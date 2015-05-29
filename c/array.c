@@ -5,32 +5,23 @@
  * @brief Array from CAP.
  */
 
-/*****************
-* Array::Include *
-*****************/
+// Array::Include
 
-#include <stdio.h>
 #include <stdlib.h>
 
-/***************
-* Array::Types *
-***************/
+// Array::Types
 
 typedef struct Array Array;
 typedef int Array_type;
 
-/*******************
-* Array::Structure *
-*******************/
+// Array::Structure
 
 struct Array {
 	size_t nelems;
 	Array_type* array;
 };
 
-/*************
-* Array::New *
-*************/
+// Array::New
 
 Array* Array_New(size_t nelems)
 {
@@ -52,9 +43,7 @@ Array* Array_New(size_t nelems)
 	return self;
 }
 
-/****************
-* Array::Delete *
-****************/
+// Array::Delete
 
 void Array_Delete(Array* self)
 {
@@ -64,9 +53,7 @@ void Array_Delete(Array* self)
 	}
 }
 
-/****************
-* Array::Getter *
-****************/
+// Array::Getter
 
 size_t Array_Size(Array const* self)
 {
@@ -103,9 +90,7 @@ Array_type const* Array_GetConstPointer(Array const* self, size_t index)
 	}
 }
 
-/****************
-* Array::Setter *
-****************/
+// Array::Setter
 
 void Array_SetCopy(Array* self, size_t index, Array_type setelem)
 {
@@ -125,9 +110,7 @@ void Array_SetPointer(Array* self, size_t index, Array_type const* setelem)
 	}
 }
 
-/****************
-* Array::Memory *
-****************/
+// Array::Memory
 
 Array* Array_Resize(Array* self, size_t nelems)
 {
