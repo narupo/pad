@@ -199,7 +199,6 @@ void List_PushFrontCopy(List* self, List_type value)
 
 // List::Remove
 
-#include <stdio.h>
 List_type List_PopBack(List* self)
 {
 	List_type value = (List_type){0};
