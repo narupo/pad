@@ -39,23 +39,29 @@ cat_main(int argc, char* argv[]) {
         }
     }
 
-    // Update input stream
-    if (argc > optind) {
-        char const* fname = argv[optind];
-        fin = fopen(fname, "rb");
-        if (!fin) {
-            die("fopen \"%s\"", fname);
+    if (argc == optind) {
+        int ch;
+        while ((ch = fgetc(fin)) != EOF) {
+            fputc(ch, fout);
         }
     }
-
-    // Render
-    int ch;
-    while ((ch = fgetc(fin)) != EOF) {
-        fputc(ch, fout);
+    else if (argc > optind) {
+        for (int i = optind; i < argc; ++i) {
+            char const* fname = argv[optind];
+            fin = file_open(fname, "rb");
+            if (!fin) {
+                die("fopen \"%s\"", fname);
+            }
+            int ch;
+            while ((ch = fgetc(fin)) != EOF) {
+                fputc(ch, fout);
+            }
+            file_close(fin);
+        }
     }
-
-    // Done
-    fclose(fin);
+    else {
+        die("Failed to parse options");
+    }
     return 0;
 }
 

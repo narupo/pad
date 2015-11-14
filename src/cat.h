@@ -2,6 +2,7 @@
 #define CAT_H
 
 #include "util.h"
+#include "file.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
