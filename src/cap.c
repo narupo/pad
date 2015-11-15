@@ -43,8 +43,6 @@ main(int argc, char* argv[]) {
     Command command = find_command(cmdname);
     if (!command)
         usage();
-    command(argc, argv);
-
-    return 0;
+    return command(argc, argv);
 }
 
