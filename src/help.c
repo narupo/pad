@@ -2,7 +2,7 @@
 
 int
 help_main(int argc, char* argv[]) {
-    usage();
+    printf("help!\n");
     return 0;
 }
 

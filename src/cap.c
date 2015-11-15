@@ -4,7 +4,21 @@
 #include "help.h"
 #include "cat.h"
 
-Command
+static void _Noreturn
+usage(Program* program) {
+    fprintf(stderr, "Usage: %s\n"
+        "\n"
+        "  -h, --help Display usage.\n"
+        "\n"
+        , program_name(program)
+    );
+    fflush(stderr);
+    program_delete(program);
+    exit(EXIT_FAILURE);
+}
+
+
+static Command
 find_command(char const* name) {
     struct CommandRecord {
         char const* name;
@@ -18,23 +32,25 @@ find_command(char const* name) {
     for (int i = 0; ; ++i) {
         struct CommandRecord* rec = &table[i];
         if (!rec->name) {
-            goto fail;
+            goto fail_0;
         }
         if (strcmp(rec->name, name) == 0) {
             return rec->command;
         }
     }
-fail:
+
+fail_0:
     return NULL;
 }
 
 int
 main(int argc, char* argv[]) {
-    program_init(argc, argv);
+    Program* program = program_new(argc, argv);
+    if (!program)
+        goto fail_0;
 
-    if (argc < 2) {
-        usage();
-    }
+    if (argc < 2)
+        usage(program);
 
     --argc;
     ++argv;
@@ -42,7 +58,14 @@ main(int argc, char* argv[]) {
     char const* cmdname = argv[0];
     Command command = find_command(cmdname);
     if (!command)
-        usage();
-    return command(argc, argv);
+        usage(program);
+    int ret = command(argc, argv);
+
+    program_delete(program);
+    return ret;
+
+fail_0:
+    fprintf(stderr, "Failed to create program.\n");
+    return 1;
 }
 
