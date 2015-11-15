@@ -72,13 +72,17 @@ cat_main(int argc, char* argv[]) {
         }
     }
 
-    int ret = 0;
-fail_parse_option:
-    ret = 1;
-fail_file_not_found:
-    ret = 2;
-
     config_delete(config);
-    return ret;
+    return 0;
+
+fail_parse_option:
+    fprintf(stderr, "Failed to parse options.\n");
+    config_delete(config);
+    return 1;
+
+fail_file_not_found:
+    fprintf(stderr, "File not found.\n");
+    config_delete(config);
+    return 2;
 }
 
