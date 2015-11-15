@@ -12,8 +12,5 @@
 void _Noreturn
 die(char const* fmt, ...);
 
-void _Noreturn
-usage(void);
-
 #endif
 

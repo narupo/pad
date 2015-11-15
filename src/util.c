@@ -23,15 +23,3 @@ die(char const* fmt, ...) {
     exit(EXIT_FAILURE);
 }
 
-void _Noreturn
-usage(void) {
-    fprintf(stderr, "Usage: %s\n"
-        "\n"
-        "  -h, --help Display usage.\n"
-        "\n"
-        , program.name
-    );
-    fflush(stderr);
-    exit(EXIT_FAILURE);
-}
-
