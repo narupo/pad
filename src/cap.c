@@ -4,16 +4,17 @@
 #include "help.h"
 #include "cat.h"
 
+static char const* progname;
+
 static void _Noreturn
-usage(Program* program) {
+usage(void) {
     fprintf(stderr, "Usage: %s\n"
         "\n"
         "  -h, --help Display usage.\n"
         "\n"
-        , program_name(program)
+        , progname
     );
     fflush(stderr);
-    program_delete(program);
     exit(EXIT_FAILURE);
 }
 
@@ -45,12 +46,10 @@ fail_0:
 
 int
 main(int argc, char* argv[]) {
-    Program* program = program_new(argc, argv);
-    if (!program)
-        goto fail_0;
+    progname = argv[0];
 
     if (argc < 2)
-        usage(program);
+        usage();
 
     --argc;
     ++argv;
@@ -58,14 +57,7 @@ main(int argc, char* argv[]) {
     char const* cmdname = argv[0];
     Command command = find_command(cmdname);
     if (!command)
-        usage(program);
-    int ret = command(argc, argv);
-
-    program_delete(program);
-    return ret;
-
-fail_0:
-    fprintf(stderr, "Failed to create program.\n");
-    return 1;
+        usage();
+    return command(argc, argv);
 }
 
