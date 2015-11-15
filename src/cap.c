@@ -3,21 +3,6 @@
 #include "help.h"
 #include "cat.h"
 
-static char const* progname;
-
-static void _Noreturn
-usage(void) {
-    fprintf(stderr, "Usage: %s\n"
-        "\n"
-        "  -h, --help Display usage.\n"
-        "\n"
-        , progname
-    );
-    fflush(stderr);
-    exit(EXIT_FAILURE);
-}
-
-
 static Command
 find_command(char const* name) {
     struct CommandRecord {
@@ -45,10 +30,8 @@ fail_0:
 
 int
 main(int argc, char* argv[]) {
-    progname = argv[0];
-
     if (argc < 2)
-        usage();
+        help_usage();
 
     --argc;
     ++argv;
@@ -56,7 +39,7 @@ main(int argc, char* argv[]) {
     char const* cmdname = argv[0];
     Command command = find_command(cmdname);
     if (!command)
-        usage();
+        help_usage();
     return command(argc, argv);
 }
 
