@@ -54,14 +54,14 @@ cat_main(int argc, char* argv[]) {
     }
     else if (argc > optind) {
         for (int i = optind; i < argc; ++i) {
-            char* fpath = config_make_file_path(config, argv[i]);
+            char* path = config_make_path_from_base(config, argv[i]);
 
-            fin = file_open(fpath, "rb");
+            fin = file_open(path, "rb");
             if (!fin) {
-                free(fpath);
+                free(path);
                 goto fail_file_not_found;
             }
-            free(fpath);
+            free(path);
             
             int ch;
             while ((ch = fgetc(fin)) != EOF) {

@@ -10,7 +10,8 @@ void _Noreturn
 help_usage(void) {
     fprintf(stderr, "Usage: cap\n"
         "\n"
-        "  -h, --help Display usage.\n"
+        "  help  Display usage.\n"
+        "  cat   Display cap file.\n"
         "\n"
     );
     fflush(stderr);
