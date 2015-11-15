@@ -18,9 +18,8 @@ static char*
 file_make_solve_path(char const* path) {
     char tmp[NFILE_PATH];
     char* dst = (char*) malloc(sizeof(char) * NFILE_PATH);
-    if (!dst) {
+    if (!dst)
         die("malloc");
-    }
 
     // Solve '~'
     if (path[0] == '~')
@@ -31,12 +30,11 @@ file_make_solve_path(char const* path) {
     // Solve real path
     errno = 0;
     if (!realpath(tmp, dst)) {
-        if (errno == ENOENT) {
+        if (errno == ENOENT)
             // Path is not exists
             strcpy(dst, tmp);
-        } else {
+        else
             die("realpath");
-        }
     }
 
     return dst;
@@ -80,9 +78,9 @@ test_mkdir(int argc, char* argv[]) {
 
     path = argv[1];
 
-    if (file_is_exists(path)) {
+    if (file_is_exists(path))
         printf("is exists [%s]\n", path);
-    } else {
+    else {
         printf("is not exists [%s]\n", path);
         file_mkdir(path, S_IRUSR | S_IWUSR | S_IXUSR);
     }
