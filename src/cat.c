@@ -39,7 +39,14 @@ cat_main(int argc, char* argv[]) {
         }
     }
 
-    if (argc == optind) {
+    // Load config
+    Config* config = config_new();
+
+    // I/O
+    if (argc < optind) {
+        goto fail_parse_option;
+    }
+    else if (argc == optind) {
         int ch;
         while ((ch = fgetc(fin)) != EOF) {
             fputc(ch, fout);
@@ -48,10 +55,15 @@ cat_main(int argc, char* argv[]) {
     else if (argc > optind) {
         for (int i = optind; i < argc; ++i) {
             char const* fname = argv[optind];
+
+            char* fpath = config_make_file_path(config, fname);
+            printf("fpath[%s]\n", fpath);
+            free(fpath);
+
             fin = file_open(fname, "rb");
-            if (!fin) {
-                die("fopen \"%s\"", fname);
-            }
+            if (!fin)
+                goto fail_file_not_found;
+            
             int ch;
             while ((ch = fgetc(fin)) != EOF) {
                 fputc(ch, fout);
@@ -59,9 +71,14 @@ cat_main(int argc, char* argv[]) {
             file_close(fin);
         }
     }
-    else {
-        die("Failed to parse options");
-    }
-    return 0;
+
+    int ret = 0;
+fail_parse_option:
+    ret = 1;
+fail_file_not_found:
+    ret = 2;
+
+    config_delete(config);
+    return ret;
 }
 
