@@ -4,6 +4,7 @@
 #include "util.h"
 #include <errno.h>
 #include <limits.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <stdio.h>

@@ -12,6 +12,27 @@ struct Config {
 static char const* config_dirpath = "~/.cap";
 static char const* source_dirpath = "/tmp/cap";
 
+static bool
+config_create_default_setting_files(Config* self, char const* dirpath) {
+    char fpath[NCONFIG_PATH] = {0};
+
+    //! Make directory with permission "drwxr-xr-x"
+    if (file_mkdir(dirpath, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) != 0)
+        return false;
+
+    //! Create 'config' file
+    strappend(fpath, sizeof(fpath), dirpath);
+    strappend(fpath, sizeof(fpath), "/config");
+
+    FILE* fout = file_open(fpath, "wb");
+    if (!fout)
+        die("Failed to open file \"%s\"", fpath);
+    fprintf(fout, "source %s\n", source_dirpath);
+    fclose(fout);
+
+    return true;
+}
+
 void
 config_delete(Config* self) {
     if (self) {
@@ -23,12 +44,12 @@ config_delete(Config* self) {
 
 bool
 config_load_settings(Config* self) {
-    //! Create cap's config directory at user's home
     char const* dirpath = buffer_getc(self->config_dirpath);
 
     if (!file_is_exists(dirpath)) {
-        if (file_mkdir(dirpath, S_IRUSR | S_IWUSR | S_IXUSR) != 0)
-            return false;
+        config_create_default_setting_files(self, dirpath);
+    }
+    else {
     }
     return true;
 }
@@ -38,8 +59,6 @@ config_new(void) {
     Config* self = (Config*) calloc(1, sizeof(Config));
     if (!self)
         goto fail_0;
-
-    //! Make Buffers
 
     //! Make cap's config directory path
     self->config_dirpath = buffer_new_str(config_dirpath);
