@@ -4,16 +4,6 @@ enum {
     NFILE_PATH = 256,
 };
 
-FILE*
-file_open(char const* name, char const* mode) {
-    return fopen(name, mode);
-}
-
-int
-file_close(FILE* fp) {
-    return fclose(fp);
-}
-
 static char*
 file_make_solve_path(char const* path) {
     char tmp[NFILE_PATH];
@@ -38,6 +28,19 @@ file_make_solve_path(char const* path) {
     }
 
     return dst;
+}
+
+FILE*
+file_open(char const* name, char const* mode) {
+    char* path = file_make_solve_path(name);
+    FILE* stream = fopen(path, mode);
+    free(path);
+    return stream;
+}
+
+int
+file_close(FILE* fp) {
+    return fclose(fp);
 }
 
 bool

@@ -11,5 +11,8 @@
 void _Noreturn
 die(char const* fmt, ...);
 
+char*
+strappend(char* dst, size_t dstsize, char const* src);
+
 #endif
 
