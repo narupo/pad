@@ -5,21 +5,20 @@ die(char const* fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
-    fflush(stdout);
+    term_flush();
 
-    fprintf(stderr, "die: ");
+    term_eprintf("die: ");
     vfprintf(stderr, fmt, args);
 
     if (fmt[strlen(fmt)-1] != '.')
-        fprintf(stderr, ".");
+        term_eprintf(".");
     if (errno != 0)
-        fprintf(stderr, " %s.", strerror(errno));
+        term_eprintf(" %s.", strerror(errno));
 
-    fprintf(stderr, "\n");
+    term_eprintf("\n");
 
     va_end(args);
 
-    fflush(stderr);
     exit(EXIT_FAILURE);
 }
 
@@ -30,19 +29,17 @@ warn(char const* fmt, ...) {
 
     fflush(stdout);
 
-    fprintf(stderr, "warn: ");
+    term_eprintf("warn: ");
     vfprintf(stderr, fmt, args);
 
     if (fmt[strlen(fmt)-1] != '.')
-        fprintf(stderr, ".");
+        term_eprintf(".");
     if (errno != 0)
-        fprintf(stderr, " %s.", strerror(errno));
+        term_eprintf(" %s.", strerror(errno));
 
-    fprintf(stderr, "\n");
+    term_eprintf("\n");
 
     va_end(args);
-
-    fflush(stderr);
 }
 
 char*

@@ -8,16 +8,19 @@ help_main(int argc, char* argv[]) {
 
 void _Noreturn
 help_usage(void) {
-    fprintf(stderr,
+    term_eprintf(
         "Cap is simple snippet manager for programmer.\n"
         "\n"
-        "Usage: cap\n"
+        "Usage:\n"
         "\n"
-        "  help  Display usage.\n"
-        "  cat   Display cap file.\n"
+        "\tcap command [arguments]\n"
+        "\n"
+        "The commands are:\n"
+        "\n"
+        "\thelp\tdisplay usage.\n"
+        "\tcat\tdisplay cap file.\n"
         "\n"
     );
-    fflush(stderr);
     exit(EXIT_FAILURE);
 }
 

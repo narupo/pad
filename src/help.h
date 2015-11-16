@@ -2,7 +2,7 @@
 #define HELP_H
 
 #include "util.h"
-#include <stdio.h>
+#include "term.h"
 
 int
 help_main(int argc, char* argv[]);
