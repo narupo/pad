@@ -40,6 +40,14 @@ file_open(char const* name, char const* mode) {
     return stream;
 }
 
+DIR*
+file_opendir(char const* path) {
+    char* spath = file_make_solve_path(path);
+    DIR* dir = opendir(spath);
+    free(spath);
+    return dir;
+}
+
 int
 file_close(FILE* fp) {
     return fclose(fp);

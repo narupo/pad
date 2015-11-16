@@ -205,3 +205,13 @@ fail_0:
     return NULL;
 }
 
+char const*
+config_dirpath(Config const* self) {
+    return buffer_getc(self->config_dirpath);
+}
+
+char const*
+config_source_dirpath(Config const* self) {
+    return buffer_getc(self->source_dirpath);
+}
+

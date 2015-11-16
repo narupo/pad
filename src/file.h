@@ -10,12 +10,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <dirent.h>
 
 int
 file_close(FILE* fp);
 
 FILE*
 file_open(char const* name, char const* mode);
+
+DIR*
+file_opendir(char const* path);
 
 bool
 file_is_exists(char const* dirpath);

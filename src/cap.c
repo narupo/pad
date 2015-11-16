@@ -11,6 +11,7 @@ find_command(char const* name) {
     static struct CommandRecord table[] = {
         {"help", help_main},
         {"cat", cat_main},
+        {"ls", ls_main},
         {0},
     };
     for (int i = 0; ; ++i) {
