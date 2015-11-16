@@ -8,7 +8,10 @@ help_main(int argc, char* argv[]) {
 
 void _Noreturn
 help_usage(void) {
-    fprintf(stderr, "Usage: cap\n"
+    fprintf(stderr,
+        "Cap is simple snippet manager for programmer.\n"
+        "\n"
+        "Usage: cap\n"
         "\n"
         "  help  Display usage.\n"
         "  cat   Display cap file.\n"

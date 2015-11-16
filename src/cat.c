@@ -17,7 +17,6 @@ cat_main(int argc, char* argv[]) {
     FILE* fout = stdout;
 
     // Parse options
-    int opt;
     for (;;) {
         static struct option longopts[] = {
             {"help", no_argument, 0, 0},
@@ -44,6 +43,7 @@ cat_main(int argc, char* argv[]) {
 
     // I/O
     if (argc < optind) {
+        WARN("Failed to parse options");
         goto fail_parse_option;
     }
     else if (argc == optind) {
@@ -54,10 +54,12 @@ cat_main(int argc, char* argv[]) {
     }
     else if (argc > optind) {
         for (int i = optind; i < argc; ++i) {
-            char* path = config_make_path_from_base(config, argv[i]);
+            char const* basename = argv[i];
+            char* path = config_make_path_from_base(config, basename);
 
             fin = file_open(path, "rb");
             if (!fin) {
+                fprintf(stderr, "Not found file \"%s\"\n", path);
                 free(path);
                 goto fail_file_not_found;
             }
@@ -75,12 +77,10 @@ cat_main(int argc, char* argv[]) {
     return 0;
 
 fail_parse_option:
-    fprintf(stderr, "Failed to parse option.\n");
     config_delete(config);
     return 1;
 
 fail_file_not_found:
-    fprintf(stderr, "File not found.\n");
     config_delete(config);
     return 2;
 }
