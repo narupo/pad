@@ -10,11 +10,26 @@
 /**
  * Desc.
  *
- * @param[in] 
- * @return    
+ * @param[in] self
  */
 void
 buffer_delete(Buffer* self);
+
+/**
+ * Desc.
+ *
+ * @param[in] self
+ */
+void
+buffer_safe_delete(Buffer** self);
+
+/**
+ * Desc.
+ *
+ * @return
+ */
+Buffer*
+buffer_new(void);
 
 /**
  * Desc.
@@ -76,5 +91,12 @@ buffer_push(Buffer* self, int ch);
 bool
 buffer_empty(Buffer const* self);
 
+/**
+ * Desc.
+ *
+ * @param[in]
+ */
+bool
+buffer_getline(Buffer* self, FILE* stream);
 
 #endif

@@ -1,5 +1,9 @@
 #include "buffer.h"
 
+enum {
+    NBUFFER_NEW_SIZE = 8,
+};
+
 /**
  * Desc.
  */
@@ -37,6 +41,21 @@ buffer_delete(Buffer* self) {
     }
 }
 
+void
+buffer_safe_delete(Buffer** self) {
+    if (self && *self) {
+        Buffer* p = *self;
+        free(p->buffer);
+        free(p);
+        *self = NULL;
+    }
+}
+
+Buffer*
+buffer_new(void) {
+    return buffer_new_size(NBUFFER_NEW_SIZE);
+}
+
 /**
  * Desc.
  *
@@ -63,6 +82,7 @@ buffer_new_str(char const* src) {
 
 fail_1:
     free(self);
+
 fail_0:
     return NULL;
 }
@@ -89,6 +109,7 @@ buffer_new_size(size_t size) {
 
 fail_1:
     free(self);
+
 fail_0:
     return NULL;
 }
@@ -155,4 +176,55 @@ buffer_empty(Buffer const* self) {
     return self->length == 0;
 }
 
+bool
+buffer_getline(Buffer* self, FILE* stream) {
+    buffer_clear(self);
+
+    if (feof(stream)) {
+        goto fail;
+    }
+
+    for (;;) {
+        int ch = fgetc(stream);
+        if (ch == EOF || ferror(stream)) {
+            goto fail;
+        }
+        if (ch == '\n') {
+            goto done;
+        }
+        buffer_push(self, ch);
+    }
+
+done:
+    buffer_push(self, '\0');
+    return true;
+
+fail:
+    buffer_push(self, '\0');
+    return false;
+}
+
+#if defined(TEST)
+int
+main(int argc, char* argv[]) {
+    FILE* stream = stdin;
+    Buffer* buf = buffer_new();
+
+    if (argc == 2) {
+        stream = fopen(argv[1], "rb");
+        if (!stream) {
+            perror("fopen");
+            exit(1);
+        }
+    }
+
+    for (; buffer_getline(buf, stream); ) {
+        printf("[%s]\n", buffer_getc(buf));
+    }
+
+    fclose(stream);
+    buffer_delete(buf);
+    return 0;
+}
+#endif
 

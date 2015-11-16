@@ -23,5 +23,14 @@ file_is_exists(char const* dirpath);
 int
 file_mkdir(char const* dirpath, mode_t mode);
 
+/**
+ * Desc.
+ *
+ * @return Success: Pointer to allocate memory for string of solve path.
+ * @return Failed: NULL
+ */
+char*
+file_make_solve_path(char const* path);
+
 #endif
 

@@ -23,6 +23,28 @@ die(char const* fmt, ...) {
     exit(EXIT_FAILURE);
 }
 
+void
+warn(char const* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+
+    fflush(stdout);
+
+    fprintf(stderr, "warn: ");
+    vfprintf(stderr, fmt, args);
+
+    if (fmt[strlen(fmt)-1] != '.')
+        fprintf(stderr, ".");
+    if (errno != 0)
+        fprintf(stderr, " %s.", strerror(errno));
+
+    fprintf(stderr, "\n");
+
+    va_end(args);
+
+    fflush(stderr);
+}
+
 char*
 strappend(char* dst, size_t dstsize, char const* src) {
     size_t dstcur = strlen(dst);  // Weak point

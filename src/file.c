@@ -4,7 +4,7 @@ enum {
     NFILE_PATH = 256,
 };
 
-static char*
+char*
 file_make_solve_path(char const* path) {
     char tmp[NFILE_PATH];
     char* dst = (char*) malloc(sizeof(char) * NFILE_PATH);
