@@ -12,19 +12,21 @@ file_make_solve_path(char const* path) {
         die("malloc");
 
     // Solve '~'
-    if (path[0] == '~')
+    if (path[0] == '~') {
         snprintf(tmp, NFILE_PATH, "%s%s", getenv("HOME"), path+1);
-    else
+    } else {
         snprintf(tmp, NFILE_PATH, "%s", path);
+    }
 
     // Solve real path
     errno = 0;
     if (!realpath(tmp, dst)) {
-        if (errno == ENOENT)
+        if (errno == ENOENT) {
             // Path is not exists
             strcpy(dst, tmp);
-        else
+        } else {
             die("realpath");
+        }
     }
 
     return dst;
@@ -50,10 +52,11 @@ file_is_exists(char const* path) {
 
     int res = stat(spath, &s);
     if (res == -1) {
-        if (errno == ENOENT)
+        if (errno == ENOENT) {
             goto not_found;
-        else
+        } else {
             die("stat");
+        }
     }
     free(spath);
     return true;
@@ -74,16 +77,15 @@ file_mkdir(char const* dirpath, mode_t mode) {
 #if defined(TEST)
 void
 test_mkdir(int argc, char* argv[]) {
-    char const* path;
-
-    if (argc < 2)
+    if (argc < 2) {
         die("need path");
+    }
 
-    path = argv[1];
+    char const* path = argv[1];
 
-    if (file_is_exists(path))
+    if (file_is_exists(path)) {
         printf("is exists [%s]\n", path);
-    else {
+    } else {
         printf("is not exists [%s]\n", path);
         file_mkdir(path, S_IRUSR | S_IWUSR | S_IXUSR);
     }
