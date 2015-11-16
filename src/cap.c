@@ -12,6 +12,7 @@ find_command(char const* name) {
         {"help", help_main},
         {"cat", cat_main},
         {"ls", ls_main},
+        {"source", source_main},
         {0},
     };
     for (int i = 0; ; ++i) {

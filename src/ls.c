@@ -88,13 +88,9 @@ ls_main(int argc, char* argv[]) {
                     ls_usage();
                 }
             } break;
-            case 'h': {
-                ls_usage();
-            } break;
+            case 'h': ls_usage(); break;
             case '?':
-            default:
-                die("Unknown option '%c'", cur);
-                break;
+            default: die("Unknown option"); break;
         }
     }
 
