@@ -1,7 +1,6 @@
-#include "types.h"
-#include "util.h"
-#include "help.h"
-#include "cat.h"
+#include "cap.h"
+
+typedef int (*Command)(int, char**);
 
 static Command
 find_command(char const* name) {
