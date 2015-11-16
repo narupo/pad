@@ -18,5 +18,11 @@ config_new(void);
 char*
 config_make_path_from_base(Config const* self, char const* basename);
 
+char const*
+config_dirpath(Config const* self);
+
+char const*
+config_source_dirpath(Config const* self);
+
 #endif
 

@@ -5,6 +5,7 @@
 #include "util.h"
 #include "help.h"
 #include "cat.h"
+#include "ls.h"
 
 #endif
 

@@ -19,6 +19,7 @@ help_usage(void) {
         "\n"
         "\thelp\tdisplay usage.\n"
         "\tcat\tdisplay cap file.\n"
+        "\tls\tdisplay cap file list.\n"
         "\n"
     );
     exit(EXIT_FAILURE);

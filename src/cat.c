@@ -59,8 +59,12 @@ cat_main(int argc, char* argv[]) {
 
             fin = file_open(path, "rb");
             if (!fin) {
-                term_eprintf("Not found file \"%s\"\n", path);
                 free(path);
+                if (errno == ENOENT) {
+                    term_eprintf("Not found file \"%s\"\n", path);
+                } else {
+                    WARN("Failed to open file \"%s\"", path);
+                }
                 goto fail_file_not_found;
             }
             free(path);
