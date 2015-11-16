@@ -95,10 +95,20 @@ _load_setting_files(Config* self) {
         if (strncmp(line, "source", 6) == 0) {  //! TODO: magic number
             char const* p = strchr(line, delim);
             ++p;
+
+            char* spath = file_make_solve_path(p);
+            if (!spath) {
+                WARN("Failed to solve path");
+                goto fail_2;
+            }
+
             if (self->source_dirpath) {
                 buffer_safe_delete(&self->source_dirpath);
             }
-            self->source_dirpath = buffer_new_str(p);
+            
+            self->source_dirpath = buffer_new_str(spath);
+            free(spath);
+
             if (!self->source_dirpath) {
                 WARN("Failed to allocate buffer");
                 goto fail_2;
@@ -130,10 +140,18 @@ fail_0:
 bool
 config_load_setting(Config* self, char const* config_dirpath) {
     //! Make cap's config directory path
+    char* spath = file_make_solve_path(config_dirpath);
+    if (!spath) {
+        WARN("Failed to make solve path");
+        goto fail_0;
+    }
+
     if (self->config_dirpath) {
         buffer_safe_delete(&self->config_dirpath);
     }
-    self->config_dirpath = buffer_new_str(config_dirpath);
+
+    self->config_dirpath = buffer_new_str(spath);
+    free(spath);
 
     if (!self->config_dirpath) {
         WARN("Failed to allocate buffer");

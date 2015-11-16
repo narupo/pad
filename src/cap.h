@@ -6,6 +6,7 @@
 #include "help.h"
 #include "cat.h"
 #include "ls.h"
+#include "source.h"
 
 #endif
 
