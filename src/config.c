@@ -92,7 +92,7 @@ _load_setting_files(Config* self) {
     for (; buffer_getline(buf, fin); ) {
         char const* line = buffer_getc(buf);
 
-        if (strncmp(line, "source", 6) == 0) {
+        if (strncmp(line, "source", 6) == 0) {  //! TODO: magic number
             char const* p = strchr(line, delim);
             ++p;
             if (self->source_dirpath) {
@@ -128,12 +128,12 @@ fail_0:
 }
 
 bool
-config_load_setting(Config* self) {
+config_load_setting(Config* self, char const* config_dirpath) {
     //! Make cap's config directory path
     if (self->config_dirpath) {
         buffer_safe_delete(&self->config_dirpath);
     }
-    self->config_dirpath = buffer_new_str("~/.cap");
+    self->config_dirpath = buffer_new_str(config_dirpath);
 
     if (!self->config_dirpath) {
         WARN("Failed to allocate buffer");
@@ -172,7 +172,7 @@ config_new(void) {
     }
 
     //! Load settings from files
-    if (!config_load_setting(self)) {
+    if (!config_load_setting(self, "~/.cap")) {
         WARN("Failed to config load setting");
         free(self);
         return NULL;

@@ -2,7 +2,7 @@
 
 static void _Noreturn
 cat_usage(void) {
-    fprintf(stderr,
+    term_eprintf(
         "Usage: cap cat\n"
         "\n"
         "  --help Display usage.\n"
@@ -59,7 +59,7 @@ cat_main(int argc, char* argv[]) {
 
             fin = file_open(path, "rb");
             if (!fin) {
-                fprintf(stderr, "Not found file \"%s\"\n", path);
+                term_eprintf("Not found file \"%s\"\n", path);
                 free(path);
                 goto fail_file_not_found;
             }

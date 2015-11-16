@@ -29,16 +29,19 @@ fail_0:
 
 int
 main(int argc, char* argv[]) {
-    if (argc < 2)
+    if (argc < 2) {
         help_usage();
+    }
 
     --argc;
     ++argv;
 
     char const* cmdname = argv[0];
     Command command = find_command(cmdname);
-    if (!command)
+    if (!command) {
+        term_eprintf("Not found name of command \"%s\".\n\n", cmdname);
         help_usage();
+    }
     return command(argc, argv);
 }
 
