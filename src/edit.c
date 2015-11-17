@@ -26,40 +26,40 @@ edit_main(int argc, char* argv[]) {
 	char const* editpath = "/usr/bin/vi";
 	char const* fname = NULL;
 	
-    //! Parse options
-    for (;;) {
-        static struct option longopts[] = {
-            {"help", no_argument, 0, 0},
-            {0},
-        };
-        int optsindex;
+	//! Parse options
+	for (;;) {
+		static struct option longopts[] = {
+			{"help", no_argument, 0, 0},
+			{0},
+		};
+		int optsindex;
 
-        int cur = getopt_long(argc, argv, "h", longopts, &optsindex);
-        if (cur == -1) {
-            break;
+		int cur = getopt_long(argc, argv, "h", longopts, &optsindex);
+		if (cur == -1) {
+			break;
 		}
 
-        switch (cur) {
-            case 0: {
-                char const* name = longopts[optsindex].name;
-                if (strcmp("help", name) == 0) {
+		switch (cur) {
+			case 0: {
+				char const* name = longopts[optsindex].name;
+				if (strcmp("help", name) == 0) {
 					edit_usage();
-                }
-            } break;
-            case 'h':
+				}
+			} break;
+			case 'h':
 				edit_usage();
 				break;
-            case '?':
-            default:
-                die("Unknown option");
-                break;
-        }
-    }
+			case '?':
+			default:
+				die("Unknown option");
+				break;
+		}
+	}
 
-    if (argc < optind) {
-        die("Failed to parse option");
+	if (argc < optind) {
+		die("Failed to parse option");
 		goto fail_parse_option;
-    }
+	}
 
 	//! Get edit file base name
 	if (argc == optind) {
