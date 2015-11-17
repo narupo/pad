@@ -22,10 +22,10 @@ DIR*
 file_opendir(char const* path);
 
 bool
-file_is_exists(char const* dirpath);
+file_is_exists(char const* path);
 
 int
-file_mkdir(char const* dirpath, mode_t mode);
+file_mkdir(char const* path, mode_t mode);
 
 /**
  * Desc.
@@ -35,6 +35,12 @@ file_mkdir(char const* dirpath, mode_t mode);
  */
 char*
 file_make_solve_path(char const* path);
+
+/**
+ *
+ */
+bool
+file_is_dir(char const* path);
 
 #endif
 

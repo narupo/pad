@@ -2,6 +2,7 @@
 #define BUFFER_H
 
 #include "types.h"
+#include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -83,6 +84,12 @@ size_t
 buffer_push(Buffer* self, int ch);
 
 /**
+ *
+ */
+bool
+buffer_resize(Buffer* self, size_t resize);
+
+/**
  * Desc.
  *
  * @param[in] 
@@ -99,4 +106,11 @@ buffer_empty(Buffer const* self);
 bool
 buffer_getline(Buffer* self, FILE* stream);
 
+/**
+ *
+ */
+bool
+buffer_copy_str(Buffer* self, char const* src);
+
 #endif
+

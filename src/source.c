@@ -27,10 +27,9 @@ source_run(int argc, char* argv[]) {
         goto done;
     }
 
-    if (optsrcdirpath && file_is_exists(optsrcdirpath)) {
-        //TODO
-        //config_set_source_dirpath(config, optsrcdirpath);
-        //config_save_config(config);
+    if (optsrcdirpath && file_is_dir(optsrcdirpath)) {
+        config_set_source_dirpath(config, optsrcdirpath);
+        config_save(config);
     } else {
         term_eprintf("Invalid source \"%s\".\n", optsrcdirpath);
         goto fail_2;
@@ -75,8 +74,9 @@ source_main(int argc, char* argv[]) {
         }
     }
 
+    //! Has new source ?
     if (argc > optind) {
-        optsrcdirpath = argv[optind];
+        optsrcdirpath = argv[optind]; //! Yes
     }
 
     return source_run(argc, argv);

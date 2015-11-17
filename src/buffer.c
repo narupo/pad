@@ -144,33 +144,35 @@ buffer_clear(Buffer* self) {
     self->length = 0;
 }
 
-/**
- * Desc.
- *
- * @param[in] 
- * @return    
- */
+bool
+buffer_resize(Buffer* self, size_t resize) {
+    resize = (resize == 0 ? 8 : resize);  // TODO: magic number
+
+    char* ptr = (char*) realloc(self->buffer, resize);
+    if (!ptr) {
+        return false;  // Failed
+    }
+
+    self->buffer = ptr;
+    self->capacity = resize;
+
+    return true;
+}
+
 size_t
 buffer_push(Buffer* self, int ch) {
     if (self->length >= self->capacity) {
-        size_t newCapa = (self->capacity == 0 ? 8 : self->capacity * 2);  // TODO: magic number
-        char* ptr = (char*) realloc(self->buffer, newCapa);
-        if (!ptr)
-            return 0;  // Failed
-
-        self->buffer = ptr;
-        self->capacity = newCapa;
+        if (!buffer_resize(self, self->capacity * 2)) {
+            goto fail;
+        }
     }
     self->buffer[self->length++] = ch;
     return self->length;
+
+fail:
+    return 0;
 }
 
-/**
- * Desc.
- *
- * @param[in] 
- * @return    
- */
 bool
 buffer_empty(Buffer const* self) {
     return self->length == 0;
@@ -201,6 +203,26 @@ done:
 
 fail:
     buffer_push(self, '\0');
+    return false;
+}
+
+bool
+buffer_copy_str(Buffer* self, char const* src) {
+    size_t srcsize = strlen(src) + 1;
+
+    if (srcsize > self->capacity) {
+        if (!buffer_resize(self, srcsize)) {
+            WARN("Failed to resize");
+            goto fail;
+        }
+    }
+
+    memmove(self->buffer, src, srcsize);
+    self->length = srcsize;
+
+    return true;
+
+fail:
     return false;
 }
 
