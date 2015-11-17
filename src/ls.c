@@ -1,5 +1,7 @@
 #include "ls.h"
 
+static bool opt_all;
+
 void _Noreturn
 ls_usage(void) {
 	term_eprintf(
@@ -41,8 +43,10 @@ ls_run(void) {
 		}
 
 		//! Skip "." and ".."
-		if (strncmp(dirp->d_name, ".", 1) == 0 || strncmp(dirp->d_name, "..", 2) == 0) {
-			continue;
+		if (!opt_all) {
+			if (strncmp(dirp->d_name, ".", 1) == 0 || strncmp(dirp->d_name, "..", 2) == 0) {
+				continue;
+			}
 		}
 
 		//! Display file
@@ -77,7 +81,7 @@ ls_main(int argc, char* argv[]) {
 		};
 		int optsindex;
 
-		int cur = getopt_long(argc, argv, "h", longopts, &optsindex);
+		int cur = getopt_long(argc, argv, "ha", longopts, &optsindex);
 		if (cur == -1)
 			break;
 
@@ -89,6 +93,7 @@ ls_main(int argc, char* argv[]) {
 				}
 			} break;
 			case 'h': ls_usage(); break;
+			case 'a': opt_all = !opt_all; break;
 			case '?':
 			default: die("Unknown option"); break;
 		}
