@@ -25,7 +25,7 @@ config_dirpath(Config const* self);
 char const*
 config_source_dirpath(Config const* self);
 
-void
+bool
 config_set_source_dirpath(Config* self, char const* srcdirpath);
 
 bool

@@ -37,19 +37,20 @@ find_command(char const* name) {
         {"cat", cat_main},
         {"ls", ls_main},
         {"source", source_main},
+        {"edit", edit_main},
         {0},
     };
     for (int i = 0; ; ++i) {
         struct CommandRecord* rec = &table[i];
         if (!rec->name) {
-            goto fail_0;
+            goto notfound;
         }
         if (strcmp(rec->name, name) == 0) {
             return rec->command;
         }
     }
 
-fail_0:
+notfound:
     return NULL;
 }
 
