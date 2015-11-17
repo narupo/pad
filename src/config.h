@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 void
 config_delete(Config* self);
@@ -23,6 +24,12 @@ config_dirpath(Config const* self);
 
 char const*
 config_source_dirpath(Config const* self);
+
+void
+config_set_source_dirpath(Config* self, char const* srcdirpath);
+
+bool
+config_save(Config const* self);
 
 #endif
 

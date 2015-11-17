@@ -33,18 +33,30 @@ file_make_solve_path(char const* path) {
 }
 
 FILE*
-file_open(char const* name, char const* mode) {
-    char* path = file_make_solve_path(name);
-    FILE* stream = fopen(path, mode);
-    free(path);
+file_open(char const* path, char const* mode) {
+    char* spath = file_make_solve_path(path);
+    if (!spath) {
+        WARNF("Failed to make solve path \"%s\"", path);
+        return NULL;
+    }
+
+    FILE* stream = fopen(spath, mode);
+    free(spath);
+
     return stream;
 }
 
 DIR*
 file_opendir(char const* path) {
     char* spath = file_make_solve_path(path);
+    if (!spath) {
+        WARNF("Failed to make solve path \"%s\"", path);
+        return NULL;
+    }
+
     DIR* dir = opendir(spath);
     free(spath);
+
     return dir;
 }
 
@@ -55,23 +67,55 @@ file_close(FILE* fp) {
 
 bool
 file_is_exists(char const* path) {
-    struct stat s;
     char* spath = file_make_solve_path(path);
-
+    if (!spath) {
+        WARNF("Failed to make solve path \"%s\"", path);
+    }
+    struct stat s;
     int res = stat(spath, &s);
+    free(spath);
+
     if (res == -1) {
         if (errno == ENOENT) {
-            goto not_found;
+            goto notfound;
         } else {
             die("stat");
         }
     }
-    free(spath);
     return true;
 
-not_found:
-    free(spath);
+notfound:
     return false;  // Does not exists
+}
+
+bool
+file_is_dir(char const* path) {
+    char* spath = file_make_solve_path(path);
+    if (!spath) {
+        WARN("Failed to make solve path \"%s\"", spath);
+        return false;
+    }
+    struct stat s;
+    int res = stat(spath, &s);
+    free(spath);
+
+    if (res == -1) {
+        if (errno == ENOENT) {
+            ;
+        } else {
+            WARN("Failed to stat");
+        }
+        goto notfound;
+    } else {
+        if (S_ISDIR(s.st_mode)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+notfound:
+    return false;
 }
 
 int

@@ -40,6 +40,10 @@ cat_main(int argc, char* argv[]) {
 
     // Load config
     Config* config = config_new();
+    if (!config) {
+        WARN("Failed to construct config");
+        goto fail_config;
+    }
 
     // I/O
     if (argc < optind) {
@@ -61,9 +65,9 @@ cat_main(int argc, char* argv[]) {
             if (!fin) {
                 free(path);
                 if (errno == ENOENT) {
-                    term_eprintf("Not found file \"%s\"\n", path);
+                    term_eprintf("Not found file \"%s\"\n", basename);
                 } else {
-                    WARN("Failed to open file \"%s\"", path);
+                    WARN("Failed to open file \"%s\"", basename);
                 }
                 goto fail_file_not_found;
             }
@@ -87,5 +91,8 @@ fail_parse_option:
 fail_file_not_found:
     config_delete(config);
     return 2;
+
+fail_config:
+    return 3;
 }
 
