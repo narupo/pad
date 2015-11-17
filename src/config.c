@@ -270,17 +270,21 @@ config_source_dirpath(Config const* self) {
     return buffer_getc(self->source_dirpath);
 }
 
-void
+bool
 config_set_source_dirpath(Config* self, char const* srcdirpath) {
-    if (!self->source_dirpath) {
-        self->source_dirpath = buffer_new_str(srcdirpath);
-        if (!self->source_dirpath) {
-            WARN("Failed to construct buffer");
-        }
-    } else {
-        if (!buffer_copy_str(self->source_dirpath, srcdirpath)) {
-            WARN("Failed to copy string");
-        }
+    char* spath = file_make_solve_path(srcdirpath);
+    if (!spath) {
+        WARN("Failed to make solve path");
+        return false;
     }
+
+    if (!buffer_copy_str(self->source_dirpath, spath)) {
+        WARN("Failed to copy string");
+        free(spath);
+        return false;
+    }
+
+    free(spath);
+    return true;
 }
 

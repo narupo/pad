@@ -17,10 +17,11 @@ help_usage(void) {
         "\n"
         "The commands are:\n"
         "\n"
-        "\thelp\tdisplay usage.\n"
-        "\tcat\tdisplay cap file.\n"
-        "\tls\tdisplay cap file list.\n"
-        "\tsource\tdisplay or set source directory.\n"
+        "\thelp\tdisplay usage\n"
+        "\tcat\tdisplay cap file\n"
+        "\tls\tdisplay cap file list\n"
+        "\tsource\tdisplay or set source directory\n"
+        "\tedit\tedit cap file\n"
         "\n"
     );
     exit(EXIT_FAILURE);

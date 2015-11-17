@@ -31,6 +31,7 @@ SOFTWARE.
 #include "cat.h"
 #include "ls.h"
 #include "source.h"
+#include "edit.h"
 
 #endif
 
