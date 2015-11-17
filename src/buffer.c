@@ -208,6 +208,11 @@ fail:
 
 bool
 buffer_copy_str(Buffer* self, char const* src) {
+    if (!src) {
+        WARN("Invalid arguments");
+        goto fail;
+    }
+
     size_t srcsize = strlen(src) + 1;
 
     if (srcsize > self->capacity) {

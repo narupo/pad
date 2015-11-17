@@ -89,6 +89,8 @@ _load_setting_files(Config* self) {
     //! Parse start
     char const delim = ' ';
 
+    buffer_clear(self->source_dirpath);
+
     for (; buffer_getline(buf, fin); ) {
         char const* line = buffer_getc(buf);
 
@@ -102,11 +104,8 @@ _load_setting_files(Config* self) {
                 goto fail_2;
             }
 
-            if (self->source_dirpath) {
-                buffer_safe_delete(&self->source_dirpath);
-            }
-            
-            self->source_dirpath = buffer_new_str(spath);
+            buffer_clear(self->source_dirpath);
+            buffer_copy_str(self->source_dirpath, spath);
             free(spath);
 
             if (!self->source_dirpath) {
@@ -117,13 +116,12 @@ _load_setting_files(Config* self) {
     }
 
     //! Check parse results
-    if (!self->source_dirpath) {
+    if (buffer_empty(self->source_dirpath)) {
         WARN("Not found source directory path");
 
         //! Fix
-        self->source_dirpath = buffer_new_str("/tmp");  //! TODO: magic string
-        if (!self->source_dirpath) {
-            WARN("Failed to allocate buffer");
+        if (!buffer_copy_str(self->source_dirpath, "/tmp")) {
+            WARN("Failed to copy string");
             goto fail_2;
         }
         config_save(self);
@@ -150,41 +148,34 @@ config_load_setting(Config* self, char const* config_dirpath) {
     char* spath = file_make_solve_path(config_dirpath);
     if (!spath) {
         WARN("Failed to make solve path");
-        goto fail_0;
+        goto fail;
     }
 
-    if (self->config_dirpath) {
-        buffer_safe_delete(&self->config_dirpath);
+    buffer_clear(self->config_dirpath);
+    if (!buffer_copy_str(self->config_dirpath, spath)) {
+        WARN("Failed to copy string");
+        free(spath);
+        goto fail;
     }
-
-    self->config_dirpath = buffer_new_str(spath);
     free(spath);
-
-    if (!self->config_dirpath) {
-        WARN("Failed to allocate buffer");
-        goto fail_0;
-    }
 
     //! Check files
     if (!file_is_exists(buffer_getc(self->config_dirpath))) {
         if (!config_create_default_setting_files(self)) {
             WARN("Failed to config create default setting files");
-            goto fail_1;
+            goto fail;
         }
     }
 
     //! Load
     if (!_load_setting_files(self)) {
         WARN("Failed to config load setting files.");
-        goto fail_1;
+        goto fail;
     }
 
     return true;
 
-fail_1:
-    buffer_safe_delete(&self->config_dirpath);
-
-fail_0:
+fail:
     return false;
 }
 
@@ -211,17 +202,38 @@ config_new(void) {
     Config* self = (Config*) calloc(1, sizeof(Config));
     if (!self) {
         WARN("Failed to allocate memory");
-        return NULL;
+        goto fail_self;
+    }
+
+    if (!(self->config_dirpath = buffer_new())) {
+        WARN("Failed to construct buffer");
+        goto fail_config;
+    }
+
+    if (!(self->source_dirpath = buffer_new())) {
+        WARN("Failed to construct buffer");
+        goto fail_source;
     }
 
     //! Load settings from files
     if (!config_load_setting(self, "~/.cap")) {
         WARN("Failed to load setting");
-        free(self);
-        return NULL;
+        goto fail_load;
     }
 
     return self;
+
+fail_load:
+    buffer_delete(self->source_dirpath);
+
+fail_source:
+    buffer_delete(self->config_dirpath);
+
+fail_config:
+    free(self);
+
+fail_self:
+    return NULL;
 }
 
 char*
