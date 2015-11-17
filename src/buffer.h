@@ -36,7 +36,7 @@ buffer_new(void);
  * Desc.
  *
  * @param[in] 
- * @return    
+ * @return	  
  */
 Buffer*
 buffer_new_str(char const* src);
@@ -45,7 +45,7 @@ buffer_new_str(char const* src);
  * Desc.
  *
  * @param[in] 
- * @return    
+ * @return	  
  */
 Buffer*
 buffer_new_size(size_t size);
@@ -60,7 +60,7 @@ buffer_length(Buffer const* self);
  * Desc.
  *
  * @param[in] 
- * @return    
+ * @return	  
  */
 char const*
 buffer_getc(Buffer const* self);
@@ -69,7 +69,7 @@ buffer_getc(Buffer const* self);
  * Desc.
  *
  * @param[in] 
- * @return    
+ * @return	  
  */
 void
 buffer_clear(Buffer* self);
@@ -78,7 +78,7 @@ buffer_clear(Buffer* self);
  * Desc.
  *
  * @param[in] 
- * @return    
+ * @return	  
  */
 size_t
 buffer_push(Buffer* self, int ch);
@@ -93,7 +93,7 @@ buffer_resize(Buffer* self, size_t resize);
  * Desc.
  *
  * @param[in] 
- * @return    
+ * @return	  
  */
 bool
 buffer_empty(Buffer const* self);

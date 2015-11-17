@@ -28,47 +28,47 @@ typedef int (*Command)(int, char**);
 
 static Command
 find_command(char const* name) {
-    struct CommandRecord {
-        char const* name;
-        Command command;
-    };
-    static struct CommandRecord table[] = {
-        {"help", help_main},
-        {"cat", cat_main},
-        {"ls", ls_main},
-        {"source", source_main},
-        {"edit", edit_main},
-        {0},
-    };
-    for (int i = 0; ; ++i) {
-        struct CommandRecord* rec = &table[i];
-        if (!rec->name) {
-            goto notfound;
-        }
-        if (strcmp(rec->name, name) == 0) {
-            return rec->command;
-        }
-    }
+	struct CommandRecord {
+		char const* name;
+		Command command;
+	};
+	static struct CommandRecord table[] = {
+		{"help", help_main},
+		{"cat", cat_main},
+		{"ls", ls_main},
+		{"source", source_main},
+		{"edit", edit_main},
+		{0},
+	};
+	for (int i = 0; ; ++i) {
+		struct CommandRecord* rec = &table[i];
+		if (!rec->name) {
+			goto notfound;
+		}
+		if (strcmp(rec->name, name) == 0) {
+			return rec->command;
+		}
+	}
 
 notfound:
-    return NULL;
+	return NULL;
 }
 
 int
 main(int argc, char* argv[]) {
-    if (argc < 2) {
-        help_usage();
-    }
+	if (argc < 2) {
+		help_usage();
+	}
 
-    --argc;
-    ++argv;
+	--argc;
+	++argv;
 
-    char const* cmdname = argv[0];
-    Command command = find_command(cmdname);
-    if (!command) {
-        term_eprintf("Not found name of command \"%s\".\n\n", cmdname);
-        help_usage();
-    }
-    return command(argc, argv);
+	char const* cmdname = argv[0];
+	Command command = find_command(cmdname);
+	if (!command) {
+		term_eprintf("Not found name of command \"%s\".\n\n", cmdname);
+		help_usage();
+	}
+	return command(argc, argv);
 }
 
