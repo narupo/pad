@@ -8,8 +8,9 @@ char*
 file_make_solve_path(char const* path) {
 	char tmp[NFILE_PATH];
 	char* dst = (char*) malloc(sizeof(char) * NFILE_PATH);
-	if (!dst)
+	if (!dst) {
 		die("malloc");
+	}
 
 	// Solve '~'
 	if (path[0] == '~') {
