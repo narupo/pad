@@ -39,6 +39,7 @@ find_command(char const* name) {
 		{"source", source_main},
 		{"src", source_main},
 		{"edit", edit_main},
+		{"deploy", deploy_main},
 		{0},
 	};
 	for (int i = 0; ; ++i) {

@@ -32,6 +32,7 @@ SOFTWARE.
 #include "ls.h"
 #include "source.h"
 #include "edit.h"
+#include "deploy.h"
 
 #endif
 

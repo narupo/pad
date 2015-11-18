@@ -22,6 +22,7 @@ help_usage(void) {
         "\tls\tdisplay cap file list\n"
         "\tsource\tdisplay or set source directory\n"
         "\tedit\tedit cap file\n"
+        "\tdeploy\tdeploy files from directory\n"
         "\n"
     );
     exit(EXIT_FAILURE);

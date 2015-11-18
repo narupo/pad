@@ -18,6 +18,9 @@ file_close(FILE* fp);
 FILE*
 file_open(char const* name, char const* mode);
 
+int
+file_closedir(DIR* dir);
+
 DIR*
 file_opendir(char const* path);
 
@@ -26,6 +29,9 @@ file_is_exists(char const* path);
 
 int
 file_mkdir(char const* path, mode_t mode);
+
+char*
+file_solve_path(char* dst, size_t dstsize, char const* path);
 
 /**
  * Desc.
