@@ -1,6 +1,6 @@
 #include "ls.h"
 
-static bool opt_all;
+static bool opt_is_all_disp;
 
 void _Noreturn
 ls_usage(void) {
@@ -22,6 +22,7 @@ ls_run(void) {
 	}
 
 	char const* confdirpath = config_source_dirpath(config);
+	
 	DIR* dir = file_opendir(confdirpath);
 	if (!dir) {
 		WARNF("Failed to opendir \"%s\"", confdirpath);
@@ -43,8 +44,9 @@ ls_run(void) {
 		}
 
 		//! Skip "." and ".."
-		if (!opt_all) {
-			if (strncmp(dirp->d_name, ".", 1) == 0 || strncmp(dirp->d_name, "..", 2) == 0) {
+		if (!opt_is_all_disp) {
+			if (strncmp(dirp->d_name, ".", 1) == 0 ||
+				strncmp(dirp->d_name, "..", 2) == 0) {
 				continue;
 			}
 		}
@@ -85,17 +87,19 @@ ls_main(int argc, char* argv[]) {
 		if (cur == -1)
 			break;
 
+	again:
 		switch (cur) {
-			case 0: {
-				char const* name = longopts[optsindex].name;
-				if (strcmp("help", name) == 0) {
-					ls_usage();
-				}
-			} break;
-			case 'h': ls_usage(); break;
-			case 'a': opt_all = !opt_all; break;
-			case '?':
-			default: die("Unknown option"); break;
+		case 0: {
+			char const* name = longopts[optsindex].name;
+			if (strcmp("help", name) == 0) {
+				cur = 'h';
+				goto again;
+			}
+		} break;
+		case 'h': ls_usage(); break;
+		case 'a': opt_is_all_disp = !opt_is_all_disp; break;
+		case '?':
+		default: die("Unknown option"); break;
 		}
 	}
 
@@ -107,4 +111,3 @@ ls_main(int argc, char* argv[]) {
 	//! Run
 	return ls_run();
 }
-
