@@ -1,9 +1,5 @@
 #include "config.h"
 
-enum {
-	NCONFIG_PATH = 256,
-};
-
 struct Config {
 	Buffer* config_dirpath;
 	Buffer* source_dirpath;
@@ -237,22 +233,42 @@ fail_self:
 }
 
 char*
+config_path_from_base(Config const* self, char* dst, size_t dstsize, char const* basename) {
+	if (!basename) {
+		WARN("Invalid arguments");
+		goto fail;
+	}
+
+	//! Check make path size
+	size_t namelen = strlen(basename);
+	size_t pathsize = buffer_length(self->source_dirpath) + 1 + namelen + 1;
+	if (pathsize > dstsize) {
+		WARN("Path size out of range");
+		goto fail;
+	}
+
+	//! Make path
+	snprintf(dst, dstsize, "%s/%s", buffer_getc(self->source_dirpath), basename);
+
+	return dst;
+
+fail:
+	return NULL;
+}
+
+char*
 config_make_path_from_base(Config const* self, char const* basename) {
 	if (!basename) {
 		WARN("Invalid arguments");
 		goto fail_0;
 	}
-	size_t namelen = strlen(basename);
-	size_t pathsize = buffer_length(self->source_dirpath) + 1 + namelen + 1;
-	char* path = (char*) malloc(sizeof(char) * pathsize);
+	char* path = (char*) malloc(sizeof(char) * NCONFIG_PATH);
 	if (!path) {
 		WARN("Failed to allocate memory");
 		goto fail_1;
 	}
 
-	snprintf(path, pathsize, "%s/%s", buffer_getc(self->source_dirpath), basename);
-
-	return path;
+	return config_path_from_base(self, path, NCONFIG_PATH, basename);
 
 fail_1:
 	;

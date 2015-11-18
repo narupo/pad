@@ -40,19 +40,19 @@ edit_main(int argc, char* argv[]) {
 		}
 
 		switch (cur) {
-			case 0: {
-				char const* name = longopts[optsindex].name;
-				if (strcmp("help", name) == 0) {
-					edit_usage();
-				}
-			} break;
-			case 'h':
+		case 0: {
+			char const* name = longopts[optsindex].name;
+			if (strcmp("help", name) == 0) {
 				edit_usage();
-				break;
-			case '?':
-			default:
-				die("Unknown option");
-				break;
+			}
+		} break;
+		case 'h':
+			edit_usage();
+			break;
+		case '?':
+		default:
+			die("Unknown option");
+			break;
 		}
 	}
 
@@ -75,8 +75,8 @@ edit_main(int argc, char* argv[]) {
 	}
 
 	//! Make file path from edit file base name
-	char* spath = config_make_path_from_base(config, fname);
-	if (!spath) {
+	char spath[NCONFIG_PATH];
+	if (!config_path_from_base(config, spath, sizeof spath, fname)) {
 		WARN("Failed to make path from \"%s\"", fname);
 		goto fail_make_path;
 	}

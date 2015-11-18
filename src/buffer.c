@@ -146,7 +146,7 @@ buffer_clear(Buffer* self) {
 
 bool
 buffer_resize(Buffer* self, size_t resize) {
-	resize = (resize == 0 ? 8 : resize);  // TODO: magic number
+	resize = (resize == 0 ? NBUFFER_NEW_SIZE : resize);
 
 	char* ptr = (char*) realloc(self->buffer, resize);
 	if (!ptr) {
@@ -254,4 +254,3 @@ main(int argc, char* argv[]) {
 	return 0;
 }
 #endif
-

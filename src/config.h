@@ -10,11 +10,18 @@
 #include <string.h>
 #include <stdbool.h>
 
+enum {
+	NCONFIG_PATH = 256,
+};
+
 void
 config_delete(Config* self);
 
 Config*
 config_new(void);
+
+char*
+config_path_from_base(Config const* self, char* dst, size_t dstsize, char const* basename);
 
 char*
 config_make_path_from_base(Config const* self, char const* basename);
