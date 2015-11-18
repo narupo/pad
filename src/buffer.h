@@ -9,6 +9,15 @@
 #include <stdbool.h>
 
 /**
+ * Destruct buffer.
+ * If self is null, do not anything.
+ *
+ * @param[in] self
+ */
+void
+buffer_delete(Buffer* self);
+
+/**
  * Safe destruct buffer and clear pointer value to NULL.
  * If self is null, do not anything.
  *

@@ -20,19 +20,14 @@ static Buffer dummy;
 
 /**
  * Get pointer to dummy object.
- *
+ * 
+ * @return	Pointer to dummy buffer.
  */
 static Buffer*
 buffer_dummy(void) {
 	return &dummy;
 }
 
-/**
- * Desc.
- *
- * @param[in] 
- * @return	  
- */
 void
 buffer_delete(Buffer* self) {
 	if (self) {
@@ -56,12 +51,6 @@ buffer_new(void) {
 	return buffer_new_size(NBUFFER_NEW_SIZE);
 }
 
-/**
- * Desc.
- *
- * @param[in] 
- * @return	  
- */
 Buffer*
 buffer_new_str(char const* src) {
 	Buffer* self = (Buffer*) calloc(1, sizeof(Buffer));
@@ -87,12 +76,6 @@ fail_0:
 	return NULL;
 }
 
-/**
- * Desc.
- *
- * @param[in] 
- * @return	  
- */
 Buffer*
 buffer_new_size(size_t size) {
 	Buffer* self = (Buffer*) calloc(1, sizeof(Buffer));
@@ -114,31 +97,16 @@ fail_0:
 	return NULL;
 }
 
-/**
- *
- */
 size_t
 buffer_length(Buffer const* self) {
 	return self->length;
 }
 
-/**
- * Desc.
- *
- * @param[in] 
- * @return	  
- */
 char const*
 buffer_getc(Buffer const* self) {
 	return self->buffer;
 }
 
-/**
- * Desc.
- *
- * @param[in] 
- * @return	  
- */
 void
 buffer_clear(Buffer* self) {
 	self->length = 0;

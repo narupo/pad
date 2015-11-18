@@ -5,6 +5,32 @@ enum {
 };
 
 char*
+file_solve_path(char* dst, size_t dstsize, char const* path) {
+	char tmp[NFILE_PATH];
+
+	//! Check arugments
+	if (!dst || !path) {
+		WARN("Invalid arguments");
+		return NULL;
+	}
+
+	//! Solve '~'
+	if (path[0] == '~') {
+		snprintf(tmp, NFILE_PATH, "%s%s", getenv("HOME"), path+1);
+	} else {
+		snprintf(tmp, NFILE_PATH, "%s", path);
+	}
+
+	//! Solve real path
+	errno = 0;
+	if (!realpath(tmp, dst)) {
+		die("realpath");
+	}
+
+	return dst;
+}
+
+char*
 file_make_solve_path(char const* path) {
 	char tmp[NFILE_PATH];
 	char* dst = (char*) malloc(sizeof(char) * NFILE_PATH);
@@ -59,6 +85,11 @@ file_opendir(char const* path) {
 	free(spath);
 
 	return dir;
+}
+
+int
+file_closedir(DIR* dir) {
+	return closedir(dir);
 }
 
 int
