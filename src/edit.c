@@ -86,18 +86,15 @@ edit_main(int argc, char* argv[]) {
 
 	if (pid < 0) {
 		WARN("Failed to fork");
-		free(spath);
 		goto fail_fork;
 	} else if (pid == 0) {
 		//! Are child process
 		execl(editpath, editpath, spath, NULL); //< Good bye!
 		WARN("Failed to execl");
-		free(spath);
 		goto fail_exec;
 	}
 
 	//! Are parent process
-	free(spath);
 	config_delete(config);
 
 	if (wait(NULL) == -1) {
