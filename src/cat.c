@@ -3,13 +3,13 @@
 static void _Noreturn
 cat_usage(void) {
 	term_eprintf(
-        "cap cat\n"
-        "\n"
+		"cap cat\n"
+		"\n"
 		"Usage:\n"
-        "\n"
-        "\tcap cat [name]\n"
-        "\n"
-        "The options are:\n"
+		"\n"
+		"\tcap cat [name]\n"
+		"\n"
+		"The options are:\n"
 		"\n"
 		"\t-h, --help display usage\n"
 		"\n"
@@ -33,24 +33,24 @@ cat_main(int argc, char* argv[]) {
 		int cur = getopt_long(argc, argv, "", longopts, &optsindex);
 		if (cur == -1) {
 			break;
-        }
+		}
 
-    again:
+	again:
 		switch (cur) {
 			case 0: {
 				char const* name = longopts[optsindex].name;
 				if (strcmp("help", name) == 0) {
-                    cur = 'h';
-                    goto again;
+					cur = 'h';
+					goto again;
 				}
 			} break;
-            case 'h': {
-                cat_usage();
-            } break;
-            case '?':
-            default: {
-                    cat_usage();
-            } break;
+			case 'h': {
+				cat_usage();
+			} break;
+			case '?':
+			default: {
+					cat_usage();
+			} break;
 		}
 	}
 
