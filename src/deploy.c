@@ -2,19 +2,19 @@
 
 static void _Noreturn
 deploy_usage(void) {
-    term_eprintf(
-        "cap deploy\n"
-        "\n"
-        "Usage:\n"
-        "\n"
-        "\tcap deploy [deploy-name] [options]\n"
-        "\n"
-        "The options are:\n"
-        "\n"
-        "\t-h, --help\tdisplay usage\n"
-        "\n"
-    );
-    exit(EXIT_FAILURE);
+	term_eprintf(
+		"cap deploy\n"
+		"\n"
+		"Usage:\n"
+		"\n"
+		"\tcap deploy [deploy-name] [options]\n"
+		"\n"
+		"The options are:\n"
+		"\n"
+		"\t-h, --help\tdisplay usage\n"
+		"\n"
+	);
+	exit(EXIT_FAILURE);
 }
 
 int
@@ -135,42 +135,42 @@ fail_config:
 
 int
 deploy_main(int argc, char* argv[]) {
-    //! Parse options
-    for (;;) {
-        static struct option longopts[] = {
-            {"help", no_argument, 0, 0},
-            {0},
-        };
-        int optsindex;
+	//! Parse options
+	for (;;) {
+		static struct option longopts[] = {
+			{"help", no_argument, 0, 0},
+			{0},
+		};
+		int optsindex;
 
-        int cur = getopt_long(argc, argv, "h", longopts, &optsindex);
-        if (cur == -1) {
-            break;
+		int cur = getopt_long(argc, argv, "h", longopts, &optsindex);
+		if (cur == -1) {
+			break;
 		}
 
 	again:
-        switch (cur) {
-            case 0: {
-                char const* name = longopts[optsindex].name;
-                if (strcmp("help", name) == 0) {
+		switch (cur) {
+			case 0: {
+				char const* name = longopts[optsindex].name;
+				if (strcmp("help", name) == 0) {
 					cur = 'h';
 					goto again;
-                }
-            } break;
-            case 'h': {
+				}
+			} break;
+			case 'h': {
 				deploy_usage();
 			} break;
-            case '?':
-            default: {
-                die("Unknown option");
-            } break;
-        }
-    }
+			case '?':
+			default: {
+				die("Unknown option");
+			} break;
+		}
+	}
 
-    if (argc < optind) {
-        die("Failed to parse option");
-        return 1;
-    } else if (argc < 2) {
+	if (argc < optind) {
+		die("Failed to parse option");
+		return 1;
+	} else if (argc < 2) {
 		deploy_usage();
 	}
 
@@ -181,7 +181,7 @@ deploy_main(int argc, char* argv[]) {
 int
 main(int argc, char* argv[]) {
 
-    return 0;
+	return 0;
 }
 #endif
 
