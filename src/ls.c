@@ -15,35 +15,37 @@ ls_usage(void) {
 
 static int
 ls_run(void) {
+	// Construct Config
 	Config* config = config_new();
 	if (!config) {
 		WARN("Failed to config new");
 		goto fail_1;
 	}
 
-	char const* confdirpath = config_source_dirpath(config);
+	// Open directory from cd path
+	char const* cdpath = config_path(config, "cd");
 	
-	DIR* dir = file_opendir(confdirpath);
+	DIR* dir = file_opendir(cdpath);
 	if (!dir) {
-		WARNF("Failed to opendir \"%s\"", confdirpath);
+		WARNF("Failed to opendir \"%s\"", cdpath);
 		goto fail_2;
 	}
 
-	///! Display file list
+	/// Display file list
 	for (;;) {
-		//! Read dirent
+		// Read dirent
 		errno = 0;
 		struct dirent* dirp = readdir(dir);
 		if (!dirp) {
 			if (errno != 0) {
-				WARN("Failed to readdir \"%s\"", confdirpath);
+				WARN("Failed to readdir \"%s\"", cdpath);
 				goto fail_3;
 			} else {
 				goto done; 
 			}
 		}
 
-		//! Skip "." and ".."
+		// Skip "." and ".."
 		if (!opt_is_all_disp) {
 			if (strncmp(dirp->d_name, ".", 1) == 0 ||
 				strncmp(dirp->d_name, "..", 2) == 0) {
@@ -51,7 +53,7 @@ ls_run(void) {
 			}
 		}
 
-		//! Display file
+		// Display file
 		term_printf("%s\n", dirp->d_name);
 	}
 
@@ -75,7 +77,7 @@ fail_1:
 
 int
 ls_main(int argc, char* argv[]) {
-	//! Parse options
+	// Parse options
 	for (;;) {
 		static struct option longopts[] = {
 			{"help", no_argument, 0, 0},
@@ -108,6 +110,6 @@ ls_main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	//! Run
+	// Run
 	return ls_run();
 }

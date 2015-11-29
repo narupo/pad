@@ -20,8 +20,9 @@ help_usage(void) {
         "\thelp\tdisplay usage\n"
         "\tcat\tdisplay cap file\n"
         "\tls\tdisplay cap file list\n"
-        "\tsource\tdisplay or set source directory\n"
+        "\tcd\tdisplay or set current directory path\n"
         "\tedit\tedit cap file\n"
+        "\teditor\tdisplay or set editor path\n"
         "\tdeploy\tdeploy files from directory\n"
         "\n"
     );

@@ -5,20 +5,25 @@
 #include "util.h"
 #include "buffer.h"
 #include "file.h"
+#include "config-setting.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 
-enum {
-	NCONFIG_PATH = 256,
-};
+/*****************
+* Delete and New *
+*****************/
 
 void
 config_delete(Config* self);
 
 Config*
 config_new(void);
+
+/*********
+* Getter *
+*********/
 
 char*
 config_path_from_base(Config const* self, char* dst, size_t dstsize, char const* basename);
@@ -27,13 +32,14 @@ char*
 config_make_path_from_base(Config const* self, char const* basename);
 
 char const*
-config_dirpath(Config const* self);
+config_path(Config const* self, char const* key);
 
-char const*
-config_source_dirpath(Config const* self);
+/*********
+* Setter *
+*********/
 
 bool
-config_set_source_dirpath(Config* self, char const* srcdirpath);
+config_set_path(Config* self, char const* key, char const* path);
 
 bool
 config_save(Config const* self);

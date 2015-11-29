@@ -36,9 +36,9 @@ find_command(char const* name) {
 		{"help", help_main},
 		{"cat", cat_main},
 		{"ls", ls_main},
-		{"source", source_main},
-		{"src", source_main},
+		{"cd", cd_main},
 		{"edit", edit_main},
+		{"editor", editor_main},
 		{"deploy", deploy_main},
 		{0},
 	};

@@ -1,9 +1,5 @@
 #include "file.h"
 
-enum {
-	NFILE_PATH = 256,
-};
-
 char*
 file_solve_path(char* dst, size_t dstsize, char const* path) {
 	char tmp[NFILE_PATH];
