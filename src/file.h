@@ -12,6 +12,10 @@
 #include <stdbool.h>
 #include <dirent.h>
 
+enum {
+	NFILE_PATH = 256,
+};
+
 int
 file_close(FILE* fp);
 

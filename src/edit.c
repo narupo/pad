@@ -75,7 +75,7 @@ edit_main(int argc, char* argv[]) {
 	}
 
 	//! Make file path from edit file base name
-	char spath[NCONFIG_PATH];
+	char spath[NFILE_PATH];
 	if (!config_path_from_base(config, spath, sizeof spath, fname)) {
 		WARN("Failed to make path from \"%s\"", fname);
 		goto fail_make_path;

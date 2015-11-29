@@ -18,10 +18,78 @@ cat_usage(void) {
 }
 
 int
-cat_main(int argc, char* argv[]) {
+cat_run(int argc, char* argv[]) {
 	FILE* fin = stdin;
 	FILE* fout = stdout;
 
+	// Load config
+	Config* config = config_new();
+	if (!config) {
+		WARN("Failed to construct config");
+		goto fail_config;
+	}
+
+	// I/O
+	if (argc < optind) {
+		WARN("Failed to parse options");
+		goto fail_parse_option;
+	}
+	else if (argc == optind) {
+		int ch;
+		while ((ch = fgetc(fin)) != EOF) {
+			fputc(ch, fout);
+		}
+	}
+	else if (argc > optind) {
+		char path[NFILE_PATH];
+
+		for (int i = optind; i < argc; ++i) {
+			//! Make a cap file path
+			char const* basename = argv[i];
+
+			if (!config_path_from_base(config, path, sizeof path, basename)) {
+				WARN("Failed to make path from \"%s\"", basename);
+				continue;
+			}
+
+			//! Open a cap file
+			fin = file_open(path, "rb");
+			if (!fin) {
+				if (errno == ENOENT) {
+					term_eprintf("Not found file \"%s\"\n", basename);
+				} else {
+					WARN("Failed to open file \"%s\"", basename);
+				}
+				goto fail_file_not_found;
+			}
+			
+			//! Render
+			int ch;
+			while ((ch = fgetc(fin)) != EOF) {
+				fputc(ch, fout);
+			}
+			file_close(fin);
+		}
+	}
+
+	config_delete(config);
+	return 0;
+
+fail_parse_option:
+	config_delete(config);
+	return 1;
+
+fail_file_not_found:
+	config_delete(config);
+	return 2;
+
+fail_config:
+	return 3;
+
+}
+
+int
+cat_main(int argc, char* argv[]) {
 	// Parse options
 	for (;;) {
 		static struct option longopts[] = {
@@ -49,66 +117,19 @@ cat_main(int argc, char* argv[]) {
 			} break;
 			case '?':
 			default: {
-					cat_usage();
+				cat_usage();
 			} break;
 		}
 	}
 
-	// Load config
-	Config* config = config_new();
-	if (!config) {
-		WARN("Failed to construct config");
-		goto fail_config;
-	}
-
-	// I/O
-	if (argc < optind) {
-		WARN("Failed to parse options");
-		goto fail_parse_option;
-	}
-	else if (argc == optind) {
-		int ch;
-		while ((ch = fgetc(fin)) != EOF) {
-			fputc(ch, fout);
-		}
-	}
-	else if (argc > optind) {
-		for (int i = optind; i < argc; ++i) {
-			char const* basename = argv[i];
-			char* path = config_make_path_from_base(config, basename);
-
-			fin = file_open(path, "rb");
-			if (!fin) {
-				free(path);
-				if (errno == ENOENT) {
-					term_eprintf("Not found file \"%s\"\n", basename);
-				} else {
-					WARN("Failed to open file \"%s\"", basename);
-				}
-				goto fail_file_not_found;
-			}
-			free(path);
-			
-			int ch;
-			while ((ch = fgetc(fin)) != EOF) {
-				fputc(ch, fout);
-			}
-			file_close(fin);
-		}
-	}
-
-	config_delete(config);
-	return 0;
-
-fail_parse_option:
-	config_delete(config);
-	return 1;
-
-fail_file_not_found:
-	config_delete(config);
-	return 2;
-
-fail_config:
-	return 3;
+	return cat_run(argc, argv);
 }
+
+#ifdef TEST_CAT
+int
+main(int argc, char* argv[]) {
+	cat_main(argc, argv);
+	return 0;
+}
+#endif
 

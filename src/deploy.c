@@ -27,11 +27,11 @@ deploy_run(char const* dirname) {
 	}
 
 	//! Get current path
-	char curpath[NCONFIG_PATH];
+	char curpath[NFILE_PATH];
 	file_solve_path(curpath, sizeof curpath, ".");
 
 	//! Make path
-	char dirpath[NCONFIG_PATH];
+	char dirpath[NFILE_PATH];
 
 	if (!config_path_from_base(config, dirpath, sizeof dirpath, dirname)) {
 		WARN("Failed to make path from \"%s\"", dirname);
@@ -76,8 +76,8 @@ deploy_run(char const* dirname) {
 		//! Deploy files to current directory
 
 		//! Make deploy file path
-		char srcpath[NCONFIG_PATH];
-		char deploypath[NCONFIG_PATH];
+		char srcpath[NFILE_PATH];
+		char deploypath[NFILE_PATH];
 
 		snprintf(srcpath, sizeof srcpath, "%s/%s", dirpath, name);
 		snprintf(deploypath, sizeof deploypath, "%s/%s", curpath, name);

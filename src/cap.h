@@ -30,8 +30,9 @@ SOFTWARE.
 #include "help.h"
 #include "cat.h"
 #include "ls.h"
-#include "source.h"
+#include "cd.h"
 #include "edit.h"
+#include "editor.h"
 #include "deploy.h"
 
 #endif

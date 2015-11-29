@@ -1,9 +1,9 @@
-#include "source.h"
+#include "cd.h"
 
 void _Noreturn
-source_usage(void) {
+cd_usage(void) {
 	term_eprintf(
-		"Usage: cap source\n"
+		"Usage: cap cd\n"
 		"\n"
 		"\t-h, --help\tdisplay usage.\n"
 		"\n"
@@ -14,7 +14,7 @@ source_usage(void) {
 static char const* optsrcdirpath;
 
 static int
-source_run(int argc, char* argv[]) {
+cd_run(int argc, char* argv[]) {
 	Config* config = config_new();
 	if (!config) {
 		WARN("Failed to construct config");
@@ -22,16 +22,16 @@ source_run(int argc, char* argv[]) {
 	}
 
 	if (argc < 2) {
-		//! Display source directory path
-		term_printf("%s\n", config_source_dirpath(config));
+		//! Display cd directory path
+		term_printf("%s\n", config_path(config, "cd"));
 		goto done;
 	}
 
 	if (optsrcdirpath && file_is_dir(optsrcdirpath)) {
-		config_set_source_dirpath(config, optsrcdirpath);
+		config_set_path(config, "cd", optsrcdirpath);
 		config_save(config);
 	} else {
-		term_eprintf("Invalid source \"%s\".\n", optsrcdirpath);
+		term_eprintf("Invalid cd \"%s\".\n", optsrcdirpath);
 		goto fail_2;
 	}
 
@@ -48,7 +48,7 @@ fail_1:
 }
 
 int
-source_main(int argc, char* argv[]) {
+cd_main(int argc, char* argv[]) {
 	//! Parse options
 	for (;;) {
 		static struct option longopts[] = {
@@ -65,20 +65,20 @@ source_main(int argc, char* argv[]) {
 			case 0: {
 				char const* name = longopts[optsindex].name;
 				if (strcmp("help", name) == 0) {
-					source_usage();
+					cd_usage();
 				}
 			} break;
-			case 'h': source_usage(); break;
+			case 'h': cd_usage(); break;
 			case '?':
 			default: die("Unknown option"); break;
 		}
 	}
 
-	//! Has new source ?
+	//! Has new cd ?
 	if (argc > optind) {
 		optsrcdirpath = argv[optind]; //! Yes
 	}
 
-	return source_run(argc, argv);
+	return cd_run(argc, argv);
 }
 
