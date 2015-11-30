@@ -1,6 +1,6 @@
 #include "cd.h"
 
-static char const* optsrcdirpath;
+static char const* optcdpath;
 
 void _Noreturn
 cd_usage(void) {
@@ -29,11 +29,11 @@ cd_run(int argc, char* argv[]) {
 	}
 
 	// Change cap's current directory
-	if (optsrcdirpath && file_is_dir(optsrcdirpath)) {
-		config_set_path(config, "cd", optsrcdirpath);
+	if (optcdpath && file_is_dir(optcdpath)) {
+		config_set_path(config, "cd", optcdpath);
 		config_save(config);
 	} else {
-		term_eprintf("Invalid cd \"%s\".\n", optsrcdirpath);
+		term_eprintf("Invalid cd \"%s\".\n", optcdpath);
 		goto fail_invalid_cd;
 	}
 
@@ -60,8 +60,9 @@ cd_main(int argc, char* argv[]) {
 		int optsindex;
 
 		int cur = getopt_long(argc, argv, "h", longopts, &optsindex);
-		if (cur == -1)
+		if (cur == -1) {
 			break;
+		}
 
 	again:
 		switch (cur) {
@@ -73,14 +74,14 @@ cd_main(int argc, char* argv[]) {
 				}
 			} break;
 			case 'h': cd_usage(); break;
-			case '?':
+			case '?': // Break through
 			default: die("Unknown option"); break;
 		}
 	}
 
 	// Has new cd ?
 	if (argc > optind) {
-		optsrcdirpath = argv[optind]; // Yes
+		optcdpath = argv[optind]; // Yes
 	}
 
 	return cd_run(argc, argv);
