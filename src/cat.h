@@ -10,6 +10,9 @@
 #include <string.h>
 #include <getopt.h>
 
+void _Noreturn
+cat_usage(void);
+
 int
 cat_main(int argc, char* argv[]);
 

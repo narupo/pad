@@ -1,6 +1,6 @@
 #include "cat.h"
 
-static void _Noreturn
+void _Noreturn
 cat_usage(void) {
 	term_eprintf(
 		"cap cat\n"
@@ -44,7 +44,7 @@ cat_run(int argc, char* argv[]) {
 		char path[NFILE_PATH];
 
 		for (int i = optind; i < argc; ++i) {
-			//! Make a cap file path
+			// Make a cap file path
 			char const* basename = argv[i];
 
 			if (!config_path_from_base(config, path, sizeof path, basename)) {
@@ -52,7 +52,7 @@ cat_run(int argc, char* argv[]) {
 				continue;
 			}
 
-			//! Open a cap file
+			// Open a cap file
 			fin = file_open(path, "rb");
 			if (!fin) {
 				if (errno == ENOENT) {
@@ -60,10 +60,10 @@ cat_run(int argc, char* argv[]) {
 				} else {
 					WARN("Failed to open file \"%s\"", basename);
 				}
-				goto fail_file_not_found;
+				goto fail_file_open;
 			}
 			
-			//! Render
+			// Render
 			int ch;
 			while ((ch = fgetc(fin)) != EOF) {
 				fputc(ch, fout);
@@ -79,7 +79,7 @@ fail_parse_option:
 	config_delete(config);
 	return 1;
 
-fail_file_not_found:
+fail_file_open:
 	config_delete(config);
 	return 2;
 

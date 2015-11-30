@@ -2,33 +2,45 @@
 
 struct ConfigSetting {
 	char cdpath[NFILE_PATH];
+	char editorpath[NFILE_PATH];
 };
 
 /*********
 * Stream *
 *********/
 
+static int
+keycmp(char const* str, char const* key) {
+	return strncmp(str, key, strlen(key));
+}
+
 static bool
 self_parse_read_line(ConfigSetting* self, char const* line) {
-	if (strncmp(line, "cd", 2) == 0) {
+	// TODO: hashmap
+	if (keycmp(line, "cd") == 0) {
 		snprintf(self->cdpath, sizeof self->cdpath, "%s", line+3);
+	} else if (keycmp(line, "editor") == 0) {
+		snprintf(self->editorpath, sizeof self->editorpath, "%s", line+7);
 	}
 	return true;
 }
 
 static bool
 self_load_from_file(ConfigSetting* self, char const* fname) {
+	// Open file
 	FILE* fin = file_open(fname, "rb");
 	if (!fin) {
 		return false;
 	}
 
+	// Buffer for read lines
 	Buffer* buf = buffer_new();
 	if (!buf) {
 		fclose(fin);
 		return false;
 	}
 	
+	// Read and parse lines
 	for (; buffer_getline(buf, fin); ) {
 		char const* str = buffer_getc(buf);
 		if (!self_parse_read_line(self, str)) {
@@ -54,6 +66,7 @@ self_create_file(ConfigSetting* self, char const* fname) {
 	}
 	
 	fprintf(fout, "cd /tmp\n");
+	fprintf(fout, "editor /usr/bin/vi\n");
 
 	file_close(fout);
 	return true;
@@ -111,10 +124,10 @@ char const*
 config_setting_path(ConfigSetting const* self, char const* key) {
 	if (strcmp(key, "cd") == 0) {
 		return self->cdpath;
+	} else if (strcmp(key, "editor") == 0) {
+		return self->editorpath;
 	}
-
-	die("Invalid key \"%s\"", key);
-	return NULL;
+	return NULL;  // Not found key
 }
 
 /*********
@@ -130,6 +143,7 @@ config_setting_save_to_file(ConfigSetting* self, char const* fname) {
 	}
 
 	fprintf(fout, "cd %s\n", self->cdpath);
+	fprintf(fout, "editor %s\n", self->editorpath);
 
 	file_close(fout);
 	return true;
@@ -145,10 +159,13 @@ config_setting_set_path(ConfigSetting* self, char const* key, char const* val) {
 	}
 
 	// Set path
-	if (strncmp(key, "cd", 2) == 0) {
+	if (keycmp(key, "cd") == 0) {
 		snprintf(self->cdpath, sizeof self->cdpath, "%s", spath);
+	} else if (keycmp(key, "editor") == 0) {
+		snprintf(self->editorpath, sizeof self->editorpath, "%s", spath);
 	} else {
-		die("Invalid key \"%s\"", key);
+		WARN("Invalid key");
+		return false;  // Invalid key
 	}
 
 	return true;
