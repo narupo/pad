@@ -28,7 +28,10 @@ deploy_run(char const* dirname) {
 
 	//! Get current path
 	char curpath[NFILE_PATH];
-	file_solve_path(curpath, sizeof curpath, ".");
+	if (!file_solve_path(curpath, sizeof curpath, ".")) {
+		WARN("Failed to solve path \".\"");
+		goto fail_solve_path;
+	}
 
 	//! Make path
 	char dirpath[NFILE_PATH];
@@ -115,17 +118,21 @@ done:
 fail_readdir:
 	file_closedir(dir);
 	config_delete(config);
-	return 5;
+	return 6;
 
 fail_opendir:
 	config_delete(config);
-	return 4;
+	return 5;
 
 fail_exists_dir:
 	config_delete(config);
-	return 3;
+	return 4;
 
 fail_make_path:
+	config_delete(config);
+	return 3;
+
+fail_solve_path:
 	config_delete(config);
 	return 2;
 
