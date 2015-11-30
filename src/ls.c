@@ -58,12 +58,12 @@ ls_run(void) {
 	}
 
 done:
-	closedir(dir);
+	file_closedir(dir);
 	config_delete(config);
 	return 0;
 
 fail_3:
-	closedir(dir);
+	file_closedir(dir);
 	config_delete(config);
 	return 3;
 
@@ -86,8 +86,9 @@ ls_main(int argc, char* argv[]) {
 		int optsindex;
 
 		int cur = getopt_long(argc, argv, "ha", longopts, &optsindex);
-		if (cur == -1)
+		if (cur == -1) {
 			break;
+		}
 
 	again:
 		switch (cur) {

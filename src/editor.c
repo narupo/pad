@@ -19,18 +19,56 @@ editor_usage(void) {
 
 static int
 editor_run(int argc, char* argv[]) {
-	//! Load config
+	// Load config
 	Config* config = config_new();
 	if (!config) {
 		WARN("Failed to construct config");
 		goto fail_config;
 	}
 
-	goto done;
+	// If has not arguments then
+	if (argc < 2) {
+		// Display current editor path
+		// Get path
+		char const* key = "editor";
+		char const* editpath = config_path(config, key);
+		if (!editpath) {
+			WARN("Not found key \"%s\"", key);
+			goto fail_config_path;
+		}
+
+		// Display path
+		term_printf("%s\n", editpath);
+		goto done;
+	}
+
+	// Set editor path
+	char const* editpath = argv[1];
+
+	if (!config_set_path(config, "editor", editpath)) {
+		WARNF("Failed to set path \"%s\"", editpath);
+		goto fail_set_path;
+	}
+	if (!config_save(config)) {
+		WARN("Failed to save config");
+		goto fail_save;
+	}
 
 done:
 	config_delete(config);
 	return 0;
+
+fail_save:
+	config_delete(config);
+	return 4;
+
+fail_set_path:
+	config_delete(config);
+	return 3;
+
+fail_config_path:
+	config_delete(config);
+	return 2;
 
 fail_config:
 	return 1;
@@ -38,7 +76,7 @@ fail_config:
 
 int
 editor_main(int argc, char* argv[]) {
-	//! Parse options
+	// Parse options
 	for (;;) {
 		static struct option longopts[] = {
 			{"help", no_argument, 0, 0},
