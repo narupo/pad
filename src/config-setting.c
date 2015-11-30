@@ -32,8 +32,8 @@ hashl(char const* s) {
 	return hashdivl(s, NHASH);
 }
 
-void
-pathmap_delete(HashMap* self) {
+static void
+hashmap_delete(HashMap* self) {
 	if (self) {
 		for (int i = 0; i < NHASH; ++i) {
 			if (self->table[i]) {
@@ -45,8 +45,8 @@ pathmap_delete(HashMap* self) {
 	}
 }
 
-HashMap*
-pathmap_new(void) {
+static HashMap*
+hashmap_new(void) {
 	HashMap* self = (HashMap*) calloc(1, sizeof(HashMap));
 	if (!self) {
 		WARN("Failed to allocate memory");
@@ -55,8 +55,8 @@ pathmap_new(void) {
 	return self;
 }
 
-const HashMap_type
-pathmap_get(HashMap* self, char const* key) {
+static const HashMap_type
+hashmap_get(HashMap* self, char const* key) {
 	static const HashMap_type dummy = "";
 
 	long i = hashl(key);
@@ -66,8 +66,8 @@ pathmap_get(HashMap* self, char const* key) {
 	return self->table[i];
 }
 
-void
-pathmap_set(HashMap* self, char const* key, HashMap_type val) {
+static void
+hashmap_set(HashMap* self, char const* key, HashMap_type val) {
 	long i = hashl(key);
 	if (self->table[i]) {
 		free(self->table[i]);
@@ -82,8 +82,8 @@ pathmap_set(HashMap* self, char const* key, HashMap_type val) {
 * Configsetting *
 ****************/
 
-static char const* DEFAULT_CD = "/tmp";
-static char const* DEFAULT_EDITOR = "/usr/bin/vi";
+static char const* DEFAULT_CD_PATH = "/tmp";
+static char const* DEFAULT_EDITOR_PATH = "/usr/bin/vi";
 
 struct ConfigSetting {
 	HashMap* pathmap;
@@ -102,9 +102,9 @@ static bool
 self_parse_read_line(ConfigSetting* self, char const* line) {
 	// TODO: pathmap
 	if (keycmp(line, "cd") == 0) {
-		pathmap_set(self->pathmap, "cd", strdup(line+3));
+		hashmap_set(self->pathmap, "cd", strdup(line+3));
 	} else if (keycmp(line, "editor") == 0) {
-		pathmap_set(self->pathmap, "editor", strdup(line+7));
+		hashmap_set(self->pathmap, "editor", strdup(line+7));
 	}
 	return true;
 }
@@ -149,8 +149,8 @@ self_create_file(ConfigSetting* self, char const* fname) {
 		return false;
 	}
 	
-	fprintf(fout, "cd %s\n", DEFAULT_CD);
-	fprintf(fout, "editor %s\n", DEFAULT_EDITOR);
+	fprintf(fout, "cd %s\n", DEFAULT_CD_PATH);
+	fprintf(fout, "editor %s\n", DEFAULT_EDITOR_PATH);
 
 	file_close(fout);
 	return true;
@@ -163,7 +163,7 @@ self_create_file(ConfigSetting* self, char const* fname) {
 void
 config_setting_delete(ConfigSetting* self) {
 	if (self) {
-		pathmap_delete(self->pathmap);
+		hashmap_delete(self->pathmap);
 		free(self);
 	}
 }
@@ -178,7 +178,7 @@ config_setting_new_from_file(char const* fname) {
 	}
 
 	// Construct HashMap for path
-	self->pathmap = pathmap_new();
+	self->pathmap = hashmap_new();
 	if (!self->pathmap) {
 		WARN("Failed to construct pathmap");
 		free(self);
@@ -186,8 +186,8 @@ config_setting_new_from_file(char const* fname) {
 	}
 
 	// Set default values
-	pathmap_set(self->pathmap, "cd", strdup(DEFAULT_CD));
-	pathmap_set(self->pathmap, "editor", strdup(DEFAULT_EDITOR));
+	hashmap_set(self->pathmap, "cd", strdup(DEFAULT_CD_PATH));
+	hashmap_set(self->pathmap, "editor", strdup(DEFAULT_EDITOR_PATH));
 
 	// Check file
 	if (!file_is_exists(fname)) {
@@ -195,7 +195,7 @@ config_setting_new_from_file(char const* fname) {
 		// Create file
 		if (!self_create_file(self, fname)) {
 			WARN("Failed to create file");
-			pathmap_delete(self->pathmap);
+			hashmap_delete(self->pathmap);
 			free(self);
 			return NULL;
 		}
@@ -204,7 +204,7 @@ config_setting_new_from_file(char const* fname) {
 	// Load from file
 	if (!self_load_from_file(self, fname)) {
 		WARN("Failed to load from file \"%s\"", fname);
-		pathmap_delete(self->pathmap);
+		hashmap_delete(self->pathmap);
 		free(self);
 		return NULL;
 	}
@@ -218,7 +218,7 @@ config_setting_new_from_file(char const* fname) {
 
 char const*
 config_setting_path(ConfigSetting const* self, char const* key) {
-	return pathmap_get(self->pathmap, key);
+	return hashmap_get(self->pathmap, key);
 }
 
 /*********
@@ -234,9 +234,9 @@ config_setting_save_to_file(ConfigSetting* self, char const* fname) {
 	}
 
 	char const* key = "cd";
-	fprintf(fout, "%s %s\n", key, pathmap_get(self->pathmap, key));
+	fprintf(fout, "%s %s\n", key, hashmap_get(self->pathmap, key));
 	key = "editor";
-	fprintf(fout, "%s %s\n", key, pathmap_get(self->pathmap, key));
+	fprintf(fout, "%s %s\n", key, hashmap_get(self->pathmap, key));
 
 	file_close(fout);
 	return true;
@@ -253,9 +253,9 @@ config_setting_set_path(ConfigSetting* self, char const* key, char const* val) {
 
 	// Set path
 	if (keycmp(key, "cd") == 0) {
-		pathmap_set(self->pathmap, "cd", strdup(spath));
+		hashmap_set(self->pathmap, "cd", strdup(spath));
 	} else if (keycmp(key, "editor") == 0) {
-		pathmap_set(self->pathmap, "editor", strdup(spath));
+		hashmap_set(self->pathmap, "editor", strdup(spath));
 	} else {
 		WARN("Invalid key");
 		return false;  // Invalid key
