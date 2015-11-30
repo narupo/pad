@@ -94,6 +94,7 @@ config_setting_new_from_file(char const* fname) {
 
 	// Set default values
 	snprintf(self->cdpath, sizeof self->cdpath, "cd /tmp");
+	snprintf(self->cdpath, sizeof self->editorpath, "editor /usr/bin/vi");
 
 	// Check file
 	if (!file_is_exists(fname)) {
