@@ -4,9 +4,6 @@
 * HashMap *
 **********/
 
-#include <stdio.h>
-#include <stdlib.h>
-
 typedef struct HashMap HashMap;
 typedef char* HashMap_type;
 
@@ -56,7 +53,7 @@ hashmap_new(void) {
 }
 
 static const HashMap_type
-hashmap_get(HashMap* self, char const* key) {
+hashmap_getc(HashMap* self, char const* key) {
 	static const HashMap_type dummy = "";
 
 	long i = hashl(key);
@@ -67,7 +64,7 @@ hashmap_get(HashMap* self, char const* key) {
 }
 
 static void
-hashmap_set(HashMap* self, char const* key, HashMap_type val) {
+hashmap_set_pointer(HashMap* self, char const* key, HashMap_type val) {
 	long i = hashl(key);
 	if (self->table[i]) {
 		free(self->table[i]);
@@ -79,7 +76,7 @@ hashmap_set(HashMap* self, char const* key, HashMap_type val) {
 
 
 /****************
-* Configsetting *
+* ConfigSetting *
 ****************/
 
 static char const* DEFAULT_CD_PATH = "/tmp";
@@ -100,11 +97,10 @@ keycmp(char const* str, char const* key) {
 
 static bool
 self_parse_read_line(ConfigSetting* self, char const* line) {
-	// TODO: pathmap
 	if (keycmp(line, "cd") == 0) {
-		hashmap_set(self->pathmap, "cd", strdup(line+3));
+		hashmap_set_pointer(self->pathmap, "cd", strdup(line+3));
 	} else if (keycmp(line, "editor") == 0) {
-		hashmap_set(self->pathmap, "editor", strdup(line+7));
+		hashmap_set_pointer(self->pathmap, "editor", strdup(line+7));
 	}
 	return true;
 }
@@ -186,8 +182,8 @@ config_setting_new_from_file(char const* fname) {
 	}
 
 	// Set default values
-	hashmap_set(self->pathmap, "cd", strdup(DEFAULT_CD_PATH));
-	hashmap_set(self->pathmap, "editor", strdup(DEFAULT_EDITOR_PATH));
+	hashmap_set_pointer(self->pathmap, "cd", strdup(DEFAULT_CD_PATH));
+	hashmap_set_pointer(self->pathmap, "editor", strdup(DEFAULT_EDITOR_PATH));
 
 	// Check file
 	if (!file_is_exists(fname)) {
@@ -218,7 +214,7 @@ config_setting_new_from_file(char const* fname) {
 
 char const*
 config_setting_path(ConfigSetting const* self, char const* key) {
-	return hashmap_get(self->pathmap, key);
+	return hashmap_getc(self->pathmap, key);
 }
 
 /*********
@@ -234,9 +230,9 @@ config_setting_save_to_file(ConfigSetting* self, char const* fname) {
 	}
 
 	char const* key = "cd";
-	fprintf(fout, "%s %s\n", key, hashmap_get(self->pathmap, key));
+	fprintf(fout, "%s %s\n", key, hashmap_getc(self->pathmap, key));
 	key = "editor";
-	fprintf(fout, "%s %s\n", key, hashmap_get(self->pathmap, key));
+	fprintf(fout, "%s %s\n", key, hashmap_getc(self->pathmap, key));
 
 	file_close(fout);
 	return true;
@@ -253,9 +249,9 @@ config_setting_set_path(ConfigSetting* self, char const* key, char const* val) {
 
 	// Set path
 	if (keycmp(key, "cd") == 0) {
-		hashmap_set(self->pathmap, "cd", strdup(spath));
+		hashmap_set_pointer(self->pathmap, "cd", strdup(spath));
 	} else if (keycmp(key, "editor") == 0) {
-		hashmap_set(self->pathmap, "editor", strdup(spath));
+		hashmap_set_pointer(self->pathmap, "editor", strdup(spath));
 	} else {
 		WARN("Invalid key");
 		return false;  // Invalid key
