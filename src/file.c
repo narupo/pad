@@ -20,7 +20,13 @@ file_solve_path(char* dst, size_t dstsize, char const* path) {
 	//! Solve real path
 	errno = 0;
 	if (!realpath(tmp, dst)) {
-		die("realpath");
+		if (errno == ENOENT) {
+			// Path is not exists
+			snprintf(dst, dstsize, "%s", tmp);
+		} else {
+			WARNF("Failed to realpath \"%s\"", tmp);
+			return NULL;
+		}
 	}
 
 	return dst;
@@ -28,31 +34,28 @@ file_solve_path(char* dst, size_t dstsize, char const* path) {
 
 char*
 file_make_solve_path(char const* path) {
-	char tmp[NFILE_PATH];
+	// Check arguments
+	if (!path) {
+		WARN("Invalid arguments");
+		return NULL;
+	}
+
+	// Ready
 	char* dst = (char*) malloc(sizeof(char) * NFILE_PATH);
 	if (!dst) {
-		die("malloc");
+		WARN("Failed to malloc");
+		return NULL;
 	}
 
-	// Solve '~'
-	if (path[0] == '~') {
-		snprintf(tmp, NFILE_PATH, "%s%s", getenv("HOME"), path+1);
-	} else {
-		snprintf(tmp, NFILE_PATH, "%s", path);
+	// Solve
+	char* res = file_solve_path(dst, NFILE_PATH, path);
+	if (!res) {
+		WARNF("Failed to solve path \"%s\"", path);
+		free(dst);
+		return NULL;
 	}
 
-	// Solve real path
-	errno = 0;
-	if (!realpath(tmp, dst)) {
-		if (errno == ENOENT) {
-			// Path is not exists
-			strcpy(dst, tmp);
-		} else {
-			die("realpath");
-		}
-	}
-
-	return dst;
+	return res;
 }
 
 FILE*
@@ -95,7 +98,7 @@ file_is_exists(char const* path) {
 
 	if (!file_solve_path(spath, sizeof spath, path)) {
 		WARN("Failed to solve path \"%s\"", path);
-		return NULL;
+		return false;
 	}
 
 	struct stat s;
