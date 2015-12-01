@@ -49,6 +49,7 @@ editor_run(int argc, char* argv[]) {
 		WARNF("Failed to set path \"%s\"", editpath);
 		goto fail_set_path;
 	}
+	
 	if (!config_save(config)) {
 		WARN("Failed to save config");
 		goto fail_save;

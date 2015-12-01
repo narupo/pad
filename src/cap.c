@@ -40,6 +40,7 @@ find_command(char const* name) {
 		{"edit", edit_main},
 		{"editor", editor_main},
 		{"deploy", deploy_main},
+		{"make", make_main},
 		{0},
 	};
 	for (int i = 0; ; ++i) {
@@ -71,6 +72,7 @@ main(int argc, char* argv[]) {
 		term_eprintf("Not found name of command \"%s\".\n\n", cmdname);
 		help_usage();
 	}
+
 	return command(argc, argv);
 }
 

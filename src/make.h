@@ -6,6 +6,8 @@
 #include "config.h"
 #include "file.h"
 
+#include "cat.h"
+
 int
 make_main(int argc, char* argv[]);
 

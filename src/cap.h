@@ -34,6 +34,7 @@ SOFTWARE.
 #include "edit.h"
 #include "editor.h"
 #include "deploy.h"
+#include "make.h"
 
 #endif
 
