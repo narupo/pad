@@ -24,6 +24,7 @@ help_usage(void) {
         "\tedit\tedit cap file\n"
         "\teditor\tdisplay or set editor path\n"
         "\tdeploy\tdeploy files from directory\n"
+        "\tmake\tdisplay and make by cap's make roule\n"
         "\n"
     );
     exit(EXIT_FAILURE);
