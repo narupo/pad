@@ -90,21 +90,33 @@ command_line_push_copy(CommandLine* self, char const* src) {
 	return true;
 }
 
-bool
-exec_command(CommandLine const* cmdline) {
+
+
+
+int
+exec_command(char const* basename, CommandLine const* cmdline) {
 	char const* cmdname = cmdline->argv[0];
 
 	if (strcmp(cmdname, "cat") == 0) {
-		cat_main(cmdline->argc, cmdline->argv);
+		return cat_main(cmdline->argc, cmdline->argv);
+	} else if (strcmp(cmdname, "make") == 0) {
+		// Check circular reference
+		char const* makename = cmdline->argv[1];
+		if (makename && strcmp(makename, basename) == 0) {
+			// Is circular reference
+			term_eprintf("Can't make because circular reference \"%s\" make \"%s\"\n", basename, makename);
+		} else {
+			// Recursive
+			return make_main(cmdline->argc, cmdline->argv);
+		}
 	} else {
 		WARN("Not found name \"%s\"", cmdname);
-		return false;
 	}
-	return true;
+	return 1;
 }
 
 bool
-do_make(FILE* fout, FILE* fin) {
+do_make(char const* basename, FILE* fout, FILE* fin) {
 	// Construct buffer for read lines
 	Buffer* buf = buffer_new();
 	if (!buf) {
@@ -129,7 +141,7 @@ do_make(FILE* fout, FILE* fin) {
 			}
 
 			// Execute command by command line
-			if (!exec_command(cmdline)) {
+			if (exec_command(basename, cmdline) != 0) {
 				WARN("Failed to execute command");
 				// Nothing todo
 			}
@@ -174,7 +186,7 @@ make_run(char const* basename) {
 	}
 
 	// Execute make
-	if (!do_make(stdout, fin)) {
+	if (!do_make(basename, stdout, fin)) {
 		WARN("Failed to make");
 		goto fail_make;
 	}
@@ -244,7 +256,7 @@ make_main(int argc, char* argv[]) {
 	return make_run(argv[1]);
 }
 
-#if defined(TEST)
+#if defined(TEST_MAKE)
 int
 main(int argc, char* argv[]) {
 
