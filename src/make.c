@@ -74,8 +74,8 @@ command_line_new_from_line(char* line) {
 
 bool
 command_line_push_copy(CommandLine* self, char const* src) {
-	if (self->argc >= self->capacity) {
-		size_t newcapa = self->capacity * 2;
+	if (self->argc >= self->capacity-1) {
+		size_t newcapa = (self->capacity-1) * 2 + 1;
 		char** ptr = (char**) realloc(self->argv, sizeof(char*) * newcapa);
 		if (!ptr) {
 			WARN("Failed to push copy");
@@ -92,9 +92,12 @@ command_line_push_copy(CommandLine* self, char const* src) {
 
 bool
 exec_command(CommandLine const* cmdline) {
-	if (strcmp(cmdline->argv[0], "cat") == 0) {
+	char const* cmdname = cmdline->argv[0];
+
+	if (strcmp(cmdname, "cat") == 0) {
 		cat_main(cmdline->argc, cmdline->argv);
 	} else {
+		WARN("Not found name \"%s\"", cmdname);
 		return false;
 	}
 	return true;
@@ -131,6 +134,7 @@ do_make(FILE* fout, FILE* fin) {
 				// Nothing todo
 			}
 
+			// Thx command line
 			command_line_delete(cmdline);
 		}
 	}
