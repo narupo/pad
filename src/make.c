@@ -47,8 +47,8 @@ command_line_new_from_line(char* line) {
 		return NULL;
 	}
 
-	self->capacity = 4 + 1;  // +1 for final null
-	self->argv = (char**) calloc(self->capacity, sizeof(char*));
+	self->capacity = 4;
+	self->argv = (char**) calloc(self->capacity + 1, sizeof(char*));  // +1 for final null
 	if (!self->argv) {
 		WARN("Failed to construct argv");
 		free(self);
@@ -74,9 +74,9 @@ command_line_new_from_line(char* line) {
 
 bool
 command_line_push_copy(CommandLine* self, char const* src) {
-	if (self->argc >= self->capacity-1) {
-		size_t newcapa = (self->capacity-1) * 2 + 1;
-		char** ptr = (char**) realloc(self->argv, sizeof(char*) * newcapa);
+	if (self->argc >= self->capacity) {
+		size_t newcapa = self->capacity * 2;
+		char** ptr = (char**) realloc(self->argv, sizeof(char*) * newcapa + 1);  // +1 for final null
 		if (!ptr) {
 			WARN("Failed to push copy");
 			return false;
