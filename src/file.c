@@ -24,7 +24,7 @@ file_solve_path(char* dst, size_t dstsize, char const* path) {
 			// Path is not exists
 			snprintf(dst, dstsize, "%s", tmp);
 		} else {
-			WARNF("Failed to realpath \"%s\"", tmp);
+			WARN("Failed to realpath \"%s\"", tmp);
 			return NULL;
 		}
 	}
@@ -50,7 +50,7 @@ file_make_solve_path(char const* path) {
 	// Solve
 	char* res = file_solve_path(dst, NFILE_PATH, path);
 	if (!res) {
-		WARNF("Failed to solve path \"%s\"", path);
+		WARN("Failed to solve path \"%s\"", path);
 		free(dst);
 		return NULL;
 	}

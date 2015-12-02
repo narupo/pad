@@ -27,7 +27,7 @@ ls_run(void) {
 	
 	DIR* dir = file_opendir(cdpath);
 	if (!dir) {
-		WARNF("Failed to opendir \"%s\"", cdpath);
+		WARN("Failed to opendir \"%s\"", cdpath);
 		goto fail_2;
 	}
 
