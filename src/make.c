@@ -163,7 +163,11 @@ fail_buffer:
 }
 
 int
-make_run(char const* basename) {
+make_run(int argc, char* argv[]) {
+	// Default values
+	FILE* fin = stdin;
+	char const* basename = "";
+
 	// Load config
 	Config* config = config_new();
 	if (!config) {
@@ -171,18 +175,23 @@ make_run(char const* basename) {
 		goto fail_config;
 	}
 
-	// Get cap's make file path
-	char spath[NFILE_PATH];
-	if (!config_path_from_base(config, spath, sizeof spath, basename)) {
-		WARN("Failed to path from base \"%s\"", basename);
-		goto fail_path_from_base;
-	}
-	
-	// Open cap's make file
-	FILE* fin = file_open(spath, "rb");
-	if (!fin) {
-		term_eprintf("%s \"%s\"\n", strerror(errno), spath);
-		goto fail_file_open;
+	// Has make name ?
+	if (argc >= 2) {
+		basename = argv[1];  // Yes
+
+		// Get cap's make file path
+		char spath[NFILE_PATH];
+		if (!config_path_from_base(config, spath, sizeof spath, basename)) {
+			WARN("Failed to path from base \"%s\"", basename);
+			goto fail_path_from_base;
+		}
+		
+		// Open cap's make file
+		fin = file_open(spath, "rb");
+		if (!fin) {
+			term_eprintf("%s \"%s\"\n", strerror(errno), spath);
+			goto fail_file_open;
+		}
 	}
 
 	// Execute make
@@ -249,11 +258,9 @@ make_main(int argc, char* argv[]) {
 
 	if (argc < optind) {
 		die("Failed to parse option");
-	} else if (argc < 2) {
-		make_usage();
 	}
 
-	return make_run(argv[1]);
+	return make_run(argc, argv);
 }
 
 #if defined(TEST_MAKE)
