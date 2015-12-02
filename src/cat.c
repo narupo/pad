@@ -1,5 +1,7 @@
 #include "cat.h"
 
+static char const* PROGNAME = "cap cat";
+
 void _Noreturn
 cat_usage(void) {
 	term_eprintf(
@@ -56,7 +58,7 @@ cat_run(int argc, char* argv[]) {
 			fin = file_open(path, "rb");
 			if (!fin) {
 				if (errno == ENOENT) {
-					term_eprintf("Not found file \"%s\"\n", basename);
+					warn("%s: Failed to open file \"%s\"", PROGNAME, path);
 				} else {
 					WARN("Failed to open file \"%s\"", basename);
 				}

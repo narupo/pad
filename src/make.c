@@ -1,5 +1,7 @@
 #include "make.h"
 
+static char const* PROGNAME = "cap make";
+
 void _Noreturn
 make_usage(void) {
 	term_eprintf(
@@ -195,7 +197,7 @@ make_run(int argc, char* argv[]) {
 		// Open cap's make file
 		fin = file_open(spath, "rb");
 		if (!fin) {
-			term_eprintf("%s \"%s\"\n", strerror(errno), spath);
+			warn("%s: Failed to open file \"%s\"", PROGNAME, spath);
 			goto fail_file_open;
 		}
 	}
