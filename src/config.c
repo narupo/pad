@@ -56,6 +56,7 @@ config_new_from_dir(char const* dirpath) {
 	// Load config from directory
 	char fname[NFILE_PATH];
 	snprintf(fname, sizeof fname, "%s/%s", sdirpath, CONFIGSETTING_FNAME);
+	
 	if (!(self->setting = configsetting_new_from_file(fname))) {
 		WARN("Failed to construct setting");
 		free(self);
