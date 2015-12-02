@@ -46,7 +46,7 @@ editor_run(int argc, char* argv[]) {
 	char const* editpath = argv[1];
 
 	if (!config_set_path(config, "editor", editpath)) {
-		WARNF("Failed to set path \"%s\"", editpath);
+		WARN("Failed to set path \"%s\"", editpath);
 		goto fail_set_path;
 	}
 	
