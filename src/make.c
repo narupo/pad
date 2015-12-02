@@ -26,10 +26,10 @@ struct CommandLine {
 };
 
 bool
-command_line_push_copy(CommandLine* self, char const* src);
+commandline_push_copy(CommandLine* self, char const* src);
 
 void
-command_line_delete(CommandLine* self) {
+commandline_delete(CommandLine* self) {
 	if (self) {
 		for (int i = 0; i < self->argc; ++i) {
 			free(self->argv[i]);
@@ -40,7 +40,7 @@ command_line_delete(CommandLine* self) {
 }
 
 CommandLine*
-command_line_new_from_line(char* line) {
+commandline_new_from_line(char* line) {
 	CommandLine* self = (CommandLine*) calloc(1, sizeof(CommandLine));
 	if (!self) {
 		WARN("Failed to construct");
@@ -66,14 +66,14 @@ command_line_new_from_line(char* line) {
 	}
 
 	for (; token; token = strtok(NULL, delim)) {
-		command_line_push_copy(self, token);
+		commandline_push_copy(self, token);
 	}
 
 	return self;
 }
 
 bool
-command_line_push_copy(CommandLine* self, char const* src) {
+commandline_push_copy(CommandLine* self, char const* src) {
 	if (self->argc >= self->capacity) {
 		size_t newcapa = self->capacity * 2;
 		char** ptr = (char**) realloc(self->argv, sizeof(char*) * newcapa + 1);  // +1 for final null
@@ -96,6 +96,10 @@ command_line_push_copy(CommandLine* self, char const* src) {
 int
 exec_command(char const* basename, CommandLine const* cmdline) {
 	char const* cmdname = cmdline->argv[0];
+	if (!cmdname) {
+		WARN("Invalid command name \"%s\"", cmdname);
+		goto fail;
+	}
 
 	if (strcmp(cmdname, "cat") == 0) {
 		return cat_main(cmdline->argc, cmdline->argv);
@@ -109,10 +113,12 @@ exec_command(char const* basename, CommandLine const* cmdline) {
 			// Recursive
 			return make_main(cmdline->argc, cmdline->argv);
 		}
-	} else {
-		WARN("Not found name \"%s\"", cmdname);
 	}
-	return 1;
+
+	WARN("Not found name \"%s\"", cmdname);
+
+fail:
+	return EXIT_FAILURE;
 }
 
 bool
@@ -134,7 +140,7 @@ do_make(char const* basename, FILE* fout, FILE* fin) {
 			fprintf(fout, "%s\n", line);
 		} else {
 			// Parse command line
-			CommandLine* cmdline = command_line_new_from_line(found);
+			CommandLine* cmdline = commandline_new_from_line(found);
 			if (!cmdline) {
 				WARN("Failed to construct CommandLine");
 				goto fail_cmdline;
@@ -147,7 +153,7 @@ do_make(char const* basename, FILE* fout, FILE* fin) {
 			}
 
 			// Thx command line
-			command_line_delete(cmdline);
+			commandline_delete(cmdline);
 		}
 	}
 
@@ -270,4 +276,3 @@ main(int argc, char* argv[]) {
 	return 0;
 }
 #endif
-

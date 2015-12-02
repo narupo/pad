@@ -7,7 +7,6 @@ die(char const* fmt, ...) {
 
 	term_flush();
 
-	term_eprintf("die: ");
 	vfprintf(stderr, fmt, args);
 
 	if (fmt[strlen(fmt)-1] != '.')
@@ -29,7 +28,6 @@ warn(char const* fmt, ...) {
 
 	fflush(stdout);
 
-	term_eprintf("warn: ");
 	vfprintf(stderr, fmt, args);
 
 	if (fmt[strlen(fmt)-1] != '.')
