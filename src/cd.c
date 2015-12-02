@@ -23,7 +23,7 @@ cd_run(int argc, char* argv[]) {
 	}
 
 	if (argc < 2) {
-		// Display cd directory path
+		// Display cd path
 		term_printf("%s\n", config_path(config, "cd"));
 		goto done;
 	}

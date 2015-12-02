@@ -63,9 +63,11 @@ main(int argc, char* argv[]) {
 		help_usage();
 	}
 
+	// Skip program name
 	--argc;
 	++argv;
 
+	// Get command by name
 	char const* cmdname = argv[0];
 	Command command = find_command(cmdname);
 	if (!command) {
@@ -73,6 +75,12 @@ main(int argc, char* argv[]) {
 		help_usage();
 	}
 
-	return command(argc, argv);
-}
+	// Execute command
+	int res = command(argc, argv);
+	if (res != 0) {
+		warn("cap: Failed to execute command \"%s\"", cmdname);
+	}
 
+	// Done
+	return res;
+}

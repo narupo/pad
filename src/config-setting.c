@@ -309,7 +309,7 @@ self_create_file(ConfigSetting* self, char const* fname) {
 *****************/
 
 void
-config_setting_delete(ConfigSetting* self) {
+configsetting_delete(ConfigSetting* self) {
 	if (self) {
 		hashmap_delete(self->pathmap);
 		free(self);
@@ -317,7 +317,7 @@ config_setting_delete(ConfigSetting* self) {
 }
 
 ConfigSetting*
-config_setting_new_from_file(char const* fname) {
+configsetting_new_from_file(char const* fname) {
 	// Construct
 	ConfigSetting* self = (ConfigSetting*) calloc(1, sizeof(ConfigSetting));
 	if (!self) {
@@ -365,7 +365,7 @@ config_setting_new_from_file(char const* fname) {
 *********/
 
 char const*
-config_setting_path(ConfigSetting const* self, char const* key) {
+configsetting_path(ConfigSetting const* self, char const* key) {
 	return hashmap_getc(self->pathmap, key);
 }
 
@@ -374,7 +374,7 @@ config_setting_path(ConfigSetting const* self, char const* key) {
 *********/
 
 bool
-config_setting_save_to_file(ConfigSetting* self, char const* fname) {
+configsetting_save_to_file(ConfigSetting* self, char const* fname) {
 	// Open save file
 	FILE* fout = file_open(fname, "wb");
 	if (!fout) {
@@ -400,7 +400,7 @@ config_setting_save_to_file(ConfigSetting* self, char const* fname) {
 }
 
 bool
-config_setting_set_path(ConfigSetting* self, char const* key, char const* val) {
+configsetting_set_path(ConfigSetting* self, char const* key, char const* val) {
 	// Solve path
 	char sval[NFILE_PATH];
 	if (!file_solve_path(sval, sizeof sval, val)) {
@@ -418,16 +418,16 @@ config_setting_set_path(ConfigSetting* self, char const* key, char const* val) {
 #if defined(TEST_CONFIGSETTING)
 int
 main(int argc, char* argv[]) {
-	ConfigSetting* setting = config_setting_new_from_file("~/.cap/setting");
+	ConfigSetting* setting = configsetting_new_from_file("~/.cap/setting");
 
-	printf("setting cd[%s]\n", config_setting_path(setting, "cd"));
+	printf("setting cd[%s]\n", configsetting_path(setting, "cd"));
 
-	config_setting_set_path(setting, "cd", "~/tmp");
-	printf("setting cd[%s]\n", config_setting_path(setting, "cd"));
+	configsetting_set_path(setting, "cd", "~/tmp");
+	printf("setting cd[%s]\n", configsetting_path(setting, "cd"));
 
-	config_setting_save_to_file(setting, "~/.cap/setting");
+	configsetting_save_to_file(setting, "~/.cap/setting");
 
-	config_setting_delete(setting);
+	configsetting_delete(setting);
     return 0;
 }
 #endif

@@ -4,8 +4,13 @@ struct Config {
 	ConfigSetting* setting;
 };
 
-static char const* CONFIG_SETTING_FNAME = "setting";
-static char const* CONFIG_SETTING_PATH = "~/.cap/setting";
+/************
+* Variables *
+************/
+
+static char const* CONFIG_ROOT_PATH = "~/.config/cap"; 
+static char const* CONFIGSETTING_FNAME = "setting";
+static char const* CONFIGSETTING_PATH = "~/.config/cap/setting";
 
 /*****************
 * Delete and New *
@@ -14,7 +19,7 @@ static char const* CONFIG_SETTING_PATH = "~/.cap/setting";
 void
 config_delete(Config* self) {
 	if (self) {
-		config_setting_delete(self->setting);
+		configsetting_delete(self->setting);
 		free(self);
 	}
 }
@@ -29,17 +34,29 @@ config_new_from_dir(char const* dirpath) {
 	}
 
 	// Solve root directory path
-	char spath[NFILE_PATH];
+	char sdirpath[NFILE_PATH];
 
-	if (!file_solve_path(spath, sizeof spath, dirpath)) {
+	if (!file_solve_path(sdirpath, sizeof sdirpath, dirpath)) {
 		free(self);
 		return NULL;
 	}
 
+	// Check directory
+	if (!file_is_exists(sdirpath)) {
+		
+		// TODO: file_mkdir(path, "0700");
+
+		if (file_mkdir(sdirpath, S_IRUSR | S_IWUSR | S_IXUSR) != 0) {
+			WARN("Failed to mkdir \"%s\"", sdirpath);
+			free(self);
+			return NULL;
+		}
+	}
+
 	// Load config from directory
 	char fname[NFILE_PATH];
-	snprintf(fname, sizeof fname, "%s/%s", spath, CONFIG_SETTING_FNAME);
-	if (!(self->setting = config_setting_new_from_file(fname))) {
+	snprintf(fname, sizeof fname, "%s/%s", sdirpath, CONFIGSETTING_FNAME);
+	if (!(self->setting = configsetting_new_from_file(fname))) {
 		WARN("Failed to construct setting");
 		free(self);
 		return NULL;
@@ -50,7 +67,7 @@ config_new_from_dir(char const* dirpath) {
 
 Config*
 config_new(void) {
-	return config_new_from_dir("~/.cap");
+	return config_new_from_dir(CONFIG_ROOT_PATH);
 }
 
 /*********
@@ -59,18 +76,19 @@ config_new(void) {
 
 char const*
 config_path(Config const* self, char const* key) {
-	return config_setting_path(self->setting, key);
+	return configsetting_path(self->setting, key);
 }
 
 char*
 config_path_from_base(Config const* self, char* dst, size_t dstsize, char const* basename) {
 	// Check arguments
 	if (!self || !dst || !basename) {
-		die("Invalid arguments");
+		WARN("Invalid arguments");
+		return NULL;
 	}
 
 	// Get current directory path
-	char const* cdpath = config_setting_path(self->setting, "cd");
+	char const* cdpath = configsetting_path(self->setting, "cd");
 	if (!cdpath) {
 		WARN("Not found cd in setting");
 		*dst = '\0';
@@ -89,12 +107,12 @@ config_path_from_base(Config const* self, char* dst, size_t dstsize, char const*
 
 bool
 config_set_path(Config* self, char const* key, char const* val) {
-	return config_setting_set_path(self->setting, key, val);
+	return configsetting_set_path(self->setting, key, val);
 }
 
 bool
 config_save(Config const* self) {
-	return config_setting_save_to_file(self->setting, CONFIG_SETTING_PATH);
+	return configsetting_save_to_file(self->setting, CONFIGSETTING_PATH);
 }
 
 /*******

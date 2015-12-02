@@ -11,38 +11,38 @@
 *****************/
 
 /**
- * Destruct config_setting.
+ * Destruct configsetting.
  *
  * @param[in: self
  */
 void
-config_setting_delete(ConfigSetting* self);
+configsetting_delete(ConfigSetting* self);
 
 /**
- * Construct config_setting from file.
+ * Construct configsetting from file.
  *
  * @param[in] fname Load file name
- * @return Pointer to allocate memory of config_setting
+ * @return Pointer to allocate memory of configsetting
  */
 ConfigSetting*
-config_setting_new_from_file(char const* fname);
+configsetting_new_from_file(char const* fname);
 
 /*********
 * Getter *
 *********/
 
 char const*
-config_setting_path(ConfigSetting const* self, char const* key);
+configsetting_path(ConfigSetting const* self, char const* key);
 
 /*********
 * Setter *
 *********/
 
 bool
-config_setting_save_to_file(ConfigSetting* self, char const* fname);
+configsetting_save_to_file(ConfigSetting* self, char const* fname);
 
 bool
-config_setting_set_path(ConfigSetting* self, char const* key, char const* val);
+configsetting_set_path(ConfigSetting* self, char const* key, char const* val);
 
 #endif
 
