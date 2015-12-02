@@ -21,10 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ******************************************************************************/
-
 #include "cap.h"
 
 typedef int (*Command)(int, char**);
+
+static char const* PROGNAME = "cap";
 
 static Command
 find_command(char const* name) {
@@ -32,6 +33,7 @@ find_command(char const* name) {
 		char const* name;
 		Command command;
 	};
+
 	static struct CommandRecord table[] = {
 		{"help", help_main},
 		{"cat", cat_main},
@@ -43,6 +45,7 @@ find_command(char const* name) {
 		{"make", make_main},
 		{0},
 	};
+	
 	for (int i = 0; ; ++i) {
 		struct CommandRecord* rec = &table[i];
 		if (!rec->name) {
@@ -59,6 +62,7 @@ notfound:
 
 int
 main(int argc, char* argv[]) {
+	// Check arguments
 	if (argc < 2) {
 		help_usage();
 	}
@@ -71,16 +75,15 @@ main(int argc, char* argv[]) {
 	char const* cmdname = argv[0];
 	Command command = find_command(cmdname);
 	if (!command) {
-		term_eprintf("Not found name of command \"%s\".\n\n", cmdname);
+		term_eprintf("Not found command name \"%s\".\n\n", cmdname);
 		help_usage();
 	}
 
 	// Execute command
 	int res = command(argc, argv);
 	if (res != 0) {
-		warn("cap: Failed to execute command \"%s\"", cmdname);
+		warn("%s: Failed to execute command \"%s\"", PROGNAME, cmdname);
 	}
 
-	// Done
 	return res;
 }
