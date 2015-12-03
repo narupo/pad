@@ -25,6 +25,7 @@ help_usage(void) {
         "\teditor\tdisplay or set editor path\n"
         "\tdeploy\tdeploy files from directory\n"
         "\tmake\tdisplay and make by cap's make roule\n"
+        "\tpath\tdisplay normalized path of cap file\n"
         "\n"
     );
     exit(EXIT_FAILURE);

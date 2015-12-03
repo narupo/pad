@@ -43,6 +43,7 @@ find_command(char const* name) {
 		{"editor", editor_main},
 		{"deploy", deploy_main},
 		{"make", make_main},
+		{"path", path_main},
 		{0},
 	};
 	
