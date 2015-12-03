@@ -1,8 +1,8 @@
 #include "csvline.h"
 
 struct CsvLine {
-	size_t capacity;
-	size_t length;
+	size_t capacity;  // cols capacity
+	size_t length;  // cols length
 	int delim;
 	void (*mode)(CsvLine* self, int ch);
 	Buffer* buffer;
@@ -38,7 +38,7 @@ csvline_new(void) {
 	self->capacity = 4;
 	self->length = 0;
 
-	self->cols = (char**) calloc(self->capacity, sizeof(char*));
+	self->cols = (char**) calloc(self->capacity + 1, sizeof(char*));  // +1 for final nul
 	if (!self->cols) {
 		WARN("Failed to construct columns");
 		free(self);

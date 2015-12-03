@@ -35,6 +35,7 @@ SOFTWARE.
 #include "editor.h"
 #include "deploy.h"
 #include "make.h"
+#include "path.h"
 
 #endif
 

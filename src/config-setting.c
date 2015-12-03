@@ -254,10 +254,9 @@ self_parse_read_line(ConfigSetting* self, char const* line) {
 		goto fail_parse;
 	}
 
-	// Set
+	// Set key and value
 	char const* key = csvline_columns(csvline, 0);
 	char const* val = csvline_columns(csvline, 1);
-
 	if (!hashmap_set_copy(self->pathmap, key, val)) {
 		WARN("Failed to pathmap set copy key=\"%s\" val=\"%s\"", key, val);
 		goto fail_set_copy;
@@ -296,9 +295,11 @@ self_load_from_file(ConfigSetting* self, char const* fname) {
 		char const* str = buffer_getc(buf);
 		if (!self_parse_read_line(self, str)) {
 			WARN("Failed to parse read line");
+			// Nothing todo
 		}
 	}
 
+	// Done
 	buffer_delete(buf);
 	fclose(fin);
 	return true;
@@ -310,15 +311,18 @@ self_load_from_file(ConfigSetting* self, char const* fname) {
 
 static bool
 self_create_file(ConfigSetting* self, char const* fname) {
+	// Create file
 	FILE* fout = file_open(fname, "wb");
 	if (!fout) {
 		WARN("Failed to open file \"%s\"", fname);
 		return false;
 	}
 	
+	// Write lines to file
 	fprintf(fout, "cd%c%s\n", LINE_FORMAT_DELIM, DEFAULT_CD_PATH);
 	fprintf(fout, "editor%c%s\n", LINE_FORMAT_DELIM, DEFAULT_EDITOR_PATH);
 
+	// Done
 	file_close(fout);
 	return true;
 }
