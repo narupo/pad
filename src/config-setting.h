@@ -5,6 +5,7 @@
 #include "util.h"
 #include "file.h"
 #include "buffer.h"
+#include "csvline.h"
 
 /*****************
 * Delete and New *

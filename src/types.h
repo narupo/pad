@@ -4,6 +4,7 @@
 typedef struct Buffer Buffer;
 typedef struct Config Config;
 typedef struct ConfigSetting ConfigSetting;
+typedef struct CsvLine CsvLine;
 
 #endif
 

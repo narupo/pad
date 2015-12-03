@@ -162,7 +162,7 @@ static HashMap*
 hashmap_new(void) {
 	HashMap* self = (HashMap*) calloc(1, sizeof(HashMap));
 	if (!self) {
-		perror("Failed to allocate memory");
+		WARN("Failed to allocate memory");
 		return NULL;
 	}
 	
@@ -186,7 +186,7 @@ hashmap_get(HashMap* self, char const* key) {
 	return self->table[i]->value;
 }
 
-static const HashMap_type
+static HashMap_const_type
 hashmap_getc(HashMap const* self, char const* key) {
 	static HashMap_const_type dummy = "";
 
@@ -229,6 +229,7 @@ hashmap_set_copy(HashMap* self, char const* key, HashMap_const_type val) {
 
 static char const* DEFAULT_CD_PATH = "/tmp";
 static char const* DEFAULT_EDITOR_PATH = "/usr/bin/vi";
+static int const LINE_FORMAT_DELIM = ' ';
 
 struct ConfigSetting {
 	HashMap* pathmap;
@@ -238,23 +239,41 @@ struct ConfigSetting {
 * Stream *
 *********/
 
-static int
-keycmp(char const* str, char const* key) {
-	return strncmp(str, key, strlen(key));
-}
-
 static bool
 self_parse_read_line(ConfigSetting* self, char const* line) {
-	// TODO
-	// char const* key = grepkey(line);
-	// char const* val = grepval(line);
-
-	if (keycmp(line, "cd") == 0) {
-		hashmap_set_copy(self->pathmap, "cd", line+3);
-	} else if (keycmp(line, "editor") == 0) {
-		hashmap_set_copy(self->pathmap, "editor", line+7);
+	// Parse read line
+	CsvLine* csvline = csvline_new_parse_line(line, LINE_FORMAT_DELIM);
+	if (!csvline) {
+		WARN("Failed to construct csvline");
+		return false;
 	}
+
+	// Check parse results
+	if (csvline_ncolumns(csvline) != 2) {
+		WARN("Invalid line format \"%s\"", line);
+		goto fail_parse;
+	}
+
+	// Set
+	char const* key = csvline_columns(csvline, 0);
+	char const* val = csvline_columns(csvline, 1);
+
+	if (!hashmap_set_copy(self->pathmap, key, val)) {
+		WARN("Failed to pathmap set copy key=\"%s\" val=\"%s\"", key, val);
+		goto fail_set_copy;
+	}
+
+	// Done
+	csvline_delete(csvline);
 	return true;
+
+fail_parse:
+	csvline_delete(csvline);
+	return false;
+
+fail_set_copy:
+	csvline_delete(csvline);
+	return false;	
 }
 
 static bool
@@ -297,8 +316,8 @@ self_create_file(ConfigSetting* self, char const* fname) {
 		return false;
 	}
 	
-	fprintf(fout, "cd %s\n", DEFAULT_CD_PATH);
-	fprintf(fout, "editor %s\n", DEFAULT_EDITOR_PATH);
+	fprintf(fout, "cd%c%s\n", LINE_FORMAT_DELIM, DEFAULT_CD_PATH);
+	fprintf(fout, "editor%c%s\n", LINE_FORMAT_DELIM, DEFAULT_EDITOR_PATH);
 
 	file_close(fout);
 	return true;
@@ -389,7 +408,7 @@ configsetting_save_to_file(ConfigSetting* self, char const* fname) {
 		 cur != hashmapit_end(it);
 		 cur = hashmapit_next(it)) {
 
-		fprintf(fout, "%s %s\n", cur->key, cur->value);
+		fprintf(fout, "%s%c%s\n", cur->key, LINE_FORMAT_DELIM, cur->value);
 	}
 
 	hashmapit_delete(it);

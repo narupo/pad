@@ -2,19 +2,19 @@
 
 void _Noreturn
 editor_usage(void) {
-    term_eprintf(
-        "cap editor\n"
-        "\n"
-        "Usage:\n"
-        "\n"
-        "\tcap editor [editor-path] [options]\n"
-        "\n"
-        "The options are:\n"
-        "\n"
-        "\t-h, --help\tdisplay usage\n"
-        "\n"
-    );
-    exit(EXIT_FAILURE);
+	term_eprintf(
+		"cap editor\n"
+		"\n"
+		"Usage:\n"
+		"\n"
+		"\tcap editor [editor-path] [options]\n"
+		"\n"
+		"The options are:\n"
+		"\n"
+		"\t-h, --help\tdisplay usage\n"
+		"\n"
+	);
+	exit(EXIT_FAILURE);
 }
 
 static int
@@ -114,14 +114,14 @@ editor_main(int argc, char* argv[]) {
 		return 1;
 	}
 
-    return editor_run(argc, argv);
+	return editor_run(argc, argv);
 }
 
 #if defined(TEST)
 int
 main(int argc, char* argv[]) {
 
-    return 0;
+	return 0;
 }
 #endif
 
