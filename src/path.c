@@ -43,12 +43,22 @@ path_run(int argc, char* argv[]) {
 		goto fail_path_from_base;
 	}
 
+	// Check path
+	if (!file_is_exists(spath)) {
+		warn("%s: Not found file name \"%s\"", PROGNAME, spath);
+		goto fail_exists;
+	}
+
 	// Display
 	term_printf("%s\n", spath);
 
 	// Done
 	config_delete(config);
 	return 0;
+
+fail_exists:
+	config_delete(config);
+	return 3;
 
 fail_path_from_base:
 	config_delete(config);
