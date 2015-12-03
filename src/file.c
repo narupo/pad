@@ -160,7 +160,7 @@ file_mkdir(char const* dirpath, mode_t mode) {
 	return mkdir(spath, mode);
 }
 
-#if defined(TEST)
+#if defined(TEST_FILE)
 void
 test_mkdir(int argc, char* argv[]) {
 	if (argc < 2) {
