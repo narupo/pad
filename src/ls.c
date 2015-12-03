@@ -1,8 +1,8 @@
 #include "ls.h"
 
-typedef struct Program Program;
+typedef struct Command Command;
 
-struct Program {
+struct Command {
 	char const* name;
 	int argc;
 	char** argv;
@@ -14,19 +14,19 @@ struct Program {
 };
 
 bool
-program_parse_options(Program* self);
+command_parse_options(Command* self);
 
 void
-program_delete(Program* self) {
+command_delete(Command* self) {
 	if (self) {
 		buffer_delete(self->buffer);
 		free(self);
 	}
 }
 
-Program*
-program_new(int argc, char* argv[]) {
-	Program* self = (Program*) calloc(1, sizeof(Program));
+Command*
+command_new(int argc, char* argv[]) {
+	Command* self = (Command*) calloc(1, sizeof(Command));
 	if (!self) {
 		WARN("Failed to construct");
 		return NULL;
@@ -42,7 +42,7 @@ program_new(int argc, char* argv[]) {
 		return NULL;
 	}
 
-	if (!program_parse_options(self)) {
+	if (!command_parse_options(self)) {
 		WARN("Failed to parse options");
 		buffer_delete(self->buffer);
 		free(self);
@@ -53,7 +53,7 @@ program_new(int argc, char* argv[]) {
 }
 
 bool
-program_parse_options(Program* self) {
+command_parse_options(Command* self) {
 	// Parse options
 	for (;;) {
 		static struct option longopts[] = {
@@ -80,7 +80,7 @@ program_parse_options(Program* self) {
 			}
 		} break;
 		case 'h':
-			program_delete(self);
+			command_delete(self);
 			ls_usage();
 			break;
 		case 'a':
@@ -115,7 +115,7 @@ ls_usage(void) {
 }
 
 static int
-display_brief(Program* self, Config const* config, char const* basename) {
+command_display_brief(Command* self, Config const* config, char const* basename) {
 
 	// Read file for check of @cap command line
 
@@ -175,7 +175,7 @@ fail_solve_path:
 }
 
 static int
-ls_run(Program* self) {
+command_run(Command* self) {
 	// Construct Config
 	Config* config = config_new();
 	if (!config) {
@@ -218,7 +218,7 @@ ls_run(Program* self) {
 		term_printf("%s", dirp->d_name);
 
 		if (self->opt_disp_brief) {
-			display_brief(self, config, dirp->d_name);
+			command_display_brief(self, config, dirp->d_name);
 		}
 
 		term_printf("\n");
@@ -245,15 +245,16 @@ fail_1:
 int
 ls_main(int argc, char* argv[]) {
 	// Construct
-	Program* program = program_new(argc, argv);
-	if (!program) {
-		die("Failed to construct program");
+	Command* command = command_new(argc, argv);
+	if (!command) {
+		WARN("Failed to construct command");
+		return EXIT_FAILURE;
 	}
 
 	// Run
-	int res = ls_run(program);
+	int res = command_run(command);
 
 	// Done
-	program_delete(program);
+	command_delete(command);
 	return res;
 }
