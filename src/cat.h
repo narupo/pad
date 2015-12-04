@@ -5,10 +5,12 @@
 #include "file.h"
 #include "config.h"
 #include "term.h"
+#include "buffer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <ctype.h>
 
 void _Noreturn
 cat_usage(void);
