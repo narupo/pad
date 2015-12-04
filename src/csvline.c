@@ -25,6 +25,19 @@ csvline_delete(CsvLine* self) {
 	}	
 }
 
+char**
+csvline_escape_delete(CsvLine* self) {
+	if (self) {
+		char** escape = self->cols;
+
+		buffer_delete(self->buffer);
+		free(self);
+		
+		return escape;
+	}
+	return NULL;
+}
+
 CsvLine*
 csvline_new(void) {
 	// Construct
@@ -100,6 +113,7 @@ self_cols_push_copy(CsvLine* self, char const* col) {
 		}
 		self->capacity = newcapa;
 		self->cols = cols;
+		self->cols[self->capacity] = NULL;
 	}
 
 	// Push copy
@@ -117,16 +131,21 @@ static void
 self_mode_delim(CsvLine* self, int ch);
 
 static void
+self_mode_double_quote(CsvLine* self, int ch);
+
+// 123, 223 , "The string", hoge
+
+static void
 self_mode_first(CsvLine* self, int ch) {
-	if (ch == self->delim) {
+	if ((self->delim != ' ' && ch == ' ') || ch == '\t') {
+		// Nothing todo
+	} else if (ch == '"') {
+		self->mode = self_mode_double_quote;
+	} else if (ch == self->delim || ch == '\n') {
+		buffer_push(self->buffer, '\0');
+		self_cols_push_copy(self, buffer_getc(self->buffer));
+		buffer_clear(self->buffer);
 		self->mode = self_mode_delim;
-		buffer_clear(self->buffer);
-		self_cols_push_copy(self, buffer_getc(self->buffer));
-
-	} else if (ch == '\n') {
-		buffer_clear(self->buffer);
-		self_cols_push_copy(self, buffer_getc(self->buffer));
-
 	} else {
 		buffer_push(self->buffer, ch);
 	}
@@ -134,10 +153,28 @@ self_mode_first(CsvLine* self, int ch) {
 
 static void
 self_mode_delim(CsvLine* self, int ch) {
-	if (ch == self->delim || ch == '\n') {
+	if ((self->delim != ' ' && ch == ' ') || ch == '\t') {
 		// Nothing todo
+	} else if (ch == '"') {
+		self->mode = self_mode_double_quote;
+	} else if (ch == self->delim) {
+		// Nothing todo
+	} else if (ch == '\n') {
+		self->mode = self_mode_first;		
 	} else {
 		self->mode = self_mode_first;
+		buffer_push(self->buffer, ch);
+	}
+}
+
+static void
+self_mode_double_quote(CsvLine* self, int ch) {
+	if (ch == '"') {
+		buffer_push(self->buffer, '\0');
+		self_cols_push_copy(self, buffer_getc(self->buffer));
+		buffer_clear(self->buffer);		
+		self->mode = self_mode_first;
+	} else {
 		buffer_push(self->buffer, ch);
 	}
 }
@@ -162,11 +199,11 @@ csvline_parse_line(CsvLine* self, char const* line, int delim) {
 
 	// Parse line
 	for (char const* p = line; ; ++p) {
-		self->mode(self, *p);
 		if (*p == '\0') {
-			self->mode(self, '\n');
+			self->mode(self, self->delim);
 			break;
 		}
+		self->mode(self, *p);
 	}
 
 	// Done
@@ -205,7 +242,7 @@ main(int argc, char* argv[]) {
 	CsvLine* csvline = csvline_new();
 
 	for (; fgets(line, sizeof line, stdin); ) {
-		csvline_parse_line(csvline, line, ',');
+		csvline_parse_line(csvline, line, ' ');
 
 		for (int i = 0; i < csvline_ncolumns(csvline); ++i) {
 			char const* col = csvline_columns(csvline, i);

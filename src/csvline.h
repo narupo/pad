@@ -23,4 +23,7 @@ csvline_ncolumns(CsvLine const* self);
 char const*
 csvline_columns(CsvLine const* self, size_t index);
 
+char**
+csvline_escape_delete(CsvLine* self);
+
 #endif
