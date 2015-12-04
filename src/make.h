@@ -5,6 +5,7 @@
 #include "term.h"
 #include "config.h"
 #include "file.h"
+#include "csvline.h"
 
 #include "cat.h"
 

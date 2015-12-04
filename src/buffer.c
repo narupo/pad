@@ -110,6 +110,7 @@ buffer_getc(Buffer const* self) {
 void
 buffer_clear(Buffer* self) {
 	self->length = 0;
+	memset(self->buffer, 0, self->capacity);
 }
 
 bool

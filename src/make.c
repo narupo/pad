@@ -19,86 +19,10 @@ make_usage(void) {
 	exit(EXIT_FAILURE);
 }
 
-typedef struct CommandLine CommandLine;
-
-struct CommandLine {
-	size_t capacity;
-	int argc;
-	char** argv;
-};
-
-bool
-commandline_push_copy(CommandLine* self, char const* src);
-
-void
-commandline_delete(CommandLine* self) {
-	if (self) {
-		for (int i = 0; i < self->argc; ++i) {
-			free(self->argv[i]);
-		}
-		free(self->argv);
-		free(self);
-	}
-}
-
-CommandLine*
-commandline_new_from_line(char* line) {
-	CommandLine* self = (CommandLine*) calloc(1, sizeof(CommandLine));
-	if (!self) {
-		WARN("Failed to construct");
-		return NULL;
-	}
-
-	self->capacity = 4;
-	self->argv = (char**) calloc(self->capacity + 1, sizeof(char*));  // +1 for final null
-	if (!self->argv) {
-		WARN("Failed to construct argv");
-		free(self);
-		return NULL;
-	}
-
-	char delim[] = " ";
-	char* token = strtok(line, delim);
-	token = strtok(NULL, delim);  // Skip "@cap"
-	if (!token) {
-		WARN("Failed to parse");
-		free(self->argv);
-		free(self);
-		return NULL;
-	}
-
-	for (; token; token = strtok(NULL, delim)) {
-		commandline_push_copy(self, token);
-	}
-
-	return self;
-}
-
-bool
-commandline_push_copy(CommandLine* self, char const* src) {
-	if (self->argc >= self->capacity) {
-		size_t newcapa = self->capacity * 2;
-		char** ptr = (char**) realloc(self->argv, sizeof(char*) * newcapa + 1);  // +1 for final null
-		if (!ptr) {
-			WARN("Failed to push copy");
-			return false;
-		}
-		self->capacity = newcapa;
-		self->argv = ptr;
-	}
-
-	self->argv[self->argc++] = strdup(src);
-
-	return true;
-}
-
-
-
-
 int
-exec_command(char const* basename, CommandLine const* cmdline) {
+exec_command(char const* basename, int argc, char** argv) {
 	// Get command name
-	char const* cmdname = cmdline->argv[0];
+	char const* cmdname = argv[0];
 	if (!cmdname) {
 		WARN("Invalid command name \"%s\"", cmdname);
 		goto fail;
@@ -106,16 +30,16 @@ exec_command(char const* basename, CommandLine const* cmdline) {
 
 	// Select command by name
 	if (strcmp(cmdname, "cat") == 0) {
-		return cat_main(cmdline->argc, cmdline->argv);
+		return cat_main(argc, argv);
 	} else if (strcmp(cmdname, "make") == 0) {
 		// Check circular reference
-		char const* makename = cmdline->argv[1];
+		char const* makename = argv[1];
 		if (makename && strcmp(makename, basename) == 0) {
 			// Is circular reference
 			term_eprintf("Can't make because circular reference \"%s\" make \"%s\"\n", basename, makename);
 		} else {
 			// Recursive
-			return make_main(cmdline->argc, cmdline->argv);
+			return make_main(argc, argv);
 		}
 	}
 
@@ -135,26 +59,35 @@ do_make(char const* basename, FILE* fout, FILE* fin) {
 	// Read lines
 	for (; buffer_getline(buf, fin); ) {
 		char const* line = buffer_getc(buf);
+		char const* atcap = "@cap";
+		size_t atcaplen = strlen(atcap);
 
 		// If has cap's command line then
-		char* found = strstr(line, "@cap");
+		char* found = strstr(line, atcap);
 		if (!found) {
 			fprintf(fout, "%s\n", line);
 		} else {
 			// Parse command line
-			CommandLine* cmdline = commandline_new_from_line(found);
+			CsvLine* cmdline = csvline_new_parse_line(found + atcaplen, ' ');
 			if (!cmdline) {
-				WARN("Failed to construct CommandLine");
+				WARN("Failed to construct CsvLine");
 				goto fail_cmdline;
 			}
 
 			// Execute command by command line
-			if (exec_command(basename, cmdline) != 0) {
+			int argc = csvline_ncolumns(cmdline);
+			char** argv = csvline_escape_delete(cmdline);
+
+			if (exec_command(basename, argc, argv) != 0) {
+				WARN("Failed to execute command");
 				// Nothing todo
 			}
 
-			// Thx command line
-			commandline_delete(cmdline);
+			// Free argv
+			for (int i = 0; i < argc; ++i) {
+				free(argv[i]);
+			}
+			free(argv);
 		}
 	}
 
@@ -232,6 +165,8 @@ fail_config:
 int
 make_main(int argc, char* argv[]) {
 	// Parse options
+	optind = 0;
+
 	for (;;) {
 		static struct option longopts[] = {
 			{"help", no_argument, 0, 0},

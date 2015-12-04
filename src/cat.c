@@ -159,9 +159,12 @@ command_parse_line(Command* self, Config const* config, FILE* fout, char const* 
 					mode = 0;
 				}
 				break;
-			case 4:
+			case 4:  // next of ':'
 				if (ch == '}') {
 					mode = 0;
+					if (repval) {
+						printf("%s", repval);
+					}
 				} else {
 					if (!repval) {
 						mode = 5;
