@@ -80,7 +80,7 @@ command_parse_options(Command* self) {
 			}
 		} break;
 		case 'h':
-			command_delete(self);
+			command_delete(self);  // Weak point because usage() to exit
 			ls_usage();
 			break;
 		case 'a':
@@ -175,21 +175,12 @@ fail_solve_path:
 }
 
 static int
-command_run(Command* self) {
-	// Construct Config
-	Config* config = config_new();
-	if (!config) {
-		WARN("Failed to config new");
-		goto fail_1;
-	}
-
-	// Open directory from cd path
-	char const* cdpath = config_path(config, "cd");
-	
-	DIR* dir = file_opendir(cdpath);
+command_display_directory(Command* self, Config const* config, char const* curpath, char const* basename) {
+	// Open directory
+	DIR* dir = file_opendir(curpath);
 	if (!dir) {
-		WARN("Failed to opendir \"%s\"", cdpath);
-		goto fail_2;
+		WARN("Failed to opendir \"%s\"", curpath);
+		goto fail_opendir;
 	}
 
 	/// Display file list
@@ -199,46 +190,88 @@ command_run(Command* self) {
 		struct dirent* dirp = readdir(dir);
 		if (!dirp) {
 			if (errno != 0) {
-				WARN("Failed to readdir \"%s\"", cdpath);
-				goto fail_3;
+				WARN("Failed to readdir \"%s\"", curpath);
+				goto fail_readdir;
 			} else {
 				goto done; 
 			}
 		}
 
 		// Skip "." and ".."
-		if (!self->opt_is_all_disp) {
-			if (strncmp(dirp->d_name, ".", 1) == 0 ||
-				strncmp(dirp->d_name, "..", 2) == 0) {
-				continue;
+		if (strcmp(dirp->d_name, ".") == 0 || strcmp(dirp->d_name, "..") == 0) {
+			continue;
+		}
+
+		// Current name by basename and file name
+		char curname[NFILE_PATH] = {0};
+		if (!basename) {
+			strappend(curname, sizeof curname, dirp->d_name);
+		} else {
+			snprintf(curname, sizeof curname, "%s/%s", basename, dirp->d_name);
+		}
+
+		// Is Directory ?
+		char fullpath[NFILE_PATH];
+		snprintf(fullpath, sizeof fullpath, "%s/%s", curpath, dirp->d_name);
+
+		if (file_is_dir(fullpath)) {
+			// Yes, recursive
+			command_display_directory(self, config, fullpath, curname);
+		} else {
+			// Display
+			if (basename) {
+				term_printf("%s/", basename);
 			}
+			term_printf("%s", dirp->d_name);
+
+			// Display brief
+			if (self->opt_disp_brief) {
+				command_display_brief(self, config, curname);
+			}
+
+			term_printf("\n");
 		}
-
-		// Display file info
-		term_printf("%s", dirp->d_name);
-
-		if (self->opt_disp_brief) {
-			command_display_brief(self, config, dirp->d_name);
-		}
-
-		term_printf("\n");
 	}
 
 done:
 	file_closedir(dir);
+	return 0;
+
+fail_readdir:
+	file_closedir(dir);
+	return 2;
+
+fail_opendir:
+	return 1;
+}
+
+static int
+command_run(Command* self) {
+	// Construct Config
+	Config* config = config_new();
+	if (!config) {
+		WARN("Failed to config new");
+		goto fail_config;
+	}
+
+	// Display
+	char const* curpath = config_path(config, "cd");
+
+	if (command_display_directory(self, config, curpath, NULL)) {
+		WARN("Failed to display");
+		goto fail_display;
+	}
+
+	// Done
 	config_delete(config);
 	return 0;
 
-fail_3:
-	file_closedir(dir);
+fail_display:
 	config_delete(config);
 	return 3;
 
-fail_2:
+fail_config:
 	config_delete(config);
-	return 2;
-
-fail_1:
 	return 1;
 }
 

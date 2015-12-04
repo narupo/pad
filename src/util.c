@@ -42,6 +42,10 @@ warn(char const* fmt, ...) {
 
 char*
 strappend(char* dst, size_t dstsize, char const* src) {
+	if (!src) {
+		return dst;
+	}
+
 	size_t dstcur = strlen(dst);  // Weak point
 
 	for (size_t i = 0; dstcur < dstsize-1 && src[i]; ++dstcur, ++i) {

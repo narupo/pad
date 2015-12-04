@@ -141,6 +141,19 @@ fail:
 	return 0;
 }
 
+size_t
+buffer_push_str(Buffer* self, char const* str) {
+	for (char const* p = str; *p; ++p) {
+		if (!buffer_push(self, *p)) {
+			goto fail;
+		}
+	}
+	return self->length;
+
+fail:
+	return 0;
+}
+
 bool
 buffer_empty(Buffer const* self) {
 	return self->length == 0;
