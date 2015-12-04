@@ -183,7 +183,7 @@ command_display_directory(Command* self, Config const* config, char const* curpa
 		goto fail_opendir;
 	}
 
-	/// Display file list
+	// Display file list
 	for (;;) {
 		// Read dirent
 		errno = 0;
@@ -219,10 +219,7 @@ command_display_directory(Command* self, Config const* config, char const* curpa
 			command_display_directory(self, config, fullpath, curname);
 		} else {
 			// Display
-			if (basename) {
-				term_printf("%s/", basename);
-			}
-			term_printf("%s", dirp->d_name);
+			term_printf("%s", curname);
 
 			// Display brief
 			if (self->opt_disp_brief) {

@@ -1,6 +1,257 @@
 #include "cat.h"
 
-static char const* PROGNAME = "cap cat";
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <getopt.h>
+#include <string.h>
+
+typedef struct Command Command;
+
+struct Command {
+	char const* name;
+	int argc;
+	char** argv;
+	int optind;  // getopt
+	char* replace_list[10];
+};
+
+static bool
+command_parse_options(Command* self);
+
+static void
+command_delete(Command* self);
+
+static bool
+command_parse_options(Command* self);
+
+static void
+command_delete(Command* self) {
+	if (self) {
+		for (int i = 0; i < NUMOF(self->replace_list); ++i) {
+			// printf("%2d:%s\n", i, self->replace_list[i]);
+			if (self->replace_list[i]) {
+				free(self->replace_list[i]);
+			}
+		}
+		free(self);
+	}
+}
+
+static Command*
+command_new(int argc, char* argv[]) {
+	Command* self = (Command*) calloc(1, sizeof(Command));
+	if (!self) {
+		WARN("Failed to construct");
+		return NULL;
+	}
+
+	self->name = "cap cat";
+	self->argc = argc;
+	self->argv = argv;
+
+	if (!command_parse_options(self)) {
+		WARN("Failed to parse options");
+		free(self);
+		return NULL;
+	}
+
+	return self;
+}
+
+static bool
+command_parse_options(Command* self) {
+	// Parse options
+	for (;;) {
+		static struct option longopts[] = {
+			{"help", no_argument, 0, 0},
+			{0},
+		};
+		int optsindex;
+
+		int cur = getopt_long(self->argc, self->argv, "h0:1:2:3:4:5:6:7:8:9:", longopts, &optsindex);
+		if (cur == -1) {
+			break;
+		}
+
+	again:
+		switch (cur) {
+		case 0: {
+			char const* name = longopts[optsindex].name;
+			if (strcmp("help", name) == 0) {
+				cur = 'h';
+				goto again;
+			}
+		} break;
+		case 'h':
+			command_delete(self);
+			cat_usage();
+			break;
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+			self->replace_list[cur - '0'] = strdup(optarg);
+			break;
+		case '?':
+		default:
+			WARN("Unknown option");
+			return false;
+			break;
+		}
+	}
+
+	// Check result of parse options
+	if (self->argc < optind) {
+		WARN("Failed to parse option");
+		return false;
+	}
+
+	self->optind = optind;
+
+	// Done
+	return true;
+}
+
+static int
+command_parse_line(Command* self, Config const* config, FILE* fout, char const* line) {
+	int mode = 0;
+	char const* atcap = "@cap";
+	size_t atcaplen = strlen(atcap);
+
+	char const* repval = NULL;
+
+	for (char const* p = line; *p; ++p) {
+		int ch = *p;
+
+		switch (mode) {
+			case 0:
+				if (strncmp(p, atcap, 4) == 0) {
+					p += atcaplen - 1;  // -1 for ++p
+					mode = 1;
+				} else {
+					fputc(ch, fout);
+				}
+				break;
+			case 1:
+				if (ch == '{') {
+					mode = 2;
+				}
+				break;
+			case 2:
+				if (ch == '}') {
+					mode = 0;
+				} else if (isdigit(ch)) {
+					mode = 3;
+					repval = self->replace_list[ch - '0'];
+				}
+				break;
+			case 3:
+				if (ch == ':') {
+					mode = 4;
+				} else if (ch == '}') {
+					mode = 0;
+				}
+				break;
+			case 4:
+				if (ch == '}') {
+					mode = 0;
+				} else {
+					if (!repval) {
+						mode = 5;
+						fputc(ch, fout);
+					} else {
+						mode = 6;
+						printf("%s", repval);
+					}
+				}
+				break;
+			case 5:  // Display default value
+				if (ch == '}') {
+					mode = 0;
+				} else {
+					fputc(ch, fout);
+				}
+				break;
+			case 6:  // Display replace value
+				if (ch == '}') {
+					mode = 0;
+				}
+				break;
+		}
+	}
+
+	return 0;
+}
+
+static int
+command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
+	Buffer* buf = buffer_new();
+	if (!buf) {
+		WARN("Failed to construct buffer");
+		goto fail_buffer;
+	}
+
+	for (; buffer_getline(buf, fin); ) {
+		char const* line = buffer_getc(buf);
+		command_parse_line(self, config, fout, line);
+		fputc('\n', fout);
+	}
+
+	// Done
+	buffer_delete(buf);
+	return 0;
+
+fail_buffer:
+	return 1;
+}
+
+static int
+command_run(Command* self) {
+	// Load config
+	Config* config = config_new();
+	if (!config) {
+		WARN("Failed to construct config");
+		goto fail_config;
+	}
+
+	if (self->argc == self->optind) {
+		command_cat_stream(self, config, stdout, stdin);
+		goto done;
+	}
+
+	for (int i = self->optind; i < self->argc; ++i) {
+		char fname[NFILE_PATH];
+		if (!config_path_from_base(config, fname, sizeof fname, self->argv[i])) {
+			WARN("Failed to path from base \"%s\"", self->argv[i]);
+			continue;
+		}
+
+		FILE* fin = file_open(fname, "rb");
+		if (!fin) {
+			WARN("Failed to open file \"%s\"", fname);
+			continue;
+		}
+
+		command_cat_stream(self, config, stdout, fin);
+
+		file_close(fin);
+	}
+
+done:
+	// Done
+	config_delete(config);
+	return 0;
+
+fail_config:
+	return 1;
+}
 
 void _Noreturn
 cat_usage(void) {
@@ -20,118 +271,37 @@ cat_usage(void) {
 }
 
 int
-cat_run(int argc, char* argv[]) {
-	FILE* fin = stdin;
-	FILE* fout = stdout;
-
-	// Load config
-	Config* config = config_new();
-	if (!config) {
-		WARN("Failed to construct config");
-		goto fail_config;
-	}
-
-	// I/O
-	if (argc < optind) {
-		WARN("Failed to parse options");
-		goto fail_parse_option;
-	}
-	else if (argc == optind) {
-		int ch;
-		while ((ch = fgetc(fin)) != EOF) {
-			fputc(ch, fout);
-		}
-	}
-	else if (argc > optind) {
-		char path[NFILE_PATH];
-
-		for (int i = optind; i < argc; ++i) {
-			// Make a cap file path
-			char const* basename = argv[i];
-
-			if (!config_path_from_base(config, path, sizeof path, basename)) {
-				WARN("Failed to make path from \"%s\"", basename);
-				continue;
-			}
-
-			// Open a cap file
-			fin = file_open(path, "rb");
-			if (!fin) {
-				if (errno == ENOENT) {
-					warn("%s: Failed to open file \"%s\"", PROGNAME, path);
-				} else {
-					WARN("Failed to open file \"%s\"", basename);
-				}
-				goto fail_file_open;
-			}
-			
-			// Render
-			int ch;
-			while ((ch = fgetc(fin)) != EOF) {
-				fputc(ch, fout);
-			}
-			file_close(fin);
-		}
-	}
-
-	config_delete(config);
-	return 0;
-
-fail_parse_option:
-	config_delete(config);
-	return 1;
-
-fail_file_open:
-	config_delete(config);
-	return 2;
-
-fail_config:
-	return 3;
-
-}
-
-int
 cat_main(int argc, char* argv[]) {
-	// Parse options
-	for (;;) {
-		static struct option longopts[] = {
-			{"help", no_argument, 0, 0},
-			{0},
-		};
-		int optsindex;
-
-		int cur = getopt_long(argc, argv, "", longopts, &optsindex);
-		if (cur == -1) {
-			break;
-		}
-
-	again:
-		switch (cur) {
-			case 0: {
-				char const* name = longopts[optsindex].name;
-				if (strcmp("help", name) == 0) {
-					cur = 'h';
-					goto again;
-				}
-			} break;
-			case 'h': {
-				cat_usage();
-			} break;
-			case '?':
-			default: {
-				cat_usage();
-			} break;
-		}
+	// Construct
+	Command* command = command_new(argc, argv);
+	if (!command) {
+		WARN("Failed to construct command");
+		return EXIT_FAILURE;
 	}
 
-	return cat_run(argc, argv);
+	// Run
+	int res = command_run(command);
+
+	// Done
+	command_delete(command);
+	return res;	
 }
 
-#ifdef TEST_CAT
+#if defined(TEST_CAT)
 int
 main(int argc, char* argv[]) {
-	cat_main(argc, argv);
-	return 0;
+	// Construct
+	Command* command = command_new(argc, argv);
+	if (!command) {
+		WARN("Failed to construct command");
+		return EXIT_FAILURE;
+	}
+
+	// Run
+	int res = command_run(command);
+
+	// Done
+	command_delete(command);
+	return res;
 }
 #endif
-

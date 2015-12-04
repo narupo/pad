@@ -9,6 +9,8 @@
 #include <getopt.h>
 #include <errno.h>
 
+#define NUMOF(array) (sizeof(array)/sizeof(array[0]))
+
 #define WARN(...) { \
     fprintf(stderr, "WARN: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
     fprintf(stderr, __VA_ARGS__); \
