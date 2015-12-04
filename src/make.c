@@ -97,12 +97,14 @@ commandline_push_copy(CommandLine* self, char const* src) {
 
 int
 exec_command(char const* basename, CommandLine const* cmdline) {
+	// Get command name
 	char const* cmdname = cmdline->argv[0];
 	if (!cmdname) {
 		WARN("Invalid command name \"%s\"", cmdname);
 		goto fail;
 	}
 
+	// Select command by name
 	if (strcmp(cmdname, "cat") == 0) {
 		return cat_main(cmdline->argc, cmdline->argv);
 	} else if (strcmp(cmdname, "make") == 0) {
@@ -116,8 +118,6 @@ exec_command(char const* basename, CommandLine const* cmdline) {
 			return make_main(cmdline->argc, cmdline->argv);
 		}
 	}
-
-	WARN("Not found name \"%s\"", cmdname);
 
 fail:
 	return EXIT_FAILURE;
@@ -150,7 +150,6 @@ do_make(char const* basename, FILE* fout, FILE* fin) {
 
 			// Execute command by command line
 			if (exec_command(basename, cmdline) != 0) {
-				WARN("Failed to execute command");
 				// Nothing todo
 			}
 
