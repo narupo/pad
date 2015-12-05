@@ -8,15 +8,6 @@ struct Command {
 	char** argv;
 };
 
-static bool
-command_parse_options(Command* self);
-
-static void
-command_delete(Command* self);
-
-static bool
-command_parse_options(Command* self);
-
 void _Noreturn
 run_usage(void) {
     fprintf(stderr,
@@ -28,7 +19,7 @@ run_usage(void) {
         "\n"
         "The options are:\n"
         "\n"
-        "\t-h, --help\tdisplay usage\n"
+        "\tnothing, see at manual of script\n"
         "\n"
     );
     exit(EXIT_FAILURE);
@@ -53,61 +44,7 @@ command_new(int argc, char* argv[]) {
 	self->argc = argc;
 	self->argv = argv;
 
-	if (!command_parse_options(self)) {
-		WARN("Failed to parse options");
-		free(self);
-		return NULL;
-	}
-
 	return self;
-}
-
-static bool
-command_parse_options(Command* self) {
-	// Parse options
-	optind = 0;
-	
-	for (;;) {
-		static struct option longopts[] = {
-			{"help", no_argument, 0, 0},
-			{0},
-		};
-		int optsindex;
-
-		int cur = getopt_long(self->argc, self->argv, "h", longopts, &optsindex);
-		if (cur == -1) {
-			break;
-		}
-
-	again:
-		switch (cur) {
-		case 0: {
-			char const* name = longopts[optsindex].name;
-			if (strcmp("help", name) == 0) {
-				cur = 'h';
-				goto again;
-			}
-		} break;
-		case 'h':
-			command_delete(self);
-			run_usage();
-			break;
-		case '?':
-		default:
-			WARN("Unknown option");
-			return false;
-			break;
-		}
-	}
-
-	// Check result of parse options
-	if (self->argc < optind) {
-		WARN("Failed to parse option");
-		return false;
-	}
-
-	// Done
-	return true;
 }
 
 static int

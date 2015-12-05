@@ -25,12 +25,6 @@ struct Command {
 	char** argv;
 };
 
-static bool
-command_parse_options(Command* self);
-
-static void
-command_delete(Command* self);
-
 static void
 command_delete(Command* self) {
 	if (self) {
