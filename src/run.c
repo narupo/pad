@@ -11,11 +11,11 @@ struct Command {
 void _Noreturn
 run_usage(void) {
     fprintf(stderr,
-        "This command is ...\n"
+        "cap run\n"
         "\n"
         "Usage:\n"
         "\n"
-        "\tcommand [arguments]\n"
+        "\tcap run [script] [arguments]...\n"
         "\n"
         "The options are:\n"
         "\n"
