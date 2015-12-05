@@ -1,6 +1,6 @@
 #include "deploy.h"
 
-static void _Noreturn
+void _Noreturn
 deploy_usage(void) {
 	term_eprintf(
 		"cap deploy\n"

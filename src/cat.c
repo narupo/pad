@@ -62,6 +62,8 @@ command_new(int argc, char* argv[]) {
 static bool
 command_parse_options(Command* self) {
 	// Parse options
+	optind = 0;
+	
 	for (;;) {
 		static struct option longopts[] = {
 			{"help", no_argument, 0, 0},
@@ -87,16 +89,7 @@ command_parse_options(Command* self) {
 			command_delete(self);
 			cat_usage();
 			break;
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
+		case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
 			self->replace_list[cur - '0'] = strdup(optarg);
 			break;
 		case '?':
@@ -267,7 +260,8 @@ cat_usage(void) {
 		"\n"
 		"The options are:\n"
 		"\n"
-		"\t-h, --help display usage\n"
+		"\t-h, --help\tdisplay usage\n"
+		"\t-[0-9]\t\treplace value of key number\n"
 		"\n"
 	);
 	exit(EXIT_FAILURE);

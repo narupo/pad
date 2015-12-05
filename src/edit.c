@@ -4,7 +4,7 @@ enum {
 	NCOMMAND = 256,
 };
 
-static void _Noreturn
+void _Noreturn
 edit_usage(void) {
 	term_eprintf(
 		"cap edit\n"

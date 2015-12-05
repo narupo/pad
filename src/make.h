@@ -9,6 +9,9 @@
 
 #include "cat.h"
 
+void _Noreturn
+make_usage(void);
+
 int
 make_main(int argc, char* argv[]);
 

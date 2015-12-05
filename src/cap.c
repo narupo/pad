@@ -44,6 +44,7 @@ find_command(char const* name) {
 		{"deploy", deploy_main},
 		{"make", make_main},
 		{"path", path_main},
+		{"run", run_main},
 		{0},
 	};
 	

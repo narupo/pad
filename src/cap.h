@@ -36,6 +36,7 @@ SOFTWARE.
 #include "deploy.h"
 #include "make.h"
 #include "path.h"
+#include "run.h"
 
 #endif
 
