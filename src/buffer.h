@@ -93,6 +93,12 @@ size_t
 buffer_push(Buffer* self, int ch);
 
 /**
+ *
+ */
+size_t
+buffer_push_str(Buffer* self, char const* str);
+
+/**
  * Resize buffer.
  *
  * @param[in] self		

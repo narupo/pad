@@ -6,6 +6,9 @@
 #include "config.h"
 #include "file.h"
 
+void _Noreturn
+deploy_usage(void);
+
 int
 deploy_main(int argc, char* argv[]);
 

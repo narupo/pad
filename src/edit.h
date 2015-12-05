@@ -7,6 +7,9 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
+void _Noreturn
+edit_usage(void);
+
 int
 edit_main(int argc, char* argv[]);
 

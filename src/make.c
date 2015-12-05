@@ -24,7 +24,7 @@ exec_command(char const* basename, int argc, char** argv) {
 	// Get command name
 	char const* cmdname = argv[0];
 	if (!cmdname) {
-		WARN("Invalid command name \"%s\"", cmdname);
+		// WARN("Invalid command name \"%s\"", cmdname);
 		goto fail;
 	}
 
@@ -79,7 +79,7 @@ do_make(char const* basename, FILE* fout, FILE* fin) {
 			char** argv = csvline_escape_delete(cmdline);
 
 			if (exec_command(basename, argc, argv) != 0) {
-				WARN("Failed to execute command");
+				// WARN("Failed to execute command");
 				// Nothing todo
 			}
 
