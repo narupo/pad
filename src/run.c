@@ -48,19 +48,19 @@ command_new(int argc, char* argv[]) {
 }
 
 static int
-run_command(Command* self, Config const* config) {
-	// Skip command name
-	char** argv = self->argv + 1;
-	char const* basename = argv[0];
-	if (!basename) {
-		WARN("Invalid command name \"%s\"", basename);
+run_script(Command* self, Config const* config) {
+	// Get script name on cap
+	char** argv = self->argv + 1;  // Skip command name of 'run'
+	char const* scriptname = argv[0];
+	if (!scriptname) {
+		WARN("Invalid command name \"%s\"", scriptname);
 		goto fail_basename;
 	}
 
 	// Get command path on cap
-	char cmdpath[NFILE_PATH];
-	if (!config_path_from_base(config, cmdpath, sizeof cmdpath, basename)) {
-		WARN("Failed to path from base \"%s\"", basename);
+	char scriptpath[NFILE_PATH];
+	if (!config_path_from_base(config, scriptpath, sizeof scriptpath, scriptname)) {
+		WARN("Failed to path from base \"%s\"", scriptname);
 		goto fail_path;		
 	}
 
@@ -71,7 +71,7 @@ run_command(Command* self, Config const* config) {
 			goto fail_fork;
 			break;
 		case 0:  // Parent process
-			if (execv(cmdpath, argv) == -1) {
+			if (execv(scriptpath, argv) == -1) {
 				WARN("Failed to execute");
 				goto fail_execv;
 			}
@@ -118,7 +118,7 @@ command_run(Command* self) {
 	}
 
 	// Run
-	int res = run_command(self, config);
+	int res = run_script(self, config);
 
 	// Done
 	config_delete(config);
