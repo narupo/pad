@@ -102,6 +102,23 @@ config_path_from_base(Config const* self, char* dst, size_t dstsize, char const*
 	return dst;
 }
 
+char*
+config_make_path_from_base(Config const* self, char const* basename) {
+	// Check arguments
+	if (!basename) {
+		WARN("Invalid arguments");
+		return NULL;
+	}
+
+	char* dst = (char*) calloc(NFILE_PATH, sizeof(char));
+	if (!dst) {
+		WARN("Failed to allocate memory");
+		return NULL;
+	}
+
+	return config_path_from_base(self, dst, NFILE_PATH, basename);
+}
+
 /*********
 * Setter *
 *********/

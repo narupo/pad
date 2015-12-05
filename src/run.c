@@ -45,7 +45,7 @@ static Command*
 command_new(int argc, char* argv[]) {
 	Command* self = (Command*) calloc(1, sizeof(Command));
 	if (!self) {
-		perror("Failed to construct");
+		WARN("Failed to construct");
 		return NULL;
 	}
 
@@ -54,7 +54,7 @@ command_new(int argc, char* argv[]) {
 	self->argv = argv;
 
 	if (!command_parse_options(self)) {
-		perror("Failed to parse options");
+		WARN("Failed to parse options");
 		free(self);
 		return NULL;
 	}
@@ -90,11 +90,11 @@ command_parse_options(Command* self) {
 		} break;
 		case 'h':
 			command_delete(self);
-			exit(EXIT_FAILURE);
+			run_usage();
 			break;
 		case '?':
 		default:
-			perror("Unknown option");
+			WARN("Unknown option");
 			return false;
 			break;
 		}
@@ -102,7 +102,7 @@ command_parse_options(Command* self) {
 
 	// Check result of parse options
 	if (self->argc < optind) {
-		perror("Failed to parse option");
+		WARN("Failed to parse option");
 		return false;
 	}
 
@@ -111,22 +111,81 @@ command_parse_options(Command* self) {
 }
 
 static int
+run_command(Command* self, Config const* config) {
+	// Skip command name
+	char** argv = self->argv + 1;
+	char const* basename = argv[0];
+	if (!basename) {
+		WARN("Invalid command name \"%s\"", basename);
+		goto fail_basename;
+	}
+
+	// Get command path on cap
+	char cmdpath[NFILE_PATH];
+	if (!config_path_from_base(config, cmdpath, sizeof cmdpath, basename)) {
+		WARN("Failed to path from base \"%s\"", basename);
+		goto fail_path;		
+	}
+
+	// Fork and execute
+	switch (fork()) {
+		case -1:  // Failed
+			WARN("Failed to fork");
+			goto fail_fork;
+			break;
+		case 0:  // Parent process
+			if (execv(cmdpath, argv) == -1) {
+				WARN("Failed to execute");
+				goto fail_execv;
+			}
+			break;
+		default:  // Child process
+			if (wait(NULL) == -1) {
+				WARN("Failed to wait");
+				goto fail_wait;
+			}
+			break;
+	}
+
+	// Done
+	return 0;
+
+fail_execv:
+	return 5;
+
+fail_wait:
+	return 4;
+
+fail_fork:
+	return 3;
+
+fail_path:
+	return 2;
+
+fail_basename:
+	return 1;
+}
+
+static int
 command_run(Command* self) {
+	// Check arguments
 	if (self->argc < 2) {
 		run_usage();
 	}
 
+	// Load config
 	Config* config = config_new();
 	if (!config) {
 		WARN("Failed to construct config");
 		goto fail_config;
 	}
 
-	char cmd[512];
-	system(config_path_from_base(config, cmd, sizeof cmd, self->argv[1]));
+	// Run
+	int res = run_command(self, config);
 
+	// Done
 	config_delete(config);
-	return 0;
+	return res;
 
 fail_config:
 	return 1;
@@ -137,7 +196,7 @@ run_main(int argc, char* argv[]) {
 	// Construct
 	Command* command = command_new(argc, argv);
 	if (!command) {
-		perror("Failed to construct command");
+		WARN("Failed to construct command");
 		return EXIT_FAILURE;
 	}
 

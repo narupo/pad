@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <getopt.h>
 #include <string.h>
+#include <sys/wait.h>
 
 void _Noreturn
 run_usage(void);
