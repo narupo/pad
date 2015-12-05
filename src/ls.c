@@ -6,11 +6,11 @@ struct Command {
 	char const* name;
 	int argc;
 	char** argv;
-
+	int optind;
 	Buffer* buffer;
-
 	bool opt_is_all_disp;
 	bool opt_disp_brief;
+	bool opt_recursive;
 };
 
 bool
@@ -63,7 +63,7 @@ command_parse_options(Command* self) {
 		};
 		int optsindex;
 
-		int cur = getopt_long(self->argc, self->argv, "ha", longopts, &optsindex);
+		int cur = getopt_long(self->argc, self->argv, "haR", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
@@ -83,18 +83,16 @@ command_parse_options(Command* self) {
 			command_delete(self);  // Weak point because usage() to exit
 			ls_usage();
 			break;
-		case 'a':
-			self->opt_is_all_disp = !self->opt_is_all_disp;
-			break;
+		case 'a': self->opt_is_all_disp = !self->opt_is_all_disp; break;
+		case 'R': self->opt_recursive = !self->opt_recursive; break;
 		case '?':
-		default:
-			warn("Unknown option");
-			return false;
-			break;
+		default: warn("Unknown option"); return false; break;
 		}
 	}
 
-	if (self->argc > optind) {
+	self->optind = optind;
+
+	if (self->argc < self->optind) {
 		WARN("Failed to parse option");
 		return false;
 	}
@@ -115,47 +113,45 @@ ls_usage(void) {
 }
 
 static int
-command_display_brief(Command* self, Config const* config, char const* basename) {
-
+command_display_brief(Command* self, Config const* config, char const* head, char const* tail) {
 	// Read file for check of @cap command line
-
 	// Make path from basename
-	char spath[NFILE_PATH];
-	if (!config_path_from_base(config, spath, sizeof spath, basename)) {
-		WARN("Failed to path from base \"%s\"", basename);
-		goto fail_solve_path;
-	}
-
-	// File only
-	if (file_is_dir(spath)) {
-		goto fail_is_dir;
-	}
+	char fpath[NFILE_PATH];
+	snprintf(fpath, sizeof fpath, "%s/%s", head, tail);
 
 	// Open file by solve path
-	FILE* fin = file_open(spath, "rb");
+	FILE* fin = file_open(fpath, "rb");
 	if (!fin) {
-		warn("%s: Failed to open file \"%s\"", self->name, spath);
+		warn("%s: Failed to open file \"%s\"", self->name, fpath);
 		goto fail_open_file;
 	}
 
 	// Read lines for @cap command
 	for (; buffer_getline(self->buffer, fin); ) {
 		char const* target = "@cap";
+		size_t tarlen = strlen(target);
+
 		char* found = strstr(buffer_getc(self->buffer), target);
 		if (!found) {
 			continue;
 		}
 
 		// Skip spaces
-		char* p = found + strlen(target);
+		char* p = found + tarlen;
 		for (; *p == ' ' || *p == '\t'; ++p) {
 		}
 
 		// Is brief command?
 		target = "brief";
-		if (*p && strncmp(p, target, strlen(target)) == 0) {
+		tarlen = strlen(target);
+		if (*p && strncmp(p, target, tarlen) == 0) {
 			// Display brief
-			term_printf("\t%s", p + strlen(target));
+			char const* brief = p + tarlen;
+
+			term_printf("\t%s", brief);
+			if (brief[strlen(brief)-1] != '.') {
+				term_printf(".");
+			}
 			break;
 		}
 	}
@@ -165,21 +161,23 @@ command_display_brief(Command* self, Config const* config, char const* basename)
 	return 0;
 
 fail_open_file:
-	return 3;
-
-fail_is_dir:
-	return 2;
-
-fail_solve_path:
 	return 1;
 }
 
 static int
-command_display_directory(Command* self, Config const* config, char const* curpath, char const* basename) {
+walkdir(Command* self, Config const* config, char const* head, char const* tail) {
+	// Make open directory path
+	char openpath[NFILE_PATH];
+	if (!tail) {
+		snprintf(openpath, sizeof openpath, "%s", head);
+	} else {
+		snprintf(openpath, sizeof openpath, "%s/%s", head, tail);
+	}
+
 	// Open directory
-	DIR* dir = file_opendir(curpath);
+	DIR* dir = file_opendir(openpath);
 	if (!dir) {
-		WARN("Failed to opendir \"%s\"", curpath);
+		WARN("Failed to opendir \"%s\"", openpath);
 		goto fail_opendir;
 	}
 
@@ -190,7 +188,7 @@ command_display_directory(Command* self, Config const* config, char const* curpa
 		struct dirent* dirp = readdir(dir);
 		if (!dirp) {
 			if (errno != 0) {
-				WARN("Failed to readdir \"%s\"", curpath);
+				WARN("Failed to readdir \"%s\"", openpath);
 				goto fail_readdir;
 			} else {
 				goto done; 
@@ -202,30 +200,27 @@ command_display_directory(Command* self, Config const* config, char const* curpa
 			continue;
 		}
 
-		// Current name by basename and file name
-		char curname[NFILE_PATH] = {0};
-		if (!basename) {
-			strappend(curname, sizeof curname, dirp->d_name);
+		// Update tail path
+		char newtail[NFILE_PATH];
+		if (!tail) {
+			snprintf(newtail, sizeof newtail, "%s", dirp->d_name);
 		} else {
-			snprintf(curname, sizeof curname, "%s/%s", basename, dirp->d_name);
+			snprintf(newtail, sizeof newtail, "%s/%s", tail, dirp->d_name);
 		}
 
-		// Is Directory ?
-		char fullpath[NFILE_PATH];
-		snprintf(fullpath, sizeof fullpath, "%s/%s", curpath, dirp->d_name);
+		// Is directory?
+		char isdirpath[NFILE_PATH];
+		snprintf(isdirpath, sizeof isdirpath, "%s/%s", head, newtail);
 
-		if (file_is_dir(fullpath)) {
-			// Yes, recursive
-			command_display_directory(self, config, fullpath, curname);
+		if (self->opt_recursive && file_is_dir(isdirpath)) {
+			// Yes, Recursive
+			walkdir(self, config, head, newtail);
 		} else {
-			// Display
-			term_printf("%s", curname);
-
-			// Display brief
+			// No, display
+			term_printf("%s", newtail);
 			if (self->opt_disp_brief) {
-				command_display_brief(self, config, curname);
+				command_display_brief(self, config, head, newtail);
 			}
-
 			term_printf("\n");
 		}
 	}
@@ -252,9 +247,12 @@ command_run(Command* self) {
 	}
 
 	// Display
-	char const* curpath = config_path(config, "cd");
-
-	if (command_display_directory(self, config, curpath, NULL)) {
+	char const* head = config_path(config, "cd");
+	char const* tail = NULL;
+	if (self->argc >= self->optind) {
+		tail = self->argv[self->optind];
+	}
+	if (walkdir(self, config, head, tail)) {
 		WARN("Failed to display");
 		goto fail_display;
 	}
