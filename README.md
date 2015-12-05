@@ -15,5 +15,4 @@ The commands are:
     deploy  deploy files from directory
     make    display and make by cap's make roule
     path    display normalized path of cap file
-    run run script
-
+    run     run script
