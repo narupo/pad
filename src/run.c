@@ -1,5 +1,9 @@
 #include "run.h"
 
+/**********
+* Command *
+**********/
+
 typedef struct Command Command;
 
 struct Command {
@@ -8,22 +12,9 @@ struct Command {
 	char** argv;
 };
 
-void _Noreturn
-run_usage(void) {
-    fprintf(stderr,
-        "cap run\n"
-        "\n"
-        "Usage:\n"
-        "\n"
-        "\tcap run [script] [arguments]...\n"
-        "\n"
-        "The options are:\n"
-        "\n"
-        "\tnothing, see at manual of script\n"
-        "\n"
-    );
-    exit(EXIT_FAILURE);
-}
+/*****************
+* Delete and New *
+*****************/
 
 static void
 command_delete(Command* self) {
@@ -47,8 +38,12 @@ command_new(int argc, char* argv[]) {
 	return self;
 }
 
+/*********
+* Runner *
+*********/
+
 static int
-run_script(Command* self, Config const* config) {
+command_run_script(Command* self, Config const* config) {
 	// Get script name on cap
 	char** argv = self->argv + 1;  // Skip command name of 'run'
 	char const* scriptname = argv[0];
@@ -118,7 +113,7 @@ command_run(Command* self) {
 	}
 
 	// Run
-	int res = run_script(self, config);
+	int res = command_run_script(self, config);
 
 	// Done
 	config_delete(config);
@@ -126,6 +121,27 @@ command_run(Command* self) {
 
 fail_config:
 	return 1;
+}
+
+/*******************
+* Public Interface *
+*******************/
+
+void _Noreturn
+run_usage(void) {
+    fprintf(stderr,
+        "cap run\n"
+        "\n"
+        "Usage:\n"
+        "\n"
+        "\tcap run [script] [arguments]...\n"
+        "\n"
+        "The options are:\n"
+        "\n"
+        "\tnothing, see at manual of script\n"
+        "\n"
+    );
+    exit(EXIT_FAILURE);
 }
 
 int

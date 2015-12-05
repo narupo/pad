@@ -40,22 +40,26 @@ command_delete(Command* self) {
 
 static Command*
 command_new(int argc, char* argv[]) {
+	// Construct
 	Command* self = (Command*) calloc(1, sizeof(Command));
 	if (!self) {
 		WARN("Failed to construct");
 		return NULL;
 	}
 
+	// Set values
 	self->name = "cap cat";
 	self->argc = argc;
 	self->argv = argv;
 
+	// Parse options
 	if (!command_parse_options(self)) {
 		WARN("Failed to parse options");
 		free(self);
 		return NULL;
 	}
 
+	// Done
 	return self;
 }
 
