@@ -203,7 +203,7 @@ command_walkdir(Command* self, Config const* config, char const* head, char cons
 		goto fail_opendir;
 	}
 
-	// Display file list
+	// Save file list
 	for (;;) {
 		// Read dirent
 		errno = 0;
@@ -231,7 +231,7 @@ command_walkdir(Command* self, Config const* config, char const* head, char cons
 		}
 
 		// Save to names
-		if (!strarray_push(self->names, newtail)) {
+		if (!strarray_push_copy(self->names, newtail)) {
 			WARN("Failed to push to names");
 			goto fail_push_names;
 		}
@@ -268,8 +268,13 @@ fail_opendir:
 
 static int
 command_display(Command const* self, Config const* config) {
+	// Get cd
 	char const* cd = config_path(config, "cd");
 
+	// Sort
+	strarray_sort(self->names);
+
+	// Display
 	for (int i = 0; i < strarray_length(self->names); ++i) {
 		// Get name
 		char const* name = strarray_get_const(self->names, i);
@@ -287,6 +292,7 @@ command_display(Command const* self, Config const* config) {
 		command_display_atcap(self, config, cd, name);
 		term_printf("\n");
 	}
+	
 	// Done
 	return 0;
 }

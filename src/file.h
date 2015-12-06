@@ -38,19 +38,18 @@ char*
 file_solve_path(char* dst, size_t dstsize, char const* path);
 
 /**
- * Desc.
+ * @param[in] path String of solve target
  *
- * @return Success: Pointer to allocate memory for string of solve path.
- * @return Failed: NULL
+ * @return Success to pointer to allocate memory for string of solve path.
+ * @return Failed to NULL
  */
 char*
 file_make_solve_path(char const* path);
 
-/**
- *
- */
 bool
 file_is_dir(char const* path);
 
-#endif
+char*
+file_read_string(char const* path);
 
+#endif
