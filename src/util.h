@@ -33,5 +33,11 @@ warn(char const* fmt, ...);
 char*
 strappend(char* dst, size_t dstsize, char const* src);
 
+char const*
+strskip(char const* src, char const* skips);
+
+int
+strcmphead(char const* src, char const* target);
+
 #endif
 

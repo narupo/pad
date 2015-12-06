@@ -13,21 +13,6 @@ struct Buffer {
 	char* buffer;
 };
 
-/**
- * Dummy object for errors.
- */
-static Buffer dummy;
-
-/**
- * Get pointer to dummy object.
- * 
- * @return	Pointer to dummy buffer.
- */
-static Buffer*
-buffer_dummy(void) {
-	return &dummy;
-}
-
 void
 buffer_delete(Buffer* self) {
 	if (self) {
@@ -104,6 +89,11 @@ buffer_length(Buffer const* self) {
 
 char const*
 buffer_getc(Buffer const* self) {
+	return self->buffer;
+}
+
+char const*
+buffer_get_const(Buffer const* self) {
 	return self->buffer;
 }
 
