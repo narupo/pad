@@ -56,3 +56,38 @@ strappend(char* dst, size_t dstsize, char const* src) {
 	return dst;
 }
 
+const char*
+strskip(char const* src, char const* skips) {
+	char const* p = src;
+	for (; *p; ++p) {
+		if (!strchr(skips, *p)) {
+			break;
+		}
+	}
+	return p;
+}
+
+int
+strcmphead(char const* src, char const* target) {
+	return strncmp(src, target, strlen(target));
+}
+
+#if defined(TEST_UTIL)
+int
+main(int argc, char* argv[]) {
+	char src[] = "\t \t \t456";
+	char const* skips = " \t";
+	char* p;
+
+	p = strskip(src, skips);
+	printf("p[%s]\n", p);
+
+	p = strskip(p, skips);
+	printf("p[%s]\n", p);
+
+	p = strskip(p, skips);
+	printf("p[%s]\n", p);
+
+    return 0;
+}
+#endif

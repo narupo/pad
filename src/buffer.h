@@ -65,6 +65,8 @@ size_t
 buffer_length(Buffer const* self);
 
 /**
+ * @deprecated
+ * 
  * Get pointer to bytes in buffer.
  *
  * @param[in] self 
@@ -72,6 +74,16 @@ buffer_length(Buffer const* self);
  */
 char const*
 buffer_getc(Buffer const* self);
+
+/**
+ * @brief      { function_description }
+ *
+ * @param      self  { parameter_description }
+ *
+ * @return     { description_of_the_return_value }
+ */
+char const*
+buffer_get_const(Buffer const* self);
 
 /**
  * Clear buffer.

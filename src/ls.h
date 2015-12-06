@@ -4,6 +4,7 @@
 #include "term.h"
 #include "file.h"
 #include "config.h"
+#include "strarray.h"
 
 void _Noreturn
 ls_usage(void);
