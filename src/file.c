@@ -160,6 +160,38 @@ file_mkdir(char const* dirpath, mode_t mode) {
 	return mkdir(spath, mode);
 }
 
+char*
+file_read_string(char const* path) {
+	FILE* fin = file_open(path, "rb");
+	if (!fin) {
+		WARN("Failed to open file \"%s\"", path);
+		return NULL;
+	}
+
+	fseek(fin, 0L, SEEK_END);
+	int len = ftell(fin);
+	fseek(fin, 0L, SEEK_SET);
+
+	char* dst = (char*) malloc(sizeof(char) * len + 1);  // +1 for final nul
+	if (!dst) {
+		WARN("Failed to allocate memory");
+		file_close(fin);
+		return NULL;
+	}
+
+	if (fread(dst, sizeof(char), len, fin) < len) {
+		WARN("Failed to fread");
+		file_close(fin);
+		free(dst);
+		return NULL;
+	}
+
+	dst[len] = '\0';
+
+	file_close(fin);
+	return dst;
+}
+
 #if defined(TEST_FILE)
 void
 test_mkdir(int argc, char* argv[]) {
@@ -177,10 +209,16 @@ test_mkdir(int argc, char* argv[]) {
 	}
 }
 
+void
+test_readall(int argc, char* argv[]) {
+	char* str = file_read_string("util.h");
+	printf("str[%s]\n", str);
+	free(str);
+}
+
 int
 main(int argc, char* argv[]) {
-	test_mkdir(argc, argv);
+	test_readall(argc, argv);
 	return 0;
 }
 #endif
-

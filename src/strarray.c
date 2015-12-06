@@ -1,7 +1,7 @@
 #include "strarray.h"
 
-typedef Buffer* StringArray_type;
-typedef Buffer const* StringArray_type_const;
+typedef char* StringArray_type;
+typedef char const* StringArray_type_const;
 #define StringArray_nullptr (NULL)
 
 enum {
@@ -22,7 +22,7 @@ void
 strarray_delete(StringArray* self) {
 	if (self) {
 		for (int i = 0; i < self->length; ++i) {
-			buffer_delete(self->array[i]);
+			free(self->array[i]);
 		}
 		free(self->array);
 		free(self);
@@ -90,7 +90,7 @@ strarray_get_const(StringArray const* self, size_t index) {
 		//("Index out of range")
 		return NULL;
 	} else {
-		return buffer_get_const(self->array[index]);
+		return self->array[index];
 	}
 }
 
@@ -104,7 +104,7 @@ strarray_set_copy(StringArray* self, size_t index, char const* value) {
 		//("Index out of range")
 		return NULL;
 	} else {
-		self->array[index] = buffer_new_str(value);
+		self->array[index] = strdup(value);
 	}
 	return self;
 }
@@ -124,7 +124,7 @@ strarray_resize(StringArray* self, size_t capacity) {
 }
 
 StringArray*
-strarray_push(StringArray* self, char const* value) {
+strarray_push_copy(StringArray* self, char const* value) {
 	if (self->length >= self->capacity) {
 		if (!strarray_resize(self, self->capacity * 2)) {
 			//("Failed to resize")
@@ -132,9 +132,28 @@ strarray_push(StringArray* self, char const* value) {
 		}
 	}
 
-	self->array[self->length++] = buffer_new_str(value);
+	self->array[self->length++] = strdup(value);
 
 	return self;
+}
+
+static int
+sort_compar(const void* a, const void* b) {
+	return strcmp(*(char* const*)a, *(char* const*)b);
+}
+
+void
+strarray_sort(StringArray* self) {
+	qsort(self->array, self->length, sizeof(StringArray_type), sort_compar);
+}
+
+void
+strarray_clear(StringArray* self) {
+	for (int i = 0; i < self->length; ++i) {
+		free(self->array[i]);
+		self->array[i] = NULL;
+	}
+	self->length = 0;
 }
 
 /*******

@@ -43,6 +43,12 @@ StringArray*
 strarray_resize(StringArray* self, size_t capacity);
 
 StringArray*
-strarray_push(StringArray* self, char const* value);
+strarray_push_copy(StringArray* self, char const* value);
+
+void
+strarray_sort(StringArray* self);
+
+void
+strarray_clear(StringArray* self);
 
 #endif
