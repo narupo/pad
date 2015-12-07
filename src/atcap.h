@@ -16,7 +16,7 @@
 @cap cat die -0 "die: "
 @cap make make/main.c
 ----
-@cap tag Java JavaScript Go Lisp C++ @cap Oops!
+@cap tag Java 	JavaScript Go 	 Lisp C++ @cap Oops!
 @cap tag Clang GCC GNU Linux
 ----
 @cap{0:sun}@cap{1:moon}
