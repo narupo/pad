@@ -162,10 +162,12 @@ mode_tag(Parser* self) {
 		buffer_clear(self->buffer);
 		step(self);
 	} else if (isblank(ch)) {
-		buffer_push(self->buffer, 0);
-		strarray_push_copy(self->atcap->tags, buffer_getc(self->buffer));
-		buffer_clear(self->buffer);
-		step(self);		
+		if (buffer_length(self->buffer)) {
+			buffer_push(self->buffer, 0);
+			strarray_push_copy(self->atcap->tags, buffer_getc(self->buffer));
+			buffer_clear(self->buffer);
+		}
+		step(self);
 	} else {
 		buffer_push(self->buffer, *self->cur);
 		step(self);		
@@ -264,7 +266,7 @@ atcap_parse_string(AtCap* self, char const* src) {
 #include "file.h"
 
 int
-main(int argc, char* argv[]) {
+test_atcap(int argc, char* argv[]) {
 	char const* fname = "atcap.h";
 	if (argc >= 2) {
 		fname = argv[1];
@@ -276,6 +278,11 @@ main(int argc, char* argv[]) {
 	
 	free(src);
 	atcap_delete(atcap);
-    return 0;
+	return 0;
+}
+
+int
+main(int argc, char* argv[]) {
+    return test_atcap(argc, argv);
 }
 #endif
