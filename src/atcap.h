@@ -29,14 +29,14 @@ atcap_parse_stream(AtCap* self, FILE* stream);
 
 /*
 @cap brief This is brief string 2.
-
-@cap tag Linux	Unix	Mac Windows 
-
+@cap tag Linux	"System V"  Unix	Mac Windows 
 @cap cat func/die.c -0 "die: "
 @cap cat func/warn.c -0 "die: "
 @cap make make/main.c
 
 My name is @cap{0:hoge}, but my sex is @cap{1:hige}@cap{2:ehe}.
 */
+
+// @cap tag C C++ Python JS "Go language"
 
 #endif

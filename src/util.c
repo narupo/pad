@@ -2,6 +2,7 @@
 
 void _Noreturn
 die(char const* fmt, ...) {
+	size_t fmtlen = strlen(fmt);
 	va_list args;
 	va_start(args, fmt);
 
@@ -9,10 +10,12 @@ die(char const* fmt, ...) {
 
 	vfprintf(stderr, fmt, args);
 
-	if (fmt[strlen(fmt)-1] != '.')
-		term_eprintf(".");
-	if (errno != 0)
-		term_eprintf(" %s.", strerror(errno));
+	if (fmtlen && fmt[fmtlen-1] != '.') {
+		term_eprintf(". ");
+	}
+	if (errno != 0) {
+		term_eprintf("%s.", strerror(errno));
+	}
 
 	term_eprintf("\n");
 
@@ -23,6 +26,7 @@ die(char const* fmt, ...) {
 
 void
 warn(char const* fmt, ...) {
+	size_t fmtlen = strlen(fmt);
 	va_list args;
 	va_start(args, fmt);
 
@@ -30,10 +34,12 @@ warn(char const* fmt, ...) {
 
 	vfprintf(stderr, fmt, args);
 
-	if (fmt[strlen(fmt)-1] != '.')
-		term_eprintf(".");
-	if (errno != 0)
-		term_eprintf(" %s.", strerror(errno));
+	if (fmtlen && fmt[fmtlen-1] != '.') {
+		term_eprintf(". ");
+	}
+	if (errno != 0) {
+		term_eprintf("%s.", strerror(errno));
+	}
 
 	term_eprintf("\n");
 
