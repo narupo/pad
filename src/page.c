@@ -1,10 +1,11 @@
 #include "page.h"
 
-typedef struct Col Col;
-typedef struct Row Row;
-typedef struct Page Page;
+/******
+* Col *
+******/
 
 struct Col {
+	ColType type;
 	Col* prev;
 	Col* next;
 	Buffer* buffer;
@@ -32,6 +33,8 @@ col_new(void) {
 		return NULL;
 	}
 
+	self->type = ColText;
+
 	return self;
 }
 
@@ -50,6 +53,8 @@ col_new_str(char const* value) {
 		return NULL;
 	}
 
+	self->type = ColText;
+
 	return self;
 }
 
@@ -58,6 +63,15 @@ col_set_copy(Col* self, char const* value) {
 	buffer_clear(self->buffer);
 	buffer_push_str(self->buffer, value);
 }
+
+void
+col_set_type(Col* self, ColType type) {
+	self->type = type;
+}
+
+/******
+* Row *
+******/
 
 struct Row {
 	Row* prev;
@@ -130,6 +144,20 @@ row_pop(Row* self) {
 	}
 }
 
+void
+row_clear(Row* self) {
+	for (Col* cur = self->col; cur; ) {
+		Col* del = cur;
+		cur = cur->next;
+		col_delete(del);
+	}
+	self->col = NULL;
+}
+
+/*******
+* Page *
+*******/
+
 struct Page {
 	Row* row;
 };
@@ -200,10 +228,20 @@ page_pop(Page* self) {
 }
 
 void
+page_clear(Page* self) {
+	for (Row* cur = self->row; cur; ) {
+		Row* del = cur;
+		cur = cur->next;
+		row_delete(del);
+	}
+	self->row = NULL;
+}
+
+void
 page_display(Page const* self) {
 	for (Row* row = self->row; row; row = row->next) {
 		for (Col* col = row->col; col; col = col->next) {
-			printf("[%s]", buffer_get_const(col->buffer));
+			printf("[%d:%s]", col->type, buffer_get_const(col->buffer));
 		}
 		printf("\n");
 	}
@@ -212,7 +250,7 @@ page_display(Page const* self) {
 #if defined(TEST_PAGE)
 #include "file.h"
 
-int
+static int
 test_page(int argc, char* argv[]) {
 	FILE* fin = stdin;
 	if (argc >= 2) {

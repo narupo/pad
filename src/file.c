@@ -161,10 +161,9 @@ file_mkdir(char const* dirpath, mode_t mode) {
 }
 
 char*
-file_read_string(char const* path) {
-	FILE* fin = file_open(path, "rb");
-	if (!fin) {
-		WARN("Failed to open file \"%s\"", path);
+file_read_string(FILE* fin) {
+	if (!fin || feof(fin)) {
+		WARN("Invalid stream");
 		return NULL;
 	}
 
@@ -188,7 +187,6 @@ file_read_string(char const* path) {
 
 	dst[len] = '\0';
 
-	file_close(fin);
 	return dst;
 }
 

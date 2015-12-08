@@ -50,6 +50,6 @@ bool
 file_is_dir(char const* path);
 
 char*
-file_read_string(char const* path);
+file_read_string(FILE* fin);
 
 #endif
