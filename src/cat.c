@@ -186,7 +186,6 @@ command_parse_line(Command* self, Config const* config, FILE* fout, char const* 
 				break;
 		}
 	}
-
 	return 0;
 }
 
