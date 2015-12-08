@@ -122,10 +122,30 @@ parser_push_col(Parser* self, ColType type) {
 }
 
 static void
+parser_push_col_str(Parser* self, char const* str, ColType type) {
+	// Push column to temp row
+	Col* col = col_new_str(str);
+	col_set_type(col, type);
+	row_push(self->row, col);	
+}
+
+static void
 parser_push_row(Parser* self) {
 	// Push row to atcap's page
 	page_push(self->atcap->page, self->row);
 	self->row = row_new();
+}
+
+static void
+parser_push_front_row(Parser* self) {
+	// Push row to atcap's page
+	page_push_front(self->atcap->page, self->row);
+	self->row = row_new();
+}
+
+static void
+parser_remove_cols(Parser* self, ColType remtype) {
+	row_remove_cols(self->row, remtype);
 }
 
 static void
@@ -168,7 +188,7 @@ static void
 parser_mode_atcap(Parser* self) {
 	parser_print_mode(self, "atcap");
 
-	static struct Identifier {
+	static const struct Identifier {
 		char const* name;
 		void (*mode)(Parser*);
 
@@ -181,8 +201,9 @@ parser_mode_atcap(Parser* self) {
 		{0},
 	};
 
-	for (struct Identifier* i = identifiers; i->name; ++i) {
+	for (struct Identifier const* i = identifiers; i->name; ++i) {
 		if (strcmphead(self->cur, i->name) == 0) {
+			// Mode of command is need identifier of command
 			if (i->mode != parser_mode_command) {
 				self->cur += strlen(i->name);
 			}
@@ -200,13 +221,73 @@ parser_mode_brief(Parser* self) {
 
 	if (*self->cur == '\n') {
 		parser_push_col(self, ColBrief);
-		parser_push_row(self);
+
+		// This row is brief column only
+		parser_remove_cols(self, ColText);
+		
+		// Pull up row for search etc
+		parser_push_front_row(self);
+		
 		self->mode = parser_mode_first;
+
 	} else {
-		buffer_push(self->buf, *self->cur);
+		// Ignore blanks of line header
+		if (isblank(*self->cur) && buffer_length(self->buf) == 0) {
+			;
+		} else {
+			buffer_push(self->buf, *self->cur);
+		}
 	}
 
 	++self->cur;
+}
+
+static StringArray*
+parser_split_tags(char const* tags) {
+	// Destination
+	StringArray* arr = strarray_new();
+	if (!arr) {
+		return NULL;
+	}
+
+	// Parse
+	Buffer* buf = buffer_new();
+	int m = 0;
+
+	for (char const* p = tags; *p; ++p) {
+		int ch = *p;
+		switch (m) {
+			case 0:
+				if (isalnum(ch)) {
+					buffer_push(buf, ch);
+
+				} else if (ch == '"') {
+					m = 1;
+					
+				} else if (isblank(ch)) {
+					if (buffer_length(buf)) {
+						strarray_push_copy(arr, buffer_get_const(buf));
+						buffer_clear(buf);
+					}
+				}
+				break;
+			case 1:  // double quoate
+				if (ch == '"') {
+					if (buffer_length(buf)) {
+						strarray_push_copy(arr, buffer_get_const(buf));
+						buffer_clear(buf);
+					}
+					m = 0;
+				} else {
+					buffer_push(buf, ch);
+				}
+				break;
+		}
+	}
+
+	// Done
+	buffer_delete(buf);
+	return arr;
 }
 
 static void
@@ -214,9 +295,23 @@ parser_mode_tag(Parser* self) {
 	parser_print_mode(self, "tag");
 
 	if (*self->cur == '\n') {
-		parser_push_col(self, ColTag);
-		parser_push_row(self);
+		// Parse tags
+		StringArray* arr = parser_split_tags(buffer_get_const(self->buf));
+		for (int i = 0; i < strarray_length(arr); ++i) {
+			char const* tag = strarray_get_const(arr, i);
+			parser_push_col_str(self, tag, ColTag);
+		}
+		strarray_delete(arr);
+
+		// This row is tag column only
+		parser_remove_cols(self, ColText);
+
+		// Pull up row for search etc
+		parser_push_front_row(self);
+
+		// Go to first state
 		self->mode = parser_mode_first;
+		buffer_clear(self->buf);
 
 	} else {
 		buffer_push(self->buf, *self->cur);

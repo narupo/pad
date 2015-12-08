@@ -62,6 +62,9 @@ void
 row_pop(Row* self); 
 
 void
+row_remove_cols(Row* self, ColType remtype);
+
+void
 row_clear(Row* self);
 
 /*******
@@ -79,6 +82,9 @@ page_find_tail(Page* self);
 
 Page*
 page_push(Page* self, Row* row); 
+
+Page*
+page_push_front(Page* self, Row* row);
 
 void
 page_pop(Page* self); 

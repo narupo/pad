@@ -150,6 +150,27 @@ row_pop(Row* self) {
 }
 
 void
+row_remove_cols(Row* self, ColType remtype) {
+	for (Col* cur = self->col; cur; ) {
+		Col* del = cur;
+		cur = cur->next;
+
+		if (del->type == remtype) {
+			if (del->prev) {
+				del->prev->next = del->next;
+			} else {
+				self->col = del->next;
+			}
+
+			if (del->next) {
+				del->next->prev = del->prev;
+			}
+			col_delete(del);
+		}
+	}
+}
+
+void
 row_clear(Row* self) {
 	for (Col* cur = self->col; cur; ) {
 		Col* del = cur;
@@ -201,17 +222,39 @@ page_find_tail(Page* self) {
 
 Page*
 page_push(Page* self, Row* row) {
+	// If first then
 	if (!self->row) {
 		self->row = row;
 		return self;
 	}
 
+	// Link
 	Row* tail = page_find_tail(self);
 	if (tail) {
 		tail->next = row;
 		row->prev = tail;
 	}
 
+	// Done
+	return self;
+}
+
+Page*
+page_push_front(Page* self, Row* row) {
+	// If first then
+	if (!self->row) {
+		self->row = row;
+		return self;
+	}
+
+	// Link
+	self->row->prev = row;
+	row->next = self->row;
+
+	// Update root
+	self->row = row;
+
+	// Done
 	return self;
 }
 
@@ -303,8 +346,34 @@ test_page(int argc, char* argv[]) {
 	return 0;
 }
 
+static int
+test_remove(int argc, char* argv[]) {
+	Row* row = row_new();
+	Col* col = col_new_str("123");
+	
+	row_push(row, col);
+
+	col = col_new_str("223");
+	col_set_type(col, ColBrief);
+	row_push(row, col);
+
+	col = col_new_str("323");
+	row_push(row, col);
+
+	row_remove_cols(row, ColBrief);
+
+	for (Col* col = row->col; col; col = col->next) {
+		printf("[%d:%s]\n", col->type, buffer_get_const(col->buffer));
+	}
+
+	row_delete(row);
+
+	return 0;
+}
+
 int
 main(int argc, char* argv[]) {
-    return test_page(argc, argv);
+	return test_remove(argc, argv);
+    //return test_page(argc, argv);
 }
 #endif
