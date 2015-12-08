@@ -36,6 +36,12 @@ col_new_str(char const* value);
 void
 col_set_copy(Col* self, char const* value); 
 
+void
+col_set_type(Col* self, ColType type);
+
+ColType
+col_type(Col const* self);
+
 /******
 * Row *
 ******/

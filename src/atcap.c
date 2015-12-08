@@ -114,6 +114,7 @@ parser_push_col(Parser* self, ColType type) {
 	// Push column to temp row
 	Col* col = col_new_str(buffer_get_const(self->buf));
 	// TODO
+	col_set_type(col, type);
 	row_push(self->row, col);
 	// TODO
 	// printf("[%d:%s]\n", type, buffer_get_const(self->buf));
@@ -149,14 +150,12 @@ parser_mode_first(Parser* self) {
 		++self->cur;
 
 	} else if (strcmphead(self->cur, "@cap") == 0) {
-		// To atcap mode
+		// Found atcap identifier
 		self->mode = parser_mode_atcap;
-
-		// Skip "@cap"
 		self->cur += strlen("@cap");
-
-		// Buffer
-		parser_push_col(self, ColText);
+		if (buffer_length(self->buf)) {
+			parser_push_col(self, ColText);
+		}
 
 	} else {
 		// Text
@@ -254,7 +253,7 @@ parser_mode_brace(Parser* self) {
 	} else if (*self->cur == '}') {
 		parser_push_col(self, ColBrace);
 		self->mode = parser_mode_first;
-		
+
 	} else {
 		buffer_push(self->buf, *self->cur);
 	}
