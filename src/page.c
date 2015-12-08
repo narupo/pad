@@ -69,6 +69,11 @@ col_set_type(Col* self, ColType type) {
 	self->type = type;
 }
 
+ColType
+col_type(Col const* self) {
+	return self->type;
+}
+
 /******
 * Row *
 ******/
