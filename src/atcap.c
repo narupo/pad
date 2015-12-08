@@ -155,6 +155,11 @@ parser_print_mode(Parser const* self, char const* modename) {
 	}
 }
 
+static bool
+is_newline(int ch) {
+	return ch == '\n' || ch == '\0';
+}
+
 /****************
 * Parser: Modes *
 ****************/
@@ -163,7 +168,7 @@ static void
 parser_mode_first(Parser* self) {
 	parser_print_mode(self, "first");
 
-	if (*self->cur == '\0' || *self->cur == '\n') {
+	if (is_newline(*self->cur)) {
 		// Buffer
 		parser_push_col(self, ColText);
 		parser_push_row(self);
@@ -219,7 +224,7 @@ static void
 parser_mode_brief(Parser* self) {
 	parser_print_mode(self, "brief");
 
-	if (*self->cur == '\n') {
+	if (is_newline(*self->cur)) {
 		parser_push_col(self, ColBrief);
 
 		// This row is brief column only
@@ -294,7 +299,7 @@ static void
 parser_mode_tag(Parser* self) {
 	parser_print_mode(self, "tag");
 
-	if (*self->cur == '\n') {
+	if (is_newline(*self->cur)) {
 		// Parse tags
 		StringArray* arr = parser_split_tags(buffer_get_const(self->buf));
 		for (int i = 0; i < strarray_length(arr); ++i) {
@@ -324,7 +329,7 @@ static void
 parser_mode_command(Parser* self) {
 	parser_print_mode(self, "command");
 
-	if (*self->cur == '\n') {
+	if (is_newline(*self->cur)) {
 		parser_push_col(self, ColCommand);
 		parser_push_row(self);
 		self->mode = parser_mode_first;
@@ -340,7 +345,7 @@ static void
 parser_mode_brace(Parser* self) {
 	parser_print_mode(self, "brace");
 
-	if (*self->cur == '\n') {
+	if (is_newline(*self->cur)) {
 		parser_push_col(self, ColBrace);
 		parser_push_row(self);
 		self->mode = parser_mode_first;
