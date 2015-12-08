@@ -40,3 +40,4 @@ My name is @cap{0:hoge}, but my sex is @cap{1:hige}@cap{2:ehe}.
 // @cap tag C C++ Python JS "Go language"
 
 #endif
+//@cap brief is end line brief
