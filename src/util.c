@@ -47,6 +47,20 @@ warn(char const* fmt, ...) {
 }
 
 char*
+strdup(char const* src) {
+	size_t len = strlen(src);
+	char* dst = (char*) malloc(sizeof(char) * len + 1);  // +1 for final '\0'
+	if (!dst) {
+		return NULL;
+	}
+
+	memmove(dst, src, len);
+	dst[len] = '\0';
+
+	return dst;
+}
+
+char*
 strappend(char* dst, size_t dstsize, char const* src) {
 	if (!src) {
 		return dst;

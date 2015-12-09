@@ -6,6 +6,8 @@
 #include "config.h"
 #include "term.h"
 #include "buffer.h"
+#include "atcap.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

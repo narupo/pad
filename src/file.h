@@ -2,6 +2,8 @@
 #define FILE_H
 
 #include "util.h"
+#include "buffer.h"
+
 #include <errno.h>
 #include <limits.h>
 #include <unistd.h>

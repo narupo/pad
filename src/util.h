@@ -31,6 +31,9 @@ void
 warn(char const* fmt, ...);
 
 char*
+strdup(char const* src);
+
+char*
 strappend(char* dst, size_t dstsize, char const* src);
 
 char const*

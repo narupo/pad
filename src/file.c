@@ -162,32 +162,33 @@ file_mkdir(char const* dirpath, mode_t mode) {
 
 char*
 file_read_string(FILE* fin) {
+	// Check arguments
 	if (!fin || feof(fin)) {
 		WARN("Invalid stream");
 		return NULL;
 	}
 
-	fseek(fin, 0L, SEEK_END);
-	int len = ftell(fin);
-	fseek(fin, 0L, SEEK_SET);
-
-	char* dst = (char*) malloc(sizeof(char) * len + 1);  // +1 for final nul
-	if (!dst) {
-		WARN("Failed to allocate memory");
-		file_close(fin);
+	// Buffer for read stream
+	Buffer* buf = buffer_new();
+	if (!buf) {
+		WARN("Failed to construct buffer");
 		return NULL;
 	}
 
-	if (fread(dst, sizeof(char), len, fin) < len) {
-		WARN("Failed to fread");
-		file_close(fin);
-		free(dst);
-		return NULL;
+	// Read stream
+	int ch;
+	for (;;) {
+		ch = fgetc(fin);
+		if (ch == EOF || ferror(fin)) {
+			goto done;
+		}
+		buffer_push(buf, ch);
 	}
 
-	dst[len] = '\0';
-
-	return dst;
+done:
+	// Done
+	buffer_push(buf, '\0');
+	return buffer_escape_delete(buf);
 }
 
 #if defined(TEST_FILE)
