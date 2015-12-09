@@ -48,6 +48,9 @@ capcol_get_const(CapCol const* self);
 void
 capcol_display(CapCol const* self);
 
+void
+capcol_write_to(CapCol const* self, FILE* fout);
+
 CapCol*
 capcol_prev(CapCol* self);
 
@@ -76,6 +79,9 @@ caprow_find_tail(CapRow* self);
 CapRow*
 caprow_push(CapRow* self, CapCol* col); 
 
+CapRow*
+caprow_push_copy(CapRow* self, CapCol const* col);
+
 void
 caprow_pop(CapRow* self); 
 
@@ -88,11 +94,29 @@ caprow_clear(CapRow* self);
 void
 caprow_display(CapRow const* self);
 
+void
+caprow_write_to(CapRow const* self, FILE* fout);
+
 CapCol*
 caprow_col(CapRow* self);
 
 CapCol const*
 caprow_col_const(CapRow const* self);
+
+CapRow*
+caprow_next(CapRow* self);
+
+CapRow const*
+caprow_next_const(CapRow const* self);
+
+CapRow*
+caprow_prev(CapRow* self);
+
+CapRow const*
+caprow_prev_const(CapRow const* self);
+
+bool
+caprow_has_cols(CapRow const* self);
 
 /*******
 * CapFile *
@@ -121,5 +145,14 @@ capfile_clear(CapFile* self);
 
 void
 capfile_display(CapFile const* self);
+
+void
+capfile_write_to(CapFile const* self, FILE* fout);
+
+CapRow*
+capfile_row(CapFile* self);
+
+CapRow const*
+capfile_row_const(CapFile const* self);
 
 #endif

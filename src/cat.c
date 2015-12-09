@@ -146,7 +146,6 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 
 	for (; buffer_getline(buf, fin); ) {
 		char const* line = buffer_getc(buf);
-
 		CapRow* row = capparser_parse_line(parser, line);
 		row = capparser_convert_braces(parser, row, self->replace_list);
 
@@ -238,6 +237,59 @@ cat_usage(void) {
 		"\n"
 	);
 	exit(EXIT_FAILURE);
+}
+
+int
+cat_read_to_atcap(CapFile* dstfile, int argc, char* argv[]) {
+	// Not supported stdin mode
+	if (argc < 2) {
+		WARN("Invalid arguments");
+		return 1;
+	}
+
+	// Construct
+	Command* self = command_new(argc, argv);
+	if (!self) {
+		WARN("Failed to construct self");
+		return EXIT_FAILURE;
+	}
+
+	// Run
+	Config* config = config_new();
+	Buffer* buf = buffer_new();
+	CapParser* parser = capparser_new();
+
+	for (int i = self->optind; i < self->argc; ++i) {
+		char fname[NFILE_PATH];
+		if (!config_path_from_base(config, fname, sizeof fname, self->argv[i])) {
+			WARN("Failed to path from base \"%s\"", self->argv[i]);
+			continue;
+		}
+
+		FILE* fin = file_open(fname, "rb");
+		if (!fin) {
+			WARN("Failed to open file \"%s\"", fname);
+			continue;
+		}
+
+		// Read
+		for (; buffer_getline(buf, fin); ) {
+			char const* line = buffer_getc(buf);
+			CapRow* row = capparser_parse_line(parser, line);
+			row = capparser_convert_braces(parser, row, self->replace_list);
+			capfile_push(dstfile, row);
+		}
+
+		// Done
+		file_close(fin);
+	}
+
+	// Done
+	capparser_delete(parser);
+	buffer_delete(buf);
+	command_delete(self);
+	config_delete(config);
+	return 0;
 }
 
 int

@@ -46,7 +46,7 @@ exec_command(char const* basename, int argc, char** argv) {
 fail:
 	return EXIT_FAILURE;
 }
-
+/*
 bool
 do_make(char const* basename, FILE* fout, FILE* fin) {
 	// Construct buffer for read lines
@@ -100,6 +100,90 @@ fail_cmdline:
 
 fail_buffer:
 	return false;
+}
+*/
+
+int
+call_command(CapFile* dstfile, int argc, char* argv[]) {
+	char const* cmdname = argv[0];
+
+	if (strcmp(cmdname, "cat") == 0) {
+		return cat_read_to_atcap(dstfile, argc, argv);
+	} else if (strcmp(cmdname, "make") == 0) {
+
+	} else {
+		goto fail_unknown_name;
+	}
+
+	// Done
+	return 0;
+
+fail_unknown_name:
+	return 1;
+}
+
+bool
+do_make(char const* basename, FILE* fout, FILE* fin) {
+	// Make CapFile from stream
+	CapFile* dstfile = capfile_new();
+	CapParser* parser = capparser_new();
+	Buffer* buf = buffer_new();
+
+	for (; buffer_getline(buf, fin); ) {
+		// Make row from line
+		char const* line = buffer_get_const(buf);
+		CapRow* row = capparser_parse_line(parser, line);
+
+		// If first col is command then
+		CapCol* col = caprow_col(row);
+		CapColType curtype = capcol_type(col);
+
+		if (curtype == CapColCommand) {
+			// Read from command to CapFile
+			char const* colval = capcol_get_const(col);
+			CsvLine* cmdline = csvline_new_parse_line(colval, ' ');
+			int argc = csvline_length(cmdline);
+			char** argv = csvline_escape_delete(cmdline);
+
+			// Read
+			call_command(dstfile, argc, argv);
+
+			// Done
+			for (int i = 0; i < argc; ++i) {
+				free(argv[i]);
+			}
+			free(argv);
+			caprow_delete(row);
+
+		} else {
+			capfile_push(dstfile, row);
+		}
+	}
+
+	// Control CapFile
+	for (CapRow const* row = capfile_row_const(dstfile); row; row = caprow_next_const(row)) {
+		int endch = '\n';
+		for (CapCol const* col = caprow_col_const(row); col; col = capcol_next_const(col)) {
+			switch (capcol_type(col)) {
+				case CapColText:
+					printf("%s", capcol_get_const(col));
+					endch = '\n';
+					break;
+				default:
+					endch = 0;
+					break;
+			}
+		}
+		if (endch) {
+			printf("%c", endch);
+		}
+	}
+
+	// Done
+	capparser_delete(parser);
+	buffer_delete(buf);
+	capfile_delete(dstfile);
+	return true;
 }
 
 int

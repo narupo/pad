@@ -106,7 +106,7 @@ self_cols_push_copy(CsvLine* self, char const* col) {
 	// Check capacity
 	if (self->length >= self->capacity) {
 		size_t newcapa = self->capacity * 2;
-		char** cols = (char**) realloc(self->cols, sizeof(char*) * newcapa + 1);  // +1 for final null
+		char** cols = (char**) realloc(self->cols, sizeof(char*) * newcapa + sizeof(char*));  // +1 for final null
 		if (!cols) {
 			WARN("Failed to push copy");
 			return false;
@@ -229,6 +229,31 @@ csvline_columns(CsvLine const* self, size_t index) {
 	}
 	return self->cols[index];
 }
+
+size_t
+csvline_length(CsvLine const* self) {
+	return self->length;
+}
+
+char const*
+csvline_get_const(CsvLine const* self, size_t index) {
+	if (index >= self->length) {
+		WARN("Index out of range");
+		return NULL;
+	}
+	return self->cols[index];
+
+}
+
+char*
+csvline_get(CsvLine* self, size_t index) {
+	if (index >= self->length) {
+		WARN("Index out of range");
+		return NULL;
+	}
+	return self->cols[index];	
+}
+
 
 /*******
 * Test *

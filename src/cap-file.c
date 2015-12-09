@@ -89,6 +89,11 @@ capcol_display(CapCol const* self) {
 	printf("[%d:%s]", self->type, buffer_get_const(self->buffer));
 }
 
+void
+capcol_write_to(CapCol const* self, FILE* fout) {
+	fprintf(fout, "%s", buffer_get_const(self->buffer));
+}
+
 CapCol*
 capcol_prev(CapCol* self) {
 	return self->prev;
@@ -167,6 +172,13 @@ caprow_push(CapRow* self, CapCol* col) {
 	return self;
 }
 
+CapRow*
+caprow_push_copy(CapRow* self, CapCol const* col) {
+	CapCol* copycol = capcol_new_str(buffer_get_const(col->buffer));
+	capcol_set_type(copycol, col->type);
+	return caprow_push(self, copycol);
+}
+
 void
 caprow_pop(CapRow* self) {
 	CapCol* tail = caprow_find_tail(self);
@@ -223,6 +235,14 @@ caprow_display(CapRow const* self) {
 	printf("\n");
 }
 
+void
+caprow_write_to(CapRow const* self, FILE* fout) {
+	for (CapCol const* col = self->col; col; col = col->next) {
+		capcol_write_to(col, fout);
+	}
+	printf("\n");	
+}
+
 CapCol*
 caprow_col(CapRow* self) {
 	return self->col;
@@ -231,6 +251,31 @@ caprow_col(CapRow* self) {
 CapCol const*
 caprow_col_const(CapRow const* self) {
 	return self->col;
+}
+
+bool
+caprow_has_cols(CapRow const* self) {
+	return self->col != NULL;
+}
+
+CapRow*
+caprow_next(CapRow* self) {
+	return self->next;
+}
+
+CapRow const*
+caprow_next_const(CapRow const* self) {
+	return self->next;
+}
+
+CapRow*
+caprow_prev(CapRow* self) {
+	return self->prev;
+}
+
+CapRow const*
+caprow_prev_const(CapRow const* self) {
+	return self->prev;
 }
 
 /**********
@@ -338,11 +383,28 @@ capfile_clear(CapFile* self) {
 	self->row = NULL;
 }
 
+CapRow*
+capfile_row(CapFile* self) {
+	return self->row;
+}
+
+CapRow const*
+capfile_row_const(CapFile const* self) {
+	return self->row;
+}
+
 void
 capfile_display(CapFile const* self) {
 	for (CapRow const* row = self->row; row; row = row->next) {
 		caprow_display(row);
 	}
+}
+
+void
+capfile_write_to(CapFile const* self, FILE* fout) {
+	for (CapRow const* row = self->row; row; row = row->next) {
+		caprow_write_to(row, fout);
+	}	
 }
 
 #if defined(TEST_PAGE)

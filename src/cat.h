@@ -21,5 +21,8 @@ cat_usage(void);
 int
 cat_main(int argc, char* argv[]);
 
+int
+cat_read_to_atcap(CapFile* dst, int argc, char* argv[]);
+
 #endif
 

@@ -6,6 +6,8 @@
 #include "config.h"
 #include "file.h"
 #include "csvline.h"
+#include "atcap.h"
+#include "cap-file.h"
 
 #include "cat.h"
 
