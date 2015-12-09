@@ -1,8 +1,8 @@
 #include "cap-file.h"
 
-/******
+/*********
 * CapCol *
-******/
+*********/
 
 struct CapCol {
 	CapColType type;
@@ -33,7 +33,7 @@ capcol_new(void) {
 		return NULL;
 	}
 
-	self->type = ColText;
+	self->type = CapColText;
 
 	return self;
 }
@@ -53,15 +53,20 @@ capcol_new_str(char const* value) {
 		return NULL;
 	}
 
-	self->type = ColText;
+	self->type = CapColText;
 
 	return self;
 }
 
 void
 capcol_set_copy(CapCol* self, char const* value) {
+	char* cpy = strdup(value);
+
 	buffer_clear(self->buffer);
-	buffer_push_str(self->buffer, value);
+	buffer_push_str(self->buffer, cpy);
+	buffer_push(self->buffer, '\0');
+
+	free(cpy);
 }
 
 void
@@ -74,9 +79,34 @@ capcol_type(CapCol const* self) {
 	return self->type;
 }
 
+char const*
+capcol_get_const(CapCol const* self) {
+	return buffer_get_const(self->buffer);
+}
+
 void
 capcol_display(CapCol const* self) {
 	printf("[%d:%s]", self->type, buffer_get_const(self->buffer));
+}
+
+CapCol*
+capcol_prev(CapCol* self) {
+	return self->prev;
+}
+
+CapCol*
+capcol_next(CapCol* self) {
+	return self->next;
+}
+
+CapCol const*
+capcol_prev_const(CapCol const* self) {
+	return self->prev;
+}
+
+CapCol const*
+capcol_next_const(CapCol const* self) {
+	return self->next;
 }
 
 /*********
@@ -193,9 +223,19 @@ caprow_display(CapRow const* self) {
 	printf("\n");
 }
 
-/*******
+CapCol*
+caprow_col(CapRow* self) {
+	return self->col;
+}
+
+CapCol const*
+caprow_col_const(CapRow const* self) {
+	return self->col;
+}
+
+/**********
 * CapFile *
-*******/
+**********/
 
 struct CapFile {
 	CapRow* row;
@@ -364,13 +404,13 @@ test_remove(int argc, char* argv[]) {
 	caprow_push(row, col);
 
 	col = capcol_new_str("223");
-	capcol_set_type(col, ColBrief);
+	capcol_set_type(col, CapColBrief);
 	caprow_push(row, col);
 
 	col = capcol_new_str("323");
 	caprow_push(row, col);
 
-	caprow_remove_cols(row, ColBrief);
+	caprow_remove_cols(row, CapColBrief);
 
 	for (CapCol* col = row->col; col; col = col->next) {
 		printf("[%d:%s]\n", col->type, buffer_get_const(col->buffer));

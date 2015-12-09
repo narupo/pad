@@ -17,7 +17,7 @@ struct Command {
 	int argc;
 	char** argv;
 	int optind;  // getopt
-	char* replace_list[10];
+	StringArray* replace_list;
 };
 
 static bool
@@ -36,12 +36,7 @@ command_parse_options(Command* self);
 static void
 command_delete(Command* self) {
 	if (self) {
-		for (int i = 0; i < NUMOF(self->replace_list); ++i) {
-			// printf("%2d:%s\n", i, self->replace_list[i]);
-			if (self->replace_list[i]) {
-				free(self->replace_list[i]);
-			}
-		}
+		strarray_delete(self->replace_list);
 		free(self);
 	}
 }
@@ -52,6 +47,13 @@ command_new(int argc, char* argv[]) {
 	Command* self = (Command*) calloc(1, sizeof(Command));
 	if (!self) {
 		WARN("Failed to construct");
+		return NULL;
+	}
+
+	// Replace list
+	if (!(self->replace_list = strarray_new())) {
+		WARN("Failed to construct replace list");
+		free(self);
 		return NULL;
 	}
 
@@ -106,7 +108,7 @@ command_parse_options(Command* self) {
 			cat_usage();
 			break;
 		case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-			self->replace_list[cur - '0'] = strdup(optarg);
+			strarray_push_copy(self->replace_list, optarg);
 			break;
 		case '?':
 		default:
@@ -128,79 +130,6 @@ command_parse_options(Command* self) {
 	return true;
 }
 
-static int
-command_parse_line(Command* self, Config const* config, FILE* fout, char const* line) {
-	int mode = 0;
-	char const* atcap = "@cap";
-	size_t atcaplen = strlen(atcap);
-
-	char const* repval = NULL;
-
-	for (char const* p = line; *p; ++p) {
-		int ch = *p;
-
-		switch (mode) {
-			case 0:
-				if (strncmp(p, atcap, 4) == 0) {
-					p += atcaplen - 1;  // -1 for ++p
-					mode = 1;
-				} else {
-					fputc(ch, fout);
-				}
-				break;
-			case 1:
-				if (ch == '{') {
-					mode = 2;
-				}
-				break;
-			case 2:
-				if (ch == '}') {
-					mode = 0;
-				} else if (isdigit(ch)) {
-					mode = 3;
-					repval = self->replace_list[ch - '0'];
-				}
-				break;
-			case 3:
-				if (ch == ':') {
-					mode = 4;
-				} else if (ch == '}') {
-					mode = 0;
-				}
-				break;
-			case 4:  // next of ':'
-				if (ch == '}') {
-					mode = 0;
-					if (repval) {
-						printf("%s", repval);
-					}
-				} else {
-					if (!repval) {
-						mode = 5;
-						fputc(ch, fout);
-					} else {
-						mode = 6;
-						printf("%s", repval);
-					}
-				}
-				break;
-			case 5:  // Display default value
-				if (ch == '}') {
-					mode = 0;
-				} else {
-					fputc(ch, fout);
-				}
-				break;
-			case 6:  // Display replace value
-				if (ch == '}') {
-					mode = 0;
-				}
-				break;
-		}
-	}
-	return 0;
-}
-
 /**********
 * Writter *
 **********/
@@ -213,13 +142,30 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 		goto fail_buffer;
 	}
 
+	CapParser* parser = capparser_new();
+
 	for (; buffer_getline(buf, fin); ) {
 		char const* line = buffer_getc(buf);
-		command_parse_line(self, config, fout, line);
-		fputc('\n', fout);
+
+		CapRow* row = capparser_parse_line(parser, line);
+		row = capparser_convert_braces(parser, row, self->replace_list);
+
+		int endline = '\n';
+		for (CapCol const* col = caprow_col(row); col; col = capcol_next_const(col)) {
+			if (capcol_type(col) == CapColText) {
+				fprintf(fout, "%s", capcol_get_const(col));
+				endline = '\n';
+			} else {
+				endline = 0;
+			}
+		}
+		fprintf(fout, "%c", endline);
+
+		caprow_delete(row);
 	}
 
 	// Done
+	capparser_delete(parser);
 	buffer_delete(buf);
 	return 0;
 
@@ -227,12 +173,6 @@ fail_buffer:
 	return 1;
 }
 
-/*
-static int
-command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
-	return 0;
-}
-*/
 /*********
 * Runner *
 *********/

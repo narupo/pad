@@ -13,16 +13,16 @@ typedef struct CapFile CapFile;
 ***************/
 
 typedef enum {
-	ColText = 1,
-	ColBrief,
-	ColTag,
-	ColBrace,
-	ColCommand,
+	CapColText = 1,
+	CapColBrief,
+	CapColTag,
+	CapColBrace,
+	CapColCommand,
 } CapColType;
 
-/******
+/*********
 * CapCol *
-******/
+*********/
 
 void
 capcol_delete(CapCol* self); 
@@ -42,12 +42,27 @@ capcol_set_type(CapCol* self, CapColType type);
 CapColType
 capcol_type(CapCol const* self);
 
+char const*
+capcol_get_const(CapCol const* self);
+
 void
 capcol_display(CapCol const* self);
 
-/******
+CapCol*
+capcol_prev(CapCol* self);
+
+CapCol*
+capcol_next(CapCol* self);
+
+CapCol const*
+capcol_prev_const(CapCol const* self);
+
+CapCol const*
+capcol_next_const(CapCol const* self);
+
+/*********
 * CapRow *
-******/
+*********/
 
 void
 caprow_delete(CapRow* self); 
@@ -72,6 +87,12 @@ caprow_clear(CapRow* self);
 
 void
 caprow_display(CapRow const* self);
+
+CapCol*
+caprow_col(CapRow* self);
+
+CapCol const*
+caprow_col_const(CapRow const* self);
 
 /*******
 * CapFile *

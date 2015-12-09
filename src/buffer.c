@@ -147,6 +147,17 @@ fail:
 	return 0;
 }
 
+int
+buffer_pop(Buffer* self) {
+	int ch = 0;
+
+	if (self->length) {
+		ch = self->buffer[--self->length];
+	}
+
+	return ch;
+}
+
 size_t
 buffer_push_str(Buffer* self, char const* str) {
 	for (char const* p = str; *p; ++p) {
