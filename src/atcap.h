@@ -12,6 +12,43 @@
 #include <ctype.h>
 
 typedef struct AtCap AtCap;
+typedef struct CapParser CapParser;
+
+/************
+* CapParser *
+************/
+
+/****************************
+* CapParser: Delete and New *
+****************************/
+
+void
+capparser_delete(CapParser* self); 
+
+CapParser*
+capparser_new(void); 
+
+/********************
+* CapParser: Runner *
+********************/
+
+CapRow*
+capparser_parse_line(CapParser* self, char const* line); 
+
+/***********************
+* CapParser: Convertor *
+***********************/
+
+CapRow*
+capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* newbraces); 
+
+/********
+* AtCap *
+********/
+
+/*****************
+* Delete and New *
+*****************/
 
 void
 atcap_delete(AtCap* self); 
@@ -19,19 +56,19 @@ atcap_delete(AtCap* self);
 AtCap*
 atcap_new(void); 
 
-AtCap*
-atcap_new_from_file(char const* fname);
+/*********
+* Setter *
+*********/
 
-AtCap*
-atcap_new_from_stream(FILE* stream);
+void
+atcap_clear(AtCap* self); 
 
-// @cap brief This is brief string.
-
-AtCap*
-atcap_parse_stream(AtCap* self, FILE* stream);
+/*********
+* Getter *
+*********/
 
 CapFile const*
-atcap_capfile_const(AtCap const* self);
+atcap_capfile_const(AtCap const* self); 
 
 /*
 @cap brief This is brief string 2.

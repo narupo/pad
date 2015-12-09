@@ -7,6 +7,7 @@
 #include "term.h"
 #include "buffer.h"
 #include "atcap.h"
+#include "strarray.h"
 
 #include <stdio.h>
 #include <stdlib.h>

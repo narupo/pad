@@ -1,8 +1,6 @@
 #include "atcap.h"
 
-typedef struct CapParser CapParser;
 typedef	int (*CapParserMode)(CapParser*);
-
 
 struct AtCap {
 	CapFile* capfile;
@@ -93,7 +91,7 @@ capparser_mode_first(CapParser* self) {
 
 	if (is_newline(*self->cur)) {
 		// Buffer
-		capparser_push_col(self, ColText);
+		capparser_push_col(self, CapColText);
 		++self->cur;
 		return EOF;
 
@@ -102,7 +100,7 @@ capparser_mode_first(CapParser* self) {
 		self->mode = capparser_mode_atcap;
 		self->cur += strlen("@cap");
 		if (buffer_length(self->buf)) {
-			capparser_push_col(self, ColText);
+			capparser_push_col(self, CapColText);
 		}
 
 	} else {
@@ -151,10 +149,10 @@ capparser_mode_brief(CapParser* self) {
 	capparser_print_mode(self, "brief");
 
 	if (is_newline(*self->cur)) {
-		capparser_push_col(self, ColBrief);
+		capparser_push_col(self, CapColBrief);
 
 		// This row is brief column only
-		capparser_remove_cols(self, ColText);
+		capparser_remove_cols(self, CapColText);
 		
 		self->mode = capparser_mode_first;
 		++self->cur;
@@ -243,12 +241,12 @@ capparser_mode_tag(CapParser* self) {
 
 		for (int i = 0; i < strarray_length(arr); ++i) {
 			char const* tag = strarray_get_const(arr, i);
-			capparser_push_capcol_str(self, tag, ColTag);
+			capparser_push_capcol_str(self, tag, CapColTag);
 		}
 		strarray_delete(arr);
 
 		// This row is tag of column only
-		capparser_remove_cols(self, ColText);
+		capparser_remove_cols(self, CapColText);
 
 		// Go to first state
 		self->mode = capparser_mode_first;
@@ -270,11 +268,12 @@ capparser_mode_command(CapParser* self) {
 	capparser_print_mode(self, "command");
 
 	if (is_newline(*self->cur)) {
-		capparser_push_col(self, ColCommand);
+		capparser_push_col(self, CapColCommand);
 		self->mode = capparser_mode_first;
 
 		++self->cur;
 		return EOF;
+
 	} else {
 		buffer_push(self->buf, *self->cur);
 	
@@ -288,14 +287,14 @@ capparser_mode_brace(CapParser* self) {
 	capparser_print_mode(self, "brace");
 
 	if (is_newline(*self->cur)) {
-		capparser_push_col(self, ColBrace);
+		capparser_push_col(self, CapColBrace);
 		self->mode = capparser_mode_first;
 
 		++self->cur;
 		return EOF;
 
 	} else if (*self->cur == '}') {
-		capparser_push_col(self, ColBrace);
+		capparser_push_col(self, CapColBrace);
 		self->mode = capparser_mode_first;
 
 	} else {
@@ -358,6 +357,50 @@ capparser_parse_line(CapParser* self, char const* line) {
 	CapRow* row = self->row;
 	self->row = caprow_new();
 
+	return row;
+}
+
+/***********************
+* CapParser: Convertor *
+***********************/
+
+CapRow*
+capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* braces) {
+	for (CapCol* col = caprow_col(row); col; col = capcol_next(col)) {
+		switch (capcol_type(col)) {
+			case CapColBrace: {
+				// Get index for repace
+				char numstr[10] = {0};
+				char const* val = capcol_get_const(col);
+				int i;
+
+				for (i = 0; i < sizeof(numstr)-1 && val[i]; ++i) { 
+					if (val[i] == ':') {
+						break;
+					} else {
+						numstr[i] = val[i];
+					}
+				}
+				numstr[i] = '\0';
+				
+				// Find replace value
+				int index = atoi(numstr);
+				char const* rep = strarray_get_const(braces, index);
+
+				if (rep) {
+					// Found, replace
+					capcol_set_copy(col, rep);
+				} else {
+					// Not found, replace default value
+					capcol_set_copy(col, val + i + 1);  // +1 for ':'
+				}
+				capcol_set_type(col, CapColText);
+
+			} break;
+			default:
+				break;
+		}
+	}
 	return row;
 }
 
@@ -432,6 +475,12 @@ test_atcap_line(int argc, char* argv[]) {
 		}
 	}
 
+	StringArray* braces = strarray_new();
+	strarray_push_copy(braces, "Linux");
+	strarray_push_copy(braces, "Unix");
+	strarray_push_copy(braces, "Mac");
+	strarray_push_copy(braces, "Windows");
+
 	CapParser* capparser = capparser_new();
 	CapFile* capfile = capfile_new();
 	Buffer* buf = buffer_new();
@@ -440,6 +489,7 @@ test_atcap_line(int argc, char* argv[]) {
 		char const* line = buffer_get_const(buf);
 
 		CapRow* row = capparser_parse_line(capparser, line);
+		row = capparser_convert_braces(capparser, row, braces);
 		caprow_display(row);
 		
 		capfile_push(capfile, row);
@@ -447,6 +497,7 @@ test_atcap_line(int argc, char* argv[]) {
 
 	capfile_display(capfile);
 
+	strarray_delete(braces);
 	capparser_delete(capparser);
 	capfile_delete(capfile);
 	buffer_delete(buf);

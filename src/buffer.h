@@ -107,6 +107,9 @@ buffer_clear(Buffer* self);
 size_t
 buffer_push(Buffer* self, int ch);
 
+int
+buffer_pop(Buffer* self);
+
 /**
  *
  */
