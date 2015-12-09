@@ -269,6 +269,7 @@ capparser_mode_command(CapParser* self) {
 
 	if (is_newline(*self->cur)) {
 		capparser_push_col(self, CapColCommand);
+		capparser_remove_cols(self, CapColText);
 		self->mode = capparser_mode_first;
 
 		++self->cur;
@@ -440,6 +441,61 @@ atcap_new(void) {
 	return self;
 }
 
+AtCap*
+atcap_new_from_stream(FILE* fin) {
+	// Check arguments
+	if (feof(fin)) {
+		WARN("Invalid arguments");
+		return NULL;
+	}
+
+	// Construct
+	AtCap* self = atcap_new();
+	if (!self) {
+		WARN("Failed to construct");
+		return NULL;
+	}
+
+	// Parser
+	CapParser* parser = capparser_new();
+	if (!parser) {
+		WARN("Failed to construct parser");
+		atcap_delete(self);
+		return NULL;
+	}
+
+	// Buffer for parse
+	Buffer* buf = buffer_new();
+	if (!buf) {
+		WARN("Failed to construct buffer");
+		capparser_delete(parser);
+		atcap_delete(self);
+		return NULL;
+	}
+
+	// Read lines
+	CapFile* capfile = self->capfile;
+
+	for (; buffer_getline(buf, fin); ) {
+		char const* line = buffer_get_const(buf);
+
+		CapRow* row = capparser_parse_line(parser, line);
+		if (!row) {
+			WARN("Failed to parse line");
+			buffer_delete(buf);
+			capparser_delete(parser);
+			atcap_delete(self);
+			return NULL;
+		}
+		capfile_push(capfile, row);
+	}
+
+	// Done
+	capparser_delete(parser);
+	buffer_delete(buf);
+	return self;
+}
+
 /*********
 * Setter *
 *********/
@@ -455,6 +511,11 @@ atcap_clear(AtCap* self) {
 
 CapFile const*
 atcap_capfile_const(AtCap const* self) {
+	return self->capfile;
+}
+
+CapFile*
+atcap_capfile(AtCap* self) {
 	return self->capfile;
 }
 

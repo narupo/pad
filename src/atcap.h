@@ -42,9 +42,10 @@ capparser_parse_line(CapParser* self, char const* line);
 CapRow*
 capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* newbraces); 
 
-/********
-* AtCap *
-********/
+/*******************************
+ * AtCap                       *
+ * AtCap is wrapper of CapFile *
+ ******************************/
 
 /*****************
 * Delete and New *
@@ -55,6 +56,9 @@ atcap_delete(AtCap* self);
 
 AtCap*
 atcap_new(void); 
+
+AtCap*
+atcap_new_from_stream(FILE* stream);
 
 /*********
 * Setter *
@@ -67,8 +71,11 @@ atcap_clear(AtCap* self);
 * Getter *
 *********/
 
+CapFile*
+atcap_capfile(AtCap* self);
+
 CapFile const*
-atcap_capfile_const(AtCap const* self); 
+atcap_capfile_const(AtCap const* self);
 
 /*
 @cap brief This is brief string 2.
