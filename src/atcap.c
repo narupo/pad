@@ -27,6 +27,7 @@ static int capparser_mode_brief(CapParser* self);
 static int capparser_mode_tag(CapParser* self);
 static int capparser_mode_command(CapParser* self);
 static int capparser_mode_brace(CapParser* self);
+static int capparser_mode_mark(CapParser* self);
 
 /******************
 * CapParser: Util *
@@ -126,6 +127,7 @@ capparser_mode_atcap(CapParser* self) {
 		{"{",  capparser_mode_brace},
 		{"cat", capparser_mode_command},
 		{"make", capparser_mode_command},
+		{"mark", capparser_mode_mark},
 		{0},
 	};
 
@@ -297,6 +299,27 @@ capparser_mode_brace(CapParser* self) {
 	} else if (*self->cur == '}') {
 		capparser_push_col(self, CapColBrace);
 		self->mode = capparser_mode_first;
+
+	} else {
+		buffer_push(self->buf, *self->cur);
+	}
+
+	++self->cur;
+	return 0;
+}
+
+static int
+capparser_mode_mark(CapParser* self) {
+	capparser_print_mode(self, "mark");
+
+	if (is_newline(*self->cur)) {
+		buffer_push(self->buf, '\0');
+		buffer_strip(self->buf, " \t");
+		capparser_push_col(self, CapColMark);
+		self->mode = capparser_mode_first;
+
+		++self->cur;
+		return EOF;
 
 	} else {
 		buffer_push(self->buf, *self->cur);

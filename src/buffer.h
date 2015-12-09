@@ -158,5 +158,8 @@ buffer_getline(Buffer* self, FILE* stream);
 bool
 buffer_copy_str(Buffer* self, char const* src);
 
+void
+buffer_strip(Buffer* self, char const* delims);
+
 #endif
 

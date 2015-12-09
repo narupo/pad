@@ -253,6 +253,10 @@ command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout)
 
 		// Display column
 		for (; col; col = capcol_next_const(col)) {
+			// Text column only
+			if (capcol_type(col) != CapColText) {
+				continue;
+			}
 			capcol_write_to(col, fout);
 		}
 		printf("\n");
