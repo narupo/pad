@@ -130,24 +130,33 @@ command_parse_options(Command* self) {
 	return true;
 }
 
+/*********
+* Reader *
+*********/
+
+static CapRow*
+cat_read_row(Command const* self, Buffer const* buffer, CapParser* parser) {
+	char const* line = buffer_get_const(buffer);
+	CapRow* row = capparser_parse_line(parser, line);
+	return capparser_convert_braces(parser, row, self->replace_list);
+}
+
 /**********
 * Writter *
 **********/
 
 static int
 command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
-	Buffer* buf = buffer_new();
-	if (!buf) {
+	Buffer* buffer = buffer_new();
+	if (!buffer) {
 		WARN("Failed to construct buffer");
 		goto fail_buffer;
 	}
 
 	CapParser* parser = capparser_new();
 
-	for (; buffer_getline(buf, fin); ) {
-		char const* line = buffer_getc(buf);
-		CapRow* row = capparser_parse_line(parser, line);
-		row = capparser_convert_braces(parser, row, self->replace_list);
+	for (; buffer_getline(buffer, fin); ) {
+		CapRow* row = cat_read_row(self, buffer, parser);
 
 		int endline = '\n';
 		for (CapCol const* col = caprow_col(row); col; col = capcol_next_const(col)) {
@@ -167,7 +176,7 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 
 	// Done
 	capparser_delete(parser);
-	buffer_delete(buf);
+	buffer_delete(buffer);
 	return 0;
 
 fail_buffer:
@@ -242,13 +251,7 @@ cat_usage(void) {
 }
 
 int
-cat_read_to_atcap(CapFile* dstfile, int argc, char* argv[]) {
-	// Not supported stdin mode
-	if (argc < 2) {
-		WARN("Invalid arguments");
-		return 1;
-	}
-
+cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	// Construct
 	Command* self = command_new(argc, argv);
 	if (!self) {
@@ -257,9 +260,8 @@ cat_read_to_atcap(CapFile* dstfile, int argc, char* argv[]) {
 	}
 
 	// Run
-	Config* config = config_new();
-	Buffer* buf = buffer_new();
 	CapParser* parser = capparser_new();
+	Buffer* buffer = buffer_new();
 
 	for (int i = self->optind; i < self->argc; ++i) {
 		char fname[NFILE_PATH];
@@ -275,10 +277,8 @@ cat_read_to_atcap(CapFile* dstfile, int argc, char* argv[]) {
 		}
 
 		// Read
-		for (; buffer_getline(buf, fin); ) {
-			char const* line = buffer_getc(buf);
-			CapRow* row = capparser_parse_line(parser, line);
-			row = capparser_convert_braces(parser, row, self->replace_list);
+		for (; buffer_getline(buffer, fin); ) {
+			CapRow* row = cat_read_row(self, buffer, parser);
 			capfile_push(dstfile, row);
 		}
 
@@ -288,9 +288,8 @@ cat_read_to_atcap(CapFile* dstfile, int argc, char* argv[]) {
 
 	// Done
 	capparser_delete(parser);
-	buffer_delete(buf);
+	buffer_delete(buffer);
 	command_delete(self);
-	config_delete(config);
 	return 0;
 }
 
