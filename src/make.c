@@ -161,23 +161,45 @@ do_make(char const* basename, FILE* fout, FILE* fin) {
 	}
 
 	// Control CapFile
-	for (CapRow const* row = capfile_row_const(dstfile); row; row = caprow_next_const(row)) {
-		int endch = '\n';
-		for (CapCol const* col = caprow_col_const(row); col; col = capcol_next_const(col)) {
+	for (CapRow* row = capfile_row(dstfile); row; ) {
+
+		CapCol* col = caprow_col(row);
+		CapColType type = capcol_type(col);
+
+		if (type == CapColBrief) {
+			CapRow* tmp = row;
+			if (tmp == capfile_row(dstfile)) {
+				row = caprow_next(row);
+				continue;			
+			}
+
+			row = caprow_next(row);
+			caprow_unlink(tmp);
+			capfile_push_front(dstfile, tmp);
+
+		} else {
+			row = caprow_next(row);
+		}
+	}
+
+	// Display
+	for (CapRow* row = capfile_row(dstfile); row; row = caprow_next(row)) {
+		if (capcol_type(caprow_col(row)) != CapColText) {
+			continue;
+		}
+		for (CapCol* col = caprow_col(row); col; col = capcol_next(col)) {
 			switch (capcol_type(col)) {
 				case CapColText:
-					printf("%s", capcol_get_const(col));
-					endch = '\n';
+					capcol_write_to(col, fout);
 					break;
 				default:
-					endch = 0;
 					break;
 			}
 		}
-		if (endch) {
-			printf("%c", endch);
-		}
+		printf("\n");
 	}
+
+	// capfile_display(dstfile);
 
 	// Done
 	capparser_delete(parser);

@@ -197,6 +197,19 @@ caprow_pop(CapRow* self) {
 }
 
 void
+caprow_unlink(CapRow* self) {
+	if (self->prev) {
+		self->prev->next = self->next;
+		self->prev = NULL;
+	}
+
+	if (self->next) {
+		self->next->prev = self->prev;
+		self->next = NULL;
+	}
+}
+
+void
 caprow_remove_cols(CapRow* self, CapColType remtype) {
 	for (CapCol* cur = self->col; cur; ) {
 		CapCol* del = cur;
@@ -386,6 +399,11 @@ capfile_clear(CapFile* self) {
 CapRow*
 capfile_row(CapFile* self) {
 	return self->row;
+}
+
+void
+capfile_set_row(CapFile* self, CapRow* row) {
+	self->row = row;
 }
 
 CapRow const*
