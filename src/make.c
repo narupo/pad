@@ -267,7 +267,7 @@ command_open_input_stream(Command* self) {
 	FILE* fin = stdin;
 
 	// Has make name ?
-	if (self->argc >= self->optind) {
+	if (self->argc > self->optind) {
 		char const* basename = self->argv[1];  // Yes
 
 		// Get cap's make file path
