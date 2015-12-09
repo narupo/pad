@@ -95,6 +95,9 @@ void
 caprow_display(CapRow const* self);
 
 void
+caprow_unlink(CapRow* self);
+
+void
 caprow_write_to(CapRow const* self, FILE* fout);
 
 CapCol*
@@ -118,9 +121,9 @@ caprow_prev_const(CapRow const* self);
 bool
 caprow_has_cols(CapRow const* self);
 
-/*******
+/**********
 * CapFile *
-*******/
+**********/
 
 void
 capfile_delete(CapFile* self); 
@@ -151,6 +154,9 @@ capfile_write_to(CapFile const* self, FILE* fout);
 
 CapRow*
 capfile_row(CapFile* self);
+
+void
+capfile_set_row(CapFile* self, CapRow* row);
 
 CapRow const*
 capfile_row_const(CapFile const* self);

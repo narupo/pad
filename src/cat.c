@@ -158,7 +158,9 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 				endline = 0;
 			}
 		}
-		fprintf(fout, "%c", endline);
+		if (endline) {
+			fprintf(fout, "%c", endline);
+		}
 
 		caprow_delete(row);
 	}
