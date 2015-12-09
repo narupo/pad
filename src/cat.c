@@ -160,8 +160,11 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 
 		int endline = '\n';
 		for (CapCol const* col = caprow_col(row); col; col = capcol_next_const(col)) {
+
+			capcol_display(col);
+
 			if (capcol_type(col) == CapColText) {
-				fprintf(fout, "%s", capcol_get_const(col));
+				// fprintf(fout, "%s", capcol_get_const(col));
 				endline = '\n';
 			} else {
 				endline = 0;

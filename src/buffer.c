@@ -13,6 +13,21 @@ struct Buffer {
 	char* buffer;
 };
 
+#define SWAP(T, a, b) { \
+	T c = a; \
+	a = b; \
+	b = c; \
+} \
+
+void
+buffer_swap_other(Buffer* self, Buffer* other) {
+	SWAP(size_t, self->capacity, other->capacity);
+	SWAP(size_t, self->length, other->length);
+	SWAP(char*, self->buffer, other->buffer);
+}
+
+#undef SWAP
+
 void
 buffer_delete(Buffer* self) {
 	if (self) {
@@ -227,6 +242,37 @@ buffer_copy_str(Buffer* self, char const* src) {
 
 fail:
 	return false;
+}
+
+void
+buffer_strip(Buffer* self, char const* delims) {
+	char const* beg = self->buffer;
+	char const* end = self->buffer + self->length;
+	char const* newbeg = self->buffer;
+	char const* newend = self->buffer + self->length;
+
+	for (char const* p = beg; p < end; ++p) {
+		if (!strchr(delims, *p)) {
+			newbeg = p;
+			break;
+		}
+	}
+
+	for (char const* p = end-1; p > beg; --p) {
+		if (!strchr(delims, *p)) {
+			newend = p;
+			break;
+		}
+	}
+
+	Buffer* tmp = buffer_new_size(newend - newbeg + 1);
+	for (; newbeg <= newend;) {
+		buffer_push(tmp, *newbeg++);
+	}
+	buffer_push(tmp, '\0');
+
+	buffer_swap_other(self, tmp);
+	buffer_delete(tmp);
 }
 
 #if defined(TEST)
