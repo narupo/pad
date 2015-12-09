@@ -21,8 +21,12 @@ cat_usage(void);
 int
 cat_main(int argc, char* argv[]);
 
+/**
+ * This Interface for the cap make command
+ * Do not clear and delete CapFile because append row to it for make
+ */
 int
-cat_read_to_atcap(CapFile* dst, int argc, char* argv[]);
+cat_make(Config const* config, CapFile* dst, int argc, char* argv[]);
 
 #endif
 

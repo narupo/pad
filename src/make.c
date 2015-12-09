@@ -1,116 +1,171 @@
 #include "make.h"
 
-static char const* PROGNAME = "cap make";
+typedef struct Command Command;
 
-void _Noreturn
-make_usage(void) {
-	term_eprintf(
-		"cap make\n"
-		"\n"
-		"Usage:\n"
-		"\n"
-		"\tcap make [make-name] [options]\n"
-		"\n"
-		"The options are:\n"
-		"\n"
-		"\t-h, --help\tdisplay usage\n"
-		"\n"
-	);
-	exit(EXIT_FAILURE);
-}
+struct Command {
+	char const* name;
+	int argc;
+	int optind;
+	char** argv;
+	Config const* config;
+};
+
+/*************
+* Prototypes *
+*************/
+
+
+static bool
+command_parse_options(Command* self);;
+
+static void
+command_delete(Command* self);;
+
+static bool
+command_parse_options(Command* self);;
+
+/*****************
+* Delete and New *
+*****************/
+
+static void
+command_delete(Command* self); 
+
+static Command*
+command_new(Config const* config, int argc, char* argv[]); 
+
+/********
+* Parse *
+********/
+
+static bool
+command_parse_options(Command* self); 
+
+/*********
+* Runner *
+*********/
 
 int
-exec_command(char const* basename, int argc, char** argv) {
-	// Get command name
-	char const* cmdname = argv[0];
-	if (!cmdname) {
-		// WARN("Invalid command name \"%s\"", cmdname);
-		goto fail;
-	}
+make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]); 
 
-	// Select command by name
-	if (strcmp(cmdname, "cat") == 0) {
-		return cat_main(argc, argv);
-	} else if (strcmp(cmdname, "make") == 0) {
-		// Check circular reference
-		char const* makename = argv[1];
-		if (makename && strcmp(makename, basename) == 0) {
-			// Is circular reference
-			term_eprintf("Can't make because circular reference \"%s\" make \"%s\"\n", basename, makename);
-		} else {
-			// Recursive
-			return make_main(argc, argv);
-		}
-	}
+int
+command_call_command(Command* self, CapFile* dstfile, int argc, char* argv[]); 
 
-fail:
-	return EXIT_FAILURE;
+static CapFile*
+command_make_capfile_from_stream(Command* self, FILE* fin); 
+
+static int
+command_control_capfile(Command const* self, CapFile* dstfile); 
+
+static int
+command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout); 
+
+static FILE*
+command_open_input_stream(Command* self); 
+
+static int
+command_run(Command* self); 
+
+/*****************
+* Delete and New *
+*****************/
+
+static void
+command_delete(Command* self) {
+	if (self) {
+		free(self);
+	}
 }
-/*
-bool
-do_make(char const* basename, FILE* fout, FILE* fin) {
-	// Construct buffer for read lines
-	Buffer* buf = buffer_new();
-	if (!buf) {
-		WARN("Failed to construct buffer");
-		goto fail_buffer;
+
+static Command*
+command_new(Config const* config, int argc, char* argv[]) {
+	// Construct
+	Command* self = (Command*) calloc(1, sizeof(Command));
+	if (!self) {
+		WARN("Failed to construct");
+		return NULL;
 	}
 
-	// Read lines
-	for (; buffer_getline(buf, fin); ) {
-		char const* line = buffer_getc(buf);
-		char const* atcap = "@cap";
-		size_t atcaplen = strlen(atcap);
+	// Set values
+	self->name = argv[0];
+	self->argc = argc;
+	self->argv = argv;
+	self->config = config;
 
-		// If has cap's command line then
-		char* found = strstr(line, atcap);
-		if (!found) {
-			fprintf(fout, "%s\n", line);
-		} else {
-			// Parse command line
-			CsvLine* cmdline = csvline_new_parse_line(found + atcaplen, ' ');
-			if (!cmdline) {
-				WARN("Failed to construct CsvLine");
-				goto fail_cmdline;
-			}
-
-			// Execute command by command line
-			int argc = csvline_ncolumns(cmdline);
-			char** argv = csvline_escape_delete(cmdline);
-
-			if (exec_command(basename, argc, argv) != 0) {
-				// WARN("Failed to execute command");
-				// Nothing todo
-			}
-
-			// Free argv
-			for (int i = 0; i < argc; ++i) {
-				free(argv[i]);
-			}
-			free(argv);
-		}
+	// Parse program options
+	if (!command_parse_options(self)) {
+		WARN("Failed to parse options");
+		free(self);
+		return NULL;
 	}
 
 	// Done
-	buffer_delete(buf);
-	return true;
-
-fail_cmdline:
-	buffer_delete(buf);
-
-fail_buffer:
-	return false;
+	return self;
 }
-*/
+
+/********
+* Parse *
+********/
+
+static bool
+command_parse_options(Command* self) {
+	// Parse options
+	optind = 0;
+	
+	for (;;) {
+		static struct option longopts[] = {
+			{"help", no_argument, 0, 0},
+			{0},
+		};
+		int optsindex;
+
+		int cur = getopt_long(self->argc, self->argv, "h", longopts, &optsindex);
+		if (cur == -1) {
+			break;
+		}
+
+	again:
+		switch (cur) {
+		case 0: {
+			char const* name = longopts[optsindex].name;
+			if (strcmp("help", name) == 0) {
+				cur = 'h';
+				goto again;
+			}
+		} break;
+		case 'h':
+			command_delete(self);
+			exit(EXIT_FAILURE);
+			break;
+		case '?':
+		default: return false; break;
+		}
+	}
+
+	self->optind = optind;
+
+	// Check result of parse options
+	if (self->argc < self->optind) {
+		WARN("Failed to parse option");
+		return false;
+	}
+
+	// Done
+	return true;
+}
+
+/*********
+* Runner *
+*********/
 
 int
-call_command(CapFile* dstfile, int argc, char* argv[]) {
+command_call_command(Command* self, CapFile* dstfile, int argc, char* argv[]) {
 	char const* cmdname = argv[0];
 
 	if (strcmp(cmdname, "cat") == 0) {
-		return cat_read_to_atcap(dstfile, argc, argv);
+		return cat_make(self->config, dstfile, argc, argv);
 	} else if (strcmp(cmdname, "make") == 0) {
-
+		return make_make(self->config, dstfile, argc, argv);
 	} else {
 		goto fail_unknown_name;
 	}
@@ -122,9 +177,8 @@ fail_unknown_name:
 	return 1;
 }
 
-bool
-do_make(char const* basename, FILE* fout, FILE* fin) {
-	// Make CapFile from stream
+static CapFile*
+command_make_capfile_from_stream(Command* self, FILE* fin) {
 	CapFile* dstfile = capfile_new();
 	CapParser* parser = capparser_new();
 	Buffer* buf = buffer_new();
@@ -146,7 +200,7 @@ do_make(char const* basename, FILE* fout, FILE* fin) {
 			char** argv = csvline_escape_delete(cmdline);
 
 			// Read
-			call_command(dstfile, argc, argv);
+			command_call_command(self, dstfile, argc, argv);
 
 			// Done
 			for (int i = 0; i < argc; ++i) {
@@ -160,161 +214,153 @@ do_make(char const* basename, FILE* fout, FILE* fin) {
 		}
 	}
 
-	// Control CapFile
+	// Done
+	capparser_delete(parser);
+	buffer_delete(buf);
+	return dstfile;
+}
+
+static int
+command_control_capfile(Command const* self, CapFile* dstfile) {
+	// Control CapFile by @cap syntax
 	for (CapRow* row = capfile_row(dstfile); row; ) {
 
+		// Move brief row to front of capfile
 		CapCol* col = caprow_col(row);
 		CapColType type = capcol_type(col);
 
 		if (type == CapColBrief) {
-			CapRow* tmp = row;
-			if (tmp == capfile_row(dstfile)) {
-				row = caprow_next(row);
-				continue;			
-			}
-
-			row = caprow_next(row);
-			caprow_unlink(tmp);
-			capfile_push_front(dstfile, tmp);
-
+			CapRow* move = row;
+			row = caprow_next(row);  // Increment
+			capfile_move_to_front(dstfile, move);
 		} else {
-			row = caprow_next(row);
+			row = caprow_next(row);  // Increment
 		}
 	}
 
+	return 0;
+}
+
+static int
+command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout) {
 	// Display
-	for (CapRow* row = capfile_row(dstfile); row; row = caprow_next(row)) {
-		if (capcol_type(caprow_col(row)) != CapColText) {
+	for (CapRow const* row = capfile_row_const(dstfile); row; row = caprow_next_const(row)) {
+		// Text column only
+		CapCol const* col = caprow_col_const(row);
+		if (capcol_type(col) != CapColText) {
 			continue;
 		}
-		for (CapCol* col = caprow_col(row); col; col = capcol_next(col)) {
-			switch (capcol_type(col)) {
-				case CapColText:
-					capcol_write_to(col, fout);
-					break;
-				default:
-					break;
-			}
+
+		// Display column
+		for (; col; col = capcol_next_const(col)) {
+			capcol_write_to(col, fout);
 		}
 		printf("\n");
 	}
 
-	// capfile_display(dstfile);
-
-	// Done
-	capparser_delete(parser);
-	buffer_delete(buf);
-	capfile_delete(dstfile);
-	return true;
+	return 0;
 }
 
-int
-make_run(int argc, char* argv[]) {
+static FILE*
+command_open_input_stream(Command* self) {
 	// Default values
 	FILE* fin = stdin;
-	char const* basename = "";
-
-	// Load config
-	Config* config = config_new();
-	if (!config) {
-		WARN("Failed to construct config");
-		goto fail_config;
-	}
 
 	// Has make name ?
-	if (argc >= 2) {
-		basename = argv[1];  // Yes
+	if (self->argc >= self->optind) {
+		char const* basename = self->argv[1];  // Yes
 
 		// Get cap's make file path
 		char spath[NFILE_PATH];
-		if (!config_path_from_base(config, spath, sizeof spath, basename)) {
+		if (!config_path_from_base(self->config, spath, sizeof spath, basename)) {
 			WARN("Failed to path from base \"%s\"", basename);
-			goto fail_path_from_base;
+			return NULL;
 		}
 		
 		// Open cap's make file
 		fin = file_open(spath, "rb");
 		if (!fin) {
-			warn("%s: Failed to open file \"%s\"", PROGNAME, spath);
-			goto fail_file_open;
+			warn("%s: Failed to open file \"%s\"", self->name, spath);
+			return NULL;
 		}
 	}
 
+	return fin;
+}
+
+static int
+command_run(Command* self) {
+	// Open stream and make capfile by it
+	FILE* fin = command_open_input_stream(self);
+	CapFile* dstfile = command_make_capfile_from_stream(self, fin);
+
 	// Execute make
-	if (!do_make(basename, stdout, fin)) {
-		WARN("Failed to make");
-		goto fail_make;
-	}
+	command_control_capfile(self, dstfile);
+	command_display_capfile(self, dstfile, stdout);
+
+	// Done
+	capfile_delete(dstfile);
+	file_close(fin);
+	return 0;
+}
+
+/*******************
+* Public Interface *
+*******************/
+
+void _Noreturn
+make_usage(void) {
+	term_eprintf(
+		"cap make\n"
+		"\n"
+		"Usage:\n"
+		"\n"
+		"\tcap make [make-name] [options]\n"
+		"\n"
+		"The options are:\n"
+		"\n"
+		"\t-h, --help\tdisplay usage\n"
+		"\n"
+	);
+	exit(EXIT_FAILURE);
+}
+
+int
+make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
+	// Construct
+	Command* self = command_new(config, argc, argv);
+
+	// Make source capfile
+	FILE* fin = command_open_input_stream(self);
+	CapFile* srcfile = command_make_capfile_from_stream(self, fin);
+	command_control_capfile(self, srcfile);
+
+	// Link srcfile to dstfile
+	CapRow* srcrow = capfile_escape_delete(srcfile);
+	capfile_push(dstfile, srcrow);
 
 	// Done
 	file_close(fin);
-	config_delete(config);
+	command_delete(self);
 	return 0;
-
-fail_make:
-	file_close(fin);
-	config_delete(config);
-	return 4;
-
-fail_file_open:
-	config_delete(config);
-	return 3;
-
-fail_path_from_base:
-	config_delete(config);
-	return 2;
-
-fail_config:
-	return 1;
 }
 
 int
 make_main(int argc, char* argv[]) {
-	// Parse options
-	optind = 0;
+	Config* config = config_new();
+	Command* command = command_new(config, argc, argv);
 
-	for (;;) {
-		static struct option longopts[] = {
-			{"help", no_argument, 0, 0},
-			{0},
-		};
-		int optsindex;
-
-		int cur = getopt_long(argc, argv, "h", longopts, &optsindex);
-		if (cur == -1) {
-			break;
-		}
-
-	again:
-		switch (cur) {
-			case 0: {
-				char const* name = longopts[optsindex].name;
-				if (strcmp("help", name) == 0) {
-					cur = 'h';
-					goto again;
-				}
-			} break;
-			case 'h': {
-				make_usage();
-			} break;
-			case '?':
-			default: {
-				die("Unknown option");
-			} break;
-		}
-	}
-
-	if (argc < optind) {
-		die("Failed to parse option");
-	}
-
-	return make_run(argc, argv);
+	int res = command_run(command);
+	
+	command_delete(command);
+	config_delete(config);
+	return res;
 }
 
 #if defined(TEST_MAKE)
 int
 main(int argc, char* argv[]) {
-
-	return 0;
+	return make_main(argc, argv);
 }
 #endif
+

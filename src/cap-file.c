@@ -311,6 +311,16 @@ capfile_delete(CapFile* self) {
 	}
 }
 
+CapRow*
+capfile_escape_delete(CapFile* self) {
+	if (self) {
+		CapRow* escape = self->row;
+		free(self);
+		return escape;
+	}
+	return NULL;
+}
+
 CapFile*
 capfile_new(void) {
 	CapFile* self = (CapFile*) calloc(1, sizeof(CapFile));
@@ -423,6 +433,15 @@ capfile_write_to(CapFile const* self, FILE* fout) {
 	for (CapRow const* row = self->row; row; row = row->next) {
 		caprow_write_to(row, fout);
 	}	
+}
+
+void
+capfile_move_to_front(CapFile* self, CapRow* target) {
+	if (target == capfile_row(self)) {
+		return;			
+	}
+	caprow_unlink(target);
+	capfile_push_front(self, target);
 }
 
 #if defined(TEST_PAGE)

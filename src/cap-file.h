@@ -128,6 +128,9 @@ caprow_has_cols(CapRow const* self);
 void
 capfile_delete(CapFile* self); 
 
+CapRow*
+capfile_escape_delete(CapFile* self);
+
 CapFile*
 capfile_new(void); 
 
@@ -160,5 +163,8 @@ capfile_set_row(CapFile* self, CapRow* row);
 
 CapRow const*
 capfile_row_const(CapFile const* self);
+
+void
+capfile_move_to_front(CapFile* self, CapRow* target);
 
 #endif
