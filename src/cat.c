@@ -6,6 +6,10 @@
 #include <getopt.h>
 #include <string.h>
 
+/**********
+* Command *
+**********/
+
 typedef struct Command Command;
 
 struct Command {
@@ -24,6 +28,10 @@ command_delete(Command* self);
 
 static bool
 command_parse_options(Command* self);
+
+/*****************
+* Delete and New *
+*****************/
 
 static void
 command_delete(Command* self) {
@@ -62,6 +70,10 @@ command_new(int argc, char* argv[]) {
 	// Done
 	return self;
 }
+
+/********
+* Parse *
+********/
 
 static bool
 command_parse_options(Command* self) {
@@ -189,6 +201,10 @@ command_parse_line(Command* self, Config const* config, FILE* fout, char const* 
 	return 0;
 }
 
+/**********
+* Writter *
+**********/
+
 static int
 command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 	Buffer* buf = buffer_new();
@@ -210,6 +226,16 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 fail_buffer:
 	return 1;
 }
+
+/*
+static int
+command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
+	return 0;
+}
+*/
+/*********
+* Runner *
+*********/
 
 static int
 command_run(Command* self) {
@@ -252,6 +278,10 @@ fail_config:
 	return 1;
 }
 
+/*******************
+* Public Interface *
+*******************/
+
 void _Noreturn
 cat_usage(void) {
 	term_eprintf(
@@ -287,21 +317,13 @@ cat_main(int argc, char* argv[]) {
 	return res;	
 }
 
+/*******
+* Test *
+*******/
+
 #if defined(TEST_CAT)
 int
 main(int argc, char* argv[]) {
-	// Construct
-	Command* command = command_new(argc, argv);
-	if (!command) {
-		WARN("Failed to construct command");
-		return EXIT_FAILURE;
-	}
-
-	// Run
-	int res = command_run(command);
-
-	// Done
-	command_delete(command);
-	return res;
+	return cat_main(argc, argv);
 }
 #endif

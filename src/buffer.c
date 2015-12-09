@@ -31,6 +31,17 @@ buffer_safe_delete(Buffer** self) {
 	}
 }
 
+char*
+buffer_escape_delete(Buffer* self) {
+	if (self) {
+		// Start move semantics
+		char* buffer = self->buffer;
+		free(self);
+		return buffer;
+	}
+	return NULL;
+}
+
 Buffer*
 buffer_new(void) {
 	return buffer_new_size(NBUFFER_NEW_SIZE);
@@ -39,46 +50,50 @@ buffer_new(void) {
 Buffer*
 buffer_new_str(char const* src) {
 	Buffer* self = (Buffer*) calloc(1, sizeof(Buffer));
-	if (!self)
-		goto fail_0;
+	if (!self) {
+		goto fail_self;
+	}
 	
 	size_t len = strlen(src) + 1;  // +1 for final nul
 
 	self->capacity = len;
 	self->length = len;
 	self->buffer = (char*) calloc(self->capacity, sizeof(char));
-	if (!self->buffer)
-		goto fail_1;
+	if (!self->buffer) {
+		goto fail_buffer;
+	}
 
 	memmove(self->buffer, src, len);
 
 	return self;
 
-fail_1:
+fail_buffer:
 	free(self);
 
-fail_0:
+fail_self:
 	return NULL;
 }
 
 Buffer*
 buffer_new_size(size_t size) {
 	Buffer* self = (Buffer*) calloc(1, sizeof(Buffer));
-	if (!self)
-		goto fail_0;
+	if (!self) {
+		goto fail_self;
+	}
 	
 	self->capacity = size;
 	self->length = 0;
 	self->buffer = (char*) calloc(self->capacity, sizeof(char));
-	if (!self->buffer)
-		goto fail_1;
+	if (!self->buffer) {
+		goto fail_buffer;
+	}
 
 	return self;
 
-fail_1:
+fail_buffer:
 	free(self);
 
-fail_0:
+fail_self:
 	return NULL;
 }
 

@@ -26,6 +26,9 @@ buffer_delete(Buffer* self);
 void
 buffer_safe_delete(Buffer** self);
 
+char*
+buffer_escape_delete(Buffer* self);
+
 /**
  * Construct buffer.
  *

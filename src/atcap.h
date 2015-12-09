@@ -4,7 +4,7 @@
 #include "util.h"
 #include "buffer.h"
 #include "strarray.h"
-#include "page.h"
+#include "cap-file.h"
 #include "file.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,10 +22,16 @@ atcap_new(void);
 AtCap*
 atcap_new_from_file(char const* fname);
 
+AtCap*
+atcap_new_from_stream(FILE* stream);
+
 // @cap brief This is brief string.
 
 AtCap*
 atcap_parse_stream(AtCap* self, FILE* stream);
+
+CapFile const*
+atcap_capfile_const(AtCap const* self);
 
 /*
 @cap brief This is brief string 2.

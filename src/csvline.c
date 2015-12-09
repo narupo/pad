@@ -251,6 +251,6 @@ main(int argc, char* argv[]) {
 	}
 
 	csvline_delete(csvline);
-    return 0;
+	return 0;
 }
 #endif
