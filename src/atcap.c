@@ -132,6 +132,7 @@ capparser_mode_atcap(CapParser* self) {
 		{"{",  capparser_mode_brace},
 		{"cat", capparser_mode_command},
 		{"make", capparser_mode_command},
+		{"run", capparser_mode_command},
 		{"mark", capparser_mode_mark},
 		{0},
 	};
@@ -328,6 +329,7 @@ capparser_mode_mark(CapParser* self) {
 		buffer_push(self->buf, '\0');
 		buffer_strip(self->buf, " \t");
 		capparser_push_col(self, CapColMark);
+		capparser_remove_cols(self, CapColText);
 		self->mode = capparser_mode_first;
 
 		++self->cur;

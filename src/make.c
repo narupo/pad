@@ -8,6 +8,7 @@ struct Command {
 	int optind;
 	char** argv;
 	Config const* config;
+	bool is_debug;
 };
 
 /*************
@@ -87,7 +88,7 @@ command_new(Config const* config, int argc, char* argv[]) {
 	}
 
 	// Set values
-	self->name = argv[0];
+	self->name = "cap make";
 	self->argc = argc;
 	self->argv = argv;
 	self->config = config;
@@ -119,7 +120,7 @@ command_parse_options(Command* self) {
 		};
 		int optsindex;
 
-		int cur = getopt_long(self->argc, self->argv, "h", longopts, &optsindex);
+		int cur = getopt_long(self->argc, self->argv, "dh", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
@@ -136,6 +137,9 @@ command_parse_options(Command* self) {
 		case 'h':
 			command_delete(self);
 			exit(EXIT_FAILURE);
+			break;
+		case 'd':
+			self->is_debug = true;
 			break;
 		case '?':
 		default: return false; break;
@@ -164,8 +168,13 @@ command_call_command(Command* self, CapFile* dstfile, int argc, char* argv[]) {
 
 	if (strcmp(cmdname, "cat") == 0) {
 		return cat_make(self->config, dstfile, argc, argv);
+
 	} else if (strcmp(cmdname, "make") == 0) {
 		return make_make(self->config, dstfile, argc, argv);
+
+	} else if (strcmp(cmdname, "run") == 0) {
+		return run_make(self->config, dstfile, argc, argv);
+
 	} else {
 		goto fail_unknown_name;
 	}
@@ -187,6 +196,9 @@ command_make_capfile_from_stream(Command* self, FILE* fin) {
 		// Make row from line
 		char const* line = buffer_get_const(buf);
 		CapRow* row = capparser_parse_line(parser, line);
+		if (!row) {
+			continue;
+		}
 
 		// If first col is command then
 		CapCol* col = caprow_col(row);
@@ -245,6 +257,11 @@ static int
 command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout) {
 	// Display
 	for (CapRow const* row = capfile_row_const(dstfile); row; row = caprow_next_const(row)) {
+		if (self->is_debug) {
+			caprow_display(row);
+			continue;
+		}
+
 		// Text column only
 		CapCol const* col = caprow_col_const(row);
 		if (capcol_type(col) != CapColText) {
@@ -272,7 +289,7 @@ command_open_input_stream(Command* self) {
 
 	// Has make name ?
 	if (self->argc > self->optind) {
-		char const* basename = self->argv[1];  // Yes
+		char const* basename = self->argv[self->optind];  // Yes
 
 		// Get cap's make file path
 		char spath[NFILE_PATH];
@@ -367,4 +384,3 @@ main(int argc, char* argv[]) {
 	return make_main(argc, argv);
 }
 #endif
-
