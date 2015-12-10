@@ -10,6 +10,7 @@
 #include "cap-file.h"
 
 #include "cat.h"
+#include "run.h"
 
 void _Noreturn
 make_usage(void);

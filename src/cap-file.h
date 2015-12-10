@@ -19,6 +19,7 @@ typedef enum {
 	CapColBrace,
 	CapColCommand,
 	CapColMark,
+	CapColRun,
 } CapColType;
 
 /*********
