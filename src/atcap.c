@@ -13,7 +13,12 @@ struct CapParser {
 	char const* end;
 	Buffer* buf;  // Temporary buffer for parse
 	CapRow* row;  // Temporary row for parse
-	bool isdebug;
+	bool is_debug;
+};
+
+enum {
+	CAPPARSER_EOF = 1,
+	CAPPARSER_PARSE_ERROR,
 };
 
 /************
@@ -72,7 +77,7 @@ capparser_remove_cols(CapParser* self, CapColType remtype) {
 
 static void
 capparser_print_mode(CapParser const* self, char const* modename) {
-	if (self->isdebug) {
+	if (self->is_debug) {
 		printf("%s: %c\n", modename, *self->cur);
 	}
 }
@@ -94,7 +99,7 @@ capparser_mode_first(CapParser* self) {
 		// Buffer
 		capparser_push_col(self, CapColText);
 		++self->cur;
-		return EOF;
+		return CAPPARSER_EOF;
 
 	} else if (strcmphead(self->cur, "@cap") == 0) {
 		// Found atcap identifier
@@ -131,6 +136,12 @@ capparser_mode_atcap(CapParser* self) {
 		{0},
 	};
 
+	// Invalid syntax
+	if (is_newline(*self->cur)) {
+		return CAPPARSER_PARSE_ERROR;
+	}
+
+	// This identifier is
 	for (struct Identifier const* i = identifiers; i->name; ++i) {
 		if (strcmphead(self->cur, i->name) == 0) {
 			// Mode of command is need identifier of command
@@ -142,6 +153,7 @@ capparser_mode_atcap(CapParser* self) {
 		}
 	}
 
+	// Skip blanks etc
 	++self->cur;
 	return 0;
 }
@@ -158,7 +170,7 @@ capparser_mode_brief(CapParser* self) {
 		
 		self->mode = capparser_mode_first;
 		++self->cur;
-		return EOF;
+		return CAPPARSER_EOF;
 
 	} else {
 		// Ignore blanks of line header
@@ -255,7 +267,7 @@ capparser_mode_tag(CapParser* self) {
 		buffer_clear(self->buf);
 
 		++self->cur;
-		return EOF;
+		return CAPPARSER_EOF;
 
 	} else {
 		buffer_push(self->buf, *self->cur);
@@ -275,7 +287,7 @@ capparser_mode_command(CapParser* self) {
 		self->mode = capparser_mode_first;
 
 		++self->cur;
-		return EOF;
+		return CAPPARSER_EOF;
 
 	} else {
 		buffer_push(self->buf, *self->cur);
@@ -294,7 +306,7 @@ capparser_mode_brace(CapParser* self) {
 		self->mode = capparser_mode_first;
 
 		++self->cur;
-		return EOF;
+		return CAPPARSER_EOF;
 
 	} else if (*self->cur == '}') {
 		capparser_push_col(self, CapColBrace);
@@ -319,7 +331,7 @@ capparser_mode_mark(CapParser* self) {
 		self->mode = capparser_mode_first;
 
 		++self->cur;
-		return EOF;
+		return CAPPARSER_EOF;
 
 	} else {
 		buffer_push(self->buf, *self->cur);
@@ -352,6 +364,7 @@ capparser_new(void) {
 
 	self->buf = buffer_new();
 	self->row = caprow_new();
+	// self->is_debug = true;
 
 	return self;
 }
@@ -360,6 +373,10 @@ capparser_new(void) {
 * CapParser: Runner *
 ********************/
 
+/**
+ * @return Success to pointer to CapRow
+ * @return Failed to NULL
+ */
 CapRow*
 capparser_parse_line(CapParser* self, char const* line) {
 	// Ready state for parse
@@ -372,16 +389,32 @@ capparser_parse_line(CapParser* self, char const* line) {
 
 	// Run parser
 	for (; self->cur < self->end; ) {
-		if (self->mode(self) == EOF) {
-			break;
+
+		// Run current mode function	
+		int res = self->mode(self);
+
+		// Check results
+		switch (res) {
+			case CAPPARSER_EOF:
+				goto done;
+				break;
+			case CAPPARSER_PARSE_ERROR:
+				goto fail;
+				break;
 		}
 	}
 
-	// Ready return results of parse and next parse by new CapRow
-	CapRow* row = self->row;
-	self->row = caprow_new();
+	done: {
+		// Ready return results of parse and next parse by new CapRow
+		CapRow* row = self->row;
+		self->row = caprow_new();
+		return row;
+	}
 
-	return row;
+	fail: {
+		WARN("Failed to parse of \"%s\"", line);
+		return NULL;
+	}
 }
 
 /***********************
