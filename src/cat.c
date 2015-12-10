@@ -18,6 +18,7 @@ struct Command {
 	char** argv;
 	int optind;  // getopt
 	StringArray* replace_list;
+	bool is_debug;
 };
 
 static bool
@@ -89,7 +90,7 @@ command_parse_options(Command* self) {
 		};
 		int optsindex;
 
-		int cur = getopt_long(self->argc, self->argv, "h0:1:2:3:4:5:6:7:8:9:", longopts, &optsindex);
+		int cur = getopt_long(self->argc, self->argv, "dh0:1:2:3:4:5:6:7:8:9:", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
@@ -106,6 +107,9 @@ command_parse_options(Command* self) {
 		case 'h':
 			command_delete(self);
 			cat_usage();
+			break;
+		case 'd':
+			self->is_debug = true;
 			break;
 		case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
 			strarray_push_copy(self->replace_list, optarg);
@@ -138,6 +142,9 @@ static CapRow*
 cat_read_row(Command const* self, Buffer const* buffer, CapParser* parser) {
 	char const* line = buffer_get_const(buffer);
 	CapRow* row = capparser_parse_line(parser, line);
+	if (!row) {
+		return NULL;
+	}
 	return capparser_convert_braces(parser, row, self->replace_list);
 }
 
@@ -157,22 +164,24 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 
 	for (; buffer_getline(buffer, fin); ) {
 		CapRow* row = cat_read_row(self, buffer, parser);
+		if (!row) {
+			continue;
+		}
 
-		int endline = '\n';
+		// Text only
+		if (!self->is_debug && capcol_type(caprow_col(row)) != CapColText) {
+			caprow_delete(row);
+			continue;
+		}
+
 		for (CapCol const* col = caprow_col(row); col; col = capcol_next_const(col)) {
-
-			capcol_display(col);
-
-			if (capcol_type(col) == CapColText) {
-				// fprintf(fout, "%s", capcol_get_const(col));
-				endline = '\n';
+			if (self->is_debug) {
+				capcol_display(col);
 			} else {
-				endline = 0;
+				fprintf(fout, "%s", capcol_get_const(col));
 			}
 		}
-		if (endline) {
-			fprintf(fout, "%c", endline);
-		}
+		fprintf(fout, "\n");
 
 		caprow_delete(row);
 	}
@@ -262,24 +271,27 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	// Run
+	// Ready
 	CapParser* parser = capparser_new();
 	Buffer* buffer = buffer_new();
 
+	// Run, push all file to CapFile
 	for (int i = self->optind; i < self->argc; ++i) {
+		// Solve file path
 		char fname[NFILE_PATH];
 		if (!config_path_from_base(config, fname, sizeof fname, self->argv[i])) {
 			WARN("Failed to path from base \"%s\"", self->argv[i]);
 			continue;
 		}
 
+		// Open file
 		FILE* fin = file_open(fname, "rb");
 		if (!fin) {
 			WARN("Failed to open file \"%s\"", fname);
 			continue;
 		}
 
-		// Read
+		// Read and push to CapFile
 		for (; buffer_getline(buffer, fin); ) {
 			CapRow* row = cat_read_row(self, buffer, parser);
 			capfile_push(dstfile, row);

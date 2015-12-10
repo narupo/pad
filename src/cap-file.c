@@ -258,6 +258,9 @@ caprow_write_to(CapRow const* self, FILE* fout) {
 
 CapCol*
 caprow_col(CapRow* self) {
+	if (!self->col) {
+		WARN("col is null");
+	}
 	return self->col;
 }
 
