@@ -113,15 +113,11 @@ self_cols_push_copy(CsvLine* self, char const* col) {
 		}
 		self->capacity = newcapa;
 		self->cols = cols;
-
-		// Clear unintialized values
-		for (int i = self->length; i <= self->capacity; ++i) {
-			self->cols[i] = NULL;
-		}
 	}
 
 	// Push copy
 	self->cols[self->length++] = strdup(col);
+	self->cols[self->length] = NULL;
 
 	return true;
 }
