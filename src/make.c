@@ -56,7 +56,7 @@ static CapFile*
 command_make_capfile_from_stream(Command* self, FILE* fin); 
 
 static int
-command_control_capfile(Command const* self, CapFile* dstfile); 
+command_edit_capfile(Command const* self, CapFile* dstfile); 
 
 static int
 command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout); 
@@ -233,7 +233,7 @@ command_make_capfile_from_stream(Command* self, FILE* fin) {
 }
 
 static int
-command_control_capfile(Command const* self, CapFile* dstfile) {
+command_edit_capfile(Command const* self, CapFile* dstfile) {
 	// Control CapFile by @cap syntax
 	for (CapRow* row = capfile_row(dstfile); row; ) {
 
@@ -313,10 +313,20 @@ static int
 command_run(Command* self) {
 	// Open stream and make capfile by it
 	FILE* fin = command_open_input_stream(self);
+	if (!fin) {
+		WARN("Failed to open stream");
+		return 1;
+	}
+
 	CapFile* dstfile = command_make_capfile_from_stream(self, fin);
+	if (!dstfile) {
+		WARN("Failed to make CapFile");
+		file_close(fin);
+		return 2;
+	}
 
 	// Execute make
-	command_control_capfile(self, dstfile);
+	command_edit_capfile(self, dstfile);
 	command_display_capfile(self, dstfile, stdout);
 
 	// Done
@@ -353,8 +363,22 @@ make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 
 	// Make source capfile
 	FILE* fin = command_open_input_stream(self);
+	if (!fin) {
+		WARN("Failed to open stream");
+		command_delete(self);
+		return 1;
+	}
+
 	CapFile* srcfile = command_make_capfile_from_stream(self, fin);
-	command_control_capfile(self, srcfile);
+	if (!srcfile) {
+		WARN("Failed to make CapFile");
+		command_delete(self);
+		file_close(fin);
+		return 2;
+	}
+
+	// Edit CapFile
+	command_edit_capfile(self, srcfile);
 
 	// Link srcfile to dstfile
 	CapRow* srcrow = capfile_escape_delete(srcfile);
