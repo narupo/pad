@@ -159,7 +159,10 @@ bool
 buffer_copy_str(Buffer* self, char const* src);
 
 void
-buffer_strip(Buffer* self, char const* delims);
+buffer_lstrip(Buffer* self, int delim);
+
+void
+buffer_rstrip(Buffer* self, int delim);
 
 #endif
 

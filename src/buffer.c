@@ -245,37 +245,60 @@ fail:
 }
 
 void
-buffer_strip(Buffer* self, char const* delims) {
+buffer_lstrip(Buffer* self, int delim) {
 	char const* beg = self->buffer;
 	char const* end = self->buffer + self->length;
-	char const* newbeg = self->buffer;
-	char const* newend = self->buffer + self->length;
+	char const* p;
 
-	for (char const* p = beg; p < end; ++p) {
-		if (!strchr(delims, *p)) {
-			newbeg = p;
+	for (p = beg; p < end; ++p) {
+		if (*p != delim) {
+			beg = p;
 			break;
 		}
 	}
 
-	for (char const* p = end-1; p > beg; --p) {
-		if (!strchr(delims, *p)) {
-			newend = p;
-			break;
-		}
+	if (p == end) {
+		buffer_clear(self);
+		return;
 	}
 
-	Buffer* tmp = buffer_new_size(newend - newbeg + 1);
-	for (; newbeg <= newend;) {
-		buffer_push(tmp, *newbeg++);
+	Buffer* tmp = buffer_new();
+	for (; beg < end;) {
+		buffer_push(tmp, *beg++);
 	}
-	buffer_push(tmp, '\0');
 
 	buffer_swap_other(self, tmp);
 	buffer_delete(tmp);
 }
 
-#if defined(TEST)
+void
+buffer_rstrip(Buffer* self, int delim) {
+	char const* beg = self->buffer;
+	char const* end = self->buffer + self->length - 1;
+	char const* p;
+
+	for (p = end; p >= beg; --p) {
+		if (*p != delim) {
+			end = p;
+			break;
+		}
+	}
+
+	if ((p+1) == beg) {
+		buffer_clear(self);
+		return;
+	}
+
+	Buffer* tmp = buffer_new();
+	for (; beg <= end;) {
+		buffer_push(tmp, *beg++);
+	}
+
+	buffer_swap_other(self, tmp);
+	buffer_delete(tmp);
+}
+
+#if defined(TEST_BUFFER)
 int
 main(int argc, char* argv[]) {
 	FILE* stream = stdin;
@@ -290,7 +313,21 @@ main(int argc, char* argv[]) {
 	}
 
 	for (; buffer_getline(buf, stream); ) {
-		printf("[%s]\n", buffer_getc(buf));
+		if (strcmp(buf->buffer, "clear") == 0) {
+			buffer_clear(buf);
+			buffer_resize(buf, 4);
+			continue;
+		}
+		printf(" line[%s] length[%d] capacity[%d]\n", buf->buffer, buf->length, buf->capacity);
+		buffer_lstrip(buf, ' ');
+		buffer_lstrip(buf, '\t');
+		buffer_lstrip(buf, '\0');
+		printf("lstrip[%s] length[%d] capacity[%d]\n", buf->buffer, buf->length, buf->capacity);
+		buffer_rstrip(buf, '\0');
+		buffer_rstrip(buf, ' ');
+		buffer_rstrip(buf, '\t');
+		// buffer_push(buf, '\0');
+		printf("rstrip[%s] length[%d] capacity[%d]\n", buf->buffer, buf->length, buf->capacity);
 	}
 
 	fclose(stream);

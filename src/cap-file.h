@@ -13,13 +13,15 @@ typedef struct CapFile CapFile;
 ***************/
 
 typedef enum {
-	CapColText = 1,
+	CapColNull = 0,
+	CapColText,
 	CapColBrief,
 	CapColTag,
 	CapColBrace,
 	CapColCommand,
 	CapColMark,
 	CapColRun,
+	CapColGoto,
 } CapColType;
 
 /*********
@@ -80,6 +82,12 @@ caprow_find_tail(CapRow* self);
 
 CapRow*
 caprow_push(CapRow* self, CapCol* col); 
+
+CapRow*
+caprow_push_front(CapRow* self, CapCol* col);
+
+CapFile*
+capfile_push_next(CapFile* self, CapRow* pushrow, CapRow* origin);
 
 CapRow*
 caprow_push_copy(CapRow* self, CapCol const* col);
@@ -153,6 +161,12 @@ capfile_clear(CapFile* self);
 
 void
 capfile_display(CapFile const* self);
+
+void
+capfile_display_row(CapRow const* row);
+
+void
+capfile_display_rows(CapFile const* cfile, int nlimit);
 
 void
 capfile_write_to(CapFile const* self, FILE* fout);

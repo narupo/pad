@@ -33,6 +33,7 @@ static int capparser_mode_tag(CapParser* self);
 static int capparser_mode_command(CapParser* self);
 static int capparser_mode_brace(CapParser* self);
 static int capparser_mode_mark(CapParser* self);
+static int capparser_mode_goto(CapParser* self);
 
 /******************
 * CapParser: Util *
@@ -53,7 +54,7 @@ capparser_push_col(CapParser* self, CapColType type) {
 	// Set type
 	capcol_set_type(col, type);
 	if (!caprow_push(self->row, col)) {
-		WARN("Failed to construct push col");
+		WARN("Failed to push col");
 		return 2;
 	}
 
@@ -63,11 +64,35 @@ capparser_push_col(CapParser* self, CapColType type) {
 }
 
 static void
-capparser_push_capcol_str(CapParser* self, char const* str, CapColType type) {
+capparser_push_col_str(CapParser* self, char const* str, CapColType type) {
 	// Push column to temp row
 	CapCol* col = capcol_new_str(str);
 	capcol_set_type(col, type);
 	caprow_push(self->row, col);
+}
+
+static int
+capparser_push_front_col(CapParser* self, CapColType type) {
+	// Ready
+	buffer_push(self->buf, 0);
+
+	// Push column to temp row
+	CapCol* col = capcol_new_str(buffer_get_const(self->buf));
+	if (!col) {
+		WARN("Failed to construct CapCol");
+		return 1;
+	}
+
+	// Set type
+	capcol_set_type(col, type);
+	if (!caprow_push_front(self->row, col)) {
+		WARN("Failed to push front col");
+		return 2;
+	}
+
+	// Done
+	buffer_clear(self->buf);
+	return 0;	
 }
 
 static void
@@ -78,7 +103,7 @@ capparser_remove_cols(CapParser* self, CapColType remtype) {
 static void
 capparser_print_mode(CapParser const* self, char const* modename) {
 	if (self->is_debug) {
-		printf("%s: %c\n", modename, *self->cur);
+		printf("%s: [%c]\n", modename, *self->cur);
 	}
 }
 
@@ -127,13 +152,16 @@ capparser_mode_atcap(CapParser* self) {
 		CapParserMode mode;
 
 	} identifiers[] = {
+		// Cap syntax on file
 		{"brief", capparser_mode_brief},
 		{"tag", capparser_mode_tag},
 		{"{",  capparser_mode_brace},
+		{"mark", capparser_mode_mark},
+		{"goto", capparser_mode_goto},
+		// Cap commands
 		{"cat", capparser_mode_command},
 		{"make", capparser_mode_command},
 		{"run", capparser_mode_command},
-		{"mark", capparser_mode_mark},
 		{0},
 	};
 
@@ -256,7 +284,7 @@ capparser_mode_tag(CapParser* self) {
 
 		for (int i = 0; i < strarray_length(arr); ++i) {
 			char const* tag = strarray_get_const(arr, i);
-			capparser_push_capcol_str(self, tag, CapColTag);
+			capparser_push_col_str(self, tag, CapColTag);
 		}
 		strarray_delete(arr);
 
@@ -292,7 +320,6 @@ capparser_mode_command(CapParser* self) {
 
 	} else {
 		buffer_push(self->buf, *self->cur);
-	
 		++self->cur;
 		return 0;
 	}
@@ -327,9 +354,39 @@ capparser_mode_mark(CapParser* self) {
 
 	if (is_newline(*self->cur)) {
 		buffer_push(self->buf, '\0');
-		buffer_strip(self->buf, " \t");
+		buffer_lstrip(self->buf, ' ');
+		buffer_lstrip(self->buf, '\t');
 		capparser_push_col(self, CapColMark);
 		capparser_remove_cols(self, CapColText);
+		self->mode = capparser_mode_first;
+
+		++self->cur;
+		return CAPPARSER_EOF;
+
+	} else {
+		buffer_push(self->buf, *self->cur);
+	}
+
+	++self->cur;
+	return 0;
+}
+
+static int
+capparser_mode_goto(CapParser* self) {
+	capparser_print_mode(self, "goto");
+
+	if (is_newline(*self->cur)) {
+		// Push
+		buffer_lstrip(self->buf, ' ');
+		buffer_lstrip(self->buf, '\t');
+
+		if (buffer_empty(self->buf)) {
+			WARN("Invalid syntax @cap goto need goto name");
+			return CAPPARSER_PARSE_ERROR;
+		}
+
+		buffer_push(self->buf, '\0');
+		capparser_push_front_col(self, CapColGoto);
 		self->mode = capparser_mode_first;
 
 		++self->cur;
@@ -366,13 +423,12 @@ capparser_new(void) {
 
 	self->buf = buffer_new();
 	self->row = caprow_new();
-	// self->is_debug = true;
 
 	return self;
 }
 
 /********************
-* CapParser: Runner *
+* CapParser: Parser *
 ********************/
 
 /**
@@ -415,7 +471,11 @@ capparser_parse_line(CapParser* self, char const* line) {
 
 	fail: {
 		WARN("Failed to parse of \"%s\"", line);
-		return NULL;
+		CapRow* row = caprow_new();
+		CapCol* col = capcol_new_str(line);
+		capcol_set_type(col, CapColNull);
+		caprow_push(row, col);
+		return row;
 	}
 }
 
@@ -423,6 +483,7 @@ capparser_parse_line(CapParser* self, char const* line) {
 * CapParser: Convertor *
 ***********************/
 
+// "0:def" to "def" or breaces element value by index
 CapRow*
 capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* braces) {
 	for (CapCol* col = caprow_col(row); col; col = capcol_next(col)) {
@@ -601,6 +662,8 @@ test_atcap_line(int argc, char* argv[]) {
 	strarray_push_copy(braces, "Windows");
 
 	CapParser* capparser = capparser_new();
+	capparser->is_debug = true;
+
 	CapFile* capfile = capfile_new();
 	Buffer* buf = buffer_new();
 
