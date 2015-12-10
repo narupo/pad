@@ -15,7 +15,6 @@ struct Command {
 * Prototypes *
 *************/
 
-
 static bool
 command_parse_options(Command* self);;
 
@@ -56,7 +55,7 @@ static CapFile*
 command_make_capfile_from_stream(Command* self, FILE* fin); 
 
 static int
-command_edit_capfile(Command const* self, CapFile* dstfile); 
+command_sort_capfile(Command const* self, CapFile* dstfile); 
 
 static int
 command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout); 
@@ -233,7 +232,42 @@ command_make_capfile_from_stream(Command* self, FILE* fin) {
 }
 
 static int
-command_edit_capfile(Command const* self, CapFile* dstfile) {
+command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
+	// Move goto row to mark
+	for (CapRow* row = capfile_row(dstfile); row; ) {
+
+		CapCol* col = caprow_col(row);
+		CapColType type = capcol_type(col);
+
+		if (type == CapColGoto) {
+			CapRow* move = row;
+			row = caprow_next(row);
+
+			// Go to next of @cap mark
+			for (CapRow* row = capfile_row(dstfile); row; row = caprow_next(row)) {
+				CapCol* col = caprow_col(row);
+				if (capcol_type(col) == CapColMark) {
+					if (strcmp(capcol_get_const(col), capcol_get_const(caprow_col(move))) == 0) {
+						caprow_remove_cols(move, CapColGoto);
+						capcol_set_type(caprow_col(move), CapColText);
+						capfile_push_next(dstfile, move, row);
+						break;
+					}
+				}
+			}
+		} else {
+			row = caprow_next(row);
+		}
+	}
+
+	return 0;
+}
+
+static int
+command_sort_capfile(Command const* self, CapFile* dstfile) {
+	// Edit @cap goto
+	command_sort_capfile_goto(self, dstfile);
+
 	// Control CapFile by @cap syntax
 	for (CapRow* row = capfile_row(dstfile); row; ) {
 
@@ -326,7 +360,7 @@ command_run(Command* self) {
 	}
 
 	// Execute make
-	command_edit_capfile(self, dstfile);
+	command_sort_capfile(self, dstfile);
 	command_display_capfile(self, dstfile, stdout);
 
 	// Done
@@ -378,7 +412,7 @@ make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	}
 
 	// Edit CapFile
-	command_edit_capfile(self, srcfile);
+	command_sort_capfile(self, srcfile);
 
 	// Link srcfile to dstfile
 	CapRow* srcrow = capfile_escape_delete(srcfile);

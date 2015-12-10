@@ -173,6 +173,23 @@ caprow_push(CapRow* self, CapCol* col) {
 }
 
 CapRow*
+caprow_push_front(CapRow* self, CapCol* col) {
+	if (!self->col) {
+		self->col = col;
+		return self;
+	}
+
+	CapCol* head = self->col;
+
+	head->prev = col;
+	col->next = head;
+
+	self->col = col;
+
+	return self;
+}
+
+CapRow*
 caprow_push_copy(CapRow* self, CapCol const* col) {
 	CapCol* copycol = capcol_new_str(buffer_get_const(col->buffer));
 	capcol_set_type(copycol, col->type);
@@ -200,12 +217,10 @@ void
 caprow_unlink(CapRow* self) {
 	if (self->prev) {
 		self->prev->next = self->next;
-		self->prev = NULL;
 	}
 
 	if (self->next) {
 		self->next->prev = self->prev;
-		self->next = NULL;
 	}
 }
 
@@ -242,10 +257,11 @@ caprow_clear(CapRow* self) {
 
 void
 caprow_display(CapRow const* self) {
+	printf("{");
 	for (CapCol const* col = self->col; col; col = col->next) {
 		capcol_display(col);
 	}
-	printf("\n");
+	printf("}\n");
 }
 
 void
@@ -357,6 +373,7 @@ capfile_push(CapFile* self, CapRow* row) {
 	if (tail) {
 		tail->next = row;
 		row->prev = tail;
+		row->next = NULL;
 	}
 
 	// Done
@@ -372,13 +389,29 @@ capfile_push_front(CapFile* self, CapRow* row) {
 	}
 
 	// Link
-	self->row->prev = row;
+	row->prev = NULL;
 	row->next = self->row;
+	self->row->prev = row;
 
 	// Update root
 	self->row = row;
 
 	// Done
+	return self;
+}
+
+CapFile*
+capfile_push_next(CapFile* self, CapRow* pushrow, CapRow* origin) {
+	caprow_unlink(pushrow);
+
+	pushrow->prev = origin;
+	pushrow->next = origin->next;
+
+	if (origin->next) {
+		origin->next->prev = pushrow;
+		origin->next = pushrow;
+	}
+
 	return self;
 }
 
@@ -441,13 +474,30 @@ capfile_write_to(CapFile const* self, FILE* fout) {
 void
 capfile_move_to_front(CapFile* self, CapRow* target) {
 	if (target == capfile_row(self)) {
-		return;			
+		return;
 	}
 	caprow_unlink(target);
 	capfile_push_front(self, target);
 }
 
-#if defined(TEST_PAGE)
+void
+capfile_display_row(CapRow const* row) {
+	printf("[%10p] <- [%10p] -> [%10p]", row->prev, row, row->next);
+}
+
+void
+capfile_display_rows(CapFile const* cfile, int nlimit) {
+	printf("==== display ====\n");
+	int i = 0;
+	for (CapRow const* r = cfile->row; r && i++ < nlimit; r = r->next) {
+		capfile_display_row(r);
+		printf("\n");
+	}
+	printf("\n");
+}
+
+
+#if defined(TEST_CAPFILE)
 #include "file.h"
 
 static int
@@ -523,9 +573,80 @@ test_remove(int argc, char* argv[]) {
 	return 0;
 }
 
+void
+test_display_row(CapRow const* row) {
+	printf("[%10p] <- [%10p] -> [%10p]", row->prev, row, row->next);
+}
+
+void
+test_display_col(CapCol const* col) {
+}
+
+void
+test_display_push_row(CapRow const* row) {
+	printf("Current row [%10p]\n", row);
+}
+
+void
+test_display_capfile(CapFile const* cfile) {
+	printf("==== display ====\n");
+	for (CapRow const* r = cfile->row; r; r = r->next) {
+		test_display_row(r);
+		for (CapCol const* c = r->col; c; c = c->next) {
+			test_display_col(c);
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
+
+int
+test_io(int argc, char* argv[]) {
+	Buffer* buffer = buffer_new();
+	CapFile* cfile = capfile_new();
+	CapRow* r = caprow_new();
+	CapRow* tmp = r;
+
+	for (; buffer_getline(buffer, stdin); ) {
+		char const* cmd = buffer_get_const(buffer);
+		if (strcmp(cmd, "r") == 0) {
+			test_display_push_row(r);
+			capfile_push(cfile, r);
+			r = caprow_new();
+		} else if (strcmp(cmd, "rf") == 0) {
+			test_display_push_row(r);
+			capfile_push_front(cfile, r);			
+			r = caprow_new();
+		} else if (strcmp(cmd, "rn") == 0) {
+			test_display_push_row(r);
+			capfile_push_next(r, r);
+			r = caprow_new();
+		} else if (strcmp(cmd, "mrf") == 0) {
+			test_display_push_row(r);
+			capfile_move_to_front(cfile, r);
+			r = caprow_new();			
+		} else if (strcmp(cmd, "c") == 0) {
+			CapCol* c = capcol_new_str(cmd);
+			caprow_push(r, c);
+		} else if (strcmp(cmd, "clear") == 0) {
+			capfile_clear(cfile);
+		} else {
+			continue;
+		}
+
+		test_display_capfile(cfile);
+	}
+
+	caprow_delete(r);
+	capfile_delete(cfile);
+	buffer_delete(buffer);
+	return 0;
+}
+
 int
 main(int argc, char* argv[]) {
-	return test_remove(argc, argv);
+	return test_io(argc, argv);
+	// return test_remove(argc, argv);
     //return test_page(argc, argv);
 }
 #endif
