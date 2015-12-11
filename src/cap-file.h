@@ -87,6 +87,9 @@ CapRow*
 caprow_push_front(CapRow* self, CapCol* col);
 
 CapFile*
+capfile_push_prev(CapFile* self, CapRow* pushrow, CapRow* origin);
+
+CapFile*
 capfile_push_next(CapFile* self, CapRow* pushrow, CapRow* origin);
 
 CapRow*

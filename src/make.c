@@ -250,7 +250,7 @@ command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
 					if (strcmp(capcol_get_const(col), capcol_get_const(caprow_col(move))) == 0) {
 						caprow_remove_cols(move, CapColGoto);
 						capcol_set_type(caprow_col(move), CapColText);
-						capfile_push_next(dstfile, move, row);
+						capfile_push_prev(dstfile, move, row);
 						break;
 					}
 				}
