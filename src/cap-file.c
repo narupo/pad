@@ -401,6 +401,25 @@ capfile_push_front(CapFile* self, CapRow* row) {
 }
 
 CapFile*
+capfile_push_prev(CapFile* self, CapRow* pushrow, CapRow* origin) {
+	caprow_unlink(pushrow);
+
+	pushrow->next = origin;
+	pushrow->prev = origin->prev;
+
+	if (origin->prev) {
+		origin->prev->next = pushrow;
+		origin->prev = pushrow;
+	}
+
+	if (origin == self->row) {
+		self->row = pushrow;
+	}
+
+	return self;
+}
+
+CapFile*
 capfile_push_next(CapFile* self, CapRow* pushrow, CapRow* origin) {
 	caprow_unlink(pushrow);
 
