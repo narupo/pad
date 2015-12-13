@@ -216,6 +216,7 @@ run_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 			// Read from child process
 			Buffer* buffer = buffer_new();
 			CapParser* parser = capparser_new();
+			CapRowList* dstrows = capfile_rows(dstfile);
 
 			for (; buffer_getline(buffer, stdin); ) {
 				char const* line = buffer_get_const(buffer);
@@ -224,7 +225,7 @@ run_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 					continue;
 				}
 
-				capfile_push(dstfile, row);
+				caprowlist_move_to_back(dstrows, row);
 			}
 
 			// Waiting

@@ -12,7 +12,7 @@ struct CapParser {
 	char const* beg;
 	char const* end;
 	Buffer* buf;  // Temporary buffer for parse
-	CapRow* row;  // Temporary row for parse
+	CapColList* columns;  // Temporary columns for parse
 	bool is_debug;
 };
 
@@ -32,7 +32,7 @@ static int capparser_mode_brief(CapParser* self);
 static int capparser_mode_tag(CapParser* self);
 static int capparser_mode_command(CapParser* self);
 static int capparser_mode_brace(CapParser* self);
-static int capparser_mode_mark(CapParser* self);
+static int capparser_mode_label(CapParser* self);
 static int capparser_mode_goto(CapParser* self);
 
 /******************
@@ -45,7 +45,7 @@ capparser_push_col(CapParser* self, CapColType type) {
 	buffer_push(self->buf, 0);
 
 	// Push column to temp row
-	CapCol* col = capcol_new_str(buffer_get_const(self->buf));
+	CapCol* col = capcol_new_from_str(buffer_get_const(self->buf));
 	if (!col) {
 		WARN("Failed to construct CapCol");
 		return 1;
@@ -53,10 +53,7 @@ capparser_push_col(CapParser* self, CapColType type) {
 
 	// Set type
 	capcol_set_type(col, type);
-	if (!caprow_push(self->row, col)) {
-		WARN("Failed to push col");
-		return 2;
-	}
+	capcollist_move_to_back(self->columns, col);
 
 	// Done
 	buffer_clear(self->buf);
@@ -66,9 +63,9 @@ capparser_push_col(CapParser* self, CapColType type) {
 static void
 capparser_push_col_str(CapParser* self, char const* str, CapColType type) {
 	// Push column to temp row
-	CapCol* col = capcol_new_str(str);
+	CapCol* col = capcol_new_from_str(str);
 	capcol_set_type(col, type);
-	caprow_push(self->row, col);
+	capcollist_move_to_back(self->columns, col);
 }
 
 static int
@@ -77,7 +74,7 @@ capparser_push_front_col(CapParser* self, CapColType type) {
 	buffer_push(self->buf, 0);
 
 	// Push column to temp row
-	CapCol* col = capcol_new_str(buffer_get_const(self->buf));
+	CapCol* col = capcol_new_from_str(buffer_get_const(self->buf));
 	if (!col) {
 		WARN("Failed to construct CapCol");
 		return 1;
@@ -85,10 +82,7 @@ capparser_push_front_col(CapParser* self, CapColType type) {
 
 	// Set type
 	capcol_set_type(col, type);
-	if (!caprow_push_front(self->row, col)) {
-		WARN("Failed to push front col");
-		return 2;
-	}
+	capcollist_move_to_front(self->columns, col);
 
 	// Done
 	buffer_clear(self->buf);
@@ -97,7 +91,15 @@ capparser_push_front_col(CapParser* self, CapColType type) {
 
 static void
 capparser_remove_cols(CapParser* self, CapColType remtype) {
-	caprow_remove_cols(self->row, remtype);
+	for (CapCol* c = capcollist_front(self->columns); c; ) {
+		if (capcol_type(c) == remtype) {
+			CapCol* del = c;
+			c = capcol_next(c);
+			capcollist_remove(self->columns, del);
+		} else {
+			c = capcol_next(c);
+		}
+	}
 }
 
 static void
@@ -156,7 +158,8 @@ capparser_mode_atcap(CapParser* self) {
 		{"brief", capparser_mode_brief},
 		{"tag", capparser_mode_tag},
 		{"{",  capparser_mode_brace},
-		{"mark", capparser_mode_mark},
+		{"mark", capparser_mode_label},
+		{"label", capparser_mode_label},
 		{"goto", capparser_mode_goto},
 		// Cap commands
 		{"cat", capparser_mode_command},
@@ -349,7 +352,7 @@ capparser_mode_brace(CapParser* self) {
 }
 
 static int
-capparser_mode_mark(CapParser* self) {
+capparser_mode_label(CapParser* self) {
 	capparser_print_mode(self, "mark");
 
 	if (is_newline(*self->cur)) {
@@ -408,7 +411,7 @@ void
 capparser_delete(CapParser* self) {
 	if (self) {
 		buffer_delete(self->buf);
-		caprow_delete(self->row);
+		capcollist_delete(self->columns);
 		free(self);
 	}
 }
@@ -422,7 +425,7 @@ capparser_new(void) {
 	}
 
 	self->buf = buffer_new();
-	self->row = caprow_new();
+	self->columns = capcollist_new();
 
 	return self;
 }
@@ -443,7 +446,7 @@ capparser_parse_line(CapParser* self, char const* line) {
 	self->beg = line;
 	self->end = line + strlen(line) + 1;  // +1 for final '\0'
 	buffer_clear(self->buf);
-	caprow_clear(self->row);
+	capcollist_clear(self->columns);
 
 	// Run parser
 	for (; self->cur < self->end; ) {
@@ -464,18 +467,18 @@ capparser_parse_line(CapParser* self, char const* line) {
 
 	done: {
 		// Ready return results of parse and next parse by new CapRow
-		CapRow* row = self->row;
-		self->row = caprow_new();
-		return row;
+		CapColList* cols = self->columns;
+		self->columns = capcollist_new();
+		return caprow_new_from_cols(cols);
 	}
 
 	fail: {
 		WARN("Failed to parse of \"%s\"", line);
-		CapRow* row = caprow_new();
-		CapCol* col = capcol_new_str(line);
-		capcol_set_type(col, CapColNull);
-		caprow_push(row, col);
-		return row;
+		CapColList* columns = capcollist_new();
+		CapCol* column = capcol_new_from_str(line);
+		capcol_set_type(column, CapColNull);
+		capcollist_move_to_back(columns, column);
+		return caprow_new_from_cols(columns);;
 	}
 }
 
@@ -486,12 +489,14 @@ capparser_parse_line(CapParser* self, char const* line) {
 // "0:def" to "def" or breaces element value by index
 CapRow*
 capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* braces) {
-	for (CapCol* col = caprow_col(row); col; col = capcol_next(col)) {
+	CapColList* cols = caprow_cols(row);
+
+	for (CapCol* col = capcollist_front(cols); col; col = capcol_next(col)) {
 		switch (capcol_type(col)) {
 			case CapColBrace: {
 				// Get index for repace
 				char numstr[10] = {0};
-				char const* val = capcol_get_const(col);
+				char const* val = capcol_value_const(col);
 				int i;
 
 				for (i = 0; i < sizeof(numstr)-1 && val[i]; ++i) { 
@@ -509,10 +514,10 @@ capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* braces
 
 				if (rep) {
 					// Found, replace
-					capcol_set_copy(col, rep);
+					capcol_set_value_copy(col, rep);
 				} else {
 					// Not found, replace default value
-					capcol_set_copy(col, val + i + 1);  // +1 for ':'
+					capcol_set_value_copy(col, val + i + 1);  // +1 for ':'
 				}
 				capcol_set_type(col, CapColText);
 
@@ -522,120 +527,6 @@ capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* braces
 		}
 	}
 	return row;
-}
-
-/********
-* AtCap *
-********/
-
-/*****************
-* Delete and New *
-*****************/
-
-void
-atcap_delete(AtCap* self) {
-	if (self) {
-		capfile_delete(self->capfile);
-		free(self);
-	}
-}
-
-AtCap*
-atcap_new(void) {
-	// Construct
-	AtCap* self = (AtCap*) calloc(1, sizeof(AtCap));
-	if (!self) {
-		WARN("Failed to construct");
-		return NULL;
-	}
-
-	// CapFile
-	if (!(self->capfile = capfile_new())) {
-		WARN("Failed to construct capfile");
-		free(self);
-		return NULL;
-	}
-
-	// Done
-	return self;
-}
-
-AtCap*
-atcap_new_from_stream(FILE* fin) {
-	// Check arguments
-	if (feof(fin)) {
-		WARN("Invalid arguments");
-		return NULL;
-	}
-
-	// Construct
-	AtCap* self = atcap_new();
-	if (!self) {
-		WARN("Failed to construct");
-		return NULL;
-	}
-
-	// Parser
-	CapParser* parser = capparser_new();
-	if (!parser) {
-		WARN("Failed to construct parser");
-		atcap_delete(self);
-		return NULL;
-	}
-
-	// Buffer for parse
-	Buffer* buf = buffer_new();
-	if (!buf) {
-		WARN("Failed to construct buffer");
-		capparser_delete(parser);
-		atcap_delete(self);
-		return NULL;
-	}
-
-	// Read lines
-	CapFile* capfile = self->capfile;
-
-	for (; buffer_getline(buf, fin); ) {
-		char const* line = buffer_get_const(buf);
-
-		CapRow* row = capparser_parse_line(parser, line);
-		if (!row) {
-			WARN("Failed to parse line");
-			buffer_delete(buf);
-			capparser_delete(parser);
-			atcap_delete(self);
-			return NULL;
-		}
-		capfile_push(capfile, row);
-	}
-
-	// Done
-	capparser_delete(parser);
-	buffer_delete(buf);
-	return self;
-}
-
-/*********
-* Setter *
-*********/
-
-void
-atcap_clear(AtCap* self) {
-	capfile_clear(self->capfile);
-}
-
-/*********
-* Getter *
-*********/
-
-CapFile const*
-atcap_capfile_const(AtCap const* self) {
-	return self->capfile;
-}
-
-CapFile*
-atcap_capfile(AtCap* self) {
-	return self->capfile;
 }
 
 /*******
@@ -674,7 +565,8 @@ test_atcap_line(int argc, char* argv[]) {
 		row = capparser_convert_braces(capparser, row, braces);
 		caprow_display(row);
 		
-		capfile_push(capfile, row);
+		CapRowList* rows = capfile_rows(capfile);
+		caprowlist_move_to_back(rows, row);
 	}
 
 	capfile_display(capfile);
