@@ -247,7 +247,6 @@ command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
 		CapCol* front = capcollist_front(cols);
 		CapColType ctype = capcol_type(front);
 		if (ctype == CapColGoto) {
-			// Goto label
 			if (g < NUMOF(gotos)) {
 				gotos[g++] = r;
 			}
@@ -258,6 +257,8 @@ command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
 		}
 	}
 
+	// TODO: Save goto and marks on time by construct CapFile
+	// Goto mark
 	for (int i = 0; i < g; ++i) {
 		CapRow* gotorow = gotos[i];
 		char const* gotoval = capcol_value_const(capcollist_front(caprow_cols(gotorow)));
@@ -269,7 +270,6 @@ command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
 			if (strcmp(gotoval, markval) == 0) {
 				caprow_remove_cols(gotorow, CapColGoto);
 				caprowlist_move_to_after(rows, gotorow, markrow);
-				// caprowlist_move_to_back(rows, gotorow);
 				break;
 			}
 		}
