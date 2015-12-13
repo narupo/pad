@@ -121,13 +121,13 @@ capcol_next_const(CapCol const* self) {
 struct CapRow {
 	CapRow* prev;
 	CapRow* next;
-	CapCol* col;
+	CapCol* head;
 };
 
 void
 caprow_delete(CapRow* self) {
 	if (self) {
-		for (CapCol* cur = self->col; cur; ) {
+		for (CapCol* cur = self->head; cur; ) {
 			CapCol* del = cur;
 			cur = cur->next;
 			capcol_delete(del);
@@ -148,7 +148,7 @@ caprow_new(void) {
 
 CapCol*
 caprow_find_tail(CapRow* self) {
-	for (CapCol* cur = self->col; cur; cur = cur->next) {
+	for (CapCol* cur = self->head; cur; cur = cur->next) {
 		if (!cur->next) {
 			return cur;
 		}
@@ -158,8 +158,8 @@ caprow_find_tail(CapRow* self) {
 
 CapRow*
 caprow_push(CapRow* self, CapCol* col) {
-	if (!self->col) {
-		self->col = col;
+	if (!self->head) {
+		self->head = col;
 		return self;
 	}
 
@@ -174,17 +174,17 @@ caprow_push(CapRow* self, CapCol* col) {
 
 CapRow*
 caprow_push_front(CapRow* self, CapCol* col) {
-	if (!self->col) {
-		self->col = col;
+	if (!self->head) {
+		self->head = col;
 		return self;
 	}
 
-	CapCol* head = self->col;
+	CapCol* head = self->head;
 
 	head->prev = col;
 	col->next = head;
 
-	self->col = col;
+	self->head = col;
 
 	return self;
 }
@@ -207,8 +207,8 @@ caprow_pop(CapRow* self) {
 
 		capcol_delete(tail);
 		
-		if (tail == self->col) {
-			self->col = NULL;
+		if (tail == self->head) {
+			self->head = NULL;
 		}
 	}
 }
@@ -226,7 +226,7 @@ caprow_unlink(CapRow* self) {
 
 void
 caprow_remove_cols(CapRow* self, CapColType remtype) {
-	for (CapCol* cur = self->col; cur; ) {
+	for (CapCol* cur = self->head; cur; ) {
 		CapCol* del = cur;
 		cur = cur->next;
 
@@ -234,7 +234,7 @@ caprow_remove_cols(CapRow* self, CapColType remtype) {
 			if (del->prev) {
 				del->prev->next = del->next;
 			} else {
-				self->col = del->next;
+				self->head = del->next;
 			}
 
 			if (del->next) {
@@ -247,18 +247,18 @@ caprow_remove_cols(CapRow* self, CapColType remtype) {
 
 void
 caprow_clear(CapRow* self) {
-	for (CapCol* cur = self->col; cur; ) {
+	for (CapCol* cur = self->head; cur; ) {
 		CapCol* del = cur;
 		cur = cur->next;
 		capcol_delete(del);
 	}
-	self->col = NULL;
+	self->head = NULL;
 }
 
 void
 caprow_display(CapRow const* self) {
 	printf("{");
-	for (CapCol const* col = self->col; col; col = col->next) {
+	for (CapCol const* col = self->head; col; col = col->next) {
 		capcol_display(col);
 	}
 	printf("}\n");
@@ -266,7 +266,7 @@ caprow_display(CapRow const* self) {
 
 void
 caprow_write_to(CapRow const* self, FILE* fout) {
-	for (CapCol const* col = self->col; col; col = col->next) {
+	for (CapCol const* col = self->head; col; col = col->next) {
 		capcol_write_to(col, fout);
 	}
 	printf("\n");	
@@ -274,20 +274,20 @@ caprow_write_to(CapRow const* self, FILE* fout) {
 
 CapCol*
 caprow_col(CapRow* self) {
-	if (!self->col) {
+	if (!self->head) {
 		WARN("col is null");
 	}
-	return self->col;
+	return self->head;
 }
 
 CapCol const*
 caprow_col_const(CapRow const* self) {
-	return self->col;
+	return self->head;
 }
 
 bool
 caprow_has_cols(CapRow const* self) {
-	return self->col != NULL;
+	return self->head != NULL;
 }
 
 CapRow*
@@ -315,13 +315,13 @@ caprow_prev_const(CapRow const* self) {
 **********/
 
 struct CapFile {
-	CapRow* row;
+	CapRow* head;
 };
 
 void
 capfile_delete(CapFile* self) {
 	if (self) {
-		for (CapRow* cur = self->row; cur; ) {
+		for (CapRow* cur = self->head; cur; ) {
 			CapRow* del = cur;
 			cur = cur->next;
 			caprow_delete(del);
@@ -333,7 +333,7 @@ capfile_delete(CapFile* self) {
 CapRow*
 capfile_escape_delete(CapFile* self) {
 	if (self) {
-		CapRow* escape = self->row;
+		CapRow* escape = self->head;
 		free(self);
 		return escape;
 	}
@@ -352,7 +352,7 @@ capfile_new(void) {
 
 CapRow*
 capfile_find_tail(CapFile* self) {
-	for (CapRow* cur = self->row; cur; cur = cur->next) {
+	for (CapRow* cur = self->head; cur; cur = cur->next) {
 		if (!cur->next) {
 			return cur;
 		}
@@ -363,8 +363,8 @@ capfile_find_tail(CapFile* self) {
 CapFile*
 capfile_push(CapFile* self, CapRow* row) {
 	// If first then
-	if (!self->row) {
-		self->row = row;
+	if (!self->head) {
+		self->head = row;
 		return self;
 	}
 
@@ -383,44 +383,51 @@ capfile_push(CapFile* self, CapRow* row) {
 CapFile*
 capfile_push_front(CapFile* self, CapRow* row) {
 	// If first then
-	if (!self->row) {
-		self->row = row;
+	if (!self->head) {
+		self->head = row;
 		return self;
 	}
 
 	// Link
 	row->prev = NULL;
-	row->next = self->row;
-	self->row->prev = row;
+	row->next = self->head;
+	self->head->prev = row;
 
 	// Update root
-	self->row = row;
+	self->head = row;
 
 	// Done
 	return self;
 }
 
+// FIXME
+// TODO: not worked links and memory leaks
 CapFile*
 capfile_push_prev(CapFile* self, CapRow* pushrow, CapRow* origin) {
+	if (pushrow == self->head || pushrow == origin) {
+		return self;
+	}
+
 	caprow_unlink(pushrow);
 
-	pushrow->next = origin;
 	pushrow->prev = origin->prev;
+	pushrow->next = origin;
 
 	if (origin->prev) {
 		origin->prev->next = pushrow;
-		origin->prev = pushrow;
 	}
 
-	if (origin == self->row) {
-		self->row = pushrow;
-	}
+	origin->prev = pushrow;
 
 	return self;
 }
 
 CapFile*
 capfile_push_next(CapFile* self, CapRow* pushrow, CapRow* origin) {
+	if (pushrow == self->head || pushrow == origin) {
+		return self;
+	}
+
 	caprow_unlink(pushrow);
 
 	pushrow->prev = origin;
@@ -445,47 +452,47 @@ capfile_pop(CapFile* self) {
 
 		caprow_delete(tail);
 		
-		if (tail == self->row) {
-			self->row = NULL;
+		if (tail == self->head) {
+			self->head = NULL;
 		}
 	}
 }
 
 void
 capfile_clear(CapFile* self) {
-	for (CapRow* cur = self->row; cur; ) {
+	for (CapRow* cur = self->head; cur; ) {
 		CapRow* del = cur;
 		cur = cur->next;
 		caprow_delete(del);
 	}
-	self->row = NULL;
+	self->head = NULL;
 }
 
 CapRow*
 capfile_row(CapFile* self) {
-	return self->row;
+	return self->head;
 }
 
 void
 capfile_set_row(CapFile* self, CapRow* row) {
-	self->row = row;
+	self->head = row;
 }
 
 CapRow const*
 capfile_row_const(CapFile const* self) {
-	return self->row;
+	return self->head;
 }
 
 void
 capfile_display(CapFile const* self) {
-	for (CapRow const* row = self->row; row; row = row->next) {
+	for (CapRow const* row = self->head; row; row = row->next) {
 		caprow_display(row);
 	}
 }
 
 void
 capfile_write_to(CapFile const* self, FILE* fout) {
-	for (CapRow const* row = self->row; row; row = row->next) {
+	for (CapRow const* row = self->head; row; row = row->next) {
 		caprow_write_to(row, fout);
 	}	
 }
@@ -508,13 +515,21 @@ void
 capfile_display_rows(CapFile const* cfile, int nlimit) {
 	printf("==== display ====\n");
 	int i = 0;
-	for (CapRow const* r = cfile->row; r && i++ < nlimit; r = r->next) {
+	for (CapRow const* r = cfile->head; r && i++ < nlimit; r = r->next) {
 		capfile_display_row(r);
 		printf("\n");
 	}
 	printf("\n");
 }
 
+int
+capfile_length(CapFile const* self) {
+	int i = 0;
+	for (CapRow const* r = self->head; r; r = r->next) {
+		++i;
+	}
+	return i;
+}
 
 #if defined(TEST_CAPFILE)
 #include "file.h"
@@ -583,7 +598,7 @@ test_remove(int argc, char* argv[]) {
 
 	caprow_remove_cols(row, CapColBrief);
 
-	for (CapCol* col = row->col; col; col = col->next) {
+	for (CapCol* col = row->head; col; col = col->next) {
 		printf("[%d:%s]\n", col->type, buffer_get_const(col->buffer));
 	}
 
@@ -593,30 +608,32 @@ test_remove(int argc, char* argv[]) {
 }
 
 void
-test_display_row(CapRow const* row) {
-	printf("[%10p] <- [%10p] -> [%10p]", row->prev, row, row->next);
-}
-
-void
-test_display_col(CapCol const* col) {
-}
-
-void
 test_display_push_row(CapRow const* row) {
-	printf("Current row [%10p]\n", row);
+	printf("push row [%10p]\n", row);
 }
 
 void
 test_display_capfile(CapFile const* cfile) {
 	printf("==== display ====\n");
-	for (CapRow const* r = cfile->row; r; r = r->next) {
-		test_display_row(r);
-		for (CapCol const* c = r->col; c; c = c->next) {
-			test_display_col(c);
-		}
+	for (CapRow const* r = cfile->head; r; r = r->next) {
+		capfile_display_row(r);
 		printf("\n");
 	}
 	printf("\n");
+}
+
+#include <assert.h>
+CapRow*
+test_get_origin(CapFile* cfile) {
+	int nlim = rand() % 100;
+	CapRow* ret = cfile->head;
+
+	for (CapRow* r = cfile->head; r && nlim > 0; r = r->next) {
+		--nlim;
+		ret = r;
+	}
+	assert(ret && "r is null");
+	return ret;
 }
 
 int
@@ -624,24 +641,22 @@ test_io(int argc, char* argv[]) {
 	Buffer* buffer = buffer_new();
 	CapFile* cfile = capfile_new();
 	CapRow* r = caprow_new();
-	CapRow* tmp = r;
 
 	for (; buffer_getline(buffer, stdin); ) {
 		char const* cmd = buffer_get_const(buffer);
+		test_display_push_row(r);
+
 		if (strcmp(cmd, "r") == 0) {
-			test_display_push_row(r);
 			capfile_push(cfile, r);
 			r = caprow_new();
+		} else if (strcmp(cmd, "rp") == 0) {
+			capfile_push_prev(cfile, r, test_get_origin(cfile));
+		} else if (strcmp(cmd, "rn") == 0) {
+			capfile_push_next(cfile, r, test_get_origin(cfile));
 		} else if (strcmp(cmd, "rf") == 0) {
-			test_display_push_row(r);
 			capfile_push_front(cfile, r);			
 			r = caprow_new();
-		} else if (strcmp(cmd, "rn") == 0) {
-			test_display_push_row(r);
-			capfile_push_next(r, r);
-			r = caprow_new();
 		} else if (strcmp(cmd, "mrf") == 0) {
-			test_display_push_row(r);
 			capfile_move_to_front(cfile, r);
 			r = caprow_new();			
 		} else if (strcmp(cmd, "c") == 0) {

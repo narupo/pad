@@ -200,12 +200,13 @@ command_make_capfile_from_stream(Command* self, FILE* fin) {
 		}
 
 		// If first col is command then
-		CapCol* col = caprow_col(row);
+		CapColList* cols = caprow_cols(row);
+		CapCol* col = capcollist_front(cols);
 		CapColType curtype = capcol_type(col);
 
 		if (curtype == CapColCommand) {
 			// Read from command to CapFile
-			char const* colval = capcol_get_const(col);
+			char const* colval = capcol_value_const(col);
 			CsvLine* cmdline = csvline_new_parse_line(colval, ' ');
 			int argc = csvline_length(cmdline);
 			char** argv = csvline_escape_delete(cmdline);
@@ -221,7 +222,8 @@ command_make_capfile_from_stream(Command* self, FILE* fin) {
 			caprow_delete(row);
 
 		} else {
-			capfile_push(dstfile, row);
+			CapRowList* rows = capfile_rows(dstfile);
+			caprowlist_move_to_back(rows, row);
 		}
 	}
 
@@ -234,51 +236,67 @@ command_make_capfile_from_stream(Command* self, FILE* fin) {
 static int
 command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
 	// Move goto row to mark
-	for (CapRow* row = capfile_row(dstfile); row; ) {
+	CapRowList* rows = capfile_rows(dstfile);
+	CapRow* gotos[1000] = {0};  // +1 for final nul
+	CapRow* marks[1000] = {0};  // +1 for final nul
+	int g = 0;
+	int m = 0;
 
-		CapCol* col = caprow_col(row);
-		CapColType type = capcol_type(col);
-
-		if (type == CapColGoto) {
-			CapRow* move = row;
-			row = caprow_next(row);
-
-			// Go to next of @cap mark
-			for (CapRow* row = capfile_row(dstfile); row; row = caprow_next(row)) {
-				CapCol* col = caprow_col(row);
-				if (capcol_type(col) == CapColMark) {
-					if (strcmp(capcol_get_const(col), capcol_get_const(caprow_col(move))) == 0) {
-						caprow_remove_cols(move, CapColGoto);
-						capcol_set_type(caprow_col(move), CapColText);
-						capfile_push_prev(dstfile, move, row);
-						break;
-					}
-				}
+	for (CapRow* r = caprowlist_back(rows); r; r = caprow_prev(r)) {
+		CapColList* cols = caprow_cols(r);
+		CapCol* front = capcollist_front(cols);
+		CapColType ctype = capcol_type(front);
+		if (ctype == CapColGoto) {
+			// Goto label
+			if (g < NUMOF(gotos)) {
+				gotos[g++] = r;
 			}
-		} else {
-			row = caprow_next(row);
+		} else if (ctype == CapColMark) {
+			if (m < NUMOF(marks)) {
+				marks[m++] = r;
+			}
 		}
 	}
+
+	for (int i = 0; i < g; ++i) {
+		CapRow* gotorow = gotos[i];
+		char const* gotoval = capcol_value_const(capcollist_front(caprow_cols(gotorow)));
+		
+		for (int j = 0; j < m; ++j) {
+			CapRow* markrow = marks[j];
+			char const* markval = capcol_value_const(capcollist_front(caprow_cols(markrow)));
+
+			if (strcmp(gotoval, markval) == 0) {
+				caprow_remove_cols(gotorow, CapColGoto);
+				caprowlist_move_to_after(rows, gotorow, markrow);
+				// caprowlist_move_to_back(rows, gotorow);
+				break;
+			}
+		}
+	}	
 
 	return 0;
 }
 
 static int
 command_sort_capfile(Command const* self, CapFile* dstfile) {
-	// Edit @cap goto
+	// Sort by @cap goto
 	command_sort_capfile_goto(self, dstfile);
 
 	// Control CapFile by @cap syntax
-	for (CapRow* row = capfile_row(dstfile); row; ) {
+	CapRowList* rows = capfile_rows(dstfile);
+
+	for (CapRow* row = caprowlist_front(rows); row; ) {
 
 		// Move brief row to front of capfile
-		CapCol* col = caprow_col(row);
+		CapColList* cols = caprow_cols(row);
+		CapCol* col = capcollist_front(cols);
 		CapColType type = capcol_type(col);
 
 		if (type == CapColBrief) {
 			CapRow* move = row;
 			row = caprow_next(row);  // Increment
-			capfile_move_to_front(dstfile, move);
+			caprowlist_move_to_front(rows, move);
 		} else {
 			row = caprow_next(row);  // Increment
 		}
@@ -290,14 +308,17 @@ command_sort_capfile(Command const* self, CapFile* dstfile) {
 static int
 command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout) {
 	// Display
-	for (CapRow const* row = capfile_row_const(dstfile); row; row = caprow_next_const(row)) {
+	CapRowList const* rows = capfile_rows_const(dstfile);
+
+	for (CapRow const* row = caprowlist_front_const(rows); row; row = caprow_next_const(row)) {
 		if (self->is_debug) {
 			caprow_display(row);
 			continue;
 		}
 
 		// Text column only
-		CapCol const* col = caprow_col_const(row);
+		CapColList const* cols = caprow_cols_const(row);
+		CapCol const* col = capcollist_front_const(cols);
 		if (capcol_type(col) != CapColText) {
 			continue;
 		}
@@ -308,7 +329,8 @@ command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout)
 			if (capcol_type(col) != CapColText) {
 				continue;
 			}
-			capcol_write_to(col, fout);
+			char const* val = capcol_value_const(col);
+			printf("%s", val);
 		}
 		printf("\n");
 	}
@@ -384,7 +406,8 @@ make_usage(void) {
 		"\n"
 		"The options are:\n"
 		"\n"
-		"\t-h, --help\tdisplay usage\n"
+		"\t-h, --help display usage\n"
+		"\t-d,        debug mode\n"
 		"\n"
 	);
 	exit(EXIT_FAILURE);
@@ -411,12 +434,14 @@ make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 		return 2;
 	}
 
-	// Edit CapFile
+	// Sort CapFile by @cap roules
 	command_sort_capfile(self, srcfile);
 
 	// Link srcfile to dstfile
-	CapRow* srcrow = capfile_escape_delete(srcfile);
-	capfile_push(dstfile, srcrow);
+	CapRowList* dstrows = capfile_rows(dstfile);
+	CapRowList* srcrows = capfile_rows(srcfile);
+	caprowlist_push_back_list(dstrows, srcrows);
+	capfile_delete(srcfile);
 
 	// Done
 	file_close(fin);

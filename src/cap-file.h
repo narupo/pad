@@ -162,6 +162,9 @@ capfile_pop(CapFile* self);
 void
 capfile_clear(CapFile* self);
 
+int
+capfile_length(CapFile const* self);
+
 void
 capfile_display(CapFile const* self);
 

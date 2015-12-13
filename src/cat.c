@@ -155,31 +155,24 @@ cat_read_row(Command const* self, Buffer const* buffer, CapParser* parser) {
 static int
 command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 	Buffer* buffer = buffer_new();
-	if (!buffer) {
-		WARN("Failed to construct buffer");
-		goto fail_buffer;
-	}
-
 	CapParser* parser = capparser_new();
 
 	for (; buffer_getline(buffer, fin); ) {
 		CapRow* row = cat_read_row(self, buffer, parser);
-		if (!row) {
+		if (self->is_debug) {
+			caprow_display(row);
 			continue;
 		}
 
 		// Text only
-		if (!self->is_debug && capcol_type(caprow_col(row)) != CapColText) {
+		CapCol const* col = capcollist_front(caprow_cols(row));
+		if (capcol_type(col) != CapColText) {
 			caprow_delete(row);
 			continue;
 		}
 
-		for (CapCol const* col = caprow_col(row); col; col = capcol_next_const(col)) {
-			if (self->is_debug) {
-				capcol_display(col);
-			} else {
-				fprintf(fout, "%s", capcol_get_const(col));
-			}
+		for (; col; col = capcol_next_const(col)) {
+			fprintf(fout, "%s", capcol_value_const(col));
 		}
 		fprintf(fout, "\n");
 
@@ -190,9 +183,6 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 	capparser_delete(parser);
 	buffer_delete(buffer);
 	return 0;
-
-fail_buffer:
-	return 1;
 }
 
 /*********
@@ -255,8 +245,9 @@ cat_usage(void) {
 		"\n"
 		"The options are:\n"
 		"\n"
-		"\t-h, --help\tdisplay usage\n"
-		"\t-[0-9]\t\treplace value of key number\n"
+		"\t-h, --help display usage\n"
+		"\t-[0-9]     replace value of key number\n"
+		"\t-d         debug mode\n"
 		"\n"
 	);
 	exit(EXIT_FAILURE);
@@ -274,6 +265,7 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	// Ready
 	CapParser* parser = capparser_new();
 	Buffer* buffer = buffer_new();
+	CapRowList* dstrows = capfile_rows(dstfile);
 
 	// Run, push all file to CapFile
 	for (int i = self->optind; i < self->argc; ++i) {
@@ -294,7 +286,7 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 		// Read and push to CapFile
 		for (; buffer_getline(buffer, fin); ) {
 			CapRow* row = cat_read_row(self, buffer, parser);
-			capfile_push(dstfile, row);
+			caprowlist_move_to_back(dstrows, row);
 		}
 
 		// Done

@@ -7,7 +7,7 @@
 #include "file.h"
 #include "csvline.h"
 #include "atcap.h"
-#include "cap-file.h"
+#include "cap-file2.h"
 
 #include "cat.h"
 #include "run.h"
