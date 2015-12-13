@@ -1,16 +1,13 @@
-#ifndef CAPFILE_H
-#define CAPFILE_H
+#ifndef CAPFILE2_H
+#define CAPFILE2_H
 
 #include "util.h"
 #include "buffer.h"
 
-typedef struct CapCol CapCol;
-typedef struct CapRow CapRow;
-typedef struct CapFile CapFile;
-
-/***************
-* Column Types *
-***************/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
 
 typedef enum {
 	CapColNull = 0,
@@ -24,52 +21,162 @@ typedef enum {
 	CapColGoto,
 } CapColType;
 
-/*********
+
+/*******************
+* CapColList types *
+*******************/
+
+typedef struct CapCol CapCol;
+typedef struct CapColList CapColList;
+
+/***********
 * CapCol *
-*********/
+***********/
+
+/************************
+* CapCol delete and new *
+************************/
 
 void
 capcol_delete(CapCol* self); 
 
 CapCol*
-capcol_new(void); 
+capcol_new(void);
 
 CapCol*
-capcol_new_str(char const* value); 
+capcol_new_from_str(char const* value);
 
-void
-capcol_set_copy(CapCol* self, char const* value); 
-
-void
-capcol_set_type(CapCol* self, CapColType type);
-
-CapColType
-capcol_type(CapCol const* self);
+/****************
+* CapCol getter *
+****************/
 
 char const*
-capcol_get_const(CapCol const* self);
-
-void
-capcol_display(CapCol const* self);
-
-void
-capcol_write_to(CapCol const* self, FILE* fout);
+capcol_value_const(CapCol const* self); 
 
 CapCol*
-capcol_prev(CapCol* self);
+capcol_prev(CapCol* self); 
 
 CapCol*
-capcol_next(CapCol* self);
+capcol_next(CapCol* self); 
 
 CapCol const*
-capcol_prev_const(CapCol const* self);
+capcol_prev_const(CapCol const* self); 
 
 CapCol const*
-capcol_next_const(CapCol const* self);
+capcol_next_const(CapCol const* self); 
+
+CapColType
+capcol_type(CapCol const* self); 
+
+/****************
+* CapCol setter *
+****************/
+
+void
+capcol_set_type(CapCol* self, CapColType type); 
+
+void
+capcol_set_value(CapCol* self, char const* value);
+
+void
+capcol_set_value_copy(CapCol* self, char const* value);
+
+/*************
+* CapColList *
+*************/
+
+void
+capcollist_delete(CapColList* self); 
+
+CapColList*
+capcollist_new(void); 
+
+/********************
+* CapColList getter *
+********************/
+
+CapCol*
+capcollist_front(CapColList* self); 
+
+CapCol*
+capcollist_back(CapColList* self); 
+
+CapCol const*
+capcollist_front_const(CapColList const* self); 
+
+CapCol const*
+capcollist_back_const(CapColList const* self); 
+
+bool
+capcollist_empty(CapColList const* self); 
+
+/********************
+* CapColList setter *
+********************/
+
+void
+capcollist_clear(CapColList* self); 
+
+void
+capcollist_remove(CapColList* self, CapCol* node); 
+
+CapCol*
+capcollist_push_back(CapColList* self, char const* value); 
+
+CapCol*
+capcollist_push_front(CapColList* self, char const* value); 
+
+CapCol*
+capcollist_pop_back(CapColList* self); 
+
+CapCol*
+capcollist_pop_front(CapColList* self); 
+
+void
+capcollist_move_to_front(CapColList* self, CapCol* node); 
+
+void
+capcollist_move_to_back(CapColList* self, CapCol* node); 
+
+CapCol*
+capcollist_insert_after(CapColList* self, char const* value, CapCol* mark); 
+
+CapCol*
+capcollist_insert_before(CapColList* self, char const* value, CapCol* mark); 
+
+/***********************
+* CapColList algorithm *
+***********************/
+
+CapCol*
+capcollist_find_front(CapColList* self, char const* value); 
+
+CapCol const*
+capcollist_find_front_const(CapColList const* self, char const* value); 
+
+CapCol*
+capcollist_find_back(CapColList* self, char const* value); 
+
+CapCol const*
+capcollist_find_back_const(CapColList const* self, char const* value); 
+
+
+
+
+/*******************
+* CapRowList types *
+*******************/
+
+typedef struct CapRow CapRow;
+typedef struct CapRowList CapRowList;
 
 /*********
 * CapRow *
 *********/
+
+/************************
+* CapRow delete and new *
+************************/
 
 void
 caprow_delete(CapRow* self); 
@@ -77,116 +184,149 @@ caprow_delete(CapRow* self);
 CapRow*
 caprow_new(void); 
 
-CapCol*
-caprow_find_tail(CapRow* self); 
+CapRow*
+caprow_new_from_cols(CapColList* cols);
+
+/****************
+* CapRow getter *
+****************/
+
+CapColList*
+caprow_cols(CapRow* self); 
+
+CapColList const*
+caprow_cols_const(CapRow const* self); 
 
 CapRow*
-caprow_push(CapRow* self, CapCol* col); 
+caprow_prev(CapRow* self); 
 
 CapRow*
-caprow_push_front(CapRow* self, CapCol* col);
+caprow_next(CapRow* self); 
 
-CapFile*
-capfile_push_prev(CapFile* self, CapRow* pushrow, CapRow* origin);
+CapRow const*
+caprow_prev_const(CapRow const* self); 
 
-CapFile*
-capfile_push_next(CapFile* self, CapRow* pushrow, CapRow* origin);
-
-CapRow*
-caprow_push_copy(CapRow* self, CapCol const* col);
-
-void
-caprow_pop(CapRow* self); 
-
-void
-caprow_remove_cols(CapRow* self, CapColType remtype);
-
-void
-caprow_clear(CapRow* self);
+CapRow const*
+caprow_next_const(CapRow const* self); 
 
 void
 caprow_display(CapRow const* self);
 
-void
-caprow_unlink(CapRow* self);
+/****************
+* CapRow setter *
+****************/
 
 void
-caprow_write_to(CapRow const* self, FILE* fout);
+caprow_remove_cols(CapRow* self, CapColType remtype);
 
-CapCol*
-caprow_col(CapRow* self);
+/*************
+* CapRowList *
+*************/
 
-CapCol const*
-caprow_col_const(CapRow const* self);
+void
+caprowlist_delete(CapRowList* self); 
+
+CapRowList*
+caprowlist_new(void); 
+
+/********************
+* CapRowList getter *
+********************/
 
 CapRow*
-caprow_next(CapRow* self);
-
-CapRow const*
-caprow_next_const(CapRow const* self);
+caprowlist_front(CapRowList* self); 
 
 CapRow*
-caprow_prev(CapRow* self);
+caprowlist_back(CapRowList* self); 
 
 CapRow const*
-caprow_prev_const(CapRow const* self);
+caprowlist_front_const(CapRowList const* self); 
+
+CapRow const*
+caprowlist_back_const(CapRowList const* self); 
 
 bool
-caprow_has_cols(CapRow const* self);
+caprowlist_empty(CapRowList const* self); 
+
+/********************
+* CapRowList setter *
+********************/
+
+void
+caprowlist_clear(CapRowList* self); 
+
+void
+caprowlist_remove(CapRowList* self, CapRow* node); 
+
+CapRow*
+caprowlist_push_back(CapRowList* self); 
+
+CapRow*
+caprowlist_push_front(CapRowList* self); 
+
+CapRowList*
+caprowlist_push_back_list(CapRowList* self, CapRowList* other);
+
+CapRowList*
+caprowlist_push_front_list(CapRowList* self, CapRowList* other);
+
+CapRow*
+caprowlist_pop_back(CapRowList* self); 
+
+CapRow*
+caprowlist_pop_front(CapRowList* self); 
+
+void
+caprowlist_move_to_front(CapRowList* self, CapRow* node); 
+
+void
+caprowlist_move_to_back(CapRowList* self, CapRow* node); 
+
+CapRow*
+caprowlist_move_to_after(CapRowList* self, CapRow* insert, CapRow* mark); 
+
+CapRow*
+caprowlist_move_to_before(CapRowList* self, CapRow* insert, CapRow* mark); 
+
+void
+caprowlist_move_other_to_back(CapRowList* self, CapRowList* other);
+
+/***********************
+* CapRowList algorithm *
+***********************/
+
+CapRow*
+caprowlist_find_front(CapRowList* self, CapColList* cols); 
+
+CapRow const*
+caprowlist_find_front_const(CapRowList const* self, CapColList const* cols); 
+
+CapRow*
+caprowlist_find_back(CapRowList* self, CapColList* cols); 
+
+CapRow const*
+caprowlist_find_back_const(CapRowList const* self, CapColList const* cols); 
+
 
 /**********
 * CapFile *
 **********/
 
+typedef struct CapFile CapFile;
+
 void
 capfile_delete(CapFile* self); 
-
-CapRow*
-capfile_escape_delete(CapFile* self);
 
 CapFile*
 capfile_new(void); 
 
-CapRow*
-capfile_find_tail(CapFile* self); 
+CapRowList*
+capfile_rows(CapFile* self);  
 
-CapFile*
-capfile_push(CapFile* self, CapRow* row); 
-
-CapFile*
-capfile_push_front(CapFile* self, CapRow* row);
-
-void
-capfile_pop(CapFile* self); 
-
-void
-capfile_clear(CapFile* self);
-
-int
-capfile_length(CapFile const* self);
+CapRowList const*
+capfile_rows_const(CapFile const* self);  
 
 void
 capfile_display(CapFile const* self);
-
-void
-capfile_display_row(CapRow const* row);
-
-void
-capfile_display_rows(CapFile const* cfile, int nlimit);
-
-void
-capfile_write_to(CapFile const* self, FILE* fout);
-
-CapRow*
-capfile_row(CapFile* self);
-
-void
-capfile_set_row(CapFile* self, CapRow* row);
-
-CapRow const*
-capfile_row_const(CapFile const* self);
-
-void
-capfile_move_to_front(CapFile* self, CapRow* target);
 
 #endif
