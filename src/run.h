@@ -4,7 +4,7 @@
 #include "util.h"
 #include "term.h"
 #include "config.h"
-#include "cap-file2.h"
+#include "cap-file.h"
 #include "atcap.h"
 
 #include <stdio.h>

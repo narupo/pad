@@ -4,7 +4,7 @@
 #include "util.h"
 #include "buffer.h"
 #include "strarray.h"
-#include "cap-file2.h"
+#include "cap-file.h"
 #include "file.h"
 #include <stdio.h>
 #include <stdlib.h>
