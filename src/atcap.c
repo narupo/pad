@@ -42,10 +42,11 @@ static int capparser_mode_goto(CapParser* self);
 static int
 capparser_push_col(CapParser* self, CapColType type) {
 	// Ready
-	buffer_push(self->buf, 0);
+	buffer_push(self->buf, '\0');
 
 	// Push column to temp row
-	CapCol* col = capcol_new_from_str(buffer_get_const(self->buf));
+	char const* str = buffer_get_const(self->buf);
+	CapCol* col = capcol_new_from_str(str);
 	if (!col) {
 		WARN("Failed to construct CapCol");
 		return 1;
@@ -71,7 +72,7 @@ capparser_push_col_str(CapParser* self, char const* str, CapColType type) {
 static int
 capparser_push_front_col(CapParser* self, CapColType type) {
 	// Ready
-	buffer_push(self->buf, 0);
+	buffer_push(self->buf, '\0');
 
 	// Push column to temp row
 	CapCol* col = capcol_new_from_str(buffer_get_const(self->buf));
@@ -450,7 +451,7 @@ capparser_parse_line(CapParser* self, char const* line) {
 	// Run parser
 	for (; self->cur < self->end; ) {
 
-		// Run current mode function	
+		// Run current mode function
 		int res = self->mode(self);
 
 		// Check results
@@ -468,11 +469,13 @@ capparser_parse_line(CapParser* self, char const* line) {
 		// Ready return results of parse and next parse by new CapRow
 		CapColList* cols = self->columns;  // Save
 		self->columns = capcollist_new();  // Ready next parse
-		return caprow_new_from_cols(cols);
+		CapRow* row = caprow_new_from_cols(cols);
+		return row;
 	}
 
 	fail: {
 		WARN("Failed to parse of \"%s\"", line);
+		capcollist_clear(self->columns);
 		CapColList* columns = capcollist_new();
 		capcollist_push_back(columns, "");
 		return caprow_new_from_cols(columns);;
@@ -559,9 +562,13 @@ test_atcap_line(int argc, char* argv[]) {
 		char const* line = buffer_get_const(buf);
 
 		CapRow* row = capparser_parse_line(capparser, line);
+		printf("parse line: "); caprow_display(row);
+
 		row = capparser_convert_braces(capparser, row, braces);
+		printf("convert braces: "); caprow_display(row);
+
 		caprow_remove_cols(row, CapColGoto);
-		caprow_display(row);
+		printf("remove cols: "); caprow_display(row);
 		
 		CapRowList* rows = capfile_rows(capfile);
 		caprowlist_move_to_back(rows, row);

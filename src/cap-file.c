@@ -63,6 +63,7 @@ capcol_new_from_str(char const* value) {
 	}
 
 	self->value = buffer_new_str(value);
+	buffer_push(self->value, '\0');
 
 	return self;
 }
@@ -204,7 +205,11 @@ capcollist_clear(CapColList* self) {
 
 static void
 capcollist_unlink(CapColList* self, CapCol* node) {
-	if (self->head == self->tail) {
+	if (!self->head) {
+		return;
+	}
+
+	if (node == self->head && node == self->tail) {
 		self->head = self->tail = NULL;
 		return;
 	}
@@ -708,7 +713,11 @@ caprowlist_clear(CapRowList* self) {
 
 static void
 caprowlist_unlink(CapRowList* self, CapRow* node) {
-	if (self->head == self->tail) {
+	if (!self->head) {
+		return;
+	}
+
+	if (node == self->head && node == self->tail) {
 		self->head = self->tail = NULL;
 		return;
 	}

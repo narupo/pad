@@ -46,6 +46,13 @@ capcol_new(void);
 CapCol*
 capcol_new_from_str(char const* value);
 
+/*****************
+* CapCol display *
+*****************/
+
+void
+capcol_display(CapCol const* self);
+
 /****************
 * CapCol getter *
 ****************/
