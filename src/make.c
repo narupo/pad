@@ -237,8 +237,8 @@ static int
 command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
 	// Move goto row to mark
 	CapRowList* rows = capfile_rows(dstfile);
-	CapRow* gotos[1000] = {0};  // +1 for final nul
-	CapRow* marks[1000] = {0};  // +1 for final nul
+	CapRow* gotos[1000] = {0};
+	CapRow* marks[1000] = {0};
 	int g = 0;
 	int m = 0;
 
