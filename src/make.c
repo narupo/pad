@@ -263,7 +263,8 @@ command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
 		CapRow* gotorow = gotos[i];
 		char const* gotoval = capcol_value_const(capcollist_front(caprow_cols(gotorow)));
 		
-		for (int j = 0; j < m; ++j) {
+		int j;
+		for (j = 0; j < m; ++j) {
 			CapRow* markrow = marks[j];
 			char const* markval = capcol_value_const(capcollist_front(caprow_cols(markrow)));
 
@@ -273,6 +274,12 @@ command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
 				break;
 			}
 		}
+
+		if (j == m) {
+			// Not found mark
+			caprow_remove_cols(gotorow, CapColGoto);  // Text only
+		}
+
 	}	
 
 	return 0;

@@ -48,12 +48,19 @@ capcol_new(void) {
 		perror("Failed to allocate memory");
 		return NULL;
 	}
+
+	self->value = buffer_new();
+
 	return self;
 }
 
 CapCol*
 capcol_new_from_str(char const* value) {
-	CapCol* self = capcol_new();
+	CapCol* self = (CapCol*) calloc(1, sizeof(CapCol));
+	if (!self) {
+		perror("Failed to allocate memory");
+		return NULL;
+	}
 
 	self->value = buffer_new_str(value);
 
@@ -197,16 +204,25 @@ capcollist_clear(CapColList* self) {
 
 static void
 capcollist_unlink(CapColList* self, CapCol* node) {
+	if (self->head == self->tail) {
+		self->head = self->tail = NULL;
+		return;
+	}
+
 	// Is head node then
 	if (node == self->head) {
-		self->head = self->head->next;
-		self->head->prev = NULL;
+		if (self->head) {
+			self->head = self->head->next;
+			self->head->prev = NULL;
+		}
 	}
 
 	// Is tail node then
 	if (node == self->tail) {
-		self->tail = self->tail->prev;
-		self->tail->next = NULL;
+		if (self->tail) {
+			self->tail = self->tail->prev;
+			self->tail->next = NULL;
+		}
 	}
 
 	// Other
@@ -220,6 +236,15 @@ capcollist_unlink(CapColList* self, CapCol* node) {
 
 	// Unlink
 	node->next = node->prev = NULL;
+}
+
+int
+capcolist_length(CapColList const* self) {
+	int len = 0;
+	for (CapCol const* c = self->head; c; c = c->next) {
+		++len;
+	}
+	return len;
 }
 
 void
@@ -683,6 +708,11 @@ caprowlist_clear(CapRowList* self) {
 
 static void
 caprowlist_unlink(CapRowList* self, CapRow* node) {
+	if (self->head == self->tail) {
+		self->head = self->tail = NULL;
+		return;
+	}
+
 	// Is head node then
 	if (node == self->head) {
 		self->head = self->head->next;

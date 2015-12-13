@@ -32,7 +32,7 @@ static int capparser_mode_brief(CapParser* self);
 static int capparser_mode_tag(CapParser* self);
 static int capparser_mode_command(CapParser* self);
 static int capparser_mode_brace(CapParser* self);
-static int capparser_mode_label(CapParser* self);
+static int capparser_mode_mark(CapParser* self);
 static int capparser_mode_goto(CapParser* self);
 
 /******************
@@ -158,8 +158,7 @@ capparser_mode_atcap(CapParser* self) {
 		{"brief", capparser_mode_brief},
 		{"tag", capparser_mode_tag},
 		{"{",  capparser_mode_brace},
-		{"mark", capparser_mode_label},
-		{"label", capparser_mode_label},
+		{"mark", capparser_mode_mark},
 		{"goto", capparser_mode_goto},
 		// Cap commands
 		{"cat", capparser_mode_command},
@@ -352,7 +351,7 @@ capparser_mode_brace(CapParser* self) {
 }
 
 static int
-capparser_mode_label(CapParser* self) {
+capparser_mode_mark(CapParser* self) {
 	capparser_print_mode(self, "mark");
 
 	if (is_newline(*self->cur)) {
@@ -467,17 +466,15 @@ capparser_parse_line(CapParser* self, char const* line) {
 
 	done: {
 		// Ready return results of parse and next parse by new CapRow
-		CapColList* cols = self->columns;
-		self->columns = capcollist_new();
+		CapColList* cols = self->columns;  // Save
+		self->columns = capcollist_new();  // Ready next parse
 		return caprow_new_from_cols(cols);
 	}
 
 	fail: {
 		WARN("Failed to parse of \"%s\"", line);
 		CapColList* columns = capcollist_new();
-		CapCol* column = capcol_new_from_str(line);
-		capcol_set_type(column, CapColNull);
-		capcollist_move_to_back(columns, column);
+		capcollist_push_back(columns, "");
 		return caprow_new_from_cols(columns);;
 	}
 }
@@ -563,6 +560,7 @@ test_atcap_line(int argc, char* argv[]) {
 
 		CapRow* row = capparser_parse_line(capparser, line);
 		row = capparser_convert_braces(capparser, row, braces);
+		caprow_remove_cols(row, CapColGoto);
 		caprow_display(row);
 		
 		CapRowList* rows = capfile_rows(capfile);
