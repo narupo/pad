@@ -279,8 +279,7 @@ command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
 			// Not found mark
 			caprow_remove_cols(gotorow, CapColGoto);  // Text only
 		}
-
-	}	
+	}
 
 	return 0;
 }
@@ -298,6 +297,10 @@ command_sort_capfile(Command const* self, CapFile* dstfile) {
 		// Move brief row to front of capfile
 		CapColList* cols = caprow_cols(row);
 		CapCol* col = capcollist_front(cols);
+		if (!col) {
+			row = caprow_next(row);
+			continue;
+		}
 		CapColType type = capcol_type(col);
 
 		if (type == CapColBrief) {
@@ -326,7 +329,7 @@ command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout)
 		// Text column only
 		CapColList const* cols = caprow_cols_const(row);
 		CapCol const* col = capcollist_front_const(cols);
-		if (capcol_type(col) != CapColText) {
+		if (!col || capcol_type(col) != CapColText) {
 			continue;
 		}
 
