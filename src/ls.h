@@ -5,6 +5,7 @@
 #include "file.h"
 #include "config.h"
 #include "strarray.h"
+#include "atcap.h"
 
 void _Noreturn
 ls_usage(void);

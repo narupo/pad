@@ -245,6 +245,10 @@ command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
 	for (CapRow* r = caprowlist_back(rows); r; r = caprow_prev(r)) {
 		CapColList* cols = caprow_cols(r);
 		CapCol* front = capcollist_front(cols);
+		if (!front) {
+			continue;
+		}
+		
 		CapColType ctype = capcol_type(front);
 		if (ctype == CapColGoto) {
 			if (g < NUMOF(gotos)) {
