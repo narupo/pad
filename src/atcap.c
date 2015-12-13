@@ -478,7 +478,7 @@ capparser_parse_line(CapParser* self, char const* line) {
 		capcollist_clear(self->columns);
 		CapColList* columns = capcollist_new();
 		capcollist_push_back(columns, "");
-		return caprow_new_from_cols(columns);;
+		return caprow_new_from_cols(columns);  // Return null object
 	}
 }
 

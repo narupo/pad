@@ -123,32 +123,6 @@ ls_usage(void) {
 	exit(EXIT_FAILURE);
 }
 
-static char const*
-grep_brief(char const* line) {
-	// Find at cap
-	char const* target = "@cap";
-	char* found = strstr(line, target);
-	if (!found) {
-		goto fail_found;
-	}
-
-	// Skip spaces
-	size_t tarlen = strlen(target);
-	char const* p = strskip(found + tarlen, " \t");
-
-	// Is brief command?
-	target = "brief";
-	tarlen = strlen(target);
-
-	if (*p && strncmp(p, target, tarlen) == 0) {
-		// Display brief
-		return p + tarlen;
-	}
-
-fail_found:
-	return NULL;
-}
-
 static int
 command_display_atcap(Command const* self, Config const* config, char const* head, char const* tail) {
 	// Read file for check of @cap command line
@@ -164,21 +138,29 @@ command_display_atcap(Command const* self, Config const* config, char const* hea
 	}
 
 	// Read lines for @cap command
+	CapParser* parser = capparser_new();
+
 	for (; buffer_getline(self->buffer, fin); ) {
+		CapRow* row = capparser_parse_line(parser, buffer_get_const(self->buffer));
+		CapCol* front = capcollist_front(caprow_cols(row));
+		if (!front) {
+			continue;
+		}
+
 		// Display brief
-		if (self->opt_disp_brief) {
-			char const* brief = grep_brief(buffer_getc(self->buffer));
+		if (self->opt_disp_brief && capcol_type(front) == CapColBrief) {
+			char const* brief = capcol_value_const(front);
 			if (brief) {
 				term_printf("%s", brief);
 				if (brief[strlen(brief)-1] != '.') {
-					term_printf(".");
+					term_printf(". ");
 				}
-				break;
 			}
 		}
 	}
 
 	// Done
+	capparser_delete(parser);
 	file_close(fin);
 	return 0;
 
