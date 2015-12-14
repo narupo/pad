@@ -7,18 +7,18 @@
 typedef struct Command Command;
 
 struct Command {
-	char const* name;			// This command name
-	int argc;					// Like a main function arguments
-	char** argv;				// "
-	int optind;					// Save getopt's optind
+	char const* name;  // This command name
+	int argc;  // Like a main function arguments
+	char** argv;  // "
+	int optind;  // Save getopt's optind
 	StringArray* replace_list;  // Replace string list for @cap brace
 
 	// Option flags
-	bool is_debug;				// Is debug mode
-	char* separate_name;		// Is separate display mode
+	bool is_debug;  // Is debug mode
+	char* separate_name;  // Is display by separate mode
 
 	// Mode
-	bool toggle_display;		// Using at separate display mode
+	bool toggle_display;  // Using at separate display mode
 };
 
 static bool
