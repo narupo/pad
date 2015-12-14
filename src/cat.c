@@ -18,9 +18,13 @@ struct Command {
 	char** argv;
 	int optind;  // Save getopt's optind
 	StringArray* replace_list;  // Replace string list for @cap brace
+
 	// Option flags
 	bool is_debug;  // Is debug mode
 	char* separate_name;  // Is separate display
+
+	// Mode
+	bool mode_is_display;
 };
 
 static bool
@@ -65,6 +69,7 @@ command_new(int argc, char* argv[]) {
 	self->name = "cap cat";
 	self->argc = argc;
 	self->argv = argv;
+	self->mode_is_display = true;
 
 	// Parse options
 	if (!command_parse_options(self)) {
@@ -119,6 +124,7 @@ command_parse_options(Command* self) {
 			break;
 		case 's':
 			self->separate_name = strdup(optarg);
+			self->mode_is_display = false;  // separate mode
 			break;
 		case '?':
 		default:
@@ -145,12 +151,35 @@ command_parse_options(Command* self) {
 *********/
 
 static CapRow*
-cat_read_row(Command const* self, Buffer const* buffer, CapParser* parser) {
+cat_read_row(Command* self, Buffer const* buffer, CapParser* parser) {
 	char const* line = buffer_get_const(buffer);
 	CapRow* row = capparser_parse_line(parser, line);
 	if (!row) {
 		return NULL;
 	}
+
+	CapCol const* col = capcollist_front(caprow_cols(row));
+	if (!col) {
+		caprow_delete(row);
+		return NULL;
+	}
+
+	// If separate mode then catch separate row and check this name
+	if (self->separate_name) {
+		if (capcol_type(col) == CapColSeparate) {
+			if (strcmp(self->separate_name, capcol_value_const(col)) == 0) {
+				self->mode_is_display = true;
+			} else if (self->mode_is_display) {
+				self->mode_is_display = false;
+			}
+		} else {
+			if (!self->mode_is_display) {
+				caprow_delete(row);
+				return NULL;  // Skip display
+			}
+		}
+	}
+
 	return capparser_convert_braces(parser, row, self->replace_list);
 }
 
@@ -163,7 +192,6 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 	Buffer* buffer = buffer_new();
 	CapParser* parser = capparser_new();
 	CapRow* row = NULL;
-	bool is_display = (self->separate_name == NULL);
 
 	for (; buffer_getline(buffer, fin); ) {
 		// Cleanup
@@ -178,22 +206,6 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 		CapCol const* col = capcollist_front(caprow_cols(row));
 		if (!col) {
 			continue;
-		}
-
-		// If separate mode then catch separate row and check this name
-		if (self->separate_name) {
-			if (capcol_type(col) == CapColSeparate) {
-				// printf("match separate [%s]\n", self->separate_name);
-				if (strcmp(self->separate_name, capcol_value_const(col)) == 0) {
-					is_display = true;
-				} else if (is_display) {
-					is_display = false;
-				}
-			} else {
-				if (!is_display) {
-					continue;  // Skip display
-				}
-			}
 		}
 
 		// If debug mode then display row with details
@@ -289,6 +301,7 @@ cat_usage(void) {
 		"\n"
 		"\t-h, --help display usage\n"
 		"\t-[0-9]     replace value of key number\n"
+		"\t-s         display by separate name\n"
 		"\t-d         debug mode\n"
 		"\n"
 	);
@@ -326,35 +339,11 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 		}
 
 		// Read and push to CapFile
-		bool is_display = (self->separate_name == NULL);
-
 		for (; buffer_getline(buffer, fin); ) {
 			CapRow* row = cat_read_row(self, buffer, parser);
 			if (!row) {
 				continue;
 			}
-
-			// If separate mode then catch separate row and check this name
-			CapCol const* col = capcollist_front(caprow_cols(row));
-			if (!col) {
-				continue;
-			}
-
-			if (self->separate_name) {
-				if (capcol_type(col) == CapColSeparate) {
-					if (strcmp(self->separate_name, capcol_value_const(col)) == 0) {
-						is_display = true;
-					} else if (is_display) {
-						is_display = false;
-					}
-				} else {
-					if (!is_display) {
-						caprow_delete(row);
-						continue;  // Skip save
-					}
-				}
-			}
-
 			// Save to CapFile's rows
 			caprowlist_move_to_back(dstrows, row);
 		}
