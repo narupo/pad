@@ -3,7 +3,7 @@
 typedef struct {
 	int saveerrno;
 	int number;
-	char const* header;
+	char header[32];
 	char message[64];
 } CapErr;
 
@@ -20,7 +20,7 @@ stack_push(int saveerrno, char const* header, int number, char const* fmt, va_li
 		CapErr* s = &stack[stack_top++];
 		s->saveerrno = saveerrno;
 		s->number = number;
-		s->header = header;
+		snprintf(s->header, sizeof(s->header), "%s", header);
 		vsnprintf(s->message, sizeof(s->message), fmt, args);
 	}
 }
