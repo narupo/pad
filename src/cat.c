@@ -7,18 +7,18 @@
 typedef struct Command Command;
 
 struct Command {
-	char const* name;
-	int argc;
-	char** argv;
-	int optind;  // Save getopt's optind
+	char const* name;			// This command name
+	int argc;					// Like a main function arguments
+	char** argv;				// "
+	int optind;					// Save getopt's optind
 	StringArray* replace_list;  // Replace string list for @cap brace
 
 	// Option flags
-	bool is_debug;  // Is debug mode
-	char* separate_name;  // Is separate display
+	bool is_debug;				// Is debug mode
+	char* separate_name;		// Is separate display mode
 
 	// Mode
-	bool mode_is_display;
+	bool toggle_display;		// Using at separate display mode
 };
 
 static bool
@@ -63,7 +63,7 @@ command_new(int argc, char* argv[]) {
 	self->name = "cap cat";
 	self->argc = argc;
 	self->argv = argv;
-	self->mode_is_display = true;
+	self->toggle_display = true;
 
 	// Parse options
 	if (!command_parse_options(self)) {
@@ -118,7 +118,7 @@ command_parse_options(Command* self) {
 			break;
 		case 's':
 			self->separate_name = strdup(optarg);
-			self->mode_is_display = false;  // separate mode
+			self->toggle_display = false;  // separate mode
 			break;
 		case '?':
 		default:
@@ -162,12 +162,12 @@ cat_read_row(Command* self, Buffer const* buffer, CapParser* parser) {
 	if (self->separate_name) {
 		if (capcol_type(col) == CapColSeparate) {
 			if (strcmp(self->separate_name, capcol_value_const(col)) == 0) {
-				self->mode_is_display = true;
-			} else if (self->mode_is_display) {
-				self->mode_is_display = false;
+				self->toggle_display = true;
+			} else if (self->toggle_display) {
+				self->toggle_display = false;
 			}
 		} else {
-			if (!self->mode_is_display) {
+			if (!self->toggle_display) {
 				caprow_delete(row);
 				return NULL;  // Skip display
 			}
