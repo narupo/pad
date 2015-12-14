@@ -63,7 +63,7 @@ command_new(int argc, char* argv[]) {
 	self->name = "cap cat";
 	self->argc = argc;
 	self->argv = argv;
-	self->toggle_display = true;
+	self->toggle_display = true;  // Need display by construct
 
 	// Parse options
 	if (!command_parse_options(self)) {
