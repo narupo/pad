@@ -29,12 +29,11 @@ static char const* PROGNAME = "cap";
 
 static Command
 find_command(char const* name) {
-	struct CommandRecord {
+	// Command table
+	static const struct CommandRecord {
 		char const* name;
 		Command command;
-	};
-
-	static struct CommandRecord table[] = {
+	} table[] = {
 		{"help", help_main},
 		{"cat", cat_main},
 		{"ls", ls_main},
@@ -48,8 +47,9 @@ find_command(char const* name) {
 		{0},
 	};
 	
+	// Find command by name
 	for (int i = 0; ; ++i) {
-		struct CommandRecord* rec = &table[i];
+		struct CommandRecord const* rec = &table[i];
 		if (!rec->name) {
 			goto notfound;
 		}
@@ -85,6 +85,7 @@ main(int argc, char* argv[]) {
 	int res = command(argc, argv);
 	if (res != 0) {
 		warn("%s: Failed to execute command \"%s\"", PROGNAME, cmdname);
+		caperr_display();
 	}
 
 	return res;

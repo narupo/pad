@@ -80,7 +80,7 @@ editor_main(int argc, char* argv[]) {
 	// Parse options
 	for (;;) {
 		static struct option longopts[] = {
-			{"help", no_argument, 0, 0},
+			{"help", no_argument, 0, 'h'},
 			{0},
 		};
 		int optsindex;
@@ -90,15 +90,7 @@ editor_main(int argc, char* argv[]) {
 			break;
 		}
 
-	again:
 		switch (cur) {
-		case 0: {
-			char const* name = longopts[optsindex].name;
-			if (strcmp("help", name) == 0) {
-				cur = 'h';
-				goto again;
-			}
-		} break;
 		case 'h': {
 			editor_usage();
 		} break;

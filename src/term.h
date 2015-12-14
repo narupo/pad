@@ -16,5 +16,11 @@ term_printf(char const* fmt, ...);
 int
 term_eprintf(char const* fmt, ...);
 
+int
+term_putsf(char const* fmt, ...);
+
+int
+term_eputsf(char const* fmt, ...);
+
 #endif
 

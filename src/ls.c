@@ -68,34 +68,26 @@ command_parse_options(Command* self) {
 	// Parse options
 	for (;;) {
 		static struct option longopts[] = {
-			{"help", no_argument, 0, 0},
-			{"brief", no_argument, 0, 0},
+			{"help", no_argument, 0, 'h'},
+			{"brief", no_argument, 0, 'b'},
+			{"recursive", no_argument, 0, 'R'},
 			{0},
 		};
 		int optsindex;
 
-		int cur = getopt_long(self->argc, self->argv, "haR", longopts, &optsindex);
+		int cur = getopt_long(self->argc, self->argv, "bhaR", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
 
-	again:
 		switch (cur) {
-		case 0: {
-			char const* name = longopts[optsindex].name;
-			if (strcmp("help", name) == 0) {
-				cur = 'h';
-				goto again;
-			} else if (strcmp("brief", name) == 0) {
-				self->opt_disp_brief = !self->opt_disp_brief;
-			}
-		} break;
 		case 'h':
 			command_delete(self);  // Weak point because usage() to exit
 			ls_usage();
 			break;
 		case 'a': self->opt_is_all_disp = !self->opt_is_all_disp; break;
 		case 'R': self->opt_recursive = !self->opt_recursive; break;
+		case 'b': self->opt_disp_brief = !self->opt_disp_brief; break;
 		case '?':
 		default: return false; break;
 		}
@@ -116,8 +108,9 @@ ls_usage(void) {
 	term_eprintf(
 		"Usage: cap ls\n"
 		"\n"
-		"\t-h, --help\tdisplay usage\n"
-		"\t    --brief\tdisplay brief\n"
+		"\t-h, --help      display usage\n"
+		"\t-b, --brief     display brief\n"
+		"\t-R, --recursive display recursive\n"
 		"\n"
 	);
 	exit(EXIT_FAILURE);

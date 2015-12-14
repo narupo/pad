@@ -27,6 +27,7 @@ SOFTWARE.
 
 #include "types.h"
 #include "util.h"
+#include "caperr.h"
 #include "help.h"
 #include "cat.h"
 #include "ls.h"
