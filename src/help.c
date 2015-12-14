@@ -2,7 +2,7 @@
 
 typedef void (*usage_type)(void);
 
-static struct Command {
+static const struct Command {
 	char const* name;
 	usage_type usage;
 } commands[] = {
@@ -21,7 +21,7 @@ static struct Command {
 static usage_type
 find_command(char const* cmdname) {
 	for (int i = 0; ; ++i) {
-		struct Command* cmd = &commands[i];
+		struct Command const* cmd = &commands[i];
 		if (!cmd->name) {
 			break;
 		}
@@ -42,6 +42,7 @@ help_main(int argc, char* argv[]) {
 		usage_type usage = find_command(cmdname);
 		if (usage) {
 			usage();
+			return EXIT_FAILURE;
 		} else {
 			term_eprintf("Not found command name \"%s\"\n", cmdname);
 		}

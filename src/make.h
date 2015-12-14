@@ -1,6 +1,7 @@
 #ifndef MAKE_H
 #define MAKE_H
 
+#include "caperr.h"
 #include "util.h"
 #include "term.h"
 #include "config.h"
@@ -12,7 +13,7 @@
 #include "cat.h"
 #include "run.h"
 
-void _Noreturn
+void
 make_usage(void);
 
 int

@@ -9,6 +9,7 @@ struct Command {
 	char** argv;
 	Config const* config;
 	bool is_debug;
+	bool is_usage;
 };
 
 /*************
@@ -94,7 +95,6 @@ command_new(Config const* config, int argc, char* argv[]) {
 
 	// Parse program options
 	if (!command_parse_options(self)) {
-		WARN("Failed to parse options");
 		free(self);
 		return NULL;
 	}
@@ -114,7 +114,8 @@ command_parse_options(Command* self) {
 	
 	for (;;) {
 		static struct option longopts[] = {
-			{"help", no_argument, 0, 0},
+			{"debug", no_argument, 0, 'd'},
+			{"help", no_argument, 0, 'h'},
 			{0},
 		};
 		int optsindex;
@@ -124,18 +125,9 @@ command_parse_options(Command* self) {
 			break;
 		}
 
-	again:
 		switch (cur) {
-		case 0: {
-			char const* name = longopts[optsindex].name;
-			if (strcmp("help", name) == 0) {
-				cur = 'h';
-				goto again;
-			}
-		} break;
 		case 'h':
-			command_delete(self);
-			exit(EXIT_FAILURE);
+			self->is_usage = true;
 			break;
 		case 'd':
 			self->is_debug = true;
@@ -381,6 +373,12 @@ command_open_input_stream(Command* self) {
 
 static int
 command_run(Command* self) {
+	// Is usage ?
+	if (self->is_usage) {
+		make_usage();
+		return 0;
+	}
+
 	// Open stream and make capfile by it
 	FILE* fin = command_open_input_stream(self);
 	if (!fin) {
@@ -409,7 +407,7 @@ command_run(Command* self) {
 * Public Interface *
 *******************/
 
-void _Noreturn
+void
 make_usage(void) {
 	term_eprintf(
 		"cap make\n"
@@ -424,20 +422,23 @@ make_usage(void) {
 		"\t-d,        debug mode\n"
 		"\n"
 	);
-	exit(EXIT_FAILURE);
 }
 
 int
 make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	// Construct
 	Command* self = command_new(config, argc, argv);
+	if (!self) {
+		WARN("Failed to construct Command");
+		return 1;
+	}
 
 	// Make source capfile
 	FILE* fin = command_open_input_stream(self);
 	if (!fin) {
 		WARN("Failed to open stream");
 		command_delete(self);
-		return 1;
+		return 2;
 	}
 
 	CapFile* srcfile = command_make_capfile_from_stream(self, fin);
@@ -445,7 +446,7 @@ make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 		WARN("Failed to make CapFile");
 		command_delete(self);
 		file_close(fin);
-		return 2;
+		return 3;
 	}
 
 	// Sort CapFile by @cap roules
@@ -465,11 +466,23 @@ make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 
 int
 make_main(int argc, char* argv[]) {
+	// Load config
 	Config* config = config_new();
-	Command* command = command_new(config, argc, argv);
+	if (!config) {
+		return 1;
+	}
 
+	// Construct make command
+	Command* command = command_new(config, argc, argv);
+	if (!command) {
+		config_delete(config);
+		return 2;
+	}
+
+	// Run
 	int res = command_run(command);
 	
+	// Done
 	command_delete(command);
 	config_delete(config);
 	return res;

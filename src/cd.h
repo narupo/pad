@@ -4,8 +4,9 @@
 #include "term.h"
 #include "file.h"
 #include "config.h"
+#include "caperr.h"
 
-void _Noreturn
+void
 cd_usage(void);
 
 int

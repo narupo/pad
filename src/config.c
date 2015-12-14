@@ -8,9 +8,9 @@ struct Config {
 * Variables *
 ************/
 
-static char const* CONFIG_ROOT_PATH = "~/.config/cap"; 
+static char const* CONFIG_ROOT_PATH = "~/.cap"; 
 static char const* CONFIGSETTING_FNAME = "setting";
-static char const* CONFIGSETTING_PATH = "~/.config/cap/setting";
+static char const* CONFIGSETTING_PATH = "~/.cap/setting";
 
 /*****************
 * Delete and New *

@@ -1,8 +1,9 @@
 #include "cd.h"
 
+static char const* PROGNAME = "cap cd";
 static char const* optcdpath;
 
-void _Noreturn
+void
 cd_usage(void) {
 	term_eprintf(
 		"Usage: cap cd\n"
@@ -10,7 +11,6 @@ cd_usage(void) {
 		"\t-h, --help\tdisplay usage.\n"
 		"\n"
 	);
-	exit(EXIT_FAILURE);
 }
 
 static int
@@ -18,8 +18,7 @@ cd_run(int argc, char* argv[]) {
 	// Load config
 	Config* config = config_new();
 	if (!config) {
-		WARN("Failed to construct config");
-		goto fail_config;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "Config");
 	}
 
 	if (argc < 2) {
@@ -33,20 +32,13 @@ cd_run(int argc, char* argv[]) {
 		config_set_path(config, "cd", optcdpath);
 		config_save(config);
 	} else {
-		term_eprintf("Invalid cd \"%s\".\n", optcdpath);
-		goto fail_invalid_cd;
+		config_delete(config);
+		return caperr(PROGNAME, CAPERR_INVALID_ARGUMENTS, "\"%s\"", optcdpath);
 	}
 
 done:
 	config_delete(config);
 	return 0;
-
-fail_invalid_cd:
-	config_delete(config);
-	return 2;
-
-fail_config:
-	return 1;
 }
 
 int
@@ -54,7 +46,7 @@ cd_main(int argc, char* argv[]) {
 	// Parse options
 	for (;;) {
 		static struct option longopts[] = {
-			{"help", no_argument, 0, 0},
+			{"help", no_argument, 0, 'h'},
 			{0},
 		};
 		int optsindex;
@@ -64,18 +56,10 @@ cd_main(int argc, char* argv[]) {
 			break;
 		}
 
-	again:
 		switch (cur) {
-			case 0: {
-				char const* name = longopts[optsindex].name;
-				if (strcmp("help", name) == 0) {
-					cur = 'h';
-					goto again;
-				}
-			} break;
-			case 'h': cd_usage(); break;
+			case 'h': cd_usage(); return 0; break;
 			case '?': // Break through
-			default: die("Unknown option"); break;
+			default: return caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "Unknown option"); break;
 		}
 	}
 
@@ -86,4 +70,3 @@ cd_main(int argc, char* argv[]) {
 
 	return cd_run(argc, argv);
 }
-

@@ -87,7 +87,9 @@ command_parse_options(Command* self) {
 	
 	for (;;) {
 		static struct option longopts[] = {
-			{"help", no_argument, 0, 0},
+			{"debug", no_argument, 0, 'd'},
+			{"help", no_argument, 0, 'h'},
+			{"separate", required_argument, 0, 's'},
 			{0},
 		};
 		int optsindex;
@@ -97,15 +99,7 @@ command_parse_options(Command* self) {
 			break;
 		}
 
-	again:
 		switch (cur) {
-		case 0: {
-			char const* name = longopts[optsindex].name;
-			if (strcmp("help", name) == 0) {
-				cur = 'h';
-				goto again;
-			}
-		} break;
 		case 'h':
 			command_delete(self);
 			cat_usage();
@@ -258,7 +252,7 @@ command_run(Command* self) {
 		// Open file
 		FILE* fin = file_open(fname, "rb");
 		if (!fin) {
-			WARN("Failed to open file \"%s\"", fname);
+			term_eputsf("Failed to open file \"%s\"", fname);
 			continue;
 		}
 
