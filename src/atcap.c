@@ -413,12 +413,6 @@ capparser_mode_separate(CapParser* self) {
 		// Push
 		buffer_lstrip(self->buf, ' ');
 		buffer_lstrip(self->buf, '\t');
-
-		if (buffer_empty(self->buf)) {
-			WARN("Invalid syntax @cap separate need separate name");
-			return CAPPARSER_PARSE_ERROR;
-		}
-
 		buffer_push(self->buf, '\0');
 		capparser_push_front_col(self, CapColSeparate);
 		self->mode = capparser_mode_first;
