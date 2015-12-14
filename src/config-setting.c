@@ -229,7 +229,7 @@ hashmap_set_copy(HashMap* self, char const* key, HashMap_const_type val) {
 
 static char const* DEFAULT_CD_PATH = "/tmp";
 static char const* DEFAULT_EDITOR_PATH = "/usr/bin/vi";
-static int const LINE_FORMAT_DELIM = ' ';
+static int const LINE_FORMAT_DELIM = ',';
 
 struct ConfigSetting {
 	HashMap* pathmap;

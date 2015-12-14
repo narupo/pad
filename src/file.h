@@ -18,24 +18,56 @@ enum {
 	NFILE_PATH = 256,
 };
 
+/**
+ * Wrapper of fclose
+ */
 int
 file_close(FILE* fp);
 
+/**
+ * Wrapper of fopen
+ */
 FILE*
 file_open(char const* name, char const* mode);
 
+/**
+ * Wrapper of closedir
+ */
 int
 file_closedir(DIR* dir);
 
+/**
+ * Wrapper of opendir
+ */
 DIR*
 file_opendir(char const* path);
 
+/**
+ * Check exists file
+ *
+ * @param[in] path check file path
+ * @return is exists to true
+ * @return is not exists to false
+ */
 bool
 file_is_exists(char const* path);
 
+/**
+ * Wrapper of mkdir
+ */
 int
 file_mkdir(char const* path, mode_t mode);
 
+/**
+ * Get normalized file path
+ *
+ * @param[out] dst Destination of normalized path
+ * @param[in] dstsize Destination size
+ * @param[in] path Target path
+ *
+ * @return success to pointer to dst
+ * @return failed to NULL
+ */
 char*
 file_solve_path(char* dst, size_t dstsize, char const* path);
 
@@ -48,9 +80,23 @@ file_solve_path(char* dst, size_t dstsize, char const* path);
 char*
 file_make_solve_path(char const* path);
 
+/**
+ * Check file is directory
+ *
+ * @param[in] path check file path
+ * @return is directory to true
+ * @return is not directory to false
+ */
 bool
 file_is_dir(char const* path);
 
+/**
+ * Read string from stream
+ *
+ * @param[in] fin source stream
+ * @return success to pointer to read stromg (nul terminated)
+ * @return failed to pointer to NULL
+ */
 char*
 file_read_string(FILE* fin);
 

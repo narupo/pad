@@ -34,6 +34,7 @@ static int capparser_mode_command(CapParser* self);
 static int capparser_mode_brace(CapParser* self);
 static int capparser_mode_mark(CapParser* self);
 static int capparser_mode_goto(CapParser* self);
+static int capparser_mode_separate(CapParser* self);
 
 /******************
 * CapParser: Util *
@@ -161,6 +162,7 @@ capparser_mode_atcap(CapParser* self) {
 		{"{",  capparser_mode_brace},
 		{"mark", capparser_mode_mark},
 		{"goto", capparser_mode_goto},
+		{"sep", capparser_mode_separate},
 		// Cap commands
 		{"cat", capparser_mode_command},
 		{"make", capparser_mode_command},
@@ -390,6 +392,35 @@ capparser_mode_goto(CapParser* self) {
 
 		buffer_push(self->buf, '\0');
 		capparser_push_front_col(self, CapColGoto);
+		self->mode = capparser_mode_first;
+
+		++self->cur;
+		return CAPPARSER_EOF;
+
+	} else {
+		buffer_push(self->buf, *self->cur);
+	}
+
+	++self->cur;
+	return 0;
+}
+
+static int
+capparser_mode_separate(CapParser* self) {
+	capparser_print_mode(self, "separate");
+
+	if (is_newline(*self->cur)) {
+		// Push
+		buffer_lstrip(self->buf, ' ');
+		buffer_lstrip(self->buf, '\t');
+
+		if (buffer_empty(self->buf)) {
+			WARN("Invalid syntax @cap separate need separate name");
+			return CAPPARSER_PARSE_ERROR;
+		}
+
+		buffer_push(self->buf, '\0');
+		capparser_push_front_col(self, CapColSeparate);
 		self->mode = capparser_mode_first;
 
 		++self->cur;

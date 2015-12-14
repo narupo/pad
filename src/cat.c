@@ -16,9 +16,11 @@ struct Command {
 	char const* name;
 	int argc;
 	char** argv;
-	int optind;  // getopt
-	StringArray* replace_list;
-	bool is_debug;
+	int optind;  // Save getopt's optind
+	StringArray* replace_list;  // Replace string list for @cap brace
+	// Option flags
+	bool is_debug;  // Is debug mode
+	char* separate_name;  // Is separate display
 };
 
 static bool
@@ -37,6 +39,7 @@ command_parse_options(Command* self);
 static void
 command_delete(Command* self) {
 	if (self) {
+		free(self->separate_name);
 		strarray_delete(self->replace_list);
 		free(self);
 	}
@@ -90,7 +93,7 @@ command_parse_options(Command* self) {
 		};
 		int optsindex;
 
-		int cur = getopt_long(self->argc, self->argv, "dh0:1:2:3:4:5:6:7:8:9:", longopts, &optsindex);
+		int cur = getopt_long(self->argc, self->argv, "s:dh0:1:2:3:4:5:6:7:8:9:", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
@@ -113,6 +116,9 @@ command_parse_options(Command* self) {
 			break;
 		case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
 			strarray_push_copy(self->replace_list, optarg);
+			break;
+		case 's':
+			self->separate_name = strdup(optarg);
 			break;
 		case '?':
 		default:
@@ -156,30 +162,60 @@ static int
 command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 	Buffer* buffer = buffer_new();
 	CapParser* parser = capparser_new();
+	CapRow* row = NULL;
+	bool is_display = (self->separate_name == NULL);
 
 	for (; buffer_getline(buffer, fin); ) {
-		CapRow* row = cat_read_row(self, buffer, parser);
+		// Cleanup
+		caprow_delete(row);
+
+		// Make row from buffer
+		row = cat_read_row(self, buffer, parser);
+		if (!row) {
+			continue;
+		}
+		
+		CapCol const* col = capcollist_front(caprow_cols(row));
+		if (!col) {
+			continue;
+		}
+
+		// If separate mode then catch separate row and check this name
+		if (self->separate_name) {
+			if (capcol_type(col) == CapColSeparate) {
+				// printf("match separate [%s]\n", self->separate_name);
+				if (strcmp(self->separate_name, capcol_value_const(col)) == 0) {
+					is_display = true;
+				} else if (is_display) {
+					is_display = false;
+				}
+			} else {
+				if (!is_display) {
+					continue;  // Skip display
+				}
+			}
+		}
+
+		// If debug mode then display row with details
 		if (self->is_debug) {
 			caprow_display(row);
 			continue;
 		}
 
 		// Text only
-		CapCol const* col = capcollist_front(caprow_cols(row));
 		if (capcol_type(col) != CapColText) {
-			caprow_delete(row);
 			continue;
 		}
 
+		// Display text columns
 		for (; col; col = capcol_next_const(col)) {
 			fprintf(fout, "%s", capcol_value_const(col));
 		}
 		fprintf(fout, "\n");
-
-		caprow_delete(row);
 	}
 
 	// Done
+	caprow_delete(row);
 	capparser_delete(parser);
 	buffer_delete(buffer);
 	return 0;
@@ -198,26 +234,32 @@ command_run(Command* self) {
 		goto fail_config;
 	}
 
+	// Need stdin?
 	if (self->argc == self->optind) {
 		command_cat_stream(self, config, stdout, stdin);
 		goto done;
 	}
 
+	// Cat all file
 	for (int i = self->optind; i < self->argc; ++i) {
+		// Solve path
 		char fname[NFILE_PATH];
 		if (!config_path_from_base(config, fname, sizeof fname, self->argv[i])) {
 			WARN("Failed to path from base \"%s\"", self->argv[i]);
 			continue;
 		}
 
+		// Open file
 		FILE* fin = file_open(fname, "rb");
 		if (!fin) {
 			WARN("Failed to open file \"%s\"", fname);
 			continue;
 		}
 
+		// Display
 		command_cat_stream(self, config, stdout, fin);
 
+		// Done
 		file_close(fin);
 	}
 
@@ -284,8 +326,36 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 		}
 
 		// Read and push to CapFile
+		bool is_display = (self->separate_name == NULL);
+
 		for (; buffer_getline(buffer, fin); ) {
 			CapRow* row = cat_read_row(self, buffer, parser);
+			if (!row) {
+				continue;
+			}
+
+			// If separate mode then catch separate row and check this name
+			CapCol const* col = capcollist_front(caprow_cols(row));
+			if (!col) {
+				continue;
+			}
+
+			if (self->separate_name) {
+				if (capcol_type(col) == CapColSeparate) {
+					if (strcmp(self->separate_name, capcol_value_const(col)) == 0) {
+						is_display = true;
+					} else if (is_display) {
+						is_display = false;
+					}
+				} else {
+					if (!is_display) {
+						caprow_delete(row);
+						continue;  // Skip save
+					}
+				}
+			}
+
+			// Save to CapFile's rows
 			caprowlist_move_to_back(dstrows, row);
 		}
 
