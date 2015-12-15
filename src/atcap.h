@@ -22,9 +22,20 @@ typedef struct CapParser CapParser;
 * CapParser: Delete and New *
 ****************************/
 
+/**
+ * Destruct object
+ *
+ * @param[in] self
+ */
 void
 capparser_delete(CapParser* self); 
 
+/**
+ * Construct object
+ *
+ * @return success to pointer to object
+ * @return failed to pointer to NULL
+ */
 CapParser*
 capparser_new(void); 
 
@@ -32,6 +43,15 @@ capparser_new(void);
 * CapParser: Runner *
 ********************/
 
+/**
+ * Parse line and create new CapRow
+ *
+ * @param[in] self
+ * @param[in] line source line string of parse
+ *
+ * @return success to pointer to CapRow of dynamic allocate memory
+ * @return failed to pointer to NULL
+ */
 CapRow*
 capparser_parse_line(CapParser* self, char const* line); 
 
@@ -39,42 +59,17 @@ capparser_parse_line(CapParser* self, char const* line);
 * CapParser: Convertor *
 ***********************/
 
+/**
+ * Convert CapRow by braces (@cap {})
+ *
+ * @param[in] self
+ * @param[in] row target pointer to CapRow
+ * @param[in] newbraces source strings of replace for braces
+ *
+ * @return success to pointer to row
+ * @return failed to pointer to NULL
+ */
 CapRow*
 capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* newbraces); 
-
-/*******************************
- * AtCap                       *
- * AtCap is wrapper of CapFile *
- ******************************/
-
-/*****************
-* Delete and New *
-*****************/
-
-void
-atcap_delete(AtCap* self); 
-
-AtCap*
-atcap_new(void); 
-
-AtCap*
-atcap_new_from_stream(FILE* stream);
-
-/*********
-* Setter *
-*********/
-
-void
-atcap_clear(AtCap* self); 
-
-/*********
-* Getter *
-*********/
-
-CapFile*
-atcap_capfile(AtCap* self);
-
-CapFile const*
-atcap_capfile_const(AtCap const* self);
 
 #endif

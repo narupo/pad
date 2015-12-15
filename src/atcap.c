@@ -2,10 +2,6 @@
 
 typedef	int (*CapParserMode)(CapParser*);
 
-struct AtCap {
-	CapFile* capfile;
-};
-
 struct CapParser {
 	CapParserMode mode;
 	char const* cur;
@@ -610,13 +606,7 @@ test_atcap_line(int argc, char* argv[]) {
 }
 
 int
-test_atcap(int argc, char* argv[]) {
-	return 0;
-}
-
-int
 main(int argc, char* argv[]) {
-    // return test_atcap(argc, argv);
     return test_atcap_line(argc, argv);
 }
 #endif

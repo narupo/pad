@@ -26,6 +26,14 @@ buffer_delete(Buffer* self);
 void
 buffer_safe_delete(Buffer** self);
 
+/**
+ * Escape buffer in object and delete object without escape buffer
+ * Using move semantics for user
+ *
+ * @param[in] self
+ *
+ * @return pointer to bytes of escape from object
+ */
 char*
 buffer_escape_delete(Buffer* self);
 
@@ -79,7 +87,7 @@ char const*
 buffer_getc(Buffer const* self);
 
 /**
- * @brief      { function_description }
+ * Get read-only pointer to bytes in buffer.
  *
  * @param      self  { parameter_description }
  *
@@ -111,7 +119,13 @@ int
 buffer_pop(Buffer* self);
 
 /**
+ * Push string to buffer without nul terminater
  *
+ * @param[in] self
+ * @param[in] str push string
+ *
+ * @return success to length of buffer
+ * @return failed to zero
  */
 size_t
 buffer_push_str(Buffer* self, char const* str);
@@ -158,11 +172,22 @@ buffer_getline(Buffer* self, FILE* stream);
 bool
 buffer_copy_str(Buffer* self, char const* src);
 
+/**
+ * Strip buffer of left side by delim
+ *
+ * @param[in] self
+ * @param[in] delim target delimiter
+ */
 void
 buffer_lstrip(Buffer* self, int delim);
 
+/**
+ * Strip buffer of right side by delim
+ *
+ * @param[in] self
+ * @param[in] delim target delimiter
+ */
 void
 buffer_rstrip(Buffer* self, int delim);
 
 #endif
-

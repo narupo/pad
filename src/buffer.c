@@ -17,15 +17,13 @@ struct Buffer {
 	T c = a; \
 	a = b; \
 	b = c; \
-} \
-
+}
 void
 buffer_swap_other(Buffer* self, Buffer* other) {
 	SWAP(size_t, self->capacity, other->capacity);
 	SWAP(size_t, self->length, other->length);
 	SWAP(char*, self->buffer, other->buffer);
 }
-
 #undef SWAP
 
 void
