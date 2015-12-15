@@ -16,7 +16,7 @@
 #include <getopt.h>
 #include <ctype.h>
 
-void _Noreturn
+void
 cat_usage(void);
 
 int
