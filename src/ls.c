@@ -137,6 +137,7 @@ command_display_atcap(Command const* self, Config const* config, char const* hea
 		CapRow* row = capparser_parse_line(parser, buffer_get_const(self->buffer));
 		CapCol* front = capcollist_front(caprow_cols(row));
 		if (!front) {
+			caprow_delete(row);
 			continue;
 		}
 
@@ -150,6 +151,7 @@ command_display_atcap(Command const* self, Config const* config, char const* hea
 				}
 			}
 		}
+		caprow_delete(row);
 	}
 
 	// Done
@@ -306,11 +308,11 @@ command_run(Command* self) {
 
 fail_display:
 	config_delete(config);
-	return 4;
+	return 3;
 
 fail_walkdir:
 	config_delete(config);
-	return 3;
+	return 2;
 
 fail_config:
 	config_delete(config);
