@@ -94,7 +94,7 @@ file_is_dir(char const* path);
  * Read string from stream
  *
  * @param[in] fin source stream
- * @return success to pointer to read stromg (nul terminated)
+ * @return success to pointer to read string (nul terminated)
  * @return failed to pointer to NULL
  */
 char*
