@@ -456,6 +456,18 @@ make_usage(void) {
 		"\t-h, --help display usage\n"
 		"\t-d,        debug mode\n"
 		"\n"
+		"The cap syntax:\n"
+		"\n"
+		"\t@cap brief [string]   brief\n"
+		"\t@cap mark [mark-name] mark for goto\n"
+		"\t@cap goto [mark-name] goto mark\n"
+		"\n"
+		"The cap syntax commands:\n"
+		"\n"
+		"\t@cap cat  like a \"cap cat\" command\n"
+		"\t@cap make like a \"cap make\" command\n"
+		"\t@cap run  like a \"cap run\" command\n"
+		"\n"
 	);
 }
 
