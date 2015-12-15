@@ -288,7 +288,7 @@ cat_usage(void) {
 		"The options are:\n"
 		"\n"
 		"\t-h, --help display usage\n"
-		"\t-[0-9]     replace value of key number\n"
+		"\t-[0-9]     key number of replace\n"
 		"\t-s         display by separate name\n"
 		"\t-d         debug mode\n"
 		"\n"

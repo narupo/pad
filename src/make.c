@@ -61,9 +61,6 @@ command_sort_capfile(Command const* self, CapFile* dstfile);
 static int
 command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout); 
 
-static FILE*
-command_open_input_stream(Command* self); 
-
 static int
 command_run(Command* self); 
 
@@ -345,30 +342,73 @@ command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout)
 }
 
 static FILE*
-command_open_input_stream(Command* self) {
-	// Default values
-	FILE* fin = stdin;
+command_open_input_file(Command* self, char const* capname) {
+	FILE* fin = NULL;
 
-	// Has make name ?
-	if (self->argc > self->optind) {
-		char const* basename = self->argv[self->optind];  // Yes
-
-		// Get cap's make file path
-		char spath[NFILE_PATH];
-		if (!config_path_from_base(self->config, spath, sizeof spath, basename)) {
-			WARN("Failed to path from base \"%s\"", basename);
-			return NULL;
-		}
-		
-		// Open cap's make file
-		fin = file_open(spath, "rb");
-		if (!fin) {
-			warn("%s: Failed to open file \"%s\"", self->name, spath);
-			return NULL;
-		}
+	// Get cap's make file path
+	char spath[NFILE_PATH];
+	if (!config_path_from_base(self->config, spath, sizeof spath, capname)) {
+		WARN("Failed to path from base \"%s\"", capname);
+		return NULL;
+	}
+	
+	// Open cap's make file
+	fin = file_open(spath, "rb");
+	if (!fin) {
+		warn("%s: Failed to open file \"%s\"", self->name, spath);
+		return NULL;
 	}
 
 	return fin;
+}
+
+static CapFile*
+command_make_capfile(Command* self) {
+	FILE* fin = stdin;
+	CapFile* capfile = NULL;
+
+	if (self->argc == self->optind) {
+		// Make CapFile from stream
+		capfile = command_make_capfile_from_stream(self, stdin);
+		if (!capfile) {
+			WARN("Failed to make CapFile");
+			file_close(fin);
+			return NULL;
+		}
+
+	} else {
+		// Ready destination file
+		capfile = capfile_new();
+		CapRowList* caprows = capfile_rows(capfile);
+
+		for (int i = self->optind; i < self->argc; ++i) {
+			char const* capname = self->argv[i];
+
+			// Open stream
+			fin = command_open_input_file(self, capname);
+			if (!fin) {
+				WARN("Failed to open file \"%s\"", capname);
+				continue;
+			}
+
+			// Make CapFile from stream
+			CapFile* ftmp = command_make_capfile_from_stream(self, fin);
+			if (!capfile) {
+				WARN("Failed to make CapFile");
+				file_close(fin);
+				capfile_delete(capfile);
+				return NULL;
+			}
+			file_close(fin);  // Thanks
+
+			// Append to destination file
+			CapRowList* tmprows = capfile_rows(ftmp);
+			caprowlist_push_back_list(caprows, tmprows);
+			capfile_delete(ftmp);
+		}
+	}
+
+	return capfile;
 }
 
 static int
@@ -379,27 +419,19 @@ command_run(Command* self) {
 		return 0;
 	}
 
-	// Open stream and make capfile by it
-	FILE* fin = command_open_input_stream(self);
-	if (!fin) {
-		WARN("Failed to open stream");
+	// Ready
+	CapFile* dstfile = command_make_capfile(self);
+	if (!dstfile) {
+		WARN("Failed to make CapFile");
 		return 1;
 	}
 
-	CapFile* dstfile = command_make_capfile_from_stream(self, fin);
-	if (!dstfile) {
-		WARN("Failed to make CapFile");
-		file_close(fin);
-		return 2;
-	}
-
-	// Execute make
+	// Sort and display
 	command_sort_capfile(self, dstfile);
 	command_display_capfile(self, dstfile, stdout);
 
 	// Done
 	capfile_delete(dstfile);
-	file_close(fin);
 	return 0;
 }
 
@@ -433,33 +465,21 @@ make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 		return 1;
 	}
 
-	// Make source capfile
-	FILE* fin = command_open_input_stream(self);
-	if (!fin) {
-		WARN("Failed to open stream");
+	// Make append capfile
+	CapFile* appfile = command_make_capfile(self);
+	if (!appfile) {
+		WARN("Failed to make CapFile");
 		command_delete(self);
 		return 2;
 	}
 
-	CapFile* srcfile = command_make_capfile_from_stream(self, fin);
-	if (!srcfile) {
-		WARN("Failed to make CapFile");
-		command_delete(self);
-		file_close(fin);
-		return 3;
-	}
-
-	// Sort CapFile by @cap roules
-	command_sort_capfile(self, srcfile);
-
-	// Link srcfile to dstfile
+	// Link appfile to dstfile
 	CapRowList* dstrows = capfile_rows(dstfile);
-	CapRowList* srcrows = capfile_rows(srcfile);
+	CapRowList* srcrows = capfile_rows(appfile);
 	caprowlist_push_back_list(dstrows, srcrows);
-	capfile_delete(srcfile);
+	capfile_delete(appfile);
 
 	// Done
-	file_close(fin);
 	command_delete(self);
 	return 0;
 }
