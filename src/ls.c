@@ -13,6 +13,8 @@ struct Command {
 	bool opt_is_all_disp;
 	bool opt_disp_brief;
 	bool opt_recursive;
+	bool opt_tags;
+	CsvLine* tags;
 };
 
 bool
@@ -23,6 +25,7 @@ command_delete(Command* self) {
 	if (self) {
 		buffer_delete(self->buffer);
 		strarray_delete(self->names);
+		csvline_delete(self->tags);
 		free(self);
 	}
 }
@@ -52,10 +55,19 @@ command_new(int argc, char* argv[]) {
 		return NULL;
 	}
 
+	if (!(self->tags = csvline_new())) {
+		WARN("Failed to construct tags");
+		buffer_delete(self->buffer);
+		strarray_delete(self->names);
+		free(self);
+		return NULL;
+	}
+
 	if (!command_parse_options(self)) {
 		WARN("Failed to parse options");
 		buffer_delete(self->buffer);
 		strarray_delete(self->names);
+		csvline_delete(self->tags);
 		free(self);
 		return NULL;
 	}
@@ -71,11 +83,12 @@ command_parse_options(Command* self) {
 			{"help", no_argument, 0, 'h'},
 			{"brief", no_argument, 0, 'b'},
 			{"recursive", no_argument, 0, 'R'},
+			{"tags", required_argument, 0, 't'},
 			{0},
 		};
 		int optsindex;
 
-		int cur = getopt_long(self->argc, self->argv, "bhaR", longopts, &optsindex);
+		int cur = getopt_long(self->argc, self->argv, "t:bhaR", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
@@ -88,6 +101,10 @@ command_parse_options(Command* self) {
 		case 'a': self->opt_is_all_disp = !self->opt_is_all_disp; break;
 		case 'R': self->opt_recursive = !self->opt_recursive; break;
 		case 'b': self->opt_disp_brief = !self->opt_disp_brief; break;
+		case 't': {
+			self->opt_tags = !self->opt_tags;
+			csvline_parse_line(self->tags, optarg, ' ');
+		} break;
 		case '?':
 		default: return false; break;
 		}
@@ -111,25 +128,15 @@ ls_usage(void) {
 		"\t-h, --help      display usage\n"
 		"\t-b, --brief     display brief\n"
 		"\t-R, --recursive display recursive\n"
+		"\t-t, --tags      grep tags\n"
 		"\n"
 	);
 	exit(EXIT_FAILURE);
 }
 
 static int
-command_display_atcap(Command const* self, Config const* config, char const* head, char const* tail) {
+command_display_atcap(Command const* self, Config const* config, FILE* fin) {
 	// Read file for check of @cap command line
-	// Make path from basename
-	char fpath[NFILE_PATH];
-	snprintf(fpath, sizeof fpath, "%s/%s", head, tail);
-
-	// Open file by solve path
-	FILE* fin = file_open(fpath, "rb");
-	if (!fin) {
-		warn("%s: Failed to open file \"%s\"", self->name, fpath);
-		goto fail_open_file;
-	}
-
 	// Read lines for @cap command
 	CapParser* parser = capparser_new();
 
@@ -151,16 +158,14 @@ command_display_atcap(Command const* self, Config const* config, char const* hea
 				}
 			}
 		}
+
+		// Done
 		caprow_delete(row);
 	}
 
 	// Done
 	capparser_delete(parser);
-	file_close(fin);
 	return 0;
-
-fail_open_file:
-	return 1;
 }
 
 static int
@@ -243,11 +248,55 @@ fail_opendir:
 	return 1;
 }
 
+static FILE*
+command_open_input_file(Command const* self, Config const* config, char const* name) {
+	// Make path from basename
+	char fpath[NFILE_PATH];
+	snprintf(fpath, sizeof fpath, "%s/%s", config_path(config, "cd"), name);
+
+	// Open file by solve path
+	FILE* fin = file_open(fpath, "rb");
+	if (!fin) {
+		warn("%s: Failed to open file \"%s\"", self->name, fpath);
+		return NULL;
+	}
+
+	return fin;
+}
+
+static bool
+command_has_tags(Command const* self, Config const* config, FILE* fin) {
+	CapParser* parser = capparser_new();
+
+	for (; buffer_getline(self->buffer, fin); ) {
+		CapRow* row = capparser_parse_line(parser, buffer_get_const(self->buffer));
+		CapCol* front = capcollist_front(caprow_cols(row));
+		if (!front) {
+			caprow_delete(row);
+			continue;
+		}
+
+		if (capcol_type(front) == CapColTag) {
+			char const* tag = capcol_value_const(front);
+			for (int i = 0; i < csvline_length(self->tags); ++i) {
+				if (strcmp(tag, csvline_get_const(self->tags, i)) == 0) {
+					// Found tag in file
+					return true;
+				}
+			}
+		}
+
+		// Done
+		caprow_delete(row);
+	}
+
+	// Done
+	capparser_delete(parser);
+	return false;  // Not found tag in file
+}
+
 static int
 command_display(Command const* self, Config const* config) {
-	// Get cd
-	char const* cd = config_path(config, "cd");
-
 	// Sort
 	strarray_sort(self->names);
 
@@ -257,7 +306,20 @@ command_display(Command const* self, Config const* config) {
 		char const* name = strarray_get_const(self->names, i);
 		int namelen = strlen(name);
 
-		// Display
+		// Open file from name
+		FILE* fin = command_open_input_file(self, config, name);
+		if (!fin) {
+			WARN("Failed to open capfile \"%s\"", name);
+			continue;
+		}
+
+		// Tag
+		if (self->opt_tags && !command_has_tags(self, config, fin)) {
+			file_close(fin);
+			continue;  // Not found tags in file so skip display
+		}
+
+		// Display name
 		term_printf("%s", name);
 		
 		// Padding
@@ -265,11 +327,18 @@ command_display(Command const* self, Config const* config) {
 			term_printf(" ");
 		}
 
-		// display by @cap option
-		command_display_atcap(self, config, cd, name);
+		// Display by @cap syntax
+		command_display_atcap(self, config, fin);
 		term_printf("\n");
+
+		file_close(fin);
 	}
 	
+	// if (self->opt_tags) {
+	// 	for (int i = 0; i < csvline_length(self->tags); ++i) {
+	// 		printf("tags[%d] = [%s]\n", i, csvline_get_const(self->tags, i));
+	// 	}
+	// }
 	// Done
 	return 0;
 }

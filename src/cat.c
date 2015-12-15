@@ -14,6 +14,7 @@ struct Command {
 	StringArray* replace_list;  // Replace string list for @cap brace
 
 	// Option flags
+	bool is_usage;  // Is usage mode
 	bool is_debug;  // Is debug mode
 	char* separate_name;  // Is display by separate mode
 
@@ -101,8 +102,7 @@ command_parse_options(Command* self) {
 
 		switch (cur) {
 		case 'h':
-			command_delete(self);
-			cat_usage();
+			self->is_usage = true;
 			break;
 		case 'd':
 			self->is_debug = true;
@@ -227,6 +227,12 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 
 static int
 command_run(Command* self) {
+	// Is usage ?
+	if (self->is_usage) {
+		cat_usage();
+		return 0;
+	}
+
 	// Load config
 	Config* config = config_new();
 	if (!config) {
@@ -276,7 +282,7 @@ fail_config:
 * Public Interface *
 *******************/
 
-void _Noreturn
+void
 cat_usage(void) {
 	term_eprintf(
 		"cap cat\n"
@@ -317,7 +323,6 @@ cat_usage(void) {
 		"\t    $ cap cat -s \"my-sep-1\" capfile\n"
 		"\n"
 	);
-	exit(EXIT_FAILURE);
 }
 
 int
