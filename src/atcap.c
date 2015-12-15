@@ -25,7 +25,7 @@ enum {
 static int capparser_mode_first(CapParser* self);
 static int capparser_mode_atcap(CapParser* self);
 static int capparser_mode_brief(CapParser* self);
-static int capparser_mode_tag(CapParser* self);
+static int capparser_mode_tags(CapParser* self);
 static int capparser_mode_command(CapParser* self);
 static int capparser_mode_brace(CapParser* self);
 static int capparser_mode_mark(CapParser* self);
@@ -154,7 +154,7 @@ capparser_mode_atcap(CapParser* self) {
 	} identifiers[] = {
 		// Cap syntax on file
 		{"brief", capparser_mode_brief},
-		{"tag", capparser_mode_tag},
+		{"tag", capparser_mode_tags},
 		{"{",  capparser_mode_brace},
 		{"mark", capparser_mode_mark},
 		{"goto", capparser_mode_goto},
@@ -275,8 +275,8 @@ capparser_split_tags(char const* tags) {
 }
 
 static int
-capparser_mode_tag(CapParser* self) {
-	capparser_print_mode(self, "tag");
+capparser_mode_tags(CapParser* self) {
+	capparser_print_mode(self, "tags");
 
 	if (is_newline(*self->cur)) {
 		// Parse tags

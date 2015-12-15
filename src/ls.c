@@ -270,18 +270,16 @@ command_has_tags(Command const* self, Config const* config, FILE* fin) {
 
 	for (; buffer_getline(self->buffer, fin); ) {
 		CapRow* row = capparser_parse_line(parser, buffer_get_const(self->buffer));
-		CapCol* front = capcollist_front(caprow_cols(row));
-		if (!front) {
-			caprow_delete(row);
-			continue;
-		}
+		CapColList const* cols = caprow_cols(row);
 
-		if (capcol_type(front) == CapColTag) {
-			char const* tag = capcol_value_const(front);
-			for (int i = 0; i < csvline_length(self->tags); ++i) {
-				if (strcmp(tag, csvline_get_const(self->tags, i)) == 0) {
-					// Found tag in file
-					return true;
+		for (CapCol const* col = capcollist_front_const(cols); col; col = capcol_next_const(col)) {
+			if (capcol_type(col) == CapColTag) {
+				char const* tag = capcol_value_const(col);
+				for (int i = 0; i < csvline_length(self->tags); ++i) {
+					if (strcmp(tag, csvline_get_const(self->tags, i)) == 0) {
+						// Found tag in file
+						return true;
+					}
 				}
 			}
 		}
@@ -328,17 +326,13 @@ command_display(Command const* self, Config const* config) {
 		}
 
 		// Display by @cap syntax
+		fseek(fin, 0L, SEEK_SET);  // Init file
 		command_display_atcap(self, config, fin);
 		term_printf("\n");
 
 		file_close(fin);
 	}
 	
-	// if (self->opt_tags) {
-	// 	for (int i = 0; i < csvline_length(self->tags); ++i) {
-	// 		printf("tags[%d] = [%s]\n", i, csvline_get_const(self->tags, i));
-	// 	}
-	// }
 	// Done
 	return 0;
 }
