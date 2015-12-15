@@ -50,16 +50,19 @@ int
 make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]); 
 
 int
-command_call_command(Command* self, CapFile* dstfile, int argc, char* argv[]); 
+command_call_command(Command const* self, CapFile* dstfile, int argc, char* argv[]); 
 
 static CapFile*
-command_make_capfile_from_stream(Command* self, FILE* fin); 
+command_make_capfile_from_stream(Command const* self, FILE* fin); 
 
 static int
 command_sort_capfile(Command const* self, CapFile* dstfile); 
 
 static int
 command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout); 
+
+static CapFile*
+command_make_capfile(Command const* self);
 
 static int
 command_run(Command* self); 
@@ -151,7 +154,7 @@ command_parse_options(Command* self) {
 *********/
 
 int
-command_call_command(Command* self, CapFile* dstfile, int argc, char* argv[]) {
+command_call_command(Command const* self, CapFile* dstfile, int argc, char* argv[]) {
 	char const* cmdname = argv[0];
 
 	if (strcmp(cmdname, "cat") == 0) {
@@ -175,7 +178,7 @@ fail_unknown_name:
 }
 
 static CapFile*
-command_make_capfile_from_stream(Command* self, FILE* fin) {
+command_make_capfile_from_stream(Command const* self, FILE* fin) {
 	CapFile* dstfile = capfile_new();
 	CapParser* parser = capparser_new();
 	Buffer* buf = buffer_new();
@@ -342,7 +345,7 @@ command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout)
 }
 
 static FILE*
-command_open_input_file(Command* self, char const* capname) {
+command_open_input_file(Command const* self, char const* capname) {
 	FILE* fin = NULL;
 
 	// Get cap's make file path
@@ -363,8 +366,7 @@ command_open_input_file(Command* self, char const* capname) {
 }
 
 static CapFile*
-command_make_capfile(Command* self) {
-	FILE* fin = stdin;
+command_make_capfile(Command const* self) {
 	CapFile* capfile = NULL;
 
 	if (self->argc == self->optind) {
@@ -372,7 +374,6 @@ command_make_capfile(Command* self) {
 		capfile = command_make_capfile_from_stream(self, stdin);
 		if (!capfile) {
 			WARN("Failed to make CapFile");
-			file_close(fin);
 			return NULL;
 		}
 
@@ -381,11 +382,12 @@ command_make_capfile(Command* self) {
 		capfile = capfile_new();
 		CapRowList* caprows = capfile_rows(capfile);
 
+		// Append all CapFile
 		for (int i = self->optind; i < self->argc; ++i) {
 			char const* capname = self->argv[i];
 
 			// Open stream
-			fin = command_open_input_file(self, capname);
+			FILE* fin = command_open_input_file(self, capname);
 			if (!fin) {
 				WARN("Failed to open file \"%s\"", capname);
 				continue;
@@ -408,6 +410,7 @@ command_make_capfile(Command* self) {
 		}
 	}
 
+	// Done
 	return capfile;
 }
 
@@ -420,18 +423,18 @@ command_run(Command* self) {
 	}
 
 	// Ready
-	CapFile* dstfile = command_make_capfile(self);
-	if (!dstfile) {
+	CapFile* capfile = command_make_capfile(self);
+	if (!capfile) {
 		WARN("Failed to make CapFile");
 		return 1;
 	}
 
 	// Sort and display
-	command_sort_capfile(self, dstfile);
-	command_display_capfile(self, dstfile, stdout);
+	command_sort_capfile(self, capfile);
+	command_display_capfile(self, capfile, stdout);
 
 	// Done
-	capfile_delete(dstfile);
+	capfile_delete(capfile);
 	return 0;
 }
 
@@ -476,6 +479,7 @@ make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	// Link appfile to dstfile
 	CapRowList* dstrows = capfile_rows(dstfile);
 	CapRowList* srcrows = capfile_rows(appfile);
+
 	caprowlist_push_back_list(dstrows, srcrows);
 	capfile_delete(appfile);
 
