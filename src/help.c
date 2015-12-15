@@ -42,7 +42,7 @@ help_main(int argc, char* argv[]) {
 		usage_type usage = find_command(cmdname);
 		if (usage) {
 			usage();
-			return EXIT_FAILURE;
+			return 0;
 		} else {
 			term_eprintf("Not found command name \"%s\"\n", cmdname);
 		}
@@ -61,16 +61,16 @@ help_usage(void) {
 		"\n"
 		"The commands are:\n"
 		"\n"
-		"\thelp\tdisplay usage\n"
-		"\tcat\tdisplay cap file\n"
-		"\tls\tdisplay cap file list\n"
-		"\tcd\tdisplay or set current directory path\n"
-		"\tedit\tedit cap file\n"
-		"\teditor\tdisplay or set editor path\n"
-		"\tdeploy\tdeploy files from directory\n"
-		"\tmake\tdisplay and make by cap's make roule\n"
-		"\tpath\tdisplay normalized path of cap file\n"
-		"\trun\trun script\n"
+		"\thelp   display usage\n"
+		"\tcat    display cap file\n"
+		"\tls     display cap file list\n"
+		"\tcd     display or set current directory path\n"
+		"\tedit   edit cap file\n"
+		"\teditor display or set editor path\n"
+		"\tdeploy deploy files from directory\n"
+		"\tmake   display and make by cap's make roule\n"
+		"\tpath   display normalized path of cap file\n"
+		"\trun    run script\n"
 		"\n"
 	);
 	exit(EXIT_FAILURE);
