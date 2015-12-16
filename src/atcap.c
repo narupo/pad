@@ -498,10 +498,7 @@ capparser_parse_line(CapParser* self, char const* line) {
 
 	fail: {
 		WARN("Failed to parse of \"%s\"", line);
-		capcollist_clear(self->columns);
-		CapColList* columns = capcollist_new();
-		capcollist_push_back(columns, "");
-		return caprow_new_from_cols(columns);  // Return null object
+		return NULL;
 	}
 }
 
@@ -585,6 +582,9 @@ test_atcap_line(int argc, char* argv[]) {
 		char const* line = buffer_get_const(buf);
 
 		CapRow* row = capparser_parse_line(capparser, line);
+		if (!row) {
+			continue;
+		}
 		printf("parse line: "); caprow_display(row);
 
 		row = capparser_convert_braces(capparser, row, braces);
