@@ -142,6 +142,10 @@ command_display_atcap(Command const* self, Config const* config, FILE* fin) {
 
 	for (; buffer_getline(self->buffer, fin); ) {
 		CapRow* row = capparser_parse_line(parser, buffer_get_const(self->buffer));
+		if (!row) {
+			continue;
+		}
+
 		CapCol* front = capcollist_front(caprow_cols(row));
 		if (!front) {
 			caprow_delete(row);
@@ -270,6 +274,12 @@ command_has_tags(Command const* self, Config const* config, FILE* fin) {
 
 	for (; buffer_getline(self->buffer, fin); ) {
 		CapRow* row = capparser_parse_line(parser, buffer_get_const(self->buffer));
+		if (!row) {
+			WARN("Failed to parse line");
+			capparser_delete(parser);
+			return false;
+		}
+
 		CapColList const* cols = caprow_cols(row);
 
 		for (CapCol const* col = capcollist_front_const(cols); col; col = capcol_next_const(col)) {
