@@ -245,6 +245,7 @@ capparser_split_tags(char const* tags) {
 					
 				} else if (isblank(ch)) {
 					if (buffer_length(buf)) {
+						buffer_push(buf, 0);
 						strarray_push_copy(arr, buffer_get_const(buf));
 						buffer_clear(buf);
 					}
@@ -253,6 +254,7 @@ capparser_split_tags(char const* tags) {
 			case 1:  // double quoate
 				if (ch == '"') {
 					if (buffer_length(buf)) {
+						buffer_push(buf, 0);
 						strarray_push_copy(arr, buffer_get_const(buf));
 						buffer_clear(buf);
 					}

@@ -278,7 +278,8 @@ command_has_tags(Command const* self, Config const* config, FILE* fin) {
 				for (int i = 0; i < csvline_length(self->tags); ++i) {
 					if (strcmp(tag, csvline_get_const(self->tags, i)) == 0) {
 						// Found tag in file
-						return true;
+						caprow_delete(row);
+						goto found;
 					}
 				}
 			}
@@ -290,7 +291,11 @@ command_has_tags(Command const* self, Config const* config, FILE* fin) {
 
 	// Done
 	capparser_delete(parser);
-	return false;  // Not found tag in file
+	return false;  // Not found tags in file
+
+found:
+	capparser_delete(parser);
+	return true;  // Found tags in file
 }
 
 static int
