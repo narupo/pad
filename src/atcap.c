@@ -154,7 +154,7 @@ capparser_mode_atcap(CapParser* self) {
 	} identifiers[] = {
 		// Cap syntax on file
 		{"brief", capparser_mode_brief},
-		{"tag", capparser_mode_tags},
+		{"tags", capparser_mode_tags},
 		{"{",  capparser_mode_brace},
 		{"mark", capparser_mode_mark},
 		{"goto", capparser_mode_goto},
