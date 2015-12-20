@@ -33,14 +33,14 @@ StringArray*
 strarray_new(void) {
 	StringArray* self = (StringArray*) calloc(1, sizeof(StringArray));
 	if (!self) {
-		//("Failed to construct")
+		WARN("Failed to construct")
 		return NULL;
 	}
 
 	self->array = (StringArray_type*) calloc(NARRAY_NEW_CAPACITY, sizeof(StringArray_type));
 	if (!self->array) {
 		free(self);
-		//("Failed to construct array")
+		WARN("Failed to construct array")
 		return NULL;
 	}
 
@@ -53,14 +53,14 @@ StringArray*
 strarray_new_from_capacity(size_t capacity) {
 	StringArray* self = (StringArray*) calloc(1, sizeof(StringArray));
 	if (!self) {
-		//("Failed to construct")
+		WARN("Failed to construct")
 		return NULL;
 	}
 
 	self->array = (StringArray_type*) calloc(capacity, sizeof(StringArray_type));
 	if (!self->array) {
 		free(self);
-		//("Failed to construct array")
+		WARN("Failed to construct array")
 		return NULL;
 	}
 
@@ -87,7 +87,7 @@ strarray_capacity(StringArray const* self) {
 char const*
 strarray_get_const(StringArray const* self, size_t index) {
 	if (index >= self->capacity) {
-		//("Index out of range")
+		WARN("Index out of range")
 		return NULL;
 	} else {
 		return self->array[index];
@@ -101,7 +101,7 @@ strarray_get_const(StringArray const* self, size_t index) {
 StringArray*
 strarray_set_copy(StringArray* self, size_t index, char const* value) {
 	if (index >= self->capacity) {
-		//("Index out of range")
+		WARN("Index out of range")
 		return NULL;
 	} else {
 		self->array[index] = strdup(value);
@@ -113,7 +113,7 @@ StringArray*
 strarray_resize(StringArray* self, size_t capacity) {
 	StringArray_type* tmp = (StringArray_type*) realloc(self->array, capacity * sizeof(StringArray_type));
 	if (!tmp) {
-		//("Failed to realloc")
+		WARN("Failed to realloc")
 		return NULL;
 	}
 
@@ -127,7 +127,7 @@ StringArray*
 strarray_push_copy(StringArray* self, char const* value) {
 	if (self->length >= self->capacity) {
 		if (!strarray_resize(self, self->capacity * 2)) {
-			//("Failed to resize")
+			WARN("Failed to resize")
 			return NULL;
 		}
 	}
