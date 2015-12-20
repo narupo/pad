@@ -36,25 +36,26 @@ find_command(char const* name) {
 	} table[] = {
 		{"help", help_main},
 		{"cat", cat_main},
+		{"fire", cat_main},
 		{"ls", ls_main},
 		{"cd", cd_main},
 		{"edit", edit_main},
 		{"editor", editor_main},
 		{"deploy", deploy_main},
 		{"make", make_main},
+		{"summon", make_main},
 		{"path", path_main},
 		{"run", run_main},
 		{0},
 	};
 	
 	// Find command by name
-	for (int i = 0; ; ++i) {
-		struct CommandRecord const* rec = &table[i];
-		if (!rec->name) {
+	for (struct CommandRecord const* i = table; i->name; ++i) {
+		if (!i->name) {
 			goto notfound;
 		}
-		if (strcmp(rec->name, name) == 0) {
-			return rec->command;
+		if (strcmp(i->name, name) == 0) {
+			return i->command;
 		}
 	}
 
