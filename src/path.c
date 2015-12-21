@@ -27,7 +27,7 @@ path_run(int argc, char* argv[]) {
 	}
 
 	// Load config
-	Config* config = config_new();
+	Config* config = config_instance();
 	if (!config) {
 		WARN("Failed to construct config");
 		goto fail_config;
@@ -53,15 +53,12 @@ path_run(int argc, char* argv[]) {
 	term_printf("%s\n", spath);
 
 	// Done
-	config_delete(config);
 	return 0;
 
 fail_exists:
-	config_delete(config);
 	return 3;
 
 fail_path_from_base:
-	config_delete(config);
 	return 2;
 
 fail_config:

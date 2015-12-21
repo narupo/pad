@@ -20,7 +20,7 @@ editor_usage(void) {
 static int
 editor_run(int argc, char* argv[]) {
 	// Load config
-	Config* config = config_new();
+	Config* config = config_instance();
 	if (!config) {
 		WARN("Failed to construct config");
 		goto fail_config;
@@ -56,19 +56,15 @@ editor_run(int argc, char* argv[]) {
 	}
 
 done:
-	config_delete(config);
 	return 0;
 
 fail_save:
-	config_delete(config);
 	return 4;
 
 fail_set_path:
-	config_delete(config);
 	return 3;
 
 fail_config_path:
-	config_delete(config);
 	return 2;
 
 fail_config:

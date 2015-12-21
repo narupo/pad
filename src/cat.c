@@ -234,7 +234,7 @@ command_run(Command* self) {
 	}
 
 	// Load config
-	Config* config = config_new();
+	Config* config = config_instance();
 	if (!config) {
 		WARN("Failed to construct config");
 		goto fail_config;
@@ -271,7 +271,6 @@ command_run(Command* self) {
 
 done:
 	// Done
-	config_delete(config);
 	return 0;
 
 fail_config:

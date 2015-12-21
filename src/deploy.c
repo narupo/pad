@@ -20,7 +20,7 @@ deploy_usage(void) {
 int
 deploy_run(char const* dirname) {
 	//! Load config
-	Config* config = config_new();
+	Config* config = config_instance();
 	if (!config) {
 		WARN("Failed to construct config");
 		goto fail_config;
@@ -112,28 +112,22 @@ deploy_run(char const* dirname) {
 
 done:
 	file_closedir(dir);
-	config_delete(config);
 	return 0;
 
 fail_readdir:
 	file_closedir(dir);
-	config_delete(config);
 	return 6;
 
 fail_opendir:
-	config_delete(config);
 	return 5;
 
 fail_exists_dir:
-	config_delete(config);
 	return 4;
 
 fail_make_path:
-	config_delete(config);
 	return 3;
 
 fail_solve_path:
-	config_delete(config);
 	return 2;
 
 fail_config:

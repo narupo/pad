@@ -16,7 +16,7 @@ cd_usage(void) {
 static int
 cd_run(int argc, char* argv[]) {
 	// Load config
-	Config* config = config_new();
+	Config* config = config_instance();
 	if (!config) {
 		return caperr(PROGNAME, CAPERR_CONSTRUCT, "Config");
 	}
@@ -32,12 +32,10 @@ cd_run(int argc, char* argv[]) {
 		config_set_path(config, "cd", optcdpath);
 		config_save(config);
 	} else {
-		config_delete(config);
 		return caperr(PROGNAME, CAPERR_INVALID_ARGUMENTS, "\"%s\"", optcdpath);
 	}
 
 done:
-	config_delete(config);
 	return 0;
 }
 

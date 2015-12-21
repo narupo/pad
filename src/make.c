@@ -503,7 +503,7 @@ make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 int
 make_main(int argc, char* argv[]) {
 	// Load config
-	Config* config = config_new();
+	Config* config = config_instance();
 	if (!config) {
 		return 1;
 	}
@@ -511,7 +511,6 @@ make_main(int argc, char* argv[]) {
 	// Construct make command
 	Command* command = command_new(config, argc, argv);
 	if (!command) {
-		config_delete(config);
 		return 2;
 	}
 
@@ -520,7 +519,6 @@ make_main(int argc, char* argv[]) {
 	
 	// Done
 	command_delete(command);
-	config_delete(config);
 	return res;
 }
 
