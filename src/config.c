@@ -9,10 +9,11 @@ struct Config {
 ************/
 
 static Config* config;  // Singleton instance
+static pthread_mutex_t config_mutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex for singleton instance of Config
 
-static char const* CONFIG_ROOT_PATH = "~/.cap"; 
-static char const* CONFIGSETTING_FNAME = "setting";
-static char const* CONFIGSETTING_PATH = "~/.cap/setting";
+static char const* CONFIG_ROOT_PATH = "~/.cap";  // Root directory path of config
+static char const* CONFIGSETTING_FNAME = "setting";  // File name of config-setting
+static char const* CONFIGSETTING_PATH = "~/.cap/setting";  // File paht of config-setting
 
 /*****************
 * Delete and New *
@@ -113,9 +114,26 @@ config_instance(void) {
 * Getter *
 *********/
 
+static bool
+self_lock(void) {
+	return pthread_mutex_lock(&config_mutex) == 0;
+}
+
+static bool
+self_unlock(void) {
+	return pthread_mutex_unlock(&config_mutex) == 0;
+}
+
 char const*
 config_path(Config const* self, char const* key) {
-	return configsetting_path(self->setting, key);
+	char const* path = NULL;
+
+	if (self_lock()) {
+		path = configsetting_path(self->setting, key);
+		self_unlock();
+	}
+
+	return path;
 }
 
 char*
@@ -127,11 +145,17 @@ config_path_from_base(Config const* self, char* dst, size_t dstsize, char const*
 	}
 
 	// Get current directory path
-	char const* cdpath = configsetting_path(self->setting, "cd");
-	if (!cdpath) {
-		WARN("Not found cd in setting");
-		*dst = '\0';
-		return dst;
+	char const* cdpath = NULL;
+
+	if (self_lock()) {
+		cdpath = configsetting_path(self->setting, "cd");
+		if (!cdpath) {
+			WARN("Not found cd in setting");
+			*dst = '\0';
+			self_unlock();
+			return dst;
+		}
+		self_unlock();
 	}
 
 	// Make path
@@ -163,12 +187,26 @@ config_make_path_from_base(Config const* self, char const* basename) {
 
 bool
 config_set_path(Config* self, char const* key, char const* val) {
-	return configsetting_set_path(self->setting, key, val);
+	bool res = false;
+
+	if (self_lock()) {
+		res = configsetting_set_path(self->setting, key, val);
+		self_unlock();
+	}
+
+	return res;
 }
 
 bool
 config_save(Config const* self) {
-	return configsetting_save_to_file(self->setting, CONFIGSETTING_PATH);
+	bool res = false;
+
+	if (self_lock()) {
+		res = configsetting_save_to_file(self->setting, CONFIGSETTING_PATH);
+		self_unlock();
+	}
+	
+	return res;
 }
 
 /*******
