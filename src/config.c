@@ -8,6 +8,8 @@ struct Config {
 * Variables *
 ************/
 
+static Config* config;  // Singleton instance
+
 static char const* CONFIG_ROOT_PATH = "~/.cap"; 
 static char const* CONFIGSETTING_FNAME = "setting";
 static char const* CONFIGSETTING_PATH = "~/.cap/setting";
@@ -16,7 +18,10 @@ static char const* CONFIGSETTING_PATH = "~/.cap/setting";
 * Delete and New *
 *****************/
 
-void
+/**
+ * Destruct Config
+ */
+static void
 config_delete(Config* self) {
 	if (self) {
 		configsetting_delete(self->setting);
@@ -24,7 +29,15 @@ config_delete(Config* self) {
 	}
 }
 
-Config*
+/**
+ * Construct Config from directory
+ * 
+ * @param[in] dirpath source directory of construct
+ *
+ * @return success to pointer to Config
+ * @return failed to pointer to NULL 
+ */
+static Config*
 config_new_from_dir(char const* dirpath) {
 	// Construct
 	Config* self = (Config*) calloc(1, sizeof(Config));
@@ -66,9 +79,34 @@ config_new_from_dir(char const* dirpath) {
 	return self;
 }
 
-Config*
+/**
+ * Construct Config
+ * 
+ * @return success to pointer to Config
+ * @return failed to pointer to NULL
+ */
+static Config*
 config_new(void) {
 	return config_new_from_dir(CONFIG_ROOT_PATH);
+}
+
+/**
+ * Destroy instance of Config
+ */
+static void
+config_destroy(void) {
+	if (config) {
+		config_delete(config);
+	}
+}
+
+Config*
+config_instance(void) {
+	if (!config) {
+		config = config_new();
+		atexit(config_destroy);
+	}
+	return config;
 }
 
 /*********

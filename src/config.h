@@ -16,21 +16,13 @@
 *****************/
 
 /**
- * Destruct config
- *
- * @param[in] self pointer to config object
- */
-void
-config_delete(Config* self);
-
-/**
- * Construct config
- *
- * @return success to pointer to config object of dynamic allocate memory
- * @return failed to pointer to NULL
+ * Get pointer to instance of Config
+ * Using singleton-pattern
+ * 
+ * @return pointer to Config object
  */
 Config*
-config_new(void);
+config_instance(void);
 
 /*********
 * Getter *
@@ -54,7 +46,7 @@ config_path_from_base(Config const* self, char* dst, size_t dstsize, char const*
  * Make normalized cap's path from basename
  * 
  * @param[in] self
- * @param[in] basename basename
+ * @param[in] basename basename like a file name of cap's management files
  *
  * @return success to pointer to normalized path of dynamic allocate memory
  * @return failed to pointer to NULL

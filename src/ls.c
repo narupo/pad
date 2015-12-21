@@ -355,7 +355,7 @@ command_display(Command const* self, Config const* config) {
 static int
 command_run(Command* self) {
 	// Construct Config
-	Config* config = config_new();
+	Config* config = config_instance();
 	if (!config) {
 		WARN("Failed to config new");
 		goto fail_config;
@@ -381,19 +381,15 @@ command_run(Command* self) {
 	}
 
 	// Done
-	config_delete(config);
 	return 0;
 
 fail_display:
-	config_delete(config);
 	return 3;
 
 fail_walkdir:
-	config_delete(config);
 	return 2;
 
 fail_config:
-	config_delete(config);
 	return 1;
 }
 
