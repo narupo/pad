@@ -15,6 +15,20 @@ static char const* CONFIG_ROOT_PATH = "~/.cap";  // Root directory path of confi
 static char const* CONFIGSETTING_FNAME = "setting";  // File name of config-setting
 static char const* CONFIGSETTING_PATH = "~/.cap/setting";  // File paht of config-setting
 
+/***************
+* Mutex family *
+***************/
+
+static bool
+self_lock(void) {
+	return pthread_mutex_lock(&config_mutex) == 0;
+}
+
+static bool
+self_unlock(void) {
+	return pthread_mutex_unlock(&config_mutex) == 0;
+}
+
 /*****************
 * Delete and New *
 *****************/
@@ -103,37 +117,32 @@ config_destroy(void) {
 
 Config*
 config_instance(void) {
-	if (!config) {
-		config = config_new();
-		atexit(config_destroy);
+	if (self_lock()) {
+		if (!config) {
+			config = config_new();
+			atexit(config_destroy);
+		}
+		self_unlock();
+		return config;
 	}
-	return config;
+
+	return NULL;
 }
 
 /*********
 * Getter *
 *********/
 
-static bool
-self_lock(void) {
-	return pthread_mutex_lock(&config_mutex) == 0;
-}
-
-static bool
-self_unlock(void) {
-	return pthread_mutex_unlock(&config_mutex) == 0;
-}
-
 char const*
 config_path(Config const* self, char const* key) {
-	char const* path = NULL;
-
+	
 	if (self_lock()) {
-		path = configsetting_path(self->setting, key);
+		char const* path = configsetting_path(self->setting, key);
 		self_unlock();
+		return path;
 	}
 
-	return path;
+	return NULL;
 }
 
 char*
