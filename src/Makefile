@@ -1,12 +1,12 @@
 CC=clang
-CFLAGS=-Wall -g -O0 -std=c99
+CFLAGS=-Wall -g -O0 -std=c99 -lpthread
 CMDS=cap.c cat.c cd.c deploy.c edit.c \
 	editor.c help.c ls.c make.c path.c run.c
 
 UTILS=caperr.c atcap.c buffer.c cap-file.c config-setting.c config.c \
 	csvline.c file.c strarray.c term.c util.c
 
-TARGET=cap
+TARGET=~/bin/cap
 TESTDIR=./test
 
 all: cap
