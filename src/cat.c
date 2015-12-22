@@ -138,15 +138,42 @@ command_parse_options(Command* self) {
 * Reader *
 *********/
 
+static CapCol const*
+cat_gotorow_to_textrow_and_front(CapRow* row) {
+	CapCol const* col = capcollist_front(caprow_cols(row));
+	if (!col) {
+		return NULL;
+	}
+
+	if (capcol_type(col) == CapColGoto) {
+		// To text row
+		caprow_remove_cols(row, CapColGoto);
+	}
+
+	return capcollist_front(caprow_cols(row));
+}
+
+/**
+ * Wrapper of capparser_parse_line
+ * 
+ * @param self 
+ * @param buffer pointer to buffer for parse string
+ * @param parser pointer to CapParser
+ *
+ * @return success to pointer to CapRow
+ * @return failed or skip to pointer to NULL
+ */
 static CapRow*
 cat_read_row(Command* self, Buffer const* buffer, CapParser* parser) {
 	char const* line = buffer_get_const(buffer);
+
 	CapRow* row = capparser_parse_line(parser, line);
 	if (!row) {
 		return NULL;
 	}
 
-	CapCol const* col = capcollist_front(caprow_cols(row));
+	// If goto row then
+	CapCol const* col = cat_gotorow_to_textrow_and_front(row);
 	if (!col) {
 		caprow_delete(row);
 		return NULL;
