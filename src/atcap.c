@@ -215,66 +215,6 @@ capparser_mode_brief(CapParser* self) {
 	return 0;
 }
 
-static StringArray*
-capparser_split_tags(char const* tags) {
-	// Destination
-	StringArray* arr = strarray_new();
-	if (!arr) {
-		return NULL;
-	}
-
-	// Parse
-	Buffer* buf = buffer_new();
-	int m = 0;
-
-	for (char const* p = tags; ; ++p) {
-		int ch = *p;
-		
-		// Convert from newline to delimiter
-		if (is_newline(ch)) {
-			ch = ' ';
-		}
-
-		switch (m) {
-			case 0:
-				if (ch == '"') {
-					m = 1;
-					
-				} else if (isblank(ch)) {
-					if (buffer_length(buf)) {
-						buffer_push(buf, 0);
-						strarray_push_copy(arr, buffer_get_const(buf));
-						buffer_clear(buf);
-					}
-				} else {
-					buffer_push(buf, ch);
-				}
-				break;
-			case 1:  // double quoate
-				if (ch == '"') {
-					if (buffer_length(buf)) {
-						buffer_push(buf, 0);
-						strarray_push_copy(arr, buffer_get_const(buf));
-						buffer_clear(buf);
-					}
-					m = 0;
-				} else {
-					buffer_push(buf, ch);
-				}
-				break;
-		}
-
-		// Catch sentinel
-		if (*p == '\0') {
-			break;
-		}
-	}
-
-	// Done
-	buffer_delete(buf);
-	return arr;
-}
-
 static int
 capparser_mode_tags(CapParser* self) {
 	capparser_print_mode(self, "tags");
@@ -282,23 +222,29 @@ capparser_mode_tags(CapParser* self) {
 	if (is_newline(*self->cur)) {
 		// Parse tags
 		buffer_push(self->buf, 0);
-		StringArray* arr = capparser_split_tags(buffer_get_const(self->buf));
+		CsvLine* tags = csvline_new_parse_line(buffer_get_const(self->buf), ' ');
+		if (!tags) {
+			WARN("Failed to split tags");
+			goto done_newline;
+		}
 
-		for (int i = 0; i < strarray_length(arr); ++i) {
-			char const* tag = strarray_get_const(arr, i);
+		for (int i = 0; i < csvline_length(tags); ++i) {
+			char const* tag = csvline_get_const(tags, i);
 			capparser_push_col_str(self, tag, CapColTag);
 		}
-		strarray_delete(arr);
+		csvline_delete(tags);
 
 		// This row is tag of column only
 		capparser_remove_cols(self, CapColText);
 
 		// Go to first state
-		self->mode = capparser_mode_first;
-		buffer_clear(self->buf);
+		done_newline: {
+			self->mode = capparser_mode_first;
+			buffer_clear(self->buf);
 
-		++self->cur;
-		return CAPPARSER_EOF;
+			++self->cur;
+			return CAPPARSER_EOF;
+		}
 
 	} else {
 		buffer_push(self->buf, *self->cur);

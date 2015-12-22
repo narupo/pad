@@ -4,6 +4,7 @@
 #include "util.h"
 #include "buffer.h"
 #include "strarray.h"
+#include "csvline.h"
 #include "cap-file.h"
 #include "file.h"
 #include <stdio.h>

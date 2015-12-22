@@ -38,6 +38,7 @@ SOFTWARE.
 #include "make.h"
 #include "path.h"
 #include "run.h"
+#include "alias.h"
 
 #endif
 
