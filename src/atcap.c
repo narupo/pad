@@ -237,10 +237,7 @@ capparser_split_tags(char const* tags) {
 
 		switch (m) {
 			case 0:
-				if (isalnum(ch)) {
-					buffer_push(buf, ch);
-
-				} else if (ch == '"') {
+				if (ch == '"') {
 					m = 1;
 					
 				} else if (isblank(ch)) {
@@ -249,6 +246,8 @@ capparser_split_tags(char const* tags) {
 						strarray_push_copy(arr, buffer_get_const(buf));
 						buffer_clear(buf);
 					}
+				} else {
+					buffer_push(buf, ch);
 				}
 				break;
 			case 1:  // double quoate
