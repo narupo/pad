@@ -196,26 +196,24 @@ config_make_path_from_base(Config const* self, char const* basename) {
 
 bool
 config_set_path(Config* self, char const* key, char const* val) {
-	bool res = false;
-
 	if (self_lock()) {
-		res = configsetting_set_path(self->setting, key, val);
+		bool res = configsetting_set_path(self->setting, key, val);
 		self_unlock();
+		return res;
 	}
 
-	return res;
+	return false;
 }
 
 bool
 config_save(Config const* self) {
-	bool res = false;
-
 	if (self_lock()) {
-		res = configsetting_save_to_file(self->setting, CONFIGSETTING_PATH);
+		bool res = configsetting_save_to_file(self->setting, CONFIGSETTING_PATH);
 		self_unlock();
+		return res;
 	}
 	
-	return res;
+	return false;
 }
 
 /*******
