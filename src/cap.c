@@ -46,6 +46,7 @@ find_command(char const* name) {
 		{"summon", make_main},
 		{"path", path_main},
 		{"run", run_main},
+		{"alias", alias_main},
 		{0},
 	};
 	

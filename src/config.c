@@ -112,6 +112,7 @@ static void
 config_destroy(void) {
 	if (config) {
 		config_delete(config);
+		config = NULL;
 	}
 }
 
@@ -135,7 +136,6 @@ config_instance(void) {
 
 char const*
 config_path(Config const* self, char const* key) {
-	
 	if (self_lock()) {
 		char const* path = configsetting_path(self->setting, key);
 		self_unlock();
