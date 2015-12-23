@@ -160,6 +160,16 @@ file_mkdir(char const* dirpath, mode_t mode) {
 	return mkdir(spath, mode);
 }
 
+bool
+file_create(char const* path) {
+	FILE* fout = file_open(path, "wb");
+	if (!fout) {
+		return false;
+	}
+	file_close(fout);
+	return true;
+}
+
 char*
 file_read_string(FILE* fin) {
 	// Check arguments

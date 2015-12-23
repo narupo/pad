@@ -58,6 +58,9 @@ file_is_exists(char const* path);
 int
 file_mkdir(char const* path, mode_t mode);
 
+bool
+file_create(char const* path);
+
 /**
  * Get normalized file path
  *
