@@ -92,6 +92,51 @@ strcmphead(char const* src, char const* target) {
 	return strncmp(src, target, strlen(target));
 }
 
+char*
+strrem(char* dst, size_t dstsize, char const* src, int rem) {
+	int i, j;
+
+	for (i = 0, j = 0; src[i]; ++i) {
+		if (src[i] != rem) {
+			dst[j++] = src[i];
+		}
+	}
+
+	dst[j] = '\0';
+
+	return dst;
+}
+
+char*
+strrstrip(char* dst, size_t dstsize, char const* src, int rem) {
+	size_t srclen = strlen(src);
+
+	if (srclen >= dstsize) {
+		die("strrstrip: buffer overflow");
+	}
+
+	int i;
+	for (i = 0; i < srclen; ++i) {
+		int c = src[srclen-i-1];
+		if (c != rem) {
+			break;
+		}
+		dst[srclen-i-1] = c;
+	}
+
+	dst[i] = '\0';
+
+	return dst;
+}
+
+void
+free_argv(int argc, char** argv) {
+	for (int i = 0; i < argc; ++i) {
+		free(argv[i]);
+	}
+	free(argv);
+}
+
 #if defined(TEST_UTIL)
 int
 main(int argc, char* argv[]) {

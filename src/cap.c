@@ -36,14 +36,12 @@ find_command(char const* name) {
 	} table[] = {
 		{"help", help_main},
 		{"cat", cat_main},
-		{"fire", cat_main},
 		{"ls", ls_main},
 		{"cd", cd_main},
 		{"edit", edit_main},
 		{"editor", editor_main},
 		{"deploy", deploy_main},
 		{"make", make_main},
-		{"summon", make_main},
 		{"path", path_main},
 		{"run", run_main},
 		{"alias", alias_main},
@@ -64,6 +62,48 @@ notfound:
 	return NULL;
 }
 
+static
+int run_alias(char const* cmdname) {
+	// Get command line by alias
+	CsvLine* cmdline = alias_to_csvline(cmdname);
+	if (!cmdline) {
+		goto fail_alias_to_csvline;
+	}
+
+	// Thank you CsvLine and good bye
+	int argc = csvline_length(cmdline);
+	char** argv = csvline_escape_delete(cmdline);
+	
+	// Find command
+	Command command = find_command(argv[0]);
+	if (!command) {
+		goto fail_find_command;
+	}
+
+	// Execute command
+	int res = command(argc, argv);
+	if (res != 0) {
+		warn("%s: Failed to execute alias \"%s\"", PROGNAME, cmdname);
+		goto done;
+	}
+
+done:
+	// Done
+	free_argv(argc, argv);
+	return res;
+
+fail_alias_to_csvline:
+	term_eprintf("Not found alias name \"%s\".\n\n", cmdname);
+	help_usage();
+	return 1;	
+
+fail_find_command:
+	free_argv(argc, argv);
+	term_eprintf("Not found command name \"%s\".\n\n", cmdname);
+	help_usage();
+	return 2;
+}
+
 int
 main(int argc, char* argv[]) {
 	// Check arguments
@@ -72,15 +112,15 @@ main(int argc, char* argv[]) {
 	}
 
 	// Skip program name
-	--argc;
-	++argv;
+	argc--;
+	argv++;
 
 	// Get command by name
 	char const* cmdname = argv[0];
 	Command command = find_command(cmdname);
 	if (!command) {
-		term_eprintf("Not found command name \"%s\".\n\n", cmdname);
-		help_usage();
+		// Not found command name, Next to find alias
+		return run_alias(cmdname);
 	}
 
 	// Execute command

@@ -138,21 +138,6 @@ command_parse_options(Command* self) {
 * Reader *
 *********/
 
-static CapCol const*
-cat_gotorow_to_textrow_and_front(CapRow* row) {
-	CapCol const* col = capcollist_front(caprow_cols(row));
-	if (!col) {
-		return NULL;
-	}
-
-	if (capcol_type(col) == CapColGoto) {
-		// To text row
-		caprow_remove_cols(row, CapColGoto);
-	}
-
-	return capcollist_front(caprow_cols(row));
-}
-
 /**
  * Wrapper of capparser_parse_line
  * 
@@ -167,13 +152,14 @@ static CapRow*
 cat_read_row(Command* self, Buffer const* buffer, CapParser* parser) {
 	char const* line = buffer_get_const(buffer);
 
+	// Parse line
 	CapRow* row = capparser_parse_line(parser, line);
 	if (!row) {
 		return NULL;
 	}
 
-	// If goto row then
-	CapCol const* col = cat_gotorow_to_textrow_and_front(row);
+	// Convert goto row to text only row
+	CapCol const* col = capcollist_front(caprow_cols(row));
 	if (!col) {
 		caprow_delete(row);
 		return NULL;
@@ -195,6 +181,7 @@ cat_read_row(Command* self, Buffer const* buffer, CapParser* parser) {
 		}
 	}
 
+	// Done and convert @cap braces
 	return capparser_convert_braces(parser, row, self->replace_list);
 }
 
@@ -217,28 +204,36 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 		if (!row) {
 			continue;
 		}
-		
-		CapCol const* col = capcollist_front(caprow_cols(row));
-		if (!col) {
-			continue;
-		}
+	
+		getcol: {
+			CapCol const* col = capcollist_front(caprow_cols(row));
+			if (!col) {
+				continue;
+			}
 
-		// If debug mode then display row with details
-		if (self->is_debug) {
-			caprow_display(row);
-			continue;
-		}
+			// If goto row then
+			if (capcol_type(col) == CapColGoto) {
+				caprow_remove_cols(row, CapColGoto);
+				goto getcol;
+			}
 
-		// Text only
-		if (capcol_type(col) != CapColText) {
-			continue;
-		}
+			// If debug mode then display row with details
+			if (self->is_debug) {
+				caprow_display(row);
+				continue;
+			}
 
-		// Display text columns
-		for (; col; col = capcol_next_const(col)) {
-			fprintf(fout, "%s", capcol_value_const(col));
+			// Text only
+			if (capcol_type(col) != CapColText) {
+				continue;
+			}
+
+			// Display text columns
+			for (; col; col = capcol_next_const(col)) {
+				fprintf(fout, "%s", capcol_value_const(col));
+			}
+			fprintf(fout, "\n");
 		}
-		fprintf(fout, "\n");
 	}
 
 	// Done

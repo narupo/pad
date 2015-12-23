@@ -94,6 +94,18 @@ csvline_new_parse_line(char const* line, int delim) {
 * Parser *
 *********/
 
+static bool
+self_resize(CsvLine* self, size_t newcapa) {
+	char** cols = (char**) realloc(self->cols, sizeof(char*) * newcapa + sizeof(char*));  // +1 for final null
+	if (!cols) {
+		WARN("Failed to resize");
+		return false;
+	}
+	self->capacity = newcapa;
+	self->cols = cols;
+	return true;
+}
+
 /* Setter */
 
 static bool
@@ -105,14 +117,10 @@ self_cols_push_copy(CsvLine* self, char const* col) {
 
 	// Check capacity
 	if (self->length >= self->capacity) {
-		size_t newcapa = self->capacity * 2;
-		char** cols = (char**) realloc(self->cols, sizeof(char*) * newcapa + sizeof(char*));  // +1 for final null
-		if (!cols) {
+		if (!self_resize(self, self->capacity * 2)) {
 			WARN("Failed to push copy");
-			return false;
+			return false;			
 		}
-		self->capacity = newcapa;
-		self->cols = cols;
 	}
 
 	// Push copy
@@ -210,6 +218,22 @@ csvline_parse_line(CsvLine* self, char const* line, int delim) {
 	return true;
 }
 
+/*****************
+* CsvLine setter *
+*****************/
+/*
+bool
+csvline_push_front(CsvLine* self, char const* col) {
+	if (self->length >= self->capacity) {
+		if (!self_resize(self, self->capacity*2)) {
+			WARN("Failed to push front \"%s\"", col);
+			return false;
+		}
+	}
+	// TODO
+	return true;
+}
+*/
 /*********
 * Getter *
 *********/

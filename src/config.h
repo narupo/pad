@@ -30,6 +30,18 @@ config_instance(void);
 *********/
 
 /**
+ * Get root directory path of config
+ * This path is directory of all config's file
+ * 
+ * @param self
+ * 
+ * @return success to pointer to string of path
+ * @return failed to pointer to NULL
+ */
+char const*
+config_root(Config const* self);
+
+/**
  * Make normalized cap's path from basename
  *
  * @param[in] self 

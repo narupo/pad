@@ -93,5 +93,25 @@ strskip(char const* src, char const* skips);
 int
 strcmphead(char const* src, char const* target);
 
+/**
+ * Remove character from string
+ * 
+ * @param[out] dst pointer to destination of string
+ * @param[in] dstsize number of destination size
+ * @param[in] src string of source
+ * @param[in] rem target character for remove
+ * 
+ * @return success to pointer to dst
+ * @return failed to pointer to NULL
+ */
+char*
+strrem(char* dst, size_t dstsize, char const* src, int rem);
+
+char*
+strrstrip(char* dst, size_t dstsize, char const* src, int rem);
+
+void
+free_argv(int argc, char** argv);
+
 #endif
 

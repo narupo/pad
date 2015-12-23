@@ -65,6 +65,13 @@ bool
 csvline_parse_line(CsvLine* self, char const* line, int delim);
 
 /*****************
+* CsvLine setter *
+*****************/
+
+// bool
+// csvline_push_front(CsvLine* self, char const* column);
+
+/*****************
 * CsvLine getter *
 *****************/
 
