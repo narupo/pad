@@ -234,6 +234,12 @@ csvline_push_front(CsvLine* self, char const* col) {
 	return true;
 }
 */
+
+bool
+csvline_push_back(CsvLine* self, char const* col) {
+	return self_cols_push_copy(self, col);
+}
+
 /*********
 * Getter *
 *********/

@@ -63,45 +63,59 @@ notfound:
 }
 
 static int
-run_alias(char const* cmdname) {
+run_alias(char const* aliasname, int argc, char** argv) {
 	// Get command line by alias
-	CsvLine* cmdline = alias_to_csvline(cmdname);
+	CsvLine* cmdline = alias_to_csvline(aliasname);
 	if (!cmdline) {
 		goto fail_alias_to_csvline;
 	}
 
+	// Command line append args of 'cap alias'
+	for (int i = 0; i < argc; ++i) {
+		csvline_push_back(cmdline, argv[i]);
+	}
+
 	// Thank you CsvLine and good bye
-	int argc = csvline_length(cmdline);
-	char** argv = csvline_escape_delete(cmdline);
+	int cmdargc = csvline_length(cmdline);
+	char** cmdargv = csvline_escape_delete(cmdline);
+
+	if (cmdargc == 0) {
+		goto fail_invalid_name;
+	}
 	
 	// Find command
-	Command command = find_command(argv[0]);
+	Command command = find_command(cmdargv[0]);
 	if (!command) {
 		goto fail_find_command;
 	}
 
 	// Execute command
-	int res = command(argc, argv);
+	int res = command(cmdargc, cmdargv);
 	if (res != 0) {
-		warn("%s: Failed to execute alias \"%s\"", PROGNAME, cmdname);
+		warn("%s: Failed to execute alias \"%s\"", PROGNAME, aliasname);
 		goto done;
 	}
 
 done:
 	// Done
-	free_argv(argc, argv);
+	free_argv(cmdargc, cmdargv);
 	return res;
 
+fail_find_command:
+	free_argv(cmdargc, cmdargv);
+	term_eputsf("Not found command name \"%s\".\n", aliasname);
+	help_usage();
+	return 3;
+
+fail_invalid_name:
+	free_argv(argc, argv);
+	term_eputsf("%s: Invalid alias \"%s\"", PROGNAME, aliasname);
+	return 2;
+
 fail_alias_to_csvline:
-	term_eprintf("Not found alias name \"%s\".\n\n", cmdname);
+	term_eputsf("Not found alias name \"%s\".\n", aliasname);
 	help_usage();
 	return 1;	
-
-fail_find_command:
-	free_argv(argc, argv);
-	term_eprintf("Not found command name \"%s\".\n\n", cmdname);
-	help_usage();
-	return 2;
 }
 
 int
@@ -120,7 +134,7 @@ main(int argc, char* argv[]) {
 	Command command = find_command(cmdname);
 	if (!command) {
 		// Not found command name, Next to find alias
-		return run_alias(cmdname);
+		return run_alias(cmdname, argc-1, argv+1);
 	}
 
 	// Execute command
