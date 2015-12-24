@@ -103,8 +103,7 @@ done:
 
 fail_find_command:
 	free_argv(cmdargc, cmdargv);
-	term_eputsf("Not found command name \"%s\".\n", aliasname);
-	help_usage();
+	term_eputsf("%s: Not found command name \"%s\".\n", PROGNAME, aliasname);
 	return 3;
 
 fail_invalid_name:
@@ -113,8 +112,7 @@ fail_invalid_name:
 	return 2;
 
 fail_alias_to_csvline:
-	term_eputsf("Not found alias name \"%s\".\n", aliasname);
-	help_usage();
+	term_eputsf("%s: Not found alias name \"%s\".\n", PROGNAME, aliasname);
 	return 1;	
 }
 

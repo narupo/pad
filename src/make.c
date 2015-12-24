@@ -207,10 +207,7 @@ command_make_capfile_from_stream(Command const* self, FILE* fin) {
 			command_call_command(self, dstfile, argc, argv);
 
 			// Done
-			for (int i = 0; i < argc; ++i) {
-				free(argv[i]);
-			}
-			free(argv);
+			free_argv(argc, argv);
 			caprow_delete(row);
 
 		} else {
