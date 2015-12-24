@@ -152,7 +152,7 @@ command_push_alias_to_file(char const* path, char const* pushkey, char const* pu
 
 		key[len] = 0; // Nul terminate for string
 
-		if (strncmp(key, pushkey, strlen(pushkey)) == 0) {
+		if (strcmp(key, pushkey) == 0) {
 			// Found overlap key, Override this record
 			fseek(stream, -ALIAS_NKEY, SEEK_CUR); // Back to the basic
 			putcol(stream, pushkey, ALIAS_NKEY);
@@ -207,7 +207,7 @@ command_disp_alias_list(Command* self) {
 		}
 		getcol(fin, val, ALIAS_NVAL);
 
-		term_printf("%-10s \"%s\"\n", key, val);
+		term_printf("%-10s %s\n", key, val);
 	}
 
 	file_close(fin);
@@ -275,7 +275,7 @@ alias_to_csvline(char const* findkey) {
 
 		key[len] = 0;
 
-		if (strncmp(key, findkey, strlen(findkey)) == 0) {
+		if (strcmp(key, findkey) == 0) {
 			// Found key, parse value column
 			char val[ALIAS_NVAL+1];
 			memset(val, 0, sizeof val);
