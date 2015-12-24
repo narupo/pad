@@ -110,6 +110,9 @@ strrem(char* dst, size_t dstsize, char const* src, int rem);
 char*
 strrstrip(char* dst, size_t dstsize, char const* src, int rem);
 
+char*
+strrset(char* str, size_t strsize, int rem);
+
 void
 free_argv(int argc, char** argv);
 

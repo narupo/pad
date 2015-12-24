@@ -62,8 +62,8 @@ notfound:
 	return NULL;
 }
 
-static
-int run_alias(char const* cmdname) {
+static int
+run_alias(char const* cmdname) {
 	// Get command line by alias
 	CsvLine* cmdline = alias_to_csvline(cmdname);
 	if (!cmdline) {
