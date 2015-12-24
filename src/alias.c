@@ -169,15 +169,58 @@ command_push_alias_to_file(char const* path, char const* pushkey, char const* pu
 	putcol(stream, pushkey, ALIAS_NKEY);
 	putcol(stream, pushval, ALIAS_NVAL);
 
-	// Done
 done:
 	file_close(stream);
 	return 0;
 }
 
 static int
+getcol(FILE* fin, char* dst, size_t colsize) {
+	int len = fread(dst, sizeof(dst[0]), colsize, fin);
+	if (len <= 0) {
+		return len;
+	}
+	if (ferror(fin)) {
+		return -1;
+	}
+	dst[len] = 0;
+	return len;
+}
+
+static int
+command_disp_alias_list(Command* self) {
+	char path[NFILE_PATH];
+	command_make_path(path, NUMOF(path));
+
+	FILE* fin = file_open(path, "rb");
+	if (!fin) {
+		WARN("Failed to open file \"%s\"", path);
+		return 1;
+	}
+
+	for (; !feof(fin); ) {
+		char key[ALIAS_NKEY+1];
+		char val[ALIAS_NVAL+1];
+		
+		if (getcol(fin, key, ALIAS_NKEY) <= 0) {
+			break;
+		}
+		getcol(fin, val, ALIAS_NVAL);
+
+		term_printf("%-10s \"%s\"\n", key, val);
+	}
+
+	file_close(fin);
+	return 0;
+}
+
+static int
 command_run(Command* self) {
 	// Check arugments
+	if (self->argc == self->optind) {
+		return command_disp_alias_list(self);
+	}
+
 	if (self->argc != self->optind + 2) {
 		alias_usage();
 		return 0;
@@ -245,7 +288,7 @@ alias_to_csvline(char const* findkey) {
 			val[len] = 0;
 
 			csvline_parse_line(csvline, val, ' ');
-			
+
 			// Success to csvline
 			file_close(fin);
 			return csvline;
