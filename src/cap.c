@@ -123,6 +123,7 @@ main(int argc, char* argv[]) {
 	// Check arguments
 	if (argc < 2) {
 		help_usage();
+		return 0;
 	}
 
 	// Skip program name

@@ -19,7 +19,7 @@
 int
 help_main(int argc, char* argv[]);
 
-void _Noreturn
+void
 help_usage(void);
 
 #endif

@@ -50,7 +50,7 @@ help_main(int argc, char* argv[]) {
 	return 0;
 }
 
-void _Noreturn
+void
 help_usage(void) {
 	term_eprintf(
 		"Cap is simple snippet manager for programmer.\n"
@@ -71,7 +71,7 @@ help_usage(void) {
 		"\tmake   display and make by cap's make roule\n"
 		"\tpath   display normalized path of cap file\n"
 		"\trun    run script\n"
+		"\talias  add alias of cap's command\n"
 		"\n"
 	);
-	exit(EXIT_FAILURE);
 }
