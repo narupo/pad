@@ -198,6 +198,25 @@ command_disp_alias_list(Command* self) {
 		return 1;
 	}
 
+	// First
+	// Get max length of key for display
+	size_t maxkeylen = 0;
+	for (; !feof(fin); ) {
+		char key[ALIAS_NKEY+1];
+		
+		if (getcol(fin, key, ALIAS_NKEY) <= 0) {
+			break;
+		}
+		fseek(fin, ALIAS_NVAL, SEEK_CUR);
+
+		size_t keylen = strlen(key);
+		maxkeylen = (keylen > maxkeylen ? keylen : maxkeylen);
+	}
+
+	// Second
+	// Display key and value with padding
+	rewind(fin);
+
 	for (; !feof(fin); ) {
 		char key[ALIAS_NKEY+1];
 		char val[ALIAS_NVAL+1];
@@ -207,7 +226,7 @@ command_disp_alias_list(Command* self) {
 		}
 		getcol(fin, val, ALIAS_NVAL);
 
-		term_printf("%-10s %s\n", key, val);
+		term_printf("%-*s %s\n", maxkeylen, key, val);
 	}
 
 	file_close(fin);
