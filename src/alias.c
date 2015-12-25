@@ -4,7 +4,8 @@ typedef struct Command Command;
 
 enum {
 	ALIAS_NKEY = 32,
-	ALIAS_NVAL = 128
+	ALIAS_NVAL = 128,
+	ALIAS_NRECORD = ALIAS_NKEY + ALIAS_NVAL,
 };
 
 struct Command {
@@ -15,6 +16,7 @@ struct Command {
 
 	bool optis_help;
 	bool optis_delete;
+	bool optis_debug;
 };
 
 static bool
@@ -67,11 +69,12 @@ command_parse_options(Command* self) {
 		static struct option longopts[] = {
 			{"help", no_argument, 0, 'h'},
 			{"delete", no_argument, 0, 'd'},
+			{"debug", no_argument, 0, 'D'},
 			{0},
 		};
 		int optsindex;
 
-		int cur = getopt_long(self->argc, self->argv, "hd", longopts, &optsindex);
+		int cur = getopt_long(self->argc, self->argv, "hdD", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
@@ -79,6 +82,7 @@ command_parse_options(Command* self) {
 		switch (cur) {
 		case 'h': self->optis_help = true; break;
 		case 'd': self->optis_delete = true; break;
+		case 'D': self->optis_debug = true; break;
 		case '?': default: return false; break;
 		}
 	}
@@ -179,14 +183,9 @@ command_push_alias_to_file(char const* path, char const* pushkey, char const* pu
 	} else {
 		// Insert to empty record
 		rewind(stream);
-		for (int i = 0; !feof(stream); ++i) {
-			if (i == emptyrecodeno) {
-				putcol(stream, pushkey, ALIAS_NKEY);
-				putcol(stream, pushval, ALIAS_NVAL);
-				break;
-			}
-			fseek(stream, ALIAS_NKEY+ALIAS_NVAL, SEEK_CUR);
-		}
+		fseek(stream, emptyrecodeno * ALIAS_NRECORD, SEEK_SET);
+		putcol(stream, pushkey, ALIAS_NKEY);
+		putcol(stream, pushval, ALIAS_NVAL);
 	}
 
 done:
@@ -248,7 +247,9 @@ command_disp_alias_list(Command* self) {
 		}
 		getcol(fin, val, ALIAS_NVAL);
 
-		if (strlen(key)) {
+		if (self->optis_debug) {
+			term_printf("%-*s %s\n", maxkeylen, key, val);
+		} else if (strlen(key)) {
 			term_printf("%-*s %s\n", maxkeylen, key, val);
 		}
 	}
@@ -410,9 +411,20 @@ fail_file_open:
 
 void
 alias_usage(void) {
-	term_eprintf(
-		"cap alias\n"
-	);
+    term_eprintf(
+        "cap alias\n"
+        "\n"
+        "Usage:\n"
+        "\n"
+        "\tcap alias [alias-name] [cap-command-line] [options]...\n"
+        "\n"
+        "The options are:\n"
+        "\n"
+        "\t-h, --help    display usage\n"
+        "\t-d, --delete  delete alias\n"
+        "\t-D, --debug   debug mode\n"
+        "\n"
+    );
 }
 
 int
