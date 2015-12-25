@@ -15,6 +15,7 @@ static const struct Command {
 	{"make", make_usage},
 	{"path", path_usage},
 	{"run", run_usage},
+	{"alias", alias_usage},
 	{NULL, NULL},
 };
 
