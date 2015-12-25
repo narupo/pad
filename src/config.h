@@ -45,7 +45,7 @@ config_root(Config const* self);
  * Make normalized cap's path from basename
  *
  * @param[in] self 
- * @param[in] dst destination of normalized path
+ * @param[out] dst destination of normalized path
  * @param[in] dstsize size of destination
  * @param[in] basename basename
  *

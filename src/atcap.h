@@ -12,12 +12,7 @@
 #include <string.h>
 #include <ctype.h>
 
-typedef struct AtCap AtCap;
 typedef struct CapParser CapParser;
-
-/************
-* CapParser *
-************/
 
 /****************************
 * CapParser: Delete and New *
@@ -41,7 +36,7 @@ CapParser*
 capparser_new(void); 
 
 /********************
-* CapParser: Runner *
+* CapParser: Parser *
 ********************/
 
 /**
@@ -61,10 +56,10 @@ capparser_parse_line(CapParser* self, char const* line);
 ***********************/
 
 /**
- * Convert CapRow by braces (@cap {})
+ * Convert CapRow by braces (@cap {index:default-value})
  *
  * @param[in] self
- * @param[in] row target pointer to CapRow
+ * @param[in/out] row target pointer to CapRow
  * @param[in] newbraces source strings of replace for braces
  *
  * @return success to pointer to row
