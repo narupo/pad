@@ -67,18 +67,18 @@ capparser_push_col_str(CapParser* self, char const* str, CapColType type) {
 }
 
 static int
-capparser_push_front_col(CapParser* self, CapColType type) {
+capparser_move_to_front_col(CapParser* self, CapColType type) {
 	// Ready
 	buffer_push(self->buf, '\0');
 
-	// Push column to temp row
+	// Make column from temp buffer
 	CapCol* col = capcol_new_from_str(buffer_get_const(self->buf));
 	if (!col) {
 		WARN("Failed to construct CapCol");
 		return 1;
 	}
 
-	// Set type
+	// Set type and push front
 	capcol_set_type(col, type);
 	capcollist_move_to_front(self->columns, col);
 
@@ -334,7 +334,7 @@ capparser_mode_goto(CapParser* self) {
 		}
 
 		buffer_push(self->buf, '\0');
-		capparser_push_front_col(self, CapColGoto);
+		capparser_move_to_front_col(self, CapColGoto);
 		self->mode = capparser_mode_first;
 
 		++self->cur;
@@ -357,7 +357,7 @@ capparser_mode_separate(CapParser* self) {
 		buffer_lstrip(self->buf, ' ');
 		buffer_lstrip(self->buf, '\t');
 		buffer_push(self->buf, '\0');
-		capparser_push_front_col(self, CapColSeparate);
+		capparser_move_to_front_col(self, CapColSeparate);
 		self->mode = capparser_mode_first;
 
 		++self->cur;
@@ -402,17 +402,13 @@ capparser_new(void) {
 * CapParser: Parser *
 ********************/
 
-/**
- * @return Success to pointer to CapRow
- * @return Failed to NULL
- */
 CapRow*
 capparser_parse_line(CapParser* self, char const* line) {
 	// Ready state for parse
 	self->mode = capparser_mode_first;
 	self->cur = line;
 	self->beg = line;
-	self->end = line + strlen(line) + 1;  // +1 for final '\0'
+	self->end = line + strlen(line) + 1;  // +1 for final '\0', do parse it
 	buffer_clear(self->buf);
 	capcollist_clear(self->columns);
 
@@ -434,7 +430,7 @@ capparser_parse_line(CapParser* self, char const* line) {
 	}
 
 	done: {
-		// Ready return results of parse and next parse by new CapRow
+		// Ready return results of parse and ready for next parse by new CapRow
 		CapColList* cols = self->columns;  // Save
 		self->columns = capcollist_new();  // Ready next parse
 		CapRow* row = caprow_new_from_cols(cols);
@@ -458,9 +454,10 @@ capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* braces
 
 	for (CapCol* col = capcollist_front(cols); col; col = capcol_next(col)) {
 		switch (capcol_type(col)) {
+			default: break;
 			case CapColBrace: {
 				// Get index for repace
-				char numstr[10] = {0};
+				char numstr[10] = {0}; // String for number [0-9]
 				char const* val = capcol_value_const(col);
 				int i;
 
@@ -487,10 +484,9 @@ capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* braces
 				capcol_set_type(col, CapColText);
 
 			} break;
-			default:
-				break;
 		}
 	}
+
 	return row;
 }
 
