@@ -12,6 +12,9 @@ struct Command {
 	int argc;
 	int optind;
 	char** argv;
+
+	bool optis_help;
+	bool optis_delete;
 };
 
 static bool
@@ -63,22 +66,20 @@ command_parse_options(Command* self) {
 	for (;;) {
 		static struct option longopts[] = {
 			{"help", no_argument, 0, 'h'},
+			{"delete", no_argument, 0, 'd'},
 			{0},
 		};
 		int optsindex;
 
-		int cur = getopt_long(self->argc, self->argv, "h", longopts, &optsindex);
+		int cur = getopt_long(self->argc, self->argv, "hd", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
 
 		switch (cur) {
-		case 'h':
-			command_delete(self);
-			exit(EXIT_FAILURE);
-			break;
-		case '?':
-		default: return false; break;
+		case 'h': self->optis_help = true; break;
+		case 'd': self->optis_delete = true; break;
+		case '?': default: return false; break;
 		}
 	}
 
@@ -104,7 +105,7 @@ hashi(char const* src, int nhash) {
 }
 
 static char*
-command_make_path(char* dst, size_t dstsize) {
+command_path_from_cd(char* dst, size_t dstsize) {
 	Config* config = config_instance();
 	char const* cd = config_path(config, "cd");
 	char const* root = config_root(config);
@@ -135,7 +136,9 @@ command_push_alias_to_file(char const* path, char const* pushkey, char const* pu
 	}
 
 	// Find overlap record by key
-	for (; !feof(stream); ) {
+	int emptyrecodeno = -1;
+
+	for (int i = 0; !feof(stream); ++i) {
 		// Read key
 		char key[ALIAS_NKEY+1] = {0}; // +1 for final nul
 
@@ -152,7 +155,10 @@ command_push_alias_to_file(char const* path, char const* pushkey, char const* pu
 
 		key[len] = 0; // Nul terminate for string
 
-		if (strcmp(key, pushkey) == 0) {
+		if (strlen(key) == 0) {
+			// Found empty record. save record number for insert new record
+			emptyrecodeno = i;
+		} else if (strcmp(key, pushkey) == 0) {
 			// Found overlap key, Override this record
 			fseek(stream, -ALIAS_NKEY, SEEK_CUR); // Back to the basic
 			putcol(stream, pushkey, ALIAS_NKEY);
@@ -165,9 +171,23 @@ command_push_alias_to_file(char const* path, char const* pushkey, char const* pu
 	}
 
 	// Not found overlap key, Insert new record
-	fseek(stream, 0L, SEEK_END);
-	putcol(stream, pushkey, ALIAS_NKEY);
-	putcol(stream, pushval, ALIAS_NVAL);
+	if (emptyrecodeno < 0) {
+		// Nothing empty record. Insert to back
+		fseek(stream, 0L, SEEK_END);
+		putcol(stream, pushkey, ALIAS_NKEY);
+		putcol(stream, pushval, ALIAS_NVAL);
+	} else {
+		// Insert to empty record
+		rewind(stream);
+		for (int i = 0; !feof(stream); ++i) {
+			if (i == emptyrecodeno) {
+				putcol(stream, pushkey, ALIAS_NKEY);
+				putcol(stream, pushval, ALIAS_NVAL);
+				break;
+			}
+			fseek(stream, ALIAS_NKEY+ALIAS_NVAL, SEEK_CUR);
+		}
+	}
 
 done:
 	file_close(stream);
@@ -189,9 +209,11 @@ getcol(FILE* fin, char* dst, size_t colsize) {
 
 static int
 command_disp_alias_list(Command* self) {
+	// Get alias file path
 	char path[NFILE_PATH];
-	command_make_path(path, NUMOF(path));
+	command_path_from_cd(path, NUMOF(path));
 
+	// Open stream
 	FILE* fin = file_open(path, "rb");
 	if (!fin) {
 		WARN("Failed to open file \"%s\"", path);
@@ -226,7 +248,9 @@ command_disp_alias_list(Command* self) {
 		}
 		getcol(fin, val, ALIAS_NVAL);
 
-		term_printf("%-*s %s\n", maxkeylen, key, val);
+		if (strlen(key)) {
+			term_printf("%-*s %s\n", maxkeylen, key, val);
+		}
 	}
 
 	file_close(fin);
@@ -234,20 +258,82 @@ command_disp_alias_list(Command* self) {
 }
 
 static int
+command_delete_record(Command* self) {
+	if (self->argc <= self->optind) {
+		term_eputsf("%s: Need delete alias name.", self->name);
+		return 0;
+	}
+
+	// Make path
+	char path[NFILE_PATH];
+	command_path_from_cd(path, NUMOF(path));
+
+	FILE* stream = file_open(path, "rb+");
+	if (!stream) {
+		WARN("Failed to open file \"%s\"", path);
+		return 1;
+	}
+
+	// Find delete alias by key
+	for (; !feof(stream); ) {
+		char key[ALIAS_NKEY+1];
+
+		if (getcol(stream, key, ALIAS_NKEY) <= 0) {
+			break;
+		}
+
+		int i;
+		for (i = self->optind; i < self->argc; ++i) {
+			char const* delalias = self->argv[i];
+
+			if (strcmp(key, delalias) == 0) {
+				// Found delete alias record, do delete
+				fseek(stream, -ALIAS_NKEY, SEEK_CUR);
+				for (int i = 0; i < ALIAS_NKEY + ALIAS_NVAL; ++i) {
+					fputc(0, stream);
+				}
+				break;
+			}
+
+		}
+
+		if (i == self->argc) {
+			// Not found delete alias
+			fseek(stream, ALIAS_NVAL, SEEK_CUR);
+		}
+	}
+
+	file_close(stream);
+	return 0;
+}
+
+static int
 command_run(Command* self) {
-	// Check arugments
+	// Check options
+	if (self->optis_help) {
+		alias_usage();
+		return 0;
+	}
+
+	if (self->optis_delete) {
+		return command_delete_record(self);
+	}
+
+	// Check arguments
+
+	// If empty arugments then
 	if (self->argc == self->optind) {
 		return command_disp_alias_list(self);
 	}
 
-	if (self->argc != self->optind + 2) {
+	if (self->argc != self->optind+2) {
 		alias_usage();
 		return 0;
 	}
 
 	// File works
 	char path[NFILE_PATH];
-	command_make_path(path, NUMOF(path));
+	command_path_from_cd(path, NUMOF(path));
 
 	if (!file_is_exists(path)) {
 		if (!file_create(path)) {
@@ -266,7 +352,7 @@ CsvLine*
 alias_to_csvline(char const* findkey) {
 	// Make alias path
 	char path[NFILE_PATH];
-	command_make_path(path, NUMOF(path));
+	command_path_from_cd(path, NUMOF(path));
 
 	// Open stream
 	FILE* fin = file_open(path, "rb");
