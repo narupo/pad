@@ -79,8 +79,8 @@ run_alias(char const* aliasname, int argc, char** argv) {
 	int cmdargc = csvline_length(cmdline);
 	char** cmdargv = csvline_escape_delete(cmdline);
 
-	if (cmdargc == 0) {
-		goto fail_invalid_name;
+	if (cmdargc == 0 || !cmdargv) {
+		goto fail_invalid_alias;
 	}
 	
 	// Find command
@@ -106,8 +106,8 @@ fail_find_command:
 	term_eputsf("%s: Not found command name \"%s\".\n", PROGNAME, aliasname);
 	return 3;
 
-fail_invalid_name:
-	free_argv(argc, argv);
+fail_invalid_alias:
+	free_argv(cmdargc, cmdargv);
 	term_eputsf("%s: Invalid alias \"%s\"", PROGNAME, aliasname);
 	return 2;
 
