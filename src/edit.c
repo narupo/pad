@@ -1,6 +1,6 @@
 #include "edit.h"
 
-void _Noreturn
+void
 edit_usage(void) {
 	term_eprintf(
 		"cap edit\n"
@@ -14,7 +14,6 @@ edit_usage(void) {
 		"\tnothing, see at manual of editor\n"
 		"\n"
 	);
-	exit(EXIT_FAILURE);
 }
 
 typedef struct Command Command;

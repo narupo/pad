@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-void _Noreturn
+void
 edit_usage(void);
 
 int

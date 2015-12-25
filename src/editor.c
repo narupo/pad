@@ -1,6 +1,6 @@
 #include "editor.h"
 
-void _Noreturn
+void
 editor_usage(void) {
 	term_eprintf(
 		"cap editor\n"
@@ -14,7 +14,6 @@ editor_usage(void) {
 		"\t-h, --help\tdisplay usage\n"
 		"\n"
 	);
-	exit(EXIT_FAILURE);
 }
 
 static int

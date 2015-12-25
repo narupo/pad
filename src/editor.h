@@ -5,7 +5,7 @@
 #include "term.h"
 #include "config.h"
 
-void _Noreturn
+void
 editor_usage(void);
 
 int

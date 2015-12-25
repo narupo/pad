@@ -167,6 +167,7 @@ command_call_command(Command const* self, CapFile* dstfile, int argc, char* argv
 		return run_make(self->config, dstfile, argc, argv);
 
 	} else {
+		// TODO: Find alias and make arguments
 		goto fail_unknown_name;
 	}
 
