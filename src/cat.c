@@ -280,7 +280,7 @@ command_run(Command* self) {
 		// Open file
 		FILE* fin = file_open(fname, "rb");
 		if (!fin) {
-			term_eputsf("Failed to open file \"%s\"", fname);
+			term_eputsf("%s: Failed to open file \"%s\"", self->name, fname);
 			continue;
 		}
 
@@ -319,7 +319,7 @@ cat_usage(void) {
 		"\t-s, --separate display by separate name\n"
 		"\t-d, --debug    debug mode\n"
 		"\n"
-		"The options details:\n"
+		"The option details:\n"
 		"\n"
 		"\t-[0-9]\n"
 		"\t    Replace @cap{} braces to number's value.\n"
