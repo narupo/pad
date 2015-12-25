@@ -142,10 +142,12 @@ strrset(char* str, size_t strsize, int rem) {
 
 void
 free_argv(int argc, char** argv) {
-	for (int i = 0; i < argc; ++i) {
-		free(argv[i]);
+	if (argv) {
+		for (int i = 0; i < argc; ++i) {
+			free(argv[i]);
+		}
+		free(argv);
 	}
-	free(argv);
 }
 
 #if defined(TEST_UTIL)
