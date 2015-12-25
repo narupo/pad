@@ -182,7 +182,6 @@ command_push_alias_to_file(char const* path, char const* pushkey, char const* pu
 		putcol(stream, pushval, ALIAS_NVAL);
 	} else {
 		// Insert to empty record
-		rewind(stream);
 		fseek(stream, emptyrecodeno * ALIAS_NRECORD, SEEK_SET);
 		putcol(stream, pushkey, ALIAS_NKEY);
 		putcol(stream, pushval, ALIAS_NVAL);
