@@ -23,6 +23,9 @@ buffer: buffer.c
 csvline: csvline.c buffer.c
 	$(CC) -DTEST_CSVLINE $(CFLAGS) -o $(TESTDIR)/$@ $^
 
+caperr: caperr.c term.c
+	$(CC) -DTEST_CAPERR $(CFLAGS) -o $(TESTDIR)/$@ $^
+
 cap-file: cap-file.c $(UTILS) 
 	$(CC) -DTEST_CAPFILE $(CFLAGS) -o $(TESTDIR)/$@ $^
 
