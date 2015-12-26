@@ -461,7 +461,7 @@ capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* braces
 				char const* val = capcol_value_const(col);
 				int i;
 
-				for (i = 0; i < sizeof(numstr)-1 && val[i]; ++i) { 
+				for (i = 0; i < NUMOF(numstr)-1 && val[i]; ++i) { 
 					if (val[i] == ':') {
 						break;
 					} else {
@@ -475,10 +475,10 @@ capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* braces
 				char const* rep = strarray_get_const(braces, index);
 
 				if (rep) {
-					// Found, replace
+					// Found, to be replace
 					capcol_set_value_copy(col, rep);
 				} else {
-					// Not found, replace default value
+					// Not found, to be replace by default value
 					capcol_set_value_copy(col, val + i + 1);  // +1 for ':'
 				}
 				capcol_set_type(col, CapColText);

@@ -6,6 +6,10 @@
 
 typedef struct Command Command;
 
+enum {
+	CAT_NREPLACE_LIST = 10,
+};
+
 struct Command {
 	char const* name;  // This command name
 	int argc;  // Like a main function arguments
@@ -54,7 +58,7 @@ command_new(int argc, char* argv[]) {
 	}
 
 	// Replace list
-	if (!(self->replace_list = strarray_new())) {
+	if (!(self->replace_list = strarray_new_from_capacity(CAT_NREPLACE_LIST))) {
 		WARN("Failed to construct replace list");
 		free(self);
 		return NULL;
@@ -108,7 +112,7 @@ command_parse_options(Command* self) {
 			self->is_debug = true;
 			break;
 		case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-			strarray_push_copy(self->replace_list, optarg);
+			strarray_set_copy(self->replace_list, cur-'0', optarg);
 			break;
 		case 's':
 			self->separate_name = strdup(optarg);

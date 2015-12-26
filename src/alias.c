@@ -289,7 +289,7 @@ command_delete_record(Command* self) {
 			if (strcmp(key, delalias) == 0) {
 				// Found delete alias record, do delete
 				fseek(stream, -ALIAS_NKEY, SEEK_CUR);
-				for (int i = 0; i < ALIAS_NKEY + ALIAS_NVAL; ++i) {
+				for (int i = 0; i < ALIAS_NRECORD; ++i) {
 					fputc(0, stream);
 				}
 				break;
