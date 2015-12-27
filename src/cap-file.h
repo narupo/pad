@@ -201,6 +201,15 @@ caprow_new(void);
 CapRow*
 caprow_new_from_cols(CapColList* cols);
 
+CapCol*
+caprow_front(CapRow* self);
+
+CapCol const*
+caprow_front_const(CapRow const* self);
+
+CapColType
+caprow_front_type(CapRow const* self);
+
 /****************
 * CapRow getter *
 ****************/
