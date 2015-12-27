@@ -443,6 +443,27 @@ capparser_parse_line(CapParser* self, char const* line) {
 	}
 }
 
+CapRow*
+cpaparser_parse_caprow(CapParser* self, CapRow* row) {
+	CapColList* cols = caprow_cols(row);
+
+	for (CapCol* col = capcollist_front(cols); col; col = capcol_next(col)) {
+		char const* colval = capcol_value_const(col);
+
+		CapRow* tmprow = capparser_parse_line(self, capcol_value_const(col));
+		if (!tmprow) {
+			WARN("Failed to parse line \"%s\"", colval);
+			continue;
+		}
+
+		printf("tmprow: ");
+		caprow_display(tmprow);
+		caprow_delete(tmprow);
+	}
+
+	return row;
+}
+
 /***********************
 * CapParser: Convertor *
 ***********************/
@@ -549,7 +570,51 @@ test_atcap_line(int argc, char* argv[]) {
 }
 
 int
+test_parse_caprow(int argc, char* argv[]) {
+	// TODO: For the convert braces on "@cap command" line in make
+	FILE* fin = stdin;
+	char buf[1024];
+
+	CapParser* parser = capparser_new();
+	StringArray* braces = strarray_new_from_capacity(10);
+	strarray_push_copy(braces, "Unix");
+	strarray_push_copy(braces, "Linux");
+	strarray_push_copy(braces, "Windows");
+
+	for (; fgets(buf, sizeof buf, fin); ) {
+		size_t len = strlen(buf);
+		if (buf[len-1] == '\n') {
+			buf[len-1] = '\0';
+		}
+
+		CapRow* row = capparser_parse_line(parser, buf);
+		if (!row) {
+			WARN("Failed to parse line \"%s\"", buf);
+			continue;
+		}
+
+		printf("parse caprow before: ");
+		caprow_display(row);
+
+		row = cpaparser_parse_caprow(parser, row);
+		capparser_convert_braces(parser, row, braces);
+
+		printf("parse caprow after:  ");
+		caprow_display(row);
+
+		caprow_delete(row);
+
+		printf("===========================================\n");
+	}
+	
+	strarray_delete(braces);
+	capparser_delete(parser);
+	return 0;
+}
+
+int
 main(int argc, char* argv[]) {
     return test_atcap_line(argc, argv);
+    // return test_parse_caprow(argc, argv);
 }
 #endif

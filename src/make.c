@@ -8,6 +8,7 @@ struct Command {
 	int optind;
 	char** argv;
 	Config const* config;
+	StringArray* replace_list;
 	bool is_debug;
 	bool is_usage;
 };
@@ -74,6 +75,7 @@ command_run(Command* self);
 static void
 command_delete(Command* self) {
 	if (self) {
+		strarray_delete(self->replace_list);
 		free(self);
 	}
 }
@@ -93,8 +95,15 @@ command_new(Config const* config, int argc, char* argv[]) {
 	self->argv = argv;
 	self->config = config;
 
+	if (!(self->replace_list = strarray_new_from_capacity(10))) {
+		WARN("Failed to construct StringArray");
+		free(self);
+		return NULL;
+	}
+
 	// Parse program options
 	if (!command_parse_options(self)) {
+		strarray_delete(self->replace_list);
 		free(self);
 		return NULL;
 	}
@@ -120,7 +129,7 @@ command_parse_options(Command* self) {
 		};
 		int optsindex;
 
-		int cur = getopt_long(self->argc, self->argv, "dh", longopts, &optsindex);
+		int cur = getopt_long(self->argc, self->argv, "dh0:1:2:3:4:5:6:7:8:9:", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
@@ -131,6 +140,9 @@ command_parse_options(Command* self) {
 			break;
 		case 'd':
 			self->is_debug = true;
+			break;
+		case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+			strarray_set_copy(self->replace_list, cur-'0', optarg);
 			break;
 		case '?':
 		default: return false; break;
@@ -185,14 +197,19 @@ command_make_capfile_from_stream(Command const* self, FILE* fin) {
 	Buffer* buf = buffer_new();
 
 	for (; buffer_getline(buf, fin); ) {
-		// Make row from line
+		// Get line
 		char const* line = buffer_get_const(buf);
+		
+		// Make CapRow from line
 		CapRow* row = capparser_parse_line(parser, line);
 		if (!row) {
 			continue;
 		}
 
-		// If first col is command then
+		// Replace braces. Like a "@cap {0:default-value}" to "default-value" or replace-value.
+		row = capparser_convert_braces(parser, row, self->replace_list);
+
+		// If first col is command then...
 		CapColList* cols = caprow_cols(row);
 		CapCol* col = capcollist_front(cols);
 		CapColType curtype = capcol_type(col);
@@ -391,7 +408,7 @@ command_make_capfile(Command const* self) {
 				continue;
 			}
 
-			// Make CapFile from stream
+			// Make temporary CapFile from stream for append rows to my CapFile
 			CapFile* ftmp = command_make_capfile_from_stream(self, fin);
 			if (!capfile) {
 				WARN("Failed to make CapFile");

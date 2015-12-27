@@ -67,6 +67,7 @@ run_alias(char const* aliasname, int argc, char** argv) {
 	// Get command line by alias
 	CsvLine* cmdline = alias_to_csvline(aliasname);
 	if (!cmdline) {
+		term_eputsf("%s: Not found alias \"%s\".\n", PROGNAME, aliasname);
 		goto fail_alias_to_csvline;
 	}
 
@@ -80,12 +81,14 @@ run_alias(char const* aliasname, int argc, char** argv) {
 	char** cmdargv = csvline_escape_delete(cmdline);
 
 	if (cmdargc == 0 || !cmdargv) {
+		term_eputsf("%s: Invalid alias \"%s\".\n", PROGNAME, aliasname);
 		goto fail_invalid_alias;
 	}
 	
 	// Find command
 	Command command = find_command(cmdargv[0]);
 	if (!command) {
+		term_eputsf("%s: Not found command \"%s\" on alias \"%s\".\n", PROGNAME, cmdargv[0], aliasname);
 		goto fail_find_command;
 	}
 
@@ -97,22 +100,18 @@ run_alias(char const* aliasname, int argc, char** argv) {
 	}
 
 done:
-	// Done
 	free_argv(cmdargc, cmdargv);
 	return res;
 
 fail_find_command:
 	free_argv(cmdargc, cmdargv);
-	term_eputsf("%s: Not found alias \"%s\".\n", PROGNAME, aliasname);
 	return 3;
 
 fail_invalid_alias:
 	free_argv(cmdargc, cmdargv);
-	term_eputsf("%s: Invalid alias \"%s\".\n", PROGNAME, aliasname);
 	return 2;
 
 fail_alias_to_csvline:
-	term_eputsf("%s: Not found alias name \"%s\".\n", PROGNAME, aliasname);
 	return 1;	
 }
 
