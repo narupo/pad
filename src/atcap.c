@@ -446,20 +446,10 @@ capparser_parse_line(CapParser* self, char const* line) {
 CapRow*
 cpaparser_parse_caprow(CapParser* self, CapRow* row) {
 	CapColList* cols = caprow_cols(row);
+	CapCol* front = capcollist_front(cols);
+	char const* val = capcol_value_const(front);
 
-	for (CapCol* col = capcollist_front(cols); col; col = capcol_next(col)) {
-		char const* colval = capcol_value_const(col);
-
-		CapRow* tmprow = capparser_parse_line(self, capcol_value_const(col));
-		if (!tmprow) {
-			WARN("Failed to parse line \"%s\"", colval);
-			continue;
-		}
-
-		printf("tmprow: ");
-		caprow_display(tmprow);
-		caprow_delete(tmprow);
-	}
+	CapRow* tmprow = capparser_parse_line(self, val);
 
 	return row;
 }

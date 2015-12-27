@@ -577,6 +577,23 @@ caprow_new_from_cols(CapColList* columns) {
 	return self;
 }
 
+CapCol*
+caprow_front(CapRow* self) {
+	return capcollist_front(caprow_cols(self));
+}
+
+CapCol const*
+caprow_front_const(CapRow const* self) {
+	return capcollist_front_const(caprow_cols_const(self));
+}
+
+CapColType
+caprow_front_type(CapRow const* self) {
+	CapColList const* cols = caprow_cols_const(self);
+	CapCol const* col = capcollist_front_const(cols);
+	return capcol_type(col);
+}
+
 /*****************
 * CapRow display *
 *****************/

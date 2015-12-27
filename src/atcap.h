@@ -51,6 +51,9 @@ capparser_new(void);
 CapRow*
 capparser_parse_line(CapParser* self, char const* line); 
 
+CapRow*
+capparser_parse_caprow(CapParser* self, CapRow* row);
+
 /***********************
 * CapParser: Convertor *
 ***********************/
