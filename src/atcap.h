@@ -52,7 +52,7 @@ CapRow*
 capparser_parse_line(CapParser* self, char const* line); 
 
 CapRow*
-capparser_parse_caprow(CapParser* self, CapRow* row);
+capparser_make_caprow(CapParser* self,char const* line, StringArray* braces);
 
 /***********************
 * CapParser: Convertor *

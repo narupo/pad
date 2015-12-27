@@ -134,6 +134,15 @@ capcol_set_value_copy(CapCol* self, char const* value) {
 	free(ptr);
 }
 
+void
+capcol_push_value_copy(CapCol* self, char const* value) {
+	for (; buffer_length(self->value) && buffer_back(self->value) == 0; ) {
+		buffer_pop(self->value);
+	}
+	buffer_push_str(self->value, value);
+	buffer_push(self->value, 0);
+}
+
 /*************
 * CapColList *
 *************/

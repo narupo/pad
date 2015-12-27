@@ -125,6 +125,20 @@ buffer_get_const(Buffer const* self) {
 	return self->buffer;
 }
 
+char
+buffer_front(Buffer const* self) {
+	return self->buffer[0];
+}
+
+char
+buffer_back(Buffer const* self) {
+	if (self->length <= 0) {
+		return EOF;
+	}
+	return self->buffer[self->length-1];
+}
+
+
 void
 buffer_clear(Buffer* self) {
 	self->length = 0;

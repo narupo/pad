@@ -96,6 +96,12 @@ buffer_getc(Buffer const* self);
 char const*
 buffer_get_const(Buffer const* self);
 
+char
+buffer_front(Buffer const* self);
+
+char
+buffer_back(Buffer const* self);
+
 /**
  * Clear buffer.
  *

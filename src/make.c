@@ -201,56 +201,10 @@ command_make_capfile_from_stream(Command const* self, FILE* fin) {
 		char const* line = buffer_get_const(buf);
 		
 		// Make CapRow from line
-		CapRow* row = capparser_parse_line(parser, line);
+		CapRow* row = capparser_make_caprow(parser, line, self->replace_list);
 		if (!row) {
 			continue;
 		}
-
-		// Re-parse for @cap{} braces on @cap command line
-		//
-		// capparser_parse_line() は行単位で CapRow へ変換する。
-		// この時、先頭のカラムがその CapRow のタイプとなり、後に利用される。
-		// 行の移動や、表示の切り替え等に。
-		// @cap make で、例えば @cap command 行にある @cap brances を変換したい場合、
-		// その手段は atcap から提供されていない。
-		//
-		// よって、変換が必要になる。
-		// 先頭カラムのタイプがコマンドであればそれを維持しつつ、各カラムのブレースを展開する。
-		// 展開後、そのカラム群を先頭のカラムのタイプにマージし、先頭絡むの値を置き換える。
-		// これはブレースの場合である。
-		//
-		// 例えばこんな関数が必要。
-		//
-		//		capparser_marge_back_text_cols(front_col);
-		// 
-		// この関数は front_col の後方にあるテキスト cols をマージし、ひとつのカラムに整形する。
-		// 
-		//
-		// たとえば @cap goto の場合、行の移動のために @cap goto カラムは常に先頭になくてはならない。
-		// よって、@cap command は @cap make 時に移動できない仕様になる。
-		//
-		//
-		// 思いつきだが、スタックは利用できないだろうか。
-		// 各行は、後の変換作業のためのスタックを持つ。
-		// パース時に、このスタックに変換TODOをプッシュし、後の変換時にスタックを参照して変換していく。
-		// スタックからTODOをポップしてひとつの変換が終わったら次の変換を行う。
-		//
-		// caprow_convstack_push( Goto );
-		// caprow_convstack_push( Unwrap braces );
-		//
-		// convtype = caprow_convstack_pop();
-		// switch (convtype) {
-		//		case Goto: ...
-		//		case ...
-		// }
-		//
-		// この場合、やはり変換順序の定義が必要になる。
-		//
-		// atcap は変革の時期を迎えているように思えるが、@cap make の対応が大変そうだ。
-		//
-
-		// Replace braces. Like a "@cap {0:default-value}" to "default-value" or replace-value.
-		capparser_convert_braces(parser, row, self->replace_list);
 
 		// If first col is command then...
 		CapColType curtype = caprow_front_type(row);

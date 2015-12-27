@@ -101,6 +101,9 @@ capcol_set_value(CapCol* self, char const* value);
 void
 capcol_set_value_copy(CapCol* self, char const* value);
 
+void
+capcol_push_value_copy(CapCol* self, char const* value);
+
 /*************
 * CapColList *
 *************/
