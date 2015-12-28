@@ -217,7 +217,9 @@ command_make_capfile_from_stream(Command const* self, FILE* fin) {
 			char** argv = csvline_escape_delete(cmdline);
 
 			// Read
-			command_call_command(self, dstfile, argc, argv);
+			if (command_call_command(self, dstfile, argc, argv) != 0) {
+				WARN("Failed to call command");
+			}
 
 			// Done
 			free_argv(argc, argv);

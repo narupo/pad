@@ -51,6 +51,9 @@ capparser_new(void);
 CapRow*
 capparser_parse_line(CapParser* self, char const* line); 
 
+/**
+ * Make CapRow with parse and convert from line
+ */
 CapRow*
 capparser_make_caprow(CapParser* self,char const* line, StringArray* braces);
 
