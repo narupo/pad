@@ -108,6 +108,16 @@ hashi(char const* src, int nhash) {
 	return n % nhash;
 }
 
+static void
+putcol(FILE* stream, char const* str, int colsize) {
+	char buf[colsize];
+	memset(buf, 0, NUMOF(buf));
+	if (str) {
+		memmove(buf, str, strlen(str));
+	}
+	fwrite(buf, sizeof(buf[0]), colsize, stream);
+}
+
 static char*
 command_path_from_cd(char* dst, size_t dstsize) {
 	Config* config = config_instance();
@@ -120,20 +130,28 @@ command_path_from_cd(char* dst, size_t dstsize) {
 	return dst;
 }
 
-static void
-putcol(FILE* stream, char const* str, int colsize) {
-	char buf[colsize];
-	memset(buf, 0, NUMOF(buf));
-	if (str) {
-		memmove(buf, str, strlen(str));
+static FILE*
+command_open_stream(void) {
+	char path[NFILE_PATH];
+	command_path_from_cd(path, sizeof path);
+
+	if (!file_is_exists(path)) {
+		file_create(path);
 	}
-	fwrite(buf, sizeof(buf[0]), colsize, stream);
+
+	FILE* stream = file_open(path, "rb+");
+	if (!stream) {
+		WARN("Failed to open file \"%s\"", path);
+		return NULL;
+	}
+
+	return stream;
 }
 
 static int
 command_push_alias_to_file(char const* path, char const* pushkey, char const* pushval) {
 	// Random access file
-	FILE* stream = file_open(path, "rb+");
+	FILE* stream = command_open_stream();
 	if (!stream) {
 		WARN("Failed to open file \"%s\"", path);
 		return 1;
@@ -212,7 +230,7 @@ command_disp_alias_list(Command* self) {
 	command_path_from_cd(path, NUMOF(path));
 
 	// Open stream
-	FILE* fin = file_open(path, "rb");
+	FILE* fin = command_open_stream();
 	if (!fin) {
 		WARN("Failed to open file \"%s\"", path);
 		return 1;
@@ -268,7 +286,7 @@ command_delete_record(Command* self) {
 	char path[NFILE_PATH];
 	command_path_from_cd(path, NUMOF(path));
 
-	FILE* stream = file_open(path, "rb+");
+	FILE* stream = command_open_stream();
 	if (!stream) {
 		WARN("Failed to open file \"%s\"", path);
 		return 1;
@@ -355,7 +373,7 @@ alias_to_csvline(char const* findkey) {
 	command_path_from_cd(path, NUMOF(path));
 
 	// Open stream
-	FILE* fin = file_open(path, "rb");
+	FILE* fin = command_open_stream();
 	if (!fin) {
 		WARN("Failed to open file \"%s\"", path);
 		goto fail_file_open;
