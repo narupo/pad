@@ -50,15 +50,12 @@ find_command(char const* name) {
 	
 	// Find command by name
 	for (struct CommandRecord const* i = table; i->name; ++i) {
-		if (!i->name) {
-			goto notfound;
-		}
 		if (strcmp(i->name, name) == 0) {
 			return i->command;
 		}
 	}
 
-notfound:
+	// Not found
 	return NULL;
 }
 
