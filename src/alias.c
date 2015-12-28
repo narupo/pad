@@ -149,11 +149,11 @@ command_open_stream(void) {
 }
 
 static int
-command_push_alias_to_file(char const* path, char const* pushkey, char const* pushval) {
+command_push_alias_to_file(char const* pushkey, char const* pushval) {
 	// Random access file
 	FILE* stream = command_open_stream();
 	if (!stream) {
-		WARN("Failed to open file \"%s\"", path);
+		WARN("Failed to open file");
 		return 1;
 	}
 
@@ -225,18 +225,13 @@ getcol(FILE* fin, char* dst, size_t colsize) {
 
 static int
 command_disp_alias_list(Command* self) {
-	// Get alias file path
-	char path[NFILE_PATH];
-	command_path_from_cd(path, NUMOF(path));
-
 	// Open stream
 	FILE* fin = command_open_stream();
 	if (!fin) {
-		WARN("Failed to open file \"%s\"", path);
+		WARN("Failed to open file");
 		return 1;
 	}
 
-	// First
 	// Get max length of key for display
 	size_t maxkeylen = 0;
 	for (; !feof(fin); ) {
@@ -251,7 +246,6 @@ command_disp_alias_list(Command* self) {
 		maxkeylen = (keylen > maxkeylen ? keylen : maxkeylen);
 	}
 
-	// Second
 	// Display key and value with padding
 	rewind(fin);
 
@@ -282,13 +276,10 @@ command_delete_record(Command* self) {
 		return 0;
 	}
 
-	// Make path
-	char path[NFILE_PATH];
-	command_path_from_cd(path, NUMOF(path));
-
+	// Open stream
 	FILE* stream = command_open_stream();
 	if (!stream) {
-		WARN("Failed to open file \"%s\"", path);
+		WARN("Failed to open file");
 		return 1;
 	}
 
@@ -326,6 +317,43 @@ command_delete_record(Command* self) {
 }
 
 static int
+command_disp_alias_value(Command* self) {
+	FILE* stream = command_open_stream();
+	if (!stream) {
+		WARN("Failed to open stream");
+		return 1;
+	}
+
+	char const* fndkey = self->argv[self->optind];
+	assert(fndkey);
+
+	for (; !feof(stream); ) {
+		char key[ALIAS_NKEY+1];
+		if (getcol(stream, key, ALIAS_NKEY) <= 0) {
+			break;
+		}
+
+		if (strcmp(key, fndkey) == 0) {
+			char val[ALIAS_NVAL+1];
+			getcol(stream, val, ALIAS_NVAL);
+			term_putsf("%s", val);
+			goto found;
+		}
+
+		fseek(stream, ALIAS_NVAL, SEEK_CUR);
+	}
+
+	// Not found
+	term_eputsf("%s: Not found alias \"%s\"", self->name, fndkey);
+	file_close(stream);
+	return 1;
+
+found:
+	file_close(stream);
+	return 0;
+}
+
+static int
 command_run(Command* self) {
 	// Check options
 	if (self->optis_help) {
@@ -333,15 +361,19 @@ command_run(Command* self) {
 		return 0;
 	}
 
+	// If enable delete record option then
 	if (self->optis_delete) {
 		return command_delete_record(self);
 	}
 
-	// Check arguments
-
 	// If empty arugments then
 	if (self->argc == self->optind) {
 		return command_disp_alias_list(self);
+	}
+
+	// If alias name only then
+	if (self->argc == self->optind+1) {
+		return command_disp_alias_value(self);
 	}
 
 	if (self->argc != self->optind+2) {
@@ -350,32 +382,17 @@ command_run(Command* self) {
 	}
 
 	// File works
-	char path[NFILE_PATH];
-	command_path_from_cd(path, NUMOF(path));
-
-	if (!file_is_exists(path)) {
-		if (!file_create(path)) {
-			WARN("Failed to create file \"%s\"", path);
-			return 2;
-		}
-	}
-
 	char const* pushkey = self->argv[self->optind];
 	char const* pushval = self->argv[self->optind + 1];
-
-	return command_push_alias_to_file(path, pushkey, pushval);
+	return command_push_alias_to_file(pushkey, pushval);
 }
 
 CsvLine*
 alias_to_csvline(char const* findkey) {
-	// Make alias path
-	char path[NFILE_PATH];
-	command_path_from_cd(path, NUMOF(path));
-
 	// Open stream
 	FILE* fin = command_open_stream();
 	if (!fin) {
-		WARN("Failed to open file \"%s\"", path);
+		WARN("Failed to open file");
 		goto fail_file_open;
 	}
 

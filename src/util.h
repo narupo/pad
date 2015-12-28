@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <getopt.h>
 #include <errno.h>
+#include <assert.h>
 
 /**
  * Get length of static array
