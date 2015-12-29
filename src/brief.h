@@ -7,6 +7,7 @@
 #include "file.h"
 #include "cap-file.h"
 #include "atcap.h"
+#include "strarray.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
