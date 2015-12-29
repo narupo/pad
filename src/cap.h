@@ -39,6 +39,7 @@ SOFTWARE.
 #include "path.h"
 #include "run.h"
 #include "alias.h"
+#include "brief.h"
 
 #endif
 
