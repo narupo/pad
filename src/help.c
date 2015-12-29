@@ -16,6 +16,7 @@ static const struct Command {
 	{"path", path_usage},
 	{"run", run_usage},
 	{"alias", alias_usage},
+	{"brief", alias_usage},
 	{NULL, NULL},
 };
 
@@ -73,6 +74,7 @@ help_usage(void) {
 		"\tpath   display normalized path of cap file\n"
 		"\trun    run script\n"
 		"\talias  add alias of cap's command\n"
+		"\tbrief  display brief of file\n"
 		"\n"
 	);
 }

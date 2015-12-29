@@ -2,6 +2,10 @@
 
 typedef struct Command Command;
 
+enum {
+	NBRIEF = 512,
+};
+
 struct Command {
 	char const* name;
 	int argc;
@@ -114,13 +118,6 @@ command_run(Command* self) {
 		return 0;
 	}
 
-	char const* fname = self->argv[self->optind];
-	FILE* fin = command_open_stream(fname);
-	if (!fin) {
-		WARN("Failed to open file \"%s\"", fname);
-		goto fail_open_file;
-	}
-
 	Buffer* buf = buffer_new();
 	if (!buf) {
 		WARN("Failed to construct buffer");
@@ -133,41 +130,101 @@ command_run(Command* self) {
 		goto fail_parser;
 	}
 
-	for (; buffer_getline(buf, fin); ) {
-		char const* line = buffer_get_const(buf);
-		CapRow* row = capparser_parse_line(parser, line);
-		if (!row) {
-			continue;
+	StringArray* briefs = strarray_new();
+	if (!briefs) {
+		WARN("Failed to construct StringArray");
+		goto fail_briefs;
+	}
+
+	StringArray* fnames = strarray_new();
+	if (!fnames) {
+		WARN("Failed to construct StringArray");
+		goto fail_fnames;
+	}
+
+	int maxfnamelen = 0;
+
+	// Read files
+	for (int i = self->optind; i < self->argc; ++i) {
+		char const* fname = self->argv[i];
+		size_t fnamelen = strlen(fname);
+		maxfnamelen = (fnamelen > maxfnamelen ? fnamelen : maxfnamelen);
+
+		FILE* fin = command_open_stream(fname);
+		if (!fin) {
+			WARN("Failed to open file \"%s\"", fname);
+			goto fail_open_file;
 		}
 
-		CapColType type = caprow_front_type(row);
-		if (type == CapColBrief) {
-			for (CapCol* col = caprow_front(row); col; col = capcol_next(col)) {
-				// Display
-				char const* val = capcol_value_const(col);
-				term_printf("%s\n", val);
+		// Read briefs in file
+		for (; buffer_getline(buf, fin); ) {
+			char const* line = buffer_get_const(buf);
+			CapRow* row = capparser_parse_line(parser, line);
+			if (!row) {
+				continue;
+			}
 
-				if (!self->optis_disp_all) {
-					break;
-				}
+			CapColType type = caprow_front_type(row);
+			if (type == CapColBrief) {
+				// Save
+				char const* val = capcol_value_const(caprow_front(row));
+				strarray_push_copy(briefs, val);
+				strarray_push_copy(fnames, fname);
+			}
+
+			caprow_delete(row);
+
+			if (!self->optis_disp_all) {
+				break;
 			}
 		}
 
-		caprow_delete(row);
+		file_close(fin);
 	}
 
+	// Display
+	char const* prevfname = NULL;
+
+	for (int i = 0; i < strarray_length(fnames); ++i) {
+		char const* fname = strarray_get_const(fnames, i);
+		char const* brief = strarray_get_const(briefs, i);
+		size_t brieflen = strlen(brief);
+		size_t fnamelen = strlen(fname);
+		
+		if (prevfname && strcmp(prevfname, fname) == 0) {
+			term_printf("%-*s %-*s%s", fnamelen, "", maxfnamelen-fnamelen, "", brief);
+		} else {
+			term_printf("%s %-*s%s", fname, maxfnamelen-fnamelen, "", brief);
+		}
+		if (brief[brieflen-1] != '.') {
+			term_printf(".");
+		}
+		term_printf("\n");
+
+		prevfname = fname;
+	}
+
+	// Done
+	strarray_delete(fnames);
+	strarray_delete(briefs);
 	capparser_delete(parser);
 	buffer_delete(buf);
-	file_close(fin);
 	return 0;
+
+
+fail_open_file:
+	strarray_delete(fnames);
+
+fail_fnames:
+	strarray_delete(briefs);
+	
+fail_briefs:
+	capparser_delete(parser);
 
 fail_parser:
 	buffer_delete(buf);
 
 fail_buffer:
-	file_close(fin);
-
-fail_open_file:
 	return 1;
 }
 
@@ -177,7 +234,7 @@ fail_open_file:
 
 void
 brief_usage(void) {
-    fprintf(stderr,
+    term_eprintf(
         "cap brief\n"
         "\n"
         "Usage:\n"
