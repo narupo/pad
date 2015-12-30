@@ -140,6 +140,28 @@ strrset(char* str, size_t strsize, int rem) {
 	return str;
 }
 
+long
+strtolong(char const* src) {
+	char* endptr;
+	int base = 0;
+
+	errno = 0;
+	long val = strtol(src, &endptr, base);
+
+	if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN)) ||
+		(errno != 0 && val == 0)) {
+		perror("strtolong: strtol");
+		return 0;
+	}
+
+	if (endptr == src) {
+		fprintf(stderr, "No digits were found.\n");
+		return 0;
+	}
+
+	return val;
+}
+
 void
 free_argv(int argc, char** argv) {
 	if (argv) {

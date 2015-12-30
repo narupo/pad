@@ -9,6 +9,7 @@
 #include <getopt.h>
 #include <errno.h>
 #include <assert.h>
+#include <limits.h>
 
 /**
  * Get length of static array
@@ -113,6 +114,9 @@ strrstrip(char* dst, size_t dstsize, char const* src, int rem);
 
 char*
 strrset(char* str, size_t strsize, int rem);
+
+long
+strtolong(char const* src);
 
 void
 free_argv(int argc, char** argv);
