@@ -2,10 +2,6 @@
 
 typedef struct Command Command;
 
-enum {
-	NBRIEF = 512,
-};
-
 struct Command {
 	char const* name;
 	int argc;
@@ -42,7 +38,7 @@ command_new(int argc, char* argv[]) {
 	}
 
 	// Set values
-	self->name = argv[0];
+	self->name = "cap brief";
 	self->argc = argc;
 	self->argv = argv;
 
@@ -96,7 +92,7 @@ command_parse_options(Command* self) {
 }
 
 static FILE*
-command_open_stream(char const* fname) {
+command_open_stream(Command const* self, char const* fname) {
 	// Ready
 	Config* config = config_instance();
 	if (!config) {
@@ -108,16 +104,28 @@ command_open_stream(char const* fname) {
 	char path[NFILE_PATH];
 	snprintf(path, NUMOF(path), "%s/%s", config_path(config, "cd"), fname);
 
+	if (file_is_dir(path)) {
+		term_eputsf("%s: Can't open file. \"%s\" is a directory.", self->name, path);
+		return NULL;
+	}
+
+	if (!file_is_exists(path)) {
+		term_eputsf("%s: Not found file \"%s\".", self->name, path);
+		return NULL;
+	}
+
 	return file_open(path, "rb");
 }
 
 static int
 command_run(Command* self) {
+	// Check argument
 	if (self->argc == self->optind || self->optis_help) {
 		brief_usage();
 		return 0;
 	}
 
+	// Ready
 	Buffer* buf = buffer_new();
 	if (!buf) {
 		WARN("Failed to construct buffer");
@@ -150,7 +158,7 @@ command_run(Command* self) {
 		size_t fnamelen = strlen(fname);
 		maxfnamelen = (fnamelen > maxfnamelen ? fnamelen : maxfnamelen);
 
-		FILE* fin = command_open_stream(fname);
+		FILE* fin = command_open_stream(self, fname);
 		if (!fin) {
 			WARN("Failed to open file \"%s\"", fname);
 			goto fail_open_file;
