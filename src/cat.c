@@ -8,6 +8,7 @@ typedef struct Command Command;
 
 enum {
 	CAT_NREPLACE_LIST = 10,
+	CAT_INDENT_VALUE = '\t',
 };
 
 struct Command {
@@ -18,9 +19,10 @@ struct Command {
 	StringArray* replace_list;  // Replace string list for @cap brace
 
 	// Option flags
-	bool is_usage;  // Is usage mode
-	bool is_debug;  // Is debug mode
-	char* separate_name;  // Is display by separate mode
+	bool opt_is_usage;  // Is usage mode
+	bool opt_is_debug;  // Is debug mode
+	char* opt_separate_name;  // Is display by separate mode
+	long opt_nindent;
 
 	// Mode
 	bool toggle_display;  // Using at separate display mode
@@ -42,7 +44,7 @@ command_parse_options(Command* self);
 static void
 command_delete(Command* self) {
 	if (self) {
-		free(self->separate_name);
+		free(self->opt_separate_name);
 		strarray_delete(self->replace_list);
 		free(self);
 	}
@@ -95,28 +97,32 @@ command_parse_options(Command* self) {
 			{"debug", no_argument, 0, 'd'},
 			{"help", no_argument, 0, 'h'},
 			{"separate", required_argument, 0, 's'},
+			{"indent", required_argument, 0, 'i'},
 			{0},
 		};
 		int optsindex;
 
-		int cur = getopt_long(self->argc, self->argv, "s:dh0:1:2:3:4:5:6:7:8:9:", longopts, &optsindex);
+		int cur = getopt_long(self->argc, self->argv, "i:s:dh0:1:2:3:4:5:6:7:8:9:", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
 
 		switch (cur) {
 		case 'h':
-			self->is_usage = true;
+			self->opt_is_usage = true;
 			break;
 		case 'd':
-			self->is_debug = true;
+			self->opt_is_debug = true;
 			break;
 		case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
 			strarray_set_copy(self->replace_list, cur-'0', optarg);
 			break;
 		case 's':
-			self->separate_name = strdup(optarg);
-			self->toggle_display = false;  // separate mode
+			self->opt_separate_name = strdup(optarg);
+			self->toggle_display = false;  // set to separate mode
+			break;
+		case 'i':
+			self->opt_nindent = strtolong(optarg);
 			break;
 		case '?':
 		default:
@@ -170,9 +176,9 @@ cat_read_row(Command* self, Buffer const* buffer, CapParser* parser) {
 	}
 
 	// If separate mode then catch separate row and check this name
-	if (self->separate_name) {
+	if (self->opt_separate_name) {
 		if (capcol_type(col) == CapColSeparate) {
-			if (strcmp(self->separate_name, capcol_value_const(col)) == 0) {
+			if (strcmp(self->opt_separate_name, capcol_value_const(col)) == 0) {
 				self->toggle_display = true;
 			} else if (self->toggle_display) {
 				self->toggle_display = false;
@@ -222,7 +228,7 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 			}
 
 			// If debug mode then display row with details
-			if (self->is_debug) {
+			if (self->opt_is_debug) {
 				caprow_display(row);
 				continue;
 			}
@@ -230,6 +236,13 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 			// Text only
 			if (capcol_type(col) != CapColText) {
 				continue;
+			}
+
+			// Indent?
+			if (self->opt_nindent) {
+				for (int i = 0; i < self->opt_nindent; ++i) {
+					fprintf(fout, "%c", CAT_INDENT_VALUE);
+				}
 			}
 
 			// Display text columns
@@ -254,7 +267,7 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 static int
 command_run(Command* self) {
 	// Is usage ?
-	if (self->is_usage) {
+	if (self->opt_is_usage) {
 		cat_usage();
 		return 0;
 	}
@@ -321,6 +334,7 @@ cat_usage(void) {
 		"\t-h, --help     display usage\n"
 		"\t-[0-9]         key number of replace\n"
 		"\t-s, --separate display by separate name\n"
+		"\t-i, --indent   number of indent\n"
 		"\t-d, --debug    debug mode\n"
 		"\n"
 		"The option details:\n"
@@ -361,7 +375,7 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 
 	// Ready
 	CapParser* parser = capparser_new();
-	Buffer* buffer = buffer_new();
+	Buffer* linebuf = buffer_new();
 	CapRowList* dstrows = capfile_rows(dstfile);
 
 	// Run, push all file to CapFile
@@ -381,11 +395,27 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 		}
 
 		// Read and push to CapFile
-		for (; buffer_getline(buffer, fin); ) {
-			CapRow* row = cat_read_row(self, buffer, parser);
+		for (; buffer_getline(linebuf, fin); ) {
+			// Read row
+			CapRow* row = cat_read_row(self, linebuf, parser);
 			if (!row) {
 				continue;
 			}
+
+			// Indent?
+			CapColType fronttype = caprow_front_type(row);
+
+			if (self->opt_nindent > 0 && fronttype == CapColText) {
+				char indents[self->opt_nindent+1];
+				memset(indents, CAT_INDENT_VALUE, sizeof(char) * self->opt_nindent);
+				indents[self->opt_nindent] = '\0';
+
+				CapColList* cols = caprow_cols(row);
+				CapCol* indcol = capcol_new_from_str(indents);
+				capcol_set_type(indcol, fronttype);
+				capcollist_move_to_front(cols, indcol);
+			}
+
 			// Save to CapFile's rows
 			caprowlist_move_to_back(dstrows, row);
 		}
@@ -396,7 +426,7 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 
 	// Done
 	capparser_delete(parser);
-	buffer_delete(buffer);
+	buffer_delete(linebuf);
 	command_delete(self);
 	return 0;
 }
