@@ -17,3 +17,5 @@ The commands are:
 	path   display normalized path of cap file
 	run    run script
 	alias  add alias of cap's command
+	brief  display brief of file
+
