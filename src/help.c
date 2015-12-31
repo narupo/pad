@@ -22,14 +22,9 @@ static const struct Command {
 
 static usage_type
 find_command(char const* cmdname) {
-	for (int i = 0; ; ++i) {
-		struct Command const* cmd = &commands[i];
-		if (!cmd->name) {
-			break;
-		}
-
-		if (strcmp(cmdname, cmd->name) == 0) {
-			return cmd->usage;
+	for (const struct Command* i = commands; i->name; ++i) {
+		if (strcmp(cmdname, i->name) == 0) {
+			return i->usage;
 		}
 	}
 	return NULL;
