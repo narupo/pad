@@ -6,6 +6,7 @@ static const struct Command {
 	char const* name;
 	Usage usage;
 } commands[] = {
+	{"help", help_usage},
 	{"cat", cat_usage},
 	{"ls", ls_usage},
 	{"cd", cd_usage},
