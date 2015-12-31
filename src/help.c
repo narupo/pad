@@ -1,10 +1,10 @@
 #include "help.h"
 
-typedef void (*usage_type)(void);
+typedef void (*Usage)(void);
 
 static const struct Command {
 	char const* name;
-	usage_type usage;
+	Usage usage;
 } commands[] = {
 	{"cat", cat_usage},
 	{"ls", ls_usage},
@@ -20,7 +20,7 @@ static const struct Command {
 	{NULL, NULL},
 };
 
-static usage_type
+static Usage
 find_command(char const* cmdname) {
 	for (const struct Command* i = commands; i->name; ++i) {
 		if (strcmp(cmdname, i->name) == 0) {
@@ -36,7 +36,7 @@ help_main(int argc, char* argv[]) {
 		help_usage();	
 	} else {
 		char const* cmdname = argv[1];
-		usage_type usage = find_command(cmdname);
+		Usage usage = find_command(cmdname);
 		if (usage) {
 			usage();
 			return 0;
