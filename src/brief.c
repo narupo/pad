@@ -76,6 +76,7 @@ fail_fnames:
 
 fail_parse_options:
 	strarray_delete(self->fnames);
+	
 	return NULL;
 }
 
