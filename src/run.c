@@ -31,7 +31,7 @@ command_new(int argc, char* argv[]) {
 		return NULL;
 	}
 
-	self->name = argv[0];
+	self->name = "cap run";
 	self->argc = argc;
 	self->argv = argv;
 
@@ -195,7 +195,7 @@ run_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 			}
 
 			if (execv(scriptpath, execargv) == -1) {
-				WARN("Failed to execute of \"%s\" on child", scriptpath);
+				term_eputsf("%s: Failed to execute of \"%s\" on child", self->name, scriptpath);
 				goto fail;
 			}
 			break;

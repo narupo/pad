@@ -201,17 +201,17 @@ command_make_capfile_from_stream(Command const* self, FILE* fin) {
 		char const* line = buffer_get_const(buf);
 		
 		// Make CapRow from line
-		CapRow* row = capparser_make_caprow(parser, line, self->replace_list);
-		if (!row) {
+		CapRow* addrow = capparser_make_caprow(parser, line, self->replace_list);
+		if (!addrow) {
 			continue;
 		}
 
 		// If first col is command then...
-		CapColType curtype = caprow_front_type(row);
+		CapColType curtype = caprow_front_type(addrow);
 
 		if (curtype == CapColCommand) {
 			// Read from command to CapFile
-			char const* colval = capcol_value_const(caprow_front_const(row));
+			char const* colval = capcol_value_const(caprow_front_const(addrow));
 			CsvLine* cmdline = csvline_new_parse_line(colval, ' ');
 			int argc = csvline_length(cmdline);
 			char** argv = csvline_escape_delete(cmdline);
@@ -223,11 +223,11 @@ command_make_capfile_from_stream(Command const* self, FILE* fin) {
 
 			// Done
 			free_argv(argc, argv);
-			caprow_delete(row);
+			caprow_delete(addrow);
 
 		} else {
 			CapRowList* rows = capfile_rows(dstfile);
-			caprowlist_move_to_back(rows, row);
+			caprowlist_move_to_back(rows, addrow);
 		}
 	}
 
@@ -465,14 +465,16 @@ make_usage(void) {
 		"\n"
 		"The options are:\n"
 		"\n"
-		"\t-h, --help display usage\n"
-		"\t-d,        debug mode\n"
+		"\t-[0-9]          key and value of replace brace\n"
+		"\t-h,     --help  display usage\n"
+		"\t-d,     --debug debug mode\n"
 		"\n"
 		"The cap syntax:\n"
 		"\n"
 		"\t@cap brief [string]   brief\n"
 		"\t@cap mark [mark-name] mark for goto\n"
 		"\t@cap goto [mark-name] goto mark\n"
+		"\t@cap {key:value}      replace brace\n"
 		"\n"
 		"The cap syntax commands:\n"
 		"\n"

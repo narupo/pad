@@ -8,6 +8,9 @@ struct Command {
 	int optind;
 	char** argv;
 
+	StringArray* briefs;
+	StringArray* fnames;
+
 	bool optis_help;
 	bool optis_disp_all;
 };
@@ -24,6 +27,8 @@ command_parse_options(Command* self);
 static void
 command_delete(Command* self) {
 	if (self) {
+		strarray_delete(self->briefs);
+		strarray_delete(self->fnames);
 		free(self);
 	}
 }
@@ -42,15 +47,36 @@ command_new(int argc, char* argv[]) {
 	self->argc = argc;
 	self->argv = argv;
 
+	self->briefs = strarray_new();
+	if (!self->briefs) {
+		WARN("Failed to construct StringArray");
+		goto fail_briefs;
+	}
+
+	self->fnames = strarray_new();
+	if (!self->fnames) {
+		WARN("Failed to construct StringArray");
+		goto fail_fnames;
+	}
+
 	// Parse command options
 	if (!command_parse_options(self)) {
 		perror("Failed to parse options");
-		free(self);
-		return NULL;
+		goto fail_parse_options;
 	}
 
 	// Done
 	return self;
+
+fail_briefs:
+	free(self);
+
+fail_fnames:
+	strarray_delete(self->briefs);
+
+fail_parse_options:
+	strarray_delete(self->fnames);
+	return NULL;
 }
 
 static bool
@@ -118,13 +144,7 @@ command_open_stream(Command const* self, char const* fname) {
 }
 
 static int
-command_run(Command* self) {
-	// Check argument
-	if (self->argc == self->optind || self->optis_help) {
-		brief_usage();
-		return 0;
-	}
-
+command_read_from_stream(Command* self, FILE* fin, char const* fname) {
 	// Ready
 	Buffer* buf = buffer_new();
 	if (!buf) {
@@ -138,71 +158,88 @@ command_run(Command* self) {
 		goto fail_parser;
 	}
 
-	StringArray* briefs = strarray_new();
-	if (!briefs) {
-		WARN("Failed to construct StringArray");
-		goto fail_briefs;
-	}
-
-	StringArray* fnames = strarray_new();
-	if (!fnames) {
-		WARN("Failed to construct StringArray");
-		goto fail_fnames;
-	}
-
-	int maxfnamelen = 0;
-
-	// Read files
-	for (int i = self->optind; i < self->argc; ++i) {
-		char const* fname = self->argv[i];
-		size_t fnamelen = strlen(fname);
-		maxfnamelen = (fnamelen > maxfnamelen ? fnamelen : maxfnamelen);
-
-		FILE* fin = command_open_stream(self, fname);
-		if (!fin) {
-			WARN("Failed to open file \"%s\"", fname);
-			goto fail_open_file;
+	// Read briefs in file
+	for (; buffer_getline(buf, fin); ) {
+		char const* line = buffer_get_const(buf);
+		CapRow* row = capparser_parse_line(parser, line);
+		if (!row) {
+			continue;
 		}
 
-		// Read briefs in file
-		for (; buffer_getline(buf, fin); ) {
-			char const* line = buffer_get_const(buf);
-			CapRow* row = capparser_parse_line(parser, line);
-			if (!row) {
-				continue;
-			}
-
-			CapColType type = caprow_front_type(row);
-			if (type == CapColBrief) {
-				// Save
-				char const* val = capcol_value_const(caprow_front(row));
-				strarray_push_copy(briefs, val);
-				strarray_push_copy(fnames, fname);
-			}
-
-			caprow_delete(row);
-
+		CapColType type = caprow_front_type(row);
+		if (type == CapColBrief) {
+			// Save
+			char const* val = capcol_value_const(caprow_front(row));
+			strarray_push_copy(self->briefs, val);
+			strarray_push_copy(self->fnames, fname);
+	
 			if (!self->optis_disp_all) {
+				caprow_delete(row);
 				break;
 			}
 		}
 
-		file_close(fin);
+		caprow_delete(row);
+	}
+
+	capparser_delete(parser);
+	buffer_delete(buf);
+	return 0;
+
+fail_parser:
+	buffer_delete(buf);
+
+fail_buffer:
+	return 1;
+}
+
+static int
+command_run(Command* self) {
+	// Check argument
+	if (self->optis_help) {
+		brief_usage();
+		return 0;
+	}
+
+	// Read from streams
+	int maxfnamelen = 0;
+
+	if (self->argc == self->optind) {
+		command_read_from_stream(self, stdin, "");
+
+	} else {
+		for (int i = self->optind; i < self->argc; ++i) {
+			char const* fname = self->argv[i];
+			size_t fnamelen = strlen(fname);
+			maxfnamelen = (fnamelen > maxfnamelen ? fnamelen : maxfnamelen);
+
+			FILE* fin = command_open_stream(self, fname);
+			if (!fin) {
+				WARN("Failed to open file \"%s\"", fname);
+				goto fail_open_file;
+			}
+
+			command_read_from_stream(self, fin, fname);
+
+			file_close(fin);
+		}
 	}
 
 	// Display
 	char const* prevfname = NULL;
 
-	for (int i = 0; i < strarray_length(fnames); ++i) {
-		char const* fname = strarray_get_const(fnames, i);
-		char const* brief = strarray_get_const(briefs, i);
+	for (int i = 0; i < strarray_length(self->fnames); ++i) {
+		char const* fname = strarray_get_const(self->fnames, i);
+		char const* brief = strarray_get_const(self->briefs, i);
 		size_t brieflen = strlen(brief);
 		size_t fnamelen = strlen(fname);
 		
 		if (prevfname && strcmp(prevfname, fname) == 0) {
 			term_printf("%-*s %-*s%s", fnamelen, "", maxfnamelen-fnamelen, "", brief);
-		} else {
+		} else if (fnamelen) {
 			term_printf("%s %-*s%s", fname, maxfnamelen-fnamelen, "", brief);
+		} else {
+			term_printf("%-*s%s", maxfnamelen-fnamelen, "", brief);
 		}
 		if (brief[brieflen-1] != '.') {
 			term_printf(".");
@@ -213,26 +250,9 @@ command_run(Command* self) {
 	}
 
 	// Done
-	strarray_delete(fnames);
-	strarray_delete(briefs);
-	capparser_delete(parser);
-	buffer_delete(buf);
 	return 0;
 
-
 fail_open_file:
-	strarray_delete(fnames);
-
-fail_fnames:
-	strarray_delete(briefs);
-	
-fail_briefs:
-	capparser_delete(parser);
-
-fail_parser:
-	buffer_delete(buf);
-
-fail_buffer:
 	return 1;
 }
 
