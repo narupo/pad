@@ -16,7 +16,7 @@ static const struct Command {
 	{"path", path_usage},
 	{"run", run_usage},
 	{"alias", alias_usage},
-	{"brief", alias_usage},
+	{"brief", brief_usage},
 	{NULL, NULL},
 };
 
