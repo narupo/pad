@@ -406,6 +406,7 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 			CapColType fronttype = caprow_front_type(row);
 
 			if (self->opt_nindent > 0 && fronttype == CapColText) {
+				// Add indent column to front of row
 				char indents[self->opt_nindent+1];
 				memset(indents, CAT_INDENT_VALUE, sizeof(char) * self->opt_nindent);
 				indents[self->opt_nindent] = '\0';

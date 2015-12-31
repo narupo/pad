@@ -344,7 +344,7 @@ command_disp_alias_value(Command* self) {
 	}
 
 	// Not found
-	term_eputsf("%s: Not found alias \"%s\"", self->name, fndkey);
+	term_eputsf("%s: Not found alias \"%s\".", self->name, fndkey);
 	file_close(stream);
 	return 1;
 
