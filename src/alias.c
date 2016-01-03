@@ -19,6 +19,8 @@ struct Command {
 	bool opt_is_debug;
 };
 
+static char const* PROGNAME = "cap alias";
+
 static bool
 command_parse_options(Command* self);
 
@@ -40,18 +42,18 @@ command_new(int argc, char* argv[]) {
 	// Construct
 	Command* self = (Command*) calloc(1, sizeof(Command));
 	if (!self) {
-		WARN("Failed to construct");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 		return NULL;
 	}
 
 	// Set values
-	self->name = "cap alias";
+	self->name = PROGNAME;
 	self->argc = argc;
 	self->argv = argv;
 
 	// Parse alias options
 	if (!command_parse_options(self)) {
-		WARN("Failed to parse options");
+		caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "command");
 		free(self);
 		return NULL;
 	}
@@ -91,7 +93,7 @@ command_parse_options(Command* self) {
 
 	// Check result of parse options
 	if (self->argc < self->optind) {
-		WARN("Failed to parse option");
+		caperr(self->name, CAPERR_PARSE_OPTIONS, "command");
 		return false;
 	}
 
@@ -141,7 +143,7 @@ command_open_stream(void) {
 
 	FILE* stream = file_open(path, "rb+");
 	if (!stream) {
-		WARN("Failed to open file \"%s\"", path);
+		caperr(PROGNAME, CAPERR_FOPEN, " \"%s\"", path);
 		return NULL;
 	}
 
@@ -153,8 +155,7 @@ command_push_alias_to_file(char const* pushkey, char const* pushval) {
 	// Random access file
 	FILE* stream = command_open_stream();
 	if (!stream) {
-		WARN("Failed to open file");
-		return 1;
+		return caperr(PROGNAME, CAPERR_FOPEN, "");
 	}
 
 	// Find overlap record by key
@@ -171,7 +172,7 @@ command_push_alias_to_file(char const* pushkey, char const* pushval) {
 		}
 
 		if (ferror(stream)) {
-			WARN("Failed to read stream");
+			caperr(PROGNAME, CAPERR_READ, "stream");
 			goto done;
 		}
 
@@ -228,8 +229,7 @@ command_disp_alias_list(Command* self) {
 	// Open stream
 	FILE* fin = command_open_stream();
 	if (!fin) {
-		WARN("Failed to open file");
-		return 1;
+		return caperr(PROGNAME, CAPERR_FOPEN, "");
 	}
 
 	// Get max length of key for display
@@ -272,15 +272,14 @@ command_disp_alias_list(Command* self) {
 static int
 command_delete_record(Command* self) {
 	if (self->argc <= self->optind) {
-		term_eputsf("%s: Need delete alias name.", self->name);
+		caperr(PROGNAME, CAPERR_ERROR, "Need delete alias name");
 		return 0;
 	}
 
 	// Open stream
 	FILE* stream = command_open_stream();
 	if (!stream) {
-		WARN("Failed to open file");
-		return 1;
+		return caperr(PROGNAME, CAPERR_FOPEN, "");
 	}
 
 	// Find delete alias by key
@@ -320,8 +319,7 @@ static int
 command_disp_alias_value(Command* self) {
 	FILE* stream = command_open_stream();
 	if (!stream) {
-		WARN("Failed to open stream");
-		return 1;
+		return caperr(PROGNAME, CAPERR_FOPEN, "");
 	}
 
 	char const* fndkey = self->argv[self->optind];
@@ -344,9 +342,8 @@ command_disp_alias_value(Command* self) {
 	}
 
 	// Not found
-	term_eputsf("%s: Not found alias \"%s\".", self->name, fndkey);
 	file_close(stream);
-	return 1;
+	return caperr(PROGNAME, CAPERR_NOTFOUND, "alias \"%s\"", fndkey);
 
 found:
 	file_close(stream);
@@ -392,7 +389,7 @@ alias_to_csvline(char const* findkey) {
 	// Open stream
 	FILE* fin = command_open_stream();
 	if (!fin) {
-		WARN("Failed to open file");
+		caperr(PROGNAME, CAPERR_FOPEN, "");
 		goto fail_file_open;
 	}
 
@@ -409,7 +406,7 @@ alias_to_csvline(char const* findkey) {
 		}
 
 		if (ferror(fin)) {
-			WARN("Failed to read stream for alias key");
+			caperr(PROGNAME, CAPERR_READ, "stream for alias key");
 			goto notfound;
 		}
 
@@ -421,7 +418,7 @@ alias_to_csvline(char const* findkey) {
 			memset(val, 0, sizeof val);
 			int len = fread(val, sizeof(val[0]), ALIAS_NVAL, fin);
 			if (len <= 0 || ferror(fin)) {
-				WARN("Failed to read stream for alias value");
+				caperr(PROGNAME, CAPERR_READ, "stream for alias value");
 				goto notfound;
 			}
 
@@ -466,16 +463,16 @@ alias_main(int argc, char* argv[]) {
 	// Construct
 	Command* command = command_new(argc, argv);
 	if (!command) {
-		WARN("Failed to construct command");
-		return EXIT_FAILURE;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 	}
 
 	// Run
-	int res = command_run(command);
+	int ret = command_run(command);
 
 	// Done
 	command_delete(command);
-	return res;
+
+	return ret;
 }
 
 #if defined(TEST_ALIAS)

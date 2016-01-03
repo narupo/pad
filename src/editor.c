@@ -1,5 +1,7 @@
 #include "editor.h"
 
+static char const* PROGNAME = "cap editor";
+
 void
 editor_usage(void) {
 	term_eprintf(
@@ -21,7 +23,7 @@ editor_run(int argc, char* argv[]) {
 	// Load config
 	Config* config = config_instance();
 	if (!config) {
-		WARN("Failed to construct config");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
 		goto fail_config;
 	}
 
@@ -32,7 +34,7 @@ editor_run(int argc, char* argv[]) {
 		char const* key = "editor";
 		char const* editpath = config_path(config, key);
 		if (!editpath) {
-			WARN("Not found key \"%s\"", key);
+			caperr(PROGNAME, CAPERR_NOTFOUND, "key \"%s\"", key);
 			goto fail_config_path;
 		}
 
@@ -45,12 +47,12 @@ editor_run(int argc, char* argv[]) {
 	char const* editpath = argv[1];
 
 	if (!config_set_path(config, "editor", editpath)) {
-		WARN("Failed to set path \"%s\"", editpath);
+		caperr(PROGNAME, CAPERR_ERROR, "Failed to set path \"%s\"", editpath);
 		goto fail_set_path;
 	}
 	
 	if (!config_save(config)) {
-		WARN("Failed to save config");
+		caperr(PROGNAME, CAPERR_WRITE, "config");
 		goto fail_save;
 	}
 
@@ -91,14 +93,13 @@ editor_main(int argc, char* argv[]) {
 		} break;
 		case '?':
 		default: {
-			die("Unknown option");
+			return caperr(PROGNAME, CAPERR_INVALID, "option");
 		} break;
 		}
 	}
 
 	if (argc < optind) {
-		die("Failed to parse option");
-		return 1;
+		return caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "");
 	}
 
 	return editor_run(argc, argv);

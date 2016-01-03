@@ -2,6 +2,8 @@
 
 typedef void (*Usage)(void);
 
+static char const* PROGNAME = "cap help";
+
 static const struct Command {
 	char const* name;
 	Usage usage;
@@ -42,7 +44,7 @@ help_main(int argc, char* argv[]) {
 			usage();
 			return 0;
 		} else {
-			term_eprintf("Not found command name \"%s\"\n", cmdname);
+			return caperr(PROGNAME, CAPERR_NOTFOUND, "command name \"%s\"\n", cmdname);
 		}
 	}
 	return 0;

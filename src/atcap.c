@@ -18,6 +18,8 @@ enum {
 	CAPPARSER_PARSE_ERROR,
 };
 
+static char const* PROGNAME = "atcap";
+
 /************
 * CapParser *
 ************/
@@ -46,8 +48,7 @@ capparser_push_col(CapParser* self, CapColType type) {
 	char const* str = buffer_get_const(self->buf);
 	CapCol* col = capcol_new_from_str(str);
 	if (!col) {
-		WARN("Failed to construct CapCol");
-		return 1;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "CapCol");
 	}
 
 	// Set type
@@ -75,8 +76,7 @@ capparser_move_to_front_col(CapParser* self, CapColType type) {
 	// Make column from temp buffer
 	CapCol* col = capcol_new_from_str(buffer_get_const(self->buf));
 	if (!col) {
-		WARN("Failed to construct CapCol");
-		return 1;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "CapCol");
 	}
 
 	// Set type and push front
@@ -237,7 +237,7 @@ capparser_mode_tags(CapParser* self) {
 		buffer_push(self->buf, 0);
 		CsvLine* tags = csvline_new_parse_line(buffer_get_const(self->buf), ' ');
 		if (!tags) {
-			WARN("Failed to split tags");
+			caperr(PROGNAME, CAPERR_PARSE, "tags");
 			goto done_newline;
 		}
 
@@ -349,7 +349,7 @@ capparser_mode_goto(CapParser* self) {
 		buffer_lstrip(self->buf, '\t');
 
 		if (buffer_empty(self->buf)) {
-			WARN("Invalid syntax @cap goto need goto name");
+			caperr(PROGNAME, CAPERR_SYNTAX, "@cap goto need goto name");
 			return CAPPARSER_PARSE_ERROR;
 		}
 
@@ -408,7 +408,7 @@ CapParser*
 capparser_new(void) {
 	CapParser* self = (CapParser*) calloc(1, sizeof(CapParser));
 	if (!self) {
-		perror("Failed to construct parser");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "parser");
 		return NULL;
 	}
 
@@ -458,7 +458,7 @@ capparser_parse_line(CapParser* self, char const* line) {
 	}
 
 	fail: {
-		WARN("Failed to parse of \"%s\"", line);
+		caperr(PROGNAME, CAPERR_PARSE, "\"%s\"", line);
 		return NULL;
 	}
 }

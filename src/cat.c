@@ -28,6 +28,8 @@ struct Command {
 	bool toggle_display;  // Using at separate display mode
 };
 
+static char const* PROGNAME = "cap cat";
+
 static bool
 command_parse_options(Command* self);
 
@@ -44,8 +46,8 @@ command_parse_options(Command* self);
 static void
 command_delete(Command* self) {
 	if (self) {
-		free(self->opt_separate_name);
 		strarray_delete(self->replace_list);
+		free(self->opt_separate_name);
 		free(self);
 	}
 }
@@ -55,26 +57,26 @@ command_new(int argc, char* argv[]) {
 	// Construct
 	Command* self = (Command*) calloc(1, sizeof(Command));
 	if (!self) {
-		WARN("Failed to construct");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 		return NULL;
 	}
 
 	// Replace list
 	if (!(self->replace_list = strarray_new_from_capacity(CAT_NREPLACE_LIST))) {
-		WARN("Failed to construct replace list");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "replace list");
 		free(self);
 		return NULL;
 	}
 
 	// Set values
-	self->name = "cap cat";
+	self->name = PROGNAME;
 	self->argc = argc;
 	self->argv = argv;
 	self->toggle_display = true;  // Need display by construct
 
 	// Parse options
 	if (!command_parse_options(self)) {
-		WARN("Failed to parse options");
+		caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "");
 		free(self);
 		return NULL;
 	}
@@ -126,7 +128,7 @@ command_parse_options(Command* self) {
 			break;
 		case '?':
 		default:
-			WARN("Unknown option");
+			caperr(PROGNAME, CAPERR_INVALID, "option");
 			return false;
 			break;
 		}
@@ -134,7 +136,7 @@ command_parse_options(Command* self) {
 
 	// Check result of parse options
 	if (self->argc < optind) {
-		WARN("Failed to parse option");
+		caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "");
 		return false;
 	}
 
@@ -275,7 +277,7 @@ command_run(Command* self) {
 	// Load config
 	Config* config = config_instance();
 	if (!config) {
-		WARN("Failed to construct config");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
 		goto fail_config;
 	}
 
@@ -290,14 +292,14 @@ command_run(Command* self) {
 		// Solve path
 		char fname[NFILE_PATH];
 		if (!config_path_from_base(config, fname, sizeof fname, self->argv[i])) {
-			WARN("Failed to path from base \"%s\"", self->argv[i]);
+			caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from base \"%s\"", self->argv[i]);
 			continue;
 		}
 
 		// Open file
 		FILE* fin = file_open(fname, "rb");
 		if (!fin) {
-			term_eputsf("%s: Failed to open file \"%s\"", self->name, fname);
+			caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", fname);
 			continue;
 		}
 
@@ -371,7 +373,7 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	// Construct
 	Command* self = command_new(argc, argv);
 	if (!self) {
-		WARN("Failed to construct self");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 		return EXIT_FAILURE;
 	}
 
@@ -385,14 +387,14 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 		// Solve file path
 		char fname[NFILE_PATH];
 		if (!config_path_from_base(config, fname, sizeof fname, self->argv[i])) {
-			WARN("Failed to path from base \"%s\"", self->argv[i]);
+			caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from base \"%s\"", self->argv[i]);
 			continue;
 		}
 
 		// Open file
 		FILE* fin = file_open(fname, "rb");
 		if (!fin) {
-			WARN("Failed to open file \"%s\"", fname);
+			caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", fname);
 			continue;
 		}
 
@@ -439,8 +441,7 @@ cat_main(int argc, char* argv[]) {
 	// Construct
 	Command* command = command_new(argc, argv);
 	if (!command) {
-		WARN("Failed to construct command");
-		return EXIT_FAILURE;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 	}
 
 	// Run

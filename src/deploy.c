@@ -1,6 +1,8 @@
 #include "deploy.h"
 
-void _Noreturn
+static char const* PROGNAME = "cap deploy";
+
+void
 deploy_usage(void) {
 	term_eprintf(
 		"cap deploy\n"
@@ -14,7 +16,6 @@ deploy_usage(void) {
 		"\t-h, --help\tdisplay usage\n"
 		"\n"
 	);
-	exit(EXIT_FAILURE);
 }
 
 int
@@ -22,14 +23,14 @@ deploy_run(char const* dirname) {
 	//! Load config
 	Config* config = config_instance();
 	if (!config) {
-		WARN("Failed to construct config");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
 		goto fail_config;
 	}
 
 	//! Get current path
 	char curpath[NFILE_PATH];
 	if (!file_solve_path(curpath, sizeof curpath, ".")) {
-		WARN("Failed to solve path \".\"");
+		caperr(PROGNAME, CAPERR_ERROR, "Failed to solve path \".\"");
 		goto fail_solve_path;
 	}
 
@@ -37,20 +38,20 @@ deploy_run(char const* dirname) {
 	char dirpath[NFILE_PATH];
 
 	if (!config_path_from_base(config, dirpath, sizeof dirpath, dirname)) {
-		WARN("Failed to make path from \"%s\"", dirname);
+		caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from \"%s\"", dirname);
 		goto fail_make_path;
 	}
 
 	//! Check path
 	if (!file_is_dir(dirpath)) {
-		term_eprintf("Not found deploy name \"%s\".\n", dirname);
+		caperr(PROGNAME, CAPERR_NOTFOUND, "deploy name \"%s\".\n", dirname);
 		goto fail_exists_dir;
 	}
 
 	//! Read directory
 	DIR* dir = file_opendir(dirpath);
 	if (!dir) {
-		WARN("Failed to open directory \"%s\"", dirpath);
+		caperr(PROGNAME, CAPERR_OPENDIR, "\"%s\"", dirpath);
 		goto fail_opendir;
 	}
 	
@@ -60,7 +61,7 @@ deploy_run(char const* dirname) {
 		struct dirent* dirp = readdir(dir);
 		if (!dirp) {
 			if (errno != 0) {
-				WARN("Failed to readdir");
+				caperr(PROGNAME, CAPERR_READDIR, "");
 				goto fail_readdir;
 			} else {
 				//! End of readdir
@@ -87,7 +88,7 @@ deploy_run(char const* dirname) {
 
 		//! Check exists for override
 		if (file_is_exists(deploypath)) {
-			term_eprintf("File is exists \"%s\".\n", deploypath);
+			caperr(PROGNAME, CAPERR_ERROR, "File is exists \"%s\".\n", deploypath);
 			continue;
 		}
 
@@ -96,7 +97,7 @@ deploy_run(char const* dirname) {
 		FILE* dst = file_open(deploypath, "wb");
 
 		if (!src || !dst) {
-			WARN("Failed to open file");
+			caperr(PROGNAME, CAPERR_FOPEN, "");
 			file_close(src);
 			file_close(dst);
 			continue;
@@ -152,19 +153,20 @@ deploy_main(int argc, char* argv[]) {
 		switch (cur) {
 			case 'h': {
 				deploy_usage();
+				return 0;
 			} break;
 			case '?':
 			default: {
-				die("Unknown option");
+				return caperr(PROGNAME, CAPERR_INVALID, "option");
 			} break;
 		}
 	}
 
 	if (argc < optind) {
-		die("Failed to parse option");
-		return 1;
+		return caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "");
 	} else if (argc < 2) {
 		deploy_usage();
+		return 0;
 	}
 
 	return deploy_run(argv[1]);

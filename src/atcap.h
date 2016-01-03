@@ -7,6 +7,8 @@
 #include "csvline.h"
 #include "cap-file.h"
 #include "file.h"
+#include "caperr.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -2,6 +2,8 @@
 #define UTIL_H
 
 #include "term.h"
+#include "caperr.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,11 +26,13 @@
  * 
  * @param[in] ... arguments
  */
-#define WARN(...) { \
-    fprintf(stderr, "WARN: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
-    fprintf(stderr, __VA_ARGS__); \
-    fprintf(stderr, "\n"); \
-}
+#ifdef DEBUG
+#  define WARN(...) { \
+      _caperr(__FILE__, __func__, __LINE__, "WARN", CAPERR_DEBUG, __VA_ARGS__); \
+  }
+#else
+#  define WARN(...) {}
+#endif
 
 /**
  * Exit program with display error message
