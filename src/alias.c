@@ -14,9 +14,9 @@ struct Command {
 	int optind;
 	char** argv;
 
-	bool optis_help;
-	bool optis_delete;
-	bool optis_debug;
+	bool opt_is_help;
+	bool opt_is_delete;
+	bool opt_is_debug;
 };
 
 static bool
@@ -80,9 +80,9 @@ command_parse_options(Command* self) {
 		}
 
 		switch (cur) {
-		case 'h': self->optis_help = true; break;
-		case 'd': self->optis_delete = true; break;
-		case 'D': self->optis_debug = true; break;
+		case 'h': self->opt_is_help = true; break;
+		case 'd': self->opt_is_delete = true; break;
+		case 'D': self->opt_is_debug = true; break;
 		case '?': default: return false; break;
 		}
 	}
@@ -258,7 +258,7 @@ command_disp_alias_list(Command* self) {
 		}
 		getcol(fin, val, ALIAS_NVAL);
 
-		if (self->optis_debug) {
+		if (self->opt_is_debug) {
 			term_printf("%-*s %s\n", maxkeylen, key, val);
 		} else if (strlen(key)) {
 			term_printf("%-*s %s\n", maxkeylen, key, val);
@@ -356,13 +356,13 @@ found:
 static int
 command_run(Command* self) {
 	// Check options
-	if (self->optis_help) {
+	if (self->opt_is_help) {
 		alias_usage();
 		return 0;
 	}
 
 	// If enable delete record option then
-	if (self->optis_delete) {
+	if (self->opt_is_delete) {
 		return command_delete_record(self);
 	}
 

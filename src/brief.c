@@ -11,8 +11,8 @@ struct Command {
 	StringArray* briefs;
 	StringArray* fnames;
 
-	bool optis_help;
-	bool optis_disp_all;
+	bool opt_is_help;
+	bool opt_is_disp_all;
 };
 
 static bool
@@ -99,8 +99,8 @@ command_parse_options(Command* self) {
 		}
 
 		switch (cur) {
-		case 'h': self->optis_help = true; break;
-		case 'a': self->optis_disp_all = true; break;
+		case 'h': self->opt_is_help = true; break;
+		case 'a': self->opt_is_disp_all = true; break;
 		case '?':
 		default: return false; break;
 		}
@@ -174,7 +174,7 @@ command_read_from_stream(Command* self, FILE* fin, char const* fname) {
 			strarray_push_copy(self->briefs, val);
 			strarray_push_copy(self->fnames, fname);
 	
-			if (!self->optis_disp_all) {
+			if (!self->opt_is_disp_all) {
 				caprow_delete(row);
 				break;
 			}
@@ -197,7 +197,7 @@ fail_buffer:
 static int
 command_run(Command* self) {
 	// Check argument
-	if (self->optis_help) {
+	if (self->opt_is_help) {
 		brief_usage();
 		return 0;
 	}
