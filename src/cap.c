@@ -97,8 +97,8 @@ run_alias(int argc, char** argv) {
 	}
 
 	// Execute command
-	int res = command(cmdargc, cmdargv);
-	if (res != 0) {
+	ret = command(cmdargc, cmdargv);
+	if (ret != 0) {
 		ret = caperr(PROGNAME, CAPERR_EXECUTE, "alias \"%s\"", aliasname);
 		goto done;
 	}
@@ -145,5 +145,6 @@ main(int argc, char* argv[]) {
 		stack_trace();
 	}
 
+	// Done
 	return ret;
 }

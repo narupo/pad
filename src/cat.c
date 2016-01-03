@@ -203,10 +203,21 @@ cat_read_row(Command* self, Buffer const* buffer, CapParser* parser) {
 
 static int
 command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
+	// Ready
 	Buffer* buffer = buffer_new();
+	if (!buffer) {
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "buffer");
+	}
+
 	CapParser* parser = capparser_new();
+	if (!parser) {
+		buffer_delete(buffer);
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "parser");
+	}
+
 	CapRow* row = NULL;
 
+	// Read and display
 	for (; buffer_getline(buffer, fin); ) {
 		// Cleanup
 		caprow_delete(row);
