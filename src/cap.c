@@ -61,8 +61,13 @@ find_command(char const* name) {
 }
 
 static int
-run_alias(char const* aliasname, int argc, char** argv) {
+run_alias(int argc, char** argv) {
 	int ret = 0;
+	char const* aliasname = argv[0];
+
+	// Skip alias name
+	++argv;
+	--argc;
 
 	// Get command line by alias
 	CsvLine* cmdline = alias_to_csvline(aliasname);
@@ -129,7 +134,7 @@ main(int argc, char* argv[]) {
 
 	if (!command) {
 		// Not found command name, Next to find alias
-		ret = run_alias(cmdname, argc-1, argv+1);
+		ret = run_alias(argc, argv);
 	} else {
 		// Execute found command
 		ret = command(argc, argv);
