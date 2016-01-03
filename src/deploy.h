@@ -6,7 +6,7 @@
 #include "config.h"
 #include "file.h"
 
-void _Noreturn
+void
 deploy_usage(void);
 
 int

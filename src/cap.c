@@ -62,11 +62,12 @@ find_command(char const* name) {
 
 static int
 run_alias(char const* aliasname, int argc, char** argv) {
+	int ret = 0;
+
 	// Get command line by alias
 	CsvLine* cmdline = alias_to_csvline(aliasname);
 	if (!cmdline) {
-		term_eputsf("%s: Not found alias \"%s\".\n", PROGNAME, aliasname);
-		goto fail_alias_to_csvline;
+		return caperr(PROGNAME, CAPERR_NOTFOUND, "alias \"%s\"", aliasname);
 	}
 
 	// Command line append args of 'cap alias'
@@ -79,46 +80,43 @@ run_alias(char const* aliasname, int argc, char** argv) {
 	char** cmdargv = csvline_escape_delete(cmdline);
 
 	if (cmdargc == 0 || !cmdargv) {
-		term_eputsf("%s: Invalid alias \"%s\".\n", PROGNAME, aliasname);
-		goto fail_invalid_alias;
+		ret = caperr(PROGNAME, CAPERR_INVALID, "alias \"%s\"", aliasname);
+		goto done;
 	}
 	
 	// Find command
 	Command command = find_command(cmdargv[0]);
 	if (!command) {
-		term_eputsf("%s: Not found command \"%s\" on alias \"%s\".\n", PROGNAME, cmdargv[0], aliasname);
-		goto fail_find_command;
+		ret = caperr(PROGNAME, CAPERR_NOTFOUND, "command \"%s\" on alias \"%s\"", cmdargv[0], aliasname);
+		goto done;
 	}
 
 	// Execute command
 	int res = command(cmdargc, cmdargv);
 	if (res != 0) {
-		warn("%s: Failed to execute alias \"%s\"", PROGNAME, aliasname);
+		ret = caperr(PROGNAME, CAPERR_EXECUTE, "alias \"%s\"", aliasname);
 		goto done;
 	}
 
 done:
 	free_argv(cmdargc, cmdargv);
-	return res;
+	return ret;
+}
 
-fail_find_command:
-	free_argv(cmdargc, cmdargv);
-	return 3;
-
-fail_invalid_alias:
-	free_argv(cmdargc, cmdargv);
-	return 2;
-
-fail_alias_to_csvline:
-	return 1;	
+static void
+stack_trace(void) {
+	caperr_display(stderr);
+	term_eprintf("\n");
 }
 
 int
 main(int argc, char* argv[]) {
+	int ret = 0;
+	
 	// Check arguments
 	if (argc < 2) {
 		help_usage();
-		return 0;
+		return ret;
 	}
 
 	// Skip program name
@@ -128,17 +126,19 @@ main(int argc, char* argv[]) {
 	// Get command by name
 	char const* cmdname = argv[0];
 	Command command = find_command(cmdname);
+
 	if (!command) {
 		// Not found command name, Next to find alias
-		return run_alias(cmdname, argc-1, argv+1);
+		ret = run_alias(cmdname, argc-1, argv+1);
+	} else {
+		// Execute found command
+		ret = command(argc, argv);
 	}
 
-	// Execute command
-	int res = command(argc, argv);
-	if (res != 0) {
-		warn("%s: Failed to execute command \"%s\"", PROGNAME, cmdname);
-		caperr_display();
+	// Check result of command
+	if (ret != 0) {
+		stack_trace();
 	}
 
-	return res;
+	return ret;
 }

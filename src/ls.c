@@ -17,6 +17,8 @@ struct Command {
 	CsvLine* tags;
 };
 
+static char const* PROGNAME = "cap ls";
+
 bool
 command_parse_options(Command* self);
 
@@ -34,29 +36,29 @@ Command*
 command_new(int argc, char* argv[]) {
 	Command* self = (Command*) calloc(1, sizeof(Command));
 	if (!self) {
-		WARN("Failed to construct");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 		return NULL;
 	}
 
-	self->name = "cap ls";
+	self->name = PROGNAME;
 	self->argc = argc;
 	self->argv = argv;
 
 	if (!(self->buffer = buffer_new())) {
-		WARN("Failed to construct buffer");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "buffer");
 		free(self);
 		return NULL;
 	}
 
 	if (!(self->names = strarray_new())) {
-		WARN("Failed to construct names");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "names");
 		buffer_delete(self->buffer);
 		free(self);
 		return NULL;
 	}
 
 	if (!(self->tags = csvline_new())) {
-		WARN("Failed to construct tags");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "tags");
 		buffer_delete(self->buffer);
 		strarray_delete(self->names);
 		free(self);
@@ -64,7 +66,7 @@ command_new(int argc, char* argv[]) {
 	}
 
 	if (!command_parse_options(self)) {
-		WARN("Failed to parse options");
+		caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "");
 		buffer_delete(self->buffer);
 		strarray_delete(self->names);
 		csvline_delete(self->tags);
@@ -113,7 +115,7 @@ command_parse_options(Command* self) {
 	self->optind = optind;
 
 	if (self->argc < self->optind) {
-		WARN("Failed to parse option");
+		caperr(PROGNAME, CAPERR_DEBUG, "Failed to parse option");
 		return false;
 	}
 
@@ -185,7 +187,7 @@ command_walkdir(Command* self, Config const* config, char const* head, char cons
 	// Open directory
 	DIR* dir = file_opendir(openpath);
 	if (!dir) {
-		WARN("Failed to opendir \"%s\"", openpath);
+		caperr(PROGNAME, CAPERR_OPENDIR, "\"%s\"", openpath);
 		goto fail_opendir;
 	}
 
@@ -196,7 +198,7 @@ command_walkdir(Command* self, Config const* config, char const* head, char cons
 		struct dirent* dirp = readdir(dir);
 		if (!dirp) {
 			if (errno != 0) {
-				WARN("Failed to readdir \"%s\"", openpath);
+				caperr(PROGNAME, CAPERR_READDIR, "\"%s\"", openpath);
 				goto fail_readdir;
 			} else {
 				goto done; 
@@ -218,7 +220,7 @@ command_walkdir(Command* self, Config const* config, char const* head, char cons
 
 		// Save to names
 		if (!strarray_push_copy(self->names, newtail)) {
-			WARN("Failed to push to names");
+			caperr(PROGNAME, CAPERR_WRITE, "names");
 			goto fail_push_names;
 		}
 
@@ -261,7 +263,7 @@ command_open_input_file(Command const* self, Config const* config, char const* n
 	// Open file by solve path
 	FILE* fin = file_open(fpath, "rb");
 	if (!fin) {
-		warn("%s: Failed to open file \"%s\"", self->name, fpath);
+		caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", fpath);
 		return NULL;
 	}
 
@@ -275,7 +277,7 @@ command_has_tags(Command const* self, Config const* config, FILE* fin) {
 	for (; buffer_getline(self->buffer, fin); ) {
 		CapRow* row = capparser_parse_line(parser, buffer_get_const(self->buffer));
 		if (!row) {
-			WARN("Failed to parse line");
+			caperr(PROGNAME, CAPERR_PARSE, "\"%s\"", buffer_get_const(self->buffer));
 			capparser_delete(parser);
 			return false;
 		}
@@ -322,7 +324,7 @@ command_display(Command const* self, Config const* config) {
 		// Open file from name
 		FILE* fin = command_open_input_file(self, config, name);
 		if (!fin) {
-			WARN("Failed to open capfile \"%s\"", name);
+			caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", name);
 			continue;
 		}
 
@@ -357,7 +359,7 @@ command_run(Command* self) {
 	// Construct Config
 	Config* config = config_instance();
 	if (!config) {
-		WARN("Failed to config new");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
 		goto fail_config;
 	}
 
@@ -370,13 +372,13 @@ command_run(Command* self) {
 
 	// Walk
 	if (command_walkdir(self, config, head, tail) != 0) {
-		WARN("Failed to walkdir");
+		caperr(PROGNAME, CAPERR_EXECUTE, "walkdir");
 		goto fail_walkdir;
 	}
 
 	// Display results of walk
 	if (command_display(self, config) != 0) {
-		WARN("Failed to display");
+		caperr(PROGNAME, CAPERR_EXECUTE, "display");
 		goto fail_display;
 	}
 
@@ -398,7 +400,7 @@ ls_main(int argc, char* argv[]) {
 	// Construct
 	Command* command = command_new(argc, argv);
 	if (!command) {
-		WARN("Failed to construct command");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 		return EXIT_FAILURE;
 	}
 

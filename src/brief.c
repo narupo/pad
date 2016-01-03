@@ -15,6 +15,8 @@ struct Command {
 	bool opt_is_disp_all;
 };
 
+static char const* PROGNAME = "cap brief";
+
 static bool
 command_parse_options(Command* self);
 
@@ -43,25 +45,25 @@ command_new(int argc, char* argv[]) {
 	}
 
 	// Set values
-	self->name = "cap brief";
+	self->name = PROGNAME;
 	self->argc = argc;
 	self->argv = argv;
 
 	self->briefs = strarray_new();
 	if (!self->briefs) {
-		WARN("Failed to construct StringArray");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "briefs");
 		goto fail_briefs;
 	}
 
 	self->fnames = strarray_new();
 	if (!self->fnames) {
-		WARN("Failed to construct StringArray");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "fnames");
 		goto fail_fnames;
 	}
 
 	// Parse command options
 	if (!command_parse_options(self)) {
-		perror("Failed to parse options");
+		caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "");
 		goto fail_parse_options;
 	}
 
@@ -123,7 +125,7 @@ command_open_stream(Command const* self, char const* fname) {
 	// Ready
 	Config* config = config_instance();
 	if (!config) {
-		WARN("Failed to construct config");
+		caperr(self->name, CAPERR_CONSTRUCT, "config");
 		return NULL;
 	}
 
@@ -131,16 +133,18 @@ command_open_stream(Command const* self, char const* fname) {
 	char path[NFILE_PATH];
 	snprintf(path, NUMOF(path), "%s/%s", config_path(config, "cd"), fname);
 
+	// Check path
 	if (file_is_dir(path)) {
-		term_eputsf("%s: Can't open file. \"%s\" is a directory.", self->name, path);
+		caperr(self->name, CAPERR_ERROR, "\"%s\" is a directory", path);
 		return NULL;
 	}
 
 	if (!file_is_exists(path)) {
-		term_eputsf("%s: Not found file \"%s\".", self->name, path);
+		caperr(self->name, CAPERR_NOTFOUND, "\"%s\".", path);
 		return NULL;
 	}
 
+	// Done
 	return file_open(path, "rb");
 }
 
@@ -149,14 +153,13 @@ command_read_from_stream(Command* self, FILE* fin, char const* fname) {
 	// Ready
 	Buffer* buf = buffer_new();
 	if (!buf) {
-		WARN("Failed to construct buffer");
-		goto fail_buffer;
+		return caperr(self->name, CAPERR_CONSTRUCT, "buffer");
 	}
 
 	CapParser* parser = capparser_new();
 	if (!parser) {
-		WARN("Failed to construct parser");
-		goto fail_parser;
+		buffer_delete(buf);
+		return caperr(self->name, CAPERR_CONSTRUCT, "parser");
 	}
 
 	// Read briefs in file
@@ -186,20 +189,16 @@ command_read_from_stream(Command* self, FILE* fin, char const* fname) {
 	capparser_delete(parser);
 	buffer_delete(buf);
 	return 0;
-
-fail_parser:
-	buffer_delete(buf);
-
-fail_buffer:
-	return 1;
 }
 
 static int
 command_run(Command* self) {
+	int ret = 0;
+
 	// Check argument
 	if (self->opt_is_help) {
 		brief_usage();
-		return 0;
+		return ret;
 	}
 
 	// Read from streams
@@ -216,7 +215,7 @@ command_run(Command* self) {
 
 			FILE* fin = command_open_stream(self, fname);
 			if (!fin) {
-				WARN("Failed to open file \"%s\"", fname);
+				ret = caperr(self->name, CAPERR_FOPEN, "\"%s\"", fname);
 				goto fail_open_file;
 			}
 
@@ -251,10 +250,8 @@ command_run(Command* self) {
 	}
 
 	// Done
-	return 0;
-
 fail_open_file:
-	return 1;
+	return ret;
 }
 
 /*************************
@@ -283,8 +280,7 @@ brief_main(int argc, char* argv[]) {
 	// Construct
 	Command* command = command_new(argc, argv);
 	if (!command) {
-		perror("Failed to construct command");
-		return EXIT_FAILURE;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 	}
 
 	// Run
@@ -299,7 +295,7 @@ brief_main(int argc, char* argv[]) {
 * Brief test *
 *************/
 
-#if defined(TEST_PROGRAM)
+#if defined(TEST_BRIEF)
 int
 main(int argc, char* argv[]) {
 	return brief_main(argc, argv);

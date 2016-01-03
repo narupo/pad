@@ -24,6 +24,8 @@ struct Command {
 	char** argv;
 };
 
+static char const* PROGNAME = "cap edit";
+
 static void
 command_delete(Command* self) {
 	if (self) {
@@ -35,11 +37,11 @@ static Command*
 command_new(int argc, char* argv[]) {
 	Command* self = (Command*) calloc(1, sizeof(Command));
 	if (!self) {
-		WARN("Failed to construct");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 		return NULL;
 	}
 
-	self->name = argv[0];
+	self->name = PROGNAME;
 	self->argc = argc;
 	self->argv = argv;
 
@@ -50,13 +52,13 @@ static char**
 make_solve_argv(Config const* config, int argc, char** argv) {
 	char** solvargv = (char**) calloc(argc + 1, sizeof(char*));  // +1 for final nul
 	if (!solvargv) {
-		WARN("Failed to allocate memory");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "solve argv");
 		return NULL;
 	}
 
 	solvargv[0] = strdup(argv[0]);
 	if (!solvargv[0]) {
-		WARN("Failed to strdup");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "");
 		free(solvargv);
 		return NULL;
 	}
@@ -82,7 +84,7 @@ run_command(Command* self, Config const* config) {
 	int argc = self->argc;
 	char** argv = make_solve_argv(config, argc, self->argv);
 	if (!argv) {
-		WARN("Failed to solve argv");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "solve argv");
 		goto fail_solve_argv;
 	}
 
@@ -95,18 +97,18 @@ run_command(Command* self, Config const* config) {
 	// Fork and execute
 	switch (fork()) {
 		case -1:  // Failed
-			WARN("Failed to fork");
+			caperr(PROGNAME, CAPERR_EXECUTE, "fork");
 			goto fail_fork;
 			break;
 		case 0:  // Parent process
 			if (execv(editpath, argv) == -1) {
-				WARN("Failed to execute");
+				caperr(PROGNAME, CAPERR_EXECUTE, "execv");
 				goto fail_execv;
 			}
 			break;
 		default:  // Child process
 			if (wait(NULL) == -1) {
-				WARN("Failed to wait");
+				caperr(PROGNAME, CAPERR_EXECUTE, "wait");
 				goto fail_wait;
 			}
 			break;
@@ -138,18 +140,11 @@ command_run(Command* self) {
 	// Load config
 	Config* config = config_instance();
 	if (!config) {
-		WARN("Failed to construct config");
-		goto fail_config;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
 	}
 
 	// Run
-	int res = run_command(self, config);
-
-	// Done
-	return res;
-
-fail_config:
-	return 1;
+	return run_command(self, config);
 }
 
 int
@@ -157,7 +152,7 @@ edit_main(int argc, char* argv[]) {
 	// Construct
 	Command* command = command_new(argc, argv);
 	if (!command) {
-		WARN("Failed to construct command");
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 		return EXIT_FAILURE;
 	}
 

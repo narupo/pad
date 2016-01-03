@@ -29,7 +29,7 @@ path_run(int argc, char* argv[]) {
 	// Load config
 	Config* config = config_instance();
 	if (!config) {
-		WARN("Failed to construct config");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
 		goto fail_config;
 	}
 
@@ -38,14 +38,13 @@ path_run(int argc, char* argv[]) {
 	char spath[NFILE_PATH];
 
 	if (!config_path_from_base(config, spath, sizeof spath, basename)) {
-		WARN("Failed to path from base \"%s\"", basename);
-		warn("%s: Invalid basename \"%s\"", PROGNAME, basename);
+		caperr(PROGNAME, CAPERR_INVALID, "basename \"%s\"", basename);
 		goto fail_path_from_base;
 	}
 
 	// Check path
 	if (!file_is_exists(spath)) {
-		warn("%s: Not found file name \"%s\"", PROGNAME, spath);
+		caperr(PROGNAME, CAPERR_NOTFOUND, "\"%s\"", spath);
 		goto fail_exists;
 	}
 
@@ -86,13 +85,13 @@ path_main(int argc, char* argv[]) {
 		} break;
 		case '?':
 		default: {
-			die("Unknown option");
+			return caperr(PROGNAME, CAPERR_INVALID, "option");
 		} break;
 		}
 	}
 
 	if (argc < optind) {
-		die("Failed to parse option");
+		caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "");
 		return 1;
 	}
 

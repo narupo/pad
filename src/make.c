@@ -13,6 +13,8 @@ struct Command {
 	bool is_usage;
 };
 
+static char const* PROGNAME = "cap make";
+
 /*************
 * Prototypes *
 *************/
@@ -85,18 +87,18 @@ command_new(Config const* config, int argc, char* argv[]) {
 	// Construct
 	Command* self = (Command*) calloc(1, sizeof(Command));
 	if (!self) {
-		WARN("Failed to construct");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 		return NULL;
 	}
 
 	// Set values
-	self->name = "cap make";
+	self->name = PROGNAME;
 	self->argc = argc;
 	self->argv = argv;
 	self->config = config;
 
 	if (!(self->replace_list = strarray_new_from_capacity(10))) {
-		WARN("Failed to construct StringArray");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "replace list");
 		free(self);
 		return NULL;
 	}
@@ -153,7 +155,7 @@ command_parse_options(Command* self) {
 
 	// Check result of parse options
 	if (self->argc < self->optind) {
-		WARN("Failed to parse option");
+		caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "");
 		return false;
 	}
 
@@ -218,7 +220,7 @@ command_make_capfile_from_stream(Command const* self, FILE* fin) {
 
 			// Read
 			if (command_call_command(self, dstfile, argc, argv) != 0) {
-				WARN("Failed to call command");
+				caperr(PROGNAME, CAPERR_EXECUTE, "command");
 			}
 
 			// Done
@@ -348,9 +350,9 @@ command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout)
 				continue;
 			}
 			char const* val = capcol_value_const(col);
-			printf("%s", val);
+			term_printf("%s", val);
 		}
-		printf("\n");
+		term_printf("\n");
 	}
 
 	return 0;
@@ -363,14 +365,14 @@ command_open_input_file(Command const* self, char const* capname) {
 	// Get cap's make file path
 	char spath[NFILE_PATH];
 	if (!config_path_from_base(self->config, spath, sizeof spath, capname)) {
-		WARN("Failed to path from base \"%s\"", capname);
+		caperr(PROGNAME, CAPERR_ERROR, "Failed to path from base \"%s\"", capname);
 		return NULL;
 	}
 	
 	// Open cap's make file
 	fin = file_open(spath, "rb");
 	if (!fin) {
-		warn("%s: Failed to open file \"%s\"", self->name, spath);
+		caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", spath);
 		return NULL;
 	}
 
@@ -385,7 +387,7 @@ command_make_capfile(Command const* self) {
 		// Make CapFile from stream
 		capfile = command_make_capfile_from_stream(self, stdin);
 		if (!capfile) {
-			WARN("Failed to make CapFile");
+			caperr(PROGNAME, CAPERR_ERROR, "Failed to make CapFile");
 			return NULL;
 		}
 
@@ -401,14 +403,14 @@ command_make_capfile(Command const* self) {
 			// Open stream
 			FILE* fin = command_open_input_file(self, capname);
 			if (!fin) {
-				WARN("Failed to open file \"%s\"", capname);
+				caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", capname);
 				continue;
 			}
 
 			// Make temporary CapFile from stream for append rows to my CapFile
 			CapFile* ftmp = command_make_capfile_from_stream(self, fin);
 			if (!capfile) {
-				WARN("Failed to make CapFile");
+				caperr(PROGNAME, CAPERR_ERROR, "Failed to make CapFile");
 				file_close(fin);
 				capfile_delete(capfile);
 				return NULL;
@@ -437,7 +439,7 @@ command_run(Command* self) {
 	// Ready
 	CapFile* capfile = command_make_capfile(self);
 	if (!capfile) {
-		WARN("Failed to make CapFile");
+		caperr(PROGNAME, CAPERR_ERROR, "Failed to make CapFile");
 		return 1;
 	}
 
@@ -490,14 +492,14 @@ make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	// Construct
 	Command* self = command_new(config, argc, argv);
 	if (!self) {
-		WARN("Failed to construct Command");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 		return 1;
 	}
 
 	// Make append capfile
 	CapFile* appfile = command_make_capfile(self);
 	if (!appfile) {
-		WARN("Failed to make CapFile");
+		caperr(PROGNAME, CAPERR_ERROR, "Failed to make CapFile");
 		command_delete(self);
 		return 2;
 	}
