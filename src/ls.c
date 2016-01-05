@@ -276,6 +276,10 @@ command_open_input_file(Command const* self, Config const* config, char const* n
 static bool
 command_has_tags(Command const* self, Config const* config, FILE* fin) {
 	CapParser* parser = capparser_new();
+	if (!parser) {
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "capparser");
+		return false;
+	}
 
 	for (; buffer_getline(self->buffer, fin); ) {
 		CapRow* row = capparser_parse_line(parser, buffer_get_const(self->buffer));
@@ -334,7 +338,7 @@ command_display(Command const* self, Config const* config) {
 		// Tag
 		if (self->opt_tags && !command_has_tags(self, config, fin)) {
 			file_close(fin);
-			continue;  // Not found tags in file so skip display
+			continue; // Not found tags in file so skip display
 		}
 
 		// Display name
@@ -346,7 +350,7 @@ command_display(Command const* self, Config const* config) {
 		}
 
 		// Display by @cap syntax
-		fseek(fin, 0L, SEEK_SET);  // Init file
+		fseek(fin, 0L, SEEK_SET); // Reset file pointer position
 		command_display_atcap(self, config, fin);
 		term_printf("\n");
 
