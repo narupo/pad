@@ -7,14 +7,20 @@ struct Command {
 	int argc;
 	char** argv;
 	int optind;
+
+	// Buffers
+	Config* config;
 	Buffer* buffer;
 	StringArray* names;
+	CsvLine* tags;
 	int max_namelen;
+	
+	// Options
+	bool opt_is_help;
 	bool opt_is_all_disp;
 	bool opt_disp_brief;
 	bool opt_recursive;
 	bool opt_tags;
-	CsvLine* tags;
 };
 
 static char const* PROGNAME = "cap ls";
@@ -43,6 +49,12 @@ command_new(int argc, char* argv[]) {
 	self->name = PROGNAME;
 	self->argc = argc;
 	self->argv = argv;
+
+	if (!(self->config = config_instance())) {
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
+		free(self);
+		return NULL;
+	}
 
 	if (!(self->buffer = buffer_new())) {
 		caperr(PROGNAME, CAPERR_CONSTRUCT, "buffer");
@@ -96,10 +108,7 @@ command_parse_options(Command* self) {
 		}
 
 		switch (cur) {
-		case 'h':
-			command_delete(self);  // Weak point because usage() to exit
-			ls_usage();
-			break;
+		case 'h': self->opt_is_help = true; break;
 		case 'a': self->opt_is_all_disp = !self->opt_is_all_disp; break;
 		case 'R': self->opt_recursive = !self->opt_recursive; break;
 		case 'b': self->opt_disp_brief = !self->opt_disp_brief; break;
@@ -122,29 +131,15 @@ command_parse_options(Command* self) {
 	return true;
 }
 
-void _Noreturn
-ls_usage(void) {
-	term_eprintf(
-		"Usage: cap ls\n"
-		"\n"
-		"\t-h, --help      display usage\n"
-		"\t-b, --brief     display brief\n"
-		"\t-R, --recursive display recursive\n"
-		"\t-t, --tags      grep tags\n"
-		"\n"
-	);
-	exit(EXIT_FAILURE);
-}
-
 static int
-command_display_atcap(Command const* self, Config const* config, FILE* fin) {
+command_display_brief_from_stream(Command const* self, FILE* fin) {
 	// Read file for check of @cap command line
-	// Read lines for @cap command
 	CapParser* parser = capparser_new();
 	if (!parser) {
 		return caperr(PROGNAME, CAPERR_CONSTRUCT, "capparser");
 	}
 
+	// Read lines for @cap command
 	for (; buffer_getline(self->buffer, fin); ) {
 		CapRow* row = capparser_parse_line(parser, buffer_get_const(self->buffer));
 		if (!row) {
@@ -178,7 +173,9 @@ command_display_atcap(Command const* self, Config const* config, FILE* fin) {
 }
 
 static int
-command_walkdir(Command* self, Config const* config, char const* head, char const* tail) {
+command_walkdir(Command* self, char const* head, char const* tail) {
+	int ret = 0;
+
 	// Make open directory path
 	char openpath[NFILE_PATH];
 	if (!tail) {
@@ -190,8 +187,7 @@ command_walkdir(Command* self, Config const* config, char const* head, char cons
 	// Open directory
 	DIR* dir = file_opendir(openpath);
 	if (!dir) {
-		caperr(PROGNAME, CAPERR_OPENDIR, "\"%s\"", openpath);
-		goto fail_opendir;
+		return caperr(PROGNAME, CAPERR_OPENDIR, "\"%s\"", openpath);
 	}
 
 	// Save file list
@@ -201,8 +197,8 @@ command_walkdir(Command* self, Config const* config, char const* head, char cons
 		struct dirent* dirp = readdir(dir);
 		if (!dirp) {
 			if (errno != 0) {
-				caperr(PROGNAME, CAPERR_READDIR, "\"%s\"", openpath);
-				goto fail_readdir;
+				ret = caperr(PROGNAME, CAPERR_READDIR, "\"%s\"", openpath);
+				goto done;
 			} else {
 				goto done; 
 			}
@@ -223,8 +219,8 @@ command_walkdir(Command* self, Config const* config, char const* head, char cons
 
 		// Save to names
 		if (!strarray_push_copy(self->names, newtail)) {
-			caperr(PROGNAME, CAPERR_WRITE, "names");
-			goto fail_push_names;
+			ret = caperr(PROGNAME, CAPERR_WRITE, "names");
+			goto done;
 		}
 
 		// Update max name length for display
@@ -237,31 +233,20 @@ command_walkdir(Command* self, Config const* config, char const* head, char cons
 
 		if (self->opt_recursive && file_is_dir(isdirpath)) {
 			// Yes, Recursive
-			command_walkdir(self, config, head, newtail);
+			command_walkdir(self, head, newtail);
 		}
 	}
 
 done:
 	file_closedir(dir);
-	return 0;
-
-fail_push_names:
-	file_closedir(dir);
-	return 3;
-
-fail_readdir:
-	file_closedir(dir);
-	return 2;
-
-fail_opendir:
-	return 1;
+	return ret;
 }
 
 static FILE*
-command_open_input_file(Command const* self, Config const* config, char const* name) {
+command_open_input_file(Command const* self, char const* name) {
 	// Make path from basename
 	char fpath[NFILE_PATH];
-	snprintf(fpath, sizeof fpath, "%s/%s", config_path(config, "cd"), name);
+	snprintf(fpath, sizeof fpath, "%s/%s", config_path(self->config, "cd"), name);
 
 	// Open file by solve path
 	FILE* fin = file_open(fpath, "rb");
@@ -274,7 +259,7 @@ command_open_input_file(Command const* self, Config const* config, char const* n
 }
 
 static bool
-command_has_tags(Command const* self, Config const* config, FILE* fin) {
+command_has_tags(Command const* self, FILE* fin) {
 	CapParser* parser = capparser_new();
 	if (!parser) {
 		caperr(PROGNAME, CAPERR_CONSTRUCT, "capparser");
@@ -308,9 +293,9 @@ command_has_tags(Command const* self, Config const* config, FILE* fin) {
 		caprow_delete(row);
 	}
 
-	// Done
+	// Not found tags in file
 	capparser_delete(parser);
-	return false;  // Not found tags in file
+	return false;
 
 found:
 	capparser_delete(parser);
@@ -318,7 +303,7 @@ found:
 }
 
 static int
-command_display(Command const* self, Config const* config) {
+command_display(Command const* self) {
 	// Sort
 	strarray_sort(self->names);
 
@@ -329,14 +314,14 @@ command_display(Command const* self, Config const* config) {
 		int namelen = strlen(name);
 
 		// Open file from name
-		FILE* fin = command_open_input_file(self, config, name);
+		FILE* fin = command_open_input_file(self, name);
 		if (!fin) {
 			caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", name);
 			continue;
 		}
 
 		// Tag
-		if (self->opt_tags && !command_has_tags(self, config, fin)) {
+		if (self->opt_tags && !command_has_tags(self, fin)) {
 			file_close(fin);
 			continue; // Not found tags in file so skip display
 		}
@@ -351,7 +336,7 @@ command_display(Command const* self, Config const* config) {
 
 		// Display by @cap syntax
 		fseek(fin, 0L, SEEK_SET); // Reset file pointer position
-		command_display_atcap(self, config, fin);
+		command_display_brief_from_stream(self, fin);
 		term_printf("\n");
 
 		file_close(fin);
@@ -363,43 +348,48 @@ command_display(Command const* self, Config const* config) {
 
 static int
 command_run(Command* self) {
-	// Construct Config
-	Config* config = config_instance();
-	if (!config) {
-		caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
-		goto fail_config;
+	// Usage?
+	if (self->opt_is_help) {
+		ls_usage();
+		return 0;
 	}
 
 	// Get current directory path and tail path for walkdir
-	char const* head = config_path(config, "cd");
+	char const* head = config_path(self->config, "cd");
 	char const* tail = NULL;
 	if (self->argc >= self->optind) {
 		tail = self->argv[self->optind];
 	}
 
 	// Walk
-	if (command_walkdir(self, config, head, tail) != 0) {
-		caperr(PROGNAME, CAPERR_EXECUTE, "walkdir");
-		goto fail_walkdir;
+	if (command_walkdir(self, head, tail) != 0) {
+		return caperr(PROGNAME, CAPERR_EXECUTE, "walkdir");
 	}
 
 	// Display results of walk
-	if (command_display(self, config) != 0) {
-		caperr(PROGNAME, CAPERR_EXECUTE, "display");
-		goto fail_display;
+	if (command_display(self) != 0) {
+		return caperr(PROGNAME, CAPERR_EXECUTE, "display");
 	}
 
 	// Done
 	return 0;
+}
 
-fail_display:
-	return 3;
+/**********************
+* ls public interface *
+**********************/
 
-fail_walkdir:
-	return 2;
-
-fail_config:
-	return 1;
+void
+ls_usage(void) {
+	term_eprintf(
+		"Usage: cap ls\n"
+		"\n"
+		"\t-h, --help      display usage\n"
+		"\t-b, --brief     display brief\n"
+		"\t-R, --recursive display recursive\n"
+		"\t-t, --tags      grep tags\n"
+		"\n"
+	);
 }
 
 int
