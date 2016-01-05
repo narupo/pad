@@ -1,6 +1,15 @@
 #include "term.h"
 
 void
+term_destroy(void) {
+}
+
+int
+term_init(void) {
+	return 0;
+}
+
+void
 term_flush(void) {
 	fflush(stdout);
 }
@@ -61,3 +70,13 @@ term_eputsf(char const* fmt, ...) {
 
 	return len;
 }
+
+#if defined(TEST_TERM)
+int
+main(int argc, char* argv[]) {
+	term_init();
+
+	term_destroy();
+    return 0;
+}
+#endif

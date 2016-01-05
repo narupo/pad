@@ -141,6 +141,9 @@ command_display_atcap(Command const* self, Config const* config, FILE* fin) {
 	// Read file for check of @cap command line
 	// Read lines for @cap command
 	CapParser* parser = capparser_new();
+	if (!parser) {
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "capparser");
+	}
 
 	for (; buffer_getline(self->buffer, fin); ) {
 		CapRow* row = capparser_parse_line(parser, buffer_get_const(self->buffer));
@@ -288,7 +291,7 @@ command_has_tags(Command const* self, Config const* config, FILE* fin) {
 			if (capcol_type(col) == CapColTag) {
 				char const* tag = capcol_value_const(col);
 				for (int i = 0; i < csvline_length(self->tags); ++i) {
-					if (strcmp(tag, csvline_get_const(self->tags, i)) == 0) {
+					if (strcasecmp(tag, csvline_get_const(self->tags, i)) == 0) {
 						// Found tag in file
 						caprow_delete(row);
 						goto found;
