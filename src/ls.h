@@ -9,7 +9,7 @@
 
 #include <strings.h>
 
-void _Noreturn
+void
 ls_usage(void);
 
 int
