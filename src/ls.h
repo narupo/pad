@@ -7,6 +7,8 @@
 #include "strarray.h"
 #include "atcap.h"
 
+#include <strings.h>
+
 void _Noreturn
 ls_usage(void);
 
