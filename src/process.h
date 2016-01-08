@@ -1,21 +1,23 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
+#include <stdbool.h>
+
 #if defined(_WIN32) || defined(_WIN64)
-# include <windows.h>
+# define PROCESS_WINDOWS
+# include "windows-process.h"
 #else
-# include <sys/wait.h>
+# define PROCESS_LINUX
+# include "linux-process.h"
 #endif
 
-int
-process_wait();
+typedef struct Process Process;
 
-int
-process_fork();
+void
+process_delete(Process* self);
 
-int
-process_pipe(int fds[]);
-
+Process*
+process_new(void);
 
 #endif
 
