@@ -28,14 +28,14 @@ deploy_run(char const* dirname) {
 	}
 
 	//! Get current path
-	char curpath[NFILE_PATH];
+	char curpath[FILE_NPATH];
 	if (!file_solve_path(curpath, sizeof curpath, ".")) {
 		caperr(PROGNAME, CAPERR_ERROR, "Failed to solve path \".\"");
 		goto fail_solve_path;
 	}
 
 	//! Make path
-	char dirpath[NFILE_PATH];
+	char dirpath[FILE_NPATH];
 
 	if (!config_path_from_base(config, dirpath, sizeof dirpath, dirname)) {
 		caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from \"%s\"", dirname);
@@ -80,8 +80,8 @@ deploy_run(char const* dirname) {
 		//! Deploy files to current directory
 
 		//! Make deploy file path
-		char srcpath[NFILE_PATH];
-		char deploypath[NFILE_PATH];
+		char srcpath[FILE_NPATH];
+		char deploypath[FILE_NPATH];
 
 		snprintf(srcpath, sizeof srcpath, "%s/%s", dirpath, name);
 		snprintf(deploypath, sizeof deploypath, "%s/%s", curpath, name);

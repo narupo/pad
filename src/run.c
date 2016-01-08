@@ -55,7 +55,7 @@ command_run_script(Command* self, Config const* config) {
 	}
 
 	// Get command path on cap
-	char scriptpath[NFILE_PATH];
+	char scriptpath[FILE_NPATH];
 	if (!config_path_from_base(config, scriptpath, sizeof scriptpath, scriptname)) {
 		caperr(PROGNAME, CAPERR_ERROR, "Failed to path from base \"%s\"", scriptname);
 		goto fail_path;
@@ -158,7 +158,7 @@ run_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	}
 
 	// Get command path on cap
-	char scriptpath[NFILE_PATH];
+	char scriptpath[FILE_NPATH];
 	if (!config_path_from_base(config, scriptpath, sizeof scriptpath, scriptname)) {
 		caperr(PROGNAME, CAPERR_ERROR, "Failed to path from base \"%s\"", scriptname);
 		goto fail;		

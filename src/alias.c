@@ -134,7 +134,7 @@ command_path_from_cd(char* dst, size_t dstsize) {
 
 static FILE*
 command_open_stream(void) {
-	char path[NFILE_PATH];
+	char path[FILE_NPATH];
 	command_path_from_cd(path, sizeof path);
 
 	if (!file_is_exists(path)) {
