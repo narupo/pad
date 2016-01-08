@@ -2,6 +2,7 @@
 #define WINDOWSPROCESS_H
 
 #include <windows.h>
+#include <stdbool.h>
 
 typedef struct {
 	int debug;

@@ -2,6 +2,7 @@
 #define LINUXPROCESS_H
 
 #include <sys/wait.h>
+#include <stdbool.h>
 
 typedef struct {
 	int pipefds[2];
