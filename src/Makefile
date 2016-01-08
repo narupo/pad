@@ -1,10 +1,10 @@
-CC=clang
+CC=gcc
 CFLAGS=-Wall -g -O2 -std=c99 -Wno-unused-function
 CMDS=cap.c cat.c cd.c deploy.c edit.c \
 	editor.c help.c ls.c make.c path.c run.c alias.c brief.c
 
 UTILS=caperr.c atcap.c buffer.c cap-file.c config-setting.c config.c \
-	csvline.c file.c strarray.c term.c util.c
+	csvline.c file.c strarray.c term.c util.c process.c
 
 LIBS=-lpthread
 
@@ -21,6 +21,9 @@ atcap: atcap.c $(UTILS)
 
 buffer: buffer.c 
 	$(CC) -DTEST_BUFFER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+
+process: process.c 
+	$(CC) -DTEST_PROCESS $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 csvline: csvline.c buffer.c
 	$(CC) -DTEST_CSVLINE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
@@ -50,3 +53,4 @@ clean:
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
+

@@ -4,21 +4,25 @@ char*
 file_solve_path(char* dst, size_t dstsize, char const* path) {
 	char tmp[FILE_NPATH];
 
-	//! Check arugments
+	// Check arugments
 	if (!dst || !path) {
 		WARN("Invalid arguments");
 		return NULL;
 	}
 
-	//! Solve '~'
+	// Solve '~'
 	if (path[0] == '~') {
 		snprintf(tmp, FILE_NPATH, "%s%s", getenv("HOME"), path+1);
 	} else {
 		snprintf(tmp, FILE_NPATH, "%s", path);
 	}
 
-	//! Solve real path
+	// Solve real path
 	errno = 0;
+
+#if defined(_WIN32) || defined(_WIN64)
+# error Need realpath!
+#endif
 	if (!realpath(tmp, dst)) {
 		if (errno == ENOENT) {
 			// Path is not exists
@@ -157,7 +161,11 @@ file_mkdir(char const* dirpath, mode_t mode) {
 		return -1;
 	}
 
+#if defined(_WIN32) || defined(_WIN64)
+	return mkdir(spath);
+#else
 	return mkdir(spath, mode);
+#endif
 }
 
 bool
