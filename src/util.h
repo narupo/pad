@@ -6,12 +6,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <stdarg.h>
 #include <getopt.h>
 #include <errno.h>
 #include <assert.h>
 #include <limits.h>
+
+#include <unistd.h>
+
+#if !defined(_WIN32) && !defined(_WIN64)
+# include <sys/wait.h>
+#endif
+
 
 /**
  * Get length of static array

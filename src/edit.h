@@ -4,8 +4,6 @@
 #include "util.h"
 #include "term.h"
 #include "config.h"
-#include <unistd.h>
-#include <sys/wait.h>
 
 void
 edit_usage(void);

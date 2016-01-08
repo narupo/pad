@@ -7,13 +7,6 @@
 #include "cap-file.h"
 #include "atcap.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <getopt.h>
-#include <string.h>
-#include <sys/wait.h>
-
 void _Noreturn
 run_usage(void);
 
