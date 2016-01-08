@@ -199,15 +199,33 @@ caperr_display(FILE* stream) {
 
 void
 caperr_display_first(FILE* stream) {
+	if (!caperrs_lock()) {
+		perror("caperr lock failed");
+		return;
+	}
+
 	if (caperrs.stack_top != 0) {
 		caperr_display_record(stream, &caperrs.stack[0]);		
+	}
+
+	if (!caperrs_unlock()) {
+		perror("caperr unlock failed");
 	}
 }
 
 void
 caperr_display_last(FILE* stream) {
+	if (!caperrs_lock()) {
+		perror("caperr lock failed");
+		return;
+	}
+
 	if (caperrs.stack_top != 0) {
 		caperr_display_record(stream, &caperrs.stack[caperrs.stack_top-1]);
+	}
+
+	if (!caperrs_unlock()) {
+		perror("caperr unlock failed");
 	}
 }
 
