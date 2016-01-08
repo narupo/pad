@@ -1,6 +1,9 @@
 #ifndef FILE_H
 #define FILE_H
 
+#undef _GNU_SOURCE
+#define _GNU_SOURCE /* For realpath(3) */
+
 #include "util.h"
 #include "buffer.h"
 
@@ -15,7 +18,7 @@
 #include <dirent.h>
 
 enum {
-	NFILE_PATH = 256,
+	FILE_NPATH = 256,
 };
 
 /**

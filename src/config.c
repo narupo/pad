@@ -1,7 +1,7 @@
 #include "config.h"
 
 struct Config {
-	char rootdirpath[NFILE_PATH];
+	char rootdirpath[FILE_NPATH];
 	ConfigSetting* setting;
 };
 
@@ -70,7 +70,7 @@ config_new_from_dir(char const* rootdirpath) {
 	}
 
 	// Solve root directory path
-	char sdirpath[NFILE_PATH];
+	char sdirpath[FILE_NPATH];
 
 	if (!file_solve_path(sdirpath, sizeof sdirpath, self->rootdirpath)) {
 		free(self);
@@ -90,7 +90,7 @@ config_new_from_dir(char const* rootdirpath) {
 	}
 
 	// Load config from directory
-	char fname[NFILE_PATH];
+	char fname[FILE_NPATH];
 	snprintf(fname, sizeof fname, "%s/%s", sdirpath, CONFIGSETTING_FNAME);
 	
 	if (!(self->setting = configsetting_new_from_file(fname))) {
@@ -194,13 +194,13 @@ config_make_path_from_base(Config const* self, char const* basename) {
 		return NULL;
 	}
 
-	char* dst = (char*) calloc(NFILE_PATH, sizeof(char));
+	char* dst = (char*) calloc(FILE_NPATH, sizeof(char));
 	if (!dst) {
 		WARN("Failed to allocate memory");
 		return NULL;
 	}
 
-	return config_path_from_base(self, dst, NFILE_PATH, basename);
+	return config_path_from_base(self, dst, FILE_NPATH, basename);
 }
 
 /*********

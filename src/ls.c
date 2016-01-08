@@ -177,7 +177,7 @@ command_walkdir(Command* self, char const* head, char const* tail) {
 	int ret = 0;
 
 	// Make open directory path
-	char openpath[NFILE_PATH];
+	char openpath[FILE_NPATH];
 	if (!tail) {
 		snprintf(openpath, sizeof openpath, "%s", head);
 	} else {
@@ -210,7 +210,7 @@ command_walkdir(Command* self, char const* head, char const* tail) {
 		}
 
 		// Update tail path
-		char newtail[NFILE_PATH];
+		char newtail[FILE_NPATH];
 		if (!tail) {
 			snprintf(newtail, sizeof newtail, "%s", dirp->d_name);
 		} else {
@@ -228,7 +228,7 @@ command_walkdir(Command* self, char const* head, char const* tail) {
 		self->max_namelen = (newtaillen > self->max_namelen ? newtaillen : self->max_namelen);
 
 		// Is directory?
-		char isdirpath[NFILE_PATH];
+		char isdirpath[FILE_NPATH];
 		snprintf(isdirpath, sizeof isdirpath, "%s/%s", head, newtail);
 
 		if (self->opt_recursive && file_is_dir(isdirpath)) {
@@ -245,7 +245,7 @@ done:
 static FILE*
 command_open_input_file(Command const* self, char const* name) {
 	// Make path from basename
-	char fpath[NFILE_PATH];
+	char fpath[FILE_NPATH];
 	snprintf(fpath, sizeof fpath, "%s/%s", config_path(self->config, "cd"), name);
 
 	// Open file by solve path

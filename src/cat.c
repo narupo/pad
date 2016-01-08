@@ -301,7 +301,7 @@ command_run(Command* self) {
 	// Cat all file
 	for (int i = self->optind; i < self->argc; ++i) {
 		// Solve path
-		char fname[NFILE_PATH];
+		char fname[FILE_NPATH];
 		if (!config_path_from_base(config, fname, sizeof fname, self->argv[i])) {
 			caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from base \"%s\"", self->argv[i]);
 			continue;
@@ -396,7 +396,7 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	// Run, push all file to CapFile
 	for (int i = self->optind; i < self->argc; ++i) {
 		// Solve file path
-		char fname[NFILE_PATH];
+		char fname[FILE_NPATH];
 		if (!config_path_from_base(config, fname, sizeof fname, self->argv[i])) {
 			caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from base \"%s\"", self->argv[i]);
 			continue;

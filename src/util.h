@@ -52,6 +52,7 @@ die(char const* fmt, ...);
 void
 warn(char const* fmt, ...);
 
+#if !defined(_GNU_SOURCE)
 /**
  * Copy string
  * 
@@ -62,6 +63,7 @@ warn(char const* fmt, ...);
  */
 char*
 strdup(char const* src);
+#endif
 
 /**
  * Append string to destination

@@ -425,7 +425,7 @@ configsetting_save_to_file(ConfigSetting* self, char const* fname) {
 bool
 configsetting_set_path(ConfigSetting* self, char const* key, char const* val) {
 	// Solve path
-	char sval[NFILE_PATH];
+	char sval[FILE_NPATH];
 	if (!file_solve_path(sval, sizeof sval, val)) {
 		WARN("Failed to solve path");
 		return false;

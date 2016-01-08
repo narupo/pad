@@ -2,7 +2,7 @@
 
 char*
 file_solve_path(char* dst, size_t dstsize, char const* path) {
-	char tmp[NFILE_PATH];
+	char tmp[FILE_NPATH];
 
 	//! Check arugments
 	if (!dst || !path) {
@@ -12,9 +12,9 @@ file_solve_path(char* dst, size_t dstsize, char const* path) {
 
 	//! Solve '~'
 	if (path[0] == '~') {
-		snprintf(tmp, NFILE_PATH, "%s%s", getenv("HOME"), path+1);
+		snprintf(tmp, FILE_NPATH, "%s%s", getenv("HOME"), path+1);
 	} else {
-		snprintf(tmp, NFILE_PATH, "%s", path);
+		snprintf(tmp, FILE_NPATH, "%s", path);
 	}
 
 	//! Solve real path
@@ -41,14 +41,14 @@ file_make_solve_path(char const* path) {
 	}
 
 	// Ready
-	char* dst = (char*) malloc(sizeof(char) * NFILE_PATH);
+	char* dst = (char*) malloc(sizeof(char) * FILE_NPATH);
 	if (!dst) {
 		WARN("Failed to malloc");
 		return NULL;
 	}
 
 	// Solve
-	char* res = file_solve_path(dst, NFILE_PATH, path);
+	char* res = file_solve_path(dst, FILE_NPATH, path);
 	if (!res) {
 		WARN("Failed to solve path \"%s\"", path);
 		free(dst);
@@ -60,7 +60,7 @@ file_make_solve_path(char const* path) {
 
 FILE*
 file_open(char const* path, char const* mode) {
-	char spath[NFILE_PATH];
+	char spath[FILE_NPATH];
 
 	if (!file_solve_path(spath, sizeof spath, path)) {
 		WARN("Failed to solve path \"%s\"", path);
@@ -72,7 +72,7 @@ file_open(char const* path, char const* mode) {
 
 DIR*
 file_opendir(char const* path) {
-	char spath[NFILE_PATH];
+	char spath[FILE_NPATH];
 
 	if (!file_solve_path(spath, sizeof spath, path)) {
 		WARN("Failed to solve path \"%s\"", path);
@@ -94,7 +94,7 @@ file_close(FILE* fp) {
 
 bool
 file_is_exists(char const* path) {
-	char spath[NFILE_PATH];
+	char spath[FILE_NPATH];
 
 	if (!file_solve_path(spath, sizeof spath, path)) {
 		WARN("Failed to solve path \"%s\"", path);
@@ -119,7 +119,7 @@ notfound:
 
 bool
 file_is_dir(char const* path) {
-	char spath[NFILE_PATH];
+	char spath[FILE_NPATH];
 
 	if (!file_solve_path(spath, sizeof spath, path)) {
 		WARN("Failed to solve path \"%s\"", path);
@@ -150,7 +150,7 @@ notfound:
 
 int
 file_mkdir(char const* dirpath, mode_t mode) {
-	char spath[NFILE_PATH];
+	char spath[FILE_NPATH];
 
 	if (!file_solve_path(spath, sizeof spath, dirpath)) {
 		WARN("Failed to solve path \"%s\"", dirpath);

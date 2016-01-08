@@ -35,7 +35,7 @@ path_run(int argc, char* argv[]) {
 
 	// Get path from basename
 	char const* basename = argv[1];
-	char spath[NFILE_PATH];
+	char spath[FILE_NPATH];
 
 	if (!config_path_from_base(config, spath, sizeof spath, basename)) {
 		caperr(PROGNAME, CAPERR_INVALID, "basename \"%s\"", basename);

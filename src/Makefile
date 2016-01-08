@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS=-Wall -g -O0 -std=c99
+CFLAGS=-Wall -g -O2 -std=c99 -Wno-unused-function
 CMDS=cap.c cat.c cd.c deploy.c edit.c \
 	editor.c help.c ls.c make.c path.c run.c alias.c brief.c
 
@@ -26,7 +26,7 @@ csvline: csvline.c buffer.c
 	$(CC) -DTEST_CSVLINE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 caperr: caperr.c term.c
-	$(CC) -DTEST_CAPERR $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -DTEST_CAPERR -DDEBUG $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 cap-file: cap-file.c $(UTILS) 
 	$(CC) -DTEST_CAPFILE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)

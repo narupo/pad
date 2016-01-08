@@ -130,7 +130,7 @@ command_open_stream(Command const* self, char const* fname) {
 	}
 
 	// Make path
-	char path[NFILE_PATH];
+	char path[FILE_NPATH];
 	snprintf(path, NUMOF(path), "%s/%s", config_path(config, "cd"), fname);
 
 	// Check path
