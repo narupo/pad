@@ -47,57 +47,46 @@ command_new(int argc, char* argv[]) {
 static int
 command_run_script(Command* self, Config const* config) {
 	// Get script name on cap
+	int argc = self->argc - 1;
 	char** argv = self->argv + 1;  // Skip command name of 'run'
+
 	char const* scriptname = argv[0];
 	if (!scriptname) {
-		caperr(PROGNAME, CAPERR_INVALID, "command name \"%s\"", scriptname);
-		goto fail_basename;
+		return caperr(PROGNAME, CAPERR_INVALID, "command name \"%s\"", scriptname);
 	}
 
 	// Get command path on cap
 	char scriptpath[FILE_NPATH];
 	if (!config_path_from_base(config, scriptpath, sizeof scriptpath, scriptname)) {
-		caperr(PROGNAME, CAPERR_ERROR, "Failed to path from base \"%s\"", scriptname);
-		goto fail_path;
+		return caperr(PROGNAME, CAPERR_ERROR, "Failed to path from base \"%s\"", scriptname);
 	}
 
-	// Fork and execute
-	switch (fork()) {
-		case -1:  // Failed
-			caperr(PROGNAME, CAPERR_EXECUTE, "fork");
-			goto fail_fork;
-			break;
-		case 0:  // Child process
-			if (execv(scriptpath, argv) == -1) {
-				caperr(PROGNAME, CAPERR_EXECUTE, "execv");
-				goto fail_execv;
-			}
-			break;
-		default:  // Parent process
-			if (wait(NULL) == -1) {
-				caperr(PROGNAME, CAPERR_EXECUTE, "wait");
-				goto fail_wait;
-			}
-			break;
+	// Create command line
+	char cmdline[512] = {0};
+
+	snprintf(cmdline, sizeof cmdline, "%s ", scriptpath);
+
+	for (int i = 1; i < argc; ++i) {
+		strcat(cmdline, argv[i]);
+		strcat(cmdline, " ");
+	}
+
+	term_eputsf("cmdline[%s]", cmdline); // Debug
+
+	// Open process
+	FILE* fin = popen(cmdline, "r");
+	if (!fin) {
+		return caperr(PROGNAME, CAPERR_OPEN, "process");
+	}
+
+	// Read from child process
+	for (int ch; (ch = fgetc(fin)) != EOF; ) {
+		term_printf("%c", ch);
 	}
 
 	// Done
+	fclose(fin);
 	return 0;
-
-fail_execv:
-	return 5;
-
-fail_wait:
-	return 4;
-
-fail_fork:
-	return 3;
-
-fail_path:
-	return 2;
-
-fail_basename:
-	return 1;
 }
 
 static int
@@ -150,99 +139,59 @@ run_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	// Make
 
 	// Get script name on cap
+	int execargc = self->argc - 1;
 	char** execargv = self->argv + 1;  // Skip self name of 'run'
+
 	char const* scriptname = execargv[0];
 	if (!scriptname) {
-		caperr(PROGNAME, CAPERR_INVALID, "name \"%s\"", scriptname);
-		goto fail;
+		command_delete(self);
+		return caperr(PROGNAME, CAPERR_INVALID, "name \"%s\"", scriptname);
 	}
 
 	// Get command path on cap
 	char scriptpath[FILE_NPATH];
 	if (!config_path_from_base(config, scriptpath, sizeof scriptpath, scriptname)) {
-		caperr(PROGNAME, CAPERR_ERROR, "Failed to path from base \"%s\"", scriptname);
-		goto fail;		
+		command_delete(self);
+		return caperr(PROGNAME, CAPERR_ERROR, "Failed to path from base \"%s\"", scriptname);
 	}
 
-	// Fork and execute with pipe
-	int pfd[2];
-	if (pipe(pfd) == -1) {
-		caperr(PROGNAME, CAPERR_EXECUTE, "pipe");
-		goto fail;
+	// Create command line
+	char cmdline[512];
+	snprintf(cmdline, sizeof cmdline, "%s ", scriptpath);
+
+	for (int i = 1; i < execargc; ++i) {
+		strcat(cmdline, execargv[i]);
+		strcat(cmdline, " ");
 	}
 
-	switch (fork()) {
-		case -1:  // Failed
-			caperr(PROGNAME, CAPERR_EXECUTE, "fork");
-			goto fail;
-			break;
-		
-		case 0:  // Child process
-			// Write to parent
-			// Copy pipe[1] to stdout and close pipe[0];
-			if (pfd[1] != STDOUT_FILENO) {
-				if (dup2(pfd[1], STDOUT_FILENO) == -1) {
-					caperr(PROGNAME, CAPERR_EXECUTE, "dup2 on child");
-				}
-				if (close(pfd[0]) == -1) {
-					caperr(PROGNAME, CAPERR_EXECUTE, "close on child");
-				}
-			}
+	// Open child process
+	FILE* fin = popen(cmdline, "r");
+	if (!fin) {
+		command_delete(self);
+		return caperr(PROGNAME, CAPERR_OPEN, "process");
+	}
 
-			if (execv(scriptpath, execargv) == -1) {
-				caperr(PROGNAME, CAPERR_EXECUTE, "\"%s\" on child", scriptpath);
-				goto fail;
-			}
-			break;
+	// Read from child process
+	Buffer* buffer = buffer_new();
+	CapParser* parser = capparser_new();
+	CapRowList* dstrows = capfile_rows(dstfile);
 
-		default:  // Parent process
-			// Read from child
-			// Copy pipe[0] to stdin and close pipe[1]
-			if (pfd[0] != STDIN_FILENO) {
-				if (dup2(pfd[0], STDIN_FILENO)) {
-					caperr(PROGNAME, CAPERR_EXECUTE, "dup2 on parent");
-				}
-				if (close(pfd[1]) == -1) {
-					caperr(PROGNAME, CAPERR_EXECUTE, "close on parent");					
-				}
-			}
+	for (; buffer_getline(buffer, fin); ) {
+		char const* line = buffer_get_const(buffer);
+		CapRow* row = capparser_parse_line(parser, line);
+		if (!row) {
+			continue;
+		}
 
-			// Read from child process
-			Buffer* buffer = buffer_new();
-			CapParser* parser = capparser_new();
-			CapRowList* dstrows = capfile_rows(dstfile);
-
-			for (; buffer_getline(buffer, stdin); ) {
-				char const* line = buffer_get_const(buffer);
-				CapRow* row = capparser_parse_line(parser, line);
-				if (!row) {
-					continue;
-				}
-
-				caprowlist_move_to_back(dstrows, row);
-			}
-
-			// Waiting
-			if (wait(NULL) == -1) {
-				caperr(PROGNAME, CAPERR_EXECUTE, "wait");
-				goto fail;
-			}
-
-			// Done
-			clearerr(stdin);  // Clear EOF from child process
-
-			capparser_delete(parser);
-			buffer_delete(buffer);
-			break;
+		caprowlist_move_to_back(dstrows, row);
 	}
 
 	// Done
+	capparser_delete(parser);
+	buffer_delete(buffer);
+	fclose(fin);
 	command_delete(self);
 	return 0;
-
-fail:
-	command_delete(self);
-	return 1;
 }
 
 int

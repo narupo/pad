@@ -36,10 +36,17 @@
  */
 #ifdef DEBUG
 #  define WARN(...) { \
-      _caperr(__FILE__, __func__, __LINE__, "WARN", CAPERR_DEBUG, __VA_ARGS__); \
+    _caperr(__FILE__, __func__, __LINE__, "WARN", CAPERR_DEBUG, __VA_ARGS__); \
+  }
+#  define DIE(...) { \
+	fprintf(stderr, "die: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
+    fprintf(stderr, __VA_ARGS__); \
+	fflush(stderr); \
+	exit(1); \
   }
 #else
 #  define WARN(...) {}
+#  define DIE(...) {}
 #endif
 
 /**

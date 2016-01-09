@@ -110,7 +110,7 @@ done:
 
 static void
 stack_trace(void) {
-	caperr_display_first(stderr);
+	caperr_display(stderr);
 	term_eprintf("\n");
 }
 

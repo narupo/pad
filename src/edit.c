@@ -84,8 +84,7 @@ run_command(Command* self, Config const* config) {
 	int argc = self->argc;
 	char** argv = make_solve_argv(config, argc, self->argv);
 	if (!argv) {
-		caperr(PROGNAME, CAPERR_CONSTRUCT, "solve argv");
-		goto fail_solve_argv;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "solve argv");
 	}
 
 	// Get editor path
@@ -94,45 +93,22 @@ run_command(Command* self, Config const* config) {
 		editpath = "/usr/bin/vi";  // Default editor path
 	}
 
-	// Fork and execute
-	switch (fork()) {
-		case -1:  // Failed
-			caperr(PROGNAME, CAPERR_EXECUTE, "fork");
-			goto fail_fork;
-			break;
-		case 0:  // Parent process
-			if (execv(editpath, argv) == -1) {
-				caperr(PROGNAME, CAPERR_EXECUTE, "execv");
-				goto fail_execv;
-			}
-			break;
-		default:  // Child process
-			if (wait(NULL) == -1) {
-				caperr(PROGNAME, CAPERR_EXECUTE, "wait");
-				goto fail_wait;
-			}
-			break;
+	// Create command line
+	char cmdline[512];
+	snprintf(cmdline, sizeof cmdline, "%s ", editpath);
+	term_eputsf("cmdline[%s]", cmdline); // Debug
+
+	for (int i = 0; i < argc; ++i) {
+		strcat(cmdline, argv[i]);
+		strcat(cmdline, " ");
 	}
+
+	// Run process
+	system(cmdline);
 
 	// Done
-	for (int i = 0; i < argc; ++i) {
-		free(argv[i]);
-	}
-	free(argv);
-
+	free_argv(argc, argv);
 	return 0;
-
-fail_execv:
-	return 4;
-
-fail_wait:
-	return 3;
-
-fail_fork:
-	return 2;
-
-fail_solve_argv:
-	return 1;
 }
 
 static int

@@ -6,6 +6,8 @@
 
 #include "util.h"
 #include "buffer.h"
+#include "caperr.h"
+#include "term.h"
 
 #include <errno.h>
 #include <limits.h>

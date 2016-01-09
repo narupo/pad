@@ -280,12 +280,14 @@ self_load_from_file(ConfigSetting* self, char const* fname) {
 	// Open file
 	FILE* fin = file_open(fname, "rb");
 	if (!fin) {
+		WARN("Failed to open file \"%s\"", fname);
 		return false;
 	}
 
 	// Buffer for read lines
 	Buffer* buf = buffer_new();
 	if (!buf) {
+		WARN("Failed to construct buffer");
 		fclose(fin);
 		return false;
 	}
