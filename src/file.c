@@ -21,8 +21,9 @@ file_solve_path(char* dst, size_t dstsize, char const* path) {
 	errno = 0;
 
 #if defined(_WIN32) || defined(_WIN64)
-# error Need realpath!
-#endif
+	DIE("TODO GetFullPathName");
+	//GetFullPathName();
+#else
 	if (!realpath(tmp, dst)) {
 		if (errno == ENOENT) {
 			// Path is not exists
@@ -32,6 +33,7 @@ file_solve_path(char* dst, size_t dstsize, char const* path) {
 			return NULL;
 		}
 	}
+#endif
 
 	return dst;
 }
@@ -210,7 +212,7 @@ done:
 }
 
 #if defined(TEST_FILE)
-void
+int
 test_mkdir(int argc, char* argv[]) {
 	if (argc < 2) {
 		die("need path");
@@ -224,18 +226,29 @@ test_mkdir(int argc, char* argv[]) {
 		printf("is not exists [%s]\n", path);
 		file_mkdir(path, S_IRUSR | S_IWUSR | S_IXUSR);
 	}
+
+	return 0;
 }
 
-void
-test_readall(int argc, char* argv[]) {
-	char* str = file_read_string("util.h");
-	printf("str[%s]\n", str);
-	free(str);
+char*
+solve_path(char dst, size_t dstsize, char const* path) {
+}
+
+int
+test_solve_path(int argc, char* argv[]) {
+	if (argc < 2) {
+		die("need path");
+	}
+
+	char spath[FILE_NPATH];
+	printf("[%s] -> \n[%s]\n", argv[1], solve_path(dst, sizeof dst, argv[1]));
+
+	return 0;
 }
 
 int
 main(int argc, char* argv[]) {
-	test_readall(argc, argv);
-	return 0;
+	return test_solve_path(argc, argv);
 }
 #endif
+

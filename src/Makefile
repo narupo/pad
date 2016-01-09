@@ -1,20 +1,14 @@
 CC=gcc
-CFLAGS=-Wall -g -O2 -std=c99 -Wno-unused-function
+CFLAGS=-Wall -g -O2 -std=c99 -Wno-unused-function -DDEBUG
 CMDS=cap.c cat.c cd.c deploy.c edit.c \
 	editor.c help.c ls.c make.c path.c run.c alias.c brief.c
 
 UTILS=caperr.c atcap.c buffer.c cap-file.c config-setting.c config.c \
-	csvline.c file.c strarray.c term.c util.c process.c
-
-ifeq (\$(OS),Windows_NT)
-	UTILS+=windows-process.c
-else
-	UTILS+=linux-process.c 
-endif
+	csvline.c file.c strarray.c term.c util.c
 
 LIBS=-lpthread
 
-TARGET=~/bin/cap
+TARGET=./cap
 TESTDIR=./test
 
 all: cap
@@ -28,14 +22,8 @@ atcap: atcap.c $(UTILS)
 buffer: buffer.c 
 	$(CC) -DTEST_BUFFER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
-process: process.c 
-	$(CC) -DTEST_PROCESS $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
-
-linux-process: linux-process.c 
-	$(CC) -DTEST_LINUXPROCESS $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
-
-windows-process: windows-process.c 
-	$(CC) -DTEST_WINDOWSPROCESS $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+file: file.c buffer.c util.c caperr.c term.c
+	$(CC) -DTEST_FILE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 csvline: csvline.c buffer.c
 	$(CC) -DTEST_CSVLINE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
