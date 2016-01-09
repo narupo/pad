@@ -120,7 +120,8 @@ int
 test_process(int argc, char* argv[]) {
 	Process* proc = process_new();
 
-	fprintf(stderr, "Process type \"%s\"\n", process_type_to_string(proc));
+	// fprintf(stderr, "Process type \"%s\"\n", process_type_to_string(proc));
+	process_start(proc, "ls");
 
 	process_delete(proc);
 	return 0;
