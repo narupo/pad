@@ -21,4 +21,7 @@ process_delete(Process* self);
 Process*
 process_new(void);
 
+Process*
+process_start(Process* self, char const* cmdname);
+
 #endif
