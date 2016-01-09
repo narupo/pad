@@ -3,33 +3,37 @@
 
 #include <windows.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-typedef struct {
-	int debug;
-} WindowsProcess;
+typedef struct WindowsProcess WindowsProcess;
 
-void
-winprocess_delete(WindowsProcess* self) {
-	if (self) {
-		free(self);
-	}
-}
+/**
+ * @brief 
+ *
+ * @param self 
+*/
+void 
+winprocess_delete(WindowsProcess* self);
 
-WindowsProcess*
-winprocess_new(void) {
-	WindowsProcess* self = (WindowsProcess*) calloc(1, sizeof(WindowsProcess));
-	if (!self) {
-		perror("WindowsProcess");
-		return NULL;
-	}
+/**
+ * @brief 
+ *
+ * @param void 
+ *
+ * @return 
+*/
+WindowsProcess* 
+winprocess_new(void);
 
-	return self;
-}
-
-bool
-winprocess_start(WindowsProcess* self) {
-	return false;
-}
+/**
+ * @brief 
+ *
+ * @param self 
+ *
+ * @return 
+*/
+bool 
+winprocess_start(WindowsProcess* self);
 
 #endif
-

@@ -1,39 +1,40 @@
 #ifndef LINUXPROCESS_H
 #define LINUXPROCESS_H
 
+#include <unistd.h>
 #include <sys/wait.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-typedef struct {
-	int pipefds[2];
-} LinuxProcess;
+typedef struct LinuxProcess LinuxProcess;
 
-void
-linprocess_delete(LinuxProcess* self) {
-	if (self) {
-		free(self);
-	}
-}
+/**
+ * @brief 
+ *
+ * @param self 
+*/
+void 
+linprocess_delete(LinuxProcess* self);
 
-LinuxProcess*
-linprocess_new(void) {
-	LinuxProcess* self = (LinuxProcess*) calloc(1, sizeof(LinuxProcess));
-	if (!self) {
-		perror("LinuxProcess");
-		return NULL;
-	}
+/**
+ * @brief 
+ *
+ * @param void 
+ *
+ * @return 
+*/
+LinuxProcess* 
+linprocess_new(void);
 
-	return self;
-}
-
-bool
-linprocess_start(LinuxProcess* self) {
-	switch (fork()) {
-	case -1: perror("fork"); break;
-	case 0: break;
-	default: return true; break;
-	}
-}
+/**
+ * @brief 
+ *
+ * @param self 
+ *
+ * @return 
+*/
+bool 
+linprocess_start(LinuxProcess* self, char const* cmdline);
 
 #endif
-

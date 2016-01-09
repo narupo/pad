@@ -6,6 +6,12 @@ CMDS=cap.c cat.c cd.c deploy.c edit.c \
 UTILS=caperr.c atcap.c buffer.c cap-file.c config-setting.c config.c \
 	csvline.c file.c strarray.c term.c util.c process.c
 
+ifeq (\$(OS),Windows_NT)
+	UTILS+=windows-process.c
+else
+	UTILS+=linux-process.c 
+endif
+
 LIBS=-lpthread
 
 TARGET=~/bin/cap
@@ -24,6 +30,12 @@ buffer: buffer.c
 
 process: process.c 
 	$(CC) -DTEST_PROCESS $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+
+linux-process: linux-process.c 
+	$(CC) -DTEST_LINUXPROCESS $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+
+windows-process: windows-process.c 
+	$(CC) -DTEST_WINDOWSPROCESS $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 csvline: csvline.c buffer.c
 	$(CC) -DTEST_CSVLINE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)

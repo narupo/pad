@@ -105,6 +105,7 @@ command_run(Command* self) {
 	// Check arguments
 	if (self->argc < 2) {
 		run_usage();
+		return 0;
 	}
 
 	// Load config
@@ -121,7 +122,7 @@ command_run(Command* self) {
 * Public Interface *
 *******************/
 
-void _Noreturn
+void
 run_usage(void) {
     fprintf(stderr,
         "cap run\n"
@@ -135,7 +136,6 @@ run_usage(void) {
         "\tnothing, see at manual of script\n"
         "\n"
     );
-    exit(EXIT_FAILURE);
 }
 
 int

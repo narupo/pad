@@ -34,18 +34,18 @@ find_command(char const* name) {
 		char const* name;
 		Command command;
 	} table[] = {
-		{"help", help_main},
-		{"cat", cat_main},
 		{"ls", ls_main},
 		{"cd", cd_main},
+		{"cat", cat_main},
+		{"run", run_main},
 		{"edit", edit_main},
-		{"editor", editor_main},
-		{"deploy", deploy_main},
+		{"help", help_main},
 		{"make", make_main},
 		{"path", path_main},
-		{"run", run_main},
 		{"alias", alias_main},
 		{"brief", brief_main},
+		{"editor", editor_main},
+		{"deploy", deploy_main},
 		{0},
 	};
 	
