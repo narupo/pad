@@ -18,9 +18,9 @@ struct Command {
 	// Options
 	bool opt_is_help;
 	bool opt_is_all_disp;
-	bool opt_disp_brief;
-	bool opt_recursive;
-	bool opt_tags;
+	bool opt_is_disp_brief;
+	bool opt_is_recursive;
+	bool opt_is_tags;
 };
 
 static char const* PROGNAME = "cap ls";
@@ -110,10 +110,10 @@ command_parse_options(Command* self) {
 		switch (cur) {
 		case 'h': self->opt_is_help = true; break;
 		case 'a': self->opt_is_all_disp = !self->opt_is_all_disp; break;
-		case 'R': self->opt_recursive = !self->opt_recursive; break;
-		case 'b': self->opt_disp_brief = !self->opt_disp_brief; break;
+		case 'R': self->opt_is_recursive = !self->opt_is_recursive; break;
+		case 'b': self->opt_is_disp_brief = !self->opt_is_disp_brief; break;
 		case 't': {
-			self->opt_tags = !self->opt_tags;
+			self->opt_is_tags = !self->opt_is_tags;
 			csvline_parse_line(self->tags, optarg, ' ');
 		} break;
 		case '?':
@@ -153,7 +153,7 @@ command_display_brief_from_stream(Command const* self, FILE* fin) {
 		}
 
 		// Display brief
-		if (self->opt_disp_brief && capcol_type(front) == CapColBrief) {
+		if (self->opt_is_disp_brief && capcol_type(front) == CapColBrief) {
 			char const* brief = capcol_value_const(front);
 			if (brief) {
 				term_printf("%s", brief);
@@ -231,7 +231,7 @@ command_walkdir(Command* self, char const* head, char const* tail) {
 		char isdirpath[FILE_NPATH];
 		snprintf(isdirpath, sizeof isdirpath, "%s/%s", head, newtail);
 
-		if (self->opt_recursive && file_is_dir(isdirpath)) {
+		if (self->opt_is_recursive && file_is_dir(isdirpath)) {
 			// Yes, Recursive
 			command_walkdir(self, head, newtail);
 		}
@@ -321,7 +321,7 @@ command_display(Command const* self) {
 		}
 
 		// Tag
-		if (self->opt_tags && !command_has_tags(self, fin)) {
+		if (self->opt_is_tags && !command_has_tags(self, fin)) {
 			file_close(fin);
 			continue; // Not found tags in file so skip display
 		}
@@ -408,3 +408,4 @@ ls_main(int argc, char* argv[]) {
 	command_delete(command);
 	return res;
 }
+

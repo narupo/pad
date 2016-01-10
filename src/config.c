@@ -13,8 +13,8 @@ static Config* config;  // Singleton instance
 static pthread_mutex_t config_mutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex for singleton instance of Config
 
 static char const* CONFIG_ROOT_PATH = "~/.cap";  // Root directory path of config
+static char const* CONFIGSETTING_PATH = "~/.cap/setting";  // File path of config-setting
 static char const* CONFIGSETTING_FNAME = "setting";  // File name of config-setting
-static char const* CONFIGSETTING_PATH = "~/.cap/setting";  // File paht of config-setting
 
 /***************
 * Mutex family *
