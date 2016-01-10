@@ -72,8 +72,8 @@ hashmapnode_new_copy(char const* key, HashMap_const_type value) {
 		return NULL;
 	}
 
-	self->key = strdup(key);
-	self->value = strdup(value);
+	self->key = util_strdup(key);
+	self->value = util_strdup(value);
 
 	return self;
 }

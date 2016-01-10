@@ -71,21 +71,19 @@ command_run_script(Command* self, Config const* config) {
 		strcat(cmdline, " ");
 	}
 
-	term_eputsf("cmdline[%s]", cmdline); // Debug
-
 	// Open process
-	FILE* fin = popen(cmdline, "r");
-	if (!fin) {
+	FILE* pin = popen(cmdline, "r");
+	if (!pin) {
 		return caperr(PROGNAME, CAPERR_OPEN, "process");
 	}
 
 	// Read from child process
-	for (int ch; (ch = fgetc(fin)) != EOF; ) {
+	for (int ch; (ch = fgetc(pin)) != EOF; ) {
 		term_printf("%c", ch);
 	}
 
 	// Done
-	fclose(fin);
+	pclose(pin);
 	return 0;
 }
 
@@ -165,8 +163,8 @@ run_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	}
 
 	// Open child process
-	FILE* fin = popen(cmdline, "r");
-	if (!fin) {
+	FILE* pin = popen(cmdline, "r");
+	if (!pin) {
 		command_delete(self);
 		return caperr(PROGNAME, CAPERR_OPEN, "process");
 	}
@@ -176,7 +174,7 @@ run_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	CapParser* parser = capparser_new();
 	CapRowList* dstrows = capfile_rows(dstfile);
 
-	for (; buffer_getline(buffer, fin); ) {
+	for (; buffer_getline(buffer, pin); ) {
 		char const* line = buffer_get_const(buffer);
 		CapRow* row = capparser_parse_line(parser, line);
 		if (!row) {
@@ -189,7 +187,7 @@ run_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	// Done
 	capparser_delete(parser);
 	buffer_delete(buffer);
-	fclose(fin);
+	pclose(pin);
 	command_delete(self);
 	return 0;
 }

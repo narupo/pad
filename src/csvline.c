@@ -124,7 +124,7 @@ self_cols_push_copy(CsvLine* self, char const* col) {
 	}
 
 	// Push copy
-	self->cols[self->length++] = strdup(col);
+	self->cols[self->length++] = util_strdup(col);
 	self->cols[self->length] = NULL;
 
 	return true;

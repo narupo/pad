@@ -46,9 +46,8 @@ warn(char const* fmt, ...) {
 	va_end(args);
 }
 
-#if !defined(_GNU_SOURCE)
 char*
-strdup(char const* src) {
+util_strdup(char const* src) {
 	size_t len = strlen(src);
 	char* dst = (char*) malloc(sizeof(char) * len + 1);  // +1 for final '\0'
 	if (!dst) {
@@ -60,7 +59,6 @@ strdup(char const* src) {
 
 	return dst;
 }
-#endif
 
 char*
 strappend(char* dst, size_t dstsize, char const* src) {

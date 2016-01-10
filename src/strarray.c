@@ -104,7 +104,7 @@ strarray_set_copy(StringArray* self, size_t index, char const* value) {
 		WARN("Index out of range")
 		return NULL;
 	} else {
-		self->array[index] = strdup(value);
+		self->array[index] = util_strdup(value);
 	}
 	return self;
 }
@@ -132,7 +132,7 @@ strarray_push_copy(StringArray* self, char const* value) {
 		}
 	}
 
-	self->array[self->length++] = strdup(value);
+	self->array[self->length++] = util_strdup(value);
 
 	return self;
 }

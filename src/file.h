@@ -112,4 +112,23 @@ file_is_dir(char const* path);
 char*
 file_read_string(FILE* fin);
 
+/*****************
+* file Directory *
+*****************/
+
+typedef struct DirectoryNode DirectoryNode;
+typedef struct Directory Directory;
+
+void
+dirnode_delete(DirectoryNode* self);
+
+char const*
+dirnode_name(DirectoryNode const* self) ;
+
+void
+dir_close(Directory* self);
+
+Directory*
+dir_open(char const* path);
+
 #endif
