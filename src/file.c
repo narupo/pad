@@ -355,10 +355,12 @@ dir_read_node(Directory* self) {
 	errno = 0;
 	if (!(node->node = readdir(self->directory))) {
 		if (errno != 0) {
+			dirnode_delete(node);
 			WARN("Failed to readdir");
 			return NULL;
 		} else {
 			// Done to readdir
+			dirnode_delete(node);
 			return NULL;
 		}
 	}

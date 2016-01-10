@@ -20,79 +20,60 @@ deploy_usage(void) {
 
 int
 deploy_run(char const* dirname) {
-	//! Load config
+	// Load config
 	Config* config = config_instance();
 	if (!config) {
-		caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
-		goto fail_config;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
 	}
 
-	//! Get current path
+	// Get current path
 	char curpath[FILE_NPATH];
 	if (!file_solve_path(curpath, sizeof curpath, ".")) {
-		caperr(PROGNAME, CAPERR_ERROR, "Failed to solve path \".\"");
-		goto fail_solve_path;
+		return caperr(PROGNAME, CAPERR_ERROR, "Failed to solve path \".\"");
 	}
 
-	//! Make path
+	// Make path
 	char dirpath[FILE_NPATH];
 
 	if (!config_path_from_base(config, dirpath, sizeof dirpath, dirname)) {
-		caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from \"%s\"", dirname);
-		goto fail_make_path;
+		return caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from \"%s\"", dirname);
 	}
 
-	//! Check path
+	// Check path
 	if (!file_is_dir(dirpath)) {
-		caperr(PROGNAME, CAPERR_NOTFOUND, "deploy name \"%s\".\n", dirname);
-		goto fail_exists_dir;
+		return caperr(PROGNAME, CAPERR_NOTFOUND, "deploy name \"%s\".\n", dirname);
 	}
 
-	//! Read directory
-	DIR* dir = file_opendir(dirpath);
+	// Read directory
+	Directory* dir = dir_open(dirpath);
 	if (!dir) {
-		caperr(PROGNAME, CAPERR_OPENDIR, "\"%s\"", dirpath);
-		goto fail_opendir;
+		return caperr(PROGNAME, CAPERR_OPENDIR, "\"%s\"", dirpath);
 	}
 	
-	for (;;) {
-		//! Read dirent
-		errno = 0;
-		struct dirent* dirp = readdir(dir);
-		if (!dirp) {
-			if (errno != 0) {
-				caperr(PROGNAME, CAPERR_READDIR, "");
-				goto fail_readdir;
-			} else {
-				//! End of readdir
-				goto done;
-			}
-		}
+	for (DirectoryNode* dirnode; (dirnode = dir_read_node(dir)); dirnode_delete(dirnode)) {
+		char const* nodename = dirnode_name(dirnode);
 
-		char const* name = dirp->d_name;
-
-		//! Skip "." and ".."
-		if (strncmp(name, ".", 1) == 0 ||
-			strncmp(name, "..", 2) == 0) {
+		// Skip "." and ".."
+		if (strncmp(nodename, ".", 1) == 0 || strncmp(nodename, "..", 2) == 0) {
 			continue;
 		}
 
-		//! Deploy files to current directory
+		// Deploy files to current directory
 
-		//! Make deploy file path
+		// Make deploy file path
 		char srcpath[FILE_NPATH];
 		char deploypath[FILE_NPATH];
 
-		snprintf(srcpath, sizeof srcpath, "%s/%s", dirpath, name);
-		snprintf(deploypath, sizeof deploypath, "%s/%s", curpath, name);
+		snprintf(srcpath, sizeof srcpath, "%s/%s", dirpath, nodename);
+		snprintf(deploypath, sizeof deploypath, "%s/%s", curpath, nodename);
 
-		//! Check exists for override
+		// Check exists for override
 		if (file_is_exists(deploypath)) {
 			caperr(PROGNAME, CAPERR_ERROR, "File is exists \"%s\".\n", deploypath);
 			continue;
 		}
 
-		//! Copy start
+		// Copy start
 		FILE* src = file_open(srcpath, "rb");
 		FILE* dst = file_open(deploypath, "wb");
 
@@ -111,33 +92,14 @@ deploy_run(char const* dirname) {
 		file_close(dst);
 	}
 
-done:
-	file_closedir(dir);
+	// Done
+	dir_close(dir);
 	return 0;
-
-fail_readdir:
-	file_closedir(dir);
-	return 6;
-
-fail_opendir:
-	return 5;
-
-fail_exists_dir:
-	return 4;
-
-fail_make_path:
-	return 3;
-
-fail_solve_path:
-	return 2;
-
-fail_config:
-	return 1;
 }
 
 int
 deploy_main(int argc, char* argv[]) {
-	//! Parse options
+	// Parse options
 	for (;;) {
 		static struct option longopts[] = {
 			{"help", no_argument, 0, 'h'},

@@ -131,4 +131,7 @@ dir_close(Directory* self);
 Directory*
 dir_open(char const* path);
 
+DirectoryNode*
+dir_read_node(Directory* self);
+
 #endif
