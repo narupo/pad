@@ -205,7 +205,7 @@ static bool
 hashmap_set_copy(HashMap* self, char const* key, HashMap_const_type val) {
 	HashMapNode* setnode = hashmapnode_new_copy(key, val);
 	if (!setnode) {
-		perror("Construct HashMapNode");
+		WARN("Construct HashMapNode");
 		return false;
 	}
 
@@ -227,8 +227,21 @@ hashmap_set_copy(HashMap* self, char const* key, HashMap_const_type val) {
 * ConfigSetting *
 ****************/
 
+
+
+
+/***********************************
+* ConfigSetting constant variables *
+***********************************/
+
+#if defined(_WIN32) || defined(_WIN64)
+static char const* DEFAULT_CD_PATH = "C:/Windows/Temp";
+static char const* DEFAULT_EDITOR_PATH = "C:/Windows/notepad.exe";
+#else
 static char const* DEFAULT_CD_PATH = "/tmp";
 static char const* DEFAULT_EDITOR_PATH = "/usr/bin/vi";
+#endif
+
 static int const LINE_FORMAT_DELIM = ',';
 
 struct ConfigSetting {

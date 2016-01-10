@@ -65,7 +65,9 @@ caperrs_push(
 	}
 
 	if (caperrs.stack_top >= NSTACK) {
-		term_eputsf("caperr: Stack overflow");
+		caperr_display(stderr);
+		perror("caperr: Stack overflow");
+		exit(1);
 
 	} else {
 		CapErr* s = &caperrs.stack[caperrs.stack_top++];

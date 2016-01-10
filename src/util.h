@@ -29,11 +29,6 @@
  */
 #define NUMOF(array) (sizeof(array)/sizeof(array[0]))
 
-/**
- * Display error message with file infomation
- * 
- * @param[in] ... arguments
- */
 #ifdef DEBUG
 #  define WARN(...) { \
     _caperr(__FILE__, __func__, __LINE__, "WARN", CAPERR_DEBUG, __VA_ARGS__); \
@@ -41,6 +36,7 @@
 #  define DIE(...) { \
 	fprintf(stderr, "die: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
     fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\n"); \
 	fflush(stderr); \
 	exit(1); \
   }
@@ -48,6 +44,13 @@
 #  define WARN(...) {}
 #  define DIE(...) {}
 #endif
+
+#define CHECK(...) { \
+	fprintf(stderr, "check: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
+	fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\n"); \
+	fflush(stderr); \
+}
 
 /**
  * Exit program with display error message

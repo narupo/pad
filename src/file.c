@@ -12,18 +12,28 @@ file_solve_path(char* dst, size_t dstsize, char const* path) {
 
 	// Solve '~'
 	if (path[0] == '~') {
-		snprintf(tmp, FILE_NPATH, "%s%s", getenv("HOME"), path+1);
+		char const* homepath = NULL;
+#if defined(_WIN32) || defined(_WIN64)
+		homepath = getenv("USERPROFILE");
+#else
+		homepath = getenv("HOME");
+#endif
+		snprintf(tmp, FILE_NPATH, "%s/%s", homepath, path+1);
 	} else {
 		snprintf(tmp, FILE_NPATH, "%s", path);
 	}
 
-	// Solve real path
+	// Solve path
+#if defined(_WIN32) || defined(_WIN64)
+	char* fpart;
+
+	if (!GetFullPathName(tmp, dstsize, dst, &fpart)) {
+		WARN("Failed to solve path");
+		return NULL;
+	}
+#else
 	errno = 0;
 
-#if defined(_WIN32) || defined(_WIN64)
-	DIE("TODO GetFullPathName");
-	//GetFullPathName();
-#else
 	if (!realpath(tmp, dst)) {
 		if (errno == ENOENT) {
 			// Path is not exists
@@ -231,7 +241,16 @@ test_mkdir(int argc, char* argv[]) {
 }
 
 char*
-solve_path(char dst, size_t dstsize, char const* path) {
+solve_path(char* dst, size_t dstsize, char const* path) {
+#if defined(_WIN32) || defined(_WIN64)
+	char* fpart;
+
+	if (!GetFullPathName(path, dstsize, dst, &fpart)) {
+		WARN("Failed to solve path");
+		return NULL;
+	}
+#endif
+	return dst;
 }
 
 int
@@ -240,8 +259,8 @@ test_solve_path(int argc, char* argv[]) {
 		die("need path");
 	}
 
-	char spath[FILE_NPATH];
-	printf("[%s] -> \n[%s]\n", argv[1], solve_path(dst, sizeof dst, argv[1]));
+	char dst[FILE_NPATH];
+	printf("[%s] -> \n[%s]\n", argv[1], file_solve_path(dst, sizeof dst, argv[1]));
 
 	return 0;
 }
