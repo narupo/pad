@@ -177,44 +177,35 @@ command_walkdir(Command* self, char const* head, char const* tail) {
 	int ret = 0;
 
 	// Make open directory path
-	char openpath[FILE_NPATH];
+	char dirpath[FILE_NPATH];
 	if (!tail) {
-		snprintf(openpath, sizeof openpath, "%s", head);
+		snprintf(dirpath, sizeof dirpath, "%s", head);
 	} else {
-		snprintf(openpath, sizeof openpath, "%s/%s", head, tail);
+		snprintf(dirpath, sizeof dirpath, "%s/%s", head, tail);
 	}
 
 	// Open directory
-	DIR* dir = file_opendir(openpath);
+	Directory* dir = dir_open(dirpath);
 	if (!dir) {
-		return caperr(PROGNAME, CAPERR_OPENDIR, "\"%s\"", openpath);
+		return caperr(PROGNAME, CAPERR_OPENDIR, "\"%s\"", dirpath);
 	}
 
-	// Save file list
-	for (;;) {
-		// Read dirent
-		errno = 0;
-		struct dirent* dirp = readdir(dir);
-		if (!dirp) {
-			if (errno != 0) {
-				ret = caperr(PROGNAME, CAPERR_READDIR, "\"%s\"", openpath);
-				goto done;
-			} else {
-				goto done; 
-			}
-		}
+	// Save file list on walk file-system
+	for (DirectoryNode* dirnode; (dirnode = dir_read_node(dir)); dirnode_delete(dirnode)) {
+		// Read directory
+		char const* nodename = dirnode_name(dirnode);
 
 		// Skip "." and ".." file
-		if (strcmp(dirp->d_name, ".") == 0 || strcmp(dirp->d_name, "..") == 0) {
+		if (strcmp(nodename, ".") == 0 || strcmp(nodename, "..") == 0) {
 			continue;
 		}
 
 		// Update tail path
 		char newtail[FILE_NPATH];
 		if (!tail) {
-			snprintf(newtail, sizeof newtail, "%s", dirp->d_name);
+			snprintf(newtail, sizeof newtail, "%s", nodename);
 		} else {
-			snprintf(newtail, sizeof newtail, "%s/%s", tail, dirp->d_name);
+			snprintf(newtail, sizeof newtail, "%s/%s", tail, nodename);
 		}
 
 		// Save to names
@@ -233,12 +224,13 @@ command_walkdir(Command* self, char const* head, char const* tail) {
 
 		if (self->opt_is_recursive && file_is_dir(isdirpath)) {
 			// Yes, Recursive
-			command_walkdir(self, head, newtail);
+			dirnode_delete(dirnode);
+			ret = command_walkdir(self, head, newtail);
 		}
 	}
 
 done:
-	file_closedir(dir);
+	dir_close(dir);
 	return ret;
 }
 
