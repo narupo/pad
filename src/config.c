@@ -166,7 +166,7 @@ config_path_from_base(Config const* self, char* dst, size_t dstsize, char const*
 		return NULL;
 	}
 
-	// Get current directory path
+	// Get cap's current directory path
 	char const* cdpath = NULL;
 
 	if (self_lock()) {
@@ -181,7 +181,14 @@ config_path_from_base(Config const* self, char* dst, size_t dstsize, char const*
 	}
 
 	// Make path
-	snprintf(dst, dstsize, "%s/%s", cdpath, basename);
+	char tmp[dstsize];
+	snprintf(tmp, dstsize, "%s/%s", cdpath, basename);
+
+	// Solve path
+	if (!file_solve_path(dst, dstsize, tmp)) {
+		WARN("Failed to solve path \"%s\"", tmp);
+		return NULL;
+	}
 
 	return dst;
 }

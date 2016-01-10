@@ -224,7 +224,6 @@ command_walkdir(Command* self, char const* head, char const* tail) {
 
 		if (self->opt_is_recursive && file_is_dir(isdirpath)) {
 			// Yes, Recursive
-			dirnode_delete(dirnode);
 			ret = command_walkdir(self, head, newtail);
 		}
 	}
@@ -238,7 +237,11 @@ static FILE*
 command_open_input_file(Command const* self, char const* name) {
 	// Make path from basename
 	char fpath[FILE_NPATH];
-	snprintf(fpath, sizeof fpath, "%s/%s", config_path(self->config, "cd"), name);
+
+	if (!config_path_from_base(self->config, fpath, sizeof fpath, name)) {
+		caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from base \"%s\"", name);
+		return NULL;
+	}
 
 	// Open file by solve path
 	FILE* fin = file_open(fpath, "rb");
@@ -308,7 +311,6 @@ command_display(Command const* self) {
 		// Open file from name
 		FILE* fin = command_open_input_file(self, name);
 		if (!fin) {
-			caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", name);
 			continue;
 		}
 
@@ -330,6 +332,7 @@ command_display(Command const* self) {
 		fseek(fin, 0L, SEEK_SET); // Reset file pointer position
 		command_display_brief_from_stream(self, fin);
 		term_printf("\n");
+		term_flush();
 
 		file_close(fin);
 	}
@@ -357,7 +360,7 @@ command_run(Command* self) {
 	if (command_walkdir(self, head, tail) != 0) {
 		return caperr(PROGNAME, CAPERR_EXECUTE, "walkdir");
 	}
-
+	
 	// Display results of walk
 	if (command_display(self) != 0) {
 		return caperr(PROGNAME, CAPERR_EXECUTE, "display");
@@ -389,8 +392,7 @@ ls_main(int argc, char* argv[]) {
 	// Construct
 	Command* command = command_new(argc, argv);
 	if (!command) {
-		caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
-		return EXIT_FAILURE;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 	}
 
 	// Run
@@ -400,4 +402,11 @@ ls_main(int argc, char* argv[]) {
 	command_delete(command);
 	return res;
 }
+
+#if defined(TEST_LS)
+int
+main(int argc, char* argv[]) {
+    return ls_main(argc, argv);
+}
+#endif
 
