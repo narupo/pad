@@ -56,7 +56,7 @@ make_solve_argv(Config const* config, int argc, char** argv) {
 		return NULL;
 	}
 
-	solvargv[0] = strdup(argv[0]);
+	solvargv[0] = util_strdup(argv[0]);
 	if (!solvargv[0]) {
 		caperr(PROGNAME, CAPERR_CONSTRUCT, "");
 		free(solvargv);
@@ -68,7 +68,7 @@ make_solve_argv(Config const* config, int argc, char** argv) {
 		char const* arg = argv[i];
 
 		if (arg[0] == '-') {
-			solvargv[i] = strdup(arg);
+			solvargv[i] = util_strdup(arg);
 		} else {
 			solvargv[i] = config_make_path_from_base(config, arg);
 		}

@@ -120,7 +120,7 @@ command_parse_options(Command* self) {
 			strarray_set_copy(self->replace_list, cur-'0', optarg);
 			break;
 		case 's':
-			self->opt_separate_name = strdup(optarg);
+			self->opt_separate_name = util_strdup(optarg);
 			self->toggle_display = false;  // set to separate mode
 			break;
 		case 'i':

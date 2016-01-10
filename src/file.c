@@ -221,6 +221,156 @@ done:
 	return buffer_escape_delete(buf);
 }
 
+/*****************
+* file Directory *
+*****************/
+
+/*
+	// #include <sys/types.h>
+	// #include <dirent.h>
+	// #include <errno.h>
+	// #include <string.h>
+
+	// Open directory
+	char const* path = "/tmp";
+	DIR* dir = opendir(path);
+	if (!dir) {
+		//("Failed to opendir")
+	}
+
+	// Read dirent
+	for (;;) {
+		errno = 0;
+		struct dirent* dirp = readdir(dir);
+		if (!dirp) {
+			if (errno != 0) {
+				//("Failed to readdir");
+			} else {
+				// Done to readdir
+				break;
+			}
+		}
+
+		// Skip "." and ".."
+		if (strcmp(dirp->d_name, ".") == 0 || strcmp(dirp->d_name, "..") == 0) {
+			continue;
+		}
+
+		// Do something
+	}
+
+	if (closedir(dir) != 0) {
+		//("Failed to closedir")
+	}
+*/
+
+struct DirectoryNode {
+#if defined(_WIN32) || defined(_WIN64)
+
+#else
+	struct dirent* node;
+#endif	
+};
+
+void
+dirnode_delete(DirectoryNode* self) {
+	if (self) {
+		free(self);
+	}
+}
+
+DirectoryNode*
+dirnode_new(void) {
+	DirectoryNode* self = (DirectoryNode*) calloc(1, sizeof(DirectoryNode));
+	if (!self) {
+		WARN("Failed to construct DirectoryNode");
+		return NULL;
+	}
+	return self;
+}
+
+char const*
+dirnode_name(DirectoryNode const* self) {
+#if defined(_WIN32) || defined(_WIN64)
+	DIE("TODO");
+#else
+	return self->node->d_name;
+#endif
+}
+
+struct Directory {
+#if defined(_WIN32) || defined(_WIN64)
+
+#else
+	DIR* directory;
+#endif
+};
+
+void
+dir_close(Directory* self) {
+	if (self) {
+#if defined(_WIN32) || defined(_WIN64)
+		DIE("TODO");
+#else
+		if (closedir(self->directory) != 0) {
+			WARN("Failed to close directory");
+		}
+#endif	
+		free(self);
+	}
+}
+
+Directory*
+dir_open(char const* path) {
+	Directory* self = (Directory*) calloc(1, sizeof(Directory));
+	if (!self) {
+		WARN("Failed to construct Directory");
+		return NULL;
+	}
+
+#if defined(_WIN32) || defined(_WIN64)
+		DIE("TODO");
+#else
+		if (!(self->directory = opendir(path))) {
+			WARN("Failed to open directory \"%s\"", path);
+			free(self);
+			return NULL;
+		}
+#endif
+
+	return self;
+}
+
+DirectoryNode*
+dir_read_node(Directory* self) {
+	DirectoryNode* node = dirnode_new();
+	if (!node) {
+		WARN("Failed to construct DirectoryNode");
+		return NULL;
+	}
+
+#if defined(_WIN32) || defined(_WIN64)
+	DIE("TODO");
+#else
+	errno = 0;
+	if (!(node->node = readdir(self->directory))) {
+		if (errno != 0) {
+			WARN("Failed to readdir");
+			return NULL;
+		} else {
+			// Done to readdir
+			return NULL;
+		}
+	}
+#endif
+
+	return node;
+}
+
+/************
+* file test *
+************/
+
 #if defined(TEST_FILE)
 int
 test_mkdir(int argc, char* argv[]) {
@@ -266,8 +416,36 @@ test_solve_path(int argc, char* argv[]) {
 }
 
 int
+test_directory(int argc, char* argv[]) {
+	char const* dirpath = "/tmp";
+	
+	if (argc >= 2) {
+		dirpath = argv[1];
+	}
+
+	Directory* dir = dir_open(dirpath);
+	if (!dir) {
+		WARN("Failed to open dir \"%s\"", dirpath);
+		return 1;
+	}
+
+	for (DirectoryNode* node; (node = dir_read_node(dir)); ) {
+		printf("name[%s]\n", dirnode_name(node));
+		dirnode_delete(node);
+	} 
+
+	dir_close(dir);
+	return 0;
+}
+
+int
 main(int argc, char* argv[]) {
-	return test_solve_path(argc, argv);
+	// return test_solve_path(argc, argv);
+	int ret = test_directory(argc, argv);
+	if (ret != 0) {
+		caperr_display(stderr);
+	}
+
+	return ret;
 }
 #endif
-

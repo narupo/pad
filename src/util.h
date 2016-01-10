@@ -1,6 +1,9 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#undef _BSD_SOURCE
+#define _BSD_SOURCE 1 /* popen in stdio.h */
+
 #include "term.h"
 #include "caperr.h"
 
@@ -70,7 +73,6 @@ die(char const* fmt, ...);
 void
 warn(char const* fmt, ...);
 
-#if !defined(_GNU_SOURCE)
 /**
  * Copy string
  * 
@@ -80,8 +82,7 @@ warn(char const* fmt, ...);
  * @return failed to pointer to NULL
  */
 char*
-strdup(char const* src);
-#endif
+util_strdup(char const* src);
 
 /**
  * Append string to destination
