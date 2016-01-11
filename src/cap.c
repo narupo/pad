@@ -120,6 +120,7 @@ stack_trace(void) {
 
 int
 main(int argc, char* argv[]) {
+	// Result value for return
 	int ret = 0;
 	
 	// Check arguments
@@ -150,5 +151,7 @@ main(int argc, char* argv[]) {
 	}
 
 	// Done
+	term_flush();
+	term_eflush();
 	return ret;
 }
