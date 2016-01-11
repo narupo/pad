@@ -96,7 +96,6 @@ run_command(Command* self, Config const* config) {
 	// Create command line
 	char cmdline[512];
 	snprintf(cmdline, sizeof cmdline, "%s ", editpath);
-	term_eputsf("cmdline[%s]", cmdline); // Debug
 
 	for (int i = 0; i < argc; ++i) {
 		strcat(cmdline, argv[i]);

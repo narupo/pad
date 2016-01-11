@@ -110,7 +110,11 @@ done:
 
 static void
 stack_trace(void) {
+#ifdef DEBUG
 	caperr_display(stderr);
+#else
+	caperr_display_first(stderr);
+#endif
 	term_eprintf("\n");
 }
 
