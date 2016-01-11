@@ -23,7 +23,7 @@ buffer: buffer.c
 	$(CC) -DTEST_BUFFER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 file: file.c buffer.c util.c caperr.c term.c
-	$(CC) -DTEST_FILE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -DDEBUG -DTEST_FILE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 csvline: csvline.c buffer.c
 	$(CC) -DTEST_CSVLINE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
