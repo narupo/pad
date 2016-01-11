@@ -308,9 +308,13 @@ command_display(Command const* self) {
 		char const* name = strarray_get_const(self->names, i);
 		int namelen = strlen(name);
 
+		// Display name
+		term_printf("%s", name);
+
 		// Open file from name
 		FILE* fin = command_open_input_file(self, name);
 		if (!fin) {
+			term_printf("\n");
 			continue;
 		}
 
@@ -320,9 +324,6 @@ command_display(Command const* self) {
 			continue; // Not found tags in file so skip display
 		}
 
-		// Display name
-		term_printf("%s", name);
-		
 		// Padding
 		for (int i = 0; i < self->max_namelen+1 - namelen; ++i) {
 			term_printf(" ");
