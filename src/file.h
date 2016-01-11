@@ -53,7 +53,7 @@ DIR*
 file_opendir(char const* path);
 
 /**
- * @brief Wrapper of realpath (Uinux's API)
+ * @brief Wrapper of realpath (Unix's API)
  *
  * @param dst     pointer to buffer of destination
  * @param dstsize number of buffer
