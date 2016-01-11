@@ -8,6 +8,7 @@
 #include "buffer.h"
 #include "caperr.h"
 #include "term.h"
+#include "environ.h"
 
 #include <errno.h>
 #include <limits.h>
@@ -52,6 +53,29 @@ DIR*
 file_opendir(char const* path);
 
 /**
+ * @brief Wrapper of realpath (Uinux's API)
+ *
+ * @param dst     pointer to buffer of destination
+ * @param dstsize number of buffer
+ * @param src     string of target path
+ *
+ * @return success to pointer to destination
+ * @return failed to NULL
+*/
+char* 
+file_realpath(char* dst, size_t dstsize, char const* src);
+
+/**
+ * @brief 
+ *
+ * @param fin 
+ *
+ * @return 
+*/
+char* 
+file_read_string(FILE* fin);
+
+/**
  * Check exists file
  *
  * @param[in] path check file path
@@ -67,6 +91,14 @@ file_is_exists(char const* path);
 int
 file_mkdir(char const* path, mode_t mode);
 
+/**
+ * Create empty file on file-system
+ *
+ * @param[in] path path of file for create
+ *
+ * @return success to true
+ * @return failed to false
+ */
 bool
 file_create(char const* path);
 
@@ -112,26 +144,65 @@ file_is_dir(char const* path);
 char*
 file_read_string(FILE* fin);
 
+/*********************
+* file DirectoryNode *
+*********************/
+
+typedef struct DirectoryNode DirectoryNode;
+
+/**
+ * @brief Delete node of dynamic allocate memory
+ *
+ * @param self 
+*/
+void 
+dirnode_delete(DirectoryNode* self);
+
+/**
+ * @brief Get name of node
+ *
+ * @param self 
+ *
+ * @return success to pointer to name
+ * @return failed to NULL
+*/
+char const* 
+dirnode_name(DirectoryNode const* self);
+
 /*****************
 * file Directory *
 *****************/
 
-typedef struct DirectoryNode DirectoryNode;
 typedef struct Directory Directory;
 
-void
-dirnode_delete(DirectoryNode* self);
-
-char const*
-dirnode_name(DirectoryNode const* self) ;
-
-void
+/**
+ * @brief Close directory
+ *
+ * @param self 
+*/
+void 
 dir_close(Directory* self);
 
-Directory*
+/**
+ * @brief Open directory
+ *
+ * @param path path of directory
+ *
+ * @return success to pointer to Directory
+ * @return failed to NULL
+*/
+Directory* 
 dir_open(char const* path);
 
-DirectoryNode*
+/**
+ * @brief Read next node in directory
+ *
+ * @param self 
+ *
+ * @return success to pointer to DirectoryNode
+ * @return failed or end of read to NULL
+*/
+DirectoryNode* 
 dir_read_node(Directory* self);
 
 #endif

@@ -19,6 +19,7 @@
 /**
  * Get pointer to instance of Config
  * Using singleton-pattern
+ * Multi thread safe
  * 
  * @return pointer to Config object
  */
@@ -68,10 +69,10 @@ char*
 config_make_path_from_base(Config const* self, char const* basename);
 
 /**
- * Get path by key name
+ * Get path by key
  *
  * @param[in] self
- * @param[in] key key name (example "cd" or "editor")
+ * @param[in] key key (example "cd" or "editor" etc...)
  *
  * @return success to pointer to path
  * @return failed to NULL
@@ -84,10 +85,10 @@ config_path(Config const* self, char const* key);
 *********/
 
 /**
- * Set path by key name
+ * Set path by key
  *
  * @param[in] self
- * @param[in] key key name
+ * @param[in] key key
  * @param[in] path set path
  *
  * @return success to true
