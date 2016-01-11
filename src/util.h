@@ -78,7 +78,7 @@ warn(char const* fmt, ...);
  * 
  * @param[in] src source string
  *
- * @return success to pointer to copy string
+ * @return success to pointer to copy string of dynamic allocate memory
  * @return failed to pointer to NULL
  */
 char*
@@ -134,15 +134,36 @@ strcmphead(char const* src, char const* target);
 char*
 strrem(char* dst, size_t dstsize, char const* src, int rem);
 
+/**
+ * @brief      
+ *
+ * @param      dst      
+ * @param[in]  dstsize  
+ * @param      src      
+ * @param[in]  rem      
+ *
+ * @return     
+ */
 char*
 strrstrip(char* dst, size_t dstsize, char const* src, int rem);
 
-char*
-strrset(char* str, size_t strsize, int rem);
-
+/**
+ *
+ *
+ * @param[]
+ *
+ * @return
+ */
 long
 strtolong(char const* src);
 
+/**
+ *
+ *
+ * @param[]
+ *
+ * @return
+ */
 void
 free_argv(int argc, char** argv);
 

@@ -129,17 +129,6 @@ strrstrip(char* dst, size_t dstsize, char const* src, int rem) {
 	return dst;
 }
 
-char*
-strrset(char* str, size_t strsize, int rem) {
-	for (int i = strlen(str)-1; i >= 0; --i) {
-		if (str[i] != rem) {
-			break;
-		}
-		str[i] = '\0';
-	}
-	return str;
-}
-
 long
 strtolong(char const* src) {
 	char* endptr;

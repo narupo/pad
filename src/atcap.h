@@ -45,7 +45,7 @@ capparser_new(void);
  * Parse line and create new CapRow
  *
  * @param[in] self
- * @param[in] line source line string of parse
+ * @param[in] line source string line of parse
  *
  * @return success to pointer to CapRow of dynamic allocate memory
  * @return failed to pointer to NULL
@@ -55,6 +55,14 @@ capparser_parse_line(CapParser* self, char const* line);
 
 /**
  * Make CapRow with parse and convert from line
+ * A wrapper of capparser_parse_line()
+ *
+ * @param[in]  self    
+ * @param[in]  line    source string line of parse
+ * @param[in]  braces  replace braces list for @cap{}
+ *
+ * @return success to pointer to CapRow of dynamic allocate memory
+ * @return failed to pointer to NULL
  */
 CapRow*
 capparser_make_caprow(CapParser* self,char const* line, StringArray* braces);

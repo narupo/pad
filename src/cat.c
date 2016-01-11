@@ -288,8 +288,7 @@ command_run(Command* self) {
 	// Load config
 	Config* config = config_instance();
 	if (!config) {
-		caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
-		goto fail_config;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
 	}
 
 	// Need stdin?
@@ -324,9 +323,6 @@ command_run(Command* self) {
 done:
 	// Done
 	return 0;
-
-fail_config:
-	return 1;
 }
 
 /*******************

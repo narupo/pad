@@ -1,6 +1,33 @@
 #include "file.h"
 
 char*
+file_realpath(char* dst, size_t dstsize, char const* src) {
+#if defined(_WIN32) || defined(_WIN64)
+	char* fpart;
+
+	if (!GetFullPathName(src, dstsize, dst, &fpart)) {
+		WARN("Failed to solve path");
+		return NULL;
+	}
+
+#else
+	errno = 0;
+
+	if (!realpath(src, dst)) {
+		if (errno == ENOENT) {
+			// Path is not exists
+			snprintf(dst, dstsize, "%s", src);
+		} else {
+			WARN("Failed to realpath \"%s\"", src);
+			return NULL;
+		}
+	}
+
+#endif
+	return dst;
+}
+
+char*
 file_solve_path(char* dst, size_t dstsize, char const* path) {
 	char tmp[FILE_NPATH];
 
@@ -12,40 +39,15 @@ file_solve_path(char* dst, size_t dstsize, char const* path) {
 
 	// Solve '~'
 	if (path[0] == '~') {
-		char const* homepath = NULL;
-
-#if defined(_WIN32) || defined(_WIN64)
-		homepath = getenv("USERPROFILE");
-#else
-		homepath = getenv("HOME");
-#endif
-
-		snprintf(tmp, FILE_NPATH, "%s/%s", homepath, path+1);
+		snprintf(tmp, FILE_NPATH, "%s/%s", environ_get("HOME"), path+1);
 	} else {
 		snprintf(tmp, FILE_NPATH, "%s", path);
 	}
 
-	// Solve path
-#if defined(_WIN32) || defined(_WIN64)
-	char* fpart;
-
-	if (!GetFullPathName(tmp, dstsize, dst, &fpart)) {
-		WARN("Failed to solve path");
+	if (!file_realpath(dst, dstsize, tmp)) {
+		WARN("Failed to realpath \"%s\"", tmp);
 		return NULL;
 	}
-#else
-	errno = 0;
-
-	if (!realpath(tmp, dst)) {
-		if (errno == ENOENT) {
-			// Path is not exists
-			snprintf(dst, dstsize, "%s", tmp);
-		} else {
-			WARN("Failed to realpath \"%s\"", tmp);
-			return NULL;
-		}
-	}
-#endif
 
 	return dst;
 }
@@ -223,9 +225,9 @@ done:
 	return buffer_escape_delete(buf);
 }
 
-/*****************
-* file Directory *
-*****************/
+/*********************
+* file DirectoryNode *
+*********************/
 
 struct DirectoryNode {
 #if defined(_WIN32) || defined(_WIN64)
@@ -234,6 +236,10 @@ struct DirectoryNode {
 	struct dirent* node;
 #endif	
 };
+
+/*******************************
+* DirectoryNode delete and new *
+*******************************/
 
 void
 dirnode_delete(DirectoryNode* self) {
@@ -252,6 +258,10 @@ dirnode_new(void) {
 	return self;
 }
 
+/***********************
+* DirectoryNode getter *
+***********************/
+
 char const*
 dirnode_name(DirectoryNode const* self) {
 #if defined(_WIN32) || defined(_WIN64)
@@ -261,24 +271,32 @@ dirnode_name(DirectoryNode const* self) {
 #endif
 }
 
+/*****************
+* file Directory *
+*****************/
+
 struct Directory {
 #if defined(_WIN32) || defined(_WIN64)
-	HANDLE directory;
+	HANDLE handle;
 	char dirpath[FILE_NPATH];
 #else
 	DIR* directory;
 #endif
 };
 
+/***************************
+* Directory close and open *
+***************************/
+
 void
 dir_close(Directory* self) {
 	if (self) {
 #if defined(_WIN32) || defined(_WIN64)
-		if (self->directory) {
-			if (!FindClose(self->directory)) {
+		if (self->handle) {
+			if (!FindClose(self->handle)) {
 				WARN("Failed to close directory");
 			}
-			self->directory = NULL;
+			self->handle = NULL;
 		}
 
 #else
@@ -300,7 +318,7 @@ dir_open(char const* path) {
 	}
 
 #if defined(_WIN32) || defined(_WIN64)
-	self->directory = NULL;
+	self->handle = NULL;
 	snprintf(self->dirpath, sizeof(self->dirpath), "%s/*", path);
 
 #else
@@ -314,6 +332,10 @@ dir_open(char const* path) {
 	return self;
 }
 
+/*******************
+* Directory getter *
+*******************/
+
 DirectoryNode*
 dir_read_node(Directory* self) {
 	DirectoryNode* node = dirnode_new();
@@ -323,8 +345,8 @@ dir_read_node(Directory* self) {
 	}
 
 #if defined(_WIN32) || defined(_WIN64)
-	if (!self->directory) {
-		if ((self->directory = FindFirstFile(self->dirpath, &node->finddata)) == INVALID_HANDLE_VALUE) {
+	if (!self->handle) {
+		if ((self->handle = FindFirstFile(self->dirpath, &node->finddata)) == INVALID_HANDLE_VALUE) {
 			WARN("Failed to open directory \"%s\"", self->dirpath);
 			dirnode_delete(node);
 			return NULL;
@@ -332,7 +354,7 @@ dir_read_node(Directory* self) {
 		}
 
 	} else {
-		if (!FindNextFile(self->directory, &node->finddata)) {
+		if (!FindNextFile(self->handle, &node->finddata)) {
 			dirnode_delete(node);
 			return NULL; // Done to find
 		}
@@ -362,7 +384,7 @@ dir_read_node(Directory* self) {
 ************/
 
 #if defined(TEST_FILE)
-int
+static int
 test_mkdir(int argc, char* argv[]) {
 	if (argc < 2) {
 		die("need path");
@@ -380,7 +402,7 @@ test_mkdir(int argc, char* argv[]) {
 	return 0;
 }
 
-char*
+static char*
 solve_path(char* dst, size_t dstsize, char const* path) {
 #if defined(_WIN32) || defined(_WIN64)
 	char* fpart;
@@ -393,7 +415,7 @@ solve_path(char* dst, size_t dstsize, char const* path) {
 	return dst;
 }
 
-int
+static int
 test_solve_path(int argc, char* argv[]) {
 	if (argc < 2) {
 		die("need path");
@@ -405,7 +427,7 @@ test_solve_path(int argc, char* argv[]) {
 	return 0;
 }
 
-int
+static int
 test_directory(int argc, char* argv[]) {
 #if defined(_WIN32) || defined(_WIN64)
 	char const* dirpath = "C:/Windows/Temp";
@@ -463,4 +485,3 @@ main(int argc, char* argv[]) {
 	return ret;
 }
 #endif
-
