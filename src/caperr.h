@@ -37,6 +37,7 @@ enum {
 	CAPERR_OPEN,
 	CAPERR_OPENDIR,
 
+	CAPERR_SOLVE,
 
 	CAPERR_SYNTAX,
 
@@ -57,6 +58,9 @@ _caperr(
 	int number,
 	char const* fmt,
 	...);
+
+int
+caperr_length(void);
 
 void
 caperr_display(FILE* stream);

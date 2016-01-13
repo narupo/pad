@@ -283,6 +283,10 @@ dir_open(char const* path) {
 	}
 
 #if defined(_WIN32) || defined(_WIN64)
+	if (!file_is_exists(path)) {
+		WARN("Not found path \"%s\"", path);
+		return NULL;
+	}
 	self->handle = NULL;
 	snprintf(self->dirpath, sizeof(self->dirpath), "%s/*", path);
 

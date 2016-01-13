@@ -20,11 +20,14 @@ editor_usage(void) {
 
 static int
 editor_run(int argc, char* argv[]) {
+	// Result value for return
+	int ret = 0;
+
 	// Load config
 	Config* config = config_instance();
 	if (!config) {
-		caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
-		goto fail_config;
+		ret = caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
+		goto done;
 	}
 
 	// If has not arguments then
@@ -34,8 +37,8 @@ editor_run(int argc, char* argv[]) {
 		char const* key = "editor";
 		char const* editpath = config_path(config, key);
 		if (!editpath) {
-			caperr(PROGNAME, CAPERR_NOTFOUND, "key \"%s\"", key);
-			goto fail_config_path;
+			ret = caperr(PROGNAME, CAPERR_NOTFOUND, "key \"%s\"", key);
+			goto done;
 		}
 
 		// Display path
@@ -47,29 +50,17 @@ editor_run(int argc, char* argv[]) {
 	char const* editpath = argv[1];
 
 	if (!config_set_path(config, "editor", editpath)) {
-		caperr(PROGNAME, CAPERR_ERROR, "Failed to set path \"%s\"", editpath);
-		goto fail_set_path;
+		ret = caperr(PROGNAME, CAPERR_ERROR, "Failed to set path \"%s\"", editpath);
+		goto done;
 	}
 	
 	if (!config_save(config)) {
-		caperr(PROGNAME, CAPERR_WRITE, "config");
-		goto fail_save;
+		ret = caperr(PROGNAME, CAPERR_WRITE, "config");
+		goto done;
 	}
 
 done:
-	return 0;
-
-fail_save:
-	return 4;
-
-fail_set_path:
-	return 3;
-
-fail_config_path:
-	return 2;
-
-fail_config:
-	return 1;
+	return ret;
 }
 
 int
@@ -90,6 +81,7 @@ editor_main(int argc, char* argv[]) {
 		switch (cur) {
 		case 'h': {
 			editor_usage();
+			return 0;
 		} break;
 		case '?':
 		default: {

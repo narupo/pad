@@ -279,16 +279,20 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 
 static int
 command_run(Command* self) {
+	// Result value for return
+	int ret = 0;
+
 	// Is usage ?
 	if (self->opt_is_usage) {
 		cat_usage();
-		return 0;
+		return ret;
 	}
 
 	// Load config
 	Config* config = config_instance();
 	if (!config) {
-		return caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
+		ret = caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
+		goto done;
 	}
 
 	// Need stdin?
@@ -302,14 +306,14 @@ command_run(Command* self) {
 		// Solve path
 		char fname[FILE_NPATH];
 		if (!config_path_from_base(config, fname, sizeof fname, self->argv[i])) {
-			caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from base \"%s\"", self->argv[i]);
+			ret = caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from base \"%s\"", self->argv[i]);
 			continue;
 		}
 
 		// Open file
 		FILE* fin = file_open(fname, "rb");
 		if (!fin) {
-			caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", fname);
+			ret = caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", fname);
 			continue;
 		}
 
@@ -322,7 +326,7 @@ command_run(Command* self) {
 
 done:
 	// Done
-	return 0;
+	return ret;
 }
 
 /*******************
@@ -380,8 +384,7 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	// Construct
 	Command* self = command_new(argc, argv);
 	if (!self) {
-		caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
-		return EXIT_FAILURE;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 	}
 
 	// Ready

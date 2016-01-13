@@ -150,6 +150,7 @@ caperr_to_string(int number) {
 		case CAPERR_READDIR: return "Failed to read directory"; break;
 		case CAPERR_WRITE: return "Failed to write"; break;
 		case CAPERR_EXECUTE: return "Failed to execute"; break;
+		case CAPERR_SOLVE: return "Failed to solve"; break;
 	}
 }
 
@@ -189,6 +190,23 @@ caperr_display_record(FILE* stream, CapErr const* e) {
 	
 	// Done
 	fprintf(stream, "\n");
+}
+
+int
+caperr_length(void) {
+	int len;
+
+	if (!caperrs_lock()) {
+		return -1;
+	}
+
+	len = caperrs.stack_top;
+
+	if (!caperrs_unlock()) {
+		return -2;
+	}
+
+	return len;
 }
 
 void

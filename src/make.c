@@ -64,8 +64,8 @@ command_sort_capfile(Command const* self, CapFile* dstfile);
 static int
 command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout); 
 
-static CapFile*
-command_make_capfile(Command const* self);
+static int 
+command_make_capfile(Command const* self, CapFile** dstfile);
 
 static int
 command_run(Command* self); 
@@ -379,22 +379,30 @@ command_open_input_file(Command const* self, char const* capname) {
 	return fin;
 }
 
-static CapFile*
-command_make_capfile(Command const* self) {
-	CapFile* capfile = NULL;
+static int 
+command_make_capfile(Command const* self, CapFile** dstfile) {
+	// Result value for return
+	int ret = 0;
+
+	// Cleanup
+	capfile_delete(*dstfile);
+	*dstfile = NULL;
 
 	if (self->argc == self->optind) {
 		// Make CapFile from stream
-		capfile = command_make_capfile_from_stream(self, stdin);
-		if (!capfile) {
-			caperr(PROGNAME, CAPERR_ERROR, "Failed to make CapFile");
-			return NULL;
+		*dstfile = command_make_capfile_from_stream(self, stdin);
+		if (!*dstfile) {
+			return caperr(PROGNAME, CAPERR_CONSTRUCT, "CapFile");
 		}
 
 	} else {
 		// Ready destination file
-		capfile = capfile_new();
-		CapRowList* caprows = capfile_rows(capfile);
+		*dstfile = capfile_new();
+		if (!*dstfile) {
+			return caperr(PROGNAME, CAPERR_CONSTRUCT, "CapFile");
+		}
+
+		CapRowList* caprows = capfile_rows(*dstfile);
 
 		// Append all CapFile
 		for (int i = self->optind; i < self->argc; ++i) {
@@ -403,17 +411,16 @@ command_make_capfile(Command const* self) {
 			// Open stream
 			FILE* fin = command_open_input_file(self, capname);
 			if (!fin) {
-				caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", capname);
+				ret = caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", capname);
 				continue;
 			}
 
 			// Make temporary CapFile from stream for append rows to my CapFile
 			CapFile* ftmp = command_make_capfile_from_stream(self, fin);
-			if (!capfile) {
-				caperr(PROGNAME, CAPERR_ERROR, "Failed to make CapFile");
+			if (!*dstfile) {
 				file_close(fin);
-				capfile_delete(capfile);
-				return NULL;
+				capfile_delete(*dstfile);
+				return caperr(PROGNAME, CAPERR_ERROR, "Failed to make CapFile");
 			}
 			file_close(fin);  // Thanks
 
@@ -425,31 +432,42 @@ command_make_capfile(Command const* self) {
 	}
 
 	// Done
-	return capfile;
+	return ret;
 }
 
 static int
 command_run(Command* self) {
+	// Result value for return
+	int ret = 0;
+
 	// Is usage ?
 	if (self->is_usage) {
 		make_usage();
-		return 0;
+		return ret;
 	}
 
 	// Ready
-	CapFile* capfile = command_make_capfile(self);
-	if (!capfile) {
-		caperr(PROGNAME, CAPERR_ERROR, "Failed to make CapFile");
-		return 1;
+	CapFile* capfile = NULL;
+
+	ret = command_make_capfile(self, &capfile);
+	if (ret != 0) {
+		goto done;
 	}
 
 	// Sort and display
-	command_sort_capfile(self, capfile);
-	command_display_capfile(self, capfile, stdout);
+	ret = command_sort_capfile(self, capfile);
+	if (ret != 0) {
+		goto done;
+	}
 
-	// Done
+	ret = command_display_capfile(self, capfile, stdout);
+	if (ret != 0) {
+		goto done;
+	}
+
+done:
 	capfile_delete(capfile);
-	return 0;
+	return ret;
 }
 
 /*******************
@@ -492,16 +510,15 @@ make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	// Construct
 	Command* self = command_new(config, argc, argv);
 	if (!self) {
-		caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
-		return 1;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 	}
 
 	// Make append capfile
-	CapFile* appfile = command_make_capfile(self);
-	if (!appfile) {
-		caperr(PROGNAME, CAPERR_ERROR, "Failed to make CapFile");
+	CapFile* appfile = NULL;
+	
+	if (command_make_capfile(self, &appfile) != 0) {
 		command_delete(self);
-		return 2;
+		return caperr(PROGNAME, CAPERR_ERROR, "Failed to make CapFile");
 	}
 
 	// Link appfile to dstfile
@@ -521,13 +538,13 @@ make_main(int argc, char* argv[]) {
 	// Load config
 	Config* config = config_instance();
 	if (!config) {
-		return 1;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
 	}
 
 	// Construct make command
 	Command* command = command_new(config, argc, argv);
 	if (!command) {
-		return 2;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 	}
 
 	// Run
