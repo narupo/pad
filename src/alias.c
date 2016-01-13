@@ -165,6 +165,8 @@ command_path_from_cd(char* dst, size_t dstsize) {
 	char const* cd = config_path(config, "cd");
 	char const* root = config_root(config);
 
+	strrem(dst, dstsize, cd, ':');
+	strrem(dst, dstsize, cd, '\\');
 	strrem(dst, dstsize, cd, '/');
 	snprintf(dst, dstsize, "%s/alias-%d", root, hashi(dst, 701));
 
