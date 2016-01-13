@@ -110,6 +110,13 @@ hashi(char const* src, int nhash) {
 	return n % nhash;
 }
 
+/**
+ * Write string without nul terminator by size of write to stream
+ *
+ * @param[out] stream
+ * @param[in] str string
+ * @param[in] colsize size of write
+ */
 static void
 putcol(FILE* stream, char const* str, int colsize) {
 	char buf[colsize];
@@ -120,6 +127,38 @@ putcol(FILE* stream, char const* str, int colsize) {
 	fwrite(buf, sizeof(buf[0]), colsize, stream);
 }
 
+/**
+ * Read string with nul terminator by size of read from stream
+ *
+ * @param[in] fin
+ * @param[out] pointer to destination buffer
+ * @param[in] colsize size of read
+ *
+ * @return success to greater than 0
+ * @return failed to less than or equal to 0
+ */
+static int
+getcol(FILE* fin, char* dst, size_t colsize) {
+	int len = fread(dst, sizeof(dst[0]), colsize, fin);
+	if (len <= 0) {
+		return len;
+	}
+	if (ferror(fin)) {
+		return -1;
+	}
+	dst[len] = 0;
+	return len;
+}
+
+/**
+ * Create path of alias file by hash value of current directory and path of cap's root
+ *
+ * @param[out] dst pointer to destination buffer for created path
+ * @param[int] dstsize number of size  of destination buffer
+ *
+ * @return success to pointer to destination buffer
+ * @return failed to pointer to NULL
+ */
 static char*
 command_path_from_cd(char* dst, size_t dstsize) {
 	Config* config = config_instance();
@@ -132,6 +171,12 @@ command_path_from_cd(char* dst, size_t dstsize) {
 	return dst;
 }
 
+/**
+ * Open stream by path of alias file
+ *
+ * @return success to pointer to FILE
+ * @return failed to pointer to NULL
+ */
 static FILE*
 command_open_stream(void) {
 	char path[FILE_NPATH];
@@ -150,6 +195,15 @@ command_open_stream(void) {
 	return stream;
 }
 
+/**
+ * Push alias's key and value to stream of alias file
+ *
+ * @param[in] pushkey push key
+ * @param[in] pushval push value
+ *
+ * @return success to number of 0
+ * @return failed to number of caperr
+ */
 static int
 command_push_alias_to_file(char const* pushkey, char const* pushval) {
 	// Random access file
@@ -211,19 +265,14 @@ done:
 	return 0;
 }
 
-static int
-getcol(FILE* fin, char* dst, size_t colsize) {
-	int len = fread(dst, sizeof(dst[0]), colsize, fin);
-	if (len <= 0) {
-		return len;
-	}
-	if (ferror(fin)) {
-		return -1;
-	}
-	dst[len] = 0;
-	return len;
-}
-
+/**
+ * Display alias list from alias file
+ *
+ * @param[in] self
+ *
+ * @return success to number of 0
+ * @return failed to number of caperr
+ */
 static int
 command_disp_alias_list(Command* self) {
 	// Open stream
@@ -269,11 +318,18 @@ command_disp_alias_list(Command* self) {
 	return 0;
 }
 
+/**
+ * Delete record from alias file
+ *
+ * @param[in] self
+ *
+ * @return success to number of 0
+ * @return failed to number of caperr
+ */
 static int
 command_delete_record(Command* self) {
 	if (self->argc <= self->optind) {
-		caperr(PROGNAME, CAPERR_ERROR, "Need delete alias name");
-		return 0;
+		return caperr(PROGNAME, CAPERR_ERROR, "Need delete alias name");
 	}
 
 	// Open stream
@@ -315,6 +371,14 @@ command_delete_record(Command* self) {
 	return 0;
 }
 
+/**
+ * Display alias value from alias file
+ *
+ * @param[in] self
+ *
+ * @return success to number of 0
+ * @return failed to number of caperr
+ */
 static int
 command_disp_alias_value(Command* self) {
 	FILE* stream = command_open_stream();
@@ -383,6 +447,8 @@ command_run(Command* self) {
 	char const* pushval = self->argv[self->optind + 1];
 	return command_push_alias_to_file(pushkey, pushval);
 }
+
+
 
 CsvLine*
 alias_to_csvline(char const* findkey) {

@@ -78,11 +78,19 @@ command_run_script(Command* self, Config const* config) {
 	}
 
 	// Read from child process
-	for (int ch; (ch = fgetc(pin)) != EOF; ) {
-		term_printf("%c", ch);
+	Buffer* linebuf = buffer_new();
+	if (!linebuf) {
+		pclose(pin);
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "line buffer");
+	}
+
+	for (; buffer_getline(linebuf, pin); ) {
+		char const* line = buffer_get_const(linebuf);
+		term_printf("%s", line);
 	}
 
 	// Done
+	buffer_delete(linebuf);
 	pclose(pin);
 	return 0;
 }
