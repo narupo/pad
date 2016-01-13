@@ -172,8 +172,19 @@ command_display_brief_from_stream(Command const* self, FILE* fin) {
 	return 0;
 }
 
+/**
+ * @brief      
+ *
+ * @param      self  
+ * @param      head  
+ * @param      tail  
+ *
+ * @return     success to 0
+ * @return     failed to number of caperr @see "caperr.h"
+ */
 static int
 command_walkdir(Command* self, char const* head, char const* tail) {
+	// Result value for return
 	int ret = 0;
 
 	// Make open directory path
@@ -236,17 +247,17 @@ done:
 static FILE*
 command_open_input_file(Command const* self, char const* name) {
 	// Make path from basename
-	char fpath[FILE_NPATH];
+	char fname[FILE_NPATH];
 
-	if (!config_path_from_base(self->config, fpath, sizeof fpath, name)) {
+	if (!config_path_from_base(self->config, fname, sizeof fname, name)) {
 		caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from base \"%s\"", name);
 		return NULL;
 	}
 
 	// Open file by solve path
-	FILE* fin = file_open(fpath, "rb");
+	FILE* fin = file_open(fname, "rb");
 	if (!fin) {
-		caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", fpath);
+		caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", fname);
 		return NULL;
 	}
 
