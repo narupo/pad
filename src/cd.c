@@ -29,8 +29,14 @@ cd_run(int argc, char* argv[]) {
 
 	// Change cap's current directory
 	if (optcdpath && file_is_dir(optcdpath)) {
-		config_set_path(config, "cd", optcdpath);
-		config_save(config);
+		if (!config_set_path(config, "cd", optcdpath)) {
+			return caperr(PROGNAME, CAPERR_EXECUTE, "set path \"%s\"", optcdpath);
+		}
+
+		if (!config_save(config)) {
+			return caperr(PROGNAME, CAPERR_WRITE, "config");
+		}
+
 	} else {
 		return caperr(PROGNAME, CAPERR_INVALID_ARGUMENTS, "\"%s\"", optcdpath);
 	}
@@ -68,3 +74,4 @@ cd_main(int argc, char* argv[]) {
 
 	return cd_run(argc, argv);
 }
+
