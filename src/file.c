@@ -145,7 +145,7 @@ file_mkdir(char const* dirpath, mode_t mode) {
 #if defined(_WIN32) || defined(_WIN64)
 	return mkdir(dirpath);
 #else
-	return mkdir(spath, mode);
+	return mkdir(dirpath, mode);
 #endif
 }
 
