@@ -1,22 +1,10 @@
 #include "edit.h"
 
-void
-edit_usage(void) {
-	term_eprintf(
-		"cap edit\n"
-		"\n"
-		"Usage:\n"
-		"\n"
-		"\tcap edit [file-name]... [options]...\n"
-		"\n"
-		"The options are:\n"
-		"\n"
-		"\tnothing, see at manual of editor\n"
-		"\n"
-	);
-}
-
 typedef struct Command Command;
+
+enum {
+	NCMDLINE = 512,
+};
 
 struct Command {
 	char const* name;
@@ -94,10 +82,10 @@ run_command(Command* self, Config const* config) {
 	}
 
 	// Create command line
-	char cmdline[512];
+	char cmdline[NCMDLINE];
 	snprintf(cmdline, sizeof cmdline, "%s ", editpath);
 
-	for (int i = 0; i < argc; ++i) {
+	for (int i = 1; i < argc; ++i) {
 		strcat(cmdline, argv[i]);
 		strcat(cmdline, " ");
 	}
@@ -122,13 +110,28 @@ command_run(Command* self) {
 	return run_command(self, config);
 }
 
+void
+edit_usage(void) {
+	term_eprintf(
+		"cap edit\n"
+		"\n"
+		"Usage:\n"
+		"\n"
+		"\tcap edit [file-name]... [options]...\n"
+		"\n"
+		"The options are:\n"
+		"\n"
+		"\tnothing, see at manual of editor\n"
+		"\n"
+	);
+}
+
 int
 edit_main(int argc, char* argv[]) {
 	// Construct
 	Command* command = command_new(argc, argv);
 	if (!command) {
 		return caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
-		return EXIT_FAILURE;
 	}
 
 	// Run
