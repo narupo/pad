@@ -80,26 +80,12 @@ file_make_solve_path(char const* path) {
 
 FILE*
 file_open(char const* path, char const* mode) {
-	char spath[FILE_NPATH];
-
-	if (!file_solve_path(spath, sizeof spath, path)) {
-		WARN("Failed to solve path \"%s\"", path);
-		return NULL;
-	}
-
-	return fopen(spath, mode);
+	return fopen(path, mode);
 }
 
 DIR*
 file_opendir(char const* path) {
-	char spath[FILE_NPATH];
-
-	if (!file_solve_path(spath, sizeof spath, path)) {
-		WARN("Failed to solve path \"%s\"", path);
-		return NULL;
-	}
-
-	return opendir(spath);
+	return opendir(path);
 }
 
 int
@@ -114,15 +100,8 @@ file_close(FILE* fp) {
 
 bool
 file_is_exists(char const* path) {
-	char spath[FILE_NPATH];
-
-	if (!file_solve_path(spath, sizeof spath, path)) {
-		WARN("Failed to solve path \"%s\"", path);
-		return false;
-	}
-
 	struct stat s;
-	int res = stat(spath, &s);
+	int res = stat(path, &s);
 
 	if (res == -1) {
 		if (errno == ENOENT) {
@@ -139,15 +118,8 @@ notfound:
 
 bool
 file_is_dir(char const* path) {
-	char spath[FILE_NPATH];
-
-	if (!file_solve_path(spath, sizeof spath, path)) {
-		WARN("Failed to solve path \"%s\"", path);
-		return NULL;
-	}
-
 	struct stat s;
-	int res = stat(spath, &s);
+	int res = stat(path, &s);
 
 	if (res == -1) {
 		if (errno == ENOENT) {
@@ -170,15 +142,8 @@ notfound:
 
 int
 file_mkdir(char const* dirpath, mode_t mode) {
-	char spath[FILE_NPATH];
-
-	if (!file_solve_path(spath, sizeof spath, dirpath)) {
-		WARN("Failed to solve path \"%s\"", dirpath);
-		return -1;
-	}
-
 #if defined(_WIN32) || defined(_WIN64)
-	return mkdir(spath);
+	return mkdir(dirpath);
 #else
 	return mkdir(spath, mode);
 #endif
