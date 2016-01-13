@@ -413,10 +413,18 @@ configsetting_path(ConfigSetting const* self, char const* key) {
 
 bool
 configsetting_save_to_file(ConfigSetting* self, char const* fname) {
+	// Solve path
+	char path[FILE_NPATH];
+	
+	if (!file_solve_path(path, sizeof path, fname)) {
+		WARN("Failed to solve path \"%s\"", fname);
+		return false;
+	}
+
 	// Open save file
-	FILE* fout = file_open(fname, "wb");
+	FILE* fout = file_open(path, "wb");
 	if (!fout) {
-		WARN("Failed to open file \"%s\"", fname);
+		WARN("Failed to open file \"%s\"", path);
 		return false;
 	}
 
@@ -441,6 +449,7 @@ bool
 configsetting_set_path(ConfigSetting* self, char const* key, char const* val) {
 	// Solve path
 	char sval[FILE_NPATH];
+
 	if (!file_solve_path(sval, sizeof sval, val)) {
 		WARN("Failed to solve path");
 		return false;

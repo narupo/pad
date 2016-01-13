@@ -64,8 +64,8 @@ command_sort_capfile(Command const* self, CapFile* dstfile);
 static int
 command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout); 
 
-static int 
-command_make_capfile(Command const* self, CapFile** dstfile);
+static CapFile* 
+command_make_capfile(Command const* self);
 
 static int
 command_run(Command* self); 
@@ -182,14 +182,11 @@ command_call_command(Command const* self, CapFile* dstfile, int argc, char* argv
 
 	} else {
 		// TODO: Find alias and make arguments
-		goto fail_unknown_name;
+		return caperr(PROGNAME, CAPERR_NOTFOUND, "command name of \"%s\"", cmdname);
 	}
 
 	// Done
 	return 0;
-
-fail_unknown_name:
-	return 1;
 }
 
 static CapFile*
@@ -379,30 +376,28 @@ command_open_input_file(Command const* self, char const* capname) {
 	return fin;
 }
 
-static int 
-command_make_capfile(Command const* self, CapFile** dstfile) {
-	// Result value for return
-	int ret = 0;
+static CapFile* 
+command_make_capfile(Command const* self) {
+	CapFile* mkfile = NULL;
 
-	// Cleanup
-	capfile_delete(*dstfile);
-	*dstfile = NULL;
 
 	if (self->argc == self->optind) {
 		// Make CapFile from stream
-		*dstfile = command_make_capfile_from_stream(self, stdin);
-		if (!*dstfile) {
-			return caperr(PROGNAME, CAPERR_CONSTRUCT, "CapFile");
+		mkfile = command_make_capfile_from_stream(self, stdin);
+		if (!mkfile) {
+			caperr(PROGNAME, CAPERR_CONSTRUCT, "CapFile");
+			return NULL;
 		}
 
 	} else {
 		// Ready destination file
-		*dstfile = capfile_new();
-		if (!*dstfile) {
-			return caperr(PROGNAME, CAPERR_CONSTRUCT, "CapFile");
+		mkfile = capfile_new();
+		if (!mkfile) {
+			caperr(PROGNAME, CAPERR_CONSTRUCT, "CapFile");
+			return NULL;
 		}
 
-		CapRowList* caprows = capfile_rows(*dstfile);
+		CapRowList* caprows = capfile_rows(mkfile);
 
 		// Append all CapFile
 		for (int i = self->optind; i < self->argc; ++i) {
@@ -411,16 +406,17 @@ command_make_capfile(Command const* self, CapFile** dstfile) {
 			// Open stream
 			FILE* fin = command_open_input_file(self, capname);
 			if (!fin) {
-				ret = caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", capname);
+				caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", capname);
 				continue;
 			}
 
 			// Make temporary CapFile from stream for append rows to my CapFile
 			CapFile* ftmp = command_make_capfile_from_stream(self, fin);
-			if (!*dstfile) {
+			if (!mkfile) {
 				file_close(fin);
-				capfile_delete(*dstfile);
-				return caperr(PROGNAME, CAPERR_ERROR, "Failed to make CapFile");
+				capfile_delete(mkfile);
+				caperr(PROGNAME, CAPERR_ERROR, "Failed to make CapFile");
+				continue;
 			}
 			file_close(fin);  // Thanks
 
@@ -432,7 +428,7 @@ command_make_capfile(Command const* self, CapFile** dstfile) {
 	}
 
 	// Done
-	return ret;
+	return mkfile;
 }
 
 static int
@@ -447,10 +443,9 @@ command_run(Command* self) {
 	}
 
 	// Ready
-	CapFile* capfile = NULL;
-
-	ret = command_make_capfile(self, &capfile);
-	if (ret != 0) {
+	CapFile* capfile = command_make_capfile(self);
+	if (!capfile) {
+		ret = caperr(PROGNAME, CAPERR_CONSTRUCT, "CapFile");
 		goto done;
 	}
 
@@ -514,9 +509,8 @@ make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	}
 
 	// Make append capfile
-	CapFile* appfile = NULL;
-	
-	if (command_make_capfile(self, &appfile) != 0) {
+	CapFile* appfile = command_make_capfile(self);
+	if (!appfile) {
 		command_delete(self);
 		return caperr(PROGNAME, CAPERR_ERROR, "Failed to make CapFile");
 	}
