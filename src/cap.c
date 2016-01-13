@@ -109,7 +109,7 @@ done:
 }
 
 static void
-stack_trace(void) {
+trace_caperr(void) {
 #ifdef DEBUG
 	caperr_display(stderr);
 #else
@@ -146,8 +146,8 @@ main(int argc, char* argv[]) {
 	}
 
 	// Check result of command
-	if (ret != 0) {
-		stack_trace();
+	if (caperr_length()) {
+		trace_caperr();
 	}
 
 	// Done
