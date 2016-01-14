@@ -308,7 +308,9 @@ command_display(Command const* self) {
 		
 		if (file_is_dir(path)) {
 			// Display name
-			term_printf("%s\n", name);
+			if (!self->opt_is_tags) {
+				term_printf("%s\n", name);
+			}
 
 		} else {
 			// Open file

@@ -141,8 +141,6 @@ self_mode_delim(CsvLine* self, int ch);
 static void
 self_mode_double_quote(CsvLine* self, int ch);
 
-// 123, 223 , "The string", hoge
-
 static void
 self_mode_first(CsvLine* self, int ch) {
 	if ((self->delim != ' ' && ch == ' ') || ch == '\t') {
@@ -293,11 +291,16 @@ csvline_get(CsvLine* self, size_t index) {
 int
 main(int argc, char* argv[]) {
 	char line[128];
+	int delim = ' ';
+
+	if (argc >= 2) {
+		delim = argv[1][0];
+	}
 
 	CsvLine* csvline = csvline_new();
 
 	for (; fgets(line, sizeof line, stdin); ) {
-		csvline_parse_line(csvline, line, ' ');
+		csvline_parse_line(csvline, line, delim);
 
 		for (int i = 0; i < csvline_ncolumns(csvline); ++i) {
 			char const* col = csvline_columns(csvline, i);

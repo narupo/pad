@@ -1,5 +1,6 @@
 #include "editor.h"
 
+// Program name
 static char const* PROGNAME = "cap editor";
 
 void
