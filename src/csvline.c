@@ -1,12 +1,56 @@
 #include "csvline.h"
 
+typedef struct Stream {
+	char const* cur;
+	char const* beg;
+	char const* end;
+} Stream;
+
+int
+stream_init(Stream* self, char const* src) {
+	if (!src) {
+		return -1;
+	}
+
+	self->cur = src;
+	self->beg = src;
+	self->end = src + strlen(src) + 1; // +1 for final nul
+
+	return self->end - self->beg;
+}
+
+int
+stream_eof(Stream const* self) {
+	return self->cur >= self->end;
+}
+
+int
+stream_current(Stream const* self) {
+	return *self->cur;
+}
+
+void
+stream_next(Stream* self) {
+	if (self->cur < self->end) {
+		++self->cur;
+	}
+}
+
+void
+stream_prev(Stream* self) {
+	if (self->cur > self->beg) {
+		--self->cur;
+	}
+}
+
 struct CsvLine {
 	size_t capacity;  // cols capacity
 	size_t length;  // cols length
 	int delim;
-	void (*mode)(CsvLine* self, int ch);
+	void (*mode)(CsvLine* self);
 	Buffer* buffer;
 	char** cols;
+	Stream stream;
 };
 
 /*****************
@@ -133,56 +177,16 @@ self_cols_push_copy(CsvLine* self, char const* col) {
 /* Mode for parse */
 
 static void
-self_mode_first(CsvLine* self, int ch);
+self_mode_first(CsvLine* self);
 
+/**
+ * delim, double-quote, newline, nul-terminator
+ */
 static void
-self_mode_delim(CsvLine* self, int ch);
+self_mode_first(CsvLine* self) {
+	int ch = stream_current(&self->stream);
 
-static void
-self_mode_double_quote(CsvLine* self, int ch);
-
-static void
-self_mode_first(CsvLine* self, int ch) {
-	if ((self->delim != ' ' && ch == ' ') || ch == '\t') {
-		// Nothing todo
-	} else if (ch == '"') {
-		self->mode = self_mode_double_quote;
-	} else if (ch == self->delim || ch == '\n') {
-		buffer_push(self->buffer, '\0');
-		self_cols_push_copy(self, buffer_getc(self->buffer));
-		buffer_clear(self->buffer);
-		self->mode = self_mode_delim;
-	} else {
-		buffer_push(self->buffer, ch);
-	}
-}
-
-static void
-self_mode_delim(CsvLine* self, int ch) {
-	if ((self->delim != ' ' && ch == ' ') || ch == '\t') {
-		// Nothing todo
-	} else if (ch == '"') {
-		self->mode = self_mode_double_quote;
-	} else if (ch == self->delim) {
-		// Nothing todo
-	} else if (ch == '\n') {
-		self->mode = self_mode_first;		
-	} else {
-		self->mode = self_mode_first;
-		buffer_push(self->buffer, ch);
-	}
-}
-
-static void
-self_mode_double_quote(CsvLine* self, int ch) {
-	if (ch == '"') {
-		buffer_push(self->buffer, '\0');
-		self_cols_push_copy(self, buffer_getc(self->buffer));
-		buffer_clear(self->buffer);		
-		self->mode = self_mode_first;
-	} else {
-		buffer_push(self->buffer, ch);
-	}
+	stream_next(&self->stream);
 }
 
 /* Parser */
@@ -197,19 +201,19 @@ csvline_parse_line(CsvLine* self, char const* line, int delim) {
 		}
 		self->length = 0;
 	}
-	buffer_clear(self->buffer);
 
 	// Ready state
 	self->mode = self_mode_first;
 	self->delim = delim;
+	buffer_clear(self->buffer);
+	if (stream_init(&self->stream, line) < 0) {
+		WARN("Failed to init of stream \"%s\"", line);
+		return false;
+	}
 
 	// Parse line
-	for (char const* p = line; ; ++p) {
-		if (*p == '\0') {
-			self->mode(self, self->delim);
-			break;
-		}
-		self->mode(self, *p);
+	for (; self->mode && !stream_eof(&self->stream); ) {
+		self->mode(self);
 	}
 
 	// Done
@@ -282,7 +286,6 @@ csvline_get(CsvLine* self, size_t index) {
 	return self->cols[index];	
 }
 
-
 /*******
 * Test *
 *******/
@@ -297,13 +300,16 @@ main(int argc, char* argv[]) {
 		delim = argv[1][0];
 	}
 
+	fprintf(stderr, "delim[%c]\n", delim);
+	fflush(stderr);
+
 	CsvLine* csvline = csvline_new();
 
 	for (; fgets(line, sizeof line, stdin); ) {
 		csvline_parse_line(csvline, line, delim);
 
-		for (int i = 0; i < csvline_ncolumns(csvline); ++i) {
-			char const* col = csvline_columns(csvline, i);
+		for (int i = 0; i < csvline_length(csvline); ++i) {
+			char const* col = csvline_get_const(csvline, i);
 			printf("%2d:[%s]\n", i, col);
 		}
 	}
