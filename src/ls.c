@@ -153,7 +153,7 @@ command_display_brief_from_stream(Command const* self, FILE* fin) {
 		}
 
 		// Display brief
-		if (self->opt_is_disp_brief && capcol_type(front) == CapColBrief) {
+		if (capcol_type(front) == CapColBrief) {
 			char const* brief = capcol_value_const(front);
 			if (brief) {
 				term_printf("%s", brief);
@@ -327,17 +327,19 @@ command_display(Command const* self) {
 			// Display name
 			term_printf("%s", name);
 
-			// Padding
-			for (int i = 0; i < self->max_namelen+1 - namelen; ++i) {
-				term_printf(" ");
-			}
+			// Display brief?
+			if (self->opt_is_disp_brief) {
+				// Padding
+				for (int i = 0; i < self->max_namelen+1 - namelen; ++i) {
+					term_printf(" ");
+				}
 
-			// Display by @cap syntax
-			fseek(fin, 0L, SEEK_SET); // Reset file pointer position
-			command_display_brief_from_stream(self, fin);
-			term_printf("\n");
+				fseek(fin, 0L, SEEK_SET); // Reset file pointer position
+				command_display_brief_from_stream(self, fin);
+			}
 			
 			// Done
+			term_printf("\n");
 			file_close(fin);
 		}
 	}
