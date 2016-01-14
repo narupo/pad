@@ -247,45 +247,44 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 			continue;
 		}
 	
-		// Label for loop
-		getcol: {
-			CapCol const* col = capcollist_front(caprow_cols(row));
-			if (!col) {
-				continue;
-			}
+		// Get front column from row
+		CapCol const* col = capcollist_front(caprow_cols(row));
 
-			// If goto row,
-			if (capcol_type(col) == CapColGoto) {
-				// Remove goto columns from row
-				caprow_remove_cols(row, CapColGoto);
-				goto getcol;
-			}
+		// If goto row,
+		for (; col && (capcol_type(col) == CapColGoto); ) {
+			// Remove goto columns from row
+			caprow_remove_cols(row, CapColGoto);
+			col = capcollist_front(caprow_cols(row));
+		}
 
-			// If debug mode, display row with details
-			if (self->opt_is_debug) {
-				caprow_display(row);
-				continue;
-			}
+		if (!col) {
+			continue;
+		}
 
-			// Sentinel, name is "Text only"
-			if (capcol_type(col) != CapColText) {
-				continue;
-			}
+		// If debug mode, display row with details
+		if (self->opt_is_debug) {
+			caprow_display(row);
+			continue;
+		}
 
-			// Indent?
-			if (self->opt_nindent) {
-				// Yes
-				for (int i = 0; i < self->opt_nindent; ++i) {
-					fprintf(fout, "%c", CAT_INDENT_VALUE);
-				}
-			}
+		// Sentinel, name is "Text only"
+		if (capcol_type(col) != CapColText) {
+			continue;
+		}
 
-			// Display text columns
-			for (; col; col = capcol_next_const(col)) {
-				fprintf(fout, "%s", capcol_value_const(col));
+		// Indent?
+		if (self->opt_nindent) {
+			// Yes
+			for (int i = 0; i < self->opt_nindent; ++i) {
+				fprintf(fout, "%c", CAT_INDENT_VALUE);
 			}
-			fprintf(fout, "\n");
-		} // getcol
+		}
+
+		// Display text columns
+		for (; col; col = capcol_next_const(col)) {
+			fprintf(fout, "%s", capcol_value_const(col));
+		}
+		fprintf(fout, "\n");
 	}
 
 	// Done
