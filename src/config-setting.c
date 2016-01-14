@@ -262,14 +262,15 @@ self_parse_read_line(ConfigSetting* self, char const* line) {
 	}
 
 	// Check parse results
-	if (csvline_ncolumns(csvline) != 2) {
+	if (csvline_length(csvline) != 2) {
 		WARN("Invalid line format \"%s\"", line);
 		goto fail_parse;
 	}
 
 	// Set key and value
-	char const* key = csvline_columns(csvline, 0);
-	char const* val = csvline_columns(csvline, 1);
+	char const* key = csvline_get_const(csvline, 0);
+	char const* val = csvline_get_const(csvline, 1);
+
 	if (!hashmap_set_copy(self->pathmap, key, val)) {
 		WARN("Failed to pathmap set copy key=\"%s\" val=\"%s\"", key, val);
 		goto fail_set_copy;
@@ -307,7 +308,7 @@ self_load_from_file(ConfigSetting* self, char const* fname) {
 	
 	// Read and parse lines
 	for (; buffer_getline(buf, fin); ) {
-		char const* str = buffer_getc(buf);
+		char const* str = buffer_get_const(buf);
 		if (!self_parse_read_line(self, str)) {
 			WARN("Failed to parse read line");
 			// Nothing todo
