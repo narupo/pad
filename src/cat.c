@@ -7,28 +7,33 @@
 typedef struct Command Command;
 
 enum {
-	CAT_NREPLACE_LIST = 10,
-	CAT_INDENT_VALUE = '\t',
+	CAT_NREPLACE_LIST = 10, // Number of a elements of array for replace of the @cap braces 
+	CAT_INDENT_VALUE = '\t', // Indent of head of strings at time on output 
 };
 
 struct Command {
-	char const* name;  // This command name
-	int argc;  // Like a main function arguments
-	char** argv;  // "
-	int optind;  // Save getopt's optind
-	StringArray* replace_list;  // Replace string list for @cap brace
+	char const* name; // Command name
+	int argc; // Like a main function arguments
+	char** argv; // "
+	int optind; // Save getopt's optind
+	StringArray* replace_list; // Replace string list for @cap brace
 
 	// Option flags
-	bool opt_is_usage;  // Is usage mode
-	bool opt_is_debug;  // Is debug mode
-	char* opt_separate_name;  // Is display by separate mode
-	long opt_nindent;
+	bool opt_is_usage; // Is usage mode
+	bool opt_is_debug; // Is debug mode
+	char* opt_separate_name; // Is display by separate mode
+	long opt_nindent; // Number of indent of strings
 
 	// Mode
 	bool toggle_display;  // Using at separate display mode
 };
 
+// Program name
 static char const* PROGNAME = "cap cat";
+
+/*************
+* Prototypes *
+*************/
 
 static bool
 command_parse_options(Command* self);
@@ -140,7 +145,7 @@ command_parse_options(Command* self) {
 		return false;
 	}
 
-	self->optind = optind;
+	self->optind = optind; // Copy value of global variable in getopt
 
 	// Done
 	return true;
@@ -162,6 +167,7 @@ command_parse_options(Command* self) {
  */
 static CapRow*
 cat_read_row(Command* self, Buffer const* buffer, CapParser* parser) {
+	// Get line for parse
 	char const* line = buffer_get_const(buffer);
 
 	// Parse line
@@ -170,14 +176,15 @@ cat_read_row(Command* self, Buffer const* buffer, CapParser* parser) {
 		return NULL;
 	}
 
-	// Convert goto row to text only row
+	// Get front column in row
 	CapCol const* col = capcollist_front(caprow_cols(row));
 	if (!col) {
 		caprow_delete(row);
 		return NULL;
 	}
 
-	// If separate mode then catch separate row and check this name
+	//  If mode is a separate mode, check type of current row,
+	// and check it for the toggle of mode.
 	if (self->opt_separate_name) {
 		if (capcol_type(col) == CapColSeparate) {
 			if (strcmp(self->opt_separate_name, capcol_value_const(col)) == 0) {
@@ -201,6 +208,17 @@ cat_read_row(Command* self, Buffer const* buffer, CapParser* parser) {
 * Writter *
 **********/
 
+/**
+ * @brief Display buffer to a output stream from a input stream
+ *
+ * @param[in]  self    
+ * @param[in]  config  pointer to Config
+ * @param[out] fout    pointer to a output stream
+ * @param[in]  fin     pointer to a input stream
+ *
+ * @return success to a number of zero
+ * @return failed to a number of caperr
+ */
 static int
 command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 	// Ready
@@ -215,6 +233,7 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 		return caperr(PROGNAME, CAPERR_CONSTRUCT, "parser");
 	}
 
+	// Temporary row for the read
 	CapRow* row = NULL;
 
 	// Read and display
@@ -222,37 +241,40 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 		// Cleanup
 		caprow_delete(row);
 
-		// Make row from buffer
+		// Read and make row from read buffer
 		row = cat_read_row(self, buffer, parser);
 		if (!row) {
 			continue;
 		}
 	
+		// Label for loop
 		getcol: {
 			CapCol const* col = capcollist_front(caprow_cols(row));
 			if (!col) {
 				continue;
 			}
 
-			// If goto row then
+			// If goto row,
 			if (capcol_type(col) == CapColGoto) {
+				// Remove goto columns from row
 				caprow_remove_cols(row, CapColGoto);
 				goto getcol;
 			}
 
-			// If debug mode then display row with details
+			// If debug mode, display row with details
 			if (self->opt_is_debug) {
 				caprow_display(row);
 				continue;
 			}
 
-			// Text only
+			// Sentinel, name is "Text only"
 			if (capcol_type(col) != CapColText) {
 				continue;
 			}
 
 			// Indent?
 			if (self->opt_nindent) {
+				// Yes
 				for (int i = 0; i < self->opt_nindent; ++i) {
 					fprintf(fout, "%c", CAT_INDENT_VALUE);
 				}
@@ -263,7 +285,7 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 				fprintf(fout, "%s", capcol_value_const(col));
 			}
 			fprintf(fout, "\n");
-		}
+		} // getcol
 	}
 
 	// Done
@@ -301,7 +323,7 @@ command_run(Command* self) {
 		goto done;
 	}
 
-	// Cat all file
+	// Catenate all file
 	for (int i = self->optind; i < self->argc; ++i) {
 		// Solve path
 		char fname[FILE_NPATH];
@@ -318,14 +340,16 @@ command_run(Command* self) {
 		}
 
 		// Display
-		command_cat_stream(self, config, stdout, fin);
+		ret = command_cat_stream(self, config, stdout, fin);
+		if (ret != 0) {
+			goto done;
+		}
 
-		// Done
+		// Ok, next
 		file_close(fin);
 	}
 
 done:
-	// Done
 	return ret;
 }
 
