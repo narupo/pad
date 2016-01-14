@@ -244,26 +244,6 @@ done:
 	return ret;
 }
 
-static FILE*
-command_open_input_file(Command const* self, char const* name) {
-	// Make path from basename
-	char fname[FILE_NPATH];
-
-	if (!config_path_from_base(self->config, fname, sizeof fname, name)) {
-		caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from base \"%s\"", name);
-		return NULL;
-	}
-
-	// Open file by solve path
-	FILE* fin = file_open(fname, "rb");
-	if (!fin) {
-		caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", fname);
-		return NULL;
-	}
-
-	return fin;
-}
-
 static bool
 command_has_tags(Command const* self, FILE* fin) {
 	CapParser* parser = capparser_new();
@@ -319,33 +299,47 @@ command_display(Command const* self) {
 		char const* name = strarray_get_const(self->names, i);
 		int namelen = strlen(name);
 
-		// Open file from name
-		FILE* fin = command_open_input_file(self, name);
-		if (!fin) {
+		// Get full path from name
+		char path[FILE_NPATH];
+		if (!config_path_from_base(self->config, path, sizeof path, name)) {
+			caperr(PROGNAME, CAPERR_SOLVE, "\"%s\"", name);
 			continue;
 		}
+		
+		if (file_is_dir(path)) {
+			// Display name
+			term_printf("%s\n", name);
 
-		// Tag
-		if (self->opt_is_tags && !command_has_tags(self, fin)) {
+		} else {
+			// Open file
+			FILE* fin = file_open(path, "rb");
+			if (!fin) {
+				caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", path);
+				continue;
+			}
+
+			// Tag
+			if (self->opt_is_tags && !command_has_tags(self, fin)) {
+				file_close(fin);
+				continue; // Not found tags in file so skip display
+			}
+
+			// Display name
+			term_printf("%s", name);
+
+			// Padding
+			for (int i = 0; i < self->max_namelen+1 - namelen; ++i) {
+				term_printf(" ");
+			}
+
+			// Display by @cap syntax
+			fseek(fin, 0L, SEEK_SET); // Reset file pointer position
+			command_display_brief_from_stream(self, fin);
+			term_printf("\n");
+			
+			// Done
 			file_close(fin);
-			continue; // Not found tags in file so skip display
 		}
-
-		// Display name
-		term_printf("%s", name);
-
-		// Padding
-		for (int i = 0; i < self->max_namelen+1 - namelen; ++i) {
-			term_printf(" ");
-		}
-
-		// Display by @cap syntax
-		fseek(fin, 0L, SEEK_SET); // Reset file pointer position
-		command_display_brief_from_stream(self, fin);
-		term_printf("\n");
-		term_flush();
-
-		file_close(fin);
 	}
 	
 	// Done
