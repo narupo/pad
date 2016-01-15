@@ -270,7 +270,6 @@ self_parse_read_line(ConfigSetting* self, char const* line) {
 	// Set key and value
 	char const* key = csvline_get_const(csvline, 0);
 	char const* val = csvline_get_const(csvline, 1);
-
 	if (!hashmap_set_copy(self->pathmap, key, val)) {
 		WARN("Failed to pathmap set copy key=\"%s\" val=\"%s\"", key, val);
 		goto fail_set_copy;

@@ -190,6 +190,22 @@ done:
 	return buffer_escape_delete(buf);
 }
 
+char*
+file_escape_blanks(char* dst, size_t dstsize, char const* src) {
+	char const* dstend = dst + dstsize - 1; // -1 for final nul
+
+	for (; dst < dstend && *src; ++dst, ++src) {
+		if (isblank(*src)) {
+			*dst = '\\';
+			++dst;
+		}
+		*dst = *src;
+	}
+
+	*dst = '\0';
+	return dst;
+}
+
 /*********************
 * file DirectoryNode *
 *********************/

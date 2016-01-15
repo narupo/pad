@@ -144,6 +144,9 @@ file_is_dir(char const* path);
 char*
 file_read_string(FILE* fin);
 
+char*
+file_escape_blanks(char* dst, size_t dstsize, char const* src);
+
 /*********************
 * file DirectoryNode *
 *********************/

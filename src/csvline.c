@@ -1,5 +1,9 @@
 #include "csvline.h"
 
+enum {
+	CSVLINE_NINIT_CAPACITY = 4,
+};
+
 typedef struct Stream {
 	char const* cur;
 	char const* beg;
@@ -25,14 +29,43 @@ stream_eof(Stream const* self) {
 }
 
 int
-stream_current(Stream const* self) {
+stream_current(Stream* self) {
 	return *self->cur;
+}
+
+int
+stream_current_at(Stream* self, int add) {
+	char const* at = self->cur + add;
+	if (at >= self->end) {
+		return EOF;
+	} else if (at < self->beg) {
+		return *self->beg;
+	} else {
+		return *at;
+	}
+}
+
+int
+stream_get(Stream* self) {
+	if (self->cur < self->end) {
+		return (int) *self->cur++;
+	}
+	return EOF;
 }
 
 void
 stream_next(Stream* self) {
-	if (self->cur < self->end) {
+	if (self->cur > self->beg) {
 		++self->cur;
+	}
+}
+
+void
+stream_next_at(Stream* self, int add) {
+	if (self->cur + add < self->end) {
+		self->cur += add;
+	} else {
+		self->cur = self->end;
 	}
 }
 
@@ -40,6 +73,15 @@ void
 stream_prev(Stream* self) {
 	if (self->cur > self->beg) {
 		--self->cur;
+	}
+}
+
+void
+stream_prev_at(Stream* self, int add) {
+	if (self->cur - add > self->beg) {
+		self->cur -= add;
+	} else {
+		self->cur = self->beg;
 	}
 }
 
@@ -92,7 +134,7 @@ csvline_new(void) {
 	}
 
 	// Columns
-	self->capacity = 4;
+	self->capacity = CSVLINE_NINIT_CAPACITY;
 	self->length = 0;
 
 	self->cols = (char**) calloc(self->capacity + 1, sizeof(char*));  // +1 for final nul
@@ -134,9 +176,33 @@ csvline_new_parse_line(char const* line, int delim) {
 	return self;
 }
 
+/**********
+* Checker *
+**********/
+
+static inline int
+is_newline(int ch) {
+	return ch == '\n';
+}
+
+static inline int
+is_eof(int ch) {
+	return ch == EOF || ch == '\0';
+}
+
 /*********
 * Parser *
 *********/
+
+static inline void
+self_clear(CsvLine* self) {
+	buffer_clear(self->buffer);
+}
+
+static inline void
+self_push(CsvLine* self, int ch) {
+	buffer_push(self->buffer, ch);
+}
 
 static bool
 self_resize(CsvLine* self, size_t newcapa) {
@@ -153,12 +219,7 @@ self_resize(CsvLine* self, size_t newcapa) {
 /* Setter */
 
 static bool
-self_cols_push_copy(CsvLine* self, char const* col) {
-	// Check copy source length
-	if (!strlen(col)) {
-		return false;
-	}
-
+self_cols_push_back(CsvLine* self, char const* col) {
 	// Check capacity
 	if (self->length >= self->capacity) {
 		if (!self_resize(self, self->capacity * 2)) {
@@ -174,19 +235,122 @@ self_cols_push_copy(CsvLine* self, char const* col) {
 	return true;
 }
 
+static inline bool
+self_save_column(CsvLine* self) {
+	buffer_push(self->buffer, '\0');
+	bool ret = self_cols_push_back(self, buffer_get_const(self->buffer));
+	buffer_clear(self->buffer);
+	return ret;
+}
+
 /* Mode for parse */
 
-static void
-self_mode_first(CsvLine* self);
+#if defined(HOGE)
+# define self_disp_current(self) { \
+	fprintf(stderr, "%s: %d: current [%c]\n", __func__, __LINE__, stream_current(&self->stream)); \
+	fflush(stderr); \
+ }
+#else
+# define self_disp_current(self) ;
+#endif
+
+static void self_mode_first(CsvLine* self);
+static void self_mode_column(CsvLine* self);
+static void self_mode_dquote(CsvLine* self);
+static void self_mode_skip_to_delim(CsvLine* self);
 
 /**
- * delim, double-quote, newline, nul-terminator
+ * delim, double-quote, newline, EOF
  */
 static void
 self_mode_first(CsvLine* self) {
-	int ch = stream_current(&self->stream);
+	self_disp_current(self);
+	int ch = stream_get(&self->stream);
 
-	stream_next(&self->stream);
+	if (ch == self->delim) {
+		ch = stream_current_at(&self->stream, -2);
+		if (ch == self->delim) {
+			self_save_column(self);
+		} else if (!buffer_empty(self->buffer)) {
+			self_save_column(self);
+		}
+		// Keep mode
+	} else if (is_eof(ch)) {
+		self->mode = NULL;
+		// Done
+	} else if (is_newline(ch)) {
+		// Keep mode
+	} else if (ch == '"') {
+		self->mode = self_mode_dquote;
+	} else {
+		self_push(self, ch);
+		self->mode = self_mode_column;
+	}
+}
+
+static void
+self_mode_column(CsvLine* self) {
+	self_disp_current(self);
+	int ch = stream_get(&self->stream);
+
+	if (ch == self->delim) {
+		self_save_column(self);
+		self->mode = self_mode_first;
+	} else if (is_newline(ch)) {
+		self_save_column(self);
+		self->mode = self_mode_first;
+	} else if (is_eof(ch)) {
+		self_save_column(self);
+		self->mode = NULL;
+	} else if (ch == '"') {
+		buffer_clear(self->buffer);
+		self->mode = self_mode_dquote;
+	} else {
+		self_push(self, ch);
+	}
+}
+
+static void
+self_mode_dquote(CsvLine* self) {
+	self_disp_current(self);
+	int ch = stream_get(&self->stream);
+
+	if (ch == '"') {
+		ch = stream_get(&self->stream);
+		if (ch != '"') {
+			// Is not escape quote
+			stream_prev(&self->stream);
+			self_save_column(self);
+			self->mode = self_mode_skip_to_delim;
+		} else {
+			// Is escape quote
+			self_push(self, ch);
+		}
+	} else if (is_newline(ch)) {
+		// This csv line parser not supported new-line on double-quote mode
+		WARN("Not supported syntax");
+		self->mode = NULL;
+	} else if (is_eof(ch)) {
+		// Parse error
+		WARN("Invalid syntax");
+		self->mode = NULL;
+	} else {
+		self_push(self, ch);
+	}
+}
+
+static void
+self_mode_skip_to_delim(CsvLine* self) {
+	self_disp_current(self);
+	int ch = stream_get(&self->stream);
+
+	if (ch == self->delim) {
+		self->mode = self_mode_first;
+	} else if (is_newline(ch)) {
+		self->mode = self_mode_first;
+	} else if (is_eof(ch)) {
+		self->mode = NULL;
+	}
 }
 
 /* Parser */
@@ -223,23 +387,10 @@ csvline_parse_line(CsvLine* self, char const* line, int delim) {
 /*****************
 * CsvLine setter *
 *****************/
-/*
-bool
-csvline_push_front(CsvLine* self, char const* col) {
-	if (self->length >= self->capacity) {
-		if (!self_resize(self, self->capacity*2)) {
-			WARN("Failed to push front \"%s\"", col);
-			return false;
-		}
-	}
-	// TODO
-	return true;
-}
-*/
 
 bool
 csvline_push_back(CsvLine* self, char const* col) {
-	return self_cols_push_copy(self, col);
+	return self_cols_push_back(self, col);
 }
 
 /*********
@@ -311,6 +462,7 @@ main(int argc, char* argv[]) {
 		for (int i = 0; i < csvline_length(csvline); ++i) {
 			char const* col = csvline_get_const(csvline, i);
 			printf("%2d:[%s]\n", i, col);
+			fflush(stdout);
 		}
 	}
 

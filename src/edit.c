@@ -84,7 +84,7 @@ run_command(Command* self, Config const* config) {
 
 	// Create command line
 	char cmdline[NCMDLINE];
-	snprintf(cmdline, sizeof cmdline, "%s ", editpath);
+	snprintf(cmdline, sizeof cmdline, "\"%s\" ", editpath);
 
 	for (int i = 1; i < argc; ++i) {
 		strcat(cmdline, argv[i]);
