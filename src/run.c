@@ -1,10 +1,67 @@
 #include "run.h"
 
+char*
+fread_script_line(char* dst, size_t dstsize, FILE* stream) {
+	if (!dst || feof(stream) || ferror(stream)) {
+		WARN("Invalid arguments");
+		return NULL;
+	}
+
+	// Read line for parse and runtime script name
+	char line[dstsize];
+	int tell = ftell(stream);
+
+	if (!fgets(line, dstsize, stream)) {
+		WARN("Failed to read line");
+		return NULL;
+	}
+
+	size_t linelen = strlen(line);
+	if (line[linelen-1] == '\n') {
+		--linelen;
+		line[linelen] = '\0';
+	}
+
+	// Check prefix
+	char const* pref = "#!";
+	size_t preflen = strlen(pref);
+
+	if (strncmp(line, pref, preflen) != 0) {
+		fseek(stream, tell, SEEK_SET);
+		return NULL; // Not found
+	}
+
+	// Parse script name
+	char* src = line + preflen;
+
+#if defined(_WIN32) || defined(_WIN64)
+	char* p = strrchr(src, '/');
+	if (p) {
+		p += 1; // +1 for '/'
+	} else {
+		p = src;
+	}
+
+	snprintf(dst, dstsize, "%s", p);
+	
+#else
+	snprintf(dst, dstsize, "%s", src);
+
+#endif
+
+	return dst;
+}
+
+
 /**********
 * Command *
 **********/
 
 typedef struct Command Command;
+
+enum {
+	NCMDLINE = 512,
+};
 
 struct Command {
 	char const* name;
@@ -40,6 +97,48 @@ command_new(int argc, char* argv[]) {
 	return self;
 }
 
+int
+command_make_cmdline(Command const* self, Config const* config, char* dst, size_t dstsize, int argc, char* argv[]) {
+	// Get script name
+	char const* name = argv[0];
+	if (!name) {
+		return caperr(PROGNAME, CAPERR_INVALID, "name \"%s\"", name);
+	}
+
+	// Get command path on cap
+	char path[FILE_NPATH];
+	if (!config_path_from_base(config, path, sizeof path, name)) {
+		return caperr(PROGNAME, CAPERR_ERROR, "Failed to path from base \"%s\"", name);
+	}
+
+	// Get runtime script name for execute from file
+	FILE* fin = file_open(path, "rb");
+	if (!fin) {
+		return caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", path);
+	}
+
+	char script[128];
+	if (!fread_script_line(script, sizeof script, fin)) {
+		file_close(fin);
+		return caperr(PROGNAME, CAPERR_READ, "script");
+	}
+
+	file_close(fin);
+
+	// Create command line
+	memset(dst, '\0', dstsize);
+	strappend(dst, dstsize, script);
+	strappend(dst, dstsize, " ");
+	strappend(dst, dstsize, path);
+
+	for (int i = 1; i < argc; ++i) {
+		strappend(dst, dstsize, argv[i]);
+		strappend(dst, dstsize, " ");
+	}
+
+	return 0;
+}
+
 /*********
 * Runner *
 *********/
@@ -50,25 +149,10 @@ command_run_script(Command* self, Config const* config) {
 	int argc = self->argc - 1;
 	char** argv = self->argv + 1;  // Skip command name of 'run'
 
-	char const* scriptname = argv[0];
-	if (!scriptname) {
-		return caperr(PROGNAME, CAPERR_INVALID, "command name \"%s\"", scriptname);
-	}
-
-	// Get command path on cap
-	char scriptpath[FILE_NPATH];
-	if (!config_path_from_base(config, scriptpath, sizeof scriptpath, scriptname)) {
-		return caperr(PROGNAME, CAPERR_ERROR, "Failed to path from base \"%s\"", scriptname);
-	}
-
-	// Create command line
-	char cmdline[512] = {0};
-
-	snprintf(cmdline, sizeof cmdline, "%s ", scriptpath);
-
-	for (int i = 1; i < argc; ++i) {
-		strcat(cmdline, argv[i]);
-		strcat(cmdline, " ");
+	// Make command line
+	char cmdline[NCMDLINE];
+	if (command_make_cmdline(self, config, cmdline, sizeof cmdline, argc, argv) != 0) {
+		return caperr(PROGNAME, CAPERR_EXECUTE, "make command line");
 	}
 
 	// Open process
@@ -144,30 +228,15 @@ run_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 
 	// Make
 
-	// Get script name on cap
+	// Skip self name of 'run'
 	int execargc = self->argc - 1;
-	char** execargv = self->argv + 1;  // Skip self name of 'run'
+	char** execargv = self->argv + 1;
 
-	char const* scriptname = execargv[0];
-	if (!scriptname) {
+	// Make command line
+	char cmdline[NCMDLINE];
+	if (command_make_cmdline(self, config, cmdline, sizeof cmdline, execargc, execargv) != 0) {
 		command_delete(self);
-		return caperr(PROGNAME, CAPERR_INVALID, "name \"%s\"", scriptname);
-	}
-
-	// Get command path on cap
-	char scriptpath[FILE_NPATH];
-	if (!config_path_from_base(config, scriptpath, sizeof scriptpath, scriptname)) {
-		command_delete(self);
-		return caperr(PROGNAME, CAPERR_ERROR, "Failed to path from base \"%s\"", scriptname);
-	}
-
-	// Create command line
-	char cmdline[512];
-	snprintf(cmdline, sizeof cmdline, "%s ", scriptpath);
-
-	for (int i = 1; i < execargc; ++i) {
-		strcat(cmdline, execargv[i]);
-		strcat(cmdline, " ");
+		return caperr(PROGNAME, CAPERR_EXECUTE, "make command line");
 	}
 
 	// Open child process
@@ -220,14 +289,13 @@ run_main(int argc, char* argv[]) {
 #if defined(TEST_RUN)
 int
 main(int argc, char* argv[]) {
-	Config* con = config_new();
+	Config* con = config_instance();
 	CapFile* cfile = capfile_new();
 
 	run_make(con, cfile, argc, argv);
 	capfile_display(cfile);
 
 	capfile_delete(cfile);
-	config_delete(con);
     return 0;
 }
 #endif
