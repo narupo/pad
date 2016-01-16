@@ -178,6 +178,10 @@ command_call_command(Command const* self, CapFile* dstfile, int argc, char* argv
 		return make_make(self->config, dstfile, argc, argv);
 
 	} else if (strcmp(cmdname, "run") == 0) {
+		for (int i = 0; i < argc; ++i) {
+			printf("argv[%d] = [%s]\n", i, argv[i]);
+		}
+		fflush(stdout);
 		return run_make(self->config, dstfile, argc, argv);
 
 	} else {
