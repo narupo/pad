@@ -130,6 +130,7 @@ command_make_cmdline(Command const* self, Config const* config, char* dst, size_
 	strappend(dst, dstsize, script);
 	strappend(dst, dstsize, " ");
 	strappend(dst, dstsize, path);
+	strappend(dst, dstsize, " ");
 
 	for (int i = 1; i < argc; ++i) {
 		strappend(dst, dstsize, argv[i]);
@@ -162,19 +163,11 @@ command_run_script(Command* self, Config const* config) {
 	}
 
 	// Read from child process
-	Buffer* linebuf = buffer_new();
-	if (!linebuf) {
-		pclose(pin);
-		return caperr(PROGNAME, CAPERR_CONSTRUCT, "line buffer");
-	}
-
-	for (; buffer_getline(linebuf, pin); ) {
-		char const* line = buffer_get_const(linebuf);
-		term_printf("%s", line);
-	}
+	for (int ch; (ch = fgetc(pin)) != EOF; ) {
+		term_putc(ch);
+	} 
 
 	// Done
-	buffer_delete(linebuf);
 	pclose(pin);
 	return 0;
 }

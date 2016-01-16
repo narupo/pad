@@ -17,6 +17,18 @@ void
 term_eflush(void);
 
 /**
+ * Wrapper of fputc(c, stdout)
+ */
+int
+term_putc(int ch);
+
+/**
+ * Wrapper of fputc(c, stderr)
+ */
+int
+term_eputc(int ch);
+
+/**
  * Wrapper of fprintf(stdout, fmt, ...)
  */
 int

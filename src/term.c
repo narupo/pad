@@ -20,6 +20,16 @@ term_eflush(void) {
 }
 
 int
+term_putc(int ch) {
+	return fputc(ch, stdout);
+}
+
+int
+term_eputc(int ch) {
+	return fputc(ch, stderr);
+}
+
+int
 term_printf(char const* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
