@@ -137,6 +137,20 @@ char*
 strrem(char* dst, size_t dstsize, char const* src, int rem);
 
 /**
+ * Remove characters from string
+ * 
+ * @param[out] dst pointer to destination of string
+ * @param[in] dstsize number of destination size
+ * @param[in] src string of source
+ * @param[in] rem target characters for remove
+ * 
+ * @return success to pointer to dst
+ * @return failed to pointer to NULL
+ */
+char*
+strrems(char* dst, size_t dstsize, char const* src, char const* rems);
+
+/**
  * @brief      
  *
  * @param      dst      

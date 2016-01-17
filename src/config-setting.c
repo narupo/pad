@@ -434,6 +434,9 @@ configsetting_save_to_file(ConfigSetting* self, char const* fname) {
 	for (HashMapNode const* cur = hashmapit_begin(it);
 		 cur != hashmapit_end(it);
 		 cur = hashmapit_next(it)) {
+		if (strlen(cur->key) == 0) {
+			continue;
+		}
 
 		fprintf(fout, "%s%c%s\n", cur->key, LINE_FORMAT_DELIM, cur->value);
 	}

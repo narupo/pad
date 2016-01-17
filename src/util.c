@@ -96,7 +96,7 @@ char*
 strrem(char* dst, size_t dstsize, char const* src, int rem) {
 	int i, j;
 
-	for (i = 0, j = 0; src[i]; ++i) {
+	for (i = 0, j = 0; src[i] && j < dstsize-1; ++i) {
 		if (src[i] != rem) {
 			dst[j++] = src[i];
 		}
@@ -105,6 +105,21 @@ strrem(char* dst, size_t dstsize, char const* src, int rem) {
 	dst[j] = '\0';
 
 	return dst;
+}
+
+char*
+strrems(char* dst, size_t dstsize, char const* src, char const* rems) {
+	int i, j;
+	
+	for (i = 0, j = 0; src[i] && j < dstsize-1; ++i) {
+		if (!strchr(rems, src[i])) {
+			dst[j++] = src[i];
+		}
+	}
+
+	dst[j] = '\0';
+
+	return dst;	
 }
 
 char*
