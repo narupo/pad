@@ -16,12 +16,6 @@ fread_script_line(char* dst, size_t dstsize, FILE* stream) {
 		return NULL;
 	}
 
-	size_t linelen = strlen(line);
-	if (line[linelen-1] == '\n') {
-		--linelen;
-		line[linelen] = '\0';
-	}
-
 	// Check prefix
 	char const* pref = "#!";
 	size_t preflen = strlen(pref);
