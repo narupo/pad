@@ -44,7 +44,7 @@ help_main(int argc, char* argv[]) {
 			usage();
 			return 0;
 		} else {
-			return caperr(PROGNAME, CAPERR_NOTFOUND, "command name \"%s\"\n", cmdname);
+			return caperr(PROGNAME, CAPERR_NOTFOUND, "command name \"%s\"", cmdname);
 		}
 	}
 	return 0;
