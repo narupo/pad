@@ -135,7 +135,7 @@ bool
 file_is_dir(char const* path);
 
 /**
- * Read string from stream
+ * Read all string from stream
  *
  * @param[in] fin source stream
  * @return success to pointer to read string (nul terminated)
@@ -144,8 +144,31 @@ file_is_dir(char const* path);
 char*
 file_read_string(FILE* fin);
 
+/**
+ * @brief      Escape blanks in strings
+ *
+ * @param      dst      
+ * @param[in]  dstsize  
+ * @param      src      
+ *
+ * @return     success to pointer to destination buffer 
+ * @return     failed to pointer to NULL 
+ */
 char*
 file_escape_blanks(char* dst, size_t dstsize, char const* src);
+
+/**
+ * @brief      Get line from stream without new-line for multi-platform
+ *
+ * @param      dst      
+ * @param[in]  dstsize  
+ * @param      fin      
+ *
+ * @return     success to pointer to destination buffer 
+ * @return     failed to pointer to NULL 
+ */
+char*
+file_getline(char* dst, size_t dstsize, FILE* fin);
 
 /*********************
 * file DirectoryNode *

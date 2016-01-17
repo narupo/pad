@@ -206,6 +206,48 @@ file_escape_blanks(char* dst, size_t dstsize, char const* src) {
 	return dst;
 }
 
+char*
+file_getline(char* dst, size_t dstsize, FILE* fin) {
+	// Check arguments
+	if (!dst || !dstsize || !fin || feof(fin) || ferror(fin)) {
+		WARN("Invalid arguments");
+		return NULL;
+	}
+
+	// Read from stream
+	char* cur = dst;
+	char const* end = dst + dstsize - 1; // +1 for final nul
+
+	for (; cur < end; ) {
+		int ch = fgetc(fin);
+		if (ch == EOF || ferror(fin)) {
+			break;
+		}
+
+		// Check newline
+		if (ch == '\n') {
+			// UNIX
+			break;
+		} else if (ch == '\r') {
+			int next = fgetc(fin);
+			if (next == '\n') {
+				// MS Windows
+				break;
+			} else {
+				// Mac
+				ungetc(next, fin);
+				break;
+			}
+		}
+
+		*cur++ = ch;
+	}
+
+	// Done
+	*cur = '\0';
+	return dst;
+}
+
 /*********************
 * file DirectoryNode *
 *********************/
