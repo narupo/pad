@@ -49,6 +49,8 @@
 #endif
 
 #define CHECK(...) { \
+	fflush(stdout); \
+	fflush(stderr); \
 	fprintf(stderr, "check: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
 	fprintf(stderr, __VA_ARGS__); \
 	fprintf(stderr, "\n"); \

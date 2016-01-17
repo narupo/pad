@@ -1,6 +1,6 @@
 #include "run.h"
 
-char*
+static char*
 fread_script_line(char* dst, size_t dstsize, FILE* stream) {
 	if (!dst || feof(stream) || ferror(stream)) {
 		WARN("Invalid arguments");
@@ -11,7 +11,7 @@ fread_script_line(char* dst, size_t dstsize, FILE* stream) {
 	char line[dstsize];
 	int tell = ftell(stream);
 
-	if (!fgets(line, dstsize, stream)) {
+	if (!file_getline(line, dstsize, stream)) {
 		WARN("Failed to read line");
 		return NULL;
 	}
@@ -97,7 +97,7 @@ command_new(int argc, char* argv[]) {
 	return self;
 }
 
-int
+static int
 command_make_cmdline(Command const* self, Config const* config, char* dst, size_t dstsize, int argc, char* argv[]) {
 	// Get script name
 	char const* name = argv[0];
