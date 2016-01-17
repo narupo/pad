@@ -1,25 +1,45 @@
 #include "alias.h"
 
+/**************
+* alias types *
+**************/
+
 typedef struct Command Command;
+
+/****************
+* alias numbers *
+****************/
 
 enum {
 	ALIAS_NKEY = 32,
 	ALIAS_NVAL = 128,
 	ALIAS_NRECORD = ALIAS_NKEY + ALIAS_NVAL,
+	ALIAS_NHASH = 701,
 };
+
+/****************
+* alias Command *
+****************/
 
 struct Command {
 	char const* name;
 	int argc;
-	int optind;
 	char** argv;
-
+	int optind;
 	bool opt_is_help;
 	bool opt_is_delete;
 	bool opt_is_debug;
 };
 
+/******************
+* alias variables *
+******************/
+
 static char const* PROGNAME = "cap alias";
+
+/*******************
+* alias prototypes *
+*******************/
 
 static bool
 command_parse_options(Command* self);
@@ -29,6 +49,10 @@ command_delete(Command* self);
 
 static bool
 command_parse_options(Command* self);
+
+/******************
+* alias functions *
+******************/
 
 static void
 command_delete(Command* self) {
@@ -165,10 +189,8 @@ command_path_from_cd(char* dst, size_t dstsize) {
 	char const* cd = config_path(config, "cd");
 	char const* root = config_root(config);
 
-	strrem(dst, dstsize, cd, ':');
-	strrem(dst, dstsize, cd, '\\');
-	strrem(dst, dstsize, cd, '/');
-	snprintf(dst, dstsize, "%s/alias-%d", root, hashi(dst, 701));
+	strrems(dst, dstsize, cd, ":\\/");
+	snprintf(dst, dstsize, "%s/alias-%d", root, hashi(dst, ALIAS_NHASH));
 
 	return dst;
 }
@@ -282,7 +304,7 @@ command_disp_alias_list(Command* self) {
 	if (!fin) {
 		return caperr(PROGNAME, CAPERR_FOPEN, "");
 	}
-
+	
 	// Get max length of key for display
 	size_t maxkeylen = 0;
 	for (; !feof(fin); ) {
@@ -298,8 +320,12 @@ command_disp_alias_list(Command* self) {
 	}
 
 	// Display key and value with padding
-	rewind(fin);
+	if (fseek(fin, 0L, SEEK_SET) != 0) {
+		file_close(fin);
+		return caperr(PROGNAME, CAPERR_EXECUTE, "fseek");
+	}
 
+	// Display
 	for (; !feof(fin); ) {
 		char key[ALIAS_NKEY+1];
 		char val[ALIAS_NVAL+1];
@@ -330,6 +356,7 @@ command_disp_alias_list(Command* self) {
  */
 static int
 command_delete_record(Command* self) {
+	// Check argument for alias-name
 	if (self->argc <= self->optind) {
 		return caperr(PROGNAME, CAPERR_ERROR, "Need delete alias name");
 	}
@@ -450,7 +477,9 @@ command_run(Command* self) {
 	return command_push_alias_to_file(pushkey, pushval);
 }
 
-
+/*************************
+* alias public interface *
+*************************/
 
 CsvLine*
 alias_to_csvline(char const* findkey) {
@@ -458,7 +487,7 @@ alias_to_csvline(char const* findkey) {
 	FILE* fin = command_open_stream();
 	if (!fin) {
 		caperr(PROGNAME, CAPERR_FOPEN, "");
-		goto fail_file_open;
+		return NULL;
 	}
 
 	// Parse record
@@ -478,7 +507,7 @@ alias_to_csvline(char const* findkey) {
 			goto notfound;
 		}
 
-		key[len] = 0;
+		key[len] = '\0';
 
 		if (strcmp(key, findkey) == 0) {
 			// Found key, parse value column
@@ -503,8 +532,6 @@ alias_to_csvline(char const* findkey) {
 notfound:
 	csvline_delete(csvline);
 	file_close(fin);
-
-fail_file_open:
 	return NULL;
 }
 
@@ -543,21 +570,13 @@ alias_main(int argc, char* argv[]) {
 	return ret;
 }
 
+/*************
+* alias test *
+*************/
+
 #if defined(TEST_ALIAS)
 int
 main(int argc, char* argv[]) {
-	char const* findkey = "fire";
-	if (argc >= 2) {
-		findkey = argv[1];
-	}
-	
-	CsvLine* csvline = alias_to_csvline(findkey);
-
-	for (int i = 0; i < csvline_length(csvline); ++i) {
-		printf("[%d] = [%s]\n", i, csvline_get(csvline, i));
-	}
-
-	csvline_delete(csvline);
-	return 0;
+	return alias_main(argc, argv);
 }
 #endif

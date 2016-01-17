@@ -92,7 +92,7 @@ run_alias(int argc, char** argv) {
 	// Find command
 	Command command = find_command(cmdargv[0]);
 	if (!command) {
-		ret = caperr(PROGNAME, CAPERR_NOTFOUND, "command \"%s\" on alias \"%s\"", cmdargv[0], aliasname);
+		ret = caperr(PROGNAME, CAPERR_NOTFOUND, "command \"%s\" of alias \"%s\"", cmdargv[0], aliasname);
 		goto done;
 	}
 

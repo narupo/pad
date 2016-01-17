@@ -167,27 +167,17 @@ file_read_string(FILE* fin) {
 		return NULL;
 	}
 
-	// Buffer for read stream
-	Buffer* buf = buffer_new();
-	if (!buf) {
-		WARN("Failed to construct buffer");
+	size_t size = file_size(fin);
+	char* dst = (char*) malloc(sizeof(char)*size+1); // +1 for final nul
+	if (!dst) {
+		WARN("Failed to allocate memory");
 		return NULL;
 	}
 
-	// Read stream
-	int ch;
-	for (;;) {
-		ch = fgetc(fin);
-		if (ch == EOF || ferror(fin)) {
-			goto done;
-		}
-		buffer_push(buf, ch);
-	}
+	fread(dst, sizeof(char), size, fin);
+	dst[size] = '\0';
 
-done:
-	// Done
-	buffer_push(buf, '\0');
-	return buffer_escape_delete(buf);
+	return dst;
 }
 
 char*
@@ -246,6 +236,12 @@ file_getline(char* dst, size_t dstsize, FILE* fin) {
 	// Done
 	*cur = '\0';
 	return dst;
+}
+
+long
+file_size(FILE* stream) {
+	DIE("TODO: https://www.securecoding.cert.org/confluence/display/c/FIO19-C.+Do+not+use+fseek%28%29+and+ftell%28%29+to+compute+the+size+of+a+regular+file");
+	return 0L;
 }
 
 /*********************
