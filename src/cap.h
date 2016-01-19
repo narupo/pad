@@ -31,7 +31,7 @@ SOFTWARE.
 #include "help.h"
 #include "cat.h"
 #include "ls.h"
-#include "cd.h"
+#include "root.h"
 #include "edit.h"
 #include "editor.h"
 #include "deploy.h"

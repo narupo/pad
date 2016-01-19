@@ -1,7 +1,7 @@
 #include "config.h"
 
 struct Config {
-	char rootdirpath[FILE_NPATH];
+	char configdirpath[FILE_NPATH];
 	ConfigSetting* setting;
 };
 
@@ -48,13 +48,13 @@ config_delete(Config* self) {
 /**
  * Construct Config from directory
  * 
- * @param[in] rootdirpath source directory of construct
+ * @param[in] configdirpath source directory of construct
  *
  * @return success to pointer to Config
  * @return failed to pointer to NULL 
  */
 static Config*
-config_new_from_dir(char const* rootdirpath) {
+config_new_from_dir(char const* configdirpath) {
 	// Construct
 	Config* self = (Config*) calloc(1, sizeof(Config));
 	if (!self) {
@@ -63,8 +63,8 @@ config_new_from_dir(char const* rootdirpath) {
 	}
 
 	// Make root path from constant because constant path is not solved
-	if (!file_solve_path(self->rootdirpath, NUMOF(self->rootdirpath), rootdirpath)) {
-		WARN("Failed to solve path \"%s\"", rootdirpath);
+	if (!file_solve_path(self->configdirpath, NUMOF(self->configdirpath), configdirpath)) {
+		WARN("Failed to solve path \"%s\"", configdirpath);
 		free(self);
 		return NULL;
 	}
@@ -72,7 +72,7 @@ config_new_from_dir(char const* rootdirpath) {
 	// Solve root directory path
 	char sdirpath[FILE_NPATH];
 
-	if (!file_solve_path(sdirpath, sizeof sdirpath, self->rootdirpath)) {
+	if (!file_solve_path(sdirpath, sizeof sdirpath, self->configdirpath)) {
 		free(self);
 		return NULL;
 	}
@@ -143,8 +143,8 @@ config_instance(void) {
 *********/
 
 char const*
-config_root(Config const* self) {
-	return self->rootdirpath;
+config_dir(Config const* self) {
+	return self->configdirpath;
 }
 
 char const*

@@ -1,20 +1,20 @@
-#include "cd.h"
+#include "root.h"
 
-static char const* PROGNAME = "cap cd";
+static char const* PROGNAME = "cap root";
 static char const* optcdpath;
 
 void
-cd_usage(void) {
+root_usage(void) {
 	term_eprintf(
-		"Usage: cap cd\n"
+		"Usage: %s\n"
 		"\n"
 		"\t-h, --help\tdisplay usage.\n"
 		"\n"
-	);
+	, PROGNAME);
 }
 
 static int
-cd_run(int argc, char* argv[]) {
+root_run(int argc, char* argv[]) {
 	// Load config
 	Config* config = config_instance();
 	if (!config) {
@@ -23,13 +23,13 @@ cd_run(int argc, char* argv[]) {
 
 	if (argc < 2) {
 		// Display cd path
-		term_printf("%s\n", config_path(config, "cd"));
+		term_printf("%s\n", config_path(config, "root"));
 		goto done;
 	}
 
 	// Change cap's current directory
 	if (optcdpath && file_is_dir(optcdpath)) {
-		if (!config_set_path(config, "cd", optcdpath)) {
+		if (!config_set_path(config, "root", optcdpath)) {
 			return caperr(PROGNAME, CAPERR_EXECUTE, "set path \"%s\"", optcdpath);
 		}
 
@@ -46,7 +46,7 @@ done:
 }
 
 int
-cd_main(int argc, char* argv[]) {
+root_main(int argc, char* argv[]) {
 	// Parse options
 	for (;;) {
 		static struct option longopts[] = {
@@ -61,7 +61,7 @@ cd_main(int argc, char* argv[]) {
 		}
 
 		switch (cur) {
-			case 'h': cd_usage(); return 0; break;
+			case 'h': root_usage(); return 0; break;
 			case '?': // Break through
 			default: return caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "Unknown option"); break;
 		}
@@ -72,6 +72,5 @@ cd_main(int argc, char* argv[]) {
 		optcdpath = argv[optind]; // Yes
 	}
 
-	return cd_run(argc, argv);
+	return root_run(argc, argv);
 }
-

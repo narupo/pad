@@ -11,7 +11,7 @@ static const struct Command {
 	{"help", help_usage},
 	{"cat", cat_usage},
 	{"ls", ls_usage},
-	{"cd", cd_usage},
+	{"root", root_usage},
 	{"edit", edit_usage},
 	{"editor", editor_usage},
 	{"deploy", deploy_usage},

@@ -40,7 +40,7 @@ config_instance(void);
  * @return failed to pointer to NULL
  */
 char const*
-config_root(Config const* self);
+config_dir(Config const* self);
 
 /**
  * Make normalized cap's path from basename
