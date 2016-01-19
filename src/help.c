@@ -62,7 +62,7 @@ help_usage(void) {
 		"The commands are:\n"
 		"\n"
 		"\thelp   display usage\n"
-		"\tcd     display or set current directory path\n"
+		"\troot   display or set root directory path\n"
 		"\tls     display cap file list\n"
 		"\tcat    display cap file\n"
 		"\trun    run script\n"
