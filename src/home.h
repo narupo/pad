@@ -1,5 +1,5 @@
-#ifndef ROOT_H
-#define ROOT_H
+#ifndef HOME_H
+#define HOME_H
 
 #include "term.h"
 #include "file.h"
@@ -7,10 +7,10 @@
 #include "caperr.h"
 
 void
-root_usage(void);
+home_usage(void);
 
 int
-root_main(int argc, char* argv[]);
+home_main(int argc, char* argv[]);
 
 #endif
 
