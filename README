@@ -7,15 +7,16 @@ Usage:
 The commands are:
 
 	help   display usage
-	cat    display cap file
 	ls     display cap file list
 	cd     display or set current directory path
-	edit   edit cap file
-	editor display or set editor path
-	deploy deploy files from directory
-	make   display and make by cap's make roule
-	path   display normalized path of cap file
+	cat    display cap file
 	run    run script
+	home   display or set home directory path
+	make   display and make by cap's make roule
+	edit   edit cap file
+	path   display normalized path of cap file
 	alias  add alias of cap's command
 	brief  display brief of file
+	editor display or set editor path
+	deploy deploy files from directory
 
