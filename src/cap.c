@@ -36,7 +36,7 @@ find_command(char const* name) {
 	} table[] = {
 		{"ls", ls_main},
 		{"cd", cd_main},
-		{"root", root_main},
+		{"home", home_main},
 		{"cat", cat_main},
 		{"run", run_main},
 		{"help", help_main},

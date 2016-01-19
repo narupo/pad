@@ -12,7 +12,7 @@ static const struct Command {
 	{"cd", cd_usage},
 	{"help", help_usage},
 	{"cat", cat_usage},
-	{"root", root_usage},
+	{"home", home_usage},
 	{"edit", edit_usage},
 	{"editor", editor_usage},
 	{"deploy", deploy_usage},
@@ -67,7 +67,7 @@ help_usage(void) {
 		"\tcd     display or set current directory path\n"
 		"\tcat    display cap file\n"
 		"\trun    run script\n"
-		"\troot   display or set root directory path\n"
+		"\thome   display or set home directory path\n"
 		"\tmake   display and make by cap's make roule\n"
 		"\tedit   edit cap file\n"
 		"\tpath   display normalized path of cap file\n"
