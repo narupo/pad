@@ -8,9 +8,10 @@ static const struct Command {
 	char const* name;
 	Usage usage;
 } commands[] = {
+	{"ls", ls_usage},
+	{"cd", cd_usage},
 	{"help", help_usage},
 	{"cat", cat_usage},
-	{"ls", ls_usage},
 	{"root", root_usage},
 	{"edit", edit_usage},
 	{"editor", editor_usage},
@@ -62,10 +63,11 @@ help_usage(void) {
 		"The commands are:\n"
 		"\n"
 		"\thelp   display usage\n"
-		"\troot   display or set root directory path\n"
 		"\tls     display cap file list\n"
+		"\tcd     display or set current directory path\n"
 		"\tcat    display cap file\n"
 		"\trun    run script\n"
+		"\troot   display or set root directory path\n"
 		"\tmake   display and make by cap's make roule\n"
 		"\tedit   edit cap file\n"
 		"\tpath   display normalized path of cap file\n"
