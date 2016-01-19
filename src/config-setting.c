@@ -235,10 +235,10 @@ hashmap_set_copy(HashMap* self, char const* key, HashMap_const_type val) {
 ***********************************/
 
 #if defined(_WIN32) || defined(_WIN64)
-static char const* DEFAULT_CD_PATH = "C:/Windows/Temp";
+static char const* DEFAULT_ROOT_PATH = "C:/Windows/Temp";
 static char const* DEFAULT_EDITOR_PATH = "C:/Windows/notepad.exe";
 #else
-static char const* DEFAULT_CD_PATH = "/tmp";
+static char const* DEFAULT_ROOT_PATH = "/tmp";
 static char const* DEFAULT_EDITOR_PATH = "/usr/bin/vi";
 #endif
 
@@ -334,7 +334,7 @@ self_create_file(ConfigSetting* self, char const* fname) {
 	}
 	
 	// Write lines to file
-	fprintf(fout, "cd%c%s\n", LINE_FORMAT_DELIM, DEFAULT_CD_PATH);
+	fprintf(fout, "root%c%s\n", LINE_FORMAT_DELIM, DEFAULT_ROOT_PATH);
 	fprintf(fout, "editor%c%s\n", LINE_FORMAT_DELIM, DEFAULT_EDITOR_PATH);
 
 	// Done
@@ -372,7 +372,8 @@ configsetting_new_from_file(char const* fname) {
 	}
 
 	// Set default values
-	hashmap_set_copy(self->pathmap, "cd", DEFAULT_CD_PATH);
+	hashmap_set_copy(self->pathmap, "root", DEFAULT_ROOT_PATH);
+	hashmap_set_copy(self->pathmap, "cd", DEFAULT_ROOT_PATH);
 	hashmap_set_copy(self->pathmap, "editor", DEFAULT_EDITOR_PATH);
 
 	// Check file

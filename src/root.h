@@ -1,5 +1,5 @@
-#ifndef CD_H
-#define CD_H
+#ifndef ROOT_H
+#define ROOT_H
 
 #include "term.h"
 #include "file.h"
@@ -7,10 +7,10 @@
 #include "caperr.h"
 
 void
-cd_usage(void);
+root_usage(void);
 
 int
-cd_main(int argc, char* argv[]);
+root_main(int argc, char* argv[]);
 
 #endif
 

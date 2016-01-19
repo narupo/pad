@@ -35,7 +35,7 @@ find_command(char const* name) {
 		Command command;
 	} table[] = {
 		{"ls", ls_main},
-		{"cd", cd_main},
+		{"root", root_main},
 		{"cat", cat_main},
 		{"run", run_main},
 		{"edit", edit_main},
@@ -46,7 +46,7 @@ find_command(char const* name) {
 		{"brief", brief_main},
 		{"editor", editor_main},
 		{"deploy", deploy_main},
-		{0},
+		{0}, // Null-terminator
 	};
 	
 	// Find command by name

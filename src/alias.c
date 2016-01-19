@@ -187,7 +187,7 @@ static char*
 command_path_from_cd(char* dst, size_t dstsize) {
 	Config* config = config_instance();
 	char const* cd = config_path(config, "cd");
-	char const* root = config_root(config);
+	char const* root = config_dir(config);
 
 	strrems(dst, dstsize, cd, ":\\/");
 	snprintf(dst, dstsize, "%s/alias-%d", root, hashi(dst, ALIAS_NHASH));
