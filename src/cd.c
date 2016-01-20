@@ -89,9 +89,47 @@ command_parse_options(Command* self) {
 }
 
 static int
-command_run(Command* self) {
-	printf("name[%s]\n", self->name);
+command_cd_home(Command* self, Config* config) {
+	char const* home = config_path(config, "home");
+	config_set_path(config, "cd", home);
 	return 0;
+}
+
+static int
+command_run(Command* self) {
+	int ret = 0;
+	Config* config = config_instance();
+
+	if (self->argc == self->optind) {
+		command_cd_home(self, config);
+		config_save(config);
+		return ret;
+	}
+
+	char const* curcd = config_path(config, "cd");
+	char const* relpath = self->argv[self->optind];
+
+	char tmp[FILE_NPATH];
+	char newcd[FILE_NPATH];
+	snprintf(tmp, sizeof tmp, "%s/%s", curcd, relpath);
+	file_solve_path(newcd, sizeof newcd, tmp);
+	if (!file_is_dir(newcd)) {
+		return caperr(PROGNAME, CAPERR_ERROR, "Failed to cd \"%s\"", newcd);
+	}
+
+	char const* home = config_path(config, "home");
+	size_t homelen = strlen(home);
+	size_t newcdlen = strlen(newcd);
+	if (newcdlen < homelen && strncmp(home, newcd, newcdlen) == 0) {
+		// Can't move to upper of home directory
+		command_cd_home(self, config);
+	} else {
+		config_set_path(config, "cd", newcd);
+	}
+
+	config_save(config);
+
+	return ret;
 }
 
 /**********************

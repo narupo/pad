@@ -22,14 +22,19 @@ home_run(int argc, char* argv[]) {
 	}
 
 	if (argc < 2) {
-		// Display cd path
+		// Display home path
 		term_printf("%s\n", config_path(config, "home"));
 		goto done;
 	}
 
-	// Change cap's current directory
+	// Change cap's home directory
 	if (optcdpath && file_is_dir(optcdpath)) {
 		if (!config_set_path(config, "home", optcdpath)) {
+			return caperr(PROGNAME, CAPERR_EXECUTE, "set path \"%s\"", optcdpath);
+		}
+
+		// And change current directory to home
+		if (!config_set_path(config, "cd", optcdpath)) {
 			return caperr(PROGNAME, CAPERR_EXECUTE, "set path \"%s\"", optcdpath);
 		}
 
