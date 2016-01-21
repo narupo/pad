@@ -37,7 +37,7 @@ path_run(int argc, char* argv[]) {
 	char const* basename = argv[1];
 	char spath[FILE_NPATH];
 
-	if (!config_path_from_base(config, spath, sizeof spath, basename)) {
+	if (!config_path_with_cd(config, spath, sizeof spath, basename)) {
 		caperr(PROGNAME, CAPERR_INVALID, "basename \"%s\"", basename);
 		goto fail_path_from_base;
 	}

@@ -7,6 +7,7 @@
 #include "csvline.h"
 #include "strarray.h"
 #include "caperr.h"
+#include "buffer.h"
 
 #include <stdio.h>
 #include <stdlib.h>

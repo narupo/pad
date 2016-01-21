@@ -158,21 +158,21 @@ config_path(Config const* self, char const* key) {
 	return NULL;
 }
 
-char*
-config_path_from_base(Config const* self, char* dst, size_t dstsize, char const* basename) {
+static char*
+config_path_with(Config const* self, char* dst, size_t dstsize, char const* with, char const* base) {
 	// Check arguments
-	if (!self || !dst || !basename) {
+	if (!self || !dst || !base) {
 		WARN("Invalid arguments");
 		return NULL;
 	}
 
 	// Get cap's current directory path
-	char const* cdpath = NULL;
+	char const* withpath = NULL;
 
 	if (self_lock()) {
-		cdpath = configsetting_path(self->setting, "cd");
-		if (!cdpath) {
-			WARN("Not found cd in setting");
+		withpath = configsetting_path(self->setting, with);
+		if (!withpath) {
+			WARN("Not found \"%s\" in setting", with);
 			*dst = '\0';
 			self_unlock();
 			return dst;
@@ -182,7 +182,7 @@ config_path_from_base(Config const* self, char* dst, size_t dstsize, char const*
 
 	// Make path
 	char tmp[dstsize];
-	snprintf(tmp, dstsize, "%s/%s", cdpath, basename);
+	snprintf(tmp, dstsize, "%s/%s", withpath, base);
 
 	// Solve path
 	if (!file_solve_path(dst, dstsize, tmp)) {
@@ -191,6 +191,16 @@ config_path_from_base(Config const* self, char* dst, size_t dstsize, char const*
 	}
 
 	return dst;
+}
+
+char*
+config_path_with_cd(Config const* self, char* dst, size_t dstsize, char const* base) {
+	return config_path_with(self, dst, dstsize, "cd", base);
+}
+
+char*
+config_path_with_home(Config const* self, char* dst, size_t dstsize, char const* base) {
+	return config_path_with(self, dst, dstsize, "home", base);
 }
 
 char*
@@ -207,7 +217,7 @@ config_make_path_from_base(Config const* self, char const* basename) {
 		return NULL;
 	}
 
-	return config_path_from_base(self, dst, FILE_NPATH, basename);
+	return config_path_with_cd(self, dst, FILE_NPATH, basename);
 }
 
 /*********

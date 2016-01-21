@@ -301,7 +301,7 @@ command_display(Command const* self) {
 
 		// Get full path from name
 		char path[FILE_NPATH];
-		if (!config_path_from_base(self->config, path, sizeof path, name)) {
+		if (!config_path_with_cd(self->config, path, sizeof path, name)) {
 			caperr(PROGNAME, CAPERR_SOLVE, "\"%s\"", name);
 			continue;
 		}

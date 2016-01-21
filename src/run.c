@@ -101,7 +101,7 @@ command_make_cmdline(Command const* self, Config const* config, char* dst, size_
 
 	// Get command path on cap
 	char path[FILE_NPATH];
-	if (!config_path_from_base(config, path, sizeof path, name)) {
+	if (!config_path_with_home(config, path, sizeof path, name)) {
 		return caperr(PROGNAME, CAPERR_ERROR, "Failed to path from base \"%s\"", name);
 	}
 
