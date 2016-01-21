@@ -122,5 +122,8 @@ config_set_path(Config* self, char const* key, char const* path);
 bool
 config_save(Config const* self);
 
+bool
+config_is_out_of_home(Config const* self, char const* path);
+
 #endif
 
