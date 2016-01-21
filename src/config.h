@@ -43,18 +43,32 @@ char const*
 config_dir(Config const* self);
 
 /**
- * Make normalized cap's path from basename
+ * Make normalized cap's path from basename with home directory
  *
  * @param[in] self 
  * @param[out] dst destination of normalized path
  * @param[in] dstsize size of destination
- * @param[in] basename basename
+ * @param[in] base basename
  *
  * @return success to pointer to dst
  * @return failed to pointer to NULL
  */
 char*
-config_path_from_base(Config const* self, char* dst, size_t dstsize, char const* basename);
+config_path_with_home(Config const* self, char* dst, size_t dstsize, char const* base);
+
+/**
+ * Make normalized cap's path from basename with current directory
+ *
+ * @param[in] self 
+ * @param[out] dst destination of normalized path
+ * @param[in] dstsize size of destination
+ * @param[in] base basename
+ *
+ * @return success to pointer to dst
+ * @return failed to pointer to NULL
+ */
+char*
+config_path_with_cd(Config const* self, char* dst, size_t dstsize, char const* basename);
 
 /**
  * Make normalized cap's path from basename

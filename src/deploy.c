@@ -35,7 +35,7 @@ deploy_run(char const* dirname) {
 	// Make path
 	char dirpath[FILE_NPATH];
 
-	if (!config_path_from_base(config, dirpath, sizeof dirpath, dirname)) {
+	if (!config_path_with_cd(config, dirpath, sizeof dirpath, dirname)) {
 		return caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from \"%s\"", dirname);
 	}
 

@@ -125,6 +125,14 @@ command_parse_options(Command* self) {
 	return true;
 }
 
+/**
+ * Create hash value from string
+ * 
+ * @param[in] src source string
+ * @param[in] nhash max hash size
+ *
+ * @return number of hash value
+ */
 static int
 hashi(char const* src, int nhash) {
 	int n = 0;
@@ -175,7 +183,7 @@ getcol(FILE* fin, char* dst, size_t colsize) {
 }
 
 /**
- * Create path of alias file by hash value of current directory and path of cap's root
+ * Create path of alias file by hash value of home directory and path of cap's root
  *
  * @param[out] dst pointer to destination buffer for created path
  * @param[int] dstsize number of size  of destination buffer
@@ -186,11 +194,11 @@ getcol(FILE* fin, char* dst, size_t colsize) {
 static char*
 command_path_from_cd(char* dst, size_t dstsize) {
 	Config* config = config_instance();
-	char const* cd = config_path(config, "cd");
-	char const* home = config_dir(config);
+	char const* home = config_path(config, "home");
+	char const* confdir = config_dir(config);
 
-	strrems(dst, dstsize, cd, ":\\/");
-	snprintf(dst, dstsize, "%s/alias-%d", home, hashi(dst, ALIAS_NHASH));
+	strrems(dst, dstsize, home, ":\\/");
+	snprintf(dst, dstsize, "%s/alias-%d", confdir, hashi(dst, ALIAS_NHASH));
 
 	return dst;
 }
@@ -229,7 +237,7 @@ command_open_stream(void) {
  * @return failed to number of caperr
  */
 static int
-command_push_alias_to_file(char const* pushkey, char const* pushval) {
+command_push_alias_to_file(Command const* self, char const* pushkey, char const* pushval) {
 	// Random access file
 	FILE* stream = command_open_stream();
 	if (!stream) {
@@ -346,6 +354,31 @@ command_disp_alias_list(Command* self) {
 	return 0;
 }
 
+static int
+command_delete_record_from_stream_by_key(Command* self, FILE* stream, char const* delkey) {
+	for (; !feof(stream); ) {
+		char key[ALIAS_NKEY+1];
+		if (getcol(stream, key, ALIAS_NKEY) <= 0) {
+			break;
+		}
+
+		key[ALIAS_NKEY] = '\0';
+
+		if (strcmp(key, delkey) == 0) {
+			// Found key, So delete recorde
+			fseek(stream, -ALIAS_NKEY, SEEK_CUR);
+			for (int i = 0; i < ALIAS_NRECORD; ++i) {
+				fputc(0, stream);
+			}
+			break; // Done
+		}
+
+		fseek(stream, ALIAS_NVAL, SEEK_CUR);
+	}
+
+	return 0;
+}
+
 /**
  * Delete record from alias file
  *
@@ -368,32 +401,10 @@ command_delete_record(Command* self) {
 	}
 
 	// Find delete alias by key
-	for (; !feof(stream); ) {
-		char key[ALIAS_NKEY+1];
-
-		if (getcol(stream, key, ALIAS_NKEY) <= 0) {
-			break;
-		}
-
-		int i;
-		for (i = self->optind; i < self->argc; ++i) {
-			char const* delalias = self->argv[i];
-
-			if (strcmp(key, delalias) == 0) {
-				// Found delete alias record, do delete
-				fseek(stream, -ALIAS_NKEY, SEEK_CUR);
-				for (int i = 0; i < ALIAS_NRECORD; ++i) {
-					fputc(0, stream);
-				}
-				break;
-			}
-
-		}
-
-		if (i == self->argc) {
-			// Not found delete alias
-			fseek(stream, ALIAS_NVAL, SEEK_CUR);
-		}
+	for (int i = self->optind; i < self->argc; ++i) {
+		char const* delkey = self->argv[i];
+		fseek(stream, 0L, SEEK_SET);
+		command_delete_record_from_stream_by_key(self, stream, delkey);	
 	}
 
 	file_close(stream);
@@ -474,7 +485,7 @@ command_run(Command* self) {
 	// File works
 	char const* pushkey = self->argv[self->optind];
 	char const* pushval = self->argv[self->optind + 1];
-	return command_push_alias_to_file(pushkey, pushval);
+	return command_push_alias_to_file(self, pushkey, pushval);
 }
 
 /*************************

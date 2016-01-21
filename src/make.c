@@ -361,7 +361,7 @@ command_open_input_file(Command const* self, char const* capname) {
 
 	// Get cap's make file path
 	char spath[FILE_NPATH];
-	if (!config_path_from_base(self->config, spath, sizeof spath, capname)) {
+	if (!config_path_with_cd(self->config, spath, sizeof spath, capname)) {
 		caperr(PROGNAME, CAPERR_ERROR, "Failed to path from base \"%s\"", capname);
 		return NULL;
 	}
