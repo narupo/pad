@@ -267,11 +267,11 @@ config_is_out_of_home(Config const* self, char const* path) {
 	size_t homelen = strlen(home);
 	size_t pathlen = strlen(spath);
 
-	if (pathlen < homelen && strncmp(home, spath, pathlen) == 0) {
-		return true;
+	if (pathlen >= homelen && strncmp(spath, home, homelen) == 0) {
+		return false;
 	}
 
-	return false;
+	return true;
 }
 
 /*******
