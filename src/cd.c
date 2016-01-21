@@ -117,11 +117,8 @@ command_run(Command* self) {
 		return caperr(PROGNAME, CAPERR_ERROR, "Failed to cd \"%s\"", newcd);
 	}
 
-	char const* home = config_path(config, "home");
-	size_t homelen = strlen(home);
-	size_t newcdlen = strlen(newcd);
-	if (newcdlen < homelen && strncmp(home, newcd, newcdlen) == 0) {
-		// Can't move to upper of home directory
+	if (config_is_out_of_home(config, newcd)) {
+		// Can't move to out of home directory
 		command_cd_home(self, config);
 	} else {
 		config_set_path(config, "cd", newcd);

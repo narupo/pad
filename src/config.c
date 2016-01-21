@@ -190,6 +190,12 @@ config_path_with(Config const* self, char* dst, size_t dstsize, char const* with
 		return NULL;
 	}
 
+	// Is out of home?
+	if (config_is_out_of_home(self, dst)) {
+		// Yes, set path to home
+		snprintf(dst, dstsize, config_path(self, "home"));
+	}
+
 	return dst;
 }
 
@@ -243,6 +249,28 @@ config_save(Config const* self) {
 		return res;
 	}
 	
+	return false;
+}
+
+// TODO: FIXME
+// This logic was failed
+bool
+config_is_out_of_home(Config const* self, char const* path) {
+	char spath[FILE_NPATH];
+
+	if (!file_solve_path(spath, sizeof spath, path)) {
+		WARN("Failed to solve path of \"%s\"", path);
+		return false;
+	}
+
+	char const* home = config_path(self, "home");
+	size_t homelen = strlen(home);
+	size_t pathlen = strlen(spath);
+
+	if (pathlen < homelen && strncmp(home, spath, pathlen) == 0) {
+		return true;
+	}
+
 	return false;
 }
 
