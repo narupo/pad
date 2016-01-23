@@ -39,6 +39,7 @@ find_command(char const* name) {
 		{"home", home_main},
 		{"cat", cat_main},
 		{"run", run_main},
+		{"pwd", pwd_main},
 		{"edit", edit_main},
 		{"help", help_main},
 		{"make", make_main},

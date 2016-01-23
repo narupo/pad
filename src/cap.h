@@ -41,6 +41,7 @@ SOFTWARE.
 #include "run.h"
 #include "alias.h"
 #include "brief.h"
+#include "pwd.h"
 
 #endif
 
