@@ -2,7 +2,7 @@
 
 typedef void (*Usage)(void);
 
-static char const* PROGNAME = "cap help";
+static char const PROGNAME[] = "cap help";
 
 static const struct Command {
 	char const* name;
@@ -68,8 +68,8 @@ help_usage(void) {
 		"\tcd     display or set current directory path\n"
 		"\tcat    display cap file\n"
 		"\trun    run script\n"
-		"\tpwd    display current directory\n"
-		"\thome   display or set home directory path\n"
+		"\tpwd    display current working directory\n"
+		"\thome   display or set current home directory path\n"
 		"\tmake   display and make by cap's make roule\n"
 		"\tedit   edit cap file\n"
 		"\tpath   display normalized path of cap file\n"

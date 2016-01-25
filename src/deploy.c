@@ -1,6 +1,6 @@
 #include "deploy.h"
 
-static char const* PROGNAME = "cap deploy";
+static char const PROGNAME[] = "cap deploy";
 
 void
 deploy_usage(void) {

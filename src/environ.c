@@ -1,6 +1,6 @@
 #include "environ.h"
 
-static char const* PROGNAME = "cap environ";
+static char const PROGNAME[] = "cap environ";
 
 char const*
 environ_get(char const* key) {

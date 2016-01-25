@@ -3,7 +3,6 @@
 typedef struct Command Command;
 
 struct Command {
-	char const* name;
 	int argc;
 	int optind;
 	char** argv;
@@ -15,7 +14,7 @@ struct Command {
 	bool opt_is_disp_all;
 };
 
-static char const* PROGNAME = "cap brief";
+static char const PROGNAME[] = "cap brief";
 
 static bool
 command_parse_options(Command* self);
@@ -45,7 +44,6 @@ command_new(int argc, char* argv[]) {
 	}
 
 	// Set values
-	self->name = PROGNAME;
 	self->argc = argc;
 	self->argv = argv;
 
@@ -125,7 +123,7 @@ command_open_stream(Command const* self, char const* fname) {
 	// Ready
 	Config* config = config_instance();
 	if (!config) {
-		caperr(self->name, CAPERR_CONSTRUCT, "config");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
 		return NULL;
 	}
 
@@ -135,12 +133,12 @@ command_open_stream(Command const* self, char const* fname) {
 
 	// Check path
 	if (file_is_dir(path)) {
-		caperr(self->name, CAPERR_ERROR, "\"%s\" is a directory", path);
+		caperr(PROGNAME, CAPERR_ERROR, "\"%s\" is a directory", path);
 		return NULL;
 	}
 
 	if (!file_is_exists(path)) {
-		caperr(self->name, CAPERR_NOTFOUND, "\"%s\".", path);
+		caperr(PROGNAME, CAPERR_NOTFOUND, "\"%s\".", path);
 		return NULL;
 	}
 
@@ -153,13 +151,13 @@ command_read_from_stream(Command* self, FILE* fin, char const* fname) {
 	// Ready
 	Buffer* buf = buffer_new();
 	if (!buf) {
-		return caperr(self->name, CAPERR_CONSTRUCT, "buffer");
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "buffer");
 	}
 
 	CapParser* parser = capparser_new();
 	if (!parser) {
 		buffer_delete(buf);
-		return caperr(self->name, CAPERR_CONSTRUCT, "parser");
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "parser");
 	}
 
 	// Read briefs in file
@@ -215,7 +213,7 @@ command_run(Command* self) {
 
 			FILE* fin = command_open_stream(self, fname);
 			if (!fin) {
-				ret = caperr(self->name, CAPERR_FOPEN, "\"%s\"", fname);
+				ret = caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", fname);
 				goto fail_open_file;
 			}
 

@@ -25,7 +25,7 @@ SOFTWARE.
 
 typedef int (*Command)(int, char**);
 
-static char const* PROGNAME = "cap";
+static char const PROGNAME[] = "cap";
 
 static Command
 find_command(char const* name) {
