@@ -235,11 +235,11 @@ hashmap_set_copy(HashMap* self, char const* key, HashMap_const_type val) {
 ***********************************/
 
 #if defined(_WIN32) || defined(_WIN64)
-static char const* DEFAULT_HOME_PATH = "C:/Windows/Temp";
-static char const* DEFAULT_EDITOR_PATH = "C:/Windows/notepad.exe";
+static char const DEFAULT_HOME_PATH[] = "C:/Windows/Temp";
+static char const DEFAULT_EDITOR_PATH[] = "C:/Windows/notepad.exe";
 #else
-static char const* DEFAULT_HOME_PATH = "/tmp";
-static char const* DEFAULT_EDITOR_PATH = "/usr/bin/vi";
+static char const DEFAULT_HOME_PATH[] = "/tmp";
+static char const DEFAULT_EDITOR_PATH[] = "/usr/bin/vi";
 #endif
 
 static int const LINE_FORMAT_DELIM = ',';

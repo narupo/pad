@@ -22,7 +22,6 @@ enum {
 ****************/
 
 struct Command {
-	char const* name;
 	int argc;
 	char** argv;
 	int optind;
@@ -35,7 +34,7 @@ struct Command {
 * alias variables *
 ******************/
 
-static char const* PROGNAME = "cap alias";
+static char const PROGNAME[] = "cap alias";
 
 /*******************
 * alias prototypes *
@@ -71,7 +70,6 @@ command_new(int argc, char* argv[]) {
 	}
 
 	// Set values
-	self->name = PROGNAME;
 	self->argc = argc;
 	self->argv = argv;
 
@@ -117,7 +115,7 @@ command_parse_options(Command* self) {
 
 	// Check result of parse options
 	if (self->argc < self->optind) {
-		caperr(self->name, CAPERR_PARSE_OPTIONS, "command");
+		caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "command");
 		return false;
 	}
 

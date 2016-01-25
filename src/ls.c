@@ -3,7 +3,6 @@
 typedef struct Command Command;
 
 struct Command {
-	char const* name;
 	int argc;
 	char** argv;
 	int optind;
@@ -23,7 +22,7 @@ struct Command {
 	bool opt_is_tags;
 };
 
-static char const* PROGNAME = "cap ls";
+static char const PROGNAME[] = "cap ls";
 
 bool
 command_parse_options(Command* self);
@@ -46,7 +45,6 @@ command_new(int argc, char* argv[]) {
 		return NULL;
 	}
 
-	self->name = PROGNAME;
 	self->argc = argc;
 	self->argv = argv;
 

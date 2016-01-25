@@ -12,7 +12,6 @@ enum {
 };
 
 struct Command {
-	char const* name; // Command name
 	int argc; // Like a main function arguments
 	char** argv; // "
 	int optind; // Save getopt's optind
@@ -29,7 +28,7 @@ struct Command {
 };
 
 // Program name
-static char const* PROGNAME = "cap cat";
+static char const PROGNAME[] = "cap cat";
 
 /*************
 * Prototypes *
@@ -74,7 +73,6 @@ command_new(int argc, char* argv[]) {
 	}
 
 	// Set values
-	self->name = PROGNAME;
 	self->argc = argc;
 	self->argv = argv;
 	self->toggle_display = true;  // Need display by construct

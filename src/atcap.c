@@ -18,7 +18,7 @@ enum {
 	CAPPARSER_PARSE_ERROR,
 };
 
-static char const* PROGNAME = "atcap";
+static char const PROGNAME[] = "atcap";
 
 /************
 * CapParser *

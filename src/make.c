@@ -3,7 +3,6 @@
 typedef struct Command Command;
 
 struct Command {
-	char const* name;
 	int argc;
 	int optind;
 	char** argv;
@@ -13,7 +12,7 @@ struct Command {
 	bool is_usage;
 };
 
-static char const* PROGNAME = "cap make";
+static char const PROGNAME[] = "cap make";
 
 /*************
 * Prototypes *
@@ -92,7 +91,6 @@ command_new(Config const* config, int argc, char* argv[]) {
 	}
 
 	// Set values
-	self->name = PROGNAME;
 	self->argc = argc;
 	self->argv = argv;
 	self->config = config;

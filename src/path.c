@@ -1,6 +1,6 @@
 #include "path.h"
 
-static char const* PROGNAME = "cap path";
+static char const PROGNAME[] = "cap path";
 
 void _Noreturn
 path_usage(void) {

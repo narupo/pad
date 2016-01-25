@@ -58,12 +58,11 @@ enum {
 };
 
 struct Command {
-	char const* name;
 	int argc;
 	char** argv;
 };
 
-static char const* PROGNAME = "cap run";
+static char const PROGNAME[] = "cap run";
 
 /*****************
 * Delete and New *
@@ -84,7 +83,6 @@ command_new(int argc, char* argv[]) {
 		return NULL;
 	}
 
-	self->name = PROGNAME;
 	self->argc = argc;
 	self->argv = argv;
 
@@ -101,7 +99,7 @@ command_make_cmdline(Command const* self, Config const* config, char* dst, size_
 
 	// Get command path on cap
 	char path[FILE_NPATH];
-	if (!config_path_with_home(config, path, sizeof path, name)) {
+	if (!config_path_with_cd(config, path, sizeof path, name)) {
 		return caperr(PROGNAME, CAPERR_ERROR, "Failed to path from base \"%s\"", name);
 	}
 

@@ -1,17 +1,15 @@
 #include "home.h"
 
-static char const* PROGNAME = "cap home";
+/*****************
+* home variables *
+*****************/
+
+static char const PROGNAME[] = "cap home";
 static char const* optcdpath;
 
-void
-home_usage(void) {
-	term_eprintf(
-		"Usage: %s\n"
-		"\n"
-		"\t-h, --help\tdisplay usage.\n"
-		"\n"
-	, PROGNAME);
-}
+/*************************
+* home private functions *
+*************************/
 
 static int
 home_run(int argc, char* argv[]) {
@@ -30,12 +28,12 @@ home_run(int argc, char* argv[]) {
 	// Change cap's home directory
 	if (optcdpath && file_is_dir(optcdpath)) {
 		if (!config_set_path(config, "home", optcdpath)) {
-			return caperr(PROGNAME, CAPERR_EXECUTE, "set path \"%s\"", optcdpath);
+			return caperr(PROGNAME, CAPERR_WRITE, "path \"%s\"", optcdpath);
 		}
 
 		// And change current directory to home
 		if (!config_set_path(config, "cd", optcdpath)) {
-			return caperr(PROGNAME, CAPERR_EXECUTE, "set path \"%s\"", optcdpath);
+			return caperr(PROGNAME, CAPERR_WRITE, "path \"%s\"", optcdpath);
 		}
 
 		if (!config_save(config)) {
@@ -48,6 +46,20 @@ home_run(int argc, char* argv[]) {
 
 done:
 	return 0;
+}
+
+/************************
+* home public interface *
+************************/
+
+void
+home_usage(void) {
+	term_eprintf(
+		"Usage: %s\n"
+		"\n"
+		"\t-h, --help\tdisplay usage.\n"
+		"\n"
+	, PROGNAME);
 }
 
 int

@@ -12,7 +12,7 @@ struct Command {
 	char** argv;
 };
 
-static char const* PROGNAME = "cap edit";
+static char const PROGNAME[] = "cap edit";
 
 static void
 command_delete(Command* self) {
