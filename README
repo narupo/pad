@@ -11,7 +11,8 @@ The commands are:
 	cd     display or set current directory path
 	cat    display cap file
 	run    run script
-	home   display or set home directory path
+	pwd    display current working directory
+	home   display or set current home directory path
 	make   display and make by cap's make roule
 	edit   edit cap file
 	path   display normalized path of cap file
