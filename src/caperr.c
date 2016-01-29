@@ -26,6 +26,19 @@ static struct {
 static pthread_mutex_t
 caperrs_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+
+/********************
+* caperr prototypes *
+********************/
+
+char const*
+caperr_to_string(int number);
+
+
+/**************
+* caperr util *
+**************/
+
 static bool
 caperrs_lock(void) {
 	if (pthread_mutex_lock(&caperrs_mutex) == 0) {
@@ -41,6 +54,11 @@ caperrs_unlock(void) {
 	}
 	return false;
 }
+
+
+/***************
+* caperr stack *
+***************/
 
 static void
 caperrs_push(
@@ -126,6 +144,45 @@ _caperr(
 	va_start(args, fmt);
 	caperrs_push(errno, fname, funcname, lineno, header, number, fmt, args);
 	va_end(args);
+
+	return number;
+}
+
+int
+_caperr_printf(
+	char const* fname,
+	char const* funcname,
+	int lineno,
+	char const* header,
+	int number,
+	char const* fmt,
+	...) {
+
+#ifdef DEBUG
+	fprintf(stderr, "%s: %s: %d: ", fname, funcname, lineno);
+#endif
+
+	char const* what = caperr_to_string(number);
+	fprintf(stderr, "%s: %s ", header, what);
+	
+	size_t fmtlen = strlen(fmt);
+	if (fmtlen) {
+		va_list args;
+		va_start(args, fmt);
+		
+		vfprintf(stderr, fmt, args);
+
+		va_end(args);
+
+		if (fmt[fmtlen-1] != '.') {
+			fprintf(stderr, ".");
+		}
+	}
+
+
+	if (errno != 0) {
+		fprintf(stderr, " %s.", strerror(errno));
+	}
 
 	return number;
 }
