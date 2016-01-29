@@ -5,7 +5,7 @@ enum {
 	NFNAME = 32,
 	NFUNCNAME = 32,
 	NHEADER = 32,
-	NMESSAGE = 64,
+	NMESSAGE = 128,
 };
 
 typedef struct {
