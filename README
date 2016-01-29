@@ -8,6 +8,7 @@ The commands are:
 
 	help   display usage
 	ls     display cap file list
+	rm     remove cap file or directory
 	cd     display or set current directory path
 	cat    display cap file
 	run    run script
