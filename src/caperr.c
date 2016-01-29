@@ -149,6 +149,7 @@ caperr_to_string(int number) {
 		case CAPERR_READ: return "Failed to read"; break;
 		case CAPERR_READDIR: return "Failed to read directory"; break;
 		case CAPERR_WRITE: return "Failed to write"; break;
+		case CAPERR_REMOVE: return "Failed to remove"; break;
 		case CAPERR_EXECUTE: return "Failed to execute"; break;
 		case CAPERR_SOLVE: return "Failed to solve"; break;
 	}
