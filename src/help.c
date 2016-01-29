@@ -9,19 +9,20 @@ static const struct Command {
 	Usage usage;
 } commands[] = {
 	{"ls", ls_usage},
+	{"rm", rm_usage},
 	{"cd", cd_usage},
-	{"help", help_usage},
 	{"cat", cat_usage},
-	{"home", home_usage},
-	{"edit", edit_usage},
-	{"editor", editor_usage},
-	{"deploy", deploy_usage},
-	{"make", make_usage},
-	{"path", path_usage},
 	{"run", run_usage},
 	{"pwd", pwd_usage},
+	{"help", help_usage},
+	{"home", home_usage},
+	{"make", make_usage},
+	{"path", path_usage},
+	{"edit", edit_usage},
 	{"alias", alias_usage},
 	{"brief", brief_usage},
+	{"editor", editor_usage},
+	{"deploy", deploy_usage},
 	{NULL, NULL},
 };
 
@@ -65,6 +66,7 @@ help_usage(void) {
 		"\n"
 		"\thelp   display usage\n"
 		"\tls     display cap file list\n"
+		"\trm     remove cap file or directory\n"
 		"\tcd     display or set current directory path\n"
 		"\tcat    display cap file\n"
 		"\trun    run script\n"

@@ -240,7 +240,8 @@ file_getline(char* dst, size_t dstsize, FILE* fin) {
 
 long
 file_size(FILE* stream) {
-	DIE("TODO: https://www.securecoding.cert.org/confluence/display/c/FIO19-C.+Do+not+use+fseek%28%29+and+ftell%28%29+to+compute+the+size+of+a+regular+file");
+	// ("TODO: https://www.securecoding.cert.org/confluence/display/c/FIO19-C.+Do+not+use+fseek%28%29+and+ftell%28%29+to+compute+the+size+of+a+regular+file");
+	DIE("TODO");
 	return 0L;
 }
 

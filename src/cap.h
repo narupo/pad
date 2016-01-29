@@ -42,6 +42,7 @@ SOFTWARE.
 #include "alias.h"
 #include "brief.h"
 #include "pwd.h"
+#include "rm.h"
 
 #endif
 
