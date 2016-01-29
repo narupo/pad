@@ -53,7 +53,7 @@ command.
 
 
  And check 'current working directory' in cap by 'cap pwd' command.
-Yes that's right. many cap's command is a like a commands of UNIX.
+Yes that's right. Many cap's command is a like a commands of UNIX.
 So, there is no longer to be do description. You know.
 
  Okay. Let to edit your snippet file by 'cap edit' command. Cap do set editor
