@@ -6,11 +6,10 @@
 #include "config.h"
 #include "file.h"
 
-void _Noreturn
+void
 path_usage(void);
 
 int
 path_main(int argc, char* argv[]);
 
 #endif
-
