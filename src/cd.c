@@ -104,11 +104,11 @@ command_run(Command* self) {
 		return ret;
 	}
 
-	char const* curcd = config_path(config, "cd");
-	char const* relpath = self->argv[self->optind];
-
 	char tmp[FILE_NPATH];
 	char newcd[FILE_NPATH];
+
+	char const* curcd = config_path(config, "cd");
+	char const* relpath = self->argv[self->optind];
 
 	snprintf(tmp, sizeof tmp, "%s/%s", curcd, relpath);
 	file_solve_path(newcd, sizeof newcd, tmp);
