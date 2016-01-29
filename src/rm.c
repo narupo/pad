@@ -6,6 +6,8 @@ struct Command {
 	int argc;
 	int optind;
 	char** argv;
+
+	bool is_help;
 };
 
 static char const PROGNAME[] = "cap rm";
@@ -62,10 +64,7 @@ command_parse_options(Command* self) {
 		}
 
 		switch (cur) {
-		case 'h':
-			command_delete(self);
-			exit(EXIT_FAILURE);
-			break;
+		case 'h': self->is_help = true; break;
 		case '?':
 		default: return false; break;
 		}
@@ -87,7 +86,7 @@ static int
 command_run(Command* self) {
 	int ret = 0;
 
-	if (self->argc == self->optind) {
+	if (self->argc == self->optind || self->is_help) {
 		rm_usage();
 		return ret;
 	}
@@ -100,8 +99,13 @@ command_run(Command* self) {
 
 		config_path_with_cd(config, rmpath, sizeof rmpath, rmname);
 
+		if (!file_is_exists(rmpath)) {
+			ret = caperr_printf(PROGNAME, CAPERR_NOTFOUND, "\"%s\"", rmpath);
+			continue;
+		}
+
 		if (remove(rmpath) != 0) {
-			ret = caperr(PROGNAME, CAPERR_REMOVE, "\"%s\"", rmpath);
+			ret = caperr_printf(PROGNAME, CAPERR_REMOVE, "\"%s\"", rmpath);
 		}
 	}
 

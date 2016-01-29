@@ -61,6 +61,18 @@ _caperr(
 	char const* fmt,
 	...);
 
+#define caperr_printf(head, number, ...) _caperr(__FILE__, __func__, __LINE__, head, number, __VA_ARGS__);
+
+int
+_caperr_printf(
+	char const* fname,
+	char const* funcname,
+	int lineno,
+	char const* header,
+	int number,
+	char const* fmt,
+	...);
+
 int
 caperr_length(void);
 
