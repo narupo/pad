@@ -45,3 +45,29 @@ A 'home directory' path is absolute path, you know.
 
     $ cap cat myfile.txt
 
+
+ If you may change 'current working directory' in cap by 'cap cd' command.
+
+    $ cap cd ./macdonald
+
+
+ And check 'current working directory' in cap by 'cap pwd' command. Yes that's right. many cap's command is a like a commands of UNIX. So, there is no longer to be do description. You know.
+
+ Okay. Let to edit your snippet file by 'cap edit' command. Cap do set editor to 'vi' at default. If your OS is MS Windows, Cap do set editor to 'notepad.exe'.
+
+    $ cap edit menu.txt
+
+
+ What? You are Emacs user? Hello, RMS. Well, you do set other editor by 'cap editor' command. Before that check your current editor in Cap.
+
+    $ cap editor
+
+
+ Okay. Let set your editor by 'cap editor' command with a 'which' command. If you have not a 'which' command, you write absolute path of editor.
+
+    $ cap editor `which emacs`
+
+
+ Okay. Your current editor is a set editor in Cap.
+
+
