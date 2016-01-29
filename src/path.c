@@ -2,21 +2,18 @@
 
 static char const PROGNAME[] = "cap path";
 
-void _Noreturn
+void
 path_usage(void) {
-    fprintf(stderr,
-        "cap path\n"
-        "\n"
+    term_eprintf(
         "Usage:\n"
         "\n"
-        "\tcap path [file-name] [arguments]\n"
+        "\t%s [file-name] [arguments]\n"
         "\n"
         "The options are:\n"
         "\n"
         "\t-h, --help\tdisplay usage\n"
         "\n"
-    );
-    exit(EXIT_FAILURE);
+    , PROGNAME);
 }
 
 static int
@@ -24,13 +21,13 @@ path_run(int argc, char* argv[]) {
 	// Check arguments
 	if (argc < 2) {
 		path_usage();
+		return 0;
 	}
 
 	// Load config
 	Config* config = config_instance();
 	if (!config) {
-		caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
-		goto fail_config;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
 	}
 
 	// Get path from basename
@@ -38,14 +35,12 @@ path_run(int argc, char* argv[]) {
 	char spath[FILE_NPATH];
 
 	if (!config_path_with_cd(config, spath, sizeof spath, basename)) {
-		caperr(PROGNAME, CAPERR_INVALID, "basename \"%s\"", basename);
-		goto fail_path_from_base;
+		return caperr(PROGNAME, CAPERR_INVALID, "basename \"%s\"", basename);
 	}
 
 	// Check path
 	if (!file_is_exists(spath)) {
-		caperr(PROGNAME, CAPERR_NOTFOUND, "\"%s\"", spath);
-		goto fail_exists;
+		return caperr(PROGNAME, CAPERR_NOTFOUND, "\"%s\"", spath);
 	}
 
 	// Display
@@ -53,15 +48,6 @@ path_run(int argc, char* argv[]) {
 
 	// Done
 	return 0;
-
-fail_exists:
-	return 3;
-
-fail_path_from_base:
-	return 2;
-
-fail_config:
-	return 1;
 }
 
 int
@@ -82,6 +68,7 @@ path_main(int argc, char* argv[]) {
 		switch (cur) {
 		case 'h': {
 			path_usage();
+			return 0;
 		} break;
 		case '?':
 		default: {
