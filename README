@@ -35,11 +35,13 @@ A 'home directory' path is absolute path, you know.
 
     $ cap home
 
+
 Okay. And check display list of 'current working directory' in cap by 'cap ls' command.
 
     $ cap ls
 
+
 And check display file by 'cap cat' command.
 
-	$ cap cat myfile.txt
+    $ cap cat myfile.txt
 
