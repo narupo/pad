@@ -109,8 +109,10 @@ command_run(Command* self) {
 
 	char tmp[FILE_NPATH];
 	char newcd[FILE_NPATH];
+
 	snprintf(tmp, sizeof tmp, "%s/%s", curcd, relpath);
 	file_solve_path(newcd, sizeof newcd, tmp);
+	
 	if (!file_is_dir(newcd)) {
 		return caperr(PROGNAME, CAPERR_ERROR, "Failed to cd \"%s\"", newcd);
 	}
