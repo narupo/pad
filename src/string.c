@@ -36,7 +36,7 @@ str_strlen(String_type const* str) {
 
 	for (cur = str; *cur; ++cur) {
 	}
-	
+
 	return cur - str;
 }
 
@@ -148,6 +148,38 @@ str_pop_back(String* self) {
 	return NIL;
 }
 
+void
+str_push_front(String* self, String_type ch) {
+	if (self->length >= self->capacity-1) {
+		str_resize(self, self->length*2);
+	}
+
+	for (int i = self->length; i > 0; --i) {
+		self->buffer[i] = self->buffer[i-1];
+	}
+
+	self->buffer[0] = ch;
+	self->buffer[++self->length] = NIL;
+}
+
+String_type
+str_pop_front(String* self) {
+	if (self->length == 0) {
+		return NIL;
+	}
+	
+	String_type ret = self->buffer[0];
+
+	for (int i = 0; i < self->length-1; ++i) {
+		self->buffer[i] = self->buffer[i+1];
+	}
+
+	--self->length;
+	self->buffer[self->length] = NIL;
+
+	return ret;
+}
+
 /***********
 * str test *
 ***********/
@@ -189,6 +221,16 @@ test_setter(int argc, char* argv[]) {
 
 	for (int i = 0; i < 5; ++i) {
 		str_pop_back(s);
+	}
+	strinfo(s);
+
+	for (int i = 0; i < 20; ++i) {
+		str_push_front(s, i + 'a');
+	}
+	strinfo(s);
+
+	for (int i = 0; i < 5; ++i) {
+		str_pop_front(s);
 	}
 	strinfo(s);
 
