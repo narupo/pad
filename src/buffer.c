@@ -161,21 +161,23 @@ buffer_resize(Buffer* self, size_t resize) {
 }
 
 size_t
-buffer_push(Buffer* self, int ch) {
+buffer_push_back(Buffer* self, int ch) {
 	if (self->length >= self->capacity) {
 		if (!buffer_resize(self, self->capacity * 2)) {
-			goto fail;
+			return 0;
 		}
 	}
 	self->buffer[self->length++] = ch;
 	return self->length;
+}
 
-fail:
-	return 0;
+size_t
+buffer_push(Buffer* self, int ch) {
+	return buffer_push_back(self, ch);
 }
 
 int
-buffer_pop(Buffer* self) {
+buffer_pop_back(Buffer* self) {
 	int ch = 0;
 
 	if (self->length) {
@@ -183,6 +185,11 @@ buffer_pop(Buffer* self) {
 	}
 
 	return ch;
+}
+
+int
+buffer_pop(Buffer* self) {
+	return buffer_pop_back(self);
 }
 
 size_t
