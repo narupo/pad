@@ -119,8 +119,25 @@ buffer_clear(Buffer* self);
  * @return         Failed to zero.
  */
 size_t
+buffer_push_back(Buffer* self, int ch);
+
+/**
+ * @deprecated
+ */
+size_t
 buffer_push(Buffer* self, int ch);
 
+/**
+ * @param      self
+ * @return     tail element
+ */
+int
+buffer_pop_back(Buffer* self);
+
+/**
+ * @deprecated
+ * @see buffer_pop_back
+ */
 int
 buffer_pop(Buffer* self);
 
