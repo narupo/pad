@@ -234,7 +234,7 @@ capparser_mode_tags(CapParser* self) {
 
 	if (is_newline(*self->cur)) {
 		// Parse tags
-		buffer_push(self->buf, 0);
+		buffer_push(self->buf, '\0');
 		CsvLine* tags = csvline_new_parse_line(buffer_get_const(self->buf), ' ');
 		if (!tags) {
 			caperr(PROGNAME, CAPERR_PARSE, "tags");
@@ -429,6 +429,7 @@ capparser_parse_line(CapParser* self, char const* line) {
 	self->cur = line;
 	self->beg = line;
 	self->end = line + strlen(line) + 1;  // +1 for final '\0', do parse it
+	
 	buffer_clear(self->buf);
 	capcollist_clear(self->columns);
 
@@ -440,12 +441,8 @@ capparser_parse_line(CapParser* self, char const* line) {
 
 		// Check results
 		switch (res) {
-			case CAPPARSER_EOF:
-				goto done;
-				break;
-			case CAPPARSER_PARSE_ERROR:
-				goto fail;
-				break;
+		case CAPPARSER_EOF: goto done; break;
+		case CAPPARSER_PARSE_ERROR: goto fail; break;
 		}
 	}
 
