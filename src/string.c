@@ -395,7 +395,7 @@ str_shuffle(String* self) {
 	if (!self) {
 		return;
 	}
-	
+
 	for (int i = 0; i < self->length; ++i) {
 		int a = rand() % self->length;
 		int b = rand() % self->length;
@@ -655,8 +655,6 @@ main(int argc, char* argv[]) {
 
 	for (; str_getline(line, stdin); ) {
 		char* cmd = (char*) str_get_const(line);
-		printf("cmd[%s]\n", cmd);
-		fflush(stdout);
 
 		for (struct Command* cur = commands; cur->name; ++cur) {
 			size_t namelen = strlen(cur->name);
@@ -693,6 +691,7 @@ main(int argc, char* argv[]) {
 	}
 
 done:
+	str_delete(line);
 	str_delete(str);
 	return 0;
 }
