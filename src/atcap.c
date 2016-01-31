@@ -521,7 +521,7 @@ capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* braces
 		switch (capcol_type(col)) {
 			default: break;
 			case CapColBrace: {
-				// Get index for repace
+				// Get index for replace
 				char numstr[10] = {0}; // String for number [0-9]
 				char const* val = capcol_value_const(col);
 				int i;
