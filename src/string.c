@@ -383,11 +383,19 @@ bmfind(
 
 char const*
 str_find_const(String const* self, char const* target) {
+	if (!self || !target) {
+		return NULL;
+	}
+
 	return bmfind(self->buffer, self->length, target, strlen(target));
 }
 
 void
 str_shuffle(String* self) {
+	if (!self) {
+		return;
+	}
+	
 	for (int i = 0; i < self->length; ++i) {
 		int a = rand() % self->length;
 		int b = rand() % self->length;
@@ -403,6 +411,10 @@ str_shuffle(String* self) {
 
 String*
 str_getline(String* self, FILE* fin) {
+	if (!self || !fin) {
+		return NULL;
+	}
+
 	str_clear(self);
 
 	if (feof(fin)) {
