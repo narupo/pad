@@ -4,7 +4,7 @@ CMDS=cap.c cat.c home.c cd.c pwd.c rm.c deploy.c edit.c \
 	editor.c help.c ls.c make.c path.c run.c alias.c brief.c
 
 UTILS=caperr.c atcap.c buffer.c cap-file.c config-setting.c config.c \
-	csvline.c file.c strarray.c term.c util.c environ.c string.c memory.c
+	csvline.c strmap.c file.c strarray.c term.c util.c environ.c string.c memory.c
 
 LIBS=-lpthread
 
@@ -24,6 +24,9 @@ buffer: buffer.c
 
 string: string.c util.c memory.c term.c csvline.c buffer.c
 	$(CC) -DTEST_STRING $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+
+strmap: strmap.c util.c
+	$(CC) -DTEST_STRINGMAP $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 file: file.c buffer.c util.c caperr.c term.c
 	$(CC) -DDEBUG -DTEST_FILE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
