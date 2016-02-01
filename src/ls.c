@@ -195,7 +195,7 @@ command_walkdir(Command* self, char const* head, char const* tail) {
 
 	// Check path
 	if (config_is_out_of_home(self->config, dirpath)) {
-		snprintf(dirpath, sizeof dirpath, "%s", config_path(self->config, "home"));
+		return 0;
 	}
 
 	// Open directory
