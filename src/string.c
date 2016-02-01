@@ -52,6 +52,18 @@ str_delete(String* self) {
 	}
 }
 
+char*
+str_escape_delete(String* self) {
+	char* ret = NULL;
+
+	if (self) {
+		ret = self->buffer;
+		free(self);
+	}
+
+	return ret;
+}
+
 String*
 str_new(void) {
 	String* self = (String*) mem_ecalloc(1, sizeof(String));
@@ -244,7 +256,7 @@ str_pop_front(String* self) {
 }
 
 void
-str_append_string(String* self, char const* src) {
+str_append_string(String* self, String_type const* src) {
 	if (!self || !src) {
 		return;
 	}
@@ -255,7 +267,7 @@ str_append_string(String* self, char const* src) {
 		str_resize(self, (self->length + srclen) * 2);
 	}
 
-	for (char const* sp = src; *sp; ++sp) {
+	for (String_type const* sp = src; *sp; ++sp) {
 		self->buffer[self->length++] = *sp;
 	}
 	self->buffer[self->length] = NIL;
@@ -266,11 +278,21 @@ str_append_other(String* self, String const* other) {
 	if (!self || !other) {
 		return;
 	}
-	str_append_string(self, other->buffer);
+
+	if (self == other) {
+		char* buf = strdup(self->buffer);
+		if (!buf) {
+			return;
+		}
+		str_append_string(self, buf);
+		free(buf);
+	} else {
+		str_append_string(self, other->buffer);
+	}
 }
 
 void
-str_rstrip(String* self, char const* rems) {
+str_rstrip(String* self, String_type const* rems) {
 	if (!self || !rems) {
 		return;
 	}
@@ -285,7 +307,7 @@ str_rstrip(String* self, char const* rems) {
 }
 
 void
-str_lstrip(String* self, char const* rems) {
+str_lstrip(String* self, String_type const* rems) {
 	if (!self || !rems) {
 		return;
 	}
@@ -300,7 +322,7 @@ str_lstrip(String* self, char const* rems) {
 }
 
 void
-str_strip(String* self, char const* rems) {
+str_strip(String* self, String_type const* rems) {
 	str_rstrip(self, rems);
 	str_lstrip(self, rems);
 }
