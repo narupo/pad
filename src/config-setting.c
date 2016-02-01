@@ -298,7 +298,7 @@ self_load_from_file(ConfigSetting* self, char const* fname) {
 	}
 
 	// Buffer for read lines
-	Buffer* buf = buffer_new();
+	String* buf = str_new();
 	if (!buf) {
 		WARN("Failed to construct buffer");
 		fclose(fin);
@@ -306,8 +306,8 @@ self_load_from_file(ConfigSetting* self, char const* fname) {
 	}
 	
 	// Read and parse lines
-	for (; buffer_getline(buf, fin); ) {
-		char const* str = buffer_get_const(buf);
+	for (; str_getline(buf, fin); ) {
+		char const* str = str_get_const(buf);
 		if (!self_parse_read_line(self, str)) {
 			WARN("Failed to parse read line");
 			// Nothing todo
@@ -315,7 +315,7 @@ self_load_from_file(ConfigSetting* self, char const* fname) {
 	}
 
 	// Done
-	buffer_delete(buf);
+	str_delete(buf);
 	fclose(fin);
 	return true;
 }

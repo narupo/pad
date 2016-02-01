@@ -4,7 +4,7 @@
 #include "types.h"
 #include "util.h"
 #include "file.h"
-#include "buffer.h"
+#include "string.h"
 #include "csvline.h"
 
 /*****************
