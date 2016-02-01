@@ -9,6 +9,7 @@
 #include "cap-file.h"
 #include "atcap.h"
 #include "strarray.h"
+#include "string.h"
 
 #include <stdio.h>
 #include <stdlib.h>

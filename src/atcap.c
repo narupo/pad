@@ -8,7 +8,7 @@ struct CapParser {
 	char const* cur;
 	char const* beg;
 	char const* end;
-	Buffer* buf;  // Temporary buffer for parse
+	String* buf;  // Temporary buffer for parse
 	CapColList* columns;  // Temporary columns for parse
 	bool is_debug;
 };
@@ -41,11 +41,8 @@ static int capparser_mode_separate(CapParser* self);
 
 static int
 capparser_push_col(CapParser* self, CapColType type) {
-	// Ready
-	buffer_push(self->buf, '\0');
-
 	// Push column to temp row
-	char const* str = buffer_get_const(self->buf);
+	char const* str = str_get_const(self->buf);
 	CapCol* col = capcol_new_from_str(str);
 	if (!col) {
 		return caperr(PROGNAME, CAPERR_CONSTRUCT, "CapCol");
@@ -56,7 +53,7 @@ capparser_push_col(CapParser* self, CapColType type) {
 	capcollist_move_to_back(self->columns, col);
 
 	// Done
-	buffer_clear(self->buf);
+	str_clear(self->buf);
 	return 0;
 }
 
@@ -70,11 +67,8 @@ capparser_push_col_str(CapParser* self, char const* str, CapColType type) {
 
 static int
 capparser_move_to_front_col(CapParser* self, CapColType type) {
-	// Ready
-	buffer_push(self->buf, '\0');
-
 	// Make column from temp buffer
-	CapCol* col = capcol_new_from_str(buffer_get_const(self->buf));
+	CapCol* col = capcol_new_from_str(str_get_const(self->buf));
 	if (!col) {
 		return caperr(PROGNAME, CAPERR_CONSTRUCT, "CapCol");
 	}
@@ -84,7 +78,7 @@ capparser_move_to_front_col(CapParser* self, CapColType type) {
 	capcollist_move_to_front(self->columns, col);
 
 	// Done
-	buffer_clear(self->buf);
+	str_clear(self->buf);
 	return 0;	
 }
 
@@ -143,13 +137,13 @@ capparser_mode_first(CapParser* self) {
 		// Found atcap identifier
 		self->mode = capparser_mode_atcap;
 		self->cur += strlen("@cap");
-		if (buffer_length(self->buf)) {
+		if (str_length(self->buf)) {
 			capparser_push_col(self, CapColText);
 		}
 
 	} else {
 		// Text
-		buffer_push(self->buf, *self->cur);
+		str_push_back(self->buf, *self->cur);
 		++self->cur;
 	}
 
@@ -217,10 +211,10 @@ capparser_mode_brief(CapParser* self) {
 
 	} else {
 		// Ignore blanks of line header
-		if (isblank(*self->cur) && buffer_length(self->buf) == 0) {
+		if (isblank(*self->cur) && str_length(self->buf) == 0) {
 			;
 		} else {
-			buffer_push(self->buf, *self->cur);
+			str_push_back(self->buf, *self->cur);
 		}
 	}
 
@@ -234,8 +228,7 @@ capparser_mode_tags(CapParser* self) {
 
 	if (is_newline(*self->cur)) {
 		// Parse tags
-		buffer_push(self->buf, '\0');
-		CsvLine* tags = csvline_new_parse_line(buffer_get_const(self->buf), ' ');
+		CsvLine* tags = csvline_new_parse_line(str_get_const(self->buf), ' ');
 		if (!tags) {
 			caperr(PROGNAME, CAPERR_PARSE, "tags");
 			goto done_newline;
@@ -253,14 +246,14 @@ capparser_mode_tags(CapParser* self) {
 		// Go to first state
 		done_newline: {
 			capparser_turnback_mode(self, capparser_mode_first);
-			buffer_clear(self->buf);
+			str_clear(self->buf);
 
 			++self->cur;
 			return CAPPARSER_EOF;
 		}
 
 	} else {
-		buffer_push(self->buf, *self->cur);
+		str_push_back(self->buf, *self->cur);
 
 		++self->cur;
 		return 0;
@@ -287,7 +280,7 @@ capparser_mode_command(CapParser* self) {
 		return 0;
 
 	} else {
-		buffer_push(self->buf, *self->cur);
+		str_push_back(self->buf, *self->cur);
 		++self->cur;
 		return 0;
 	}
@@ -309,7 +302,7 @@ capparser_mode_brace(CapParser* self) {
 		capparser_turnback_mode(self, capparser_mode_first);
 
 	} else {
-		buffer_push(self->buf, *self->cur);
+		str_push_back(self->buf, *self->cur);
 	}
 
 	++self->cur;
@@ -321,9 +314,8 @@ capparser_mode_mark(CapParser* self) {
 	capparser_print_mode(self, "mark");
 
 	if (is_newline(*self->cur)) {
-		buffer_push(self->buf, '\0');
-		buffer_lstrip(self->buf, ' ');
-		buffer_lstrip(self->buf, '\t');
+		str_lstrip(self->buf, " ");
+		str_lstrip(self->buf, "\t");
 		capparser_push_col(self, CapColMark);
 		capparser_remove_cols(self, CapColText);
 
@@ -332,7 +324,7 @@ capparser_mode_mark(CapParser* self) {
 		return CAPPARSER_EOF;
 
 	} else {
-		buffer_push(self->buf, *self->cur);
+		str_push_back(self->buf, *self->cur);
 	}
 
 	++self->cur;
@@ -345,15 +337,14 @@ capparser_mode_goto(CapParser* self) {
 
 	if (is_newline(*self->cur)) {
 		// Push
-		buffer_lstrip(self->buf, ' ');
-		buffer_lstrip(self->buf, '\t');
+		str_lstrip(self->buf, " ");
+		str_lstrip(self->buf, "\t");
 
-		if (buffer_empty(self->buf)) {
+		if (str_empty(self->buf)) {
 			caperr(PROGNAME, CAPERR_SYNTAX, "@cap goto need goto name");
 			return CAPPARSER_PARSE_ERROR;
 		}
 
-		buffer_push(self->buf, '\0');
 		capparser_move_to_front_col(self, CapColGoto);
 		
 		capparser_turnback_mode(self, capparser_mode_first);
@@ -361,7 +352,7 @@ capparser_mode_goto(CapParser* self) {
 		return CAPPARSER_EOF;
 
 	} else {
-		buffer_push(self->buf, *self->cur);
+		str_push_back(self->buf, *self->cur);
 	}
 
 	++self->cur;
@@ -374,9 +365,8 @@ capparser_mode_separate(CapParser* self) {
 
 	if (is_newline(*self->cur)) {
 		// Push
-		buffer_lstrip(self->buf, ' ');
-		buffer_lstrip(self->buf, '\t');
-		buffer_push(self->buf, '\0');
+		str_lstrip(self->buf, " ");
+		str_lstrip(self->buf, "\t");
 		capparser_move_to_front_col(self, CapColSeparate);
 
 		capparser_turnback_mode(self, capparser_mode_first);
@@ -384,7 +374,7 @@ capparser_mode_separate(CapParser* self) {
 		return CAPPARSER_EOF;
 
 	} else {
-		buffer_push(self->buf, *self->cur);
+		str_push_back(self->buf, *self->cur);
 	}
 
 	++self->cur;
@@ -398,7 +388,7 @@ capparser_mode_separate(CapParser* self) {
 void
 capparser_delete(CapParser* self) {
 	if (self) {
-		buffer_delete(self->buf);
+		str_delete(self->buf);
 		capcollist_delete(self->columns);
 		free(self);
 	}
@@ -412,7 +402,7 @@ capparser_new(void) {
 		return NULL;
 	}
 
-	self->buf = buffer_new();
+	self->buf = str_new();
 	self->columns = capcollist_new();
 
 	return self;
@@ -430,7 +420,7 @@ capparser_parse_line(CapParser* self, char const* line) {
 	self->beg = line;
 	self->end = line + strlen(line) + 1;  // +1 for final '\0', do parse it
 	
-	buffer_clear(self->buf);
+	str_clear(self->buf);
 	capcollist_clear(self->columns);
 
 	// Run parser
@@ -583,10 +573,10 @@ test_atcap_line(int argc, char* argv[]) {
 	capparser->is_debug = true;
 
 	CapFile* capfile = capfile_new();
-	Buffer* buf = buffer_new();
+	Buffer* buf = str_new();
 
-	for (; buffer_getline(buf, fin); ) {
-		char const* line = buffer_get_const(buf);
+	for (; str_getline(buf, fin); ) {
+		char const* line = str_get_const(buf);
 		CapRow* row = capparser_make_caprow(capparser, line, braces);
 		if (!row) {
 			continue;
@@ -610,7 +600,7 @@ test_atcap_line(int argc, char* argv[]) {
 	strarray_delete(braces);
 	capparser_delete(capparser);
 	capfile_delete(capfile);
-	buffer_delete(buf);
+	str_delete(buf);
 	file_close(fin);
 	return 0;
 }

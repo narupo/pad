@@ -2,7 +2,7 @@
 #define CAPFILE2_H
 
 #include "util.h"
-#include "buffer.h"
+#include "string.h"
 
 #include <stdio.h>
 #include <stdlib.h>

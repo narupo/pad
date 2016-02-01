@@ -2,7 +2,7 @@
 #define ATCAP_H
 
 #include "util.h"
-#include "buffer.h"
+#include "string.h"
 #include "strarray.h"
 #include "csvline.h"
 #include "cap-file.h"

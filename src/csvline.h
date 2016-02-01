@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "util.h"
-#include "buffer.h"
+#include "string.h"
 
 /*************************
 * CsvLine delete and new *

@@ -6,6 +6,7 @@
 #include "config.h"
 #include "cap-file.h"
 #include "atcap.h"
+#include "string.h"
 #include <stdio.h>
 
 void

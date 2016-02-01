@@ -90,7 +90,7 @@ struct CsvLine {
 	size_t length;  // cols length
 	int delim;
 	void (*mode)(CsvLine* self);
-	Buffer* buffer;
+	String* buffer;
 	char** cols;
 	Stream stream;
 };
@@ -102,7 +102,7 @@ struct CsvLine {
 void
 csvline_delete(CsvLine* self) {
 	if (self) {
-		buffer_delete(self->buffer);
+		str_delete(self->buffer);
 		for (int i = 0; i < self->length; ++i) {
 			free(self->cols[i]);
 		}
@@ -116,7 +116,7 @@ csvline_escape_delete(CsvLine* self) {
 	if (self) {
 		char** escape = self->cols;
 
-		buffer_delete(self->buffer);
+		str_delete(self->buffer);
 		free(self);
 		
 		return escape;
@@ -145,7 +145,7 @@ csvline_new(void) {
 	}
 
 	// Buffer for the parse
-	self->buffer = buffer_new();
+	self->buffer = str_new();
 	if (!self->buffer) {
 		WARN("Failed to construct buffer");
 		free(self->cols);
@@ -196,12 +196,12 @@ is_eof(int ch) {
 
 static inline void
 self_clear(CsvLine* self) {
-	buffer_clear(self->buffer);
+	str_clear(self->buffer);
 }
 
 static inline void
 self_push(CsvLine* self, int ch) {
-	buffer_push(self->buffer, ch);
+	str_push_back(self->buffer, ch);
 }
 
 static bool
@@ -237,9 +237,8 @@ self_cols_push_back(CsvLine* self, char const* col) {
 
 static inline bool
 self_save_column(CsvLine* self) {
-	buffer_push(self->buffer, '\0');
-	bool ret = self_cols_push_back(self, buffer_get_const(self->buffer));
-	buffer_clear(self->buffer);
+	bool ret = self_cols_push_back(self, str_get_const(self->buffer));
+	str_clear(self->buffer);
 	return ret;
 }
 
@@ -271,7 +270,7 @@ self_mode_first(CsvLine* self) {
 		ch = stream_current_at(&self->stream, -2);
 		if (ch == self->delim) {
 			self_save_column(self);
-		} else if (!buffer_empty(self->buffer)) {
+		} else if (!str_empty(self->buffer)) {
 			self_save_column(self);
 		}
 		// Keep mode
@@ -303,7 +302,7 @@ self_mode_column(CsvLine* self) {
 		self_save_column(self);
 		self->mode = NULL;
 	} else if (ch == '"') {
-		buffer_clear(self->buffer);
+		str_clear(self->buffer);
 		self->mode = self_mode_dquote;
 	} else {
 		self_push(self, ch);
@@ -369,7 +368,7 @@ csvline_parse_line(CsvLine* self, char const* line, int delim) {
 	// Ready state
 	self->mode = self_mode_first;
 	self->delim = delim;
-	buffer_clear(self->buffer);
+	str_clear(self->buffer);
 	if (stream_init(&self->stream, line) < 0) {
 		WARN("Failed to init of stream \"%s\"", line);
 		return false;
