@@ -332,6 +332,10 @@ str_pop_newline(String* self) {
 	if (!self) {
 		return;
 	}
+
+	if (self->length != 2) {
+		return;
+	}
 	
 	if (self->buffer[self->length-1] == '\n') {
 		if (self->buffer[self->length-2] == '\r') {
@@ -483,7 +487,7 @@ str_getline(String* self, FILE* fin) {
 #include <string.h>
 #include "csvline.h"
 
-String* str;
+static String* str;
 
 static void
 strinfo(String const* s) {
