@@ -333,12 +333,12 @@ str_pop_newline(String* self) {
 		return;
 	}
 
-	if (self->length != 2) {
+	if (self->length == 0) {
 		return;
 	}
 	
 	if (self->buffer[self->length-1] == '\n') {
-		if (self->buffer[self->length-2] == '\r') {
+		if (self->length > 1 && self->buffer[self->length-2] == '\r') {
 			self->length -= 2;
 		} else {
 			self->length -= 1;
