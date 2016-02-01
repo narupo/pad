@@ -1,234 +1,8 @@
 #include "config-setting.h"
 
-
-/**********
-* HashMap *
-**********/
-
-typedef char* HashMap_type;
-typedef char const* HashMap_const_type;
-typedef struct HashMap HashMap;
-typedef struct HashMapNode HashMapNode;
-typedef struct HashMapIterator HashMapIterator;
-
-enum {
-	NHASH = 701,
-};
-
-struct HashMapNode {
-	char* key;
-	HashMap_type value;
-};
-
-struct HashMap {
-	size_t tablesize;
-	HashMapNode* table[NHASH + 1];  // +1 for final nul
-};
-
-struct HashMapIterator {
-	size_t index;
-	size_t tablesize;
-	HashMapNode** table;
-	HashMapNode* current;
-};
-
-
-/*******
-* Hash *
-*******/
-
-static long
-hashdivl(char const* s, long nhash) {
-	long n = 0;
-	for (; *s; ++s) {
-		n += *s;
-	}
-	return n % nhash;
-}
-
-static long
-hashl(char const* s) {
-	return hashdivl(s, NHASH);
-}
-
-/*******
-* Node *
-*******/
-
-static void
-hashmapnode_delete(HashMapNode* self) {
-	if (self) {
-		free(self->key);
-		free(self->value);
-		free(self);
-	}
-}
-
-static HashMapNode*
-hashmapnode_new_copy(char const* key, HashMap_const_type value) {
-	HashMapNode* self = (HashMapNode*) calloc(1, sizeof(HashMapNode));
-	if (!self) {
-		perror("Failed to construct HashMap");
-		return NULL;
-	}
-
-	self->key = util_strdup(key);
-	self->value = util_strdup(value);
-
-	return self;
-}
-
-/***********
-* Iterator *
-***********/
-
-void
-hashmapit_delete(HashMapIterator* self) {
-	if (self) {
-		free(self);
-	}
-}
-
-HashMapIterator*
-hashmapit_new(HashMap* hashmap) {
-	HashMapIterator* self = (HashMapIterator*) calloc(1, sizeof(HashMapIterator));
-	if (!self) {
-		perror("Failed to construct HashMapIterator");
-		return NULL;
-	}
-	
-	self->index = 0;
-	self->tablesize = hashmap->tablesize;
-	self->table = hashmap->table;
-	self->current = hashmap->table[0];
-
-	return self;
-}
-
-HashMapNode*
-hashmapit_begin(HashMapIterator* self) {
-	size_t i;
-	for (i = self->index; i != self->tablesize; ++i) {
-		if (self->table[i]) {
-			break;
-		}
-	}
-	self->index = i;
-	return self->table[self->index];
-}
-
-HashMapNode*
-hashmapit_end(HashMapIterator* self) {
-	return self->table[self->tablesize];
-}
-
-HashMapNode*
-hashmapit_current(HashMapIterator* self) {
-	return self->current;
-}
-
-HashMapNode*
-hashmapit_next(HashMapIterator* self) {
-	size_t i;
-	for (i = self->index + 1; i != self->tablesize; ++i) {
-		if (self->table[i]) {
-			break;
-		}
-	}
-	self->index = i;
-	self->current = self->table[self->index];
-
-	return self->current;
-}
-
-/*****************
-* Delete and New *
-*****************/
-
-static void
-hashmap_delete(HashMap* self) {
-	if (self) {
-		for (int i = 0; i < self->tablesize; ++i) {
-			if (self->table[i]) {
-				hashmapnode_delete(self->table[i]);
-				self->table[i] = NULL;
-			}
-		}
-		free(self);
-	}
-}
-
-static HashMap*
-hashmap_new(void) {
-	HashMap* self = (HashMap*) calloc(1, sizeof(HashMap));
-	if (!self) {
-		WARN("Failed to allocate memory");
-		return NULL;
-	}
-	
-	self->tablesize = NHASH;
-
-	return self;
-}
-
-/*********
-* Getter *
-*********/
-
-static HashMap_type
-hashmap_get(HashMap* self, char const* key) {
-	static HashMap_type dummy = "";
-
-	long i = hashl(key);
-	if (!self->table[i]) {
-		return dummy;
-	}
-	return self->table[i]->value;
-}
-
-static HashMap_const_type
-hashmap_getc(HashMap const* self, char const* key) {
-	static HashMap_const_type dummy = "";
-
-	long i = hashl(key);
-	if (!self->table[i]) {
-		return dummy;
-	}
-	return self->table[i]->value;
-}
-
-/*********
-* Setter *
-*********/
-
-static bool
-hashmap_set_copy(HashMap* self, char const* key, HashMap_const_type val) {
-	HashMapNode* setnode = hashmapnode_new_copy(key, val);
-	if (!setnode) {
-		WARN("Construct HashMapNode");
-		return false;
-	}
-
-	long i = hashl(key);
-
-	if (self->table[i]) {
-		hashmapnode_delete(self->table[i]);
-	}
-	
-	self->table[i] = setnode;
-	
-	return true;
-}
-
-
-
-
 /****************
 * ConfigSetting *
 ****************/
-
-
-
 
 /***********************************
 * ConfigSetting constant variables *
@@ -245,7 +19,7 @@ static char const DEFAULT_EDITOR_PATH[] = "/usr/bin/vi";
 static int const LINE_FORMAT_DELIM = ',';
 
 struct ConfigSetting {
-	HashMap* pathmap;
+	StringHashMap* pathmap;
 };
 
 /*********
@@ -270,7 +44,7 @@ self_parse_read_line(ConfigSetting* self, char const* line) {
 	// Set key and value
 	char const* key = csvline_get_const(csvline, 0);
 	char const* val = csvline_get_const(csvline, 1);
-	if (!hashmap_set_copy(self->pathmap, key, val)) {
+	if (!strmap_set_copy(self->pathmap, key, val)) {
 		WARN("Failed to pathmap set copy key=\"%s\" val=\"%s\"", key, val);
 		goto fail_set_copy;
 	}
@@ -349,7 +123,7 @@ self_create_file(ConfigSetting* self, char const* fname) {
 void
 configsetting_delete(ConfigSetting* self) {
 	if (self) {
-		hashmap_delete(self->pathmap);
+		strmap_delete(self->pathmap);
 		free(self);
 	}
 }
@@ -363,8 +137,8 @@ configsetting_new_from_file(char const* fname) {
 		return NULL;
 	}
 
-	// Construct HashMap for path
-	self->pathmap = hashmap_new();
+	// Construct StringHashMap for path
+	self->pathmap = strmap_new();
 	if (!self->pathmap) {
 		WARN("Failed to construct pathmap");
 		free(self);
@@ -372,9 +146,9 @@ configsetting_new_from_file(char const* fname) {
 	}
 
 	// Set default values
-	hashmap_set_copy(self->pathmap, "home", DEFAULT_HOME_PATH);
-	hashmap_set_copy(self->pathmap, "cd", DEFAULT_HOME_PATH);
-	hashmap_set_copy(self->pathmap, "editor", DEFAULT_EDITOR_PATH);
+	strmap_set_copy(self->pathmap, "home", DEFAULT_HOME_PATH);
+	strmap_set_copy(self->pathmap, "cd", DEFAULT_HOME_PATH);
+	strmap_set_copy(self->pathmap, "editor", DEFAULT_EDITOR_PATH);
 
 	// Check file
 	if (!file_is_exists(fname)) {
@@ -382,7 +156,7 @@ configsetting_new_from_file(char const* fname) {
 		// Create file
 		if (!self_create_file(self, fname)) {
 			WARN("Failed to create file");
-			hashmap_delete(self->pathmap);
+			strmap_delete(self->pathmap);
 			free(self);
 			return NULL;
 		}
@@ -391,7 +165,7 @@ configsetting_new_from_file(char const* fname) {
 	// Load from file
 	if (!self_load_from_file(self, fname)) {
 		WARN("Failed to load from file \"%s\"", fname);
-		hashmap_delete(self->pathmap);
+		strmap_delete(self->pathmap);
 		free(self);
 		return NULL;
 	}
@@ -405,7 +179,7 @@ configsetting_new_from_file(char const* fname) {
 
 char const*
 configsetting_path(ConfigSetting const* self, char const* key) {
-	return hashmap_getc(self->pathmap, key);
+	return strmap_get_const(self->pathmap, key);
 }
 
 /*********
@@ -430,19 +204,23 @@ configsetting_save_to_file(ConfigSetting* self, char const* fname) {
 	}
 
 	// Save path-map's key and value
-	HashMapIterator* it = hashmapit_new(self->pathmap);
+	StringHashMapIterator* it = strmapit_new(self->pathmap);
 
-	for (HashMapNode const* cur = hashmapit_begin(it);
-		 cur != hashmapit_end(it);
-		 cur = hashmapit_next(it)) {
-		if (strlen(cur->key) == 0) {
+	for (StringHashMapNode const* cur = strmapit_begin(it);
+		 cur != strmapit_end(it);
+		 cur = strmapit_next(it)) {
+
+		char const* key = strmapnode_key_const(cur);
+		char const* value = strmapnode_value_const(cur);
+		
+		if (strlen(key) == 0) {
 			continue;
 		}
 
-		fprintf(fout, "%s%c%s\n", cur->key, LINE_FORMAT_DELIM, cur->value);
+		fprintf(fout, "%s%c%s\n", key, LINE_FORMAT_DELIM, value);
 	}
 
-	hashmapit_delete(it);
+	strmapit_delete(it);
 
 	// Done
 	file_close(fout);
@@ -459,7 +237,7 @@ configsetting_set_path(ConfigSetting* self, char const* key, char const* val) {
 		return false;
 	}
 
-	return hashmap_set_copy(self->pathmap, key, sval);
+	return strmap_set_copy(self->pathmap, key, sval);
 }
 
 /*******

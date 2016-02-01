@@ -6,6 +6,7 @@
 #include "file.h"
 #include "string.h"
 #include "csvline.h"
+#include "strmap.h"
 
 /*****************
 * Delete and New *
