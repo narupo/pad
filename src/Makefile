@@ -6,6 +6,8 @@ CMDS=cap.c cat.c home.c cd.c pwd.c rm.c deploy.c edit.c \
 UTILS=caperr.c atcap.c buffer.c cap-file.c config-setting.c config.c \
 	csvline.c strmap.c file.c strarray.c term.c util.c environ.c string.c memory.c
 
+OBJS=$(CMDS:.c=.o) $(UTILS:.c=.o)
+
 LIBS=-lpthread
 
 TARGET=~/bin/cap
@@ -13,7 +15,7 @@ TESTDIR=./test
 
 all: cap
 
-cap: $(CMDS) $(UTILS)
+cap: $(OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) $^ $(LIBS)
 
 atcap: atcap.c $(UTILS)
