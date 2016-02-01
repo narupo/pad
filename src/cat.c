@@ -164,9 +164,9 @@ command_parse_options(Command* self) {
  * @return failed or skip to pointer to NULL
  */
 static CapRow*
-cat_read_row(Command* self, Buffer const* buffer, CapParser* parser) {
+cat_read_row(Command* self, String const* buffer, CapParser* parser) {
 	// Get line for parse
-	char const* line = buffer_get_const(buffer);
+	char const* line = str_get_const(buffer);
 
 	// Parse line
 	CapRow* row = capparser_parse_line(parser, line);
@@ -220,14 +220,14 @@ cat_read_row(Command* self, Buffer const* buffer, CapParser* parser) {
 static int
 command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 	// Ready
-	Buffer* buffer = buffer_new();
+	String* buffer = str_new();
 	if (!buffer) {
 		return caperr(PROGNAME, CAPERR_CONSTRUCT, "buffer");
 	}
 
 	CapParser* parser = capparser_new();
 	if (!parser) {
-		buffer_delete(buffer);
+		str_delete(buffer);
 		return caperr(PROGNAME, CAPERR_CONSTRUCT, "parser");
 	}
 
@@ -235,7 +235,7 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 	CapRow* row = NULL;
 
 	// Read and display
-	for (; buffer_getline(buffer, fin); ) {
+	for (; str_getline(buffer, fin); ) {
 		// Cleanup
 		caprow_delete(row);
 
@@ -288,7 +288,7 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 	// Done
 	caprow_delete(row);
 	capparser_delete(parser);
-	buffer_delete(buffer);
+	str_delete(buffer);
 	return 0;
 }
 
@@ -410,7 +410,7 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 
 	// Ready
 	CapParser* parser = capparser_new();
-	Buffer* linebuf = buffer_new();
+	String* linebuf = str_new();
 	CapRowList* dstrows = capfile_rows(dstfile);
 
 	// Run, push all file to CapFile
@@ -430,7 +430,7 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 		}
 
 		// Read and push to CapFile
-		for (; buffer_getline(linebuf, fin); ) {
+		for (; str_getline(linebuf, fin); ) {
 			// Read row
 			CapRow* row = cat_read_row(self, linebuf, parser);
 			if (!row) {
@@ -462,7 +462,7 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 
 	// Done
 	capparser_delete(parser);
-	buffer_delete(linebuf);
+	str_delete(linebuf);
 	command_delete(self);
 	return 0;
 }

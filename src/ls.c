@@ -9,7 +9,7 @@ struct Command {
 
 	// Buffers
 	Config* config;
-	Buffer* buffer;
+	String* buffer;
 	StringArray* names;
 	CsvLine* tags;
 	int max_namelen;
@@ -30,7 +30,7 @@ command_parse_options(Command* self);
 void
 command_delete(Command* self) {
 	if (self) {
-		buffer_delete(self->buffer);
+		str_delete(self->buffer);
 		strarray_delete(self->names);
 		csvline_delete(self->tags);
 		free(self);
@@ -54,7 +54,7 @@ command_new(int argc, char* argv[]) {
 		return NULL;
 	}
 
-	if (!(self->buffer = buffer_new())) {
+	if (!(self->buffer = str_new())) {
 		caperr(PROGNAME, CAPERR_CONSTRUCT, "buffer");
 		free(self);
 		return NULL;
@@ -62,14 +62,14 @@ command_new(int argc, char* argv[]) {
 
 	if (!(self->names = strarray_new())) {
 		caperr(PROGNAME, CAPERR_CONSTRUCT, "names");
-		buffer_delete(self->buffer);
+		str_delete(self->buffer);
 		free(self);
 		return NULL;
 	}
 
 	if (!(self->tags = csvline_new())) {
 		caperr(PROGNAME, CAPERR_CONSTRUCT, "tags");
-		buffer_delete(self->buffer);
+		str_delete(self->buffer);
 		strarray_delete(self->names);
 		free(self);
 		return NULL;
@@ -77,7 +77,7 @@ command_new(int argc, char* argv[]) {
 
 	if (!command_parse_options(self)) {
 		caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "");
-		buffer_delete(self->buffer);
+		str_delete(self->buffer);
 		strarray_delete(self->names);
 		csvline_delete(self->tags);
 		free(self);
@@ -138,8 +138,8 @@ command_display_brief_from_stream(Command const* self, FILE* fin) {
 	}
 
 	// Read lines for @cap command
-	for (; buffer_getline(self->buffer, fin); ) {
-		CapRow* row = capparser_parse_line(parser, buffer_get_const(self->buffer));
+	for (; str_getline(self->buffer, fin); ) {
+		CapRow* row = capparser_parse_line(parser, str_get_const(self->buffer));
 		if (!row) {
 			continue;
 		}
@@ -250,10 +250,10 @@ command_has_tags(Command const* self, FILE* fin) {
 		return false;
 	}
 
-	for (; buffer_getline(self->buffer, fin); ) {
-		CapRow* row = capparser_parse_line(parser, buffer_get_const(self->buffer));
+	for (; str_getline(self->buffer, fin); ) {
+		CapRow* row = capparser_parse_line(parser, str_get_const(self->buffer));
 		if (!row) {
-			caperr(PROGNAME, CAPERR_PARSE, "\"%s\"", buffer_get_const(self->buffer));
+			caperr(PROGNAME, CAPERR_PARSE, "\"%s\"", str_get_const(self->buffer));
 			capparser_delete(parser);
 			return false;
 		}

@@ -5,7 +5,7 @@
 #include "file.h"
 #include "config.h"
 #include "term.h"
-#include "buffer.h"
+#include "string.h"
 #include "atcap.h"
 #include "strarray.h"
 

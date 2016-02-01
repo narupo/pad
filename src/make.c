@@ -191,11 +191,11 @@ static CapFile*
 command_make_capfile_from_stream(Command const* self, FILE* fin) {
 	CapFile* dstfile = capfile_new();
 	CapParser* parser = capparser_new();
-	Buffer* buf = buffer_new();
+	String* buf = str_new();
 
-	for (; buffer_getline(buf, fin); ) {
+	for (; str_getline(buf, fin); ) {
 		// Get line
-		char const* line = buffer_get_const(buf);
+		char const* line = str_get_const(buf);
 		
 		// Make CapRow from line
 		CapRow* addrow = capparser_make_caprow(parser, line, self->replace_list);
@@ -230,7 +230,7 @@ command_make_capfile_from_stream(Command const* self, FILE* fin) {
 
 	// Done
 	capparser_delete(parser);
-	buffer_delete(buf);
+	str_delete(buf);
 	return dstfile;
 }
 

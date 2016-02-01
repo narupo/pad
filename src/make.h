@@ -9,6 +9,7 @@
 #include "csvline.h"
 #include "atcap.h"
 #include "cap-file.h"
+#include "string.h"
 
 #include "cat.h"
 #include "run.h"

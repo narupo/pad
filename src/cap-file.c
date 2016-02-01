@@ -7,7 +7,7 @@
 struct CapCol {
 	struct CapCol* prev;
 	struct CapCol* next;
-	Buffer* value;
+	String* value;
 	CapColType type;
 };
 
@@ -36,7 +36,7 @@ CapCol_compare(char const* lh, char const* rh) {
 void
 capcol_delete(CapCol* self) {
 	if (self) {
-		buffer_delete(self->value);
+		str_delete(self->value);
 		free(self);
 	}
 }
@@ -49,7 +49,7 @@ capcol_new(void) {
 		return NULL;
 	}
 
-	self->value = buffer_new();
+	self->value = str_new();
 
 	return self;
 }
@@ -62,8 +62,7 @@ capcol_new_from_str(char const* value) {
 		return NULL;
 	}
 
-	self->value = buffer_new_str(value);
-	buffer_push(self->value, '\0');
+	self->value = str_new_from_string(value);
 
 	return self;
 }
@@ -74,7 +73,7 @@ capcol_new_from_str(char const* value) {
 
 void
 capcol_display(CapCol const* self) {
-	printf("[%d:%s]", self->type, buffer_get_const(self->value));
+	printf("[%d:%s]", self->type, str_get_const(self->value));
 }
 
 /****************
@@ -83,7 +82,7 @@ capcol_display(CapCol const* self) {
 
 char const*
 capcol_value_const(CapCol const* self) {
-	return buffer_get_const(self->value);
+	return str_get_const(self->value);
 }
 
 CapCol*
@@ -122,9 +121,8 @@ capcol_set_type(CapCol* self, CapColType type) {
 
 void
 capcol_set_value(CapCol* self, char const* value) {
-	buffer_clear(self->value);
-	buffer_push_str(self->value, value);
-	buffer_push(self->value, '\0');
+	str_clear(self->value);
+	str_append_string(self->value, value);
 }
 
 void
@@ -136,11 +134,8 @@ capcol_set_value_copy(CapCol* self, char const* value) {
 
 void
 capcol_push_value_copy(CapCol* self, char const* value) {
-	for (; buffer_length(self->value) && buffer_back(self->value) == 0; ) {
-		buffer_pop(self->value);
-	}
-	buffer_push_str(self->value, value);
-	buffer_push(self->value, 0);
+	str_append_string(self->value, value);
+	str_push_back(self->value, 0);
 }
 
 /*************
@@ -491,7 +486,7 @@ done:
 CapCol*
 capcollist_find_front(CapColList* self, char const* value) {
 	for (CapCol* cur = self->head; cur; cur = cur->next) {
-		if (CapCol_compare(buffer_get_const(cur->value), value) == 0) {
+		if (CapCol_compare(str_get_const(cur->value), value) == 0) {
 			return cur;
 		}
 	}
@@ -501,7 +496,7 @@ capcollist_find_front(CapColList* self, char const* value) {
 CapCol const*
 capcollist_find_front_const(CapColList const* self, char const* value) {
 	for (CapCol const* cur = self->head; cur; cur = cur->next) {
-		if (CapCol_compare(buffer_get_const(cur->value), value) == 0) {
+		if (CapCol_compare(str_get_const(cur->value), value) == 0) {
 			return cur;
 		}
 	}
@@ -511,7 +506,7 @@ capcollist_find_front_const(CapColList const* self, char const* value) {
 CapCol*
 capcollist_find_back(CapColList* self, char const* value) {
 	for (CapCol* cur = self->tail; cur; cur = cur->prev) {
-		if (CapCol_compare(buffer_get_const(cur->value), value) == 0) {
+		if (CapCol_compare(str_get_const(cur->value), value) == 0) {
 			return cur;
 		}
 	}
@@ -521,7 +516,7 @@ capcollist_find_back(CapColList* self, char const* value) {
 CapCol const*
 capcollist_find_back_const(CapColList const* self, char const* value) {
 	for (CapCol const* cur = self->tail; cur; cur = cur->prev) {
-		if (CapCol_compare(buffer_get_const(cur->value), value) == 0) {
+		if (CapCol_compare(str_get_const(cur->value), value) == 0) {
 			return cur;
 		}
 	}

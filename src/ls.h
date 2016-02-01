@@ -6,6 +6,7 @@
 #include "config.h"
 #include "strarray.h"
 #include "atcap.h"
+#include "string.h"
 
 #include <strings.h>
 

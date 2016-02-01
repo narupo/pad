@@ -149,20 +149,20 @@ command_open_stream(Command const* self, char const* fname) {
 static int
 command_read_from_stream(Command* self, FILE* fin, char const* fname) {
 	// Ready
-	Buffer* buf = buffer_new();
+	String* buf = str_new();
 	if (!buf) {
 		return caperr(PROGNAME, CAPERR_CONSTRUCT, "buffer");
 	}
 
 	CapParser* parser = capparser_new();
 	if (!parser) {
-		buffer_delete(buf);
+		str_delete(buf);
 		return caperr(PROGNAME, CAPERR_CONSTRUCT, "parser");
 	}
 
 	// Read briefs in file
-	for (; buffer_getline(buf, fin); ) {
-		char const* line = buffer_get_const(buf);
+	for (; str_getline(buf, fin); ) {
+		char const* line = str_get_const(buf);
 		CapRow* row = capparser_parse_line(parser, line);
 		if (!row) {
 			continue;
@@ -185,7 +185,7 @@ command_read_from_stream(Command* self, FILE* fin, char const* fname) {
 	}
 
 	capparser_delete(parser);
-	buffer_delete(buf);
+	str_delete(buf);
 	return 0;
 }
 
