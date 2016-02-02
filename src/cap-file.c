@@ -135,7 +135,6 @@ capcol_set_value_copy(CapCol* self, char const* value) {
 void
 capcol_push_value_copy(CapCol* self, char const* value) {
 	str_append_string(self->value, value);
-	str_push_back(self->value, 0);
 }
 
 /*************
