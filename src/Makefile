@@ -1,10 +1,12 @@
 CC=gcc
 CFLAGS=-Wall -g -O2 -std=c99 -Wno-unused-function 
 CMDS=cap.c cat.c home.c cd.c pwd.c rm.c deploy.c edit.c \
-	editor.c help.c ls.c make.c path.c run.c alias.c brief.c
+	editor.c help.c ls.c make.c path.c run.c alias.c brief.c \
+	server.c
 
 UTILS=caperr.c atcap.c buffer.c cap-file.c config-setting.c config.c \
-	csvline.c strmap.c file.c strarray.c term.c util.c environ.c string.c memory.c
+	csvline.c strmap.c file.c strarray.c term.c util.c environ.c string.c memory.c \
+	socket.c
 
 OBJS=$(CMDS:.c=.o) $(UTILS:.c=.o)
 
@@ -39,6 +41,12 @@ ls: ls.c $(UTILS)
 rm: rm.c $(UTILS)
 	$(CC) -DDEBUG -DTEST_RM $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
+server: server.c $(UTILS)
+	$(CC) -DDEBUG -DTEST_SERVER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+
+socket: socket.c util.c caperr.c memory.c term.c
+	$(CC) -DDEBUG -DTEST_SOCKET $(CFLAGS) -o $(TESTDIR)/$@ $^ -lws2_32 $(LIBS)
+
 run: run.c $(UTILS)
 	$(CC) -DDEBUG -DTEST_RUN $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
@@ -66,7 +74,7 @@ make: make.c run.c cat.c $(UTILS)
 .PHONY: clean
 
 clean:
-	rm ./cap ./test/*
+	rm $(TARGET) ./*.o ./test/*
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<

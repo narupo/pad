@@ -183,5 +183,13 @@ strtolong(char const* src);
 void
 free_argv(int argc, char** argv);
 
+static inline void
+print_argv(FILE* fout, int argc, char* argv[]) {
+	for (int i = 0; i < argc; ++i) {
+		fprintf(fout, "argv[%i] = [%s]\n", i, argv[i]);
+	}
+	fflush(fout);
+}
+
 #endif
 

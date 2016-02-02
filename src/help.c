@@ -23,6 +23,7 @@ static const struct Command {
 	{"brief", brief_usage},
 	{"editor", editor_usage},
 	{"deploy", deploy_usage},
+	{"server", server_usage},
 	{NULL, NULL},
 };
 
@@ -56,7 +57,7 @@ help_main(int argc, char* argv[]) {
 void
 help_usage(void) {
 	term_eprintf(
-		"Cap is simple snippet manager for programmer.\n"
+		"Cap is simple snippet manager for the programmer.\n"
 		"\n"
 		"Usage:\n"
 		"\n"
@@ -79,6 +80,7 @@ help_usage(void) {
 		"\tbrief  display brief of file\n"
 		"\teditor display or set editor path\n"
 		"\tdeploy deploy files from directory\n"
+		"\tserver run cap server\n"
 		"\n"
 	);
 }
