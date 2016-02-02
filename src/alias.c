@@ -290,15 +290,14 @@ alias_push_alias_to_file(Command const* self, char const* pushkey, char const* p
 	if (emptyrecodeno < 0) {
 		// Nothing empty record. Insert to back
 		fseek(stream, 0L, SEEK_END);
-		putcol(stream, pushkey, ALIAS_NKEY);
-		putcol(stream, pushval, ALIAS_NVAL);
 	} else {
 		// Insert to empty record
 		fseek(stream, emptyrecodeno * ALIAS_NRECORD, SEEK_SET);
-		putcol(stream, pushkey, ALIAS_NKEY);
-		putcol(stream, pushval, ALIAS_NVAL);
 	}
 
+	putcol(stream, pushkey, ALIAS_NKEY);
+	putcol(stream, pushval, ALIAS_NVAL);
+	
 done:
 	file_close(stream);
 	return 0;
@@ -313,7 +312,7 @@ done:
  * @return failed to number of caperr
  */
 static int
-alias_disp_alias_list(Command* self) {
+alias_disp_list(Command* self) {
 	// Open stream
 	FILE* fin = alias_open_stream();
 	if (!fin) {
@@ -566,7 +565,7 @@ alias_run(Command* self) {
 
 	// If empty arugments then
 	if (self->argc == self->optind) {
-		return alias_disp_alias_list(self);
+		return alias_disp_list(self);
 	}
 
 	// If alias name only then
@@ -646,19 +645,19 @@ notfound:
 void
 alias_usage(void) {
     term_eprintf(
-        "cap alias\n"
-        "\n"
         "Usage:\n"
         "\n"
-        "\tcap alias [alias-name] [cap-command-line] [options]...\n"
+        "\t%s [alias-name] [cap-command-line] [options]...\n"
         "\n"
         "The options are:\n"
         "\n"
-        "\t-h, --help    display usage\n"
-        "\t-d, --delete  delete alias\n"
-        "\t-D, --debug   debug mode\n"
+        "\t-h, --help          display usage\n"
+        "\t-d, --delete        delete alias\n"
+        "\t-i, --import [file] import alias file\n"
+        "\t-e, --export [file] export alias file\n"
+        "\t-D, --debug         debug mode\n"
         "\n"
-    );
+    , PROGNAME);
 }
 
 int
