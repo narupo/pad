@@ -17,6 +17,7 @@
 #include "run.h"
 #include "alias.h"
 #include "brief.h"
+#include "server.h"
 
 #include <stdbool.h>
 #include <string.h>
