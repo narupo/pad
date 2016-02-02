@@ -17,9 +17,6 @@ enum {
 	ALIAS_NHASH = 701,
 };
 
-// Import and export file name
-static char const ALIAS_IE_FNAME[] = ".capalias";
-
 /****************
 * alias Command *
 ****************/
@@ -41,6 +38,8 @@ struct Command {
 ******************/
 
 static char const PROGNAME[] = "cap alias";
+// Import and export file name
+static char const ALIAS_IE_FNAME[] = ".capalias";
 
 /*******************
 * alias prototypes *
