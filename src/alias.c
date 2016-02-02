@@ -25,9 +25,12 @@ struct Command {
 	int argc;
 	char** argv;
 	int optind;
+
 	bool opt_is_help;
 	bool opt_is_delete;
 	bool opt_is_debug;
+	bool opt_is_export;
+	bool opt_is_import;
 };
 
 /******************
@@ -41,27 +44,27 @@ static char const PROGNAME[] = "cap alias";
 *******************/
 
 static bool
-command_parse_options(Command* self);
+alias_parse_options(Command* self);
 
 static void
-command_delete(Command* self);
+alias_delete(Command* self);
 
 static bool
-command_parse_options(Command* self);
+alias_parse_options(Command* self);
 
 /******************
 * alias functions *
 ******************/
 
 static void
-command_delete(Command* self) {
+alias_delete(Command* self) {
 	if (self) {
 		free(self);
 	}
 }
 
 static Command*
-command_new(int argc, char* argv[]) {
+alias_new(int argc, char* argv[]) {
 	// Construct
 	Command* self = (Command*) calloc(1, sizeof(Command));
 	if (!self) {
@@ -74,7 +77,7 @@ command_new(int argc, char* argv[]) {
 	self->argv = argv;
 
 	// Parse alias options
-	if (!command_parse_options(self)) {
+	if (!alias_parse_options(self)) {
 		caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "command");
 		free(self);
 		return NULL;
@@ -85,28 +88,32 @@ command_new(int argc, char* argv[]) {
 }
 
 static bool
-command_parse_options(Command* self) {
+alias_parse_options(Command* self) {
 	// Parse options
 	optind = 0;
 	
 	for (;;) {
 		static struct option longopts[] = {
+			{"debug", no_argument, 0, 'D'},
 			{"help", no_argument, 0, 'h'},
 			{"delete", no_argument, 0, 'd'},
-			{"debug", no_argument, 0, 'D'},
+			{"import", no_argument, 0, 'i'},
+			{"export", no_argument, 0, 'e'},
 			{0},
 		};
 		int optsindex;
 
-		int cur = getopt_long(self->argc, self->argv, "hdD", longopts, &optsindex);
+		int cur = getopt_long(self->argc, self->argv, "iehdD", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
 
 		switch (cur) {
+		case 'D': self->opt_is_debug = true; break;
 		case 'h': self->opt_is_help = true; break;
 		case 'd': self->opt_is_delete = true; break;
-		case 'D': self->opt_is_debug = true; break;
+		case 'i': self->opt_is_import = true; break;
+		case 'e': self->opt_is_export = true; break;
 		case '?': default: return false; break;
 		}
 	}
@@ -190,7 +197,7 @@ getcol(FILE* fin, char* dst, size_t colsize) {
  * @return failed to pointer to NULL
  */
 static char*
-command_path_from_cd(char* dst, size_t dstsize) {
+alias_path_from_home(char* dst, size_t dstsize) {
 	Config* config = config_instance();
 	char const* home = config_path(config, "home");
 	char const* confdir = config_dir(config);
@@ -208,9 +215,9 @@ command_path_from_cd(char* dst, size_t dstsize) {
  * @return failed to pointer to NULL
  */
 static FILE*
-command_open_stream(void) {
+alias_open_stream(void) {
 	char path[FILE_NPATH];
-	command_path_from_cd(path, sizeof path);
+	alias_path_from_home(path, sizeof path);
 
 	if (!file_is_exists(path)) {
 		file_create(path);
@@ -235,9 +242,9 @@ command_open_stream(void) {
  * @return failed to number of caperr
  */
 static int
-command_push_alias_to_file(Command const* self, char const* pushkey, char const* pushval) {
+alias_push_alias_to_file(Command const* self, char const* pushkey, char const* pushval) {
 	// Random access file
-	FILE* stream = command_open_stream();
+	FILE* stream = alias_open_stream();
 	if (!stream) {
 		return caperr(PROGNAME, CAPERR_FOPEN, "");
 	}
@@ -304,9 +311,9 @@ done:
  * @return failed to number of caperr
  */
 static int
-command_disp_alias_list(Command* self) {
+alias_disp_alias_list(Command* self) {
 	// Open stream
-	FILE* fin = command_open_stream();
+	FILE* fin = alias_open_stream();
 	if (!fin) {
 		return caperr(PROGNAME, CAPERR_FOPEN, "");
 	}
@@ -353,7 +360,7 @@ command_disp_alias_list(Command* self) {
 }
 
 static int
-command_delete_record_from_stream_by_key(Command* self, FILE* stream, char const* delkey) {
+alias_delete_record_from_stream_by_key(Command* self, FILE* stream, char const* delkey) {
 	for (; !feof(stream); ) {
 		char key[ALIAS_NKEY+1];
 		if (getcol(stream, key, ALIAS_NKEY) <= 0) {
@@ -386,14 +393,14 @@ command_delete_record_from_stream_by_key(Command* self, FILE* stream, char const
  * @return failed to number of caperr
  */
 static int
-command_delete_record(Command* self) {
+alias_delete_record(Command* self) {
 	// Check argument for alias-name
 	if (self->argc <= self->optind) {
 		return caperr(PROGNAME, CAPERR_ERROR, "Need delete alias name");
 	}
 
 	// Open stream
-	FILE* stream = command_open_stream();
+	FILE* stream = alias_open_stream();
 	if (!stream) {
 		return caperr(PROGNAME, CAPERR_FOPEN, "");
 	}
@@ -402,7 +409,7 @@ command_delete_record(Command* self) {
 	for (int i = self->optind; i < self->argc; ++i) {
 		char const* delkey = self->argv[i];
 		fseek(stream, 0L, SEEK_SET);
-		command_delete_record_from_stream_by_key(self, stream, delkey);	
+		alias_delete_record_from_stream_by_key(self, stream, delkey);	
 	}
 
 	file_close(stream);
@@ -418,8 +425,8 @@ command_delete_record(Command* self) {
  * @return failed to number of caperr
  */
 static int
-command_disp_alias_value(Command* self) {
-	FILE* stream = command_open_stream();
+alias_disp_alias_value(Command* self) {
+	FILE* stream = alias_open_stream();
 	if (!stream) {
 		return caperr(PROGNAME, CAPERR_FOPEN, "");
 	}
@@ -452,27 +459,117 @@ found:
 	return 0;
 }
 
+/**
+ * Import alias file from current home directory to config directory
+ *
+ * @param self
+ *
+ * @return 
+ */
 static int
-command_run(Command* self) {
+alias_import(Command* self) {
+	Config* config = config_instance();
+	if (!config) {
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
+	}
+
+	// Get import file path
+	char inpath[FILE_NPATH];
+
+	if (self->argc > self->optind) {
+		char const* fname = self->argv[self->optind];
+		file_solve_path(inpath, sizeof inpath, fname);
+	} else {
+		config_path_with_home(config, inpath, sizeof inpath, ".capalias");
+	}
+
+	// Open streams
+	FILE* fin = file_open(inpath, "rb");
+	if (!fin) {
+		return caperr(PROGNAME, CAPERR_FOPEN, "import file");
+	}
+
+	FILE* fout = alias_open_stream();
+	if (!fout) {
+		file_close(fin);
+		return caperr(PROGNAME, CAPERR_FOPEN, "alias file");
+	}
+
+	// Copy file
+	for (int ch; (ch = fgetc(fin)) != EOF; ) {
+		fputc(ch, fout);
+	}
+
+	// Done
+	file_close(fout);
+	file_close(fin);
+	return 0;
+}
+
+static int
+alias_export(Command* self) {
+	Config* config = config_instance();
+	if (!config) {
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
+	}
+
+	FILE* fin = alias_open_stream();
+	if (!fin) {
+		return caperr(PROGNAME, CAPERR_FOPEN, "alias file");
+	}
+
+	char outpath[FILE_NPATH];
+
+	if (self->argc > self->optind) {
+		char const* fname = self->argv[self->optind];
+		file_solve_path(outpath, sizeof outpath, fname);
+	} else {
+		config_path_with_home(config, outpath, sizeof outpath, ".capalias");
+	}
+
+	FILE* fout = file_open(outpath, "wb");
+	if (!fout) {
+		file_close(fin);
+		return caperr(PROGNAME, CAPERR_FOPEN, "export file");
+	}
+
+	for (int ch; (ch = fgetc(fin)) != EOF; ) {
+		fputc(ch, fout);
+	}
+
+	file_close(fin);
+	file_close(fout);
+	return 0;
+}
+
+static int
+alias_run(Command* self) {
 	// Check options
 	if (self->opt_is_help) {
 		alias_usage();
 		return 0;
 	}
 
-	// If enable delete record option then
 	if (self->opt_is_delete) {
-		return command_delete_record(self);
+		return alias_delete_record(self);
+	}
+
+	if (self->opt_is_import) {
+		return alias_import(self);
+	}
+
+	if (self->opt_is_export) {
+		return alias_export(self);
 	}
 
 	// If empty arugments then
 	if (self->argc == self->optind) {
-		return command_disp_alias_list(self);
+		return alias_disp_alias_list(self);
 	}
 
 	// If alias name only then
 	if (self->argc == self->optind+1) {
-		return command_disp_alias_value(self);
+		return alias_disp_alias_value(self);
 	}
 
 	if (self->argc != self->optind+2) {
@@ -483,7 +580,7 @@ command_run(Command* self) {
 	// File works
 	char const* pushkey = self->argv[self->optind];
 	char const* pushval = self->argv[self->optind + 1];
-	return command_push_alias_to_file(self, pushkey, pushval);
+	return alias_push_alias_to_file(self, pushkey, pushval);
 }
 
 /*************************
@@ -493,7 +590,7 @@ command_run(Command* self) {
 CsvLine*
 alias_to_csvline(char const* findkey) {
 	// Open stream
-	FILE* fin = command_open_stream();
+	FILE* fin = alias_open_stream();
 	if (!fin) {
 		caperr(PROGNAME, CAPERR_FOPEN, "");
 		return NULL;
@@ -565,16 +662,16 @@ alias_usage(void) {
 int
 alias_main(int argc, char* argv[]) {
 	// Construct
-	Command* command = command_new(argc, argv);
+	Command* command = alias_new(argc, argv);
 	if (!command) {
 		return caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 	}
 
 	// Run
-	int ret = command_run(command);
+	int ret = alias_run(command);
 
 	// Done
-	command_delete(command);
+	alias_delete(command);
 
 	return ret;
 }
