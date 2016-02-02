@@ -451,7 +451,7 @@ capparser_parse_line(CapParser* self, char const* line) {
 }
 
 CapRow*
-capparser_make_caprow(CapParser* self,char const* line, StringArray* braces) {
+capparser_make_caprow(CapParser* self, char const* line, StringArray* braces) {
 	CapRow* row = capparser_parse_line(self, line);
 	if (!row) {
 		return NULL;
@@ -466,6 +466,7 @@ capparser_make_caprow(CapParser* self,char const* line, StringArray* braces) {
 
 	for (CapCol* col = capcollist_front(cols); col; ) {
 		CapColType type = capcol_type(col);
+
 		switch (m) {
 			default: {
 				col = capcol_next(col);
@@ -489,7 +490,6 @@ capparser_make_caprow(CapParser* self,char const* line, StringArray* braces) {
 					CapCol* del = col;
 					col = capcol_next(col);
 					capcollist_remove(cols, del);
-
 				}
 			} break;
 		}

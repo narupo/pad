@@ -51,7 +51,7 @@ command_parse_options(Command* self);
 int
 make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]); 
 
-int
+static int
 command_call_command(Command const* self, CapFile* dstfile, int argc, char* argv[]); 
 
 static CapFile*
@@ -187,6 +187,14 @@ command_call_command(Command const* self, CapFile* dstfile, int argc, char* argv
 	return 0;
 }
 
+/**
+ * Make CapFile from stream
+ *
+ * @param      self  
+ * @param      fin   
+ *
+ * @return     
+ */
 static CapFile*
 command_make_capfile_from_stream(Command const* self, FILE* fin) {
 	CapFile* dstfile = capfile_new();
