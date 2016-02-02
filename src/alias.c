@@ -17,6 +17,9 @@ enum {
 	ALIAS_NHASH = 701,
 };
 
+// Import and export file name
+static char const ALIAS_IE_FNAME[] = ".capalias";
+
 /****************
 * alias Command *
 ****************/
@@ -480,7 +483,7 @@ alias_import(Command* self) {
 		char const* fname = self->argv[self->optind];
 		file_solve_path(inpath, sizeof inpath, fname);
 	} else {
-		config_path_with_home(config, inpath, sizeof inpath, ".capalias");
+		config_path_with_home(config, inpath, sizeof inpath, ALIAS_IE_FNAME);
 	}
 
 	// Open streams
@@ -524,7 +527,7 @@ alias_export(Command* self) {
 		char const* fname = self->argv[self->optind];
 		file_solve_path(outpath, sizeof outpath, fname);
 	} else {
-		config_path_with_home(config, outpath, sizeof outpath, ".capalias");
+		config_path_with_home(config, outpath, sizeof outpath, ALIAS_IE_FNAME);
 	}
 
 	FILE* fout = file_open(outpath, "wb");
