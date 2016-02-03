@@ -6,11 +6,11 @@ CMDS=cap.c cat.c home.c cd.c pwd.c rm.c deploy.c edit.c \
 
 UTILS=caperr.c atcap.c buffer.c cap-file.c config-setting.c config.c \
 	csvline.c strmap.c file.c strarray.c term.c util.c environ.c string.c memory.c \
-	socket.c
+	socket.c http-header.c
 
 OBJS=$(CMDS:.c=.o) $(UTILS:.c=.o)
 
-LIBS=-lpthread
+LIBS=-lpthread -lws2_32
 
 TARGET=~/bin/cap
 TESTDIR=./test
@@ -45,7 +45,10 @@ server: server.c $(UTILS)
 	$(CC) -DDEBUG -DTEST_SERVER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 socket: socket.c util.c caperr.c memory.c term.c
-	$(CC) -DDEBUG -DTEST_SOCKET $(CFLAGS) -o $(TESTDIR)/$@ $^ -lws2_32 $(LIBS)
+	$(CC) -DDEBUG -DTEST_SOCKET $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+
+http-header: http-header.c
+	$(CC) -DDEBUG -DTEST_HTTPHEADER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 run: run.c $(UTILS)
 	$(CC) -DDEBUG -DTEST_RUN $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)

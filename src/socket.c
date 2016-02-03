@@ -308,20 +308,6 @@ socket_accept(Socket const* self) {
 }
 
 int
-socket_send_string(Socket* self, char const* str) {
-	int ret = 0;
-	size_t len = strlen(str);
-
-	ret = send(self->socket, str, len, 0);
-	if (ret < 0) {
-		WARN("Failed to write to socket [%d] by \"%s:%s\""
-			, self->socket, self->host, self->port);
-	}
-
-	return ret;
-}
-
-int
 socket_recv_string(Socket* self, char* dst, size_t dstsz) {
 	int ret = 0;
 
@@ -332,6 +318,20 @@ socket_recv_string(Socket* self, char* dst, size_t dstsz) {
 		*dst = '\0';
 	} else if (ret > 0) {
 		dst[ret] = '\0';
+	}
+
+	return ret;
+}
+
+int
+socket_send_string(Socket* self, char const* str) {
+	int ret = 0;
+	size_t len = strlen(str);
+
+	ret = send(self->socket, str, len, 0);
+	if (ret < 0) {
+		WARN("Failed to write to socket [%d] by \"%s:%s\""
+			, self->socket, self->host, self->port);
 	}
 
 	return ret;
