@@ -151,19 +151,6 @@ char*
 strrems(char* dst, size_t dstsize, char const* src, char const* rems);
 
 /**
- * @brief      
- *
- * @param      dst      
- * @param[in]  dstsize  
- * @param      src      
- * @param[in]  rem      
- *
- * @return     
- */
-char*
-strrstrip(char* dst, size_t dstsize, char const* src, int rem);
-
-/**
  *
  *
  * @param[]

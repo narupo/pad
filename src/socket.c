@@ -30,14 +30,14 @@ struct Socket {
 };
 
 static char const SOCKET_DEFAULT_PORT[] = "8000";
-static int is_init;
 
 #if defined(_WIN32) || defined(_WIN64)
-static WSADATA wsadata;
-static void
-cleanup(void) {
+ static int is_init;
+ static WSADATA wsadata;
+ static void
+ socket_wsa_cleanup(void) {
 	WSACleanup();
-}
+ }
 #endif
 
 static SocketMode
@@ -61,12 +61,10 @@ socket_display(Socket const* self) {
 int
 socket_close(Socket* self) {
 	if (self) {
-		if (self->mode == SocketModeAcceptClient) {
-			if (close(self->socket) < 0) {
-				WARN("Failed to close socket [%d] by \"%s:%s\""
-					, self->socket, self->host, self->port);
-			}
-		}
+		// if (close(self->socket) < 0) {
+		// 	WARN("Failed to close socket [%d] by \"%s:%s\""
+		// 		, self->socket, self->host, self->port);
+		// }
 		free(self);
 	}
 
@@ -236,7 +234,7 @@ socket_open(char const* src, char const* mode) {
 			return NULL;
 		}
 		is_init = !is_init;
-		atexit(cleanup);
+		atexit(socket_wsa_cleanup);
 	}
 #endif
 
@@ -272,6 +270,16 @@ socket_open(char const* src, char const* mode) {
 	WARN("Invalid open mode \"%s:%s\"", self->host, self->port);
 	free(self);
 	return NULL;
+}
+
+char const*
+socket_host(Socket const* self) {
+	return self->host;
+}
+
+char const*
+socket_port(Socket const* self) {
+	return self->port;
 }
 
 Socket*

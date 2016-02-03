@@ -7,6 +7,7 @@
 #include "caperr.h"
 #include "memory.h"
 #include "string.h"
+#include "socket.h"
 
 void
 server_usage(void);

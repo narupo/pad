@@ -122,28 +122,6 @@ strrems(char* dst, size_t dstsize, char const* src, char const* rems) {
 	return dst;	
 }
 
-char*
-strrstrip(char* dst, size_t dstsize, char const* src, int rem) {
-	size_t srclen = strlen(src);
-
-	if (srclen >= dstsize) {
-		die("strrstrip: buffer overflow");
-	}
-
-	int i;
-	for (i = 0; i < srclen; ++i) {
-		int c = src[srclen-i-1];
-		if (c != rem) {
-			break;
-		}
-		dst[srclen-i-1] = c;
-	}
-
-	dst[i] = '\0';
-
-	return dst;
-}
-
 long
 strtolong(char const* src) {
 	char* endptr;
