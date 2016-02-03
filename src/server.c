@@ -84,7 +84,37 @@ server_parse_options(Server* self) {
 
 static int
 server_run(Server* self) {
-	printf("name[%s]\n", PROGNAME);
+	term_putsf("name[%s]", PROGNAME);
+	term_flush();
+
+	Socket* servsock = socket_open("127.0.0.1:1234", "tcp-server");
+	if (!servsock) {
+		return caperr_printf(PROGNAME, CAPERR_OPEN, "socket");
+	}
+
+	Socket* cliesock = socket_accept(servsock);
+	if (!cliesock) {
+		socket_close(servsock);
+		return caperr_printf(PROGNAME, CAPERR_OPEN, "accept socket");
+	}
+
+	for (;;) {
+		char buf[1024];
+		int nrecv = socket_recv_string(cliesock, buf, sizeof buf);
+		if (nrecv <= 0) {
+			break;
+		}
+
+		term_putsf("buf[%s]", buf);
+		term_flush();
+
+		if (strncmp(buf, "exit", 4) == 0) {
+			break;
+		}
+	}
+
+	socket_close(cliesock);
+	socket_close(servsock);
 	return 0;
 }
 
