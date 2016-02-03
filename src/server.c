@@ -11,6 +11,7 @@ struct Server {
 };
 
 static char const PROGNAME[] = "cap server";
+static char const DEFAULT_HOSTPORT[] = "127.0.0.1:1234";
 
 static bool
 server_parse_options(Server* self);
@@ -84,25 +85,35 @@ server_parse_options(Server* self) {
 
 static int
 server_run(Server* self) {
-	term_putsf("name[%s]", PROGNAME);
-	term_flush();
+	char const* hostport = DEFAULT_HOSTPORT;
+	if (self->argc > self->optind) {
+		hostport = self->argv[self->optind];
+	}
 
-	Socket* servsock = socket_open("127.0.0.1:1234", "tcp-server");
+	term_eputsf("CapServer running by \"%s\".", hostport);
+
+	HttpHeader* header = httpheader_new();
+	if (!header) {
+		return caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "HttpHeader");
+	}
+
+	Socket* servsock = socket_open(hostport, "tcp-server");
 	if (!servsock) {
+		httpheader_delete(header);
 		return caperr_printf(PROGNAME, CAPERR_OPEN, "socket");
 	}
 
+	term_eputsf("accept...");
+
 	Socket* cliesock = socket_accept(servsock);
 	if (!cliesock) {
+		httpheader_delete(header);
 		socket_close(servsock);
 		return caperr_printf(PROGNAME, CAPERR_OPEN, "accept socket");
 	}
 
-	HttpHeader* header = httpheader_new();
-
 	for (;;) {
-		fprintf(stderr, "recv...\n");
-		fflush(stderr);
+		term_eputsf("recv...");
 
 		char buf[1024];
 		int nrecv = socket_recv_string(cliesock, buf, sizeof buf);
@@ -110,15 +121,12 @@ server_run(Server* self) {
 			break;
 		}
 
-		term_putsf("buf[%s]", buf);
-		term_flush();
+		term_eputsf("****************\n%s", buf);
 
 		httpheader_parse_string(header, buf);
-		httpheader_display(header);
 
 		if (strcasecmp(httpheader_method_name(header), "GET") == 0) {
-			fprintf(stderr, "send...\n");
-			fflush(stderr);
+			term_eputsf("send...");
 
 			socket_send_string(cliesock,
 				"HTTP/1.1 200 OK\r\n"
