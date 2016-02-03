@@ -3,7 +3,7 @@
 # define WARN(...) { \
 	fprintf(stderr, "Warn: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
 	fprintf(stderr, __VA_ARGS__); \
-	fprintf(stderr, "\n"); \
+	fprintf(stderr, ". %s.\n", strerror(errno)); \
 	fflush(stderr); \
 }
 
@@ -15,8 +15,8 @@ enum {
 
 typedef enum {
 	SocketModeNull,
-	SocketModeClient,
-	SocketModeServer,
+	SocketModeTcpClient,
+	SocketModeTcpServer,
 } SocketMode;
 
 struct Socket {
@@ -40,9 +40,9 @@ cleanup(void) {
 static SocketMode
 socket_string_to_type(char const* mode) {
 	if (strcmp(mode, "tcp-server") == 0) {
-		return SocketModeServer;
+		return SocketModeTcpServer;
 	} else if (strcmp(mode, "tcp-client") == 0) {
-		return SocketModeClient;
+		return SocketModeTcpClient;
 	} else {
 		return SocketModeNull;
 	}
@@ -50,16 +50,17 @@ socket_string_to_type(char const* mode) {
 
 void
 socket_display(Socket const* self) {
-	WARN("Socket host[%s] port[%s] mode[%d]\n", self->host, self->port, self->mode);
+	fprintf(stderr, "Socket host[%s] port[%s] mode[%d] socket[%d]\n"
+		, self->host, self->port, self->mode, self->socket);
 	fflush(stderr);
 }
 
 int
 socket_close(Socket* self) {
 	if (self) {
-		if (close(self->socket) < 0) {
-			WARN("Failed to close socket\n");
-		}
+		// if (close(self->socket) != 0) {
+		//     Do not send  EOF to server
+		// }
 		free(self);
 	}
 
@@ -71,7 +72,7 @@ socket_open(char const* src, char const* mode) {
 #if defined(_WIN32) || defined(_WIN64)
 	if (!is_init) {
 		if (WSAStartup(MAKEWORD(2, 0), &wsadata) != 0) {
-			WARN("Failed to start WSA. %d\n", WSAGetLastError());
+			WARN("Failed to start WSA. %d", WSAGetLastError());
 			return NULL;
 		}
 		is_init = !is_init;
@@ -81,14 +82,14 @@ socket_open(char const* src, char const* mode) {
 
 	Socket* self = (Socket*) calloc(1, sizeof(Socket));
 	if (!self) {
-		WARN("Failed to allocate memory\n");
+		WARN("Failed to allocate memory");
 		return NULL;
 	}
 
 	// Convert from string to number of mode
 	self->mode = socket_string_to_type(mode);
 	if (self->mode == SocketModeNull) {
-		WARN("Invalid open mode \"%s\"\n", mode);
+		WARN("Invalid open mode \"%s\"", mode);
 		free(self);
 		return NULL;
 	}
@@ -115,7 +116,7 @@ socket_open(char const* src, char const* mode) {
 			break;
 		case 1:
 			if (!isdigit((int) *sp)) {
-				WARN("Invalid port number of \"%s\"\n", src);
+				WARN("Invalid port number of \"%s\"", src);
 				free(self);
 				return NULL;
 			}
@@ -133,6 +134,8 @@ socket_open(char const* src, char const* mode) {
 		snprintf(self->port, sizeof self->port, "%s", SOCKET_DEFAULT_PORT);
 	}
 
+	// TCP Client
+	
 	struct addrinfo* infores = NULL;
 	struct addrinfo hints;
 	memset(&hints, 0, sizeof(struct addrinfo));
@@ -140,9 +143,9 @@ socket_open(char const* src, char const* mode) {
 	hints.ai_canonname = NULL;
 	hints.ai_addr = NULL;
 	hints.ai_next = NULL;
-	hints.ai_family = AF_UNSPEC;
+	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
+	hints.ai_flags = IPPROTO_TCP;
 
 	if (getaddrinfo(self->host, self->port, &hints, &infores) != 0) {
 		WARN("Failed to getaddrinfo \"%s\"", src);
@@ -160,21 +163,53 @@ socket_open(char const* src, char const* mode) {
 		}		
 
 		if (connect(self->socket, rp->ai_addr, rp->ai_addrlen) != -1) {
+			WARN("Success to connect [%d]", self->socket);
 			break; // Success to connect
 		}
 
-		close(self->socket);
-	}
-
-	if (!rp) {
-		WARN("Could not connect to any address \"%s:%s\"\n", self->host, self->port);
-		freeaddrinfo(infores);
-		free(self);
+		if (close(self->socket) < 0) {
+			WARN("Failed to close socket [%d]", self->socket);
+		}
 	}
 
 	freeaddrinfo(infores);
 
+	if (!rp) {
+		WARN("Could not connect to any address \"%s:%s\"\n", self->host, self->port);
+		free(self);
+		return NULL;
+	}
+
 	return self;
+}
+
+int
+socket_send_string(Socket* self, char const* str) {
+	int ret = 0;
+	size_t len = strlen(str);
+
+	ret = send(self->socket, str, len, 0);
+	if (ret < 0) {
+		WARN("Failed to write to socket [%d] by \"%s:%s\""
+			, self->socket, self->host, self->port);
+	}
+
+	return ret;
+}
+
+int
+socket_recv_string(Socket* self, char* dst, size_t dstsz) {
+	int ret = 0;
+
+	ret = recv(self->socket, dst, dstsz, 0);
+	if (ret < 0) {
+		WARN("Failed to read from socket [%d] by \"%s:%s\""
+			, self->socket, self->host, self->port);
+	} else if (ret > 0) {
+		dst[ret-1] = '\0';
+	}
+
+	return ret;
 }
 
 #if defined(TEST_SOCKET)
@@ -190,6 +225,17 @@ test_socket(int argc, char* argv[]) {
 	}
 
 	socket_display(socket);
+
+	socket_send_string(socket, "GET / \r\n\r\n");
+
+	char buf[1024];
+	for (;;) {
+		if (socket_recv_string(socket, buf, sizeof buf) <= 0) {
+			break;
+		}
+		printf("buf[%s]\n", buf);
+	}
+
 
 	socket_close(socket);
 	return 0;
