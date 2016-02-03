@@ -5,9 +5,8 @@
 #include "term.h"
 #include "config.h"
 #include "caperr.h"
-#include "memory.h"
-#include "string.h"
 #include "socket.h"
+#include "http-header.h"
 
 void
 server_usage(void);

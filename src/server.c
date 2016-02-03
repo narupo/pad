@@ -98,7 +98,12 @@ server_run(Server* self) {
 		return caperr_printf(PROGNAME, CAPERR_OPEN, "accept socket");
 	}
 
+	HttpHeader* header = httpheader_new();
+
 	for (;;) {
+		fprintf(stderr, "recv...\n");
+		fflush(stderr);
+
 		char buf[1024];
 		int nrecv = socket_recv_string(cliesock, buf, sizeof buf);
 		if (nrecv <= 0) {
@@ -108,11 +113,35 @@ server_run(Server* self) {
 		term_putsf("buf[%s]", buf);
 		term_flush();
 
+		httpheader_parse_string(header, buf);
+		httpheader_display(header);
+
+		if (strcasecmp(httpheader_method_name(header), "GET") == 0) {
+			fprintf(stderr, "send...\n");
+			fflush(stderr);
+
+			socket_send_string(cliesock,
+				"HTTP/1.1 200 OK\r\n"
+				"Server: CapServer (Prototype)\r\n"
+				"Date: ^_^\r\n"
+				"Content-Type: text/html; charset=utf-8\r\n"
+				"Content-Length: 100\r\n"
+				"Connection: keep-alive\r\n"
+				"\r\n"
+				"<!DOCTYPE html>\n"
+				"<html><head><title>test</title></head><body>\n"
+				"Hello, World!\n"
+				"日本語！\n"
+				"</body></html>\n"
+			);
+		}
+
 		if (strncmp(buf, "exit", 4) == 0) {
 			break;
 		}
 	}
 
+	httpheader_delete(header);
 	socket_close(cliesock);
 	socket_close(servsock);
 	return 0;
@@ -152,6 +181,7 @@ server_main(int argc, char* argv[]) {
 	server_delete(server);
 	return res;
 }
+
 /**************
 * server test *
 **************/
