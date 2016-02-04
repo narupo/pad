@@ -91,6 +91,7 @@ server_run(Server* self) {
 	}
 
 	term_eputsf("CapServer running by \"%s\".", hostport);
+	term_eputsf("** Caution!! THIS SERVER DO NOT PUBLISHED ON INTERNET. DANGER! **");
 
 	HttpHeader* header = httpheader_new();
 	if (!header) {
