@@ -477,6 +477,28 @@ str_getline(String* self, FILE* fin) {
 	return self;
 }
 
+int
+str_read_stream(String* self, FILE* fin) {
+	self->length = 0;
+
+	for (int ch; (ch = fgetc(fin)) != EOF; ) {
+		str_push_back(self, ch);
+	}
+
+	return self->length;
+}
+
+int
+str_append_stream(String* self, FILE* fin) {
+	int nread = 0;
+
+	for (int ch; (ch = fgetc(fin)) != EOF; ++nread) {
+		str_push_back(self, ch);
+	}
+
+	return nread;
+}
+
 /***********
 * str test *
 ***********/

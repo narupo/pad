@@ -149,23 +149,16 @@ server_run(Server* self) {
 				continue;
 			}
 
-			int contlen = 0;
-			for (contlen = 0; fgetc(fin) != EOF; ++contlen) {
-			}
+			String* file = str_new();
 
-			if (fseek(fin, 0L, SEEK_SET) == EOF) {
-				caperr_printf(PROGNAME, CAPERR_ERROR, "Failed to seek");
-				file_close(fin);
-				continue;
-			}
+			str_append_string(file, "<pre>");
+			str_append_stream(file, fin);
+			str_append_string(file, "</pre>");
 
-			char cont[contlen+1];
-			fread(cont, sizeof(cont[0]), contlen, fin);
-			cont[contlen] = '\0';
 			file_close(fin);
 
 			char tmp[128];
-			snprintf(tmp, sizeof tmp, "Content-Length: %d\r\n", contlen);
+			snprintf(tmp, sizeof tmp, "Content-Length: %d\r\n", str_length(file));
 
 			String* res = str_new();
 
@@ -179,13 +172,12 @@ server_run(Server* self) {
 
 			str_append_string(res, tmp);
 			str_append_string(res, "\r\n");
-			str_append_string(res, "<pre>\n");
-			str_append_string(res, cont);
-			str_append_string(res, "</pre>\n");
+			str_append_other(res, file);
 
 			term_eputsf("send...");
 			socket_send_string(cliesock, str_get_const(res));
 
+			str_delete(file);
 			str_delete(res);
 		}
 
