@@ -161,6 +161,17 @@ void
 str_append_string(String* self, char const* src);
 
 /**
+ * @brief      
+ *
+ * @param      self
+ * @param      fin
+ *
+ * @return     
+ */
+int
+str_append_stream(String* self, FILE* fin);
+
+/**
  * @brief 
  *
  * @param self  
@@ -236,8 +247,5 @@ str_getline(String* self, FILE* fin);
 
 int
 str_read_stream(String* self, FILE* fin);
-
-int
-str_append_stream(String* self, FILE* fin);
 
 #endif
