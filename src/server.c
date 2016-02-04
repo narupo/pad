@@ -132,7 +132,9 @@ server_run(Server* self) {
 
 			char const* reqpath = httpheader_method_value(header);
 			char path[FILE_NPATH];
+
 			config_path_with_home(config, path, sizeof path, reqpath);
+			size_t pathlen = strlen(path);
 
 			// Check 404
 			if (!file_is_exists(path)) {
@@ -146,12 +148,32 @@ server_run(Server* self) {
 
 			// Check 403
 			if (file_is_dir(path)) {
-				socket_send_string(cliesock,
-					"HTTP/1.1 403 Forbidden\r\n"
-					"Content-Length: 0\r\n"
-					"\r\n"
-				);
-				continue;
+				if (path[pathlen-1] != '/') {
+					strappend(path, sizeof path, "/");
+				}
+
+				char const* fnames[] = {
+					"index.html", "index.php", 0,
+				};
+
+				char const** fp = NULL;
+				for (fp = fnames; *fp; ++fp) {
+					char tmp[FILE_NPATH];
+					snprintf(tmp, sizeof tmp, "%s%s", path, *fp);
+					if (file_is_exists(tmp)) {
+						snprintf(path, sizeof path, "%s", tmp);
+						break;
+					}
+				}
+
+				if (!*fp) {
+					socket_send_string(cliesock,
+						"HTTP/1.1 403 Forbidden\r\n"
+						"Content-Length: 0\r\n"
+						"\r\n"
+					);
+					continue;
+				}
 			}
 
 			term_eputsf("open path [%s]", path);
