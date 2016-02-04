@@ -83,6 +83,49 @@ server_parse_options(Server* self) {
 	return true;
 }
 
+static void*
+thread_main(void* arg) {
+	Socket* client = (Socket*) arg;
+	char buf[512];
+
+	HttpHeader* header = httpheader_new();
+	if (!header) {
+		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "HttpHeader");
+	}
+
+	term_eputsf("Thread %d running...", pthread_self());
+
+	for (;;) {
+		int nrecv = socket_recv_string(client, buf, sizeof buf);
+		if (nrecv < 0) {
+			WARN("Failed to recv");
+			break;
+		}
+
+		httpheader_parse_request(header, buf);
+		char const* methname = httpheader_method_name(header);
+
+		if (strcmp(methname, "GET") == 0) {
+			socket_send_string(client,
+				"HTTP/1.1 200 OK\r\n"
+				"Content-Length: 14\r\n"
+				"\r\n"
+				"Hello, World!\n"
+			);
+		} else {
+			socket_send_string(client,
+				"HTTP/1.1 405 Method Not Allowed\r\n"
+				"Content-Length: 0\r\n"
+				"\r\n"
+			);
+		}
+	}
+
+	httpheader_delete(header);
+	socket_close(client);
+	return NULL;
+}
+
 static int
 server_run(Server* self) {
 	char const* hostport = DEFAULT_HOSTPORT;
@@ -90,140 +133,40 @@ server_run(Server* self) {
 		hostport = self->argv[self->optind];
 	}
 
-	term_eputsf("CapServer running by \"%s\".", hostport);
-	term_eputsf("** Caution!! THIS SERVER DO NOT PUBLISHED ON INTERNET. DANGER! **");
-
-	HttpHeader* header = httpheader_new();
-	if (!header) {
-		return caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "HttpHeader");
-	}
-
-	Socket* servsock = socket_open(hostport, "tcp-server");
-	if (!servsock) {
-		httpheader_delete(header);
+	Socket* server = socket_open(hostport, "tcp-server");
+	if (!server) {
 		return caperr_printf(PROGNAME, CAPERR_OPEN, "socket");
 	}
 
-	term_eputsf("accept...");
+	// Welcome message
+	term_eputsf("CapServer running by \"%s\".", hostport);
+	term_eputsf("** Caution!! THIS SERVER DO NOT PUBLISHED ON INTERNET. DANGER! **");
 
-	Socket* cliesock = socket_accept(servsock);
-	if (!cliesock) {
-		httpheader_delete(header);
-		socket_close(servsock);
-		return caperr_printf(PROGNAME, CAPERR_OPEN, "accept socket");
-	}
-
+	// Loop
 	for (;;) {
-		term_eputsf("recv...");
+		term_eputsf("accept...");
 
-		char buf[1024];
-		int nrecv = socket_recv_string(cliesock, buf, sizeof buf);
-		if (nrecv < 0) {
-			WARN("nrecv [%d]", nrecv);
-			break;
+		Socket* client = socket_accept(server);
+		if (!client) {
+			socket_close(server);
+			return caperr_printf(PROGNAME, CAPERR_OPEN, "accept socket");
+		}
+		
+		// Thread works
+		pthread_t thread;
+
+		if (pthread_create(&thread, NULL, thread_main, (void*) client) != 0) {
+			WARN("Failed to create thread");
+			continue;
 		}
 
-		term_eputsf("****************\n%s", buf);
-
-		httpheader_parse_string(header, buf);
-
-		if (strcasecmp(httpheader_method_name(header), "GET") == 0) {
-			Config* config = config_instance();
-
-			char const* reqpath = httpheader_method_value(header);
-			char path[FILE_NPATH];
-
-			config_path_with_home(config, path, sizeof path, reqpath);
-			size_t pathlen = strlen(path);
-
-			// Check 404
-			if (!file_is_exists(path)) {
-				socket_send_string(cliesock,
-					"HTTP/1.1 404 Not Found\r\n"
-					"Content-Length: 0\r\n"
-					"\r\n"
-				);
-				continue;
-			}
-
-			// Check 403
-			if (file_is_dir(path)) {
-				if (path[pathlen-1] != '/') {
-					strappend(path, sizeof path, "/");
-				}
-
-				char const* fnames[] = {
-					"index.html", "index.php", 0,
-				};
-
-				char const** fp = NULL;
-				for (fp = fnames; *fp; ++fp) {
-					char tmp[FILE_NPATH];
-					snprintf(tmp, sizeof tmp, "%s%s", path, *fp);
-					if (file_is_exists(tmp)) {
-						snprintf(path, sizeof path, "%s", tmp);
-						break;
-					}
-				}
-
-				if (!*fp) {
-					socket_send_string(cliesock,
-						"HTTP/1.1 403 Forbidden\r\n"
-						"Content-Length: 0\r\n"
-						"\r\n"
-					);
-					continue;
-				}
-			}
-
-			term_eputsf("open path [%s]", path);
-
-			FILE* fin = file_open(path, "rb");
-			if (!fin) {
-				caperr_printf(PROGNAME, CAPERR_FOPEN, "\"%s\"", path);
-				continue;
-			}
-
-			String* file = str_new();
-
-			str_append_string(file, "<pre>");
-			str_append_stream(file, fin);
-			str_append_string(file, "</pre>");
-
-			file_close(fin);
-
-			char tmp[128];
-			snprintf(tmp, sizeof tmp, "Content-Length: %d\r\n", str_length(file));
-
-			String* res = str_new();
-
-			str_append_string(res,
-				"HTTP/1.1 200 OK\r\n"
-				"Server: CapServer (Prototype)\r\n"
-				"Date: ^_^\r\n"
-				"Content-Type: text/html; charset=utf-8\r\n"
-				"Connection: keep-alive\r\n"
-			);
-
-			str_append_string(res, tmp);
-			str_append_string(res, "\r\n");
-			str_append_other(res, file);
-
-			term_eputsf("send...");
-			socket_send_string(cliesock, str_get_const(res));
-
-			str_delete(file);
-			str_delete(res);
-		}
-
-		if (strncmp(buf, "exit", 4) == 0) {
-			break;
+		if (pthread_detach(thread) != 0) {
+			WARN("Failed to detach thread");
+			continue;
 		}
 	}
 
-	httpheader_delete(header);
-	socket_close(cliesock);
-	socket_close(servsock);
+	socket_close(server);
 	return 0;
 }
 

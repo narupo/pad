@@ -84,7 +84,7 @@ httpheader_display(HttpHeader const* self) {
 ********************/
 
 HttpHeader*
-httpheader_parse_string(HttpHeader* self, char const* src) {
+httpheader_parse_request(HttpHeader* self, char const* src) {
 	// Init state
 	self->method_name[0] = '\0';
 	self->method_value[0] = '\0';
@@ -109,7 +109,7 @@ httpheader_parse_string(HttpHeader* self, char const* src) {
 				di = 0;
 			} else {
 				if (di < ndst) {
-					dst[di++] = tolower(*sp);
+					dst[di++] = *sp;
 					dst[di] = '\0';
 				}
 			}
@@ -135,7 +135,7 @@ httpheader_parse_string(HttpHeader* self, char const* src) {
 				di = 0;
 			} else {
 				if (di < ndst) {
-					dst[di++] = tolower(*sp);
+					dst[di++] = *sp;
 					dst[di] = '\0';
 				}				
 			}

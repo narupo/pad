@@ -83,6 +83,6 @@ httpheader_display(HttpHeader const* self);
  * @return 
 */
 HttpHeader* 
-httpheader_parse_string(HttpHeader* self, char const* src);
+httpheader_parse_request(HttpHeader* self, char const* src);
 
 #endif
