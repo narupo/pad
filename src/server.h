@@ -3,8 +3,10 @@
 
 #include "util.h"
 #include "term.h"
+#include "file.h"
 #include "config.h"
 #include "caperr.h"
+#include "string.h"
 #include "socket.h"
 #include "http-header.h"
 
