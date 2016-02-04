@@ -273,6 +273,17 @@ str_append_string(String* self, String_type const* src) {
 	self->buffer[self->length] = NIL;
 }
 
+int
+str_append_stream(String* self, FILE* fin) {
+	int nread = 0;
+
+	for (int ch; (ch = fgetc(fin)) != EOF; ++nread) {
+		str_push_back(self, ch);
+	}
+
+	return nread;
+}
+
 void
 str_append_other(String* self, String const* other) {
 	if (!self || !other) {
@@ -486,17 +497,6 @@ str_read_stream(String* self, FILE* fin) {
 	}
 
 	return self->length;
-}
-
-int
-str_append_stream(String* self, FILE* fin) {
-	int nread = 0;
-
-	for (int ch; (ch = fgetc(fin)) != EOF; ++nread) {
-		str_push_back(self, ch);
-	}
-
-	return nread;
 }
 
 /***********

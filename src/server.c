@@ -127,16 +127,28 @@ server_run(Server* self) {
 		httpheader_parse_string(header, buf);
 
 		if (strcasecmp(httpheader_method_name(header), "GET") == 0) {
-			char const* reqpath = httpheader_method_value(header);
 			Config* config = config_instance();
 
+			char const* reqpath = httpheader_method_value(header);
 			char path[FILE_NPATH];
 			config_path_with_home(config, path, sizeof path, reqpath);
 
+			// Check 404
 			if (!file_is_exists(path)) {
 				socket_send_string(cliesock,
-					"HTTP/1.1 404\r\n"
-					"\r\n"\
+					"HTTP/1.1 404 Not Found\r\n"
+					"Content-Length: 0\r\n"
+					"\r\n"
+				);
+				continue;
+			}
+
+			// Check 403
+			if (file_is_dir(path)) {
+				socket_send_string(cliesock,
+					"HTTP/1.1 403 Forbidden\r\n"
+					"Content-Length: 0\r\n"
+					"\r\n"
 				);
 				continue;
 			}
