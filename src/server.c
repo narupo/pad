@@ -83,6 +83,68 @@ server_parse_options(Server* self) {
 	return true;
 }
 
+static void
+thread_method_get(HttpHeader const* header, Socket* client) {
+	Config* config = config_instance();
+	char const* methval = httpheader_method_value(header);
+	char path[FILE_NPATH];
+
+	config_path_with_home(config, path, sizeof path, methval);
+	term_eputsf("Thread %d path[%s]", pthread_self(), path);
+	
+	if (!file_is_exists(path)) {
+		socket_send_string(client,
+			"HTTP/1.1 404 Not Found\r\n"
+			"Content-Length: 0\r\n"
+			"\r\n"
+		);
+		return;
+	}
+
+	if (file_is_dir(path)) {
+		socket_send_string(client,
+			"HTTP/1.1 403 Permission denied\r\n"
+			"Content-Length: 0\r\n"
+			"\r\n"
+		);
+		return;
+	}
+
+	FILE* fin = file_open(path, "rb");
+	if (!fin) {
+		WARN("Failed to open file \"%s\"", path);
+		return;
+	}
+
+	// Content
+	String* content = str_new();
+	str_append_string(content, "<pre>");
+	str_append_stream(content, fin);
+	str_append_string(content, "</pre>");
+
+	file_close(fin);
+
+	// Make send buffer
+	String* sendbuf = str_new();
+	char tmp[100];
+	snprintf(tmp, sizeof tmp, "Content-Length: %d\r\n", str_length(content));
+
+	str_append_string(sendbuf,
+		"HTTP/1.1 200 OK\r\n"
+		"Server: CapServer\r\n"
+	);
+	str_append_string(sendbuf, tmp);
+	str_append_string(sendbuf, "\r\n");
+	str_append_other(sendbuf, content);
+
+	// Send
+	socket_send_string(client, str_get_const(sendbuf));
+
+	// Done
+	str_delete(sendbuf);
+	str_delete(content);
+}
+
 static void*
 thread_main(void* arg) {
 	Socket* client = (Socket*) arg;
@@ -106,12 +168,7 @@ thread_main(void* arg) {
 		char const* methname = httpheader_method_name(header);
 
 		if (strcmp(methname, "GET") == 0) {
-			socket_send_string(client,
-				"HTTP/1.1 200 OK\r\n"
-				"Content-Length: 14\r\n"
-				"\r\n"
-				"Hello, World!\n"
-			);
+			thread_method_get(header, client);
 		} else {
 			socket_send_string(client,
 				"HTTP/1.1 405 Method Not Allowed\r\n"
@@ -123,6 +180,8 @@ thread_main(void* arg) {
 
 	httpheader_delete(header);
 	socket_close(client);
+
+	term_eputsf("Done thread %d", pthread_self());
 	return NULL;
 }
 
@@ -139,7 +198,7 @@ server_run(Server* self) {
 	}
 
 	// Welcome message
-	term_eputsf("CapServer running by \"%s\".", hostport);
+	term_eputsf("CapServer is running by \"%s\".", hostport);
 	term_eputsf("** Caution!! THIS SERVER DO NOT PUBLISHED ON INTERNET. DANGER! **");
 
 	// Loop
@@ -148,8 +207,8 @@ server_run(Server* self) {
 
 		Socket* client = socket_accept(server);
 		if (!client) {
-			socket_close(server);
-			return caperr_printf(PROGNAME, CAPERR_OPEN, "accept socket");
+			caperr_printf(PROGNAME, CAPERR_OPEN, "accept socket");
+			continue;
 		}
 		
 		// Thread works
