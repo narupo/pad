@@ -10,6 +10,8 @@
 #include "socket.h"
 #include "http-header.h"
 
+#include <pthread.h>
+
 void
 server_usage(void);
 
