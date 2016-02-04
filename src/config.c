@@ -252,8 +252,6 @@ config_save(Config const* self) {
 	return false;
 }
 
-// TODO: FIXME
-// This logic was failed
 bool
 config_is_out_of_home(Config const* self, char const* path) {
 	char spath[FILE_NPATH];
