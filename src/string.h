@@ -234,4 +234,10 @@ str_shuffle(String* self);
 String* 
 str_getline(String* self, FILE* fin);
 
+int
+str_read_stream(String* self, FILE* fin);
+
+int
+str_append_stream(String* self, FILE* fin);
+
 #endif
