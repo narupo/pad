@@ -165,15 +165,26 @@ static void
 thread_method_get_script(
 	  HttpHeader const* header
 	, Socket* client
-	, char const* cmdname
+	, char const* defcmdname
 	, char const* path) {
 	
+	char const* cmdname = defcmdname;
 	char cmdln[SERVER_NCOMMAND_LINE];
+	char scrln[100];
+	FILE* fin;
 
+	// Try get command name from file
+	fin = file_open(path, "rb");
+	if (file_read_script_line(scrln, sizeof scrln, fin)) {
+		cmdname  = scrln;
+	}
+	file_close(fin);
+
+	// Open process
 	snprintf(cmdln, sizeof cmdln, "%s %s", cmdname, path);
 	term_eputsf("command line[%s]", cmdln); // debug
 
-	FILE* fin = popen(cmdln, "rb");
+	fin = popen(cmdln, "rb");
 	if (!fin) {
 		WARN("Failed to open process \"%s\"", cmdln);
 	}
@@ -277,20 +288,21 @@ thread_method_get(HttpHeader const* header, Socket* client) {
 		char const* suffix;
 		char const* name;
 	} cmds[] = {
-		{"py", "python"},
+		{"py", "python3"},
 		{"php", "php"},
 		{"rb", "ruby"},
 		{0},
 	};
+	char const* suffix = file_suffix(path);
 
 	for (struct Command const* cmd = cmds; cmd->name; ++cmd) {
-		if (strcmp(file_suffix(path), cmd->suffix) == 0) {
+		if (strcmp(suffix, cmd->suffix) == 0) {
 			thread_method_get_script(header, client, cmd->name, path);
 			return;
 		}
 	}
 
-	// Other
+	// Other files
 	thread_method_get_file(header, client, path);
 }
 
