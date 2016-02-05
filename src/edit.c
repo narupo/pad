@@ -60,7 +60,9 @@ make_solve_argv(Config const* config, int argc, char** argv) {
 			solvargv[i] = util_strdup(arg);
 		} else {
 			// Solve argument's path
-			solvargv[i] = config_make_path_from_base(config, arg);
+			char spath[FILE_NPATH];
+			config_path_with_cd(config, spath, sizeof spath, arg);
+			solvargv[i] = util_strdup(spath);
 		}
 	}
 
@@ -69,7 +71,6 @@ make_solve_argv(Config const* config, int argc, char** argv) {
 
 static int
 run_command(Command* self, Config const* config) {
-	// Skip command name, and solve argv for file path on cap
 	int argc = self->argc;
 	char** argv = make_solve_argv(config, argc, self->argv);
 	if (!argv) {

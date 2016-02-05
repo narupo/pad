@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -g -O2 -std=c99 -Wno-unused-function 
+CFLAGS=-Wall -DDEBUG -g -O2 -std=c99 -Wno-unused-function 
 CMDS=cap.c cat.c home.c cd.c pwd.c rm.c deploy.c edit.c \
 	editor.c help.c ls.c make.c path.c run.c alias.c brief.c \
 	server.c

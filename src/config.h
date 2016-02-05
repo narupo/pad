@@ -73,18 +73,6 @@ char*
 config_path_with_cd(Config const* self, char* dst, size_t dstsize, char const* basename);
 
 /**
- * Make normalized cap's path from basename
- * 
- * @param[in] self
- * @param[in] basename basename like a file name of cap's management files
- *
- * @return success to pointer to normalized path of dynamic allocate memory
- * @return failed to pointer to NULL
- */
-char*
-config_make_path_from_base(Config const* self, char const* basename);
-
-/**
  * Get path by key
  *
  * @param[in] self
@@ -124,6 +112,15 @@ config_set_path(Config* self, char const* key, char const* path);
 bool
 config_save(Config const* self);
 
+/**
+ * Check path is out of home
+ *
+ * @param      self  
+ * @param      path  check path
+ *
+ * @return     is out of home to true
+ * @return     is not out of home to false
+ */
 bool
 config_is_out_of_home(Config const* self, char const* path);
 

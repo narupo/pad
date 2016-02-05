@@ -13,7 +13,6 @@
 #endif
 
 static char const CONFIGSERVER_DEFAULT_HOSTPORT[] = "127.0.0.1:1234";
-static char
 static int const LINE_FORMAT_DELIM = ',';
 
 struct ConfigServer {
@@ -216,6 +215,8 @@ configserver_save_to_file(ConfigServer* self, char const* fname) {
 
 bool
 configserver_set_path(ConfigServer* self, char const* key, char const* val) {
+	WARN("TODO");
+	return false;
 }
 
 /*******
