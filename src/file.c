@@ -397,7 +397,6 @@ dir_read_node(Directory* self) {
 			return NULL;
 		}
 	}
-
 #endif
 
 	return node;
