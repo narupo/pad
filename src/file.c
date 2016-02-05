@@ -245,6 +245,19 @@ file_size(FILE* stream) {
 	return 0L;
 }
 
+char const*
+file_suffix(char const* path) {
+	if (!path) {
+		return "";
+	}
+	
+	char const* suf = strrchr(path, '.');
+	if (!suf) {
+		return path;
+	}
+	return suf + 1;
+}
+
 /*********************
 * file DirectoryNode *
 *********************/

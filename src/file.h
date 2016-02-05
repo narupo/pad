@@ -170,8 +170,14 @@ file_escape_blanks(char* dst, size_t dstsize, char const* src);
 char*
 file_getline(char* dst, size_t dstsize, FILE* fin);
 
+//
+// TODO
+// 
 long
 file_size(FILE* stream);
+
+char const*
+file_suffix(char const* path);
 
 /*********************
 * file DirectoryNode *
