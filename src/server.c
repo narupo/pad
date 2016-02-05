@@ -2,6 +2,10 @@
 
 typedef struct Server Server;
 
+enum {
+	SERVER_NCOMMAND_LINE = 128,
+};
+
 struct Server {
 	int argc;
 	int optind;
@@ -135,23 +139,23 @@ thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* 
 	char contlen[100];
 	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", str_length(content));
 
-	String* sendbuf = str_new();
+	String* response = str_new();
 
-	str_append_string(sendbuf,
+	str_append_string(response,
 		"HTTP/1.1 200 OK\r\n"
 		"Server: CapServer\r\n"
 	);
-	str_append_string(sendbuf, contlen);
-	str_append_string(sendbuf, "\r\n");
-	str_append_string(sendbuf, "\r\n");
-	str_append_other(sendbuf, content); // Merge content
+	str_append_string(response, contlen);
+	str_append_string(response, "\r\n");
+	str_append_string(response, "\r\n");
+	str_append_other(response, content); // Merge content
 
 	// Send
-	// term_eprintf("sendbuf[%s]", str_get_const(sendbuf));
-	socket_send_string(client, str_get_const(sendbuf));
+	// term_eprintf("response[%s]", str_get_const(response));
+	socket_send_string(client, str_get_const(response));
 
 	// Done
-	str_delete(sendbuf);
+	str_delete(response);
 	str_delete(content);
 	dir_close(dir);
 
@@ -159,29 +163,52 @@ thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* 
 }
 
 static void
-thread_method_get(HttpHeader const* header, Socket* client) {
-	Config* config = config_instance();
-	char const* methval = httpheader_method_value(header);
-	char path[FILE_NPATH];
-
-	config_path_with_home(config, path, sizeof path, methval);
-	term_eputsf("Thread %d path[%s]", pthread_self(), path);
+thread_method_get_script(
+	  HttpHeader const* header
+	, Socket* client
+	, char const* cmdname
+	, char const* path) {
 	
-	if (!file_is_exists(path)) {
-		socket_send_string(client,
-			"HTTP/1.1 404 Not Found\r\n"
-			"Content-Length: 0\r\n"
-			"\r\n"
-		);
-		return;
+	char cmdln[SERVER_NCOMMAND_LINE];
+
+	snprintf(cmdln, sizeof cmdln, "%s %s", cmdname, path);
+	term_eputsf("command line[%s]", cmdln); // debug
+
+	FILE* fin = popen(cmdln, "rb");
+	if (!fin) {
+		WARN("Failed to open process \"%s\"", cmdln);
 	}
 
-	if (file_is_dir(path)) {
-		term_eputsf("dir \"%s\"", path);
-		thread_index_page_by_path(header, client, path);
-		return;
-	}
+	// Content
+	String* content = str_new();
+	str_append_stream(content, fin);
+	file_close(fin);
 
+	// Response header
+	char contlen[100];
+	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", str_length(content));
+
+	String* response = str_new();
+	
+	str_append_string(response,
+		"HTTP/1.1 200 OK\r\n"
+		"Server: CapServer\r\n"
+	);
+	str_append_string(response, contlen);
+	str_append_string(response, "\r\n");
+	str_append_other(response, content);
+
+	// Send
+	socket_send_string(client, str_get_const(response));
+
+	// Done
+	str_delete(content);
+	str_delete(response);
+}
+
+static void
+thread_method_get_file(HttpHeader const* header, Socket* client, char const* path) {
+	// Other
 	FILE* fin = file_open(path, "rb");
 	if (!fin) {
 		WARN("Failed to open file \"%s\"", path);
@@ -197,24 +224,60 @@ thread_method_get(HttpHeader const* header, Socket* client) {
 	file_close(fin);
 
 	// Make send buffer
-	String* sendbuf = str_new();
+	String* response = str_new();
 	char tmp[100];
 	snprintf(tmp, sizeof tmp, "Content-Length: %d\r\n", str_length(content));
 
-	str_append_string(sendbuf,
+	str_append_string(response,
 		"HTTP/1.1 200 OK\r\n"
 		"Server: CapServer\r\n"
 	);
-	str_append_string(sendbuf, tmp);
-	str_append_string(sendbuf, "\r\n");
-	str_append_other(sendbuf, content);
+	str_append_string(response, tmp);
+	str_append_string(response, "\r\n");
+	str_append_other(response, content);
 
 	// Send
-	socket_send_string(client, str_get_const(sendbuf));
+	socket_send_string(client, str_get_const(response));
 
 	// Done
-	str_delete(sendbuf);
+	str_delete(response);
 	str_delete(content);
+}
+
+static void
+thread_method_get(HttpHeader const* header, Socket* client) {
+	char const* methval = httpheader_method_value(header);
+	Config const* config = config_instance();
+	char path[FILE_NPATH];
+
+	config_path_with_home(config, path, sizeof path, methval);
+	term_eputsf("Thread %d GET path[%s]", pthread_self(), path); // debug
+
+	// Not found?
+	if (!file_is_exists(path)) {
+		socket_send_string(client,
+			"HTTP/1.1 404 Not Found\r\n"
+			"Content-Length: 0\r\n"
+			"\r\n"
+		);
+		return;
+	}
+
+	// Directory?
+	if (file_is_dir(path)) {
+		term_eputsf("dir \"%s\"", path);
+		thread_index_page_by_path(header, client, path);
+		return;
+	}
+
+	// Command with white list for security
+	if (strcmp(file_suffix(path), "py") == 0) {
+		thread_method_get_script(header, client, "python", path);
+		return;
+	}
+
+	// Other
+	thread_method_get_file(header, client, path);
 }
 
 static void*
