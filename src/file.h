@@ -179,6 +179,9 @@ file_size(FILE* stream);
 char const*
 file_suffix(char const* path);
 
+char*
+file_read_script_line(char* dst, size_t dstsize, FILE* stream);
+
 /*********************
 * file DirectoryNode *
 *********************/
