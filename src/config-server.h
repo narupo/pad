@@ -1,5 +1,5 @@
-#ifndef CONFIGSETTING_H
-#define CONFIGSETTING_H
+#ifndef CONFIGSERVER_H
+#define CONFIGSERVER_H
 
 #include "util.h"
 #include "file.h"
@@ -7,29 +7,29 @@
 #include "csvline.h"
 #include "strmap.h"
 
-typedef struct ConfigSetting ConfigSetting;
+typedef struct ConfigServer ConfigServer;
 
 /*****************
 * Delete and New *
 *****************/
 
 /**
- * Destruct configsetting.
+ * Destruct configserver
  *
  * @param[in] self
  */
 void
-configsetting_delete(ConfigSetting* self);
+configserver_delete(ConfigServer* self);
 
 /**
- * Construct configsetting from file.
+ * Construct configserver from file.
  *
  * @param[in] fname Load file name
  *
- * @return pointer to allocate memory of configsetting
+ * @return pointer to allocate memory of configserver
  */
-ConfigSetting*
-configsetting_new_from_file(char const* fname);
+ConfigServer*
+configserver_new_from_file(char const* fname);
 
 /*********
 * Getter *
@@ -45,14 +45,14 @@ configsetting_new_from_file(char const* fname);
  * @return failed to pointer to dummy string
  */
 char const*
-configsetting_path(ConfigSetting const* self, char const* key);
+configserver_path(ConfigServer const* self, char const* key);
 
 /*********
 * Setter *
 *********/
 
 /**
- * Save config settings to file by name
+ * Save config servers to file by name
  *
  * @param[in] self
  * @param[in] fname file name
@@ -61,7 +61,7 @@ configsetting_path(ConfigSetting const* self, char const* key);
  * @return failed to false
  */
 bool
-configsetting_save_to_file(ConfigSetting* self, char const* fname);
+configserver_save_to_file(ConfigServer* self, char const* fname);
 
 /**
  * Set value of string to object by key
@@ -74,7 +74,7 @@ configsetting_save_to_file(ConfigSetting* self, char const* fname);
  * @return failed to true
  */
 bool
-configsetting_set_path(ConfigSetting* self, char const* key, char const* val);
+configserver_set_path(ConfigServer* self, char const* key, char const* val);
 
 #endif
 

@@ -25,7 +25,6 @@ SOFTWARE.
 #ifndef CAP_H
 #define CAP_H
 
-#include "types.h"
 #include "util.h"
 #include "caperr.h"
 #include "help.h"

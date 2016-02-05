@@ -1,8 +1,9 @@
 #include "config.h"
 
 struct Config {
-	char configdirpath[FILE_NPATH];
+	char dirpath[FILE_NPATH];
 	ConfigSetting* setting;
+	ConfigServer* server;
 };
 
 /************
@@ -15,6 +16,8 @@ static pthread_mutex_t config_mutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex for s
 static char const CONFIG_DIR_PATH[] = "~/.cap";  // Root directory path of config
 static char const CONFIGSETTING_PATH[] = "~/.cap/setting";  // File path of config-setting
 static char const CONFIGSETTING_FNAME[] = "setting";  // File name of config-setting
+static char const CONFIGSERVER_PATH[] = "~/.cap/server";
+static char const CONFIGSERVER_FNAME[] = "server";
 
 /***************
 * Mutex family *
@@ -48,13 +51,13 @@ config_delete(Config* self) {
 /**
  * Construct Config from directory
  * 
- * @param[in] configdirpath source directory of construct
+ * @param[in] dirpath source directory of construct
  *
  * @return success to pointer to Config
  * @return failed to pointer to NULL 
  */
 static Config*
-config_new_from_dir(char const* configdirpath) {
+config_new_from_dir(char const* dirpath) {
 	// Construct
 	Config* self = (Config*) calloc(1, sizeof(Config));
 	if (!self) {
@@ -63,8 +66,8 @@ config_new_from_dir(char const* configdirpath) {
 	}
 
 	// Make root path from constant because constant path is not solved
-	if (!file_solve_path(self->configdirpath, NUMOF(self->configdirpath), configdirpath)) {
-		WARN("Failed to solve path \"%s\"", configdirpath);
+	if (!file_solve_path(self->dirpath, NUMOF(self->dirpath), dirpath)) {
+		WARN("Failed to solve path \"%s\"", dirpath);
 		free(self);
 		return NULL;
 	}
@@ -72,7 +75,7 @@ config_new_from_dir(char const* configdirpath) {
 	// Solve root directory path
 	char sdirpath[FILE_NPATH];
 
-	if (!file_solve_path(sdirpath, sizeof sdirpath, self->configdirpath)) {
+	if (!file_solve_path(sdirpath, sizeof sdirpath, self->dirpath)) {
 		free(self);
 		return NULL;
 	}
@@ -144,7 +147,7 @@ config_instance(void) {
 
 char const*
 config_dir(Config const* self) {
-	return self->configdirpath;
+	return self->dirpath;
 }
 
 char const*

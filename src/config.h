@@ -1,16 +1,18 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "types.h"
 #include "util.h"
 #include "buffer.h"
 #include "file.h"
 #include "config-setting.h"
+#include "config-server.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <pthread.h>
+
+typedef struct Config Config;
 
 /*****************
 * Delete and New *
