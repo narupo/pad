@@ -12,6 +12,8 @@
 #else
 #endif
 
+static char const CONFIGSERVER_DEFAULT_HOSTPORT[] = "127.0.0.1:1234";
+static char
 static int const LINE_FORMAT_DELIM = ',';
 
 struct ConfigServer {
