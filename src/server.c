@@ -83,6 +83,81 @@ server_parse_options(Server* self) {
 	return true;
 }
 
+static int
+thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* dirpath) {
+	char const* methvalue = httpheader_method_value(header);
+	size_t methvallen = strlen(methvalue);
+
+	Directory* dir = dir_open(dirpath);
+	if (!dir) {
+		return caperr_printf(PROGNAME, CAPERR_OPEN, "directory \"%s\"", dirpath);
+	}
+
+	String* content = str_new();
+	if (!content) {
+		dir_close(dir);
+		return caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "string");
+	}
+
+	// Content
+	str_append_string(content,
+		"<!DOCTYPE html>\n"
+		"<html>\n"
+		"<head><title>Index of</title></head>\n"
+		"<body>\n"
+		"<h1>Index of "
+	);
+	str_append_string(content, methvalue);
+	str_append_string(content, "</h1>\n");
+
+	for (DirectoryNode* node; (node = dir_read_node(dir)); ) {
+		char const* name = dirnode_name(node);
+
+		str_append_string(content, "<div><a href='");
+		str_append_string(content, methvalue);
+		if (methvalue[methvallen-1] != '/') {
+			str_append_string(content, "/");
+		}
+		str_append_string(content, name);
+		str_append_string(content, "'>");
+		str_append_string(content, name);
+		str_append_string(content, "</a></div>\n");
+
+		dirnode_delete(node);
+	}
+
+	str_append_string(content,
+		"</body>\n"
+		"</html>\n"
+	);
+
+	// HTTP Response Header
+	char contlen[100];
+	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", str_length(content));
+
+	String* sendbuf = str_new();
+
+	str_append_string(sendbuf,
+		"HTTP/1.1 200 OK\r\n"
+		"Server: CapServer\r\n"
+	);
+	str_append_string(sendbuf, contlen);
+	str_append_string(sendbuf, "\r\n");
+	str_append_string(sendbuf, "\r\n");
+	str_append_other(sendbuf, content); // Merge content
+
+	// Send
+	// term_eprintf("sendbuf[%s]", str_get_const(sendbuf));
+	socket_send_string(client, str_get_const(sendbuf));
+
+	// Done
+	str_delete(sendbuf);
+	str_delete(content);
+	dir_close(dir);
+
+	return 0;
+}
+
 static void
 thread_method_get(HttpHeader const* header, Socket* client) {
 	Config* config = config_instance();
@@ -102,11 +177,8 @@ thread_method_get(HttpHeader const* header, Socket* client) {
 	}
 
 	if (file_is_dir(path)) {
-		socket_send_string(client,
-			"HTTP/1.1 403 Permission denied\r\n"
-			"Content-Length: 0\r\n"
-			"\r\n"
-		);
+		term_eputsf("dir \"%s\"", path);
+		thread_index_page_by_path(header, client, path);
 		return;
 	}
 
@@ -148,7 +220,7 @@ thread_method_get(HttpHeader const* header, Socket* client) {
 static void*
 thread_main(void* arg) {
 	Socket* client = (Socket*) arg;
-	char buf[512];
+	pthread_t selfid = pthread_self();
 
 	HttpHeader* header = httpheader_new();
 	if (!header) {
@@ -158,6 +230,7 @@ thread_main(void* arg) {
 	term_eputsf("Thread %d running...", pthread_self());
 
 	for (;;) {
+		char buf[512];
 		int nrecv = socket_recv_string(client, buf, sizeof buf);
 		if (nrecv < 0) {
 			WARN("Failed to recv");
@@ -166,8 +239,10 @@ thread_main(void* arg) {
 
 		httpheader_parse_request(header, buf);
 		char const* methname = httpheader_method_name(header);
+		char const* methvalue = httpheader_method_value(header);
 
 		if (strcmp(methname, "GET") == 0) {
+			term_eputsf("Thread %d %s %s", selfid, methname, methvalue);
 			thread_method_get(header, client);
 		} else {
 			socket_send_string(client,

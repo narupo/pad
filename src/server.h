@@ -7,6 +7,7 @@
 #include "config.h"
 #include "caperr.h"
 #include "string.h"
+#include "strarray.h"
 #include "socket.h"
 #include "http-header.h"
 
