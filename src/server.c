@@ -151,7 +151,6 @@ thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* 
 	str_append_other(response, content); // Merge content
 
 	// Send
-	// term_eprintf("response[%s]", str_get_const(response));
 	socket_send_string(client, str_get_const(response));
 
 	// Done
@@ -207,7 +206,10 @@ thread_method_get_script(
 }
 
 static void
-thread_method_get_file(HttpHeader const* header, Socket* client, char const* path) {
+thread_method_get_file(
+	  HttpHeader const* header
+	, Socket* client
+	, char const* path) {
 	// Other
 	FILE* fin = file_open(path, "rb");
 	if (!fin) {
@@ -271,9 +273,21 @@ thread_method_get(HttpHeader const* header, Socket* client) {
 	}
 
 	// Command with white list for security
-	if (strcmp(file_suffix(path), "py") == 0) {
-		thread_method_get_script(header, client, "python", path);
-		return;
+	static struct Command {
+		char const* suffix;
+		char const* name;
+	} cmds[] = {
+		{"py", "python"},
+		{"php", "php"},
+		{"rb", "ruby"},
+		{0},
+	};
+
+	for (struct Command const* cmd = cmds; cmd->name; ++cmd) {
+		if (strcmp(file_suffix(path), cmd->suffix) == 0) {
+			thread_method_get_script(header, client, cmd->name, path);
+			return;
+		}
 	}
 
 	// Other
