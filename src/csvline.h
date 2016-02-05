@@ -1,9 +1,10 @@
 #ifndef CSVLINE_H
 #define CSVLINE_H
 
-#include "types.h"
 #include "util.h"
 #include "string.h"
+
+typedef struct CsvLine CsvLine;
 
 /*************************
 * CsvLine delete and new *

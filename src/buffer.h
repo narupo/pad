@@ -1,12 +1,13 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
-#include "types.h"
 #include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+
+typedef struct Buffer Buffer;
 
 /**
  * Destruct buffer.

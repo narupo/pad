@@ -1,24 +1,20 @@
-#include "config-setting.h"
+#include "config-server.h"
 
-/****************
-* ConfigSetting *
-****************/
+/***************
+* ConfigServer *
+***************/
 
-/***********************************
-* ConfigSetting constant variables *
-***********************************/
+/**********************************
+* ConfigServer constant variables *
+**********************************/
 
 #if defined(_WIN32) || defined(_WIN64)
-static char const DEFAULT_HOME_PATH[] = "C:/Windows/Temp";
-static char const DEFAULT_EDITOR_PATH[] = "C:/Windows/notepad.exe";
 #else
-static char const DEFAULT_HOME_PATH[] = "/tmp";
-static char const DEFAULT_EDITOR_PATH[] = "/usr/bin/vi";
 #endif
 
 static int const LINE_FORMAT_DELIM = ',';
 
-struct ConfigSetting {
+struct ConfigServer {
 	StringHashMap* pathmap;
 };
 
@@ -27,7 +23,7 @@ struct ConfigSetting {
 *********/
 
 static bool
-self_parse_read_line(ConfigSetting* self, char const* line) {
+self_parse_read_line(ConfigServer* self, char const* line) {
 	// Parse read line
 	CsvLine* csvline = csvline_new_parse_line(line, LINE_FORMAT_DELIM);
 	if (!csvline) {
@@ -57,7 +53,7 @@ self_parse_read_line(ConfigSetting* self, char const* line) {
 }
 
 static bool
-self_load_from_file(ConfigSetting* self, char const* fname) {
+self_load_from_file(ConfigServer* self, char const* fname) {
 	// Open file
 	FILE* fin = file_open(fname, "rb");
 	if (!fin) {
@@ -93,7 +89,7 @@ self_load_from_file(ConfigSetting* self, char const* fname) {
 **********/
 
 static bool
-self_create_file(ConfigSetting* self, char const* fname) {
+self_create_file(ConfigServer* self, char const* fname) {
 	// Create file
 	FILE* fout = file_open(fname, "wb");
 	if (!fout) {
@@ -102,8 +98,6 @@ self_create_file(ConfigSetting* self, char const* fname) {
 	}
 	
 	// Write lines to file
-	fprintf(fout, "home%c%s\n", LINE_FORMAT_DELIM, DEFAULT_HOME_PATH);
-	fprintf(fout, "editor%c%s\n", LINE_FORMAT_DELIM, DEFAULT_EDITOR_PATH);
 
 	// Done
 	file_close(fout);
@@ -115,17 +109,17 @@ self_create_file(ConfigSetting* self, char const* fname) {
 *****************/
 
 void
-configsetting_delete(ConfigSetting* self) {
+configserver_delete(ConfigServer* self) {
 	if (self) {
 		strmap_delete(self->pathmap);
 		free(self);
 	}
 }
 
-ConfigSetting*
-configsetting_new_from_file(char const* fname) {
+ConfigServer*
+configserver_new_from_file(char const* fname) {
 	// Construct
-	ConfigSetting* self = (ConfigSetting*) calloc(1, sizeof(ConfigSetting));
+	ConfigServer* self = (ConfigServer*) calloc(1, sizeof(ConfigServer));
 	if (!self) {
 		WARN("Failed to construct");
 		return NULL;
@@ -140,9 +134,6 @@ configsetting_new_from_file(char const* fname) {
 	}
 
 	// Set default values
-	strmap_set_copy(self->pathmap, "home", DEFAULT_HOME_PATH);
-	strmap_set_copy(self->pathmap, "cd", DEFAULT_HOME_PATH);
-	strmap_set_copy(self->pathmap, "editor", DEFAULT_EDITOR_PATH);
 
 	// Check file
 	if (!file_is_exists(fname)) {
@@ -172,7 +163,7 @@ configsetting_new_from_file(char const* fname) {
 *********/
 
 char const*
-configsetting_path(ConfigSetting const* self, char const* key) {
+configserver_path(ConfigServer const* self, char const* key) {
 	return strmap_get_const(self->pathmap, key);
 }
 
@@ -181,7 +172,7 @@ configsetting_path(ConfigSetting const* self, char const* key) {
 *********/
 
 bool
-configsetting_save_to_file(ConfigSetting* self, char const* fname) {
+configserver_save_to_file(ConfigServer* self, char const* fname) {
 	// Solve path
 	char path[FILE_NPATH];
 	
@@ -222,35 +213,18 @@ configsetting_save_to_file(ConfigSetting* self, char const* fname) {
 }
 
 bool
-configsetting_set_path(ConfigSetting* self, char const* key, char const* val) {
-	// Solve path
-	char sval[FILE_NPATH];
-
-	if (!file_solve_path(sval, sizeof sval, val)) {
-		WARN("Failed to solve path");
-		return false;
-	}
-
-	return strmap_set_copy(self->pathmap, key, sval);
+configserver_set_path(ConfigServer* self, char const* key, char const* val) {
 }
 
 /*******
 * Test *
 *******/
 
-#if defined(TEST_CONFIGSETTING)
+#if defined(TEST_CONFIGSERVER)
 int
 main(int argc, char* argv[]) {
-	ConfigSetting* setting = configsetting_new_from_file("~/.cap/setting");
-
-	printf("setting cd[%s]\n", configsetting_path(setting, "cd"));
-
-	configsetting_set_path(setting, "cd", "~/tmp");
-	printf("setting cd[%s]\n", configsetting_path(setting, "cd"));
-
-	configsetting_save_to_file(setting, "~/.cap/setting");
-
-	configsetting_delete(setting);
+	ConfigServer* server = configserver_new_from_file("~/.cap/server");
+	configserver_delete(server);
     return 0;
 }
 #endif
