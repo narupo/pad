@@ -33,6 +33,41 @@ self_unlock(void) {
 	return pthread_mutex_unlock(&config_mutex) == 0;
 }
 
+static char const*
+self_path_unsafe(Config const* self, char const* key) {
+	char const* pref = "server-";
+	size_t preflen = strlen(pref);
+	char const* path;
+
+	if (strncmp(key, pref, preflen) == 0) {
+		path = configserver_path(self->server, key + preflen);
+	} else {
+		path = configsetting_path(self->setting, key);
+	}
+
+	return path;
+}
+
+static bool
+self_is_out_of_home_unsafe(Config const* self, char const* path) {
+	char spath[FILE_NPATH];
+
+	if (!file_solve_path(spath, sizeof spath, path)) {
+		WARN("Failed to solve path of \"%s\"", path);
+		return false;
+	}
+
+	char const* home = self_path_unsafe(self, "home");
+	size_t homelen = strlen(home);
+	size_t pathlen = strlen(spath);
+
+	if (pathlen >= homelen && strncmp(spath, home, homelen) == 0) {
+		return false;
+	}
+
+	return true;
+}
+
 /*****************
 * Delete and New *
 *****************/
@@ -43,6 +78,7 @@ self_unlock(void) {
 static void
 config_delete(Config* self) {
 	if (self) {
+		configserver_delete(self->server);
 		configsetting_delete(self->setting);
 		free(self);
 	}
@@ -82,9 +118,6 @@ config_new_from_dir(char const* dirpath) {
 
 	// Check directory
 	if (!file_is_exists(sdirpath)) {
-		
-		// TODO: file_mkdir(path, "0700");
-
 		if (file_mkdir(sdirpath, S_IRUSR | S_IWUSR | S_IXUSR) != 0) {
 			WARN("Failed to mkdir \"%s\"", sdirpath);
 			free(self);
@@ -97,7 +130,16 @@ config_new_from_dir(char const* dirpath) {
 	snprintf(fname, sizeof fname, "%s/%s", sdirpath, CONFIGSETTING_FNAME);
 	
 	if (!(self->setting = configsetting_new_from_file(fname))) {
-		WARN("Failed to construct setting");
+		WARN("Failed to construct config-setting");
+		free(self);
+		return NULL;
+	}
+
+	snprintf(fname, sizeof fname, "%s/%s", sdirpath, CONFIGSERVER_FNAME);
+
+	if (!(self->server = configserver_new_from_file(fname))) {
+		WARN("Failed to construct config-server");
+		configsetting_delete(self->setting);
 		free(self);
 		return NULL;
 	}
@@ -153,7 +195,7 @@ config_dir(Config const* self) {
 char const*
 config_path(Config const* self, char const* key) {
 	if (self_lock()) {
-		char const* path = configsetting_path(self->setting, key);
+		char const* path = self_path_unsafe(self, key);
 		self_unlock();
 		return path;
 	}
@@ -163,24 +205,26 @@ config_path(Config const* self, char const* key) {
 
 static char*
 config_path_with(Config const* self, char* dst, size_t dstsize, char const* with, char const* base) {
+	if (!self_lock()) {
+		return NULL;
+	}
+
 	// Check arguments
 	if (!self || !dst || !base) {
 		WARN("Invalid arguments");
+		self_unlock();
 		return NULL;
 	}
 
 	// Get cap's current directory path
 	char const* withpath = NULL;
 
-	if (self_lock()) {
-		withpath = configsetting_path(self->setting, with);
-		if (!withpath) {
-			WARN("Not found \"%s\" in setting", with);
-			*dst = '\0';
-			self_unlock();
-			return dst;
-		}
+	withpath = self_path_unsafe(self, with);
+	if (!withpath) {
+		WARN("Not found \"%s\" in setting", with);
+		*dst = '\0';
 		self_unlock();
+		return dst;
 	}
 
 	// Make path
@@ -190,15 +234,17 @@ config_path_with(Config const* self, char* dst, size_t dstsize, char const* with
 	// Solve path
 	if (!file_solve_path(dst, dstsize, tmp)) {
 		WARN("Failed to solve path \"%s\"", tmp);
+		self_unlock();
 		return NULL;
 	}
 
 	// Is out of home?
-	if (config_is_out_of_home(self, dst)) {
+	if (self_is_out_of_home_unsafe(self, dst)) {
 		// Yes, set path to home
-		snprintf(dst, dstsize, config_path(self, "home"));
+		snprintf(dst, dstsize, self_path_unsafe(self, "home"));
 	}
 
+	self_unlock();
 	return dst;
 }
 
@@ -212,23 +258,6 @@ config_path_with_home(Config const* self, char* dst, size_t dstsize, char const*
 	return config_path_with(self, dst, dstsize, "home", base);
 }
 
-char*
-config_make_path_from_base(Config const* self, char const* basename) {
-	// Check arguments
-	if (!basename) {
-		WARN("Invalid arguments");
-		return NULL;
-	}
-
-	char* dst = (char*) calloc(FILE_NPATH, sizeof(char));
-	if (!dst) {
-		WARN("Failed to allocate memory");
-		return NULL;
-	}
-
-	return config_path_with_cd(self, dst, FILE_NPATH, basename);
-}
-
 /*********
 * Setter *
 *********/
@@ -236,9 +265,9 @@ config_make_path_from_base(Config const* self, char const* basename) {
 bool
 config_set_path(Config* self, char const* key, char const* val) {
 	if (self_lock()) {
-		bool res = configsetting_set_path(self->setting, key, val);
+		bool ret = configsetting_set_path(self->setting, key, val);
 		self_unlock();
-		return res;
+		return ret;
 	}
 
 	return false;
@@ -247,9 +276,18 @@ config_set_path(Config* self, char const* key, char const* val) {
 bool
 config_save(Config const* self) {
 	if (self_lock()) {
-		bool res = configsetting_save_to_file(self->setting, CONFIGSETTING_PATH);
+		bool ret = true;
+
+		if (!configsetting_save_to_file(self->setting, CONFIGSETTING_PATH)) {
+			ret = false;
+		}
+		
+		if (!configserver_save_to_file(self->server, CONFIGSERVER_PATH)) {
+			ret = false;
+		}
+
 		self_unlock();
-		return res;
+		return ret;
 	}
 	
 	return false;
@@ -257,22 +295,13 @@ config_save(Config const* self) {
 
 bool
 config_is_out_of_home(Config const* self, char const* path) {
-	char spath[FILE_NPATH];
-
-	if (!file_solve_path(spath, sizeof spath, path)) {
-		WARN("Failed to solve path of \"%s\"", path);
-		return false;
+	if (self_lock()) {
+		bool ret = self_is_out_of_home_unsafe(self, path);
+		self_unlock();
+		return ret;
 	}
 
-	char const* home = config_path(self, "home");
-	size_t homelen = strlen(home);
-	size_t pathlen = strlen(spath);
-
-	if (pathlen >= homelen && strncmp(spath, home, homelen) == 0) {
-		return false;
-	}
-
-	return true;
+	return false;
 }
 
 /*******
@@ -287,10 +316,10 @@ main(int argc, char* argv[]) {
 		die("config");
 	}
 
-	printf("cd[%s]\n", config_path(config, "cd"));
+	printf("cd[%s]\n", self_path_unsafe(config, "cd"));
 
 	config_set_path(config, "cd", "/tmp");
-	printf("cd[%s]\n", config_path(config, "cd"));
+	printf("cd[%s]\n", self_path_unsafe(config, "cd"));
 
 	config_save(config);
 	
