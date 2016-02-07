@@ -7,20 +7,21 @@ Usage:
 The commands are:
 
 	help   display usage
-	ls     display cap file list
-	rm     remove cap file or directory
-	cd     display or set current directory path
-	cat    display cap file
-	run    run script
-	pwd    display current working directory
 	home   display or set current home directory path
-	make   display and make by cap's make roule
-	edit   edit cap file
-	path   display normalized path of cap file
-	alias  add alias of cap's command
+	pwd    display current working directory
+	cd     display or set current directory path
+	ls     display cap file list
+	cat    display cap file
 	brief  display brief of file
-	editor display or set editor path
+	path   display normalized path of cap file
+	make   display and make by cap's make roule
 	deploy deploy files from directory
+	edit   edit cap file
+	editor display or set editor path
+	rm     remove cap file or directory
+	mkdir  make directory
+	run    run script
+	alias  add alias of cap's command
 	server run cap server
 
 
