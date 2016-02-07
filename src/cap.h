@@ -42,6 +42,7 @@ SOFTWARE.
 #include "brief.h"
 #include "pwd.h"
 #include "rm.h"
+#include "mkdir.h"
 #include "server.h"
 
 #endif

@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS=-Wall -DDEBUG -g -O2 -std=c99 -Wno-unused-function 
 CMDS=cap.c cat.c home.c cd.c pwd.c rm.c deploy.c edit.c \
 	editor.c help.c ls.c make.c path.c run.c alias.c brief.c \
-	server.c
+	server.c mkdir.c
 
 UTILS=caperr.c atcap.c buffer.c cap-file.c config.c \
 	csvline.c strmap.c file.c strarray.c term.c util.c environ.c string.c memory.c \
@@ -43,6 +43,9 @@ ls: ls.c $(UTILS)
 
 rm: rm.c $(UTILS)
 	$(CC) -DDEBUG -DTEST_RM $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+
+mkdir: mkdir.c $(UTILS)
+	$(CC) -DDEBUG -DTEST_MKDIR $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 server: server.c $(UTILS)
 	$(CC) -DDEBUG -DTEST_SERVER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
