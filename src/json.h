@@ -6,8 +6,23 @@
 #include "strarray.h"
 #include <stdbool.h>
 
-typedef struct Json Json;
+/*************
+* JsonObject *
+*************/
+
 typedef struct JsonObject JsonObject;
+
+typedef enum {
+	JOTDict = 0,
+	JOTList,
+	JOTValue,
+} JsonObjectType;
+
+void
+jsonobj_delete(JsonObject* self);
+
+JsonObject*
+jsonobj_new_with(JsonObjectType type, JsonObject const* parent, char const* name);
 
 /**
  * @brief 
@@ -41,6 +56,15 @@ jsonobj_find_value(JsonObject* self, char const* name);
 */
 JsonObject* 
 jsonobj_find_dict(JsonObject* self, char const* name);
+
+void
+jsonobj_move_back(JsonObject* self, JsonObject* other);
+
+/*******
+* Json *
+*******/
+
+typedef struct Json Json;
 
 /**
  * @brief 

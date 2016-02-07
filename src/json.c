@@ -71,16 +71,14 @@ stream_prev(Stream* self) {
 	}
 }
 
+/*************
+* JsonObject *
+*************/
+
 enum {
 	NBRACE_NAME = 32,
 	NINIT_BRACES_CAPACITY = 4,
 };
-
-typedef enum {
-	JOTDict = 0,
-	JOTList = 1,
-	JOTValue = 2,
-} JsonObjectType;
 
 typedef struct JsonObject JsonObject;
 
@@ -476,6 +474,10 @@ jsonobj_find_dict(JsonObject* self, char const* name) {
 
 	return NULL; // Not found
 }
+
+/*******
+* Json *
+*******/
 
 typedef struct Json Json;
 
