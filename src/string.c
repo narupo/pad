@@ -167,6 +167,22 @@ str_clear(String* self) {
 }
 
 void
+str_set_string(String* self, char const* src) {
+	int srclen = strlen(src);
+
+	if (srclen >= self->length) {
+		str_resize(self, srclen);
+	}
+
+	self->length = srclen;
+
+	for (int i = 0; i < srclen; ++i) {
+		self->buffer[i] = src[i];
+	}
+	self->buffer[srclen] = NIL;
+}
+
+void
 str_resize(String* self, int newlen) {
 	if (!self) {
 		return;
@@ -176,8 +192,7 @@ str_resize(String* self, int newlen) {
 		newlen = 0;
 	}
 
-	String_type* tmp =
-		(String_type*) mem_erealloc(self->buffer, newlen * NCHAR + NCHAR);
+	String_type* tmp = (String_type*) mem_erealloc(self->buffer, newlen * NCHAR + NCHAR);
 	self->buffer = tmp;
 	self->capacity = newlen + 1; // +1 for final nul
 	if (newlen < self->length) {

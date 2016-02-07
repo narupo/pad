@@ -77,7 +77,7 @@ enum {
 };
 
 typedef enum {
-	JOTBrace = 0,
+	JOTDict = 0,
 	JOTList = 1,
 	JOTValue = 2,
 } JsonObjectType;
@@ -101,6 +101,8 @@ jsonobj_delete(JsonObject* self) {
 		for (int i = 0; i < self->jsonobjs_length; ++i) {
 			jsonobj_delete(self->jsonobjs[i]);
 		}
+		strarray_delete(self->list);
+		str_delete(self->value);
 		free(self);
 	}
 }
@@ -227,7 +229,7 @@ jsonobj_prase_list(JsonObject* self, Stream* s) {
 			} else if (isspace(ch)) {
 				;
 			} else {
-				CHECK("Syntax error");
+				WARN("Syntax error");
 				m = -1;
 			}
 			break;
@@ -283,7 +285,7 @@ done:
 }
 
 void
-jsonobj_parse_brace(JsonObject* self, Stream* s) {
+jsonobj_parse_dict(JsonObject* self, Stream* s) {
 	String* tmpname = str_new();
 	int m = 0;
 
@@ -296,12 +298,12 @@ jsonobj_parse_brace(JsonObject* self, Stream* s) {
 		case -1: // Syntax error
 			return;
 			break;
-		case 0: // Out of brace
+		case 0: // Out of dict
 			if (ch == '{') {
 				m = 1;
 			}
 			break;
-		case 1: // In of brace
+		case 1: // In of dict
 			if (ch == '}') {
 				goto done; // End of parse
 			} else if (is_quote(ch)) {
@@ -319,27 +321,27 @@ jsonobj_parse_brace(JsonObject* self, Stream* s) {
 			if (ch == ':') {
 				m = 4;
 			} else {
-				CHECK("Syntax error");
+				WARN("Syntax error");
 				m = -1;
 			}
 			break;
 		case 4: // :
 			if (ch == '{') {
-				// Parse brace
+				// Parse dict
 				if (str_empty(tmpname)) {
-					CHECK("Syntax error: need name");
+					WARN("Syntax error: need name");
 					m = -1;
 				} else {
 					stream_prev(s);
-					JsonObject* obj = jsonobj_new_with(JOTBrace, self, str_get_const(tmpname));
-					jsonobj_parse_brace(obj, s);
+					JsonObject* obj = jsonobj_new_with(JOTDict, self, str_get_const(tmpname));
+					jsonobj_parse_dict(obj, s);
 					jsonobj_move_back(self, obj);
 					m = 5;
 				}
 			} else if (ch == '[') {
 				// Parse list
 				if (str_empty(tmpname)) {
-					CHECK("Syntax error: need name");
+					WARN("Syntax error: need name");
 					m = -1;
 				} else {
 					stream_prev(s);
@@ -351,7 +353,7 @@ jsonobj_parse_brace(JsonObject* self, Stream* s) {
 			} else if (is_quote(ch) || isdigit(ch)) {
 				// Parse value with quotes
 				if (str_empty(tmpname)) {
-					CHECK("Syntax error: need name");
+					WARN("Syntax error: need name");
 					m = -1;
 				} else {
 					stream_prev(s);
@@ -372,7 +374,7 @@ jsonobj_parse_brace(JsonObject* self, Stream* s) {
 			} else if (isspace(ch)) {
 				;
 			} else {
-				CHECK("Syntax error");
+				WARN("Syntax error");
 				m = -1;
 			}
 			break;
@@ -391,14 +393,14 @@ jsonobj_display(JsonObject const* self, int depth) {
 	}
 
 	for (int i = 0; i < depth; ++i) {
-		fputc(' ', stderr);
+		fputc('\t', stderr);
 	}
 
 	fprintf(stderr, "name[%s]", self->name);
 
 	switch (self->type) {
-	case JOTBrace:
-		fprintf(stderr, " type[brace]");		
+	case JOTDict:
+		fprintf(stderr, " type[dict]");		
 		break;
 	case JOTList:
 		if (!self->list) {
@@ -425,6 +427,54 @@ jsonobj_display(JsonObject const* self, int depth) {
 	for (int i = 0; i < self->jsonobjs_length; ++i) {
 		jsonobj_display(self->jsonobjs[i], depth+1);
 	}
+}
+
+StringArray*
+jsonobj_find_list(JsonObject* self, char const* name) {
+	if (strcmp(self->name, name) == 0) {
+		return self->list;
+	}
+
+	for (int i = 0; i < self->jsonobjs_length; ++i) {
+		StringArray* found = jsonobj_find_list(self->jsonobjs[i], name);
+		if (found) {
+			return found;
+		}
+	}
+
+	return NULL; // Not found
+}
+
+String*
+jsonobj_find_value(JsonObject* self, char const* name) {
+	if (strcmp(self->name, name) == 0) {
+		return self->value;
+	}
+
+	for (int i = 0; i < self->jsonobjs_length; ++i) {
+		String* found = jsonobj_find_value(self->jsonobjs[i], name);
+		if (found) {
+			return found;
+		}
+	}
+
+	return NULL; // Not found
+}
+
+JsonObject*
+jsonobj_find_dict(JsonObject* self, char const* name) {
+	if (strcmp(self->name, name) == 0) {
+		return self;
+	}
+
+	for (int i = 0; i < self->jsonobjs_length; ++i) {
+		JsonObject* found = jsonobj_find_dict(self->jsonobjs[i], name);
+		if (found) {
+			return found;
+		}
+	}
+
+	return NULL; // Not found
 }
 
 typedef struct Json Json;
@@ -480,10 +530,16 @@ json_mode_first(Json* self, Stream* s) {
 		if (str_empty(self->buffer) && !self->root) {
 			// stream_prev(s);
 			stream_prev(s);
-			self->root = jsonobj_new_with(JOTBrace, NULL, "ROOT");
-			jsonobj_parse_brace(self->root, s);
+
+			if (self->root) {
+				jsonobj_delete(self->root);
+			}
+
+			self->root = jsonobj_new_with(JOTDict, NULL, "ROOT");
+			jsonobj_parse_dict(self->root, s);
+
 		} else {
-			CHECK("Syntax error");
+			WARN("Syntax error");
 		}
 	}
 }
@@ -505,12 +561,144 @@ json_parse_string(Json* self, char const* src) {
 	}
 }
 
+JsonObject*
+json_root(Json* self) {
+	return self->root;
+}
+
 void
 json_display(Json* self) {
 	jsonobj_display(self->root, 0);
 }
 
+static void
+fpad(FILE* fout, int pad, int depth) {
+	for (int i = 0; i < depth; ++i) {
+		fputc(pad, fout);
+	}	
+}
+
+bool
+jsonobj_write_to_stream(JsonObject const* self, FILE* fout, int depth, int end) {
+	switch (self->type) {
+	case JOTDict: { 
+		bool isroot = strcasecmp(self->name, "root") == 0;
+
+		if (isroot) {
+			fpad(fout, '\t', depth);
+			fprintf(fout, "{\n");
+		} else {
+			fpad(fout, '\t', depth);
+			fprintf(fout, "\"%s\": {\n", self->name);
+		}
+
+		for (int i = 0; i < self->jsonobjs_length-1; ++i) {
+			if (!jsonobj_write_to_stream(self->jsonobjs[i], fout, depth+1, ',')) {
+				return false;
+			}
+		}
+
+		if (self->jsonobjs_length > 0) {
+			if (!jsonobj_write_to_stream(self->jsonobjs[self->jsonobjs_length-1], fout, depth+1, ' ')) {
+				return false;
+			}			
+		}
+
+		fpad(fout, '\t', depth);
+		fprintf(fout, "}%c\n", end);
+
+	} break;
+	case JOTList: {
+		StringArray const* li = self->list;
+		int lilen = strarray_length(li);
+
+		fpad(fout, '\t', depth);
+		fprintf(fout, "\"%s\": [\n", self->name);
+		
+		for (int i = 0; i < lilen-1; ++i) {
+			fpad(fout, '\t', depth+1);
+			fprintf(fout, "\"%s\",\n", strarray_get_const(li, i));
+		}
+
+		if (lilen > 0) {
+			fpad(fout, '\t', depth+1);
+			fprintf(fout, "\"%s\"\n", strarray_get_const(li, lilen-1));
+		}
+
+		fpad(fout, '\t', depth);
+		fprintf(fout, "]%c\n", end);
+
+	} break;
+	case JOTValue: {
+		String* val = self->value;
+
+		fpad(fout, '\t', depth);
+		fprintf(fout, "\"%s\": \"%s\"%c\n", self->name, str_get_const(val), end);
+	} break;
+	}
+
+	return true;
+}
+
+bool
+json_read_from_stream(Json* self, FILE* fin) {
+	String* src = str_new();
+	str_read_stream(src, fin);
+
+	json_parse_string(self, str_get_const(src));
+
+	str_delete(src);	
+
+	return true;
+}
+
+bool
+json_read_from_file(Json* self, char const* fname) {
+	FILE* fin = fopen(fname, "rb");
+	if (!fin) {
+		return false;
+	}
+
+	if (!json_read_from_stream(self, fin)) {
+		fclose(fin);
+		return false;
+	}
+
+	if (fclose(fin) != 0) {
+		return false;
+	}
+	return true;
+}
+
+bool
+json_write_to_stream(Json const* self, FILE* fout) {
+	return jsonobj_write_to_stream(self->root, fout, 0, ' ');
+}
+
+bool
+json_write_to_file(Json const* self, char const* fname) {
+	FILE* fout = fopen(fname, "wb");
+	if (!fout) {
+		WARN("Failed to open file \"%s\"", fname);
+		return false;
+	}
+
+	if (!json_write_to_stream(self, fout)) {
+		fclose(fout);
+		WARN("Failed to write to stream \"%s\"", fname);
+		return false;
+	}
+
+	if (fclose(fout) != 0) {
+		WARN("Failed to close file \"%s\"", fname);
+		return false;
+	}
+
+	return true;
+}
+
 #if defined(TEST_JSON)
+#include "file.h"
 int
 test_list(int argc, char* argv[]) {
 	Stream* s = stream_new();
@@ -551,8 +739,30 @@ test_json(int argc, char* argv[]) {
 
 	Json* json = json_new();
 	json_parse_string(json, src);
-	json_display(json);
-	json_delete(json);    
+
+	JsonObject* root = json_root(json);
+
+	StringArray* list = jsonobj_find_list(root, "scripts");
+	if (list) {
+		for (int i = 0; i < strarray_length(list); ++i) {
+			printf("list[%d] = [%s]\n", i, strarray_get_const(list, i));
+		}
+	}
+
+	String* value = jsonobj_find_value(root, "string");
+	if (value) {
+		printf("value[%s]\n", str_get_const(value));
+	}
+
+	// json_display(json);
+	char path[FILE_NPATH];
+	file_solve_path(path, sizeof path, "/Temp/json");
+
+	if (!json_write_to_file(json, path)) {
+		WARN("Failed to write to file");
+	}
+
+	json_delete(json);
 	return 0;
 }
 
