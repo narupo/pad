@@ -70,6 +70,31 @@ strarray_new_from_capacity(size_t capacity) {
 	return self;
 }
 
+StringArray*
+strarray_new_from_argv(int argc, char* argv[]) {
+	StringArray* self = (StringArray*) calloc(1, sizeof(StringArray));
+	if (!self) {
+		WARN("Failed to construct")
+		return NULL;
+	}
+
+	self->length = argc;
+	self->capacity = argc*2;
+
+	self->array = (StringArray_type*) calloc(self->capacity, sizeof(StringArray_type));
+	if (!self->array) {
+		free(self);
+		WARN("Failed to construct array")
+		return NULL;
+	}
+
+	for (int i = 0; i < self->length; ++i) {
+		self->array[i] = util_strdup(argv[i]);
+	}
+
+	return self;	
+}
+
 /*********
 * Getter *
 *********/

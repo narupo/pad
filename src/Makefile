@@ -7,7 +7,7 @@ CMDS=cap.c cat.c home.c cd.c pwd.c rm.c deploy.c edit.c \
 UTILS=caperr.c atcap.c buffer.c cap-file.c \
 	config-server.c config-setting.c config.c \
 	csvline.c strmap.c file.c strarray.c term.c util.c environ.c string.c memory.c \
-	socket.c http-header.c
+	socket.c http-header.c json.c
 
 OBJS=$(CMDS:.c=.o) $(UTILS:.c=.o)
 
@@ -29,6 +29,9 @@ buffer: buffer.c
 
 string: string.c util.c memory.c term.c csvline.c buffer.c
 	$(CC) -DTEST_STRING $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+
+json: json.c util.c memory.c string.c strmap.c strarray.c term.c caperr.c csvline.c
+	$(CC) -DTEST_JSON $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 strmap: strmap.c util.c
 	$(CC) -DTEST_STRINGMAP $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)

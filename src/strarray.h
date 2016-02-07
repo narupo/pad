@@ -38,6 +38,18 @@ strarray_new(void);
 StringArray*
 strarray_new_from_capacity(size_t capacity);
 
+/**
+ * Construct object by argc and argv
+ * 
+ * @param[in]  argc  
+ * @param[in]  argv  
+ *
+ * @return success to pointer to object of dynamic allocate memory
+ * @return failed to pointer to NULL
+ */
+StringArray*
+strarray_new_from_argv(int argc, char* argv[]);
+
 /*********
 * Getter *
 *********/

@@ -10,7 +10,7 @@ typedef struct Stream {
 	char const* end;
 } Stream;
 
-int
+static int
 stream_init(Stream* self, char const* src) {
 	if (!src) {
 		return -1;
@@ -23,17 +23,17 @@ stream_init(Stream* self, char const* src) {
 	return self->end - self->beg;
 }
 
-int
+static int
 stream_eof(Stream const* self) {
 	return self->cur >= self->end;
 }
 
-int
+static int
 stream_current(Stream* self) {
 	return *self->cur;
 }
 
-int
+static int
 stream_current_at(Stream* self, int add) {
 	char const* at = self->cur + add;
 	if (at >= self->end) {
@@ -45,7 +45,7 @@ stream_current_at(Stream* self, int add) {
 	}
 }
 
-int
+static int
 stream_get(Stream* self) {
 	if (self->cur < self->end) {
 		return (int) *self->cur++;
@@ -53,14 +53,14 @@ stream_get(Stream* self) {
 	return EOF;
 }
 
-void
+static void
 stream_next(Stream* self) {
 	if (self->cur > self->beg) {
 		++self->cur;
 	}
 }
 
-void
+static void
 stream_next_at(Stream* self, int add) {
 	if (self->cur + add < self->end) {
 		self->cur += add;
@@ -69,14 +69,14 @@ stream_next_at(Stream* self, int add) {
 	}
 }
 
-void
+static void
 stream_prev(Stream* self) {
 	if (self->cur > self->beg) {
 		--self->cur;
 	}
 }
 
-void
+static void
 stream_prev_at(Stream* self, int add) {
 	if (self->cur - add > self->beg) {
 		self->cur -= add;
@@ -386,6 +386,11 @@ csvline_parse_line(CsvLine* self, char const* line, int delim) {
 /*****************
 * CsvLine setter *
 *****************/
+
+void
+csvline_clear(CsvLine* self) {
+	self->length = 0;
+}
 
 bool
 csvline_push_back(CsvLine* self, char const* col) {

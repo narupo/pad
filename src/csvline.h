@@ -69,8 +69,8 @@ csvline_parse_line(CsvLine* self, char const* line, int delim);
 * CsvLine setter *
 *****************/
 
-// bool
-// csvline_push_front(CsvLine* self, char const* column);
+void
+csvline_clear(CsvLine* self);
 
 bool
 csvline_push_back(CsvLine* self, char const* col);
