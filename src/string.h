@@ -104,6 +104,9 @@ str_empty(String const* self);
 void 
 str_clear(String* self);
 
+void
+str_set_string(String* self, char const* src);
+
 /**
  * @brief 
  *

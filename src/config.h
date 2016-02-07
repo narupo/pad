@@ -4,8 +4,7 @@
 #include "util.h"
 #include "buffer.h"
 #include "file.h"
-#include "config-setting.h"
-#include "config-server.h"
+#include "json.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

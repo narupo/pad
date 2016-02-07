@@ -2,8 +2,7 @@
 
 struct Config {
 	char dirpath[FILE_NPATH];
-	ConfigSetting* setting;
-	ConfigServer* server;
+	Json* json;
 };
 
 /************
@@ -14,10 +13,8 @@ static Config* config;  // Singleton instance
 static pthread_mutex_t config_mutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex for singleton instance of Config
 
 static char const CONFIG_DIR_PATH[] = "~/.cap";  // Root directory path of config
-static char const CONFIGSETTING_PATH[] = "~/.cap/setting";  // File path of config-setting
-static char const CONFIGSETTING_FNAME[] = "setting";  // File name of config-setting
-static char const CONFIGSERVER_PATH[] = "~/.cap/server";
-static char const CONFIGSERVER_FNAME[] = "server";
+static char const CONFIGSAVE_PATH[] = "~/.cap/config";  // File path of config-setting
+static char const CONFIGSAVE_FNAME[] = "config";  // File name of config-setting
 
 /***************
 * Mutex family *
@@ -35,17 +32,13 @@ self_unlock(void) {
 
 static char const*
 self_path_unsafe(Config const* self, char const* key) {
-	char const* pref = "server-";
-	size_t preflen = strlen(pref);
-	char const* path;
-
-	if (strncmp(key, pref, preflen) == 0) {
-		path = configserver_path(self->server, key + preflen);
-	} else {
-		path = configsetting_path(self->setting, key);
+	JsonObject* root = json_root(self->json);
+	String const* s = jsonobj_find_value(root, key);
+	if (!s) {
+		WARN("Failed to find value \"%s\"", key);
+		return "";
 	}
-
-	return path;
+	return str_get_const(s);
 }
 
 static bool
@@ -78,10 +71,64 @@ self_is_out_of_home_unsafe(Config const* self, char const* path) {
 static void
 config_delete(Config* self) {
 	if (self) {
-		configserver_delete(self->server);
-		configsetting_delete(self->setting);
+		json_delete(self->json);
 		free(self);
 	}
+}
+
+static Config*
+config_init_file(Config* self, char const* fname) {
+#if defined(_WIN32) || defined(_WIN64)
+	char const DEFAULT_HOME_PATH[] = "C:/Windows/Temp";
+	char const DEFAULT_EDITOR_PATH[] = "C:/Windows/notepad.exe";
+#else
+	char const DEFAULT_HOME_PATH[] = "/tmp";
+	char const DEFAULT_EDITOR_PATH[] = "/usr/bin/vi";
+#endif
+
+	String* src = str_new();
+
+	str_append_string(src, "{\n");
+
+		str_append_string(src, "	\"home\": \"");
+		str_append_string(src, DEFAULT_HOME_PATH);
+		str_append_string(src, "\",\n");
+
+		str_append_string(src, "	\"cd\": \"");
+		str_append_string(src, DEFAULT_HOME_PATH);
+		str_append_string(src, "\",\n");
+
+		str_append_string(src, "	\"editor\": \"");
+		str_append_string(src, DEFAULT_EDITOR_PATH);
+		str_append_string(src, "\"\n");
+		
+	str_append_string(src, "}\n");
+
+	FILE* fout = file_open(fname, "wb");
+	if (!fout) {
+		WARN("Failed to open file \"%s\"", fname);
+		return NULL;
+	}
+
+	char const* buf = str_get_const(src);
+	size_t buflen = str_length(src);
+	if (!fwrite(buf, sizeof(buf[0]), buflen, fout)) {
+		WARN("Failed to write file \"%s\"", fname);
+		fclose(fout);
+		return NULL;
+	}
+
+	if (fclose(fout) != 0) {
+		WARN("Failed to close file \"%s\"", fname);
+		return NULL;
+	}
+
+	if (!json_read_from_file(self->json, fname)) {
+		WARN("Failed to read from file \"%s\"", fname);
+		return NULL;
+	}
+
+	return self;
 }
 
 /**
@@ -127,21 +174,23 @@ config_new_from_dir(char const* dirpath) {
 
 	// Load config from directory
 	char fname[FILE_NPATH];
-	snprintf(fname, sizeof fname, "%s/%s", sdirpath, CONFIGSETTING_FNAME);
-	
-	if (!(self->setting = configsetting_new_from_file(fname))) {
-		WARN("Failed to construct config-setting");
-		free(self);
-		return NULL;
-	}
+	snprintf(fname, sizeof fname, "%s/%s", sdirpath, CONFIGSAVE_FNAME);
 
-	snprintf(fname, sizeof fname, "%s/%s", sdirpath, CONFIGSERVER_FNAME);
+	self->json = json_new();
 
-	if (!(self->server = configserver_new_from_file(fname))) {
-		WARN("Failed to construct config-server");
-		configsetting_delete(self->setting);
-		free(self);
-		return NULL;
+	if (!file_is_exists(fname)) {
+		if (!config_init_file(self, fname)) {
+			WARN("Failed to init file \"%s\"", fname);
+			free(self);
+			return NULL;
+		}
+	} else {
+		if (!json_read_from_file(self->json, fname)) {
+			WARN("Failed to read from file \"%s\"", fname);
+			json_delete(self->json);
+			free(self);
+			return NULL;
+		}
 	}
 
 	return self;
@@ -265,7 +314,18 @@ config_path_with_home(Config const* self, char* dst, size_t dstsize, char const*
 bool
 config_set_path(Config* self, char const* key, char const* val) {
 	if (self_lock()) {
-		bool ret = configsetting_set_path(self->setting, key, val);
+		bool ret = true;
+
+		JsonObject* root = json_root(self->json);
+		String* str = jsonobj_find_value(root, key);
+		if (!str) {
+			WARN("Invalid key \"%s\"", key);
+			ret = false;
+		} else {
+			char path[FILE_NPATH];
+			file_solve_path(path, sizeof path, val);
+			str_set_string(str, path);
+		}
 		self_unlock();
 		return ret;
 	}
@@ -277,15 +337,9 @@ bool
 config_save(Config const* self) {
 	if (self_lock()) {
 		bool ret = true;
-
-		if (!configsetting_save_to_file(self->setting, CONFIGSETTING_PATH)) {
-			ret = false;
-		}
-		
-		if (!configserver_save_to_file(self->server, CONFIGSERVER_PATH)) {
-			ret = false;
-		}
-
+		char path[FILE_NPATH];
+		file_solve_path(path, sizeof path, CONFIGSAVE_PATH);
+		ret = json_write_to_file(self->json, path);
 		self_unlock();
 		return ret;
 	}

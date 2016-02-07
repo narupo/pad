@@ -34,24 +34,29 @@
 
 #ifdef DEBUG
 #  define WARN(...) { \
-    _caperr(__FILE__, __func__, __LINE__, "WARN", CAPERR_DEBUG, __VA_ARGS__); \
+	fprintf(stderr, "Warn: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
+    fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\n"); \
+	fflush(stderr); \
   }
 #  define DIE(...) { \
-	fprintf(stderr, "die: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
+	fprintf(stderr, "Die: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
     fprintf(stderr, __VA_ARGS__); \
 	fprintf(stderr, "\n"); \
 	fflush(stderr); \
 	exit(1); \
   }
 #else
-#  define WARN(...) {}
+#  define WARN(...) { \
+    _caperr(__FILE__, __func__, __LINE__, "WARN", CAPERR_DEBUG, __VA_ARGS__); \
+  }
 #  define DIE(...) {}
 #endif
 
 #define CHECK(...) { \
 	fflush(stdout); \
 	fflush(stderr); \
-	fprintf(stderr, "check: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
+	fprintf(stderr, "Check: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
 	fprintf(stderr, __VA_ARGS__); \
 	fprintf(stderr, "\n"); \
 	fflush(stderr); \
