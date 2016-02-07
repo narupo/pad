@@ -93,7 +93,7 @@ command_run(Command* self) {
 
 	char const* mkpath = self->argv[self->optind];
 
-	// file_mkdir(mkpath);
+	// file_mkdir_mode(mkpath);
 
 	return ret;
 }

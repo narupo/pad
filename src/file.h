@@ -89,7 +89,19 @@ file_is_exists(char const* path);
  * Wrapper of mkdir
  */
 int
-file_mkdir(char const* path, mode_t mode);
+file_mkdir_mode(char const* path, mode_t mode);
+
+/**
+ * Wrapper of mkdir with mode of string
+ *
+ * @param      path  make directory path
+ * @param      mode  make mode like a "0777"
+ *
+ * @return     success to number of 0
+ * @return     failed to number of -1
+ */
+int
+file_mkdir(char const* path, char const* mode);
 
 /**
  * Create empty file on file-system

@@ -165,7 +165,7 @@ config_new_from_dir(char const* dirpath) {
 
 	// Check directory
 	if (!file_is_exists(sdirpath)) {
-		if (file_mkdir(sdirpath, S_IRUSR | S_IWUSR | S_IXUSR) != 0) {
+		if (file_mkdir_mode(sdirpath, S_IRUSR | S_IWUSR | S_IXUSR) != 0) {
 			WARN("Failed to mkdir \"%s\"", sdirpath);
 			free(self);
 			return NULL;

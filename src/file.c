@@ -141,11 +141,21 @@ notfound:
 }
 
 int
-file_mkdir(char const* dirpath, mode_t mode) {
+file_mkdir_mode(char const* dirpath, mode_t mode) {
 #if defined(_WIN32) || defined(_WIN64)
 	return mkdir(dirpath);
 #else
 	return mkdir(dirpath, mode);
+#endif
+}
+
+int
+file_mkdir(char const* dirpath, char const* mode) {
+#if defined(_WIN32) || defined(_WIN64)
+	return mkdir(dirpath);
+#else
+	DIE("TODO");
+	return -1;
 #endif
 }
 
@@ -478,7 +488,7 @@ test_mkdir(int argc, char* argv[]) {
 		printf("is exists [%s]\n", path);
 	} else {
 		printf("is not exists [%s]\n", path);
-		file_mkdir(path, S_IRUSR | S_IWUSR | S_IXUSR);
+		file_mkdir_mode(path, S_IRUSR | S_IWUSR | S_IXUSR);
 	}
 
 	return 0;
