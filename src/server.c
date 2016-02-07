@@ -176,7 +176,7 @@ thread_method_get_script(
 	// Try get command name from file
 	fin = file_open(path, "rb");
 	if (file_read_script_line(scrln, sizeof scrln, fin)) {
-		cmdname  = scrln;
+		cmdname  = scrln; // Change command name
 	}
 	file_close(fin);
 
@@ -286,20 +286,23 @@ thread_method_get(HttpHeader const* header, Socket* client) {
 
 	// Command with white list for security
 	static struct Command {
-		char const* suffix;
-		char const* name;
+		char const* suffix; // File suffix name (.py, .php, ...)
+		char const* name; // Command name (python, php, ...)
 	} cmds[] = {
 		{"py", "python3"},
 		{"php", "php"},
 		{"rb", "ruby"},
+		{"sh", "sh"},
 		{0},
 	};
-	char const* suffix = file_suffix(path);
 
-	for (struct Command const* cmd = cmds; cmd->name; ++cmd) {
-		if (strcmp(suffix, cmd->suffix) == 0) {
-			thread_method_get_script(header, client, cmd->name, path);
-			return;
+	char const* suffix = file_suffix(path);
+	if (suffix) {
+		for (struct Command const* cmd = cmds; cmd->name; ++cmd) {
+			if (strcmp(suffix, cmd->suffix) == 0) {
+				thread_method_get_script(header, client, cmd->name, path);
+				return;
+			}
 		}
 	}
 
