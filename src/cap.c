@@ -45,6 +45,7 @@ find_command(char const* name) {
 		{"help", help_main},
 		{"make", make_main},
 		{"path", path_main},
+		{"mkdir", mkdir_main},
 		{"alias", alias_main},
 		{"brief", brief_main},
 		{"editor", editor_main},

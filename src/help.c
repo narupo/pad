@@ -20,6 +20,7 @@ static const struct Command {
 	{"path", path_usage},
 	{"edit", edit_usage},
 	{"alias", alias_usage},
+	{"mkdir", mkdir_usage},
 	{"brief", brief_usage},
 	{"editor", editor_usage},
 	{"deploy", deploy_usage},
@@ -66,20 +67,21 @@ help_usage(void) {
 		"The commands are:\n"
 		"\n"
 		"\thelp   display usage\n"
-		"\tls     display cap file list\n"
-		"\trm     remove cap file or directory\n"
-		"\tcd     display or set current directory path\n"
-		"\tcat    display cap file\n"
-		"\trun    run script\n"
-		"\tpwd    display current working directory\n"
 		"\thome   display or set current home directory path\n"
-		"\tmake   display and make by cap's make roule\n"
-		"\tedit   edit cap file\n"
-		"\tpath   display normalized path of cap file\n"
-		"\talias  add alias of cap's command\n"
+		"\tpwd    display current working directory\n"
+		"\tcd     display or set current directory path\n"
+		"\tls     display cap file list\n"
+		"\tcat    display cap file\n"
 		"\tbrief  display brief of file\n"
-		"\teditor display or set editor path\n"
+		"\tpath   display normalized path of cap file\n"
+		"\tmake   display and make by cap's make roule\n"
 		"\tdeploy deploy files from directory\n"
+		"\tedit   edit cap file\n"
+		"\teditor display or set editor path\n"
+		"\trm     remove cap file or directory\n"
+		"\tmkdir  make directory\n"
+		"\trun    run script\n"
+		"\talias  add alias of cap's command\n"
 		"\tserver run cap server\n"
 		"\n"
 	);
