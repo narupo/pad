@@ -193,6 +193,7 @@ caperr_to_string(int number) {
 		default: return "Unknown errors"; break;
 		case CAPERR_DEBUG: return "debug: "; break;
 		case CAPERR_ERROR: return ""; break;
+		case CAPERR_IS_EXISTS: return "File was exists"; break;
 		case CAPERR_NOTFOUND: return "Not found"; break;
 		case CAPERR_CONSTRUCT: return "Failed to construct"; break;
 		case CAPERR_FOPEN: return "Failed to open file"; break;
@@ -203,6 +204,8 @@ caperr_to_string(int number) {
 		case CAPERR_PARSE_OPTIONS: return "Failed to parse options"; break;
 		case CAPERR_INVALID: return "Invalid"; break;
 		case CAPERR_INVALID_ARGUMENTS: return "Invalid arguments"; break;
+		case CAPERR_MAKE: return "Failed to make"; break;
+		case CAPERR_MAKEDIR: return "Failed to make directory"; break;
 		case CAPERR_READ: return "Failed to read"; break;
 		case CAPERR_READDIR: return "Failed to read directory"; break;
 		case CAPERR_WRITE: return "Failed to write"; break;
