@@ -187,6 +187,7 @@ thread_method_get_script(
 	fin = popen(cmdln, "rb");
 	if (!fin) {
 		WARN("Failed to open process \"%s\"", cmdln);
+		return;
 	}
 
 	// Content
