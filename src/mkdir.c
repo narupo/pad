@@ -91,9 +91,21 @@ command_run(Command* self) {
 		return ret;
 	}
 
-	char const* mkpath = self->argv[self->optind];
+	Config const* config = config_instance();
+	char const* relpath = self->argv[self->optind];
+	char mkpath[FILE_NPATH];
 
-	// file_mkdir_mode(mkpath);
+	if (!config_path_with_cd(config, mkpath, sizeof mkpath, relpath)) {
+		return caperr_printf(PROGNAME, CAPERR_MAKE, "path");
+	}
+
+	if (file_is_exists(mkpath)) {
+		return caperr_printf(PROGNAME, CAPERR_IS_EXISTS, "\"%s\"", mkpath);
+	}
+
+	if (file_mkdir(mkpath, "00755") < 0) {
+		return caperr_printf(PROGNAME, CAPERR_MAKEDIR, "\"%s\"", mkpath);
+	}
 
 	return ret;
 }
