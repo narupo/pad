@@ -6,7 +6,7 @@ CMDS=cap.c cat.c home.c cd.c pwd.c rm.c deploy.c edit.c \
 
 UTILS=caperr.c atcap.c buffer.c cap-file.c config.c \
 	csvline.c strmap.c file.c strarray.c term.c util.c environ.c string.c memory.c \
-	socket.c http-header.c json.c
+	socket.c http-header.c json.c signal.c
 
 OBJS=$(CMDS:.c=.o) $(UTILS:.c=.o)
 
@@ -52,6 +52,9 @@ server: server.c $(UTILS)
 
 socket: socket.c util.c caperr.c memory.c term.c
 	$(CC) -DDEBUG -DTEST_SOCKET $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+
+signal: signal.c
+	$(CC) -DDEBUG -DTEST_SIGNAL $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 http-header: http-header.c
 	$(CC) -DDEBUG -DTEST_HTTPHEADER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
