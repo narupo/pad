@@ -32,7 +32,7 @@ caperrs_mutex = PTHREAD_MUTEX_INITIALIZER;
 ********************/
 
 char const*
-caperr_to_string(int number);
+caperr_to_string_unsafe(int number);
 
 
 /**************
@@ -158,11 +158,16 @@ _caperr_printf(
 	char const* fmt,
 	...) {
 
+	if (!caperrs_lock()) {
+		perror("caperrs lock");
+		return -1;
+	}
+
 #ifdef DEBUG
 	fprintf(stderr, "%s: %s: %d: ", fname, funcname, lineno);
 #endif
 
-	char const* what = caperr_to_string(number);
+	char const* what = caperr_to_string_unsafe(number);
 	fprintf(stderr, "%s: %s ", header, what);
 	
 	size_t fmtlen = strlen(fmt);
@@ -179,16 +184,19 @@ _caperr_printf(
 		}
 	}
 
-
 	if (errno != 0) {
 		fprintf(stderr, " %s.", strerror(errno));
+	}
+
+	if (!caperrs_unlock()) {
+		perror("caperrs unlock");
 	}
 
 	return number;
 }
 
 char const*
-caperr_to_string(int number) {
+caperr_to_string_unsafe(int number) {
 	switch (number) {
 		default: return "Unknown errors"; break;
 		case CAPERR_DEBUG: return "debug: "; break;
@@ -216,14 +224,14 @@ caperr_to_string(int number) {
 }
 
 static void
-caperr_display_record(FILE* stream, CapErr const* e) {
+caperr_display_record_unsafe(FILE* stream, CapErr const* e) {
 
 #ifdef DEBUG
 	fprintf(stream, "%s: %s: %d: ", e->fname, e->funcname, e->lineno);
 #endif
 
 	// Display header and number
-	fprintf(stream, "%s: %s", e->header, caperr_to_string(e->number));
+	fprintf(stream, "%s: %s", e->header, caperr_to_string_unsafe(e->number));
 
 	// Display user's message
 	size_t msglen = strlen(e->message);
@@ -274,7 +282,7 @@ void
 caperr_display(FILE* stream) {
 	// Stack trace
 	for (CapErr const* e = caperrs_pop(); e; e = caperrs_pop()) {
-		caperr_display_record(stream, e);
+		caperr_display_record_unsafe(stream, e);
 	}
 }
 
@@ -286,7 +294,7 @@ caperr_display_first(FILE* stream) {
 	}
 
 	if (caperrs.stack_top != 0) {
-		caperr_display_record(stream, &caperrs.stack[0]);		
+		caperr_display_record_unsafe(stream, &caperrs.stack[0]);		
 	}
 
 	if (!caperrs_unlock()) {
@@ -302,7 +310,7 @@ caperr_display_last(FILE* stream) {
 	}
 
 	if (caperrs.stack_top != 0) {
-		caperr_display_record(stream, &caperrs.stack[caperrs.stack_top-1]);
+		caperr_display_record_unsafe(stream, &caperrs.stack[caperrs.stack_top-1]);
 	}
 
 	if (!caperrs_unlock()) {
