@@ -1,6 +1,9 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
+#include "util.h"
+
+#include <pthread.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>

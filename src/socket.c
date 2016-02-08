@@ -1,12 +1,5 @@
 #include "socket.h"
 
-# define WARN(...) { \
-	fprintf(stderr, "Warn: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
-	fprintf(stderr, __VA_ARGS__); \
-	fprintf(stderr, ". %s.\n", strerror(errno)); \
-	fflush(stderr); \
-}
-
 enum {
 	SOCKET_NBUF = 512,
 	SOCKET_NHOST = 128,
@@ -22,6 +15,8 @@ typedef enum {
 
 } SocketMode;
 
+static char const SOCKET_DEFAULT_PORT[] = "8000";
+
 struct Socket {
 	char host[SOCKET_NHOST];
 	char port[SOCKET_NPORT];
@@ -29,16 +24,32 @@ struct Socket {
 	int socket;
 };
 
-static char const SOCKET_DEFAULT_PORT[] = "8000";
+/*******************************
+* socket WSA family of Windows *
+*******************************/
 
 #if defined(_WIN32) || defined(_WIN64)
- static int is_init;
- static WSADATA wsadata;
- static void
- socket_wsa_cleanup(void) {
+static pthread_once_t socket_wsa_once = PTHREAD_ONCE_INIT;
+static WSADATA wsadata;
+
+static void
+socket_wsa_destroy(void) {
 	WSACleanup();
- }
+}
+
+static void
+socket_wsa_init(void) {
+	if (WSAStartup(MAKEWORD(2, 0), &wsadata) != 0) {
+		WARN("Failed to start WSA. %d", WSAGetLastError());
+	} else {
+		atexit(socket_wsa_destroy);
+	}
+}
 #endif
+
+/*******************
+* socket functions *
+*******************/
 
 static SocketMode
 socket_string_to_mode(char const* mode) {
@@ -228,13 +239,9 @@ socket_parse_open_source(Socket* self, char const* src) {
 Socket*
 socket_open(char const* src, char const* mode) {
 #if defined(_WIN32) || defined(_WIN64)
-	if (!is_init) {
-		if (WSAStartup(MAKEWORD(2, 0), &wsadata) != 0) {
-			WARN("Failed to start WSA. %d", WSAGetLastError());
-			return NULL;
-		}
-		is_init = !is_init;
-		atexit(socket_wsa_cleanup);
+	if (pthread_once(&socket_wsa_once, socket_wsa_init) != 0) {
+		WARN("Failed to pthread once");
+		return NULL;
 	}
 #endif
 

@@ -10,6 +10,7 @@
 #include "strarray.h"
 #include "socket.h"
 #include "http-header.h"
+#include "signal.h"
 
 #include <pthread.h>
 
