@@ -290,7 +290,7 @@ config_path_with(Config const* self, char* dst, size_t dstsize, char const* with
 	// Is out of home?
 	if (self_is_out_of_home_unsafe(self, dst)) {
 		// Yes, set path to home
-		snprintf(dst, dstsize, self_path_unsafe(self, "home"));
+		snprintf(dst, dstsize, "%s", self_path_unsafe(self, "home"));
 	}
 
 	self_unlock();
