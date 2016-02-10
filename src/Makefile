@@ -6,11 +6,15 @@ CMDS=cap.c cat.c home.c cd.c pwd.c rm.c deploy.c edit.c \
 
 UTILS=caperr.c atcap.c buffer.c cap-file.c config.c \
 	csvline.c strmap.c file.c strarray.c term.c util.c environ.c string.c memory.c \
-	socket.c http-header.c json.c signal.c
+	socket.c http-header.c json.c
 
 OBJS=$(CMDS:.c=.o) $(UTILS:.c=.o)
 
-LIBS=-lpthread -lws2_32
+ifeq (\$(OS),Windows_NT)
+	LIBS=-lpthread -lws2_32
+else
+	LIBS=-lpthread
+endif
 
 TARGET=~/bin/cap
 TESTDIR=./test

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <errno.h>
 #include <ctype.h>
 #include <signal.h>
@@ -12,8 +13,12 @@
 #if defined(_WIN32) || defined(_WIN64)
 # include "windows.h"
 #else
-# define _BSD_SOURCE
+# undef _BSD_SOURCE
+# define _BSD_SOURCE 1 /* For netdb.h in cap/socket.h */
+# undef __USE_POSIX
+# define __USE_POSIX 1 /* For netdb.h in cap/socket.h */
 # include <netdb.h>
+# include <sys/types.h>
 # include <sys/socket.h>
 # include <netinet/in.h>
 #endif
