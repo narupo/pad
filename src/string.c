@@ -4,7 +4,6 @@
 * str macros *
 *************/
 
-#define CHAR(ch) (ch)
 #define NCHAR (sizeof(String_type))
 #define NIL ('\0')
 

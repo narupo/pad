@@ -28,8 +28,7 @@ The commands are:
 * How to use of Cap?
 
 
- You should be set 'home directory' of cap by 'cap home' command at first
-using. A 'home directory' path is absolute path, you know.
+ You should be set 'home directory' of cap by 'cap home' command at first using. A 'home directory' path is absolute path, you know.
 
     $ cap home ~/my/snippets
 
@@ -39,8 +38,7 @@ using. A 'home directory' path is absolute path, you know.
     $ cap home
 
 
- Okay. And check display list of 'current working directory' in cap by 'cap ls'
-command.
+ Okay. And check display list of 'current working directory' in cap by 'cap ls'command.
 
     $ cap ls
 
@@ -55,25 +53,17 @@ command.
     $ cap cd ./macdonald
 
 
- And check 'current working directory' in cap by 'cap pwd' command.
-Yes that's right. Many cap's command is a like a commands of UNIX.
-So, there is no longer to be do description. You know.
-
- Okay. Let to edit your snippet file by 'cap edit' command. Cap do set editor
-to 'vi' at default. If your OS is MS Windows, Cap do set editor to
-'notepad.exe'.
+ And check 'current working directory' in cap by 'cap pwd' command. Yes that's right. Many cap's command is a like a commands of UNIX. So, there is no longer to be do description. You know. Okay. Let to edit your snippet file by 'cap edit' command. Cap do set editor to 'vi' at default. If your OS is MS Windows, Cap do set editor to 'notepad.exe'.
 
     $ cap edit menu.txt
 
 
- What? You are Emacs user? Hello, RMS. Well, you do set other editor by
-'cap editor' command. Before that check your current editor in Cap.
+ What? You are Emacs user? Hello, RMS. Well, you do set other editor by 'cap editor' command. Before that check your current editor in Cap.
 
     $ cap editor
 
 
- Okay. Let set your editor by 'cap editor' command with a 'which' command.
-If you have not a 'which' command, you write absolute path of editor.
+ Okay. Let set your editor by 'cap editor' command with a 'which' command. If you have not a 'which' command, you write absolute path of editor.
 
     $ cap editor `which emacs`
 
