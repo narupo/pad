@@ -10,7 +10,7 @@ UTILS=caperr.c atcap.c buffer.c cap-file.c config.c \
 
 OBJS=$(CMDS:.c=.o) $(UTILS:.c=.o)
 
-ifeq (\$(OS),Windows_NT)
+ifeq ($(OS),Windows_NT)
 	LIBS=-lpthread -lws2_32
 else
 	LIBS=-lpthread

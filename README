@@ -38,7 +38,7 @@ The commands are:
     $ cap home
 
 
- Okay. And check display list of 'current working directory' in cap by 'cap ls'command.
+ Okay. And check display list of 'current working directory' in cap by 'cap ls' command.
 
     $ cap ls
 
