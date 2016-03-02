@@ -110,4 +110,7 @@ socket_recv_string(Socket* self, char* dst, size_t dstsz);
 int 
 socket_send_string(Socket* self, char const* str);
 
+int 
+socket_send_bytes(Socket* self, unsigned char const* bytes, size_t size);
+
 #endif

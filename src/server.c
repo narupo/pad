@@ -25,65 +25,65 @@ thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* 
 		return caperr_printf(PROGNAME, CAPERR_OPEN, "directory \"%s\"", dirpath);
 	}
 
-	String* content = str_new();
+	Buffer* content = buffer_new();
 	if (!content) {
 		dir_close(dir);
 		return caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "string");
 	}
 
 	// Content
-	str_append_string(content,
+	buffer_append_string(content,
 		"<!DOCTYPE html>\n"
 		"<html>\n"
 		"<head><title>Index of</title></head>\n"
 		"<body>\n"
 		"<h1>Index of "
 	);
-	str_append_string(content, methvalue);
-	str_append_string(content, "</h1>\n");
+	buffer_append_string(content, methvalue);
+	buffer_append_string(content, "</h1>\n");
 
 	for (DirectoryNode* node; (node = dir_read_node(dir)); ) {
 		char const* name = dirnode_name(node);
 
-		str_append_string(content, "<div><a href='");
-		str_append_string(content, methvalue);
+		buffer_append_string(content, "<div><a href='");
+		buffer_append_string(content, methvalue);
 		if (methvalue[methvallen-1] != '/') {
-			str_append_string(content, "/");
+			buffer_append_string(content, "/");
 		}
-		str_append_string(content, name);
-		str_append_string(content, "'>");
-		str_append_string(content, name);
-		str_append_string(content, "</a></div>\n");
+		buffer_append_string(content, name);
+		buffer_append_string(content, "'>");
+		buffer_append_string(content, name);
+		buffer_append_string(content, "</a></div>\n");
 
 		dirnode_delete(node);
 	}
 
-	str_append_string(content,
+	buffer_append_string(content,
 		"</body>\n"
 		"</html>\n"
 	);
 
 	// HTTP Response Header
 	char contlen[SERVER_NTMP_BUFFER];
-	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", str_length(content));
+	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", buffer_length(content));
 
-	String* response = str_new();
+	Buffer* response = buffer_new();
 
-	str_append_string(response,
+	buffer_append_string(response,
 		"HTTP/1.1 200 OK\r\n"
 		"Server: CapServer\r\n"
 	);
-	str_append_string(response, contlen);
-	str_append_string(response, "\r\n");
-	str_append_string(response, "\r\n");
-	str_append_other(response, content); // Merge content
+	buffer_append_string(response, contlen);
+	buffer_append_string(response, "\r\n");
+	buffer_append_string(response, "\r\n");
+	buffer_append_other(response, content); // Merge content
 
 	// Send
-	socket_send_string(client, str_get_const(response));
+	socket_send_bytes(client, buffer_get_const(response), buffer_length(response));
 
 	// Done
-	str_delete(response);
-	str_delete(content);
+	buffer_delete(response);
+	buffer_delete(content);
 	dir_close(dir);
 
 	return 0;
@@ -97,52 +97,56 @@ thread_method_get_script(
 	, char const* path) {
 	
 	char const* cmdname = defcmdname;
-	char cmdln[SERVER_NCOMMAND_LINE];
-	char scrln[SERVER_NTMP_BUFFER];
+	char cmdline[SERVER_NCOMMAND_LINE];
+	char scriptline[SERVER_NTMP_BUFFER];
 	FILE* fin;
 
 	// Try get command name from file
 	fin = file_open(path, "rb");
-	if (file_read_script_line(scrln, sizeof scrln, fin)) {
-		cmdname  = scrln; // Change command name
+	if (file_read_script_line(scriptline, sizeof scriptline, fin)) {
+		cmdname  = scriptline; // Change command name
 	}
-	file_close(fin);
+
+	if (file_close(fin) != 0) {
+		WARN("Faile to close file \"%s\"", path);
+		return;
+	}
 
 	// Open process
-	snprintf(cmdln, sizeof cmdln, "%s %s", cmdname, path);
-	term_eputsf("command line[%s]", cmdln); // debug
+	snprintf(cmdline, sizeof cmdline, "%s %s", cmdname, path);
+	term_eputsf("Command line[%s]", cmdline); // debug
 
-	fin = popen(cmdln, "rb");
+	fin = popen(cmdline, "rb");
 	if (!fin) {
-		WARN("Failed to open process \"%s\"", cmdln);
+		WARN("Failed to open process \"%s\"", cmdline);
 		return;
 	}
 
 	// Content
-	String* content = str_new();
-	str_append_stream(content, fin);
+	Buffer* content = buffer_new();
+	buffer_append_stream(content, fin);
 	file_close(fin);
 
 	// Response header
 	char contlen[SERVER_NTMP_BUFFER];
-	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", str_length(content));
+	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", buffer_length(content));
 
-	String* response = str_new();
+	Buffer* response = buffer_new();
 	
-	str_append_string(response,
+	buffer_append_string(response,
 		"HTTP/1.1 200 OK\r\n"
 		"Server: CapServer\r\n"
 	);
-	str_append_string(response, contlen);
-	str_append_string(response, "\r\n");
-	str_append_other(response, content);
+	buffer_append_string(response, contlen);
+	buffer_append_string(response, "\r\n");
+	buffer_append_other(response, content);
 
 	// Send
-	socket_send_string(client, str_get_const(response));
+	socket_send_bytes(client, buffer_get_const(response), buffer_length(response));
 
 	// Done
-	str_delete(content);
-	str_delete(response);
+	buffer_delete(content);
+	buffer_delete(response);
 }
 
 static void
@@ -154,33 +158,37 @@ thread_method_get_file(HttpHeader const* header, Socket* client, char const* pat
 		return;
 	}
 
-	// Content
-	String* content = str_new();
-	str_append_string(content, "<pre>");
-	str_append_stream(content, fin);
-	str_append_string(content, "</pre>");
+	// Make content
+	Buffer* content = buffer_new();
+	buffer_append_string(content, "<pre>");
+	buffer_append_stream(content, fin);
+	buffer_append_string(content, "</pre>");
 
-	file_close(fin);
+	if (file_close(fin) != 0) {
+		WARN("Failed to close file \"%s\"", path);
+		buffer_delete(content);
+		return;
+	}
 
-	// Make send buffer
-	String* response = str_new();
+	// Make response with content
+	Buffer* response = buffer_new();
 	char contlen[SERVER_NTMP_BUFFER];
-	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", str_length(content));
+	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", buffer_length(content));
 
-	str_append_string(response,
+	buffer_append_string(response,
 		"HTTP/1.1 200 OK\r\n"
 		"Server: CapServer\r\n"
 	);
-	str_append_string(response, contlen);
-	str_append_string(response, "\r\n");
-	str_append_other(response, content);
+	buffer_append_string(response, contlen);
+	buffer_append_string(response, "\r\n");
+	buffer_append_other(response, content);
 
 	// Send
-	socket_send_string(client, str_get_const(response));
+	socket_send_bytes(client, buffer_get_const(response), buffer_length(response));
 
 	// Done
-	str_delete(response);
-	str_delete(content);
+	buffer_delete(response);
+	buffer_delete(content);
 }
 
 static void
