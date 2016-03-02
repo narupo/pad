@@ -28,7 +28,7 @@ thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* 
 	Buffer* content = buffer_new();
 	if (!content) {
 		dir_close(dir);
-		return caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "string");
+		return caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "buffer");
 	}
 
 	// Content
