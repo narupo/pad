@@ -548,16 +548,29 @@ make_main(int argc, char* argv[]) {
 	}
 
 	// Run
-	int res = command_run(command);
+	int ret = command_run(command);
 	
 	// Done
 	command_delete(command);
-	return res;
+	return ret;
+}
+
+/********
+* make2 *
+********/
+
+int
+make_2_main(int argc, char* argv[]) {
+	int ret = 0;
+
+
+
+	return ret;
 }
 
 #if defined(TEST_MAKE)
 int
 main(int argc, char* argv[]) {
-	return make_main(argc, argv);
+	return make_2_main(argc, argv);
 }
 #endif
