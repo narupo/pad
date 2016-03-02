@@ -160,9 +160,7 @@ thread_method_get_file(HttpHeader const* header, Socket* client, char const* pat
 
 	// Make content
 	Buffer* content = buffer_new();
-	buffer_append_string(content, "<pre>");
 	buffer_append_stream(content, fin);
-	buffer_append_string(content, "</pre>");
 
 	if (file_close(fin) != 0) {
 		WARN("Failed to close file \"%s\"", path);
