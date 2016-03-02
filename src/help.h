@@ -20,9 +20,6 @@
 #include "brief.h"
 #include "server.h"
 
-#include <stdbool.h>
-#include <string.h>
-
 int
 help_main(int argc, char* argv[]);
 
@@ -30,4 +27,3 @@ void
 help_usage(void);
 
 #endif
-

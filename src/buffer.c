@@ -1,16 +1,16 @@
 #include "buffer.h"
 
 enum {
-	NBUFFER_NEW_SIZE = 8,
+	NBUFFER_NEW_CAPACITY = 8,
 };
 
 /**
- * Desc.
+ * Desc
  */
 struct Buffer {
 	size_t capacity;
 	size_t length;
-	char* buffer;
+	Buffer_pointer_type buffer;
 };
 
 #define SWAP(T, a, b) { \
@@ -22,7 +22,7 @@ void
 buffer_swap_other(Buffer* self, Buffer* other) {
 	SWAP(size_t, self->capacity, other->capacity);
 	SWAP(size_t, self->length, other->length);
-	SWAP(char*, self->buffer, other->buffer);
+	SWAP(Buffer_pointer_type, self->buffer, other->buffer);
 }
 #undef SWAP
 
@@ -34,21 +34,11 @@ buffer_delete(Buffer* self) {
 	}
 }
 
-void
-buffer_safe_delete(Buffer** self) {
-	if (self && *self) {
-		Buffer* p = *self;
-		free(p->buffer);
-		free(p);
-		*self = NULL;
-	}
-}
-
-char*
+Buffer_pointer_type
 buffer_escape_delete(Buffer* self) {
 	if (self) {
 		// Start move semantics
-		char* buffer = self->buffer;
+		Buffer_pointer_type buffer = self->buffer;
 		free(self);
 		return buffer;
 	}
@@ -57,57 +47,25 @@ buffer_escape_delete(Buffer* self) {
 
 Buffer*
 buffer_new(void) {
-	return buffer_new_size(NBUFFER_NEW_SIZE);
+	return buffer_new_from_capacity(NBUFFER_NEW_CAPACITY);
 }
 
 Buffer*
-buffer_new_str(char const* src) {
+buffer_new_from_capacity(size_t capacity) {
 	Buffer* self = (Buffer*) calloc(1, sizeof(Buffer));
 	if (!self) {
-		goto fail_self;
+		return NULL;
 	}
 	
-	size_t len = strlen(src) + 1;  // +1 for final nul
-
-	self->capacity = len;
-	self->length = len;
-	self->buffer = (char*) calloc(self->capacity, sizeof(char));
-	if (!self->buffer) {
-		goto fail_buffer;
-	}
-
-	memmove(self->buffer, src, len);
-
-	return self;
-
-fail_buffer:
-	free(self);
-
-fail_self:
-	return NULL;
-}
-
-Buffer*
-buffer_new_size(size_t size) {
-	Buffer* self = (Buffer*) calloc(1, sizeof(Buffer));
-	if (!self) {
-		goto fail_self;
-	}
-	
-	self->capacity = size;
+	self->capacity = capacity;
 	self->length = 0;
-	self->buffer = (char*) calloc(self->capacity, sizeof(char));
+	self->buffer = (Buffer_pointer_type) calloc(self->capacity, sizeof(Buffer_type));
 	if (!self->buffer) {
-		goto fail_buffer;
+		free(self);
+		return NULL;
 	}
 
 	return self;
-
-fail_buffer:
-	free(self);
-
-fail_self:
-	return NULL;
 }
 
 size_t
@@ -115,29 +73,23 @@ buffer_length(Buffer const* self) {
 	return self->length;
 }
 
-char const*
-buffer_getc(Buffer const* self) {
-	return self->buffer;
-}
-
-char const*
+Buffer_type const*
 buffer_get_const(Buffer const* self) {
 	return self->buffer;
 }
 
-char
+Buffer_type
 buffer_front(Buffer const* self) {
 	return self->buffer[0];
 }
 
-char
+Buffer_type
 buffer_back(Buffer const* self) {
 	if (self->length <= 0) {
 		return EOF;
 	}
 	return self->buffer[self->length-1];
 }
-
 
 void
 buffer_clear(Buffer* self) {
@@ -147,9 +99,9 @@ buffer_clear(Buffer* self) {
 
 bool
 buffer_resize(Buffer* self, size_t resize) {
-	resize = (resize == 0 ? NBUFFER_NEW_SIZE : resize);
+	resize = (resize == 0 ? NBUFFER_NEW_CAPACITY : resize);
 
-	char* ptr = (char*) realloc(self->buffer, resize);
+	Buffer_pointer_type ptr = (Buffer_pointer_type) realloc(self->buffer, resize);
 	if (!ptr) {
 		return false;  // Failed
 	}
@@ -160,25 +112,20 @@ buffer_resize(Buffer* self, size_t resize) {
 	return true;
 }
 
-size_t
+int
 buffer_push_back(Buffer* self, int ch) {
 	if (self->length >= self->capacity) {
 		if (!buffer_resize(self, self->capacity * 2)) {
-			return 0;
+			return -1;
 		}
 	}
 	self->buffer[self->length++] = ch;
 	return self->length;
 }
 
-size_t
-buffer_push(Buffer* self, int ch) {
-	return buffer_push_back(self, ch);
-}
-
-int
+Buffer_type
 buffer_pop_back(Buffer* self) {
-	int ch = 0;
+	Buffer_type ch = 0;
 
 	if (self->length) {
 		ch = self->buffer[--self->length];
@@ -188,21 +135,51 @@ buffer_pop_back(Buffer* self) {
 }
 
 int
-buffer_pop(Buffer* self) {
-	return buffer_pop_back(self);
-}
-
-size_t
-buffer_push_str(Buffer* self, char const* str) {
-	for (char const* p = str; *p; ++p) {
-		if (!buffer_push(self, *p)) {
-			goto fail;
+buffer_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size) {
+	for (size_t i = 0; i < size; ++i) {
+		if (buffer_push_back(self, bytes[i]) < 0) {
+			return -1;
 		}
 	}
-	return self->length;
 
-fail:
-	return 0;
+	return self->length;
+}
+
+int
+buffer_append_string(Buffer* self, char const* str) {
+	for (size_t i = 0, len = strlen(str); i < len; ++i) {
+		if (buffer_push_back(self, str[i]) < 0) {
+			return -1;
+		}
+	}
+
+	return self->length;
+}
+
+int
+buffer_append_stream(Buffer* self, FILE* fin) {
+	if (feof(fin)) {
+		return -1;
+	}
+
+	for (int ch; (ch = fgetc(fin)) != EOF; ) {
+		if (ferror(fin) || buffer_push_back(self, ch) < 0) {
+			return -1;
+		}
+	}
+
+	return self->length;
+}
+
+int
+buffer_append_other(Buffer* self, Buffer const* other) {
+	for (size_t i = 0; i < other->length; ++i) {
+		if (buffer_push_back(self, other->buffer[i]) < 0) {
+			return -1;
+		}
+	}
+
+	return self->length;
 }
 
 bool
@@ -215,141 +192,25 @@ buffer_getline(Buffer* self, FILE* stream) {
 	buffer_clear(self);
 
 	if (feof(stream)) {
-		goto fail;
+		return false;
 	}
 
 	for (;;) {
 		int ch = fgetc(stream);
 		if (ch == EOF || ferror(stream)) {
-			goto fail;
+			return false;
 		}
 		if (ch == '\n') {
-			goto done;
+			return true;
 		}
-		buffer_push(self, ch);
+		buffer_push_back(self, ch);
 	}
-
-done:
-	buffer_push(self, '\0');
-	return true;
-
-fail:
-	buffer_push(self, '\0');
-	return false;
-}
-
-bool
-buffer_copy_str(Buffer* self, char const* src) {
-	if (!src) {
-		WARN("Invalid arguments");
-		goto fail;
-	}
-
-	size_t srcsize = strlen(src) + 1;
-
-	if (srcsize > self->capacity) {
-		if (!buffer_resize(self, srcsize)) {
-			WARN("Failed to resize");
-			goto fail;
-		}
-	}
-
-	memmove(self->buffer, src, srcsize);
-	self->length = srcsize;
-
-	return true;
-
-fail:
-	return false;
-}
-
-void
-buffer_lstrip(Buffer* self, int delim) {
-	char const* beg = self->buffer;
-	char const* end = self->buffer + self->length;
-	char const* p;
-
-	for (p = beg; p < end; ++p) {
-		if (*p != delim) {
-			beg = p;
-			break;
-		}
-	}
-
-	if (p == end) {
-		buffer_clear(self);
-		return;
-	}
-
-	Buffer* tmp = buffer_new();
-	for (; beg < end;) {
-		buffer_push(tmp, *beg++);
-	}
-
-	buffer_swap_other(self, tmp);
-	buffer_delete(tmp);
-}
-
-void
-buffer_rstrip(Buffer* self, int delim) {
-	char const* beg = self->buffer;
-	char const* end = self->buffer + self->length - 1;
-	char const* p;
-
-	for (p = end; p >= beg; --p) {
-		if (*p != delim) {
-			end = p;
-			break;
-		}
-	}
-
-	if ((p+1) == beg) {
-		buffer_clear(self);
-		return;
-	}
-
-	Buffer* tmp = buffer_new();
-	for (; beg <= end;) {
-		buffer_push(tmp, *beg++);
-	}
-
-	buffer_swap_other(self, tmp);
-	buffer_delete(tmp);
 }
 
 #if defined(TEST_BUFFER)
 int
 main(int argc, char* argv[]) {
-	FILE* stream = stdin;
 	Buffer* buf = buffer_new();
-
-	if (argc == 2) {
-		stream = fopen(argv[1], "rb");
-		if (!stream) {
-			perror("fopen");
-			exit(1);
-		}
-	}
-
-	for (; buffer_getline(buf, stream); ) {
-		if (strcmp(buf->buffer, "clear") == 0) {
-			buffer_clear(buf);
-			buffer_resize(buf, 4);
-			continue;
-		}
-		printf(" line[%s] length[%d] capacity[%d]\n", buf->buffer, buf->length, buf->capacity);
-		buffer_lstrip(buf, ' ');
-		buffer_lstrip(buf, '\t');
-		buffer_lstrip(buf, '\0');
-		printf("lstrip[%s] length[%d] capacity[%d]\n", buf->buffer, buf->length, buf->capacity);
-		buffer_rstrip(buf, '\0');
-		buffer_rstrip(buf, ' ');
-		buffer_rstrip(buf, '\t');
-		// buffer_push(buf, '\0');
-		printf("rstrip[%s] length[%d] capacity[%d]\n", buf->buffer, buf->length, buf->capacity);
-	}
-
-	fclose(stream);
 	buffer_delete(buf);
 	return 0;
 }

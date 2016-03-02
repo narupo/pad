@@ -8,24 +8,19 @@
 #include <stdbool.h>
 
 typedef struct Buffer Buffer;
+typedef unsigned char Buffer_type;
+typedef unsigned char const Buffer_const_type;
+typedef unsigned char* Buffer_pointer_type;
+typedef unsigned char const* Buffer_const_pointer_type;
 
 /**
- * Destruct buffer.
- * If self is null, do not anything.
+ * Destruct buffer
+ * If self is null, do not anything
  *
  * @param[in] self
  */
 void
 buffer_delete(Buffer* self);
-
-/**
- * Safe destruct buffer and clear pointer value to NULL.
- * If self is null, do not anything.
- *
- * @param[in] self
- */
-void
-buffer_safe_delete(Buffer** self);
 
 /**
  * Escape buffer in object and delete object without escape buffer
@@ -35,76 +30,69 @@ buffer_safe_delete(Buffer** self);
  *
  * @return pointer to bytes of escape from object
  */
-char*
+Buffer_pointer_type
 buffer_escape_delete(Buffer* self);
 
 /**
- * Construct buffer.
+ * Construct buffer
  *
- * @return Success to pointer to buffer.
- * @return Failed to NULL.
+ * @return Success to pointer to buffer
+ * @return Failed to NULL
  */
 Buffer*
 buffer_new(void);
 
 /**
- * Construct buffer from string.
+ * Construct buffer from number of capacity
  *
- * @param[in] src Source string.
- * @return        Success to pointer to buffer.
- * @return        Failed to NULL.
+ * @param[in] capacity allocate memory capacity
+ * @return success to pointer to buffer
+ * @return failed to NULL
  */
 Buffer*
-buffer_new_str(char const* src);
+buffer_new_from_capacity(size_t capacity);
 
 /**
- * Construct buffer from number of size.
- *
- * @param[in] size Allocate memory size.
- * @return	       Success to pointer to buffer.
- * @return         Failed to NULL.
- */
-Buffer*
-buffer_new_size(size_t size);
-
-/**
- * Get used length of buffer.
+ * Get used length of buffer
  *
  * @param[in] self 
- * @return         Number of length.
+ * @return         number of length
  */
 size_t
 buffer_length(Buffer const* self);
 
 /**
- * @deprecated
- * 
- * Get pointer to bytes in buffer.
+ * Get read-only pointer to bytes in buffer
  *
- * @param[in] self 
- * @return         Pointer to bytes.
+ * @param      self
+ *
+ * @return     
  */
-char const*
-buffer_getc(Buffer const* self);
-
-/**
- * Get read-only pointer to bytes in buffer.
- *
- * @param      self  { parameter_description }
- *
- * @return     { description_of_the_return_value }
- */
-char const*
+Buffer_const_pointer_type
 buffer_get_const(Buffer const* self);
 
-char
+/**
+ * Get byte at front of buffer
+ *
+ * @param      self
+ *
+ * @return     byte
+ */
+Buffer_type
 buffer_front(Buffer const* self);
 
-char
+/**
+ * Get byte at back of buffer
+ *
+ * @param      self  
+ *
+ * @return     byte
+ */
+Buffer_type
 buffer_back(Buffer const* self);
 
 /**
- * Clear buffer.
+ * Clear buffer
  *
  * @param[in] self 
  */
@@ -112,106 +100,64 @@ void
 buffer_clear(Buffer* self);
 
 /**
- * Push data to buffer.
+ * Push data to buffer
  *
  * @param[in] self 
- * @param[in] ch   Push data.
- * @return         Success to length of buffer.
- * @return         Failed to zero.
+ * @param[in] ch   push data
+ * @return         success to length of buffer
+ * @return         failed to under of zero
  */
-size_t
+int
 buffer_push_back(Buffer* self, int ch);
-
-/**
- * @deprecated
- */
-size_t
-buffer_push(Buffer* self, int ch);
 
 /**
  * @param      self
  * @return     tail element
  */
-int
+Buffer_type
 buffer_pop_back(Buffer* self);
 
-/**
- * @deprecated
- * @see buffer_pop_back
- */
 int
-buffer_pop(Buffer* self);
+buffer_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size);
+
+int
+buffer_append_string(Buffer* self, char const* str);
+
+int
+buffer_append_stream(Buffer* self, FILE* fin);
+
+int
+buffer_append_other(Buffer* self, Buffer const* other);
 
 /**
- * Push string to buffer without nul terminater
- *
- * @param[in] self
- * @param[in] str push string
- *
- * @return success to length of buffer
- * @return failed to zero
- */
-size_t
-buffer_push_str(Buffer* self, char const* str);
-
-/**
- * Resize buffer.
+ * Resize buffer
  *
  * @param[in] self		
- * @param[in] resize	Number of resize size.	
- * @return				Success to true.
- * @return				Failed to false.
+ * @param[in] resize	number of resize size.	
+ * @return				success to true
+ * @return				failed to false
  */
 bool
 buffer_resize(Buffer* self, size_t resize);
 
 /**
- * Check empty is buffer.
+ * Check empty is buffer
  *
  * @param[in] 
- * @return		Empty to true.
- * @return		Not empty to false.
+ * @return		empty to true
+ * @return		not empty to false
  */
 bool
 buffer_empty(Buffer const* self);
 
 /**
- * Read line from stream, And write to buffer.
+ * Read line from stream, And write to buffer
  *
- * @param[in] stream	Source stream.
- * @return				Success to true.
- * @return				Done or failed to false.
+ * @param[in] stream	source stream
+ * @return				success to true
+ * @return				done or failed to false
  */
 bool
 buffer_getline(Buffer* self, FILE* stream);
-
-/**
- * Copy string to buffer.
- *
- * @param[in] self	
- * @param[in] src	Copy source string.
- * @return			Success to true.
- * @return			Failed to false.
- */
-bool
-buffer_copy_str(Buffer* self, char const* src);
-
-/**
- * Strip buffer of left side by delim
- *
- * @param[in] self
- * @param[in] delim target delimiter
- */
-void
-buffer_lstrip(Buffer* self, int delim);
-
-/**
- * Strip buffer of right side by delim
- *
- * @param[in] self
- * @param[in] delim target delimiter
- */
-void
-buffer_rstrip(Buffer* self, int delim);
 
 #endif

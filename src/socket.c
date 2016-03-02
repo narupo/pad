@@ -344,6 +344,19 @@ socket_send_string(Socket* self, char const* str) {
 	return ret;
 }
 
+int 
+socket_send_bytes(Socket* self, unsigned char const* bytes, size_t size) {
+	int ret = 0;
+
+	ret = send(self->socket, bytes, size, 0);
+	if (ret < 0) {
+		WARN("Failed to write to socket [%d] by \"%s:%s\""
+			, self->socket, self->host, self->port);
+	}
+
+	return ret;
+}
+
 #if defined(TEST_SOCKET)
 int
 test_tcp_server(int argc, char* argv[]) {
