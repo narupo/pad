@@ -121,7 +121,6 @@ trace_caperr(void) {
 #else
 	caperr_display_first(stderr);
 #endif
-	term_eprintf("\n");
 }
 
 int
