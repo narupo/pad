@@ -117,15 +117,52 @@ buffer_push_back(Buffer* self, int ch);
 Buffer_type
 buffer_pop_back(Buffer* self);
 
+/**
+ * 
+ *
+ * @param      self   
+ * @param      bytes  
+ * @param[in]  size   
+ *
+ * @return     failed to number of under zero
+ * @return     success to number of appended
+ */
 int
 buffer_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size);
 
+/**
+ * @brief      
+ *
+ * @param      self  
+ * @param      str   
+ *
+ * @return     failed to number of under zero
+ * @return     success to number of appended
+ */
 int
 buffer_append_string(Buffer* self, char const* str);
 
+/**
+ * @brief      
+ *
+ * @param      self  
+ * @param      fin   
+ *
+ * @return     failed to number of under zero
+ * @return     success to number of appended
+ */
 int
 buffer_append_stream(Buffer* self, FILE* fin);
 
+/**
+ * @brief      
+ *
+ * @param      self  
+ * @param      other   
+ *
+ * @return     failed to number of under zero
+ * @return     success to number of appended
+ */
 int
 buffer_append_other(Buffer* self, Buffer const* other);
 

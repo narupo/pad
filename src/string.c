@@ -269,10 +269,10 @@ str_pop_front(String* self) {
 	return ret;
 }
 
-void
+int
 str_append_string(String* self, String_type const* src) {
 	if (!self || !src) {
-		return;
+		return -1;
 	}
 
 	int srclen = strlen(src);
@@ -285,6 +285,8 @@ str_append_string(String* self, String_type const* src) {
 		self->buffer[self->length++] = *sp;
 	}
 	self->buffer[self->length] = NIL;
+
+	return srclen;
 }
 
 int
@@ -298,22 +300,24 @@ str_append_stream(String* self, FILE* fin) {
 	return nread;
 }
 
-void
+int
 str_append_other(String* self, String const* other) {
 	if (!self || !other) {
-		return;
+		return -1;
 	}
 
 	if (self == other) {
 		char* buf = strdup(self->buffer);
 		if (!buf) {
-			return;
+			return -1;
 		}
 		str_append_string(self, buf);
 		free(buf);
 	} else {
 		str_append_string(self, other->buffer);
 	}
+
+	return other->length;
 }
 
 void

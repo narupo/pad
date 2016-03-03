@@ -160,7 +160,7 @@ str_pop_front(String* self);
  * @param self 
  * @param src  
 */
-void 
+int 
 str_append_string(String* self, char const* src);
 
 /**
@@ -180,7 +180,7 @@ str_append_stream(String* self, FILE* fin);
  * @param self  
  * @param other 
 */
-void 
+int 
 str_append_other(String* self, String const* other);
 
 /**
