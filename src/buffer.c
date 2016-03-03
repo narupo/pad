@@ -142,18 +142,20 @@ buffer_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size) {
 		}
 	}
 
-	return self->length;
+	return size;
 }
 
 int
 buffer_append_string(Buffer* self, char const* str) {
-	for (size_t i = 0, len = strlen(str); i < len; ++i) {
+	size_t i, len;
+
+	for (i = 0, len = strlen(str); i < len; ++i) {
 		if (buffer_push_back(self, str[i]) < 0) {
 			return -1;
 		}
 	}
 
-	return self->length;
+	return i;
 }
 
 int
@@ -162,24 +164,28 @@ buffer_append_stream(Buffer* self, FILE* fin) {
 		return -1;
 	}
 
-	for (int ch; (ch = fgetc(fin)) != EOF; ) {
+	int napp = 0;
+
+	for (int ch; (ch = fgetc(fin)) != EOF; ++napp) {
 		if (ferror(fin) || buffer_push_back(self, ch) < 0) {
 			return -1;
 		}
 	}
 
-	return self->length;
+	return napp;
 }
 
 int
 buffer_append_other(Buffer* self, Buffer const* other) {
-	for (size_t i = 0; i < other->length; ++i) {
+	size_t i;
+
+	for (i = 0; i < other->length; ++i) {
 		if (buffer_push_back(self, other->buffer[i]) < 0) {
 			return -1;
 		}
 	}
 
-	return self->length;
+	return i;
 }
 
 bool
