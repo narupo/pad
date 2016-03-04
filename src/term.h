@@ -4,6 +4,18 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+// Macros for color string on terminal
+// Example: printf(TERM_RED "This is red string." TERM_RESET " Reseted.");
+#define TERM_NRM     "\x1B[0m"
+#define TERM_RED     "\x1B[31m"
+#define TERM_GREEN   "\x1B[32m"
+#define TERM_YELLOW  "\x1B[33m"
+#define TERM_BLUE    "\x1B[34m"
+#define TERM_MAGENTA "\x1B[35m"
+#define TERM_CYAN    "\x1B[36m"
+#define TERM_WHITE   "\x1B[37m"
+#define TERM_RESET   "\033[0m"
+
 /**
  * Wrapper of fflush(stdout)
  */
