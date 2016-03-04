@@ -85,7 +85,6 @@ caperrs_push(
 	if (caperrs.stack_top >= NSTACK) {
 		caperr_display(stderr);
 		perror("caperr: Stack overflow");
-		exit(1);
 
 	} else {
 		CapErr* s = &caperrs.stack[caperrs.stack_top++];
@@ -231,7 +230,7 @@ caperr_display_record_unsafe(FILE* stream, CapErr const* e) {
 #endif
 
 	// Display header and number
-	fprintf(stream, "%s: %s", e->header, caperr_to_string_unsafe(e->number));
+	fprintf(stream, TERM_RED "%s: " TERM_YELLOW "%s", e->header, caperr_to_string_unsafe(e->number));
 
 	// Display user's message
 	size_t msglen = strlen(e->message);
@@ -244,7 +243,7 @@ caperr_display_record_unsafe(FILE* stream, CapErr const* e) {
 		}
 
 		// Display
-		fprintf(stream, "%s", e->message);
+		fprintf(stream, TERM_YELLOW "%s" TERM_RESET, e->message);
 		
 		// Fix tail format of string
 		if (e->message[msglen-1] != '.') {
