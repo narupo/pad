@@ -3,7 +3,7 @@
 typedef struct Server Server;
 
 enum {
-	SERVER_NRECV_BUFFER = 1024,
+	SERVER_NRECV_BUFFER = 1024 * 5,
 	SERVER_NCOMMAND_LINE = 128,
 	SERVER_NTMP_BUFFER = 128,
 };
@@ -287,7 +287,7 @@ thread_main(void* arg) {
 			break;
 		}
 
-		thread_eputsf("Recv buffer[%s]", buf);
+		thread_eputsf("Recv buffer (%d) [%s]", nrecv, buf);
 
 		httpheader_parse_request(header, buf);
 		char const* methname = httpheader_method_name(header);
