@@ -348,7 +348,11 @@ int
 socket_send_bytes(Socket* self, unsigned char const* bytes, size_t size) {
 	int ret = 0;
 
+#if defined(_WIN32) || defined(_WIN64)
+	ret = send(self->socket, (char const*) bytes, size, 0);
+#else
 	ret = send(self->socket, bytes, size, 0);
+#endif
 	if (ret < 0) {
 		WARN("Failed to write to socket [%d] by \"%s:%s\""
 			, self->socket, self->host, self->port);

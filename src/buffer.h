@@ -131,7 +131,7 @@ int
 buffer_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size);
 
 /**
- * @brief      
+ *
  *
  * @param      self  
  * @param      str   
@@ -143,7 +143,7 @@ int
 buffer_append_string(Buffer* self, char const* str);
 
 /**
- * @brief      
+ * 
  *
  * @param      self  
  * @param      fin   
@@ -155,7 +155,7 @@ int
 buffer_append_stream(Buffer* self, FILE* fin);
 
 /**
- * @brief      
+ * 
  *
  * @param      self  
  * @param      other   

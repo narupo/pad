@@ -8,8 +8,9 @@ struct Command {
 	char** argv;
 	Config const* config;
 	StringArray* replace_list;
-	bool is_debug;
-	bool is_usage;
+	bool opt_debug;
+	bool opt_usage;
+	bool opt_without_solve;
 };
 
 static char const PROGNAME[] = "cap make";
@@ -125,22 +126,20 @@ command_parse_options(Command* self) {
 		static struct option longopts[] = {
 			{"debug", no_argument, 0, 'd'},
 			{"help", no_argument, 0, 'h'},
+			{"without-solve-path", no_argument, 0, 'w'},
 			{0},
 		};
 		int optsindex;
 
-		int cur = getopt_long(self->argc, self->argv, "dh0:1:2:3:4:5:6:7:8:9:", longopts, &optsindex);
+		int cur = getopt_long(self->argc, self->argv, "wdh0:1:2:3:4:5:6:7:8:9:", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
 
 		switch (cur) {
-		case 'h':
-			self->is_usage = true;
-			break;
-		case 'd':
-			self->is_debug = true;
-			break;
+		case 'h': self->opt_usage = true; break;
+		case 'd': self->opt_debug = true; break;
+		case 'w': self->opt_without_solve = true; break;
 		case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
 			strarray_set_copy(self->replace_list, cur-'0', optarg);
 			break;
@@ -334,7 +333,7 @@ command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout)
 	CapRowList const* rows = capfile_rows_const(dstfile);
 
 	for (CapRow const* row = caprowlist_front_const(rows); row; row = caprow_next_const(row)) {
-		if (self->is_debug) {
+		if (self->opt_debug) {
 			caprow_display(row);
 			continue;
 		}
@@ -367,9 +366,22 @@ command_open_input_file(Command const* self, char const* capname) {
 
 	// Get cap's make file path
 	char spath[FILE_NPATH];
-	if (!config_path_with_cd(self->config, spath, sizeof spath, capname)) {
-		caperr(PROGNAME, CAPERR_ERROR, "Failed to path from base \"%s\"", capname);
-		return NULL;
+
+	if (self->opt_without_solve) {
+		snprintf(spath, sizeof spath, "%s", capname);
+
+	} else {
+		char path[FILE_NPATH];
+
+		if (!config_path_with_cd(self->config, path, sizeof path, capname)) {
+			caperr(PROGNAME, CAPERR_ERROR, "Failed to path from base \"%s\"", capname);
+			return NULL;
+		}
+
+		if (!file_solve_path(spath, sizeof spath, path)) {
+			caperr(PROGNAME, CAPERR_SOLVE, "\"%s\"", path);
+			return NULL;
+		}
 	}
 	
 	// Open cap's make file
@@ -385,7 +397,6 @@ command_open_input_file(Command const* self, char const* capname) {
 static CapFile* 
 command_make_capfile(Command const* self) {
 	CapFile* mkfile = NULL;
-
 
 	if (self->argc == self->optind) {
 		// Make CapFile from stream
@@ -443,7 +454,7 @@ command_run(Command* self) {
 	int ret = 0;
 
 	// Is usage ?
-	if (self->is_usage) {
+	if (self->opt_usage) {
 		make_usage();
 		return ret;
 	}
@@ -486,9 +497,10 @@ make_usage(void) {
 		"\n"
 		"The options are:\n"
 		"\n"
-		"\t-[0-9]          key and value of replace brace\n"
-		"\t-h,     --help  display usage\n"
-		"\t-d,     --debug debug mode\n"
+		"\t-[0-9]                       key and value of replace brace\n"
+		"\t-h,     --help               display usage\n"
+		"\t-d,     --debug              debug mode\n"
+		"\t-w,     --without-solve-path mode of non solve path\n"
 		"\n"
 		"The cap syntax:\n"
 		"\n"

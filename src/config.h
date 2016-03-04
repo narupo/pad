@@ -83,6 +83,9 @@ config_path_with_cd(Config const* self, char* dst, size_t dstsize, char const* b
 char const*
 config_path(Config const* self, char const* key);
 
+JsonObject const*
+config_server_const(Config const* self);
+
 /*********
 * Setter *
 *********/
