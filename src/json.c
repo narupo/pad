@@ -87,11 +87,10 @@ struct JsonObject {
 	JsonObject const* parent;
 	StringArray* list;
 	String* value;
+	String* name;
 	JsonObject** jsonobjs;
 	int jsonobjs_length;
 	int jsonobjs_capacity;
-	// char name[NBRACE_NAME];
-	String* name;
 };
 
 JsonObjectType
@@ -125,6 +124,7 @@ jsonobj_delete(JsonObject* self) {
 		for (int i = 0; i < self->jsonobjs_length; ++i) {
 			jsonobj_delete(self->jsonobjs[i]);
 		}
+		free(self->jsonobjs);
 		strarray_delete(self->list);
 		str_delete(self->value);
 		str_delete(self->name);
