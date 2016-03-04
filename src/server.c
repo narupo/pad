@@ -128,7 +128,7 @@ thread_method_get_script(
 	thread_eputsf("Command line[%s]", cmdline); // debug
 
 	thread_eputsf("Open process...");
-	fin = popen(cmdline, "rb");
+	fin = popen(cmdline, "r");
 	if (!fin) {
 		WARN("Failed to open process \"%s\"", cmdline);
 		return;
