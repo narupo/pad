@@ -21,7 +21,7 @@ thread_id(void) {
 }
 
 #define thread_eputsf(...) { \
-	term_eprintf("Thread %d: ", thread_id()); \
+	term_eprintf(TERM_YELLOW "Thread %d: " TERM_RESET, thread_id()); \
 	term_eputsf(__VA_ARGS__); \
 }
 
@@ -96,6 +96,7 @@ thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* 
 	buffer_delete(content);
 	dir_close(dir);
 
+	thread_eputsf("200 OK");
 	return 0;
 }
 
@@ -157,6 +158,7 @@ thread_method_get_script(
 	// Done
 	buffer_delete(content);
 	buffer_delete(response);
+	thread_eputsf("200 OK");
 }
 
 static void
@@ -201,6 +203,7 @@ thread_method_get_file(
 	// Done
 	buffer_delete(response);
 	buffer_delete(content);
+	thread_eputsf("200 OK");
 }
 
 static void
@@ -223,6 +226,7 @@ thread_method_get(
 			"Content-Length: 0\r\n"
 			"\r\n"
 		);
+		thread_eputsf("404 Not Found");
 		return;
 	}
 
@@ -266,6 +270,7 @@ thread_method_get(
 static void*
 thread_main(void* arg) {
 	Socket* client = (Socket*) arg;
+
 	HttpHeader* header = httpheader_new();
 	if (!header) {
 		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "HttpHeader");
@@ -282,6 +287,8 @@ thread_main(void* arg) {
 			break;
 		}
 
+		thread_eputsf("Recv buffer[%s]", buf);
+
 		httpheader_parse_request(header, buf);
 		char const* methname = httpheader_method_name(header);
 		char const* methvalue = httpheader_method_value(header);
@@ -295,6 +302,7 @@ thread_main(void* arg) {
 				"Content-Length: 0\r\n"
 				"\r\n"
 			);
+			thread_eputsf("405 Method Not Allowed");
 		}
 	}
 
@@ -391,11 +399,12 @@ static void
 server_display_welcome_message(Server const* self, char const* hostport) {
 	time_t runtime = time(NULL);
 	term_eputsf(
-		"=============================================================\n"
-		" CapServer running on %s\n"
-		" CAUTION!! THIS SERVER DO NOT PUBLISHED ON INTERNET. DANGER!\n"
-		" Run at %s"
-		"=============================================================\n"
+		TERM_YELLOW "CapServer" TERM_RESET " running on %s\n"
+		"Run at %s"
+		"\n"
+		TERM_RED
+		"** CAUTION!! THIS SERVER DO NOT PUBLISHED ON INTERNET. DANGER! **\n"
+		TERM_RESET
 		, hostport, ctime(&runtime)
 	);
 }
