@@ -143,7 +143,7 @@ thread_method_get_script(
 	// Response header
 	char contlen[SERVER_NTMP_BUFFER];
 	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", buffer_length(content));
-	thread_eputsf("Read content length %d", buffer_length(content));
+	thread_eputsf("Read content length %d/bytes", buffer_length(content));
 
 	Buffer* response = buffer_new();
 	
@@ -221,7 +221,7 @@ thread_method_get(
 
 	// Get path with home
 	config_path_with_home(config, path, sizeof path, methval);
-	thread_eputsf("GET path[%s]", path); // debug
+	thread_eputsf("Get path \"%s\"", path); // debug
 
 	// Not found?
 	if (!file_is_exists(path)) {
@@ -293,14 +293,15 @@ thread_main(void* arg) {
 			break;
 		}
 
-		thread_eputsf("Recv buffer (%d) [%s]", nrecv, buf);
+		thread_eputsf("Recv buffer (%d/bytes) \"%s\"", nrecv, buf);
 
 		httpheader_parse_request(header, buf);
 		char const* methname = httpheader_method_name(header);
 		char const* methvalue = httpheader_method_value(header);
+		thread_eputsf("Http method name \"%s\" and value \"%s\"", methname, methvalue);
 
 		if (strcmp(methname, "GET") == 0) {
-			thread_eputsf("%s %s", methname, methvalue);
+			thread_eputsf("Accept GET method");
 			thread_method_get(header, client);
 		} else {
 			socket_send_string(client,
