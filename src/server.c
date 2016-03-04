@@ -127,6 +127,7 @@ thread_method_get_script(
 	snprintf(cmdline, sizeof cmdline, "%s %s", cmdname, path);
 	thread_eputsf("Command line[%s]", cmdline); // debug
 
+	thread_eputsf("Open process...");
 	fin = popen(cmdline, "rb");
 	if (!fin) {
 		WARN("Failed to open process \"%s\"", cmdline);
@@ -134,13 +135,15 @@ thread_method_get_script(
 	}
 
 	// Content
+	thread_eputsf("Read from process...");
 	Buffer* content = buffer_new();
 	buffer_append_stream(content, fin);
-	file_close(fin);
+	pclose(fin);
 
 	// Response header
 	char contlen[SERVER_NTMP_BUFFER];
 	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", buffer_length(content));
+	term_eputsf("Read content length %d", buffer_length(content));
 
 	Buffer* response = buffer_new();
 	
@@ -153,6 +156,7 @@ thread_method_get_script(
 	buffer_append_other(response, content);
 
 	// Send
+	thread_eputsf("Send response...");
 	socket_send_bytes(client, buffer_get_const(response), buffer_length(response));
 
 	// Done
@@ -232,7 +236,7 @@ thread_method_get(
 
 	// Directory?
 	if (file_is_dir(path)) {
-		thread_eputsf("Directory \"%s\"", path);
+		thread_eputsf("Get index list by directory \"%s\"", path);
 		thread_index_page_by_path(header, client, path);
 		return;
 	}
@@ -255,6 +259,7 @@ thread_method_get(
 				String const* cmd = jsonobj_value(obj);
 				String const* suf = jsonobj_name_const(obj);
 				if (strcmp(suffix, str_get_const(suf)) == 0) {
+					thread_eputsf("Get content by script of \"%s\"", path);
 					thread_method_get_script(header, client, str_get_const(cmd), path);
 					return;
 				}
@@ -264,6 +269,7 @@ thread_method_get(
 	}
 
 	// Other files
+	thread_eputsf("Get content by file of \"%s\"", path);
 	thread_method_get_file(header, client, path);
 }
 
@@ -282,7 +288,7 @@ thread_main(void* arg) {
 	for (;;) {
 		char buf[SERVER_NRECV_BUFFER];
 		int nrecv = socket_recv_string(client, buf, sizeof buf);
-		if (nrecv < 0) {
+		if (nrecv <= 0) {
 			WARN("Failed to recv");
 			break;
 		}
