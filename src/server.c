@@ -128,7 +128,7 @@ thread_method_get_script(
 	thread_eputsf("Command line[%s]", cmdline); // debug
 
 	thread_eputsf("Open process...");
-	fin = popen(cmdline, "rb");
+	fin = popen(cmdline, "r");
 	if (!fin) {
 		WARN("Failed to open process \"%s\"", cmdline);
 		return;
@@ -143,7 +143,7 @@ thread_method_get_script(
 	// Response header
 	char contlen[SERVER_NTMP_BUFFER];
 	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", buffer_length(content));
-	term_eputsf("Read content length %d", buffer_length(content));
+	thread_eputsf("Read content length %d", buffer_length(content));
 
 	Buffer* response = buffer_new();
 	
