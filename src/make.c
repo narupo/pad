@@ -126,12 +126,12 @@ command_parse_options(Command* self) {
 		static struct option longopts[] = {
 			{"debug", no_argument, 0, 'd'},
 			{"help", no_argument, 0, 'h'},
-			{"without-solve-path", no_argument, 0, 'w'},
+			{"without-completion-path", no_argument, 0, 'c'},
 			{0},
 		};
 		int optsindex;
 
-		int cur = getopt_long(self->argc, self->argv, "wdh0:1:2:3:4:5:6:7:8:9:", longopts, &optsindex);
+		int cur = getopt_long(self->argc, self->argv, "cdh0:1:2:3:4:5:6:7:8:9:", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
@@ -139,7 +139,7 @@ command_parse_options(Command* self) {
 		switch (cur) {
 		case 'h': self->opt_usage = true; break;
 		case 'd': self->opt_debug = true; break;
-		case 'w': self->opt_without_solve = true; break;
+		case 'c': self->opt_without_solve = true; break;
 		case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
 			strarray_set_copy(self->replace_list, cur-'0', optarg);
 			break;
@@ -497,10 +497,10 @@ make_usage(void) {
 		"\n"
 		"The options are:\n"
 		"\n"
-		"\t-[0-9]                       key and value of replace brace\n"
-		"\t-h,     --help               display usage\n"
-		"\t-d,     --debug              debug mode\n"
-		"\t-w,     --without-solve-path mode of non solve path\n"
+		"\t-[0-9]                            key and value of replace brace\n"
+		"\t-h,     --help                    display usage\n"
+		"\t-d,     --debug                   debug mode\n"
+		"\t-w,     --without-completion-path mode of non solve path\n"
 		"\n"
 		"The cap syntax:\n"
 		"\n"

@@ -399,9 +399,18 @@ static void
 server_display_welcome_message(Server const* self, char const* hostport) {
 	time_t runtime = time(NULL);
 	term_eputsf(
-		TERM_YELLOW "CapServer" TERM_RESET " running on %s\n"
-		"Run at %s"
+		TERM_GREEN
+		"        _____    ___    _______       \n"
+		"       /____/\\ /|___|\\ |\\______\\  \n"
+		"      /     \\///     \\\\||    __ \\ \n"
+		"     |    ==<//   |   \\||    ___|    \n"
+		"      \\_____/ \\___^___/\\|___/      \n"
+		"                                      \n"
+		TERM_MAGENTA
+		"        === Server for dev ===        \n"
 		"\n"
+		TERM_GREEN "    CapServer" TERM_RESET " running on " TERM_YELLOW "%s\n"
+		TERM_RESET "    Run at " TERM_MAGENTA "%s\n"
 		TERM_RED
 		"** CAUTION!! THIS SERVER DO NOT PUBLISHED ON INTERNET. DANGER! **\n"
 		TERM_RESET
