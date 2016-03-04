@@ -307,6 +307,11 @@ config_path_with_home(Config const* self, char* dst, size_t dstsize, char const*
 	return config_path_with(self, dst, dstsize, "home", base);
 }
 
+JsonObject const*
+config_server_const(Config const* self) {
+	return jsonobj_find_dict_const(json_root_const(self->json), "server");
+}
+
 /*********
 * Setter *
 *********/
@@ -363,9 +368,28 @@ config_is_out_of_home(Config const* self, char const* path) {
 *******/
 
 #if defined(TEST_CONFIG)
-int
-main(int argc, char* argv[]) {
-	Config* config = config_new();
+static int
+test_server(int argc, char* argv[]) {
+	Config* config = config_instance();
+	json_write_to_stream(config->json, stderr);
+
+	JsonObject const* joserv = config_server_const(config);
+	assert(joserv);
+	jsonobj_write_to_stream(joserv, stderr);
+
+	JsonObject const* josuffix = jsonobj_find_dict_const(joserv, "script-suffix");
+	assert(josuffix);
+	jsonobj_write_to_stream(josuffix, stderr);
+
+	String const* scriptname = jsonobj_find_value_const(josuffix, "py");
+	printf("script name[%s]\n", str_get_const(scriptname));
+
+	return 0;
+}
+
+static int
+test_io(int argc, char* argv[]) {
+	Config* config = config_instance();
 	if (!config) {
 		die("config");
 	}
@@ -376,8 +400,17 @@ main(int argc, char* argv[]) {
 	printf("cd[%s]\n", self_path_unsafe(config, "cd"));
 
 	config_save(config);
-	
-	config_delete(config);
-    return 0;
+	return 0;
+}
+
+int
+main(int argc, char* argv[]) {
+	int ret = 0;
+    // ret = test_io(argc, argv);
+    ret = test_server(argc, argv);
+
+    fflush(stdout);
+    fflush(stderr);
+    return ret;
 }
 #endif

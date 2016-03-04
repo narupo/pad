@@ -16,6 +16,16 @@ static char const DEFAULT_HOSTPORT[] = "127.0.0.1:1234";
 *********/
 
 static int
+thread_id(void) {
+	return pthread_self();
+}
+
+#define thread_eputsf(...) { \
+	term_eprintf("Thread %d: ", thread_id()); \
+	term_eputsf(__VA_ARGS__); \
+}
+
+static int
 thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* dirpath) {
 	char const* methvalue = httpheader_method_value(header);
 	size_t methvallen = strlen(methvalue);
@@ -114,7 +124,7 @@ thread_method_get_script(
 
 	// Open process
 	snprintf(cmdline, sizeof cmdline, "%s %s", cmdname, path);
-	term_eputsf("Command line[%s]", cmdline); // debug
+	thread_eputsf("Command line[%s]", cmdline); // debug
 
 	fin = popen(cmdline, "rb");
 	if (!fin) {
@@ -150,7 +160,11 @@ thread_method_get_script(
 }
 
 static void
-thread_method_get_file(HttpHeader const* header, Socket* client, char const* path) {
+thread_method_get_file(
+	HttpHeader const* header,
+	Socket* client,
+	char const* path) {
+	
 	// Other
 	FILE* fin = file_open(path, "rb");
 	if (!fin) {
@@ -190,13 +204,17 @@ thread_method_get_file(HttpHeader const* header, Socket* client, char const* pat
 }
 
 static void
-thread_method_get(HttpHeader const* header, Socket* client) {
+thread_method_get(
+	HttpHeader const* header,
+	Socket* client) {
+
 	char const* methval = httpheader_method_value(header);
 	Config const* config = config_instance();
 	char path[FILE_NPATH];
 
+	// Get path with home
 	config_path_with_home(config, path, sizeof path, methval);
-	term_eputsf("Thread %d GET path[%s]", pthread_self(), path); // debug
+	thread_eputsf("GET path[%s]", path); // debug
 
 	// Not found?
 	if (!file_is_exists(path)) {
@@ -210,29 +228,33 @@ thread_method_get(HttpHeader const* header, Socket* client) {
 
 	// Directory?
 	if (file_is_dir(path)) {
-		term_eputsf("dir \"%s\"", path);
+		thread_eputsf("Directory \"%s\"", path);
 		thread_index_page_by_path(header, client, path);
 		return;
 	}
 
 	// Command with white list for security
-	static struct Command {
-		char const* suffix; // File suffix name (.py, .php, ...)
-		char const* name; // Command name (python, php, ...)
-	} cmds[] = {
-		{"py", "python3"},
-		{"php", "php"},
-		{"rb", "ruby"},
-		{"sh", "sh"},
-		{0},
-	};
+	JsonObject* servobj = (JsonObject*) config_server_const(config);
+	JsonObject* sufobj = jsonobj_find_dict(servobj, "suffix-command");
 
 	char const* suffix = file_suffix(path);
 	if (suffix) {
-		for (struct Command const* cmd = cmds; cmd->name; ++cmd) {
-			if (strcmp(suffix, cmd->suffix) == 0) {
-				thread_method_get_script(header, client, cmd->name, path);
-				return;
+		for (JsonIter it = jsonobj_begin(sufobj), end = jsonobj_end(sufobj);
+			!jsoniter_equals(&it, &end);
+			jsoniter_next(&it)) {
+
+			JsonObject* obj = jsoniter_value(&it);
+
+			switch (jsonobj_type_const(obj)) {
+			default: break;
+			case JOTValue: {
+				String const* cmd = jsonobj_value(obj);
+				String const* suf = jsonobj_name_const(obj);
+				if (strcmp(suffix, str_get_const(suf)) == 0) {
+					thread_method_get_script(header, client, str_get_const(cmd), path);
+					return;
+				}
+			} break;
 			}
 		}
 	}
@@ -244,15 +266,13 @@ thread_method_get(HttpHeader const* header, Socket* client) {
 static void*
 thread_main(void* arg) {
 	Socket* client = (Socket*) arg;
-	pthread_t selfid = pthread_self();
-
 	HttpHeader* header = httpheader_new();
 	if (!header) {
 		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "HttpHeader");
 		return NULL;
 	}
 
-	term_eputsf("Thread %d running...", pthread_self());
+	thread_eputsf("Running...");
 
 	for (;;) {
 		char buf[SERVER_NRECV_BUFFER];
@@ -267,7 +287,7 @@ thread_main(void* arg) {
 		char const* methvalue = httpheader_method_value(header);
 
 		if (strcmp(methname, "GET") == 0) {
-			term_eputsf("Thread %d %s %s", selfid, methname, methvalue);
+			thread_eputsf("%s %s", methname, methvalue);
 			thread_method_get(header, client);
 		} else {
 			socket_send_string(client,
@@ -281,7 +301,7 @@ thread_main(void* arg) {
 	httpheader_delete(header);
 	socket_close(client);
 
-	term_eputsf("Done thread %d", pthread_self());
+	thread_eputsf("Done");
 	return NULL;
 }
 
@@ -367,6 +387,19 @@ server_parse_options(Server* self) {
 	return true;
 }
 
+static void
+server_display_welcome_message(Server const* self, char const* hostport) {
+	time_t runtime = time(NULL);
+	term_eputsf(
+		"=============================================================\n"
+		" CapServer running on %s\n"
+		" CAUTION!! THIS SERVER DO NOT PUBLISHED ON INTERNET. DANGER!\n"
+		" Run at %s"
+		"=============================================================\n"
+		, hostport, ctime(&runtime)
+	);
+}
+
 static int
 server_run(Server* self) {
 	// Update default value
@@ -382,12 +415,11 @@ server_run(Server* self) {
 	}
 
 	// Welcome message
-	term_eputsf("CapServer is running by \"%s\".", hostport);
-	term_eputsf("** Caution!! THIS SERVER DO NOT PUBLISHED ON INTERNET. DANGER! **");
+	server_display_welcome_message(self, hostport);
 
 	// Loop
 	for (;;) {
-		term_eputsf("accept...");
+		thread_eputsf("Accept...");
 
 		Socket* client = socket_accept(server);
 		if (!client) {
@@ -412,7 +444,6 @@ server_run(Server* self) {
 	// Done
 	socket_close(server);
 
-	term_eputsf("Thanks.");
 	return 0;
 }
 
@@ -436,17 +467,14 @@ server_usage(void) {
 
 int
 server_main(int argc, char* argv[]) {
-	// Construct
 	Server* server = server_new(argc, argv);
 	if (!server) {
 		WARN("Failed to construct server");
 		return EXIT_FAILURE;
 	}
 
-	// Run
 	int res = server_run(server);
-
-	// Done
+	
 	server_delete(server);
 	return res;
 }

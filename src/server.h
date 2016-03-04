@@ -14,6 +14,7 @@
 #include "signal.h"
 
 #include <pthread.h>
+#include <time.h>
 
 void
 server_usage(void);
