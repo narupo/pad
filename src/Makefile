@@ -66,9 +66,6 @@ signal: signal.c
 http-header: http-header.c
 	$(CC) -DDEBUG -DTEST_HTTPHEADER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
-run: run.c $(UTILS)
-	$(CC) -DDEBUG -DTEST_RUN $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
-
 csvline: csvline.c buffer.c caperr.c util.c term.c
 	$(CC) -DDEBUG -DTEST_CSVLINE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
@@ -77,6 +74,12 @@ caperr: caperr.c term.c
 
 cap-file: cap-file.c $(UTILS) 
 	$(CC) -DDEBUG -DTEST_CAPFILE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+
+term: term.c 
+	$(CC) -DDEBUG -DTEST_TERM $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+
+run: run.c $(UTILS)
+	$(CC) -DDEBUG -DTEST_RUN $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 cat: cat.c $(UTILS)
 	$(CC) -DDEBUG -DTEST_CAT $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)

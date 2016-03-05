@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#  include "windows.h"
+#endif
+
 // Macros for color string on terminal
 // Example: printf(TERM_RED "This is red string." TERM_RESET " Reseted.");
 // #if defined(_WIN32) || defined(_WIN64)
@@ -78,6 +82,43 @@ term_putsf(char const* fmt, ...);
  */
 int
 term_eputsf(char const* fmt, ...);
+
+/********************
+* term color family *
+********************/
+
+typedef enum {
+	TA_RESET     = 0,
+	TA_BRIGHT    = 1,
+	TA_DIM       = 2,
+	TA_BLINK     = 3,
+	TA_UNDERLINE = 4,
+	TA_REVERSE   = 7,
+	TA_HIDDEN    = 8,
+} TermAttr;
+
+typedef enum {
+	TC_BLACK   = 0,
+	TC_RED     = 1,
+	TC_GREEN   = 2,
+	TC_YELLOW  = 3,
+	TC_BLUE    = 4,
+	TC_MAGENTA = 5,
+	TC_CYAN    = 6,
+	TC_WHITE   = 7,
+} TermColor;
+
+int
+term_acprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...);
+
+int
+term_cprintf(TermColor fg, TermColor bg, char const* fmt, ...);
+
+int
+term_aceprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...);
+
+int
+term_ceprintf(TermColor fg, TermColor bg, char const* fmt, ...);
 
 #endif
 
