@@ -230,7 +230,8 @@ caperr_display_record_unsafe(FILE* stream, CapErr const* e) {
 #endif
 
 	// Display header and number
-	fprintf(stream, TERM_RED "%s: " TERM_YELLOW "%s", e->header, caperr_to_string_unsafe(e->number));
+	term_cfprintf(stream, TC_RED, TC_BLACK, "%s: ", e->header);
+	term_cfprintf(stream, TC_YELLOW, TC_BLACK, "%s", caperr_to_string_unsafe(e->number));
 
 	// Display user's message
 	size_t msglen = strlen(e->message);
@@ -243,7 +244,7 @@ caperr_display_record_unsafe(FILE* stream, CapErr const* e) {
 		}
 
 		// Display
-		fprintf(stream, TERM_YELLOW "%s" TERM_RESET, e->message);
+		term_cfprintf(stream, TC_YELLOW, TC_BLACK, "%s", e->message);
 		
 		// Fix tail format of string
 		if (e->message[msglen-1] != '.') {

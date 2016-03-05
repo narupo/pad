@@ -21,8 +21,18 @@ thread_id(void) {
 }
 
 #define thread_eputsf(...) { \
-	term_eprintf(TERM_YELLOW "Thread %d: " TERM_RESET, thread_id()); \
+	term_ceprintf(TC_YELLOW, TC_BLACK, "Thread %d: ", thread_id()); \
 	term_eputsf(__VA_ARGS__); \
+}
+
+#define thread_eprintf(...) { \
+	term_ceprintf(TC_YELLOW, TC_BLACK, "Thread %d: ", thread_id()); \
+	term_eprintf(__VA_ARGS__); \
+}
+
+#define thread_ceprintf(fg, bg, ...) { \
+	term_ceprintf(TC_YELLOW, TC_BLACK, "Thread %d: ", thread_id()); \
+	term_ceprintf(fg, bg, __VA_ARGS__); \
 }
 
 static int
@@ -96,7 +106,7 @@ thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* 
 	buffer_delete(content);
 	dir_close(dir);
 
-	thread_eputsf( TERM_GREEN "200 OK" TERM_RESET);
+	thread_ceprintf(TC_GREEN, TC_BLACK, "200 OK\n");
 	return 0;
 }
 
@@ -125,7 +135,7 @@ thread_method_get_script(
 
 	// Open process
 	snprintf(cmdline, sizeof cmdline, "%s %s", cmdname, path);
-	thread_eputsf("Command line[%s]", cmdline); // debug
+	thread_eputsf("Command line \"%s\"", cmdline); // debug
 
 	thread_eputsf("Open process...");
 	fin = popen(cmdline, "r");
@@ -162,7 +172,7 @@ thread_method_get_script(
 	// Done
 	buffer_delete(content);
 	buffer_delete(response);
-	thread_eputsf(TERM_GREEN "200 OK" TERM_RESET);
+	thread_ceprintf(TC_GREEN, TC_BLACK, "200 OK\n");
 }
 
 static void
@@ -207,7 +217,7 @@ thread_method_get_file(
 	// Done
 	buffer_delete(response);
 	buffer_delete(content);
-	thread_eputsf(TERM_GREEN "200 OK" TERM_RESET);
+	thread_ceprintf(TC_GREEN, TC_BLACK, "200 OK\n");
 }
 
 static void
@@ -221,7 +231,9 @@ thread_method_get(
 
 	// Get path with home
 	config_path_with_home(config, path, sizeof path, methval);
-	thread_eputsf("Get path \"" TERM_CYAN "%s" TERM_RESET "\"", path); // debug
+	thread_eprintf("Get path \"");
+	term_ceprintf(TC_CYAN, TC_BLACK, "%s", path);
+	term_eprintf("\"\n");
 
 	// Not found?
 	if (!file_is_exists(path)) {
@@ -230,7 +242,7 @@ thread_method_get(
 			"Content-Length: 0\r\n"
 			"\r\n"
 		);
-		thread_eputsf(TERM_RED "404 Not Found" TERM_RESET);
+		thread_ceprintf(TC_RED, TC_BLACK, "404 Not Found\n");
 		return;
 	}
 
@@ -293,14 +305,18 @@ thread_main(void* arg) {
 			break;
 		}
 
-		thread_eputsf("Recv (%d/bytes) \"" TERM_CYAN "%s" TERM_RESET "\"" , nrecv, buf);
+		thread_eprintf("Recv (%d/bytes) \"" , nrecv);
+		term_ceprintf(TC_CYAN, TC_BLACK, "%s" , buf);
+		term_eprintf("\"\n" , nrecv);
 
 		httpheader_parse_request(header, buf);
 		char const* methname = httpheader_method_name(header);
 		char const* methvalue = httpheader_method_value(header);
-		thread_eputsf(
-			"Http method name \"" TERM_CYAN "%s" TERM_RESET
-			"\" and value \"" TERM_CYAN "%s" TERM_RESET "\"", methname, methvalue);
+		thread_eprintf("Http method name \"");
+		term_ceprintf(TC_YELLOW, TC_BLACK, "%s", methname);
+		term_eprintf("\" and value \"");
+		term_ceprintf(TC_CYAN, TC_BLACK, "%s", methvalue);
+		term_eprintf("\"\n");
 
 		if (strcmp(methname, "GET") == 0) {
 			thread_eputsf("Accept GET method");
@@ -311,14 +327,14 @@ thread_main(void* arg) {
 				"Content-Length: 0\r\n"
 				"\r\n"
 			);
-			thread_eputsf(TERM_RED "405 Method Not Allowed" TERM_RESET);
+			thread_ceprintf(TC_RED, TC_BLACK, "405 Method Not Allowed");
 		}
 	}
 
 	httpheader_delete(header);
 	socket_close(client);
 
-	thread_eputsf("Done");
+	thread_ceprintf(TC_GREEN, TC_BLACK, "Done\n");
 	return NULL;
 }
 
@@ -407,24 +423,25 @@ server_parse_options(Server* self) {
 static void
 server_display_welcome_message(Server const* self, char const* hostport) {
 	time_t runtime = time(NULL);
-	term_eputsf(
-		TERM_GREEN
+	term_ceprintf(TC_GREEN, TC_BLACK,
 		"        _____    ___    _______       \n"
 		"       /____/\\ /|___|\\ |\\______\\  \n"
 		"      /     \\///     \\\\||    __ \\ \n"
 		"     |    ==<//   |   \\||    ___|    \n"
 		"      \\_____/ \\___^___/\\|___/      \n"
 		"                                      \n"
-		TERM_MAGENTA
+	);
+	term_ceprintf(TC_MAGENTA, TC_BLACK,
 		"        === Server for dev ===        \n"
 		"\n"
-		TERM_GREEN "    CapServer" TERM_RESET " running on " TERM_YELLOW "%s\n"
-		TERM_RESET "    Run at " TERM_MAGENTA "%s\n"
-		TERM_RED
-		"    ** CAUTION!! THIS SERVER DO NOT PUBLISHED ON INTERNET. DANGER! **\n"
-		TERM_RESET
-		, hostport, ctime(&runtime)
 	);
+	term_ceprintf(TC_GREEN, TC_BLACK, "    CapSurver ");
+	term_eprintf("running on ");
+	term_ceprintf(TC_YELLOW, TC_BLACK, "%s\n", hostport);
+	term_eprintf("    Run at ");
+	term_ceprintf(TC_MAGENTA, TC_BLACK, "%s", ctime(&runtime));
+	term_ceprintf(TC_RED, TC_BLACK,
+		"    ** CAUTION!! THIS SERVER DO NOT PUBLISHED ON INTERNET. **\n\n", hostport);
 }
 
 static int
