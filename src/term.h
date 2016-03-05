@@ -3,34 +3,11 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <pthread.h>
+#include <stdbool.h>
 
 #if defined(_WIN32) || defined(_WIN64)
 #  include "windows.h"
-#endif
-
-// Macros for color string on terminal
-// Example: printf(TERM_RED "This is red string." TERM_RESET " Reseted.");
-// #if defined(_WIN32) || defined(_WIN64)
-// #  define TERM_NRM     
-// #  define TERM_RED     
-// #  define TERM_GREEN   
-// #  define TERM_YELLOW  
-// #  define TERM_BLUE    
-// #  define TERM_MAGENTA 
-// #  define TERM_CYAN    
-// #  define TERM_WHITE   
-// #  define TERM_RESET  
-#if 0
-#else
-#  define TERM_NRM     "\x1B[0m"
-#  define TERM_RED     "\x1B[31m"
-#  define TERM_GREEN   "\x1B[32m"
-#  define TERM_YELLOW  "\x1B[33m"
-#  define TERM_BLUE    "\x1B[34m"
-#  define TERM_MAGENTA "\x1B[35m"
-#  define TERM_CYAN    "\x1B[36m"
-#  define TERM_WHITE   "\x1B[37m"
-#  define TERM_RESET   "\033[0m"
 #endif
 
 /**
@@ -109,6 +86,9 @@ typedef enum {
 } TermColor;
 
 int
+term_cfprintf(FILE* fout, TermColor fg, TermColor bg, char const* fmt, ...);
+
+int
 term_acprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...);
 
 int
@@ -121,4 +101,3 @@ int
 term_ceprintf(TermColor fg, TermColor bg, char const* fmt, ...);
 
 #endif
-

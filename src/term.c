@@ -1,5 +1,36 @@
 #include "term.h"
 
+/********************
+* term mutex family *
+********************/
+
+static pthread_mutex_t stdout_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t stderr_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+bool
+stdout_lock(void) {
+	return pthread_mutex_lock(&stdout_mutex) == 0;
+}
+
+bool
+stdout_unlock(void) {
+	return pthread_mutex_unlock(&stdout_mutex) == 0;
+}
+
+bool
+stderr_lock(void) {
+	return pthread_mutex_lock(&stderr_mutex) == 0;
+}
+
+bool
+stderr_unlock(void) {
+	return pthread_mutex_unlock(&stderr_mutex) == 0;
+}
+
+/*******
+* term *
+*******/
+
 void
 term_destroy(void) {
 }
@@ -142,14 +173,14 @@ term_ftextcolor(FILE* fout, TermAttr attr, TermColor fg, TermColor bg) {
 }
 
 static int
-_acfprintf(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char const* fmt, va_list args) {
+_acfprintf_unsafe(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char const* fmt, va_list args) {
 	// Set state
 #if defined(_WIN32) || defined(_WIN64)
 	DWORD nhandle = STD_OUTPUT_HANDLE;
 	if (fout == stderr) {
 		nhandle = STD_ERROR_HANDLE;
 	} else if (fout != stdout) {
-		fprintf(stderr, "cap: term: Invalid stream in acfprintf.");
+		// fprintf(stderr, "cap: term: Invalid stream in acfprintf.");
 	}
 
 	HANDLE stdh = GetStdHandle(nhandle);
@@ -163,7 +194,9 @@ _acfprintf(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char const* fm
 	setattr = attrtowinattrflag(attr) | fgtowincolorflag(fg) | bgtowincolorflag(bg);
 	SetConsoleTextAttribute(stdh, setattr);
 #else
-	term_ftextcolor(fout, attr, fg, bg);
+	if (fout == stdout || fout == stderr) {
+		term_ftextcolor(fout, attr, fg, bg);
+	}
 #endif
 
 	// Draw
@@ -173,45 +206,90 @@ _acfprintf(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char const* fm
 #if defined(_WIN32) || defined(_WIN64)
 	SetConsoleTextAttribute(stdh, oldattr);
 #else
-	term_ftextcolor(fout, TA_RESET, fg, bg);
+	if (fout == stdout || fout == stderr) {
+		term_ftextcolor(fout, TA_RESET, fg, bg);
+	}
 #endif
 
+	return len;	
+}
+ 
+int
+term_cfprintf(FILE* fout, TermColor fg, TermColor bg, char const* fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	int len = _acfprintf_unsafe(fout, 0, fg, bg, fmt, args);	
+	va_end(args);
 	return len;	
 }
 
 int
 term_acprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...) {
+	if (!stdout_lock()) {
+		return -1;
+	}
+
 	va_list args;
 	va_start(args, fmt);
-	int len = _acfprintf(stdout, attr, fg, bg, fmt, args);	
+	int len = _acfprintf_unsafe(stdout, attr, fg, bg, fmt, args);	
 	va_end(args);
+
+	if (!stdout_unlock()) {
+		return -1;
+	}
 	return len;
 }
 
 int
 term_cprintf(TermColor fg, TermColor bg, char const* fmt, ...) {
+	if (!stdout_lock()) {
+		return -1;
+	}
+
 	va_list args;
 	va_start(args, fmt);
-	int len = _acfprintf(stdout, TA_BRIGHT, fg, bg, fmt, args);	
+	int len = _acfprintf_unsafe(stdout, 0, fg, bg, fmt, args);	
 	va_end(args);
+
+	if (!stdout_unlock()) {
+		return -1;
+	}
 	return len;
 }
 
 int
 term_aceprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...) {
+	if (!stderr_lock()) {
+		return -1;
+	}
+
 	va_list args;
 	va_start(args, fmt);
-	int len = _acfprintf(stderr, attr, fg, bg, fmt, args);	
+	int len = _acfprintf_unsafe(stderr, attr, fg, bg, fmt, args);	
 	va_end(args);
+
+	if (!stderr_unlock()) {
+		return -1;
+	}
+
 	return len;
 }
 
 int
 term_ceprintf(TermColor fg, TermColor bg, char const* fmt, ...) {
+	if (!stderr_lock()) {
+		return -1;
+	}
+
 	va_list args;
 	va_start(args, fmt);
-	int len = _acfprintf(stderr, TA_BRIGHT, fg, bg, fmt, args);	
+	int len = _acfprintf_unsafe(stderr, TA_BRIGHT, fg, bg, fmt, args);	
 	va_end(args);
+
+	if (!stderr_unlock()) {
+		return -1;
+	}
+
 	return len;
 }
 
