@@ -450,7 +450,8 @@ server_display_welcome_message(Server const* self, char const* hostport) {
 	term_eprintf("    Run at ");
 	term_ceprintf(TC_MAGENTA, TC_BLACK, "%s", ctime(&runtime));
 	term_ceprintf(TC_RED, TC_BLACK,
-		"    ** CAUTION!! THIS SERVER DO NOT PUBLISHED ON INTERNET. **\n\n", hostport);
+		"    ** CAUTION!! DO NOT PUBLISHED THIS SERVER ON INTERNET. **\n\n", hostport
+	);
 }
 
 static int
