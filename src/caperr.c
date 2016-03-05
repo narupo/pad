@@ -206,6 +206,7 @@ caperr_to_string_unsafe(int number) {
 		case CAPERR_FOPEN: return "Failed to open file"; break;
 		case CAPERR_OPEN: return "Failed to open"; break;
 		case CAPERR_OPENDIR: return "Failed to open directory"; break;
+		case CAPERR_FCLOSE: return "Failed to close file"; break;
 		case CAPERR_SYNTAX: return "Syntax error"; break;
 		case CAPERR_PARSE: return "Failed to parse"; break;
 		case CAPERR_PARSE_OPTIONS: return "Failed to parse options"; break;

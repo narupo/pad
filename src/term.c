@@ -9,22 +9,38 @@ static pthread_mutex_t stderr_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 bool
 stdout_lock(void) {
-	return pthread_mutex_lock(&stdout_mutex) == 0;
+	bool ret = pthread_mutex_lock(&stdout_mutex) == 0;
+	if (!ret) {
+		perror("Failed to lock stdout");
+	}
+	return ret;
 }
 
 bool
 stdout_unlock(void) {
-	return pthread_mutex_unlock(&stdout_mutex) == 0;
+	bool ret = pthread_mutex_unlock(&stdout_mutex) == 0;
+	if (!ret) {
+		perror("Failed to unlock stdout");
+	}
+	return ret;
 }
 
 bool
 stderr_lock(void) {
-	return pthread_mutex_lock(&stderr_mutex) == 0;
+	bool ret = pthread_mutex_lock(&stderr_mutex) == 0;
+	if (!ret) {
+		perror("Failed to lock stderr");
+	}
+	return ret;
 }
 
 bool
 stderr_unlock(void) {
-	return pthread_mutex_unlock(&stderr_mutex) == 0;
+	bool ret = pthread_mutex_unlock(&stderr_mutex) == 0;
+	if (!ret) {
+		perror("Failed to unlock stderr");
+	}
+	return ret;
 }
 
 /*******
@@ -216,10 +232,23 @@ _acfprintf_unsafe(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char co
  
 int
 term_cfprintf(FILE* fout, TermColor fg, TermColor bg, char const* fmt, ...) {
+	if (fout == stdout && !stdout_lock()) {
+		return -1;
+	} else if (fout == stderr && !stderr_lock()) {
+		return -1;
+	}
+
 	va_list args;
 	va_start(args, fmt);
 	int len = _acfprintf_unsafe(fout, 0, fg, bg, fmt, args);	
 	va_end(args);
+
+	if (fout == stdout && !stdout_unlock()) {
+		return -1;
+	} else if (fout == stderr && !stderr_unlock()) {
+		return -1;
+	}
+
 	return len;	
 }
 
