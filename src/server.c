@@ -99,6 +99,7 @@ thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* 
 	buffer_append_other(response, content); // Merge content
 
 	// Send
+	thread_eputsf("Send (%d bytes)", buffer_length(response));
 	socket_send_bytes(client, buffer_get_const(response), buffer_length(response));
 
 	// Done
@@ -135,7 +136,8 @@ thread_method_get_script(
 
 	// Open process
 	snprintf(cmdline, sizeof cmdline, "%s %s", cmdname, path);
-	thread_eputsf("Command line \"%s\"", cmdline); // debug
+	thread_eprintf("Command line ");
+	term_ceprintf(TC_CYAN, TC_BLACK, "\"%s\"\n", cmdline);
 
 	thread_eputsf("Open process...");
 	fin = popen(cmdline, "r");
@@ -153,7 +155,7 @@ thread_method_get_script(
 	// Response header
 	char contlen[SERVER_NTMP_BUFFER];
 	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", buffer_length(content));
-	thread_eputsf("Read content length %d/bytes", buffer_length(content));
+	thread_eputsf("Read content length (%d bytes)", buffer_length(content));
 
 	Buffer* response = buffer_new();
 	
@@ -166,7 +168,7 @@ thread_method_get_script(
 	buffer_append_other(response, content);
 
 	// Send
-	thread_eputsf("Send response...");
+	thread_eputsf("Send (%d bytes)", buffer_length(response));
 	socket_send_bytes(client, buffer_get_const(response), buffer_length(response));
 
 	// Done
@@ -184,22 +186,35 @@ thread_method_get_file(
 	// Other
 	FILE* fin = file_open(path, "rb");
 	if (!fin) {
-		WARN("Failed to open file \"%s\"", path);
+		caperr_printf(PROGNAME, CAPERR_FOPEN, "\"%s\"", path);
 		return;
 	}
 
 	// Make content
 	Buffer* content = buffer_new();
+	if (!content) {
+		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "buffer");
+		file_close(fin);
+		return;
+	}
+
+	thread_eputsf("Read from file...");
 	buffer_append_stream(content, fin);
+	thread_eputsf("Read content length (%d bytes)", buffer_length(content));
 
 	if (file_close(fin) != 0) {
-		WARN("Failed to close file \"%s\"", path);
+		caperr_printf(PROGNAME, CAPERR_FCLOSE, "\"%s\"", path);
 		buffer_delete(content);
 		return;
 	}
 
 	// Make response with content
 	Buffer* response = buffer_new();
+	if (!response) {
+		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "buffer");
+		buffer_delete(content);
+		return;
+	}
 	char contlen[SERVER_NTMP_BUFFER];
 	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", buffer_length(content));
 
@@ -212,6 +227,7 @@ thread_method_get_file(
 	buffer_append_other(response, content);
 
 	// Send
+	thread_eputsf("Send (%d bytes)", buffer_length(response));
 	socket_send_bytes(client, buffer_get_const(response), buffer_length(response));
 
 	// Done
@@ -231,9 +247,8 @@ thread_method_get(
 
 	// Get path with home
 	config_path_with_home(config, path, sizeof path, methval);
-	thread_eprintf("Get path \"");
-	term_ceprintf(TC_CYAN, TC_BLACK, "%s", path);
-	term_eprintf("\"\n");
+	thread_eprintf("Solve path ");
+	term_ceprintf(TC_CYAN, TC_BLACK, "\"%s\"\n", path);
 
 	// Not found?
 	if (!file_is_exists(path)) {
@@ -248,7 +263,6 @@ thread_method_get(
 
 	// Directory?
 	if (file_is_dir(path)) {
-		thread_eputsf("Get index list by directory \"%s\"", path);
 		thread_index_page_by_path(header, client, path);
 		return;
 	}
@@ -271,7 +285,6 @@ thread_method_get(
 				String const* cmd = jsonobj_value(obj);
 				String const* suf = jsonobj_name_const(obj);
 				if (strcmp(suffix, str_get_const(suf)) == 0) {
-					thread_eputsf("Get content by script of \"%s\"", path);
 					thread_method_get_script(header, client, str_get_const(cmd), path);
 					return;
 				}
@@ -281,7 +294,6 @@ thread_method_get(
 	}
 
 	// Other files
-	thread_eputsf("Get content by file of \"%s\"", path);
 	thread_method_get_file(header, client, path);
 }
 
@@ -305,21 +317,18 @@ thread_main(void* arg) {
 			break;
 		}
 
-		thread_eprintf("Recv (%d/bytes) \"" , nrecv);
-		term_ceprintf(TC_CYAN, TC_BLACK, "%s" , buf);
-		term_eprintf("\"\n" , nrecv);
+		thread_eprintf("Recv (%d bytes) " , nrecv);
+		term_ceprintf(TC_CYAN, TC_BLACK, "\"%s\"\n" , buf);
 
 		httpheader_parse_request(header, buf);
 		char const* methname = httpheader_method_name(header);
 		char const* methvalue = httpheader_method_value(header);
-		thread_eprintf("Http method name \"");
-		term_ceprintf(TC_YELLOW, TC_BLACK, "%s", methname);
-		term_eprintf("\" and value \"");
-		term_ceprintf(TC_CYAN, TC_BLACK, "%s", methvalue);
-		term_eprintf("\"\n");
+
+		thread_eprintf("Request ");
+		term_ceprintf(TC_YELLOW, TC_BLACK, "%s ", methname);
+		term_ceprintf(TC_CYAN, TC_BLACK, "\"%s\"\n", methvalue);
 
 		if (strcmp(methname, "GET") == 0) {
-			thread_eputsf("Accept GET method");
 			thread_method_get(header, client);
 		} else {
 			socket_send_string(client,
@@ -334,7 +343,7 @@ thread_main(void* arg) {
 	httpheader_delete(header);
 	socket_close(client);
 
-	thread_ceprintf(TC_GREEN, TC_BLACK, "Done\n");
+	thread_ceprintf(TC_MAGENTA, TC_BLACK, "Done\n");
 	return NULL;
 }
 
