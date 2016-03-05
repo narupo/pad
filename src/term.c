@@ -312,7 +312,7 @@ term_ceprintf(TermColor fg, TermColor bg, char const* fmt, ...) {
 
 	va_list args;
 	va_start(args, fmt);
-	int len = _acfprintf_unsafe(stderr, TA_BRIGHT, fg, bg, fmt, args);	
+	int len = _acfprintf_unsafe(stderr, 0, fg, bg, fmt, args);	
 	va_end(args);
 
 	if (!stderr_unlock()) {
