@@ -96,7 +96,7 @@ thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* 
 	buffer_delete(content);
 	dir_close(dir);
 
-	thread_eputsf("200 OK");
+	thread_eputsf( TERM_GREEN "200 OK" TERM_RESET);
 	return 0;
 }
 
@@ -162,7 +162,7 @@ thread_method_get_script(
 	// Done
 	buffer_delete(content);
 	buffer_delete(response);
-	thread_eputsf("200 OK");
+	thread_eputsf(TERM_GREEN "200 OK" TERM_RESET);
 }
 
 static void
@@ -207,7 +207,7 @@ thread_method_get_file(
 	// Done
 	buffer_delete(response);
 	buffer_delete(content);
-	thread_eputsf("200 OK");
+	thread_eputsf(TERM_GREEN "200 OK" TERM_RESET);
 }
 
 static void
@@ -221,7 +221,7 @@ thread_method_get(
 
 	// Get path with home
 	config_path_with_home(config, path, sizeof path, methval);
-	thread_eputsf("Get path \"%s\"", path); // debug
+	thread_eputsf("Get path \"" TERM_CYAN "%s" TERM_RESET "\"", path); // debug
 
 	// Not found?
 	if (!file_is_exists(path)) {
@@ -230,7 +230,7 @@ thread_method_get(
 			"Content-Length: 0\r\n"
 			"\r\n"
 		);
-		thread_eputsf("404 Not Found");
+		thread_eputsf(TERM_RED "404 Not Found" TERM_RESET);
 		return;
 	}
 
@@ -283,7 +283,7 @@ thread_main(void* arg) {
 		return NULL;
 	}
 
-	thread_eputsf("Running...");
+	thread_eputsf("Created thread");
 
 	for (;;) {
 		char buf[SERVER_NRECV_BUFFER];
@@ -293,12 +293,14 @@ thread_main(void* arg) {
 			break;
 		}
 
-		thread_eputsf("Recv buffer (%d/bytes) \"%s\"", nrecv, buf);
+		thread_eputsf("Recv (%d/bytes) \"" TERM_CYAN "%s" TERM_RESET "\"" , nrecv, buf);
 
 		httpheader_parse_request(header, buf);
 		char const* methname = httpheader_method_name(header);
 		char const* methvalue = httpheader_method_value(header);
-		thread_eputsf("Http method name \"%s\" and value \"%s\"", methname, methvalue);
+		thread_eputsf(
+			"Http method name \"" TERM_CYAN "%s" TERM_RESET
+			"\" and value \"" TERM_CYAN "%s" TERM_RESET "\"", methname, methvalue);
 
 		if (strcmp(methname, "GET") == 0) {
 			thread_eputsf("Accept GET method");
@@ -309,7 +311,7 @@ thread_main(void* arg) {
 				"Content-Length: 0\r\n"
 				"\r\n"
 			);
-			thread_eputsf("405 Method Not Allowed");
+			thread_eputsf(TERM_RED "405 Method Not Allowed" TERM_RESET);
 		}
 	}
 
@@ -419,7 +421,7 @@ server_display_welcome_message(Server const* self, char const* hostport) {
 		TERM_GREEN "    CapServer" TERM_RESET " running on " TERM_YELLOW "%s\n"
 		TERM_RESET "    Run at " TERM_MAGENTA "%s\n"
 		TERM_RED
-		"** CAUTION!! THIS SERVER DO NOT PUBLISHED ON INTERNET. DANGER! **\n"
+		"    ** CAUTION!! THIS SERVER DO NOT PUBLISHED ON INTERNET. DANGER! **\n"
 		TERM_RESET
 		, hostport, ctime(&runtime)
 	);
