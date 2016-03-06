@@ -1,6 +1,7 @@
 #ifndef PWD_H
 #define PWD_H
 
+#include "define.h"
 #include "util.h"
 #include "term.h"
 #include "caperr.h"

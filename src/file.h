@@ -4,6 +4,7 @@
 #undef _GNU_SOURCE
 #define _GNU_SOURCE /* For realpath(3) */
 
+#include "define.h"
 #include "util.h"
 #include "buffer.h"
 #include "caperr.h"
@@ -20,7 +21,7 @@
 #include <stdbool.h>
 #include <dirent.h>
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 # include "windows.h"
 #endif
 

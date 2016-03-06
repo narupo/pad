@@ -1,6 +1,7 @@
 #ifndef BRIEF_H
 #define BRIEF_H
 
+#include "define.h"
 #include "term.h"
 #include "util.h"
 #include "config.h"

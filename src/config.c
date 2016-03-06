@@ -78,7 +78,7 @@ config_delete(Config* self) {
 
 static Config*
 config_init_file(Config* self, char const* fname) {
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 	char const DEFAULT_HOME_PATH[] = "C:/Windows/Temp";
 	char const DEFAULT_EDITOR_PATH[] = "C:/Windows/notepad.exe";
 #else

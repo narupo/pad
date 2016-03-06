@@ -5,7 +5,7 @@ static char const PROGNAME[] = "cap environ";
 char const*
 environ_get(char const* key) {
 	if (strcmp(key, "HOME") == 0) {
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 		return getenv("USERPROFILE");
 #else
 		return getenv("HOME");

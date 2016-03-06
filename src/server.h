@@ -1,6 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include "define.h"
 #include "util.h"
 #include "term.h"
 #include "file.h"

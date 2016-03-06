@@ -1,6 +1,7 @@
 #ifndef MAKE_H
 #define MAKE_H
 
+#include "define.h"
 #include "caperr.h"
 #include "util.h"
 #include "term.h"

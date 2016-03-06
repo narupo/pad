@@ -1,28 +1,30 @@
-CC=gcc
-CFLAGS=-Wall -g -O2 -std=c99 -Wno-unused-function #-DDEBUG
-CMDS=cap.c cat.c home.c cd.c pwd.c rm.c deploy.c edit.c \
+CC := gcc
+CFLAGS := -Wall -g -O2 -std=c99 -Wno-unused-function #-DDEBUG
+CMDS := cap.c cat.c home.c cd.c pwd.c rm.c deploy.c edit.c \
 	editor.c help.c ls.c make.c path.c run.c alias.c brief.c \
 	server.c mkdir.c
 
-UTILS=caperr.c atcap.c buffer.c cap-file.c config.c \
+UTILS := caperr.c atcap.c buffer.c cap-file.c config.c \
 	csvline.c strmap.c file.c strarray.c term.c util.c environ.c string.c memory.c \
 	socket.c http-header.c json.c
 
-OBJS=$(CMDS:.c=.o) $(UTILS:.c=.o)
+HEADERS := $(CMDS:.c=.h) $(UTILS:.c=.h) 
+OBJS := $(CMDS:.c=.o) $(UTILS:.c=.o)
+DEPS := $(CMDS:.c=.d) $(UTILS:.c=.d) 
 
 ifeq ($(OS),Windows_NT)
-	LIBS=-lpthread -lws2_32
+	LIBS := -lpthread -lws2_32
 else
-	LIBS=-lpthread
+	LIBS := -lpthread
 endif
 
-TARGET=~/bin/cap
-TESTDIR=./test
+PROGRAM := ~/bin/cap
+TESTDIR := ./test
 
 all: cap
 
 cap: $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $^ $(LIBS)
+	$(CC) $(CFLAGS) -o $(PROGRAM) $^ $(LIBS)
 
 atcap: atcap.c $(UTILS)
 	$(CC) -DDEBUG -DTEST_ATCAP $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
@@ -93,11 +95,12 @@ alias: alias.c $(UTILS)
 make: make.c run.c cat.c $(UTILS)
 	$(CC) -DDEBUG -DTEST_MAKE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
-.PHONY: clean
+.PHONY: clean depend
 
 clean:
-	rm $(TARGET) ./*.o ./test/*
+	rm $(PROGRAM) $(OBJS) $(DEPS)
 
 .c.o:
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c -MMD -MP $<
 
+-include $(DEPS)

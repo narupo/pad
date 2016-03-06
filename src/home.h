@@ -1,6 +1,7 @@
 #ifndef HOME_H
 #define HOME_H
 
+#include "define.h"
 #include "term.h"
 #include "file.h"
 #include "config.h"

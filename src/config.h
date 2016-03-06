@@ -1,6 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include "define.h"
 #include "util.h"
 #include "buffer.h"
 #include "file.h"

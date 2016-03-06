@@ -1,6 +1,7 @@
 #ifndef CAPERR_H
 #define CAPERR_H
 
+#include "define.h"
 #include "term.h"
 #include <stdio.h>
 #include <stdlib.h>

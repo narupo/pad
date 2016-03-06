@@ -1,6 +1,7 @@
 #ifndef DEPLOY_H
 #define DEPLOY_H
 
+#include "define.h"
 #include "util.h"
 #include "term.h"
 #include "config.h"

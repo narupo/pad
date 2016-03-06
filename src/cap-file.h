@@ -1,6 +1,7 @@
 #ifndef CAPFILE2_H
 #define CAPFILE2_H
 
+#include "define.h"
 #include "util.h"
 #include "string.h"
 

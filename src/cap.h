@@ -25,6 +25,7 @@ SOFTWARE.
 #ifndef CAP_H
 #define CAP_H
 
+#include "define.h"
 #include "util.h"
 #include "caperr.h"
 #include "help.h"
@@ -46,4 +47,3 @@ SOFTWARE.
 #include "server.h"
 
 #endif
-

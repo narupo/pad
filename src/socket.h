@@ -1,6 +1,7 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
+#include "define.h"
 #include "util.h"
 
 #include <pthread.h>
@@ -13,17 +14,18 @@
 #include <ctype.h>
 #include <signal.h>
 
-#if defined(_WIN32) || defined(_WIN64)
-# include "windows.h"
+#if defined(_CAP_WINDOWS)
+#  include "windows.h"
 #else
-# undef _BSD_SOURCE
-# define _BSD_SOURCE 1 /* For netdb.h in cap/socket.h */
-# undef __USE_POSIX
-# define __USE_POSIX 1 /* For netdb.h in cap/socket.h */
-# include <netdb.h>
-# include <sys/types.h>
-# include <sys/socket.h>
-# include <netinet/in.h>
+#  warning WTF
+#  undef _BSD_SOURCE
+#  define _BSD_SOURCE 1 /* For netdb.h in cap/socket.h */
+#  undef __USE_POSIX
+#  define __USE_POSIX 1 /* For netdb.h in cap/socket.h */
+#  include <netdb.h>
+#  include <sys/types.h>
+#  include <sys/socket.h>
+#  include <netinet/in.h>
 #endif
 
 typedef struct Socket Socket;

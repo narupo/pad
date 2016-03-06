@@ -1,6 +1,7 @@
 #ifndef HTTPHEADER_H
 #define HTTPHEADER_H
 
+#include "define.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

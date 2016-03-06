@@ -1,6 +1,7 @@
 #ifndef STRINGMAP_H
 #define STRINGMAP_H
 
+#include "define.h"
 #include "util.h"
 #include <stdio.h>
 #include <stdlib.h>

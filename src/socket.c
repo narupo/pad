@@ -28,7 +28,7 @@ struct Socket {
 * socket WSA family of Windows *
 *******************************/
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 static pthread_once_t socket_wsa_once = PTHREAD_ONCE_INIT;
 static WSADATA wsadata;
 
@@ -238,7 +238,7 @@ socket_parse_open_source(Socket* self, char const* src) {
 
 Socket*
 socket_open(char const* src, char const* mode) {
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 	if (pthread_once(&socket_wsa_once, socket_wsa_init) != 0) {
 		WARN("Failed to pthread once");
 		return NULL;
@@ -348,7 +348,7 @@ int
 socket_send_bytes(Socket* self, unsigned char const* bytes, size_t size) {
 	int ret = 0;
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 	ret = send(self->socket, (char const*) bytes, size, 0);
 #else
 	ret = send(self->socket, bytes, size, 0);
