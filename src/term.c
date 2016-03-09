@@ -48,15 +48,6 @@ stderr_unlock(void) {
 *******/
 
 void
-term_destroy(void) {
-}
-
-int
-term_init(void) {
-	return 0;
-}
-
-void
 term_flush(void) {
 	fflush(stdout);
 }
