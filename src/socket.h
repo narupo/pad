@@ -17,7 +17,6 @@
 #if defined(_CAP_WINDOWS)
 #  include "windows.h"
 #else
-#  warning WTF
 #  undef _BSD_SOURCE
 #  define _BSD_SOURCE 1 /* For netdb.h in cap/socket.h */
 #  undef __USE_POSIX

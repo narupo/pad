@@ -184,7 +184,10 @@ file_read_string(FILE* fin) {
 		return NULL;
 	}
 
-	fread(dst, sizeof(char), size, fin);
+	if (fread(dst, sizeof(char), size, fin) < size) {
+		WARN("Failed to read from stream");
+		return NULL;
+	}
 	dst[size] = '\0';
 
 	return dst;

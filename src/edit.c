@@ -93,7 +93,10 @@ run_command(Command* self, Config const* config) {
 	}
 
 	// Run process
-	system(cmdline);
+	int ret = system(cmdline);
+	if (ret <= 0) {
+		return caperr(PROGNAME, CAPERR_EXECUTE, "command \"%s\"", cmdline); 
+	}
 
 	// Done
 	free_argv(argc, argv);
