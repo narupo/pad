@@ -45,5 +45,6 @@ SOFTWARE.
 #include "rm.h"
 #include "mkdir.h"
 #include "server.h"
+#include "hub.h"
 
 #endif

@@ -25,7 +25,8 @@ static const struct Command {
 	{"editor", editor_usage},
 	{"deploy", deploy_usage},
 	{"server", server_usage},
-	{NULL, NULL},
+	{"hub", hub_usage},
+	{0},
 };
 
 static Usage
@@ -82,5 +83,6 @@ help_usage(void) {
 	term_eprintf("\trun    run script\n");
 	term_eprintf("\talias  add alias of cap's command\n");
 	term_eprintf("\tserver run cap server\n");
+	term_eprintf("\thub    hub\n");
 	term_eprintf("\n");
 }

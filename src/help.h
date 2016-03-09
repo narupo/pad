@@ -20,6 +20,7 @@
 #include "mkdir.h"
 #include "brief.h"
 #include "server.h"
+#include "hub.h"
 
 int
 help_main(int argc, char* argv[]);
