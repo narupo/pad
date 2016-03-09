@@ -2,7 +2,7 @@ CC := gcc
 CFLAGS := -Wall -g -O2 -std=c99 -Wno-unused-function #-DDEBUG
 CMDS := cap.c cat.c home.c cd.c pwd.c rm.c deploy.c edit.c \
 	editor.c help.c ls.c make.c path.c run.c alias.c brief.c \
-	server.c mkdir.c
+	server.c mkdir.c hub.c
 
 UTILS := caperr.c atcap.c buffer.c cap-file.c config.c \
 	csvline.c strmap.c file.c strarray.c term.c util.c environ.c string.c memory.c \
@@ -94,6 +94,9 @@ alias: alias.c $(UTILS)
 
 make: make.c run.c cat.c $(UTILS)
 	$(CC) -DDEBUG -DTEST_MAKE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+
+hub: hub.c $(UTILS)
+	$(CC) -DDEBUG -DTEST_HUB $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 .PHONY: clean depend
 

@@ -52,6 +52,7 @@ find_command(char const* name) {
 		{"editor", editor_main},
 		{"deploy", deploy_main},
 		{"server", server_main},
+		{"hub", hub_main},
 		{0}, // Null-terminator
 	};
 	
