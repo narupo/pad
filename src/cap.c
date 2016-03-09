@@ -115,7 +115,7 @@ done:
 
 static void
 trace_caperr(void) {
-#ifdef DEBUG
+#ifdef _CAP_DEBUG
 	caperr_display(stderr);
 #else
 	caperr_display_first(stderr);

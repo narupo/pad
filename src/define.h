@@ -9,4 +9,10 @@
 #  define _CAP_MSYS (1)
 #endif
 
+#if defined(_DEBUG)
+#  define _CAP_DEBUG (1)
+#elif defined(_RELEASE)
+#  define _CAP_RELEASE (1)
+#endif
+
 #endif
