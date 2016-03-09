@@ -85,7 +85,7 @@ thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* 
 
 	// HTTP Response Header
 	char contlen[SERVER_NTMP_BUFFER];
-	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", buffer_length(content));
+	snprintf(contlen, sizeof contlen, "Content-Length: %zd\r\n", buffer_length(content));
 
 	Buffer* response = buffer_new();
 	if (!response) {
@@ -103,7 +103,7 @@ thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* 
 	buffer_append_other(response, content); // Merge content
 
 	// Send
-	thread_eputsf("Send (%d bytes)", buffer_length(response));
+	thread_eputsf("Send (%zd bytes)", buffer_length(response));
 	socket_send_bytes(client, buffer_get_const(response), buffer_length(response));
 
 	// Done
@@ -157,8 +157,8 @@ thread_method_get_script(
 
 	// Response header
 	char contlen[SERVER_NTMP_BUFFER];
-	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", buffer_length(content));
-	thread_eputsf("Read content length (%d bytes)", buffer_length(content));
+	snprintf(contlen, sizeof contlen, "Content-Length: %zd\r\n", buffer_length(content));
+	thread_eputsf("Read content length (%zd bytes)", buffer_length(content));
 
 	Buffer* response = buffer_new();
 	
@@ -171,7 +171,7 @@ thread_method_get_script(
 	buffer_append_other(response, content);
 
 	// Send
-	thread_eputsf("Send (%d bytes)", buffer_length(response));
+	thread_eputsf("Send (%zd bytes)", buffer_length(response));
 	socket_send_bytes(client, buffer_get_const(response), buffer_length(response));
 
 	// Done
@@ -203,7 +203,7 @@ thread_method_get_file(
 
 	thread_eputsf("Read from file...");
 	buffer_append_stream(content, fin);
-	thread_eputsf("Read content length (%d bytes)", buffer_length(content));
+	thread_eputsf("Read content length (%zd bytes)", buffer_length(content));
 
 	if (file_close(fin) != 0) {
 		caperr_printf(PROGNAME, CAPERR_FCLOSE, "\"%s\"", path);
@@ -219,7 +219,7 @@ thread_method_get_file(
 		return;
 	}
 	char contlen[SERVER_NTMP_BUFFER];
-	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", buffer_length(content));
+	snprintf(contlen, sizeof contlen, "Content-Length: %zd\r\n", buffer_length(content));
 
 	buffer_append_string(response,
 		"HTTP/1.1 200 OK\r\n"
@@ -230,7 +230,7 @@ thread_method_get_file(
 	buffer_append_other(response, content);
 
 	// Send
-	thread_eputsf("Send (%d bytes)", buffer_length(response));
+	thread_eputsf("Send (%zd bytes)", buffer_length(response));
 	socket_send_bytes(client, buffer_get_const(response), buffer_length(response));
 
 	// Done
