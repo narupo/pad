@@ -58,7 +58,7 @@ help_main(int argc, char* argv[]) {
 
 void
 help_usage(void) {
-	term_eprintf("Cap is simple snippet manager for the programmer.\n");
+	term_eprintf("Cap is simple snippet manager for programmers.\n");
 	term_eprintf("\n");
 	term_eprintf("Usage:\n");
 	term_eprintf("\n");
