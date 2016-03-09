@@ -10,245 +10,280 @@
 typedef struct String String;
 
 /**
- * @brief 
+ * Destruct string
  *
- * @param self 
-*/
+ * @param[in] self 
+ */
 void 
 str_delete(String* self);
 
 /**
- * @brief 
+ * Construct string
  *
- * @param void 
- *
- * @return 
-*/
+ * @return pointer to dynamic allocate memory of string
+ */
 String* 
 str_new(void);
 
 /**
- * @brief 
+ * Construct string from c string 
  *
- * @param str 
+ * @param[in] str pointer to memory of c string
  *
- * @return 
-*/
+ * @return pointer to dynamic allocate memory of string
+ */
 String* 
 str_new_from_string(String_type const* str);
 
 /**
- * @brief 
+ * Construct string from number of capacity
  *
- * @param capacity 
+ * @param[in] capacity number of capacity of buffer without final nil
  *
- * @return 
-*/
+ * @return pointer to dynamic allocate memory of string
+ */
 String* 
 str_new_from_capacity(int capacity);
 
 /**
- * @brief 
+ * Construct string from other string
+ * String is copy object of other string
  *
- * @param other 
+ * @param[in] other pointer to memory of other string
  *
- * @return 
-*/
+ * @return pointer to dynamic allocate memory of string
+ */
 String* 
 str_new_from_other(String const* other);
 
 /**
- * @brief 
+ * Get number of length of buffer in string
  *
- * @param self 
+ * @param[in] self 
  *
- * @return 
-*/
+ * @return number of length
+ */
 int 
 str_length(String const* self);
 
 /**
- * @brief 
+ * Get number of capacity of buffer in string
  *
- * @param self 
+ * @param[in] self 
  *
- * @return 
-*/
+ * @return number of capacity
+ */
 int 
 str_capacity(String const* self);
 
 /**
- * @brief 
+ * Get read-only pointer to buffer in string
  *
- * @param self 
+ * @param[in] self 
  *
- * @return 
-*/
+ * @return pointer to memory of buffer in string 
+ */
 String_type const* 
 str_get_const(String const* self);
 
 /**
- * @brief      
+ * Check empty of buffer in string
  *
- * @param self
+ * @param[in] self
  *
- * @return 
+ * @return empty to true
+ * @return not empty to false
  */
 int
 str_empty(String const* self);
 
 /**
- * @brief 
+ * Clear buffer in string
+ * It to zero number of length of buffer in string
  *
- * @param self 
-*/
+ * @param[in] self 
+ */
 void 
 str_clear(String* self);
 
+/**
+ * @deprecated This function can't get error state
+ *
+ * Set c string to buffer of string
+ *
+ * @param[in] self
+ * @param[in] src pointer to memory of c string
+ */
 void
 str_set_string(String* self, char const* src);
 
 /**
- * @brief 
+ * @deprecated This function can't get error state
  *
- * @param self   
- * @param newlen 
-*/
+ * Resize buffer in string by number of new length of buffer
+ *
+ * @param[in] self   
+ * @param[in] newlen 
+ */
 void 
 str_resize(String* self, int newlen);
 
 /**
- * @brief 
+ * @deprecated This function can't get error state
  *
- * @param self 
- * @param ch   
-*/
+ * Push data to back of buffer in string
+ *
+ * @param[in] self 
+ * @param[in] ch push data
+ */
 void 
 str_push_back(String* self, String_type ch);
 
 /**
- * @brief 
+ * Pop data at back of buffer in string
  *
- * @param self 
+ * @param[in] self 
  *
- * @return 
-*/
+ * @return success to data at back
+ * @return failed to NIL
+ */
 String_type 
 str_pop_back(String* self);
 
 /**
- * @brief 
+ * @deprecated This function can't get error state
+ * 
+ * Push data at front of buffer in string
  *
- * @param self 
- * @param ch   
-*/
+ * @param[in] self 
+ * @param[in] ch push data
+ */
 void 
 str_push_front(String* self, String_type ch);
 
 /**
- * @brief 
+ * Pop data at front of buffer in string
  *
- * @param self 
+ * @param[in] self 
  *
- * @return 
-*/
+ * @return success to front data of buffer
+ * @return failed to NIL
+ */
 String_type 
 str_pop_front(String* self);
 
 /**
- * @brief 
+ * Append c string at back of buffer in string
  *
- * @param self 
- * @param src  
-*/
+ * @param[in] self 
+ * @param[in] src pointer to memory of c string
+ *
+ * @return success to number of append
+ * @return failed to number of under of zero
+ */
 int 
 str_append_string(String* self, char const* src);
 
 /**
- * @brief      
+ * Append stream at back of buffer in string
  *
- * @param      self
- * @param      fin
+ * @param[in] self
+ * @param[in] fin pointer to memory of input stream
  *
- * @return     
+ * @return success to number of append
+ * @return failed to number of under of zero
  */
 int
 str_append_stream(String* self, FILE* fin);
 
 /**
- * @brief 
+ * Append other string at back of buffer in string
  *
- * @param self  
- * @param other 
-*/
+ * @param[in] self 
+ * @param[in] other pointer to memory of other string
+ *
+ * @return success to number of append
+ * @return failed to number of under of zero
+ */
 int 
 str_append_other(String* self, String const* other);
 
 /**
- * @brief 
+ * @deprecated This function can't get error state
  *
- * @param self 
- * @param rems 
-*/
+ * Strip elements at right of string
+ *
+ * @param[in] self 
+ * @param[in] rems list of target elements
+ */
 void 
 str_rstrip(String* self, char const* rems);
 
 /**
- * @brief 
+ * @deprecated This function can't get error state
+ * 
+ * Strip elements at left of string
  *
- * @param self 
- * @param rems 
-*/
+ * @param[in] self 
+ * @param[in] rems list of target elements
+ */
 void 
 str_lstrip(String* self, char const* rems);
 
 /**
- * @brief 
+ * @deprecated This function can't get error state
  *
- * @param self 
- * @param rems 
-*/
+ * Strip elements at both sides of string
+ *
+ * @param[in] self 
+ * @param[in] rems list of target elements
+ */
 void 
 str_strip(String* self, char const* rems);
 
 /**
- * @brief 
+ * @deprecated This function can't get error state
  *
- * @param self 
-*/
+ * Pop elements as new-line of string
+ *
+ * @param[in] self 
+ */
 void 
 str_pop_newline(String* self);
 
 /**
- * @brief 
+ * Find token of string from front of buffer in string
  *
- * @param self   
- * @param target 
+ * @param[in] self
+ * @param[in] target target string for find
  *
- * @return 
-*/
+ * @return found to pointer to memory of found string
+ * @return not found to NULL
+ */
 char const* 
 str_find_const(String const* self, char const* target);
 
 /**
- * @brief 
+ * Read from stream by line
  *
- * @param self 
-*/
-void 
-str_shuffle(String* self);
-
-/**
- * @brief 
+ * @param[in] self 
+ * @param[in] fin pointer to memory of input stream
  *
- * @param self 
- * @param fin  
- *
- * @return 
-*/
+ * @return success to self
+ * @return failed to NULL
+ */
 String* 
 str_getline(String* self, FILE* fin);
 
+/**
+ * Read from stream
+ * Clear state of string before read
+ *
+ * @param[in] self 
+ * @param[in] fin pointer to memory of input stream
+ *             
+ * @return success to number of read
+ */
 int
 str_read_stream(String* self, FILE* fin);
 
