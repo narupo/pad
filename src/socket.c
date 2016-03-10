@@ -314,9 +314,12 @@ socket_accept(Socket const* self) {
 
 int
 socket_recv_string(Socket* self, char* dst, size_t dstsz) {
-	int ret = 0;
+	if (!dst || dstsz < 1) {
+		WARN("Invalid arguments");
+		return -1;
+	}
 
-	ret = recv(self->socket, dst, dstsz-1, 0);
+	int ret = recv(self->socket, dst, dstsz-1, 0);
 	if (ret < 0) {
 		WARN("Failed to read from socket [%d] by \"%s:%s\""
 			, self->socket, self->host, self->port);
