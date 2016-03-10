@@ -10,9 +10,7 @@ typedef enum {
 	SocketModeNull,
 	SocketModeTcpClient,
 	SocketModeTcpServer,
-
 	SocketModeAcceptClient,
-
 } SocketMode;
 
 static char const SOCKET_DEFAULT_PORT[] = "8000";
@@ -45,7 +43,7 @@ socket_wsa_init(void) {
 		atexit(socket_wsa_destroy);
 	}
 }
-#endif
+#endif /* _CAP_WINDOWS */
 
 /*******************
 * socket functions *
