@@ -152,24 +152,6 @@ jsonobj_new_with(
 }
 
 void
-jsonobj_move_list(JsonObject* self, StringArray* list) {
-	if (self->list) {
-		strarray_delete(self->list);
-	}
-	
-	self->list = list;
-}
-
-void
-jsonobj_set_value(JsonObject* self, char const* value) {
-	if (self->value) {
-		str_delete(self->value);
-	}
-
-	self->value = str_new_from_string(value);
-}
-
-void
 jsonobj_resize(JsonObject* self, size_t newcapa) {
 	JsonObject** tmp = (JsonObject**) mem_erealloc(self->jsonobjs, newcapa * sizeof(JsonObject*) + sizeof(JsonObject*));
 	self->jsonobjs = tmp;

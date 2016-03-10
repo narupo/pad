@@ -13,7 +13,7 @@ typedef struct JsonIter JsonIter;
 
 /*************
 * JsonObject *
-*************/
+************ */
 
 typedef enum {
 	JOTDict = 0,
@@ -22,299 +22,289 @@ typedef enum {
 } JsonObjectType;
 
 /**
- * @brief 
+ * Get type of JsonObject
  *
- * @param self 
+ * @param[in] self 
  *
- * @return 
-*/
+ * @return type of JsonObject
+ */
 JsonObjectType 
 jsonobj_type_const(JsonObject const* self);
 
 /**
- * @brief 
+ * Get parent of pointer to memory of JsonObject
  *
- * @param self 
+ * @param[in] self 
  *
- * @return 
-*/
+ * @return pointer to memory of JsonObject
+ */
 JsonObject const* 
 jsonobj_parent_const(JsonObject const* self);
 
 /**
- * @brief 
+ * Get list of JsonObject
  *
- * @param self 
+ * @param[in] self 
  *
- * @return 
-*/
+ * @return pointer to memory of list as StringArray
+ */
 StringArray* 
 jsonobj_list(JsonObject* self);
 
 /**
- * @brief 
+ * Get value of JsonObject
  *
- * @param self 
+ * @param[in] self 
  *
- * @return 
-*/
+ * @return pointer to memory of value as String
+ */
 String* 
 jsonobj_value(JsonObject* self);
 
 /**
- * @brief 
+ * Get name of JsonObject
  *
- * @param self 
+ * @param[in] self 
  *
- * @return 
-*/
+ * @return pointer to memory of name as String
+ */
 String const* 
 jsonobj_name_const(JsonObject const* self);
 
 /**
- * @brief 
+ * Destruct JsonObject
  *
- * @param self 
-*/
+ * @param[in] self 
+ */
 void 
 jsonobj_delete(JsonObject* self);
 
 /**
- * @brief 
+ * Construct JsonObject with parameters
+ * If this object is root parent parameter is NULL
  *
- * @param type   
- * @param parent 
- * @param name   
+ * @param[in] type   type of JsonObject
+ * @param[in] parent pointer to memory of parent of JsonObject
+ * @param[in] name   pointer to memory of name of C string
  *
- * @return 
-*/
+ * @return pointer to dynamic allocate memory of JsonObject
+ */
 JsonObject* 
 jsonobj_new_with(JsonObjectType type, JsonObject const* parent, char const* name);
 
 /**
- * @brief 
+ * Resize array of child objects in JsonObject
  *
- * @param self 
- * @param list 
-*/
-void 
-jsonobj_move_list(JsonObject* self, StringArray* list);
-
-/**
- * @brief 
- *
- * @param self  
- * @param value 
-*/
-void 
-jsonobj_set_value(JsonObject* self, char const* value);
-
-/**
- * @brief 
- *
- * @param self    
- * @param newcapa 
-*/
+ * @param[in] self    
+ * @param[in] newcapa resize capacity
+ */
 void 
 jsonobj_resize(JsonObject* self, size_t newcapa);
 
 /**
- * @brief 
+ * Move other object to back of objects in JsonObject
  *
- * @param self  
- * @param other 
-*/
+ * @param[in] self  
+ * @param[in] other pointer to memory of other JsonObject
+ */
 void 
 jsonobj_move_back(JsonObject* self, JsonObject* other);
 
 /**
- * @brief 
+ * Display JsonObject parameters
  *
- * @param self  
- * @param depth 
-*/
+ * @param[in] self  
+ * @param[in] depth current recursive depth
+ */
 void 
 jsonobj_display(JsonObject const* self, int depth);
 
 /**
- * @brief 
+ * Find list of JsonObject by name of object
  *
- * @param self 
- * @param name 
+ * @param[in] self 
+ * @param[in] name pointer to memory of find name of C string
  *
- * @return 
-*/
+ * @return found to pointer to memory of found list
+ * @return not found to NULL
+ */
 StringArray* 
 jsonobj_find_list(JsonObject* self, char const* name);
 
 /**
- * @brief 
+ * Find value of JsonObject by name of object
  *
- * @param self 
- * @param name 
+ * @param[in] self 
+ * @param[in] name pointer to memory of C string
  *
- * @return 
-*/
+ * @return found to pointer to memory of found value
+ * @return not found to NULL
+ */
 String* 
 jsonobj_find_value(JsonObject* self, char const* name);
 
 /**
- * @brief 
+ * Find read-only value of JsonObject by name of object
  *
- * @param self 
- * @param name 
+ * @param[in] self 
+ * @param[in] name pointer to memory of C string
  *
- * @return 
-*/
+ * @return found to pointer to memory of value of String
+ * @return not found to NULL
+ */
 String const* 
 jsonobj_find_value_const(JsonObject const* self, char const* name);
 
 /**
- * @brief 
+ * Find dictionary of JsonObject by name of object
  *
- * @param self 
- * @param name 
+ * @param[in] self 
+ * @param[in] name pointer to memory of name of C string
  *
- * @return 
-*/
+ * @return found to pointer to memory of name of C string
+ * @return not found to NULL
+ */
 JsonObject* 
 jsonobj_find_dict(JsonObject* self, char const* name);
 
 /**
- * @brief 
+ * Find read-only dictionary of JsonObject by name of object
  *
- * @param self 
- * @param name 
+ * @param[in] self 
+ * @param[in] name pointer to memory of name of C string
  *
- * @return 
-*/
+ * @return found to pointer to memory of name of C string
+ * @return not found to NULL
+ */
 JsonObject const* 
 jsonobj_find_dict_const(JsonObject const* self, char const* name);
 
 /**
- * @brief 
+ * Write JsonObject to stream
  *
- * @param self 
-*/
+ * @param[in] self 
+ * @param[in] fout output stream
+ *
+ * @return success to true
+ * @return failed to false
+ */
+bool 
+jsonobj_write_to_stream(JsonObject const* self, FILE* fout);
+
+/*******
+* Json *
+*******/
+
+/**
+ * Destruct Json
+ *
+ * @param[in] self 
+ */
 void 
 json_delete(Json* self);
 
 /**
- * @brief 
+ * Construct Json
  *
- * @param void 
+ * @param[in] void 
  *
- * @return 
-*/
+ * @return pointer to dynamic allocate memory of Json
+ */
 Json* 
 json_new(void);
 
 /**
- * @brief 
+ * Parse string for build objects
  *
- * @param self 
- * @param src  
+ * @param[in] self 
+ * @param[in] src  source string
  *
- * @return 
-*/
+ * @return success to true
+ * @return failed to false
+ */
 bool 
 json_parse_string(Json* self, char const* src);
 
+/**
+ * Get root object of Json
+ * 
+ * @param self 
+ *
+ * @return found to pointer to memory of root JsonObject
+ * @return not found to NULL
+ */
 JsonObject*
 json_root(Json* self);
 
 /**
- * @brief 
+ * Get root object of Json
  *
- * @param self 
+ * @param[in] self 
  *
- * @return 
-*/
+ * @return pointer to read-only memory of JsonObject
+ */
 JsonObject const* 
 json_root_const(Json const* self);
 
 /**
- * @brief 
+ * Display Json objects to stderr
  *
- * @param self 
-*/
+ * @param[in] self 
+ */
 void 
 json_display(Json* self);
 
 /**
- * @brief 
+ * Read from stream for build objects
  *
- * @param self 
- * @param fout 
+ * @param[in] self 
+ * @param[in] fin  input stream
  *
- * @return 
-*/
-bool 
-jsonobj_write_to_stream(JsonObject const* self, FILE* fout);
-
-/**
- * @brief 
- *
- * @param self 
- * @param fin  
- *
- * @return 
-*/
+ * @return success to true
+ * @return failed to false
+ */
 bool 
 json_read_from_stream(Json* self, FILE* fin);
 
 /**
- * @brief 
+ * Read from file for build objects by file name
  *
- * @param self  
- * @param fname 
+ * @param[in] self  
+ * @param[in] fname input file name
  *
- * @return 
-*/
+ * @return success to true
+ * @return failed to false
+ */
 bool 
 json_read_from_file(Json* self, char const* fname);
 
 /**
- * @brief 
+ * Write Json to stream
  *
- * @param self 
- * @param fout 
+ * @param[in] self 
+ * @param[in] fout output stream
  *
- * @return 
-*/
+ * @return success to true
+ * @return failed to false
+ */
 bool 
 json_write_to_stream(Json const* self, FILE* fout);
 
 /**
- * @brief 
+ * Write Json to file
  *
- * @param self  
- * @param fname 
+ * @param[in] self  
+ * @param[in] fname output file name
  *
- * @return 
-*/
+ * @return success to true
+ * @return failed to false
+ */
 bool 
 json_write_to_file(Json const* self, char const* fname);
 
-/**
- * @brief 
- *
- * @param self 
- *
- * @return 
-*/
-JsonIter 
-jsonobj_begin(JsonObject* self);
-
-/**
- * @brief 
- *
- * @param self 
- *
- * @return 
-*/
-JsonIter 
-jsonobj_end(JsonObject* self);
+/***********
+* JsonIter *
+***********/
 
 struct JsonIter {
 	JsonObject** beg;
@@ -323,26 +313,54 @@ struct JsonIter {
 };
 
 /**
- * @brief 
+ * Get begin of iterator from JsonObject
  *
- * @param lh 
- * @param rh 
+ * @param[in] self 
  *
- * @return 
-*/
+ * @return JsonIter
+ */
+JsonIter 
+jsonobj_begin(JsonObject* self);
+
+/**
+ * Get end of iterator from JsonObject
+ *
+ * @param[in] self 
+ *
+ * @return JsonIter
+ */
+JsonIter 
+jsonobj_end(JsonObject* self);
+
+/**
+ * Compare for equals like a "lh == rh"
+ *
+ * @param[in] lh left-hand iterator
+ * @param[in] rh right-hand iterator
+ *
+ * @return equals to true
+ * @return not equals to false
+ */
 bool 
 jsoniter_equals(JsonIter const* lh, JsonIter const* rh);
 
 /**
- * @brief 
+ * Get value of current from iterator
  *
- * @param self 
+ * @param[in] self 
  *
- * @return 
-*/
+ * @return pointer to memory of JsonObject
+ */
 JsonObject* 
 jsoniter_value(JsonIter* self);
 
+/**
+ * Get next of iterator from current iterator
+ * 
+ * @param self 
+ *             
+ * @return pointer to memory of next iterator
+ */
 JsonIter*
 jsoniter_next(JsonIter* self);
 
