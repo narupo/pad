@@ -30,87 +30,109 @@
 typedef struct Socket Socket;
 
 /**
- * @brief 
+ * Display parameters of socket
  *
- * @param self 
-*/
+ * @param[in] self 
+ */
 void 
 socket_display(Socket const* self);
 
 /**
- * @brief 
+ * Close socket
+ * If self is NULL then don't anything
  *
- * @param self 
+ * @param[in] self 
  *
- * @return 
-*/
+ * @return success to number of zero
+ * @return failed to under number of zero
+ */
 int 
 socket_close(Socket* self);
 
 /**
- * @brief 
+ * Open socket by source and mode like a fopen(3)
+ * Open mode are:
  *
- * @param src  
- * @param mode 
+ * 		tcp-client
+ * 		tcp-server
+ *
+ * @param[in] src  format of "host:port" of C string
+ * @param[in] mode open mode
  *
  * @return 
-*/
+ */
 Socket* 
 socket_open(char const* src, char const* mode);
 
 /**
- * @brief      
+ * Get host of C string by socket
  *
- * @param      self
+ * @param[in] self
  *
- * @return     
+ * @return pointer to memory of C string
  */
 char const*
 socket_host(Socket const* self);
 
 /**
- * @brief      
+ * Get port of C string by socket
  *
- * @param      self
+ * @param[in] self
  *
- * @return     
+ * @return pointer to memory of C string
  */
 char const*
 socket_port(Socket const* self);
 
 /**
- * @brief 
+ * Wrapper of accept(2)
+ * Get new socket by self socket 
  *
- * @param self 
+ * @param[in] self 
  *
- * @return pointer to Socket of client
-*/
+ * @return pointer to dynamic allocate memory of Socket of client
+ */
 Socket* 
 socket_accept(Socket const* self);
 
 /**
- * @brief      
+ * Wrapper of recv(2)
+ * Recv string from socket
  *
- * @param      self
- * @param      dst 
- * @param[in]  dstsz
+ * @param[in] self  
+ * @param[in] dst   pointer to memory of destination buffer
+ * @param[in] dstsz number of size of destination buffer
  *
- * @return     
+ * @return success to number of recv size
+ * @return failed to number of under of zero
  */
 int
 socket_recv_string(Socket* self, char* dst, size_t dstsz);
 
 /**
- * @brief 
+ * Wrapper of send(2)
+ * Send string to socket
  *
- * @param self 
- * @param str  
+ * @param[in] self 
+ * @param[in] str  send C string
  *
- * @return 
-*/
+ * @return success to number of send size
+ * @return failed to number of under of zero
+ */
 int 
 socket_send_string(Socket* self, char const* str);
 
+/**
+ * Wrapper of send(2)
+ * Send bytes to socket
+ * 
+ * @param[in] self  
+ * @param[in] bytes pointer to memory of bytes
+ * @param[in] size  number of size of bytes
+ *
+ * @return success to number of send size
+ * @return failed to number of under of zero
+ */
 int 
 socket_send_bytes(Socket* self, unsigned char const* bytes, size_t size);
 
