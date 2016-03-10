@@ -59,7 +59,7 @@ socket_close(Socket* self);
  * @param[in] src  format of "host:port" of C string
  * @param[in] mode open mode
  *
- * @return 
+ * @return pointer to dynamic allocate memory of Socket
  */
 Socket* 
 socket_open(char const* src, char const* mode);
