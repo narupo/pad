@@ -71,7 +71,7 @@ caperrs_push(
 	char const* fmt,
 	va_list args) {
 
-#if !defined(DEBUG)
+#if !defined(_CAP_DEBUG)
 	if (number == CAPERR_DEBUG) {
 		return;
 	}
@@ -158,16 +158,16 @@ _caperr_printf(
 	...) {
 
 	if (!caperrs_lock()) {
-		perror("caperrs lock");
+		perror("Failed to lock caperrs");
 		return -1;
 	}
 
-#ifdef DEBUG
-	fprintf(stderr, "%s: %s: %d: ", fname, funcname, lineno);
+#ifdef _CAP_DEBUG
+	term_eprintf("%s: %s: %d: ", fname, funcname, lineno);
 #endif
 
 	char const* what = caperr_to_string_unsafe(number);
-	fprintf(stderr, "%s: %s ", header, what);
+	term_eprintf("%s: %s ", header, what);
 	
 	size_t fmtlen = strlen(fmt);
 	if (fmtlen) {
@@ -179,16 +179,16 @@ _caperr_printf(
 		va_end(args);
 
 		if (fmt[fmtlen-1] != '.') {
-			fprintf(stderr, ".");
+			term_eprintf(".");
 		}
 	}
 
 	if (errno != 0) {
-		fprintf(stderr, " %s.", strerror(errno));
+		term_eprintf(" %s.", strerror(errno));
 	}
 
 	if (!caperrs_unlock()) {
-		perror("caperrs unlock");
+		term_eprintf("Failed to unlock of caperrs");
 	}
 
 	return number;
@@ -225,14 +225,13 @@ caperr_to_string_unsafe(int number) {
 
 static void
 caperr_display_record_unsafe(FILE* stream, CapErr const* e) {
-
-#ifdef DEBUG
+#ifdef _CAP_DEBUG
 	fprintf(stream, "%s: %s: %d: ", e->fname, e->funcname, e->lineno);
 #endif
 
 	// Display header and number
-	term_cfprintf(stream, TC_RED, TC_BLACK, "%s: ", e->header);
-	term_cfprintf(stream, TC_YELLOW, TC_BLACK, "%s", caperr_to_string_unsafe(e->number));
+	term_acfprintf(stream, TA_BRIGHT, TC_RED, TC_BLACK, "%s: ", e->header);
+	term_acfprintf(stream, TA_BRIGHT, TC_YELLOW, TC_BLACK, "%s", caperr_to_string_unsafe(e->number));
 
 	// Display user's message
 	size_t msglen = strlen(e->body);
@@ -245,7 +244,7 @@ caperr_display_record_unsafe(FILE* stream, CapErr const* e) {
 		}
 
 		// Display
-		term_cfprintf(stream, TC_YELLOW, TC_BLACK, "%s", e->body);
+		term_acfprintf(stream, TA_BRIGHT, TC_YELLOW, TC_BLACK, "%s", e->body);
 		
 		// Fix tail format of string
 		if (e->body[msglen-1] != '.') {

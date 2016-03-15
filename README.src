@@ -1,0 +1,73 @@
+Cap is simple snippet manager for programmers.
+
+Usage:
+
+	cap command [arguments]
+
+The commands are:
+
+	help   display usage
+	home   display or set current home directory path
+	pwd    display current working directory
+	cd     display or set current directory path
+	ls     display cap file list
+	cat    display cap file
+	brief  display brief of file
+	path   display normalized path of cap file
+	make   display and make by cap's make roule
+	deploy deploy files from directory
+	edit   edit cap file
+	editor display or set editor path
+	rm     remove cap file or directory
+	mkdir  make directory
+	run    run script
+	alias  add alias of cap's command
+	server run cap server
+
+
+How to use of Cap?
+
+
+ You should be set 'home directory' of cap by 'cap home' command at first using. A 'home directory' path is absolute path, you know.
+
+    $ cap home ~/my/snippets
+
+
+ Check your 'home directory' in cap by 'cap home' command.
+
+    $ cap home
+
+
+ Okay. And check display list of 'current working directory' in cap by 'cap ls' command.
+
+    $ cap ls
+
+
+ And check display file by 'cap cat' command.
+
+    $ cap cat myfile.txt
+
+
+ If you may change 'current working directory' in cap by 'cap cd' command.
+
+    $ cap cd ./macdonald
+
+
+ And check 'current working directory' in cap by 'cap pwd' command. Yes that's right. Many cap's command is a like a commands of UNIX. So, there is no longer to be do description. You know. Okay. Let to edit your snippet file by 'cap edit' command. Cap do set editor to 'vi' at default. If your OS is MS Windows, Cap do set editor to 'notepad.exe'.
+
+    $ cap edit menu.txt
+
+
+ What? You are Emacs user? Hello, RMS. Well, you do set other editor by 'cap editor' command. Before that check your current editor in Cap.
+
+    $ cap editor
+
+
+ Okay. Let set your editor by 'cap editor' command with a 'which' command. If you have not a 'which' command, you write absolute path of editor.
+
+    $ cap editor `which emacs`
+
+
+ Okay. Your current editor is a set editor in Cap.
+
+

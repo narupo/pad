@@ -16,6 +16,14 @@
 #include <getopt.h>
 #include <string.h>
 
+/**
+ * Convert alias record to CsvLine 
+ * 
+ * @param[in] name pointer to memory of C string for alias name
+ * 
+ * @return success to pointer to dynamic allocate memory of CsvLine
+ * @return failed to NULL
+ */
 CsvLine*
 alias_to_csvline(char const* name);
 
