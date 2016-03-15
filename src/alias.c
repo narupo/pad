@@ -38,8 +38,7 @@ struct Command {
 ******************/
 
 static char const PROGNAME[] = "cap alias";
-// Import and export file name
-static char const ALIAS_IE_FNAME[] = ".capalias";
+static char const ALIAS_IE_FNAME[] = ".capalias"; // Import and Export file name
 
 /*******************
 * alias prototypes *
@@ -58,6 +57,12 @@ alias_parse_options(Command* self);
 * alias functions *
 ******************/
 
+/**
+ * Destruct command of alias
+ * If self is NULL then don't anything
+ * 
+ * @param[in] self 
+ */
 static void
 alias_delete(Command* self) {
 	if (self) {
@@ -65,6 +70,15 @@ alias_delete(Command* self) {
 	}
 }
 
+/**
+ * Construct command of alias inherit from main function
+ * 
+ * @param[in] argc    main's argc
+ * @param[in] *argv[] main's argv
+ * 
+ * @return success to number of zero
+ * @return failed to number of another
+ */
 static Command*
 alias_new(int argc, char* argv[]) {
 	// Construct
@@ -89,6 +103,13 @@ alias_new(int argc, char* argv[]) {
 	return self;
 }
 
+/**
+ * 
+ * 
+ * @param[in] *self 
+ * 
+ * @return 
+ */
 static bool
 alias_parse_options(Command* self) {
 	// Parse options

@@ -243,6 +243,28 @@ term_cfprintf(FILE* fout, TermColor fg, TermColor bg, char const* fmt, ...) {
 }
 
 int
+term_acfprintf(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...) {
+	if (fout == stdout && !stdout_lock()) {
+		return -1;
+	} else if (fout == stderr && !stderr_lock()) {
+		return -1;
+	}
+
+	va_list args;
+	va_start(args, fmt);
+	int len = _acfprintf_unsafe(fout, attr, fg, bg, fmt, args);	
+	va_end(args);
+
+	if (fout == stdout && !stdout_unlock()) {
+		return -1;
+	} else if (fout == stderr && !stderr_unlock()) {
+		return -1;
+	}
+
+	return len;	
+}
+
+int
 term_acprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...) {
 	if (!stdout_lock()) {
 		return -1;

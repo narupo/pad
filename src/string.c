@@ -202,7 +202,7 @@ str_resize(String* self, int newlen) {
 
 void
 str_push_back(String* self, String_type ch) {
-	if (!self) {
+	if (!self || ch == NIL) {
 		return;
 	}
 
@@ -231,7 +231,7 @@ str_pop_back(String* self) {
 
 void
 str_push_front(String* self, String_type ch) {
-	if (!self) {
+	if (!self || ch == NIL) {
 		return;
 	}
 

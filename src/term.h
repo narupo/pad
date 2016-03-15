@@ -101,6 +101,22 @@ int
 term_cfprintf(FILE* fout, TermColor fg, TermColor bg, char const* fmt, ...);
 
 /**
+ * Wrapper of fprintf(3) with colors
+ *
+ * @param[out] fout pointer to FILE for destination
+ * @param[in]  attr attribute
+ * @param[in]  fg   fore ground color
+ * @param[in]  bg   back ground color
+ * @param[in]  fmt  string of format
+ * @param[in]  ...  arguments of format
+ *
+ * @return     success to number of length of write
+ * @return     failed to under of zero
+ */
+int
+term_acfprintf(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...);
+
+/**
  * Wrapper of fprintf(stdout) with attribute and colors
  * 
  * @param[in]  attr attribute
