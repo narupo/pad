@@ -2,8 +2,9 @@
 #define UTIL_H
 
 #undef _BSD_SOURCE
-#define _BSD_SOURCE 1 /* popen in stdio.h */
+#define _BSD_SOURCE 1 /* For popen in stdio.h */
 
+#include "define.h"
 #include "term.h"
 #include "caperr.h"
 
@@ -19,7 +20,7 @@
 
 #include <unistd.h>
 
-#if !defined(_WIN32) && !defined(_WIN64)
+#if !defined(_CAP_WINDOWS)
 # include <sys/wait.h>
 #endif
 
@@ -32,7 +33,7 @@
  */
 #define NUMOF(array) (sizeof(array)/sizeof(array[0]))
 
-#ifdef DEBUG
+#ifdef _CAP_DEBUG
 #  define WARN(...) { \
 	fprintf(stderr, "Warn: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
     fprintf(stderr, __VA_ARGS__); \
