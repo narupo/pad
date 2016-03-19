@@ -9,12 +9,7 @@
 #include "strarray.h"
 #include "caperr.h"
 #include "buffer.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <getopt.h>
-#include <string.h>
+#include "hash.h"
 
 /**
  * Convert alias record to CsvLine 

@@ -8,7 +8,7 @@ UTILS := caperr.c atcap.c buffer.c cap-file.c config.c \
 	csvline.c strmap.c file.c strarray.c term.c util.c environ.c string.c memory.c \
 	socket.c http-header.c json.c
 
-HEADERS := $(CMDS:.c=.h) $(UTILS:.c=.h) 
+HEADERS := $(CMDS:.c=.h) $(UTILS:.c=.h) hash.h
 OBJS := $(CMDS:.c=.o) $(UTILS:.c=.o)
 DEPS := $(CMDS:.c=.d) $(UTILS:.c=.d) 
 

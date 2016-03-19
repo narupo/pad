@@ -14,7 +14,6 @@ enum {
 	ALIAS_NKEY = 32,
 	ALIAS_NVAL = 128,
 	ALIAS_NRECORD = ALIAS_NKEY + ALIAS_NVAL,
-	ALIAS_NHASH = 701,
 };
 
 /****************
@@ -25,7 +24,6 @@ struct Command {
 	int argc;
 	char** argv;
 	int optind;
-
 	bool opt_is_help;
 	bool opt_is_delete;
 	bool opt_is_debug;
@@ -104,11 +102,12 @@ alias_new(int argc, char* argv[]) {
 }
 
 /**
- * 
+ * Parse program options
  * 
  * @param[in] *self 
  * 
- * @return 
+ * @return success to true
+ * @return failed to false
  */
 static bool
 alias_parse_options(Command* self) {
@@ -151,23 +150,6 @@ alias_parse_options(Command* self) {
 
 	// Done
 	return true;
-}
-
-/**
- * Create hash value from string
- * 
- * @param[in] src source string
- * @param[in] nhash max hash size
- *
- * @return number of hash value
- */
-static int
-hashi(char const* src, int nhash) {
-	int n = 0;
-	for (char const* p = src; *p; ++p) {
-		n += *p;
-	}
-	return n % nhash;
 }
 
 /**
@@ -226,7 +208,7 @@ alias_path_from_home(char* dst, size_t dstsize) {
 	char const* confdir = config_dir(config);
 
 	strrems(dst, dstsize, home, ":\\/");
-	snprintf(dst, dstsize, "%s/alias-%d", confdir, hashi(dst, ALIAS_NHASH));
+	snprintf(dst, dstsize, "%s/alias-%d", confdir, hash_int(dst));
 
 	return dst;
 }
@@ -381,6 +363,16 @@ alias_disp_list(Command* self) {
 	return 0;
 }
 
+/**
+ * Delete record from stream file by key
+ * 
+ * @param[in]  *self   
+ * @param[out] *stream destination stream
+ * @param[in]  *delkey delete key
+ * 
+ * @return success to number of zero
+ * @return failed to number of caperr
+ */
 static int
 alias_delete_record_from_stream_by_key(Command* self, FILE* stream, char const* delkey) {
 	for (; !feof(stream); ) {
@@ -484,9 +476,10 @@ found:
 /**
  * Import alias file from current home directory to config directory
  *
- * @param self
+ * @param[in] self
  *
- * @return 
+ * @return success to number of zero
+ * @return failed to number of caperr
  */
 static int
 alias_import(Command* self) {
@@ -528,6 +521,14 @@ alias_import(Command* self) {
 	return 0;
 }
 
+/**
+ * Export alias to file system
+ * 
+ * @param[in] *self 
+ * 
+ * @return success to number of zero
+ * @return failed to number of caperr
+ */
 static int
 alias_export(Command* self) {
 	Config* config = config_instance();
@@ -564,6 +565,14 @@ alias_export(Command* self) {
 	return 0;
 }
 
+/**
+ * Run alias command
+ * 
+ * @param[in] *self 
+ * 
+ * @return success to number of zero
+ * @return failed to number of caperr
+ */
 static int
 alias_run(Command* self) {
 	// Check options
