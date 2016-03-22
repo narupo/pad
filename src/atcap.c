@@ -18,7 +18,7 @@ enum {
 	CAPPARSER_PARSE_ERROR,
 };
 
-static char const PROGNAME[] = "atcap";
+static char const PROGNAME[] = "cap atcap";
 
 /************
 * CapParser *
@@ -552,7 +552,6 @@ capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* braces
 #if defined(TEST_ATCAP)
 #include "file.h"
 
-
 int
 test_atcap_line(int argc, char* argv[]) {
 	FILE* fin = stdin;
@@ -604,12 +603,6 @@ test_atcap_line(int argc, char* argv[]) {
 	file_close(fin);
 	return 0;
 }
-
-typedef struct Source {
-	char const* cur;
-	char const* beg;
-	char const* end;
-} Source;
 
 int
 main(int argc, char* argv[]) {
