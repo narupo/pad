@@ -6,12 +6,10 @@ struct Command {
 	int argc;
 	int optind;
 	char** argv;
-
-	StringArray* briefs;
-	StringArray* fnames;
-
-	bool opt_is_help;
-	bool opt_is_disp_all;
+	StringArray* briefs; // pointer to array of brief strings
+	StringArray* fnames; // pointer to array of file-name strings
+	bool opt_is_help; // option for help (enable to true)
+	bool opt_is_disp_all; // option for display-all (enable to true)
 };
 
 static char const PROGNAME[] = "cap brief";
@@ -25,6 +23,11 @@ command_delete(Command* self);
 static bool
 command_parse_options(Command* self);
 
+/**
+ * Destruct command
+ * 
+ * @param[in] *self 
+ */
 static void
 command_delete(Command* self) {
 	if (self) {
@@ -34,6 +37,15 @@ command_delete(Command* self) {
 	}
 }
 
+/**
+ * Construct command by args
+ * 
+ * @param[in] argc    like a argc of main()
+ * @param[in] *argv[] like a argv of main()
+ * 
+ * @return success to pointer to dynamic allocate memory of command
+ * @return failed to NULL
+ */
 static Command*
 command_new(int argc, char* argv[]) {
 	// Construct
@@ -50,36 +62,39 @@ command_new(int argc, char* argv[]) {
 	self->briefs = strarray_new();
 	if (!self->briefs) {
 		caperr(PROGNAME, CAPERR_CONSTRUCT, "briefs");
-		goto fail_briefs;
+		goto fail;
 	}
 
 	self->fnames = strarray_new();
 	if (!self->fnames) {
 		caperr(PROGNAME, CAPERR_CONSTRUCT, "fnames");
-		goto fail_fnames;
+		goto fail;
 	}
 
 	// Parse command options
 	if (!command_parse_options(self)) {
 		caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "");
-		goto fail_parse_options;
+		goto fail;
 	}
 
 	// Done
 	return self;
 
-fail_briefs:
-	free(self);
-
-fail_fnames:
+fail:
 	strarray_delete(self->briefs);
-
-fail_parse_options:
 	strarray_delete(self->fnames);
-	
+	free(self);
 	return NULL;
 }
 
+/**
+ * Parse command options
+ * 
+ * @param[in] *self 
+ * 
+ * @return success to true
+ * @return failed to false 
+ */
 static bool
 command_parse_options(Command* self) {
 	// Parse options
@@ -118,6 +133,15 @@ command_parse_options(Command* self) {
 	return true;
 }
 
+/**
+ * Open stream by file-name
+ * 
+ * @param[in] *self  
+ * @param[in] *fname open file name
+ * 
+ * @return success to pointer to FILE
+ * @return failed to NULL
+ */
 static FILE*
 command_open_stream(Command const* self, char const* fname) {
 	// Ready
@@ -146,12 +170,22 @@ command_open_stream(Command const* self, char const* fname) {
 	return file_open(path, "rb");
 }
 
+/**
+ * Read from stream
+ * 
+ * @param[out] *self  
+ * @param[in] *fin   read stream
+ * @param[in] *fname file-name of read stream
+ * 
+ * @return success to number of zero
+ * @return failed to number of caperr
+ */
 static int
 command_read_from_stream(Command* self, FILE* fin, char const* fname) {
 	// Ready
 	String* buf = str_new();
 	if (!buf) {
-		return caperr(PROGNAME, CAPERR_CONSTRUCT, "buffer");
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "string");
 	}
 
 	CapParser* parser = capparser_new();
@@ -176,6 +210,7 @@ command_read_from_stream(Command* self, FILE* fin, char const* fname) {
 			strarray_push_copy(self->fnames, fname);
 	
 			if (!self->opt_is_disp_all) {
+				// This brief only. Break from loop
 				caprow_delete(row);
 				break;
 			}
@@ -189,6 +224,14 @@ command_read_from_stream(Command* self, FILE* fin, char const* fname) {
 	return 0;
 }
 
+/**
+ * Run command
+ * 
+ * @param[in] *self 
+ * 
+ * @return success to number of zero
+ * @return failed to number of caperr
+ */
 static int
 command_run(Command* self) {
 	int ret = 0;
@@ -214,10 +257,10 @@ command_run(Command* self) {
 			FILE* fin = command_open_stream(self, fname);
 			if (!fin) {
 				ret = caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", fname);
-				goto fail_open_file;
+				goto fail;
 			}
 
-			command_read_from_stream(self, fin, fname);
+			ret = command_read_from_stream(self, fin, fname);
 
 			file_close(fin);
 		}
@@ -248,7 +291,7 @@ command_run(Command* self) {
 	}
 
 	// Done
-fail_open_file:
+fail:
 	return ret;
 }
 
