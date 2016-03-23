@@ -4,6 +4,7 @@
 #include "define.h"
 #include "util.h"
 #include "term.h"
+#include "memory.h"
 #include "file.h"
 #include "config.h"
 #include "caperr.h"
