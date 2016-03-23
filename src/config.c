@@ -44,21 +44,31 @@ self_path_unsafe(Config const* self, char const* key) {
 static bool
 self_is_out_of_home_unsafe(Config const* self, char const* path) {
 	char spath[FILE_NPATH];
-
 	if (!file_solve_path(spath, sizeof spath, path)) {
 		WARN("Failed to solve path of \"%s\"", path);
-		return false;
+		return true;
 	}
 
-	char const* home = self_path_unsafe(self, "home");
-	size_t homelen = strlen(home);
+	if (!file_is_exists(spath)) {
+		WARN("Not found file \"%s\"", spath);
+		return true;
+	}
+
+	char const* home = self_path_unsafe(config, "home");
+	char shome[FILE_NPATH];
+	if (!file_solve_path(shome, sizeof shome, home)) {
+		WARN("Failed to solve path of \"%s\"", home)
+		return true;
+	}
+
+	size_t homelen = strlen(shome);
 	size_t pathlen = strlen(spath);
 
-	if (pathlen >= homelen && strncmp(spath, home, homelen) == 0) {
-		return false;
+	if (strncmp(spath, shome, homelen) != 0 || pathlen < homelen) {
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 /*****************
@@ -79,11 +89,11 @@ config_delete(Config* self) {
 static Config*
 config_init_file(Config* self, char const* fname) {
 #if defined(_CAP_WINDOWS)
-	char const DEFAULT_HOME_PATH[] = "C:/Windows/Temp";
-	char const DEFAULT_EDITOR_PATH[] = "C:/Windows/notepad.exe";
+	static char const DEFAULT_HOME_PATH[] = "C:/Windows/Temp";
+	static char const DEFAULT_EDITOR_PATH[] = "C:/Windows/notepad.exe";
 #else
-	char const DEFAULT_HOME_PATH[] = "/tmp";
-	char const DEFAULT_EDITOR_PATH[] = "/usr/bin/vi";
+	static char const DEFAULT_HOME_PATH[] = "/tmp";
+	static char const DEFAULT_EDITOR_PATH[] = "/usr/bin/vi";
 #endif
 
 	String* src = str_new();
@@ -309,7 +319,19 @@ config_path_with_home(Config const* self, char* dst, size_t dstsize, char const*
 
 JsonObject const*
 config_server_const(Config const* self) {
-	return jsonobj_find_dict_const(json_root_const(self->json), "server");
+	JsonObject const* servobj;
+
+	if (!self_lock()) {
+		return NULL;
+	}
+
+	servobj = jsonobj_find_dict_const(json_root_const(self->json), "server");
+
+	if (!self_unlock()) {
+		return NULL;
+	}
+	
+	return servobj;
 }
 
 /*********
@@ -403,11 +425,28 @@ test_io(int argc, char* argv[]) {
 	return 0;
 }
 
+static int
+test_is_out_of_home(int argc, char* argv[]) {
+	if (argc < 2) {
+		die("need path");
+	}
+
+	Config* config = config_instance();
+	if (!config) {
+		die("config");
+	}
+
+	char dst[FILE_NPATH];
+	config_path_with_home(config, dst, sizeof dst, argv[1]);
+	return 0;
+}
+
 int
 main(int argc, char* argv[]) {
 	int ret = 0;
     // ret = test_io(argc, argv);
-    ret = test_server(argc, argv);
+    // ret = test_server(argc, argv);
+    ret = test_is_out_of_home(argc, argv);
 
     fflush(stdout);
     fflush(stderr);
