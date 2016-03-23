@@ -1113,9 +1113,6 @@ capfile_display(CapFile const* self) {
 	}
 }
 
-
-
-
 /*******
 * Test *
 *******/
