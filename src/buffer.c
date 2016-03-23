@@ -5,7 +5,8 @@ enum {
 };
 
 /**
- * Desc
+ * Structure for Buffer object
+ *
  */
 struct Buffer {
 	size_t capacity;
@@ -13,18 +14,20 @@ struct Buffer {
 	Buffer_pointer_type buffer;
 };
 
-#define SWAP(T, a, b) { \
-	T c = a; \
-	a = b; \
-	b = c; \
-}
 void
 buffer_swap_other(Buffer* self, Buffer* other) {
+#	define SWAP(T, a, b) { \
+		T c = a; \
+		a = b; \
+		b = c; \
+	}
+
 	SWAP(size_t, self->capacity, other->capacity);
 	SWAP(size_t, self->length, other->length);
 	SWAP(Buffer_pointer_type, self->buffer, other->buffer);
+
+#	undef SWAP
 }
-#undef SWAP
 
 void
 buffer_delete(Buffer* self) {
