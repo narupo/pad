@@ -74,8 +74,30 @@ enum {
 	CAPERR_MUTEX_LOCK,
 };
 
+/**
+ * Macro of _caperr
+ *
+ * @param[in] head   header message
+ * @param[in] number number of caperr
+ * @param[in] ...    arguments
+ *
+ * @return @see _caperr
+ */
 #define caperr(head, number, ...) _caperr(__FILE__, __func__, __LINE__, head, number, __VA_ARGS__);
 
+/**
+ * Regist error of details to caperrs
+ * 
+ * @param[in] *fname    file name
+ * @param[in] *funcname function name in file
+ * @param[in] lineno    line number in file
+ * @param[in] *header   header message
+ * @param[in] number    number of caperr
+ * @param[in] *fmt      format for arguments
+ * @param[in] ...       arguments
+ * 
+ * @return number of caperr (this number is arguments number)
+ */
 int
 _caperr(
 	char const* fname,
@@ -86,8 +108,30 @@ _caperr(
 	char const* fmt,
 	...);
 
+/**
+ * Macro of _caperr_printf
+ *
+ * @param[in] head   header message
+ * @param[in] number number of caperr
+ * @param[in] ...    arguments
+ *
+ * @return @see _caperr_printf
+ */
 #define caperr_printf(head, number, ...) _caperr(__FILE__, __func__, __LINE__, head, number, __VA_ARGS__);
 
+/**
+ * Print error by caperr's format
+ * 
+ * @param[in] *fname    file name
+ * @param[in] *funcname function name in file
+ * @param[in] lineno    line number in file
+ * @param[in] *header   header message
+ * @param[in] number    number of caperr
+ * @param[in] *fmt      format for arguments
+ * @param[in] ...       arguments
+ * 
+ * @return number of caperr (this number is arguments number)
+ */
 int
 _caperr_printf(
 	char const* fname,
@@ -98,15 +142,35 @@ _caperr_printf(
 	char const* fmt,
 	...);
 
+/**
+ * Get number of length of caperrs
+ * 
+ * @return number of length
+ */
 int
 caperr_length(void);
 
+/**
+ * Display all caperrs to stream
+ * 
+ * @param[in] *stream 
+ */
 void
 caperr_display(FILE* stream);
 
+/**
+ * Display first caperr of caperrs to stream
+ * 
+ * @param[in] *stream 
+ */
 void
 caperr_display_first(FILE* stream);
 
+/**
+ * Display last caperr of caperrs to stream
+ * 
+ * @param[in] *stream 
+ */
 void
 caperr_display_last(FILE* stream);
 
