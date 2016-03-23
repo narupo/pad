@@ -59,6 +59,7 @@ enum {
 
 	// Close family
 	CAPERR_FCLOSE,
+	CAPERR_CLOSE,
 
 	// Solve family
 	CAPERR_SOLVE,
