@@ -10,12 +10,12 @@ enum {
 
 typedef struct {
 	int saveerrno;
-	int number; // Number of CAPERR
-	int lineno;
-	char fname[NFNAME];
-	char funcname[NFUNCNAME];
-	char header[NHEADER]; // Line header message
-	char body[NMESSAGE]; // Line body message
+	int number; // number of CAPERR
+	int lineno; // number of line in file
+	char fname[NFNAME]; // file name
+	char funcname[NFUNCNAME]; // function name in file
+	char header[NHEADER]; // line header message
+	char body[NMESSAGE]; // line body message
 } CapErr;
 
 static struct {
@@ -23,9 +23,7 @@ static struct {
 	CapErr stack[NSTACK];
 } caperrs;
 
-static pthread_mutex_t
-caperrs_mutex = PTHREAD_MUTEX_INITIALIZER;
-
+static pthread_mutex_t caperrs_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /********************
 * caperr prototypes *
@@ -33,7 +31,6 @@ caperrs_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 char const*
 caperr_to_string_unsafe(int number);
-
 
 /**************
 * caperr util *
@@ -55,11 +52,23 @@ caperrs_unlock(void) {
 	return false;
 }
 
-
 /***************
 * caperr stack *
 ***************/
 
+/**
+ * Push to stack of caperrs
+ * This function is multi-thread safe
+ * 
+ * @param[in] saveerrno 
+ * @param[in] *fname    
+ * @param[in] *funcname 
+ * @param[in] lineno    
+ * @param[in] *header   
+ * @param[in] number    
+ * @param[in] *fmt      
+ * @param[in] args      
+ */
 static void
 caperrs_push(
 	int saveerrno,
