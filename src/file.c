@@ -380,25 +380,34 @@ struct Directory {
 * Directory close and open *
 ***************************/
 
-void
+int
 dir_close(Directory* self) {
 	if (self) {
+		int ret = 0;
 #if defined(_CAP_WINDOWS)
 		if (self->handle) {
-			if (!FindClose(self->handle)) {
+			ret = FindClose(self->handle);
+			if (ret == 0) {
 				WARN("Failed to close directory");
 			}
 			self->handle = NULL;
+			ret = !ret;
+		} else {
+			ret = -1;
 		}
 
 #else
-		if (closedir(self->directory) != 0) {
+		ret = closedir(self->directory);
+		if (ret != 0) {
 			WARN("Failed to close directory");
 		}
 #endif	
-		
 		free(self);
+
+		return ret;
 	}
+
+	return -1;
 }
 
 Directory*

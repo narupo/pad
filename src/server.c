@@ -8,8 +8,287 @@ enum {
 	SERVER_NTMP_BUFFER = 128,
 };
 
+static char const SERVER_NAME[] = "CapServer";
 static char const PROGNAME[] = "cap server";
 static char const DEFAULT_HOSTPORT[] = "127.0.0.1:1234";
+
+/***********
+* response *
+***********/
+
+enum {
+	RESPONSE_INIT_STATUS = 500,
+};
+
+typedef struct Response Response;
+
+struct Response {
+	int status;
+	Buffer* buffer;
+	Buffer* content;
+};
+
+void
+response_delete(Response* self) {
+	if (self) {
+		buffer_delete(self->buffer);
+		buffer_delete(self->content);
+		free(self);
+	}
+}
+
+Response*
+response_new(void) {
+	Response* self = (Response*) mem_calloc(1, sizeof(Response));
+	if (!self) {
+		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "response");
+		return NULL;
+	}
+
+	self->status = RESPONSE_INIT_STATUS;
+
+	self->buffer = buffer_new();
+	if (!self->buffer) {
+		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "buffer");
+		goto fail;
+	}
+
+	self->content = buffer_new();
+	if (!self->content) {
+		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "content");
+		goto fail;
+	}
+	
+	return self;
+
+fail:
+	buffer_delete(self->buffer);
+	buffer_delete(self->content);
+	mem_free(self);
+	return NULL;
+}
+
+void
+response_clear(Response* self) {
+	self->status = RESPONSE_INIT_STATUS;
+	buffer_clear(self->buffer);
+	buffer_clear(self->content);
+}
+
+static char const*
+status_line_from_version(double version, int status) {
+	if (version == 1.1) {
+		switch (status) {
+		default: return "HTTP/1.1 500 Unknown status\r\n"; break;
+		case 100: return "HTTP/1.1 100 Continue\r\n"; break; //	継続
+		case 101: return "HTTP/1.1 101 Switching Protocols\r\n"; break; //	プロトコル切替
+		case 200: return "HTTP/1.1 200 OK\r\n"; break; //	成功
+		case 201: return "HTTP/1.1 201 Created\r\n"; break; //	作成完了
+		case 202: return "HTTP/1.1 202 Accepted\r\n"; break; //	受理
+		case 203: return "HTTP/1.1 203 Non-Authoritative Information\r\n"; break; //	非公式な情報
+		case 204: return "HTTP/1.1 204 No Content\r\n"; break; //	内容が空
+		case 205: return "HTTP/1.1 205 Reset Content\r\n"; break; //	内容をリセット
+		case 206: return "HTTP/1.1 206 Partial Content\r\n"; break; //	内容の一部
+		case 300: return "HTTP/1.1 300 Multiple Choices\r\n"; break; //	複数の候補がある
+		case 301: return "HTTP/1.1 301 Moved Permanently\r\n"; break; //	恒久的に移転
+		case 302: return "HTTP/1.1 302 Found\r\n"; break; //	別の場所で見つけた
+		case 303: return "HTTP/1.1 303 See Other\r\n"; break; //	別の場所を探せ
+		case 304: return "HTTP/1.1 304 Not Modified\r\n"; break; //	変更なし
+		case 305: return "HTTP/1.1 305 Use Proxy\r\n"; break; //	中継サーバを通せ
+		case 307: return "HTTP/1.1 307 Temporary Redirect\r\n"; break; //	一時的な転送
+		case 400: return "HTTP/1.1 400 Bad Request\r\n"; break; //	不正なリクエスト
+		case 401: return "HTTP/1.1 401 Unauthorized\r\n"; break; //	未認証
+		case 402: return "HTTP/1.1 402 Payment Required\r\n"; break; //	有料である
+		case 403: return "HTTP/1.1 403 Forbidden\r\n"; break; //	アクセス権がない
+		case 404: return "HTTP/1.1 404 Not Found\r\n"; break; //	存在しない
+		case 405: return "HTTP/1.1 405 Method Not Allowed\r\n"; break; //	そのメソッドは不可
+		case 406: return "HTTP/1.1 406 Not Acceptable\r\n"; break; //	受理不可
+		case 407: return "HTTP/1.1 407 Proxy Authentication Required\r\n"; break; //	中継サーバの認証が必要
+		case 408: return "HTTP/1.1 408 Request Time-out\r\n"; break; //	時間切れ
+		case 409: return "HTTP/1.1 409 Conflict\r\n"; break; //	競合
+		case 410: return "HTTP/1.1 410 Gone\r\n"; break; //	消滅した
+		case 411: return "HTTP/1.1 411 Length Required\r\n"; break; //	長さを指定せよ
+		case 412: return "HTTP/1.1 412 Precondition Failed\r\n"; break; //	前提条件が満たされていない
+		case 413: return "HTTP/1.1 413 Request Entity Too Large\r\n"; break; //	リクエスト中のデータが大きすぎる
+		case 414: return "HTTP/1.1 414 Request-URI Too Large\r\n"; break; //	URIが長すぎる
+		case 415: return "HTTP/1.1 415 Unsupported Media Type\r\n"; break; //	そのメディアは使えない
+		case 500: return "HTTP/1.1 500 Internal Server Error\r\n"; break; //	サーバ内部のエラー
+		case 501: return "HTTP/1.1 501 Not Implemented\r\n"; break; //	その機能は実装されていない
+		case 502: return "HTTP/1.1 502 Bad Gateway\r\n"; break; //	中継サーバのエラー
+		case 503: return "HTTP/1.1 503 Service Unavailable\r\n"; break; //	サービス停止中
+		case 504: return "HTTP/1.1 504 Gateway Time-out\r\n"; break; //	中継サーバの要求が時間切れ
+		case 505: return "HTTP/1.1 505 HTTP Version not supported\r\n"; break; //	そのバージョンのHTTPは使えない
+		}
+	} else {
+		caperr_printf(PROGNAME, CAPERR_INVALID, "Http version");
+		return "500 Internal Server Error\r\n";
+	}
+}
+
+Response*
+response_merge_content_with_status(Response* self, int status) {
+	// Make buffer
+	self->status = status;
+	buffer_append_string(self->buffer, status_line_from_version(1.1, status));
+
+	buffer_append_string(self->buffer, "Server: ");
+	buffer_append_string(self->buffer, SERVER_NAME);
+	buffer_append_string(self->buffer, "\r\n");
+
+	char tmp[100/* TODO */];
+	snprintf(tmp, sizeof tmp, "Content-Length: %d\r\n", (int) buffer_length(self->content));
+	buffer_append_string(self->buffer, tmp);	
+
+	buffer_append_string(self->buffer, "\r\n");
+
+	// Merge content
+	buffer_append_other(self->buffer, self->content);
+
+	// Done
+	return self;
+}
+
+Response*
+response_init_from_status(Response* self, int status) {
+	// Init
+	response_clear(self);
+
+	// Update status
+	self->status = status;
+
+	// Make buffer
+	switch (status) {
+	case 404: buffer_append_string(self->content, "<html><h1>404 Not Found</h1></html>\n"); break;
+	case 405: buffer_append_string(self->content, "<html><h1>405 Method Not Allowed</h1></html>\n"); break;
+	case 500: buffer_append_string(self->content, "<html><h1>500 Internal Server Error</h1></html>\n"); break;
+	default: buffer_append_string(self->content, "<html><h1>500 Internal Server Error. Unknown status.</h1></html>\n"); break;
+	}
+
+	return response_merge_content_with_status(self, status);
+}
+
+Response*
+response_init_from_file(Response* self, char const* fname) {
+	// Clear
+	response_clear(self);
+
+	// Read from file
+	FILE* fin = file_open(fname, "rb");
+	if (!fin) {
+		caperr_printf(PROGNAME, CAPERR_FOPEN, "%s", fname);
+		return response_init_from_status(self, 404);
+	}
+
+	if (buffer_append_stream(self->content, fin) < 0) {
+		caperr_printf(PROGNAME, CAPERR_READ, "stream by \"%s\"", fname);
+		return response_init_from_status(self, 500);		
+	}
+
+	if (file_close(fin) != 0) {
+		caperr_printf(PROGNAME, CAPERR_FCLOSE, "%s", fname);
+		return response_init_from_status(self, 500);		
+	}
+
+	return response_merge_content_with_status(self, 200);
+}
+
+Response*
+response_init_from_dir(Response* self, char const* dirname, char const* dirpath) {
+	// Clear
+	response_clear(self);
+
+	// Read directory
+	Directory* dir = dir_open(dirpath);
+	if (!dir) {
+		caperr_printf(PROGNAME, CAPERR_OPEN, "directory \"%s\"", dirpath);
+		return response_init_from_status(self, 400);
+	}
+
+	buffer_append_string(self->content, "<h1>Index of ");
+	buffer_append_string(self->content, dirname);
+	buffer_append_string(self->content, "</h1>\n");
+	
+	buffer_append_string(self->content, "<ul>\n");
+
+	for (DirectoryNode* node; (node = dir_read_node(dir)); ) {
+		char const* name = dirnode_name(node);
+		buffer_append_string(self->content, "<li><a href=\"");
+		if (strcmp(dirname, "/") != 0) {
+			buffer_append_string(self->content, dirname);
+			buffer_append_string(self->content, "/");			
+		}
+		buffer_append_string(self->content, name);
+		buffer_append_string(self->content, "\">");
+		buffer_append_string(self->content, name);
+		buffer_append_string(self->content, "</a></li>\n");
+	}
+
+	buffer_append_string(self->content, "</ul>\n");
+
+	if (dir_close(dir) != 0) {
+		caperr_printf(PROGNAME, CAPERR_CLOSE, "directory \"%s\"", dirpath);
+		return response_init_from_status(self, 500);	
+	}
+
+	return response_merge_content_with_status(self, 200);
+}
+
+/*********
+* store *
+*********/
+
+typedef struct Store Store;
+
+struct Store {
+	Socket* client;
+	HttpHeader* header;
+	Response* response;
+	char buffer[SERVER_NRECV_BUFFER];
+};
+
+void
+store_delete(Store* self) {
+	if (self) {
+		httpheader_delete(self->header);	
+		socket_close(self->client);
+		response_delete(self->response);
+		free(self);
+	}
+}
+
+Store*
+store_new(void) {
+	Store* self = (Store*) mem_calloc(1, sizeof(Store));
+	if (!self) {
+		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "store");
+		return NULL;
+	}
+
+	self->header = httpheader_new();
+	if (!self->header) {
+		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "HttpHeader");
+		goto fail;
+	}
+
+	self->response = response_new();
+	if (!self->response) {
+		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "Response");
+		goto fail;
+	}
+
+	return self;
+
+fail:
+	httpheader_delete(self->header);
+	response_delete(self->response);
+	free(self);
+	return NULL;
+}
+
+void
+store_move_client(Store* self, Socket* client) {
+	self->client = client;
+}
 
 /*********
 * thread *
@@ -35,318 +314,131 @@ thread_id(void) {
 	term_ceprintf(fg, bg, __VA_ARGS__); \
 }
 
-static int
-thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* dirpath) {
-	char const* methvalue = httpheader_method_value(header);
-	size_t methvallen = strlen(methvalue);
-
-	Directory* dir = dir_open(dirpath);
-	if (!dir) {
-		return caperr_printf(PROGNAME, CAPERR_OPEN, "directory \"%s\"", dirpath);
+static char const*
+store_recv(Store* self) {
+	int nrecv = socket_recv_string(self->client, self->buffer, sizeof self->buffer);
+	if (nrecv <= 0) {
+		WARN("Failed to recv");
+		return NULL;
 	}
 
-	Buffer* content = buffer_new();
-	if (!content) {
-		dir_close(dir);
-		return caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "buffer");
-	}
+	thread_eprintf("Recv (%d bytes) " , nrecv);
+	term_ceprintf(TC_CYAN, TC_BLACK, "\"%s\"\n" , self->buffer);
 
-	// Content
-	buffer_append_string(content,
-		"<!DOCTYPE html>\n"
-		"<html>\n"
-		"<head><title>Index of</title></head>\n"
-		"<body>\n"
-		"<h1>Index of "
-	);
-	buffer_append_string(content, methvalue);
-	buffer_append_string(content, "</h1>\n");
-
-	for (DirectoryNode* node; (node = dir_read_node(dir)); ) {
-		char const* name = dirnode_name(node);
-
-		buffer_append_string(content, "<div><a href='");
-		buffer_append_string(content, methvalue);
-		if (methvalue[methvallen-1] != '/') {
-			buffer_append_string(content, "/");
-		}
-		buffer_append_string(content, name);
-		buffer_append_string(content, "'>");
-		buffer_append_string(content, name);
-		buffer_append_string(content, "</a></div>\n");
-
-		dirnode_delete(node);
-	}
-	dir_close(dir);
-	buffer_append_string(content,
-		"</body>\n"
-		"</html>\n"
-	);
-
-	// HTTP Response Header
-	char contlen[SERVER_NTMP_BUFFER];
-	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", buffer_length(content));
-
-	Buffer* response = buffer_new();
-	if (!response) {
-		buffer_delete(content);
-		return caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "buffer");
-	}
-
-	buffer_append_string(response,
-		"HTTP/1.1 200 OK\r\n"
-		"Server: CapServer\r\n"
-	);
-	buffer_append_string(response, contlen);
-	buffer_append_string(response, "\r\n");
-	buffer_append_string(response, "\r\n");
-	buffer_append_other(response, content); // Merge content
-
-	// Send
-	thread_eputsf("Send (%d bytes)", buffer_length(response));
-	socket_send_bytes(client, buffer_get_const(response), buffer_length(response));
-
-	// Done
-	buffer_delete(response);
-	buffer_delete(content);
-
-	thread_ceprintf(TC_GREEN, TC_BLACK, "200 OK\n");
-	return 0;
+	return self->buffer;
 }
 
-static void
-thread_method_get_script(
-	  HttpHeader const* header
-	, Socket* client
-	, char const* defcmdname
-	, char const* path) {
-	
-	char const* cmdname = defcmdname;
-	char cmdline[SERVER_NCOMMAND_LINE];
-	char scriptline[SERVER_NTMP_BUFFER];
-	FILE* fin;
-
-	// Try get command name from file
-	fin = file_open(path, "rb");
-	if (file_read_script_line(scriptline, sizeof scriptline, fin)) {
-		cmdname  = scriptline; // Change command name
+static HttpHeader*
+store_parse_request(Store* self, char const* buffer) {
+	if (!httpheader_parse_request(self->header, buffer)) {
+		caperr_printf(PROGNAME, CAPERR_PARSE, "request");
+		return NULL;
 	}
 
-	if (file_close(fin) != 0) {
-		WARN("Faile to close file \"%s\"", path);
-		return;
-	}
+	char const* methname = httpheader_method_name(self->header);
+	char const* methvalue = httpheader_method_value(self->header);
+	thread_eprintf("Request ");
+	term_ceprintf(TC_YELLOW, TC_BLACK, "%s ", methname);
+	term_ceprintf(TC_CYAN, TC_BLACK, "\"%s\"\n", methvalue);
 
-	// Open process
-	snprintf(cmdline, sizeof cmdline, "%s %s", cmdname, path);
-	thread_eprintf("Command line ");
-	term_ceprintf(TC_CYAN, TC_BLACK, "\"%s\"\n", cmdline);
-
-	thread_eputsf("Open process...");
-	fin = popen(cmdline, "r");
-	if (!fin) {
-		WARN("Failed to open process \"%s\"", cmdline);
-		return;
-	}
-
-	// Content
-	thread_eputsf("Read from process...");
-	Buffer* content = buffer_new();
-	buffer_append_stream(content, fin);
-	pclose(fin);
-
-	// Response header
-	char contlen[SERVER_NTMP_BUFFER];
-	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", buffer_length(content));
-	thread_eputsf("Read content length (%d bytes)", buffer_length(content));
-
-	Buffer* response = buffer_new();
-	
-	buffer_append_string(response,
-		"HTTP/1.1 200 OK\r\n"
-		"Server: CapServer\r\n"
-	);
-	buffer_append_string(response, contlen);
-	buffer_append_string(response, "\r\n");
-	buffer_append_other(response, content);
-
-	// Send
-	thread_eputsf("Send (%d bytes)", buffer_length(response));
-	socket_send_bytes(client, buffer_get_const(response), buffer_length(response));
-
-	// Done
-	buffer_delete(content);
-	buffer_delete(response);
-	thread_ceprintf(TC_GREEN, TC_BLACK, "200 OK\n");
+	return self->header;
 }
 
-static void
-thread_method_get_file(
-	HttpHeader const* header,
-	Socket* client,
-	char const* path) {
-	
-	// Other
-	FILE* fin = file_open(path, "rb");
-	if (!fin) {
-		caperr_printf(PROGNAME, CAPERR_FOPEN, "\"%s\"", path);
-		return;
+static Response*
+store_response_from_get_method(Store* self, char const* value) {
+	Config* config = config_instance();
+	if (!config) {
+		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "config");
+		return response_init_from_status(self->response, 500);
 	}
 
-	// Make content
-	Buffer* content = buffer_new();
-	if (!content) {
-		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "buffer");
-		file_close(fin);
-		return;
+	char spath[FILE_NPATH];
+	if (!config_path_with_home(config, spath, sizeof spath, value)) {
+		caperr_printf(PROGNAME, CAPERR_MAKE, "path");
+		return response_init_from_status(self->response, 500);
+	}	
+
+	if (!file_is_exists(spath)) {
+		return response_init_from_status(self->response, 404);
 	}
 
-	thread_eputsf("Read from file...");
-	buffer_append_stream(content, fin);
-	thread_eputsf("Read content length (%d bytes)", buffer_length(content));
-
-	if (file_close(fin) != 0) {
-		caperr_printf(PROGNAME, CAPERR_FCLOSE, "\"%s\"", path);
-		buffer_delete(content);
-		return;
+	if (file_is_dir(spath)) {
+		return response_init_from_dir(self->response, value, spath);
 	}
 
-	// Make response with content
-	Buffer* response = buffer_new();
-	if (!response) {
-		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "buffer");
-		buffer_delete(content);
-		return;
-	}
-	char contlen[SERVER_NTMP_BUFFER];
-	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", buffer_length(content));
-
-	buffer_append_string(response,
-		"HTTP/1.1 200 OK\r\n"
-		"Server: CapServer\r\n"
-	);
-	buffer_append_string(response, contlen);
-	buffer_append_string(response, "\r\n");
-	buffer_append_other(response, content);
-
-	// Send
-	thread_eputsf("Send (%d bytes)", buffer_length(response));
-	socket_send_bytes(client, buffer_get_const(response), buffer_length(response));
-
-	// Done
-	buffer_delete(response);
-	buffer_delete(content);
-	thread_ceprintf(TC_GREEN, TC_BLACK, "200 OK\n");
+	return response_init_from_file(self->response, spath);
 }
 
-static void
-thread_method_get(
-	HttpHeader const* header,
-	Socket* client) {
+static Response*
+store_response_from_header(Store* self, HttpHeader const* header) {
+	// Clear
+	response_clear(self->response);
 
-	char const* methval = httpheader_method_value(header);
-	Config const* config = config_instance();
-	char path[FILE_NPATH];
+	// Get name and value from header
+	char const* name = httpheader_method_name(header);
+	char const* value = httpheader_method_value(header);
 
-	// Get path with home
-	config_path_with_home(config, path, sizeof path, methval);
-	thread_eprintf("Solve path ");
-	term_ceprintf(TC_CYAN, TC_BLACK, "\"%s\"\n", path);
-
-	// Not found?
-	if (!file_is_exists(path)) {
-		socket_send_string(client,
-			"HTTP/1.1 404 Not Found\r\n"
-			"Content-Length: 0\r\n"
-			"\r\n"
-		);
-		thread_ceprintf(TC_RED, TC_BLACK, "404 Not Found\n");
-		return;
+	// Switch by name
+	if (strcmp(name, "GET") == 0) {
+		return store_response_from_get_method(self, value);
+	} else {
+		response_init_from_status(self->response, 405);
 	}
 
-	// Directory?
-	if (file_is_dir(path)) {
-		thread_index_page_by_path(header, client, path);
-		return;
+	return self->response;
+}
+
+Store*
+store_send_response(Store* self, Response* response) {
+	unsigned char const* buf = buffer_get_const(response->buffer);
+	size_t buflen = buffer_length(response->buffer);
+
+	thread_eprintf("Send... (%d bytes)\n", buflen);
+	thread_eprintf("Send response buffer \"%s\"\n", buf);
+
+	if (socket_send_bytes(self->client, buf, buflen) < 0) {
+		thread_eprintf("Failed to send");
+		return NULL;
 	}
 
-	// Command with white list for security
-	JsonObject* servobj = (JsonObject*) config_server_const(config);
-	JsonObject* sufobj = jsonobj_find_dict(servobj, "suffix-command");
+	thread_eprintf("Success to send (%d bytes)\n", buflen);
 
-	char const* suffix = file_suffix(path);
-	if (suffix) {
-		for (JsonIter it = jsonobj_begin(sufobj), end = jsonobj_end(sufobj);
-			!jsoniter_equals(&it, &end);
-			jsoniter_next(&it)) {
-
-			JsonObject* obj = jsoniter_value(&it);
-
-			switch (jsonobj_type_const(obj)) {
-			default: break;
-			case JOTValue: {
-				String const* cmd = jsonobj_value(obj);
-				String const* suf = jsonobj_name_const(obj);
-				if (strcmp(suffix, str_get_const(suf)) == 0) {
-					// With script
-					thread_method_get_script(header, client, str_get_const(cmd), path);
-					return;
-				}
-			} break;
-			}
-		}
-	}
-
-	// Other files
-	thread_method_get_file(header, client, path);
+	return self;
 }
 
 static void*
 thread_main(void* arg) {
-	Socket* client = (Socket*) arg;
-
-	HttpHeader* header = httpheader_new();
-	if (!header) {
-		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "HttpHeader");
-		return NULL;
-	}
-
-	thread_eputsf("Created thread");
+	thread_eputsf("Created");
+	Store* store = (Store*) arg;
 
 	for (;;) {
-		char buf[SERVER_NRECV_BUFFER];
-		int nrecv = socket_recv_string(client, buf, sizeof buf);
-		if (nrecv <= 0) {
-			WARN("Failed to recv");
+		char const* buffer = store_recv(store);
+		if (!buffer) {
 			break;
 		}
 
-		thread_eprintf("Recv (%d bytes) " , nrecv);
-		term_ceprintf(TC_CYAN, TC_BLACK, "\"%s\"\n" , buf);
+		thread_eprintf("store_parse_request\n");
+		HttpHeader* header = store_parse_request(store, buffer);
+		if (!header) {
+			caperr_printf(PROGNAME, CAPERR_PARSE, "request");
+			continue;
+		}
 
-		httpheader_parse_request(header, buf);
-		char const* methname = httpheader_method_name(header);
-		char const* methvalue = httpheader_method_value(header);
+		thread_eprintf("store_response_from_header\n");
+		Response* response = store_response_from_header(store, header);
+		if (!response) {
+			caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "response");
+			continue;
+		}
 
-		thread_eprintf("Request ");
-		term_ceprintf(TC_YELLOW, TC_BLACK, "%s ", methname);
-		term_ceprintf(TC_CYAN, TC_BLACK, "\"%s\"\n", methvalue);
-
-		if (strcmp(methname, "GET") == 0) {
-			thread_method_get(header, client);
-		} else {
-			socket_send_string(client,
-				"HTTP/1.1 405 Method Not Allowed\r\n"
-				"Content-Length: 0\r\n"
-				"\r\n"
-			);
-			thread_ceprintf(TC_RED, TC_BLACK, "405 Method Not Allowed");
+		thread_eprintf("store_send_response\n");
+		if (!store_send_response(store, response)) {
+			caperr_printf(PROGNAME, CAPERR_WRITE, "response");
+			continue;			
 		}
 	}
 
-	httpheader_delete(header);
-	socket_close(client);
-
+	store_delete(store);
 	thread_ceprintf(TC_MAGENTA, TC_BLACK, "Done\n");
 	return NULL;
 }
@@ -359,7 +451,6 @@ struct Server {
 	int argc;
 	int optind;
 	char** argv;
-
 	bool opt_is_help;
 };
 
@@ -481,14 +572,24 @@ server_run(Server* self) {
 
 		Socket* client = socket_accept(server);
 		if (!client) {
-			caperr_printf(PROGNAME, CAPERR_OPEN, "accept socket");
+			caperr_printf(PROGNAME, CAPERR_OPEN, "accept client");
 			continue;
 		}
 		
+		// Create Store
+		Store* store = store_new();
+		if (!store) {
+			caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "store");
+			socket_close(client);
+			continue;	
+		}
+
+		store_move_client(store, client);
+
 		// Thread works
 		pthread_t thread;
 
-		if (pthread_create(&thread, NULL, thread_main, (void*) client) != 0) {
+		if (pthread_create(&thread, NULL, thread_main, (void*) store) != 0) {
 			WARN("Failed to create thread");
 			continue;
 		}

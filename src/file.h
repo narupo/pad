@@ -230,8 +230,11 @@ typedef struct Directory Directory;
  * @brief Close directory
  *
  * @param self 
+ *
+ * @return success to number of zero
+ * @return failed to number of under of zero
 */
-void 
+int 
 dir_close(Directory* self);
 
 /**
