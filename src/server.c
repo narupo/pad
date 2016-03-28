@@ -58,7 +58,7 @@ response_new(void) {
 		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "content");
 		goto fail;
 	}
-	
+
 	return self;
 
 fail:
@@ -137,7 +137,7 @@ response_merge_content_with_status(Response* self, int status) {
 
 	char tmp[100/* TODO */];
 	snprintf(tmp, sizeof tmp, "Content-Length: %d\r\n", (int) buffer_length(self->content));
-	buffer_append_string(self->buffer, tmp);	
+	buffer_append_string(self->buffer, tmp);
 
 	buffer_append_string(self->buffer, "\r\n");
 
@@ -179,14 +179,18 @@ response_init_from_file(Response* self, char const* fname) {
 		return response_init_from_status(self, 404);
 	}
 
+	buffer_append_string(self->content, "<pre>\n");
+
 	if (buffer_append_stream(self->content, fin) < 0) {
 		caperr_printf(PROGNAME, CAPERR_READ, "stream by \"%s\"", fname);
-		return response_init_from_status(self, 500);		
+		return response_init_from_status(self, 500);
 	}
+
+	buffer_append_string(self->content, "</pre>\n");
 
 	if (file_close(fin) != 0) {
 		caperr_printf(PROGNAME, CAPERR_FCLOSE, "%s", fname);
-		return response_init_from_status(self, 500);		
+		return response_init_from_status(self, 500);
 	}
 
 	return response_merge_content_with_status(self, 200);
@@ -207,7 +211,7 @@ response_init_from_dir(Response* self, char const* dirname, char const* dirpath)
 	buffer_append_string(self->content, "<h1>Index of ");
 	buffer_append_string(self->content, dirname);
 	buffer_append_string(self->content, "</h1>\n");
-	
+
 	buffer_append_string(self->content, "<ul>\n");
 
 	for (DirectoryNode* node; (node = dir_read_node(dir)); ) {
@@ -215,7 +219,7 @@ response_init_from_dir(Response* self, char const* dirname, char const* dirpath)
 		buffer_append_string(self->content, "<li><a href=\"");
 		if (strcmp(dirname, "/") != 0) {
 			buffer_append_string(self->content, dirname);
-			buffer_append_string(self->content, "/");			
+			buffer_append_string(self->content, "/");
 		}
 		buffer_append_string(self->content, name);
 		buffer_append_string(self->content, "\">");
@@ -227,7 +231,7 @@ response_init_from_dir(Response* self, char const* dirname, char const* dirpath)
 
 	if (dir_close(dir) != 0) {
 		caperr_printf(PROGNAME, CAPERR_CLOSE, "directory \"%s\"", dirpath);
-		return response_init_from_status(self, 500);	
+		return response_init_from_status(self, 500);
 	}
 
 	return response_merge_content_with_status(self, 200);
@@ -249,7 +253,7 @@ struct Store {
 void
 store_delete(Store* self) {
 	if (self) {
-		httpheader_delete(self->header);	
+		httpheader_delete(self->header);
 		socket_close(self->client);
 		response_delete(self->response);
 		free(self);
@@ -300,17 +304,17 @@ thread_id(void) {
 }
 
 #define thread_eputsf(...) { \
-	term_ceprintf(TC_YELLOW, TC_BLACK, "Thread %d: ", thread_id()); \
+	term_ceprintf(TC_YELLOW, TC_DEFAULT, "Thread %d: ", thread_id()); \
 	term_eputsf(__VA_ARGS__); \
 }
 
 #define thread_eprintf(...) { \
-	term_ceprintf(TC_YELLOW, TC_BLACK, "Thread %d: ", thread_id()); \
+	term_ceprintf(TC_YELLOW, TC_DEFAULT, "Thread %d: ", thread_id()); \
 	term_eprintf(__VA_ARGS__); \
 }
 
 #define thread_ceprintf(fg, bg, ...) { \
-	term_ceprintf(TC_YELLOW, TC_BLACK, "Thread %d: ", thread_id()); \
+	term_ceprintf(TC_YELLOW, TC_DEFAULT, "Thread %d: ", thread_id()); \
 	term_ceprintf(fg, bg, __VA_ARGS__); \
 }
 
@@ -323,7 +327,7 @@ store_recv(Store* self) {
 	}
 
 	thread_eprintf("Recv (%d bytes) " , nrecv);
-	term_ceprintf(TC_CYAN, TC_BLACK, "\"%s\"\n" , self->buffer);
+	term_ceprintf(TC_CYAN, TC_DEFAULT, "\"%s\"\n" , self->buffer);
 
 	return self->buffer;
 }
@@ -338,8 +342,8 @@ store_parse_request(Store* self, char const* buffer) {
 	char const* methname = httpheader_method_name(self->header);
 	char const* methvalue = httpheader_method_value(self->header);
 	thread_eprintf("Request ");
-	term_ceprintf(TC_YELLOW, TC_BLACK, "%s ", methname);
-	term_ceprintf(TC_CYAN, TC_BLACK, "\"%s\"\n", methvalue);
+	term_ceprintf(TC_YELLOW, TC_DEFAULT, "%s ", methname);
+	term_ceprintf(TC_CYAN, TC_DEFAULT, "\"%s\"\n", methvalue);
 
 	return self->header;
 }
@@ -356,7 +360,7 @@ store_response_from_get_method(Store* self, char const* value) {
 	if (!config_path_with_home(config, spath, sizeof spath, value)) {
 		caperr_printf(PROGNAME, CAPERR_MAKE, "path");
 		return response_init_from_status(self->response, 500);
-	}	
+	}
 
 	if (!file_is_exists(spath)) {
 		return response_init_from_status(self->response, 404);
@@ -434,12 +438,12 @@ thread_main(void* arg) {
 		thread_eprintf("store_send_response\n");
 		if (!store_send_response(store, response)) {
 			caperr_printf(PROGNAME, CAPERR_WRITE, "response");
-			continue;			
+			continue;
 		}
 	}
 
 	store_delete(store);
-	thread_ceprintf(TC_MAGENTA, TC_BLACK, "Done\n");
+	thread_ceprintf(TC_MAGENTA, TC_DEFAULT, "Done\n");
 	return NULL;
 }
 
@@ -492,7 +496,7 @@ static bool
 server_parse_options(Server* self) {
 	// Parse options
 	optind = 0;
-	
+
 	for (;;) {
 		static struct option longopts[] = {
 			{"help", no_argument, 0, 'h'},
@@ -527,7 +531,7 @@ server_parse_options(Server* self) {
 static void
 server_display_welcome_message(Server const* self, char const* hostport) {
 	time_t runtime = time(NULL);
-	term_ceprintf(TC_GREEN, TC_BLACK,
+	term_ceprintf(TC_GREEN, TC_DEFAULT,
 		"        _____    ___    _______       \n"
 		"       /____/\\ /|___|\\ |\\______\\  \n"
 		"      /     \\///     \\\\||    __ \\ \n"
@@ -535,16 +539,12 @@ server_display_welcome_message(Server const* self, char const* hostport) {
 		"      \\_____/ \\___^___/\\|___/      \n"
 		"                                      \n"
 	);
-	term_ceprintf(TC_MAGENTA, TC_BLACK,
-		"        === Server for dev ===        \n"
-		"\n"
-	);
-	term_ceprintf(TC_GREEN, TC_BLACK, "    CapSurver ");
+	term_ceprintf(TC_GREEN, TC_DEFAULT, "    CapSurver ");
 	term_eprintf("running on ");
-	term_ceprintf(TC_YELLOW, TC_BLACK, "%s\n", hostport);
+	term_ceprintf(TC_YELLOW, TC_DEFAULT, "%s\n", hostport);
 	term_eprintf("    Run at ");
-	term_ceprintf(TC_MAGENTA, TC_BLACK, "%s", ctime(&runtime));
-	term_ceprintf(TC_RED, TC_BLACK,
+	term_ceprintf(TC_MAGENTA, TC_DEFAULT, "%s", ctime(&runtime));
+	term_ceprintf(TC_RED, TC_DEFAULT,
 		"    ** CAUTION!! DO NOT PUBLISHED THIS SERVER ON INTERNET. **\n\n", hostport
 	);
 }
@@ -575,13 +575,13 @@ server_run(Server* self) {
 			caperr_printf(PROGNAME, CAPERR_OPEN, "accept client");
 			continue;
 		}
-		
+
 		// Create Store
 		Store* store = store_new();
 		if (!store) {
 			caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "store");
 			socket_close(client);
-			continue;	
+			continue;
 		}
 
 		store_move_client(store, client);
@@ -612,7 +612,7 @@ server_run(Server* self) {
 
 void
 server_usage(void) {
-    term_eprintf( 
+    term_eprintf(
         "Usage:\n"
         "\n"
         "\t%s [host-ip-address:number-of-port] [option]...\n"
@@ -633,7 +633,7 @@ server_main(int argc, char* argv[]) {
 	}
 
 	int res = server_run(server);
-	
+
 	server_delete(server);
 	return res;
 }
