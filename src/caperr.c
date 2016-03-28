@@ -59,15 +59,15 @@ caperrs_unlock(void) {
 /**
  * Push to stack of caperrs
  * This function is multi-thread safe
- * 
- * @param[in] saveerrno 
- * @param[in] *fname    
- * @param[in] *funcname 
- * @param[in] lineno    
- * @param[in] *header   
- * @param[in] number    
- * @param[in] *fmt      
- * @param[in] args      
+ *
+ * @param[in] saveerrno
+ * @param[in] *fname
+ * @param[in] *funcname
+ * @param[in] lineno
+ * @param[in] *header
+ * @param[in] number
+ * @param[in] *fmt
+ * @param[in] args
  */
 static void
 caperrs_push(
@@ -177,12 +177,12 @@ _caperr_printf(
 
 	char const* what = caperr_to_string_unsafe(number);
 	term_eprintf("%s: %s ", header, what);
-	
+
 	size_t fmtlen = strlen(fmt);
 	if (fmtlen) {
 		va_list args;
 		va_start(args, fmt);
-		
+
 		vfprintf(stderr, fmt, args);
 
 		va_end(args);
@@ -239,8 +239,8 @@ caperr_display_record_unsafe(FILE* stream, CapErr const* e) {
 #endif
 
 	// Display header and number
-	term_acfprintf(stream, TA_BRIGHT, TC_RED, TC_BLACK, "%s: ", e->header);
-	term_acfprintf(stream, TA_BRIGHT, TC_YELLOW, TC_BLACK, "%s", caperr_to_string_unsafe(e->number));
+	term_acfprintf(stream, TA_BRIGHT, TC_RED, TC_DEFAULT, "%s: ", e->header);
+	term_acfprintf(stream, TA_BRIGHT, TC_YELLOW, TC_DEFAULT, "%s", caperr_to_string_unsafe(e->number));
 
 	// Display user's message
 	size_t msglen = strlen(e->body);
@@ -253,19 +253,19 @@ caperr_display_record_unsafe(FILE* stream, CapErr const* e) {
 		}
 
 		// Display
-		term_acfprintf(stream, TA_BRIGHT, TC_YELLOW, TC_BLACK, "%s", e->body);
-		
+		term_acfprintf(stream, TA_BRIGHT, TC_YELLOW, TC_DEFAULT, "%s", e->body);
+
 		// Fix tail format of string
 		if (e->body[msglen-1] != '.') {
 			fprintf(stream, ".");
 		}
 	}
-	
+
 	// Display by errno
 	if (e->saveerrno != 0) {
 		fprintf(stream, " %s.", strerror(e->saveerrno));
 	}
-	
+
 	// Done
 	fprintf(stream, "\n");
 }
@@ -303,7 +303,7 @@ caperr_display_first(FILE* stream) {
 	}
 
 	if (caperrs.stack_top != 0) {
-		caperr_display_record_unsafe(stream, &caperrs.stack[0]);		
+		caperr_display_record_unsafe(stream, &caperrs.stack[0]);
 	}
 
 	if (!caperrs_unlock()) {

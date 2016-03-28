@@ -168,13 +168,17 @@ bgtowincolorflag(TermColor termcolor) {
 }
 #endif /* For Windows */
 
-/** 
+/**
  * From http://www.linuxjournal.com/article/8603
  */
 void
 term_ftextcolor(FILE* fout, TermAttr attr, TermColor fg, TermColor bg) {
 	char cmd[13];
-	snprintf(cmd, sizeof cmd, "%c[%d;%d;%dm", 0x1b, attr, fg+30, bg+40);
+
+	fg = (fg < 0 ? 1 : fg+30);
+	bg = (bg < 0 ? 1 : bg+40);
+
+	snprintf(cmd, sizeof cmd, "%c[%d;%d;%dm", 0x1b, attr, fg, bg);
 	fprintf(fout, "%s", cmd);
 }
 
@@ -207,7 +211,7 @@ _acfprintf_unsafe(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char co
 
 	// Draw
 	int len = vfprintf(fout, fmt, args);
-	
+
 	// Undo state
 #if !defined(_CAP_MSYS) && defined(_CAP_WINDOWS)
 	SetConsoleTextAttribute(stdh, oldattr);
@@ -217,9 +221,9 @@ _acfprintf_unsafe(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char co
 	}
 #endif
 
-	return len;	
+	return len;
 }
- 
+
 int
 term_cfprintf(FILE* fout, TermColor fg, TermColor bg, char const* fmt, ...) {
 	if (fout == stdout && !stdout_lock()) {
@@ -230,7 +234,7 @@ term_cfprintf(FILE* fout, TermColor fg, TermColor bg, char const* fmt, ...) {
 
 	va_list args;
 	va_start(args, fmt);
-	int len = _acfprintf_unsafe(fout, 0, fg, bg, fmt, args);	
+	int len = _acfprintf_unsafe(fout, 0, fg, bg, fmt, args);
 	va_end(args);
 
 	if (fout == stdout && !stdout_unlock()) {
@@ -239,7 +243,7 @@ term_cfprintf(FILE* fout, TermColor fg, TermColor bg, char const* fmt, ...) {
 		return -1;
 	}
 
-	return len;	
+	return len;
 }
 
 int
@@ -252,7 +256,7 @@ term_acfprintf(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char const
 
 	va_list args;
 	va_start(args, fmt);
-	int len = _acfprintf_unsafe(fout, attr, fg, bg, fmt, args);	
+	int len = _acfprintf_unsafe(fout, attr, fg, bg, fmt, args);
 	va_end(args);
 
 	if (fout == stdout && !stdout_unlock()) {
@@ -261,7 +265,7 @@ term_acfprintf(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char const
 		return -1;
 	}
 
-	return len;	
+	return len;
 }
 
 int
@@ -272,7 +276,7 @@ term_acprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...) {
 
 	va_list args;
 	va_start(args, fmt);
-	int len = _acfprintf_unsafe(stdout, attr, fg, bg, fmt, args);	
+	int len = _acfprintf_unsafe(stdout, attr, fg, bg, fmt, args);
 	va_end(args);
 
 	if (!stdout_unlock()) {
@@ -289,7 +293,7 @@ term_cprintf(TermColor fg, TermColor bg, char const* fmt, ...) {
 
 	va_list args;
 	va_start(args, fmt);
-	int len = _acfprintf_unsafe(stdout, 0, fg, bg, fmt, args);	
+	int len = _acfprintf_unsafe(stdout, 0, fg, bg, fmt, args);
 	va_end(args);
 
 	if (!stdout_unlock()) {
@@ -306,7 +310,7 @@ term_aceprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...) 
 
 	va_list args;
 	va_start(args, fmt);
-	int len = _acfprintf_unsafe(stderr, attr, fg, bg, fmt, args);	
+	int len = _acfprintf_unsafe(stderr, attr, fg, bg, fmt, args);
 	va_end(args);
 
 	if (!stderr_unlock()) {
@@ -324,7 +328,7 @@ term_ceprintf(TermColor fg, TermColor bg, char const* fmt, ...) {
 
 	va_list args;
 	va_start(args, fmt);
-	int len = _acfprintf_unsafe(stderr, 0, fg, bg, fmt, args);	
+	int len = _acfprintf_unsafe(stderr, 0, fg, bg, fmt, args);
 	va_end(args);
 
 	if (!stderr_unlock()) {

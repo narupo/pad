@@ -13,7 +13,7 @@ struct Command {
 	StringArray* names;
 	CsvLine* tags;
 	int max_namelen;
-	
+
 	// Options
 	bool opt_is_help;
 	bool opt_is_all_disp;
@@ -171,11 +171,11 @@ command_display_brief_from_stream(Command const* self, FILE* fin) {
 }
 
 /**
- * @brief      
+ * @brief
  *
- * @param      self  
- * @param      head  
- * @param      tail  
+ * @param      self
+ * @param      head
+ * @param      tail
  *
  * @return     success to 0
  * @return     failed to number of caperr @see "caperr.h"
@@ -195,13 +195,15 @@ command_walkdir(Command* self, char const* head, char const* tail) {
 
 	// Check path
 	if (config_is_out_of_home(self->config, dirpath)) {
+		ret = caperr(PROGNAME, CAPERR_NOTFOUND, "directory \"%s\"", dirpath);
 		return ret;
 	}
 
 	// Open directory
 	Directory* dir = dir_open(dirpath);
 	if (!dir) {
-		return caperr(PROGNAME, CAPERR_OPENDIR, "\"%s\"", dirpath);
+		ret = caperr(PROGNAME, CAPERR_OPENDIR, "\"%s\"", dirpath);
+		return ret;
 	}
 
 	// Save file list on walk file-system
@@ -308,7 +310,7 @@ command_display(Command const* self) {
 			caperr(PROGNAME, CAPERR_SOLVE, "\"%s\"", name);
 			continue;
 		}
-		
+
 		if (file_is_dir(path)) {
 			// Display name
 			if (!self->opt_is_tags) {
@@ -342,13 +344,13 @@ command_display(Command const* self) {
 				fseek(fin, 0L, SEEK_SET); // Reset file pointer position
 				command_display_brief_from_stream(self, fin);
 			}
-			
+
 			// Done
 			term_printf("\n");
 			file_close(fin);
 		}
 	}
-	
+
 	// Done
 	return 0;
 }
@@ -372,7 +374,7 @@ command_run(Command* self) {
 	if (command_walkdir(self, head, tail) != 0) {
 		return caperr(PROGNAME, CAPERR_EXECUTE, "walkdir");
 	}
-	
+
 	// Display results of walk
 	if (command_display(self) != 0) {
 		return caperr(PROGNAME, CAPERR_EXECUTE, "display");
