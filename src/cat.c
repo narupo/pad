@@ -322,9 +322,11 @@ command_run(Command* self) {
 
 	// Catenate all file
 	for (int i = self->optind; i < self->argc; ++i) {
+		char const* arg = self->argv[i];
+
 		// Solve path
 		char fname[FILE_NPATH];
-		if (!config_path_with_cd(config, fname, sizeof fname, self->argv[i])) {
+		if (!config_path_with_cd(config, fname, sizeof fname, arg)) {
 			ret = caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from base \"%s\"", self->argv[i]);
 			continue;
 		}
