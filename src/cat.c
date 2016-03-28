@@ -7,8 +7,8 @@
 typedef struct Command Command;
 
 enum {
-	CAT_NREPLACE_LIST = 10, // Number of a elements of array for replace of the @cap braces 
-	CAT_INDENT_VALUE = '\t', // Indent of head of strings at time on output 
+	CAT_NREPLACE_LIST = 10, // Number of a elements of array for replace of the @cap braces
+	CAT_INDENT_VALUE = '\t', // Indent of head of strings at time on output
 };
 
 struct Command {
@@ -96,7 +96,7 @@ static bool
 command_parse_options(Command* self) {
 	// Parse options
 	optind = 0;
-	
+
 	for (;;) {
 		static struct option longopts[] = {
 			{"debug", no_argument, 0, 'd'},
@@ -155,8 +155,8 @@ command_parse_options(Command* self) {
 
 /**
  * Wrapper of capparser_parse_line
- * 
- * @param self 
+ *
+ * @param self
  * @param buffer pointer to buffer for parse string
  * @param parser pointer to CapParser
  *
@@ -209,7 +209,7 @@ cat_read_row(Command* self, String const* buffer, CapParser* parser) {
 /**
  * @brief Display buffer to a output stream from a input stream
  *
- * @param[in]  self    
+ * @param[in]  self
  * @param[in]  config  pointer to Config
  * @param[out] fout    pointer to a output stream
  * @param[in]  fin     pointer to a input stream
@@ -244,7 +244,7 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 		if (!row) {
 			continue;
 		}
-	
+
 		// Get front column from row
 		CapCol const* col = capcollist_front(caprow_cols(row));
 
@@ -326,6 +326,11 @@ command_run(Command* self) {
 		char fname[FILE_NPATH];
 		if (!config_path_with_cd(config, fname, sizeof fname, self->argv[i])) {
 			ret = caperr(PROGNAME, CAPERR_ERROR, "Failed to make path from base \"%s\"", self->argv[i]);
+			continue;
+		}
+
+		if (file_is_dir(fname)) {
+			ret = caperr(PROGNAME, CAPERR_ERROR, "Can't read \"%s\".", fname);
 			continue;
 		}
 
@@ -480,7 +485,7 @@ cat_main(int argc, char* argv[]) {
 
 	// Done
 	command_delete(command);
-	return res;	
+	return res;
 }
 
 /*******
