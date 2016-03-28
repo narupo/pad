@@ -10,7 +10,7 @@ UTILS := caperr.c atcap.c buffer.c cap-file.c config.c \
 
 HEADERS := $(CMDS:.c=.h) $(UTILS:.c=.h) hash.h
 OBJS := $(CMDS:.c=.o) $(UTILS:.c=.o)
-DEPS := $(CMDS:.c=.d) $(UTILS:.c=.d) 
+DEPS := $(CMDS:.c=.d) $(UTILS:.c=.d)
 
 ifeq ($(OS),Windows_NT)
 	LIBS := -lpthread -lws2_32
@@ -29,7 +29,7 @@ cap: $(OBJS)
 atcap: atcap.c $(UTILS)
 	$(CC) -DDEBUG -DTEST_ATCAP $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
-buffer: buffer.c 
+buffer: buffer.c
 	$(CC) -DDEBUG -DTEST_BUFFER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 string: string.c util.c memory.c term.c csvline.c buffer.c
@@ -74,10 +74,10 @@ csvline: csvline.c buffer.c caperr.c util.c term.c
 caperr: caperr.c term.c
 	$(CC) -DDEBUG -DTEST_CAPERR $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
-cap-file: cap-file.c $(UTILS) 
+cap-file: cap-file.c $(UTILS)
 	$(CC) -DDEBUG -DTEST_CAPFILE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
-term: term.c 
+term: term.c
 	$(CC) -DDEBUG -DTEST_TERM $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 run: run.c $(UTILS)

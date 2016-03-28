@@ -111,7 +111,7 @@ config_init_file(Config* self, char const* fname) {
 		str_append_string(src, "	\"editor\": \"");
 		str_append_string(src, DEFAULT_EDITOR_PATH);
 		str_append_string(src, "\"\n");
-		
+
 	str_append_string(src, "}\n");
 
 	FILE* fout = file_open(fname, "wb");
@@ -143,11 +143,11 @@ config_init_file(Config* self, char const* fname) {
 
 /**
  * Construct Config from directory
- * 
+ *
  * @param[in] dirpath source directory of construct
  *
  * @return success to pointer to Config
- * @return failed to pointer to NULL 
+ * @return failed to pointer to NULL
  */
 static Config*
 config_new_from_dir(char const* dirpath) {
@@ -208,7 +208,7 @@ config_new_from_dir(char const* dirpath) {
 
 /**
  * Construct Config
- * 
+ *
  * @return success to pointer to Config
  * @return failed to pointer to NULL
  */
@@ -300,7 +300,9 @@ config_path_with(Config const* self, char* dst, size_t dstsize, char const* with
 	// Is out of home?
 	if (self_is_out_of_home_unsafe(self, dst)) {
 		// Yes, set path to home
-		snprintf(dst, dstsize, "%s", self_path_unsafe(self, "home"));
+		// snprintf(dst, dstsize, "%s", self_path_unsafe(self, "home"));
+		self_unlock();
+		return NULL;
 	}
 
 	self_unlock();
@@ -330,7 +332,7 @@ config_server_const(Config const* self) {
 	if (!self_unlock()) {
 		return NULL;
 	}
-	
+
 	return servobj;
 }
 
@@ -370,7 +372,7 @@ config_save(Config const* self) {
 		self_unlock();
 		return ret;
 	}
-	
+
 	return false;
 }
 
