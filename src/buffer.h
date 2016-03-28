@@ -21,7 +21,7 @@ typedef unsigned char const* Buffer_const_pointer_type;
  * @param[in] self
  */
 void
-buffer_delete(Buffer* self);
+buf_delete(Buffer* self);
 
 /**
  * Escape buffer in object and delete object without escape buffer
@@ -32,7 +32,7 @@ buffer_delete(Buffer* self);
  * @return pointer to bytes of escape from object
  */
 Buffer_pointer_type
-buffer_escape_delete(Buffer* self);
+buf_escape_delete(Buffer* self);
 
 /**
  * Construct buffer
@@ -41,7 +41,7 @@ buffer_escape_delete(Buffer* self);
  * @return failed to NULL
  */
 Buffer*
-buffer_new(void);
+buf_new(void);
 
 /**
  * Construct buffer from number of capacity
@@ -52,7 +52,7 @@ buffer_new(void);
  * @return failed to NULL
  */
 Buffer*
-buffer_new_from_capacity(size_t capacity);
+buf_new_from_capacity(size_t capacity);
 
 /**
  * Get used length of buffer
@@ -62,7 +62,7 @@ buffer_new_from_capacity(size_t capacity);
  * @return number of length
  */
 size_t
-buffer_length(Buffer const* self);
+buf_length(Buffer const* self);
 
 /**
  * Get read-only pointer to bytes in buffer
@@ -72,7 +72,7 @@ buffer_length(Buffer const* self);
  * @return pointer to memory of bytes in buffer  
  */
 Buffer_const_pointer_type
-buffer_get_const(Buffer const* self);
+buf_get_const(Buffer const* self);
 
 /**
  * Get byte at front of buffer
@@ -82,7 +82,7 @@ buffer_get_const(Buffer const* self);
  * @return byte
  */
 Buffer_type
-buffer_front(Buffer const* self);
+buf_front(Buffer const* self);
 
 /**
  * Get byte at back of buffer
@@ -92,7 +92,7 @@ buffer_front(Buffer const* self);
  * @return byte
  */
 Buffer_type
-buffer_back(Buffer const* self);
+buf_back(Buffer const* self);
 
 /**
  * Clear buffer
@@ -100,7 +100,7 @@ buffer_back(Buffer const* self);
  * @param[in] self 
  */
 void
-buffer_clear(Buffer* self);
+buf_clear(Buffer* self);
 
 /**
  * Push data at back of buffer
@@ -111,7 +111,7 @@ buffer_clear(Buffer* self);
  * @return failed to under of zero
  */
 int
-buffer_push_back(Buffer* self, int ch);
+buf_push_back(Buffer* self, int ch);
 
 /**
  * Pop data at back of buffer
@@ -120,7 +120,7 @@ buffer_push_back(Buffer* self, int ch);
  * @return pop data
  */
 Buffer_type
-buffer_pop_back(Buffer* self);
+buf_pop_back(Buffer* self);
 
 /**
  * Append bytes at back of buffer
@@ -133,7 +133,7 @@ buffer_pop_back(Buffer* self);
  * @return success to number of appended
  */
 int
-buffer_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size);
+buf_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size);
 
 /**
  * Append string without nil-terminator at back of buffer
@@ -145,7 +145,7 @@ buffer_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size);
  * @return success to number of appended
  */
 int
-buffer_append_string(Buffer* self, char const* str);
+buf_append_string(Buffer* self, char const* str);
 
 /**
  * Append bytes from stream at back of buffer
@@ -157,7 +157,7 @@ buffer_append_string(Buffer* self, char const* str);
  * @return success to number of appended
  */
 int
-buffer_append_stream(Buffer* self, FILE* fin);
+buf_append_stream(Buffer* self, FILE* fin);
 
 /**
  * Append a other buffer's bytes at back of buffer
@@ -169,7 +169,7 @@ buffer_append_stream(Buffer* self, FILE* fin);
  * @return success to number of appended
  */
 int
-buffer_append_other(Buffer* self, Buffer const* other);
+buf_append_other(Buffer* self, Buffer const* other);
 
 /**
  * Resize buffer
@@ -181,7 +181,7 @@ buffer_append_other(Buffer* self, Buffer const* other);
  * @return failed to false
  */
 bool
-buffer_resize(Buffer* self, size_t resize);
+buf_resize(Buffer* self, size_t resize);
 
 /**
  * Check empty is buffer
@@ -192,7 +192,7 @@ buffer_resize(Buffer* self, size_t resize);
  * @return not empty to false
  */
 bool
-buffer_empty(Buffer const* self);
+buf_empty(Buffer const* self);
 
 /**
  * Read line from stream, And write to buffer
@@ -202,6 +202,6 @@ buffer_empty(Buffer const* self);
  * @return done or failed to false
  */
 bool
-buffer_getline(Buffer* self, FILE* stream);
+buf_getline(Buffer* self, FILE* stream);
 
 #endif
