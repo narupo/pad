@@ -75,6 +75,7 @@ typedef enum {
 } TermAttr;
 
 typedef enum {
+	TC_DEFAULT = -1,
 	TC_BLACK   = 0,
 	TC_RED     = 1,
 	TC_GREEN   = 2,
@@ -118,54 +119,54 @@ term_acfprintf(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char const
 
 /**
  * Wrapper of fprintf(stdout) with attribute and colors
- * 
+ *
  * @param[in]  attr attribute
  * @param[in]  fg   fore ground color
  * @param[in]  bg   back ground color
  * @param[in]  fmt  string of format
  * @param[in]  ...  arguments of format
- *             
- * @return     
+ *
+ * @return
  */
 int
 term_acprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...);
 
 /**
  * Wrapper of fprintf(stdout) with colors
- * 
+ *
  * @param[in]  fg   fore ground color
  * @param[in]  bg   back ground color
  * @param[in]  fmt  string of format
  * @param[in]  ...  arguments of format
- *            
- * @return    
+ *
+ * @return
  */
 int
 term_cprintf(TermColor fg, TermColor bg, char const* fmt, ...);
 
 /**
  * Wrapper of fprintf(stderr) with attribute and colors
- * 
+ *
  * @param[in]  attr attribute
  * @param[in]  fg   fore ground color
  * @param[in]  bg   back ground color
  * @param[in]  fmt  string of format
  * @param[in]  ...  arguments of format
- *             
- * @return     
+ *
+ * @return
  */
 int
 term_aceprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...);
 
 /**
  * Wrapper of fprintf(stderr) with colors
- * 
+ *
  * @param[in]  fg   fore ground color
  * @param[in]  bg   back ground color
  * @param[in]  fmt  string of format
  * @param[in]  ...  arguments of format
- *            
- * @return    
+ *
+ * @return
  */
 int
 term_ceprintf(TermColor fg, TermColor bg, char const* fmt, ...);

@@ -58,8 +58,8 @@ alias_parse_options(Command* self);
 /**
  * Destruct command of alias
  * If self is NULL then don't anything
- * 
- * @param[in] self 
+ *
+ * @param[in] self
  */
 static void
 alias_delete(Command* self) {
@@ -70,10 +70,10 @@ alias_delete(Command* self) {
 
 /**
  * Construct command of alias inherit from main function
- * 
+ *
  * @param[in] argc    main's argc
  * @param[in] *argv[] main's argv
- * 
+ *
  * @return success to number of zero
  * @return failed to number of another
  */
@@ -103,9 +103,9 @@ alias_new(int argc, char* argv[]) {
 
 /**
  * Parse program options
- * 
- * @param[in] *self 
- * 
+ *
+ * @param[in] *self
+ *
  * @return success to true
  * @return failed to false
  */
@@ -113,7 +113,7 @@ static bool
 alias_parse_options(Command* self) {
 	// Parse options
 	optind = 0;
-	
+
 	for (;;) {
 		static struct option longopts[] = {
 			{"debug", no_argument, 0, 'D'},
@@ -300,7 +300,7 @@ alias_push_alias_to_file(Command const* self, char const* pushkey, char const* p
 
 	putcol(stream, pushkey, ALIAS_NKEY);
 	putcol(stream, pushval, ALIAS_NVAL);
-	
+
 done:
 	file_close(stream);
 	return 0;
@@ -321,12 +321,12 @@ alias_disp_list(Command* self) {
 	if (!fin) {
 		return caperr(PROGNAME, CAPERR_FOPEN, "");
 	}
-	
+
 	// Get max length of key for display
 	size_t maxkeylen = 0;
 	for (; !feof(fin); ) {
 		char key[ALIAS_NKEY+1];
-		
+
 		if (getcol(fin, key, ALIAS_NKEY) <= 0) {
 			break;
 		}
@@ -346,7 +346,7 @@ alias_disp_list(Command* self) {
 	for (; !feof(fin); ) {
 		char key[ALIAS_NKEY+1];
 		char val[ALIAS_NVAL+1];
-		
+
 		if (getcol(fin, key, ALIAS_NKEY) <= 0) {
 			break;
 		}
@@ -365,11 +365,11 @@ alias_disp_list(Command* self) {
 
 /**
  * Delete record from stream file by key
- * 
- * @param[in]  *self   
+ *
+ * @param[in]  *self
  * @param[out] *stream destination stream
  * @param[in]  *delkey delete key
- * 
+ *
  * @return success to number of zero
  * @return failed to number of caperr
  */
@@ -423,7 +423,7 @@ alias_delete_record(Command* self) {
 	for (int i = self->optind; i < self->argc; ++i) {
 		char const* delkey = self->argv[i];
 		fseek(stream, 0L, SEEK_SET);
-		alias_delete_record_from_stream_by_key(self, stream, delkey);	
+		alias_delete_record_from_stream_by_key(self, stream, delkey);
 	}
 
 	file_close(stream);
@@ -523,9 +523,9 @@ alias_import(Command* self) {
 
 /**
  * Export alias to file system
- * 
- * @param[in] *self 
- * 
+ *
+ * @param[in] *self
+ *
  * @return success to number of zero
  * @return failed to number of caperr
  */
@@ -567,9 +567,9 @@ alias_export(Command* self) {
 
 /**
  * Run alias command
- * 
- * @param[in] *self 
- * 
+ *
+ * @param[in] *self
+ *
  * @return success to number of zero
  * @return failed to number of caperr
  */
