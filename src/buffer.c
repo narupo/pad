@@ -15,7 +15,7 @@ struct Buffer {
 };
 
 void
-buffer_swap_other(Buffer* self, Buffer* other) {
+buf_swap_other(Buffer* self, Buffer* other) {
 #	define SWAP(T, a, b) { \
 		T c = a; \
 		a = b; \
@@ -30,7 +30,7 @@ buffer_swap_other(Buffer* self, Buffer* other) {
 }
 
 void
-buffer_delete(Buffer* self) {
+buf_delete(Buffer* self) {
 	if (self) {
 		free(self->buffer);
 		free(self);
@@ -38,7 +38,7 @@ buffer_delete(Buffer* self) {
 }
 
 Buffer_pointer_type
-buffer_escape_delete(Buffer* self) {
+buf_escape_delete(Buffer* self) {
 	if (self) {
 		// Start move semantics
 		Buffer_pointer_type buffer = self->buffer;
@@ -49,12 +49,12 @@ buffer_escape_delete(Buffer* self) {
 }
 
 Buffer*
-buffer_new(void) {
-	return buffer_new_from_capacity(NBUFFER_NEW_CAPACITY);
+buf_new(void) {
+	return buf_new_from_capacity(NBUFFER_NEW_CAPACITY);
 }
 
 Buffer*
-buffer_new_from_capacity(size_t capacity) {
+buf_new_from_capacity(size_t capacity) {
 	Buffer* self = (Buffer*) calloc(1, sizeof(Buffer));
 	if (!self) {
 		return NULL;
@@ -72,22 +72,22 @@ buffer_new_from_capacity(size_t capacity) {
 }
 
 size_t
-buffer_length(Buffer const* self) {
+buf_length(Buffer const* self) {
 	return self->length;
 }
 
 Buffer_type const*
-buffer_get_const(Buffer const* self) {
+buf_get_const(Buffer const* self) {
 	return self->buffer;
 }
 
 Buffer_type
-buffer_front(Buffer const* self) {
+buf_front(Buffer const* self) {
 	return self->buffer[0];
 }
 
 Buffer_type
-buffer_back(Buffer const* self) {
+buf_back(Buffer const* self) {
 	if (self->length <= 0) {
 		return EOF;
 	}
@@ -95,13 +95,13 @@ buffer_back(Buffer const* self) {
 }
 
 void
-buffer_clear(Buffer* self) {
+buf_clear(Buffer* self) {
 	self->length = 0;
 	memset(self->buffer, 0, self->capacity);
 }
 
 bool
-buffer_resize(Buffer* self, size_t resize) {
+buf_resize(Buffer* self, size_t resize) {
 	resize = (resize == 0 ? NBUFFER_NEW_CAPACITY : resize);
 
 	Buffer_pointer_type ptr = (Buffer_pointer_type) realloc(self->buffer, resize);
@@ -116,9 +116,9 @@ buffer_resize(Buffer* self, size_t resize) {
 }
 
 int
-buffer_push_back(Buffer* self, int ch) {
+buf_push_back(Buffer* self, int ch) {
 	if (self->length >= self->capacity) {
-		if (!buffer_resize(self, self->capacity * 2)) {
+		if (!buf_resize(self, self->capacity * 2)) {
 			return -1;
 		}
 	}
@@ -127,7 +127,7 @@ buffer_push_back(Buffer* self, int ch) {
 }
 
 Buffer_type
-buffer_pop_back(Buffer* self) {
+buf_pop_back(Buffer* self) {
 	Buffer_type ch = 0;
 
 	if (self->length) {
@@ -138,9 +138,9 @@ buffer_pop_back(Buffer* self) {
 }
 
 int
-buffer_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size) {
+buf_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size) {
 	for (size_t i = 0; i < size; ++i) {
-		if (buffer_push_back(self, bytes[i]) < 0) {
+		if (buf_push_back(self, bytes[i]) < 0) {
 			return -1;
 		}
 	}
@@ -149,11 +149,11 @@ buffer_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size) {
 }
 
 int
-buffer_append_string(Buffer* self, char const* str) {
+buf_append_string(Buffer* self, char const* str) {
 	size_t i, len;
 
 	for (i = 0, len = strlen(str); i < len; ++i) {
-		if (buffer_push_back(self, str[i]) < 0) {
+		if (buf_push_back(self, str[i]) < 0) {
 			return -1;
 		}
 	}
@@ -162,7 +162,7 @@ buffer_append_string(Buffer* self, char const* str) {
 }
 
 int
-buffer_append_stream(Buffer* self, FILE* fin) {
+buf_append_stream(Buffer* self, FILE* fin) {
 	if (feof(fin)) {
 		return -1;
 	}
@@ -170,7 +170,7 @@ buffer_append_stream(Buffer* self, FILE* fin) {
 	int napp = 0;
 
 	for (int ch; (ch = fgetc(fin)) != EOF; ++napp) {
-		if (ferror(fin) || buffer_push_back(self, ch) < 0) {
+		if (ferror(fin) || buf_push_back(self, ch) < 0) {
 			return -1;
 		}
 	}
@@ -179,11 +179,11 @@ buffer_append_stream(Buffer* self, FILE* fin) {
 }
 
 int
-buffer_append_other(Buffer* self, Buffer const* other) {
+buf_append_other(Buffer* self, Buffer const* other) {
 	size_t i;
 
 	for (i = 0; i < other->length; ++i) {
-		if (buffer_push_back(self, other->buffer[i]) < 0) {
+		if (buf_push_back(self, other->buffer[i]) < 0) {
 			return -1;
 		}
 	}
@@ -192,13 +192,13 @@ buffer_append_other(Buffer* self, Buffer const* other) {
 }
 
 bool
-buffer_empty(Buffer const* self) {
+buf_empty(Buffer const* self) {
 	return self->length == 0;
 }
 
 bool
-buffer_getline(Buffer* self, FILE* stream) {
-	buffer_clear(self);
+buf_getline(Buffer* self, FILE* stream) {
+	buf_clear(self);
 
 	if (feof(stream)) {
 		return false;
@@ -212,15 +212,15 @@ buffer_getline(Buffer* self, FILE* stream) {
 		if (ch == '\n') {
 			return true;
 		}
-		buffer_push_back(self, ch);
+		buf_push_back(self, ch);
 	}
 }
 
 #if defined(TEST_BUFFER)
 int
 main(int argc, char* argv[]) {
-	Buffer* buf = buffer_new();
-	buffer_delete(buf);
+	Buffer* buf = buf_new();
+	buf_delete(buf);
 	return 0;
 }
 #endif

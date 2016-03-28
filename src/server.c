@@ -31,8 +31,8 @@ struct Response {
 void
 response_delete(Response* self) {
 	if (self) {
-		buffer_delete(self->buffer);
-		buffer_delete(self->content);
+		buf_delete(self->buffer);
+		buf_delete(self->content);
 		free(self);
 	}
 }
@@ -47,13 +47,13 @@ response_new(void) {
 
 	self->status = RESPONSE_INIT_STATUS;
 
-	self->buffer = buffer_new();
+	self->buffer = buf_new();
 	if (!self->buffer) {
 		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "buffer");
 		goto fail;
 	}
 
-	self->content = buffer_new();
+	self->content = buf_new();
 	if (!self->content) {
 		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "content");
 		goto fail;
@@ -62,8 +62,8 @@ response_new(void) {
 	return self;
 
 fail:
-	buffer_delete(self->buffer);
-	buffer_delete(self->content);
+	buf_delete(self->buffer);
+	buf_delete(self->content);
 	mem_free(self);
 	return NULL;
 }
@@ -71,8 +71,8 @@ fail:
 void
 response_clear(Response* self) {
 	self->status = RESPONSE_INIT_STATUS;
-	buffer_clear(self->buffer);
-	buffer_clear(self->content);
+	buf_clear(self->buffer);
+	buf_clear(self->content);
 }
 
 static char const*
@@ -129,20 +129,20 @@ Response*
 response_merge_content_with_status(Response* self, int status) {
 	// Make buffer
 	self->status = status;
-	buffer_append_string(self->buffer, status_line_from_version(1.1, status));
+	buf_append_string(self->buffer, status_line_from_version(1.1, status));
 
-	buffer_append_string(self->buffer, "Server: ");
-	buffer_append_string(self->buffer, SERVER_NAME);
-	buffer_append_string(self->buffer, "\r\n");
+	buf_append_string(self->buffer, "Server: ");
+	buf_append_string(self->buffer, SERVER_NAME);
+	buf_append_string(self->buffer, "\r\n");
 
 	char tmp[100/* TODO */];
-	snprintf(tmp, sizeof tmp, "Content-Length: %d\r\n", (int) buffer_length(self->content));
-	buffer_append_string(self->buffer, tmp);
+	snprintf(tmp, sizeof tmp, "Content-Length: %d\r\n", (int) buf_length(self->content));
+	buf_append_string(self->buffer, tmp);
 
-	buffer_append_string(self->buffer, "\r\n");
+	buf_append_string(self->buffer, "\r\n");
 
 	// Merge content
-	buffer_append_other(self->buffer, self->content);
+	buf_append_other(self->buffer, self->content);
 
 	// Done
 	return self;
@@ -158,10 +158,10 @@ response_init_from_status(Response* self, int status) {
 
 	// Make buffer
 	switch (status) {
-	case 404: buffer_append_string(self->content, "<html><h1>404 Not Found</h1></html>\n"); break;
-	case 405: buffer_append_string(self->content, "<html><h1>405 Method Not Allowed</h1></html>\n"); break;
-	case 500: buffer_append_string(self->content, "<html><h1>500 Internal Server Error</h1></html>\n"); break;
-	default: buffer_append_string(self->content, "<html><h1>500 Internal Server Error. Unknown status.</h1></html>\n"); break;
+	case 404: buf_append_string(self->content, "<html><h1>404 Not Found</h1></html>\n"); break;
+	case 405: buf_append_string(self->content, "<html><h1>405 Method Not Allowed</h1></html>\n"); break;
+	case 500: buf_append_string(self->content, "<html><h1>500 Internal Server Error</h1></html>\n"); break;
+	default: buf_append_string(self->content, "<html><h1>500 Internal Server Error. Unknown status.</h1></html>\n"); break;
 	}
 
 	return response_merge_content_with_status(self, status);
@@ -179,14 +179,14 @@ response_init_from_file(Response* self, char const* fname) {
 		return response_init_from_status(self, 404);
 	}
 
-	buffer_append_string(self->content, "<pre>\n");
+	buf_append_string(self->content, "<pre>\n");
 
-	if (buffer_append_stream(self->content, fin) < 0) {
+	if (buf_append_stream(self->content, fin) < 0) {
 		caperr_printf(PROGNAME, CAPERR_READ, "stream by \"%s\"", fname);
 		return response_init_from_status(self, 500);
 	}
 
-	buffer_append_string(self->content, "</pre>\n");
+	buf_append_string(self->content, "</pre>\n");
 
 	if (file_close(fin) != 0) {
 		caperr_printf(PROGNAME, CAPERR_FCLOSE, "%s", fname);
@@ -208,26 +208,26 @@ response_init_from_dir(Response* self, char const* dirname, char const* dirpath)
 		return response_init_from_status(self, 400);
 	}
 
-	buffer_append_string(self->content, "<h1>Index of ");
-	buffer_append_string(self->content, dirname);
-	buffer_append_string(self->content, "</h1>\n");
+	buf_append_string(self->content, "<h1>Index of ");
+	buf_append_string(self->content, dirname);
+	buf_append_string(self->content, "</h1>\n");
 
-	buffer_append_string(self->content, "<ul>\n");
+	buf_append_string(self->content, "<ul>\n");
 
 	for (DirectoryNode* node; (node = dir_read_node(dir)); ) {
 		char const* name = dirnode_name(node);
-		buffer_append_string(self->content, "<li><a href=\"");
+		buf_append_string(self->content, "<li><a href=\"");
 		if (strcmp(dirname, "/") != 0) {
-			buffer_append_string(self->content, dirname);
-			buffer_append_string(self->content, "/");
+			buf_append_string(self->content, dirname);
+			buf_append_string(self->content, "/");
 		}
-		buffer_append_string(self->content, name);
-		buffer_append_string(self->content, "\">");
-		buffer_append_string(self->content, name);
-		buffer_append_string(self->content, "</a></li>\n");
+		buf_append_string(self->content, name);
+		buf_append_string(self->content, "\">");
+		buf_append_string(self->content, name);
+		buf_append_string(self->content, "</a></li>\n");
 	}
 
-	buffer_append_string(self->content, "</ul>\n");
+	buf_append_string(self->content, "</ul>\n");
 
 	if (dir_close(dir) != 0) {
 		caperr_printf(PROGNAME, CAPERR_CLOSE, "directory \"%s\"", dirpath);
@@ -394,8 +394,8 @@ store_response_from_header(Store* self, HttpHeader const* header) {
 
 Store*
 store_send_response(Store* self, Response* response) {
-	unsigned char const* buf = buffer_get_const(response->buffer);
-	size_t buflen = buffer_length(response->buffer);
+	unsigned char const* buf = buf_get_const(response->buffer);
+	size_t buflen = buf_length(response->buffer);
 
 	thread_eprintf("Send... (%d bytes)\n", buflen);
 	thread_eprintf("Send response buffer \"%s\"\n", buf);
