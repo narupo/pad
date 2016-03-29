@@ -12,9 +12,9 @@ typedef struct String String;
 /**
  * Destruct string
  *
- * @param[in] self 
+ * @param[in] self
  */
-void 
+void
 str_delete(String* self);
 
 /**
@@ -22,17 +22,17 @@ str_delete(String* self);
  *
  * @return pointer to dynamic allocate memory of string
  */
-String* 
+String*
 str_new(void);
 
 /**
- * Construct string from c string 
+ * Construct string from c string
  *
  * @param[in] str pointer to memory of c string
  *
  * @return pointer to dynamic allocate memory of string
  */
-String* 
+String*
 str_new_from_string(String_type const* str);
 
 /**
@@ -42,7 +42,7 @@ str_new_from_string(String_type const* str);
  *
  * @return pointer to dynamic allocate memory of string
  */
-String* 
+String*
 str_new_from_capacity(int capacity);
 
 /**
@@ -53,37 +53,37 @@ str_new_from_capacity(int capacity);
  *
  * @return pointer to dynamic allocate memory of string
  */
-String* 
+String*
 str_new_from_other(String const* other);
 
 /**
  * Get number of length of buffer in string
  *
- * @param[in] self 
+ * @param[in] self
  *
  * @return number of length
  */
-int 
+int
 str_length(String const* self);
 
 /**
  * Get number of capacity of buffer in string
  *
- * @param[in] self 
+ * @param[in] self
  *
  * @return number of capacity
  */
-int 
+int
 str_capacity(String const* self);
 
 /**
  * Get read-only pointer to buffer in string
  *
- * @param[in] self 
+ * @param[in] self
  *
- * @return pointer to memory of buffer in string 
+ * @return pointer to memory of buffer in string
  */
-String_type const* 
+String_type const*
 str_get_const(String const* self);
 
 /**
@@ -101,9 +101,9 @@ str_empty(String const* self);
  * Clear buffer in string
  * It to zero number of length of buffer in string
  *
- * @param[in] self 
+ * @param[in] self
  */
-void 
+void
 str_clear(String* self);
 
 /**
@@ -122,10 +122,10 @@ str_set_string(String* self, char const* src);
  *
  * Resize buffer in string by number of new length of buffer
  *
- * @param[in] self   
- * @param[in] newlen 
+ * @param[in] self
+ * @param[in] newlen
  */
-void 
+void
 str_resize(String* self, int newlen);
 
 /**
@@ -133,55 +133,55 @@ str_resize(String* self, int newlen);
  *
  * Push data to back of buffer in string
  *
- * @param[in] self 
+ * @param[in] self
  * @param[in] ch push data
  */
-void 
+void
 str_push_back(String* self, String_type ch);
 
 /**
  * Pop data at back of buffer in string
  *
- * @param[in] self 
+ * @param[in] self
  *
  * @return success to data at back
  * @return failed to NIL
  */
-String_type 
+String_type
 str_pop_back(String* self);
 
 /**
  * @deprecated This function can't get error state
- * 
+ *
  * Push data at front of buffer in string
  *
- * @param[in] self 
+ * @param[in] self
  * @param[in] ch push data
  */
-void 
+void
 str_push_front(String* self, String_type ch);
 
 /**
  * Pop data at front of buffer in string
  *
- * @param[in] self 
+ * @param[in] self
  *
  * @return success to front data of buffer
  * @return failed to NIL
  */
-String_type 
+String_type
 str_pop_front(String* self);
 
 /**
  * Append c string at back of buffer in string
  *
- * @param[in] self 
+ * @param[in] self
  * @param[in] src pointer to memory of c string
  *
  * @return success to number of append
  * @return failed to number of under of zero
  */
-int 
+int
 str_append_string(String* self, char const* src);
 
 /**
@@ -199,35 +199,50 @@ str_append_stream(String* self, FILE* fin);
 /**
  * Append other string at back of buffer in string
  *
- * @param[in] self 
+ * @param[in] self
  * @param[in] other pointer to memory of other string
  *
  * @return success to number of append
  * @return failed to number of under of zero
  */
-int 
+int
 str_append_other(String* self, String const* other);
+
+/**
+ * Append format string at back of buffer in string
+ *
+ * @param[in] self
+ * @param[in] buf  temporary buffer
+ * @param[in] nbuf size of temporary buffer
+ * @param[in] fmt  format
+ * @param[in] ...  arguments
+ *
+ * @return success to number of append
+ * @return failed to number of under of zero
+ */
+int
+str_append_nformat(String* self, char* buf, size_t nbuf, char const* fmt, ...);
 
 /**
  * @deprecated This function can't get error state
  *
  * Strip elements at right of string
  *
- * @param[in] self 
+ * @param[in] self
  * @param[in] rems list of target elements
  */
-void 
+void
 str_rstrip(String* self, char const* rems);
 
 /**
  * @deprecated This function can't get error state
- * 
+ *
  * Strip elements at left of string
  *
- * @param[in] self 
+ * @param[in] self
  * @param[in] rems list of target elements
  */
-void 
+void
 str_lstrip(String* self, char const* rems);
 
 /**
@@ -235,10 +250,10 @@ str_lstrip(String* self, char const* rems);
  *
  * Strip elements at both sides of string
  *
- * @param[in] self 
+ * @param[in] self
  * @param[in] rems list of target elements
  */
-void 
+void
 str_strip(String* self, char const* rems);
 
 /**
@@ -246,9 +261,9 @@ str_strip(String* self, char const* rems);
  *
  * Pop elements as new-line of string
  *
- * @param[in] self 
+ * @param[in] self
  */
-void 
+void
 str_pop_newline(String* self);
 
 /**
@@ -260,28 +275,28 @@ str_pop_newline(String* self);
  * @return found to pointer to memory of found string
  * @return not found to NULL
  */
-char const* 
+char const*
 str_find_const(String const* self, char const* target);
 
 /**
  * Read from stream by line
  *
- * @param[in] self 
+ * @param[in] self
  * @param[in] fin pointer to memory of input stream
  *
  * @return success to self
  * @return failed to NULL
  */
-String* 
+String*
 str_getline(String* self, FILE* fin);
 
 /**
  * Read from stream
  * Clear state of string before read
  *
- * @param[in] self 
+ * @param[in] self
  * @param[in] fin pointer to memory of input stream
- *             
+ *
  * @return success to number of read
  */
 int

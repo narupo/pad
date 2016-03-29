@@ -1,5 +1,9 @@
 #include "config.h"
 
+enum {
+	CONFIG_FORMAT_SIZE = 256,
+};
+
 struct Config {
 	char dirpath[FILE_NPATH];
 	Json* json;
@@ -15,6 +19,7 @@ static pthread_mutex_t config_mutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex for s
 static char const CONFIG_DIR_PATH[] = "~/.cap";  // Root directory path of config
 static char const CONFIGSAVE_PATH[] = "~/.cap/config";  // File path of config-setting
 static char const CONFIGSAVE_FNAME[] = "config";  // File name of config-setting
+static char const CONFIG_TRASH_DIRNAME[] = "trash"; // For trash command
 
 /***************
 * Mutex family *
@@ -92,27 +97,18 @@ config_init_file(Config* self, char const* fname) {
 #endif
 
 	String* src = str_new();
+	char fmt[CONFIG_FORMAT_SIZE];
 
 	str_append_string(src, "{\n");
-
-		str_append_string(src, "	\"home\": \"");
-		str_append_string(src, DEFAULT_HOME_PATH);
-		str_append_string(src, "\",\n");
-
-		str_append_string(src, "	\"cd\": \"");
-		str_append_string(src, DEFAULT_HOME_PATH);
-		str_append_string(src, "\",\n");
-
-		str_append_string(src, "	\"editor\": \"");
-		str_append_string(src, DEFAULT_EDITOR_PATH);
-		str_append_string(src, "\"\n");
-
+	str_append_nformat(src, fmt, sizeof fmt, "\t\"home\": \"%s\",\n", DEFAULT_HOME_PATH);
+	str_append_nformat(src, fmt, sizeof fmt, "\t\"cd\": \"%s\",\n", DEFAULT_HOME_PATH);
+	str_append_nformat(src, fmt, sizeof fmt, "\t\"editor\": \"%s\"\n", DEFAULT_EDITOR_PATH);
 	str_append_string(src, "}\n");
 
 	FILE* fout = file_open(fname, "wb");
 	if (!fout) {
 		WARN("Failed to open file \"%s\"", fname);
-		return NULL;
+		goto fail;
 	}
 
 	char const* buf = str_get_const(src);
@@ -120,20 +116,34 @@ config_init_file(Config* self, char const* fname) {
 	if (!fwrite(buf, sizeof(buf[0]), buflen, fout)) {
 		WARN("Failed to write file \"%s\"", fname);
 		fclose(fout);
-		return NULL;
+		goto fail;
 	}
 
 	if (fclose(fout) != 0) {
 		WARN("Failed to close file \"%s\"", fname);
-		return NULL;
+		goto fail;
 	}
 
 	if (!json_read_from_file(self->json, fname)) {
 		WARN("Failed to read from file \"%s\"", fname);
-		return NULL;
+		goto fail;
 	}
 
 	return self;
+
+fail:
+	str_delete(src);
+	return NULL;
+}
+
+static bool
+not_exists_to_mkdir(char const* path) {
+	if (!file_is_exists(path)) {
+		if (file_mkdir_mode(path, S_IRUSR | S_IWUSR | S_IXUSR) != 0) {
+			return false;
+		}
+	}
+	return true;
 }
 
 /**
@@ -169,12 +179,20 @@ config_new_from_dir(char const* dirpath) {
 	}
 
 	// Check directory
-	if (!file_is_exists(sdirpath)) {
-		if (file_mkdir_mode(sdirpath, S_IRUSR | S_IWUSR | S_IXUSR) != 0) {
-			WARN("Failed to mkdir \"%s\"", sdirpath);
-			free(self);
-			return NULL;
-		}
+	if (!not_exists_to_mkdir(sdirpath)) {
+		WARN("Failed to mkdir \"%s\"", sdirpath);
+		free(self);
+		return NULL;
+	}
+
+	// Make directory for trash command
+	char tmp[FILE_NPATH];
+	snprintf(tmp, sizeof tmp, "%s/%s", sdirpath, CONFIG_TRASH_DIRNAME);
+
+	if (!not_exists_to_mkdir(tmp)) {
+		WARN("Failed to mkdir \"%s\"", sdirpath);
+		free(self);
+		return NULL;
 	}
 
 	// Load config from directory

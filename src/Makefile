@@ -1,6 +1,7 @@
+RM := rm
 CC := gcc
 CFLAGS := -Wall -g -O2 -std=c99 -Wno-unused-function #-D_DEBUG
-CMDS := cap.c cat.c home.c cd.c pwd.c rm.c deploy.c edit.c \
+CMDS := cap.c cat.c home.c cd.c pwd.c trash.c deploy.c edit.c \
 	editor.c help.c ls.c make.c path.c run.c alias.c brief.c \
 	server.c mkdir.c hub.c
 
@@ -47,8 +48,8 @@ file: file.c buffer.c util.c caperr.c term.c
 ls: ls.c $(UTILS)
 	$(CC) -DDEBUG -DTEST_LS $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
-rm: rm.c $(UTILS)
-	$(CC) -DDEBUG -DTEST_RM $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+trash: trash.c $(UTILS)
+	$(CC) -DDEBUG -DTEST_TRASH $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 mkdir: mkdir.c $(UTILS)
 	$(CC) -DDEBUG -DTEST_MKDIR $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
@@ -101,7 +102,7 @@ hub: hub.c $(UTILS)
 .PHONY: clean depend
 
 clean:
-	rm $(PROGRAM) $(OBJS) $(DEPS)
+	$(RM) $(PROGRAM) $(OBJS) $(DEPS)
 
 .c.o:
 	$(CC) $(CFLAGS) -c -MMD -MP $<
