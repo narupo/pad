@@ -49,11 +49,6 @@ self_is_out_of_home_unsafe(Config const* self, char const* path) {
 		return true;
 	}
 
-	if (!file_is_exists(spath)) {
-		WARN("Not found file \"%s\"", spath);
-		return true;
-	}
-
 	char const* home = self_path_unsafe(config, "home");
 	char shome[FILE_NPATH];
 	if (!file_solve_path(shome, sizeof shome, home)) {
