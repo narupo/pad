@@ -52,8 +52,6 @@ make_solve_argv(Config const* config, int argc, char** argv) {
 	}
 
 	// Start offset of 1
-	char const* cdpath = config_path(config, "cd");
-
 	for (int i = 1; i < argc; ++i) {
 		char const* arg = argv[i];
 
@@ -63,13 +61,11 @@ make_solve_argv(Config const* config, int argc, char** argv) {
 		} else {
 			// Solve argument's path
 			char path[FILE_NPATH];
-			char spath[FILE_NPATH];
-			snprintf(path, sizeof path, "%s/%s", cdpath, arg);
-			if (!file_solve_path(spath, sizeof spath, path)) {
+			if (!config_path_with_cd(config, path, sizeof path, arg)) {
 				caperr(PROGNAME, CAPERR_SOLVE, "path \"%s\"", path);
 				goto fail;
 			}
-			solvargv[i] = util_strdup(spath);
+			solvargv[i] = util_strdup(path);
 		}
 	}
 
