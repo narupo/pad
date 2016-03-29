@@ -35,7 +35,7 @@ find_command(char const* name) {
 		Command command;
 	} table[] = {
 		{"ls", ls_main},
-		{"rm", rm_main},
+		{"trash", trash_main},
 		{"cd", cd_main},
 		{"home", home_main},
 		{"cat", cat_main},
@@ -54,7 +54,7 @@ find_command(char const* name) {
 		{"hub", hub_main},
 		{0}, // Null-terminator
 	};
-	
+
 	// Find command by name
 	for (struct CommandRecord const* i = table; i->name; ++i) {
 		if (strcmp(i->name, name) == 0) {
@@ -94,7 +94,7 @@ run_alias(int argc, char** argv) {
 		ret = caperr(PROGNAME, CAPERR_INVALID, "alias \"%s\"", aliasname);
 		goto done;
 	}
-	
+
 	// Find command
 	Command command = find_command(cmdargv[0]);
 	if (!command) {
@@ -127,7 +127,7 @@ int
 main(int argc, char* argv[]) {
 	// Result value for return
 	int ret = 0;
-	
+
 	// Check arguments
 	if (argc < 2) {
 		help_usage();

@@ -256,7 +256,7 @@ str_pop_front(String* self) {
 	if (self->length == 0) {
 		return NIL;
 	}
-	
+
 	String_type ret = self->buffer[0];
 
 	for (int i = 0; i < self->length-1; ++i) {
@@ -320,6 +320,24 @@ str_append_other(String* self, String const* other) {
 	return other->length;
 }
 
+int
+str_append_nformat(String* self, char* buf, size_t nbuf, char const* fmt, ...) {
+	if (!self || !buf || !fmt || nbuf == 0) {
+		return -1;
+	}
+
+	va_list args;
+	va_start(args, fmt);
+	int buflen = vsnprintf(buf, nbuf, fmt, args);
+	va_end(args);
+
+	for (int i = 0; i < buflen; ++i) {
+		str_push_back(self, buf[i]);
+	}
+
+	return buflen;
+}
+
 void
 str_rstrip(String* self, String_type const* rems) {
 	if (!self || !rems) {
@@ -340,7 +358,7 @@ str_lstrip(String* self, String_type const* rems) {
 	if (!self || !rems) {
 		return;
 	}
-	
+
 	for (; self->length; ) {
 		if (strchr(rems, self->buffer[0])) {
 			str_pop_front(self);
@@ -365,7 +383,7 @@ str_pop_newline(String* self) {
 	if (self->length == 0) {
 		return;
 	}
-	
+
 	if (self->buffer[self->length-1] == '\n') {
 		if (self->length > 1 && self->buffer[self->length-2] == '\r') {
 			self->length -= 2;
@@ -559,7 +577,7 @@ test_pb(char* args[]) {
 			str_push_back(str, *ap);
 		}
 	}
-	
+
 	return 0;
 }
 
@@ -744,12 +762,12 @@ main(int argc, char* argv[]) {
 				CsvLine* csvl = csvline_new_parse_line(pcmd, ' ');
 				int argc = csvline_length(csvl);
 				char** argv = csvline_escape_delete(csvl);
-				
+
 				if (cur->command(argv) != 0) {
 					fprintf(stderr, "Failed to test of \"%s\"", cmd);
 				}
 				strinfo(str);
-				
+
 				free_argv(argc, argv);
 				break;
 			}

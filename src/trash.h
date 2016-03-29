@@ -1,5 +1,5 @@
-#ifndef RM_H
-#define RM_H
+#ifndef TRASH_H
+#define TRASH_H
 
 #include "define.h"
 #include "util.h"
@@ -8,9 +8,9 @@
 #include "config.h"
 
 void
-rm_usage(void);
+trash_usage(void);
 
 int
-rm_main(int argc, char* argv[]);
+trash_main(int argc, char* argv[]);
 
 #endif

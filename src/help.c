@@ -9,7 +9,7 @@ static const struct Command {
 	Usage usage;
 } commands[] = {
 	{"ls", ls_usage},
-	{"rm", rm_usage},
+	{"trash", trash_usage},
 	{"cd", cd_usage},
 	{"cat", cat_usage},
 	{"run", run_usage},
@@ -42,7 +42,7 @@ find_command(char const* cmdname) {
 int
 help_main(int argc, char* argv[]) {
 	if (argc < 2) {
-		help_usage();	
+		help_usage();
 	} else {
 		char const* cmdname = argv[1];
 		Usage usage = find_command(cmdname);
@@ -78,7 +78,7 @@ help_usage(void) {
 	term_eprintf("\tdeploy deploy files from directory\n");
 	term_eprintf("\tedit   edit cap file\n");
 	term_eprintf("\teditor display or set editor path\n");
-	term_eprintf("\trm     remove cap file or directory\n");
+	term_eprintf("\ttrash  trash cap file or directory\n");
 	term_eprintf("\tmkdir  make directory\n");
 	term_eprintf("\trun    run script\n");
 	term_eprintf("\talias  add alias of cap's command\n");

@@ -6,7 +6,7 @@
 #include "term.h"
 #include "cat.h"
 #include "ls.h"
-#include "rm.h"
+#include "trash.h"
 #include "cd.h"
 #include "pwd.h"
 #include "home.h"

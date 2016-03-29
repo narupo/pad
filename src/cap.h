@@ -42,7 +42,7 @@ SOFTWARE.
 #include "alias.h"
 #include "brief.h"
 #include "pwd.h"
-#include "rm.h"
+#include "trash.h"
 #include "mkdir.h"
 #include "server.h"
 #include "hub.h"
