@@ -52,6 +52,8 @@ make_solve_argv(Config const* config, int argc, char** argv) {
 	}
 
 	// Start offset of 1
+	char const* cdpath = config_path(config, "cd");
+
 	for (int i = 1; i < argc; ++i) {
 		char const* arg = argv[i];
 
@@ -60,13 +62,25 @@ make_solve_argv(Config const* config, int argc, char** argv) {
 			solvargv[i] = util_strdup(arg);
 		} else {
 			// Solve argument's path
+			char path[FILE_NPATH];
 			char spath[FILE_NPATH];
-			config_path_with_cd(config, spath, sizeof spath, arg);
+			snprintf(path, sizeof path, "%s/%s", cdpath, arg);
+			if (!file_solve_path(spath, sizeof spath, path)) {
+				caperr(PROGNAME, CAPERR_SOLVE, "path \"%s\"", path);
+				goto fail;
+			}
 			solvargv[i] = util_strdup(spath);
 		}
 	}
 
 	return solvargv;
+
+fail:
+	for (int i = 0; i < argc; ++i) {
+		free(solvargv[i]);
+	}
+	free(solvargv);
+	return NULL;
 }
 
 static int
@@ -94,13 +108,10 @@ run_command(Command* self, Config const* config) {
 
 	// Run process
 	int ret = system(cmdline);
-	if (ret <= 0) {
-		return caperr(PROGNAME, CAPERR_EXECUTE, "command \"%s\"", cmdline); 
-	}
 
 	// Done
 	free_argv(argc, argv);
-	return 0;
+	return ret;
 }
 
 static int
