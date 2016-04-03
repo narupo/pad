@@ -6,7 +6,6 @@ struct Command {
 	int argc;
 	int optind;
 	char** argv;
-
 	bool opt_is_help;
 	bool opt_is_clear;
 	bool opt_is_undo;
