@@ -33,42 +33,42 @@ command_parse_options(Command* self);;
 *****************/
 
 static void
-command_delete(Command* self); 
+command_delete(Command* self);
 
 static Command*
-command_new(Config const* config, int argc, char* argv[]); 
+command_new(Config const* config, int argc, char* argv[]);
 
 /********
 * Parse *
 ********/
 
 static bool
-command_parse_options(Command* self); 
+command_parse_options(Command* self);
 
 /*********
 * Runner *
 *********/
 
 int
-make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]); 
+make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]);
 
 static int
-command_call_command(Command const* self, CapFile* dstfile, int argc, char* argv[]); 
+command_call_command(Command const* self, CapFile* dstfile, int argc, char* argv[]);
 
 static CapFile*
-command_make_capfile_from_stream(Command const* self, FILE* fin); 
+command_make_capfile_from_stream(Command const* self, FILE* fin);
 
 static int
-command_sort_capfile(Command const* self, CapFile* dstfile); 
+command_sort_capfile(Command const* self, CapFile* dstfile);
 
 static int
-command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout); 
+command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout);
 
-static CapFile* 
+static CapFile*
 command_make_capfile(Command const* self);
 
 static int
-command_run(Command* self); 
+command_run(Command* self);
 
 /*****************
 * Delete and New *
@@ -121,7 +121,7 @@ static bool
 command_parse_options(Command* self) {
 	// Parse options
 	optind = 0;
-	
+
 	for (;;) {
 		static struct option longopts[] = {
 			{"debug", no_argument, 0, 'd'},
@@ -189,10 +189,10 @@ command_call_command(Command const* self, CapFile* dstfile, int argc, char* argv
 /**
  * Make CapFile from stream
  *
- * @param      self  
- * @param      fin   
+ * @param      self
+ * @param      fin
  *
- * @return     
+ * @return
  */
 static CapFile*
 command_make_capfile_from_stream(Command const* self, FILE* fin) {
@@ -203,7 +203,7 @@ command_make_capfile_from_stream(Command const* self, FILE* fin) {
 	for (; str_getline(buf, fin); ) {
 		// Get line
 		char const* line = str_get_const(buf);
-		
+
 		// Make CapRow from line
 		CapRow* addrow = capparser_make_caprow(parser, line, self->replace_list);
 		if (!addrow) {
@@ -256,7 +256,7 @@ command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
 		if (!front) {
 			continue;
 		}
-		
+
 		CapColType ctype = capcol_type(front);
 		if (ctype == CapColGoto) {
 			if (g < NUMOF(gotos)) {
@@ -274,7 +274,7 @@ command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
 	for (int i = 0; i < g; ++i) {
 		CapRow* gotorow = gotos[i];
 		char const* gotoval = capcol_value_const(capcollist_front(caprow_cols(gotorow)));
-		
+
 		int j;
 		for (j = 0; j < m; ++j) {
 			CapRow* markrow = marks[j];
@@ -383,7 +383,12 @@ command_open_input_file(Command const* self, char const* capname) {
 			return NULL;
 		}
 	}
-	
+
+	// Check directory
+	if (file_is_dir(spath)) {
+		caperr(PROGNAME, CAPERR_ERROR, "Can't read \"%s\"", spath);
+		return NULL;
+	}
 	// Open cap's make file
 	fin = file_open(spath, "rb");
 	if (!fin) {
@@ -394,7 +399,7 @@ command_open_input_file(Command const* self, char const* capname) {
 	return fin;
 }
 
-static CapFile* 
+static CapFile*
 command_make_capfile(Command const* self) {
 	CapFile* mkfile = NULL;
 
@@ -423,7 +428,7 @@ command_make_capfile(Command const* self) {
 			// Open stream
 			FILE* fin = command_open_input_file(self, capname);
 			if (!fin) {
-				caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", capname);
+				caperr_printf(PROGNAME, CAPERR_FOPEN, "\"%s\"", capname);
 				continue;
 			}
 
@@ -561,7 +566,7 @@ make_main(int argc, char* argv[]) {
 
 	// Run
 	int ret = command_run(command);
-	
+
 	// Done
 	command_delete(command);
 	return ret;
