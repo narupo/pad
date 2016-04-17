@@ -96,7 +96,7 @@ command_parse_options(Command* self) {
 			{"brief", no_argument, 0, 'b'},
 			{"recursive", no_argument, 0, 'R'},
 			{"tags", required_argument, 0, 't'},
-			{0},
+			{},
 		};
 		int optsindex;
 
@@ -231,7 +231,7 @@ command_walkdir(Command* self, char const* head, char const* tail) {
 		}
 
 		// Update max name length for display
-		size_t newtaillen = strlen(newtail);
+		int newtaillen = strlen(newtail);
 		self->max_namelen = (newtaillen > self->max_namelen ? newtaillen : self->max_namelen);
 
 		// Is directory?
