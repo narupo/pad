@@ -7,8 +7,10 @@ typedef enum {
 
 typedef struct {
 	Type type;
-	String* str;
-	Buffer* buf;
+	union {
+		String* str;
+		Buffer* buf;
+	};
 } Object;
 
 void*
