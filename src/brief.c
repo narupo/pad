@@ -25,8 +25,8 @@ command_parse_options(Command* self);
 
 /**
  * Destruct command
- * 
- * @param[in] *self 
+ *
+ * @param[in] *self
  */
 static void
 command_delete(Command* self) {
@@ -39,10 +39,10 @@ command_delete(Command* self) {
 
 /**
  * Construct command by args
- * 
+ *
  * @param[in] argc    like a argc of main()
  * @param[in] *argv[] like a argv of main()
- * 
+ *
  * @return success to pointer to dynamic allocate memory of command
  * @return failed to NULL
  */
@@ -89,17 +89,17 @@ fail:
 
 /**
  * Parse command options
- * 
- * @param[in] *self 
- * 
+ *
+ * @param[in] *self
+ *
  * @return success to true
- * @return failed to false 
+ * @return failed to false
  */
 static bool
 command_parse_options(Command* self) {
 	// Parse options
 	optind = 0;
-	
+
 	for (;;) {
 		static struct option longopts[] = {
 			{"help", no_argument, 0, 'h'},
@@ -135,10 +135,10 @@ command_parse_options(Command* self) {
 
 /**
  * Open stream by file-name
- * 
- * @param[in] *self  
+ *
+ * @param[in] *self
  * @param[in] *fname open file name
- * 
+ *
  * @return success to pointer to FILE
  * @return failed to NULL
  */
@@ -172,11 +172,11 @@ command_open_stream(Command const* self, char const* fname) {
 
 /**
  * Read from stream
- * 
- * @param[out] *self  
+ *
+ * @param[out] *self
  * @param[in] *fin   read stream
  * @param[in] *fname file-name of read stream
- * 
+ *
  * @return success to number of zero
  * @return failed to number of caperr
  */
@@ -195,7 +195,7 @@ command_read_from_stream(Command* self, FILE* fin, char const* fname) {
 	}
 
 	// Read briefs in file
-	for (; str_getline(buf, fin); ) {
+	for (; io_getline_str(buf, fin); ) {
 		char const* line = str_get_const(buf);
 		CapRow* row = capparser_parse_line(parser, line);
 		if (!row) {
@@ -208,7 +208,7 @@ command_read_from_stream(Command* self, FILE* fin, char const* fname) {
 			char const* val = capcol_value_const(caprow_front(row));
 			strarray_push_copy(self->briefs, val);
 			strarray_push_copy(self->fnames, fname);
-	
+
 			if (!self->opt_is_disp_all) {
 				// This brief only. Break from loop
 				caprow_delete(row);
@@ -226,9 +226,9 @@ command_read_from_stream(Command* self, FILE* fin, char const* fname) {
 
 /**
  * Run command
- * 
- * @param[in] *self 
- * 
+ *
+ * @param[in] *self
+ *
  * @return success to number of zero
  * @return failed to number of caperr
  */
@@ -274,7 +274,7 @@ command_run(Command* self) {
 		char const* brief = strarray_get_const(self->briefs, i);
 		size_t brieflen = strlen(brief);
 		size_t fnamelen = strlen(fname);
-		
+
 		if (prevfname && strcmp(prevfname, fname) == 0) {
 			term_printf("%-*s %-*s%s", fnamelen, "", maxfnamelen-fnamelen, "", brief);
 		} else if (fnamelen) {

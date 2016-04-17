@@ -200,7 +200,7 @@ command_make_capfile_from_stream(Command const* self, FILE* fin) {
 	CapParser* parser = capparser_new();
 	String* buf = str_new();
 
-	for (; str_getline(buf, fin); ) {
+	for (; io_getline_str(buf, fin); ) {
 		// Get line
 		char const* line = str_get_const(buf);
 

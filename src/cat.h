@@ -3,6 +3,7 @@
 
 #include "define.h"
 #include "util.h"
+#include "io.h"
 #include "file.h"
 #include "config.h"
 #include "term.h"

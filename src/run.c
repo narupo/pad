@@ -186,12 +186,12 @@ run_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	}
 
 	// Read from child process
-	String* buffer = str_new();
+	String* strbuf = str_new();
 	CapParser* parser = capparser_new();
 	CapRowList* dstrows = capfile_rows(dstfile);
 
-	for (; str_getline(buffer, pin); ) {
-		char const* line = str_get_const(buffer);
+	for (; io_getline_str(strbuf, pin); ) {
+		char const* line = str_get_const(strbuf);
 		CapRow* row = capparser_parse_line(parser, line);
 		if (!row) {
 			continue;
@@ -202,7 +202,7 @@ run_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 
 	// Done
 	capparser_delete(parser);
-	str_delete(buffer);
+	str_delete(strbuf);
 	pclose(pin);
 	command_delete(self);
 	return 0;

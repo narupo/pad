@@ -3,6 +3,7 @@
 
 #include "define.h"
 #include "caperr.h"
+#include "io.h"
 #include "util.h"
 #include "term.h"
 #include "config.h"

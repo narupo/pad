@@ -3,6 +3,7 @@
 
 #include "define.h"
 #include "term.h"
+#include "io.h"
 #include "util.h"
 #include "config.h"
 #include "file.h"
@@ -19,22 +20,22 @@
 #include <string.h>
 
 /**
- * @brief 
+ * @brief
  *
- * @param void 
+ * @param void
 */
-void 
+void
 brief_usage(void);
 
 /**
- * @brief 
+ * @brief
  *
- * @param argc   
- * @param argv[] 
+ * @param argc
+ * @param argv[]
  *
- * @return 
+ * @return
 */
-int 
+int
 brief_main(int argc, char* argv[]);
 
 #endif
