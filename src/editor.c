@@ -54,7 +54,7 @@ editor_run(int argc, char* argv[]) {
 		ret = caperr(PROGNAME, CAPERR_ERROR, "Failed to set path \"%s\"", editpath);
 		goto done;
 	}
-	
+
 	if (!config_save(config)) {
 		ret = caperr(PROGNAME, CAPERR_WRITE, "config");
 		goto done;
@@ -70,7 +70,7 @@ editor_main(int argc, char* argv[]) {
 	for (;;) {
 		static struct option longopts[] = {
 			{"help", no_argument, 0, 'h'},
-			{0},
+			{},
 		};
 		int optsindex;
 
@@ -98,10 +98,9 @@ editor_main(int argc, char* argv[]) {
 	return editor_run(argc, argv);
 }
 
-#if defined(TEST)
+#if defined(TEST_EDITOR)
 int
 main(int argc, char* argv[]) {
-
-	return 0;
+	return editor_main(argc, argv);
 }
 #endif
