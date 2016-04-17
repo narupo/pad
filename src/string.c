@@ -1,4 +1,4 @@
-#include "string.h"
+#include "string.imp.h"
 
 /*************
 * str macros *
@@ -13,16 +13,6 @@
 
 enum {
 	STR_INIT_CAPACITY = 4,
-};
-
-/*********
-* struct *
-*********/
-
-struct String {
-	int length;
-	int capacity;
-	String_type* buffer;
 };
 
 /***********
@@ -481,48 +471,6 @@ str_shuffle(String* self) {
 /*************
 * str stream *
 *************/
-
-String*
-str_getline(String* self, FILE* fin) {
-	if (!self || !fin) {
-		return NULL;
-	}
-
-	str_clear(self);
-
-	if (feof(fin)) {
-		return NULL;
-	}
-
-	for (int ch; ; ) {
-		ch = fgetc(fin);
-
-		if (ch == EOF || ferror(fin)) {
-			return NULL;
-		}
-
-		if (ch == '\n') {
-			break;
-		} else if (ch == '\r') {
-			int nc = fgetc(fin);
-			if (nc == EOF) {
-				return NULL;
-			}
-			if (nc == '\n') {
-				break;
-			} else {
-				if (ungetc(ch, fin) == EOF) {
-					return NULL;
-				}
-				break;
-			}
-		}
-
-		str_push_back(self, ch);
-	}
-
-	return self;
-}
 
 int
 str_read_stream(String* self, FILE* fin) {

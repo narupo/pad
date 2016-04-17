@@ -138,7 +138,7 @@ command_display_brief_from_stream(Command const* self, FILE* fin) {
 	}
 
 	// Read lines for @cap command
-	for (; str_getline(self->buffer, fin); ) {
+	for (; io_getline_str(self->buffer, fin); ) {
 		CapRow* row = capparser_parse_line(parser, str_get_const(self->buffer));
 		if (!row) {
 			continue;
@@ -257,7 +257,7 @@ command_has_tags(Command const* self, FILE* fin) {
 		return false;
 	}
 
-	for (; str_getline(self->buffer, fin); ) {
+	for (; io_getline_str(self->buffer, fin); ) {
 		CapRow* row = capparser_parse_line(parser, str_get_const(self->buffer));
 		if (!row) {
 			caperr(PROGNAME, CAPERR_PARSE, "\"%s\"", str_get_const(self->buffer));

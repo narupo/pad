@@ -3,6 +3,7 @@
 
 #include "define.h"
 #include "term.h"
+#include "io.h"
 #include "file.h"
 #include "config.h"
 #include "strarray.h"

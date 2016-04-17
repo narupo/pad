@@ -235,7 +235,7 @@ command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
 	CapRow* row = NULL;
 
 	// Read and display
-	for (; str_getline(buffer, fin); ) {
+	for (; io_getline_str(buffer, fin); ) {
 		// Cleanup
 		caprow_delete(row);
 
@@ -437,7 +437,7 @@ cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 		}
 
 		// Read and push to CapFile
-		for (; str_getline(linebuf, fin); ) {
+		for (; io_getline_str(linebuf, fin); ) {
 			// Read row
 			CapRow* row = cat_read_row(self, linebuf, parser);
 			if (!row) {

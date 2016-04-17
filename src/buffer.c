@@ -1,17 +1,7 @@
-#include "buffer.h"
+#include "buffer.imp.h"
 
 enum {
 	NBUFFER_NEW_CAPACITY = 8,
-};
-
-/**
- * Structure for Buffer object
- *
- */
-struct Buffer {
-	size_t capacity;
-	size_t length;
-	Buffer_pointer_type buffer;
 };
 
 void
@@ -59,7 +49,7 @@ buf_new_from_capacity(size_t capacity) {
 	if (!self) {
 		return NULL;
 	}
-	
+
 	self->capacity = capacity;
 	self->length = 0;
 	self->buffer = (Buffer_pointer_type) calloc(self->capacity, sizeof(Buffer_type));
@@ -194,26 +184,6 @@ buf_append_other(Buffer* self, Buffer const* other) {
 bool
 buf_empty(Buffer const* self) {
 	return self->length == 0;
-}
-
-bool
-buf_getline(Buffer* self, FILE* stream) {
-	buf_clear(self);
-
-	if (feof(stream)) {
-		return false;
-	}
-
-	for (;;) {
-		int ch = fgetc(stream);
-		if (ch == EOF || ferror(stream)) {
-			return false;
-		}
-		if (ch == '\n') {
-			return true;
-		}
-		buf_push_back(self, ch);
-	}
 }
 
 #if defined(TEST_BUFFER)

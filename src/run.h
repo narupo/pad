@@ -3,6 +3,7 @@
 
 #include "define.h"
 #include "util.h"
+#include "io.h"
 #include "term.h"
 #include "config.h"
 #include "cap-file.h"

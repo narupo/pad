@@ -6,8 +6,8 @@
 #include "memory.h"
 #include <limits.h>
 
-#define String_type char
 typedef struct String String;
+#define String_type char
 
 /**
  * Destruct string
