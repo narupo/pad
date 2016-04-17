@@ -196,9 +196,9 @@ strmap_set_copy(StringHashMap* self, char const* key, StringHashMap_const_type v
 	return true;
 }
 
-/******************
+/**************
 * strmap test *
-******************/
+**************/
 
 #if defined(TEST_STRINGMAP)
 int
