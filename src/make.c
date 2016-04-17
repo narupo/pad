@@ -494,11 +494,9 @@ done:
 void
 make_usage(void) {
 	term_eprintf(
-		"cap make\n"
-		"\n"
 		"Usage:\n"
 		"\n"
-		"\tcap make [make-name] [options]\n"
+		"\t%s [make-name] [options]\n"
 		"\n"
 		"The options are:\n"
 		"\n"
@@ -520,7 +518,7 @@ make_usage(void) {
 		"\t@cap make like a \"cap make\" command\n"
 		"\t@cap run  like a \"cap run\" command\n"
 		"\n"
-	);
+	, PROGNAME);
 }
 
 int
