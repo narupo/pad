@@ -6,10 +6,9 @@ enum {
 };
 
 /**
- * Create hash value from string
+ * Create integer hash value from string
  *
  * @param[in] src source string
- * @param[in] nhash max hash size
  *
  * @return number of hash value
  */
@@ -25,7 +24,7 @@ hash_int(char const* src) {
 }
 
 /**
- * Create hash value from string and number
+ * Create integer hash value from string and mod number
  *
  * @param[in] src source string
  * @param[in] nhash max hash size
@@ -44,10 +43,9 @@ hash_int_from(char const* src, int nhash) {
 }
 
 /**
- * Create hash value from string
+ * Create long hash value from string
  *
  * @param[in] src source string
- * @param[in] nhash max hash size
  *
  * @return number of hash value
  */
