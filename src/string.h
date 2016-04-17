@@ -279,18 +279,6 @@ char const*
 str_find_const(String const* self, char const* target);
 
 /**
- * Read from stream by line
- *
- * @param[in] self
- * @param[in] fin pointer to memory of input stream
- *
- * @return success to self
- * @return failed to NULL
- */
-String*
-str_getline(String* self, FILE* fin);
-
-/**
  * Read from stream
  * Clear state of string before read
  *

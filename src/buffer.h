@@ -194,14 +194,4 @@ buf_resize(Buffer* self, size_t resize);
 bool
 buf_empty(Buffer const* self);
 
-/**
- * Read line from stream, And write to buffer
- *
- * @param[in] stream source stream
- * @return success to true
- * @return done or failed to false
- */
-bool
-buf_getline(Buffer* self, FILE* stream);
-
 #endif
