@@ -1,9 +1,5 @@
 #include "strmap.h"
 
-enum {
-	NHASH = 701,
-};
-
 struct StringHashMapNode {
 	char* key;
 	StringHashMap_type value;
@@ -11,7 +7,7 @@ struct StringHashMapNode {
 
 struct StringHashMap {
 	size_t tablesize;
-	StringHashMapNode* table[NHASH + 1];  // +1 for final nul
+	StringHashMapNode* table[HASH_NHASH + 1];  // +1 for final nul
 };
 
 struct StringHashMapIterator {
@@ -20,25 +16,6 @@ struct StringHashMapIterator {
 	StringHashMapNode** table;
 	StringHashMapNode* current;
 };
-
-
-/*******
-* Hash *
-*******/
-
-static long
-hashdivl(char const* s, long nhash) {
-	long n = 0;
-	for (; *s; ++s) {
-		n += *s;
-	}
-	return n % nhash;
-}
-
-static long
-hashl(char const* s) {
-	return hashdivl(s, NHASH);
-}
 
 /*******
 * Node *
@@ -95,7 +72,7 @@ strmapit_new(StringHashMap* strmap) {
 		perror("Failed to construct StringHashMapIterator");
 		return NULL;
 	}
-	
+
 	self->index = 0;
 	self->tablesize = strmap->tablesize;
 	self->table = strmap->table;
@@ -164,8 +141,8 @@ strmap_new(void) {
 		WARN("Failed to allocate memory");
 		return NULL;
 	}
-	
-	self->tablesize = NHASH;
+
+	self->tablesize = HASH_NHASH;
 
 	return self;
 }
@@ -178,7 +155,7 @@ StringHashMap_type
 strmap_get(StringHashMap* self, char const* key) {
 	static StringHashMap_type dummy = "";
 
-	long i = hashl(key);
+	long i = hash_long(key);
 	if (!self->table[i]) {
 		return dummy;
 	}
@@ -189,7 +166,7 @@ StringHashMap_const_type
 strmap_get_const(StringHashMap const* self, char const* key) {
 	static StringHashMap_const_type dummy = "";
 
-	long i = hashl(key);
+	long i = hash_long(key);
 	if (!self->table[i]) {
 		return dummy;
 	}
@@ -208,14 +185,14 @@ strmap_set_copy(StringHashMap* self, char const* key, StringHashMap_const_type v
 		return false;
 	}
 
-	long i = hashl(key);
+	long i = hash_long(key);
 
 	if (self->table[i]) {
 		strmapnode_delete(self->table[i]);
 	}
-	
+
 	self->table[i] = setnode;
-	
+
 	return true;
 }
 

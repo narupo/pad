@@ -3,9 +3,7 @@
 
 #include "define.h"
 #include "util.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#include "hash.h"
 
 typedef char* StringHashMap_type;
 typedef char const* StringHashMap_const_type;
@@ -14,156 +12,156 @@ typedef struct StringHashMapNode StringHashMapNode;
 typedef struct StringHashMapIterator StringHashMapIterator;
 
 /**
- * @brief 
+ * @brief
  *
- * @param self 
+ * @param self
  *
- * @return 
+ * @return
 */
-void 
+void
 strmapnode_delete(StringHashMapNode* self);
 
 /**
- * @brief      
+ * @brief
  *
  * @param      self
  *
- * @return     
+ * @return
  */
 char const*
 strmapnode_key_const(StringHashMapNode const* self);
 
 /**
- * @brief      
+ * @brief
  *
  * @param      self
  *
- * @return     
+ * @return
  */
 char const*
 strmapnode_value_const(StringHashMapNode const* self);
 
 /**
- * @brief 
+ * @brief
  *
- * @param key   
- * @param value 
+ * @param key
+ * @param value
  *
- * @return 
+ * @return
 */
-StringHashMapNode* 
+StringHashMapNode*
 strmapnode_new_copy(char const* key, StringHashMap_const_type value);
 
 /**
- * @brief 
+ * @brief
  *
- * @param self 
+ * @param self
 */
-void 
+void
 strmapit_delete(StringHashMapIterator* self);
 
 /**
- * @brief 
+ * @brief
  *
- * @param strmap 
+ * @param strmap
  *
- * @return 
+ * @return
 */
-StringHashMapIterator* 
+StringHashMapIterator*
 strmapit_new(StringHashMap* strmap);
 
 /**
- * @brief 
+ * @brief
  *
- * @param self 
+ * @param self
  *
- * @return 
+ * @return
 */
-StringHashMapNode* 
+StringHashMapNode*
 strmapit_begin(StringHashMapIterator* self);
 
 /**
- * @brief 
+ * @brief
  *
- * @param self 
+ * @param self
  *
- * @return 
+ * @return
 */
-StringHashMapNode* 
+StringHashMapNode*
 strmapit_end(StringHashMapIterator* self);
 
 /**
- * @brief 
+ * @brief
  *
- * @param self 
+ * @param self
  *
- * @return 
+ * @return
 */
-StringHashMapNode* 
+StringHashMapNode*
 strmapit_current(StringHashMapIterator* self);
 
 /**
- * @brief 
+ * @brief
  *
- * @param self 
+ * @param self
  *
- * @return 
+ * @return
 */
-StringHashMapNode* 
+StringHashMapNode*
 strmapit_next(StringHashMapIterator* self);
 
 /**
- * @brief 
+ * @brief
  *
- * @param self 
+ * @param self
  *
- * @return 
+ * @return
 */
-void 
+void
 strmap_delete(StringHashMap* self);
 
 /**
- * @brief 
+ * @brief
  *
- * @param void 
+ * @param void
  *
- * @return 
+ * @return
 */
-StringHashMap* 
+StringHashMap*
 strmap_new(void);
 
 /**
- * @brief 
+ * @brief
  *
- * @param self 
- * @param key  
+ * @param self
+ * @param key
  *
- * @return 
+ * @return
 */
-StringHashMap_type 
+StringHashMap_type
 strmap_get(StringHashMap* self, char const* key);
 
 /**
- * @brief 
+ * @brief
  *
- * @param self 
- * @param key  
+ * @param self
+ * @param key
  *
- * @return 
+ * @return
 */
-StringHashMap_const_type 
+StringHashMap_const_type
 strmap_get_const(StringHashMap const* self, char const* key);
 
 /**
- * @brief 
+ * @brief
  *
- * @param self 
- * @param key  
- * @param val  
+ * @param self
+ * @param key
+ * @param val
  *
- * @return 
+ * @return
 */
-bool 
+bool
 strmap_set_copy(StringHashMap* self, char const* key, StringHashMap_const_type val);
 
 #endif
