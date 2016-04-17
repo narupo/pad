@@ -64,11 +64,12 @@ command_make_cmdline(Command const* self, Config const* config, char* dst, size_
 
 	char script[128];
 	if (!file_read_script_line(script, sizeof script, fin)) {
-		file_close(fin);
-		return caperr(PROGNAME, CAPERR_READ, "script");
+		script[0] = '\0'; // Nothing script
 	}
 
-	file_close(fin);
+	if (file_close(fin) != 0) {
+		return caperr(PROGNAME, CAPERR_FCLOSE, "\"%s\"", path);
+	}
 
 	// Create command line
 	memset(dst, '\0', dstsize);
@@ -110,7 +111,7 @@ command_run_script(Command* self, Config const* config) {
 	// Read from child process
 	for (int ch; (ch = fgetc(pin)) != EOF; ) {
 		term_putc(ch);
-	} 
+	}
 
 	// Done
 	pclose(pin);
@@ -212,16 +213,15 @@ run_main(int argc, char* argv[]) {
 	// Construct
 	Command* command = command_new(argc, argv);
 	if (!command) {
-		caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
-		return EXIT_FAILURE;
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 	}
 
 	// Run
-	int res = command_run(command);
+	int ret = command_run(command);
 
 	// Done
 	command_delete(command);
-	return res;
+	return ret;
 }
 
 #if defined(TEST_RUN)

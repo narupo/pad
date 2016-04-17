@@ -18,6 +18,7 @@ static char const DEFAULT_HOSTPORT[] = "127.0.0.1:1234";
 
 enum {
 	RESPONSE_INIT_STATUS = 500,
+	RESPONSE_NTEMP_CONTENTLENGTH = 100,
 };
 
 typedef struct Response Response;
@@ -80,44 +81,44 @@ status_line_from_version(double version, int status) {
 	if (version == 1.1) {
 		switch (status) {
 		default: return "HTTP/1.1 500 Unknown status\r\n"; break;
-		case 100: return "HTTP/1.1 100 Continue\r\n"; break; //	継続
-		case 101: return "HTTP/1.1 101 Switching Protocols\r\n"; break; //	プロトコル切替
-		case 200: return "HTTP/1.1 200 OK\r\n"; break; //	成功
-		case 201: return "HTTP/1.1 201 Created\r\n"; break; //	作成完了
-		case 202: return "HTTP/1.1 202 Accepted\r\n"; break; //	受理
-		case 203: return "HTTP/1.1 203 Non-Authoritative Information\r\n"; break; //	非公式な情報
-		case 204: return "HTTP/1.1 204 No Content\r\n"; break; //	内容が空
-		case 205: return "HTTP/1.1 205 Reset Content\r\n"; break; //	内容をリセット
-		case 206: return "HTTP/1.1 206 Partial Content\r\n"; break; //	内容の一部
-		case 300: return "HTTP/1.1 300 Multiple Choices\r\n"; break; //	複数の候補がある
-		case 301: return "HTTP/1.1 301 Moved Permanently\r\n"; break; //	恒久的に移転
-		case 302: return "HTTP/1.1 302 Found\r\n"; break; //	別の場所で見つけた
-		case 303: return "HTTP/1.1 303 See Other\r\n"; break; //	別の場所を探せ
-		case 304: return "HTTP/1.1 304 Not Modified\r\n"; break; //	変更なし
-		case 305: return "HTTP/1.1 305 Use Proxy\r\n"; break; //	中継サーバを通せ
-		case 307: return "HTTP/1.1 307 Temporary Redirect\r\n"; break; //	一時的な転送
-		case 400: return "HTTP/1.1 400 Bad Request\r\n"; break; //	不正なリクエスト
-		case 401: return "HTTP/1.1 401 Unauthorized\r\n"; break; //	未認証
-		case 402: return "HTTP/1.1 402 Payment Required\r\n"; break; //	有料である
-		case 403: return "HTTP/1.1 403 Forbidden\r\n"; break; //	アクセス権がない
-		case 404: return "HTTP/1.1 404 Not Found\r\n"; break; //	存在しない
-		case 405: return "HTTP/1.1 405 Method Not Allowed\r\n"; break; //	そのメソッドは不可
-		case 406: return "HTTP/1.1 406 Not Acceptable\r\n"; break; //	受理不可
-		case 407: return "HTTP/1.1 407 Proxy Authentication Required\r\n"; break; //	中継サーバの認証が必要
-		case 408: return "HTTP/1.1 408 Request Time-out\r\n"; break; //	時間切れ
-		case 409: return "HTTP/1.1 409 Conflict\r\n"; break; //	競合
-		case 410: return "HTTP/1.1 410 Gone\r\n"; break; //	消滅した
-		case 411: return "HTTP/1.1 411 Length Required\r\n"; break; //	長さを指定せよ
-		case 412: return "HTTP/1.1 412 Precondition Failed\r\n"; break; //	前提条件が満たされていない
-		case 413: return "HTTP/1.1 413 Request Entity Too Large\r\n"; break; //	リクエスト中のデータが大きすぎる
-		case 414: return "HTTP/1.1 414 Request-URI Too Large\r\n"; break; //	URIが長すぎる
-		case 415: return "HTTP/1.1 415 Unsupported Media Type\r\n"; break; //	そのメディアは使えない
-		case 500: return "HTTP/1.1 500 Internal Server Error\r\n"; break; //	サーバ内部のエラー
-		case 501: return "HTTP/1.1 501 Not Implemented\r\n"; break; //	その機能は実装されていない
-		case 502: return "HTTP/1.1 502 Bad Gateway\r\n"; break; //	中継サーバのエラー
-		case 503: return "HTTP/1.1 503 Service Unavailable\r\n"; break; //	サービス停止中
-		case 504: return "HTTP/1.1 504 Gateway Time-out\r\n"; break; //	中継サーバの要求が時間切れ
-		case 505: return "HTTP/1.1 505 HTTP Version not supported\r\n"; break; //	そのバージョンのHTTPは使えない
+		case 100: return "HTTP/1.1 100 Continue\r\n"; break; // 継続
+		case 101: return "HTTP/1.1 101 Switching Protocols\r\n"; break; // プロトコル切替
+		case 200: return "HTTP/1.1 200 OK\r\n"; break; // 成功
+		case 201: return "HTTP/1.1 201 Created\r\n"; break; // 作成完了
+		case 202: return "HTTP/1.1 202 Accepted\r\n"; break; // 受理
+		case 203: return "HTTP/1.1 203 Non-Authoritative Information\r\n"; break; // 非公式な情報
+		case 204: return "HTTP/1.1 204 No Content\r\n"; break; // 内容が空
+		case 205: return "HTTP/1.1 205 Reset Content\r\n"; break; // 内容をリセット
+		case 206: return "HTTP/1.1 206 Partial Content\r\n"; break; // 内容の一部
+		case 300: return "HTTP/1.1 300 Multiple Choices\r\n"; break; // 複数の候補がある
+		case 301: return "HTTP/1.1 301 Moved Permanently\r\n"; break; // 恒久的に移転
+		case 302: return "HTTP/1.1 302 Found\r\n"; break; // 別の場所で見つけた
+		case 303: return "HTTP/1.1 303 See Other\r\n"; break; // 別の場所を探せ
+		case 304: return "HTTP/1.1 304 Not Modified\r\n"; break; // 変更なし
+		case 305: return "HTTP/1.1 305 Use Proxy\r\n"; break; // 中継サーバを通せ
+		case 307: return "HTTP/1.1 307 Temporary Redirect\r\n"; break; // 一時的な転送
+		case 400: return "HTTP/1.1 400 Bad Request\r\n"; break; // 不正なリクエスト
+		case 401: return "HTTP/1.1 401 Unauthorized\r\n"; break; // 未認証
+		case 402: return "HTTP/1.1 402 Payment Required\r\n"; break; // 有料である
+		case 403: return "HTTP/1.1 403 Forbidden\r\n"; break; // アクセス権がない
+		case 404: return "HTTP/1.1 404 Not Found\r\n"; break; // 存在しない
+		case 405: return "HTTP/1.1 405 Method Not Allowed\r\n"; break; // そのメソッドは不可
+		case 406: return "HTTP/1.1 406 Not Acceptable\r\n"; break; // 受理不可
+		case 407: return "HTTP/1.1 407 Proxy Authentication Required\r\n"; break; // 中継サーバの認証が必要
+		case 408: return "HTTP/1.1 408 Request Time-out\r\n"; break; // 時間切れ
+		case 409: return "HTTP/1.1 409 Conflict\r\n"; break; // 競合
+		case 410: return "HTTP/1.1 410 Gone\r\n"; break; // 消滅した
+		case 411: return "HTTP/1.1 411 Length Required\r\n"; break; // 長さを指定せよ
+		case 412: return "HTTP/1.1 412 Precondition Failed\r\n"; break; // 前提条件が満たされていない
+		case 413: return "HTTP/1.1 413 Request Entity Too Large\r\n"; break; // リクエスト中のデータが大きすぎる
+		case 414: return "HTTP/1.1 414 Request-URI Too Large\r\n"; break; // URIが長すぎる
+		case 415: return "HTTP/1.1 415 Unsupported Media Type\r\n"; break; // そのメディアは使えない
+		case 500: return "HTTP/1.1 500 Internal Server Error\r\n"; break; // サーバ内部のエラー
+		case 501: return "HTTP/1.1 501 Not Implemented\r\n"; break; // その機能は実装されていない
+		case 502: return "HTTP/1.1 502 Bad Gateway\r\n"; break; // 中継サーバのエラー
+		case 503: return "HTTP/1.1 503 Service Unavailable\r\n"; break; // サービス停止中
+		case 504: return "HTTP/1.1 504 Gateway Time-out\r\n"; break; // 中継サーバの要求が時間切れ
+		case 505: return "HTTP/1.1 505 HTTP Version not supported\r\n"; break; // そのバージョンのHTTPは使えない
 		}
 	} else {
 		caperr_printf(PROGNAME, CAPERR_INVALID, "Http version");
@@ -130,15 +131,14 @@ response_merge_content_with_status(Response* self, int status) {
 	// Make buffer
 	self->status = status;
 	buf_append_string(self->buffer, status_line_from_version(1.1, status));
-
 	buf_append_string(self->buffer, "Server: ");
 	buf_append_string(self->buffer, SERVER_NAME);
 	buf_append_string(self->buffer, "\r\n");
 
-	char tmp[100/* TODO */];
+	// Content-Length
+	char tmp[RESPONSE_NTEMP_CONTENTLENGTH];
 	snprintf(tmp, sizeof tmp, "Content-Length: %d\r\n", (int) buf_length(self->content));
 	buf_append_string(self->buffer, tmp);
-
 	buf_append_string(self->buffer, "\r\n");
 
 	// Merge content
@@ -179,14 +179,10 @@ response_init_from_file(Response* self, char const* fname) {
 		return response_init_from_status(self, 404);
 	}
 
-	buf_append_string(self->content, "<pre>\n");
-
 	if (buf_append_stream(self->content, fin) < 0) {
 		caperr_printf(PROGNAME, CAPERR_READ, "stream by \"%s\"", fname);
 		return response_init_from_status(self, 500);
 	}
-
-	buf_append_string(self->content, "</pre>\n");
 
 	if (file_close(fin) != 0) {
 		caperr_printf(PROGNAME, CAPERR_FCLOSE, "%s", fname);
