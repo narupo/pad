@@ -7,6 +7,7 @@ enum {
 struct Config {
 	char dirpath[FILE_NPATH];
 	char filepath[FILE_NPATH];
+	char aliasdirpath[FILE_NPATH];
 	char trashdirpath[FILE_NPATH];
 	Json* json;
 };
@@ -21,6 +22,7 @@ static pthread_mutex_t config_mutex = PTHREAD_MUTEX_INITIALIZER; // Mutex for si
 static const char PROGNAME[] = "cap config";
 static const char CONFIG_DIR_PATH[] = "~/.cap"; // Root directory path of config
 static const char CONFIG_FNAME[] = "config"; // File name of config-setting
+static const char CONFIG_ALIAS_DIRNAME[] = "alias"; // For alias command
 static const char CONFIG_TRASH_DIRNAME[] = "trash"; // For trash command
 
 /***************
@@ -163,22 +165,6 @@ not_exists_to_mkdir(const char* path) {
 	return true;
 }
 
-static bool
-file_solve_path_format(char* dst, size_t dstsize, const char* fmt, ...) {
-	char tmp[dstsize+1];
-
-	va_list args;
-	va_start(args, fmt);
-	vsnprintf(tmp, dstsize, fmt, args);
-	va_end(args);
-
-	if (!file_solve_path(dst, dstsize, tmp)) {
-		return false;
-	}
-
-	return true;
-}
-
 /**
  * Construct Config from directory
  *
@@ -212,6 +198,12 @@ config_new_from_dir_unsafe(const char* srcdirpath) {
 		goto fail;
 	}
 
+	// Alias directory path
+	if (!file_solve_path_format(self->aliasdirpath, sizeof self->aliasdirpath, "%s/%s", srcdirpath, CONFIG_ALIAS_DIRNAME)) {
+		WARN("Failed to solve path \"%s/%s\"", srcdirpath, CONFIG_ALIAS_DIRNAME);
+		goto fail;
+	}
+
 	// Trash directory path
 	if (!file_solve_path_format(self->trashdirpath, sizeof self->trashdirpath, "%s/%s", srcdirpath, CONFIG_TRASH_DIRNAME)) {
 		WARN("Failed to solve path \"%s/%s\"", srcdirpath, CONFIG_TRASH_DIRNAME);
@@ -224,13 +216,19 @@ config_new_from_dir_unsafe(const char* srcdirpath) {
 
 	// Root directory
 	if (!not_exists_to_mkdir(self->dirpath)) {
-		WARN("Failed to make directory \"%s\"", self->dirpath);
+		WARN("Failed to make cap directory \"%s\"", self->dirpath);
+		goto fail;
+	}
+
+	// Alias directory
+	if (!not_exists_to_mkdir(self->aliasdirpath)) {
+		WARN("Failed to make alias directory \"%s\"", self->aliasdirpath);
 		goto fail;
 	}
 
 	// Trash directory
 	if (!not_exists_to_mkdir(self->trashdirpath)) {
-		WARN("Failed to make directory \"%s\"", self->trashdirpath);
+		WARN("Failed to make trash directory \"%s\"", self->trashdirpath);
 		goto fail;
 	}
 
@@ -311,6 +309,8 @@ const char*
 config_dirpath(const Config* self, const char* key) {
 	if (strcasecmp(key, "root") == 0) {
 		return self->dirpath;
+	} else if (strcasecmp(key, "alias") == 0) {
+		return self->aliasdirpath;
 	} else if (strcasecmp(key, "trash") == 0) {
 		return self->trashdirpath;
 	}
@@ -334,7 +334,7 @@ config_path(const Config* self, const char* key) {
 	if (self_lock()) {
 		const char* path = self_path_unsafe(self, key);
 		self_unlock();
-		return path;
+		return path; // TODO: Need return copy for multi-thread. Reference is danger.
 	}
 
 	return NULL;

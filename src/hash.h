@@ -13,33 +13,14 @@ enum {
  * @return number of hash value
  */
 static inline int
-hash_int(char const* src) {
+hash_int(const char* src) {
 	int n = 0;
 
-	for (char const* p = src; *p; ++p) {
+	for (const char* p = src; *p; ++p) {
 		n += *p;
 	}
 
 	return n % HASH_NHASH;
-}
-
-/**
- * Create integer hash value from string and mod number
- *
- * @param[in] src source string
- * @param[in] nhash max hash size
- *
- * @return number of hash value
- */
-static inline int
-hash_int_from(char const* src, int nhash) {
-	int n = 0;
-
-	for (char const* p = src; *p; ++p) {
-		n += *p;
-	}
-
-	return n % nhash;
 }
 
 /**
@@ -50,14 +31,28 @@ hash_int_from(char const* src, int nhash) {
  * @return number of hash value
  */
 static inline long
-hash_long(char const* src) {
+hash_long(const char* src) {
 	long n = 0;
 
-	for (char const* p = src; *p; ++p) {
+	for (const char* p = src; *p; ++p) {
 		n += *p;
 	}
 
 	return n % HASH_NHASH;
+}
+
+static inline int
+hash_int_from_path(const char* path) {
+	int n = 0;
+
+	for (const char* p = path; *p; ++p) {
+		if (strchr("/\\:", *p)) {
+			continue; // ignore this character
+		}
+		n += *p;
+	}
+
+	return n;
 }
 
 #endif

@@ -22,6 +22,9 @@ enum {
 	// Debug family
 	CAPERR_DEBUG,
 
+	// Rename
+	CAPERR_RENAME,
+
 	// Is family
 	CAPERR_IS_EXISTS,
 

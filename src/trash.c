@@ -1,5 +1,9 @@
 #include "trash.h"
 
+
+static const char TRASH_INFO_FNAME[] = "info";
+static const char PROGNAME[] = "cap trash";
+
 typedef struct Command Command;
 
 struct Command {
@@ -13,7 +17,6 @@ struct Command {
 	bool opt_is_history;
 };
 
-static char const PROGNAME[] = "cap trash";
 
 static bool
 cmd_parse_options(Command* self);
@@ -61,7 +64,7 @@ cmd_parse_options(Command* self) {
 			{"redo", no_argument, 0, 'r'},
 			{"clear", no_argument, 0, 'c'},
 			{"history", no_argument, 0, 'H'},
-			{0},
+			{},
 		};
 		int optsindex;
 
@@ -85,12 +88,108 @@ cmd_parse_options(Command* self) {
 
 	// Check result of parse options
 	if (self->argc < self->optind) {
-		perror("Failed to parse option");
+		caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "");
 		return false;
 	}
 
 	// Done
 	return true;
+}
+
+static bool
+not_exists_to_mkdir(const char* path) {
+	if (file_is_exists(path)) {
+		return true;
+	}
+
+	if (file_mkdir_mode(path, S_IRUSR | S_IWUSR | S_IXUSR) != 0) {
+		return false;
+	}
+
+	return true;
+}
+
+char*
+cmd_oldpath_to_newpath(char* dst, size_t dstsize, const char* oldpath) {
+	const Config* config = config_instance();
+	const char* trashdir = config_dirpath(config, "trash");
+	const char* home = config_path(config, "home");
+	const char* fbase = file_basename((char*) oldpath);
+
+	char hashdir[FILE_NPATH];
+	if (!file_solve_path_format(hashdir, sizeof hashdir, "%s/%d", trashdir, hash_int_from_path(home))) {
+		caperr(PROGNAME, CAPERR_SOLVE, "path \"%s/%d\"", trashdir, hash_int_from_path(home));
+		return NULL;
+	}
+
+	if (!not_exists_to_mkdir(hashdir)) {
+		caperr(PROGNAME, CAPERR_MAKEDIR, "\"%s\"", hashdir);
+		return NULL;
+	}
+
+	// Create or edit info file
+	if (!file_solve_path_format(dst, dstsize, "%s/%s", hashdir, fbase)) {
+		caperr(PROGNAME, CAPERR_SOLVE, "path \"%s/%s\"", hashdir, fbase);
+		return NULL;
+	}
+
+	return dst;
+}
+
+char*
+cmd_oldpath_to_infopath(char* dst, size_t dstsize, const char* oldpath) {
+	const Config* config = config_instance();
+	const char* home = config_path(config, "home");
+	const char* trashdir = config_dirpath(config, "trash");
+
+	char hashdir[FILE_NPATH];
+	if (!file_solve_path_format(hashdir, sizeof hashdir, "%s/%d", trashdir, hash_int_from_path(home))) {
+		caperr(PROGNAME, CAPERR_SOLVE, "path \"%s/%d\"", trashdir, hash_int_from_path(home));
+		return NULL;
+	}
+
+	if (!not_exists_to_mkdir(hashdir)) {
+		caperr(PROGNAME, CAPERR_MAKEDIR, "\"%s\"", hashdir);
+		return NULL;
+	}
+
+	// Create or edit info file
+	if (!file_solve_path_format(dst, dstsize, "%s/%s", hashdir, TRASH_INFO_FNAME)) {
+		caperr(PROGNAME, CAPERR_SOLVE, "path \"%s/%s\"", hashdir, TRASH_INFO_FNAME);
+		return NULL;
+	}
+
+	return dst;
+}
+
+/**
+ * ~/.cap/trash-289/
+ *
+ * ~/.cap/trash-289/info
+ *	key(file name),value(undo path)
+ *	.vimrc,~/src/bottle/src/
+ *
+ * ~/.cap/trash/289/.vimrc
+ */
+static int
+cmd_save_info_from_path(const char* oldpath) {
+	char infopath[FILE_NPATH];
+	if (!cmd_oldpath_to_infopath(infopath, sizeof infopath, oldpath)) {
+		return caperr(PROGNAME, CAPERR_MAKE, "infopath form \"%s\"", oldpath);
+	}
+
+	FILE* finfo = file_open(infopath, "ab+");
+	if (!finfo) {
+		return caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", infopath);
+	}
+
+	fputs("test", finfo); // debug
+
+	if (file_close(finfo) != 0) {
+		return caperr(PROGNAME, CAPERR_FCLOSE, "\"%s\"", infopath);
+	}
+
+	return 0;
 }
 
 /**
@@ -104,21 +203,32 @@ cmd_parse_options(Command* self) {
  * 4. Update history (For undo and redo)
  */
 static int
-cmd_trash_file(char const* oldpath) {
+cmd_trash_file(const char* oldpath) {
 	// Check oldpath
 	if (!oldpath || !file_is_exists(oldpath)) {
 		return caperr(PROGNAME, CAPERR_NOTFOUND, "\"%s\"", oldpath);
 	}
 
-	// const Config* conf = config_instance();
-	const char* base = file_basename((char*) oldpath);
-	char newpath[FILE_NPATH] = {};
+	// Create new path in trash directory from oldpath
+	char newpath[FILE_NPATH];
+	if (!cmd_oldpath_to_newpath(newpath, sizeof newpath, oldpath)) {
+		return caperr(PROGNAME, CAPERR_MAKE, "path from \"%s\"", oldpath);
+	}
 
-	// TODO:
-	// Get /trash/.vimrc
+	// Debug
+	// term_eprintf("oldpath[%s]\n", oldpath);
+	// term_eprintf("newpath[%s]\n", newpath);
 
-	term_eprintf("oldpath[%s]\n", oldpath);
-	term_eprintf("newpath[%s/%s]\n", newpath, base);
+	// Rename trash file to file in trash directory
+	if (file_rename(oldpath, newpath) != 0) {
+		return caperr(PROGNAME, CAPERR_RENAME, "\"%s\" -> \"%s\"", oldpath, newpath);
+	}
+
+	// Success to trash. Save trash info
+	if (cmd_save_info_from_path(oldpath) != 0) {
+		// TODO: undo trash file
+		return caperr(PROGNAME, CAPERR_WRITE, "trash info of \"%s\"", oldpath);
+	}
 
 	return 0;
 }
@@ -126,10 +236,10 @@ cmd_trash_file(char const* oldpath) {
 static int
 cmd_trash_files(Command* self) {
 	int ret = 0;
-	Config const* config = config_instance();
+	const Config* config = config_instance();
 
 	for (int i = self->optind; i < self->argc; ++i) {
-		char const* trashname = self->argv[i];
+		const char* trashname = self->argv[i];
 		char trashpath[FILE_NPATH];
 
 		// Make file path from arguments and cap's cd

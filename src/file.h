@@ -129,6 +129,9 @@ file_create(char const* path);
 char*
 file_solve_path(char* dst, size_t dstsize, char const* path);
 
+char*
+file_solve_path_format(char* dst, size_t dstsize, const char* fmt, ...);
+
 /**
  * @param[in] path String of solve target
  *

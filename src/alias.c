@@ -121,7 +121,7 @@ alias_parse_options(Command* self) {
 			{"delete", no_argument, 0, 'd'},
 			{"import", no_argument, 0, 'i'},
 			{"export", no_argument, 0, 'e'},
-			{0},
+			{},
 		};
 		int optsindex;
 
@@ -205,10 +205,9 @@ static char*
 alias_path_from_home(char* dst, size_t dstsize) {
 	Config* config = config_instance();
 	char const* home = config_path(config, "home");
-	char const* confdir = config_dirpath(config, "root");
+	char const* aliasdir = config_dirpath(config, "alias");
 
-	strrems(dst, dstsize, home, ":\\/");
-	snprintf(dst, dstsize, "%s/alias-%d", confdir, hash_int(dst));
+	snprintf(dst, dstsize, "%s/%d", aliasdir, hash_int_from_path(home));
 
 	return dst;
 }
