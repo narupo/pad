@@ -6,6 +6,8 @@
 #include "term.h"
 #include "caperr.h"
 #include "config.h"
+#include "file.h"
+#include "hash.h"
 
 void
 trash_usage(void);

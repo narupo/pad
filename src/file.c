@@ -39,13 +39,29 @@ file_solve_path(char* dst, size_t dstsize, char const* path) {
 
 	// Solve '~'
 	if (path[0] == '~') {
-		snprintf(tmp, FILE_NPATH, "%s/%s", environ_get("HOME"), path+1);
+		snprintf(tmp, sizeof tmp, "%s/%s", environ_get("HOME"), path+1);
 	} else {
-		snprintf(tmp, FILE_NPATH, "%s", path);
+		snprintf(tmp, sizeof tmp, "%s", path);
 	}
 
 	if (!file_realpath(dst, dstsize, tmp)) {
 		WARN("Failed to realpath \"%s\"", tmp);
+		return NULL;
+	}
+
+	return dst;
+}
+
+char*
+file_solve_path_format(char* dst, size_t dstsize, const char* fmt, ...) {
+	char tmp[dstsize+1];
+
+	va_list args;
+	va_start(args, fmt);
+	vsnprintf(tmp, dstsize, fmt, args);
+	va_end(args);
+
+	if (!file_solve_path(dst, dstsize, tmp)) {
 		return NULL;
 	}
 
