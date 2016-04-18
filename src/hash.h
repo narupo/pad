@@ -52,7 +52,7 @@ hash_int_from_path(const char* path) {
 		n += *p;
 	}
 
-	return n;
+	return n % HASH_NHASH;
 }
 
 #endif
