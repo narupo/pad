@@ -27,10 +27,10 @@ enum {
 
 	// Construct family
 	CAPERR_CONSTRUCT,
-	
+
 	// Not family
 	CAPERR_NOTFOUND,
-	
+
 	// Make family
 	CAPERR_MAKE,
 	CAPERR_MAKEDIR,
@@ -38,7 +38,7 @@ enum {
 	// Read family
 	CAPERR_READ,
 	CAPERR_READDIR,
-	
+
 	// Write family
 	CAPERR_WRITE,
 
@@ -51,7 +51,7 @@ enum {
 
 	// Execute family
 	CAPERR_EXECUTE,
-	
+
 	// Open family
 	CAPERR_FOPEN,
 	CAPERR_OPEN,
@@ -70,7 +70,7 @@ enum {
 	// Parse family
 	CAPERR_PARSE,
 	CAPERR_PARSE_OPTIONS,
-	
+
 	// Mutex family
 	CAPERR_MUTEX_LOCK,
 };
@@ -88,7 +88,7 @@ enum {
 
 /**
  * Regist error of details to caperrs
- * 
+ *
  * @param[in] *fname    file name
  * @param[in] *funcname function name in file
  * @param[in] lineno    line number in file
@@ -96,7 +96,7 @@ enum {
  * @param[in] number    number of caperr
  * @param[in] *fmt      format for arguments
  * @param[in] ...       arguments
- * 
+ *
  * @return number of caperr (this number is arguments number)
  */
 int
@@ -122,7 +122,7 @@ _caperr(
 
 /**
  * Print error by caperr's format
- * 
+ *
  * @param[in] *fname    file name
  * @param[in] *funcname function name in file
  * @param[in] lineno    line number in file
@@ -130,7 +130,7 @@ _caperr(
  * @param[in] number    number of caperr
  * @param[in] *fmt      format for arguments
  * @param[in] ...       arguments
- * 
+ *
  * @return number of caperr (this number is arguments number)
  */
 int
@@ -145,7 +145,7 @@ _caperr_printf(
 
 /**
  * Get number of length of caperrs
- * 
+ *
  * @return number of length
  */
 int
@@ -153,24 +153,24 @@ caperr_length(void);
 
 /**
  * Display all caperrs to stream
- * 
- * @param[in] *stream 
+ *
+ * @param[in] *stream
  */
 void
 caperr_display(FILE* stream);
 
 /**
  * Display first caperr of caperrs to stream
- * 
- * @param[in] *stream 
+ *
+ * @param[in] *stream
  */
 void
 caperr_display_first(FILE* stream);
 
 /**
  * Display last caperr of caperrs to stream
- * 
- * @param[in] *stream 
+ *
+ * @param[in] *stream
  */
 void
 caperr_display_last(FILE* stream);
