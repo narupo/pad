@@ -16,17 +16,17 @@ struct Command {
 static char const PROGNAME[] = "cap trash";
 
 static bool
-command_parse_options(Command* self);
+cmd_parse_options(Command* self);
 
 static void
-command_delete(Command* self) {
+cmd_delete(Command* self) {
 	if (self) {
 		free(self);
 	}
 }
 
 static Command*
-command_new(int argc, char* argv[]) {
+cmd_new(int argc, char* argv[]) {
 	// Construct
 	Command* self = (Command*) calloc(1, sizeof(Command));
 	if (!self) {
@@ -39,7 +39,7 @@ command_new(int argc, char* argv[]) {
 	self->argv = argv;
 
 	// Parse command options
-	if (!command_parse_options(self)) {
+	if (!cmd_parse_options(self)) {
 		perror("Failed to parse options");
 		free(self);
 		return NULL;
@@ -50,7 +50,7 @@ command_new(int argc, char* argv[]) {
 }
 
 static bool
-command_parse_options(Command* self) {
+cmd_parse_options(Command* self) {
 	// Parse options
 	optind = 0;
 
@@ -104,32 +104,41 @@ command_parse_options(Command* self) {
  * 4. Update history (For undo and redo)
  */
 static int
-command_trash_file(char const* path) {
-	// Check path
-	if (!path || !file_is_exists(path)) {
-		return caperr_printf(PROGNAME, CAPERR_NOTFOUND, "\"%s\"", path);
+cmd_trash_file(char const* oldpath) {
+	// Check oldpath
+	if (!oldpath || !file_is_exists(oldpath)) {
+		return caperr(PROGNAME, CAPERR_NOTFOUND, "\"%s\"", oldpath);
 	}
 
-	term_eprintf("path[%s]\n", path);
+	// const Config* conf = config_instance();
+	const char* base = file_basename((char*) oldpath);
+	char newpath[FILE_NPATH] = {};
+
+	// TODO:
+	// Get /trash/.vimrc
+
+	term_eprintf("oldpath[%s]\n", oldpath);
+	term_eprintf("newpath[%s/%s]\n", newpath, base);
+
 	return 0;
 }
 
 static int
-command_trash_files(Command* self) {
+cmd_trash_files(Command* self) {
 	int ret = 0;
 	Config const* config = config_instance();
 
 	for (int i = self->optind; i < self->argc; ++i) {
-		char const* rmname = self->argv[i];
-		char rmpath[FILE_NPATH];
+		char const* trashname = self->argv[i];
+		char trashpath[FILE_NPATH];
 
 		// Make file path from arguments and cap's cd
-		config_path_with_cd(config, rmpath, sizeof rmpath, rmname);
+		config_path_with_cd(config, trashpath, sizeof trashpath, trashname);
 
 		// Do trash file
-		ret = command_trash_file(rmpath);
+		ret = cmd_trash_file(trashpath);
 		if (ret != 0) {
-			caperr_printf(PROGNAME, ret, "\"%s\"", rmpath);
+			caperr_printf(PROGNAME, ret, "\"%s\"", trashpath);
 		}
 	}
 
@@ -137,31 +146,31 @@ command_trash_files(Command* self) {
 }
 
 static int
-command_history(Command* self) {
+cmd_history(Command* self) {
 	term_eprintf("history\n");
 	return 0;
 }
 
 static int
-command_undo(Command* self) {
+cmd_undo(Command* self) {
 	term_eprintf("undo\n");
 	return 0;
 }
 
 static int
-command_redo(Command* self) {
+cmd_redo(Command* self) {
 	term_eprintf("redo\n");
 	return 0;
 }
 
 static int
-command_clear(Command* self) {
+cmd_clear(Command* self) {
 	term_eprintf("clear\n");
 	return 0;
 }
 
 static int
-command_run(Command* self) {
+cmd_run(Command* self) {
 	int ret = 0;
 
 	if (self->opt_is_help) {
@@ -170,22 +179,22 @@ command_run(Command* self) {
 	}
 
 	if (self->opt_is_history || self->argc == 1) {
-		return command_history(self);
+		return cmd_history(self);
 	}
 
 	if (self->opt_is_undo) {
-		return command_undo(self);
+		return cmd_undo(self);
 	}
 
 	if (self->opt_is_redo) {
-		return command_redo(self);
+		return cmd_redo(self);
 	}
 
 	if (self->opt_is_clear) {
-		return command_clear(self);
+		return cmd_clear(self);
 	}
 
-	return command_trash_files(self);
+	return cmd_trash_files(self);
 }
 
 /*************************
@@ -209,17 +218,17 @@ trash_usage(void) {
 int
 trash_main(int argc, char* argv[]) {
 	// Construct
-	Command* command = command_new(argc, argv);
+	Command* command = cmd_new(argc, argv);
 	if (!command) {
 		perror("Failed to construct command");
 		return EXIT_FAILURE;
 	}
 
 	// Run
-	int res = command_run(command);
+	int res = cmd_run(command);
 
 	// Done
-	command_delete(command);
+	cmd_delete(command);
 	return res;
 }
 

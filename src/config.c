@@ -6,6 +6,8 @@ enum {
 
 struct Config {
 	char dirpath[FILE_NPATH];
+	char filepath[FILE_NPATH];
+	char trashdirpath[FILE_NPATH];
 	Json* json;
 };
 
@@ -13,13 +15,13 @@ struct Config {
 * Variables *
 ************/
 
-static Config* config;  // Singleton instance
-static pthread_mutex_t config_mutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex for singleton instance of Config
+static Config* config; // Singleton instance
+static pthread_mutex_t config_mutex = PTHREAD_MUTEX_INITIALIZER; // Mutex for singleton instance of Config
 
-static char const CONFIG_DIR_PATH[] = "~/.cap";  // Root directory path of config
-static char const CONFIGSAVE_PATH[] = "~/.cap/config";  // File path of config-setting
-static char const CONFIGSAVE_FNAME[] = "config";  // File name of config-setting
-static char const CONFIG_TRASH_DIRNAME[] = "trash"; // For trash command
+static const char PROGNAME[] = "cap config";
+static const char CONFIG_DIR_PATH[] = "~/.cap"; // Root directory path of config
+static const char CONFIG_FNAME[] = "config"; // File name of config-setting
+static const char CONFIG_TRASH_DIRNAME[] = "trash"; // For trash command
 
 /***************
 * Mutex family *
@@ -35,26 +37,29 @@ self_unlock(void) {
 	return pthread_mutex_unlock(&config_mutex) == 0;
 }
 
-static char const*
-self_path_unsafe(Config const* self, char const* key) {
+static const char*
+self_path_unsafe(const Config* self, const char* key) {
+	// Find from json
 	JsonObject* root = json_root(self->json);
 	String const* s = jsonobj_find_value(root, key);
 	if (!s) {
 		WARN("Failed to find value \"%s\"", key);
 		return "";
 	}
+
+	// Done
 	return str_get_const(s);
 }
 
 static bool
-self_is_out_of_home_unsafe(Config const* self, char const* path) {
+self_is_out_of_home_unsafe(const Config* self, const char* path) {
 	char spath[FILE_NPATH];
 	if (!file_solve_path(spath, sizeof spath, path)) {
 		WARN("Failed to solve path of \"%s\"", path);
 		return true;
 	}
 
-	char const* home = self_path_unsafe(config, "home");
+	const char* home = self_path_unsafe(config, "home");
 	char shome[FILE_NPATH];
 	if (!file_solve_path(shome, sizeof shome, home)) {
 		WARN("Failed to solve path of \"%s\"", home)
@@ -87,33 +92,41 @@ config_delete(Config* self) {
 }
 
 static Config*
-config_init_file(Config* self, char const* fname) {
+config_init_file(Config* self, const char* fname) {
+	// Cross-platform for Linux and MS Windows
 #if defined(_CAP_WINDOWS)
-	static char const DEFAULT_HOME_PATH[] = "C:/Windows/Temp";
-	static char const DEFAULT_EDITOR_PATH[] = "C:/Windows/notepad.exe";
+	static const char DEFAULT_HOME_PATH[] = "C:/Windows/Temp";
+	static const char DEFAULT_EDITOR_PATH[] = "C:/Windows/notepad.exe"; // wtf
 #else
-	static char const DEFAULT_HOME_PATH[] = "/tmp";
-	static char const DEFAULT_EDITOR_PATH[] = "/usr/bin/vi";
+	static const char DEFAULT_HOME_PATH[] = "/tmp";
+	static const char DEFAULT_EDITOR_PATH[] = "/usr/bin/vi";
 #endif
 
-	String* src = str_new();
+	// Ready
 	char fmt[CONFIG_FORMAT_SIZE];
+	String* strbuf = str_new();
+	if (!strbuf) {
+		WARN("Failed to construct string");
+		goto fail;
+	}
 
-	str_append_string(src, "{\n");
-	str_append_nformat(src, fmt, sizeof fmt, "\t\"home\": \"%s\",\n", DEFAULT_HOME_PATH);
-	str_append_nformat(src, fmt, sizeof fmt, "\t\"cd\": \"%s\",\n", DEFAULT_HOME_PATH);
-	str_append_nformat(src, fmt, sizeof fmt, "\t\"editor\": \"%s\"\n", DEFAULT_EDITOR_PATH);
-	str_append_string(src, "}\n");
+	// Create save buffer with JSON format
+	str_append_string(strbuf, "{\n");
+	str_append_nformat(strbuf, fmt, sizeof fmt, "	\"home\": \"%s\",\n", DEFAULT_HOME_PATH);
+	str_append_nformat(strbuf, fmt, sizeof fmt, "	\"cd\": \"%s\",\n", DEFAULT_HOME_PATH);
+	str_append_nformat(strbuf, fmt, sizeof fmt, "	\"editor\": \"%s\"\n", DEFAULT_EDITOR_PATH);
+	str_append_string(strbuf, "}\n");
 
+	// Save
 	FILE* fout = file_open(fname, "wb");
 	if (!fout) {
 		WARN("Failed to open file \"%s\"", fname);
 		goto fail;
 	}
 
-	char const* buf = str_get_const(src);
-	size_t buflen = str_length(src);
-	if (!fwrite(buf, sizeof(buf[0]), buflen, fout)) {
+	const char* savebuf = str_get_const(strbuf);
+	size_t buflen = str_length(strbuf);
+	if (!fwrite(savebuf, sizeof(savebuf[0]), buflen, fout)) {
 		WARN("Failed to write file \"%s\"", fname);
 		fclose(fout);
 		goto fail;
@@ -124,6 +137,7 @@ config_init_file(Config* self, char const* fname) {
 		goto fail;
 	}
 
+	// Read config from saved file
 	if (!json_read_from_file(self->json, fname)) {
 		WARN("Failed to read from file \"%s\"", fname);
 		goto fail;
@@ -132,17 +146,36 @@ config_init_file(Config* self, char const* fname) {
 	return self;
 
 fail:
-	str_delete(src);
+	str_delete(strbuf);
 	return NULL;
 }
 
 static bool
-not_exists_to_mkdir(char const* path) {
-	if (!file_is_exists(path)) {
-		if (file_mkdir_mode(path, S_IRUSR | S_IWUSR | S_IXUSR) != 0) {
-			return false;
-		}
+not_exists_to_mkdir(const char* path) {
+	if (file_is_exists(path)) {
+		return true;
 	}
+
+	if (file_mkdir_mode(path, S_IRUSR | S_IWUSR | S_IXUSR) != 0) {
+		return false;
+	}
+
+	return true;
+}
+
+static bool
+file_solve_path_format(char* dst, size_t dstsize, const char* fmt, ...) {
+	char tmp[dstsize+1];
+
+	va_list args;
+	va_start(args, fmt);
+	vsnprintf(tmp, dstsize, fmt, args);
+	va_end(args);
+
+	if (!file_solve_path(dst, dstsize, tmp)) {
+		return false;
+	}
+
 	return true;
 }
 
@@ -155,68 +188,83 @@ not_exists_to_mkdir(char const* path) {
  * @return failed to pointer to NULL
  */
 static Config*
-config_new_from_dir(char const* dirpath) {
+config_new_from_dir_unsafe(const char* srcdirpath) {
 	// Construct
 	Config* self = (Config*) calloc(1, sizeof(Config));
 	if (!self) {
 		WARN("Failed to allocate memory");
-		return NULL;
+		goto fail;
 	}
 
-	// Make root path from constant because constant path is not solved
-	if (!file_solve_path(self->dirpath, NUMOF(self->dirpath), dirpath)) {
-		WARN("Failed to solve path \"%s\"", dirpath);
-		free(self);
-		return NULL;
+	/***************
+	* Create paths *
+	***************/
+
+	// Root directory path
+	if (!file_solve_path(self->dirpath, sizeof self->dirpath, srcdirpath)) {
+		WARN("Failed to solve path \"%s\"", srcdirpath);
+		goto fail;
 	}
 
-	// Solve root directory path
-	char sdirpath[FILE_NPATH];
-
-	if (!file_solve_path(sdirpath, sizeof sdirpath, self->dirpath)) {
-		free(self);
-		return NULL;
+	// Config file path
+	if (!file_solve_path_format(self->filepath, sizeof self->filepath, "%s/%s", srcdirpath, CONFIG_FNAME)) {
+		WARN("Failed to solve path \"%s/%s\"", srcdirpath, CONFIG_FNAME);
+		goto fail;
 	}
 
-	// Check directory
-	if (!not_exists_to_mkdir(sdirpath)) {
-		WARN("Failed to mkdir \"%s\"", sdirpath);
-		free(self);
-		return NULL;
+	// Trash directory path
+	if (!file_solve_path_format(self->trashdirpath, sizeof self->trashdirpath, "%s/%s", srcdirpath, CONFIG_TRASH_DIRNAME)) {
+		WARN("Failed to solve path \"%s/%s\"", srcdirpath, CONFIG_TRASH_DIRNAME);
+		goto fail;
 	}
 
-	// Make directory for trash command
-	char tmp[FILE_NPATH];
-	snprintf(tmp, sizeof tmp, "%s/%s", sdirpath, CONFIG_TRASH_DIRNAME);
+	/********************
+	* Create directorys *
+	********************/
 
-	if (!not_exists_to_mkdir(tmp)) {
-		WARN("Failed to mkdir \"%s\"", sdirpath);
-		free(self);
-		return NULL;
+	// Root directory
+	if (!not_exists_to_mkdir(self->dirpath)) {
+		WARN("Failed to make directory \"%s\"", self->dirpath);
+		goto fail;
 	}
+
+	// Trash directory
+	if (!not_exists_to_mkdir(self->trashdirpath)) {
+		WARN("Failed to make directory \"%s\"", self->trashdirpath);
+		goto fail;
+	}
+
+	/*******
+	* Load *
+	*******/
 
 	// Load config from directory
-	char fname[FILE_NPATH];
-	snprintf(fname, sizeof fname, "%s/%s", sdirpath, CONFIGSAVE_FNAME);
-
 	self->json = json_new();
+	if (!self->json) {
+		WARN("Failed to construct json");
+		goto fail;
+	}
 
-	if (!file_is_exists(fname)) {
-		if (!config_init_file(self, fname)) {
-			WARN("Failed to init file \"%s\"", fname);
-			free(self);
-			return NULL;
+	if (!file_is_exists(self->filepath)) {
+		if (!config_init_file(self, self->filepath)) {
+			WARN("Failed to init file \"%s\"", self->filepath);
+			goto fail;
 		}
 	} else {
-		if (!json_read_from_file(self->json, fname)) {
-			WARN("Failed to read from file \"%s\"", fname);
+		if (!json_read_from_file(self->json, self->filepath)) {
+			WARN("Failed to read from file \"%s\"", self->filepath);
 			json_delete(self->json);
-			free(self);
-			return NULL;
+			goto fail;
 		}
 	}
 
+	// Done
 	return self;
+
+fail:
+	json_delete(self->json);
+	free(self);
+	return NULL;
 }
 
 /**
@@ -226,15 +274,15 @@ config_new_from_dir(char const* dirpath) {
  * @return failed to pointer to NULL
  */
 static Config*
-config_new(void) {
-	return config_new_from_dir(CONFIG_DIR_PATH);
+config_new_unsafe(void) {
+	return config_new_from_dir_unsafe(CONFIG_DIR_PATH);
 }
 
 /**
  * Destroy instance of Config
  */
 static void
-config_destroy(void) {
+config_destroy_unsafe(void) {
 	if (config) {
 		config_delete(config);
 		config = NULL;
@@ -245,8 +293,8 @@ Config*
 config_instance(void) {
 	if (self_lock()) {
 		if (!config) {
-			config = config_new();
-			atexit(config_destroy);
+			config = config_new_unsafe();
+			atexit(config_destroy_unsafe);
 		}
 		self_unlock();
 		return config;
@@ -259,15 +307,32 @@ config_instance(void) {
 * Getter *
 *********/
 
-char const*
-config_dir(Config const* self) {
-	return self->dirpath;
+const char*
+config_dirpath(const Config* self, const char* key) {
+	if (strcasecmp(key, "root") == 0) {
+		return self->dirpath;
+	} else if (strcasecmp(key, "trash") == 0) {
+		return self->trashdirpath;
+	}
+
+	caperr(PROGNAME, CAPERR_NOTFOUND, "key \"%s\"", key);
+	return NULL;
 }
 
-char const*
-config_path(Config const* self, char const* key) {
+const char*
+config_filepath(const Config* self, const char* key) {
+	if (strcasecmp(key, "config") == 0) {
+		return self->filepath;
+	}
+
+	caperr(PROGNAME, CAPERR_NOTFOUND, "key \"%s\"", key);
+	return NULL;
+}
+
+const char*
+config_path(const Config* self, const char* key) {
 	if (self_lock()) {
-		char const* path = self_path_unsafe(self, key);
+		const char* path = self_path_unsafe(self, key);
 		self_unlock();
 		return path;
 	}
@@ -275,78 +340,58 @@ config_path(Config const* self, char const* key) {
 	return NULL;
 }
 
-static char*
-config_path_with(Config const* self, char* dst, size_t dstsize, char const* with, char const* base) {
+char*
+config_path_with(const Config* self, char* dst, size_t dstsize, const char* with, const char* base) {
 	if (!self_lock()) {
+		caperr(PROGNAME, CAPERR_MUTEX_LOCK, "\"%s/%s\"", with, base);
 		return NULL;
 	}
 
 	// Check arguments
 	if (!self || !dst || !base) {
-		WARN("Invalid arguments");
-		self_unlock();
-		return NULL;
+		caperr(PROGNAME, CAPERR_INVALID, "arguments");
+		goto fail;
 	}
 
 	// Get cap's current directory path
-	char const* withpath = NULL;
+	const char* withpath = NULL;
 
 	withpath = self_path_unsafe(self, with);
 	if (!withpath) {
-		WARN("Not found \"%s\" in setting", with);
+		caperr(PROGNAME, CAPERR_NOTFOUND, "\"%s\" in setting", with);
 		*dst = '\0';
-		self_unlock();
-		return dst;
+		goto fail;
 	}
 
-	// Make path
-	char tmp[dstsize];
-	snprintf(tmp, dstsize, "%s/%s", withpath, base);
-
-	// Solve path
-	if (!file_solve_path(dst, dstsize, tmp)) {
-		WARN("Failed to solve path \"%s\"", tmp);
-		self_unlock();
-		return NULL;
+	// Make solve path
+	if (!file_solve_path_format(dst, dstsize, "%s/%s", withpath, base)) {
+		caperr(PROGNAME, CAPERR_SOLVE, "path \"%s/%s\"", withpath, base);
+		goto fail;
 	}
 
 	// Is out of home?
 	if (self_is_out_of_home_unsafe(self, dst)) {
 		// Yes, set path to home
 		snprintf(dst, dstsize, "%s", self_path_unsafe(self, "home"));
-		self_unlock();
-		return NULL;
 	}
 
+	// Done
 	self_unlock();
 	return dst;
+
+fail:
+	self_unlock();
+	return NULL;
 }
 
 char*
-config_path_with_cd(Config const* self, char* dst, size_t dstsize, char const* base) {
+config_path_with_cd(const Config* self, char* dst, size_t dstsize, const char* base) {
 	return config_path_with(self, dst, dstsize, "cd", base);
 }
 
 char*
-config_path_with_home(Config const* self, char* dst, size_t dstsize, char const* base) {
+config_path_with_home(const Config* self, char* dst, size_t dstsize, const char* base) {
 	return config_path_with(self, dst, dstsize, "home", base);
-}
-
-JsonObject const*
-config_server_const(Config const* self) {
-	JsonObject const* servobj;
-
-	if (!self_lock()) {
-		return NULL;
-	}
-
-	servobj = jsonobj_find_dict_const(json_root_const(self->json), "server");
-
-	if (!self_unlock()) {
-		return NULL;
-	}
-
-	return servobj;
 }
 
 /*********
@@ -354,7 +399,7 @@ config_server_const(Config const* self) {
 *********/
 
 bool
-config_set_path(Config* self, char const* key, char const* val) {
+config_set_path(Config* self, const char* key, const char* val) {
 	if (self_lock()) {
 		bool ret = true;
 
@@ -368,6 +413,8 @@ config_set_path(Config* self, char const* key, char const* val) {
 			file_solve_path(path, sizeof path, val);
 			str_set_string(str, path);
 		}
+
+		// Done
 		self_unlock();
 		return ret;
 	}
@@ -376,12 +423,10 @@ config_set_path(Config* self, char const* key, char const* val) {
 }
 
 bool
-config_save(Config const* self) {
+config_save(const Config* self) {
 	if (self_lock()) {
 		bool ret = true;
-		char path[FILE_NPATH];
-		file_solve_path(path, sizeof path, CONFIGSAVE_PATH);
-		ret = json_write_to_file(self->json, path);
+		ret = json_write_to_file(self->json, self->filepath);
 		self_unlock();
 		return ret;
 	}
@@ -390,7 +435,7 @@ config_save(Config const* self) {
 }
 
 bool
-config_is_out_of_home(Config const* self, char const* path) {
+config_is_out_of_home(const Config* self, const char* path) {
 	if (self_lock()) {
 		bool ret = self_is_out_of_home_unsafe(self, path);
 		self_unlock();
@@ -407,20 +452,6 @@ config_is_out_of_home(Config const* self, char const* path) {
 #if defined(TEST_CONFIG)
 static int
 test_server(int argc, char* argv[]) {
-	Config* config = config_instance();
-	json_write_to_stream(config->json, stderr);
-
-	JsonObject const* joserv = config_server_const(config);
-	assert(joserv);
-	jsonobj_write_to_stream(joserv, stderr);
-
-	JsonObject const* josuffix = jsonobj_find_dict_const(joserv, "script-suffix");
-	assert(josuffix);
-	jsonobj_write_to_stream(josuffix, stderr);
-
-	String const* scriptname = jsonobj_find_value_const(josuffix, "py");
-	printf("script name[%s]\n", str_get_const(scriptname));
-
 	return 0;
 }
 

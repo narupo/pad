@@ -205,7 +205,7 @@ static char*
 alias_path_from_home(char* dst, size_t dstsize) {
 	Config* config = config_instance();
 	char const* home = config_path(config, "home");
-	char const* confdir = config_dir(config);
+	char const* confdir = config_dirpath(config, "root");
 
 	strrems(dst, dstsize, home, ":\\/");
 	snprintf(dst, dstsize, "%s/alias-%d", confdir, hash_int(dst));

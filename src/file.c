@@ -252,10 +252,18 @@ file_getline(char* dst, size_t dstsize, FILE* fin) {
 }
 
 long
-file_size(FILE* stream) {
-	// ("TODO: https://www.securecoding.cert.org/confluence/display/c/FIO19-C.+Do+not+use+fseek%28%29+and+ftell%28%29+to+compute+the+size+of+a+regular+file");
-	DIE("TODO");
-	return 0L;
+file_size(FILE* fp) {
+	long curtel = ftell(fp);
+	long size = 0;
+
+	fseek(fp, 0L, SEEK_SET);
+
+	for (; fgetc(fp) != EOF; ) {
+		++size;
+	}
+
+	fseek(fp, curtel, SEEK_SET);
+	return size;
 }
 
 char const*
@@ -263,7 +271,7 @@ file_suffix(char const* path) {
 	if (!path) {
 		return "";
 	}
-	
+
 	char const* suf = strrchr(path, '.');
 	if (!suf) {
 		return path;
@@ -308,13 +316,28 @@ file_read_script_line(char* dst, size_t dstsize, FILE* stream) {
 	}
 
 	snprintf(dst, dstsize, "%s", p);
-	
+
 #else
 	snprintf(dst, dstsize, "%s", src);
 
 #endif
 
 	return dst;
+}
+
+int
+file_rename(const char* oldpath, const char* newpath) {
+	return rename(oldpath, newpath);
+}
+
+char*
+file_dirname(char* path) {
+	return dirname(path);
+}
+
+char*
+file_basename(char* path) {
+	return basename(path);
 }
 
 /*********************
@@ -326,7 +349,7 @@ struct DirectoryNode {
 	WIN32_FIND_DATA finddata;
 #else
 	struct dirent* node;
-#endif	
+#endif
 };
 
 /*******************************
@@ -401,7 +424,7 @@ dir_close(Directory* self) {
 		if (ret != 0) {
 			WARN("Failed to close directory");
 		}
-#endif	
+#endif
 		free(self);
 
 		return ret;
@@ -535,7 +558,7 @@ static int
 test_directory(int argc, char* argv[]) {
 #if defined(_CAP_WINDOWS)
 	char const* dirpath = "C:/Windows/Temp";
-	
+
 	if (argc >= 2) {
 		dirpath = argv[1];
 	}
@@ -549,7 +572,7 @@ test_directory(int argc, char* argv[]) {
 	for (DirectoryNode* node; (node = dir_read_node(dir)); ) {
 		fprintf(stderr, "name[%s]\n", dirnode_name(node));
 		dirnode_delete(node);
-	} 
+	}
 
 	fflush(stderr);
 	dir_close(dir);
@@ -557,7 +580,7 @@ test_directory(int argc, char* argv[]) {
 
 #else
 	char const* dirpath = "/tmp";
-	
+
 	if (argc >= 2) {
 		dirpath = argv[1];
 	}
@@ -571,7 +594,7 @@ test_directory(int argc, char* argv[]) {
 	for (DirectoryNode* node; (node = dir_read_node(dir)); ) {
 		printf("name[%s]\n", dirnode_name(node));
 		dirnode_delete(node);
-	} 
+	}
 
 	dir_close(dir);
 #endif

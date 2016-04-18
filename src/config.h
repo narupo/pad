@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 #include "define.h"
+#include "caperr.h"
 #include "util.h"
 #include "buffer.h"
 #include "file.h"
@@ -9,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <stdbool.h>
 #include <pthread.h>
 
@@ -22,7 +24,7 @@ typedef struct Config Config;
  * Get pointer to instance of Config
  * Using singleton-pattern
  * Multi thread safe
- * 
+ *
  * @return pointer to Config object
  */
 Config*
@@ -33,21 +35,48 @@ config_instance(void);
 *********/
 
 /**
- * Get root directory path of config
- * This path is directory of all config's file
- * 
- * @param self
- * 
+ * Get config's directory path
+ *
+ * @param[in] self
+ * @param[in] key key of path (examples "root", "trash")
+ *
  * @return success to pointer to string of path
  * @return failed to pointer to NULL
  */
-char const*
-config_dir(Config const* self);
+const char*
+config_dirpath(const Config* self, const char* key);
+
+/**
+ * Get confing's file path
+ *
+ * @param[in] self
+ * @param[in] key key of path (examples "config")
+ *
+ * @return success to pointer to string of path
+ * @return failed to pointer to NULL
+ */
+const char*
+config_filepath(const Config* self, const char* key);
+
+/**
+ * Make normalized cap's path from basename with keyword
+ *
+ * @param[in] self
+ * @param[out] dst destination of normalized path
+ * @param[in] dstsize size of destination
+ * @param[in] with keyword (examples "cd", "home")
+ * @param[in] base basename
+ *
+ * @return success to pointer to dst
+ * @return failed to pointer to NULL
+ */
+char*
+config_path_with(const Config* self, char* dst, size_t dstsize, const char* with, const char* base);
 
 /**
  * Make normalized cap's path from basename with home directory
  *
- * @param[in] self 
+ * @param[in] self
  * @param[out] dst destination of normalized path
  * @param[in] dstsize size of destination
  * @param[in] base basename
@@ -56,12 +85,12 @@ config_dir(Config const* self);
  * @return failed to pointer to NULL
  */
 char*
-config_path_with_home(Config const* self, char* dst, size_t dstsize, char const* base);
+config_path_with_home(const Config* self, char* dst, size_t dstsize, const char* base);
 
 /**
  * Make normalized cap's path from basename with current directory
  *
- * @param[in] self 
+ * @param[in] self
  * @param[out] dst destination of normalized path
  * @param[in] dstsize size of destination
  * @param[in] base basename
@@ -70,7 +99,7 @@ config_path_with_home(Config const* self, char* dst, size_t dstsize, char const*
  * @return failed to pointer to NULL
  */
 char*
-config_path_with_cd(Config const* self, char* dst, size_t dstsize, char const* basename);
+config_path_with_cd(const Config* self, char* dst, size_t dstsize, const char* basename);
 
 /**
  * Get path by key
@@ -81,11 +110,8 @@ config_path_with_cd(Config const* self, char* dst, size_t dstsize, char const* b
  * @return success to pointer to path
  * @return failed to NULL
  */
-char const*
-config_path(Config const* self, char const* key);
-
-JsonObject const*
-config_server_const(Config const* self);
+const char*
+config_path(const Config* self, const char* key);
 
 /*********
 * Setter *
@@ -102,7 +128,7 @@ config_server_const(Config const* self);
  * @return failed to false
  */
 bool
-config_set_path(Config* self, char const* key, char const* path);
+config_set_path(Config* self, const char* key, const char* path);
 
 /**
  * Save config to file system
@@ -113,19 +139,19 @@ config_set_path(Config* self, char const* key, char const* path);
  * @return failed to false
  */
 bool
-config_save(Config const* self);
+config_save(const Config* self);
 
 /**
  * Check path is out of home
  *
- * @param      self  
+ * @param      self
  * @param      path  check path
  *
  * @return     is out of home to true
  * @return     is not out of home to false
  */
 bool
-config_is_out_of_home(Config const* self, char const* path);
+config_is_out_of_home(const Config* self, const char* path);
 
 #endif
 

@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <dirent.h>
+#include <libgen.h>
 
 #if defined(_CAP_WINDOWS)
 # include "windows.h"
@@ -63,17 +64,17 @@ file_opendir(char const* path);
  * @return success to pointer to destination
  * @return failed to NULL
 */
-char* 
+char*
 file_realpath(char* dst, size_t dstsize, char const* src);
 
 /**
- * @brief 
+ * @brief
  *
- * @param fin 
+ * @param fin
  *
- * @return 
+ * @return
 */
-char* 
+char*
 file_read_string(FILE* fin);
 
 /**
@@ -160,32 +161,31 @@ file_read_string(FILE* fin);
 /**
  * @brief      Escape blanks in strings
  *
- * @param      dst      
- * @param[in]  dstsize  
- * @param      src      
+ * @param      dst
+ * @param[in]  dstsize
+ * @param      src
  *
- * @return     success to pointer to destination buffer 
- * @return     failed to pointer to NULL 
+ * @return     success to pointer to destination buffer
+ * @return     failed to pointer to NULL
  */
 char*
 file_escape_blanks(char* dst, size_t dstsize, char const* src);
 
 /**
+ * TODO: move to io
+ *
  * @brief      Get line from stream without new-line for multi-platform
  *
- * @param      dst      
- * @param[in]  dstsize  
- * @param      fin      
+ * @param      dst
+ * @param[in]  dstsize
+ * @param      fin
  *
- * @return     success to pointer to destination buffer 
- * @return     failed to pointer to NULL 
+ * @return     success to pointer to destination buffer
+ * @return     failed to pointer to NULL
  */
 char*
 file_getline(char* dst, size_t dstsize, FILE* fin);
 
-//
-// TODO
-// 
 long
 file_size(FILE* stream);
 
@@ -194,6 +194,23 @@ file_suffix(char const* path);
 
 char*
 file_read_script_line(char* dst, size_t dstsize, FILE* stream);
+
+char*
+file_dirname(char* path);
+
+char*
+file_basename(char* path);
+
+/**
+ * Wrapper of rename(2)
+ *
+ * @param[in] oldpath
+ * @param[in] newpath
+ *
+ * @return on success, zero is returned. on error, -1 is returned, and errno is set appropriately
+ */
+int
+file_rename(const char* oldpath, const char* newpath);
 
 /*********************
 * file DirectoryNode *
@@ -204,20 +221,20 @@ typedef struct DirectoryNode DirectoryNode;
 /**
  * @brief Delete node of dynamic allocate memory
  *
- * @param self 
+ * @param self
 */
-void 
+void
 dirnode_delete(DirectoryNode* self);
 
 /**
  * @brief Get name of node
  *
- * @param self 
+ * @param self
  *
  * @return success to pointer to name
  * @return failed to NULL
 */
-char const* 
+char const*
 dirnode_name(DirectoryNode const* self);
 
 /*****************
@@ -229,12 +246,12 @@ typedef struct Directory Directory;
 /**
  * @brief Close directory
  *
- * @param self 
+ * @param self
  *
  * @return success to number of zero
  * @return failed to number of under of zero
 */
-int 
+int
 dir_close(Directory* self);
 
 /**
@@ -245,18 +262,18 @@ dir_close(Directory* self);
  * @return success to pointer to Directory
  * @return failed to NULL
 */
-Directory* 
+Directory*
 dir_open(char const* path);
 
 /**
  * @brief Read next node in directory
  *
- * @param self 
+ * @param self
  *
  * @return success to pointer to DirectoryNode
  * @return failed or end of read to NULL
 */
-DirectoryNode* 
+DirectoryNode*
 dir_read_node(Directory* self);
 
 #endif
