@@ -54,11 +54,19 @@ hash_int_from_path(const char* path) {
 
 char*
 hash_sha2(char* dst, size_t dstsz, const char* src) {
-	if (pthread_mutex_lock(&hash_crypt_mutex) != 0) {
+	if (!dst || dstsz == 0 || !src) {
+		perror("Invalid arguments");
 		return NULL;
 	}
 
-	const char* p = crypt(src, "$5$");
+	if (pthread_mutex_lock(&hash_crypt_mutex) != 0) {
+		perror("Failed to lock");
+		return NULL;
+	}
+
+	char seed[20];
+	snprintf(seed, sizeof seed, "$5$%u", (unsigned) time(NULL));
+	const char* p = crypt(src, seed);
 
 	for (int found = 0; *p; ++p) {
 		if (*p == '$') {
@@ -74,9 +82,11 @@ hash_sha2(char* dst, size_t dstsz, const char* src) {
 		return NULL;
 	}
 
+	memset(dst, 0, dstsz);
 	snprintf(dst, dstsz, "%s", p);
 
 	if (pthread_mutex_unlock(&hash_crypt_mutex) != 0) {
+		perror("Failed to unlock");
 		return NULL;
 	}
 

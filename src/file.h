@@ -199,10 +199,10 @@ char*
 file_read_script_line(char* dst, size_t dstsize, FILE* stream);
 
 char*
-file_dirname(char* path);
+file_dirname(char* dst, size_t dstsz, const char* path);
 
 char*
-file_basename(char* path);
+file_basename(char* dst, size_t dstsz, const char* path);
 
 /**
  * Wrapper of rename(2)
