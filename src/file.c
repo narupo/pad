@@ -347,13 +347,15 @@ file_rename(const char* oldpath, const char* newpath) {
 }
 
 char*
-file_dirname(char* path) {
-	return dirname(path);
+file_dirname(char* dst, size_t dstsz, const char* path) {
+	snprintf(dst, dstsz, "%s", path);
+	return dirname(dst);
 }
 
 char*
-file_basename(char* path) {
-	return basename(path);
+file_basename(char* dst, size_t dstsz, const char* path) {
+	snprintf(dst, dstsz, "%s", path);
+	return basename(dst);
 }
 
 /*********************
