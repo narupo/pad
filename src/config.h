@@ -7,6 +7,7 @@
 #include "buffer.h"
 #include "file.h"
 #include "json.h"
+#include "hash.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

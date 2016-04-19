@@ -7,8 +7,9 @@ enum {
 struct Config {
 	char dirpath[FILE_NPATH];
 	char filepath[FILE_NPATH];
-	char aliasdirpath[FILE_NPATH];
-	char trashdirpath[FILE_NPATH];
+	char homesdirpath[FILE_NPATH];
+	char curhomedirpath[FILE_NPATH];
+	char curtrashdirpath[FILE_NPATH];
 	Json* json;
 };
 
@@ -22,8 +23,8 @@ static pthread_mutex_t config_mutex = PTHREAD_MUTEX_INITIALIZER; // Mutex for si
 static const char PROGNAME[] = "cap config";
 static const char CONFIG_DIR_PATH[] = "~/.cap"; // Root directory path of config
 static const char CONFIG_FNAME[] = "config"; // File name of config-setting
-static const char CONFIG_ALIAS_DIRNAME[] = "alias"; // For alias command
-static const char CONFIG_TRASH_DIRNAME[] = "trash"; // For trash command
+static const char CONFIG_HOMES_DIRNAE[] = "homes";
+static const char CONFIG_TRASH_DIRNAE[] = "trash";
 
 /***************
 * Mutex family *
@@ -198,15 +199,9 @@ config_new_from_dir_unsafe(const char* srcdirpath) {
 		goto fail;
 	}
 
-	// Alias directory path
-	if (!file_solve_path_format(self->aliasdirpath, sizeof self->aliasdirpath, "%s/%s", srcdirpath, CONFIG_ALIAS_DIRNAME)) {
-		WARN("Failed to solve path \"%s/%s\"", srcdirpath, CONFIG_ALIAS_DIRNAME);
-		goto fail;
-	}
-
-	// Trash directory path
-	if (!file_solve_path_format(self->trashdirpath, sizeof self->trashdirpath, "%s/%s", srcdirpath, CONFIG_TRASH_DIRNAME)) {
-		WARN("Failed to solve path \"%s/%s\"", srcdirpath, CONFIG_TRASH_DIRNAME);
+	// Homes directory path
+	if (!file_solve_path_format(self->homesdirpath, sizeof self->homesdirpath, "%s/%s", srcdirpath, CONFIG_HOMES_DIRNAE)) {
+		WARN("Failed to solve path \"%s/%s\"", srcdirpath, CONFIG_HOMES_DIRNAE);
 		goto fail;
 	}
 
@@ -220,15 +215,9 @@ config_new_from_dir_unsafe(const char* srcdirpath) {
 		goto fail;
 	}
 
-	// Alias directory
-	if (!not_exists_to_mkdir(self->aliasdirpath)) {
-		WARN("Failed to make alias directory \"%s\"", self->aliasdirpath);
-		goto fail;
-	}
-
-	// Trash directory
-	if (!not_exists_to_mkdir(self->trashdirpath)) {
-		WARN("Failed to make trash directory \"%s\"", self->trashdirpath);
+	// Homes directory
+	if (!not_exists_to_mkdir(self->homesdirpath)) {
+		WARN("Failed to make alias directory \"%s\"", self->homesdirpath);
 		goto fail;
 	}
 
@@ -254,6 +243,36 @@ config_new_from_dir_unsafe(const char* srcdirpath) {
 			json_delete(self->json);
 			goto fail;
 		}
+	}
+
+	/********************************************
+	* Initialize current hash directory of home *
+	********************************************/
+
+	// Paths
+
+	const char* home = self_path_unsafe(self, "home");
+
+	if (!file_solve_path_format(self->curhomedirpath, sizeof self->curhomedirpath, "%s/%d", self->homesdirpath, hash_int_from_path(home))) {
+		WARN("Failed to solve path of current home directory");
+		goto fail;
+	}
+
+	if (!file_solve_path_format(self->curtrashdirpath, sizeof self->curtrashdirpath, "%s/%s", self->curhomedirpath, CONFIG_TRASH_DIRNAE)) {
+		WARN("Failed to solve path of current trash directory");
+		goto fail;
+	}
+
+	// Directorys
+
+	if (!not_exists_to_mkdir(self->curhomedirpath)) {
+		WARN("Failed to make directory \"%s\"", self->curhomedirpath);
+		goto fail;
+	}
+
+	if (!not_exists_to_mkdir(self->curtrashdirpath)) {
+		WARN("Failed to make directory \"%s\"", self->curtrashdirpath);
+		goto fail;
 	}
 
 	// Done
@@ -309,10 +328,12 @@ const char*
 config_dirpath(const Config* self, const char* key) {
 	if (strcasecmp(key, "root") == 0) {
 		return self->dirpath;
-	} else if (strcasecmp(key, "alias") == 0) {
-		return self->aliasdirpath;
+	} else if (strcasecmp(key, "homes") == 0) {
+		return self->homesdirpath;
+	} else if (strcasecmp(key, "home") == 0) {
+		return self->curhomedirpath;
 	} else if (strcasecmp(key, "trash") == 0) {
-		return self->trashdirpath;
+		return self->curtrashdirpath;
 	}
 
 	caperr(PROGNAME, CAPERR_NOTFOUND, "key \"%s\"", key);
