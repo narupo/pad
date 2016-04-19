@@ -1,8 +1,7 @@
 #include "trash.h"
 
-
-static const char TRASH_INFO_FNAME[] = "info";
 static const char PROGNAME[] = "cap trash";
+static const char TRASH_INFO_FNAME[] = "trash.info";
 
 typedef struct Command Command;
 
@@ -97,32 +96,134 @@ cmd_parse_options(Command* self) {
 }
 
 char*
-cmd_oldpath_to_newpath(char* dst, size_t dstsize, const char* oldpath) {
+cmd_oldpath_to_newpath(char* newpath, size_t newpathsz, const char* oldpath) {
 	const Config* config = config_instance();
 	const char* trashpath = config_dirpath(config, "trash");
 	const char* fbase = file_basename((char*) oldpath);
 
-	// Create or edit info file
-	if (!file_solve_path_format(dst, dstsize, "%s/%s", trashpath, fbase)) {
+	// Create base newpath
+	if (!file_solve_path_format(newpath, newpathsz, "%s/%s", trashpath, fbase)) {
 		caperr(PROGNAME, CAPERR_SOLVE, "path \"%s/%s\"", trashpath, fbase);
+		return NULL;
+	}
+
+	// Fix path for never override
+	int num = 0;
+	char tmppath[newpathsz+1 +4]; // +1 for final nil, +3 for loop number and decolate
+
+	for (; num < UCHAR_MAX; ++num) {
+		// Retry create path with loop number
+		snprintf(tmppath, sizeof tmppath, "%s.%03d", newpath, num);
+
+		if (!file_is_exists(tmppath)) {
+			snprintf(newpath, newpathsz, "%s", tmppath);
+			break; // Ok. File path is unique
+		}
+	}
+
+	// File number was overflow?
+	if (num == UCHAR_MAX) {
+		caperr(PROGNAME, CAPERR_ERROR, "Can't trash. Too many same name files of \"%s\"", newpath);
+		return NULL;
+	}
+
+	// CHECK("newpath[%s]", newpath);
+	// Created newpath is format of "/my/file/name.number"
+	return newpath;
+}
+
+char*
+cmd_infopath(char* dst, size_t dstsize) {
+	const Config* config = config_instance();
+	const char* homepath = config_dirpath(config, "home");
+
+	// Create or edit info file
+	if (!file_solve_path_format(dst, dstsize, "%s/%s", homepath, TRASH_INFO_FNAME)) {
+		caperr(PROGNAME, CAPERR_SOLVE, "path \"%s/%s\"", homepath, TRASH_INFO_FNAME);
 		return NULL;
 	}
 
 	return dst;
 }
 
-char*
-cmd_infopath(char* dst, size_t dstsize) {
-	const Config* config = config_instance();
-	const char* trashpath = config_dirpath(config, "trash");
+enum {
+	TRASH_INFO_NCOL_KEY = 64,
+	TRASH_INFO_NCOL_FNAME = 128,
+	TRASH_INFO_NCOL_OLDDIR = 255,
+	TRASH_INFO_NRECORD = TRASH_INFO_NCOL_FNAME + TRASH_INFO_NCOL_OLDDIR,
+};
 
-	// Create or edit info file
-	if (!file_solve_path_format(dst, dstsize, "%s/%s", trashpath, TRASH_INFO_FNAME)) {
-		caperr(PROGNAME, CAPERR_SOLVE, "path \"%s/%s\"", trashpath, TRASH_INFO_FNAME);
-		return NULL;
+static int
+fpushfmt(FILE* fout, size_t putsize, const char* fmt, ...) {
+	char buf[putsize];
+	memset(buf, 0, putsize);
+
+	va_list args;
+	va_start(args, fmt);
+	vsnprintf(buf, sizeof buf, fmt, args);
+	va_end(args);
+
+	return fwrite(buf, sizeof(*buf), putsize, fout);
+}
+
+static int
+cmd_infofile_append_newrecord(FILE* finfo, const char* oldpath, const char* newpath) {
+	// Columns
+	const char* fname = file_basename((char*) newpath); // Key of record
+	const char* olddir = file_dirname((char*) oldpath); // Old directory path
+
+	// Append columns of record
+	fseek(finfo, 0L, SEEK_END);
+
+	if (fpushfmt(finfo, TRASH_INFO_NCOL_FNAME, "%s", fname) <= 0) {
+		return caperr(PROGNAME, CAPERR_WRITE, "fname \"%s\"", fname);
 	}
 
-	return dst;
+	if (fpushfmt(finfo, TRASH_INFO_NCOL_OLDDIR, "%s", olddir) <= 0) {
+		return caperr(PROGNAME, CAPERR_WRITE, "olddir \"%s\"", olddir);
+	}
+
+	return 0;
+}
+
+static int
+cmd_infofile_update_from_path(FILE* finfo, const char* oldpath, const char* newpath) {
+	if (!finfo || !oldpath || !newpath) {
+		return caperr(PROGNAME, CAPERR_INVALID_ARGUMENTS, "");
+	}
+
+	// Search record by key
+	int ret = 0;
+	const char* newfname = file_basename((char*) newpath);
+
+	fseek(finfo, 0L, SEEK_SET);
+
+	for (; !feof(finfo); ) {
+		// Read key column of record
+		char cfname[TRASH_INFO_NCOL_FNAME];
+		int len = fread(cfname, sizeof(*cfname), TRASH_INFO_NCOL_FNAME, finfo);
+		if (len <= 0) {
+			break;
+		}
+
+		// Compare key
+		cfname[len] = '\0';
+
+		if (strcmp(cfname, newfname) == 0) {
+			// Found key.
+		} else {
+			// Not found key. Skip current record
+			fseek(finfo, TRASH_INFO_NRECORD-TRASH_INFO_NCOL_FNAME, SEEK_CUR);
+		}
+	}
+
+	if (feof(finfo)) {
+		// Not found record, Append new record
+		cmd_infofile_append_newrecord(finfo, oldpath, newpath);
+	}
+
+done:
+	return ret;
 }
 
 /**
@@ -135,10 +236,11 @@ cmd_infopath(char* dst, size_t dstsize) {
  * ~/.cap/trash/289/.vimrc
  */
 static int
-cmd_save_info_from_path(const char* oldpath) {
+cmd_save_info_from_path(const char* oldpath, const char* newpath) {
+	// Open file
 	char infopath[FILE_NPATH];
 	if (!cmd_infopath(infopath, sizeof infopath)) {
-		return caperr(PROGNAME, CAPERR_MAKE, "infopath form \"%s\"", oldpath);
+		return caperr(PROGNAME, CAPERR_MAKE, "infopath from \"%s\"", oldpath);
 	}
 
 	FILE* finfo = file_open(infopath, "ab+");
@@ -146,8 +248,12 @@ cmd_save_info_from_path(const char* oldpath) {
 		return caperr(PROGNAME, CAPERR_FOPEN, "\"%s\"", infopath);
 	}
 
-	fputs("test", finfo); // debug
+	// Update stream by random access
+	if (cmd_infofile_update_from_path(finfo, oldpath, newpath) != 0) {
+		return caperr(PROGNAME, CAPERR_EXECUTE, "update trash info of \"%s\"", oldpath);
+	}
 
+	// Done
 	if (file_close(finfo) != 0) {
 		return caperr(PROGNAME, CAPERR_FCLOSE, "\"%s\"", infopath);
 	}
@@ -158,7 +264,7 @@ cmd_save_info_from_path(const char* oldpath) {
 /**
  * Trash pipe line
  *
- * 1. User input file path
+ * 1. User input file path (relative of home)
  * 2. Cap check file path
  * 3. Move file to trash/
  * 3a. Need format for overlap file names
@@ -188,8 +294,8 @@ cmd_trash_file(const char* oldpath) {
 	}
 
 	// Success to trash. Save trash info
-	if (cmd_save_info_from_path(oldpath) != 0) {
-		// TODO: undo trash file
+	if (cmd_save_info_from_path(oldpath, newpath) != 0) {
+		// TODO: Failed to undo trash file
 		return caperr(PROGNAME, CAPERR_WRITE, "trash info of \"%s\"", oldpath);
 	}
 
