@@ -16,6 +16,8 @@ enum {
 	ALIAS_NRECORD = ALIAS_NKEY + ALIAS_NVAL,
 };
 
+static const char ALIAS_FNAME[] = "alias";
+
 /****************
 * alias Command *
 ****************/
@@ -193,7 +195,7 @@ getcol(FILE* fin, char* dst, size_t colsize) {
 }
 
 /**
- * Create path of alias file by hash value of home directory and path of cap's root
+ * Create path of alias file
  *
  * @param[out] dst pointer to destination buffer for created path
  * @param[int] dstsize number of size  of destination buffer
@@ -202,12 +204,11 @@ getcol(FILE* fin, char* dst, size_t colsize) {
  * @return failed to pointer to NULL
  */
 static char*
-alias_path_from_home(char* dst, size_t dstsize) {
+alias_config_file_path(char* dst, size_t dstsize) {
 	Config* config = config_instance();
-	char const* home = config_path(config, "home");
-	char const* aliasdir = config_dirpath(config, "alias");
+	char const* home = config_dirpath(config, "home");
 
-	snprintf(dst, dstsize, "%s/%d", aliasdir, hash_int_from_path(home));
+	snprintf(dst, dstsize, "%s/%s", home, ALIAS_FNAME);
 
 	return dst;
 }
@@ -221,7 +222,7 @@ alias_path_from_home(char* dst, size_t dstsize) {
 static FILE*
 alias_open_stream(void) {
 	char path[FILE_NPATH];
-	alias_path_from_home(path, sizeof path);
+	alias_config_file_path(path, sizeof path);
 
 	if (!file_is_exists(path)) {
 		file_create(path);

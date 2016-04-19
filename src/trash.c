@@ -96,40 +96,15 @@ cmd_parse_options(Command* self) {
 	return true;
 }
 
-static bool
-not_exists_to_mkdir(const char* path) {
-	if (file_is_exists(path)) {
-		return true;
-	}
-
-	if (file_mkdir_mode(path, S_IRUSR | S_IWUSR | S_IXUSR) != 0) {
-		return false;
-	}
-
-	return true;
-}
-
 char*
 cmd_oldpath_to_newpath(char* dst, size_t dstsize, const char* oldpath) {
 	const Config* config = config_instance();
-	const char* trashdir = config_dirpath(config, "trash");
-	const char* home = config_path(config, "home");
+	const char* trashpath = config_dirpath(config, "trash");
 	const char* fbase = file_basename((char*) oldpath);
 
-	char hashdir[FILE_NPATH];
-	if (!file_solve_path_format(hashdir, sizeof hashdir, "%s/%d", trashdir, hash_int_from_path(home))) {
-		caperr(PROGNAME, CAPERR_SOLVE, "path \"%s/%d\"", trashdir, hash_int_from_path(home));
-		return NULL;
-	}
-
-	if (!not_exists_to_mkdir(hashdir)) {
-		caperr(PROGNAME, CAPERR_MAKEDIR, "\"%s\"", hashdir);
-		return NULL;
-	}
-
 	// Create or edit info file
-	if (!file_solve_path_format(dst, dstsize, "%s/%s", hashdir, fbase)) {
-		caperr(PROGNAME, CAPERR_SOLVE, "path \"%s/%s\"", hashdir, fbase);
+	if (!file_solve_path_format(dst, dstsize, "%s/%s", trashpath, fbase)) {
+		caperr(PROGNAME, CAPERR_SOLVE, "path \"%s/%s\"", trashpath, fbase);
 		return NULL;
 	}
 
@@ -137,25 +112,13 @@ cmd_oldpath_to_newpath(char* dst, size_t dstsize, const char* oldpath) {
 }
 
 char*
-cmd_oldpath_to_infopath(char* dst, size_t dstsize, const char* oldpath) {
+cmd_infopath(char* dst, size_t dstsize) {
 	const Config* config = config_instance();
-	const char* home = config_path(config, "home");
-	const char* trashdir = config_dirpath(config, "trash");
-
-	char hashdir[FILE_NPATH];
-	if (!file_solve_path_format(hashdir, sizeof hashdir, "%s/%d", trashdir, hash_int_from_path(home))) {
-		caperr(PROGNAME, CAPERR_SOLVE, "path \"%s/%d\"", trashdir, hash_int_from_path(home));
-		return NULL;
-	}
-
-	if (!not_exists_to_mkdir(hashdir)) {
-		caperr(PROGNAME, CAPERR_MAKEDIR, "\"%s\"", hashdir);
-		return NULL;
-	}
+	const char* trashpath = config_dirpath(config, "trash");
 
 	// Create or edit info file
-	if (!file_solve_path_format(dst, dstsize, "%s/%s", hashdir, TRASH_INFO_FNAME)) {
-		caperr(PROGNAME, CAPERR_SOLVE, "path \"%s/%s\"", hashdir, TRASH_INFO_FNAME);
+	if (!file_solve_path_format(dst, dstsize, "%s/%s", trashpath, TRASH_INFO_FNAME)) {
+		caperr(PROGNAME, CAPERR_SOLVE, "path \"%s/%s\"", trashpath, TRASH_INFO_FNAME);
 		return NULL;
 	}
 
@@ -174,7 +137,7 @@ cmd_oldpath_to_infopath(char* dst, size_t dstsize, const char* oldpath) {
 static int
 cmd_save_info_from_path(const char* oldpath) {
 	char infopath[FILE_NPATH];
-	if (!cmd_oldpath_to_infopath(infopath, sizeof infopath, oldpath)) {
+	if (!cmd_infopath(infopath, sizeof infopath)) {
 		return caperr(PROGNAME, CAPERR_MAKE, "infopath form \"%s\"", oldpath);
 	}
 
