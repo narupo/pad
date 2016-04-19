@@ -259,7 +259,7 @@ alias_push_alias_to_file(Command const* self, char const* pushkey, char const* p
 
 	for (int i = 0; !feof(stream); ++i) {
 		// Read key
-		char key[ALIAS_NKEY+1] = {0}; // +1 for final nul
+		char key[ALIAS_NKEY+1] = {}; // +1 for final nul
 
 		int len = fread(key, sizeof(key[0]), ALIAS_NKEY, stream);
 		if (len <= 0) {
@@ -272,7 +272,7 @@ alias_push_alias_to_file(Command const* self, char const* pushkey, char const* p
 			goto done;
 		}
 
-		key[len] = 0; // Nul terminate for string
+		key[len] = '\0'; // Nul terminate for string
 
 		if (strlen(key) == 0) {
 			// Found empty record. save record number for insert new record
