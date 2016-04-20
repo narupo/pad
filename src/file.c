@@ -99,6 +99,11 @@ file_open(char const* path, char const* mode) {
 	return fopen(path, mode);
 }
 
+int
+file_close(FILE* fp) {
+	return fclose(fp);
+}
+
 DIR*
 file_opendir(char const* path) {
 	return opendir(path);
@@ -107,11 +112,6 @@ file_opendir(char const* path) {
 int
 file_closedir(DIR* dir) {
 	return closedir(dir);
-}
-
-int
-file_close(FILE* fp) {
-	return fclose(fp);
 }
 
 bool
