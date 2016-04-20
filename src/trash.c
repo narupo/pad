@@ -334,7 +334,7 @@ cmd_open_history(void) {
 
 static StringArray*
 cmd_make_history_array(void) {
-	StringArray* history = cmd_make_history_array();
+	StringArray* history = strarray_new();
 	if (!history) {
 		caperr(PROGNAME, CAPERR_CONSTRUCT, "history array");
 		return NULL;
@@ -464,7 +464,35 @@ cmd_trash_files(const Command* self) {
 
 static int
 cmd_history(Command* self) {
-	term_eprintf("history\n");
+	StringArray* history = cmd_make_history_array();
+	if (!history) {
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "history array");
+	}
+
+	for (size_t i = 0; i < strarray_length(history); ++i) {
+		CsvLine* cl = csvline_new_parse_line(strarray_get_const(history, i), ',');
+		if (!cl) {
+			strarray_delete(history);
+			return caperr(PROGNAME, CAPERR_PARSE, "history record at %d", i);
+		}
+
+		const char* type = csvline_get_const(cl, 0);
+		const char* oldpath = csvline_get_const(cl, 1);
+
+		switch (type[0]) {
+		default: term_printf("unknown "); break;
+		case H_TRASH: term_printf("trash "); break;
+		case H_UNDO: term_printf("undo "); break;
+		case H_REDO: term_printf("redo "); break;
+		}
+
+		term_printf("%s\n", oldpath);
+		term_flush();
+
+		csvline_delete(cl);
+	}
+
+	strarray_delete(history);
 	return 0;
 }
 
@@ -498,11 +526,9 @@ cmd_clear(Command* self) {
 
 static int
 cmd_run(Command* self) {
-	int ret = 0;
-
 	if (self->opt_is_help) {
 		trash_usage();
-		return ret;
+		return 0;
 	}
 
 	if (self->opt_is_history || self->argc == 1) {
