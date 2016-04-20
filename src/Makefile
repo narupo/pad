@@ -7,7 +7,7 @@ CMDS := cap.c cat.c home.c cd.c pwd.c trash.c deploy.c edit.c \
 
 UTILS := caperr.c atcap.c buffer.c cap-file.c config.c \
 	csvline.c strmap.c file.c strarray.c term.c util.c environ.c string.c memory.c \
-	socket.c http-header.c json.c io.c hash.c
+	socket.c http-header.c json.c io.c hash.c shell.c
 
 HEADERS := $(CMDS:.c=.h) $(UTILS:.c=.h) hash.h
 OBJS := $(CMDS:.c=.o) $(UTILS:.c=.o)

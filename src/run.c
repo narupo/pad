@@ -63,7 +63,7 @@ command_make_cmdline(Command const* self, Config const* config, char* dst, size_
 	}
 
 	char script[128];
-	if (!file_read_script_line(script, sizeof script, fin)) {
+	if (!shell_read_script_line(script, sizeof script, fin)) {
 		script[0] = '\0'; // Nothing script
 	}
 

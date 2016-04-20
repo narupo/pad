@@ -1,7 +1,7 @@
 #include "file.h"
 
 char*
-file_realpath(char* dst, size_t dstsize, char const* src) {
+file_realpath(char* dst, size_t dstsize, const char* src) {
 #if defined(_CAP_WINDOWS)
 	char* fpart;
 
@@ -28,7 +28,7 @@ file_realpath(char* dst, size_t dstsize, char const* src) {
 }
 
 char*
-file_solve_path(char* dst, size_t dstsize, char const* path) {
+file_solve_path(char* dst, size_t dstsize, const char* path) {
 	char tmp[FILE_NPATH];
 
 	// Check arugments
@@ -69,7 +69,7 @@ file_solve_path_format(char* dst, size_t dstsize, const char* fmt, ...) {
 }
 
 char*
-file_make_solve_path(char const* path) {
+file_make_solve_path(const char* path) {
 	// Check arguments
 	if (!path) {
 		WARN("Invalid arguments");
@@ -95,7 +95,7 @@ file_make_solve_path(char const* path) {
 }
 
 FILE*
-file_open(char const* path, char const* mode) {
+file_open(const char* path, const char* mode) {
 	return fopen(path, mode);
 }
 
@@ -105,7 +105,7 @@ file_close(FILE* fp) {
 }
 
 DIR*
-file_opendir(char const* path) {
+file_opendir(const char* path) {
 	return opendir(path);
 }
 
@@ -115,7 +115,7 @@ file_closedir(DIR* dir) {
 }
 
 bool
-file_is_exists(char const* path) {
+file_is_exists(const char* path) {
 	struct stat s;
 	int res = stat(path, &s);
 
@@ -133,7 +133,7 @@ notfound:
 }
 
 bool
-file_is_dir(char const* path) {
+file_is_dir(const char* path) {
 	struct stat s;
 	int res = stat(path, &s);
 
@@ -157,7 +157,7 @@ notfound:
 }
 
 int
-file_mkdir_mode(char const* dirpath, mode_t mode) {
+file_mkdir_mode(const char* dirpath, mode_t mode) {
 #if defined(_CAP_WINDOWS)
 	return mkdir(dirpath);
 #else
@@ -166,7 +166,7 @@ file_mkdir_mode(char const* dirpath, mode_t mode) {
 }
 
 int
-file_mkdir(char const* dirpath, char const* mode) {
+file_mkdir(const char* dirpath, const char* mode) {
 #if defined(_CAP_WINDOWS)
 	return mkdir(dirpath);
 #else
@@ -176,7 +176,7 @@ file_mkdir(char const* dirpath, char const* mode) {
 }
 
 bool
-file_create(char const* path) {
+file_create(const char* path) {
 	FILE* fout = file_open(path, "wb");
 	if (!fout) {
 		return false;
@@ -210,8 +210,8 @@ file_read_string(FILE* fin) {
 }
 
 char*
-file_escape_blanks(char* dst, size_t dstsize, char const* src) {
-	char const* dstend = dst + dstsize - 1; // -1 for final nul
+file_escape_blanks(char* dst, size_t dstsize, const char* src) {
+	const char* dstend = dst + dstsize - 1; // -1 for final nul
 
 	for (; dst < dstend && *src; ++dst, ++src) {
 		if (isblank(*src)) {
@@ -222,48 +222,6 @@ file_escape_blanks(char* dst, size_t dstsize, char const* src) {
 	}
 
 	*dst = '\0';
-	return dst;
-}
-
-char*
-file_getline(char* dst, size_t dstsize, FILE* fin) {
-	// Check arguments
-	if (!dst || !dstsize || !fin || feof(fin) || ferror(fin)) {
-		WARN("Invalid arguments");
-		return NULL;
-	}
-
-	// Read from stream
-	char* cur = dst;
-	char const* end = dst + dstsize - 1; // +1 for final nul
-
-	for (; cur < end; ) {
-		int ch = fgetc(fin);
-		if (ch == EOF || ferror(fin)) {
-			break;
-		}
-
-		// Check newline
-		if (ch == '\n') {
-			// UNIX
-			break;
-		} else if (ch == '\r') {
-			int next = fgetc(fin);
-			if (next == '\n') {
-				// MS Windows
-				break;
-			} else {
-				// Mac
-				ungetc(next, fin);
-				break;
-			}
-		}
-
-		*cur++ = ch;
-	}
-
-	// Done
-	*cur = '\0';
 	return dst;
 }
 
@@ -282,63 +240,17 @@ file_size(FILE* fp) {
 	return size;
 }
 
-char const*
-file_suffix(char const* path) {
+const char*
+file_suffix(const char* path) {
 	if (!path) {
 		return "";
 	}
 
-	char const* suf = strrchr(path, '.');
+	const char* suf = strrchr(path, '.');
 	if (!suf) {
 		return path;
 	}
 	return suf + 1;
-}
-
-char*
-file_read_script_line(char* dst, size_t dstsize, FILE* stream) {
-	if (!dst || feof(stream) || ferror(stream)) {
-		WARN("Invalid arguments");
-		return NULL;
-	}
-
-	// Read line for parse and runtime script name
-	char line[dstsize];
-	int tell = ftell(stream);
-
-	if (!file_getline(line, dstsize, stream)) {
-		WARN("Failed to read line");
-		return NULL;
-	}
-
-	// Check prefix
-	char const* pref = "#!";
-	size_t preflen = strlen(pref);
-
-	if (strncmp(line, pref, preflen) != 0) {
-		fseek(stream, tell, SEEK_SET);
-		return NULL; // Not found
-	}
-
-	// Parse script name
-	char* src = line + preflen;
-
-#if defined(_CAP_WINDOWS)
-	char* p = strrchr(src, '/');
-	if (p) {
-		p += 1; // +1 for '/'
-	} else {
-		p = src;
-	}
-
-	snprintf(dst, dstsize, "%s", p);
-
-#else
-	snprintf(dst, dstsize, "%s", src);
-
-#endif
-
-	return dst;
 }
 
 int
@@ -395,7 +307,7 @@ dirnode_new(void) {
 * DirectoryNode getter *
 ***********************/
 
-char const*
+const char*
 dirnode_name(DirectoryNode const* self) {
 #if defined(_CAP_WINDOWS)
 	return self->finddata.cFileName;
@@ -452,7 +364,7 @@ dir_close(Directory* self) {
 }
 
 Directory*
-dir_open(char const* path) {
+dir_open(const char* path) {
 	Directory* self = (Directory*) calloc(1, sizeof(Directory));
 	if (!self) {
 		WARN("Failed to construct Directory");
@@ -535,7 +447,7 @@ test_mkdir(int argc, char* argv[]) {
 		die("need path");
 	}
 
-	char const* path = argv[1];
+	const char* path = argv[1];
 
 	if (file_is_exists(path)) {
 		printf("is exists [%s]\n", path);
@@ -548,7 +460,7 @@ test_mkdir(int argc, char* argv[]) {
 }
 
 static char*
-solve_path(char* dst, size_t dstsize, char const* path) {
+solve_path(char* dst, size_t dstsize, const char* path) {
 #if defined(_CAP_WINDOWS)
 	char* fpart;
 
@@ -575,7 +487,7 @@ test_solve_path(int argc, char* argv[]) {
 static int
 test_directory(int argc, char* argv[]) {
 #if defined(_CAP_WINDOWS)
-	char const* dirpath = "C:/Windows/Temp";
+	const char* dirpath = "C:/Windows/Temp";
 
 	if (argc >= 2) {
 		dirpath = argv[1];
@@ -597,7 +509,7 @@ test_directory(int argc, char* argv[]) {
 	return 0;
 
 #else
-	char const* dirpath = "/tmp";
+	const char* dirpath = "/tmp";
 
 	if (argc >= 2) {
 		dirpath = argv[1];

@@ -10,6 +10,7 @@
 #include "atcap.h"
 #include "string.h"
 #include "file.h"
+#include "shell.h"
 
 void
 run_usage(void);
@@ -21,4 +22,3 @@ int
 run_main(int argc, char* argv[]);
 
 #endif
-
