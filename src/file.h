@@ -40,7 +40,7 @@ file_close(FILE* fp);
  * Wrapper of fopen
  */
 FILE*
-file_open(char const* name, char const* mode);
+file_open(const char* name, const char* mode);
 
 /**
  * Wrapper of closedir
@@ -52,7 +52,7 @@ file_closedir(DIR* dir);
  * Wrapper of opendir
  */
 DIR*
-file_opendir(char const* path);
+file_opendir(const char* path);
 
 /**
  * @brief Wrapper of realpath (Unix's API)
@@ -65,7 +65,7 @@ file_opendir(char const* path);
  * @return failed to NULL
 */
 char*
-file_realpath(char* dst, size_t dstsize, char const* src);
+file_realpath(char* dst, size_t dstsize, const char* src);
 
 /**
  * @brief
@@ -85,13 +85,13 @@ file_read_string(FILE* fin);
  * @return is not exists to false
  */
 bool
-file_is_exists(char const* path);
+file_is_exists(const char* path);
 
 /**
  * Wrapper of mkdir
  */
 int
-file_mkdir_mode(char const* path, mode_t mode);
+file_mkdir_mode(const char* path, mode_t mode);
 
 /**
  * Wrapper of mkdir with mode of string
@@ -103,7 +103,7 @@ file_mkdir_mode(char const* path, mode_t mode);
  * @return     failed to number of -1
  */
 int
-file_mkdir(char const* path, char const* mode);
+file_mkdir(const char* path, const char* mode);
 
 /**
  * Create empty file on file-system
@@ -114,7 +114,7 @@ file_mkdir(char const* path, char const* mode);
  * @return failed to false
  */
 bool
-file_create(char const* path);
+file_create(const char* path);
 
 /**
  * Get normalized file path
@@ -127,8 +127,19 @@ file_create(char const* path);
  * @return failed to NULL
  */
 char*
-file_solve_path(char* dst, size_t dstsize, char const* path);
+file_solve_path(char* dst, size_t dstsize, const char* path);
 
+/**
+ * Get normalized file path by format
+ *
+ * @param[out] dst    destination of normalized path
+ * @param[in] dstsize destination size
+ * @param[in] fmt     format string
+ * @param[in] ...     arguments of format
+ *
+ * @return success to pointer to dst
+ * @return failed to NULL
+ */
 char*
 file_solve_path_format(char* dst, size_t dstsize, const char* fmt, ...);
 
@@ -139,7 +150,7 @@ file_solve_path_format(char* dst, size_t dstsize, const char* fmt, ...);
  * @return Failed to NULL
  */
 char*
-file_make_solve_path(char const* path);
+file_make_solve_path(const char* path);
 
 /**
  * Check file is directory
@@ -149,7 +160,7 @@ file_make_solve_path(char const* path);
  * @return is not directory to false
  */
 bool
-file_is_dir(char const* path);
+file_is_dir(const char* path);
 
 /**
  * Read all string from stream
@@ -172,31 +183,13 @@ file_read_string(FILE* fin);
  * @return     failed to pointer to NULL
  */
 char*
-file_escape_blanks(char* dst, size_t dstsize, char const* src);
-
-/**
- * TODO: move to io
- *
- * @brief      Get line from stream without new-line for multi-platform
- *
- * @param      dst
- * @param[in]  dstsize
- * @param      fin
- *
- * @return     success to pointer to destination buffer
- * @return     failed to pointer to NULL
- */
-char*
-file_getline(char* dst, size_t dstsize, FILE* fin);
+file_escape_blanks(char* dst, size_t dstsize, const char* src);
 
 long
 file_size(FILE* stream);
 
-char const*
-file_suffix(char const* path);
-
-char*
-file_read_script_line(char* dst, size_t dstsize, FILE* stream);
+const char*
+file_suffix(const char* path);
 
 char*
 file_dirname(char* dst, size_t dstsz, const char* path);
@@ -237,7 +230,7 @@ dirnode_delete(DirectoryNode* self);
  * @return success to pointer to name
  * @return failed to NULL
 */
-char const*
+const char*
 dirnode_name(DirectoryNode const* self);
 
 /*****************
@@ -266,7 +259,7 @@ dir_close(Directory* self);
  * @return failed to NULL
 */
 Directory*
-dir_open(char const* path);
+dir_open(const char* path);
 
 /**
  * @brief Read next node in directory
