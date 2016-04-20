@@ -225,7 +225,7 @@ command_walkdir(Command* self, char const* head, char const* tail) {
 		}
 
 		// Save to names
-		if (!strarray_push_copy(self->names, newtail)) {
+		if (!strarray_append_string(self->names, newtail)) {
 			ret = caperr(PROGNAME, CAPERR_WRITE, "names");
 			goto done;
 		}

@@ -153,7 +153,7 @@ cmd_oldpath_to_newpath(char* newpath, size_t newpathsz, const char* oldpath) {
 	return newpath;
 }
 
-char*
+static char*
 cmd_infopath(char* dst, size_t dstsize) {
 	const Config* config = config_instance();
 	const char* homepath = config_dirpath(config, "home");
@@ -218,7 +218,7 @@ cmd_infofile_append_newrecord(FILE* finfo, const char* oldpath, const char* newp
 }
 
 static int
-cmd_infofile_update_from_path(FILE* finfo, const char* oldpath, const char* newpath) {
+cmd_update_info(FILE* finfo, const char* oldpath, const char* newpath) {
 	if (!finfo || !oldpath || !newpath) {
 		return caperr(PROGNAME, CAPERR_INVALID_ARGUMENTS, "");
 	}
@@ -266,7 +266,7 @@ cmd_infofile_update_from_path(FILE* finfo, const char* oldpath, const char* newp
 }
 
 static FILE*
-cmd_infofile_open(void) {
+cmd_open_info(void) {
 	char fname[FILE_NPATH];
 	if (!cmd_infopath(fname, sizeof fname)) {
 		caperr(PROGNAME, CAPERR_SOLVE, "info file path");
@@ -294,17 +294,15 @@ cmd_infofile_open(void) {
 static int
 cmd_save_info_from_path(const char* oldpath, const char* newpath) {
 	// Open file
-	FILE* finfo = cmd_infofile_open();
+	FILE* finfo = cmd_open_info();
 	if (!finfo) {
 		return caperr(PROGNAME, CAPERR_OPEN, "info file");
 	}
 
 	// Update stream by random access
-	CHECK("oldpath[%s]", oldpath);
-	if (cmd_infofile_update_from_path(finfo, oldpath, newpath) != 0) {
+	if (cmd_update_info(finfo, oldpath, newpath) != 0) {
 		return caperr(PROGNAME, CAPERR_EXECUTE, "update trash info of \"%s\"", oldpath);
 	}
-	CHECK("oldpath[%s]", oldpath);
 
 	// Done
 	if (file_close(finfo) != 0) {
@@ -315,7 +313,7 @@ cmd_save_info_from_path(const char* oldpath, const char* newpath) {
 }
 
 static FILE*
-cmd_history_open(void) {
+cmd_open_history(void) {
 	const Config* config = config_instance();
 	const char* home = config_dirpath(config, "home");
 	char histpath[FILE_NPATH];
@@ -334,17 +332,68 @@ cmd_history_open(void) {
 	return fhist;
 }
 
+static StringArray*
+cmd_make_history_array(void) {
+	StringArray* history = cmd_make_history_array();
+	if (!history) {
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "history array");
+		return NULL;
+	}
+
+	FILE* fhist = cmd_open_history();
+	if (!fhist) {
+		strarray_delete(history);
+		caperr(PROGNAME, CAPERR_OPEN, "history file");
+		return NULL;
+	}
+
+	String* line = str_new();
+	for (; io_getline_str(line, fhist); ) {
+		strarray_append_string(history, str_get_const(line));
+	}
+	str_delete(line);
+
+	if (file_close(fhist) != 0) {
+		strarray_delete(history);
+		caperr(PROGNAME, CAPERR_CLOSE, "history file");
+		return NULL;
+	}
+
+	return history;
+}
+
+static String*
+cmd_make_history_record(History type, const char* oldpath) {
+	String* buf = str_new();
+	if (!buf) {
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "string");
+		return NULL;
+	}
+	str_push_back(buf, type);
+	str_push_back(buf, ',');
+	str_append_string(buf, oldpath);
+	return buf;
+}
+
+static int
+cmd_append_history_record(FILE* fhist, const String* record) {
+	return fprintf(fhist, "%s\n", str_get_const(record));
+}
+
 static int
 cmd_save_trash_history(const char* oldpath) {
-	FILE* fhist = cmd_history_open();
+	FILE* fhist = cmd_open_history();
 	if (!fhist) {
 		return caperr(PROGNAME, CAPERR_OPEN, "history file");
 	}
 
-
-	fseek(fhist, 0L, SEEK_END);
-	fpushfmt(fhist, TRASH_HISTORY_NCOL_TYPE, "%c", H_TRASH);
-	fpushfmt(fhist, TRASH_HISTORY_NCOL_OLDDIR, "%s", oldpath);
+	String* record = cmd_make_history_record(H_TRASH, oldpath);
+	if (!record) {
+		file_close(fhist);
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "history record");
+	}
+	cmd_append_history_record(fhist, record);
+	str_delete(record);
 
 	if (file_close(fhist) != 0) {
 		return caperr(PROGNAME, CAPERR_CLOSE, "history file");
@@ -382,7 +431,6 @@ cmd_trash_file(const char* oldpath) {
 	}
 
 	// Success to trash. Save trash info
-	CHECK("oldpath[%s]", oldpath);
 	if (cmd_save_info_from_path(oldpath, newpath) != 0) {
 		// TODO: Failed to undo trash file
 		return caperr(PROGNAME, CAPERR_WRITE, "trash info of \"%s\"", oldpath);

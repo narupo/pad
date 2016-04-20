@@ -149,7 +149,7 @@ strarray_resize(StringArray* self, size_t capacity) {
 }
 
 StringArray*
-strarray_push_copy(StringArray* self, char const* value) {
+strarray_append_string(StringArray* self, char const* value) {
 	if (self->length >= self->capacity) {
 		if (!strarray_resize(self, self->capacity * 2)) {
 			WARN("Failed to resize")

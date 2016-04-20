@@ -8,7 +8,10 @@
 #include "config.h"
 #include "file.h"
 #include "hash.h"
+#include "io.h"
 #include "csvline.h"
+#include "string.h"
+#include "strarray.h"
 
 void
 trash_usage(void);
