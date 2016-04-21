@@ -146,6 +146,7 @@ config_init_file(Config* self, const char* fname) {
 		goto fail;
 	}
 
+	str_delete(strbuf);
 	return self;
 
 fail:
