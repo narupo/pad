@@ -18,7 +18,7 @@ struct HttpHeader {
 *******************************/
 
 static int
-is_newline(char const* sp) {
+is_newline(const char* sp) {
 	return *sp == '\r' && *(sp+1) == '\n';
 }
 
@@ -48,17 +48,17 @@ httpheader_new(void) {
 * httpheader getter *
 ********************/
 
-char const*
+const char*
 httpheader_method_name(HttpHeader const* self) {
 	return self->method_name;
 }
 
-char const*
+const char*
 httpheader_method_value(HttpHeader const* self) {
 	return self->method_value;
 }
 
-char const*
+const char*
 httpheader_http_name(HttpHeader const* self) {
 	return self->http_name;
 }
@@ -84,7 +84,7 @@ httpheader_display(HttpHeader const* self) {
 ********************/
 
 HttpHeader*
-httpheader_parse_request(HttpHeader* self, char const* src) {
+httpheader_parse_request(HttpHeader* self, const char* src) {
 	// Init state
 	self->method_name[0] = '\0';
 	self->method_value[0] = '\0';
@@ -99,7 +99,7 @@ httpheader_parse_request(HttpHeader* self, char const* src) {
 	char tmp[512];
 	
 	// GET / HTTP/1.1\r\n
-	for (char const* sp = src; *sp; ++sp) {
+	for (const char* sp = src; *sp; ++sp) {
 		switch (m) {
 		case 0: // Method name
 			if (*sp == ' ') {

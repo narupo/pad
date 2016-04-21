@@ -115,7 +115,7 @@ str_clear(String* self);
  * @param[in] src pointer to memory of c string
  */
 void
-str_set_string(String* self, char const* src);
+str_set_string(String* self, const char* src);
 
 /**
  * @deprecated This function can't get error state
@@ -182,7 +182,7 @@ str_pop_front(String* self);
  * @return failed to number of under of zero
  */
 int
-str_append_string(String* self, char const* src);
+str_append_string(String* self, const char* src);
 
 /**
  * Append stream at back of buffer in string
@@ -221,7 +221,7 @@ str_append_other(String* self, String const* other);
  * @return failed to number of under of zero
  */
 int
-str_append_nformat(String* self, char* buf, size_t nbuf, char const* fmt, ...);
+str_append_nformat(String* self, char* buf, size_t nbuf, const char* fmt, ...);
 
 /**
  * @deprecated This function can't get error state
@@ -232,7 +232,7 @@ str_append_nformat(String* self, char* buf, size_t nbuf, char const* fmt, ...);
  * @param[in] rems list of target elements
  */
 void
-str_rstrip(String* self, char const* rems);
+str_rstrip(String* self, const char* rems);
 
 /**
  * @deprecated This function can't get error state
@@ -243,7 +243,7 @@ str_rstrip(String* self, char const* rems);
  * @param[in] rems list of target elements
  */
 void
-str_lstrip(String* self, char const* rems);
+str_lstrip(String* self, const char* rems);
 
 /**
  * @deprecated This function can't get error state
@@ -254,7 +254,7 @@ str_lstrip(String* self, char const* rems);
  * @param[in] rems list of target elements
  */
 void
-str_strip(String* self, char const* rems);
+str_strip(String* self, const char* rems);
 
 /**
  * @deprecated This function can't get error state
@@ -275,8 +275,8 @@ str_pop_newline(String* self);
  * @return found to pointer to memory of found string
  * @return not found to NULL
  */
-char const*
-str_find_const(String const* self, char const* target);
+const char*
+str_find_const(String const* self, const char* target);
 
 /**
  * Read from stream

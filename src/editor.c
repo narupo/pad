@@ -1,7 +1,7 @@
 #include "editor.h"
 
 // Program name
-static char const PROGNAME[] = "cap editor";
+static const char PROGNAME[] = "cap editor";
 
 void
 editor_usage(void) {
@@ -35,8 +35,8 @@ editor_run(int argc, char* argv[]) {
 	if (argc < 2) {
 		// Display current editor path
 		// Get path
-		char const* key = "editor";
-		char const* editpath = config_path(config, key);
+		const char* key = "editor";
+		const char* editpath = config_path(config, key);
 		if (!editpath) {
 			ret = caperr(PROGNAME, CAPERR_NOTFOUND, "key \"%s\"", key);
 			goto done;
@@ -48,7 +48,7 @@ editor_run(int argc, char* argv[]) {
 	}
 
 	// Set editor path
-	char const* editpath = argv[1];
+	const char* editpath = argv[1];
 
 	if (!config_set_path(config, "editor", editpath)) {
 		ret = caperr(PROGNAME, CAPERR_ERROR, "Failed to set path \"%s\"", editpath);

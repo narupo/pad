@@ -8,9 +8,9 @@ enum {
 	SERVER_NTMP_BUFFER = 128,
 };
 
-static char const SERVER_NAME[] = "CapServer";
-static char const PROGNAME[] = "cap server";
-static char const DEFAULT_HOSTPORT[] = "127.0.0.1:1234";
+static const char SERVER_NAME[] = "CapServer";
+static const char PROGNAME[] = "cap server";
+static const char DEFAULT_HOSTPORT[] = "127.0.0.1:1234";
 
 /***********
 * response *
@@ -76,7 +76,7 @@ response_clear(Response* self) {
 	buf_clear(self->content);
 }
 
-static char const*
+static const char*
 status_line_from_version(double version, int status) {
 	if (version == 1.1) {
 		switch (status) {
@@ -168,7 +168,7 @@ response_init_from_status(Response* self, int status) {
 }
 
 Response*
-response_init_from_file(Response* self, char const* fname) {
+response_init_from_file(Response* self, const char* fname) {
 	// Clear
 	response_clear(self);
 
@@ -193,7 +193,7 @@ response_init_from_file(Response* self, char const* fname) {
 }
 
 Response*
-response_init_from_dir(Response* self, char const* dirname, char const* dirpath) {
+response_init_from_dir(Response* self, const char* dirname, const char* dirpath) {
 	// Clear
 	response_clear(self);
 
@@ -211,7 +211,7 @@ response_init_from_dir(Response* self, char const* dirname, char const* dirpath)
 	buf_append_string(self->content, "<ul>\n");
 
 	for (DirectoryNode* node; (node = dir_read_node(dir)); ) {
-		char const* name = dirnode_name(node);
+		const char* name = dirnode_name(node);
 		buf_append_string(self->content, "<li><a href=\"");
 		if (strcmp(dirname, "/") != 0) {
 			buf_append_string(self->content, dirname);
@@ -314,7 +314,7 @@ thread_id(void) {
 	term_ceprintf(fg, bg, __VA_ARGS__); \
 }
 
-static char const*
+static const char*
 store_recv(Store* self) {
 	int nrecv = socket_recv_string(self->client, self->buffer, sizeof self->buffer);
 	if (nrecv <= 0) {
@@ -329,14 +329,14 @@ store_recv(Store* self) {
 }
 
 static HttpHeader*
-store_parse_request(Store* self, char const* buffer) {
+store_parse_request(Store* self, const char* buffer) {
 	if (!httpheader_parse_request(self->header, buffer)) {
 		caperr_printf(PROGNAME, CAPERR_PARSE, "request");
 		return NULL;
 	}
 
-	char const* methname = httpheader_method_name(self->header);
-	char const* methvalue = httpheader_method_value(self->header);
+	const char* methname = httpheader_method_name(self->header);
+	const char* methvalue = httpheader_method_value(self->header);
 	thread_eprintf("Request ");
 	term_ceprintf(TC_YELLOW, TC_DEFAULT, "%s ", methname);
 	term_ceprintf(TC_CYAN, TC_DEFAULT, "\"%s\"\n", methvalue);
@@ -345,7 +345,7 @@ store_parse_request(Store* self, char const* buffer) {
 }
 
 static Response*
-store_response_from_get_method(Store* self, char const* value) {
+store_response_from_get_method(Store* self, const char* value) {
 	Config* config = config_instance();
 	if (!config) {
 		caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "config");
@@ -375,8 +375,8 @@ store_response_from_header(Store* self, HttpHeader const* header) {
 	response_clear(self->response);
 
 	// Get name and value from header
-	char const* name = httpheader_method_name(header);
-	char const* value = httpheader_method_value(header);
+	const char* name = httpheader_method_name(header);
+	const char* value = httpheader_method_value(header);
 
 	// Switch by name
 	if (strcmp(name, "GET") == 0) {
@@ -390,7 +390,7 @@ store_response_from_header(Store* self, HttpHeader const* header) {
 
 Store*
 store_send_response(Store* self, Response* response) {
-	unsigned char const* buf = buf_get_const(response->buffer);
+	unsigned const char* buf = buf_get_const(response->buffer);
 	size_t buflen = buf_length(response->buffer);
 
 	thread_eprintf("Send... (%d bytes)\n", buflen);
@@ -412,7 +412,7 @@ thread_main(void* arg) {
 	Store* store = (Store*) arg;
 
 	for (;;) {
-		char const* buffer = store_recv(store);
+		const char* buffer = store_recv(store);
 		if (!buffer) {
 			break;
 		}
@@ -525,7 +525,7 @@ server_parse_options(Server* self) {
 }
 
 static void
-server_display_welcome_message(Server const* self, char const* hostport) {
+server_display_welcome_message(Server const* self, const char* hostport) {
 	time_t runtime = time(NULL);
 	term_ceprintf(TC_GREEN, TC_DEFAULT,
 		"        _____    ___    _______       \n"
@@ -548,7 +548,7 @@ server_display_welcome_message(Server const* self, char const* hostport) {
 static int
 server_run(Server* self) {
 	// Update default value
-	char const* hostport = DEFAULT_HOSTPORT;
+	const char* hostport = DEFAULT_HOSTPORT;
 	if (self->argc > self->optind) {
 		hostport = self->argv[self->optind];
 	}

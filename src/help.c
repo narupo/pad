@@ -2,10 +2,10 @@
 
 typedef void (*Usage)(void);
 
-static char const PROGNAME[] = "cap help";
+static const char PROGNAME[] = "cap help";
 
 static const struct Command {
-	char const* name;
+	const char* name;
 	Usage usage;
 } commands[] = {
 	{"ls", ls_usage},
@@ -30,7 +30,7 @@ static const struct Command {
 };
 
 static Usage
-find_command(char const* cmdname) {
+find_command(const char* cmdname) {
 	for (const struct Command* i = commands; i->name; ++i) {
 		if (strcmp(cmdname, i->name) == 0) {
 			return i->usage;
@@ -44,7 +44,7 @@ help_main(int argc, char* argv[]) {
 	if (argc < 2) {
 		help_usage();
 	} else {
-		char const* cmdname = argv[1];
+		const char* cmdname = argv[1];
 		Usage usage = find_command(cmdname);
 		if (usage) {
 			usage();

@@ -5,13 +5,13 @@ enum {
 };
 
 typedef struct Stream {
-	char const* cur;
-	char const* beg;
-	char const* end;
+	const char* cur;
+	const char* beg;
+	const char* end;
 } Stream;
 
 static int
-stream_init(Stream* self, char const* src) {
+stream_init(Stream* self, const char* src) {
 	if (!src) {
 		return -1;
 	}
@@ -35,7 +35,7 @@ stream_current(Stream* self) {
 
 static int
 stream_current_at(Stream* self, int add) {
-	char const* at = self->cur + add;
+	const char* at = self->cur + add;
 	if (at >= self->end) {
 		return EOF;
 	} else if (at < self->beg) {
@@ -158,7 +158,7 @@ csvline_new(void) {
 }
 
 CsvLine*
-csvline_new_parse_line(char const* line, int delim) {
+csvline_new_parse_line(const char* line, int delim) {
 	// Construct by new
 	CsvLine* self = csvline_new();
 	if (!self) {
@@ -219,7 +219,7 @@ self_resize(CsvLine* self, size_t newcapa) {
 /* Setter */
 
 static bool
-self_cols_push_back(CsvLine* self, char const* col) {
+self_cols_push_back(CsvLine* self, const char* col) {
 	// Check capacity
 	if (self->length >= self->capacity) {
 		if (!self_resize(self, self->capacity * 2)) {
@@ -355,7 +355,7 @@ self_mode_skip_to_delim(CsvLine* self) {
 /* Parser */
 
 bool
-csvline_parse_line(CsvLine* self, char const* line, int delim) {
+csvline_parse_line(CsvLine* self, const char* line, int delim) {
 	// Cleanup
 	if (self->length) {
 		for (size_t i = 0; i < self->length; ++i) {
@@ -393,7 +393,7 @@ csvline_clear(CsvLine* self) {
 }
 
 bool
-csvline_push_back(CsvLine* self, char const* col) {
+csvline_push_back(CsvLine* self, const char* col) {
 	return self_cols_push_back(self, col);
 }
 
@@ -406,9 +406,9 @@ csvline_ncolumns(CsvLine const* self) {
 	return self->length;
 }
 
-char const*
+const char*
 csvline_columns(CsvLine const* self, size_t index) {
-	static char const* dummy = "";
+	static const char* dummy = "";
 
 	if (index >= self->length) {
 		WARN("Index out of range");
@@ -422,7 +422,7 @@ csvline_length(CsvLine const* self) {
 	return self->length;
 }
 
-char const*
+const char*
 csvline_get_const(CsvLine const* self, size_t index) {
 	if (index >= self->length) {
 		WARN("Index out of range");
@@ -464,7 +464,7 @@ main(int argc, char* argv[]) {
 		csvline_parse_line(csvline, line, delim);
 
 		for (int i = 0; i < csvline_length(csvline); ++i) {
-			char const* col = csvline_get_const(csvline, i);
+			const char* col = csvline_get_const(csvline, i);
 			printf("%2d:[%s]\n", i, col);
 			fflush(stdout);
 		}

@@ -90,7 +90,7 @@ jsonobj_delete(JsonObject* self);
  * @return pointer to dynamic allocate memory of JsonObject
  */
 JsonObject* 
-jsonobj_new_with(JsonObjectType type, JsonObject const* parent, char const* name);
+jsonobj_new_with(JsonObjectType type, JsonObject const* parent, const char* name);
 
 /**
  * Resize array of child objects in JsonObject
@@ -129,7 +129,7 @@ jsonobj_display(JsonObject const* self, int depth);
  * @return not found to NULL
  */
 StringArray* 
-jsonobj_find_list(JsonObject* self, char const* name);
+jsonobj_find_list(JsonObject* self, const char* name);
 
 /**
  * Find value of JsonObject by name of object
@@ -141,7 +141,7 @@ jsonobj_find_list(JsonObject* self, char const* name);
  * @return not found to NULL
  */
 String* 
-jsonobj_find_value(JsonObject* self, char const* name);
+jsonobj_find_value(JsonObject* self, const char* name);
 
 /**
  * Find read-only value of JsonObject by name of object
@@ -153,7 +153,7 @@ jsonobj_find_value(JsonObject* self, char const* name);
  * @return not found to NULL
  */
 String const* 
-jsonobj_find_value_const(JsonObject const* self, char const* name);
+jsonobj_find_value_const(JsonObject const* self, const char* name);
 
 /**
  * Find dictionary of JsonObject by name of object
@@ -165,7 +165,7 @@ jsonobj_find_value_const(JsonObject const* self, char const* name);
  * @return not found to NULL
  */
 JsonObject* 
-jsonobj_find_dict(JsonObject* self, char const* name);
+jsonobj_find_dict(JsonObject* self, const char* name);
 
 /**
  * Find read-only dictionary of JsonObject by name of object
@@ -177,7 +177,7 @@ jsonobj_find_dict(JsonObject* self, char const* name);
  * @return not found to NULL
  */
 JsonObject const* 
-jsonobj_find_dict_const(JsonObject const* self, char const* name);
+jsonobj_find_dict_const(JsonObject const* self, const char* name);
 
 /**
  * Write JsonObject to stream
@@ -223,7 +223,7 @@ json_new(void);
  * @return failed to false
  */
 bool 
-json_parse_string(Json* self, char const* src);
+json_parse_string(Json* self, const char* src);
 
 /**
  * Get root object of Json
@@ -276,7 +276,7 @@ json_read_from_stream(Json* self, FILE* fin);
  * @return failed to false
  */
 bool 
-json_read_from_file(Json* self, char const* fname);
+json_read_from_file(Json* self, const char* fname);
 
 /**
  * Write Json to stream
@@ -300,7 +300,7 @@ json_write_to_stream(Json const* self, FILE* fout);
  * @return failed to false
  */
 bool 
-json_write_to_file(Json const* self, char const* fname);
+json_write_to_file(Json const* self, const char* fname);
 
 /***********
 * JsonIter *

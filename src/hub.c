@@ -14,7 +14,7 @@ struct Command {
 	bool opt_is_usage;
 };
 
-static char const PROGNAME[] = "cap hub";
+static const char PROGNAME[] = "cap hub";
 
 static bool
 hub_parse_options(Command* self);

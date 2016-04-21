@@ -52,7 +52,7 @@ capparser_new(void);
  * @return failed to pointer to NULL
  */
 CapRow*
-capparser_parse_line(CapParser* self, char const* line); 
+capparser_parse_line(CapParser* self, const char* line); 
 
 /**
  * Make CapRow with parse and convert from line
@@ -66,7 +66,7 @@ capparser_parse_line(CapParser* self, char const* line);
  * @return failed to pointer to NULL
  */
 CapRow*
-capparser_make_caprow(CapParser* self,char const* line, StringArray* braces);
+capparser_make_caprow(CapParser* self,const char* line, StringArray* braces);
 
 /***********************
 * CapParser: Convertor *

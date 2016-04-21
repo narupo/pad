@@ -1,6 +1,6 @@
 #include "path.h"
 
-static char const PROGNAME[] = "cap path";
+static const char PROGNAME[] = "cap path";
 
 void
 path_usage(void) {
@@ -31,7 +31,7 @@ path_run(int argc, char* argv[]) {
 	}
 
 	// Get path from basename
-	char const* basename = argv[1];
+	const char* basename = argv[1];
 	char spath[FILE_NPATH];
 
 	if (!config_path_with_cd(config, spath, sizeof spath, basename)) {

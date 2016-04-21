@@ -10,9 +10,9 @@
 
 typedef struct Buffer Buffer;
 typedef unsigned char Buffer_type;
-typedef unsigned char const Buffer_const_type;
+typedef unsigned const char Buffer_const_type;
 typedef unsigned char* Buffer_pointer_type;
-typedef unsigned char const* Buffer_const_pointer_type;
+typedef unsigned const char* Buffer_const_pointer_type;
 
 /**
  * Destruct buffer
@@ -145,7 +145,7 @@ buf_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size);
  * @return success to number of appended
  */
 int
-buf_append_string(Buffer* self, char const* str);
+buf_append_string(Buffer* self, const char* str);
 
 /**
  * Append bytes from stream at back of buffer

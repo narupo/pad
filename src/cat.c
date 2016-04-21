@@ -28,7 +28,7 @@ struct Command {
 };
 
 // Program name
-static char const PROGNAME[] = "cap cat";
+static const char PROGNAME[] = "cap cat";
 
 /*************
 * Prototypes *
@@ -166,7 +166,7 @@ command_parse_options(Command* self) {
 static CapRow*
 cat_read_row(Command* self, String const* buffer, CapParser* parser) {
 	// Get line for parse
-	char const* line = str_get_const(buffer);
+	const char* line = str_get_const(buffer);
 
 	// Parse line
 	CapRow* row = capparser_parse_line(parser, line);
@@ -218,7 +218,7 @@ cat_read_row(Command* self, String const* buffer, CapParser* parser) {
  * @return failed to a number of caperr
  */
 static int
-command_cat_stream(Command* self, Config const* config, FILE* fout, FILE* fin) {
+command_cat_stream(Command* self, const Config* config, FILE* fout, FILE* fin) {
 	// Ready
 	String* buffer = str_new();
 	if (!buffer) {
@@ -322,7 +322,7 @@ command_run(Command* self) {
 
 	// Catenate all file
 	for (int i = self->optind; i < self->argc; ++i) {
-		char const* arg = self->argv[i];
+		const char* arg = self->argv[i];
 
 		// Solve path
 		char fname[FILE_NPATH];
@@ -408,7 +408,7 @@ cat_usage(void) {
 }
 
 int
-cat_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
+cat_make(const Config* config, CapFile* dstfile, int argc, char* argv[]) {
 	// Construct
 	Command* self = command_new(argc, argv);
 	if (!self) {

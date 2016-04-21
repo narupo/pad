@@ -10,7 +10,7 @@ struct Command {
 	bool is_help;
 };
 
-static char const PROGNAME[] = "cap mkdir";
+static const char PROGNAME[] = "cap mkdir";
 
 static bool
 command_parse_options(Command* self);
@@ -91,8 +91,8 @@ command_run(Command* self) {
 		return ret;
 	}
 
-	Config const* config = config_instance();
-	char const* relpath = self->argv[self->optind];
+	const Config* config = config_instance();
+	const char* relpath = self->argv[self->optind];
 	char mkpath[FILE_NPATH];
 
 	if (!config_path_with_cd(config, mkpath, sizeof mkpath, relpath)) {

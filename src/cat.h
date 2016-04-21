@@ -49,6 +49,6 @@ cat_main(int argc, char* argv[]);
  * @return     failed to a number of caperr
  */
 int
-cat_make(Config const* config, CapFile* dst, int argc, char* argv[]);
+cat_make(const Config* config, CapFile* dst, int argc, char* argv[]);
 
 #endif

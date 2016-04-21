@@ -50,7 +50,7 @@ csvline_new(void);
  * @return failed to pointer to NULL
  */
 CsvLine*
-csvline_new_parse_line(char const* line, int delim);
+csvline_new_parse_line(const char* line, int delim);
 
 /*****************
 * CsvLine parser *
@@ -64,7 +64,7 @@ csvline_new_parse_line(char const* line, int delim);
  * @param[in] delim parse delimiter
  */
 bool
-csvline_parse_line(CsvLine* self, char const* line, int delim);
+csvline_parse_line(CsvLine* self, const char* line, int delim);
 
 /*****************
 * CsvLine setter *
@@ -74,7 +74,7 @@ void
 csvline_clear(CsvLine* self);
 
 bool
-csvline_push_back(CsvLine* self, char const* col);
+csvline_push_back(CsvLine* self, const char* col);
 
 /*****************
 * CsvLine getter *
@@ -89,7 +89,7 @@ csvline_ncolumns(CsvLine const* self);
 /**
  * @deprecated
  */
-char const*
+const char*
 csvline_columns(CsvLine const* self, size_t index);
 
 /**
@@ -111,7 +111,7 @@ csvline_length(CsvLine const* self);
  * @return success to string of index element
  * @return failed to pointer to NULL, case by index out of range
  */
-char const*
+const char*
 csvline_get_const(CsvLine const* self, size_t index);
 
 /**

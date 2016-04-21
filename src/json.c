@@ -1,9 +1,9 @@
 #include "json.h"
 
 typedef struct {
-	char const* cur;
-	char const* beg;
-	char const* end;
+	const char* cur;
+	const char* beg;
+	const char* end;
 } Stream;
 
 static void
@@ -20,7 +20,7 @@ stream_new(void) {
 }
 
 static void
-stream_init(Stream* self, char const* src) {
+stream_init(Stream* self, const char* src) {
 	self->cur = src;
 	self->beg = src;
 	self->end = src + strlen(src) + 1; // +1 for final nul
@@ -38,7 +38,7 @@ stream_current(Stream const* self) {
 
 static int
 stream_current_at(Stream const* self, int ofs) {
-	char const* at = self->cur + ofs;
+	const char* at = self->cur + ofs;
 	if (at < self->end && at >= self->beg) {
 		return *at;
 	} else {
@@ -136,7 +136,7 @@ JsonObject*
 jsonobj_new_with(
 	JsonObjectType type
 	, JsonObject const* parent
-	, char const* name) {
+	, const char* name) {
 
 	JsonObject* self = (JsonObject*) mem_ecalloc(1, sizeof(JsonObject));
 
@@ -447,7 +447,7 @@ jsonobj_display(JsonObject const* self, int depth) {
 }
 
 StringArray*
-jsonobj_find_list(JsonObject* self, char const* name) {
+jsonobj_find_list(JsonObject* self, const char* name) {
 	if (strcmp(str_get_const(self->name), name) == 0) {
 		return self->list;
 	}
@@ -463,7 +463,7 @@ jsonobj_find_list(JsonObject* self, char const* name) {
 }
 
 String*
-jsonobj_find_value(JsonObject* self, char const* name) {
+jsonobj_find_value(JsonObject* self, const char* name) {
 	if (strcmp(str_get_const(self->name), name) == 0) {
 		return self->value;
 	}
@@ -479,7 +479,7 @@ jsonobj_find_value(JsonObject* self, char const* name) {
 }
 
 String const* 
-jsonobj_find_value_const(JsonObject const* self, char const* name) {
+jsonobj_find_value_const(JsonObject const* self, const char* name) {
 	if (!self || !name) {
 		return NULL;
 	}
@@ -488,7 +488,7 @@ jsonobj_find_value_const(JsonObject const* self, char const* name) {
 }
 
 JsonObject*
-jsonobj_find_dict(JsonObject* self, char const* name) {
+jsonobj_find_dict(JsonObject* self, const char* name) {
 	if (strcmp(str_get_const(self->name), name) == 0) {
 		return self;
 	}
@@ -504,7 +504,7 @@ jsonobj_find_dict(JsonObject* self, char const* name) {
 }
 
 JsonObject const* 
-jsonobj_find_dict_const(JsonObject const* self, char const* name) {
+jsonobj_find_dict_const(JsonObject const* self, const char* name) {
 	if (!self || !name) {
 		return NULL;
 	}
@@ -588,7 +588,7 @@ json_mode_first(Json* self, Stream* s) {
 }
 
 bool
-json_parse_string(Json* self, char const* src) {
+json_parse_string(Json* self, const char* src) {
 	// Ready state for parse
 	self->mode = json_mode_first;
 	stream_init(self->stream, src);
@@ -709,7 +709,7 @@ json_read_from_stream(Json* self, FILE* fin) {
 }
 
 bool
-json_read_from_file(Json* self, char const* fname) {
+json_read_from_file(Json* self, const char* fname) {
 	FILE* fin = fopen(fname, "rb");
 	if (!fin) {
 		return false;
@@ -732,7 +732,7 @@ json_write_to_stream(Json const* self, FILE* fout) {
 }
 
 bool
-json_write_to_file(Json const* self, char const* fname) {
+json_write_to_file(Json const* self, const char* fname) {
 	FILE* fout = fopen(fname, "wb");
 	if (!fout) {
 		WARN("Failed to open file \"%s\"", fname);
@@ -817,7 +817,7 @@ test_list(int argc, char* argv[]) {
 
 static int
 test_json(int argc, char* argv[]) {
-	char const* src =
+	const char* src =
 		"{"
 		"	'setting': {"
 		"		'number': 1024,"
@@ -871,7 +871,7 @@ test_json(int argc, char* argv[]) {
 
 static int
 test_iter(int argc, char* argv[]) {
-	char const* src = 
+	const char* src = 
 		"{\n"
 		"	\"names\": {\n"
 		"		\"cat\": \"nyan\",\n"

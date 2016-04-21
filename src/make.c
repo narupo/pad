@@ -6,14 +6,14 @@ struct Command {
 	int argc;
 	int optind;
 	char** argv;
-	Config const* config;
+	const Config* config;
 	StringArray* replace_list;
 	bool opt_debug;
 	bool opt_usage;
 	bool opt_without_solve;
 };
 
-static char const PROGNAME[] = "cap make";
+static const char PROGNAME[] = "cap make";
 
 /*************
 * Prototypes *
@@ -36,7 +36,7 @@ static void
 command_delete(Command* self);
 
 static Command*
-command_new(Config const* config, int argc, char* argv[]);
+command_new(const Config* config, int argc, char* argv[]);
 
 /********
 * Parse *
@@ -50,22 +50,22 @@ command_parse_options(Command* self);
 *********/
 
 int
-make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]);
+make_make(const Config* config, CapFile* dstfile, int argc, char* argv[]);
 
 static int
-command_call_command(Command const* self, CapFile* dstfile, int argc, char* argv[]);
+command_call_command(const Command* self, CapFile* dstfile, int argc, char* argv[]);
 
 static CapFile*
-command_make_capfile_from_stream(Command const* self, FILE* fin);
+command_make_capfile_from_stream(const Command* self, FILE* fin);
 
 static int
-command_sort_capfile(Command const* self, CapFile* dstfile);
+command_sort_capfile(const Command* self, CapFile* dstfile);
 
 static int
-command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout);
+command_display_capfile(const Command* self, CapFile const* dstfile, FILE* fout);
 
 static CapFile*
-command_make_capfile(Command const* self);
+command_make_capfile(const Command* self);
 
 static int
 command_run(Command* self);
@@ -83,7 +83,7 @@ command_delete(Command* self) {
 }
 
 static Command*
-command_new(Config const* config, int argc, char* argv[]) {
+command_new(const Config* config, int argc, char* argv[]) {
 	// Construct
 	Command* self = (Command*) calloc(1, sizeof(Command));
 	if (!self) {
@@ -165,8 +165,8 @@ command_parse_options(Command* self) {
 *********/
 
 int
-command_call_command(Command const* self, CapFile* dstfile, int argc, char* argv[]) {
-	char const* cmdname = argv[0];
+command_call_command(const Command* self, CapFile* dstfile, int argc, char* argv[]) {
+	const char* cmdname = argv[0];
 
 	if (strcmp(cmdname, "cat") == 0) {
 		return cat_make(self->config, dstfile, argc, argv);
@@ -195,14 +195,14 @@ command_call_command(Command const* self, CapFile* dstfile, int argc, char* argv
  * @return
  */
 static CapFile*
-command_make_capfile_from_stream(Command const* self, FILE* fin) {
+command_make_capfile_from_stream(const Command* self, FILE* fin) {
 	CapFile* dstfile = capfile_new();
 	CapParser* parser = capparser_new();
 	String* buf = str_new();
 
 	for (; io_getline_str(buf, fin); ) {
 		// Get line
-		char const* line = str_get_const(buf);
+		const char* line = str_get_const(buf);
 
 		// Make CapRow from line
 		CapRow* addrow = capparser_make_caprow(parser, line, self->replace_list);
@@ -215,7 +215,7 @@ command_make_capfile_from_stream(Command const* self, FILE* fin) {
 
 		if (curtype == CapColCommand) {
 			// Read from command to CapFile
-			char const* colval = capcol_value_const(caprow_front_const(addrow));
+			const char* colval = capcol_value_const(caprow_front_const(addrow));
 			CsvLine* cmdline = csvline_new_parse_line(colval, ' ');
 			int argc = csvline_length(cmdline);
 			char** argv = csvline_escape_delete(cmdline);
@@ -242,7 +242,7 @@ command_make_capfile_from_stream(Command const* self, FILE* fin) {
 }
 
 static int
-command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
+command_sort_capfile_goto(const Command* self, CapFile* dstfile) {
 	// Move goto row to mark
 	CapRowList* rows = capfile_rows(dstfile);
 	CapRow* gotos[1000] = {0};
@@ -273,12 +273,12 @@ command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
 	// Goto mark
 	for (int i = 0; i < g; ++i) {
 		CapRow* gotorow = gotos[i];
-		char const* gotoval = capcol_value_const(capcollist_front(caprow_cols(gotorow)));
+		const char* gotoval = capcol_value_const(capcollist_front(caprow_cols(gotorow)));
 
 		int j;
 		for (j = 0; j < m; ++j) {
 			CapRow* markrow = marks[j];
-			char const* markval = capcol_value_const(capcollist_front(caprow_cols(markrow)));
+			const char* markval = capcol_value_const(capcollist_front(caprow_cols(markrow)));
 
 			if (strcmp(gotoval, markval) == 0) {
 				caprow_remove_cols(gotorow, CapColGoto);
@@ -297,7 +297,7 @@ command_sort_capfile_goto(Command const* self, CapFile* dstfile) {
 }
 
 static int
-command_sort_capfile(Command const* self, CapFile* dstfile) {
+command_sort_capfile(const Command* self, CapFile* dstfile) {
 	// Sort by @cap goto
 	command_sort_capfile_goto(self, dstfile);
 
@@ -328,7 +328,7 @@ command_sort_capfile(Command const* self, CapFile* dstfile) {
 }
 
 static int
-command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout) {
+command_display_capfile(const Command* self, CapFile const* dstfile, FILE* fout) {
 	// Display
 	CapRowList const* rows = capfile_rows_const(dstfile);
 
@@ -351,7 +351,7 @@ command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout)
 			if (capcol_type(col) != CapColText) {
 				continue;
 			}
-			char const* val = capcol_value_const(col);
+			const char* val = capcol_value_const(col);
 			term_printf("%s", val);
 		}
 		term_printf("\n");
@@ -361,7 +361,7 @@ command_display_capfile(Command const* self, CapFile const* dstfile, FILE* fout)
 }
 
 static FILE*
-command_open_input_file(Command const* self, char const* capname) {
+command_open_input_file(const Command* self, const char* capname) {
 	FILE* fin = NULL;
 
 	// Get cap's make file path
@@ -400,7 +400,7 @@ command_open_input_file(Command const* self, char const* capname) {
 }
 
 static CapFile*
-command_make_capfile(Command const* self) {
+command_make_capfile(const Command* self) {
 	CapFile* mkfile = NULL;
 
 	if (self->argc == self->optind) {
@@ -423,7 +423,7 @@ command_make_capfile(Command const* self) {
 
 		// Append all CapFile
 		for (int i = self->optind; i < self->argc; ++i) {
-			char const* capname = self->argv[i];
+			const char* capname = self->argv[i];
 
 			// Open stream
 			FILE* fin = command_open_input_file(self, capname);
@@ -522,7 +522,7 @@ make_usage(void) {
 }
 
 int
-make_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
+make_make(const Config* config, CapFile* dstfile, int argc, char* argv[]) {
 	// Construct
 	Command* self = command_new(config, argc, argv);
 	if (!self) {

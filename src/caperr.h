@@ -104,12 +104,12 @@ enum {
  */
 int
 _caperr(
-	char const* fname,
-	char const* funcname,
+	const char* fname,
+	const char* funcname,
 	int lineno,
-	char const* header,
+	const char* header,
 	int number,
-	char const* fmt,
+	const char* fmt,
 	...);
 
 /**
@@ -138,12 +138,12 @@ _caperr(
  */
 int
 _caperr_printf(
-	char const* fname,
-	char const* funcname,
+	const char* fname,
+	const char* funcname,
 	int lineno,
-	char const* header,
+	const char* header,
 	int number,
-	char const* fmt,
+	const char* fmt,
 	...);
 
 /**

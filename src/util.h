@@ -70,7 +70,7 @@
  * @param[in] ... arguments of format
  */
 void _Noreturn
-die(char const* fmt, ...);
+die(const char* fmt, ...);
 
 /**
  * Display error message
@@ -79,7 +79,7 @@ die(char const* fmt, ...);
  * @param[in] ... arguments of format
  */
 void
-warn(char const* fmt, ...);
+warn(const char* fmt, ...);
 
 /**
  * Copy string
@@ -90,7 +90,7 @@ warn(char const* fmt, ...);
  * @return failed to pointer to NULL
  */
 char*
-util_strdup(char const* src);
+util_strdup(const char* src);
 
 /**
  * Append string to destination
@@ -103,7 +103,7 @@ util_strdup(char const* src);
  * @return failed to pointer to NULL
  */
 char*
-strappend(char* dst, size_t dstsize, char const* src);
+strappend(char* dst, size_t dstsize, const char* src);
 
 /**
  * Skip characters in string by skips
@@ -113,8 +113,8 @@ strappend(char* dst, size_t dstsize, char const* src);
  * 
  * @return pointer to string of skipped
  */
-char const*
-strskip(char const* src, char const* skips);
+const char*
+strskip(const char* src, const char* skips);
 
 /**
  * Compare string of header by target length
@@ -126,7 +126,7 @@ strskip(char const* src, char const* skips);
  * @return other to not match
  */
 int
-strcmphead(char const* src, char const* target);
+strcmphead(const char* src, const char* target);
 
 /**
  * Remove character from string
@@ -140,7 +140,7 @@ strcmphead(char const* src, char const* target);
  * @return failed to pointer to NULL
  */
 char*
-strrem(char* dst, size_t dstsize, char const* src, int rem);
+strrem(char* dst, size_t dstsize, const char* src, int rem);
 
 /**
  * Remove characters from string
@@ -154,7 +154,7 @@ strrem(char* dst, size_t dstsize, char const* src, int rem);
  * @return failed to pointer to NULL
  */
 char*
-strrems(char* dst, size_t dstsize, char const* src, char const* rems);
+strrems(char* dst, size_t dstsize, const char* src, const char* rems);
 
 /**
  *
@@ -164,7 +164,7 @@ strrems(char* dst, size_t dstsize, char const* src, char const* rems);
  * @return
  */
 long
-strtolong(char const* src);
+strtolong(const char* src);
 
 /**
  *

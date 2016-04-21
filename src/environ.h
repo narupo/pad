@@ -5,7 +5,7 @@
 #include "util.h"
 #include "term.h"
 
-char const*
-environ_get(char const* key);
+const char*
+environ_get(const char* key);
 
 #endif

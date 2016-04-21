@@ -4,8 +4,8 @@
 * home variables *
 *****************/
 
-static char const PROGNAME[] = "cap home";
-static char const* optcdpath;
+static const char PROGNAME[] = "cap home";
+static const char* optcdpath;
 
 /*************************
 * home private functions *

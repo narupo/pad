@@ -8,7 +8,7 @@ struct Command {
 	char** argv;
 };
 
-static char const PROGNAME[] = "cap pwd";
+static const char PROGNAME[] = "cap pwd";
 
 static bool
 command_parse_options(Command* self);
@@ -85,9 +85,9 @@ command_parse_options(Command* self) {
 
 static int
 command_run(Command* self) {
-	Config const* config = config_instance();
+	const Config* config = config_instance();
 
-	char const* cd = config_path(config, "cd");
+	const char* cd = config_path(config, "cd");
 	term_printf("%s\n", cd);
 
 	return 0;

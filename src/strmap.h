@@ -6,7 +6,7 @@
 #include "hash.h"
 
 typedef char* StringHashMap_type;
-typedef char const* StringHashMap_const_type;
+typedef const char* StringHashMap_const_type;
 typedef struct StringHashMap StringHashMap;
 typedef struct StringHashMapNode StringHashMapNode;
 typedef struct StringHashMapIterator StringHashMapIterator;
@@ -28,7 +28,7 @@ strmapnode_delete(StringHashMapNode* self);
  *
  * @return
  */
-char const*
+const char*
 strmapnode_key_const(StringHashMapNode const* self);
 
 /**
@@ -38,7 +38,7 @@ strmapnode_key_const(StringHashMapNode const* self);
  *
  * @return
  */
-char const*
+const char*
 strmapnode_value_const(StringHashMapNode const* self);
 
 /**
@@ -50,7 +50,7 @@ strmapnode_value_const(StringHashMapNode const* self);
  * @return
 */
 StringHashMapNode*
-strmapnode_new_copy(char const* key, StringHashMap_const_type value);
+strmapnode_new_copy(const char* key, StringHashMap_const_type value);
 
 /**
  * @brief
@@ -139,7 +139,7 @@ strmap_new(void);
  * @return
 */
 StringHashMap_type
-strmap_get(StringHashMap* self, char const* key);
+strmap_get(StringHashMap* self, const char* key);
 
 /**
  * @brief
@@ -150,7 +150,7 @@ strmap_get(StringHashMap* self, char const* key);
  * @return
 */
 StringHashMap_const_type
-strmap_get_const(StringHashMap const* self, char const* key);
+strmap_get_const(StringHashMap const* self, const char* key);
 
 /**
  * @brief
@@ -162,6 +162,6 @@ strmap_get_const(StringHashMap const* self, char const* key);
  * @return
 */
 bool
-strmap_set_copy(StringHashMap* self, char const* key, StringHashMap_const_type val);
+strmap_set_copy(StringHashMap* self, const char* key, StringHashMap_const_type val);
 
 #endif

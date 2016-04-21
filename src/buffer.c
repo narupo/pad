@@ -139,7 +139,7 @@ buf_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size) {
 }
 
 int
-buf_append_string(Buffer* self, char const* str) {
+buf_append_string(Buffer* self, const char* str) {
 	size_t i, len;
 
 	for (i = 0, len = strlen(str); i < len; ++i) {

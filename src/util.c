@@ -1,7 +1,7 @@
 #include "util.h"
 
 void _Noreturn
-die(char const* fmt, ...) {
+die(const char* fmt, ...) {
 	size_t fmtlen = strlen(fmt);
 	va_list args;
 	va_start(args, fmt);
@@ -25,7 +25,7 @@ die(char const* fmt, ...) {
 }
 
 void
-warn(char const* fmt, ...) {
+warn(const char* fmt, ...) {
 	size_t fmtlen = strlen(fmt);
 	va_list args;
 	va_start(args, fmt);
@@ -47,7 +47,7 @@ warn(char const* fmt, ...) {
 }
 
 char*
-util_strdup(char const* src) {
+util_strdup(const char* src) {
 	size_t len = strlen(src);
 	char* dst = (char*) malloc(sizeof(char) * len + 1);  // +1 for final '\0'
 	if (!dst) {
@@ -61,7 +61,7 @@ util_strdup(char const* src) {
 }
 
 char*
-strappend(char* dst, size_t dstsize, char const* src) {
+strappend(char* dst, size_t dstsize, const char* src) {
 	if (!src) {
 		return dst;
 	}
@@ -77,8 +77,8 @@ strappend(char* dst, size_t dstsize, char const* src) {
 }
 
 const char*
-strskip(char const* src, char const* skips) {
-	char const* p = src;
+strskip(const char* src, const char* skips) {
+	const char* p = src;
 	for (; *p; ++p) {
 		if (!strchr(skips, *p)) {
 			break;
@@ -88,12 +88,12 @@ strskip(char const* src, char const* skips) {
 }
 
 int
-strcmphead(char const* src, char const* target) {
+strcmphead(const char* src, const char* target) {
 	return strncmp(src, target, strlen(target));
 }
 
 char*
-strrem(char* dst, size_t dstsize, char const* src, int rem) {
+strrem(char* dst, size_t dstsize, const char* src, int rem) {
 	int i, j;
 
 	for (i = 0, j = 0; src[i] && j < dstsize-1; ++i) {
@@ -108,7 +108,7 @@ strrem(char* dst, size_t dstsize, char const* src, int rem) {
 }
 
 char*
-strrems(char* dst, size_t dstsize, char const* src, char const* rems) {
+strrems(char* dst, size_t dstsize, const char* src, const char* rems) {
 	int i, j;
 	
 	for (i = 0, j = 0; src[i] && j < dstsize-1; ++i) {
@@ -123,7 +123,7 @@ strrems(char* dst, size_t dstsize, char const* src, char const* rems) {
 }
 
 long
-strtolong(char const* src) {
+strtolong(const char* src) {
 	char* endptr;
 	int base = 0;
 
@@ -158,7 +158,7 @@ free_argv(int argc, char** argv) {
 int
 main(int argc, char* argv[]) {
 	char src[] = "\t \t \t456";
-	char const* skips = " \t";
+	const char* skips = " \t";
 	char* p;
 
 	p = strskip(src, skips);

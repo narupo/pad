@@ -20,7 +20,7 @@
  * @return failed to NULL
  */
 CsvLine*
-alias_to_csvline(char const* name);
+alias_to_csvline(const char* name);
 
 void
 alias_usage(void);

@@ -68,7 +68,7 @@ term_eputc(int ch) {
 }
 
 int
-term_printf(char const* fmt, ...) {
+term_printf(const char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
 
@@ -80,7 +80,7 @@ term_printf(char const* fmt, ...) {
 }
 
 int
-term_putsf(char const* fmt, ...) {
+term_putsf(const char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
 
@@ -93,7 +93,7 @@ term_putsf(char const* fmt, ...) {
 }
 
 int
-term_eprintf(char const* fmt, ...) {
+term_eprintf(const char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
 
@@ -106,7 +106,7 @@ term_eprintf(char const* fmt, ...) {
 }
 
 int
-term_eputsf(char const* fmt, ...) {
+term_eputsf(const char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
 
@@ -183,7 +183,7 @@ term_ftextcolor(FILE* fout, TermAttr attr, TermColor fg, TermColor bg) {
 }
 
 static int
-_acfprintf_unsafe(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char const* fmt, va_list args) {
+_acfprintf_unsafe(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, const char* fmt, va_list args) {
 	// Set state
 #if !defined(_CAP_MSYS) && defined(_CAP_WINDOWS)
 	DWORD nhandle = STD_OUTPUT_HANDLE;
@@ -225,7 +225,7 @@ _acfprintf_unsafe(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char co
 }
 
 int
-term_cfprintf(FILE* fout, TermColor fg, TermColor bg, char const* fmt, ...) {
+term_cfprintf(FILE* fout, TermColor fg, TermColor bg, const char* fmt, ...) {
 	if (fout == stdout && !stdout_lock()) {
 		return -1;
 	} else if (fout == stderr && !stderr_lock()) {
@@ -247,7 +247,7 @@ term_cfprintf(FILE* fout, TermColor fg, TermColor bg, char const* fmt, ...) {
 }
 
 int
-term_acfprintf(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...) {
+term_acfprintf(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, const char* fmt, ...) {
 	if (fout == stdout && !stdout_lock()) {
 		return -1;
 	} else if (fout == stderr && !stderr_lock()) {
@@ -269,7 +269,7 @@ term_acfprintf(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char const
 }
 
 int
-term_acprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...) {
+term_acprintf(TermAttr attr, TermColor fg, TermColor bg, const char* fmt, ...) {
 	if (!stdout_lock()) {
 		return -1;
 	}
@@ -286,7 +286,7 @@ term_acprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...) {
 }
 
 int
-term_cprintf(TermColor fg, TermColor bg, char const* fmt, ...) {
+term_cprintf(TermColor fg, TermColor bg, const char* fmt, ...) {
 	if (!stdout_lock()) {
 		return -1;
 	}
@@ -303,7 +303,7 @@ term_cprintf(TermColor fg, TermColor bg, char const* fmt, ...) {
 }
 
 int
-term_aceprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...) {
+term_aceprintf(TermAttr attr, TermColor fg, TermColor bg, const char* fmt, ...) {
 	if (!stderr_lock()) {
 		return -1;
 	}
@@ -321,7 +321,7 @@ term_aceprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...) 
 }
 
 int
-term_ceprintf(TermColor fg, TermColor bg, char const* fmt, ...) {
+term_ceprintf(TermColor fg, TermColor bg, const char* fmt, ...) {
 	if (!stderr_lock()) {
 		return -1;
 	}
@@ -345,7 +345,7 @@ term_ceprintf(TermColor fg, TermColor bg, char const* fmt, ...) {
 #if defined(TEST_TERM)
 static int
 test_cprintf(int argc, char* argv[]) {
-	char const* src = argv[0];
+	const char* src = argv[0];
 	if (argc >= 2) {
 		src = argv[1];
 	}

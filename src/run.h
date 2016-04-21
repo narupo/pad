@@ -16,7 +16,7 @@ void
 run_usage(void);
 
 int
-run_make(Config const* config, CapFile* dstfile, int argc, char* argv[]);
+run_make(const Config* config, CapFile* dstfile, int argc, char* argv[]);
 
 int
 run_main(int argc, char* argv[]);
