@@ -90,30 +90,30 @@ buf_clear(Buffer* self) {
 	memset(self->buffer, 0, self->capacity);
 }
 
-bool
+Buffer*
 buf_resize(Buffer* self, size_t resize) {
 	resize = (resize == 0 ? NBUFFER_NEW_CAPACITY : resize);
 
 	Buffer_pointer_type ptr = (Buffer_pointer_type) realloc(self->buffer, resize);
 	if (!ptr) {
-		return false;  // Failed
+		return NULL;  // Failed
 	}
 
 	self->buffer = ptr;
 	self->capacity = resize;
 
-	return true;
+	return self;
 }
 
-int
+Buffer*
 buf_push_back(Buffer* self, int ch) {
 	if (self->length >= self->capacity) {
 		if (!buf_resize(self, self->capacity * 2)) {
-			return -1;
+			return NULL;
 		}
 	}
 	self->buffer[self->length++] = ch;
-	return self->length;
+	return self;
 }
 
 Buffer_type
@@ -127,58 +127,58 @@ buf_pop_back(Buffer* self) {
 	return ch;
 }
 
-int
+Buffer*
 buf_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size) {
 	for (size_t i = 0; i < size; ++i) {
 		if (buf_push_back(self, bytes[i]) < 0) {
-			return -1;
+			return NULL;
 		}
 	}
 
-	return size;
+	return self;
 }
 
-int
+Buffer*
 buf_append_string(Buffer* self, const char* str) {
 	size_t i, len;
 
 	for (i = 0, len = strlen(str); i < len; ++i) {
 		if (buf_push_back(self, str[i]) < 0) {
-			return -1;
+			return NULL;
 		}
 	}
 
-	return i;
+	return self;
 }
 
-int
+Buffer*
 buf_append_stream(Buffer* self, FILE* fin) {
 	if (feof(fin)) {
-		return -1;
+		return NULL;
 	}
 
 	int napp = 0;
 
 	for (int ch; (ch = fgetc(fin)) != EOF; ++napp) {
 		if (ferror(fin) || buf_push_back(self, ch) < 0) {
-			return -1;
+			return NULL;
 		}
 	}
 
-	return napp;
+	return self;
 }
 
-int
+Buffer*
 buf_append_other(Buffer* self, Buffer const* other) {
 	size_t i;
 
 	for (i = 0; i < other->length; ++i) {
 		if (buf_push_back(self, other->buffer[i]) < 0) {
-			return -1;
+			return NULL;
 		}
 	}
 
-	return i;
+	return self;
 }
 
 bool

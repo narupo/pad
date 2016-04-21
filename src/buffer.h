@@ -106,10 +106,11 @@ buf_clear(Buffer* self);
  *
  * @param[in] self
  * @param[in] ch   push data
- * @return success to length of buffer
- * @return failed to under of zero
+ *
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-int
+Buffer*
 buf_push_back(Buffer* self, int ch);
 
 /**
@@ -128,10 +129,10 @@ buf_pop_back(Buffer* self);
  * @param[in] bytes
  * @param[in] size  size of bytes
  *
- * @return failed to number of under zero
- * @return success to number of appended
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-int
+Buffer*
 buf_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size);
 
 /**
@@ -140,10 +141,10 @@ buf_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size);
  * @param[in] self
  * @param[in] str  pointer to memory of string
  *
- * @return failed to number of under zero
- * @return success to number of appended
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-int
+Buffer*
 buf_append_string(Buffer* self, const char* str);
 
 /**
@@ -152,10 +153,10 @@ buf_append_string(Buffer* self, const char* str);
  * @param[in] self
  * @param[in] fin  input stream
  *
- * @return failed to number of under zero
- * @return success to number of appended
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-int
+Buffer*
 buf_append_stream(Buffer* self, FILE* fin);
 
 /**
@@ -164,10 +165,10 @@ buf_append_stream(Buffer* self, FILE* fin);
  * @param self
  * @param other pointer to memory of other buffer
  *
- * @return failed to number of under zero
- * @return success to number of appended
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-int
+Buffer*
 buf_append_other(Buffer* self, Buffer const* other);
 
 /**
@@ -176,10 +177,10 @@ buf_append_other(Buffer* self, Buffer const* other);
  * @param[in] self
  * @param[in] resize number of resize size.
  *
- * @return success to true
- * @return failed to false
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-bool
+Buffer*
 buf_resize(Buffer* self, size_t resize);
 
 /**
