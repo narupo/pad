@@ -2,7 +2,6 @@
 #define BUFFER_H
 
 #include "define.h"
-#include "util.h"
 #include "caperr.h"
 
 #include <stdio.h>
