@@ -3,7 +3,7 @@
 
 #include "define.h"
 #include "buffer.h"
-#include <stdlib.h>
+#include "string.h"
 
 typedef struct StringArray StringArray;
 

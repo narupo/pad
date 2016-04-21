@@ -47,7 +47,7 @@ warn(const char* fmt, ...) {
 }
 
 char*
-util_strdup(const char* src) {
+strdup(const char* src) {
 	size_t len = strlen(src);
 	char* dst = (char*) malloc(sizeof(char) * len + 1);  // +1 for final '\0'
 	if (!dst) {

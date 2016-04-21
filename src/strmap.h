@@ -3,6 +3,7 @@
 
 #include "define.h"
 #include "util.h"
+#include "string.h"
 #include "hash.h"
 
 typedef char* StringHashMap_type;

@@ -289,4 +289,93 @@ str_find_const(String const* self, const char* target);
 int
 str_read_stream(String* self, FILE* fin);
 
+/************************
+* string free functions *
+************************/
+
+/**
+ * Copy string
+ *
+ * @param[in] src source string
+ *
+ * @return success to pointer to copy string of dynamic allocate memory
+ * @return failed to pointer to NULL
+ */
+char*
+strdup(const char* src);
+
+/**
+ * Append string to destination
+ *
+ * @param[out] dst destination buffer
+ * @param[in] dstsize destination size
+ * @param[in] src append string
+ *
+ * @return success to pointer to destination
+ * @return failed to pointer to NULL
+ */
+char*
+strappend(char* dst, size_t dstsize, const char* src);
+
+/**
+ * Skip characters in string by skips
+ *
+ * @param[in] src source of string
+ * @param[in] skips skip characters
+ *
+ * @return pointer to string of skipped
+ */
+const char*
+strskip(const char* src, const char* skips);
+
+/**
+ * Compare string of header by target length
+ *
+ * @param[in] src source string
+ * @param[in] target compare string
+ *
+ * @return 0 to match
+ * @return other to not match
+ */
+int
+strcmphead(const char* src, const char* target);
+
+/**
+ * Remove character from string
+ *
+ * @param[out] dst pointer to destination of string
+ * @param[in] dstsize number of destination size
+ * @param[in] src string of source
+ * @param[in] rem target character for remove
+ *
+ * @return success to pointer to dst
+ * @return failed to pointer to NULL
+ */
+char*
+strrem(char* dst, size_t dstsize, const char* src, int rem);
+
+/**
+ * Remove characters from string
+ *
+ * @param[out] dst pointer to destination of string
+ * @param[in] dstsize number of destination size
+ * @param[in] src string of source
+ * @param[in] rem target characters for remove
+ *
+ * @return success to pointer to dst
+ * @return failed to pointer to NULL
+ */
+char*
+strrems(char* dst, size_t dstsize, const char* src, const char* rems);
+
+/**
+ *
+ *
+ * @param[]
+ *
+ * @return
+ */
+long
+strtolong(const char* src);
+
 #endif

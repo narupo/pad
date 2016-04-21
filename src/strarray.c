@@ -89,7 +89,7 @@ strarray_new_from_argv(int argc, char* argv[]) {
 	}
 
 	for (int i = 0; i < self->length; ++i) {
-		self->array[i] = util_strdup(argv[i]);
+		self->array[i] = strdup(argv[i]);
 	}
 
 	return self;
@@ -129,7 +129,7 @@ strarray_set_copy(StringArray* self, size_t index, const char* value) {
 		WARN("Index out of range")
 		return NULL;
 	} else {
-		self->array[index] = util_strdup(value);
+		self->array[index] = strdup(value);
 	}
 	return self;
 }
@@ -157,7 +157,7 @@ strarray_push_back(StringArray* self, const char* value) {
 		}
 	}
 
-	self->array[self->length++] = util_strdup(value);
+	self->array[self->length++] = strdup(value);
 
 	return self;
 }
