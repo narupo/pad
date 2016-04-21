@@ -4,6 +4,7 @@ typedef enum {
 	H_TRASH = 'T',
 	H_UNDO = 'U',
 	H_REDO = 'R',
+	H_CLEAR = 'C',
 } History;
 
 enum {
@@ -13,6 +14,7 @@ enum {
 	TRASH_INFO_NRECORD = TRASH_INFO_NCOL_FNAME + TRASH_INFO_NCOL_OLDDIR,
 
 	// History
+	TRASH_HISTORY_RECORD_DELIM = ' ',
 	TRASH_HISTORY_NCOL_TYPE = 8,
 	TRASH_HISTORY_NCOL_OLDDIR = 255,
 	TRASH_HISTORY_NRECORD = TRASH_HISTORY_NCOL_TYPE + TRASH_HISTORY_NCOL_OLDDIR,
@@ -298,6 +300,17 @@ cmd_save_info_from_path(const char* oldpath, const char* newpath) {
 	return 0;
 }
 
+static const char*
+cmd_history_type_to_string(History type) {
+	switch (type) {
+	case H_TRASH: return "trash"; break;
+	case H_UNDO: return "undo"; break;
+	case H_REDO: return "redo"; break;
+	case H_CLEAR: return "clear"; break;
+	default: return "unknown"; break;
+	}
+}
+
 static FILE*
 cmd_open_history(void) {
 	const Config* config = config_instance();
@@ -355,8 +368,8 @@ cmd_make_history_record(History type, const char* oldpath) {
 		caperr(PROGNAME, CAPERR_CONSTRUCT, "string");
 		return NULL;
 	}
-	str_push_back(buf, type);
-	str_push_back(buf, ',');
+	str_append_string(buf, cmd_history_type_to_string(type));
+	str_push_back(buf, TRASH_HISTORY_RECORD_DELIM);
 	str_append_string(buf, oldpath);
 	return buf;
 }
@@ -546,7 +559,7 @@ cmd_history(void) {
 	}
 
 	for (size_t i = 0; i < strarray_length(history); ++i) {
-		CsvLine* cl = csvline_new_parse_line(strarray_get_const(history, i), ',');
+		CsvLine* cl = csvline_new_parse_line(strarray_get_const(history, i), TRASH_HISTORY_RECORD_DELIM);
 		if (!cl || csvline_length(cl) < 2) {
 			strarray_delete(history);
 			return caperr(PROGNAME, CAPERR_PARSE, "history record at %d", i);
@@ -555,16 +568,9 @@ cmd_history(void) {
 		const char* type = csvline_get_const(cl, 0);
 		const char* oldpath = csvline_get_const(cl, 1);
 
-		switch (type[0]) {
-		default: term_printf("unknown "); break;
-		case H_TRASH: term_printf("trash "); break;
-		case H_UNDO: term_printf("undo "); break;
-		case H_REDO: term_printf("redo "); break;
-		}
+		term_printf("%s%c%s\n", type, TRASH_HISTORY_RECORD_DELIM, oldpath);
 
-		term_printf("%s\n", oldpath);
 		term_flush();
-
 		csvline_delete(cl);
 	}
 
