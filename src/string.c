@@ -7,9 +7,11 @@
 #define NCHAR (sizeof(String_type))
 #define NIL ('\0')
 
-/***********************
-* str constant numbers *
-***********************/
+/**************************
+* str constant variabless *
+**************************/
+
+static const char MODULENAME[] = "cap string";
 
 enum {
 	STR_INIT_CAPACITY = 4,
@@ -55,11 +57,20 @@ str_escape_delete(String* self) {
 
 String*
 str_new(void) {
-	String* self = (String*) mem_ecalloc(1, sizeof(String));
+	String* self = (String*) calloc(1, sizeof(String));
+	if (!self) {
+		caperr(MODULENAME, CAPERR_CONSTRUCT, "string");
+		return NULL;
+	}
 
 	self->length = 0;
 	self->capacity = STR_INIT_CAPACITY + 1; // +1 for final nul
-	self->buffer = (String_type*) mem_ecalloc(self->capacity, NCHAR);
+	self->buffer = (String_type*) calloc(self->capacity, NCHAR);
+	if (!self->buffer) {
+		caperr(MODULENAME, CAPERR_CONSTRUCT, "string buffer");
+		free(self);
+		return NULL;
+	}
 
 	self->buffer[self->length] = NIL;
 
@@ -68,11 +79,20 @@ str_new(void) {
 
 String*
 str_new_from_string(String_type const* str) {
-	String* self = (String*) mem_ecalloc(1, sizeof(String));
+	String* self = (String*) calloc(1, sizeof(String));
+	if (!self) {
+		caperr(MODULENAME, CAPERR_CONSTRUCT, "string");
+		return NULL;
+	}
 
 	self->length = str_strlen(str);
 	self->capacity = self->length + 1; // +1 for final nul
-	self->buffer = (String_type*) mem_emalloc(self->length * NCHAR + NCHAR); // +1 for final nul
+	self->buffer = (String_type*) malloc(self->length * NCHAR + NCHAR); // +1 for final nul
+	if (!self->buffer) {
+		caperr(MODULENAME, CAPERR_CONSTRUCT, "string buffer");
+		free(self);
+		return NULL;
+	}
 
 	memmove(self->buffer, str, self->length * NCHAR);
 	self->buffer[self->length] = NIL;
@@ -82,11 +102,20 @@ str_new_from_string(String_type const* str) {
 
 String*
 str_new_from_capacity(int capacity) {
-	String* self = (String*) mem_ecalloc(1, sizeof(String));
+	String* self = (String*) calloc(1, sizeof(String));
+	if (!self) {
+		caperr(MODULENAME, CAPERR_CONSTRUCT, "string");
+		return NULL;
+	}
 
 	self->length = 0;
 	self->capacity = capacity + 1; // +1 for final nul
-	self->buffer = (String_type*) mem_emalloc(capacity * NCHAR + NCHAR); // +1 for final nul
+	self->buffer = (String_type*) malloc(capacity * NCHAR + NCHAR); // +1 for final nul
+	if (!self->buffer) {
+		caperr(MODULENAME, CAPERR_CONSTRUCT, "string buffer");
+		free(self);
+		return NULL;
+	}
 
 	self->buffer[self->length] = NIL;
 
@@ -95,11 +124,20 @@ str_new_from_capacity(int capacity) {
 
 String*
 str_new_from_other(String const* other) {
-	String* self = (String*) mem_ecalloc(1, sizeof(String));
+	String* self = (String*) calloc(1, sizeof(String));
+	if (!self) {
+		caperr(MODULENAME, CAPERR_CONSTRUCT, "string");
+		return NULL;
+	}
 
 	self->length = other->length;
 	self->capacity = other->capacity;
-	self->buffer = (String_type*) mem_ecalloc(self->capacity, NCHAR);
+	self->buffer = (String_type*) calloc(self->capacity, NCHAR);
+	if (!self->buffer) {
+		caperr(MODULENAME, CAPERR_CONSTRUCT, "string buffer");
+		free(self);
+		return NULL;
+	}
 
 	for (int i = 0; i < self->length; ++i) {
 		self->buffer[i] = other->buffer[i];
@@ -155,12 +193,15 @@ str_clear(String* self) {
 	self->buffer[self->length] = NIL;
 }
 
-void
+String*
 str_set_string(String* self, const char* src) {
 	int srclen = strlen(src);
 
 	if (srclen >= self->length) {
-		str_resize(self, srclen);
+		if (!str_resize(self, srclen)) {
+			caperr(MODULENAME, CAPERR_EXECUTE, "resize");
+			return NULL;
+		}
 	}
 
 	self->length = srclen;
@@ -169,39 +210,53 @@ str_set_string(String* self, const char* src) {
 		self->buffer[i] = src[i];
 	}
 	self->buffer[srclen] = NIL;
+	return self;
 }
 
-void
+String*
 str_resize(String* self, int newlen) {
 	if (!self) {
-		return;
+		return NULL;
 	}
 
 	if (newlen < 0) {
 		newlen = 0;
 	}
 
-	String_type* tmp = (String_type*) mem_erealloc(self->buffer, newlen * NCHAR + NCHAR);
+	String_type* tmp = (String_type*) realloc(self->buffer, newlen * NCHAR + NCHAR);
+	if (!tmp) {
+		caperr(MODULENAME, CAPERR_CONSTRUCT, "resize buffer");
+		str_delete(self);
+		return NULL;
+	}
+
 	self->buffer = tmp;
 	self->capacity = newlen + 1; // +1 for final nul
 	if (newlen < self->length) {
 		self->length = newlen;
 		self->buffer[self->length] = NIL;
 	}
+
+	return self;
 }
 
-void
+String*
 str_push_back(String* self, String_type ch) {
 	if (!self || ch == NIL) {
-		return;
+		caperr(MODULENAME, CAPERR_INVALID_ARGUMENTS, "");
+		return NULL;
 	}
 
 	if (self->length >= self->capacity-1) {
-		str_resize(self, self->length*2);
+		if (!str_resize(self, self->length*2)) {
+			caperr(MODULENAME, CAPERR_EXECUTE, "resize");
+			return NULL;
+		}
 	}
 
 	self->buffer[self->length++] = ch;
 	self->buffer[self->length] = NIL;
+	return self;
 }
 
 String_type
@@ -219,14 +274,18 @@ str_pop_back(String* self) {
 	return NIL;
 }
 
-void
+String*
 str_push_front(String* self, String_type ch) {
 	if (!self || ch == NIL) {
-		return;
+		caperr(MODULENAME, CAPERR_INVALID_ARGUMENTS, "");
+		return NULL;
 	}
 
 	if (self->length >= self->capacity-1) {
-		str_resize(self, self->length*2);
+		if (!str_resize(self, self->length*2)) {
+			caperr(MODULENAME, CAPERR_EXECUTE, "resize");
+			return NULL;
+		}
 	}
 
 	for (int i = self->length; i > 0; --i) {
@@ -235,6 +294,7 @@ str_push_front(String* self, String_type ch) {
 
 	self->buffer[0] = ch;
 	self->buffer[++self->length] = NIL;
+	return self;
 }
 
 String_type
@@ -259,16 +319,19 @@ str_pop_front(String* self) {
 	return ret;
 }
 
-int
+String*
 str_append_string(String* self, String_type const* src) {
 	if (!self || !src) {
-		return -1;
+		return NULL;
 	}
 
 	int srclen = strlen(src);
 
 	if (self->length + srclen >= self->capacity-1) {
-		str_resize(self, (self->length + srclen) * 2);
+		if (!str_resize(self, (self->length + srclen) * 2)) {
+			caperr(MODULENAME, CAPERR_EXECUTE, "resize");
+			return NULL;
+		}
 	}
 
 	for (String_type const* sp = src; *sp; ++sp) {
@@ -276,44 +339,47 @@ str_append_string(String* self, String_type const* src) {
 	}
 	self->buffer[self->length] = NIL;
 
-	return srclen;
+	return self;
 }
 
-int
+String*
 str_append_stream(String* self, FILE* fin) {
-	int nread = 0;
-
-	for (int ch; (ch = fgetc(fin)) != EOF; ++nread) {
-		str_push_back(self, ch);
+	for (int ch; (ch = fgetc(fin)) != EOF; ) {
+		if (!str_push_back(self, ch)) {
+			caperr(MODULENAME, CAPERR_EXECUTE, "push back");
+			return NULL;
+		}
 	}
 
-	return nread;
+	return self;
 }
 
-int
+String*
 str_append_other(String* self, String const* other) {
+	String* ret = NULL;
+
 	if (!self || !other) {
-		return -1;
+		return ret;
 	}
 
 	if (self == other) {
 		char* buf = strdup(self->buffer);
 		if (!buf) {
-			return -1;
+			return ret;
 		}
-		str_append_string(self, buf);
+		ret = str_append_string(self, buf);
 		free(buf);
 	} else {
-		str_append_string(self, other->buffer);
+		ret = str_append_string(self, other->buffer);
 	}
 
-	return other->length;
+	return ret;
 }
 
-int
+String*
 str_append_nformat(String* self, char* buf, size_t nbuf, const char* fmt, ...) {
 	if (!self || !buf || !fmt || nbuf == 0) {
-		return -1;
+		return NULL;
 	}
 
 	va_list args;
@@ -322,16 +388,19 @@ str_append_nformat(String* self, char* buf, size_t nbuf, const char* fmt, ...) {
 	va_end(args);
 
 	for (int i = 0; i < buflen; ++i) {
-		str_push_back(self, buf[i]);
+		if (!str_push_back(self, buf[i])) {
+			caperr(MODULENAME, CAPERR_EXECUTE, "push back");
+			return NULL;
+		}
 	}
 
-	return buflen;
+	return self;
 }
 
-void
+String*
 str_rstrip(String* self, String_type const* rems) {
 	if (!self || !rems) {
-		return;
+		return NULL;
 	}
 
 	for (int i = self->length-1; i > 0; --i) {
@@ -341,12 +410,14 @@ str_rstrip(String* self, String_type const* rems) {
 			break;
 		}
 	}
+
+	return self;
 }
 
-void
+String*
 str_lstrip(String* self, String_type const* rems) {
 	if (!self || !rems) {
-		return;
+		return NULL;
 	}
 
 	for (; self->length; ) {
@@ -356,34 +427,19 @@ str_lstrip(String* self, String_type const* rems) {
 			break;
 		}
 	}
+
+	return self;
 }
 
-void
+String*
 str_strip(String* self, String_type const* rems) {
-	str_rstrip(self, rems);
-	str_lstrip(self, rems);
-}
-
-void
-str_pop_newline(String* self) {
-	if (!self) {
-		return;
+	if (!str_rstrip(self, rems)) {
+		return NULL;
 	}
-
-	if (self->length == 0) {
-		return;
+	if (!str_lstrip(self, rems)) {
+		return NULL;
 	}
-
-	if (self->buffer[self->length-1] == '\n') {
-		if (self->length > 1 && self->buffer[self->length-2] == '\r') {
-			self->length -= 2;
-		} else {
-			self->length -= 1;
-		}
-		self->buffer[self->length] = NIL;
-	} else if (self->buffer[self->length-1] == '\r') {
-		self->buffer[--self->length] = NIL;
-	}
+	return self;
 }
 
 /****************
@@ -483,14 +539,121 @@ str_read_stream(String* self, FILE* fin) {
 	return self->length;
 }
 
+/*********************
+* str free functions *
+*********************/
+
+char*
+strdup(const char* src) {
+	size_t len = strlen(src);
+	char* dst = (char*) malloc(sizeof(char) * len + 1);  // +1 for final '\0'
+	if (!dst) {
+		return NULL;
+	}
+
+	memmove(dst, src, len);
+	dst[len] = '\0';
+
+	return dst;
+}
+
+char*
+strappend(char* dst, size_t dstsize, const char* src) {
+	if (!src) {
+		return dst;
+	}
+
+	size_t dstcur = strlen(dst);  // Weak point
+
+	for (size_t i = 0; dstcur < dstsize-1 && src[i]; ++dstcur, ++i) {
+		dst[dstcur] = src[i];
+	}
+	dst[dstcur] = '\0';
+
+	return dst;
+}
+
+const char*
+strskip(const char* src, const char* skips) {
+	const char* p = src;
+	for (; *p; ++p) {
+		if (!strchr(skips, *p)) {
+			break;
+		}
+	}
+	return p;
+}
+
+int
+strcmphead(const char* src, const char* target) {
+	return strncmp(src, target, strlen(target));
+}
+
+char*
+strrem(char* dst, size_t dstsize, const char* src, int rem) {
+	size_t i, j;
+
+	for (i = 0, j = 0; src[i] && j < dstsize-1; ++i) {
+		if (src[i] != rem) {
+			dst[j++] = src[i];
+		}
+	}
+
+	dst[j] = '\0';
+
+	return dst;
+}
+
+char*
+strrems(char* dst, size_t dstsize, const char* src, const char* rems) {
+	size_t i, j;
+
+	for (i = 0, j = 0; src[i] && j < dstsize-1; ++i) {
+		if (!strchr(rems, src[i])) {
+			dst[j++] = src[i];
+		}
+	}
+
+	dst[j] = '\0';
+
+	return dst;
+}
+
+long
+strtolong(const char* src) {
+	char* endptr;
+	int base = 0;
+
+	errno = 0;
+	long val = strtol(src, &endptr, base);
+
+	if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN)) ||
+		(errno != 0 && val == 0)) {
+		perror("strtolong: strtol");
+		return 0;
+	}
+
+	if (endptr == src) {
+		fprintf(stderr, "No digits were found.\n");
+		return 0;
+	}
+
+	return val;
+}
+
+/**************
+* str cleanup *
+**************/
+
+#undef NCHAR
+#undef NIL
+
 /***********
 * str test *
 ***********/
 
-#if defined(TEST_STRING)
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#if defined(_TEST_STRING)
+
 #include "csvline.h"
 
 static String* str;
@@ -634,30 +797,6 @@ test_st(char* args[]) {
 	return 0;
 }
 
-static int
-test_ppn(char* args[]) {
-	str_push_back(str, '\r');
-	strinfo(str);
-	str_pop_newline(str);
-	strinfo(str);
-
-	str_push_back(str, '\n');
-	strinfo(str);
-	str_pop_newline(str);
-	strinfo(str);
-
-	str_append_string(str, "\r\n");
-	strinfo(str);
-	str_pop_newline(str);
-	return 0;
-}
-
-static int
-test_shf(char* args[]) {
-	str_shuffle(str);
-	return 0;
-}
-
 int
 main(int argc, char* argv[]) {
 	static struct Command {
@@ -677,24 +816,25 @@ main(int argc, char* argv[]) {
 		{"lst", test_lst},
 		{"st", test_st},
 		{"find", test_find},
-		{"ppn", test_ppn},
-		{"shf", test_shf},
-		{0, 0},
+		{},
 	};
 
-	String* line = str_new();
+	char line[1024];
 	str = str_new();
 
-	for (; str_getline(line, stdin); ) {
-		char* cmd = (char*) str_get_const(line);
+	for (; fgets(line, sizeof line, stdin); ) {
+		size_t linelen = strlen(line);
+		if (line[linelen-1] == '\0') {
+			line[--linelen] = '\0';
+		}
 
 		for (struct Command* cur = commands; cur->name; ++cur) {
 			size_t namelen = strlen(cur->name);
 
-			if (strcmp(cmd, "q") == 0) {
+			if (strcmp(line, "q") == 0) {
 				goto done;
 
-			} else if (strcmp(cmd, "?") == 0) {
+			} else if (strcmp(line, "?") == 0) {
 				for (struct Command* c = commands; c->name; ++c) {
 					printf("%s\n", c->name);
 				}
@@ -702,8 +842,8 @@ main(int argc, char* argv[]) {
 				fflush(stdout);
 				break;
 
-			} else if (strncmp(cmd, cur->name, namelen) == 0) {
-				char* pcmd = cmd + namelen;
+			} else if (strncmp(line, cur->name, namelen) == 0) {
+				char* pcmd = line + namelen;
 				for (; *pcmd == ' '; ++pcmd) {
 				}
 
@@ -712,7 +852,7 @@ main(int argc, char* argv[]) {
 				char** argv = csvline_escape_delete(csvl);
 
 				if (cur->command(argv) != 0) {
-					fprintf(stderr, "Failed to test of \"%s\"", cmd);
+					fprintf(stderr, "Failed to test of \"%s\"", line);
 				}
 				strinfo(str);
 
@@ -723,8 +863,8 @@ main(int argc, char* argv[]) {
 	}
 
 done:
-	str_delete(line);
 	str_delete(str);
 	return 0;
 }
+
 #endif

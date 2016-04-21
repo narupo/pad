@@ -342,7 +342,7 @@ term_ceprintf(TermColor fg, TermColor bg, const char* fmt, ...) {
 * term test *
 ************/
 
-#if defined(TEST_TERM)
+#if defined(_TEST_TERM)
 static int
 test_cprintf(int argc, char* argv[]) {
 	const char* src = argv[0];

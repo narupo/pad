@@ -549,7 +549,7 @@ capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* braces
 * Test *
 *******/
 
-#if defined(TEST_ATCAP)
+#if defined(_TEST_ATCAP)
 #include "file.h"
 
 int

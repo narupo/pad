@@ -329,11 +329,61 @@ caperr_display_last(FILE* stream) {
 	}
 }
 
-#if defined(TEST_CAPERR)
+/****************
+* caperr macros *
+****************/
+
+void
+die(const char* fmt, ...) {
+	size_t fmtlen = strlen(fmt);
+	va_list args;
+	va_start(args, fmt);
+
+	fflush(stdout);
+
+	vfprintf(stderr, fmt, args);
+
+	if (fmtlen && fmt[fmtlen-1] != '.') {
+		fprintf(stderr, ". ");
+	}
+	if (errno != 0) {
+		fprintf(stderr, "%s.", strerror(errno));
+	}
+
+	fprintf(stderr, "\n");
+
+	va_end(args);
+
+	exit(EXIT_FAILURE);
+}
+
+void
+warn(const char* fmt, ...) {
+	size_t fmtlen = strlen(fmt);
+	va_list args;
+	va_start(args, fmt);
+
+	fflush(stdout);
+
+	vfprintf(stderr, fmt, args);
+
+	if (fmtlen && fmt[fmtlen-1] != '.') {
+		fprintf(stderr, ". ");
+	}
+	if (errno != 0) {
+		fprintf(stderr, "%s.", strerror(errno));
+	}
+
+	fprintf(stderr, "\n");
+
+	va_end(args);
+}
+
+#if defined(_TEST_CAPERR)
 int
 main(int argc, char* argv[]) {
 	caperr(argv[0], CAPERR_FOPEN, "not found file \"%s\"", argv[0]);
-	caperr_display();
+	caperr_display(stderr);
     return 0;
 }
 #endif

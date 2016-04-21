@@ -440,7 +440,7 @@ dir_read_node(Directory* self) {
 * file test *
 ************/
 
-#if defined(TEST_FILE)
+#if defined(_TEST_FILE)
 static int
 test_mkdir(int argc, char* argv[]) {
 	if (argc < 2) {

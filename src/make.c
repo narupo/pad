@@ -583,7 +583,7 @@ make_2_main(int argc, char* argv[]) {
 	return ret;
 }
 
-#if defined(TEST_MAKE)
+#if defined(_TEST_MAKE)
 int
 main(int argc, char* argv[]) {
 	return make_2_main(argc, argv);

@@ -277,7 +277,7 @@ tree_remove(Tree* tree, int key) {
 * Tree and TreeNode test *
 *************************/
 
-#if defined(TEST_TREE)
+#if defined(_TEST_TREE)
 int
 test_insert(int argc, char* argv[]) {
 	Tree* tree = tree_new();

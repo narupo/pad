@@ -417,7 +417,7 @@ ls_main(int argc, char* argv[]) {
 	return res;
 }
 
-#if defined(TEST_LS)
+#if defined(_TEST_LS)
 int
 main(int argc, char* argv[]) {
     return ls_main(argc, argv);

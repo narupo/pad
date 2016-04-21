@@ -149,7 +149,7 @@ mkdir_main(int argc, char* argv[]) {
 * rm test *
 **********/
 
-#if defined(TEST_MKDIR)
+#if defined(_TEST_MKDIR)
 int
 main(int argc, char* argv[]) {
 	return mkdir_main(argc, argv);

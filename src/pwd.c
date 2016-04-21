@@ -124,7 +124,7 @@ pwd_main(int argc, char* argv[]) {
 	return res;
 }
 
-#if defined(TEST_PWD)
+#if defined(_TEST_PWD)
 int
 main(int argc, char* argv[]) {
 	// Construct

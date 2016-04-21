@@ -28,76 +28,76 @@ cap: $(OBJS)
 	$(CC) $(CFLAGS) -o $(PROGRAM) $^ $(LIBS)
 
 atcap: atcap.c $(UTILS)
-	$(CC) -DDEBUG -DTEST_ATCAP $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_ATCAP $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 buffer: buffer.c
-	$(CC) -DDEBUG -DTEST_BUFFER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_BUFFER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
-string: string.c util.c memory.c term.c csvline.c buffer.c
-	$(CC) -DDEBUG -DTEST_STRING $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+string: string.c memory.c caperr.c csvline.c util.c term.c
+	$(CC) -D_DEBUG -D_TEST_STRING $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 json: json.c util.c memory.c string.c strmap.c strarray.c term.c caperr.c csvline.c file.c environ.c
-	$(CC) -DDEBUG -DTEST_JSON $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_JSON $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 strmap: strmap.c util.c
-	$(CC) -DDEBUG -DTEST_STRINGMAP $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_STRINGMAP $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 file: file.c buffer.c util.c caperr.c term.c
-	$(CC) -DDEBUG -DTEST_FILE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_FILE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 ls: ls.c $(UTILS)
-	$(CC) -DDEBUG -DTEST_LS $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_LS $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 trash: trash.c $(UTILS)
-	$(CC) -DDEBUG -DTEST_TRASH $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_TRASH $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 mkdir: mkdir.c $(UTILS)
-	$(CC) -DDEBUG -DTEST_MKDIR $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_MKDIR $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 config: config.c $(UTILS)
-	$(CC) -DDEBUG -DTEST_CONFIG $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_CONFIG $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 server: server.c $(UTILS)
-	$(CC) -DDEBUG -DTEST_SERVER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_SERVER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 socket: socket.c util.c caperr.c memory.c term.c
-	$(CC) -DDEBUG -DTEST_SOCKET $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_SOCKET $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 signal: signal.c
-	$(CC) -DDEBUG -DTEST_SIGNAL $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_SIGNAL $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 http-header: http-header.c
-	$(CC) -DDEBUG -DTEST_HTTPHEADER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_HTTPHEADER $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 csvline: csvline.c buffer.c caperr.c util.c term.c
-	$(CC) -DDEBUG -DTEST_CSVLINE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_CSVLINE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 caperr: caperr.c term.c
-	$(CC) -DDEBUG -DTEST_CAPERR $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_CAPERR $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 cap-file: cap-file.c $(UTILS)
-	$(CC) -DDEBUG -DTEST_CAPFILE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_CAPFILE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 term: term.c
-	$(CC) -DDEBUG -DTEST_TERM $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_TERM $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 run: run.c $(UTILS)
-	$(CC) -DDEBUG -DTEST_RUN $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_RUN $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 cat: cat.c $(UTILS)
-	$(CC) -DDEBUG -DTEST_CAT $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_CAT $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 brief: brief.c $(UTILS)
-	$(CC) -DDEBUG -DTEST_CAT $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_CAT $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 alias: alias.c $(UTILS)
-	$(CC) -DDEBUG -DTEST_ALIAS $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_ALIAS $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 make: make.c run.c cat.c $(UTILS)
-	$(CC) -DDEBUG -DTEST_MAKE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_MAKE $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 hub: hub.c $(UTILS)
-	$(CC) -DDEBUG -DTEST_HUB $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
+	$(CC) -D_DEBUG -D_TEST_HUB $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 .PHONY: clean depend
 

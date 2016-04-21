@@ -2,8 +2,13 @@
 #define STRING_H
 
 #include "define.h"
-#include "util.h"
-#include "memory.h"
+#include "caperr.h"
+
+#include <string.h>
+#include <strings.h>
+#include <stdarg.h>
+#include <limits.h>
+#include <unistd.h>
 
 typedef struct String String;
 #define String_type char
@@ -106,36 +111,39 @@ void
 str_clear(String* self);
 
 /**
- * @deprecated This function can't get error state
- *
  * Set c string to buffer of string
  *
  * @param[in] self
  * @param[in] src pointer to memory of c string
+ *
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-void
+String*
 str_set_string(String* self, const char* src);
 
 /**
- * @deprecated This function can't get error state
- *
  * Resize buffer in string by number of new length of buffer
  *
  * @param[in] self
  * @param[in] newlen
+ *
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-void
+String*
 str_resize(String* self, int newlen);
 
 /**
- * @deprecated This function can't get error state
- *
  * Push data to back of buffer in string
  *
  * @param[in] self
  * @param[in] ch push data
+ *
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-void
+String*
 str_push_back(String* self, String_type ch);
 
 /**
@@ -150,14 +158,15 @@ String_type
 str_pop_back(String* self);
 
 /**
- * @deprecated This function can't get error state
- *
  * Push data at front of buffer in string
  *
  * @param[in] self
  * @param[in] ch push data
+ *
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-void
+String*
 str_push_front(String* self, String_type ch);
 
 /**
@@ -177,10 +186,10 @@ str_pop_front(String* self);
  * @param[in] self
  * @param[in] src pointer to memory of c string
  *
- * @return success to number of append
- * @return failed to number of under of zero
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-int
+String*
 str_append_string(String* self, const char* src);
 
 /**
@@ -189,10 +198,10 @@ str_append_string(String* self, const char* src);
  * @param[in] self
  * @param[in] fin pointer to memory of input stream
  *
- * @return success to number of append
- * @return failed to number of under of zero
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-int
+String*
 str_append_stream(String* self, FILE* fin);
 
 /**
@@ -201,10 +210,10 @@ str_append_stream(String* self, FILE* fin);
  * @param[in] self
  * @param[in] other pointer to memory of other string
  *
- * @return success to number of append
- * @return failed to number of under of zero
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-int
+String*
 str_append_other(String* self, String const* other);
 
 /**
@@ -216,10 +225,10 @@ str_append_other(String* self, String const* other);
  * @param[in] fmt  format
  * @param[in] ...  arguments
  *
- * @return success to number of append
- * @return failed to number of under of zero
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-int
+String*
 str_append_nformat(String* self, char* buf, size_t nbuf, const char* fmt, ...);
 
 /**
@@ -227,10 +236,10 @@ str_append_nformat(String* self, char* buf, size_t nbuf, const char* fmt, ...);
  *
  * Strip elements at right of string
  *
- * @param[in] self
- * @param[in] rems list of target elements
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-void
+String*
 str_rstrip(String* self, const char* rems);
 
 /**
@@ -238,10 +247,10 @@ str_rstrip(String* self, const char* rems);
  *
  * Strip elements at left of string
  *
- * @param[in] self
- * @param[in] rems list of target elements
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-void
+String*
 str_lstrip(String* self, const char* rems);
 
 /**
@@ -249,21 +258,11 @@ str_lstrip(String* self, const char* rems);
  *
  * Strip elements at both sides of string
  *
- * @param[in] self
- * @param[in] rems list of target elements
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-void
+String*
 str_strip(String* self, const char* rems);
-
-/**
- * @deprecated This function can't get error state
- *
- * Pop elements as new-line of string
- *
- * @param[in] self
- */
-void
-str_pop_newline(String* self);
 
 /**
  * Find token of string from front of buffer in string
@@ -278,6 +277,8 @@ const char*
 str_find_const(String const* self, const char* target);
 
 /**
+ * @deprecated Move to io.h
+ *
  * Read from stream
  * Clear state of string before read
  *

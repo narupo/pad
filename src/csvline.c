@@ -445,7 +445,7 @@ csvline_get(CsvLine* self, size_t index) {
 * Test *
 *******/
 
-#if defined(TEST_CSVLINE)
+#if defined(_TEST_CSVLINE)
 int
 main(int argc, char* argv[]) {
 	char line[128];

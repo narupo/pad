@@ -638,7 +638,7 @@ server_main(int argc, char* argv[]) {
 * server test *
 **************/
 
-#if defined(TEST_SERVER)
+#if defined(_TEST_SERVER)
 int
 main(int argc, char* argv[]) {
 	return server_main(argc, argv);

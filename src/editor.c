@@ -98,7 +98,7 @@ editor_main(int argc, char* argv[]) {
 	return editor_run(argc, argv);
 }
 
-#if defined(TEST_EDITOR)
+#if defined(_TEST_EDITOR)
 int
 main(int argc, char* argv[]) {
 	return editor_main(argc, argv);

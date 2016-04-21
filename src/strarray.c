@@ -193,7 +193,7 @@ strarray_clear(StringArray* self) {
 * Test *
 *******/
 
-#if defined(TEST_STRARRAY)
+#if defined(_TEST_STRARRAY)
 #include <stdio.h>
 
 int

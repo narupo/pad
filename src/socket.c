@@ -362,7 +362,7 @@ socket_send_bytes(Socket* self, unsigned const char* bytes, size_t size) {
 	return ret;
 }
 
-#if defined(TEST_SOCKET)
+#if defined(_TEST_SOCKET)
 int
 test_tcp_server(int argc, char* argv[]) {
 	if (argc < 2) {

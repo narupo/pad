@@ -150,7 +150,7 @@ hub_main(int argc, char* argv[]) {
 * Test *
 *******/
 
-#if defined(TEST_HUB)
+#if defined(_TEST_HUB)
 int
 main(int argc, char* argv[]) {
 	return hub_main(argc, argv);

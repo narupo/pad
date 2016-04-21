@@ -186,7 +186,7 @@ buf_empty(Buffer const* self) {
 	return self->length == 0;
 }
 
-#if defined(TEST_BUFFER)
+#if defined(_TEST_BUFFER)
 int
 main(int argc, char* argv[]) {
 	Buffer* buf = buf_new();

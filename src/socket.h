@@ -3,6 +3,7 @@
 
 #include "define.h"
 #include "util.h"
+#include "caperr.h"
 
 #include <pthread.h>
 #include <unistd.h>
@@ -32,21 +33,21 @@ typedef struct Socket Socket;
 /**
  * Display parameters of socket
  *
- * @param[in] self 
+ * @param[in] self
  */
-void 
+void
 socket_display(Socket const* self);
 
 /**
  * Close socket
  * If self is NULL then don't anything
  *
- * @param[in] self 
+ * @param[in] self
  *
  * @return success to number of zero
  * @return failed to under number of zero
  */
-int 
+int
 socket_close(Socket* self);
 
 /**
@@ -61,7 +62,7 @@ socket_close(Socket* self);
  *
  * @return pointer to dynamic allocate memory of Socket
  */
-Socket* 
+Socket*
 socket_open(const char* src, const char* mode);
 
 /**
@@ -86,20 +87,20 @@ socket_port(Socket const* self);
 
 /**
  * Wrapper of accept(2)
- * Get new socket by self socket 
+ * Get new socket by self socket
  *
- * @param[in] self 
+ * @param[in] self
  *
  * @return pointer to dynamic allocate memory of Socket of client
  */
-Socket* 
+Socket*
 socket_accept(Socket const* self);
 
 /**
  * Wrapper of recv(2)
  * Recv string from socket
  *
- * @param[in] self  
+ * @param[in] self
  * @param[in] dst   pointer to memory of destination buffer
  * @param[in] dstsz number of size of destination buffer
  *
@@ -113,27 +114,27 @@ socket_recv_string(Socket* self, char* dst, size_t dstsz);
  * Wrapper of send(2)
  * Send string to socket
  *
- * @param[in] self 
+ * @param[in] self
  * @param[in] str  send C string
  *
  * @return success to number of send size
  * @return failed to number of under of zero
  */
-int 
+int
 socket_send_string(Socket* self, const char* str);
 
 /**
  * Wrapper of send(2)
  * Send bytes to socket
- * 
- * @param[in] self  
+ *
+ * @param[in] self
  * @param[in] bytes pointer to memory of bytes
  * @param[in] size  number of size of bytes
  *
  * @return success to number of send size
  * @return failed to number of under of zero
  */
-int 
+int
 socket_send_bytes(Socket* self, unsigned const char* bytes, size_t size);
 
 #endif

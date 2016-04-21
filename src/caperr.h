@@ -3,6 +3,7 @@
 
 #include "define.h"
 #include "term.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -11,6 +12,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <stdbool.h>
+#include <assert.h>
 
 /**
  * Numbers of caperr
@@ -177,5 +179,55 @@ caperr_display_first(FILE* stream);
  */
 void
 caperr_display_last(FILE* stream);
+
+/****************
+* caperr macros *
+****************/
+
+#ifdef _CAP_DEBUG
+#  define WARN(...) { \
+	fprintf(stderr, "Warn: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
+    fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\n"); \
+	fflush(stderr); \
+  }
+#  define DIE(...) { \
+	fprintf(stderr, "Die: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
+    fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\n"); \
+	fflush(stderr); \
+	exit(1); \
+  }
+#else
+#  define WARN(...) {}
+#  define DIE(...) {}
+#endif
+
+#define CHECK(...) { \
+	fflush(stdout); \
+	fflush(stderr); \
+	fprintf(stderr, "Check: %s: %s: %d: ", __FILE__, __func__, __LINE__); \
+	fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\n"); \
+	fflush(stderr); \
+}
+
+/**
+ * Exit program with display error message
+ *
+ * @param[in] fmt string of message format
+ * @param[in] ... arguments of format
+ */
+void
+die(const char* fmt, ...);
+
+/**
+ * Display error message
+ *
+ * @param[in] fmt string of message format
+ * @param[in] ... arguments of format
+ */
+void
+warn(const char* fmt, ...);
 
 #endif
