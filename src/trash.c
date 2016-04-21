@@ -8,10 +8,9 @@ typedef enum {
 
 enum {
 	// Info
-	TRASH_INFO_NCOL_KEY = 64,
 	TRASH_INFO_NCOL_FNAME = 128,
 	TRASH_INFO_NCOL_OLDDIR = 255,
-	TRASH_INFO_NRECORD = TRASH_INFO_NCOL_KEY + TRASH_INFO_NCOL_FNAME + TRASH_INFO_NCOL_OLDDIR,
+	TRASH_INFO_NRECORD = TRASH_INFO_NCOL_FNAME + TRASH_INFO_NCOL_OLDDIR,
 
 	// History
 	TRASH_HISTORY_NCOL_TYPE = 8,
@@ -189,25 +188,14 @@ cmd_infofile_append_newrecord(FILE* finfo, const char* oldpath, const char* newp
 	// Columns
 	char cpnewpath[FILE_NPATH];
 	char cpoldpath[FILE_NPATH];
-	const char* fname = file_basename(cpnewpath, sizeof cpnewpath, newpath); // Key of record
+	const char* newfname = file_basename(cpnewpath, sizeof cpnewpath, newpath); // Key of record
 	const char* olddir = file_dirname(cpoldpath, sizeof cpoldpath, oldpath); // Old directory path
-
-	// Create key from oldpath
-	char key[TRASH_INFO_NCOL_KEY];
-	if (!hash_sha2(key, sizeof key, oldpath)) {
-		return caperr(PROGNAME, CAPERR_MAKE, "hash value from \"%s\"", oldpath);
-	}
-	// CHECK("oldpath[%s] -> key[%s]", oldpath, key);
 
 	// Append columns of record
 	fseek(finfo, 0L, SEEK_END);
 
-	if (fpushfmt(finfo, TRASH_INFO_NCOL_KEY, "%s", key) <= 0) {
-		return caperr(PROGNAME, CAPERR_WRITE, "key \"%s\"", key);
-	}
-
-	if (fpushfmt(finfo, TRASH_INFO_NCOL_FNAME, "%s", fname) <= 0) {
-		return caperr(PROGNAME, CAPERR_WRITE, "fname \"%s\"", fname);
+	if (fpushfmt(finfo, TRASH_INFO_NCOL_FNAME, "%s", newfname) <= 0) {
+		return caperr(PROGNAME, CAPERR_WRITE, "newfname \"%s\"", newfname);
 	}
 
 	if (fpushfmt(finfo, TRASH_INFO_NCOL_OLDDIR, "%s", olddir) <= 0) {
@@ -225,31 +213,29 @@ cmd_update_info(FILE* finfo, const char* oldpath, const char* newpath) {
 
 	int ret = 0;
 
-	char oldkey[TRASH_INFO_NCOL_KEY];
-	if (!hash_sha2(oldkey, sizeof oldkey, oldpath)) {
-		return caperr(PROGNAME, CAPERR_MAKE, "hash value from \"%s\"", oldpath);
-	}
+	char fname[TRASH_INFO_NCOL_FNAME];
+	file_basename(fname, sizeof fname, newpath);
 
 	// Search record by key
 	fseek(finfo, 0L, SEEK_SET);
 
 	for (; !feof(finfo); ) {
 		// Read key column of record
-		char reckey[TRASH_INFO_NCOL_KEY];
-		int len = fread(reckey, sizeof(*reckey), TRASH_INFO_NCOL_KEY, finfo);
+		char recfname[TRASH_INFO_NCOL_FNAME];
+		int len = fread(recfname, sizeof(*recfname), TRASH_INFO_NCOL_FNAME, finfo);
 		if (len <= 0) {
 			break;
 		}
 
 		// Compare key
-		reckey[len] = '\0';
+		recfname[len] = '\0';
 
-		if (strcmp(reckey, oldkey) == 0) {
+		if (strcmp(recfname, fname) == 0) {
 			// Found key. Impossible!
 			return caperr(PROGNAME, CAPERR_ERROR, "Invalid key of \"%s\"", oldpath);
 		} else {
 			// Not found key. Skip current record
-			fseek(finfo, TRASH_INFO_NRECORD-TRASH_INFO_NCOL_KEY, SEEK_CUR);
+			fseek(finfo, TRASH_INFO_NRECORD-TRASH_INFO_NCOL_FNAME, SEEK_CUR);
 		}
 	}
 
@@ -463,7 +449,96 @@ cmd_trash_files(const Command* self) {
 }
 
 static int
-cmd_history(Command* self) {
+cmd_test(char* dst, size_t dstsize, const char* fname) {
+	FILE* finfo = cmd_open_info();
+	if (!finfo) {
+		return caperr(PROGNAME, CAPERR_OPEN, "info");
+	}
+
+	snprintf(dst, dstsize, "unknown location");
+
+	char olddir[TRASH_INFO_NCOL_OLDDIR];
+
+	for (; !feof(finfo); ) {
+		char cfname[TRASH_INFO_NCOL_FNAME];
+		int len = fread(cfname, sizeof(*cfname), TRASH_INFO_NCOL_FNAME, finfo);
+		if (len <= 0) {
+			break;
+		}
+
+		cfname[len] = '\0';
+
+		if (strcmp(cfname, fname) == 0) {
+			int len = fread(olddir, sizeof(*olddir), TRASH_INFO_NCOL_OLDDIR, finfo);
+			if (len <= 0) {
+				file_close(finfo);
+				return caperr(PROGNAME, CAPERR_READ, "old directory path");
+			}
+
+			olddir[len] = '\0';
+
+			if (dstsize < strlen(olddir)+1) {
+				return caperr(PROGNAME, CAPERR_ERROR, "Need more capacity of buffer");
+			}
+
+			memmove(dst, olddir, strlen(olddir)+1);
+			goto done;
+
+		} else {
+			fseek(finfo, TRASH_INFO_NRECORD-TRASH_INFO_NCOL_FNAME, SEEK_CUR);
+		}
+	}
+
+done:
+	if (file_close(finfo) != 0) {
+		return caperr(PROGNAME, CAPERR_CLOSE, "info");
+	}
+
+	return 0;
+}
+
+static int
+cmd_trashed(void) {
+	Config* config = config_instance();
+	if (!config) {
+		return caperr(PROGNAME, CAPERR_CONSTRUCT, "config");
+	}
+
+	const char* dirpath = config_dirpath(config, "trash");
+	if (!dirpath) {
+		return caperr(PROGNAME, CAPERR_MAKE, "trash directory path");
+	}
+
+	Directory* dir = dir_open(dirpath);
+	if (!dir) {
+		return caperr(PROGNAME, CAPERR_OPEN, "directory \"%s\"", dirpath);
+	}
+
+	for (DirectoryNode* n; (n = dir_read_node(dir)); ){
+		const char* name = dirnode_name(n);
+		if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
+			continue;
+		}
+
+		char olddir[TRASH_INFO_NCOL_OLDDIR];
+		if (cmd_test(olddir, sizeof olddir, name) != 0) {
+			dir_close(dir);
+			return caperr(PROGNAME, CAPERR_MAKE, "old directory path");
+		}
+
+		term_printf("%s from %s\n", name, olddir);
+		dirnode_delete(n);
+	}
+
+	if (dir_close(dir) != 0) {
+		return caperr(PROGNAME, CAPERR_CLOSE, "directory \"%s\"", dirpath);
+	}
+
+	return 0;
+}
+
+static int
+cmd_history(void) {
 	StringArray* history = cmd_make_history_array();
 	if (!history) {
 		return caperr(PROGNAME, CAPERR_CONSTRUCT, "history array");
@@ -471,7 +546,7 @@ cmd_history(Command* self) {
 
 	for (size_t i = 0; i < strarray_length(history); ++i) {
 		CsvLine* cl = csvline_new_parse_line(strarray_get_const(history, i), ',');
-		if (!cl) {
+		if (!cl || csvline_length(cl) < 2) {
 			strarray_delete(history);
 			return caperr(PROGNAME, CAPERR_PARSE, "history record at %d", i);
 		}
@@ -498,17 +573,8 @@ cmd_history(Command* self) {
 
 static int
 cmd_undo(Command* self) {
-	const Config* config = config_instance();
-	const char* relname = self->argv[self->optind];
-	char oldpath[FILE_NPATH];
-
-	config_path_with_cd(config, oldpath, sizeof oldpath, relname);
-
-	char oldkey[TRASH_INFO_NCOL_KEY];
-	if (!hash_sha2(oldkey, sizeof oldkey, oldpath)) {
-		return caperr(PROGNAME, CAPERR_MAKE, "hash value from \"%s\"", oldpath);
-	}
-
+	term_eprintf("undo\n");
+	return 0;
 	return 0;
 }
 
@@ -531,8 +597,12 @@ cmd_run(Command* self) {
 		return 0;
 	}
 
-	if (self->opt_is_history || self->argc == 1) {
-		return cmd_history(self);
+	if (self->argc == 1) {
+		return cmd_trashed();
+	}
+
+	if (self->opt_is_history) {
+		return cmd_history();
 	}
 
 	if (self->opt_is_undo) {
@@ -564,6 +634,10 @@ trash_usage(void) {
         "The options are:\n"
         "\n"
         "\t-h, --help display usage\n"
+        "\t-H, --history display history\n"
+        "\t-u, --undo undo\n"
+        "\t-r, --redo redo\n"
+        "\t-c, --clear clear trash\n"
         "\n"
     , PROGNAME);
 }
