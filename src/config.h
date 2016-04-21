@@ -8,12 +8,6 @@
 #include "file.h"
 #include "json.h"
 #include "hash.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-#include <stdbool.h>
-#include <pthread.h>
 
 typedef struct Config Config;
 

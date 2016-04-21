@@ -6,18 +6,18 @@ die(const char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
 
-	term_flush();
+	fflush(stdout);
 
 	vfprintf(stderr, fmt, args);
 
 	if (fmtlen && fmt[fmtlen-1] != '.') {
-		term_eprintf(". ");
+		fprintf(stderr, ". ");
 	}
 	if (errno != 0) {
-		term_eprintf("%s.", strerror(errno));
+		fprintf(stderr, "%s.", strerror(errno));
 	}
 
-	term_eprintf("\n");
+	fprintf(stderr, "\n");
 
 	va_end(args);
 
@@ -35,13 +35,13 @@ warn(const char* fmt, ...) {
 	vfprintf(stderr, fmt, args);
 
 	if (fmtlen && fmt[fmtlen-1] != '.') {
-		term_eprintf(". ");
+		fprintf(stderr, ". ");
 	}
 	if (errno != 0) {
-		term_eprintf("%s.", strerror(errno));
+		fprintf(stderr, "%s.", strerror(errno));
 	}
 
-	term_eprintf("\n");
+	fprintf(stderr, "\n");
 
 	va_end(args);
 }

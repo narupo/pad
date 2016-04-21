@@ -206,8 +206,8 @@ command_read_from_stream(Command* self, FILE* fin, const char* fname) {
 		if (type == CapColBrief) {
 			// Save
 			const char* val = capcol_value_const(caprow_front(row));
-			strarray_append_string(self->briefs, val);
-			strarray_append_string(self->fnames, fname);
+			strarray_push_back(self->briefs, val);
+			strarray_push_back(self->fnames, fname);
 
 			if (!self->opt_is_disp_all) {
 				// This brief only. Break from loop

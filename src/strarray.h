@@ -81,9 +81,7 @@ strarray_capacity(StringArray const* self);
  * @param[in] self
  * @param[in] index index of array
  *
- * @return success to pointer to string of element by index
- * @return failed to pointer to NULL. case by index out of range
- */
+ * @return success to pointer to string of element by index * @return failed to pointer to NULL. case by index out of range */
 const char*
 strarray_get_const(StringArray const* self, size_t index);
 
@@ -126,7 +124,10 @@ strarray_resize(StringArray* self, size_t capacity);
  * @return failed to pointer to NULL
  */
 StringArray*
-strarray_append_string(StringArray* self, const char* value);
+strarray_push_back(StringArray* self, const char* value);
+
+char*
+strarray_pop_back(StringArray* self);
 
 /**
  * Sort elements

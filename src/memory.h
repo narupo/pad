@@ -3,7 +3,6 @@
 
 #include "define.h"
 #include "util.h"
-#include <stdlib.h>
 
 /**
  * Wrapper of free(3)

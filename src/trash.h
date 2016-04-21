@@ -12,6 +12,7 @@
 #include "csvline.h"
 #include "string.h"
 #include "strarray.h"
+#include "memory.h"
 
 void
 trash_usage(void);

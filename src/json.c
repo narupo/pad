@@ -206,7 +206,7 @@ jsonobj_prase_list(JsonObject* self, Stream* s) {
 			break;
 		case 2: // Token with quote
 			if (is_quote(ch)) {
-				strarray_append_string(self->list, str_get_const(tok));
+				strarray_push_back(self->list, str_get_const(tok));
 				m = 4;
 			} else {
 				str_push_back(tok, ch);
@@ -214,7 +214,7 @@ jsonobj_prase_list(JsonObject* self, Stream* s) {
 			break;
 		case 3: // Token with numbers
 			if (!isdigit(ch)) {
-				strarray_append_string(self->list, str_get_const(tok));
+				strarray_push_back(self->list, str_get_const(tok));
 				m = 4;
 			} else {
 				str_push_back(tok, ch);
