@@ -1,6 +1,6 @@
 #include "deploy.h"
 
-static char const PROGNAME[] = "cap deploy";
+static const char PROGNAME[] = "cap deploy";
 
 void
 deploy_usage(void) {
@@ -19,7 +19,7 @@ deploy_usage(void) {
 }
 
 int
-deploy_run(char const* dirname) {
+deploy_run(const char* dirname) {
 	// Load config
 	Config* config = config_instance();
 	if (!config) {
@@ -51,7 +51,7 @@ deploy_run(char const* dirname) {
 	}
 	
 	for (DirectoryNode* dirnode; (dirnode = dir_read_node(dir)); dirnode_delete(dirnode)) {
-		char const* nodename = dirnode_name(dirnode);
+		const char* nodename = dirnode_name(dirnode);
 
 		// Skip "." and ".."
 		if (strncmp(nodename, ".", 1) == 0 || strncmp(nodename, "..", 2) == 0) {

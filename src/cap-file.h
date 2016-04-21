@@ -58,7 +58,7 @@ CapCol*
 capcol_new(void);
 
 CapCol*
-capcol_new_from_str(char const* value);
+capcol_new_from_str(const char* value);
 
 /*****************
 * CapCol display *
@@ -71,7 +71,7 @@ capcol_display(CapCol const* self);
 * CapCol getter *
 ****************/
 
-char const*
+const char*
 capcol_value_const(CapCol const* self); 
 
 CapCol*
@@ -97,13 +97,13 @@ void
 capcol_set_type(CapCol* self, CapColType type); 
 
 void
-capcol_set_value(CapCol* self, char const* value);
+capcol_set_value(CapCol* self, const char* value);
 
 void
-capcol_set_value_copy(CapCol* self, char const* value);
+capcol_set_value_copy(CapCol* self, const char* value);
 
 void
-capcol_push_value_copy(CapCol* self, char const* value);
+capcol_push_value_copy(CapCol* self, const char* value);
 
 /*************
 * CapColList *
@@ -145,10 +145,10 @@ void
 capcollist_remove(CapColList* self, CapCol* node); 
 
 // CapCol*
-// capcollist_push_back(CapColList* self, char const* value); 
+// capcollist_push_back(CapColList* self, const char* value); 
 
 // CapCol*
-// capcollist_push_front(CapColList* self, char const* value); 
+// capcollist_push_front(CapColList* self, const char* value); 
 
 // CapCol*
 // capcollist_pop_back(CapColList* self); 
@@ -163,26 +163,26 @@ void
 capcollist_move_to_back(CapColList* self, CapCol* node); 
 
 // CapCol*
-// capcollist_insert_after(CapColList* self, char const* value, CapCol* mark); 
+// capcollist_insert_after(CapColList* self, const char* value, CapCol* mark); 
 
 // CapCol*
-// capcollist_insert_before(CapColList* self, char const* value, CapCol* mark); 
+// capcollist_insert_before(CapColList* self, const char* value, CapCol* mark); 
 
 /***********************
 * CapColList algorithm *
 ***********************/
 
 // CapCol*
-// capcollist_find_front(CapColList* self, char const* value); 
+// capcollist_find_front(CapColList* self, const char* value); 
 
 // CapCol const*
-// capcollist_find_front_const(CapColList const* self, char const* value); 
+// capcollist_find_front_const(CapColList const* self, const char* value); 
 
 // CapCol*
-// capcollist_find_back(CapColList* self, char const* value); 
+// capcollist_find_back(CapColList* self, const char* value); 
 
 // CapCol const*
-// capcollist_find_back_const(CapColList const* self, char const* value); 
+// capcollist_find_back_const(CapColList const* self, const char* value); 
 
 
 

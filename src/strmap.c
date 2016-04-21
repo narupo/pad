@@ -31,7 +31,7 @@ if (self) {
 }
 
 StringHashMapNode*
-strmapnode_new_copy(char const* key, StringHashMap_const_type value) {
+strmapnode_new_copy(const char* key, StringHashMap_const_type value) {
 	StringHashMapNode* self = (StringHashMapNode*) calloc(1, sizeof(StringHashMapNode));
 	if (!self) {
 		perror("Failed to construct StringHashMap");
@@ -44,12 +44,12 @@ strmapnode_new_copy(char const* key, StringHashMap_const_type value) {
 	return self;
 }
 
-char const*
+const char*
 strmapnode_key_const(StringHashMapNode const* self) {
 	return self->key;
 }
 
-char const*
+const char*
 strmapnode_value_const(StringHashMapNode const* self) {
 	return self->value;
 }
@@ -152,7 +152,7 @@ strmap_new(void) {
 *********/
 
 StringHashMap_type
-strmap_get(StringHashMap* self, char const* key) {
+strmap_get(StringHashMap* self, const char* key) {
 	static StringHashMap_type dummy = "";
 
 	long i = hash_long(key);
@@ -163,7 +163,7 @@ strmap_get(StringHashMap* self, char const* key) {
 }
 
 StringHashMap_const_type
-strmap_get_const(StringHashMap const* self, char const* key) {
+strmap_get_const(StringHashMap const* self, const char* key) {
 	static StringHashMap_const_type dummy = "";
 
 	long i = hash_long(key);
@@ -178,7 +178,7 @@ strmap_get_const(StringHashMap const* self, char const* key) {
 *********/
 
 bool
-strmap_set_copy(StringHashMap* self, char const* key, StringHashMap_const_type val) {
+strmap_set_copy(StringHashMap* self, const char* key, StringHashMap_const_type val) {
 	StringHashMapNode* setnode = strmapnode_new_copy(key, val);
 	if (!setnode) {
 		WARN("Construct StringHashMapNode");

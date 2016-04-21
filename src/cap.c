@@ -25,13 +25,13 @@ SOFTWARE.
 
 typedef int (*Command)(int, char**);
 
-static char const PROGNAME[] = "cap";
+static const char PROGNAME[] = "cap";
 
 static Command
-find_command(char const* name) {
+find_command(const char* name) {
 	// Command table
 	static const struct CommandRecord {
-		char const* name;
+		const char* name;
 		Command command;
 	} table[] = {
 		{"ls", ls_main},
@@ -69,7 +69,7 @@ find_command(char const* name) {
 static int
 run_alias(int argc, char** argv) {
 	int ret = 0;
-	char const* aliasname = argv[0];
+	const char* aliasname = argv[0];
 
 	// Skip alias name
 	++argv;
@@ -139,7 +139,7 @@ main(int argc, char* argv[]) {
 	argv++;
 
 	// Get command by name
-	char const* cmdname = argv[0];
+	const char* cmdname = argv[0];
 	Command command = find_command(cmdname);
 
 	if (!command) {

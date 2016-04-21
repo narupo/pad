@@ -39,27 +39,27 @@ term_eputc(int ch);
  * Wrapper of fprintf(stdout, fmt, ...)
  */
 int
-term_printf(char const* fmt, ...);
+term_printf(const char* fmt, ...);
 
 /**
  * Wrapper of fprintf(stderr, fmt, ...)
  */
 int
-term_eprintf(char const* fmt, ...);
+term_eprintf(const char* fmt, ...);
 
 /**
  * Wrapper of fprintf(stdout, fmt, ...)
  * And print newline
  */
 int
-term_putsf(char const* fmt, ...);
+term_putsf(const char* fmt, ...);
 
 /**
  * Wrapper of fprintf(stderr, fmt, ...)
  * And print newline
  */
 int
-term_eputsf(char const* fmt, ...);
+term_eputsf(const char* fmt, ...);
 
 /********************
 * term color family *
@@ -99,7 +99,7 @@ typedef enum {
  * @return     failed to under of zero
  */
 int
-term_cfprintf(FILE* fout, TermColor fg, TermColor bg, char const* fmt, ...);
+term_cfprintf(FILE* fout, TermColor fg, TermColor bg, const char* fmt, ...);
 
 /**
  * Wrapper of fprintf(3) with colors
@@ -115,7 +115,7 @@ term_cfprintf(FILE* fout, TermColor fg, TermColor bg, char const* fmt, ...);
  * @return     failed to under of zero
  */
 int
-term_acfprintf(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...);
+term_acfprintf(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, const char* fmt, ...);
 
 /**
  * Wrapper of fprintf(stdout) with attribute and colors
@@ -129,7 +129,7 @@ term_acfprintf(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char const
  * @return
  */
 int
-term_acprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...);
+term_acprintf(TermAttr attr, TermColor fg, TermColor bg, const char* fmt, ...);
 
 /**
  * Wrapper of fprintf(stdout) with colors
@@ -142,7 +142,7 @@ term_acprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...);
  * @return
  */
 int
-term_cprintf(TermColor fg, TermColor bg, char const* fmt, ...);
+term_cprintf(TermColor fg, TermColor bg, const char* fmt, ...);
 
 /**
  * Wrapper of fprintf(stderr) with attribute and colors
@@ -156,7 +156,7 @@ term_cprintf(TermColor fg, TermColor bg, char const* fmt, ...);
  * @return
  */
 int
-term_aceprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...);
+term_aceprintf(TermAttr attr, TermColor fg, TermColor bg, const char* fmt, ...);
 
 /**
  * Wrapper of fprintf(stderr) with colors
@@ -169,6 +169,6 @@ term_aceprintf(TermAttr attr, TermColor fg, TermColor bg, char const* fmt, ...);
  * @return
  */
 int
-term_ceprintf(TermColor fg, TermColor bg, char const* fmt, ...);
+term_ceprintf(TermColor fg, TermColor bg, const char* fmt, ...);
 
 #endif

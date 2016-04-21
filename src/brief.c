@@ -12,7 +12,7 @@ struct Command {
 	bool opt_is_disp_all; // option for display-all (enable to true)
 };
 
-static char const PROGNAME[] = "cap brief";
+static const char PROGNAME[] = "cap brief";
 
 static bool
 command_parse_options(Command* self);
@@ -143,7 +143,7 @@ command_parse_options(Command* self) {
  * @return failed to NULL
  */
 static FILE*
-command_open_stream(Command const* self, char const* fname) {
+command_open_stream(const Command* self, const char* fname) {
 	// Ready
 	Config* config = config_instance();
 	if (!config) {
@@ -181,7 +181,7 @@ command_open_stream(Command const* self, char const* fname) {
  * @return failed to number of caperr
  */
 static int
-command_read_from_stream(Command* self, FILE* fin, char const* fname) {
+command_read_from_stream(Command* self, FILE* fin, const char* fname) {
 	// Ready
 	String* buf = str_new();
 	if (!buf) {
@@ -196,7 +196,7 @@ command_read_from_stream(Command* self, FILE* fin, char const* fname) {
 
 	// Read briefs in file
 	for (; io_getline_str(buf, fin); ) {
-		char const* line = str_get_const(buf);
+		const char* line = str_get_const(buf);
 		CapRow* row = capparser_parse_line(parser, line);
 		if (!row) {
 			continue;
@@ -205,7 +205,7 @@ command_read_from_stream(Command* self, FILE* fin, char const* fname) {
 		CapColType type = caprow_front_type(row);
 		if (type == CapColBrief) {
 			// Save
-			char const* val = capcol_value_const(caprow_front(row));
+			const char* val = capcol_value_const(caprow_front(row));
 			strarray_append_string(self->briefs, val);
 			strarray_append_string(self->fnames, fname);
 
@@ -250,7 +250,7 @@ command_run(Command* self) {
 
 	} else {
 		for (int i = self->optind; i < self->argc; ++i) {
-			char const* fname = self->argv[i];
+			const char* fname = self->argv[i];
 			size_t fnamelen = strlen(fname);
 			maxfnamelen = (fnamelen > maxfnamelen ? fnamelen : maxfnamelen);
 
@@ -267,11 +267,11 @@ command_run(Command* self) {
 	}
 
 	// Display
-	char const* prevfname = NULL;
+	const char* prevfname = NULL;
 
 	for (int i = 0; i < strarray_length(self->fnames); ++i) {
-		char const* fname = strarray_get_const(self->fnames, i);
-		char const* brief = strarray_get_const(self->briefs, i);
+		const char* fname = strarray_get_const(self->fnames, i);
+		const char* brief = strarray_get_const(self->briefs, i);
 		size_t brieflen = strlen(brief);
 		size_t fnamelen = strlen(fname);
 

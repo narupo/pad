@@ -62,7 +62,7 @@ socket_close(Socket* self);
  * @return pointer to dynamic allocate memory of Socket
  */
 Socket* 
-socket_open(char const* src, char const* mode);
+socket_open(const char* src, const char* mode);
 
 /**
  * Get host of C string by socket
@@ -71,7 +71,7 @@ socket_open(char const* src, char const* mode);
  *
  * @return pointer to memory of C string
  */
-char const*
+const char*
 socket_host(Socket const* self);
 
 /**
@@ -81,7 +81,7 @@ socket_host(Socket const* self);
  *
  * @return pointer to memory of C string
  */
-char const*
+const char*
 socket_port(Socket const* self);
 
 /**
@@ -120,7 +120,7 @@ socket_recv_string(Socket* self, char* dst, size_t dstsz);
  * @return failed to number of under of zero
  */
 int 
-socket_send_string(Socket* self, char const* str);
+socket_send_string(Socket* self, const char* str);
 
 /**
  * Wrapper of send(2)
@@ -134,6 +134,6 @@ socket_send_string(Socket* self, char const* str);
  * @return failed to number of under of zero
  */
 int 
-socket_send_bytes(Socket* self, unsigned char const* bytes, size_t size);
+socket_send_bytes(Socket* self, unsigned const char* bytes, size_t size);
 
 #endif

@@ -64,7 +64,7 @@ treenode_new_from_key(int key) {
 *******************/
 
 void
-treenode_display(TreeNode* self, FILE* stream, int depth, int pad, char const* head) {
+treenode_display(TreeNode* self, FILE* stream, int depth, int pad, const char* head) {
 	if (!self) {
 		return;
 	}

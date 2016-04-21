@@ -7,12 +7,12 @@ enum {
 };
 
 struct Command {
-	char const* name;
+	const char* name;
 	int argc;
 	char** argv;
 };
 
-static char const PROGNAME[] = "cap edit";
+static const char PROGNAME[] = "cap edit";
 
 static void
 command_delete(Command* self) {
@@ -37,7 +37,7 @@ command_new(int argc, char* argv[]) {
 }
 
 static char**
-make_solve_argv(Config const* config, int argc, char** argv) {
+make_solve_argv(const Config* config, int argc, char** argv) {
 	char** solvargv = (char**) calloc(argc + 1, sizeof(char*));  // +1 for final nul
 	if (!solvargv) {
 		caperr(PROGNAME, CAPERR_CONSTRUCT, "solve argv");
@@ -53,7 +53,7 @@ make_solve_argv(Config const* config, int argc, char** argv) {
 
 	// Start offset of 1
 	for (int i = 1; i < argc; ++i) {
-		char const* arg = argv[i];
+		const char* arg = argv[i];
 
 		if (arg[0] == '-') {
 			// Is option
@@ -80,7 +80,7 @@ fail:
 }
 
 static int
-run_command(Command* self, Config const* config) {
+run_command(Command* self, const Config* config) {
 	int argc = self->argc;
 	char** argv = make_solve_argv(config, argc, self->argv);
 	if (!argv) {
@@ -88,7 +88,7 @@ run_command(Command* self, Config const* config) {
 	}
 
 	// Get editor path
-	char const* editpath = config_path(config, "editor");
+	const char* editpath = config_path(config, "editor");
 	if (!editpath) {
 		editpath = "/usr/bin/vi";  // Default editor path
 	}

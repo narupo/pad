@@ -1,7 +1,7 @@
 #include "strarray.h"
 
 typedef char* StringArray_type;
-typedef char const* StringArray_type_const;
+typedef const char* StringArray_type_const;
 #define StringArray_nullptr (NULL)
 
 enum {
@@ -109,7 +109,7 @@ strarray_capacity(StringArray const* self) {
 	return self->capacity;
 }
 
-char const*
+const char*
 strarray_get_const(StringArray const* self, size_t index) {
 	if (index >= self->capacity) {
 		WARN("Index out of range")
@@ -124,7 +124,7 @@ strarray_get_const(StringArray const* self, size_t index) {
 *********/
 
 StringArray*
-strarray_set_copy(StringArray* self, size_t index, char const* value) {
+strarray_set_copy(StringArray* self, size_t index, const char* value) {
 	if (index >= self->capacity) {
 		WARN("Index out of range")
 		return NULL;
@@ -149,7 +149,7 @@ strarray_resize(StringArray* self, size_t capacity) {
 }
 
 StringArray*
-strarray_append_string(StringArray* self, char const* value) {
+strarray_append_string(StringArray* self, const char* value) {
 	if (self->length >= self->capacity) {
 		if (!strarray_resize(self, self->capacity * 2)) {
 			WARN("Failed to resize")

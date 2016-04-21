@@ -8,7 +8,7 @@ struct Command {
 	char** argv;
 };
 
-static char const PROGNAME[] = "cap cd";
+static const char PROGNAME[] = "cap cd";
 
 static bool
 command_parse_options(Command* self);
@@ -88,7 +88,7 @@ command_parse_options(Command* self) {
 
 static int
 command_cd_home(Command* self, Config* config) {
-	char const* home = config_path(config, "home");
+	const char* home = config_path(config, "home");
 	config_set_path(config, "cd", home);
 	return 0;
 }
@@ -107,8 +107,8 @@ command_run(Command* self) {
 	char tmp[FILE_NPATH];
 	char newcd[FILE_NPATH];
 
-	char const* curcd = config_path(config, "cd");
-	char const* relpath = self->argv[self->optind];
+	const char* curcd = config_path(config, "cd");
+	const char* relpath = self->argv[self->optind];
 
 	snprintf(tmp, sizeof tmp, "%s/%s", curcd, relpath);
 	file_solve_path(newcd, sizeof newcd, tmp);

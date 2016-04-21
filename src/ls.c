@@ -22,7 +22,7 @@ struct Command {
 	bool opt_is_tags;
 };
 
-static char const PROGNAME[] = "cap ls";
+static const char PROGNAME[] = "cap ls";
 
 bool
 command_parse_options(Command* self);
@@ -130,7 +130,7 @@ command_parse_options(Command* self) {
 }
 
 static int
-command_display_brief_from_stream(Command const* self, FILE* fin) {
+command_display_brief_from_stream(const Command* self, FILE* fin) {
 	// Read file for check of @cap command line
 	CapParser* parser = capparser_new();
 	if (!parser) {
@@ -152,7 +152,7 @@ command_display_brief_from_stream(Command const* self, FILE* fin) {
 
 		// Display brief
 		if (capcol_type(front) == CapColBrief) {
-			char const* brief = capcol_value_const(front);
+			const char* brief = capcol_value_const(front);
 			if (brief) {
 				term_printf("%s", brief);
 				if (brief[strlen(brief)-1] != '.') {
@@ -181,7 +181,7 @@ command_display_brief_from_stream(Command const* self, FILE* fin) {
  * @return     failed to number of caperr @see "caperr.h"
  */
 static int
-command_walkdir(Command* self, char const* head, char const* tail) {
+command_walkdir(Command* self, const char* head, const char* tail) {
 	// Result value for return
 	int ret = 0;
 
@@ -209,7 +209,7 @@ command_walkdir(Command* self, char const* head, char const* tail) {
 	// Save file list on walk file-system
 	for (DirectoryNode* dirnode; (dirnode = dir_read_node(dir)); dirnode_delete(dirnode)) {
 		// Read directory
-		char const* nodename = dirnode_name(dirnode);
+		const char* nodename = dirnode_name(dirnode);
 
 		// Skip "." and ".." file
 		if (strcmp(nodename, ".") == 0 || strcmp(nodename, "..") == 0) {
@@ -250,7 +250,7 @@ done:
 }
 
 static bool
-command_has_tags(Command const* self, FILE* fin) {
+command_has_tags(const Command* self, FILE* fin) {
 	CapParser* parser = capparser_new();
 	if (!parser) {
 		caperr(PROGNAME, CAPERR_CONSTRUCT, "capparser");
@@ -269,7 +269,7 @@ command_has_tags(Command const* self, FILE* fin) {
 
 		for (CapCol const* col = capcollist_front_const(cols); col; col = capcol_next_const(col)) {
 			if (capcol_type(col) == CapColTag) {
-				char const* tag = capcol_value_const(col);
+				const char* tag = capcol_value_const(col);
 				for (int i = 0; i < csvline_length(self->tags); ++i) {
 					if (strcasecmp(tag, csvline_get_const(self->tags, i)) == 0) {
 						// Found tag in file
@@ -294,14 +294,14 @@ found:
 }
 
 static int
-command_display(Command const* self) {
+command_display(const Command* self) {
 	// Sort
 	strarray_sort(self->names);
 
 	// Display
 	for (int i = 0; i < strarray_length(self->names); ++i) {
 		// Get name
-		char const* name = strarray_get_const(self->names, i);
+		const char* name = strarray_get_const(self->names, i);
 		int namelen = strlen(name);
 
 		// Get full path from name
@@ -364,8 +364,8 @@ command_run(Command* self) {
 	}
 
 	// Get current directory path and tail path for walkdir
-	char const* head = config_path(self->config, "cd");
-	char const* tail = NULL;
+	const char* head = config_path(self->config, "cd");
+	const char* tail = NULL;
 	if (self->argc >= self->optind) {
 		tail = self->argv[self->optind];
 	}

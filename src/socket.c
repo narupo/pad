@@ -13,7 +13,7 @@ typedef enum {
 	SocketModeAcceptClient,
 } SocketMode;
 
-static char const SOCKET_DEFAULT_PORT[] = "8000";
+static const char SOCKET_DEFAULT_PORT[] = "8000";
 
 struct Socket {
 	char host[SOCKET_NHOST];
@@ -50,7 +50,7 @@ socket_wsa_init(void) {
 *******************/
 
 static SocketMode
-socket_string_to_mode(char const* mode) {
+socket_string_to_mode(const char* mode) {
 	if (strcasecmp(mode, "tcp-server") == 0) {
 		return SocketModeTcpServer;
 	} else if (strcasecmp(mode, "tcp-client") == 0) {
@@ -191,13 +191,13 @@ socket_init_tcp_client(Socket* self) {
 }
 
 static Socket*
-socket_parse_open_source(Socket* self, char const* src) {
+socket_parse_open_source(Socket* self, const char* src) {
 	int m = 0;
 	char* dst = self->host;
 	int ndst = sizeof(self->host)-1;
 	int di = 0;
 
-	for (char const* sp = src; *sp; ++sp) {
+	for (const char* sp = src; *sp; ++sp) {
 		switch (m) {
 		case 0:
 			if (*sp == ':') {
@@ -235,7 +235,7 @@ socket_parse_open_source(Socket* self, char const* src) {
 }
 
 Socket*
-socket_open(char const* src, char const* mode) {
+socket_open(const char* src, const char* mode) {
 #if defined(_CAP_WINDOWS)
 	if (pthread_once(&socket_wsa_once, socket_wsa_init) != 0) {
 		WARN("Failed to pthread once");
@@ -277,12 +277,12 @@ socket_open(char const* src, char const* mode) {
 	return NULL;
 }
 
-char const*
+const char*
 socket_host(Socket const* self) {
 	return self->host;
 }
 
-char const*
+const char*
 socket_port(Socket const* self) {
 	return self->port;
 }
@@ -332,7 +332,7 @@ socket_recv_string(Socket* self, char* dst, size_t dstsz) {
 }
 
 int
-socket_send_string(Socket* self, char const* str) {
+socket_send_string(Socket* self, const char* str) {
 	int ret = 0;
 	size_t len = strlen(str);
 
@@ -346,11 +346,11 @@ socket_send_string(Socket* self, char const* str) {
 }
 
 int 
-socket_send_bytes(Socket* self, unsigned char const* bytes, size_t size) {
+socket_send_bytes(Socket* self, unsigned const char* bytes, size_t size) {
 	int ret = 0;
 
 #if defined(_CAP_WINDOWS)
-	ret = send(self->socket, (char const*) bytes, size, 0);
+	ret = send(self->socket, (const char*) bytes, size, 0);
 #else
 	ret = send(self->socket, bytes, size, 0);
 #endif

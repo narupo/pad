@@ -15,7 +15,7 @@ struct Command {
 	char** argv;
 };
 
-static char const PROGNAME[] = "cap run";
+static const char PROGNAME[] = "cap run";
 
 /*****************
 * Delete and New *
@@ -43,9 +43,9 @@ command_new(int argc, char* argv[]) {
 }
 
 static int
-command_make_cmdline(Command const* self, Config const* config, char* dst, size_t dstsize, int argc, char* argv[]) {
+command_make_cmdline(const Command* self, const Config* config, char* dst, size_t dstsize, int argc, char* argv[]) {
 	// Get script name
-	char const* name = argv[0];
+	const char* name = argv[0];
 	if (!name) {
 		return caperr(PROGNAME, CAPERR_INVALID, "name \"%s\"", name);
 	}
@@ -91,7 +91,7 @@ command_make_cmdline(Command const* self, Config const* config, char* dst, size_
 *********/
 
 static int
-command_run_script(Command* self, Config const* config) {
+command_run_script(Command* self, const Config* config) {
 	// Get script name on cap
 	int argc = self->argc - 1;
 	char** argv = self->argv + 1;  // Skip command name of 'run'
@@ -157,7 +157,7 @@ run_usage(void) {
 }
 
 int
-run_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
+run_make(const Config* config, CapFile* dstfile, int argc, char* argv[]) {
 	// Construct
 	Command* self = command_new(argc, argv);
 	if (!self) {
@@ -191,7 +191,7 @@ run_make(Config const* config, CapFile* dstfile, int argc, char* argv[]) {
 	CapRowList* dstrows = capfile_rows(dstfile);
 
 	for (; io_getline_str(strbuf, pin); ) {
-		char const* line = str_get_const(strbuf);
+		const char* line = str_get_const(strbuf);
 		CapRow* row = capparser_parse_line(parser, line);
 		if (!row) {
 			continue;

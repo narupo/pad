@@ -5,9 +5,9 @@ typedef	int (*CapParserMode)(CapParser*);
 struct CapParser {
 	CapParserMode mode;
 	CapParserMode turnback;
-	char const* cur;
-	char const* beg;
-	char const* end;
+	const char* cur;
+	const char* beg;
+	const char* end;
 	String* buf;  // Temporary buffer for parse
 	CapColList* columns;  // Temporary columns for parse
 	bool is_debug;
@@ -18,7 +18,7 @@ enum {
 	CAPPARSER_PARSE_ERROR,
 };
 
-static char const PROGNAME[] = "cap atcap";
+static const char PROGNAME[] = "cap atcap";
 
 /************
 * CapParser *
@@ -42,7 +42,7 @@ static int capparser_mode_separate(CapParser* self);
 static int
 capparser_push_col(CapParser* self, CapColType type) {
 	// Push column to temp row
-	char const* str = str_get_const(self->buf);
+	const char* str = str_get_const(self->buf);
 	CapCol* col = capcol_new_from_str(str);
 	if (!col) {
 		return caperr(PROGNAME, CAPERR_CONSTRUCT, "CapCol");
@@ -58,7 +58,7 @@ capparser_push_col(CapParser* self, CapColType type) {
 }
 
 static void
-capparser_push_col_str(CapParser* self, char const* str, CapColType type) {
+capparser_push_col_str(CapParser* self, const char* str, CapColType type) {
 	// Push column to temp row
 	CapCol* col = capcol_new_from_str(str);
 	capcol_set_type(col, type);
@@ -96,7 +96,7 @@ capparser_remove_cols(CapParser* self, CapColType remtype) {
 }
 
 static void
-capparser_print_mode(CapParser const* self, char const* modename) {
+capparser_print_mode(const CapParser* self, const char* modename) {
 	if (self->is_debug) {
 		printf("%s: [%c]\n", modename, *self->cur);
 	}
@@ -155,7 +155,7 @@ capparser_mode_atcap(CapParser* self) {
 	capparser_print_mode(self, "atcap");
 
 	static const struct Identifier {
-		char const* name;
+		const char* name;
 		CapParserMode mode;
 
 	} identifiers[] = {
@@ -235,7 +235,7 @@ capparser_mode_tags(CapParser* self) {
 		}
 
 		for (int i = 0; i < csvline_length(tags); ++i) {
-			char const* tag = csvline_get_const(tags, i);
+			const char* tag = csvline_get_const(tags, i);
 			capparser_push_col_str(self, tag, CapColTag);
 		}
 		csvline_delete(tags);
@@ -413,7 +413,7 @@ capparser_new(void) {
 ********************/
 
 CapRow*
-capparser_parse_line(CapParser* self, char const* line) {
+capparser_parse_line(CapParser* self, const char* line) {
 	// Ready state for parse
 	self->mode = capparser_mode_first;
 	self->cur = line;
@@ -451,7 +451,7 @@ capparser_parse_line(CapParser* self, char const* line) {
 }
 
 CapRow*
-capparser_make_caprow(CapParser* self, char const* line, StringArray* braces) {
+capparser_make_caprow(CapParser* self, const char* line, StringArray* braces) {
 	CapRow* row = capparser_parse_line(self, line);
 	if (!row) {
 		return NULL;
@@ -481,7 +481,7 @@ capparser_make_caprow(CapParser* self, char const* line, StringArray* braces) {
 
 			case CapColCommand: {
 				// Copy
-				char const* val = capcol_value_const(col);
+				const char* val = capcol_value_const(col);
 				CapCol* prev = capcol_prev(col);
 				if (prev) {
 					capcol_push_value_copy(prev, val);
@@ -513,7 +513,7 @@ capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* braces
 			case CapColBrace: {
 				// Get index for replace
 				char numstr[10] = {0}; // String for number [0-9]
-				char const* val = capcol_value_const(col);
+				const char* val = capcol_value_const(col);
 				int i;
 
 				for (i = 0; i < NUMOF(numstr)-1 && val[i]; ++i) { 
@@ -527,7 +527,7 @@ capparser_convert_braces(CapParser* self, CapRow* row, StringArray const* braces
 				
 				// Find replace value
 				int index = atoi(numstr);
-				char const* rep = strarray_get_const(braces, index);
+				const char* rep = strarray_get_const(braces, index);
 
 				if (rep) {
 					// Found, to be replace
@@ -575,7 +575,7 @@ test_atcap_line(int argc, char* argv[]) {
 	Buffer* buf = str_new();
 
 	for (; str_getline(buf, fin); ) {
-		char const* line = str_get_const(buf);
+		const char* line = str_get_const(buf);
 		CapRow* row = capparser_make_caprow(capparser, line, braces);
 		if (!row) {
 			continue;

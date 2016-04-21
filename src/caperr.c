@@ -29,7 +29,7 @@ static pthread_mutex_t caperrs_mutex = PTHREAD_MUTEX_INITIALIZER;
 * caperr prototypes *
 ********************/
 
-char const*
+const char*
 caperr_to_string_unsafe(int number);
 
 /**************
@@ -72,12 +72,12 @@ caperrs_unlock(void) {
 static void
 caperrs_push(
 	int saveerrno,
-	char const* fname,
-	char const* funcname,
+	const char* fname,
+	const char* funcname,
 	int lineno,
-	char const* header,
+	const char* header,
 	int number,
-	char const* fmt,
+	const char* fmt,
 	va_list args) {
 
 #if !defined(_CAP_DEBUG)
@@ -139,12 +139,12 @@ done:
 
 int
 _caperr(
-	char const* fname,
-	char const* funcname,
+	const char* fname,
+	const char* funcname,
 	int lineno,
-	char const* header,
+	const char* header,
 	int number,
-	char const* fmt,
+	const char* fmt,
 	...) {
 
 	va_list args;
@@ -158,12 +158,12 @@ _caperr(
 
 int
 _caperr_printf(
-	char const* fname,
-	char const* funcname,
+	const char* fname,
+	const char* funcname,
 	int lineno,
-	char const* header,
+	const char* header,
 	int number,
-	char const* fmt,
+	const char* fmt,
 	...) {
 
 	if (!caperrs_lock()) {
@@ -175,7 +175,7 @@ _caperr_printf(
 	term_eprintf("%s: %s: %d: ", fname, funcname, lineno);
 #endif
 
-	char const* what = caperr_to_string_unsafe(number);
+	const char* what = caperr_to_string_unsafe(number);
 	term_eprintf("%s: %s ", header, what);
 
 	size_t fmtlen = strlen(fmt);
@@ -203,7 +203,7 @@ _caperr_printf(
 	return number;
 }
 
-char const*
+const char*
 caperr_to_string_unsafe(int number) {
 	switch (number) {
 		default: return "Unknown errors"; break;

@@ -25,7 +25,7 @@ struct CapColList {
 *******************/
 
 static inline int
-CapCol_compare(char const* lh, char const* rh) {
+CapCol_compare(const char* lh, const char* rh) {
 	return strcmp(lh, rh);
 }
 
@@ -55,7 +55,7 @@ capcol_new(void) {
 }
 
 CapCol*
-capcol_new_from_str(char const* value) {
+capcol_new_from_str(const char* value) {
 	CapCol* self = (CapCol*) calloc(1, sizeof(CapCol));
 	if (!self) {
 		perror("Failed to allocate memory");
@@ -80,7 +80,7 @@ capcol_display(CapCol const* self) {
 * CapCol getter *
 ****************/
 
-char const*
+const char*
 capcol_value_const(CapCol const* self) {
 	return str_get_const(self->value);
 }
@@ -120,20 +120,20 @@ capcol_set_type(CapCol* self, CapColType type) {
 }
 
 void
-capcol_set_value(CapCol* self, char const* value) {
+capcol_set_value(CapCol* self, const char* value) {
 	str_clear(self->value);
 	str_append_string(self->value, value);
 }
 
 void
-capcol_set_value_copy(CapCol* self, char const* value) {
+capcol_set_value_copy(CapCol* self, const char* value) {
 	char* ptr = util_strdup(value);
 	capcol_set_value(self, ptr);
 	free(ptr);
 }
 
 void
-capcol_push_value_copy(CapCol* self, char const* value) {
+capcol_push_value_copy(CapCol* self, const char* value) {
 	str_append_string(self->value, value);
 }
 
@@ -262,7 +262,7 @@ capcollist_remove(CapColList* self, CapCol* node) {
 }
 
 CapCol*
-capcollist_push_back(CapColList* self, char const* value) {
+capcollist_push_back(CapColList* self, const char* value) {
 	CapCol* node = capcol_new_from_str(value);
 	if (!node) {
 		perror("Failed to construct CapCol");
@@ -283,7 +283,7 @@ done:
 }
 
 CapCol*
-capcollist_push_front(CapColList* self, char const* value) {
+capcollist_push_front(CapColList* self, const char* value) {
 	CapCol* node = capcol_new_from_str(value);
 	if (!node) {
 		perror("Failed to construct CapCol");
@@ -411,7 +411,7 @@ capcollist_move_to_back(CapColList* self, CapCol* node) {
 }
 
 CapCol*
-capcollist_insert_after(CapColList* self, char const* value, CapCol* mark) {
+capcollist_insert_after(CapColList* self, const char* value, CapCol* mark) {
 	CapCol* node = capcol_new_from_str(value);
 	if (!node) {
 		perror("Failed to construct CapCol");
@@ -445,7 +445,7 @@ done:
 }
 
 CapCol*
-capcollist_insert_before(CapColList* self, char const* value, CapCol* mark) {
+capcollist_insert_before(CapColList* self, const char* value, CapCol* mark) {
 	CapCol* node = capcol_new_from_str(value);
 	if (!node) {
 		perror("Failed to construct CapCol");
@@ -483,7 +483,7 @@ done:
 ***********************/
 
 CapCol*
-capcollist_find_front(CapColList* self, char const* value) {
+capcollist_find_front(CapColList* self, const char* value) {
 	for (CapCol* cur = self->head; cur; cur = cur->next) {
 		if (CapCol_compare(str_get_const(cur->value), value) == 0) {
 			return cur;
@@ -493,7 +493,7 @@ capcollist_find_front(CapColList* self, char const* value) {
 }
 
 CapCol const*
-capcollist_find_front_const(CapColList const* self, char const* value) {
+capcollist_find_front_const(CapColList const* self, const char* value) {
 	for (CapCol const* cur = self->head; cur; cur = cur->next) {
 		if (CapCol_compare(str_get_const(cur->value), value) == 0) {
 			return cur;
@@ -503,7 +503,7 @@ capcollist_find_front_const(CapColList const* self, char const* value) {
 }
 
 CapCol*
-capcollist_find_back(CapColList* self, char const* value) {
+capcollist_find_back(CapColList* self, const char* value) {
 	for (CapCol* cur = self->tail; cur; cur = cur->prev) {
 		if (CapCol_compare(str_get_const(cur->value), value) == 0) {
 			return cur;
@@ -513,7 +513,7 @@ capcollist_find_back(CapColList* self, char const* value) {
 }
 
 CapCol const*
-capcollist_find_back_const(CapColList const* self, char const* value) {
+capcollist_find_back_const(CapColList const* self, const char* value) {
 	for (CapCol const* cur = self->tail; cur; cur = cur->prev) {
 		if (CapCol_compare(str_get_const(cur->value), value) == 0) {
 			return cur;
@@ -1140,7 +1140,7 @@ main(int argc, char* argv[]) {
 
 		printf("{");
 		for (CapCol* c = capcollist_front(cols); c; c = capcol_next(c)) {
-			char const* s = capcol_value_const(c);
+			const char* s = capcol_value_const(c);
 			printf("[%s]", s);
 		}
 		printf("}\n");

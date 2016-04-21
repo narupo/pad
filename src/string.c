@@ -156,7 +156,7 @@ str_clear(String* self) {
 }
 
 void
-str_set_string(String* self, char const* src) {
+str_set_string(String* self, const char* src) {
 	int srclen = strlen(src);
 
 	if (srclen >= self->length) {
@@ -311,7 +311,7 @@ str_append_other(String* self, String const* other) {
 }
 
 int
-str_append_nformat(String* self, char* buf, size_t nbuf, char const* fmt, ...) {
+str_append_nformat(String* self, char* buf, size_t nbuf, const char* fmt, ...) {
 	if (!self || !buf || !fmt || nbuf == 0) {
 		return -1;
 	}
@@ -401,11 +401,11 @@ str_pop_newline(String* self) {
  * @return		  Success to pointer to found position in target string
  * @return		  Failed to NULL
  */
-static char const*
+static const char*
 bmfind(
-	char const* restrict tex,
+	const char* restrict tex,
 	size_t texlen,
-	char const* restrict pat,
+	const char* restrict pat,
 	size_t patlen
 ) {
 	size_t const max = CHAR_MAX+1;
@@ -444,8 +444,8 @@ bmfind(
 }
 #undef MAX
 
-char const*
-str_find_const(String const* self, char const* target) {
+const char*
+str_find_const(String const* self, const char* target) {
 	if (!self || !target) {
 		return NULL;
 	}
@@ -603,7 +603,7 @@ test_apo(char* args[]) {
 static int
 test_find(char* args[]) {
 	if (*args) {
-		char const* fnd = str_find_const(str, *args);
+		const char* fnd = str_find_const(str, *args);
 		printf("found[%s]\n", fnd);
 	}
 
@@ -661,7 +661,7 @@ test_shf(char* args[]) {
 int
 main(int argc, char* argv[]) {
 	static struct Command {
-		char const* name;
+		const char* name;
 		int (*command)(char**);
 	} commands[] = {
 		{"newo", test_newo},

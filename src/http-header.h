@@ -34,7 +34,7 @@ httpheader_new(void);
  *
  * @return 
 */
-char const* 
+const char* 
 httpheader_method_name(HttpHeader const* self);
 
 /**
@@ -44,7 +44,7 @@ httpheader_method_name(HttpHeader const* self);
  *
  * @return 
 */
-char const* 
+const char* 
 httpheader_method_value(HttpHeader const* self);
 
 /**
@@ -54,7 +54,7 @@ httpheader_method_value(HttpHeader const* self);
  *
  * @return 
 */
-char const* 
+const char* 
 httpheader_http_name(HttpHeader const* self);
 
 /**
@@ -84,6 +84,6 @@ httpheader_display(HttpHeader const* self);
  * @return 
 */
 HttpHeader* 
-httpheader_parse_request(HttpHeader* self, char const* src);
+httpheader_parse_request(HttpHeader* self, const char* src);
 
 #endif

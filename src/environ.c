@@ -1,9 +1,9 @@
 #include "environ.h"
 
-static char const PROGNAME[] = "cap environ";
+static const char PROGNAME[] = "cap environ";
 
-char const*
-environ_get(char const* key) {
+const char*
+environ_get(const char* key) {
 	if (strcmp(key, "HOME") == 0) {
 #if defined(_CAP_WINDOWS)
 		return getenv("USERPROFILE");
