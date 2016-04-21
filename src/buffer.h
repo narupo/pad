@@ -3,6 +3,10 @@
 
 #include "define.h"
 #include "util.h"
+#include "caperr.h"
+
+#include <stdio.h>
+#include <string.h>
 
 typedef struct Buffer Buffer;
 typedef unsigned char Buffer_type;

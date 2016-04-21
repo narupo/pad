@@ -185,7 +185,7 @@ done:
 	return self;
 }
 
-#if defined(TEST_HTTPHEADER)
+#if defined(_TEST_HTTPHEADER)
 int
 main(int argc, char* argv[]) {
 	HttpHeader* header = httpheader_new();

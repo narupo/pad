@@ -800,7 +800,7 @@ jsoniter_value(JsonIter* self) {
 * Test *
 *******/
 
-#if defined(TEST_JSON)
+#if defined(_TEST_JSON)
 #include "file.h"
 static int
 test_list(int argc, char* argv[]) {

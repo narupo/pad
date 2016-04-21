@@ -224,7 +224,7 @@ run_main(int argc, char* argv[]) {
 	return ret;
 }
 
-#if defined(TEST_RUN)
+#if defined(_TEST_RUN)
 int
 main(int argc, char* argv[]) {
 	Config* con = config_instance();

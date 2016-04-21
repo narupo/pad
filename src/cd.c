@@ -167,7 +167,7 @@ cd_main(int argc, char* argv[]) {
 * cd test *
 **********/
 
-#if defined(TEST_CD)
+#if defined(_TEST_CD)
 int
 main(int argc, char* argv[]) {
 	return cd_main(argc, argv);

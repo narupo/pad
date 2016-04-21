@@ -85,7 +85,7 @@ path_main(int argc, char* argv[]) {
 	return path_run(argc, argv);
 }
 
-#if defined(TEST_PATH)
+#if defined(_TEST_PATH)
 int
 main(int argc, char* argv[]) {
 

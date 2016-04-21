@@ -1117,7 +1117,7 @@ capfile_display(CapFile const* self) {
 * Test *
 *******/
 
-#if defined(TEST_CAPFILE2)
+#if defined(_TEST_CAPFILE2)
 
 #include <string.h>
 #include <time.h>

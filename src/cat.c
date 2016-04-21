@@ -494,7 +494,7 @@ cat_main(int argc, char* argv[]) {
 * Test *
 *******/
 
-#if defined(TEST_CAT)
+#if defined(_TEST_CAT)
 int
 main(int argc, char* argv[]) {
 	return cat_main(argc, argv);

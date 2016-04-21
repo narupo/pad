@@ -471,7 +471,7 @@ config_is_out_of_home(const Config* self, const char* path) {
 * Test *
 *******/
 
-#if defined(TEST_CONFIG)
+#if defined(_TEST_CONFIG)
 static int
 test_server(int argc, char* argv[]) {
 	return 0;

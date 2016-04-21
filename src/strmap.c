@@ -200,7 +200,7 @@ strmap_set_copy(StringHashMap* self, const char* key, StringHashMap_const_type v
 * strmap test *
 **************/
 
-#if defined(TEST_STRINGMAP)
+#if defined(_TEST_STRINGMAP)
 int
 main(int argc, char* argv[]) {
 

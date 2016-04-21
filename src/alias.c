@@ -711,7 +711,7 @@ alias_main(int argc, char* argv[]) {
 * alias test *
 *************/
 
-#if defined(TEST_ALIAS)
+#if defined(_TEST_ALIAS)
 int
 main(int argc, char* argv[]) {
 	return alias_main(argc, argv);

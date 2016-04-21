@@ -336,7 +336,7 @@ brief_main(int argc, char* argv[]) {
 * Brief test *
 *************/
 
-#if defined(TEST_BRIEF)
+#if defined(_TEST_BRIEF)
 int
 main(int argc, char* argv[]) {
 	return brief_main(argc, argv);

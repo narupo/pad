@@ -30,7 +30,7 @@ signal(int sig, sighandler_t handler) {
 * signal test *
 **************/
 
-#if defined(TEST_SIGNAL)
+#if defined(_TEST_SIGNAL)
 void
 handler(int sig) {
 	if (sig == SIGINT) {
