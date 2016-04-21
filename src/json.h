@@ -2,10 +2,10 @@
 #define JSON_H
 
 #include "define.h"
+#include "util.h"
 #include "memory.h"
 #include "string.h"
 #include "strarray.h"
-#include <stdbool.h>
 
 typedef struct JsonObject JsonObject;
 typedef struct Json Json;

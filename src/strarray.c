@@ -21,7 +21,7 @@ struct StringArray {
 void
 strarray_delete(StringArray* self) {
 	if (self) {
-		for (int i = 0; i < self->length; ++i) {
+		for (size_t i = 0; i < self->length; ++i) {
 			free(self->array[i]);
 		}
 		free(self->array);
@@ -92,7 +92,7 @@ strarray_new_from_argv(int argc, char* argv[]) {
 		self->array[i] = util_strdup(argv[i]);
 	}
 
-	return self;	
+	return self;
 }
 
 /*********
@@ -149,7 +149,7 @@ strarray_resize(StringArray* self, size_t capacity) {
 }
 
 StringArray*
-strarray_append_string(StringArray* self, const char* value) {
+strarray_push_back(StringArray* self, const char* value) {
 	if (self->length >= self->capacity) {
 		if (!strarray_resize(self, self->capacity * 2)) {
 			WARN("Failed to resize")
@@ -160,6 +160,14 @@ strarray_append_string(StringArray* self, const char* value) {
 	self->array[self->length++] = util_strdup(value);
 
 	return self;
+}
+
+char*
+strarray_pop_back(StringArray* self) {
+	if (self->length == 0) {
+		return NULL;
+	}
+	return self->array[--self->length];
 }
 
 static int

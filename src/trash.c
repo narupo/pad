@@ -1,6 +1,7 @@
 #include "trash.h"
 
 typedef enum {
+	H_UNKNOWN = '?',
 	H_TRASH = 'T',
 	H_UNDO = 'U',
 	H_REDO = 'R',
@@ -37,6 +38,104 @@ struct Command {
 	bool opt_is_history;
 };
 
+/*************
+* StringFile *
+*************/
+
+typedef struct StringFile StringFile;
+
+struct StringFile {
+	StringArray* array;
+	FILE* file;
+	char fname[FILE_NPATH];
+};
+
+int
+strf_delete(StringFile* self) {
+	int ret = 0;
+
+	if (self) {
+		ret = file_close(self->file);
+		strarray_delete(self->array);
+		mem_free(self);
+	}
+
+	return ret;
+}
+
+StringFile*
+strf_new_from_file(const char* fname) {
+	StringFile* self = (StringFile*) mem_ecalloc(1, sizeof(StringFile));
+
+	self->array = strarray_new();
+	if (!self->array) {
+		mem_free(self);
+		return NULL;
+	}
+
+	self->file = file_open(fname, "ab+");
+	if (!self->file) {
+		strarray_delete(self->array);
+		mem_free(self);
+		return NULL;
+	}
+
+	String* line = str_new();
+	if (!line) {
+		strarray_delete(self->array);
+		file_close(self->file);
+		mem_free(self);
+		return NULL;
+	}
+
+	for (; io_getline_str(line, self->file); ) {
+		strarray_push_back(self->array, str_get_const(line));
+	}
+
+	str_delete(line);
+
+	snprintf(self->fname, sizeof self->fname, "%s", fname);
+
+	return self;
+}
+
+int
+strf_flush(StringFile* self) {
+	FILE* fout = freopen(self->fname, "w", self->file);
+	if (!fout) {
+
+	}
+
+	for (size_t i = 0; i < strarray_length(self->array); ++i) {
+		const char* line = strarray_get_const(self->array, i);
+		fprintf(fout, "%s\n", line);
+	}
+	fflush(fout);
+
+	self->file = freopen(self->fname, "ab+", fout);
+	if (!self->file) {
+
+	}
+
+	return 0;
+}
+
+StringFile*
+strf_push_back(StringFile* self, const char* str) {
+	if (!strarray_push_back(self->array, str)) {
+		return NULL;
+	}
+	return self;
+}
+
+char*
+strf_pop_back(StringFile* self) {
+	return strarray_pop_back(self->array);
+}
+
+/******
+* SEP *
+******/
 
 static bool
 cmd_parse_options(Command* self);
@@ -53,7 +152,7 @@ cmd_new(int argc, char* argv[]) {
 	// Construct
 	Command* self = (Command*) calloc(1, sizeof(Command));
 	if (!self) {
-		perror("Failed to construct");
+		caperr(PROGNAME, CAPERR_CONSTRUCT, "command");
 		return NULL;
 	}
 
@@ -63,7 +162,7 @@ cmd_new(int argc, char* argv[]) {
 
 	// Parse command options
 	if (!cmd_parse_options(self)) {
-		perror("Failed to parse options");
+		caperr(PROGNAME, CAPERR_PARSE_OPTIONS, "");
 		free(self);
 		return NULL;
 	}
@@ -241,10 +340,6 @@ cmd_update_info(FILE* finfo, const char* oldpath, const char* newpath) {
 		}
 	}
 
-	// Debug
-	// term_eprintf("oldpath[%s]\n", oldpath);
-	// term_eprintf("newpath[%s]\n", newpath);
-
 	if (feof(finfo)) {
 		// Not found record, Append new record
 		cmd_infofile_append_newrecord(finfo, oldpath, newpath);
@@ -311,6 +406,21 @@ cmd_history_type_to_string(History type) {
 	}
 }
 
+History
+cmd_history_string_to_type(const char* str) {
+	if (strcasecmp(str, "trash") == 0) {
+		return H_TRASH;
+	} else 	if (strcasecmp(str, "undo") == 0) {
+		return H_UNDO;
+	} else 	if (strcasecmp(str, "redo") == 0) {
+		return H_REDO;
+	} else 	if (strcasecmp(str, "clear") == 0) {
+		return H_CLEAR;
+	}
+
+	return H_UNKNOWN;
+}
+
 static FILE*
 cmd_open_history(void) {
 	const Config* config = config_instance();
@@ -348,7 +458,7 @@ cmd_make_history_array(void) {
 
 	String* line = str_new();
 	for (; io_getline_str(line, fhist); ) {
-		strarray_append_string(history, str_get_const(line));
+		strarray_push_back(history, str_get_const(line));
 	}
 	str_delete(line);
 
@@ -462,7 +572,7 @@ cmd_trash_files(const Command* self) {
 }
 
 static int
-cmd_test(char* dst, size_t dstsize, const char* fname) {
+cmd_read_olddir_from_info_by_fname(char* dst, size_t dstsize, const char* fname) {
 	FILE* finfo = cmd_open_info();
 	if (!finfo) {
 		return caperr(PROGNAME, CAPERR_OPEN, "info");
@@ -535,7 +645,7 @@ cmd_trashed(void) {
 		}
 
 		char olddir[TRASH_INFO_NCOL_OLDDIR];
-		if (cmd_test(olddir, sizeof olddir, name) != 0) {
+		if (cmd_read_olddir_from_info_by_fname(olddir, sizeof olddir, name) != 0) {
 			dir_close(dir);
 			return caperr(PROGNAME, CAPERR_MAKE, "old directory path");
 		}

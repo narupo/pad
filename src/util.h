@@ -1,24 +1,23 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include "define.h"
+
 #undef _BSD_SOURCE
 #define _BSD_SOURCE 1 /* For popen in stdio.h */
-
-#include "define.h"
-#include "term.h"
-#include "caperr.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <strings.h>
 #include <stdarg.h>
 #include <getopt.h>
 #include <errno.h>
 #include <assert.h>
 #include <limits.h>
-
 #include <unistd.h>
+#include <ctype.h>
 
 #if !defined(_CAP_WINDOWS)
 # include <sys/wait.h>
@@ -48,9 +47,7 @@
 	exit(1); \
   }
 #else
-#  define WARN(...) { \
-    _caperr(__FILE__, __func__, __LINE__, "WARN", CAPERR_DEBUG, __VA_ARGS__); \
-  }
+#  define WARN(...) {}
 #  define DIE(...) {}
 #endif
 

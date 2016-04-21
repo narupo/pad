@@ -4,7 +4,6 @@
 #include "define.h"
 #include "util.h"
 #include "memory.h"
-#include <limits.h>
 
 typedef struct String String;
 #define String_type char

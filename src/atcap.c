@@ -563,10 +563,10 @@ test_atcap_line(int argc, char* argv[]) {
 	}
 
 	StringArray* braces = strarray_new();
-	strarray_append_string(braces, "Linux");
-	strarray_append_string(braces, "Unix");
-	strarray_append_string(braces, "Mac");
-	strarray_append_string(braces, "Windows");
+	strarray_push_back(braces, "Linux");
+	strarray_push_back(braces, "Unix");
+	strarray_push_back(braces, "Mac");
+	strarray_push_back(braces, "Windows");
 
 	CapParser* capparser = capparser_new();
 	capparser->is_debug = true;
