@@ -478,6 +478,7 @@ cmd_test(char* dst, size_t dstsize, const char* fname) {
 			olddir[len] = '\0';
 
 			if (dstsize < strlen(olddir)+1) {
+				file_close(finfo);
 				return caperr(PROGNAME, CAPERR_ERROR, "Need more capacity of buffer");
 			}
 
