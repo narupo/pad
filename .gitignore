@@ -32,4 +32,4 @@
 # Debug files
 *.dSYM/
 
-test/*
+src/test/*

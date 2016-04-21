@@ -37,7 +37,7 @@ str_new(void);
  * @return pointer to dynamic allocate memory of string
  */
 String*
-str_new_from_string(String_type const* str);
+str_new_from_string(const String_type* str);
 
 /**
  * Construct string from number of capacity
@@ -58,7 +58,7 @@ str_new_from_capacity(int capacity);
  * @return pointer to dynamic allocate memory of string
  */
 String*
-str_new_from_other(String const* other);
+str_new_from_other(const String* other);
 
 /**
  * Get number of length of buffer in string
@@ -68,7 +68,7 @@ str_new_from_other(String const* other);
  * @return number of length
  */
 int
-str_length(String const* self);
+str_length(const String* self);
 
 /**
  * Get number of capacity of buffer in string
@@ -78,7 +78,7 @@ str_length(String const* self);
  * @return number of capacity
  */
 int
-str_capacity(String const* self);
+str_capacity(const String* self);
 
 /**
  * Get read-only pointer to buffer in string
@@ -87,8 +87,8 @@ str_capacity(String const* self);
  *
  * @return pointer to memory of buffer in string
  */
-String_type const*
-str_get_const(String const* self);
+const String_type*
+str_get_const(const String* self);
 
 /**
  * Check empty of buffer in string
@@ -99,7 +99,7 @@ str_get_const(String const* self);
  * @return not empty to false
  */
 int
-str_empty(String const* self);
+str_empty(const String* self);
 
 /**
  * Clear buffer in string
@@ -214,7 +214,7 @@ str_append_stream(String* self, FILE* fin);
  * @return failed to NULL
  */
 String*
-str_append_other(String* self, String const* other);
+str_append_other(String* self, const String* other);
 
 /**
  * Append format string at back of buffer in string
@@ -274,7 +274,7 @@ str_strip(String* self, const char* rems);
  * @return not found to NULL
  */
 const char*
-str_find_const(String const* self, const char* target);
+str_find_const(const String* self, const char* target);
 
 /**
  * @deprecated Move to io.h

@@ -21,9 +21,9 @@ enum {
 * str util *
 ***********/
 
-int
-str_strlen(String_type const* str) {
-	String_type const* cur;
+static int
+str_strlen(const String_type* str) {
+	const String_type* cur;
 
 	for (cur = str; *cur; ++cur) {
 	}
@@ -78,7 +78,7 @@ str_new(void) {
 }
 
 String*
-str_new_from_string(String_type const* str) {
+str_new_from_string(const String_type* str) {
 	String* self = (String*) calloc(1, sizeof(String));
 	if (!self) {
 		caperr(MODULENAME, CAPERR_CONSTRUCT, "string");
@@ -123,7 +123,7 @@ str_new_from_capacity(int capacity) {
 }
 
 String*
-str_new_from_other(String const* other) {
+str_new_from_other(const String* other) {
 	String* self = (String*) calloc(1, sizeof(String));
 	if (!self) {
 		caperr(MODULENAME, CAPERR_CONSTRUCT, "string");
@@ -152,7 +152,7 @@ str_new_from_other(String const* other) {
 *************/
 
 int
-str_length(String const* self) {
+str_length(const String* self) {
 	if (!self) {
 		return 0;
 	}
@@ -160,15 +160,15 @@ str_length(String const* self) {
 }
 
 int
-str_capacity(String const* self) {
+str_capacity(const String* self) {
 	if (!self) {
 		return 0;
 	}
 	return self->capacity;
 }
 
-String_type const*
-str_get_const(String const* self) {
+const String_type*
+str_get_const(const String* self) {
 	if (!self) {
 		return "";
 	}
@@ -176,7 +176,7 @@ str_get_const(String const* self) {
 }
 
 int
-str_empty(String const* self) {
+str_empty(const String* self) {
 	if (!self) {
 		return 1;
 	}
@@ -320,7 +320,7 @@ str_pop_front(String* self) {
 }
 
 String*
-str_append_string(String* self, String_type const* src) {
+str_append_string(String* self, const String_type* src) {
 	if (!self || !src) {
 		return NULL;
 	}
@@ -334,7 +334,7 @@ str_append_string(String* self, String_type const* src) {
 		}
 	}
 
-	for (String_type const* sp = src; *sp; ++sp) {
+	for (const String_type* sp = src; *sp; ++sp) {
 		self->buffer[self->length++] = *sp;
 	}
 	self->buffer[self->length] = NIL;
@@ -355,7 +355,7 @@ str_append_stream(String* self, FILE* fin) {
 }
 
 String*
-str_append_other(String* self, String const* other) {
+str_append_other(String* self, const String* other) {
 	String* ret = NULL;
 
 	if (!self || !other) {
@@ -398,7 +398,7 @@ str_append_nformat(String* self, char* buf, size_t nbuf, const char* fmt, ...) {
 }
 
 String*
-str_rstrip(String* self, String_type const* rems) {
+str_rstrip(String* self, const String_type* rems) {
 	if (!self || !rems) {
 		return NULL;
 	}
@@ -415,7 +415,7 @@ str_rstrip(String* self, String_type const* rems) {
 }
 
 String*
-str_lstrip(String* self, String_type const* rems) {
+str_lstrip(String* self, const String_type* rems) {
 	if (!self || !rems) {
 		return NULL;
 	}
@@ -432,7 +432,7 @@ str_lstrip(String* self, String_type const* rems) {
 }
 
 String*
-str_strip(String* self, String_type const* rems) {
+str_strip(String* self, const String_type* rems) {
 	if (!str_rstrip(self, rems)) {
 		return NULL;
 	}
@@ -501,7 +501,7 @@ bmfind(
 #undef MAX
 
 const char*
-str_find_const(String const* self, const char* target) {
+str_find_const(const String* self, const char* target) {
 	if (!self || !target) {
 		return NULL;
 	}
@@ -659,7 +659,7 @@ strtolong(const char* src) {
 static String* str;
 
 static void
-strinfo(String const* s) {
+strinfo(const String* s) {
 	printf("capa[%d] len[%d] buf[%s]\n", str_capacity(s), str_length(s), str_get_const(s));
 	fflush(stdout);
 }
