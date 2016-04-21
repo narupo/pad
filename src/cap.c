@@ -35,24 +35,24 @@ find_command(const char* name) {
 		Command command;
 	} table[] = {
 		{"ls", ls_main},
-		{"trash", trash_main},
 		{"cd", cd_main},
-		{"home", home_main},
+		{"hub", hub_main},
 		{"cat", cat_main},
 		{"run", run_main},
 		{"pwd", pwd_main},
 		{"edit", edit_main},
+		{"home", home_main},
 		{"help", help_main},
 		{"make", make_main},
 		{"path", path_main},
 		{"mkdir", mkdir_main},
 		{"alias", alias_main},
+		{"trash", trash_main},
 		{"brief", brief_main},
 		{"editor", editor_main},
 		{"deploy", deploy_main},
 		{"server", server_main},
-		{"hub", hub_main},
-		{0}, // Null-terminator
+		{}, // Sentry
 	};
 
 	// Find command by name
