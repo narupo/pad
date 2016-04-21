@@ -44,7 +44,7 @@ make_solve_argv(const Config* config, int argc, char** argv) {
 		return NULL;
 	}
 
-	solvargv[0] = util_strdup(argv[0]);
+	solvargv[0] = strdup(argv[0]);
 	if (!solvargv[0]) {
 		caperr(PROGNAME, CAPERR_CONSTRUCT, "string");
 		free(solvargv);
@@ -57,7 +57,7 @@ make_solve_argv(const Config* config, int argc, char** argv) {
 
 		if (arg[0] == '-') {
 			// Is option
-			solvargv[i] = util_strdup(arg);
+			solvargv[i] = strdup(arg);
 		} else {
 			// Solve argument's path
 			char path[FILE_NPATH];
@@ -65,7 +65,7 @@ make_solve_argv(const Config* config, int argc, char** argv) {
 				caperr(PROGNAME, CAPERR_SOLVE, "path \"%s\"", path);
 				goto fail;
 			}
-			solvargv[i] = util_strdup(path);
+			solvargv[i] = strdup(path);
 		}
 	}
 

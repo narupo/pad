@@ -38,8 +38,8 @@ strmapnode_new_copy(const char* key, StringHashMap_const_type value) {
 		return NULL;
 	}
 
-	self->key = util_strdup(key);
-	self->value = util_strdup(value);
+	self->key = strdup(key);
+	self->value = strdup(value);
 
 	return self;
 }

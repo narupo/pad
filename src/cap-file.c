@@ -127,7 +127,7 @@ capcol_set_value(CapCol* self, const char* value) {
 
 void
 capcol_set_value_copy(CapCol* self, const char* value) {
-	char* ptr = util_strdup(value);
+	char* ptr = strdup(value);
 	capcol_set_value(self, ptr);
 	free(ptr);
 }

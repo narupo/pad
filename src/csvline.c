@@ -229,7 +229,7 @@ self_cols_push_back(CsvLine* self, const char* col) {
 	}
 
 	// Push copy
-	self->cols[self->length++] = util_strdup(col);
+	self->cols[self->length++] = strdup(col);
 	self->cols[self->length] = NULL;
 
 	return true;
