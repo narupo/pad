@@ -576,7 +576,6 @@ static int
 cmd_undo(Command* self) {
 	term_eprintf("undo\n");
 	return 0;
-	return 0;
 }
 
 static int
