@@ -130,7 +130,7 @@ buf_pop_back(Buffer* self) {
 Buffer*
 buf_append_bytes(Buffer* self, Buffer_const_type* bytes, size_t size) {
 	for (size_t i = 0; i < size; ++i) {
-		if (buf_push_back(self, bytes[i]) < 0) {
+		if (!buf_push_back(self, bytes[i])) {
 			return NULL;
 		}
 	}
@@ -143,7 +143,7 @@ buf_append_string(Buffer* self, const char* str) {
 	size_t i, len;
 
 	for (i = 0, len = strlen(str); i < len; ++i) {
-		if (buf_push_back(self, str[i]) < 0) {
+		if (!buf_push_back(self, str[i])) {
 			return NULL;
 		}
 	}
@@ -160,7 +160,7 @@ buf_append_stream(Buffer* self, FILE* fin) {
 	int napp = 0;
 
 	for (int ch; (ch = fgetc(fin)) != EOF; ++napp) {
-		if (ferror(fin) || buf_push_back(self, ch) < 0) {
+		if (ferror(fin) || !buf_push_back(self, ch)) {
 			return NULL;
 		}
 	}
@@ -173,7 +173,7 @@ buf_append_other(Buffer* self, Buffer const* other) {
 	size_t i;
 
 	for (i = 0; i < other->length; ++i) {
-		if (buf_push_back(self, other->buffer[i]) < 0) {
+		if (!buf_push_back(self, other->buffer[i])) {
 			return NULL;
 		}
 	}
