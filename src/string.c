@@ -242,8 +242,12 @@ str_resize(String* self, int newlen) {
 
 String*
 str_push_back(String* self, String_type ch) {
-	if (!self || ch == NIL) {
+	if (!self) {
 		caperr(MODULENAME, CAPERR_INVALID_ARGUMENTS, "");
+		return NULL;
+	}
+
+	if (ch == NIL) {
 		return NULL;
 	}
 
