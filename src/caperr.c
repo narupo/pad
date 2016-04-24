@@ -92,7 +92,6 @@ caperrs_push(
 	}
 
 	if (caperrs.stack_top >= NSTACK) {
-		caperr_display(stderr);
 		perror("caperr: Stack overflow");
 
 	} else {
