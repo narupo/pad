@@ -78,6 +78,7 @@ enum {
 
 	// Mutex family
 	CAPERR_MUTEX_LOCK,
+	CAPERR_MUTEX_UNLOCK,
 };
 
 /**
