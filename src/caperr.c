@@ -208,6 +208,8 @@ caperr_to_string_unsafe(int number) {
 		default: return "Unknown errors"; break;
 		case CAPERR_DEBUG: return "debug: "; break;
 		case CAPERR_ERROR: return ""; break;
+		case CAPERR_MUTEX_LOCK: return "Failed to mutex lock"; break;
+		case CAPERR_MUTEX_UNLOCK: return "Failed to mutex unlock"; break;
 		case CAPERR_RENAME: return "Failed to rename"; break;
 		case CAPERR_IS_EXISTS: return "File was exists"; break;
 		case CAPERR_NOTFOUND: return "Not found"; break;

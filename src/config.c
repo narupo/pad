@@ -95,7 +95,7 @@ config_delete(Config* self) {
 }
 
 static Config*
-config_init_file(Config* self, const char* fname) {
+config_init_file_unsafe(Config* self, const char* fname) {
 	// Cross-platform for Linux and MS Windows
 #if defined(_CAP_WINDOWS)
 	static const char DEFAULT_HOME_PATH[] = "C:/Windows/Temp";
@@ -234,7 +234,7 @@ config_new_from_dir_unsafe(const char* srcdirpath) {
 	}
 
 	if (!file_is_exists(self->filepath)) {
-		if (!config_init_file(self, self->filepath)) {
+		if (!config_init_file_unsafe(self, self->filepath)) {
 			WARN("Failed to init file \"%s\"", self->filepath);
 			goto fail;
 		}
@@ -327,18 +327,66 @@ config_instance(void) {
 
 const char*
 config_dirpath(const Config* self, const char* key) {
-	if (strcasecmp(key, "root") == 0) {
-		return self->dirpath;
-	} else if (strcasecmp(key, "homes") == 0) {
-		return self->homesdirpath;
-	} else if (strcasecmp(key, "home") == 0) {
-		return self->curhomedirpath;
-	} else if (strcasecmp(key, "trash") == 0) {
-		return self->curtrashdirpath;
+	const char* path = NULL;
+
+	if (!self_lock()) {
+		caperr(PROGNAME, CAPERR_MUTEX_LOCK, "");
+		return path;
 	}
 
-	caperr(PROGNAME, CAPERR_NOTFOUND, "key \"%s\"", key);
-	return NULL;
+	if (strcasecmp(key, "root") == 0) {
+		path = self->dirpath;
+	} else if (strcasecmp(key, "homes") == 0) {
+		path = self->homesdirpath;
+	} else if (strcasecmp(key, "home") == 0) {
+		path = self->curhomedirpath;
+	} else if (strcasecmp(key, "trash") == 0) {
+		path = self->curtrashdirpath;
+	} else {
+		caperr(PROGNAME, CAPERR_NOTFOUND, "key \"%s\"", key);
+	}
+
+	if (!self_unlock()) {
+		caperr(PROGNAME, CAPERR_MUTEX_UNLOCK, "");
+		return path;
+	}
+
+	return path;
+}
+
+char*
+config_dirpath_with(const Config* self, char* dst, size_t dstsz, const char* with, const char* name) {
+
+	if (!dst || dstsz == 0 || !with || !name) {
+		caperr(PROGNAME, CAPERR_INVALID_ARGUMENTS, "");
+		return NULL;
+	}
+
+	*dst = '\0';
+
+	const char* dirpath = config_dirpath(self, with);
+	if (!dirpath) {
+		return NULL;
+	}
+
+	if (!self_lock()) {
+		caperr(PROGNAME, CAPERR_MUTEX_LOCK, "");
+		return NULL;
+	}
+
+	if (!file_solve_path_format(dst, dstsz, "%s/%s", dirpath, name)) {
+		caperr(PROGNAME, CAPERR_SOLVE, "name of \"%s\"", name);
+		*dst = '\0';
+		self_unlock();
+		return NULL;
+	}
+
+	if (!self_unlock()) {
+		caperr(PROGNAME, CAPERR_MUTEX_UNLOCK, "");
+		return NULL;
+	}
+
+	return dst;
 }
 
 const char*

@@ -13,6 +13,7 @@
 #include "string.h"
 #include "strarray.h"
 #include "memory.h"
+#include "json.h"
 
 void
 trash_usage(void);

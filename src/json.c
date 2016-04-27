@@ -361,7 +361,7 @@ jsonobj_parse_dict(JsonObject* self, Stream* s) {
 						m = -1;
 					} else {
 						jsonobj_move_back(self, obj);
-						m = 5;						
+						m = 5;
 					}
 				}
 			} else if (is_quote(ch) || isdigit(ch)) {
@@ -376,7 +376,7 @@ jsonobj_parse_dict(JsonObject* self, Stream* s) {
 						m = -1;
 					} else {
 						jsonobj_move_back(self, obj);
-						m = 5;						
+						m = 5;
 					}
 				}
 			}
@@ -417,7 +417,7 @@ jsonobj_display(JsonObject const* self, int depth) {
 
 	switch (self->type) {
 	case JOTDict:
-		fprintf(stderr, " type[dict]");		
+		fprintf(stderr, " type[dict]");
 		break;
 	case JOTList:
 		if (!self->list) {
@@ -428,7 +428,7 @@ jsonobj_display(JsonObject const* self, int depth) {
 		for (int i = 0; i < strarray_length(self->list); ++i) {
 			fprintf(stderr, " [%s]", strarray_get_const(self->list, i));
 		}
-		
+
 		break;
 	case JOTValue:
 		if (!self->value) {
@@ -478,7 +478,7 @@ jsonobj_find_value(JsonObject* self, const char* name) {
 	return NULL; // Not found
 }
 
-String const* 
+String const*
 jsonobj_find_value_const(JsonObject const* self, const char* name) {
 	if (!self || !name) {
 		return NULL;
@@ -503,7 +503,7 @@ jsonobj_find_dict(JsonObject* self, const char* name) {
 	return NULL; // Not found
 }
 
-JsonObject const* 
+JsonObject const*
 jsonobj_find_dict_const(JsonObject const* self, const char* name) {
 	if (!self || !name) {
 		return NULL;
@@ -520,9 +520,9 @@ typedef struct Json Json;
 
 struct Json {
 	JsonObject* root;
-	Stream* stream; 
+	Stream* stream;
 	String* buffer;
-	void (*mode)(Json*, Stream*); 
+	void (*mode)(Json*, Stream*);
 };
 
 static void json_mode_first(Json* self, Stream* s);
@@ -544,8 +544,8 @@ json_new(void) {
 
 	self->stream = stream_new();
 	self->buffer = str_new();
-	
-	return self;	
+
+	return self;
 }
 
 static void
@@ -562,7 +562,7 @@ json_mode_quote(Json* self, Stream* s) {
 static void
 json_mode_first(Json* self, Stream* s) {
 	int ch = stream_get(s);
-	
+
 	if (is_quote(ch)) {
 		self->mode = json_mode_quote;
 
@@ -626,13 +626,13 @@ static void
 fpad(FILE* fout, int pad, int depth) {
 	for (int i = 0; i < depth; ++i) {
 		fputc(pad, fout);
-	}	
+	}
 }
 
 static bool
 _jsonobj_write_to_stream(JsonObject const* self, FILE* fout, int depth, int end) {
 	switch (self->type) {
-	case JOTDict: { 
+	case JOTDict: {
 		bool isroot = strcasecmp(str_get_const(self->name), "root") == 0;
 
 		if (isroot) {
@@ -652,7 +652,7 @@ _jsonobj_write_to_stream(JsonObject const* self, FILE* fout, int depth, int end)
 		if (self->jsonobjs_length > 0) {
 			if (!_jsonobj_write_to_stream(self->jsonobjs[self->jsonobjs_length-1], fout, depth+1, ' ')) {
 				return false;
-			}			
+			}
 		}
 
 		fpad(fout, '\t', depth);
@@ -665,7 +665,7 @@ _jsonobj_write_to_stream(JsonObject const* self, FILE* fout, int depth, int end)
 
 		fpad(fout, '\t', depth);
 		fprintf(fout, "\"%s\": [\n", str_get_const(self->name));
-		
+
 		for (int i = 0; i < lilen-1; ++i) {
 			fpad(fout, '\t', depth+1);
 			fprintf(fout, "\"%s\",\n", strarray_get_const(li, i));
@@ -703,7 +703,7 @@ json_read_from_stream(Json* self, FILE* fin) {
 
 	json_parse_string(self, str_get_const(src));
 
-	str_delete(src);	
+	str_delete(src);
 
 	return true;
 }
@@ -871,7 +871,7 @@ test_json(int argc, char* argv[]) {
 
 static int
 test_iter(int argc, char* argv[]) {
-	const char* src = 
+	const char* src =
 		"{\n"
 		"	\"names\": {\n"
 		"		\"cat\": \"nyan\",\n"

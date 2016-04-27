@@ -42,6 +42,12 @@ const char*
 config_dirpath(const Config* self, const char* key);
 
 /**
+ *
+ */
+char*
+config_dirpath_with(const Config* self, char* dst, size_t dstsz, const char* with, const char* name);
+
+/**
  * Get confing's file path
  *
  * @param[in] self

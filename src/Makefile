@@ -36,7 +36,7 @@ buffer: buffer.c
 string: string.c memory.c caperr.c csvline.c util.c term.c
 	$(CC) -D_DEBUG -D_TEST_STRING $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
-json: json.c util.c memory.c string.c strmap.c strarray.c term.c caperr.c csvline.c file.c environ.c
+json: json.c util.c memory.c string.c strmap.c strarray.c term.c caperr.c csvline.c file.c environ.c hash.c
 	$(CC) -D_DEBUG -D_TEST_JSON $(CFLAGS) -o $(TESTDIR)/$@ $^ $(LIBS)
 
 strmap: strmap.c util.c
