@@ -18,7 +18,15 @@ struct Program {
 	char** argv;
 	Command* cmd;
 	Json* json;
+	bool isdebug;
 };
+
+#undef DEBUG
+#define DEBUG(prog, block) { \
+	if (prog->isdebug) { \
+		block; \
+	} \
+}
 
 /****************
 * Command utils *
@@ -71,18 +79,29 @@ cmd_list(Command* self) {
 	Config* cnf = config_instance();
 
 	char* dpath = config_make_dirpath(cnf, "trash");
+	if (!dpath) {
+
+	}
+
 	StringArray* names = strarray_new();
+	if (!names) {
+
+	}
 
 	//
 	Directory* dir = dir_open(dpath);
-	//
+	if (!dir) {
+
+	}
+
 	for (DirectoryNode* nd; (nd = dir_read_node(dir)); ) {
 		strarray_push_back(names, dirnode_name(nd));
+		dirnode_delete(nd);
 	}
 
 	strarray_sort(names);
 
-	for (size_t i = 0; i < strarray_length(names); ++i) {
+	for (size_t i = 0, len = strarray_length(names); i < len; ++i) {
 		const char* name = strarray_get_const(names, i);
 		term_printf("%s\n", name);
 	}
@@ -98,6 +117,12 @@ done:
 }
 
 static int
+save_trash_info(const char* oldpath, const char* newpath) {
+
+	return 0;
+}
+
+static int
 cmd_trash(Command* self) {
 	Program* prog = self->prog;
 
@@ -105,10 +130,14 @@ cmd_trash(Command* self) {
 		return cmd_list(self);
 	}
 
+	String* oldpath = NULL;
+	String* newpath = NULL;
+
 	for (int i = prog->optind; i < prog->argc; ++i) {
 		const char* arg = prog->argv[i];
-		String* oldpath = make_oldpath(arg);
-		String* newpath = make_newpath(arg);
+
+		oldpath = make_oldpath(arg);
+		newpath = make_newpath(arg);
 		if (!oldpath || !newpath) {
 			str_delete(oldpath);
 			str_delete(newpath);
@@ -116,13 +145,20 @@ cmd_trash(Command* self) {
 		}
 
 		if (!file_is_exists(str_get_const(oldpath))) {
+			str_delete(oldpath);
+			str_delete(newpath);
 			caperr_printf(PROGNAME, CAPERR_NOTFOUND, "\"%s\"", arg);
 			continue;
 		}
 
-		term_eprintf("rename [%s] -> [%s]\n", str_get_const(oldpath), str_get_const(newpath));
+		DEBUG(prog, term_eprintf("rename [%s] -> [%s]\n", str_get_const(oldpath), str_get_const(newpath)));
+
 		if (file_rename(str_get_const(oldpath), str_get_const(newpath)) != 0) {
 			caperr_printf(PROGNAME, CAPERR_RENAME, "%s", arg);
+		}
+
+		if (save_trash_info(oldpath, newpath) != 0) {
+			// TODO
 		}
 
 		str_delete(oldpath);
@@ -193,6 +229,7 @@ prog_parse_options(Program* self) {
 	for (;;) {
 		static struct option longopts[] = {
 			{"help", no_argument, 0, 'h'},
+			{"debug", no_argument, 0, 'd'},
 			{"undo", no_argument, 0, 'u'},
 			{"redo", no_argument, 0, 'r'},
 			{"clear", no_argument, 0, 'c'},
@@ -201,13 +238,14 @@ prog_parse_options(Program* self) {
 		};
 		int optsindex;
 
-		int cur = getopt_long(self->argc, self->argv, "hurcH", longopts, &optsindex);
+		int cur = getopt_long(self->argc, self->argv, "hurcHd", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
 
 		switch (cur) {
 		case 'h': self->cmd = &cmds[1]; break;
+		case 'd': self->isdebug = true; break;
 		case 'c': break;
 		case 'u': break;
 		case 'r': break;
@@ -277,7 +315,7 @@ trash_main(int argc, char* argv[]) {
 * trash test *
 *************/
 
-#if defined(TEST_TRASH)
+#if defined(_TEST_TRASH)
 int
 main(int argc, char* argv[]) {
 	return trash_main(argc, argv);
