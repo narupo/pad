@@ -19,7 +19,7 @@ else
 	LIBS := -lpthread -lcrypt
 endif
 
-PROGRAM := ~/bin/cap
+PROGRAM := ./cap
 TESTDIR := ./test
 
 all: cap

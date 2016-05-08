@@ -325,14 +325,9 @@ config_instance(void) {
 * Getter *
 *********/
 
-const char*
-config_dirpath(const Config* self, const char* key) {
+static const char*
+config_dirpath_unsafe(const Config* self, const char* key) {
 	const char* path = NULL;
-
-	if (!self_lock()) {
-		caperr(PROGNAME, CAPERR_MUTEX_LOCK, "");
-		return path;
-	}
 
 	if (strcasecmp(key, "root") == 0) {
 		path = self->dirpath;
@@ -345,6 +340,39 @@ config_dirpath(const Config* self, const char* key) {
 	} else {
 		caperr(PROGNAME, CAPERR_NOTFOUND, "key \"%s\"", key);
 	}
+
+	return path;
+}
+
+const char*
+config_dirpath(const Config* self, const char* key) {
+	const char* path = NULL;
+
+	if (!self_lock()) {
+		caperr(PROGNAME, CAPERR_MUTEX_LOCK, "");
+		return path;
+	}
+
+	path = config_dirpath_unsafe(self, key);
+
+	if (!self_unlock()) {
+		caperr(PROGNAME, CAPERR_MUTEX_UNLOCK, "");
+		return path;
+	}
+
+	return path;
+}
+
+char*
+config_make_dirpath(const Config* self, const char* key) {
+	char* path = NULL;
+
+	if (!self_lock()) {
+		caperr(PROGNAME, CAPERR_MUTEX_LOCK, "");
+		return path;
+	}
+
+	path = strdup(config_dirpath_unsafe(self, key));
 
 	if (!self_unlock()) {
 		caperr(PROGNAME, CAPERR_MUTEX_UNLOCK, "");

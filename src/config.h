@@ -41,8 +41,20 @@ config_instance(void);
 const char*
 config_dirpath(const Config* self, const char* key);
 
+char*
+config_make_dirpath(const Config* self, const char* key);
+
 /**
+ * Get config's directory path with name
  *
+ * @param[in] self
+ * @param[out] dst destination buffer for path
+ * @param[in] dstsz size of destination buffer
+ * @param[in] with key of path (examples "root", "trash")
+ * @param[in] name composition name by a with
+ *
+ * @return success to pointer to destination buffer (dst)
+ * @return failed to pointer to NULL
  */
 char*
 config_dirpath_with(const Config* self, char* dst, size_t dstsz, const char* with, const char* name);
