@@ -66,11 +66,43 @@ cmd_help(Command* self) {
 }
 
 static int
+cmd_list(Command* self) {
+	int ret = 0;
+	Config* cnf = config_instance();
+
+	char* dpath = config_make_dirpath(cnf, "trash");
+	StringArray* names = strarray_new();
+
+	//
+	Directory* dir = dir_open(dpath);
+	//
+	for (DirectoryNode* nd; (nd = dir_read_node(dir)); ) {
+		strarray_push_back(names, dirnode_name(nd));
+	}
+
+	strarray_sort(names);
+
+	for (size_t i = 0; i < strarray_length(names); ++i) {
+		const char* name = strarray_get_const(names, i);
+		term_printf("%s\n", name);
+	}
+
+done:
+	if (dir_close(dir) != 0) {
+
+	}
+
+	free(dpath);
+	strarray_delete(names);
+	return ret;
+}
+
+static int
 cmd_trash(Command* self) {
 	Program* prog = self->prog;
 
 	if (prog->argc == prog->optind) {
-		return cmd_help(self);
+		return cmd_list(self);
 	}
 
 	for (int i = prog->optind; i < prog->argc; ++i) {
@@ -92,8 +124,6 @@ cmd_trash(Command* self) {
 		if (file_rename(str_get_const(oldpath), str_get_const(newpath)) != 0) {
 			caperr_printf(PROGNAME, CAPERR_RENAME, "%s", arg);
 		}
-
-
 
 		str_delete(oldpath);
 		str_delete(newpath);
