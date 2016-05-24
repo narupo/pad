@@ -2,51 +2,62 @@
 
 static pthread_mutex_t hash_crypt_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-/**
- * Create integer hash value from string
- *
- * @param[in] src source string
- *
- * @return number of hash value
- */
 int
 hash_int(const char* src) {
-	int n = 0;
+	if (!src) {
+		return -1;
+	}
 
-	for (const char* p = src; *p; ++p) {
-		n += *p;
+	int n = 0;
+	int weight = 0;
+
+	for (const char* p = src; *p; ++p, ++weight) {
+		if (weight > 7) {
+			weight = 0;
+		}
+		n += *p << (4 * weight);
 	}
 
 	return n % HASH_NHASH;
 }
 
-/**
- * Create long hash value from string
- *
- * @param[in] src source string
- *
- * @return number of hash value
- */
 long
-hash_long(const char* src) {
-	long n = 0;
-
-	for (const char* p = src; *p; ++p) {
-		n += *p;
+hash_long_with(const char* src, long nhash) {
+	if (!src || nhash <= 0) {
+		return -1;
 	}
 
-	return n % HASH_NHASH;
+	long n = 0;
+	long weight = 0;
+
+	for (const char* p = src; *p; ++p, ++weight) {
+		if (weight > 7) {
+			weight = 0;
+		}
+		n += *p << (4 * weight);
+	}
+
+	return n % nhash;
+}
+
+long
+hash_long(const char* src) {
+	return hash_long_with(src, HASH_NHASH);
 }
 
 int
 hash_int_from_path(const char* path) {
 	int n = 0;
+	long weight = 0;
 
-	for (const char* p = path; *p; ++p) {
+	for (const char* p = path; *p; ++p, ++weight) {
 		if (strchr("/\\:", *p)) {
 			continue; // ignore this character
 		}
-		n += *p;
+		if (weight > 7) {
+			weight = 0;
+		}
+		n += *p << (4 * weight);
 	}
 
 	return n % HASH_NHASH;
