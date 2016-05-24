@@ -157,7 +157,7 @@ cmd_trash(Command* self) {
 			caperr_printf(PROGNAME, CAPERR_RENAME, "%s", arg);
 		}
 
-		if (save_trash_info(oldpath, newpath) != 0) {
+		if (save_trash_info(str_get_const(oldpath), str_get_const(newpath)) != 0) {
 			// TODO
 		}
 
