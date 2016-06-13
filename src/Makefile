@@ -6,12 +6,15 @@ CMDS := cap.c
 HEADERS := $(CMDS:.c=.h)
 OBJS := $(CMDS:.c=.o) 
 DEPS := $(CMDS:.c=.d)
-TESTDIR := ./test
+BINDIR := ../bin
 
-all: cap
+all: cap cap-cat
 
-cap: $(OBJS)
+cap: cap.c
 	$(CC) $(CFLAGS) -o $(PROG) $^ $(LIBS)
+
+cap-cat: cap-cat.c
+	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
 
 .PHONY: clean depend
 
