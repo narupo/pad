@@ -185,7 +185,9 @@ nodefindkey(struct node *self, const char *key) {
 
 
 
-
+/***********************
+* cap config structure *
+***********************/
 
 struct cap_config {
 	struct node *root;
@@ -222,6 +224,9 @@ struct cap_config *
 cap_confnewload(void) {
 	const char *confpath = getenv("CAP_CONFPATH");
 	if (!confpath) {
+		fprintf(stderr, "Not found environment variable of 'CAP_CONFPATH'\n");
+		fflush(stderr);
+		exit(1);
 		return NULL;
 	}
 	return cap_confnewfile(confpath);
