@@ -1,93 +1,8 @@
 #include "config.h"
 
-struct node {
-	long hash;
-	struct cap_string *key;
-	struct cap_string *val;
-	struct node *left;
-	struct node *right;
+struct cap_config {
+	struct cap_map *map;
 };
-
-static void
-nodepush(struct node *self, struct node *nd) {
-	if (nd->hash < self->hash) {
-		// To left
-		if (!self->left) {
-			self->left = nd;
-		} else {
-			nodepush(self->left, nd);
-		}
-	} else {
-		// To right
-		if (!self->right) {
-			self->right = nd;
-		} else {
-			nodepush(self->right, nd);
-		}
-	}
-}
-
-static void
-nodedel(struct node *self) {
-	if (self) {
-		cap_strdel(self->val);
-		cap_strdel(self->key);
-		free(self);
-	}
-}
-
-static void
-nodedeltree(struct node *self) {
-	if (self->left) {
-		nodedeltree(self->left);
-	}
-	if (self->right) {
-		nodedeltree(self->right);		
-	}
-	nodedel(self);
-}
-
-static struct node *
-nodenew(void) {
-	struct node *self = calloc(1, sizeof (struct node));
-	return self;
-}
-
-static void
-nodemovekey(struct node *self, struct cap_string *key) {
-	self->hash = cap_hashl(cap_strgetc(key));
-	if (self->key) {
-		cap_strdel(self->key);
-	}
-	self->key = key;
-}
-
-static void
-nodemoveval(struct node *self, struct cap_string *val) {
-	if (self->val) {
-		cap_strdel(self->val);
-	}
-	self->val = val;
-}
-
-static void
-nodedump(struct node *self, FILE *fout, int sym) {
-	fprintf(fout, "[%c] node[%p] hash[%ld] key[%s] val[%s]\n", sym, self, self->hash, cap_strgetc(self->key), cap_strgetc(self->val));
-}
-
-static void
-nodedumptree(struct node *self, FILE *fout, int sym, int dep) {
-	for (int i = 0; i < dep; ++i) {
-		fputc('-', fout);
-	}
-	nodedump(self, fout, sym);
-	if (self->left) {
-		nodedumptree(self->left, fout, 'L', dep+1);
-	}
-	if (self->right) {
-		nodedumptree(self->right, fout, 'R', dep+1);
-	}
-}
 
 static bool
 iskey(int c) {
@@ -95,7 +10,7 @@ iskey(int c) {
 }
 
 static void
-parse(struct node **root, FILE *fin) {
+parse(struct cap_config *self, FILE *fin) {
 	int m = 0;
 	struct cap_string *key = cap_strnew();
 	struct cap_string *val = cap_strnew();
@@ -132,18 +47,9 @@ parse(struct node **root, FILE *fin) {
 		case 30: // Read string of value
 			if (c == '"') {
 				// printf("val[%s]\n", cap_strgetc(val));
-				struct node *nd = nodenew();
-				nodemovekey(nd, key);
-				nodemoveval(nd, val);
-
-				if (!(*root)) {
-					*root = nd;
-				} else {
-					nodepush(*root, nd);
-				}
-
-				key = cap_strnew();
-				val = cap_strnew();
+				cap_mapset(self->map, cap_strgetc(key), cap_strgetc(val));
+				cap_strclear(key);
+				cap_strclear(val);
 				m = 100;
 			} else {
 				cap_strpushb(val, c);
@@ -163,40 +69,14 @@ parse(struct node **root, FILE *fin) {
 	cap_strdel(val);
 }
 
-static struct node *
-nodefindhash(struct node *self, long hash) {
-	if (!self) {
-		return NULL;
-	}
-
-	if (self->hash == hash) {
-		return self;
-	} else if (hash < self->hash) {
-		return nodefindhash(self->left, hash);
-	} else {
-		return nodefindhash(self->right, hash);
-	}
-}
-
-static struct node *
-nodefindkey(struct node *self, const char *key) {
-	return nodefindhash(self, cap_hashl(key));
-}
-
-
-
 /***********************
 * cap config structure *
 ***********************/
 
-struct cap_config {
-	struct node *root;
-};
-
 void
 cap_confdel(struct cap_config *self) {
 	if (self) {
-		nodedeltree(self->root);
+		cap_mapdel(self->map);
 		free(self);
 	}
 }
@@ -238,38 +118,28 @@ cap_confloadfile(struct cap_config *self, const char *fname) {
 	if (!fin) {
 		return false;
 	}
-	if (self->root) {
-		nodedeltree(self->root);
-		self->root = NULL;
+
+	struct cap_map *newmap = cap_mapnew();
+	if (!newmap) {
+		return false;
 	}
-	parse(&self->root, fin);
+
+	cap_mapdel(self->map);
+	self->map = newmap;
+
+	parse(self, fin);
 	fclose(fin);
 	return true;
 }
 
 const char *
 cap_confgetc(const struct cap_config *self, const char *key) {
-	struct node *fnd = nodefindkey(self->root, key);
-	if (!fnd) {
-		return NULL;
-	}
-
-	return cap_strgetc(fnd->val);
+	return cap_mapgetc(self->map, key);
 }
 
 char *
 cap_confgetcp(const struct cap_config *self, const char *key) {
-	struct node *fnd = nodefindkey(self->root, key);
-	if (!fnd) {
-		return NULL;
-	}
-
-	return strdup(cap_strgetc(fnd->val));
-}
-
-void
-cap_confdump(const struct cap_config *self, FILE *fout) {
-	nodedumptree(self->root, fout, 'r', 0);
+	return cap_mapgetcp(self->map, key);
 }
 
 #if 0

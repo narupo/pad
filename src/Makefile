@@ -2,7 +2,7 @@ RM := rm
 CC := gcc
 CFLAGS := -Wall -g -O0 -std=c11 -Wno-unused-function -D_DEBUG
 CMDS := cap.c cap-cat.c cap-make.c cap-cd.c
-MODS := error.c file.c hash.c string.c config.c file.c
+MODS := error.c file.c hash.c string.c config.c file.c map.c
 LIBS := -lm
 HEADERS := $(CMDS:.c=.h)
 CMDOBJS := $(CMDS:.c=.o)

@@ -4,6 +4,8 @@
 #include "string.h"
 #include "error.h"
 #include "hash.h"
+#include "map.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
