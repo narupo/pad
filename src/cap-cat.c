@@ -1,7 +1,20 @@
 #include "cap-cat.h"
 
+static bool
+cat(FILE *fout, FILE *fin) {
+	if (!cap_fcopy(fout, fin)) {
+		return false;
+	}
+	return true;
+}
+
 int
 main(int argc, char *argv[]) {
+	if (argc < 2) {
+		cat(stdout, stdin);
+		return 0;
+	}
+
 	const char *cd = getenv("CAP_CD");
 
 	for (int i = 1; i < argc; ++i) {
@@ -18,8 +31,8 @@ main(int argc, char *argv[]) {
 			cap_log("error", "fopen %s", path);
 			continue;
 		}
-		if (!cap_fcopy(stderr, fin)) {
-			cap_log("error", "fcopy");
+		if (!cat(stdout, fin)) {
+			cap_log("error", "cat");
 		}
 		fclose(fin);
 	}

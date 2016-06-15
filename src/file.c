@@ -191,10 +191,16 @@ cap_freadcp(FILE* fin) {
 		return NULL;
 	}
 
-	if (fread(dst, sizeof(char), size, fin) < size) {
+	fread(dst, sizeof(char), size, fin);
+	if (ferror(fin)) {
 		fprintf(stderr, "Failed to read from stream");
 		return NULL;
 	}
+
+	if (feof(fin)) {
+		return NULL;
+	}
+
 	dst[size] = '\0';
 
 	return dst;

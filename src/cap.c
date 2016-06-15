@@ -1,9 +1,5 @@
 #include "cap.h"
 
-/*
-	@cap {{ cat file.c }}
-*/
-
 static bool
 putconfig(const char *path) {
 	FILE *fout = fopen(path, "w");
