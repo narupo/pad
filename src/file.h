@@ -86,6 +86,9 @@ cap_fexists(const char* path);
 int
 cap_fmkdirmode(const char* path, mode_t mode);
 
+int
+cap_fmkdirq(const char *path);
+
 /**
  * Create empty file on file-system
  *

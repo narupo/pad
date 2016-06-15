@@ -2,9 +2,7 @@
 
 int
 main(int argc, char *argv[]) {
-	struct cap_config *conf = cap_confnewload();
-	char *cd = cap_confgetcp(conf, "cd");
-	cap_confdel(conf);
+	const char *cd = getenv("CAP_CD");
 
 	for (int i = 1; i < argc; ++i) {
 		const char *name = argv[i];
@@ -26,6 +24,5 @@ main(int argc, char *argv[]) {
 		fclose(fin);
 	}
 
-	free(cd);
 	return 0;
 }

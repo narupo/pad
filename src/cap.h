@@ -7,5 +7,6 @@
 
 #include "error.h"
 #include "file.h"
+#include "config.h"
 
 #endif

@@ -4,9 +4,9 @@ static bool
 fcopy(FILE *dst, FILE *src) {
 	char *p = cap_freadcp(src);
 	struct cap_string *buf = cap_strnew();
+	struct cap_string *tmp = cap_strnew();
 
-	int m = 0;
-	for (; *p; ++p) {
+	for (int m = 0; *p; ++p) {
 		// fputc(*p, dst);
 		switch (m) {
 		case 0: // First
@@ -20,6 +20,7 @@ fcopy(FILE *dst, FILE *src) {
 		case 10: // Found @cap
 			if (strncmp(p, "{{", strlen("{{")) == 0) {
 				p += strlen("{{")-1;
+				cap_strclear(tmp);
 				m = 20;
 			} else {
 				cap_strpushb(buf, *p);
@@ -29,8 +30,10 @@ fcopy(FILE *dst, FILE *src) {
 			if (strncmp(p, "}}", strlen("}}")) == 0) {
 				p += strlen("}}")-1;
 				m = 0;
+				fprintf(dst, "[%s]\n", cap_strgetc(tmp));
+				cap_strclear(tmp);
 			} else {
-				cap_strpushb(buf, *p);
+				cap_strpushb(tmp, *p);
 			}
 			break;
 		}
@@ -38,6 +41,7 @@ fcopy(FILE *dst, FILE *src) {
 
 	fwrite(cap_strgetc(buf), 1, cap_strlen(buf), dst);	
 	cap_strdel(buf);
+	cap_strdel(tmp);
 	return true;
 }
 
@@ -47,14 +51,11 @@ main(int argc, char* argv[]) {
 
 	if (argc >= 2) {
 		const char *fname = argv[1];
-		struct cap_config *conf = cap_confnewload();
-		char *cd = cap_confgetcp(conf, "cd");
-		cap_confdel(conf);
+		const char *cd = getenv("CAP_CD");
 
 		char path[100];
 		snprintf(path, sizeof path, "%s/%s", cd, fname);
 		// printf("path[%s]\n", path);
-		free(cd);		
 		
 		fin = fopen(path, "rb");
 		if (!fin) {
