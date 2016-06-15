@@ -1,12 +1,16 @@
 #include "cap.h"
 
+/*
+	@cap {{ cat file.c }}
+*/
+
 int
 main(int argc, char *ap[]) {
 	const char *pname = ap[1];
 	char *const *argv = (char *const *)ap+1;
 
 	char ppath[100];
-	snprintf(ppath, sizeof ppath, "%s/%s", getenv("CAP_BINDIR"), pname);
+	snprintf(ppath, sizeof ppath, "%s/cap-%s", getenv("CAP_BINDIR"), pname);
 
 	pid_t pid = fork();
 	if (pid == -1) {

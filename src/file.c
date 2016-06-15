@@ -180,7 +180,7 @@ cap_freadcp(FILE* fin) {
 	}
 
 	size_t size = cap_fsize(fin);
-	char* dst = (char*) malloc(sizeof(char)*size+1); // +1 for final nul
+	char* dst = malloc(sizeof(char)*size+1); // +1 for final nul
 	if (!dst) {
 		fprintf(stderr, "Failed to allocate memory");
 		return NULL;
