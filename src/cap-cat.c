@@ -1,37 +1,31 @@
 #include "cap-cat.h"
 
-char *
-cap_envwith(char *dst, size_t dstsz, const char *key, const char *with, int delim) {
-	const char* val = getenv(key);
-	snprintf(dst, dstsz, "%s%c%s", val, delim, with);
-	return dst;
-}
-
-char *
-cap_pathwith(char *dst, size_t dstsz, const char *key, const char *with) {
-	return cap_envwith(dst, dstsz, key, with, '/');
-}
-
-void
-cap_fwriteto(FILE *fin, FILE *fout) {
-	for (int c; (c = fgetc(fin)) != EOF; fputc(c, fout)) {
-	}
-}
-
 int
 main(int argc, char *argv[]) {
+	struct cap_config *conf = cap_confnewload();
+	char *cd = cap_confgetcp(conf, "cd");
+
 	for (int i = 1; i < argc; ++i) {
 		const char *name = argv[i];
+		
+		// Make path
 		char path[100];
-		cap_pathwith(path, sizeof path, "CAP_PWD", name);
+		snprintf(path, sizeof path, "%s/%s", cd, name);
 		//printf("path[%s]\n", path);
+
+		// Copy stream
 		FILE *fin = fopen(path, "rb");
 		if (!fin) {
+			cap_log("error", "fopen %s", path);
 			continue;
 		}
-		cap_fwriteto(fin, stderr);
+		if (!cap_fcopy(stderr, fin)) {
+			cap_log("error", "fcopy");
+		}
 		fclose(fin);
 	}
+
+	free(cd);
+	cap_confdel(conf);
 	return 0;
 }
-

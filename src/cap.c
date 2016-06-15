@@ -1,7 +1,7 @@
 #include "cap.h"
 
 int
-main(int argc, char* argv[]) {
+main(int argc, char *argv[]) {
 	printf("Hello, World!\n");
 	return 0;
 }
