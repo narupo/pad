@@ -161,6 +161,11 @@ cap_fmkdirmode(const char* dirpath, mode_t mode) {
 #endif
 }
 
+int
+cap_fmkdirq(const char *path) {
+	return cap_fmkdirmode(path, S_IRUSR | S_IWUSR | S_IXUSR);
+}
+
 bool
 cap_ftrunc(const char* path) {
 	FILE* fout = cap_fopen(path, "wb");
