@@ -23,7 +23,7 @@ _cap_log(const char *file, long line, const char *func, const char *type, const 
 	}
 
 	if (msglen) {
-		fprintf(fout, ": %s", msg);
+		fprintf(fout, ": %c%s", toupper(msg[0]), msg+1);
 		if (msg[msglen-1] != '.') {
 			fprintf(fout, ".");
 		}
@@ -37,14 +37,20 @@ _cap_log(const char *file, long line, const char *func, const char *type, const 
 }
 
 void
-cap_die(char const *fmt, ...) {
+cap_die(const char *fmt, ...) {
+	char tmp[1024];
+	if (isalpha(fmt[0])) {
+		snprintf(tmp, sizeof tmp, "%c%s", toupper(fmt[0]), fmt+1);
+		fmt = tmp;
+	}
+
 	size_t fmtlen = strlen(fmt);
 	va_list args;
 	va_start(args, fmt);
 
 	fflush(stdout);
 
-	fprintf(stderr, "Die: ");
+	fprintf(stderr, "cap: ");
 	vfprintf(stderr, fmt, args);
 
 	if (fmtlen && fmt[fmtlen-1] != '.') {

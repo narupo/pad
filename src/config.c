@@ -142,49 +142,6 @@ cap_confgetcp(const struct cap_config *self, const char *key) {
 	return cap_mapgetcp(self->map, key);
 }
 
-bool
-cap_confsaverow(struct cap_config *self, const char *key, const char *val) {
-	const char *confpath = getenv("CAP_CONFIG");
-
-	FILE *fin = fopen(confpath, "rb");
-	if (!fin) {
-		cap_log("error", "fopen %s", confpath);
-		return false;
-	}
-
-	const char *tmppath = "/tmp/cap.config";
-	FILE *fout = fopen(tmppath, "w");
-	if (!fout) {
-		cap_log("error", "fopen %s", tmppath);
-		return false;
-	}
-
-	char line[1024];
-	for (; fgets(line, sizeof line, fin); ) {
-		size_t len = strlen(line);
-		if (line[len-1] == '\n') {
-			line[--len] = '\0';
-		}
-		if (strncmp(line, key, strlen(key)) == 0) {
-			fprintf(fout, "%s = \"%s\"\n", key, val);
-		} else {
-			fprintf(fout, "%s\n", line);
-		}
-	}
-
-	fclose(fin);
-	fclose(fout);
-
-	if (rename(tmppath, confpath) != 0) {
-		cap_log("error", "rename %s -> %s", tmppath, confpath);
-		return false;
-	}
-
-	cap_mapset(self->map, key, val);
-
-	return true;
-}
-
 #if 0
 int main(int argc, char *argv[]) {
 	struct cap_config *conf = cap_confnew();

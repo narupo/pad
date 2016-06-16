@@ -16,6 +16,10 @@ main(int argc, char *argv[]) {
 	}
 
 	const char *cd = getenv("CAP_CD");
+	if (!cd) {
+		cap_log("error", "need environ variable of cd");
+		return 1;
+	}
 
 	for (int i = 1; i < argc; ++i) {
 		const char *name = argv[i];
