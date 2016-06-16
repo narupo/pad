@@ -102,9 +102,9 @@ cap_confnewfile(const char *fname) {
 
 struct cap_config *
 cap_confnewload(void) {
-	const char *confpath = getenv("CAP_CONFPATH");
+	const char *confpath = getenv("CAP_CONFIG");
 	if (!confpath) {
-		fprintf(stderr, "Not found environment variable of 'CAP_CONFPATH'\n");
+		fprintf(stderr, "Not found environment variable of 'CAP_CONFIG'\n");
 		fflush(stderr);
 		exit(1);
 		return NULL;
@@ -144,7 +144,7 @@ cap_confgetcp(const struct cap_config *self, const char *key) {
 
 bool
 cap_confsaverow(struct cap_config *self, const char *key, const char *val) {
-	const char *confpath = getenv("CAP_CONFPATH");
+	const char *confpath = getenv("CAP_CONFIG");
 
 	FILE *fin = fopen(confpath, "rb");
 	if (!fin) {

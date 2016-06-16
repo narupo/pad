@@ -2,35 +2,42 @@
 
 int
 main(int argc, char* argv[]) {
-puts("4");	
 	if (argc < 2) {
 		const char *cd = getenv("CAP_CD");
-		printf("%s\n", (cd ? cd : "null"));
+		if (!cd) {
+			cap_log("error", "need environ variable of cd");
+			return 1;
+		}
+		printf("%s\n", cd);
 		return 0;
 	}
-puts("3");	
 	
 	char newcd[100];
 	cap_fsolve(newcd, sizeof newcd, argv[1]);
 	
-puts("2");	
 	if (!cap_fisdir(newcd)) {
 		cap_log("error", "can't move to %s", newcd);
 		return 1;
 	}
 
-puts("1");	
-	struct cap_config *conf = cap_confnew();
-	if (!conf) {
-		cap_log("error", "cap_confnew");
+	const char *vardir = getenv("CAP_VARDIR");
+	if (!vardir) {
+		cap_log("error", "need environ variable of vardir");
+		return 1;
+	}
+	
+	char cdpath[100];
+	snprintf(cdpath, sizeof cdpath, "%s/cd", vardir);
+	// printf("vardir[%s]\n", cdpath);
+
+	FILE *fout = fopen(cdpath, "w");
+	if (!fout) {
+		cap_log("error", "fopen %s", cdpath);
 		return 1;
 	}
 
-	if (!cap_confsaverow(conf, "cd", newcd)) {
-		cap_log("error", "cap_confsaverow");
-		return 1;
-	}	
+	fprintf(fout, "%s", newcd);
 
-	cap_confdel(conf);
+	fclose(fout);
 	return 0;
 }
