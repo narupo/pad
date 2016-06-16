@@ -34,13 +34,13 @@ enum {
  * Wrapper of fclose
  */
 int
-cap_fclose(FILE* fp);
+cap_fclose(FILE *fp);
 
 /**
  * Wrapper of fopen
  */
-FILE*
-cap_fopen(const char* name, const char* mode);
+FILE *
+cap_fopen(const char *name, const char *mode);
 
 bool
 cap_fcopy(FILE *dst, FILE *src);
@@ -54,8 +54,8 @@ cap_fclosedir(DIR* dir);
 /**
  * Wrapper of opendir
  */
-DIR*
-cap_fopendir(const char* path);
+DIR *
+cap_fopendir(const char *path);
 
 /**
  * @brief Wrapper of realpath (Unix's API)
@@ -67,8 +67,8 @@ cap_fopendir(const char* path);
  * @return success to pointer to destination
  * @return failed to NULL
 */
-char*
-cap_frealpath(char* dst, size_t dstsize, const char* src);
+char *
+cap_frealpath(char *dst, size_t dstsize, const char *src);
 
 /**
  * Check exists file
@@ -78,13 +78,13 @@ cap_frealpath(char* dst, size_t dstsize, const char* src);
  * @return is not exists to false
  */
 bool
-cap_fexists(const char* path);
+cap_fexists(const char *path);
 
 /**
  * Wrapper of mkdir
  */
 int
-cap_fmkdirmode(const char* path, mode_t mode);
+cap_fmkdirmode(const char *path, mode_t mode);
 
 int
 cap_fmkdirq(const char *path);
@@ -98,7 +98,7 @@ cap_fmkdirq(const char *path);
  * @return failed to false
  */
 bool
-cap_ftrunc(const char* path);
+cap_ftrunc(const char *path);
 
 /**
  * Get normalized file path
@@ -110,8 +110,8 @@ cap_ftrunc(const char* path);
  * @return success to pointer to dst
  * @return failed to NULL
  */
-char*
-cap_fsolve(char* dst, size_t dstsize, const char* path);
+char *
+cap_fsolve(char *dst, size_t dstsize, const char *path);
 
 /**
  * @param[in] path String of solve target
@@ -119,8 +119,8 @@ cap_fsolve(char* dst, size_t dstsize, const char* path);
  * @return Success to pointer to allocate memory for string of solve path.
  * @return Failed to NULL
  */
-char*
-cap_fsolvecp(const char* path);
+char *
+cap_fsolvecp(const char *path);
 
 /**
  * Check file is directory
@@ -130,7 +130,7 @@ cap_fsolvecp(const char* path);
  * @return is not directory to false
  */
 bool
-cap_fisdir(const char* path);
+cap_fisdir(const char *path);
 
 /**
  * Read all string from stream
@@ -139,20 +139,20 @@ cap_fisdir(const char* path);
  * @return success to pointer to read string (nul terminated)
  * @return failed to pointer to NULL
  */
-char*
-cap_freadcp(FILE* fin);
+char *
+cap_freadcp(FILE *fin);
 
 long
-cap_fsize(FILE* stream);
+cap_fsize(FILE *stream);
 
-const char*
-cap_fsuffix(const char* path);
+const char *
+cap_fsuffix(const char *path);
 
-char*
-cap_fdirname(char* dst, size_t dstsz, const char* path);
+char *
+cap_fdirname(char *dst, size_t dstsz, const char *path);
 
-char*
-cap_fbasename(char* dst, size_t dstsz, const char* path);
+char *
+cap_fbasename(char *dst, size_t dstsz, const char *path);
 
 /*********************
 * file struct cap_dirnode *
@@ -166,7 +166,7 @@ struct cap_dirnode;
  * @param self
 */
 void
-cap_dirnodedel(struct cap_dirnode* self);
+cap_dirnodedel(struct cap_dirnode *self);
 
 /**
  * @brief Get name of node
@@ -176,8 +176,8 @@ cap_dirnodedel(struct cap_dirnode* self);
  * @return success to pointer to name
  * @return failed to NULL
 */
-const char*
-cap_dirnodename(struct cap_dirnode const* self);
+const char *
+cap_dirnodename(const struct cap_dirnode* self);
 
 /*****************
 * file struct cap_dir *
@@ -194,7 +194,7 @@ struct cap_dir;
  * @return failed to number of under of zero
 */
 int
-cap_dirclose(struct cap_dir* self);
+cap_dirclose(struct cap_dir *self);
 
 /**
  * @brief Open directory
@@ -204,8 +204,8 @@ cap_dirclose(struct cap_dir* self);
  * @return success to pointer to struct cap_dir
  * @return failed to NULL
 */
-struct cap_dir*
-cap_diropen(const char* path);
+struct cap_dir *
+cap_diropen(const char *path);
 
 /**
  * @brief Read next node in directory
@@ -215,7 +215,7 @@ cap_diropen(const char* path);
  * @return success to pointer to struct cap_dirnode
  * @return failed or end of read to NULL
 */
-struct cap_dirnode*
-cap_dirread(struct cap_dir* self);
+struct cap_dirnode *
+cap_dirread(struct cap_dir *self);
 
 #endif
