@@ -418,7 +418,7 @@ cap_dirread(struct cap_dir* self) {
 
 #if defined(_TEST_FILE)
 static int
-test_mkdir(int argc, char* argv[]) {
+test_mkdir(int argc, char *argv[]) {
 	if (argc < 2) {
 		die("need path");
 	}
@@ -449,7 +449,7 @@ solve_path(char* dst, size_t dstsize, const char* path) {
 }
 
 static int
-test_solve_path(int argc, char* argv[]) {
+test_solve_path(int argc, char *argv[]) {
 	if (argc < 2) {
 		die("need path");
 	}
@@ -461,7 +461,7 @@ test_solve_path(int argc, char* argv[]) {
 }
 
 static int
-test_directory(int argc, char* argv[]) {
+test_directory(int argc, char *argv[]) {
 #if defined(_CAP_WINDOWS)
 	const char* dirpath = "C:/Windows/Temp";
 
@@ -508,7 +508,7 @@ test_directory(int argc, char* argv[]) {
 }
 
 int
-main(int argc, char* argv[]) {
+main(int argc, char *argv[]) {
 	// return test_solve_path(argc, argv);
 	int ret = test_directory(argc, argv);
 	if (ret != 0) {
