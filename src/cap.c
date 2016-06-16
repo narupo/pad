@@ -1,18 +1,16 @@
 #include "cap.h"
 
 static bool
-putconfig(const char *path) {
-	FILE *fout = fopen(path, "w");
+putconfigto(const char *cnfpath) {
+	FILE *fout = fopen(cnfpath, "w");
 	if (!fout) {
 		return false;
 	}
 
 	char tmp[100];
 
-	fprintf(fout, "# Cap's config\n");
-	fprintf(fout, "home = \"%s\"\n", cap_fsolve(tmp, sizeof tmp, "/tmp"));
-	fprintf(fout, "cd = \"%s\"\n", cap_fsolve(tmp, sizeof tmp, "/tmp"));
-	fprintf(fout, "editor = \"%s\"\n", cap_fsolve(tmp, sizeof tmp, "/usr/bin/vi"));
+	fprintf(fout, "# Cap's constant config\n");
+	fprintf(fout, "ignore = \"%s\"\n", cap_fsolve(tmp, sizeof tmp, "/tmp"));
 
 	if (fclose(fout) != 0) {
 		return false;
@@ -22,41 +20,99 @@ putconfig(const char *path) {
 }
 
 static bool
-deployenv(const char *confpath) {
-	struct cap_config *conf = cap_confnewfile(confpath);
-	if (!conf) {
+writeto(const char *path, const char *line) {
+	if (cap_fexists(path)) {
 		return false;
 	}
+	FILE *fout = fopen(path, "w");
+	if (!fout) {
+		return false;
+	}
+	fprintf(fout, "%s\n", line);
+	fflush(fout);
+	return fclose(fout) == 0;
+}
 
-	char tmp[100];
-	
-	setenv("CAP_CONFPATH", confpath, 1);
-	setenv("CAP_HOME", cap_fsolve(tmp, sizeof tmp, cap_confgetc(conf, "home")), 1);
-	setenv("CAP_CD", cap_fsolve(tmp, sizeof tmp, cap_confgetc(conf, "cd")), 1);
-	setenv("CAP_EDITOR", cap_fsolve(tmp, sizeof tmp, cap_confgetc(conf, "editor")), 1);
+static bool
+combwriteto(const char *vardir, const char *fname, const char *line) {
+	char path[100];
+	char slvline[100];
 
-	cap_confdel(conf);
+	cap_fsolve(slvline, sizeof slvline, line);
+	snprintf(path, sizeof path, "%s/%s", vardir, fname);
+
+	return writeto(path, slvline);
+}
+
+struct var {
+	const char *envkey;
+	const char *fname;
+	char defval[100];
+} vars[] = {
+	{"CAP_HOME", "home", "/tmp"},
+	{"CAP_CD", "cd", "/tmp"},
+	{"CAP_EDITOR", "editor", "/usr/bin/vi"},
+	{},
+};
+
+static bool
+putvarsin(const char *vardir) {
+	for (const struct var *p = vars; p->envkey; ++p) {
+		combwriteto(vardir, p->fname, p->defval);
+	}
+	return true;
+}
+
+static bool
+readenvfrom(const char *vardir) {
+	char path[100];
+	for (const struct var *p = vars; p->envkey; ++p) {
+		snprintf(path, sizeof path, "%s/%s", vardir, p->fname);
+		FILE *fin = fopen(path, "rb");
+		if (!fin) {
+			cap_log("error", "fopen %s", path);
+			continue;
+		}
+		char val[100];
+		size_t vallen;
+		fgets(val, sizeof val, fin);
+		vallen = strlen(val);
+		if (val[vallen-1] == '\n') {
+			val[--vallen] = '\0';
+		}
+		setenv(p->envkey, val, 1);
+		fclose(fin);
+	}
 	return true;
 }
 
 static bool
 setup(int argc, char *const argv[]) {
-	char path[100];
-	char tmp[100];
-	cap_fsolve(path, sizeof path, "~");
-
-	snprintf(tmp, sizeof tmp, "%s/.cap2", path);
-	if (!cap_fexists(tmp)) {
-		cap_fmkdirq(tmp);
+	char caproot[100];
+	char cnfpath[100];
+	char vardir[100];
+	
+	cap_fsolve(caproot, sizeof caproot, "~/.cap2");
+	setenv("CAP_ROOT", caproot, 1);
+	if (!cap_fexists(caproot)) {
+		cap_fmkdirq(caproot);
 	}
 
-	snprintf(tmp, sizeof tmp, "%s/.cap2/config", path);
-	if (!cap_fexists(tmp)) {
-		putconfig(tmp);
+	snprintf(cnfpath, sizeof cnfpath, "%s/config", caproot);
+	setenv("CAP_CONFIG", cnfpath, 1);
+	if (!cap_fexists(cnfpath)) {
+		putconfigto(cnfpath);
 	}
 
-	if (!deployenv(tmp)) {
-		cap_log("error", "deployenv");
+	snprintf(vardir, sizeof vardir, "%s/var", caproot);
+	setenv("CAP_VARDIR", vardir, 1);
+	if (!cap_fexists(vardir)) {
+		cap_fmkdirq(vardir);
+	}
+	putvarsin(vardir);
+
+	if (!readenvfrom(vardir)) {
+		cap_log("error", "readenvfrom");
 		return false;
 	}
 
