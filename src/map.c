@@ -174,7 +174,7 @@ cap_mapgetcp(struct cap_map *self, const char *key) {
 
 #if 0
 int
-main(int argc, char* argv[]) {
+main(int argc, char *argv[]) {
 	struct cap_map *map = cap_mapnew();
 	cap_mapset(map, "home", "/tmp");
 	cap_mapset(map, "cd", "/var/tmp");

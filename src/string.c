@@ -556,7 +556,7 @@ test_resize(char *args[]) {
 
 static int
 test_aps(char *args[]) {
-	for (char** app = args; *app; ++app) {
+	for (char **app = args; *app; ++app) {
 		cap_strapp(str, *app);
 	}
 
@@ -565,7 +565,7 @@ test_aps(char *args[]) {
 
 static int
 test_apo(char *args[]) {
-	for (char** app = args; *app; ++app) {
+	for (char **app = args; *app; ++app) {
 		struct cap_string *other = cap_strnew_from_string(*app);
 		cap_strappend_other(str, other);
 		cap_strdel(other);
@@ -612,7 +612,7 @@ int
 main(int argc, char *argv[]) {
 	static struct Command {
 		const char *name;
-		int (*command)(char**);
+		int (*command)(char **);
 	} commands[] = {
 		{"newo", test_newo},
 		{"cl", test_clear},
@@ -660,7 +660,7 @@ main(int argc, char *argv[]) {
 
 				CsvLine* csvl = csvline_new_parse_line(pcmd, ' ');
 				int argc = csvline_length(csvl);
-				char** argv = csvline_escape_delete(csvl);
+				char **argv = csvline_escape_delete(csvl);
 
 				if (cur->command(argv) != 0) {
 					fprintf(stderr, "Failed to test of \"%s\"", line);
