@@ -234,11 +234,6 @@ cap_fsuffix(const char* path) {
 	return suf + 1;
 }
 
-int
-cap_frename(const char* oldpath, const char* newpath) {
-	return rename(oldpath, newpath);
-}
-
 char*
 cap_fdirname(char* dst, size_t dstsz, const char* path) {
 	snprintf(dst, dstsz, "%s", path);

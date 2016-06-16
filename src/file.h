@@ -154,17 +154,6 @@ cap_fdirname(char* dst, size_t dstsz, const char* path);
 char*
 cap_fbasename(char* dst, size_t dstsz, const char* path);
 
-/**
- * Wrapper of rename(2)
- *
- * @param[in] oldpath
- * @param[in] newpath
- *
- * @return on success, zero is returned. on error, -1 is returned, and errno is set appropriately
- */
-int
-cap_frename(const char* oldpath, const char* newpath);
-
 /*********************
 * file struct cap_dirnode *
 *********************/
