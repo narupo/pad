@@ -17,7 +17,7 @@ main(int argc, char *argv[]) {
 
 	const char *cd = getenv("CAP_CD");
 	if (!cd) {
-		cap_log("error", "need environ variable of cd");
+		cap_log("error", "need environment variable of cd");
 		return 1;
 	}
 
