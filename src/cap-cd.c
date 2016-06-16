@@ -20,7 +20,7 @@ docd(const char *newcd) {
 		return false;
 	}
 
-	fprintf(fout, "%s", newcd);
+	fprintf(fout, "%s\n", newcd);
 
 	return fclose(fout) == 0;
 }

@@ -90,8 +90,9 @@ main(int argc, char* argv[]) {
 		
 		FILE *fin = fopen(path, "rb");
 		if (!fin) {
-			cap_die("fopen %s", path);
-		}		
+			cap_log("error", "fopen %s", path);
+			continue;
+		}
 		make(stdout, fin);
 		fclose(fin);
 	}
