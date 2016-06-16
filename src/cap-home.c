@@ -4,7 +4,7 @@ static void
 setline(const char *path, const char *line) {
 	FILE *fout = fopen(path, "w");
 	if (!fout) {
-		cap_die("fopen");
+		cap_die("fopen %s", path);
 	}
 
 	fprintf(fout, "%s\n", line);
@@ -24,10 +24,13 @@ main(int argc, char* argv[]) {
 
 	char newhome[100];
 	cap_fsolve(newhome, sizeof newhome, argv[1]);
+	if (!cap_fexists(newhome)) {
+		cap_die("%s is not a directory", newhome);
+	}
 
 	const char *vardir = getenv("CAP_VARDIR");
 	if (!vardir) {
-		cap_die("getenv");
+		cap_die("need environment variable of vardir");
 	}
 
 	char fpath[100];

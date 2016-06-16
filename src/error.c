@@ -51,13 +51,17 @@ cap_die(const char *fmt, ...) {
 	fflush(stdout);
 
 	fprintf(stderr, "cap: ");
-	vfprintf(stderr, fmt, args);
+
+	if (errno != 0) {
+		fprintf(stderr, "%s. ", strerror(errno));
+	}
+	
+	if (fmtlen) {
+		vfprintf(stderr, fmt, args);
+	}
 
 	if (fmtlen && fmt[fmtlen-1] != '.') {
 		fprintf(stderr, ".");
-	}
-	if (errno != 0) {
-		fprintf(stderr, " %s.", strerror(errno));
 	}
 
 	fprintf(stderr, "\n");
