@@ -34,7 +34,7 @@ main(int argc, char* argv[]) {
 
 	char newhome[100];
 	cap_fsolve(newhome, sizeof newhome, argv[1]);
-	if (!cap_fexists(newhome)) {
+	if (!cap_fisdir(newhome)) {
 		cap_die("%s is not a directory", newhome);
 	}
 
