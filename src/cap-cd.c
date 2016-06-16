@@ -29,7 +29,9 @@ int
 main(int argc, char* argv[]) {
 	if (argc < 2) {
 		const char *home = getenv("CAP_HOME");
-		home = (home ? home : "/tmp");
+		if (!home) {
+			cap_die("need environment variable of home");
+		}
 		if (!docd(home)) {
 			cap_die("failed to cd");
 		}

@@ -17,10 +17,20 @@ int
 main(int argc, char* argv[]) {
 	if (argc < 2) {
 		const char *home = getenv("CAP_HOME");
-		home = (home ? home : "/tmp");
+		if (!home) {
+			cap_die("need environment variable of home");
+		}
 		printf("%s\n", home);
 		return 0;
 	}
+
+	const char *vardir = getenv("CAP_VARDIR");
+	if (!vardir || strlen(vardir) == 0) {
+		cap_die("need environment variable of vardir");
+	}
+
+	char hmpath[100];
+	snprintf(hmpath, sizeof hmpath, "%s/home", vardir);
 
 	char newhome[100];
 	cap_fsolve(newhome, sizeof newhome, argv[1]);
@@ -28,18 +38,11 @@ main(int argc, char* argv[]) {
 		cap_die("%s is not a directory", newhome);
 	}
 
-	const char *vardir = getenv("CAP_VARDIR");
-	if (!vardir) {
-		cap_die("need environment variable of vardir");
-	}
+	setline(hmpath, newhome);
 
-	char fpath[100];
-
-	snprintf(fpath, sizeof fpath, "%s/home", vardir);
-	setline(fpath, newhome);
-
-	snprintf(fpath, sizeof fpath, "%s/cd", vardir);
-	setline(fpath, newhome);
+	char cdpath[100];
+	snprintf(cdpath, sizeof cdpath, "%s/cd", vardir);
+	setline(cdpath, newhome);
 
 	return 0;
 }
