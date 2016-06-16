@@ -62,4 +62,7 @@ cap_confgetcp(const struct cap_config *self, const char *key);
 void 
 cap_confdump(const struct cap_config *self, FILE *fout);
 
+bool
+cap_confsaverow(struct cap_config *self, const char *key, const char *val);
+
 #endif

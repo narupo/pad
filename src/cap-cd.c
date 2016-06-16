@@ -2,52 +2,35 @@
 
 int
 main(int argc, char* argv[]) {
+puts("4");	
 	if (argc < 2) {
-		printf("%s\n", getenv("CAP_CD"));
+		const char *cd = getenv("CAP_CD");
+		printf("%s\n", (cd ? cd : "null"));
 		return 0;
 	}
+puts("3");	
 	
-	const char *newcd = argv[1];
-	const char *confpath = getenv("CAP_CONFPATH");
-
+	char newcd[100];
+	cap_fsolve(newcd, sizeof newcd, argv[1]);
+	
+puts("2");	
 	if (!cap_fisdir(newcd)) {
 		cap_log("error", "can't move to %s", newcd);
 		return 1;
 	}
-	
-	FILE *fin = fopen(confpath, "rb");
-	if (!fin) {
-		cap_log("error", "fopen %s", confpath);
+
+puts("1");	
+	struct cap_config *conf = cap_confnew();
+	if (!conf) {
+		cap_log("error", "cap_confnew");
 		return 1;
 	}
 
-	const char *tmppath = "/tmp/cap.config";
-	FILE *fout = fopen(tmppath, "w");
-	if (!fout) {
-		cap_log("error", "fopen %s", tmppath);
+	if (!cap_confsaverow(conf, "cd", newcd)) {
+		cap_log("error", "cap_confsaverow");
 		return 1;
-	}
+	}	
 
-	char line[1024];
-	for (; fgets(line, sizeof line, fin); ) {
-		size_t len = strlen(line);
-		if (line[len-1] == '\n') {
-			line[--len] = '\0';
-		}
-		if (strncmp(line, "cd", 2) == 0) {
-			fprintf(fout, "cd = \"%s\"\n", newcd);
-		} else {
-			fprintf(fout, "%s\n", line);
-		}
-	}
-
-	fclose(fin);
-	fclose(fout);
-
-	if (cap_frename(tmppath, confpath) != 0) {
-		cap_log("error", "rename %s -> %s", tmppath, confpath);
-		return 1;
-	}
-	
+	cap_confdel(conf);
 	return 0;
 }
