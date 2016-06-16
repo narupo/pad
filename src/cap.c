@@ -119,13 +119,8 @@ setup(int argc, char *const argv[]) {
 	return true;
 }
 
-int
-main(int argc, char *ap[]) {
-	if (!setup(argc, ap)) {
-		cap_log("error", "setup");
-		return 1;
-	}
-
+static void
+run(int argc, char *const ap[]) {
 	const char *pname = ap[1];
 	char *const *argv = (char *const *)ap+1;
 
@@ -148,6 +143,15 @@ main(int argc, char *ap[]) {
 		wait(NULL);
 		exit(0);
 	}
+}
+
+int
+main(int argc, char *ap[]) {
+	if (!setup(argc, ap)) {
+		cap_die("Failed to setup");
+	}
+
+	run(argc, ap);
 
 	return 0;
 }

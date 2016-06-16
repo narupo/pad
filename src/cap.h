@@ -14,7 +14,7 @@
 #ifndef CAP_H
 #define CAP_H
 
-#define _BSD_SOURCE 1 /**/
+#define _BSD_SOURCE 1 /* In cap.h: For the setenv */
 #include <stdio.h>
 #include <sys/wait.h>
 
