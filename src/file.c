@@ -11,10 +11,10 @@ cap_fcopy(FILE *dst, FILE *src) {
 	return fseek(src, tell, SEEK_SET) == 0;
 }
 
-char*
-cap_frealpath(char* dst, size_t dstsize, const char* src) {
+char *
+cap_frealpath(char *dst, size_t dstsize, const char *src) {
 #if defined(_CAP_WINDOWS)
-	char* fpart;
+	char *fpart;
 
 	if (!GetFullPathName(src, dstsize, dst, &fpart)) {
 		fprintf(stderr, "Failed to solve path");
@@ -38,8 +38,8 @@ cap_frealpath(char* dst, size_t dstsize, const char* src) {
 	return dst;
 }
 
-char*
-cap_fsolve(char* dst, size_t dstsize, const char* path) {
+char *
+cap_fsolve(char *dst, size_t dstsize, const char *path) {
 	char tmp[FILE_NPATH];
 
 	// Check arugments
@@ -63,8 +63,8 @@ cap_fsolve(char* dst, size_t dstsize, const char* path) {
 	return dst;
 }
 
-char*
-cap_fsolvecp(const char* path) {
+char *
+cap_fsolvecp(const char *path) {
 	// Check arguments
 	if (!path) {
 		fprintf(stderr, "Invalid arguments");
@@ -72,14 +72,14 @@ cap_fsolvecp(const char* path) {
 	}
 
 	// Ready
-	char* dst = (char*) malloc(sizeof(char) * FILE_NPATH);
+	char *dst = malloc(sizeof(char) * FILE_NPATH);
 	if (!dst) {
 		fprintf(stderr, "Failed to malloc");
 		return NULL;
 	}
 
 	// Solve
-	char* res = cap_fsolve(dst, FILE_NPATH, path);
+	char *res = cap_fsolve(dst, FILE_NPATH, path);
 	if (!res) {
 		fprintf(stderr, "Failed to solve path \"%s\"", path);
 		free(dst);
@@ -90,7 +90,7 @@ cap_fsolvecp(const char* path) {
 }
 
 FILE*
-cap_fopen(const char* path, const char* mode) {
+cap_fopen(const char *path, const char *mode) {
 	return fopen(path, mode);
 }
 
@@ -100,7 +100,7 @@ cap_fclose(FILE* fp) {
 }
 
 DIR*
-cap_fopendir(const char* path) {
+cap_fopendir(const char *path) {
 	return opendir(path);
 }
 
@@ -110,7 +110,7 @@ cap_fclosedir(DIR* dir) {
 }
 
 bool
-cap_fexists(const char* path) {
+cap_fexists(const char *path) {
 	struct stat s;
 	int res = stat(path, &s);
 
@@ -129,7 +129,7 @@ notfound:
 }
 
 bool
-cap_fisdir(const char* path) {
+cap_fisdir(const char *path) {
 	struct stat s;
 	int res = stat(path, &s);
 
@@ -153,7 +153,7 @@ notfound:
 }
 
 int
-cap_fmkdirmode(const char* dirpath, mode_t mode) {
+cap_fmkdirmode(const char *dirpath, mode_t mode) {
 #if defined(_CAP_WINDOWS)
 	return mkdir(dirpath);
 #else
@@ -167,7 +167,7 @@ cap_fmkdirq(const char *path) {
 }
 
 bool
-cap_ftrunc(const char* path) {
+cap_ftrunc(const char *path) {
 	FILE* fout = cap_fopen(path, "wb");
 	if (!fout) {
 		return false;
@@ -176,8 +176,7 @@ cap_ftrunc(const char* path) {
 	return true;
 }
 
-char*
-cap_freadcp(FILE* fin) {
+char *cap_freadcp(FILE* fin) {
 	// Check arguments
 	if (!fin || feof(fin)) {
 		fprintf(stderr, "Invalid stream");
@@ -185,7 +184,7 @@ cap_freadcp(FILE* fin) {
 	}
 
 	size_t size = cap_fsize(fin);
-	char* dst = malloc(sizeof(char)*size+1); // +1 for final nul
+	char *dst = malloc(sizeof(char)*size+1); // +1 for final nul
 	if (!dst) {
 		fprintf(stderr, "Failed to allocate memory");
 		return NULL;
@@ -221,27 +220,27 @@ cap_fsize(FILE* fp) {
 	return size;
 }
 
-const char*
-cap_fsuffix(const char* path) {
+const char *
+cap_fsuffix(const char *path) {
 	if (!path) {
 		return "";
 	}
 
-	const char* suf = strrchr(path, '.');
+	const char *suf = strrchr(path, '.');
 	if (!suf) {
 		return path;
 	}
 	return suf + 1;
 }
 
-char*
-cap_fdirname(char* dst, size_t dstsz, const char* path) {
+char *
+cap_fdirname(char *dst, size_t dstsz, const char *path) {
 	snprintf(dst, dstsz, "%s", path);
 	return dirname(dst);
 }
 
-char*
-cap_fbasename(char* dst, size_t dstsz, const char* path) {
+char *
+cap_fbasename(char *dst, size_t dstsz, const char *path) {
 	snprintf(dst, dstsz, "%s", path);
 	return basename(dst);
 }
@@ -263,15 +262,15 @@ struct cap_dirnode {
 *******************************/
 
 void
-cap_dirnodedel(struct cap_dirnode* self) {
+cap_dirnodedel(struct cap_dirnode *self) {
 	if (self) {
 		free(self);
 	}
 }
 
-struct cap_dirnode*
+struct cap_dirnode *
 cap_dirnodenew(void) {
-	struct cap_dirnode* self = (struct cap_dirnode*) calloc(1, sizeof(struct cap_dirnode));
+	struct cap_dirnode *self = (struct cap_dirnode *) calloc(1, sizeof(struct cap_dirnode));
 	if (!self) {
 		fprintf(stderr, "Failed to construct cap_dirnode");
 		return NULL;
@@ -283,8 +282,7 @@ cap_dirnodenew(void) {
 * cap_dirnode getter *
 ***********************/
 
-const char*
-cap_dirnodename(const struct cap_dirnode* self) {
+const char *cap_dirnodename(const struct cap_dirnode *self) {
 #if defined(_CAP_WINDOWS)
 	return self->finddata.cFileName;
 #else
@@ -310,7 +308,7 @@ struct cap_dir {
 ***************************/
 
 int
-cap_dirclose(struct cap_dir* self) {
+cap_dirclose(struct cap_dir *self) {
 	if (self) {
 		int ret = 0;
 #if defined(_CAP_WINDOWS)
@@ -339,9 +337,9 @@ cap_dirclose(struct cap_dir* self) {
 	return -1;
 }
 
-struct cap_dir*
-cap_diropen(const char* path) {
-	struct cap_dir* self = (struct cap_dir*) calloc(1, sizeof(struct cap_dir));
+struct cap_dir *
+cap_diropen(const char *path) {
+	struct cap_dir *self = calloc(1, sizeof(struct cap_dir));
 	if (!self) {
 		fprintf(stderr, "Failed to construct struct cap_dir");
 		return NULL;
@@ -370,9 +368,9 @@ cap_diropen(const char* path) {
 * struct cap_dir getter *
 *******************/
 
-struct cap_dirnode*
-cap_dirread(struct cap_dir* self) {
-	struct cap_dirnode* node = cap_dirnodenew();
+struct cap_dirnode *
+cap_dirread(struct cap_dir *self) {
+	struct cap_dirnode * node = cap_dirnodenew();
 	if (!node) {
 		fprintf(stderr, "Failed to construct cap_dirnode");
 		return NULL;
@@ -423,7 +421,7 @@ test_mkdir(int argc, char *argv[]) {
 		die("need path");
 	}
 
-	const char* path = argv[1];
+	const char *path = argv[1];
 
 	if (cap_fexists(path)) {
 		printf("is exists [%s]\n", path);
@@ -435,10 +433,10 @@ test_mkdir(int argc, char *argv[]) {
 	return 0;
 }
 
-static char*
-solve_path(char* dst, size_t dstsize, const char* path) {
+static char *
+solve_path(char *dst, size_t dstsize, const char *path) {
 #if defined(_CAP_WINDOWS)
-	char* fpart;
+	char *fpart;
 
 	if (!GetFullPathName(path, dstsize, dst, &fpart)) {
 		fprintf(stderr, "Failed to solve path");
@@ -463,19 +461,19 @@ test_solve_path(int argc, char *argv[]) {
 static int
 test_directory(int argc, char *argv[]) {
 #if defined(_CAP_WINDOWS)
-	const char* dirpath = "C:/Windows/Temp";
+	const char *dirpath = "C:/Windows/Temp";
 
 	if (argc >= 2) {
 		dirpath = argv[1];
 	}
 
-	struct cap_dir* dir = cap_diropen(dirpath);
+	struct cap_dir *dir = cap_diropen(dirpath);
 	if (!dir) {
 		fprintf(stderr, "Failed to open dir \"%s\"", dirpath);
 		return 1;
 	}
 
-	for (struct cap_dirnode* node; (node = cap_dirread(dir)); ) {
+	for (struct cap_dirnode * node; (node = cap_dirread(dir)); ) {
 		fprintf(stderr, "name[%s]\n", cap_dirnodename(node));
 		cap_dirnodedel(node);
 	}
@@ -485,19 +483,19 @@ test_directory(int argc, char *argv[]) {
 	return 0;
 
 #else
-	const char* dirpath = "/tmp";
+	const char *dirpath = "/tmp";
 
 	if (argc >= 2) {
 		dirpath = argv[1];
 	}
 
-	struct cap_dir* dir = cap_diropen(dirpath);
+	struct cap_dir *dir = cap_diropen(dirpath);
 	if (!dir) {
 		fprintf(stderr, "Failed to open dir \"%s\"", dirpath);
 		return 1;
 	}
 
-	for (struct cap_dirnode* node; (node = cap_dirread(dir)); ) {
+	for (struct cap_dirnode * node; (node = cap_dirread(dir)); ) {
 		printf("name[%s]\n", cap_dirnodename(node));
 		cap_dirnodedel(node);
 	}
