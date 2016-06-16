@@ -91,6 +91,7 @@ setup(int argc, char *const argv[]) {
 	char caproot[100];
 	char cnfpath[100];
 	char vardir[100];
+	char homedir[100];
 	
 	cap_fsolve(caproot, sizeof caproot, "~/.cap2");
 	setenv("CAP_ROOT", caproot, 1);
@@ -102,6 +103,12 @@ setup(int argc, char *const argv[]) {
 	setenv("CAP_CONFIG", cnfpath, 1);
 	if (!cap_fexists(cnfpath)) {
 		putconfigto(cnfpath);
+	}
+
+	snprintf(homedir, sizeof homedir, "%s/home", caproot);
+	setenv("CAP_HOMEDIR", homedir, 1);
+	if (!cap_fexists(homedir)) {
+		cap_fmkdirq(homedir);
 	}
 
 	snprintf(vardir, sizeof vardir, "%s/var", caproot);
