@@ -1,5 +1,16 @@
 #include "cap.h"
 
+static const struct var {
+	const char *envkey;
+	const char *fname;
+	char defval[100];
+} vars[] = {
+	{"CAP_HOME", "home", "/tmp"},
+	{"CAP_CD", "cd", "/tmp"},
+	{"CAP_EDITOR", "editor", "/usr/bin/vi"},
+	{},
+};
+
 static bool
 putconfigto(const char *cnfpath) {
 	FILE *fout = fopen(cnfpath, "w");
@@ -44,17 +55,6 @@ combwriteto(const char *vardir, const char *fname, const char *line) {
 	return writeto(path, slvline);
 }
 
-struct var {
-	const char *envkey;
-	const char *fname;
-	char defval[100];
-} vars[] = {
-	{"CAP_HOME", "home", "/tmp"},
-	{"CAP_CD", "cd", "/tmp"},
-	{"CAP_EDITOR", "editor", "/usr/bin/vi"},
-	{},
-};
-
 static bool
 putvarsin(const char *vardir) {
 	for (const struct var *p = vars; p->envkey; ++p) {
@@ -66,23 +66,29 @@ putvarsin(const char *vardir) {
 static bool
 readenvfrom(const char *vardir) {
 	char path[100];
+
 	for (const struct var *p = vars; p->envkey; ++p) {
 		snprintf(path, sizeof path, "%s/%s", vardir, p->fname);
+	
 		FILE *fin = fopen(path, "rb");
 		if (!fin) {
 			cap_log("error", "fopen %s", path);
 			continue;
 		}
+	
 		char val[100];
 		size_t vallen;
+	
 		fgets(val, sizeof val, fin);
 		vallen = strlen(val);
 		if (val[vallen-1] == '\n') {
 			val[--vallen] = '\0';
 		}
+	
 		setenv(p->envkey, val, 1);
 		fclose(fin);
 	}
+	
 	return true;
 }
 
@@ -94,29 +100,30 @@ setup(int argc, char *const argv[]) {
 	char homedir[100];
 	
 	cap_fsolve(caproot, sizeof caproot, "~/.cap2");
-	setenv("CAP_ROOT", caproot, 1);
 	if (!cap_fexists(caproot)) {
 		cap_fmkdirq(caproot);
 	}
 
 	snprintf(cnfpath, sizeof cnfpath, "%s/config", caproot);
-	setenv("CAP_CONFIG", cnfpath, 1);
 	if (!cap_fexists(cnfpath)) {
 		putconfigto(cnfpath);
 	}
 
 	snprintf(homedir, sizeof homedir, "%s/home", caproot);
-	setenv("CAP_HOMEDIR", homedir, 1);
 	if (!cap_fexists(homedir)) {
 		cap_fmkdirq(homedir);
 	}
 
 	snprintf(vardir, sizeof vardir, "%s/var", caproot);
-	setenv("CAP_VARDIR", vardir, 1);
 	if (!cap_fexists(vardir)) {
 		cap_fmkdirq(vardir);
 	}
 	putvarsin(vardir);
+
+	setenv("CAP_ROOT", caproot, 1);
+	setenv("CAP_CONFIG", cnfpath, 1);
+	setenv("CAP_HOMEDIR", homedir, 1);
+	setenv("CAP_VARDIR", vardir, 1);
 
 	if (!readenvfrom(vardir)) {
 		cap_log("error", "readenvfrom");
@@ -126,6 +133,9 @@ setup(int argc, char *const argv[]) {
 	return true;
 }
 
+/**
+ * TODO
+ */
 static void
 run(int argc, char *const ap[]) {
 	const char *pname = ap[1];
@@ -153,12 +163,13 @@ run(int argc, char *const ap[]) {
 }
 
 int
-main(int argc, char *ap[]) {
-	if (!setup(argc, ap)) {
+main(int argc, char *argv[]) {
+	if (!setup(argc, argv)) {
 		cap_die("Failed to setup");
 	}
 
-	run(argc, ap);
+	run(argc, argv);
 
 	return 0;
 }
+
