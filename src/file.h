@@ -154,9 +154,9 @@ cap_fdirname(char *dst, size_t dstsz, const char *path);
 char *
 cap_fbasename(char *dst, size_t dstsz, const char *path);
 
-/*********************
+/**************************
 * file struct cap_dirnode *
-*********************/
+**************************/
 
 struct cap_dirnode;
 
@@ -179,9 +179,9 @@ cap_dirnodedel(struct cap_dirnode *self);
 const char *
 cap_dirnodename(const struct cap_dirnode* self);
 
-/*****************
+/**********************
 * file struct cap_dir *
-*****************/
+**********************/
 
 struct cap_dir;
 
