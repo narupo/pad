@@ -1,7 +1,8 @@
 RM := rm
 CC := gcc
 CFLAGS := -Wall -pg -O0 -std=c11 -Wno-unused-function -D_DEBUG
-CMDS := cap.c cap-cat.c cap-make.c cap-cd.c cap-home.c cap-editor.c cap-pwd.c
+CMDS := cap.c cap-cat.c cap-make.c cap-cd.c cap-home.c cap-editor.c cap-pwd.c \
+	cap-ls.c
 MODS := error.c file.c hash.c string.c config.c file.c map.c
 LIBS := -lm
 HEADERS := $(CMDS:.c=.h)
@@ -10,7 +11,8 @@ MODOBJS := $(MODS:.c=.o)
 DEPS := $(CMDS:.c=.d) $(MODS:.c=.d)
 BINDIR := ../bin
 
-all: cap cap-cat cap-make cap-cd cap-home cap-editor cap-pwd
+all: cap cap-cat cap-make cap-cd cap-home cap-editor cap-pwd \
+	cap-ls
 
 cap: cap.c $(MODOBJS)
 	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
@@ -31,6 +33,9 @@ cap-editor: cap-editor.c $(MODOBJS)
 	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
 
 cap-pwd: cap-pwd.c $(MODOBJS)
+	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
+
+cap-ls: cap-ls.c $(MODOBJS)
 	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
 
 .PHONY: clean depend
