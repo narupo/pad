@@ -2,7 +2,7 @@
 #define CAP_LS_H
 
 #undef _GNU_SOURCE
-#define _GNU_SOURCE 1 /* In cap-ls for strdup */
+#define _GNU_SOURCE 1 /* In cap-ls: For strdup */
 #include <stdio.h>
 #include <stdlib.h>
 
