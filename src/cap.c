@@ -77,10 +77,9 @@ readenvfrom(const char *vardir) {
 		}
 	
 		char val[100];
-		size_t vallen;
-	
 		fgets(val, sizeof val, fin);
-		vallen = strlen(val);
+
+		size_t vallen = strlen(val);
 		if (val[vallen-1] == '\n') {
 			val[--vallen] = '\0';
 		}
@@ -137,7 +136,7 @@ setup(int argc, char *const argv[]) {
  * TODO
  */
 static void
-run(int argc, char *const ap[]) {
+run(int argc, char *ap[]) {
 	const char *pname = ap[1];
 	char *const *argv = (char *const *)ap+1;
 
