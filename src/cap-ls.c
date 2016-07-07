@@ -99,17 +99,17 @@ cap_ls(const char *path) {
 	struct array *arr = dir2array(dir);
 	if (!arr) {
 		cap_log("error", "failed to read directory %s", path);
-		return 2;
-	}
-
-	if (cap_dirclose(dir) < 0) {
-		cap_log("error", "failed to close directory %s", path);
 		return 1;
 	}
 
 	arrsort(arr);
 	arrdump(arr, stdout);
 	arrdel(arr);
+
+	if (cap_dirclose(dir) < 0) {
+		cap_log("error", "failed to close directory %s", path);
+		return 1;
+	}
 
 	return 0;
 }
@@ -118,12 +118,9 @@ int
 main(int argc, char *argv[]) {
 	const char *cd = getenv("CAP_CD");
 	if (!cd) {
-		cap_log("error", "need environment variable of cd");
-		return 1;
+		cap_die("need environment variable of cd");
 	}
 
-	cap_ls(cd);
-
-	return 0;
+	return cap_ls(cd);
 }
 
