@@ -29,14 +29,15 @@ static char *
 readline(char *dst, size_t dstsz, const char *path) {
 	FILE *fin = fopen(path, "rb");
 	if (!fin) {
-		cap_log("error", "fopen %s", path);
 		return NULL;
 	}
 
-	cap_fgetline(dst, dstsz, fin);
+	if (cap_fgetline(dst, dstsz, fin) == EOF) {
+		fclose(fin);
+		return NULL;
+	}
 
 	if (fclose(fin) < 0) {
-		cap_log("error", "failed to close file %s", path);
 		return NULL;
 	}
 
@@ -47,7 +48,6 @@ static const char *
 writeline(const char *line, const char *path) {
 	FILE *fout = fopen(path, "w");
 	if (!fout) {
-		cap_log("error", "failed to open file %s", path);
 		return NULL;
 	}
 
@@ -55,7 +55,6 @@ writeline(const char *line, const char *path) {
 	fflush(fout);
 
 	if (fclose(fout) < 0) {
-		cap_log("error", "failed to close file %s", path);
 		return NULL;
 	}
 
@@ -63,7 +62,7 @@ writeline(const char *line, const char *path) {
 }
 
 static bool
-varsdepto(const struct var *vars, const char *vardir) {
+varswrite(const struct var *vars, const char *vardir) {
 	char path[100];
 	char sval[100]; // Solve value
 
@@ -74,20 +73,29 @@ varsdepto(const struct var *vars, const char *vardir) {
 		}
 
 		cap_fsolve(sval, sizeof sval, p->defval);
-		writeline(sval, path);
+		
+		if (!writeline(sval, path)) {
+			cap_log("error", "failed to write line to %s", path);
+			continue;
+		}
 	}
 
 	return true;
 }
 
 static bool
-varsreadfrom(const struct var *vars, const char *vardir) {
+varsread(const struct var *vars, const char *vardir) {
 	char path[100];
 	char val[100];
 
 	for (const struct var *p = vars; p->envkey; ++p) {
 		snprintf(path, sizeof path, "%s/%s", vardir, p->fname);
-		readline(val, sizeof val, path);
+		
+		if (!readline(val, sizeof val, path)) {
+			cap_log("error", "failed to read line from %s", path);
+			continue;
+		}
+
 		setenv(p->envkey, val, 1);
 	}
 	
@@ -103,8 +111,8 @@ varsrun(const char *vardir) {
 		{},
 	};
 
-	varsdepto(vars, vardir);
-	return varsreadfrom(vars, vardir);
+	varswrite(vars, vardir);
+	return varsread(vars, vardir);
 }
 
 static bool
