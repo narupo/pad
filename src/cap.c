@@ -280,21 +280,21 @@ caprun(struct cap *cap) {
 	snprintf(ppath, sizeof ppath, "../bin/cap-%s", cap->cmdargv[0]); // TODO
 
 	pid_t pid = fork();
-	if (pid == -1) {
+	switch (pid) {
+	case -1:
 		cap_die("failed to fork");
-	}
-
-	if (pid == 0) {
-		// Child
+		break;
+	case 0: // Child
 		if (execv(ppath, cap->cmdargv) == -1) {
 			capdel(cap);
 			cap_die("execv");
 		}
-	} else {
-		// Parent
+		break;
+	default:// Parent
 		wait(NULL);
 		capdel(cap);
 		exit(0);
+		break;
 	}
 }
 
