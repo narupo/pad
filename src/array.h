@@ -60,4 +60,7 @@ cap_arrgetc(const struct cap_array *arr, int idx);
 ssize_t
 cap_arrlen(const struct cap_array *arr); 
 
+void
+cap_arrdump(const struct cap_array *arr, FILE *fout);
+
 #endif

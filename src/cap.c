@@ -198,16 +198,18 @@ capnew(int ac, char *av[]) {
 	for (int i = 1; i < ac; ++i) {
 		const char *ag = av[i];
 		
-		if (ag[0] != '-') {
+		if (arr == args && ag[0] != '-') {
 			cap_arrmove(arr, NULL); // For the final null in argv
 			arr = cmdargs;
 		}
 
 		cap_arrpush(arr, ag);
 	}
+
 	cap_arrmove(arr, NULL); // For the final null in argv
 
 	// Parse options
+	//cap_arrdump(cmdargs, stdout);
 	cap->argc = cap_arrlen(args)-1; // -1 for final null
 	cap->argv = cap_arrescdel(args);
 	cap->cmdargc = cap_arrlen(cmdargs)-1; // -1 for final null

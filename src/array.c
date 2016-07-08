@@ -110,3 +110,12 @@ cap_arrlen(const struct cap_array *arr) {
 	return arr->len;
 }
 
+void
+cap_arrdump(const struct cap_array *arr, FILE *fout) {
+	for (ssize_t i = 0; i < arr->len; ++i) {
+		fprintf(fout, "%s\n", arr->arr[i]);
+	}
+	fflush(fout);
+}
+
+
