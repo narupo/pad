@@ -7,7 +7,7 @@ struct var {
 };
 
 static bool
-putconfigto(const char *cnfpath) {
+writeconfig(const char *cnfpath) {
 	FILE *fout = fopen(cnfpath, "w");
 	if (!fout) {
 		return false;
@@ -129,7 +129,7 @@ setup(int argc, char *const argv[]) {
 
 	snprintf(cnfpath, sizeof cnfpath, "%s/config", caproot);
 	if (!cap_fexists(cnfpath)) {
-		putconfigto(cnfpath);
+		writeconfig(cnfpath);
 	}
 	setenv("CAP_CONFPATH", cnfpath, 1);
 
