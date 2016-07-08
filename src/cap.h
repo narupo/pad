@@ -17,6 +17,8 @@
 #define _BSD_SOURCE 1 /* In cap.h: For the setenv */
 #include <stdio.h>
 #include <sys/wait.h>
+#include <getopt.h>
+#include <string.h>
 
 #include "error.h"
 #include "file.h"

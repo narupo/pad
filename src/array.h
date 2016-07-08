@@ -27,6 +27,9 @@ cap_arrdel(struct cap_array *arr);
 struct cap_array * 
 cap_arrnew(void);
 
+char **
+cap_arrescdel(struct cap_array *arr);
+
 /**
  * 
  *
@@ -37,6 +40,9 @@ cap_arrnew(void);
  */
 struct cap_array * 
 cap_arrpush(struct cap_array *arr, const char *str);
+
+struct cap_array * 
+cap_arrmove(struct cap_array *arr, char *ptr);
 
 /**
  * 

@@ -34,21 +34,51 @@ cap_arrnew(void) {
 	return arr;
 }
 
+char **
+cap_arrescdel(struct cap_array *arr) {
+	char **esc = arr->arr;
+
+	free(arr);
+
+	return esc;
+}
+
+struct cap_array *
+cap_arrresize(struct cap_array *arr, ssize_t capa) {
+	ssize_t size = sizeof(arr->arr[0]);
+	char **tmp = realloc(arr->arr, size*capa + size);
+	if (!tmp) {
+		return NULL;
+	}
+
+	arr->arr = tmp;
+	arr->capa = capa;
+	return arr;
+}
+
 struct cap_array *
 cap_arrpush(struct cap_array *arr, const char *str) {
 	if (arr->len >= arr->capa) {
-		size_t capa = arr->capa*2;
-		size_t size = sizeof(arr->arr[0]);
-		char **tmp = realloc(arr->arr, size*capa + size);
-		if (!tmp) {
+		if (!cap_arrresize(arr, arr->capa*2)) {
 			return NULL;
 		}
-
-		arr->arr = tmp;
-		arr->capa = capa;
 	}
 
 	arr->arr[arr->len++] = strdup(str);
+	arr->arr[arr->len] = NULL;
+
+	return arr;
+}
+
+struct cap_array * 
+cap_arrmove(struct cap_array *arr, char *ptr) {
+	if (arr->len >= arr->capa) {
+		if (!cap_arrresize(arr, arr->capa*2)) {
+			return NULL;
+		}
+	}
+
+	arr->arr[arr->len++] = ptr;
 	arr->arr[arr->len] = NULL;
 
 	return arr;
