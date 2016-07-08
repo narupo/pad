@@ -17,7 +17,6 @@ cap_frealpath(char *dst, size_t dstsize, const char *src) {
 	char *fpart;
 
 	if (!GetFullPathName(src, dstsize, dst, &fpart)) {
-		fprintf(stderr, "Failed to solve path");
 		return NULL;
 	}
 
@@ -29,7 +28,6 @@ cap_frealpath(char *dst, size_t dstsize, const char *src) {
 			// Path is not exists
 			snprintf(dst, dstsize, "%s", src);
 		} else {
-			fprintf(stderr, "Failed to realpath \"%s\"", src);
 			return NULL;
 		}
 	}
@@ -44,7 +42,6 @@ cap_fsolve(char *dst, size_t dstsize, const char *path) {
 
 	// Check arugments
 	if (!dst || !path) {
-		fprintf(stderr, "Invalid arguments");
 		return NULL;
 	}
 
@@ -56,7 +53,6 @@ cap_fsolve(char *dst, size_t dstsize, const char *path) {
 	}
 
 	if (!cap_frealpath(dst, dstsize, tmp)) {
-		fprintf(stderr, "Failed to realpath \"%s\"", tmp);
 		return NULL;
 	}
 
@@ -67,21 +63,18 @@ char *
 cap_fsolvecp(const char *path) {
 	// Check arguments
 	if (!path) {
-		fprintf(stderr, "Invalid arguments");
 		return NULL;
 	}
 
 	// Ready
 	char *dst = malloc(sizeof(char) * FILE_NPATH);
 	if (!dst) {
-		fprintf(stderr, "Failed to malloc");
 		return NULL;
 	}
 
 	// Solve
 	char *res = cap_fsolve(dst, FILE_NPATH, path);
 	if (!res) {
-		fprintf(stderr, "Failed to solve path \"%s\"", path);
 		free(dst);
 		return NULL;
 	}
@@ -137,7 +130,7 @@ cap_fisdir(const char *path) {
 		if (errno == ENOENT) {
 			;
 		} else {
-			fprintf(stderr, "Failed to stat");
+			// Error
 		}
 		goto notfound;
 	} else {
@@ -186,13 +179,11 @@ char *cap_freadcp(FILE* fin) {
 	size_t size = cap_fsize(fin);
 	char *dst = malloc(sizeof(char)*size+1); // +1 for final nul
 	if (!dst) {
-		fprintf(stderr, "Failed to allocate memory");
 		return NULL;
 	}
 
 	fread(dst, sizeof(char), size, fin);
 	if (ferror(fin)) {
-		fprintf(stderr, "Failed to read from stream");
 		return NULL;
 	}
 
@@ -286,7 +277,6 @@ struct cap_dirnode *
 cap_dirnodenew(void) {
 	struct cap_dirnode *self = (struct cap_dirnode *) calloc(1, sizeof(struct cap_dirnode));
 	if (!self) {
-		fprintf(stderr, "Failed to construct cap_dirnode");
 		return NULL;
 	}
 	return self;
@@ -329,7 +319,7 @@ cap_dirclose(struct cap_dir *self) {
 		if (self->handle) {
 			ret = FindClose(self->handle);
 			if (ret == 0) {
-				fprintf(stderr, "Failed to close directory");
+				// Error
 			}
 			self->handle = NULL;
 			ret = !ret;
@@ -340,7 +330,7 @@ cap_dirclose(struct cap_dir *self) {
 #else
 		ret = closedir(self->directory);
 		if (ret != 0) {
-			fprintf(stderr, "Failed to close directory");
+			// Error
 		}
 #endif
 		free(self);
@@ -355,13 +345,11 @@ struct cap_dir *
 cap_diropen(const char *path) {
 	struct cap_dir *self = calloc(1, sizeof(struct cap_dir));
 	if (!self) {
-		fprintf(stderr, "Failed to construct struct cap_dir");
 		return NULL;
 	}
 
 #if defined(_CAP_WINDOWS)
 	if (!cap_fexists(path)) {
-		fprintf(stderr, "Not found path \"%s\"", path);
 		return NULL;
 	}
 	self->handle = NULL;
@@ -369,7 +357,6 @@ cap_diropen(const char *path) {
 
 #else
 	if (!(self->directory = opendir(path))) {
-		fprintf(stderr, "Failed to open directory \"%s\"", path);
 		free(self);
 		return NULL;
 	}
@@ -386,14 +373,12 @@ struct cap_dirnode *
 cap_dirread(struct cap_dir *self) {
 	struct cap_dirnode * node = cap_dirnodenew();
 	if (!node) {
-		fprintf(stderr, "Failed to construct cap_dirnode");
 		return NULL;
 	}
 
 #if defined(_CAP_WINDOWS)
 	if (!self->handle) {
 		if ((self->handle = FindFirstFile(self->dirpath, &node->finddata)) == INVALID_HANDLE_VALUE) {
-			fprintf(stderr, "Failed to open directory \"%s\"", self->dirpath);
 			cap_dirnodedel(node);
 			return NULL;
 
@@ -411,7 +396,6 @@ cap_dirread(struct cap_dir *self) {
 	if (!(node->node = readdir(self->directory))) {
 		if (errno != 0) {
 			cap_dirnodedel(node);
-			fprintf(stderr, "Failed to readdir");
 			return NULL;
 		} else {
 			// Done to readdir
@@ -453,7 +437,6 @@ solve_path(char *dst, size_t dstsize, const char *path) {
 	char *fpart;
 
 	if (!GetFullPathName(path, dstsize, dst, &fpart)) {
-		fprintf(stderr, "Failed to solve path");
 		return NULL;
 	}
 #endif
