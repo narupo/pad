@@ -16,7 +16,7 @@ setline(const char *path, const char *line) {
 int
 main(int argc, char *argv[]) {
 	if (argc < 2) {
-		const char *home = getenv("CAP_HOME");
+		const char *home = getenv("CAP_VARHOME");
 		if (!home) {
 			cap_die("need environment variable of home");
 		}

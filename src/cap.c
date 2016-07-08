@@ -5,9 +5,9 @@ static const struct var {
 	const char *fname;
 	char defval[100];
 } vars[] = {
-	{"CAP_HOME", "home", "/tmp"},
-	{"CAP_CD", "cd", "/tmp"},
-	{"CAP_EDITOR", "editor", "/usr/bin/vi"},
+	{"CAP_VARHOME", "home", "/tmp"},
+	{"CAP_VARCD", "cd", "/tmp"},
+	{"CAP_VAREDITOR", "editor", "/usr/bin/vi"},
 	{},
 };
 
@@ -119,8 +119,7 @@ setup(int argc, char *const argv[]) {
 	}
 	putvarsin(vardir);
 
-	setenv("CAP_ROOT", caproot, 1);
-	setenv("CAP_CONFIG", cnfpath, 1);
+	setenv("CAP_CONFPATH", cnfpath, 1);
 	setenv("CAP_HOMEDIR", homedir, 1);
 	setenv("CAP_VARDIR", vardir, 1);
 
@@ -143,7 +142,6 @@ run(int argc, char *ap[]) {
 	char ppath[100];
 	snprintf(ppath, sizeof ppath, "../bin/cap-%s", pname); // TODO
 
-	// Fork
 	pid_t pid = fork();
 	if (pid == -1) {
 		cap_die("fork");

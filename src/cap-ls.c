@@ -116,7 +116,7 @@ cap_ls(const char *path) {
 
 int
 main(int argc, char *argv[]) {
-	const char *cd = getenv("CAP_CD");
+	const char *cd = getenv("CAP_VARCD");
 	if (!cd) {
 		cap_die("need environment variable of cd");
 	}

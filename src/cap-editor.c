@@ -16,7 +16,7 @@ setline(const char *path, const char *line) {
 int
 main(int argc, char *argv[]) {
 	if (argc < 2) {
-		const char *edtr = getenv("CAP_EDITOR");
+		const char *edtr = getenv("CAP_VAREDITOR");
 		if (!edtr) {
 			cap_die("need environment variable of editor");
 		}

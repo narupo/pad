@@ -1,5 +1,5 @@
-#ifndef CAP_CD_H
-#define CAP_CD_H
+#ifndef CAP_VARCD_H
+#define CAP_VARCD_H
 
 #include <stdio.h>
 #include <stdlib.h>
