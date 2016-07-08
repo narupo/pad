@@ -25,65 +25,86 @@ putconfigto(const char *cnfpath) {
 	return true;
 }
 
-static bool
-writeto(const char *path, const char *line) {
-	if (cap_fexists(path)) {
-		return false;
+static char *
+readline(char *dst, size_t dstsz, const char *path) {
+	FILE *fin = fopen(path, "rb");
+	if (!fin) {
+		cap_log("error", "fopen %s", path);
+		return NULL;
 	}
+
+	cap_fgetline(dst, dstsz, fin);
+
+	if (fclose(fin) < 0) {
+		cap_log("error", "failed to close file %s", path);
+		return NULL;
+	}
+
+	return dst;
+}
+
+static const char *
+writeline(const char *line, const char *path) {
 	FILE *fout = fopen(path, "w");
 	if (!fout) {
-		return false;
+		cap_log("error", "failed to open file %s", path);
+		return NULL;
 	}
+
 	fprintf(fout, "%s\n", line);
 	fflush(fout);
-	return fclose(fout) == 0;
-}
 
-static bool
-combwriteto(const char *vardir, const char *fname, const char *line) {
-	char path[100];
-	char slvline[100];
-
-	cap_fsolve(slvline, sizeof slvline, line);
-	snprintf(path, sizeof path, "%s/%s", vardir, fname);
-
-	return writeto(path, slvline);
-}
-
-static bool
-putvarsin(const struct var *vars, const char *vardir) {
-	for (const struct var *p = vars; p->envkey; ++p) {
-		combwriteto(vardir, p->fname, p->defval);
+	if (fclose(fout) < 0) {
+		cap_log("error", "failed to close file %s", path);
+		return NULL;
 	}
-	return true;
+
+	return line;
 }
 
 static bool
-readenvfrom(const struct var *vars, const char *vardir) {
+varsdepto(const struct var *vars, const char *vardir) {
 	char path[100];
+	char sval[100]; // Solve value
 
 	for (const struct var *p = vars; p->envkey; ++p) {
 		snprintf(path, sizeof path, "%s/%s", vardir, p->fname);
-	
-		FILE *fin = fopen(path, "rb");
-		if (!fin) {
-			cap_log("error", "fopen %s", path);
+		if (cap_fexists(path)) {
 			continue;
 		}
-	
-		char val[100];
-		fgets(val, sizeof val, fin);
 
-		size_t vallen = strlen(val);
-		if (val[vallen-1] == '\n') {
-			val[--vallen] = '\0';
-		}
-	
+		cap_fsolve(sval, sizeof sval, p->defval);
+		writeline(sval, path);
+	}
+
+	return true;
+}
+
+static bool
+varsreadfrom(const struct var *vars, const char *vardir) {
+	char path[100];
+	char val[100];
+
+	for (const struct var *p = vars; p->envkey; ++p) {
+		snprintf(path, sizeof path, "%s/%s", vardir, p->fname);
+		readline(val, sizeof val, path);
 		setenv(p->envkey, val, 1);
-		fclose(fin);
 	}
 	
 	return true;
+}
+
+static bool
+varsrun(const char *vardir) {
+	const struct var vars[] = {
+		{"CAP_VARHOME", "home", "/tmp"},
+		{"CAP_VARCD", "cd", "/tmp"},
+		{"CAP_VAREDITOR", "editor", "/usr/bin/vi"},
+		{},
+	};
+
+	varsdepto(vars, vardir);
+	return varsreadfrom(vars, vardir);
 }
 
 static bool
@@ -92,13 +113,6 @@ setup(int argc, char *const argv[]) {
 	char cnfpath[100];
 	char vardir[100];
 	char homedir[100];
-	
-	const struct var vars[] = {
-		{"CAP_VARHOME", "home", "/tmp"},
-		{"CAP_VARCD", "cd", "/tmp"},
-		{"CAP_VAREDITOR", "editor", "/usr/bin/vi"},
-		{},
-	};
 
 	cap_fsolve(caproot, sizeof caproot, "~/.cap2");
 	if (!cap_fexists(caproot)) {
@@ -109,28 +123,21 @@ setup(int argc, char *const argv[]) {
 	if (!cap_fexists(cnfpath)) {
 		putconfigto(cnfpath);
 	}
+	setenv("CAP_CONFPATH", cnfpath, 1);
 
 	snprintf(homedir, sizeof homedir, "%s/home", caproot);
 	if (!cap_fexists(homedir)) {
 		cap_fmkdirq(homedir);
 	}
+	setenv("CAP_HOMEDIR", homedir, 1);
 
 	snprintf(vardir, sizeof vardir, "%s/var", caproot);
 	if (!cap_fexists(vardir)) {
 		cap_fmkdirq(vardir);
 	}
-	putvarsin(vars, vardir);
-
-	setenv("CAP_CONFPATH", cnfpath, 1);
-	setenv("CAP_HOMEDIR", homedir, 1);
 	setenv("CAP_VARDIR", vardir, 1);
-
-	if (!readenvfrom(vars, vardir)) {
-		cap_log("error", "readenvfrom");
-		return false;
-	}
-
-	return true;
+	
+	return varsrun(vardir);
 }
 
 /**
