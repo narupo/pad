@@ -161,7 +161,7 @@ run(int argc, char *ap[]) {
 
 	pid_t pid = fork();
 	if (pid == -1) {
-		cap_die("fork");
+		cap_die("failed to fork");
 	}
 
 	if (pid == 0) {
@@ -179,7 +179,7 @@ run(int argc, char *ap[]) {
 int
 main(int argc, char *argv[]) {
 	if (!setup(argc, argv)) {
-		cap_die("Failed to setup");
+		cap_die("failed to setup");
 	}
 
 	run(argc, argv);
