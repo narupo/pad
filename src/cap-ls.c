@@ -57,6 +57,16 @@ main(int argc, char *argv[]) {
 		cap_die("need environment variable of cd");
 	}
 
-	return cap_ls(cd);
+	if (argc < 2) {
+		cap_ls(cd);
+	} else {
+		char path[256];
+		for (int i = 1; i < argc; ++i) {
+			snprintf(path, sizeof path, "%s/%s", cd, argv[i]);
+			cap_ls(path);
+		}
+	}
+
+	return 0;
 }
 
