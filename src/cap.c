@@ -6,6 +6,16 @@ struct var {
 	char defval[100];
 };
 
+const char *cmdnames[] = {
+	"ls",
+	"cat",
+	"make",
+	"cd",
+	"home",
+	"pwd",
+	NULL,
+};
+
 static bool
 writeconfig(const char *cnfpath) {
 	FILE *fout = fopen(cnfpath, "w");
@@ -176,8 +186,71 @@ run(int argc, char *ap[]) {
 	}
 }
 
+struct args {
+	struct cap_array *cap;
+	struct cap_array *cmd;
+};
+
+static void
+argsdel(struct args *args) {
+	if (args) {
+		cap_arrdel(args->cap);
+		cap_arrdel(args->cmd);
+		free(args);
+	}
+}
+
+static struct args *
+argsnew(int argc, char *argv[]) {
+	struct args *args = calloc(1, sizeof(*args));
+	if (!args) {
+		return NULL;
+	}
+
+	args->cap = cap_arrnew();
+	args->cmd = cap_arrnew();
+	if (!args->cap || !args->cap) {
+		argsdel(args);
+		return NULL;
+	}
+
+	struct cap_array *arr = args->cap; // Current array for parse
+	cap_arrpush(arr, argv[0]);
+
+	for (int i = 1; i < argc; ++i) {
+		const char *ag = argv[i];
+		
+		if (ag[0] != '-') {
+			arr = args->cmd;
+		}
+
+		cap_arrpush(arr, ag);
+	}
+
+	arrdump(args->cap, stdout);
+	printf("<\n");
+	arrdump(args->cmd, stdout);
+	
+	return args;
+}
+
+static void
+arrdump(const struct cap_array *arr, FILE *fout) {
+	for (size_t i = 0; i < cap_arrlen(arr); ++i) {
+		fprintf(fout, "%s\n", cap_arrgetc(arr, i));
+	}
+	fflush(fout);
+}
+
 int
 main(int argc, char *argv[]) {
+	struct args *args = argsnew(argc, argv);
+	if (!args) {
+		cap_die("failed to parse args");
+	}
+	argsdel(args);
+	return 0;
+
 	if (!setup(argc, argv)) {
 		cap_die("failed to setup");
 	}
