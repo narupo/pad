@@ -154,6 +154,9 @@ cap_fdirname(char *dst, size_t dstsz, const char *path);
 char *
 cap_fbasename(char *dst, size_t dstsz, const char *path);
 
+int
+cap_fgetline(char *dst, size_t dstsz, FILE *fin);
+
 /**************************
 * file struct cap_dirnode *
 **************************/

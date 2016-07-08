@@ -245,6 +245,20 @@ cap_fbasename(char *dst, size_t dstsz, const char *path) {
 	return basename(dst);
 }
 
+int 
+cap_fgetline(char *dst, size_t dstsz, FILE *fin) {
+	if (!fgets(dst, dstsz, fin)) {
+		return EOF;
+	}
+
+	int dstlen = strlen(dst);
+	if (dst[dstlen-1] == '\n') {
+		dst[--dstlen] = '\0';
+	}
+
+	return dstlen;
+}
+
 /*********************
 * file cap_dirnode *
 *********************/
