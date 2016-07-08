@@ -6,15 +6,19 @@ struct var {
 	char defval[100];
 };
 
-const char *cmdnames[] = {
-	"ls",
-	"cat",
-	"make",
-	"cd",
-	"home",
-	"pwd",
-	NULL,
+struct opts {
+	bool ishelp;
 };
+
+static void
+freeargv(int argc, char *argv[]) {
+	if (argv) {
+		for (int i = 0; i < argc; ++i) {
+			free(argv[i]);
+		}
+		free(argv);
+	}
+}
 
 static bool
 writeconfig(const char *cnfpath) {
@@ -125,8 +129,100 @@ varsrun(const char *vardir) {
 	return varsread(vars, vardir);
 }
 
+struct cap {
+	int argc;
+	char **argv;
+	int cmdargc;
+	char **cmdargv;
+	struct opts opts;
+};
+
+static void
+capdel(struct cap *cap) {
+	if (cap) {
+		freeargv(cap->argc, cap->argv);
+		freeargv(cap->cmdargc, cap->cmdargv);
+		free(cap);
+	}
+}
+
 static bool
-setup(int argc, char *const argv[]) {
+optsparse(struct opts *opts, int argc, char *argv[]) {
+	optind = 0;
+	
+	for (;;) {
+		static struct option longopts[] = {
+			{"help", no_argument, 0, 'h'},
+			{0},
+		};
+		int optsindex;
+
+		int cur = getopt_long(argc, argv, "h", longopts, &optsindex);
+		if (cur == -1) {
+			break;
+		}
+
+		switch (cur) {
+		case 'h': opts->ishelp = true; break;
+		case '?':
+		default: cap_log("error", "unknown option"); break;
+		}
+	}
+
+	if (argc < optind) {
+		return false;
+	}
+
+	return true;
+}
+
+static struct cap *
+capnew(int ac, char *av[]) {
+	struct cap *cap = calloc(1, sizeof(*cap));
+	if (!cap) {
+		return NULL;
+	}
+
+	struct cap_array *args = cap_arrnew();
+	struct cap_array *cmdargs = cap_arrnew();
+	if (!args || !cmdargs) {
+		cap_arrdel(args);
+		cap_arrdel(cmdargs);
+		capdel(cap);
+		return NULL;
+	}
+
+	struct cap_array *arr = args; // Current array for parse
+	cap_arrpush(arr, av[0]);
+
+	for (int i = 1; i < ac; ++i) {
+		const char *ag = av[i];
+		
+		if (ag[0] != '-') {
+			cap_arrmove(arr, NULL); // For the final null in argv
+			arr = cmdargs;
+		}
+
+		cap_arrpush(arr, ag);
+	}
+	cap_arrmove(arr, NULL); // For the final null in argv
+
+	// Parse options
+	cap->argc = cap_arrlen(args)-1; // -1 for final null
+	cap->argv = cap_arrescdel(args);
+	cap->cmdargc = cap_arrlen(cmdargs)-1; // -1 for final null
+	cap->cmdargv = cap_arrescdel(cmdargs);
+
+	if (!optsparse(&cap->opts, cap->argc, cap->argv)) {
+		capdel(cap);
+		return NULL;
+	}
+	
+	return cap;
+}
+
+static bool
+capsetup(const struct cap *cap) {
 	char caproot[100];
 	char cnfpath[100];
 	char vardir[100];
@@ -158,16 +254,28 @@ setup(int argc, char *const argv[]) {
 	return varsrun(vardir);
 }
 
+static void
+capusage(struct cap *cap) {
+	fprintf(stderr, "Usage: cap [command]... [options]...\n"
+
+	);
+	capdel(cap);
+	exit(0);
+}
+
 /**
  * TODO
  */
 static void
-run(int argc, char *ap[]) {
-	const char *pname = ap[1];
-	char *const *argv = (char *const *)ap+1;
+caprun(struct cap *cap) {
+	const struct opts *opts = &cap->opts;
+
+	if (cap->cmdargc < 1 || opts->ishelp) {
+		capusage(cap);
+	}
 
 	char ppath[100];
-	snprintf(ppath, sizeof ppath, "../bin/cap-%s", pname); // TODO
+	snprintf(ppath, sizeof ppath, "../bin/cap-%s", cap->cmdargv[0]); // TODO
 
 	pid_t pid = fork();
 	if (pid == -1) {
@@ -176,86 +284,31 @@ run(int argc, char *ap[]) {
 
 	if (pid == 0) {
 		// Child
-		if (execv(ppath, argv) == -1) {
+		if (execv(ppath, cap->cmdargv) == -1) {
+			capdel(cap);
 			cap_die("execv");
 		}
 	} else {
 		// Parent
 		wait(NULL);
+		capdel(cap);
 		exit(0);
 	}
 }
 
-struct args {
-	struct cap_array *cap;
-	struct cap_array *cmd;
-};
-
-static void
-argsdel(struct args *args) {
-	if (args) {
-		cap_arrdel(args->cap);
-		cap_arrdel(args->cmd);
-		free(args);
-	}
-}
-
-static struct args *
-argsnew(int argc, char *argv[]) {
-	struct args *args = calloc(1, sizeof(*args));
-	if (!args) {
-		return NULL;
-	}
-
-	args->cap = cap_arrnew();
-	args->cmd = cap_arrnew();
-	if (!args->cap || !args->cap) {
-		argsdel(args);
-		return NULL;
-	}
-
-	struct cap_array *arr = args->cap; // Current array for parse
-	cap_arrpush(arr, argv[0]);
-
-	for (int i = 1; i < argc; ++i) {
-		const char *ag = argv[i];
-		
-		if (ag[0] != '-') {
-			arr = args->cmd;
-		}
-
-		cap_arrpush(arr, ag);
-	}
-
-	arrdump(args->cap, stdout);
-	printf("<\n");
-	arrdump(args->cmd, stdout);
-	
-	return args;
-}
-
-static void
-arrdump(const struct cap_array *arr, FILE *fout) {
-	for (size_t i = 0; i < cap_arrlen(arr); ++i) {
-		fprintf(fout, "%s\n", cap_arrgetc(arr, i));
-	}
-	fflush(fout);
-}
-
 int
 main(int argc, char *argv[]) {
-	struct args *args = argsnew(argc, argv);
-	if (!args) {
-		cap_die("failed to parse args");
+	struct cap *cap = capnew(argc, argv);
+	if (!cap) {
+		cap_die("failed to create cap");
 	}
-	argsdel(args);
-	return 0;
 
-	if (!setup(argc, argv)) {
+	if (!capsetup(cap)) {
+		capdel(cap);
 		cap_die("failed to setup");
 	}
 
-	run(argc, argv);
+	caprun(cap);
 
 	return 0;
 }
