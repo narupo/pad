@@ -285,7 +285,7 @@ caprun(struct cap *cap) {
 		cap_die("failed to fork");
 		break;
 	case 0: // Child
-		if (execv(ppath, cap->cmdargv) == -1) {
+		if (execv(ppath, cap->cmdargv) < 0) {
 			capdel(cap);
 			cap_die("execv");
 		}
