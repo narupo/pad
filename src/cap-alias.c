@@ -1,4 +1,4 @@
-#include "cap-pwd.h"
+#include "cap-alias.h"
 
 int
 main(int argc, char *argv[]) {

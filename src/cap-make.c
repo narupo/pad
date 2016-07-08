@@ -82,7 +82,7 @@ main(int argc, char *argv[]) {
 
 	for (int i = 1; i < argc; ++i) {
 		const char *fname = argv[i];
-		const char *cd = getenv("CAP_CD");
+		const char *cd = getenv("CAP_VARCD");
 
 		char path[100];
 		snprintf(path, sizeof path, "%s/%s", cd, fname);
