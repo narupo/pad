@@ -1,14 +1,9 @@
 #include "cap.h"
 
-static const struct var {
+struct var {
 	const char *envkey;
 	const char *fname;
 	char defval[100];
-} vars[] = {
-	{"CAP_VARHOME", "home", "/tmp"},
-	{"CAP_VARCD", "cd", "/tmp"},
-	{"CAP_VAREDITOR", "editor", "/usr/bin/vi"},
-	{},
 };
 
 static bool
@@ -56,7 +51,7 @@ combwriteto(const char *vardir, const char *fname, const char *line) {
 }
 
 static bool
-putvarsin(const char *vardir) {
+putvarsin(const struct var *vars, const char *vardir) {
 	for (const struct var *p = vars; p->envkey; ++p) {
 		combwriteto(vardir, p->fname, p->defval);
 	}
@@ -64,7 +59,7 @@ putvarsin(const char *vardir) {
 }
 
 static bool
-readenvfrom(const char *vardir) {
+readenvfrom(const struct var *vars, const char *vardir) {
 	char path[100];
 
 	for (const struct var *p = vars; p->envkey; ++p) {
@@ -98,6 +93,13 @@ setup(int argc, char *const argv[]) {
 	char vardir[100];
 	char homedir[100];
 	
+	const struct var vars[] = {
+		{"CAP_VARHOME", "home", "/tmp"},
+		{"CAP_VARCD", "cd", "/tmp"},
+		{"CAP_VAREDITOR", "editor", "/usr/bin/vi"},
+		{},
+	};
+
 	cap_fsolve(caproot, sizeof caproot, "~/.cap2");
 	if (!cap_fexists(caproot)) {
 		cap_fmkdirq(caproot);
@@ -117,13 +119,13 @@ setup(int argc, char *const argv[]) {
 	if (!cap_fexists(vardir)) {
 		cap_fmkdirq(vardir);
 	}
-	putvarsin(vardir);
+	putvarsin(vars, vardir);
 
 	setenv("CAP_CONFPATH", cnfpath, 1);
 	setenv("CAP_HOMEDIR", homedir, 1);
 	setenv("CAP_VARDIR", vardir, 1);
 
-	if (!readenvfrom(vardir)) {
+	if (!readenvfrom(vars, vardir)) {
 		cap_log("error", "readenvfrom");
 		return false;
 	}
