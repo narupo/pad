@@ -258,7 +258,7 @@ capsetup(const struct cap *cap) {
 
 static void
 capusage(struct cap *cap) {
-	fprintf(stderr, "Usage: cap [command]... [options]...\n"
+	fprintf(stderr, "Usage: cap [command]... [option]...\n"
 
 	);
 	capdel(cap);
