@@ -22,6 +22,41 @@ struct cap_socket {
 	cap_sockmode_t mode;
 };
 
+/*************
+* socket log *
+*************/
+
+void
+socklog(const char *fmt, ...) {
+	size_t fmtlen = strlen(fmt);
+	va_list args;
+	va_start(args, fmt);
+
+	fflush(stdout);
+	fprintf(stderr, "cap socket: ");
+
+	if (isalpha(fmt[0])) {
+		fprintf(stderr, "%c", toupper(fmt[0]));
+		vfprintf(stderr, fmt+1, args);
+	} else {
+		vfprintf(stderr, fmt, args);
+	}
+
+	if (fmtlen && fmt[fmtlen-1] != '.') {
+		fprintf(stderr, ". ");
+	}
+
+	if (errno != 0) {
+		fprintf(stderr, "%s.", strerror(errno));
+	}
+
+	fprintf(stderr, "\n");
+
+	va_end(args);
+	fflush(stderr);
+	exit(EXIT_FAILURE);
+}
+
 /*******************************
 * socket WSA family of Windows *
 *******************************/
@@ -38,7 +73,7 @@ wsasockdestroy(void) {
 static void
 wsasockinit(void) {
 	if (WSAStartup(MAKEWORD(2, 0), &wsadata) != 0) {
-		fprintf(stderr, "failed to start WSA. %d", WSAGetLastError());
+		socklog("failed to start WSA. %d", WSAGetLastError());
 	} else {
 		atexit(wsasockdestroy);
 	}
@@ -73,7 +108,7 @@ cap_sockmode2str(cap_sockmode_t mode) {
 
 void
 cap_sockdisp(const struct cap_socket *self) {
-	fprintf(stderr, "socket host[%s] port[%s] mode[%s] socket[%d]\n"
+	socklog("socket host[%s] port[%s] mode[%s] socket[%d]\n"
 		, self->host, self->port, cap_sockmode2str(self->mode), self->socket);
 	fflush(stderr);
 }
@@ -82,7 +117,7 @@ int
 cap_sockclose(struct cap_socket *self) {
 	if (self) {
 		// if (close(self->socket) < 0) {
-		// 	fprintf(stderr, "failed to close socket [%d] by \"%s:%s\""
+		// 	socklog("failed to close socket [%d] by \"%s:%s\""
 		// 		, self->socket, self->host, self->port);
 		// }
 		free(self);
@@ -107,7 +142,7 @@ cap_sockinittcpserver(struct cap_socket *self) {
 	hints.ai_flags = AI_PASSIVE;
 
 	if (getaddrinfo(NULL, self->port, &hints, &infores) != 0) {
-		fprintf(stderr, "failed to getaddrinfo \"%s:%s\"", self->host, self->port);
+		socklog("failed to getaddrinfo \"%s:%s\"", self->host, self->port);
 		free(self);
 		return NULL;
 	}
@@ -123,7 +158,7 @@ cap_sockinittcpserver(struct cap_socket *self) {
 
 		int optval;
 		if (setsockopt(self->socket, SOL_SOCKET, SO_REUSEADDR, (void *) &optval, sizeof(optval)) == -1) {
-			fprintf(stderr, "failed to setsockopt \"%s:%s\"", self->host, self->port);
+			socklog("failed to setsockopt \"%s:%s\"", self->host, self->port);
 			freeaddrinfo(infores);
 			free(self);
 			return NULL;
@@ -139,13 +174,13 @@ cap_sockinittcpserver(struct cap_socket *self) {
 	freeaddrinfo(infores);
 
 	if (!rp) {
-		fprintf(stderr, "failed to find listen socket");
+		socklog("failed to find listen socket");
 		free(self);
 		return NULL;
 	}
 
 	if (listen(self->socket, SOMAXCONN) < 0) {
-		fprintf(stderr, "failed to listen \"%s:%s\"", self->host, self->port);
+		socklog("failed to listen \"%s:%s\"", self->host, self->port);
 		free(self);
 		return NULL;
 	}
@@ -168,7 +203,7 @@ cap_sockinittcpclient(struct cap_socket *self) {
 	hints.ai_flags = IPPROTO_TCP;
 
 	if (getaddrinfo(self->host, self->port, &hints, &infores) != 0) {
-		fprintf(stderr, "failed to getaddrinfo \"%s:%s\"", self->host, self->port);
+		socklog("failed to getaddrinfo \"%s:%s\"", self->host, self->port);
 		free(self);
 		return NULL;
 	}
@@ -183,19 +218,19 @@ cap_sockinittcpclient(struct cap_socket *self) {
 		}		
 
 		if (connect(self->socket, rp->ai_addr, rp->ai_addrlen) != -1) {
-			fprintf(stderr, "success to connect [%d]", self->socket);
+			socklog("success to connect [%d]", self->socket);
 			break; // success to connect
 		}
 
 		if (close(self->socket) < 0) {
-			fprintf(stderr, "failed to close socket [%d]", self->socket);
+			socklog("failed to close socket [%d]", self->socket);
 		}
 	}
 
 	freeaddrinfo(infores);
 
 	if (!rp) {
-		fprintf(stderr, "could not connect to any address \"%s:%s\"\n", self->host, self->port);
+		socklog("could not connect to any address \"%s:%s\"\n", self->host, self->port);
 		free(self);
 		return NULL;
 	}
@@ -205,10 +240,10 @@ cap_sockinittcpclient(struct cap_socket *self) {
 
 static struct cap_socket *
 cap_sockparseopensrc(struct cap_socket *self, const char *src) {
-	int m = 0;
 	char *dst = self->host;
 	int ndst = sizeof(self->host)-1;
 	int di = 0;
+	int m = 0;
 
 	for (const char *sp = src; *sp; ++sp) {
 		switch (m) {
@@ -227,7 +262,7 @@ cap_sockparseopensrc(struct cap_socket *self, const char *src) {
 			break;
 		case 1:
 			if (!isdigit((int) *sp)) {
-				fprintf(stderr, "invalid port number of \"%s\"", src);
+				socklog("invalid port number of \"%s\"", src);
 				return NULL;
 			}
 		
@@ -251,28 +286,28 @@ struct cap_socket *
 cap_sockopen(const char *src, const char *mode) {
 #if defined(_CAP_WINDOWS)
 	if (pthread_once(&wsasockonce, wsasockinit) != 0) {
-		fprintf(stderr, "failed to pthread once");
+		socklog("failed to pthread once");
 		return NULL;
 	}
 #endif
 
 	struct cap_socket *self = calloc(1, sizeof(struct cap_socket));
 	if (!self) {
-		fprintf(stderr, "failed to allocate memory");
+		socklog("failed to allocate memory");
 		return NULL;
 	}
 
 	// Convert from string to number of mode
 	self->mode = cap_sockstr2mode(mode);
 	if (self->mode == SOCKMODE_NULL) {
-		fprintf(stderr, "invalid open mode \"%s\"", mode);
+		socklog("invalid open mode \"%s\"", mode);
 		free(self);
 		return NULL;
 	}
 
 	// Parse source for host and port
 	if (!cap_sockparseopensrc(self, src)) {
-		fprintf(stderr, "failed to parse of \"%s\"", src);
+		socklog("failed to parse of \"%s\"", src);
 		free(self);
 		return NULL;
 	}
@@ -284,8 +319,8 @@ cap_sockopen(const char *src, const char *mode) {
 	default: break;
 	}
 
-	// invalid open mode
-	fprintf(stderr, "invalid open mode \"%s:%s\"", self->host, self->port);
+	// Invalid open mode
+	socklog("invalid open mode \"%s:%s\"", self->host, self->port);
 	free(self);
 	return NULL;
 }
@@ -303,19 +338,19 @@ cap_sockport(const struct cap_socket *self) {
 struct cap_socket *
 cap_sockaccept(const struct cap_socket *self) {
 	if (self->mode != SOCKMODE_TCPSERVER) {
-		fprintf(stderr, "invalid mode on accept \"%s:%s\"", self->host, self->port);
+		socklog("invalid mode on accept \"%s:%s\"", self->host, self->port);
 		return NULL;
 	}
 
 	int cliefd = accept(self->socket, NULL, NULL);
 	if (cliefd < 0) {
-		fprintf(stderr, "failed to accept \"%s:%s\"", self->host, self->port);
+		socklog("failed to accept \"%s:%s\"", self->host, self->port);
 		return NULL;
 	}
 
 	struct cap_socket *client = calloc(1, sizeof(struct cap_socket));
 	if (!client) {
-		fprintf(stderr, "failed to construct socket");
+		socklog("failed to construct socket");
 		return NULL;
 	}
 
@@ -328,13 +363,13 @@ cap_sockaccept(const struct cap_socket *self) {
 int
 cap_sockrecvstr(struct cap_socket *self, char *dst, size_t dstsz) {
 	if (!dst || dstsz < 1) {
-		fprintf(stderr, "invalid arguments");
+		socklog("invalid arguments");
 		return -1;
 	}
 
 	int ret = recv(self->socket, dst, dstsz-1, 0);
 	if (ret < 0) {
-		fprintf(stderr, "failed to read from socket [%d] by \"%s:%s\""
+		socklog("failed to read from socket [%d] by \"%s:%s\""
 			, self->socket, self->host, self->port);
 		*dst = '\0';
 	} else if (ret > 0) {
@@ -351,7 +386,7 @@ cap_socksendstr(struct cap_socket *self, const char *str) {
 
 	ret = send(self->socket, str, len, 0);
 	if (ret < 0) {
-		fprintf(stderr, "failed to write to socket [%d] by \"%s:%s\""
+		socklog("failed to write to socket [%d] by \"%s:%s\""
 			, self->socket, self->host, self->port);
 	}
 
@@ -368,7 +403,7 @@ cap_socksend(struct cap_socket *self, const unsigned char *bytes, size_t size) {
 	ret = send(self->socket, bytes, size, 0);
 #endif
 	if (ret < 0) {
-		fprintf(stderr, "failed to write to socket [%d] by \"%s:%s\""
+		socklog("failed to write to socket [%d] by \"%s:%s\""
 			, self->socket, self->host, self->port);
 	}
 
@@ -390,13 +425,13 @@ testtcpserv(int argc, char *argv[]) {
 	cap_sockdisp(server);
 
 	// Single I/O
-	fprintf(stderr, "accept...\n");
+	socklog("accept...\n");
 	fflush(stderr);
 	struct cap_socket *client = cap_sockaccept(server);
 
 	for (;;) {
 
-		fprintf(stderr, "recv...\n");
+		socklog("recv...\n");
 		fflush(stderr);
 
 		char buf[1024];

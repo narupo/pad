@@ -10,6 +10,8 @@
 #include <errno.h>
 #include <ctype.h>
 #include <signal.h>
+#include <stdarg.h> 
+#include <ctype.h> 
 
 #if defined(_WIN32) || defined(_WIN64)
 #  define _CAP_WINDOWS 1
@@ -52,7 +54,7 @@ cap_sockclose(struct cap_socket *self);
 
 /**
  * Open socket by source and mode like a fopen(3)
- * Open mode are:
+ * The open modes are:
  *
  * 		tcp-client
  * 		tcp-server
