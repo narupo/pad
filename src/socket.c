@@ -60,10 +60,21 @@ cap_sockstr2mode(const char *mode) {
 	}
 }
 
+static const char *
+cap_sockmode2str(cap_sockmode_t mode) {
+	switch (mode) {
+	case SOCKMODE_NULL: return "null"; break;
+	case SOCKMODE_TCPCLIENT: return "tcp-client"; break;
+	case SOCKMODE_TCPSERVER: return "tcp-server"; break;
+	case SOCKMODE_ACCEPTCLIENT: return "tcp-accept-client"; break;
+	default: return "unknown"; break;
+	}
+}
+
 void
 cap_sockdisp(const struct cap_socket *self) {
-	fprintf(stderr, "socket host[%s] port[%s] mode[%d] socket[%d]\n"
-		, self->host, self->port, self->mode, self->socket);
+	fprintf(stderr, "socket host[%s] port[%s] mode[%s] socket[%d]\n"
+		, self->host, self->port, cap_sockmode2str(self->mode), self->socket);
 	fflush(stderr);
 }
 
