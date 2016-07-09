@@ -183,6 +183,7 @@ capnew(int ac, char *av[]) {
 		return NULL;
 	}
 
+	// Parse options
 	struct cap_array *args = cap_arrnew();
 	struct cap_array *cmdargs = cap_arrnew();
 	if (!args || !cmdargs) {
@@ -209,7 +210,6 @@ capnew(int ac, char *av[]) {
 	cap_arrmove(arr, NULL); // For the final null in argv
 
 	// Parse options
-	//cap_arrdump(cmdargs, stdout);
 	cap->argc = cap_arrlen(args)-1; // -1 for final null
 	cap->argv = cap_arrescdel(args);
 	cap->cmdargc = cap_arrlen(cmdargs)-1; // -1 for final null
@@ -267,9 +267,6 @@ capusage(struct cap *cap) {
 	exit(0);
 }
 
-/**
- * TODO
- */
 static void
 caprun(struct cap *cap) {
 	const struct opts *opts = &cap->opts;
