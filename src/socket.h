@@ -1,9 +1,5 @@
-#ifndef SOCKET_H
-#define SOCKET_H
-
-#include "define.h"
-#include "util.h"
-#include "caperr.h"
+#ifndef CAP_SOCKET_H
+#define CAP_SOCKET_H
 
 #include <pthread.h>
 #include <unistd.h>
@@ -15,8 +11,12 @@
 #include <ctype.h>
 #include <signal.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#  define _CAP_WINDOWS 1
+#endif
+
 #if defined(_CAP_WINDOWS)
-#  include "windows.h"
+#  include <windows.h>
 #else
 #  undef _BSD_SOURCE
 #  define _BSD_SOURCE 1 /* For netdb.h in cap/socket.h */
@@ -28,7 +28,7 @@
 #  include <netinet/in.h>
 #endif
 
-typedef struct Socket Socket;
+struct cap_socket;
 
 /**
  * Display parameters of socket
@@ -36,7 +36,7 @@ typedef struct Socket Socket;
  * @param[in] self
  */
 void
-socket_display(Socket const* self);
+cap_sockdisp(const struct cap_socket *self);
 
 /**
  * Close socket
@@ -48,7 +48,7 @@ socket_display(Socket const* self);
  * @return failed to under number of zero
  */
 int
-socket_close(Socket* self);
+cap_sockclose(struct cap_socket *self);
 
 /**
  * Open socket by source and mode like a fopen(3)
@@ -60,10 +60,10 @@ socket_close(Socket* self);
  * @param[in] src  format of "host:port" of C string
  * @param[in] mode open mode
  *
- * @return pointer to dynamic allocate memory of Socket
+ * @return pointer to dynamic allocate memory of struct cap_socket
  */
-Socket*
-socket_open(const char* src, const char* mode);
+struct cap_socket *
+cap_sockopen(const char *src, const char *mode);
 
 /**
  * Get host of C string by socket
@@ -72,8 +72,8 @@ socket_open(const char* src, const char* mode);
  *
  * @return pointer to memory of C string
  */
-const char*
-socket_host(Socket const* self);
+const char *
+cap_sockhost(const struct cap_socket *self);
 
 /**
  * Get port of C string by socket
@@ -82,8 +82,8 @@ socket_host(Socket const* self);
  *
  * @return pointer to memory of C string
  */
-const char*
-socket_port(Socket const* self);
+const char *
+cap_sockport(const struct cap_socket *self);
 
 /**
  * Wrapper of accept(2)
@@ -91,10 +91,10 @@ socket_port(Socket const* self);
  *
  * @param[in] self
  *
- * @return pointer to dynamic allocate memory of Socket of client
+ * @return pointer to dynamic allocate memory of struct cap_socket of client
  */
-Socket*
-socket_accept(Socket const* self);
+struct cap_socket *
+cap_sockaccept(const struct cap_socket *self);
 
 /**
  * Wrapper of recv(2)
@@ -108,7 +108,7 @@ socket_accept(Socket const* self);
  * @return failed to number of under of zero
  */
 int
-socket_recv_string(Socket* self, char* dst, size_t dstsz);
+cap_sockrecvstr(struct cap_socket *self, char *dst, size_t dstsz);
 
 /**
  * Wrapper of send(2)
@@ -121,7 +121,7 @@ socket_recv_string(Socket* self, char* dst, size_t dstsz);
  * @return failed to number of under of zero
  */
 int
-socket_send_string(Socket* self, const char* str);
+cap_socksendstr(struct cap_socket *self, const char *str);
 
 /**
  * Wrapper of send(2)
@@ -135,6 +135,7 @@ socket_send_string(Socket* self, const char* str);
  * @return failed to number of under of zero
  */
 int
-socket_send_bytes(Socket* self, unsigned const char* bytes, size_t size);
+cap_socksend(struct cap_socket *self, const unsigned char *bytes, size_t size);
 
 #endif
+

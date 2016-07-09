@@ -3,7 +3,8 @@ CC := gcc
 CFLAGS := -Wall -g -O0 -std=c11 -Wno-unused-function -D_DEBUG
 CMDS := cap.c cap-cat.c cap-make.c cap-cd.c cap-home.c cap-editor.c cap-pwd.c \
 	cap-ls.c cap-alias.c cap-run.c
-MODS := error.c file.c hash.c string.c config.c file.c map.c array.c
+MODS := error.c file.c hash.c string.c config.c file.c map.c array.c \
+	socket.c
 LIBS := -lm
 HEADERS := $(CMDS:.c=.h)
 CMDOBJS := $(CMDS:.c=.o)

@@ -258,9 +258,18 @@ capsetup(const struct cap *cap) {
 
 static void
 capusage(struct cap *cap) {
-	fprintf(stderr, "Usage: cap [command]... [option]...\n"
+	fprintf(stderr, "Usage: cap [options] [command] [arguments]\n"
 		"\n"
-		"	-h, --help	show usage.\n"
+		"    -h, --help    show usage.\n"
+		"\n"
+		"The commands are:\n"
+		"\n"
+		"    home    change home directory, or show.\n"
+		"    cd      change current directory by relative of home.\n"
+		"    pwd     show current directory.\n"
+		"    ls      show list in current directory.\n"
+		"    cat     catenate files and show.\n"
+		"    make    make buffer from cap files.\n"
 		"\n"
 	);
 	capdel(cap);
