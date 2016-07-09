@@ -260,6 +260,8 @@ static void
 capusage(struct cap *cap) {
 	fprintf(stderr, "Usage: cap [options] [command] [arguments]\n"
 		"\n"
+		"The options are:\n"
+		"\n"
 		"    -h, --help    show usage.\n"
 		"\n"
 		"The commands are:\n"
