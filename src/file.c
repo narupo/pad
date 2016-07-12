@@ -250,6 +250,42 @@ cap_fgetline(char *dst, size_t dstsz, FILE *fin) {
 	return dstlen;
 }
 
+char *
+cap_freadline(char *dst, size_t dstsz, const char *path) {
+	FILE *fin = fopen(path, "rb");
+	if (!fin) {
+		return NULL;
+	}
+
+	if (cap_fgetline(dst, dstsz, fin) == EOF) {
+		fclose(fin);
+		return NULL;
+	}
+
+	if (fclose(fin) < 0) {
+		return NULL;
+	}
+
+	return dst;
+}
+
+const char *
+cap_fwriteline(const char *line, const char *path) {
+	FILE *fout = fopen(path, "w");
+	if (!fout) {
+		return NULL;
+	}
+
+	fprintf(fout, "%s\n", line);
+	fflush(fout);
+
+	if (fclose(fout) < 0) {
+		return NULL;
+	}
+
+	return line;
+}
+
 /*********************
 * file cap_dirnode *
 *********************/
