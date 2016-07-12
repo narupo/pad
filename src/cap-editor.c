@@ -1,18 +1,5 @@
 #include "cap-editor.h"
 
-static void
-setline(const char *path, const char *line) {
-	FILE *fout = fopen(path, "w");
-	if (!fout) {
-		cap_die("fopen %s", path);
-	}
-
-	fprintf(fout, "%s\n", line);
-	fflush(fout);
-
-	fclose(fout);
-}
-
 int
 main(int argc, char *argv[]) {
 	if (argc < 2) {
@@ -38,7 +25,7 @@ main(int argc, char *argv[]) {
 		cap_die("%s is not exists", newedtr);
 	}
 
-	setline(edtrpath, newedtr);
+	cap_fwriteline(newedtr, edtrpath);
 
 	return 0;
 }

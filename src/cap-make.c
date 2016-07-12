@@ -80,9 +80,10 @@ main(int argc, char *argv[]) {
 		return 0;
 	}
 
+	const char *cd = getenv("CAP_VARCD");
+
 	for (int i = 1; i < argc; ++i) {
 		const char *fname = argv[i];
-		const char *cd = getenv("CAP_VARCD");
 
 		char path[100];
 		snprintf(path, sizeof path, "%s/%s", cd, fname);
@@ -90,11 +91,15 @@ main(int argc, char *argv[]) {
 		
 		FILE *fin = fopen(path, "rb");
 		if (!fin) {
-			cap_log("error", "fopen %s", path);
+			cap_log("error", "failed to open file %s", path);
 			continue;
 		}
+
 		make(stdout, fin);
-		fclose(fin);
+		
+		if (fclose(fin) < 0) {
+			cap_log("error", "failed to close file %s", path);
+		}
 	}
 
 	fflush(stderr);

@@ -157,6 +157,12 @@ cap_fbasename(char *dst, size_t dstsz, const char *path);
 int
 cap_fgetline(char *dst, size_t dstsz, FILE *fin);
 
+char *
+cap_freadline(char *dst, size_t dstsz, const char *path);
+
+const char *
+cap_fwriteline(const char *line, const char *path);
+
 /**************************
 * file struct cap_dirnode *
 **************************/

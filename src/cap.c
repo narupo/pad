@@ -39,42 +39,6 @@ writeconfig(const char *cnfpath) {
 	return true;
 }
 
-static char *
-readline(char *dst, size_t dstsz, const char *path) {
-	FILE *fin = fopen(path, "rb");
-	if (!fin) {
-		return NULL;
-	}
-
-	if (cap_fgetline(dst, dstsz, fin) == EOF) {
-		fclose(fin);
-		return NULL;
-	}
-
-	if (fclose(fin) < 0) {
-		return NULL;
-	}
-
-	return dst;
-}
-
-static const char *
-writeline(const char *line, const char *path) {
-	FILE *fout = fopen(path, "w");
-	if (!fout) {
-		return NULL;
-	}
-
-	fprintf(fout, "%s\n", line);
-	fflush(fout);
-
-	if (fclose(fout) < 0) {
-		return NULL;
-	}
-
-	return line;
-}
-
 static bool
 varswrite(const struct var *vars, const char *vardir) {
 	char path[100];
@@ -88,7 +52,7 @@ varswrite(const struct var *vars, const char *vardir) {
 
 		cap_fsolve(sval, sizeof sval, p->defval);
 		
-		if (!writeline(sval, path)) {
+		if (!cap_fwriteline(sval, path)) {
 			cap_log("error", "failed to write line to %s", path);
 			continue;
 		}
@@ -105,7 +69,7 @@ varsread(const struct var *vars, const char *vardir) {
 	for (const struct var *p = vars; p->envkey; ++p) {
 		snprintf(path, sizeof path, "%s/%s", vardir, p->fname);
 		
-		if (!readline(val, sizeof val, path)) {
+		if (!cap_freadline(val, sizeof val, path)) {
 			cap_log("error", "failed to read line from %s", path);
 			continue;
 		}
