@@ -1,18 +1,5 @@
 #include "cap-home.h"
 
-static void
-setline(const char *path, const char *line) {
-	FILE *fout = fopen(path, "w");
-	if (!fout) {
-		cap_die("fopen %s", path);
-	}
-
-	fprintf(fout, "%s\n", line);
-	fflush(fout);
-
-	fclose(fout);
-}
-
 int
 main(int argc, char *argv[]) {
 	if (argc < 2) {
@@ -38,11 +25,13 @@ main(int argc, char *argv[]) {
 		cap_die("%s is not a directory", newhome);
 	}
 
-	setline(hmpath, newhome);
+	// Update var/home
+	cap_fwriteline(newhome, hmpath);
 
+	// Update var/cd
 	char cdpath[100];
 	snprintf(cdpath, sizeof cdpath, "%s/cd", vardir);
-	setline(cdpath, newhome);
+	cap_fwriteline(newhome, cdpath);
 
 	return 0;
 }
