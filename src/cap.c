@@ -112,6 +112,7 @@ capdel(struct cap *cap) {
 
 static bool
 optsparse(struct opts *opts, int argc, char *argv[]) {
+	*opts = (struct opts){};
 	optind = 0;
 	
 	for (;;) {
@@ -261,7 +262,7 @@ caprun(struct cap *cap) {
 	case 0: // Child
 		if (execv(ppath, cap->cmdargv) < 0) {
 			capdel(cap);
-			cap_die("execv");
+			cap_die("failed to execute of %s", ppath);
 		}
 		break;
 	default:// Parent
