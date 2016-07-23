@@ -1,5 +1,5 @@
-#ifndef CAP_FILE_H
-#define CAP_FILE_H
+#ifndef FILE_H
+#define FILE_H
 
 #undef _GNU_SOURCE
 #define _GNU_SOURCE 1 /* For realpath(3) */

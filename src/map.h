@@ -1,5 +1,5 @@
-#ifndef CAP_MAP_H
-#define CAP_MAP_H
+#ifndef MAP_H
+#define MAP_H
 
 #define _GNU_SOURCE 1 /* In cap: map.h for the strdup */
 #include <stdbool.h>

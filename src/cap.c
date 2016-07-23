@@ -150,43 +150,83 @@ optsparse(struct opts *opts, int argc, char *argv[]) {
 }
 
 static struct cap *
-capnew(int ac, char *av[]) {
-	struct cap *cap = calloc(1, sizeof(*cap));
-	if (!cap) {
-		return NULL;
+capfixcmdargs(struct cap *cap) {
+	static const char *capcmds[] = {
+		"home",
+		"cat",
+		"make",
+		"cd",
+		"pwd",
+		"ls",
+		"editor",
+		"edit",
+		"run",
+		"alias",
+		NULL,
+	};
+	const char *cmdname = cap->cmdargv[0];
+	if (!cmdname) {
+		return cap;
 	}
 
+	for (const char **p = capcmds; *p; ++p) {
+		if (!strcmp(*p, cmdname)) {
+			return cap; // Exists command
+		}
+	}
+
+	// Not found command. Find to alias
+	printf("Not found command of '%s'\n", cmdname);
+	return NULL;
+}
+
+static struct cap *
+capsolveopts(struct cap *cap, int ac, char *av[]) {
 	// Parse options
 	struct cap_array *args = cap_arrnew();
 	struct cap_array *cmdargs = cap_arrnew();
 	if (!args || !cmdargs) {
 		cap_arrdel(args);
 		cap_arrdel(cmdargs);
-		capdel(cap);
 		return NULL;
 	}
 
-	struct cap_array *arr = args; // Current array for parse
-	cap_arrpush(arr, av[0]);
+	struct cap_array *curarr = args; // Current array for parse
 
+	cap_arrpush(curarr, av[0]);
 	for (int i = 1; i < ac; ++i) {
 		const char *ag = av[i];
-		
-		if (arr == args && ag[0] != '-') {
-			cap_arrmove(arr, NULL); // For the final null in argv
-			arr = cmdargs;
+		if (curarr == args && ag[0] != '-') {
+			cap_arrmove(curarr, NULL); // For the final null in argv
+			curarr = cmdargs;
 		}
-
-		cap_arrpush(arr, ag);
+		cap_arrpush(curarr, ag);
 	}
-
-	cap_arrmove(arr, NULL); // For the final null in argv
+	cap_arrmove(curarr, NULL); // For the final null in argv
 
 	// Parse options
 	cap->argc = cap_arrlen(args)-1; // -1 for final null
 	cap->argv = cap_arrescdel(args);
 	cap->cmdargc = cap_arrlen(cmdargs)-1; // -1 for final null
 	cap->cmdargv = cap_arrescdel(cmdargs);
+
+	// Fix command arguments
+	capfixcmdargs(cap);
+
+	return cap;
+}
+
+static struct cap *
+capnew(int ac, char *av[]) {
+	struct cap *cap = calloc(1, sizeof(*cap));
+	if (!cap) {
+		return NULL;
+	}
+
+	if (!capsolveopts(cap, ac, av)) {
+		capdel(cap);
+		return NULL;
+	}
 
 	if (!optsparse(&cap->opts, cap->argc, cap->argv)) {
 		capdel(cap);

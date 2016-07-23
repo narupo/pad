@@ -1,5 +1,5 @@
-#ifndef CAP_ARRAY_H
-#define CAP_ARRAY_H
+#ifndef ARRAY_H
+#define ARRAY_H
 
 #undef _GNU_SOURCE
 #define _GNU_SOURCE 1 /* In cap: array: For strdup */
