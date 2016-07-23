@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "error.h"
+#include "hash.h"
 #include "file.h"
 
 #endif
