@@ -43,9 +43,16 @@ makealpath(char *dst, size_t dstsz) {
 	return cap_fsolve(dst, dstsz, path);
 }
 
+enum {
+	ALF_BUFCAPA = 1024,
+	ALF_CNAME = 128,
+	ALF_CCMD = 256,
+	ALF_RLEN = ALF_CNAME + ALF_CCMD,
+};
+
 struct alfile {
 	FILE *fp;
-	char buf[1024];
+	char buf[ALF_BUFCAPA];
 };
 
 void
@@ -81,12 +88,11 @@ alfeof(const struct alfile *alf) {
 	return feof(alf->fp);
 }
 
-enum {
-	ALF_CID = 32,
-};
-
 static const char *
-alfread(struct alfile *alf, int nread) {
+alfreadstr(struct alfile *alf, int nread) {
+	if (nread >= ALF_BUFCAPA) {
+		return NULL;
+	}
 	int n = fread(alf->buf, 1, nread, alf->fp);
 	if (n < nread) {
 		if (ferror(alf->fp)) {
@@ -97,29 +103,130 @@ alfread(struct alfile *alf, int nread) {
 	return alf->buf;
 }
 
+static size_t
+alfwrite(struct alfile *alf, const void *ptr, size_t size, size_t nmemb) {
+	return fwrite(ptr, size, nmemb, alf->fp);
+}
+
+static int
+alfseek(struct alfile *alf, long ofs, int whence) {
+	return fseek(alf->fp, ofs, whence);
+}
+
 static void
-alshow(void) {
-	struct alfile *alf = alfopen("rb");
+alshowls(void) {
+	struct alfile *alf = alfopen("r+");
 	if (!alf) {
-		cap_die("internal error");
+		cap_die("failed to open alias file");
 	}
 
 	for (; !alfeof(alf); ) {
-		const char *buf = alfread(alf, ALF_CID);
+		const char *buf = alfreadstr(alf, ALF_CNAME);
 		if (!buf) {
 			break;
 		}
-		printf("[%s]\n", buf);
+		printf("%s ", buf);
+
+		buf = alfreadstr(alf, ALF_CCMD);
+		if (!buf) {
+			break;
+		}
+
+		printf("%s\n", buf);
 	}
 
 	alfclose(alf);
 }
 
+char *
+alcmd(const char *name) {
+	struct alfile *alf = alfopen("r+");
+	if (!alf) {
+		cap_die("failed to open alias file");
+	}
+
+	for (; !alfeof(alf); ) {
+		const char *buf = alfreadstr(alf, ALF_CNAME);
+		if (!buf) {
+			break;
+		}
+
+		if (strcmp(buf, name) != 0) {
+			alfreadstr(alf, ALF_CCMD);
+			continue;
+		}
+
+		buf = alfreadstr(alf, ALF_CCMD);
+		if (!buf) {
+			break;
+		}
+
+		alfclose(alf);
+		return strdup(buf);
+	}
+
+	alfclose(alf);
+	return NULL;
+}
+
+static void
+alshowcmd(const char *name) {
+	char *cmd = alcmd(name);
+	if (!cmd) {
+		cap_die("not found alias name of '%s'", name);
+	}
+
+	printf("%s\n", cmd);
+	free(cmd);
+}
+
+static void
+aladd(const char *name, const char *cmd) {
+	struct alfile *alf = alfopen("r+");
+	if (!alf) {
+		cap_die("failed to open alias file");
+	}
+
+	char cname[ALF_CNAME];
+	char ccmd[ALF_CCMD];
+	snprintf(cname, sizeof cname, "%s", name);
+	snprintf(ccmd, sizeof ccmd, "%s", cmd);
+
+	for (; !alfeof(alf); ) {
+		const char *buf = alfreadstr(alf, ALF_CNAME);
+		if (!buf) {
+			break;
+		}
+
+		if (!strcmp(buf, cname)) {
+			// Update command column
+			alfwrite(alf, ccmd, 1, sizeof ccmd);
+			goto done;
+		}
+	}
+
+	// Insert alias record
+	alfwrite(alf, cname, 1, sizeof cname);
+	alfwrite(alf, ccmd, 1, sizeof ccmd);
+
+done:
+	alfclose(alf);
+}
+
+struct alopts {
+	bool isdel;
+	bool isimport;
+	bool isexport;
+};
+
 int
 main(int argc, char* argv[]) {
 	if (argc < 2) {
-		alshow();
+		alshowls();
+	} else if (argc == 2) {
+		alshowcmd(argv[1]);
+	} else if (argc == 3) {
+		aladd(argv[1], argv[2]);
 	}
-
 	return 0;
 }
