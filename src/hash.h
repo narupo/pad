@@ -1,5 +1,5 @@
-#ifndef CAP_HASH_H
-#define CAP_HASH_H
+#ifndef HASH_H
+#define HASH_H
 
 #include <stdio.h>
 #include <crypt.h>

@@ -1,5 +1,5 @@
-#ifndef CAP_ERROR_H
-#define CAP_ERROR_H
+#ifndef ERROR_H
+#define ERROR_H
 
 #include <stdio.h> 
 #include <stdlib.h> 

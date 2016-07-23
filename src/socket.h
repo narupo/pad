@@ -1,5 +1,5 @@
-#ifndef CAP_SOCKET_H
-#define CAP_SOCKET_H
+#ifndef SOCKET_H
+#define SOCKET_H
 
 #include <pthread.h>
 #include <unistd.h>

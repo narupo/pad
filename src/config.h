@@ -1,5 +1,5 @@
-#ifndef CAP_CONFPATH_H
-#define CAP_CONFPATH_H
+#ifndef CONFIG_H
+#define CONFIG_H
 
 #include "string.h"
 #include "error.h"

@@ -139,7 +139,7 @@ alshowls(void) {
 }
 
 char *
-alcmd(const char *name) {
+cap_alcmd(const char *name) {
 	struct alfile *alf = alfopen("r+");
 	if (!alf) {
 		cap_die("failed to open alias file");
@@ -171,7 +171,7 @@ alcmd(const char *name) {
 
 static void
 alshowcmd(const char *name) {
-	char *cmd = alcmd(name);
+	char *cmd = cap_alcmd(name);
 	if (!cmd) {
 		cap_die("not found alias name of '%s'", name);
 	}

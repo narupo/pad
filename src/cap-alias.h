@@ -8,5 +8,13 @@
 #include "hash.h"
 #include "file.h"
 
-#endif
+#include "alias.h"
 
+/**
+ *
+ * @return string pointer to dynamic allocate memory
+ */
+char *
+cap_alcmd(const char *name);
+
+#endif
