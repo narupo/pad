@@ -1,11 +1,19 @@
 #include "cap.h"
 
+/**
+ * Structure for directory of ~/.cap/var/  
+ *
+ */
 struct var {
 	const char *envkey;
 	const char *fname;
 	char defval[100];
 };
 
+/**
+ * Program option values for command.
+ *
+ */
 struct opts {
 	bool ishelp;
 };
@@ -118,7 +126,7 @@ optsparse(struct opts *opts, int argc, char *argv[]) {
 	for (;;) {
 		static struct option longopts[] = {
 			{"help", no_argument, 0, 'h'},
-			{0},
+			{},
 		};
 		int optsindex;
 
@@ -237,6 +245,9 @@ capusage(struct cap *cap) {
 		"    ls      show list in current directory.\n"
 		"    cat     catenate files and show.\n"
 		"    make    make buffer from cap files.\n"
+		"    editor  set editor or show it.\n"
+		"    run     run script.\n"
+		"    alias   run alias command.\n"
 		"\n"
 	);
 	capdel(cap);
