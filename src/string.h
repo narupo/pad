@@ -23,6 +23,14 @@ void
 cap_strdel(struct cap_string *self);
 
 /**
+ * Destruct string with move semantics
+ *
+ * @param[in] self
+ */
+char *
+cap_strescdel(struct cap_string *self);
+
+/**
  * Construct string
  *
  * @return pointer to dynamic allocate memory of string

@@ -1,5 +1,12 @@
 #include "cap-alias.h"
 
+enum {
+	ALF_BUFCAPA = 1024,
+	ALF_CNAME = 128,
+	ALF_CCMD = 256,
+	ALF_RLEN = ALF_CNAME + ALF_CCMD,
+};
+
 static char *
 cap_strcpywithout(char *dst, size_t dstsz, const char *src, const char *without) {
 	size_t di = 0;
@@ -54,13 +61,6 @@ makealpath(char *dst, size_t dstsz) {
 	return cap_fsolve(dst, dstsz, path);
 }
 
-enum {
-	ALF_BUFCAPA = 1024,
-	ALF_CNAME = 128,
-	ALF_CCMD = 256,
-	ALF_RLEN = ALF_CNAME + ALF_CCMD,
-};
-
 struct alfile {
 	FILE *fp;
 	char buf[ALF_BUFCAPA];
@@ -71,10 +71,7 @@ alfclose(struct alfile *alf) {
 	int ret = 0;
 
 	if (alf) {
-		if (fclose(alf->fp) < 0) {
-			cap_log("error", "failed to close file");
-			ret = 1;
-		}
+		ret = fclose(alf->fp);
 		free(alf);
 	}
 
@@ -109,16 +106,20 @@ alfeof(const struct alfile *alf) {
 
 static const char *
 alfreadstr(struct alfile *alf, int nread) {
-	if (nread >= ALF_BUFCAPA) {
+	if (nread >= ALF_BUFCAPA || nread < 1) {
+		cap_log("error", "buffer overflow");
 		return NULL;
 	}
+
 	int n = fread(alf->buf, 1, nread, alf->fp);
+	alf->buf[n] = '\0';
+
 	if (n < nread) {
 		if (ferror(alf->fp)) {
 			return NULL;
 		}
 	}
-	alf->buf[n] = 0;
+
 	return alf->buf;
 }
 
@@ -162,6 +163,10 @@ alshowls(void) {
 	return 0;
 }
 
+/**
+ *
+ * @return string pointer to dynamic allocate memory
+ */
 char *
 alcmd(const char *name) {
 	struct alfile *alf = alfopen("r+");
@@ -185,8 +190,10 @@ alcmd(const char *name) {
 			break;
 		}
 
+		char *cmd = strdup(buf);
 		alfclose(alf);
-		return strdup(buf);
+
+		return cmd;
 	}
 
 	alfclose(alf);
@@ -261,13 +268,50 @@ alexport(const char *path) {
 	return 0;
 }
 
+static int
+alrun(const char *runarg) {
+	const char *bindir = getenv("CAP_BINDIR");
+	if (!bindir) {
+		cap_log("error", "need bin directory on environ");
+		return 1;
+	}
+
+	char name[ALF_CNAME];
+	const char *parg = runarg;
+	{
+		char *pname = name;
+		const char *pend = name + sizeof(name) - 1;
+		for (; *parg && !isspace(*parg) && pname < pend; *pname++ = *parg++) {
+		}
+		*pname = '\0';
+	}
+
+	const char *cmd = alcmd(name);
+	if (!cmd) {
+		cap_die("not found alias command of '%s'", name);
+		return 1;
+	}
+
+	char cmdln[1024];
+	snprintf(cmdln, sizeof cmdln, "%s/cap-%s%s", bindir, cmd, parg);
+
+	// printf("runarg[%s] name[%s] parg[%s] cmd[%s]\n", runarg, name, parg, cmd);
+	// printf("cmdln[%s]\n", cmdln);
+
+	system(cmdln);
+
+	return 0;
+}
+
 struct opts {
 	int nargs;
 	bool ishelp;
 	bool isdelete;
 	bool isimport;
 	bool isexport;
+	bool isrun;
 	char delname[ALF_CNAME];
+	char runname[ALF_CNAME];
 	char imppath[1024];
 	char exppath[1024];
 };
@@ -279,6 +323,7 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 		{"export", required_argument, 0, 'e'},
 		{"import", required_argument, 0, 'i'},
 		{"delete", required_argument, 0, 'd'},
+		{"run", required_argument, 0, 'r'},
 		{},
 	};
 
@@ -293,7 +338,7 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 	
 	for (;;) {
 		int optsindex;
-		int cur = getopt_long(argc, argv, "he:i:d:", longopts, &optsindex);
+		int cur = getopt_long(argc, argv, "he:i:d:r:", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
@@ -320,6 +365,10 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 			opts->isdelete = true;
 			snprintf(opts->delname, sizeof opts->delname, "%s", optarg);
 		break;
+		case 'r':
+			opts->isrun = true;
+			snprintf(opts->runname, sizeof opts->runname, "%s", optarg);
+		break;
 		case '?':
 		default: return NULL; break;
 		}
@@ -345,10 +394,11 @@ alusage(void) {
 		"\n"
 		"The options are:\n"
 		"\n"
-		"    --help   show usage.\n"
-		"    --delete delete alias.\n"
-		"    --import import alias file.\n"
-		"    --export export alias file to home.\n"
+		"    -h, --help   show usage.\n"
+		"    -d, --delete delete alias.\n"
+		"    -i, --import import alias file.\n"
+		"    -e, --export export alias file to home.\n"
+		"    -r, --run    run command of alias.\n"
 		"\n"
 	);
 	return 0;
@@ -373,6 +423,9 @@ main(int argc, char* argv[]) {
 	} else if (opts.isexport) {
 		return alexport(opts.exppath);
 
+	} else if (opts.isrun) {
+		return alrun(opts.runname);
+
 	} else if (opts.nargs == 0) {
 		return alshowls();
 
@@ -383,5 +436,5 @@ main(int argc, char* argv[]) {
 		return aladdal(argv[1], argv[2]);
 	}
 
-	return 1;
+	return alusage();
 }

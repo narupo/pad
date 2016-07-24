@@ -9,5 +9,6 @@
 #include "error.h"
 #include "hash.h"
 #include "file.h"
+#include "string.h"
 
 #endif
