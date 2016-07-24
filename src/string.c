@@ -37,6 +37,17 @@ cap_strdel(struct cap_string *self) {
 	}
 }
 
+char *
+cap_strescdel(struct cap_string *self) {
+	if (!self) {
+		return NULL;
+	}
+	
+	char *buf = self->buffer;
+	free(self);
+	return buf;
+}
+
 struct cap_string *
 cap_strnew(void) {
 	struct cap_string *self = calloc(1, sizeof(struct cap_string));

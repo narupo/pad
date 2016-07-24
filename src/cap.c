@@ -101,11 +101,16 @@ varsrun(const char *vardir) {
 	return varsread(vars, vardir);
 }
 
+/******
+* cap *
+******/
+
 struct cap {
 	int argc;
 	char **argv;
 	int cmdargc;
 	char **cmdargv;
+	char *alcmdln;
 	struct opts opts;
 };
 
@@ -114,22 +119,23 @@ capdel(struct cap *cap) {
 	if (cap) {
 		freeargv(cap->argc, cap->argv);
 		freeargv(cap->cmdargc, cap->cmdargv);
+		free(cap->alcmdln);
 		free(cap);
 	}
 }
 
 static bool
 optsparse(struct opts *opts, int argc, char *argv[]) {
+	static struct option longopts[] = {
+		{"help", no_argument, 0, 'h'},
+		{},
+	};
+
 	*opts = (struct opts){};
 	optind = 0;
 	
 	for (;;) {
-		static struct option longopts[] = {
-			{"help", no_argument, 0, 'h'},
-			{},
-		};
 		int optsindex;
-
 		int cur = getopt_long(argc, argv, "h", longopts, &optsindex);
 		if (cur == -1) {
 			break;
@@ -176,7 +182,29 @@ capfixcmdargs(struct cap *cap) {
 	}
 
 	// Not found command. Find to alias
-	printf("Not found command of '%s'\n", cmdname);
+	const char *bindir = getenv("CAP_BINDIR");
+	if (!bindir) {
+		cap_log("error", "need bin directory path on environ");
+		return NULL;
+	}
+
+	struct cap_string *buf = cap_strnew();
+	if (!buf) {
+		return NULL;
+	}
+
+	cap_strapp(buf, bindir);
+	cap_strapp(buf, "/cap-alias --run '");
+
+	for (int i = 0; i < cap->cmdargc; ++i) {
+		cap_strapp(buf, cap->cmdargv[i]);
+		cap_strapp(buf, " ");
+	}
+	cap_strapp(buf, "'");
+
+	cap->alcmdln = cap_strescdel(buf);
+	// printf("cap->alcmdln[%s]\n", cap->alcmdln);
+
 	return NULL;
 }
 
@@ -216,10 +244,50 @@ capsolveopts(struct cap *cap, int ac, char *av[]) {
 	return cap;
 }
 
+static bool
+capinitenv(const struct cap *cap) {
+	char caproot[100];
+	char cnfpath[100];
+	char vardir[100];
+	char homedir[100];
+
+	cap_fsolve(caproot, sizeof caproot, "~/.cap2"); // TODO
+	if (!cap_fexists(caproot)) {
+		cap_fmkdirq(caproot);
+	}
+
+	snprintf(cnfpath, sizeof cnfpath, "%s/config", caproot);
+	if (!cap_fexists(cnfpath)) {
+		writeconfig(cnfpath);
+	}
+
+	snprintf(homedir, sizeof homedir, "%s/home", caproot);
+	if (!cap_fexists(homedir)) {
+		cap_fmkdirq(homedir);
+	}
+
+	snprintf(vardir, sizeof vardir, "%s/var", caproot);
+	if (!cap_fexists(vardir)) {
+		cap_fmkdirq(vardir);
+	}
+
+	setenv("CAP_BINDIR", "../bin", 1); // TODO
+	setenv("CAP_CONFPATH", cnfpath, 1);
+	setenv("CAP_HOMEDIR", homedir, 1);
+	setenv("CAP_VARDIR", vardir, 1);
+	
+	return varsrun(vardir);
+}
+
 static struct cap *
 capnew(int ac, char *av[]) {
 	struct cap *cap = calloc(1, sizeof(*cap));
 	if (!cap) {
+		return NULL;
+	}
+
+	if (!capinitenv(cap)) {
+		capdel(cap);
 		return NULL;
 	}
 
@@ -234,39 +302,6 @@ capnew(int ac, char *av[]) {
 	}
 	
 	return cap;
-}
-
-static bool
-capsetup(const struct cap *cap) {
-	char caproot[100];
-	char cnfpath[100];
-	char vardir[100];
-	char homedir[100];
-
-	cap_fsolve(caproot, sizeof caproot, "~/.cap2");
-	if (!cap_fexists(caproot)) {
-		cap_fmkdirq(caproot);
-	}
-
-	snprintf(cnfpath, sizeof cnfpath, "%s/config", caproot);
-	if (!cap_fexists(cnfpath)) {
-		writeconfig(cnfpath);
-	}
-	setenv("CAP_CONFPATH", cnfpath, 1);
-
-	snprintf(homedir, sizeof homedir, "%s/home", caproot);
-	if (!cap_fexists(homedir)) {
-		cap_fmkdirq(homedir);
-	}
-	setenv("CAP_HOMEDIR", homedir, 1);
-
-	snprintf(vardir, sizeof vardir, "%s/var", caproot);
-	if (!cap_fexists(vardir)) {
-		cap_fmkdirq(vardir);
-	}
-	setenv("CAP_VARDIR", vardir, 1);
-	
-	return varsrun(vardir);
 }
 
 static void
@@ -305,22 +340,25 @@ caprun(struct cap *cap) {
 	char ppath[100];
 	snprintf(ppath, sizeof ppath, "../bin/cap-%s", cap->cmdargv[0]); // TODO
 
-	pid_t pid = fork();
-	switch (pid) {
-	case -1:
-		cap_die("failed to fork");
+	if (cap->alcmdln) {
+		system(cap->alcmdln);
+	} else {
+		switch (fork()) {
+		case -1:
+			cap_die("failed to fork");
 		break;
-	case 0: // Child
-		if (execv(ppath, cap->cmdargv) < 0) {
+		case 0: // Child
+			if (execv(ppath, cap->cmdargv) < 0) {
+				cap_log("error", "failed to execute of %s", ppath);
+				_exit(1);
+			}
+		break;
+		default:// Parent
+			wait(NULL);
 			capdel(cap);
-			cap_die("failed to execute of %s", ppath);
+			exit(0);
+		break;
 		}
-		break;
-	default:// Parent
-		wait(NULL);
-		capdel(cap);
-		exit(0);
-		break;
 	}
 }
 
@@ -331,13 +369,7 @@ main(int argc, char *argv[]) {
 		cap_die("failed to create cap");
 	}
 
-	if (!capsetup(cap)) {
-		capdel(cap);
-		cap_die("failed to setup");
-	}
-
 	caprun(cap);
 
 	return 0;
 }
-
