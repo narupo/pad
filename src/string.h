@@ -1,5 +1,5 @@
-#ifndef CAP_STRING_H
-#define CAP_STRING_H
+#ifndef STRING_H
+#define STRING_H
 
 #define _GNU_SOURCE 1 /* In cap: string.h for the strdup */
 
@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 struct cap_string;
-typedef char cap_string_type;
+typedef char cap_string_type_t;
 
 /**
  * Destruct string
@@ -68,7 +68,7 @@ cap_strcapa(const struct cap_string *self);
  *
  * @return pointer to memory of buffer in string
  */
-const cap_string_type *
+const cap_string_type_t *
 cap_strgetc(const struct cap_string *self);
 
 /**
@@ -125,7 +125,7 @@ cap_strresize(struct cap_string *self, int newlen);
  * @return failed to NULL
  */
 struct cap_string *
-cap_strpushb(struct cap_string *self, cap_string_type ch);
+cap_strpushb(struct cap_string *self, cap_string_type_t ch);
 
 /**
  * Pop data at back of buffer in string
@@ -135,7 +135,7 @@ cap_strpushb(struct cap_string *self, cap_string_type ch);
  * @return success to data at back
  * @return failed to NIL
  */
-cap_string_type
+cap_string_type_t
 cap_strpopb(struct cap_string *self);
 
 /**
@@ -148,7 +148,7 @@ cap_strpopb(struct cap_string *self);
  * @return failed to NULL
  */
 struct cap_string *
-cap_strpushf(struct cap_string *self, cap_string_type ch);
+cap_strpushf(struct cap_string *self, cap_string_type_t ch);
 
 /**
  * Pop data at front of buffer in string
@@ -158,7 +158,7 @@ cap_strpushf(struct cap_string *self, cap_string_type ch);
  * @return success to front data of buffer
  * @return failed to NIL
  */
-cap_string_type
+cap_string_type_t
 cap_strpopf(struct cap_string *self);
 
 /**
