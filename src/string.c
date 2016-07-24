@@ -7,14 +7,14 @@
 struct cap_string {
 	int length;
 	int capacity;
-	cap_string_type *buffer;
+	cap_string_type_t *buffer;
 };
 
 /*************
 * str macros *
 *************/
 
-#define NCHAR (sizeof(cap_string_type))
+#define NCHAR (sizeof(cap_string_type_t))
 #define NIL ('\0')
 
 /**************************
@@ -46,7 +46,7 @@ cap_strnew(void) {
 
 	self->length = 0;
 	self->capacity = NCAPACITY + 1; // +1 for final nul
-	self->buffer = (cap_string_type *) calloc(self->capacity, NCHAR);
+	self->buffer = calloc(self->capacity, NCHAR);
 	if (!self->buffer) {
 		free(self);
 		return NULL;
@@ -66,7 +66,7 @@ cap_strnewother(const struct cap_string *other) {
 
 	self->length = other->length;
 	self->capacity = other->capacity;
-	self->buffer = (cap_string_type *) calloc(self->capacity, NCHAR);
+	self->buffer = calloc(self->capacity, NCHAR);
 	if (!self->buffer) {
 		free(self);
 		return NULL;
@@ -100,7 +100,7 @@ cap_strcapa(const struct cap_string *self) {
 	return self->capacity;
 }
 
-const cap_string_type *
+const cap_string_type_t *
 cap_strgetc(const struct cap_string *self) {
 	if (!self) {
 		return "";
@@ -155,7 +155,7 @@ cap_strresize(struct cap_string *self, int newlen) {
 		newlen = 0;
 	}
 
-	cap_string_type *tmp = (cap_string_type *) realloc(self->buffer, newlen * NCHAR + NCHAR);
+	cap_string_type_t *tmp = (cap_string_type_t *) realloc(self->buffer, newlen * NCHAR + NCHAR);
 	if (!tmp) {
 		cap_strdel(self);
 		return NULL;
@@ -172,7 +172,7 @@ cap_strresize(struct cap_string *self, int newlen) {
 }
 
 struct cap_string *
-cap_strpushb(struct cap_string *self, cap_string_type ch) {
+cap_strpushb(struct cap_string *self, cap_string_type_t ch) {
 	if (!self) {
 		return NULL;
 	}
@@ -192,14 +192,14 @@ cap_strpushb(struct cap_string *self, cap_string_type ch) {
 	return self;
 }
 
-cap_string_type
+cap_string_type_t
 cap_strpopb(struct cap_string *self) {
 	if (!self) {
 		return NIL;
 	}
 
 	if (self->length > 0) {
-		cap_string_type ret = self->buffer[--self->length];
+		cap_string_type_t ret = self->buffer[--self->length];
 		self->buffer[self->length] = NIL;
 		return ret;
 	}
@@ -208,7 +208,7 @@ cap_strpopb(struct cap_string *self) {
 }
 
 struct cap_string *
-cap_strpushf(struct cap_string *self, cap_string_type ch) {
+cap_strpushf(struct cap_string *self, cap_string_type_t ch) {
 	if (!self || ch == NIL) {
 		return NULL;
 	}
@@ -228,7 +228,7 @@ cap_strpushf(struct cap_string *self, cap_string_type ch) {
 	return self;
 }
 
-cap_string_type
+cap_string_type_t
 cap_strpopf(struct cap_string *self) {
 	if (!self) {
 		return NIL;
@@ -238,7 +238,7 @@ cap_strpopf(struct cap_string *self) {
 		return NIL;
 	}
 
-	cap_string_type ret = self->buffer[0];
+	cap_string_type_t ret = self->buffer[0];
 
 	for (int i = 0; i < self->length-1; ++i) {
 		self->buffer[i] = self->buffer[i+1];
@@ -251,7 +251,7 @@ cap_strpopf(struct cap_string *self) {
 }
 
 struct cap_string *
-cap_strapp(struct cap_string *self, const cap_string_type *src) {
+cap_strapp(struct cap_string *self, const cap_string_type_t *src) {
 	if (!self || !src) {
 		return NULL;
 	}
@@ -264,7 +264,7 @@ cap_strapp(struct cap_string *self, const cap_string_type *src) {
 		}
 	}
 
-	for (const cap_string_type *sp = src; *sp; ++sp) {
+	for (const cap_string_type_t *sp = src; *sp; ++sp) {
 		self->buffer[self->length++] = *sp;
 	}
 	self->buffer[self->length] = NIL;
@@ -292,7 +292,7 @@ cap_strappother(struct cap_string *self, const struct cap_string *other) {
 	}
 
 	if (self == other) {
-		cap_string_type *buf = (cap_string_type *) strdup(self->buffer);
+		cap_string_type_t *buf = (cap_string_type_t *) strdup(self->buffer);
 		if (!buf) {
 			return ret;
 		}
@@ -326,7 +326,7 @@ cap_strappfmt(struct cap_string *self, char *buf, size_t nbuf, const char *fmt, 
 }
 
 struct cap_string *
-cap_strrstrip(struct cap_string *self, const cap_string_type *rems) {
+cap_strrstrip(struct cap_string *self, const cap_string_type_t *rems) {
 	if (!self || !rems) {
 		return NULL;
 	}
@@ -343,7 +343,7 @@ cap_strrstrip(struct cap_string *self, const cap_string_type *rems) {
 }
 
 struct cap_string *
-cap_strlstrip(struct cap_string *self, const cap_string_type *rems) {
+cap_strlstrip(struct cap_string *self, const cap_string_type_t *rems) {
 	if (!self || !rems) {
 		return NULL;
 	}
@@ -360,7 +360,7 @@ cap_strlstrip(struct cap_string *self, const cap_string_type *rems) {
 }
 
 struct cap_string *
-cap_strstrip(struct cap_string *self, const cap_string_type *rems) {
+cap_strstrip(struct cap_string *self, const cap_string_type_t *rems) {
 	if (!cap_strrstrip(self, rems)) {
 		return NULL;
 	}

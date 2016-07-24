@@ -1,21 +1,30 @@
 #include "cap-alias.h"
 
 static char *
-pathtofname(char *dst, size_t dstsz, const char *path) {
-	char tmp[dstsz+1];
-	size_t ti = 0;
-
-	// Remove 環境依存の文字
-	for (const char *p = path; *p; ++p) {
-		if (strchr("/\\:", *p)) {
+cap_strcpywithout(char *dst, size_t dstsz, const char *src, const char *without) {
+	size_t di = 0;
+	for (const char *p = src; *p; ++p) {
+		if (strchr(without, *p)) {
 			continue;
 		}
-		if (ti >= dstsz) {
+		if (di >= dstsz-1) {
+			dst[di] = '\0';
 			return NULL;
 		}
-		tmp[ti++] = *p;
+		dst[di++] = *p;
 	}
-	tmp[ti] = '\0';
+	dst[di] = '\0';
+	return dst;
+}
+
+static char *
+pathtofname(char *dst, size_t dstsz, const char *path) {
+	char tmp[dstsz];
+
+	// Remove 環境依存の文字
+	if (!cap_strcpywithout(tmp, sizeof tmp, path, "/\\:")) {
+		return NULL;
+	}
 
 	// Hash value to file name string
 	long hsh = cap_hashl(tmp);
@@ -29,12 +38,14 @@ makealpath(char *dst, size_t dstsz) {
 	const char *hmdir = getenv("CAP_HOMEDIR");
 	const char *varhm = getenv("CAP_VARHOME");
 	if (!hmdir || !varhm) {
-		cap_die("invalid environ variables");
+		cap_log("error", "invalid environ variables");
+		return NULL;
 	}
 
 	char fname[100];
 	if (!pathtofname(fname, sizeof fname, varhm)) {
-		cap_die("internal error");
+		cap_die("error", "internal error");
+		return NULL;
 	}
 
 	char path[100];
@@ -55,19 +66,27 @@ struct alfile {
 	char buf[ALF_BUFCAPA];
 };
 
-void
+int
 alfclose(struct alfile *alf) {
+	int ret = 0;
+
 	if (alf) {
 		if (fclose(alf->fp) < 0) {
 			cap_log("error", "failed to close file");
+			ret = 1;
 		}
 		free(alf);
 	}
+
+	return ret;
 }
 
 struct alfile *
 alfopen(const char *mode) {
 	struct alfile *alf = calloc(1, sizeof(*alf));
+	if (!alf) {
+		return NULL;
+	}
 
 	char path[100];
 	if (!makealpath(path, sizeof path)) {
@@ -113,7 +132,7 @@ alfseek(struct alfile *alf, long ofs, int whence) {
 	return fseek(alf->fp, ofs, whence);
 }
 
-static void
+static int
 alshowls(void) {
 	struct alfile *alf = alfopen("r+");
 	if (!alf) {
@@ -135,11 +154,16 @@ alshowls(void) {
 		printf("%s\n", buf);
 	}
 
-	alfclose(alf);
+	if (alfclose(alf) < 0) {
+		cap_log("error", "failed to close alias file");
+		return 1;
+	}
+
+	return 0;
 }
 
 char *
-cap_alcmd(const char *name) {
+alcmd(const char *name) {
 	struct alfile *alf = alfopen("r+");
 	if (!alf) {
 		cap_die("failed to open alias file");
@@ -169,19 +193,20 @@ cap_alcmd(const char *name) {
 	return NULL;
 }
 
-static void
+static int
 alshowcmd(const char *name) {
-	char *cmd = cap_alcmd(name);
+	char *cmd = alcmd(name);
 	if (!cmd) {
 		cap_die("not found alias name of '%s'", name);
 	}
 
 	printf("%s\n", cmd);
 	free(cmd);
+	return 0;
 }
 
-static void
-aladd(const char *name, const char *cmd) {
+static int
+aladdal(const char *name, const char *cmd) {
 	struct alfile *alf = alfopen("r+");
 	if (!alf) {
 		cap_die("failed to open alias file");
@@ -210,23 +235,153 @@ aladd(const char *name, const char *cmd) {
 	alfwrite(alf, ccmd, 1, sizeof ccmd);
 
 done:
-	alfclose(alf);
+	if (alfclose(alf) < 0) {
+		cap_log("error", "failed to close alias file");
+		return 1;
+	}
+
+	return 0;
 }
 
-struct alopts {
-	bool isdel;
+static int
+aldelal(const char *dname) {
+	puts(dname);
+	return 0;
+}
+
+static int
+alimport(const char *path) {
+	puts(path);
+	return 0;
+}
+
+static int
+alexport(const char *path) {
+	puts(path);
+	return 0;
+}
+
+struct opts {
+	int nargs;
+	bool ishelp;
+	bool isdelete;
 	bool isimport;
 	bool isexport;
+	char delname[ALF_CNAME];
+	char imppath[1024];
+	char exppath[1024];
 };
+
+static struct opts *
+parseopts(struct opts *opts, int argc, char *argv[]) {
+	static struct option longopts[] = {
+		{"help", no_argument, 0, 'h'},
+		{"export", required_argument, 0, 'e'},
+		{"import", required_argument, 0, 'i'},
+		{"delete", required_argument, 0, 'd'},
+		{},
+	};
+
+	const char *hmpath = getenv("CAP_VARHOME");
+	if (!hmpath) {
+		cap_log("error", "invalid environ variables");
+		return NULL;
+	}
+
+	*opts = (struct opts){};
+	optind = 0;
+	
+	for (;;) {
+		int optsindex;
+		int cur = getopt_long(argc, argv, "he:i:d:", longopts, &optsindex);
+		if (cur == -1) {
+			break;
+		}
+
+		switch (cur) {
+		case 'h': opts->ishelp = true; break;
+		case 'i':
+			opts->isimport = true;
+			cap_fsolve(opts->imppath, sizeof opts->imppath, optarg);
+			if (!cap_fexists(opts->imppath)) {
+				cap_die("Invalid import path %s", opts->imppath);
+			}
+			snprintf(opts->imppath, sizeof opts->imppath, "%s/.capalias", hmpath);
+			break;
+		case 'e':
+			opts->isexport = true;
+			if (!optarg) {
+				snprintf(opts->exppath, sizeof opts->exppath, "%s/.capalias", hmpath);
+			} else {
+				cap_fsolve(opts->exppath, sizeof opts->exppath, optarg);
+			}
+			break;
+		case 'd':
+			opts->isdelete = true;
+			snprintf(opts->delname, sizeof opts->delname, "%s", optarg);
+		break;
+		case '?':
+		default: return NULL; break;
+		}
+	}
+
+	if (argc < optind) {
+		return NULL;
+	}
+
+	opts->nargs = argc - optind;
+	return opts;
+}
+
+static int
+alusage(void) {
+	fprintf(stderr,
+		"Usage: cap alias [arguments] [options]\n"
+		"\n"
+		"Example:\n"
+		"\n"
+		"    cap alias myalias \"cat my/path/to/docs/note.md\"\n"
+		"    cap myalias\n"
+		"\n"
+		"The options are:\n"
+		"\n"
+		"    --help   show usage.\n"
+		"    --delete delete alias.\n"
+		"    --import import alias file.\n"
+		"    --export export alias file to home.\n"
+		"\n"
+	);
+	return 0;
+}
 
 int
 main(int argc, char* argv[]) {
-	if (argc < 2) {
-		alshowls();
-	} else if (argc == 2) {
-		alshowcmd(argv[1]);
-	} else if (argc == 3) {
-		aladd(argv[1], argv[2]);
+	struct opts opts;
+	if (!parseopts(&opts, argc, argv)) {
+		cap_die("failed to parse options");
 	}
-	return 0;
+
+	if (opts.ishelp) {
+		return alusage();
+
+	} else if (opts.isdelete) {
+		return aldelal(opts.delname);
+
+	} else if (opts.isimport) {
+		return alimport(opts.imppath);
+
+	} else if (opts.isexport) {
+		return alexport(opts.exppath);
+
+	} else if (opts.nargs == 0) {
+		return alshowls();
+
+	} else if (opts.nargs == 1) {
+		return alshowcmd(argv[1]);
+
+	} else if (opts.nargs == 2) {
+		return aladdal(argv[1], argv[2]);
+	}
+
+	return 1;
 }
