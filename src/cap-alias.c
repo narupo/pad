@@ -279,11 +279,11 @@ alrun(const char *runarg) {
 	char name[ALF_CNAME];
 	const char *parg = runarg;
 	{
-		char *pname = name;
-		const char *pend = name + sizeof(name) - 1;
-		for (; *parg && !isspace(*parg) && pname < pend; *pname++ = *parg++) {
+		char *beg = name;
+		const char *end = name + sizeof(name) - 1;
+		for (; *parg && !isspace(*parg) && beg < end; *beg++ = *parg++) {
 		}
-		*pname = '\0';
+		*beg = '\0';
 	}
 
 	const char *cmd = alcmd(name);
@@ -294,12 +294,10 @@ alrun(const char *runarg) {
 
 	char cmdln[1024];
 	snprintf(cmdln, sizeof cmdln, "%s/cap-%s%s", bindir, cmd, parg);
-
+	system(cmdln);
 	// printf("runarg[%s] name[%s] parg[%s] cmd[%s]\n", runarg, name, parg, cmd);
 	// printf("cmdln[%s]\n", cmdln);
-
-	system(cmdln);
-
+	
 	return 0;
 }
 
