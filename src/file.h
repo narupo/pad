@@ -12,9 +12,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+#include <stdarg.h>
 #include <dirent.h>
 #include <libgen.h>
-#include <string.h>
 
 #if defined(_WIN32) || defined(_WIN64)
 # define _CAP_WINDOWS 1 /* In cap: file.h */
@@ -42,6 +43,13 @@ cap_fclose(FILE *fp);
 FILE *
 cap_fopen(const char *name, const char *mode);
 
+/**
+ * Copy stream
+ *
+ * @param FILE* dst destination for copy
+ * @param FILE* src source for copy
+ * @return bool success to true, failed to false
+ */
 bool
 cap_fcopy(FILE *dst, FILE *src);
 
@@ -61,14 +69,14 @@ cap_fopendir(const char *path);
  * @brief Wrapper of realpath (Unix's API)
  *
  * @param dst     pointer to buffer of destination
- * @param dstsize number of buffer
+ * @param dstsz number of buffer
  * @param src     string of target path
  *
  * @return success to pointer to destination
  * @return failed to NULL
 */
 char *
-cap_frealpath(char *dst, size_t dstsize, const char *src);
+cap_frealpath(char *dst, size_t dstsz, const char *src);
 
 /**
  * Check exists file
@@ -103,24 +111,39 @@ cap_ftrunc(const char *path);
 /**
  * Get normalized file path
  *
- * @param[out] dst Destination of normalized path
- * @param[in] dstsize Destination size
- * @param[in] path Target path
+ * @param[out] dst destination of normalized path
+ * @param[in] dstsz destination size
+ * @param[in] path target path
  *
  * @return success to pointer to dst
  * @return failed to NULL
  */
 char *
-cap_fsolve(char *dst, size_t dstsize, const char *path);
+cap_fsolve(char *dst, size_t dstsz, const char *path);
 
 /**
  * @param[in] path String of solve target
  *
- * @return Success to pointer to allocate memory for string of solve path.
- * @return Failed to NULL
+ * @return success to pointer to allocate memory for string of solve path.
+ * @return failed to NULL
  */
 char *
 cap_fsolvecp(const char *path);
+
+/**
+ * Get normalized file path by string format
+ *
+ * @param[out] dst destination of normalized path
+ * @param[in] dstsz destination size
+ * @param[in] path target path
+ * @param[in]:fmt string format
+ * @param[in] ... arguments of format
+ *
+ * @return success to pointer to dst
+ * @return failed to NULL
+ */
+char *
+cap_fsolvefmt(char *dst, size_t dstsz, const char *fmt, ...);
 
 /**
  * Check file is directory

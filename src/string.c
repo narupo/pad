@@ -1,5 +1,21 @@
 #include "string.h"
 
+/********
+* utils *
+********/
+
+char *
+capstrncat(char *dst, size_t dstsz, const char *src) {
+	const char * dend = dst+dstsz-1; // -1 for final nul
+	char *dp = dst + strlen(dst);
+
+	for (const char *sp = src; *sp && dp < dend; *dp++ = *sp++) {
+	}	
+	*dp = '\0';
+	
+	return dst;
+}
+
 /***********************
 * cap string structure *
 ***********************/

@@ -50,7 +50,11 @@ cap_die(const char *fmt, ...) {
 
 	fflush(stdout);
 
-	fprintf(stderr, "cap: ");
+	const char *procname = getenv("CAP_PROCNAME");
+	if (!procname) {
+		procname = "cap";
+	}
+	fprintf(stderr, "%s: ", procname);
 
 	if (errno != 0) {
 		fprintf(stderr, "%s. ", strerror(errno));

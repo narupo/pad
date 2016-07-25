@@ -1,6 +1,10 @@
 #include "cap-alias.h"
 
 enum {
+	CAPAL_NCMDLINE = 1024
+};
+
+enum {
 	ALF_BUFCAPA = 1024,
 	ALF_CNAME = 128,
 	ALF_CCMD = 256,
@@ -213,16 +217,20 @@ alshowcmd(const char *name) {
 }
 
 static int
-aladdal(const char *name, const char *cmd) {
+aladdal(int argc, char *argv[]) {
 	struct alfile *alf = alfopen("r+");
 	if (!alf) {
 		cap_die("failed to open alias file");
 	}
 
 	char cname[ALF_CNAME];
-	char ccmd[ALF_CCMD];
-	snprintf(cname, sizeof cname, "%s", name);
-	snprintf(ccmd, sizeof ccmd, "%s", cmd);
+	snprintf(cname, sizeof cname, "%s", argv[1]);
+	
+	char ccmd[ALF_CCMD] = {0};
+	for (int i = 2; i < argc; ++i) {
+		capstrncat(ccmd, sizeof ccmd, argv[i]);
+		capstrncat(ccmd, sizeof ccmd, " ");
+	}
 
 	for (; !alfeof(alf); ) {
 		const char *buf = alfreadstr(alf, ALF_CNAME);
@@ -257,8 +265,37 @@ aldelal(const char *dname) {
 }
 
 static int
-alimport(const char *path) {
-	puts(path);
+alimport(const char *drtpath) {
+	char path[FILE_NPATH];
+
+	cap_fsolve(path, sizeof path, drtpath);
+	if (!cap_fexists(path)) {
+		cap_die("invalid import alias path '%s'", drtpath);
+	}
+
+	FILE *fsrc = fopen(path, "rb");
+	if (!fsrc) {
+		cap_die("failed to open file '%s'", path);
+	}
+
+	struct alfile *fdst = alfopen("wb");
+	if (!fdst) {
+		fclose(fsrc);
+		cap_die("failed to open alias file");
+	}
+
+	cap_fcopy(fdst->fp, fsrc);
+
+	if (fclose(fsrc) < 0) {
+		cap_log("error", "failed to close file '%s'", path);
+	}
+
+	if (alfclose(fdst) < 0) {
+		cap_log("error", "failed to close alias file");
+	}
+
+	cap_log("debug", "copy alias file from '%s'", path);
+
 	return 0;
 }
 
@@ -286,32 +323,35 @@ alrun(const char *runarg) {
 		*beg = '\0';
 	}
 
-	const char *cmd = alcmd(name);
-	if (!cmd) {
+	const char *cmdclm = alcmd(name);
+	if (!cmdclm) {
 		cap_die("not found alias command of '%s'", name);
 		return 1;
 	}
 
-	char cmdln[1024];
-	snprintf(cmdln, sizeof cmdln, "%s/cap-%s%s", bindir, cmd, parg);
+	char cmdbase[FILE_NPATH];
+	snprintf(cmdbase, sizeof cmdbase, "%s/cap-%s", bindir, cmdclm);
+
+	char cmdln[CAPAL_NCMDLINE];
+	snprintf(cmdln, sizeof cmdln, "%s%s", cmdbase, parg);
 	system(cmdln);
-	// printf("runarg[%s] name[%s] parg[%s] cmd[%s]\n", runarg, name, parg, cmd);
+	// printf("runarg[%s] name[%s] parg[%s] cmdclm[%s]\n", runarg, name, parg, cmdclm);
 	// printf("cmdln[%s]\n", cmdln);
 	
 	return 0;
 }
 
 struct opts {
-	int nargs;
+	int nargs; // argc - optind
 	bool ishelp;
 	bool isdelete;
 	bool isimport;
 	bool isexport;
 	bool isrun;
-	char delname[ALF_CNAME];
-	char runname[ALF_CNAME];
-	char imppath[1024];
-	char exppath[1024];
+	char delname[ALF_CNAME]; // delete alias name
+	char runname[ALF_CNAME]; // run alias name
+	char imppath[FILE_NPATH]; // import file path
+	char exppath[FILE_NPATH]; // export file path
 };
 
 static struct opts *
@@ -349,8 +389,7 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 			if (!cap_fexists(opts->imppath)) {
 				cap_die("Invalid import path %s", opts->imppath);
 			}
-			snprintf(opts->imppath, sizeof opts->imppath, "%s/.capalias", hmpath);
-			break;
+		break;
 		case 'e':
 			opts->isexport = true;
 			if (!optarg) {
@@ -358,7 +397,7 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 			} else {
 				cap_fsolve(opts->exppath, sizeof opts->exppath, optarg);
 			}
-			break;
+		break;
 		case 'd':
 			opts->isdelete = true;
 			snprintf(opts->delname, sizeof opts->delname, "%s", optarg);
@@ -404,6 +443,8 @@ alusage(void) {
 
 int
 main(int argc, char* argv[]) {
+	setenv("CAP_PROCNAME", "cap alias", 1);
+
 	struct opts opts;
 	if (!parseopts(&opts, argc, argv)) {
 		cap_die("failed to parse options");
@@ -430,9 +471,9 @@ main(int argc, char* argv[]) {
 	} else if (opts.nargs == 1) {
 		return alshowcmd(argv[1]);
 
-	} else if (opts.nargs == 2) {
-		return aladdal(argv[1], argv[2]);
+	} else if (opts.nargs >= 2) {
+		return aladdal(argc, argv);
 	}
 
-	return alusage();
+	return 1;
 }

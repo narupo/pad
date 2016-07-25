@@ -11,6 +11,27 @@
 #include <limits.h>
 #include <unistd.h>
 
+/********
+* utils *
+********/
+
+/**
+ * Catenate source strings to destination
+ *
+ * @param[out] dst pointer to destination buffer
+ * @param[in] dstsz size of destination buffer
+ * @param[in] src source string
+ *
+ * @return success to pointer to dst
+ * @return failed to pointer to NULL
+ */
+char *
+capstrncat(char *dst, size_t dstsz, const char *src);
+
+/*************
+* cap_string *
+*************/
+
 struct cap_string;
 typedef char cap_string_type_t;
 
