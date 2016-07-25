@@ -2,7 +2,6 @@
 #define STRING_H
 
 #define _GNU_SOURCE 1 /* In cap: string.h for the strdup */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,6 +26,9 @@
  */
 char *
 capstrncat(char *dst, size_t dstsz, const char *src);
+
+char *
+capstrcpywithout(char *dst, size_t dstsz, const char *src, const char *without);
 
 /*************
 * cap_string *
