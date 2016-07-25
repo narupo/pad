@@ -330,35 +330,44 @@ capusage(struct cap *cap) {
 }
 
 static void
-caprun(struct cap *cap) {
-	const struct opts *opts = &cap->opts;
-
-	if (cap->cmdargc < 1 || opts->ishelp) {
-		capusage(cap);
+capfork(struct cap *cap) {
+	const char *bindir = getenv("CAP_BINDIR");
+	if (!bindir) {
+		capdel(cap);
+		cap_die("need bin directory on environ");
 	}
 
 	char ppath[100];
-	snprintf(ppath, sizeof ppath, "../bin/cap-%s", cap->cmdargv[0]); // TODO
+	snprintf(ppath, sizeof ppath, "%s/cap-%s", bindir, cap->cmdargv[0]);
 
-	if (cap->alcmdln) {
-		system(cap->alcmdln);
-	} else {
-		switch (fork()) {
-		case -1:
-			cap_die("failed to fork");
-		break;
-		case 0: // Child
-			if (execv(ppath, cap->cmdargv) < 0) {
-				cap_log("error", "failed to execute of %s", ppath);
-				_exit(1);
-			}
-		break;
-		default:// Parent
-			wait(NULL);
-			capdel(cap);
-			exit(0);
-		break;
+	switch (fork()) {
+	case -1:
+		cap_die("failed to fork");
+	break;
+	case 0: // Child
+		if (execv(ppath, cap->cmdargv) < 0) {
+			cap_log("error", "failed to execute of %s", ppath);
+			_exit(1);
 		}
+	break;
+	default:// Parent
+		wait(NULL);
+		capdel(cap);
+		exit(0);
+	break;
+	}
+}
+
+static void
+caprun(struct cap *cap) {
+	if (cap->cmdargc < 1 || cap->opts.ishelp) {
+		capusage(cap);
+
+	} else if (cap->alcmdln) {
+		system(cap->alcmdln);
+
+	} else {
+		capfork(cap);
 	}
 }
 

@@ -37,7 +37,7 @@ cap_frealpath(char *dst, size_t dstsize, const char *src) {
 }
 
 char *
-cap_fsolve(char *dst, size_t dstsize, const char *path) {
+cap_fsolve(char *dst, size_t dstsz, const char *path) {
 	char tmp[FILE_NPATH];
 
 	// Check arugments
@@ -52,7 +52,7 @@ cap_fsolve(char *dst, size_t dstsize, const char *path) {
 		snprintf(tmp, sizeof tmp, "%s", path);
 	}
 
-	if (!cap_frealpath(dst, dstsize, tmp)) {
+	if (!cap_frealpath(dst, dstsz, tmp)) {
 		return NULL;
 	}
 
@@ -80,6 +80,16 @@ cap_fsolvecp(const char *path) {
 	}
 
 	return res;
+}
+
+char *
+cap_fsolvefmt(char *dst, size_t dstsz, const char *fmt, ...) {
+	va_list ap;
+	va_start(ap, fmt);
+	char tmp[FILE_NPATH];
+	vsnprintf(tmp, sizeof tmp, fmt, ap);
+	va_end(ap);
+	return cap_fsolve(dst, dstsz, tmp);
 }
 
 FILE*
