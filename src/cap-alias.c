@@ -12,28 +12,11 @@ enum {
 };
 
 static char *
-cap_strcpywithout(char *dst, size_t dstsz, const char *src, const char *without) {
-	size_t di = 0;
-	for (const char *p = src; *p; ++p) {
-		if (strchr(without, *p)) {
-			continue;
-		}
-		if (di >= dstsz-1) {
-			dst[di] = '\0';
-			return NULL;
-		}
-		dst[di++] = *p;
-	}
-	dst[di] = '\0';
-	return dst;
-}
-
-static char *
 pathtofname(char *dst, size_t dstsz, const char *path) {
 	char tmp[dstsz];
 
 	// Remove 環境依存の文字
-	if (!cap_strcpywithout(tmp, sizeof tmp, path, "/\\:")) {
+	if (!capstrcpywithout(tmp, sizeof tmp, path, "/\\:")) {
 		return NULL;
 	}
 

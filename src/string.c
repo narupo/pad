@@ -16,6 +16,23 @@ capstrncat(char *dst, size_t dstsz, const char *src) {
 	return dst;
 }
 
+char *
+capstrcpywithout(char *dst, size_t dstsz, const char *src, const char *without) {
+	size_t di = 0;
+	for (const char *p = src; *p; ++p) {
+		if (strchr(without, *p)) {
+			continue;
+		}
+		if (di >= dstsz-1) {
+			dst[di] = '\0';
+			return NULL;
+		}
+		dst[di++] = *p;
+	}
+	dst[di] = '\0';
+	return dst;
+}
+
 /***********************
 * cap string structure *
 ***********************/
