@@ -94,6 +94,10 @@ alfopen(const char *mode) {
 		return NULL;
 	}
 
+	if (!cap_fexists(path)) {
+		cap_ftrunc(path);
+	}
+
 	alf->fp = fopen(path, mode);
 	if (!alf->fp) {
 		free(alf);
@@ -119,9 +123,7 @@ alfreadstr(struct alfile *alf, int nread) {
 	alf->buf[n] = '\0';
 
 	if (n < nread) {
-		if (ferror(alf->fp)) {
-			return NULL;
-		}
+		return NULL;
 	}
 
 	return alf->buf;
@@ -138,8 +140,15 @@ alfseek(struct alfile *alf, long ofs, int whence) {
 }
 
 static int
+alfclear(struct alfile *alf, long len) {
+	char buf[len];
+	memset(buf, 0, sizeof buf);
+	return fwrite(buf, 1, len, alf->fp);
+}
+
+static int
 alshowls(void) {
-	struct alfile *alf = alfopen("r+");
+	struct alfile *alf = alfopen("rb");
 	if (!alf) {
 		cap_die("failed to open alias file");
 	}
@@ -149,13 +158,18 @@ alshowls(void) {
 		if (!buf) {
 			break;
 		}
+
+		if (!strlen(buf)) {
+			alfseek(alf, ALF_CCMD, SEEK_CUR);
+			continue;
+		}
+
 		printf("%s ", buf);
 
 		buf = alfreadstr(alf, ALF_CCMD);
 		if (!buf) {
 			break;
 		}
-
 		printf("%s\n", buf);
 	}
 
@@ -232,10 +246,17 @@ aladdal(int argc, char *argv[]) {
 		capstrncat(ccmd, sizeof ccmd, " ");
 	}
 
-	for (; !alfeof(alf); ) {
+	int ern = -1; // Empty record number
+	for (int i = 0; !alfeof(alf); ++i) {
 		const char *buf = alfreadstr(alf, ALF_CNAME);
 		if (!buf) {
 			break;
+		}
+
+		if (!strlen(buf)) {
+			ern = i;
+			alfseek(alf, ALF_CCMD, SEEK_CUR);
+			continue;
 		}
 
 		if (!strcmp(buf, cname)) {
@@ -243,11 +264,20 @@ aladdal(int argc, char *argv[]) {
 			alfwrite(alf, ccmd, 1, sizeof ccmd);
 			goto done;
 		}
+
+		alfseek(alf, ALF_CCMD, SEEK_CUR);
 	}
 
-	// Insert alias record
+	if (ern < 0) {
+		// Insert alias record
+		alfseek(alf, 0L, SEEK_END);
+	} else {
+		alfseek(alf, ALF_RLEN*ern, SEEK_SET);
+	}
+
 	alfwrite(alf, cname, 1, sizeof cname);
 	alfwrite(alf, ccmd, 1, sizeof ccmd);
+	// printf("ern[%d] cname[%s] ccmd[%s]\n", ern, cname, ccmd);
 
 done:
 	if (alfclose(alf) < 0) {
@@ -259,8 +289,26 @@ done:
 }
 
 static int
-aldelal(const char *dname) {
-	puts(dname);
+aldelal(const char *name) {
+	struct alfile *alf = alfopen("r+");
+
+	for (; !alfeof(alf); ) {
+		const char *clmname = alfreadstr(alf, ALF_CNAME);
+		if (!clmname) {
+			break;
+		}
+		// printf("clmname[%s]\n", clmname);
+
+		if (!strcmp(name, clmname)) {
+			alfseek(alf, -ALF_CNAME, SEEK_CUR);
+			alfclear(alf, ALF_RLEN);
+			break;
+		}
+
+		alfseek(alf, ALF_CCMD, SEEK_CUR);
+	}
+
+	alfclose(alf);
 	return 0;
 }
 
