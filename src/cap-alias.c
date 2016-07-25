@@ -267,41 +267,74 @@ aldelal(const char *dname) {
 static int
 alimport(const char *drtpath) {
 	char path[FILE_NPATH];
-
 	cap_fsolve(path, sizeof path, drtpath);
 	if (!cap_fexists(path)) {
 		cap_die("invalid import alias path '%s'", drtpath);
+		return 1;
 	}
 
 	FILE *fsrc = fopen(path, "rb");
 	if (!fsrc) {
 		cap_die("failed to open file '%s'", path);
+		return 1;
 	}
 
 	struct alfile *fdst = alfopen("wb");
 	if (!fdst) {
 		fclose(fsrc);
 		cap_die("failed to open alias file");
+		return 1;
 	}
 
 	cap_fcopy(fdst->fp, fsrc);
 
 	if (fclose(fsrc) < 0) {
 		cap_log("error", "failed to close file '%s'", path);
+		alfclose(fdst);
+		return 1;
 	}
 
 	if (alfclose(fdst) < 0) {
 		cap_log("error", "failed to close alias file");
+		return 1;
 	}
 
-	cap_log("debug", "copy alias file from '%s'", path);
-
+	// cap_log("debug", "copy alias file from '%s'", path);
 	return 0;
 }
 
 static int
-alexport(const char *path) {
-	puts(path);
+alexport(const char *drtpath) {
+	char path[FILE_NPATH];
+	if (!cap_fsolve(path, sizeof path, drtpath)) {
+		cap_die("invalid export alias path '%s'", drtpath);
+	}
+
+	struct alfile *fsrc = alfopen("rb");
+	if (!fsrc) {
+		cap_die("failed to open alias file");
+	}
+
+	FILE *fdst = fopen(path, "wb");
+	if (!fdst) {
+		alfclose(fsrc);
+		cap_die("failed to open file '%s'", path);
+	}
+
+	cap_fcopy(fdst, fsrc->fp);
+
+	if (alfclose(fsrc) < 0) {
+		cap_log("error", "failed to close alias file");
+		fclose(fdst);
+		return 1;
+	}
+
+	if (fclose(fdst) < 0) {
+		cap_log("error", "failed to close file '%s'", path);
+		return 1;
+	}
+
+	// cap_log("debug", "export alias file to '%s'", path);
 	return 0;
 }
 
