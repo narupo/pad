@@ -1,7 +1,7 @@
 RM := rm
 CC := gcc
 CFLAGS := -Wall -g -O0 -std=c11 -Wno-unused-function -D_DEBUG
-CMDS := cap.c cap-cat.c cap-make.c cap-cd.c cap-home.c cap-editor.c cap-pwd.c \
+CMDS := cap.c cap-cat.c cap-cd.c cap-home.c cap-pwd.c \
 	cap-ls.c cap-alias.c cap-run.c
 MODS := error.c file.c hash.c string.c config.c file.c map.c array.c \
 	socket.c
@@ -12,7 +12,7 @@ MODOBJS := $(MODS:.c=.o)
 DEPS := $(CMDS:.c=.d) $(MODS:.c=.d)
 BINDIR := ../bin
 
-all: cap cap-cat cap-make cap-cd cap-home cap-editor cap-pwd \
+all: cap cap-cat cap-cd cap-home cap-pwd \
 	cap-ls cap-alias cap-run
 
 cap: cap.c $(MODOBJS)
@@ -21,16 +21,10 @@ cap: cap.c $(MODOBJS)
 cap-cat: cap-cat.c $(MODOBJS)
 	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
 
-cap-make: cap-make.c $(MODOBJS)
-	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
-
 cap-cd: cap-cd.c $(MODOBJS)
 	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
 
 cap-home: cap-home.c $(MODOBJS)
-	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
-
-cap-editor: cap-editor.c $(MODOBJS)
 	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
 
 cap-pwd: cap-pwd.c $(MODOBJS)

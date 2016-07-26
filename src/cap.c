@@ -319,8 +319,6 @@ capusage(struct cap *cap) {
 		"    pwd     show current directory.\n"
 		"    ls      show list in current directory.\n"
 		"    cat     catenate files and show.\n"
-		"    make    make buffer from cap files.\n"
-		"    editor  set editor or show it.\n"
 		"    run     run script.\n"
 		"    alias   run alias command.\n"
 		"\n"
