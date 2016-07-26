@@ -378,6 +378,7 @@ main(int argc, char *argv[]) {
 	}
 
 	caprun(cap);
+	capdel(cap);
 
 	return 0;
 }
