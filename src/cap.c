@@ -181,7 +181,7 @@ capfixcmdargs(struct cap *cap) {
 		}
 	}
 
-	// Not found command. Find to alias
+	// Not found command. Re-build command for cap-alias
 	const char *bindir = getenv("CAP_BINDIR");
 	if (!bindir) {
 		cap_log("error", "need bin directory path on environ");
@@ -306,7 +306,8 @@ capnew(int ac, char *av[]) {
 
 static void
 capusage(struct cap *cap) {
-	fprintf(stderr, "Usage: cap [options] [command] [arguments]\n"
+	fprintf(stderr,
+		"Usage: cap [options] [command] [arguments]\n"
 		"\n"
 		"The options are:\n"
 		"\n"
