@@ -1,6 +1,7 @@
 #ifndef CAP_VARCD_H
 #define CAP_VARCD_H
 
+#define _GNU_SOURCE 1 /* in cap-alias.h for strdup */
 #include <stdio.h>
 #include <stdlib.h>
 
