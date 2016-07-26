@@ -271,7 +271,7 @@ capinitenv(const struct cap *cap) {
 		cap_fmkdirq(vardir);
 	}
 
-	setenv("CAP_BINDIR", "../bin", 1); // TODO
+	setenv("CAP_BINDIR", "/home/narupo/src/cap/bin", 1); // TODO
 	setenv("CAP_CONFPATH", cnfpath, 1);
 	setenv("CAP_HOMEDIR", homedir, 1);
 	setenv("CAP_VARDIR", vardir, 1);

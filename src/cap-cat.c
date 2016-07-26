@@ -10,6 +10,8 @@ cat(FILE *fout, FILE *fin) {
 
 int
 main(int argc, char *argv[]) {
+	setenv("CAP_PROCNAME", "cap cat", 1);
+
 	if (argc < 2) {
 		cat(stdout, stdin);
 		return 0;
@@ -26,19 +28,22 @@ main(int argc, char *argv[]) {
 		
 		// Make path
 		char path[100];
-		snprintf(path, sizeof path, "%s/%s", cd, name);
-		//printf("path[%s]\n", path);
+		cap_fsolvefmt(path, sizeof path, "%s/%s", cd, name);
 
 		// Copy stream
 		FILE *fin = fopen(path, "rb");
 		if (!fin) {
-			cap_log("error", "fopen %s", path);
+			cap_error("fopen %s", path);
 			continue;
 		}
+
 		if (!cat(stdout, fin)) {
-			cap_log("error", "cat");
+			cap_error("failed to catenate");
 		}
-		fclose(fin);
+		
+		if (fclose(fin) < 0) {
+			cap_error("failed to close file");
+		}
 	}
 
 	return 0;

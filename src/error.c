@@ -36,20 +36,11 @@ _cap_log(const char *file, long line, const char *func, const char *type, const 
 	return true;
 }
 
-void
-cap_die(const char *fmt, ...) {
-	char tmp[1024];
-	if (isalpha(fmt[0])) {
-		snprintf(tmp, sizeof tmp, "%c%s", toupper(fmt[0]), fmt+1);
-		fmt = tmp;
-	}
-
-	size_t fmtlen = strlen(fmt);
-	va_list args;
-	va_start(args, fmt);
-
+static void
+errorap(va_list ap, const char *fmt) {
 	fflush(stdout);
 
+	size_t fmtlen = strlen(fmt);
 	const char *procname = getenv("CAP_PROCNAME");
 	if (!procname) {
 		procname = "cap";
@@ -61,7 +52,7 @@ cap_die(const char *fmt, ...) {
 	}
 	
 	if (fmtlen) {
-		vfprintf(stderr, fmt, args);
+		vfprintf(stderr, fmt, ap);
 	}
 
 	if (fmtlen && fmt[fmtlen-1] != '.') {
@@ -69,9 +60,39 @@ cap_die(const char *fmt, ...) {
 	}
 
 	fprintf(stderr, "\n");
-
-	va_end(args);
-
 	fflush(stderr);
+}
+
+static const char *
+fmttoupper(char *dst, size_t dstsz, const char *fmt) {
+	if (isalpha(fmt[0])) {
+		snprintf(dst, dstsz, "%c%s", toupper(fmt[0]), fmt+1);
+		return dst;
+	}
+
+	return fmt;
+}
+
+void
+cap_error(const char *fmt, ...) {
+	char tmp[1024];
+	fmt = fmttoupper(tmp, sizeof tmp, fmt);
+
+	va_list ap;
+	va_start(ap, fmt);
+	errorap(ap, fmt);
+	va_end(ap);
+}
+
+void
+cap_die(const char *fmt, ...) {
+	char tmp[1024];
+	fmt = fmttoupper(tmp, sizeof tmp, fmt);
+
+	va_list ap;
+	va_start(ap, fmt);
+	errorap(ap, fmt);
+	va_end(ap);
+
 	exit(EXIT_FAILURE);
 }

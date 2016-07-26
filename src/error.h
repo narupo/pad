@@ -22,4 +22,7 @@ _cap_log(const char *file, long line, const char *func, const char *type, const 
 void
 cap_die(const char *fmt, ...);
 
+void
+cap_error(const char *fmt, ...);
+
 #endif
