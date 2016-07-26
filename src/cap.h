@@ -26,4 +26,3 @@
 #include "array.h"
 
 #endif
-
