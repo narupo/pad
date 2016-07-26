@@ -488,11 +488,6 @@ alusage(void) {
 	fprintf(stderr,
 		"Usage: cap alias [arguments] [options]\n"
 		"\n"
-		"Example:\n"
-		"\n"
-		"    cap alias myalias \"cat my/path/to/docs/note.md\"\n"
-		"    cap myalias\n"
-		"\n"
 		"The options are:\n"
 		"\n"
 		"    -h, --help   show usage.\n"
@@ -500,6 +495,11 @@ alusage(void) {
 		"    -i, --import import alias file.\n"
 		"    -e, --export export alias file to home.\n"
 		"    -r, --run    run command of alias.\n"
+		"\n"
+		"Example:\n"
+		"\n"
+		"    cap alias myalias \"cat my/path/to/docs/note.md\"\n"
+		"    cap myalias\n"
 		"\n"
 	);
 	return 0;
