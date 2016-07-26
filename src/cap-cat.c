@@ -27,8 +27,17 @@ main(int argc, char *argv[]) {
 		const char *name = argv[i];
 		
 		// Make path
-		char path[100];
+		char path[FILE_NPATH];
 		cap_fsolvefmt(path, sizeof path, "%s/%s", cd, name);
+		if (!cap_fexists(path)) {
+			cap_error("invalid path of '%s'", path);
+			continue;
+		}
+
+		if (!cap_fisdir(path)) {
+			cap_error("'%s' is not a directory", path);
+			continue;
+		}
 
 		// Copy stream
 		FILE *fin = fopen(path, "rb");

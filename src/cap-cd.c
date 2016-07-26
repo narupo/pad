@@ -31,15 +31,21 @@ docd(const char *drtpath) {
 	cap_fsolve(newcd, sizeof newcd, drtpath);
 	// printf("newcd[%s]\n", newcd);
 
+	if (!cap_fisdir(newcd)) {
+		cap_die("'%s' is not a directory", newcd);
+	}
+
 	if (!writevarcd(newcd)) {
 		cap_die("failed to write var");
 	}	
-	
+
 	return true;
 }
 
 int
 main(int argc, char *argv[]) {
+	setenv("CAP_PROCNAME", "cap cd", 1);
+
 	if (argc < 2) {
 		const char *home = getenv("CAP_VARHOME");
 		if (!home) {

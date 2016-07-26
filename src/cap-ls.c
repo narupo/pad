@@ -2,7 +2,7 @@
 
 static void
 arrdump(const struct cap_array *arr, FILE *fout) {
-	for (size_t i = 0; i < cap_arrlen(arr); ++i) {
+	for (int i = 0; i < cap_arrlen(arr); ++i) {
 		fprintf(fout, "%s\n", cap_arrgetc(arr, i));
 	}
 	fflush(fout);
@@ -25,10 +25,10 @@ dir2array(struct cap_dir *dir) {
 }
 
 static int
-cap_ls(const char *path) {
+capls(const char *path) {
 	struct cap_dir *dir = cap_diropen(path);
 	if (!dir) {
-		cap_log("error", "failed to open directory %s", path);
+		cap_error("failed to open directory %s", path);
 		return 1;
 	}
 
@@ -52,21 +52,22 @@ cap_ls(const char *path) {
 
 int
 main(int argc, char *argv[]) {
+	setenv("CAP_PROCNAME", "cap ls", 1);
+
 	const char *cd = getenv("CAP_VARCD");
 	if (!cd) {
 		cap_die("need environment variable of cd");
 	}
 
 	if (argc < 2) {
-		cap_ls(cd);
+		capls(cd);
 	} else {
-		char path[256];
+		char path[FILE_NPATH];
 		for (int i = 1; i < argc; ++i) {
-			snprintf(path, sizeof path, "%s/%s", cd, argv[i]);
-			cap_ls(path);
+			cap_fsolvefmt(path, sizeof path, "%s/%s", cd, argv[i]);
+			capls(path);
 		}
 	}
 
 	return 0;
 }
-
