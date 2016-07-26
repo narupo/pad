@@ -18,16 +18,6 @@ struct opts {
 	bool ishelp;
 };
 
-static void
-freeargv(int argc, char *argv[]) {
-	if (argv) {
-		for (int i = 0; i < argc; ++i) {
-			free(argv[i]);
-		}
-		free(argv);
-	}
-}
-
 static bool
 writeconfig(const char *cnfpath) {
 	FILE *fout = fopen(cnfpath, "w");

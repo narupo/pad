@@ -24,5 +24,6 @@
 #include "file.h"
 #include "config.h"
 #include "array.h"
+#include "util.h"
 
 #endif
