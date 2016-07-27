@@ -1,7 +1,7 @@
 #include "cap-cat.h"
 
 static bool
-cat(FILE *fout, FILE *fin) {
+capcat(FILE *fout, FILE *fin) {
 	if (!cap_fcopy(fout, fin)) {
 		return false;
 	}
@@ -13,13 +13,13 @@ main(int argc, char *argv[]) {
 	setenv("CAP_PROCNAME", "cap cat", 1);
 
 	if (argc < 2) {
-		cat(stdout, stdin);
+		capcat(stdout, stdin);
 		return 0;
 	}
 
 	const char *cd = getenv("CAP_VARCD");
 	if (!cd) {
-		cap_log("error", "need environment variable of cd");
+		cap_error("need environment variable of cd");
 		return 1;
 	}
 
@@ -34,8 +34,8 @@ main(int argc, char *argv[]) {
 			continue;
 		}
 
-		if (!cap_fisdir(path)) {
-			cap_error("'%s' is not a directory", path);
+		if (cap_fisdir(path)) {
+			cap_error("'%s' is directory", path);
 			continue;
 		}
 
@@ -46,7 +46,7 @@ main(int argc, char *argv[]) {
 			continue;
 		}
 
-		if (!cat(stdout, fin)) {
+		if (!capcat(stdout, fin)) {
 			cap_error("failed to catenate");
 		}
 		
