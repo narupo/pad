@@ -7,7 +7,7 @@
 struct var {
 	const char *envkey;
 	const char *fname;
-	char defval[100];
+	char defval[FILE_NPATH];
 };
 
 /**
@@ -236,10 +236,10 @@ capsolveopts(struct cap *cap, int ac, char *av[]) {
 
 static bool
 capinitenv(const struct cap *cap) {
-	char caproot[100];
-	char cnfpath[100];
-	char vardir[100];
-	char homedir[100];
+	char caproot[FILE_NPATH];
+	char cnfpath[FILE_NPATH];
+	char vardir[FILE_NPATH];
+	char homedir[FILE_NPATH];
 
 	cap_fsolve(caproot, sizeof caproot, "~/.cap2"); // TODO
 	if (!cap_fexists(caproot)) {
