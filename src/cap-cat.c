@@ -10,15 +10,15 @@ capcat(FILE *fout, FILE *fin) {
 
 int
 main(int argc, char *argv[]) {
-	setenv("CAP_PROCNAME", "cap cat", 1);
+	cap_envsetf("CAP_PROCNAME", "cap cat");
 
 	if (argc < 2) {
 		capcat(stdout, stdin);
 		return 0;
 	}
 
-	const char *cd = getenv("CAP_VARCD");
-	if (!cd) {
+	char cd[FILE_NPATH];
+	if (!cap_envget(cd, sizeof cd, "CAP_VARCD")) {
 		cap_error("need environment variable of cd");
 		return 1;
 	}
