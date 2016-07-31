@@ -1,9 +1,9 @@
 #include "cap-pwd.h"
 
 int
-main(int argc, char *argv[]) {
-	const char *cd = getenv("CAP_VARCD");
-	if (!cd) {
+main(void) {
+	char cd[FILE_NPATH];
+	if (!cap_envget(cd, sizeof cd, "CAP_VARCD")) {
 		cap_log("error", "need environment variable of cd");
 		return 1;
 	}
@@ -12,4 +12,3 @@ main(int argc, char *argv[]) {
 
 	return 0;
 }
-

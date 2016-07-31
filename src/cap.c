@@ -72,7 +72,7 @@ varsread(const struct var *vars, const char *vardir) {
 			continue;
 		}
 
-		setenv(p->envkey, val, 1);
+		cap_envsetf(p->envkey, val);
 	}
 	
 	return true;
@@ -172,8 +172,8 @@ capfixcmdargs(struct cap *cap) {
 	}
 
 	// Not found command. Re-build command for cap-alias
-	const char *bindir = getenv("CAP_BINDIR");
-	if (!bindir) {
+	char bindir[FILE_NPATH];
+	if (!cap_envget(bindir, sizeof bindir, "CAP_BINDIR")) {
 		cap_log("error", "need bin directory path on environ");
 		return NULL;
 	}
@@ -261,10 +261,10 @@ capinitenv(const struct cap *cap) {
 		cap_fmkdirq(vardir);
 	}
 
-	setenv("CAP_BINDIR", "/home/narupo/src/cap/bin", 1); // TODO
-	setenv("CAP_CONFPATH", cnfpath, 1);
-	setenv("CAP_HOMEDIR", homedir, 1);
-	setenv("CAP_VARDIR", vardir, 1);
+	cap_envsetf("CAP_BINDIR", "/home/narupo/src/cap/bin"); // TODO
+	cap_envsetf("CAP_CONFPATH", cnfpath);
+	cap_envsetf("CAP_HOMEDIR", homedir);
+	cap_envsetf("CAP_VARDIR", vardir);
 	
 	return varsrun(vardir);
 }
@@ -320,8 +320,8 @@ capusage(struct cap *cap) {
 
 static void
 capfork(struct cap *cap) {
-	const char *bindir = getenv("CAP_BINDIR");
-	if (!bindir) {
+	char bindir[FILE_NPATH];
+	if (!cap_envget(bindir, sizeof bindir, "CAP_BINDIR")) {
 		capdel(cap);
 		cap_die("need bin directory on environ");
 	}

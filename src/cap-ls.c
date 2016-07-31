@@ -52,10 +52,10 @@ capls(const char *path) {
 
 int
 main(int argc, char *argv[]) {
-	setenv("CAP_PROCNAME", "cap ls", 1);
+	cap_envsetf("CAP_PROCNAME", "cap ls");
 
-	const char *cd = getenv("CAP_VARCD");
-	if (!cd) {
+	char cd[FILE_NPATH];
+	if (!cap_envget(cd, sizeof cd, "CAP_VARCD")) {
 		cap_die("need environment variable of cd");
 	}
 

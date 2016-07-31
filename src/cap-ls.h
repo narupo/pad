@@ -8,5 +8,6 @@
 #include "error.h"
 #include "file.h"
 #include "array.h"
+#include "env.h"
 
 #endif
