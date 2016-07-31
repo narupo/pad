@@ -39,19 +39,19 @@ writeconfig(const char *cnfpath) {
 
 static bool
 varswrite(const struct var *vars, const char *vardir) {
-	char path[100];
+	char wrpath[FILE_NPATH]; // Write path
 	char sval[100]; // Solve value
 
 	for (const struct var *p = vars; p->envkey; ++p) {
-		snprintf(path, sizeof path, "%s/%s", vardir, p->fname);
-		if (cap_fexists(path)) {
-			continue;
+		cap_fsolvefmt(wrpath, sizeof wrpath, "%s/%s", vardir, p->fname);
+		if (cap_fexists(wrpath)) {
+			continue; // Don't over write
 		}
 
 		cap_fsolve(sval, sizeof sval, p->defval);
 		
-		if (!cap_fwriteline(sval, path)) {
-			cap_log("error", "failed to write line to %s", path);
+		if (!cap_fwriteline(sval, wrpath)) {
+			cap_log("error", "failed to write line to %s", wrpath);
 			continue;
 		}
 	}
@@ -61,14 +61,14 @@ varswrite(const struct var *vars, const char *vardir) {
 
 static bool
 varsread(const struct var *vars, const char *vardir) {
-	char path[100];
+	char rdpath[FILE_NPATH]; // Read path
 	char val[100];
 
 	for (const struct var *p = vars; p->envkey; ++p) {
-		snprintf(path, sizeof path, "%s/%s", vardir, p->fname);
+		cap_fsolvefmt(rdpath, sizeof rdpath, "%s/%s", vardir, p->fname);
 		
-		if (!cap_freadline(val, sizeof val, path)) {
-			cap_log("error", "failed to read line from %s", path);
+		if (!cap_freadline(val, sizeof val, rdpath)) {
+			cap_log("error", "failed to read line from %s", rdpath);
 			continue;
 		}
 
@@ -150,12 +150,9 @@ capfixcmdargs(struct cap *cap) {
 	static const char *capcmds[] = {
 		"home",
 		"cat",
-		"make",
 		"cd",
 		"pwd",
 		"ls",
-		"editor",
-		"edit",
 		"run",
 		"alias",
 		NULL,
@@ -195,7 +192,7 @@ capfixcmdargs(struct cap *cap) {
 	cap->alcmdln = cap_strescdel(buf);
 	// printf("cap->alcmdln[%s]\n", cap->alcmdln);
 
-	return NULL;
+	return cap;
 }
 
 static struct cap *
@@ -326,7 +323,7 @@ capfork(struct cap *cap) {
 		cap_die("need bin directory on environ");
 	}
 
-	char ppath[100];
+	char ppath[FILE_NPATH];
 	snprintf(ppath, sizeof ppath, "%s/cap-%s", bindir, cap->cmdargv[0]);
 
 	switch (fork()) {
