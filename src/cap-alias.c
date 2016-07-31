@@ -43,8 +43,8 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 		{},
 	};
 
-	const char *hmpath = getenv("CAP_VARHOME");
-	if (!hmpath) {
+	char hmpath[FILE_NPATH];
+	if (!cap_envget(hmpath, sizeof hmpath, "CAP_VARHOME")) {
 		cap_log("error", "invalid environ variables");
 		return NULL;
 	}
@@ -119,20 +119,21 @@ pathtofname(char *dst, size_t dstsz, const char *path) {
 
 static char *
 makealpath(char *dst, size_t dstsz) {
-	const char *hmdir = getenv("CAP_HOMEDIR");
-	const char *varhm = getenv("CAP_VARHOME");
-	if (!hmdir || !varhm) {
+	char hmdir[FILE_NPATH];
+	char varhm[FILE_NPATH];
+	if (!cap_envget(hmdir, sizeof hmdir, "CAP_HOMEDIR") ||
+		!cap_envget(varhm, sizeof varhm, "CAP_VARHOME")) {
 		cap_log("error", "invalid environ variables");
 		return NULL;
 	}
 
-	char fname[100];
+	char fname[FILE_NPATH];
 	if (!pathtofname(fname, sizeof fname, varhm)) {
 		cap_die("error", "internal error");
 		return NULL;
 	}
 
-	char path[100];
+	char path[FILE_NPATH];
 	snprintf(path, sizeof path, "%s/%s-alias", hmdir, fname);
 
 	return cap_fsolve(dst, dstsz, path);
@@ -469,8 +470,8 @@ alexport(const char *drtpath) {
 
 static int
 alrun(const char *runarg) {
-	const char *bindir = getenv("CAP_BINDIR");
-	if (!bindir) {
+	char bindir[FILE_NPATH];
+	if (!cap_envget(bindir, sizeof bindir, "CAP_BINDIR")) {
 		cap_log("error", "need bin directory on environ");
 		return 1;
 	}
@@ -531,7 +532,7 @@ alusage(void) {
 
 int
 main(int argc, char* argv[]) {
-	setenv("CAP_PROCNAME", "cap alias", 1);
+	cap_envsetf("CAP_PROCNAME", "cap alias");
 
 	struct opts opts;
 	if (!parseopts(&opts, argc, argv)) {
