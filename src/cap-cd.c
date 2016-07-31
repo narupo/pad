@@ -2,8 +2,8 @@
 
 static char *
 makevarcdpath(char *dst, size_t dstsz) {
-	const char *vardir = getenv("CAP_VARDIR");
-	if (!vardir) {
+	char vardir[FILE_NPATH];
+	if (!cap_envget(vardir, sizeof vardir, "CAP_VARDIR")) {
 		cap_die("need environment variable of vardir");
 	}
 
@@ -44,11 +44,11 @@ docd(const char *drtpath) {
 
 int
 main(int argc, char *argv[]) {
-	setenv("CAP_PROCNAME", "cap cd", 1);
+	cap_envsetf("CAP_PROCNAME", "cap cd");
 
 	if (argc < 2) {
-		const char *home = getenv("CAP_VARHOME");
-		if (!home) {
+		char home[FILE_NPATH];
+		if (!cap_envget(home, sizeof home, "CAP_VARHOME")) {
 			cap_die("need environment variable of home");
 		}
 
