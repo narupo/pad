@@ -79,7 +79,7 @@ varsread(const struct var *vars, const char *vardir) {
 }
 
 static bool
-varsrun(const char *vardir) {
+varsinit(const char *vardir) {
 	const struct var vars[] = {
 		{"CAP_VARHOME", "home", "/tmp"},
 		{"CAP_VARCD", "cd", "/tmp"},
@@ -263,7 +263,7 @@ capinitenv(const struct cap *cap) {
 	cap_envsetf("CAP_HOMEDIR", homedir);
 	cap_envsetf("CAP_VARDIR", vardir);
 	
-	return varsrun(vardir);
+	return varsinit(vardir);
 }
 
 static struct cap *
