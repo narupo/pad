@@ -267,7 +267,7 @@ alshowls(void) {
  * @return string pointer to dynamic allocate memory
  */
 static char *
-alcmd(const char *name) {
+alreadcmd(const char *name) {
 	struct alfile *alf = alfopen("r+");
 	if (!alf) {
 		cap_die("failed to open alias file");
@@ -301,7 +301,7 @@ alcmd(const char *name) {
 
 static int
 alshowcmd(const char *name) {
-	char *cmd = alcmd(name);
+	char *cmd = alreadcmd(name);
 	if (!cmd) {
 		cap_die("not found alias name of '%s'", name);
 	}
@@ -485,7 +485,7 @@ alrun(const char *runarg) {
 		*beg = '\0';
 	}
 
-	const char *cmdclm = alcmd(name);
+	const char *cmdclm = alreadcmd(name);
 	if (!cmdclm) {
 		cap_die("not found alias command of '%s'", name);
 		return 1;

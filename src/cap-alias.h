@@ -10,5 +10,6 @@
 #include "hash.h"
 #include "file.h"
 #include "string.h"
+#include "env.h"
 
 #endif
