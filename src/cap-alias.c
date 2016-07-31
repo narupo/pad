@@ -1,5 +1,9 @@
 #include "cap-alias.h"
 
+/**********
+* numbers *
+**********/
+
 enum {
 	CAPAL_NCMDLINE = 1024
 };
@@ -10,6 +14,92 @@ enum {
 	ALF_CCMD = 256,
 	ALF_RLEN = ALF_CNAME + ALF_CCMD,
 };
+
+/**********
+* options *
+**********/
+
+struct opts {
+	int nargs; // Number of arguments without program name (argc - optind)
+	bool ishelp;
+	bool isdelete;
+	bool isimport;
+	bool isexport;
+	bool isrun;
+	char delname[ALF_CNAME]; // delete alias name
+	char runname[ALF_CNAME]; // run alias name
+	char imppath[FILE_NPATH]; // import file path
+	char exppath[FILE_NPATH]; // export file path
+};
+
+static struct opts *
+parseopts(struct opts *opts, int argc, char *argv[]) {
+	static struct option longopts[] = {
+		{"help", no_argument, 0, 'h'},
+		{"export", required_argument, 0, 'e'},
+		{"import", required_argument, 0, 'i'},
+		{"delete", required_argument, 0, 'd'},
+		{"run", required_argument, 0, 'r'},
+		{},
+	};
+
+	const char *hmpath = getenv("CAP_VARHOME");
+	if (!hmpath) {
+		cap_log("error", "invalid environ variables");
+		return NULL;
+	}
+
+	*opts = (struct opts){};
+	optind = 0;
+	
+	for (;;) {
+		int optsindex;
+		int cur = getopt_long(argc, argv, "he:i:d:r:", longopts, &optsindex);
+		if (cur == -1) {
+			break;
+		}
+
+		switch (cur) {
+		case 'h': opts->ishelp = true; break;
+		case 'i':
+			opts->isimport = true;
+			cap_fsolve(opts->imppath, sizeof opts->imppath, optarg);
+			if (!cap_fexists(opts->imppath)) {
+				cap_die("Invalid import path %s", opts->imppath);
+			}
+		break;
+		case 'e':
+			opts->isexport = true;
+			if (!optarg) {
+				snprintf(opts->exppath, sizeof opts->exppath, "%s/.capalias", hmpath);
+			} else {
+				cap_fsolve(opts->exppath, sizeof opts->exppath, optarg);
+			}
+		break;
+		case 'd':
+			opts->isdelete = true;
+			snprintf(opts->delname, sizeof opts->delname, "%s", optarg);
+		break;
+		case 'r':
+			opts->isrun = true;
+			snprintf(opts->runname, sizeof opts->runname, "%s", optarg);
+		break;
+		case '?':
+		default: return NULL; break;
+		}
+	}
+
+	if (argc < optind) {
+		return NULL;
+	}
+
+	opts->nargs = argc - optind;
+	return opts;
+}
+
+/*******
+* utls *
+*******/
 
 static char *
 pathtofname(char *dst, size_t dstsz, const char *path) {
@@ -48,12 +138,16 @@ makealpath(char *dst, size_t dstsz) {
 	return cap_fsolve(dst, dstsz, path);
 }
 
+/*********
+* alfile *
+*********/
+
 struct alfile {
 	FILE *fp;
 	char buf[ALF_BUFCAPA];
 };
 
-int
+static int
 alfclose(struct alfile *alf) {
 	int ret = 0;
 
@@ -65,7 +159,7 @@ alfclose(struct alfile *alf) {
 	return ret;
 }
 
-struct alfile *
+static struct alfile *
 alfopen(const char *mode) {
 	struct alfile *alf = calloc(1, sizeof(*alf));
 	if (!alf) {
@@ -129,6 +223,10 @@ alfclear(struct alfile *alf, long len) {
 	return fwrite(buf, 1, len, alf->fp);
 }
 
+/*************
+* al options *
+*************/
+
 static int
 alshowls(void) {
 	struct alfile *alf = alfopen("rb");
@@ -168,7 +266,7 @@ alshowls(void) {
  *
  * @return string pointer to dynamic allocate memory
  */
-char *
+static char *
 alcmd(const char *name) {
 	struct alfile *alf = alfopen("r+");
 	if (!alf) {
@@ -405,84 +503,6 @@ alrun(const char *runarg) {
 	return 0;
 }
 
-struct opts {
-	int nargs; // argc - optind
-	bool ishelp;
-	bool isdelete;
-	bool isimport;
-	bool isexport;
-	bool isrun;
-	char delname[ALF_CNAME]; // delete alias name
-	char runname[ALF_CNAME]; // run alias name
-	char imppath[FILE_NPATH]; // import file path
-	char exppath[FILE_NPATH]; // export file path
-};
-
-static struct opts *
-parseopts(struct opts *opts, int argc, char *argv[]) {
-	static struct option longopts[] = {
-		{"help", no_argument, 0, 'h'},
-		{"export", required_argument, 0, 'e'},
-		{"import", required_argument, 0, 'i'},
-		{"delete", required_argument, 0, 'd'},
-		{"run", required_argument, 0, 'r'},
-		{},
-	};
-
-	const char *hmpath = getenv("CAP_VARHOME");
-	if (!hmpath) {
-		cap_log("error", "invalid environ variables");
-		return NULL;
-	}
-
-	*opts = (struct opts){};
-	optind = 0;
-	
-	for (;;) {
-		int optsindex;
-		int cur = getopt_long(argc, argv, "he:i:d:r:", longopts, &optsindex);
-		if (cur == -1) {
-			break;
-		}
-
-		switch (cur) {
-		case 'h': opts->ishelp = true; break;
-		case 'i':
-			opts->isimport = true;
-			cap_fsolve(opts->imppath, sizeof opts->imppath, optarg);
-			if (!cap_fexists(opts->imppath)) {
-				cap_die("Invalid import path %s", opts->imppath);
-			}
-		break;
-		case 'e':
-			opts->isexport = true;
-			if (!optarg) {
-				snprintf(opts->exppath, sizeof opts->exppath, "%s/.capalias", hmpath);
-			} else {
-				cap_fsolve(opts->exppath, sizeof opts->exppath, optarg);
-			}
-		break;
-		case 'd':
-			opts->isdelete = true;
-			snprintf(opts->delname, sizeof opts->delname, "%s", optarg);
-		break;
-		case 'r':
-			opts->isrun = true;
-			snprintf(opts->runname, sizeof opts->runname, "%s", optarg);
-		break;
-		case '?':
-		default: return NULL; break;
-		}
-	}
-
-	if (argc < optind) {
-		return NULL;
-	}
-
-	opts->nargs = argc - optind;
-	return opts;
-}
-
 static int
 alusage(void) {
 	fprintf(stderr,
@@ -504,6 +524,10 @@ alusage(void) {
 	);
 	return 0;
 }
+
+/*******
+* main *
+*******/
 
 int
 main(int argc, char* argv[]) {
