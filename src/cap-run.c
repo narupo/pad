@@ -1,5 +1,10 @@
 #include "cap-run.h"
 
+enum {
+	NSCRIPTNAME = 100,
+	NCMDLINE = 256
+};
+
 char *
 readscriptline(char *dst, size_t dstsz, const char *path) {
 	FILE *fin = fopen(path, "rb");
@@ -32,15 +37,15 @@ main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	const char *cd = getenv("CAP_VARCD");
-	if (!cd) {
+	char cd[FILE_NPATH];
+	if (!cap_envget(cd, sizeof cd, "CAP_VARCD")) {
 		cap_log("error", "need environment variable of cd");
 		return 1;
 	}
 
-	char path[100];
-	char sname[100]; // Script name
-	char cmdline[256];
+	char path[FILE_NPATH];
+	char sname[NSCRIPTNAME]; // Script name
+	char cmdline[NCMDLINE];
 
 	snprintf(path, sizeof path, "%s/%s", cd, argv[1]);
 	readscriptline(sname, sizeof sname, path);

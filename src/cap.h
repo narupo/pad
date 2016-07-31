@@ -25,5 +25,6 @@
 #include "config.h"
 #include "array.h"
 #include "util.h"
+#include "env.h"
 
 #endif
