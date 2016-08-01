@@ -145,6 +145,16 @@ optsparse(struct opts *opts, int argc, char *argv[]) {
 	return true;
 }
 
+static char **
+wrapargvvals(int argc, char *argv[]) {
+	struct cap_args *args = cap_argsnew();
+	cap_argsparse(args, argc, argv);
+	for (int i = 2; i < cap_argslen(args); ++i) {
+		cap_argwrapvalue(cap_argsget(args, i), '"');
+	}
+	return cap_argsescdel(args);
+}
+
 static struct cap *
 capfixcmdargs(struct cap *cap) {
 	static const char *capcmds[] = {
@@ -180,18 +190,24 @@ capfixcmdargs(struct cap *cap) {
 		return NULL;
 	}
 
+	char **newargv = wrapargvvals(cap->cmdargc, cap->cmdargv);
+	if (!newargv) {
+		cap_strdel(buf);
+		return NULL;
+	}
+
 	cap_strapp(buf, bindir);
 	cap_strapp(buf, "/cap-alias --run '");
 
 	for (int i = 0; i < cap->cmdargc; ++i) {
-		cap_strapp(buf, cap->cmdargv[i]);
+		cap_strapp(buf, newargv[i]);
 		cap_strapp(buf, " ");
 	}
 	cap_strapp(buf, "'");
 
+	freeargv(cap->cmdargc, newargv);
 	cap->alcmdln = cap_strescdel(buf);
 	// printf("cap->alcmdln[%s]\n", cap->alcmdln);
-
 	return cap;
 }
 
@@ -267,7 +283,7 @@ capinitenv(const struct cap *cap) {
 }
 
 static struct cap *
-capnew(int ac, char *av[]) {
+capnew(int argc, char *argv[]) {
 	struct cap *cap = calloc(1, sizeof(*cap));
 	if (!cap) {
 		return NULL;
@@ -278,8 +294,9 @@ capnew(int ac, char *av[]) {
 		return NULL;
 	}
 
-	if (!capsolveopts(cap, ac, av)) {
+	if (!capsolveopts(cap, argc, argv)) {
 		capdel(cap);
+		freeargv(argc, argv);
 		return NULL;
 	}
 
@@ -350,7 +367,7 @@ caprun(struct cap *cap) {
 		capusage(cap);
 
 	} else if (cap->alcmdln) {
-		cap_log("debug", "cap->alcmdln[%s]", cap->alcmdln);
+		// cap_log("debug", "cap->alcmdln[%s]", cap->alcmdln);
 		system(cap->alcmdln);
 
 	} else {
@@ -360,10 +377,6 @@ caprun(struct cap *cap) {
 
 int
 main(int argc, char *argv[]) {
-	for (int i = 0; i < argc; ++i) {
-		cap_log("debug", "[%d] = [%s]", i, argv[i]);
-	}
-
 	struct cap *cap = capnew(argc, argv);
 	if (!cap) {
 		cap_die("failed to create cap");
@@ -371,6 +384,5 @@ main(int argc, char *argv[]) {
 
 	caprun(cap);
 	capdel(cap);
-
 	return 0;
 }

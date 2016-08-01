@@ -31,39 +31,47 @@ readscriptline(char *dst, size_t dstsz, const char *path) {
 	return dst;
 }
 
+static char **
+wrapargvvals(int argc, char *argv[]) {
+	struct cap_args *args = cap_argsnew();
+	cap_argsparse(args, argc, argv);
+	for (int i = 2; i < cap_argslen(args); ++i) {
+		cap_argwrapvalue(cap_argsget(args, i), '"');
+	}
+	return cap_argsescdel(args);
+}
+
 int
 main(int argc, char *argv[]) {
-	for (int i = 0; i < argc; ++i) {
-		// printf("cap-run: [%d] = [%s]\n", i, argv[i]);
-		cap_log("debug", "cap-run: [%d] = [%s]", i, argv[i]);
-	}
-
 	if (argc < 2) {
+		cap_error("need script name");
 		return 1;
 	}
 
-	char cd[FILE_NPATH];
-	if (!cap_envget(cd, sizeof cd, "CAP_VARCD")) {
+	char varcd[FILE_NPATH];
+	if (!cap_envget(varcd, sizeof varcd, "CAP_VARCD")) {
 		cap_log("error", "need environment variable of cd");
 		return 1;
 	}
 
+	argv = wrapargvvals(argc, argv);
 	char path[FILE_NPATH];
 	char sname[NSCRIPTNAME]; // Script name
-	char cmdline[NCMDLINE];
+	char cmdline[NCMDLINE] = {};
 
-	snprintf(path, sizeof path, "%s/%s", cd, argv[1]);
+	cap_fsolvefmt(path, sizeof path, "%s/%s", varcd, argv[1]);
 	readscriptline(sname, sizeof sname, path);
+	// cap_log("debug", "sname[%s]\n", sname);
 
-	strcat(cmdline, sname);
-	strcat(cmdline, " ");
-	strcat(cmdline, path);
-	strcat(cmdline, " ");
+	capstrncat(cmdline, sizeof cmdline, sname);
+	capstrncat(cmdline, sizeof cmdline, " ");
+	capstrncat(cmdline, sizeof cmdline, path);
+	capstrncat(cmdline, sizeof cmdline, " ");
 	for (int i = 2; i < argc; ++i) {
-		strcat(cmdline, argv[i]);
-		strcat(cmdline, " ");
+		capstrncat(cmdline, sizeof cmdline, argv[i]);
+		capstrncat(cmdline, sizeof cmdline, " ");
 	}
-	// printf("cap-run: cmdline[%s]\n", cmdline);
+	// cap_log("debug", "cap-run: cmdline[%s]\n", cmdline);
 
 	FILE* pin = popen(cmdline, "r");
 	if (!pin) {
@@ -76,9 +84,10 @@ main(int argc, char *argv[]) {
 	fflush(stdout);
 
 	if (pclose(pin) < 0) {
+		freeargv(argc, argv);
 		cap_die("failed to close process");
 	}
 
+	freeargv(argc, argv);
 	return 0;
 }
-
