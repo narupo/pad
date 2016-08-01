@@ -260,6 +260,8 @@ cap_argsescdel(struct cap_args *self) {
 	for (int i = 0; i < self->len; ++i) {
 		argv[i] = cap_argescdel(self->args[i]);
 	}
+	free(self->args);
+	free(self);
 
 	return argv;
 }
@@ -375,9 +377,12 @@ main(int argc, char *argv[]) {
 
 	int newargc = cap_argslen(args);
 	char **newargv = cap_argsescdel(args);
+	for (int i = 0; i < newargc; ++i) {
+		printf("[%d] = [%s]\n", i, newargv[i]);
+		free(newargv[i]);
+	}
+	free(newargv);
 
-	
-	
 	return 0;
 }
 #endif
