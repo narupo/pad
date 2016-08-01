@@ -18,7 +18,7 @@ struct cap_arg {
 };
 
 void
-argdel(struct cap_arg *self) {
+cap_argdel(struct cap_arg *self) {
 	if (self) {
 		free(self->value);
 		free(self);
@@ -29,6 +29,11 @@ struct cap_arg *
 cap_argnew(void) {
 	struct cap_arg *self = calloc(1, sizeof(*self));
 	return self;
+}
+
+static bool
+isnormch(int ch) {
+	return isalnum(ch) || ch == '-' || ch == '_';
 }
 
 struct cap_arg *
@@ -42,12 +47,81 @@ cap_argparse(struct cap_arg *self, const char *src) {
 		return NULL;
 	}
 
+	// Parse
+	int m = 0;
+	cap_argtype_t type = ARG_UNKNOWN;
+	const char *p = self->value;
+	do {
+		switch (m) {
+		case 0: // First
+			if (*p == '-') {
+				m = 10;
+			} else {
+				type = ARG_ARGUMENT;
+				goto done;
+			}
+		break;
+		case 10: // -
+			if (*p == '-') {
+				m = 20;
+			} else if (isnormch(*p)) {
+				type = ARG_SHORTOPT;
+				m = 15;
+			} else {
+				type = ARG_ARGUMENT;
+				goto done;
+			}
+		break;
+		case 15: // -?
+			if (isnormch(*p)) {
+				type = ARG_SHORTOPTS;
+				m = 17;
+			} else if (*p == '=') {
+				type = ARG_SHORTOPTASS;
+			} else {
+				goto done;
+			}
+		break;
+		case 17: // -??
+			if (isnormch(*p)) {
+				;
+			} else if (*p == '=') {
+				type = ARG_SHORTOPTSASS;
+				goto done;
+			} else {
+				goto done;
+			}
+		break;
+		case 20: // --
+			if (isnormch(*p)) {
+				type = ARG_LONGOPT;
+				m = 25;
+			} else {
+				type = ARG_ARGUMENT;
+				goto done;
+			}
+		break;
+		case 25: // --?
+ 			if (isnormch(*p)) {
+ 				;
+ 			} else if (*p == '=') {
+ 				type = ARG_LONGOPTASS;
+ 				goto done;
+ 			} else {
+ 				goto done;
+ 			}
+		break;
+		}
+	} while (*p++);
+
+done:
+	self->type = type;
 	return self;
 }
 
 void
 cap_argshow(const struct cap_arg *self, FILE *fout) {
-	fprintf(fout, "<cap_arg value=\"%s\">\n", self->value);
+	fprintf(fout, "<cap_arg type=\"%d\" value=\"%s\">\n", self->type, self->value);
 }
 
 /*******
@@ -64,7 +138,7 @@ void
 cap_argsdel(struct cap_args *self) {
 	if (self) {
 		for (int i = 0; i < self->len; ++i) {
-			argdel(self->args[i]);
+			cap_argdel(self->args[i]);
 		}
 		free(self->args);
 		free(self);
