@@ -5,7 +5,7 @@ enum {
 	NCMDLINE = 256
 };
 
-char *
+static char *
 readscriptline(char *dst, size_t dstsz, const char *path) {
 	FILE *fin = fopen(path, "rb");
 	if (!fin) {
@@ -91,3 +91,4 @@ main(int argc, char *argv[]) {
 	freeargv(argc, argv);
 	return 0;
 }
+
