@@ -1,7 +1,7 @@
 #ifndef ARGS_H
 #define ARGS_H
 
-#define _GNU_SOURCE 1 /* args.h: strdup */
+#define _GNU_SOURCE 1 /* cap: args.h: strdup */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,7 +19,9 @@ typedef enum {
 	/* 7 */ ARG_LONGOPTASS,
 } cap_argtype_t;
 
-// cap_arg
+/**********
+* cap_arg *
+**********/
 
 struct cap_arg;
 
@@ -50,7 +52,9 @@ cap_argshow(const struct cap_arg *self, FILE *fout);
 const char *
 cap_argwrapvalue(struct cap_arg *self, int wrpch);
 
-// cap_args
+/***********
+* cap_args *
+***********/
 
 struct cap_args;
 

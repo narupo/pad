@@ -171,8 +171,8 @@ cap_argwrapvalue(struct cap_arg *self, int wrpch) {
 
 	const char *src = self->value;
 	int srclen = strlen(src);
-	int dstcapa = srclen+2+1;
-	char *dst = calloc(dstcapa, sizeof(self->value[0])); // +1 for final nul
+	int dstcapa = srclen+2+1; // (wrpch * 2) + '\0'
+	char *dst = calloc(dstcapa, sizeof(self->value[0])); 
 	if (!dst) {
 		return NULL;
 	}
