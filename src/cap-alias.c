@@ -26,8 +26,8 @@ struct opts {
 	bool isimport;
 	bool isexport;
 	bool isrun;
-	char delname[ALF_CNAME]; // delete alias name
-	char runname[ALF_CNAME]; // run alias name
+	char *delname; // delete alias name
+	char *runarg; // run alias arg
 	char imppath[FILE_NPATH]; // import file path
 	char exppath[FILE_NPATH]; // export file path
 };
@@ -78,11 +78,11 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 		break;
 		case 'd':
 			opts->isdelete = true;
-			snprintf(opts->delname, sizeof opts->delname, "%s", optarg);
+			opts->delname = strdup(optarg);
 		break;
 		case 'r':
 			opts->isrun = true;
-			snprintf(opts->runname, sizeof opts->runname, "%s", optarg);
+			opts->runarg = strdup(optarg);
 		break;
 		case '?':
 		default: return NULL; break;
@@ -486,21 +486,29 @@ alrun(const char *runarg) {
 		*beg = '\0';
 	}
 
-	const char *cmdclm = alreadcmd(name);
-	if (!cmdclm) {
+	const char *cmdcol = alreadcmd(name);
+	if (!cmdcol) {
 		cap_die("not found alias command of '%s'", name);
 		return 1;
 	}
 
 	char cmdbase[FILE_NPATH];
-	snprintf(cmdbase, sizeof cmdbase, "%s/cap-%s", bindir, cmdclm);
+	snprintf(cmdbase, sizeof cmdbase, "%s/cap-%s", bindir, cmdcol);
 
-	char cmdln[CAPAL_NCMDLINE];
-	snprintf(cmdln, sizeof cmdln, "%s%s", cmdbase, parg);
-	system(cmdln);
-	// printf("runarg[%s] name[%s] parg[%s] cmdclm[%s]\n", runarg, name, parg, cmdclm);
-	// printf("cmdln[%s]\n", cmdln);
+	struct cap_string *cmdline = cap_strnew();
+	if (!cmdline) {
+		cap_log("error", "failed to create cap string");
+		return 1;
+	}
+
+	cap_strapp(cmdline, cmdbase);
+	cap_strapp(cmdline, parg);
+
+	system(cap_strgetc(cmdline));
+	// cap_log("debug", "runarg[%s] name[%s] parg[%s] cmdcol[%s]\n", runarg, name, parg, cmdcol);
+	// cap_log("debug", "cmdln[%s]\n", cap_strgetc(cmdline));
 	
+	cap_strdel(cmdline);
 	return 0;
 }
 
@@ -539,30 +547,34 @@ main(int argc, char* argv[]) {
 		cap_die("failed to parse options");
 	}
 
-	if (opts.ishelp) {
-		return alusage();
+	int ret = 0;
 
-	} else if (opts.isdelete) {
-		return aldelal(opts.delname);
+	if (opts.ishelp) {
+		ret = alusage();
 
 	} else if (opts.isimport) {
-		return alimport(opts.imppath);
+		ret = alimport(opts.imppath);
 
 	} else if (opts.isexport) {
-		return alexport(opts.exppath);
+		ret = alexport(opts.exppath);
+
+	} else if (opts.isdelete) {
+		ret = aldelal(opts.delname);
+		free(opts.delname);
 
 	} else if (opts.isrun) {
-		return alrun(opts.runname);
+		ret = alrun(opts.runarg);
+		free(opts.runarg);
 
 	} else if (opts.nargs == 0) {
-		return alshowls();
+		ret = alshowls();
 
 	} else if (opts.nargs == 1) {
-		return alshowcmd(argv[1]);
+		ret = alshowcmd(argv[1]);
 
 	} else if (opts.nargs >= 2) {
-		return aladdal(argc, argv);
+		ret = aladdal(argc, argv);
 	}
 
-	return 1;
+	return ret;
 }

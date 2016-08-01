@@ -185,29 +185,29 @@ capfixcmdargs(struct cap *cap) {
 		return NULL;
 	}
 
-	struct cap_string *buf = cap_strnew();
-	if (!buf) {
+	struct cap_string *cmdln = cap_strnew();
+	if (!cmdln) {
 		return NULL;
 	}
 
 	char **newargv = wrapargvvals(cap->cmdargc, cap->cmdargv);
 	if (!newargv) {
-		cap_strdel(buf);
+		cap_strdel(cmdln);
 		return NULL;
 	}
 
-	cap_strapp(buf, bindir);
-	cap_strapp(buf, "/cap-alias --run '");
+	cap_strapp(cmdln, bindir);
+	cap_strapp(cmdln, "/cap-alias --run '");
 
 	for (int i = 0; i < cap->cmdargc; ++i) {
-		cap_strapp(buf, newargv[i]);
-		cap_strapp(buf, " ");
+		cap_strapp(cmdln, newargv[i]);
+		cap_strapp(cmdln, " ");
 	}
-	cap_strapp(buf, "'");
+	cap_strapp(cmdln, "'");
 
 	freeargv(cap->cmdargc, newargv);
-	cap->alcmdln = cap_strescdel(buf);
-	// printf("cap->alcmdln[%s]\n", cap->alcmdln);
+	cap->alcmdln = cap_strescdel(cmdln);
+	// cap_log("debug", "cap->alcmdln[%s]\n", cap->alcmdln);
 	return cap;
 }
 

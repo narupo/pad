@@ -57,23 +57,24 @@ main(int argc, char *argv[]) {
 	argv = wrapargvvals(argc, argv);
 	char path[FILE_NPATH];
 	char sname[NSCRIPTNAME]; // Script name
-	char cmdline[NCMDLINE] = {};
+	struct cap_string *cmdline = cap_strnew();
 
 	cap_fsolvefmt(path, sizeof path, "%s/%s", varcd, argv[1]);
 	readscriptline(sname, sizeof sname, path);
 	// cap_log("debug", "sname[%s]\n", sname);
 
-	capstrncat(cmdline, sizeof cmdline, sname);
-	capstrncat(cmdline, sizeof cmdline, " ");
-	capstrncat(cmdline, sizeof cmdline, path);
-	capstrncat(cmdline, sizeof cmdline, " ");
+	cap_strapp(cmdline, sname);
+	cap_strapp(cmdline, " ");
+	cap_strapp(cmdline, path);
+	cap_strapp(cmdline, " ");
 	for (int i = 2; i < argc; ++i) {
-		capstrncat(cmdline, sizeof cmdline, argv[i]);
-		capstrncat(cmdline, sizeof cmdline, " ");
+		cap_strapp(cmdline, argv[i]);
+		cap_strapp(cmdline, " ");
 	}
-	// cap_log("debug", "cap-run: cmdline[%s]\n", cmdline);
+	// cap_log("debug", "cap-run: cmdline[%s]\n", cap_strgetc(cmdline));
 
-	FILE* pin = popen(cmdline, "r");
+	// Start process communication
+	FILE* pin = popen(cap_strgetc(cmdline), "r");
 	if (!pin) {
 		cap_die("failed open process '%s'", cmdline);
 	}
@@ -88,7 +89,8 @@ main(int argc, char *argv[]) {
 		cap_die("failed to close process");
 	}
 
+	// Done
+	cap_strdel(cmdline);
 	freeargv(argc, argv);
 	return 0;
 }
-
