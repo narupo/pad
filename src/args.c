@@ -5,7 +5,7 @@
 *********/
 
 enum {
-	NCAPA = 4,
+	ARGS_NCAPA = 4,
 };
 
 /******
@@ -270,7 +270,7 @@ struct cap_args *
 cap_argsnew(void) {
 	struct cap_args *self = calloc(1, sizeof(*self));
 
-	self->capa = NCAPA;
+	self->capa = ARGS_NCAPA;
 	self->args = calloc(self->capa+1, sizeof(struct cap_arg *)); // +1 for final nul
 
 	return self;
