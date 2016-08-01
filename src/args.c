@@ -25,6 +25,18 @@ cap_argdel(struct cap_arg *self) {
 	}
 }
 
+char *
+cap_argescdel(struct cap_arg *self) {
+	if (!self) {
+		return NULL;
+	}
+
+	char *value = self->value;
+	free(self);
+
+	return value;
+}
+
 struct cap_arg *
 cap_argnew(void) {
 	struct cap_arg *self = calloc(1, sizeof(*self));
@@ -151,8 +163,8 @@ cap_argshow(const struct cap_arg *self, FILE *fout) {
 	fprintf(fout, "<cap_arg type=\"%d\" value=\"%s\">\n", self->type, self->value);
 }
 
-struct cap_arg *
-cap_argwrapvalue(const struct cap_arg *self, int wrpch) {
+const char *
+cap_argwrapvalue(struct cap_arg *self, int wrpch) {
 	if (!self->value) {
 		return NULL;
 	}
@@ -206,17 +218,10 @@ cap_argwrapvalue(const struct cap_arg *self, int wrpch) {
 	}
 
 	done: {
-		struct cap_arg *wrparg = cap_argnew();
-		if (!wrparg) {
-			free(dst);
-			return NULL;
-		}
-
 		dst[dstcapa-1] = '\0';
-		wrparg->type = self->type;
-		wrparg->value = dst;
-
-		return wrparg;
+		free(self->value);
+		self->value = dst;
+		return self->value;
 	}
 }
 
@@ -239,6 +244,24 @@ cap_argsdel(struct cap_args *self) {
 		free(self->args);
 		free(self);
 	}
+}
+
+char **
+cap_argsescdel(struct cap_args *self) {
+	if (!self) {
+		return NULL;
+	}
+
+	char **argv = calloc(self->len+1, sizeof(char*)); // +1 for final nul
+	if (!argv) {
+		return NULL;
+	}
+
+	for (int i = 0; i < self->len; ++i) {
+		argv[i] = cap_argescdel(self->args[i]);
+	}
+
+	return argv;
 }
 
 struct cap_args *
@@ -314,6 +337,14 @@ cap_argscapa(const struct cap_args *self) {
 	return self->capa;
 }
 
+struct cap_arg *
+cap_argsget(struct cap_args *self, int idx) {
+	if (idx >= self->len || idx < 0) {
+		return NULL;
+	}
+	return self->args[idx];
+}
+
 const struct cap_arg *
 cap_argsgetc(const struct cap_args *self, int idx) {
 	if (idx >= self->len || idx < 0) {
@@ -327,14 +358,13 @@ int
 main(int argc, char *argv[]) {
 	struct cap_args *args = cap_argsnew();
 
-	cap_argsparse(args, argc-1, argv+1);
+	cap_argsparse(args, argc, argv);
 	// cap_argsshow(args, stderr);
 
-	for (int i = 0; i < cap_argslen(args); ++i) {
-		const struct cap_arg *arg = cap_argsgetc(args, i);
-		struct cap_arg *wrp = cap_argwrapvalue(arg, '"');
-		printf("wrp->value[%s]\n", cap_argvaluec(wrp));
-		cap_argdel(wrp);
+	for (int i = 1; i < cap_argslen(args); ++i) {
+		struct cap_arg *arg = cap_argsget(args, i);
+		const char *value = cap_argwrapvalue(arg, '\'');
+		printf("value[%s]\n", value);
 		// cap_argshow(arg, stderr);
 /*		switch (cap_argtype(arg)) {
 		case ARG_ARGUMENT:
@@ -343,7 +373,11 @@ main(int argc, char *argv[]) {
 		}
 */	}
 
-	cap_argsdel(args);
+	int newargc = cap_argslen(args);
+	char **newargv = cap_argsescdel(args);
+
+	
+	
 	return 0;
 }
 #endif
