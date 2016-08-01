@@ -33,6 +33,11 @@ readscriptline(char *dst, size_t dstsz, const char *path) {
 
 int
 main(int argc, char *argv[]) {
+	for (int i = 0; i < argc; ++i) {
+		// printf("cap-run: [%d] = [%s]\n", i, argv[i]);
+		cap_log("debug", "cap-run: [%d] = [%s]", i, argv[i]);
+	}
+
 	if (argc < 2) {
 		return 1;
 	}
@@ -58,6 +63,7 @@ main(int argc, char *argv[]) {
 		strcat(cmdline, argv[i]);
 		strcat(cmdline, " ");
 	}
+	// printf("cap-run: cmdline[%s]\n", cmdline);
 
 	FILE* pin = popen(cmdline, "r");
 	if (!pin) {

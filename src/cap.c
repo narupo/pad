@@ -350,6 +350,7 @@ caprun(struct cap *cap) {
 		capusage(cap);
 
 	} else if (cap->alcmdln) {
+		cap_log("debug", "cap->alcmdln[%s]", cap->alcmdln);
 		system(cap->alcmdln);
 
 	} else {
@@ -359,6 +360,10 @@ caprun(struct cap *cap) {
 
 int
 main(int argc, char *argv[]) {
+	for (int i = 0; i < argc; ++i) {
+		cap_log("debug", "[%d] = [%s]", i, argv[i]);
+	}
+
 	struct cap *cap = capnew(argc, argv);
 	if (!cap) {
 		cap_die("failed to create cap");
