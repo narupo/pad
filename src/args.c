@@ -365,7 +365,7 @@ main(int argc, char *argv[]) {
 
 	for (int i = 1; i < cap_argslen(args); ++i) {
 		struct cap_arg *arg = cap_argsget(args, i);
-		const char *value = cap_argwrapvalue(arg, '\'');
+		const char *value = cap_argwrapvalue(arg, '"');
 		printf("value[%s]\n", value);
 		// cap_argshow(arg, stderr);
 /*		switch (cap_argtype(arg)) {
