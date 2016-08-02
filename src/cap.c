@@ -327,6 +327,12 @@ capusage(struct cap *cap) {
 		"    run     run script.\n"
 		"    alias   run alias command.\n"
 		"\n"
+		"Examples:\n"
+		"\n"
+		"    $ cap home\n"
+		"    $ cap home .\n"
+		"    $ cap pwd\n"
+		"\n"
 	);
 	capdel(cap);
 	exit(0);
