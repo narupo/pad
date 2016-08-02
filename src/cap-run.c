@@ -78,7 +78,7 @@ main(int argc, char *argv[]) {
 		cap_strapp(cmdline, argv[i]);
 		cap_strapp(cmdline, " ");
 	}
-	cap_log("debug", "sname[%s] spath[%s] cmdline[%s]\n", sname, spath, cap_strgetc(cmdline));
+	// cap_log("debug", "sname[%s] spath[%s] cmdline[%s]\n", sname, spath, cap_strgetc(cmdline));
 
 	// Start process communication
 	FILE* pin = popen(cap_strgetc(cmdline), "r");
