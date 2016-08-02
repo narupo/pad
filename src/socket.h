@@ -24,6 +24,8 @@
 #  define _BSD_SOURCE 1 /* For netdb.h in cap/socket.h */
 #  undef __USE_POSIX
 #  define __USE_POSIX 1 /* For netdb.h in cap/socket.h */
+#  undef __USE_XOPEN2K
+#  define __USE_XOPEN2K 1 /* cap: socket.h: for struct addrinfo {} */
 #  include <netdb.h>
 #  include <sys/types.h>
 #  include <sys/socket.h>
