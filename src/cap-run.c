@@ -65,12 +65,12 @@ main(int argc, char *argv[]) {
 		cap_die("not found script '%s'", spath);
 	}
 
-	char sname[NSCRIPTNAME]; // Script name in file
-	readscriptline(sname, sizeof sname, spath);
-	// cap_log("debug", "sname[%s]\n", sname);
+	char exesname[NSCRIPTNAME]; // Execute script name in file
+	readscriptline(exesname, sizeof exesname, spath);
+	// cap_log("debug", "exesname[%s]\n", exesname);
 
 	struct cap_string *cmdline = cap_strnew();
-	cap_strapp(cmdline, sname);
+	cap_strapp(cmdline, exesname);
 	cap_strapp(cmdline, " ");
 	cap_strapp(cmdline, spath);
 	cap_strapp(cmdline, " ");
@@ -78,7 +78,7 @@ main(int argc, char *argv[]) {
 		cap_strapp(cmdline, argv[i]);
 		cap_strapp(cmdline, " ");
 	}
-	// cap_log("debug", "sname[%s] spath[%s] cmdline[%s]\n", sname, spath, cap_strgetc(cmdline));
+	// cap_log("debug", "exesname[%s] spath[%s] cmdline[%s]\n", exesname, spath, cap_strgetc(cmdline));
 
 	// Start process communication
 	FILE* pin = popen(cap_strgetc(cmdline), "r");
