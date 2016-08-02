@@ -43,6 +43,8 @@ wrapargvvals(int argc, char *argv[]) {
 
 int
 main(int argc, char *argv[]) {
+	cap_envsetf("CAP_PROCNAME", "cap run");
+
 	if (argc < 2) {
 		cap_error("need script name");
 		return 1;
@@ -55,23 +57,27 @@ main(int argc, char *argv[]) {
 	}
 
 	argv = wrapargvvals(argc, argv);
-	char path[FILE_NPATH];
-	char sname[NSCRIPTNAME]; // Script name
-	struct cap_string *cmdline = cap_strnew();
 
-	cap_fsolvefmt(path, sizeof path, "%s/%s", varcd, argv[1]);
-	readscriptline(sname, sizeof sname, path);
+	char spath[FILE_NPATH]; // Script path
+	cap_fsolvefmt(spath, sizeof spath, "%s/%s", varcd, argv[1]);
+	if (!cap_fexists(spath)) {
+		cap_die("not found script '%s'", spath);
+	}
+
+	char sname[NSCRIPTNAME]; // Script name in file
+	readscriptline(sname, sizeof sname, spath);
 	// cap_log("debug", "sname[%s]\n", sname);
 
+	struct cap_string *cmdline = cap_strnew();
 	cap_strapp(cmdline, sname);
 	cap_strapp(cmdline, " ");
-	cap_strapp(cmdline, path);
+	cap_strapp(cmdline, spath);
 	cap_strapp(cmdline, " ");
 	for (int i = 2; i < argc; ++i) {
 		cap_strapp(cmdline, argv[i]);
 		cap_strapp(cmdline, " ");
 	}
-	// cap_log("debug", "cap-run: cmdline[%s]\n", cap_strgetc(cmdline));
+	cap_log("debug", "sname[%s] spath[%s] cmdline[%s]\n", sname, spath, cap_strgetc(cmdline));
 
 	// Start process communication
 	FILE* pin = popen(cap_strgetc(cmdline), "r");
