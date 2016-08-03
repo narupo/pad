@@ -1,7 +1,14 @@
+/**
+ * cap
+ *
+ * License: MIT
+ *  Author: narupo
+ *   Since: 2016
+ */
 #ifndef CAP_ALIAS_H
 #define CAP_ALIAS_H
 
-#define _GNU_SOURCE 1 /* in cap-alias.h for strdup */
+#define _GNU_SOURCE 1 /* cap: cap-alias.h: strdup */
 #include <stdio.h>
 #include <getopt.h>
 #include <string.h>

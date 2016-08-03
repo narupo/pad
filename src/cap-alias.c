@@ -1,3 +1,10 @@
+/**
+ * cap
+ *
+ * License: MIT
+ *  Author: narupo
+ *   Since: 2016
+ */
 #include "cap-alias.h"
 
 /**********
@@ -224,36 +231,238 @@ alfclear(struct alfile *alf, long len) {
 	return fwrite(buf, 1, len, alf->fp);
 }
 
+/*********
+* record *
+*********/
+
+struct record {
+	char name[ALF_CNAME];
+	char cmd[ALF_CCMD];
+};
+
+static void
+recdel(struct record *self) {
+	if (self) {
+		free(self);
+	}
+}
+
+static struct record *
+recnew(void) {
+	struct record *self = calloc(1, sizeof(*self));
+	if (!self) {
+		return NULL;
+	}
+
+	return self;
+}
+
+static struct record *
+recnewparam(const char *name, const char *cmd) {
+	struct record *self = calloc(1, sizeof(*self));
+	if (!self) {
+		return NULL;
+	}
+
+	snprintf(self->name, sizeof self->name,"%s", name);
+	snprintf(self->cmd, sizeof self->cmd,"%s", cmd);
+
+	return self;
+}
+
+static struct record *
+recsetname(struct record *self, const char *name) {
+	snprintf(self->name, sizeof self->name,"%s", name);
+	return self;
+}
+
+static struct record *
+recsetcmd(struct record *self, const char *cmd) {
+	snprintf(self->cmd, sizeof self->cmd,"%s", cmd);
+	return self;
+}
+
+static void
+recshow(const struct record *self, FILE *fout) {
+	fprintf(fout, "<record name='%s' cmd='%s'>\n", self->name, self->cmd);
+}
+
+static const char *
+recnamec(const struct record *self) {
+	return self->name;
+}
+
+static const char *
+reccmdc(const struct record *self) {
+	return self->cmd;
+}
+
+/**********
+* records *
+**********/
+
+struct records {
+	int len;
+	int capa;
+	struct record **recs;
+};
+
+static void
+recsdel(struct records *self) {
+	if (self) {
+		for (int i = 0; i < self->len; ++i) {
+			recdel(self->recs[i]);
+		}
+		free(self->recs);
+		free(self);
+	}
+}
+
+static struct records *
+recsnewcapa(int capa) {
+	struct records *self = calloc(1, sizeof(*self));
+	if (!self) {
+		return NULL;
+	}
+
+	self->capa = (capa > 0 ? capa : 4);
+	self->recs = calloc(self->capa+1, sizeof(struct record*)); // +1 for final nul
+	if (!self->recs) {
+		free(self);
+		return NULL;
+	}
+
+	return self;
+}
+
+static struct records *
+recsresize(struct records *self, int newcapa) {
+	if (newcapa < self->capa) {
+		return NULL;
+	}
+
+	struct record **tmp = realloc(self->recs, sizeof(struct record *) * newcapa +1);
+	if (!tmp) {
+		return NULL;
+	}
+
+	self->capa = newcapa;
+	self->recs = tmp;
+	self->recs[newcapa] = NULL;
+
+	return self;
+}
+
+static struct records *
+recsmove(struct records *self, struct record *rec) {
+	if (self->len >= self->capa) {
+		if (!recsresize(self, self->capa*2)) {
+			return NULL;
+		}
+	}
+
+	self->recs[self->len++] = rec;
+	return self;
+}
+
+static int
+recscmp(const void *p1, const void *p2) {
+	const struct record *r1 = *(const struct record **)p1;
+	const struct record *r2 = *(const struct record **)p2;
+	return strcmp(r1->name, r2->name);
+}
+
+static void
+recssortname(struct records *self) {
+	qsort(self->recs, self->len, sizeof(self->recs[0]), recscmp);
+}
+
+static int
+recslen(const struct records *self) {
+	return self->len;
+}
+
+static const struct record *
+recsgetc(const struct records *self, int idx) {
+	if (idx >= self->len) {
+		return NULL;
+	}
+	return self->recs[idx];
+}
+
 /*************
 * al options *
 *************/
 
 static int
 alshowls(void) {
+	struct records *recs = recsnewcapa(4);
+	if (!recs) {
+		cap_die("failed to create records");
+	}
+
+	struct record *tmprec = recnew();
+	if (!tmprec) {
+		recsdel(recs);
+		cap_die("failed to create record");
+	}
+
 	struct alfile *alf = alfopen("rb");
 	if (!alf) {
+		recdel(tmprec);
+		recsdel(recs);
 		cap_die("failed to open alias file");
 	}
 
+	// Read records
+	int maxnamelen = 0;
 	for (; !alfeof(alf); ) {
 		const char *buf = alfreadstr(alf, ALF_CNAME);
 		if (!buf) {
 			break;
 		}
 
-		if (!strlen(buf)) {
+		int namelen = strlen(buf);
+		if (!namelen) {
 			alfseek(alf, ALF_CCMD, SEEK_CUR);
 			continue;
 		}
-
-		printf("%s ", buf);
+		maxnamelen = (namelen > maxnamelen ? namelen : maxnamelen);
+		// printf("%s ", buf);
+		recsetname(tmprec, buf);
 
 		buf = alfreadstr(alf, ALF_CCMD);
 		if (!buf) {
 			break;
 		}
-		printf("%s\n", buf);
+		// printf("%s\n", buf);
+		recsetcmd(tmprec, buf);
+		// recshow(tmprec, stderr);
+
+		recsmove(recs, tmprec);
+		tmprec = recnew();
 	}
+
+	// Sort records
+	recssortname(recs);
+
+	// Draw records
+	for (int i = 0; i < recslen(recs); ++i) {
+		const struct record *r = recsgetc(recs, i); 
+		const char *name = recnamec(r);
+		const char *cmd = reccmdc(r);
+		int namelen = strlen(name);
+		
+		fprintf(stdout, "%s", name);
+		for (int i = 0; i < maxnamelen-namelen; ++i) {
+			fputc(' ', stdout);
+		}
+		fprintf(stdout, " %s\n", cmd);
+	}
+
+	// Done
+	recdel(tmprec);
+	recsdel(recs);
 
 	if (alfclose(alf) < 0) {
 		cap_log("error", "failed to close alias file");
@@ -264,7 +473,9 @@ alshowls(void) {
 }
 
 /**
+ * Read command by alias name
  *
+ * @param string alias name
  * @return string pointer to dynamic allocate memory
  */
 static char *
