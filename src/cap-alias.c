@@ -733,7 +733,7 @@ alusage(void) {
 		"    -h, --help   show usage.\n"
 		"    -d, --delete delete alias.\n"
 		"    -i, --import import alias file.\n"
-		"    -e, --export export alias file to home.\n"
+		"    -e, --export export alias file.\n"
 		"    -r, --run    run command of alias.\n"
 		"\n"
 		"Example:\n"
