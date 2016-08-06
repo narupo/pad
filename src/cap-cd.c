@@ -31,6 +31,10 @@ docd(const char *drtpath) {
 	cap_fsolve(newcd, sizeof newcd, drtpath);
 	// printf("newcd[%s]\n", newcd);
 
+	if (capisoutofhome(newcd)) {
+		cap_die("'%s' is out of home", newcd);
+	}
+
 	if (!cap_fisdir(newcd)) {
 		cap_die("'%s' is not a directory", newcd);
 	}

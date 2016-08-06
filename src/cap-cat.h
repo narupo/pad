@@ -9,5 +9,6 @@
 #include "file.h"
 #include "config.h"
 #include "env.h"
+#include "util.h"
 
 #endif
