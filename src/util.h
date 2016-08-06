@@ -24,6 +24,6 @@ freeargv(int argc, char *argv[]);
  * @return bool is not out of home to false
  */
 bool
-capisoutofhome(const char *path);
+isoutofhome(const char *path);
 
 #endif
