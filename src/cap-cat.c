@@ -29,8 +29,8 @@ main(int argc, char *argv[]) {
 		// Make path
 		char path[FILE_NPATH];
 		cap_fsolvefmt(path, sizeof path, "%s/%s", cd, name);
-		if (!cap_fexists(path)) {
-			cap_error("invalid path of '%s'", path);
+		if (capisoutofhome(path)) {
+			cap_error("invalid path '%s'", path);
 			continue;
 		}
 

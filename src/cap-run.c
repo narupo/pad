@@ -60,9 +60,9 @@ main(int argc, char *argv[]) {
 
 	char spath[FILE_NPATH]; // Script path
 	cap_fsolvefmt(spath, sizeof spath, "%s/%s", varcd, argv[1]);
-	if (!cap_fexists(spath)) {
+	if (capisoutofhome(spath)) {
 		freeargv(argc, argv);
-		cap_die("not found script '%s'", spath);
+		cap_die("invalid script '%s'", spath);
 	}
 
 	char exesname[NSCRIPTNAME]; // Execute script name in file
