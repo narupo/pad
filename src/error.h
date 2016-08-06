@@ -1,3 +1,10 @@
+/**
+ * Cap
+ *
+ * License: MIT
+ *  Author: narupo
+ *   Since: 2016
+ */
 #ifndef ERROR_H
 #define ERROR_H
 

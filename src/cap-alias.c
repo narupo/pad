@@ -1,5 +1,5 @@
 /**
- * cap
+ * Cap
  *
  * License: MIT
  *  Author: narupo

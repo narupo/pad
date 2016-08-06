@@ -1,16 +1,10 @@
-/*
-	{# comment 1 #}
-	left{{ var }}right
-	{{ CD }}
-	{{ HOME }}
-	{% if (var) : %}
-		{# comment 2 #}
-		{{ dog }}
-	{% end %}
-	{% for (el in lis): %}
-		{{ el }}
-	{% end %}
-*/
+/**
+ * Cap
+ *
+ * License: MIT
+ *  Author: narupo
+ *   Since: 2016
+ */
 #ifndef CAP_H
 #define CAP_H
 

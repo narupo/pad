@@ -1,3 +1,10 @@
+/**
+ * Cap
+ *
+ * License: MIT
+ *  Author: narupo
+ *   Since: 2016
+ */
 #include "cap-cat.h"
 
 static bool

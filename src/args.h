@@ -1,3 +1,10 @@
+/**
+ * Cap
+ *
+ * License: MIT
+ *  Author: narupo
+ *   Since: 2016
+ */
 #ifndef ARGS_H
 #define ARGS_H
 

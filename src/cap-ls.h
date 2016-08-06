@@ -1,3 +1,10 @@
+/**
+ * Cap
+ *
+ * License: MIT
+ *  Author: narupo
+ *   Since: 2016
+ */
 #ifndef CAP_LS_H
 #define CAP_LS_H
 

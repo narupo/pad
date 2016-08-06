@@ -1,3 +1,10 @@
+/**
+ * Cap
+ *
+ * License: MIT
+ *  Author: narupo
+ *   Since: 2016
+ */
 #ifndef ENV_H
 #define ENV_H
 
