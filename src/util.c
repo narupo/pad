@@ -11,10 +11,10 @@ freeargv(int argc, char *argv[]) {
 }
 
 bool
-capisoutofhome(const char *pth) {
-	const char *hm = getenv("CAP_HOME");
+isoutofhome(const char *pth) {
+	const char *hm = getenv("CAP_VARHOME");
 	if (!hm) {
-		cap_log("error", "invalid environment variable of 'CAP_HOME'");
+		cap_log("error", "invalid environment variable of 'CAP_VARHOME'");
 		return true;
 	}
 

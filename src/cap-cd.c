@@ -31,7 +31,7 @@ docd(const char *drtpath) {
 	cap_fsolve(newcd, sizeof newcd, drtpath);
 	// printf("newcd[%s]\n", newcd);
 
-	if (capisoutofhome(newcd)) {
+	if (isoutofhome(newcd)) {
 		cap_die("'%s' is out of home", newcd);
 	}
 
