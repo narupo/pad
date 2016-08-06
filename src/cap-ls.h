@@ -16,5 +16,6 @@
 #include "file.h"
 #include "array.h"
 #include "env.h"
+#include "util.h"
 
 #endif

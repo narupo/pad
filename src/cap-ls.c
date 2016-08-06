@@ -33,6 +33,11 @@ dir2array(struct cap_dir *dir) {
 
 static int
 capls(const char *path) {
+	if (isoutofhome(path)) {
+		cap_error("'%s' is out of home", path);
+		return 1;
+	}
+	
 	struct cap_dir *dir = cap_diropen(path);
 	if (!dir) {
 		cap_error("failed to open directory %s", path);
