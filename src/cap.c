@@ -359,6 +359,7 @@ capusage(struct cap *cap) {
 		"Example:\n\n"
 		"%s\n"
 	, usage, example);
+	
 	capdel(cap);
 	exit(0);
 }
