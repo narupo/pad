@@ -317,6 +317,23 @@ capnew(int argc, char *argv[]) {
 
 static void
 capusage(struct cap *cap) {
+	static const char usage[] =
+		"Usage: cap [options] [command] [arguments]\n"
+		"\n"
+		"The options are:\n"
+		"\n"
+		"    -h, --help    show usage.\n"
+		"\n"
+		"The commands are:\n"
+		"\n"
+		"    home     change home directory, or show.\n"
+		"    cd       change current directory by relative of home.\n"
+		"    pwd      show current directory.\n"
+		"    ls       show list in current directory.\n"
+		"    cat      catenate files and show.\n"
+		"    run      run script.\n"
+		"    alias    run alias command.\n"
+	;
 	static const char *examples[] = {
 		"    $ cap home\n"
 		"    $ cap pwd\n"
@@ -336,27 +353,10 @@ capusage(struct cap *cap) {
 	example = examples[randrange(0, exmlen-1)];
 
 	fprintf(stderr,
-		"Usage: cap [options] [command] [arguments]\n"
-		"\n"
-		"The options are:\n"
-		"\n"
-		"    -h, --help    show usage.\n"
-		"\n"
-		"The commands are:\n"
-		"\n"
-		"    home     change home directory, or show.\n"
-		"    cd       change current directory by relative of home.\n"
-		"    pwd      show current directory.\n"
-		"    ls       show list in current directory.\n"
-		"    cat      catenate files and show.\n"
-		"    run      run script.\n"
-		"    alias    run alias command.\n"
-		"\n"
-		"Example:\n"
-		"\n"
-		"%s"
-		"\n"
-	, example);
+		"%s\n"
+		"Example:\n\n"
+		"%s\n"
+	, usage, example);
 	capdel(cap);
 	exit(0);
 }
