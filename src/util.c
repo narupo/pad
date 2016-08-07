@@ -51,14 +51,59 @@ randrange(int min, int max) {
 	return min + (int)(rand() * (max - min + 1.0) / (1.0 + RAND_MAX));
 }
 
-#if defined(_TEST_UTIL)
 int
-main(int argc, char* argv[]) {
+safesystem(const char *cmdline) {
+	printf("cmdline[%s]\n", cmdline);
+	return 0;
+}
+
+#if defined(_TEST_UTIL)
+static int
+test_isoutofhome(int argc, char *argv[]) {
 	if (isoutofhome(argv[1])) {
 		puts("is out of home");
 	} else {
 		puts("not out of home");
 	}
 	return 0;
+}
+
+static int
+test_safesystem(int argc, char *argv[]) {
+	if (argc < 2) {
+		perror("Need command line string.");
+		return 1;
+	}
+
+	return safesystem(argv[1]);
+}
+
+int
+main(int argc, char* argv[]) {
+	static const struct cmd {
+		const char *name;
+		int (*func)(int, char**);
+	} cmds[] = {
+		{"isoutofhome", test_isoutofhome},
+		{"safesystem", test_safesystem},
+		{},
+	};
+
+	if (argc < 2) {
+		fprintf(stderr, "Commands:\n");
+		for (const struct cmd *p = cmds; p->name; ++p) {
+			fprintf(stderr, "    %s\n", p->name);
+		}
+		return 1;
+	}
+
+	for (const struct cmd *p = cmds; p->name; ++p) {
+		if (!strcmp(p->name, argv[1])) {
+			return p->func(--argc, ++argv);
+		}
+	}
+
+	fprintf(stderr, "Not found command of '%s'\n", argv[1]);
+	return 1;
 }
 #endif

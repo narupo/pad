@@ -258,19 +258,6 @@ recnew(void) {
 }
 
 static struct record *
-recnewparam(const char *name, const char *cmd) {
-	struct record *self = calloc(1, sizeof(*self));
-	if (!self) {
-		return NULL;
-	}
-
-	snprintf(self->name, sizeof self->name,"%s", name);
-	snprintf(self->cmd, sizeof self->cmd,"%s", cmd);
-
-	return self;
-}
-
-static struct record *
 recsetname(struct record *self, const char *name) {
 	snprintf(self->name, sizeof self->name,"%s", name);
 	return self;
@@ -717,7 +704,7 @@ alrun(const char *runarg) {
 
 	system(cap_strgetc(cmdline));
 	// cap_log("debug", "runarg[%s] name[%s] parg[%s] cmdcol[%s]\n", runarg, name, parg, cmdcol);
-	// cap_log("debug", "cmdln[%s]\n", cap_strgetc(cmdline));
+	cap_log("debug", "cmdln[%s]", cap_strgetc(cmdline));
 	
 	cap_strdel(cmdline);
 	return 0;

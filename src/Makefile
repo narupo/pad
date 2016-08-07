@@ -39,6 +39,9 @@ cap-alias: cap-alias.c $(MODOBJS)
 cap-run: cap-run.c $(MODOBJS)
 	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
 
+util: util.c file.c error.c env.c args.c
+	$(CC) -D_TEST_UTIL $(CFLAGS) -o $(BINDIR)/test-util $^ $(LIBS)
+
 .PHONY: clean depend
 
 clean:
