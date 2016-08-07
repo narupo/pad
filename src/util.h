@@ -19,7 +19,14 @@
 #include "file.h"
 #include "error.h"
 #include "env.h"
+#include "args.h"
 
+/**
+ * Free argv memory.
+ * 
+ * @param[in] argc    
+ * @param[in] *argv[] 
+ */
 void
 freeargv(int argc, char *argv[]);
 
@@ -44,5 +51,13 @@ isoutofhome(const char *path);
  */
 int
 randrange(int min, int max);
+
+/**
+ * Wrapper of system(3) for safe execute.
+ *
+ * @see system(3)
+ */
+int
+safesystem(const char *cmdline);
 
 #endif
