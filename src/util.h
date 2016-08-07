@@ -25,12 +25,23 @@ freeargv(int argc, char *argv[]);
 /**
  * Check path is out of cap's home?
  *
- * @param string path check path
+ * @param[in] string path check path
  *
  * @return bool is out of home to true
  * @return bool is not out of home to false
  */
 bool
 isoutofhome(const char *path);
+
+/**
+ * Get random number of range.
+ * 
+ * @param[in] int min minimum number of range
+ * @param[in] int max maximum number of range
+ * 
+ * @return int random number
+ */
+int
+randrange(int min, int max);
 
 #endif

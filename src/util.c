@@ -46,6 +46,11 @@ isoutofhome(const char *pth) {
 	return false;
 }
 
+int
+randrange(int min, int max) {
+	return min + (int)(rand() * (max - min + 1.0) / (1.0 + RAND_MAX));
+}
+
 #if defined(_TEST_UTIL)
 int
 main(int argc, char* argv[]) {
