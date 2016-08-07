@@ -344,8 +344,8 @@ capusage(struct cap *cap) {
 		"    $ cap alias al alias\n"
 		"    $ cap al\n"
 		,
-		"    $ cat path/to/code/file.c\n"
-		"    $ ls path/to/code\n"
+		"    $ cap cat path/to/code/file.c\n"
+		"    $ cap ls path/to/code\n"
 		,
 	};
 	const int exmlen = sizeof(examples)/sizeof(*examples);
