@@ -457,7 +457,7 @@ alshowls(void) {
 		for (int i = 0; i < maxnamelen-namelen; ++i) {
 			fputc(' ', stdout);
 		}
-		fprintf(stdout, " %s\n", cmd);
+		fprintf(stdout, "    %s\n", cmd);
 	}
 
 	// Done
