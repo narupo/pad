@@ -18,6 +18,7 @@
 
 #include "file.h"
 #include "error.h"
+#include "env.h"
 
 void
 freeargv(int argc, char *argv[]);

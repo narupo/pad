@@ -19,8 +19,8 @@ freeargv(int argc, char *argv[]) {
 
 bool
 isoutofhome(const char *pth) {
-	const char *hm = getenv("CAP_VARHOME");
-	if (!hm) {
+	char hm[FILE_NPATH];
+	if (!cap_envget(hm, sizeof hm, "CAP_VARHOME")) {
 		cap_log("error", "invalid environment variable of 'CAP_VARHOME'");
 		return true;
 	}
