@@ -320,6 +320,8 @@ capusage(struct cap *cap) {
 	static const char usage[] =
 		"Usage: cap [options] [command] [arguments]\n"
 		"\n"
+		"    Cap is simple snippet manager.\n"
+		"\n"
 		"The options are:\n"
 		"\n"
 		"    -h, --help    show usage.\n"
