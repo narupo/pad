@@ -703,8 +703,8 @@ alrun(const char *runarg) {
 		return 1;
 	}
 
-	char cmdbase[FILE_NPATH];
-	snprintf(cmdbase, sizeof cmdbase, "%s/cap-%s", bindir, cmdcol);
+	char cmdpath[FILE_NPATH];
+	snprintf(cmdpath, sizeof cmdpath, "%s/cap-%s", bindir, cmdcol);
 
 	struct cap_string *cmdline = cap_strnew();
 	if (!cmdline) {
@@ -712,7 +712,7 @@ alrun(const char *runarg) {
 		return 1;
 	}
 
-	cap_strapp(cmdline, cmdbase);
+	cap_strapp(cmdline, cmdpath);
 	cap_strapp(cmdline, parg);
 
 	system(cap_strgetc(cmdline));

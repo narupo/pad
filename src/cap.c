@@ -317,6 +317,24 @@ capnew(int argc, char *argv[]) {
 
 static void
 capusage(struct cap *cap) {
+	static const char *examples[] = {
+		"    $ cap home\n"
+		"    $ cap pwd\n"
+		"    $ cap ls\n"
+		,
+		"    $ cap alias al alias\n"
+		"    $ cap al\n"
+		,
+		"    $ cat path/to/code/file.c\n"
+		"    $ ls path/to/code\n"
+		,
+	};
+	const int exmlen = sizeof(examples)/sizeof(*examples);
+	const char *example = NULL;
+
+	srand(time(NULL));
+	example = examples[randrange(0, exmlen-1)];
+
 	fprintf(stderr,
 		"Usage: cap [options] [command] [arguments]\n"
 		"\n"
@@ -334,13 +352,11 @@ capusage(struct cap *cap) {
 		"    run      run script.\n"
 		"    alias    run alias command.\n"
 		"\n"
-		"Examples:\n"
+		"Example:\n"
 		"\n"
-		"    $ cap home\n"
-		"    $ cap pwd\n"
-		"    $ cap ls ./\n"
+		"%s"
 		"\n"
-	);
+	, example);
 	capdel(cap);
 	exit(0);
 }
