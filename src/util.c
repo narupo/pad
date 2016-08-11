@@ -51,10 +51,19 @@ randrange(int min, int max) {
 	return min + (int)(rand() * (max - min + 1.0) / (1.0 + RAND_MAX));
 }
 
+static bool
+isnormch(int c) {
+	return isalpha(c) || isdigit(c) || c == '-' || c == '_';
+}
+
+/*
+    if (execve("/usr/bin/any_cmd", args, env) == -1) {
+      _Exit(127);
+    } 
+*/
 int
 safesystem(const char *cmdline) {
-	printf("cmdline[%s]\n", cmdline);
-	return 0;
+	return system(cmdline);
 }
 
 #if defined(_TEST_UTIL)
