@@ -400,7 +400,7 @@ caprun(struct cap *cap) {
 
 	} else if (cap->alcmdln) {
 		// cap_log("debug", "cap->alcmdln[%s]", cap->alcmdln);
-		system(cap->alcmdln);
+		safesystem(cap->alcmdln);
 
 	} else {
 		capfork(cap);

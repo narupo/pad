@@ -4,7 +4,7 @@ CFLAGS := -Wall -g -O0 -std=c11 -Wno-unused-function -D_DEBUG
 CMDS := cap.c cap-cat.c cap-cd.c cap-home.c cap-pwd.c \
 	cap-ls.c cap-alias.c cap-run.c
 MODS := error.c file.c hash.c string.c config.c file.c map.c array.c \
-	socket.c util.c env.c args.c
+	socket.c util.c env.c args.c cl.c
 LIBS := -lm
 HEADERS := $(CMDS:.c=.h)
 CMDOBJS := $(CMDS:.c=.o)
@@ -39,7 +39,7 @@ cap-alias: cap-alias.c $(MODOBJS)
 cap-run: cap-run.c $(MODOBJS)
 	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
 
-util: util.c file.c error.c env.c args.c
+util: util.c file.c error.c env.c string.c cl.c
 	$(CC) -D_TEST_UTIL $(CFLAGS) -o $(BINDIR)/test-util $^ $(LIBS)
 
 .PHONY: clean depend

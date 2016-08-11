@@ -19,7 +19,8 @@
 #include "file.h"
 #include "error.h"
 #include "env.h"
-#include "args.h"
+#include "string.h"
+#include "cl.h"
 
 /**
  * Free argv memory.

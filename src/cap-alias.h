@@ -18,5 +18,6 @@
 #include "file.h"
 #include "string.h"
 #include "env.h"
+#include "util.h"
 
 #endif

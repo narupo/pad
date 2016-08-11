@@ -466,7 +466,7 @@ alshowls(void) {
  * @return string pointer to dynamic allocate memory
  */
 static char *
-alreadcmd(const char *name) {
+alreadcmdcp(const char *name) {
 	struct alfile *alf = alfopen("r+");
 	if (!alf) {
 		cap_die("failed to open alias file");
@@ -500,7 +500,7 @@ alreadcmd(const char *name) {
 
 static int
 alshowcmd(const char *name) {
-	char *cmd = alreadcmd(name);
+	char *cmd = alreadcmdcp(name);
 	if (!cmd) {
 		cap_die("not found alias name of '%s'", name);
 	}
@@ -684,7 +684,7 @@ alrun(const char *runarg) {
 		*beg = '\0';
 	}
 
-	const char *cmdcol = alreadcmd(name);
+	char *cmdcol = alreadcmdcp(name);
 	if (!cmdcol) {
 		cap_die("not found alias command of '%s'", name);
 		return 1;
@@ -692,6 +692,7 @@ alrun(const char *runarg) {
 
 	char cmdpath[FILE_NPATH];
 	snprintf(cmdpath, sizeof cmdpath, "%s/cap-%s", bindir, cmdcol);
+	free(cmdcol);
 
 	struct cap_string *cmdline = cap_strnew();
 	if (!cmdline) {
@@ -702,9 +703,8 @@ alrun(const char *runarg) {
 	cap_strapp(cmdline, cmdpath);
 	cap_strapp(cmdline, parg);
 
-	system(cap_strgetc(cmdline));
-	// cap_log("debug", "runarg[%s] name[%s] parg[%s] cmdcol[%s]\n", runarg, name, parg, cmdcol);
-	cap_log("debug", "cmdln[%s]", cap_strgetc(cmdline));
+	safesystem(cap_strgetc(cmdline));
+	//cap_log("debug", "cmdln[%s]", cap_strgetc(cmdline));
 	
 	cap_strdel(cmdline);
 	return 0;
@@ -776,3 +776,4 @@ main(int argc, char* argv[]) {
 
 	return ret;
 }
+
