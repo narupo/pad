@@ -42,6 +42,9 @@ cap-run: cap-run.c $(MODOBJS)
 util: util.c file.c error.c env.c string.c cl.c
 	$(CC) -D_TEST_UTIL $(CFLAGS) -o $(BINDIR)/test-util $^ $(LIBS)
 
+cl: cl.c
+	$(CC) -D_TEST_CL $(CFLAGS) -o $(BINDIR)/test-cl $^ $(LIBS)
+
 .PHONY: clean depend
 
 clean:

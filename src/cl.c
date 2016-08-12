@@ -122,24 +122,106 @@ strpush(struct string *self, char c) {
 		}
 	}
 	self->arr[self->len++] = c;
+	self->arr[self->len] = '\0';
 	return self;
+}
+
+static const char *
+strgetc(struct string *self) {
+	return self->arr;
+}
+
+static void
+strclear(struct string *self) {
+	self->len = 0;
+	self->arr[self->len] = '\0';
+}
+
+static bool
+isnormch(int c) {
+	return isalnum(c) || c == '-' || c == '_';
 }
 
 struct cap_cl *
 cap_clparse(struct cap_cl *self, const char *drtcl) {
 	int m = 0;
 	const char *p = drtcl;
-
+	struct string *tmp = strnew();
 
 	do {
-		int c = *p++;
+		int c = *p;
+		if (c == '\0') {
+			c = ' ';
+		}
+
+		printf("m[%d] c[%c]\n", m, c);
 
 		switch (m) {
 		case 0: // First
+			if (isblank(c)) {
+				;
+			} else if (c == '-') {
+				m = 100;
+				strpush(tmp, c);
+			} else {
+				m = 10;
+				strpush(tmp, c);
+			}
+		break;
+		case 10: // arg
+			if (isblank(c)) {
+				m = 0;
+				cap_clpush(self, strgetc(tmp));
+				strclear(tmp);
+			} else {
+				strpush(tmp, c);
+			}
+		break;
+		case 100: // -
+			if (c == '-') {
+				m = 150;
+				strpush(tmp, c);
+			} else if (isnormch(c)) {
+				m = 110;
+				strpush(tmp, c);
+			} else {
+				m = 0;
+				cap_clpush(self, strgetc(tmp));
+				strclear(tmp);
+			}
+		break;
+		case 110: // -?
+			if (isnormch(c)) {
+				strpush(tmp, c);
+			} else {
+				m = 0;
+				cap_clpush(self, strgetc(tmp));
+				strclear(tmp);
+			}
+		break;
+		case 150: // --
+			if (isnormch(c)) {
+				m = 160;
+				strpush(tmp, c);
+			} else {
+				m = 0;
+				cap_clpush(self, strgetc(tmp));
+				strclear(tmp);
+			}
+		break;
+		case 160: // --?
+			if (isnormch(c)) {
+				strpush(tmp, c);
+			} else {
+				m = 0;
+				cap_clpush(self, strgetc(tmp));
+				strclear(tmp);
+			}
 		break;
 		}
-	} while (*p);
+	} while (*p++);
 
+	strdel(tmp);
 	return self;
 }
 
@@ -151,8 +233,10 @@ cap_clshow(const struct cap_cl *self, FILE *fout) {
 }
 
 #if defined(_TEST_CL)
-int
-main(int argc, char* argv[]) {
+#include <stdio.h>
+
+static int
+test_a(int argc, char *argv[]) {
 	if (argc < 2) {
 		perror("need cl");
 		return 1;
@@ -162,7 +246,39 @@ main(int argc, char* argv[]) {
 	cap_clparse(cl, argv[1]);
 	cap_clshow(cl, stderr);
 	cap_cldel(cl);
-
 	return 0;
+}
+
+int
+main(int argc, char *argv[]) {
+	static const struct cmd {
+		const char *name;
+		int (*func)(int, char**);
+	} cmds[] = {
+		{"a", test_a},
+		{},
+	};
+
+	if (argc < 2) {
+		fprintf(stderr,
+			"Usage: %s [command]\n"
+			"\n"
+			"The commands are:\n\n"
+		, argv[0]);
+		for (const struct cmd *p = cmds; p->name; ++p) {
+			fprintf(stderr, "    %s\n", p->name);
+		}
+		fprintf(stderr, "\n");
+		return 1;
+	}
+
+	for (const struct cmd *p = cmds; p->name; ++p) {
+		if (!strcmp(p->name, argv[1])) {
+			return p->func(argc-1, argv+1);
+		}
+	}
+
+	fprintf(stderr, "Not found command of '%s'\n", argv[1]);
+	return 1;
 }
 #endif
