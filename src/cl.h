@@ -4,7 +4,9 @@
 #define _GNU_SOURCE 1 /* cap: cl.h: strdup */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
 
 struct cap_cl;
 
