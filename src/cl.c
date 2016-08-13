@@ -62,6 +62,19 @@ cap_clpush(struct cap_cl *self, const char *str) {
 	return self;
 }
 
+void
+cap_clclear(struct cap_cl *self) {
+	for (int i = 0; i < self->len; ++i) {
+		free(self->arr[i]);
+		self->arr[i] = NULL;
+	}
+	self->len = 0;
+}
+
+/*********
+* string *
+*********/
+
 struct string {
 	int capa;
 	int len;
@@ -142,37 +155,75 @@ isnormch(int c) {
 	return isalnum(c) || c == '-' || c == '_';
 }
 
+static void
+pushclear(struct cap_cl *cl, struct string *str) {
+	const char *val = strgetc(str);
+	cap_clpush(cl, val);
+	strclear(str);
+}
+
 struct cap_cl *
 cap_clparse(struct cap_cl *self, const char *drtcl) {
 	int m = 0;
 	const char *p = drtcl;
 	struct string *tmp = strnew();
 
+	cap_clclear(self);
+
 	do {
 		int c = *p;
 		if (c == '\0') {
-			c = ' ';
+			c = '\n';
+		}
+
+		if (c == '\\') {
+			if (*++p == '\0') {
+				strdel(tmp);
+				return NULL;
+			}
+			strpush(tmp, c);
+			strpush(tmp, *p);
+			continue;
 		}
 
 		printf("m[%d] c[%c]\n", m, c);
 
 		switch (m) {
 		case 0: // First
-			if (isblank(c)) {
+			if (isspace(c)) {
 				;
 			} else if (c == '-') {
 				m = 100;
 				strpush(tmp, c);
-			} else {
+			} else if (c == '"') {
 				m = 10;
+			} else if (c == '\'') {
+				m = 20;
+			} else {
+				m = 30;
 				strpush(tmp, c);
 			}
 		break;
-		case 10: // arg
-			if (isblank(c)) {
+		case 10: // "arg"
+			if (c == '"') {
 				m = 0;
-				cap_clpush(self, strgetc(tmp));
-				strclear(tmp);
+				pushclear(self, tmp);
+			} else {
+				strpush(tmp, c);
+			}
+		break;
+		case 20: // 'arg'
+			if (c == '\'') {
+				m = 0;
+				pushclear(self, tmp);
+			} else {
+				strpush(tmp, c);
+			}
+		break;
+		case 30: // arg
+			if (isspace(c)) {
+				m = 0;
+				pushclear(self, tmp);
 			} else {
 				strpush(tmp, c);
 			}
@@ -186,17 +237,18 @@ cap_clparse(struct cap_cl *self, const char *drtcl) {
 				strpush(tmp, c);
 			} else {
 				m = 0;
-				cap_clpush(self, strgetc(tmp));
-				strclear(tmp);
+				pushclear(self, tmp);
 			}
 		break;
 		case 110: // -?
 			if (isnormch(c)) {
 				strpush(tmp, c);
+			} else if (c == '=') {
+				m = 200;
+				strpush(tmp, c);
 			} else {
 				m = 0;
-				cap_clpush(self, strgetc(tmp));
-				strclear(tmp);
+				pushclear(self, tmp);
 			}
 		break;
 		case 150: // --
@@ -205,17 +257,56 @@ cap_clparse(struct cap_cl *self, const char *drtcl) {
 				strpush(tmp, c);
 			} else {
 				m = 0;
-				cap_clpush(self, strgetc(tmp));
-				strclear(tmp);
+				pushclear(self, tmp);
 			}
 		break;
 		case 160: // --?
 			if (isnormch(c)) {
 				strpush(tmp, c);
+			} else if (c == '=') {
+				m = 200;				
+				strpush(tmp, c);
 			} else {
 				m = 0;
-				cap_clpush(self, strgetc(tmp));
-				strclear(tmp);
+				pushclear(self, tmp);
+			}
+		break;
+		case 200: // -?= or --?=
+			if (c == '"') {
+				m = 210;
+				strpush(tmp, c);
+			} else if (c == '\'') {
+				m = 220;
+				strpush(tmp, c);
+			} else {
+				m = 230;
+				strpush(tmp, c);
+			}
+		break;
+		case 210: // -?="arg" or --?="arg"
+			if (c == '"') {
+				m = 0;
+				strpush(tmp, c);
+				pushclear(self, tmp);
+			} else {
+				strpush(tmp, c);
+			}
+		break;
+		case 220: // -?='arg' or --?='arg'
+			if (c == '\'') {
+				m = 0;
+				strpush(tmp, c);
+				pushclear(self, tmp);
+			} else {
+				strpush(tmp, c);
+			}
+		break;
+		case 230: // -?=arg or --?=arg
+			if (isspace(c)) {
+				m = 0;
+				pushclear(self, tmp);
+			} else {
+				strpush(tmp, c);
 			}
 		break;
 		}
@@ -236,7 +327,7 @@ cap_clshow(const struct cap_cl *self, FILE *fout) {
 #include <stdio.h>
 
 static int
-test_a(int argc, char *argv[]) {
+test_cl(int argc, char *argv[]) {
 	if (argc < 2) {
 		perror("need cl");
 		return 1;
@@ -255,7 +346,7 @@ main(int argc, char *argv[]) {
 		const char *name;
 		int (*func)(int, char**);
 	} cmds[] = {
-		{"a", test_a},
+		{"cl", test_cl},
 		{},
 	};
 
