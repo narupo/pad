@@ -17,6 +17,13 @@ freeargv(int argc, char *argv[]) {
 	}
 }
 
+void
+showargv(int argc, char *argv[]) {
+	for (int i = 0; i < argc; ++i) {
+		printf("[%d] = [%s]\n", i, 	argv[i]);
+	}
+}
+
 bool
 isoutofhome(const char *pth) {
 	char hm[FILE_NPATH];
@@ -51,19 +58,37 @@ randrange(int min, int max) {
 	return min + (int)(rand() * (max - min + 1.0) / (1.0 + RAND_MAX));
 }
 
-static bool
-isnormch(int c) {
-	return isalpha(c) || isdigit(c) || c == '-' || c == '_';
-}
-
-/*
-    if (execve("/usr/bin/any_cmd", args, env) == -1) {
-      _Exit(127);
-    } 
-*/
 int
 safesystem(const char *cmdline) {
-	return system(cmdline);
+	// puts("-- safesystem");
+	// printf("cmdline[%s]\n", cmdline);	
+	struct cap_cl *cl = cap_clnew();
+	if (!cap_clparsestr(cl, cmdline)) {
+		cap_cldel(cl);
+		return -1;
+	}
+
+	int argc = cap_cllen(cl);
+	char **argv = cap_clescdel(cl);
+	// showargv(argc, argv);
+	
+	switch (fork()) {
+	case -1:
+		return -1;
+	break;
+	case 0:
+		if (execv(argv[0], argv) == -1) {
+			freeargv(argc, argv);
+			_exit(1);
+		}
+	break;
+	default:
+		freeargv(argc, argv);
+		wait(NULL);
+	break;
+	}
+
+	return 0;
 }
 
 #if defined(_TEST_UTIL)
@@ -84,6 +109,8 @@ test_safesystem(int argc, char *argv[]) {
 		return 1;
 	}
 
+	showargv(argc, argv);
+	puts("do safesystem");
 	return safesystem(argv[1]);
 }
 
@@ -99,10 +126,12 @@ main(int argc, char* argv[]) {
 	};
 
 	if (argc < 2) {
-		fprintf(stderr, "Commands:\n");
+		fprintf(stderr, "Usage: %s [command]\n\n", argv[0]);
+		fprintf(stderr, "The commands are:\n\n");
 		for (const struct cmd *p = cmds; p->name; ++p) {
 			fprintf(stderr, "    %s\n", p->name);
 		}
+		fprintf(stderr, "\n");
 		return 1;
 	}
 

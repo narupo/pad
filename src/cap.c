@@ -152,16 +152,6 @@ optsparse(struct opts *opts, int argc, char *argv[]) {
 	return true;
 }
 
-static char **
-wrapargvvals(int argc, char *argv[]) {
-	struct cap_args *args = cap_argsnew();
-	cap_argsparse(args, argc, argv);
-	for (int i = 2; i < cap_argslen(args); ++i) {
-		cap_argwrapvalue(cap_argsget(args, i), '"');
-	}
-	return cap_argsescdel(args);
-}
-
 static struct cap *
 capfixcmdargs(struct cap *cap) {
 	static const char *capcmds[] = {
@@ -197,22 +187,18 @@ capfixcmdargs(struct cap *cap) {
 		return NULL;
 	}
 
-	char **newargv = wrapargvvals(cap->cmdargc, cap->cmdargv);
-	if (!newargv) {
-		cap_strdel(cmdln);
-		return NULL;
-	}
-
 	cap_strapp(cmdln, bindir);
 	cap_strapp(cmdln, "/cap-alias --run '");
 
-	for (int i = 0; i < cap->cmdargc; ++i) {
-		cap_strapp(cmdln, newargv[i]);
+	for (int i = 0; i < cap->cmdargc-1; ++i) {
+		cap_strapp(cmdln, cap->cmdargv[i]);
 		cap_strapp(cmdln, " ");
+	}
+	if (cap->cmdargc > 0) {
+		cap_strapp(cmdln, cap->cmdargv[cap->cmdargc-1]);
 	}
 	cap_strapp(cmdln, "'");
 
-	freeargv(cap->cmdargc, newargv);
 	cap->alcmdln = cap_strescdel(cmdln);
 	// cap_log("debug", "cap->alcmdln[%s]\n", cap->alcmdln);
 	return cap;
@@ -247,6 +233,7 @@ capsolveopts(struct cap *cap, int ac, char *av[]) {
 	cap->argv = cap_arrescdel(args);
 	cap->cmdargc = cap_arrlen(cmdargs)-1; // -1 for final null
 	cap->cmdargv = cap_arrescdel(cmdargs);
+	// showargv(cap->cmdargc, cap->cmdargv);
 
 	// Fix command arguments
 	capfixcmdargs(cap);

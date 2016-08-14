@@ -20,13 +20,37 @@ struct cap_cl;
 void
 cap_cldel(struct cap_cl *self);
 
+char **
+cap_clescdel(struct cap_cl *self);
+
 struct cap_cl *
 cap_clnew(void);
+
+struct cap_cl *
+cap_clresize(struct cap_cl *self, int newcapa);
+
+struct cap_cl *
+cap_clpush(struct cap_cl *self, const char *str);
+
+void
+cap_clclear(struct cap_cl *self);
+
+struct cap_cl *
+cap_clparsestropts(struct cap_cl *self, const char *drtsrc, int opts);
 
 struct cap_cl *
 cap_clparsestr(struct cap_cl *self, const char *drtcl);
 
 struct cap_cl *
-cap_clparsestropts(struct cap_cl *self, const char *drtcl, int opts);
+cap_clparseargvopts(struct cap_cl *self, int argc, char *argv[], int opts);
+
+struct cap_cl *
+cap_clparseargv(struct cap_cl *self, int argc, char *argv[]);
+
+void
+cap_clshow(const struct cap_cl *self, FILE *fout);
+
+int
+cap_cllen(const struct cap_cl *self);
 
 #endif
