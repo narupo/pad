@@ -90,6 +90,7 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 		case 'r':
 			opts->isrun = true;
 			opts->runarg = strdup(optarg);
+			// cap_log("debug", "runarg[%s]", opts->runarg);
 		break;
 		case '?':
 		default: return NULL; break;
@@ -668,6 +669,7 @@ alexport(const char *drtpath) {
 
 static int
 alrun(const char *runarg) {
+	// cap_log("debug", "runarg[%s]", runarg);
 	char bindir[FILE_NPATH];
 	if (!cap_envget(bindir, sizeof bindir, "CAP_BINDIR")) {
 		cap_log("error", "need bin directory on environ");
@@ -704,7 +706,7 @@ alrun(const char *runarg) {
 	cap_strapp(cmdline, parg);
 
 	safesystem(cap_strgetc(cmdline));
-	//cap_log("debug", "cmdln[%s]", cap_strgetc(cmdline));
+	// cap_log("debug", "cmdline[%s]", cap_strgetc(cmdline));
 	
 	cap_strdel(cmdline);
 	return 0;
@@ -739,6 +741,9 @@ alusage(void) {
 int
 main(int argc, char* argv[]) {
 	cap_envsetf("CAP_PROCNAME", "cap alias");
+
+	// cap_log("debug", "main");
+	// showargv(argc, argv);
 
 	struct opts opts;
 	if (!parseopts(&opts, argc, argv)) {

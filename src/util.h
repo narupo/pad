@@ -32,6 +32,15 @@ void
 freeargv(int argc, char *argv[]);
 
 /**
+ * Show argv values.
+ * 
+ * @param[in] argc    
+ * @param[in] *argv[] 
+ */
+void
+showargv(int argc, char *argv[]);
+
+/**
  * Check path is out of cap's home?
  *
  * @param[in] string path check path
@@ -54,7 +63,7 @@ int
 randrange(int min, int max);
 
 /**
- * Wrapper of system(3) for safe execute.
+ * Wrapper of system(3) for the safe execute.
  *
  * @see system(3)
  */

@@ -82,6 +82,11 @@ cap_clclear(struct cap_cl *self) {
 	self->len = 0;
 }
 
+int
+cap_cllen(const struct cap_cl *self) {
+	return self->len;
+}
+
 /*********
 * string *
 *********/
@@ -553,6 +558,7 @@ test_execv(int argc, char *argv[]) {
 	break;
 	case 0:
 		execv("/home/narupo/src/bottle/src/bin/args", av);
+		perror("execv");
 		freeargv(av);
 		_exit(1);
 	break;
