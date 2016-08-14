@@ -38,16 +38,6 @@ readscriptline(char *dst, size_t dstsz, const char *path) {
 	return dst;
 }
 
-static char **
-wrapargvvals(int argc, char *argv[]) {
-	struct cap_args *args = cap_argsnew();
-	cap_argsparse(args, argc, argv);
-	for (int i = 2; i < cap_argslen(args); ++i) {
-		cap_argwrapvalue(cap_argsget(args, i), '"');
-	}
-	return cap_argsescdel(args);
-}
-
 int
 main(int argc, char *argv[]) {
 	cap_envsetf("CAP_PROCNAME", "cap run");
@@ -62,8 +52,6 @@ main(int argc, char *argv[]) {
 		cap_log("error", "need environment variable of cd");
 		return 1;
 	}
-
-	argv = wrapargvvals(argc, argv);
 
 	char spath[FILE_NPATH]; // Script path
 	cap_fsolvefmt(spath, sizeof spath, "%s/%s", varcd, argv[1]);
@@ -88,23 +76,9 @@ main(int argc, char *argv[]) {
 	// cap_log("debug", "exesname[%s] spath[%s] cmdline[%s]\n", exesname, spath, cap_strgetc(cmdline));
 
 	// Start process communication
-	FILE* pin = popen(cap_strgetc(cmdline), "r");
-	if (!pin) {
-		cap_die("failed open process '%s'", cmdline);
-	}
-
-	for (int ch; (ch = fgetc(pin)) != EOF; ) {
-		putchar(ch);
-	}
-	fflush(stdout);
-
-	if (pclose(pin) < 0) {
-		freeargv(argc, argv);
-		cap_die("failed to close process");
-	}
-
+	safesystem(cap_strgetc(cmdline));
+	
 	// Done
 	cap_strdel(cmdline);
-	freeargv(argc, argv);
 	return 0;
 }
