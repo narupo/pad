@@ -228,6 +228,10 @@ escapecpy(struct cl_string *dst, const struct cl_string *src, int opts) {
 			continue;
 		}
 
+		if (opts & CL_DEBUG) {
+			printf("esc: m[%d] c[%c]\n", m, *p);
+		}
+
 		switch (m) {
 		case 0: // First
 			if (ismetach(*p)) {
@@ -284,6 +288,8 @@ validatepush(struct cap_cl *cl, struct cl_string *src, int opts) {
 	if (opts & CL_WRAP) {
 		cl_strpush(dst, '\'');
 	}
+
+// printf("dst[%s]\n", cl_strgetc(dst));//debug
 
 	cap_clpush(cl, cl_strgetc(dst));
 	cl_strdel(dst);
