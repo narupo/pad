@@ -305,6 +305,10 @@ cap_clparsestropts(struct cap_cl *self, const char *drtsrc, int opts) {
 			c = '\n';
 		}
 
+		if (opts & CL_DEBUG) {
+			printf("m[%d] c[%c]\n", m, c);
+		}
+
 		if (c == '\\') {
 			if (*++p == '\0') {
 				cl_strdel(tmp);
@@ -314,8 +318,6 @@ cap_clparsestropts(struct cap_cl *self, const char *drtsrc, int opts) {
 			cl_strpush(tmp, *p);
 			continue;
 		}
-
-		// printf("m[%d] c[%c]\n", m, c);
 
 		switch (m) {
 		case 0: // First
@@ -403,7 +405,10 @@ cap_clparsestropts(struct cap_cl *self, const char *drtsrc, int opts) {
 			}
 		break;
 		case 200: // -?= or --?=
-			if (c == '"') {
+			if (isspace(c)) {
+				m = 0;
+				validatepush(self, tmp, opts);
+			} else if (c == '"') {
 				m = 210;
 				cl_strpush(tmp, c);
 			} else if (c == '\'') {

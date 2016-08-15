@@ -11,8 +11,9 @@
 #include <ctype.h>
 
 enum {
-	CL_WRAP = (1 << 1),
-	CL_ESCAPE = (1 << 2),
+	CL_DEBUG = (1 << 1),
+	CL_WRAP = (1 << 2),
+	CL_ESCAPE = (1 << 3),
 };
 
 struct cap_cl;
