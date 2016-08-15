@@ -61,15 +61,17 @@ randrange(int min, int max) {
 int
 safesystem(const char *cmdline) {
 	// puts("-- safesystem");
-	// printf("cmdline[%s]\n", cmdline);	
+	// printf("cmdline[%s]\n", cmdline);
+	int opts = 0;
 	struct cap_cl *cl = cap_clnew();
-	if (!cap_clparsestr(cl, cmdline)) {
+	if (!cap_clparsestropts(cl, cmdline, opts)) {
 		cap_cldel(cl);
 		return -1;
 	}
 
 	int argc = cap_cllen(cl);
 	char **argv = cap_clescdel(cl);
+	// puts("safesystem");
 	// showargv(argc, argv);
 	
 	switch (fork()) {
