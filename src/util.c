@@ -62,9 +62,8 @@ int
 safesystem(const char *cmdline) {
 	// puts("-- safesystem");
 	// printf("cmdline[%s]\n", cmdline);
-	int opts = 0;
 	struct cap_cl *cl = cap_clnew();
-	if (!cap_clparsestropts(cl, cmdline, opts)) {
+	if (!cap_clparsestropts(cl, cmdline, 0)) {
 		cap_cldel(cl);
 		return -1;
 	}
