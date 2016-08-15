@@ -273,6 +273,10 @@ escapecpy(struct cl_string *dst, const struct cl_string *src, int opts) {
 
 static void
 validatepush(struct cap_cl *cl, struct cl_string *src, int opts) {
+	if (!cl_strlen(src)) {
+		return;
+	}
+
 	struct cl_string *dst = cl_strnew();
 
 	if (opts & CL_WRAP) {
@@ -290,7 +294,6 @@ validatepush(struct cap_cl *cl, struct cl_string *src, int opts) {
 	}
 
 // printf("dst[%s]\n", cl_strgetc(dst));//debug
-
 	cap_clpush(cl, cl_strgetc(dst));
 	cl_strdel(dst);
 	cl_strclear(src);
@@ -308,7 +311,8 @@ cap_clparsestropts(struct cap_cl *self, const char *drtsrc, int opts) {
 	do {
 		int c = *p;
 		if (c == '\0') {
-			c = '\n';
+			validatepush(self, tmp, opts);
+			break;
 		}
 
 		if (opts & CL_DEBUG) {
@@ -510,30 +514,6 @@ cap_clshow(const struct cap_cl *self, FILE *fout) {
 #if defined(_TEST_CL)
 #include <stdio.h>
 
-static int
-test_parsestr(int argc, char *argv[]) {
-	if (argc < 2) {
-		perror("need cl");
-		return 1;
-	}
-
-	struct cap_cl *cl = cap_clnew();
-	cap_clparsestr(cl, argv[1]);
-	cap_clshow(cl, stderr);
-	cap_cldel(cl);
-	printf("source [%s]\n", argv[1]);
-	return 0;
-}
-
-static int
-test_parseargv(int argc, char *argv[]) {
-	struct cap_cl *cl = cap_clnew();
-	cap_clparseargv(cl, argc, argv);
-	cap_clshow(cl, stderr);
-	cap_cldel(cl);
-	return 0;
-}
-
 static void
 freeargv(char *argv[]) {
 	for (char **a = argv; *a; ++a) {
@@ -556,10 +536,33 @@ die(const char *fmt) {
 }
 
 static int
+test_parsestr(int argc, char *argv[]) {
+	if (argc < 2) {
+		die("need argv");
+	}
+
+	struct cap_cl *cl = cap_clnew();
+	cap_clparsestropts(cl, argv[1], CL_DEBUG | CL_ESCAPE);
+	cap_clshow(cl, stderr);
+	cap_cldel(cl);
+	printf("source [%s]\n", argv[1]);
+	return 0;
+}
+
+static int
+test_parseargv(int argc, char *argv[]) {
+	struct cap_cl *cl = cap_clnew();
+	cap_clparseargvopts(cl, argc, argv, CL_DEBUG | CL_ESCAPE);
+	cap_clshow(cl, stderr);
+	cap_cldel(cl);
+	return 0;
+}
+
+static int
 test_execv(int argc, char *argv[]) {
 	struct cap_cl *cl = cap_clnew();
 	showargv(argv);
-	cap_clparseargv(cl, argc, argv);
+	cap_clparseargvopts(cl, argc, argv, CL_DEBUG | CL_ESCAPE);
 	char **av = cap_clescdel(cl);
 	showargv(av);
 
