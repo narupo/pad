@@ -8,7 +8,7 @@
 #ifndef CAP_H
 #define CAP_H
 
-#define _BSD_SOURCE 1 /* In cap.h: For the setenv */
+#define _BSD_SOURCE 1 /* cap: cap.h: setenv */
 #include <stdio.h>
 #include <sys/wait.h>
 #include <getopt.h>

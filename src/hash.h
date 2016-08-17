@@ -19,14 +19,14 @@ enum {
 };
 
 /**
+ * Get hash value by string of source.
  *
+ * @param[in]  src string of source
  *
- * @param[in]  src
- *
- * @return
+ * @return success to number of hash value
+ * @return failed to under of zero
  */
 long
 cap_hashl(const char *src);
 
 #endif
-

@@ -9,7 +9,7 @@
 #define FILE_H
 
 #undef _GNU_SOURCE
-#define _GNU_SOURCE 1 /* For realpath(3) */
+#define _GNU_SOURCE 1 /* cap: file.h: realpath(3) */
 
 #include <errno.h>
 #include <limits.h>
@@ -25,7 +25,7 @@
 #include <libgen.h>
 
 #if defined(_WIN32) || defined(_WIN64)
-# define _CAP_WINDOWS 1 /* In cap: file.h */
+# define _CAP_WINDOWS 1 /* cap: file.h */
 #else
 # undef _CAP_WINDOWS
 #endif
@@ -34,9 +34,17 @@
 # include <windows.h>
 #endif
 
+/***************
+* file numbers *
+***************/
+
 enum {
 	FILE_NPATH = 256,
 };
+
+/*******
+* file *
+*******/
 
 /**
  * Wrapper of fclose
@@ -73,11 +81,11 @@ DIR *
 cap_fopendir(const char *path);
 
 /**
- * @brief Wrapper of realpath (Unix's API)
+ * Wrapper of realpath (Unix's API)
  *
- * @param dst     pointer to buffer of destination
- * @param dstsz number of buffer
- * @param src     string of target path
+ * @param[out] dst pointer to buffer of destination
+ * @param[in] dstsz number of buffer
+ * @param[in] src string of target path
  *
  * @return success to pointer to destination
  * @return failed to NULL
@@ -101,6 +109,9 @@ cap_fexists(const char *path);
 int
 cap_fmkdirmode(const char *path, mode_t mode);
 
+/**
+ * Wrapper of mkdir without mode for the quickly
+ */
 int
 cap_fmkdirq(const char *path);
 
@@ -143,7 +154,7 @@ cap_fsolvecp(const char *path);
  * @param[out] dst destination of normalized path
  * @param[in] dstsz destination size
  * @param[in] path target path
- * @param[in]:fmt string format
+ * @param[in] fmt string format
  * @param[in] ... arguments of format
  *
  * @return success to pointer to dst
@@ -172,35 +183,100 @@ cap_fisdir(const char *path);
 char *
 cap_freadcp(FILE *fin);
 
+/**
+ * Get file size
+ * 
+ * @param[in] *stream pointer to FILE
+ * 
+ * @return success to file size
+ * @return failed to under of zero
+ */
 long
 cap_fsize(FILE *stream);
 
+/**
+ * Get suffix in file path
+ * 
+ * @param[in] *path string of file path
+ * 
+ * @return success to pointer to suffix in path
+ * @return failed to NULL
+ */
 const char *
 cap_fsuffix(const char *path);
 
+/**
+ * Get directory name in path
+ * 
+ * @param[out] *dst destination buffer
+ * @param[in] dstsz size of destination buffer
+ * @param[in] *path string of path
+ * 
+ * @return success to pointer to destination buffer
+ * @return failed to NULL
+ */
 char *
 cap_fdirname(char *dst, size_t dstsz, const char *path);
 
+/**
+ * Get base name in path 
+ * 
+ * @param[out] *dst destination buffer
+ * @param[in] dstsz size of destination buffer
+ * @param[in] *path string of path
+ * 
+ * @return success to pointer to destination buffer
+ * @return failed to NULL
+ */
 char *
 cap_fbasename(char *dst, size_t dstsz, const char *path);
 
+/**
+ * Get line of string from stream
+ * 
+ * @param[out] *dst destination buffer
+ * @param[in] dstsz size of destination buffer
+ * @param[in] *fin pointer to FILE
+ * 
+ * @return success to number of get size
+ * @return end of file or failed to EOF
+ */
 int
 cap_fgetline(char *dst, size_t dstsz, FILE *fin);
 
+/**
+ * Read first line in file
+ * 
+ * @param[out] *dst destination buffer
+ * @param[in] dstsz size of destination buffer
+ * @param[in] *path string of file path
+ * 
+ * @return success to pointer to destination buffer
+ * @return failed to NULL
+ */
 char *
 cap_freadline(char *dst, size_t dstsz, const char *path);
 
+/**
+ * Write first line to file
+ * 
+ * @param[in] line string of line
+ * @param[in] *path string of file path
+ * 
+ * @return success to pointer to destination buffer
+ * @return failed to NULL
+ */
 const char *
 cap_fwriteline(const char *line, const char *path);
 
-/**************************
-* file struct cap_dirnode *
-**************************/
+/**************
+* cap_dirnode *
+**************/
 
 struct cap_dirnode;
 
 /**
- * @brief Delete node of dynamic allocate memory
+ * Delete node of dynamic allocate memory
  *
  * @param self
 */
@@ -208,7 +284,7 @@ void
 cap_dirnodedel(struct cap_dirnode *self);
 
 /**
- * @brief Get name of node
+ * Get name of node
  *
  * @param self
  *
@@ -218,14 +294,14 @@ cap_dirnodedel(struct cap_dirnode *self);
 const char *
 cap_dirnodename(const struct cap_dirnode* self);
 
-/**********************
-* file struct cap_dir *
-**********************/
+/**********
+* cap_dir *
+**********/
 
 struct cap_dir;
 
 /**
- * @brief Close directory
+ * Close directory
  *
  * @param self
  *
@@ -236,7 +312,7 @@ int
 cap_dirclose(struct cap_dir *self);
 
 /**
- * @brief Open directory
+ * Open directory
  *
  * @param path path of directory
  *
@@ -247,7 +323,7 @@ struct cap_dir *
 cap_diropen(const char *path);
 
 /**
- * @brief Read next node in directory
+ * Read next node in directory
  *
  * @param self
  *

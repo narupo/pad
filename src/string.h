@@ -34,6 +34,17 @@
 char *
 capstrncat(char *dst, size_t dstsz, const char *src);
 
+/**
+ * Copy string without specified string
+ * 
+ * @param[out] dst destination buffer
+ * @param[in] dstsz size of destination buffer
+ * @param[in] src source string for copy
+ * @param[in] without specified string
+ * 
+ * @return success to pointer to destination buffer
+ * @return failed to NULL
+ */
 char *
 capstrcpywithout(char *dst, size_t dstsz, const char *src, const char *without);
 
