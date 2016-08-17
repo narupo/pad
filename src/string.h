@@ -8,7 +8,7 @@
 #ifndef STRING_H
 #define STRING_H
 
-#define _GNU_SOURCE 1 /* In cap: string.h for the strdup */
+#define _GNU_SOURCE 1 /* cap: string.h: strdup */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
