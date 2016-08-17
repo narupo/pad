@@ -9,65 +9,109 @@
 #define ARRAY_H
 
 #undef _GNU_SOURCE
-#define _GNU_SOURCE 1 /* In cap: array: For strdup */
+#define _GNU_SOURCE 1 /* cap: array.h: strdup */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+/************
+* cap_array *
+************/
+
 struct cap_array;
 
 /**
+ * Destruct array
  * 
- *
- * @param[in]  *arr 
+ * @param[in] *self 
  */
 void 
-cap_arrdel(struct cap_array *arr);
+cap_arrdel(struct cap_array *self);
 
 /**
+ * Destruct array with move semantics
+ * Need freeargv for the return value
  * 
- *
- * @param[in]  void 
- *
- * @return 
+ * @param[in] *self 
+ * 
+ * @return pointer to array like a argv
+ */
+char **
+cap_arrescdel(struct cap_array *self);
+
+/**
+ * Construct array
+ * 
+ * @return success to pointer to dynamic allocate memory of array
+ * @return failed to NULL
  */
 struct cap_array * 
 cap_arrnew(void);
 
-char **
-cap_arrescdel(struct cap_array *arr);
-
 /**
+ * Push string to array with copy
  * 
- *
- * @param[in]  *arr 
- * @param[in]  *str 
- *
- * @return 
+ * @param[in] *self 
+ * @param[in] *str string
+ * 
+ * @return success to pointer to self
+ * @return failed to NULL
  */
 struct cap_array * 
-cap_arrpush(struct cap_array *arr, const char *str);
-
-struct cap_array * 
-cap_arrmove(struct cap_array *arr, char *ptr);
+cap_arrpush(struct cap_array *self, const char *str);
 
 /**
+ * Move pointer to dynamic allocate memory to array with move semantics
  * 
- *
- * @param[in]  *arr 
- *
- * @return 
+ * @param[in] *self 
+ * @param[in] *ptr pointer to dynamic allocate memory of string 
+ * 
+ * @return success to pointer to self
+ * @return failed to NULL
  */
 struct cap_array * 
-cap_arrsort(struct cap_array *arr);
+cap_arrmove(struct cap_array *self, char *ptr);
 
+/**
+ * Sort elements
+ * 
+ * @param[in] *self 
+ * 
+ * @return success to pointer to self
+ * @return failed to NULL
+ */
+struct cap_array * 
+cap_arrsort(struct cap_array *self);
+
+/**
+ * Get element in array by index
+ * 
+ * @param[in] *self 
+ * @param[in] idx number of index of array
+ * 
+ * @return success to pointer to element in array
+ * @return failed to NULL
+ */
 const char *
-cap_arrgetc(const struct cap_array *arr, int idx);
+cap_arrgetc(const struct cap_array *self, int idx);
 
+/**
+ * Get number of length of array
+ * 
+ * @param[in] *self 
+ * 
+ * @return number of length of array
+ */
 ssize_t
-cap_arrlen(const struct cap_array *arr); 
+cap_arrlen(const struct cap_array *self); 
 
+/**
+ * Dump array to stream
+ * 
+ * @param[in] *self 
+ * @param[out] *fout pointer to destination stream
+ */
 void
-cap_arrdump(const struct cap_array *arr, FILE *fout);
+cap_arrdump(const struct cap_array *self, FILE *fout);
 
 #endif
