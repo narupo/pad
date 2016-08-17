@@ -2,7 +2,7 @@
  * Cap
  *
  * License: MIT
- *  Author: narupo
+ *  Author: Aizawa Yuta
  *   Since: 2016
  */
 #ifndef CAP_PWD_H

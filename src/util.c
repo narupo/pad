@@ -2,7 +2,7 @@
  * Cap
  *
  * License: MIT
- *  Author: narupo
+ *  Author: Aizawa Yuta
  *   Since: 2016
  */
 #include "util.h"
@@ -20,7 +20,7 @@ freeargv(int argc, char *argv[]) {
 void
 showargv(int argc, char *argv[]) {
 	for (int i = 0; i < argc; ++i) {
-		printf("[%d] = [%s]\n", i, 	argv[i]);
+		printf("[%d] = [%s]\n", i, argv[i]);
 	}
 }
 
