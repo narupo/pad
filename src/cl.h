@@ -48,6 +48,7 @@ cap_clescdel(struct cap_cl *self);
  * Construct cl
  * 
  * @return success to pointer to dynamic allocate memory of cl
+ * @return failed to NULL
  */
 struct cap_cl *
 cap_clnew(void);
