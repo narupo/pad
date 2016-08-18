@@ -57,7 +57,7 @@ isoutofhome(const char *path);
  * @param[in] int min minimum number of range
  * @param[in] int max maximum number of range
  * 
- * @return int random number
+ * @return int random number (n >= min && n <= max)
  */
 int
 randrange(int min, int max);

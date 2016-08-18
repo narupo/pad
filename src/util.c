@@ -94,6 +94,18 @@ safesystem(const char *cmdline) {
 
 #if defined(_TEST_UTIL)
 static int
+test_randrange(int argc, char *argv[]) {
+	if (argc < 3) {
+		cap_die("need value of min, max");
+	}
+	srand(time(NULL));
+	int min = atoi(argv[1]);
+	int max = atoi(argv[2]);
+	printf("%d\n", randrange(min, max));
+	return 0;
+}
+
+static int
 test_isoutofhome(int argc, char *argv[]) {
 	if (isoutofhome(argv[1])) {
 		puts("is out of home");
@@ -121,6 +133,7 @@ main(int argc, char* argv[]) {
 		const char *name;
 		int (*func)(int, char**);
 	} cmds[] = {
+		{"randrange", test_randrange},
 		{"isoutofhome", test_isoutofhome},
 		{"safesystem", test_safesystem},
 		{},
