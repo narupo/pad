@@ -114,7 +114,7 @@ cap_clparsestr(struct cap_cl *self, const char *cmdline);
  * Parse argv by options
  * 
  * @param[in] *self
- * @param[in] argc number of lenght of argv
+ * @param[in] argc number of length of argv
  * @param[in] *argv[] pointer to pointer to string
  * @param[in] opts number of cl options
  * 
