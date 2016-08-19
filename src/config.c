@@ -153,7 +153,7 @@ cap_confgetcp(const struct cap_config *self, const char *key) {
 int main(int argc, char *argv[]) {
 	struct cap_config *conf = cap_confnew();
 	cap_confloadfile(conf, argv[1]);
-	cap_confdump(conf, stderr);
+	cap_confshow(conf, stderr);
 	const char *fnd = cap_confgetc(conf, "editor");
 	fprintf(stderr, "Found[%s]\n", fnd);
 	cap_confdel(conf);
