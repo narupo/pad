@@ -40,6 +40,6 @@ char *
 cap_confgetcp(const struct cap_config *self, const char *key);
 
 void 
-cap_confdump(const struct cap_config *self, FILE *fout);
+cap_confshow(const struct cap_config *self, FILE *fout);
 
 #endif
