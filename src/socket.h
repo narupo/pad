@@ -28,11 +28,11 @@
 #  include <windows.h>
 #else
 #  undef _BSD_SOURCE
-#  define _BSD_SOURCE 1 /* For netdb.h in cap/socket.h */
+#  define _BSD_SOURCE 1 /* cap: socket.h: netdb.h */
 #  undef __USE_POSIX
-#  define __USE_POSIX 1 /* For netdb.h in cap/socket.h */
+#  define __USE_POSIX 1 /* cap: socket.h: netdb.h */
 #  undef __USE_XOPEN2K
-#  define __USE_XOPEN2K 1 /* cap: socket.h: for struct addrinfo {} */
+#  define __USE_XOPEN2K 1 /* cap: socket.h: netdb.h */
 #  include <netdb.h>
 #  include <sys/types.h>
 #  include <sys/socket.h>
@@ -112,7 +112,7 @@ cap_sockaccept(const struct cap_socket *self);
  * Recv string from socket
  *
  * @param[in] self
- * @param[in] dst   pointer to memory of destination buffer
+ * @param[in] dst pointer to memory of destination buffer
  * @param[in] dstsz number of size of destination buffer
  *
  * @return success to number of recv size
@@ -126,7 +126,7 @@ cap_sockrecvstr(struct cap_socket *self, char *dst, size_t dstsz);
  * Send string to socket
  *
  * @param[in] self
- * @param[in] str  send C string
+ * @param[in] str send C string
  *
  * @return success to number of send size
  * @return failed to number of under of zero
@@ -140,7 +140,7 @@ cap_socksendstr(struct cap_socket *self, const char *str);
  *
  * @param[in] self
  * @param[in] bytes pointer to memory of bytes
- * @param[in] size  number of size of bytes
+ * @param[in] size number of size of bytes
  *
  * @return success to number of send size
  * @return failed to number of under of zero
