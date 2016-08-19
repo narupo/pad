@@ -5,8 +5,8 @@
  *  Author: Aizawa Yuta
  *   Since: 2016
  */
-#ifndef cAP_HOME_H
-#define cAP_HOME_H
+#ifndef CAP_HOME_H
+#define CAP_HOME_H
 
 #include <stdio.h>
 #include <stdlib.h>
