@@ -81,7 +81,7 @@ DIR *
 cap_fopendir(const char *path);
 
 /**
- * Wrapper of realpath (Unix's API)
+ * Wrapper of realpath (UNIX's API)
  *
  * @param[out] dst pointer to buffer of destination
  * @param[in] dstsz number of buffer
@@ -140,6 +140,8 @@ char *
 cap_fsolve(char *dst, size_t dstsz, const char *path);
 
 /**
+ * Get normalized file path with copy
+ *
  * @param[in] path String of solve target
  *
  * @return success to pointer to allocate memory for string of solve path.
