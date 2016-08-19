@@ -250,10 +250,10 @@ cap_strappother(struct cap_string *self, const struct cap_string *other);
  * Append format string at back of buffer in string
  *
  * @param[in] self
- * @param[in] buf  temporary buffer
+ * @param[in] buf temporary buffer
  * @param[in] nbuf size of temporary buffer
- * @param[in] fmt  format
- * @param[in] ...  arguments
+ * @param[in] fmt format
+ * @param[in] ... arguments
  *
  * @return success to pointer to self
  * @return failed to NULL
