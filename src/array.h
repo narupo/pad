@@ -112,6 +112,6 @@ cap_arrlen(const struct cap_array *self);
  * @param[out] *fout pointer to destination stream
  */
 void
-cap_arrdump(const struct cap_array *self, FILE *fout);
+cap_arrshow(const struct cap_array *self, FILE *fout);
 
 #endif
