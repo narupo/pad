@@ -28,6 +28,6 @@ cap_hashlw(const char* src, long nhash) {
 
 long
 cap_hashl(const char* src) {
-	return cap_hashlw(src, CAP_NHASH);
+	return cap_hashlw(src, HASH_NMOD);
 }
 
