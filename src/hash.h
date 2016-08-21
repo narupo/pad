@@ -30,3 +30,4 @@ long
 cap_hashl(const char *src);
 
 #endif
+
