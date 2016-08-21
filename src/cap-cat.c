@@ -7,11 +7,47 @@
  */
 #include "cap-cat.h"
 
-static bool
-capcat(FILE *fout, FILE *fin) {
+static int
+catstream(FILE *fout, FILE *fin) {
 	if (!cap_fcopy(fout, fin)) {
+		return 1;
+	}
+	return 0;
+}
+
+static char *
+makepath(char *dst, size_t dstsz, const char *cdpath, const char *name) {
+	if (!cap_fsolvefmt(dst, dstsz, "%s/%s", cdpath, name)) {
+		return NULL;
+	}
+
+	if (isoutofhome(dst)) {
+		return NULL;
+	}
+
+	if (cap_fisdir(dst)) {
+		return NULL;
+	}
+
+	return dst;
+}
+
+static bool
+catfile(const char *path, FILE *fout) {
+	FILE *fin = fopen(path, "rb");
+	if (!fin) {
 		return false;
 	}
+
+	if (catstream(fout, fin) != 0) {
+		fclose(fin);
+		return false;
+	}
+	
+	if (fclose(fin) < 0) {
+		return false;
+	}
+
 	return true;
 }
 
@@ -20,12 +56,11 @@ main(int argc, char *argv[]) {
 	cap_envsetf("CAP_PROCNAME", "cap cat");
 
 	if (argc < 2) {
-		capcat(stdout, stdin);
-		return 0;
+		return catstream(stdout, stdin);
 	}
 
-	char cd[FILE_NPATH];
-	if (!cap_envget(cd, sizeof cd, "CAP_VARCD")) {
+	char cdpath[FILE_NPATH];
+	if (!cap_envget(cdpath, sizeof cdpath, "CAP_VARCD")) {
 		cap_error("need environment variable of cd");
 		return 1;
 	}
@@ -33,32 +68,15 @@ main(int argc, char *argv[]) {
 	for (int i = 1; i < argc; ++i) {
 		const char *name = argv[i];
 		
-		// Make path
 		char path[FILE_NPATH];
-		cap_fsolvefmt(path, sizeof path, "%s/%s", cd, name);
-		if (isoutofhome(path)) {
-			cap_error("invalid path '%s'", path);
+		if (!makepath(path, sizeof path, cdpath, name)) {
+			cap_error("failed to make path by '%s'", path);
 			continue;
 		}
 
-		if (cap_fisdir(path)) {
-			cap_error("'%s' is directory", path);
+		if (!catfile(path, stdout)) {
+			cap_error("failed to catenate of '%s'", path);
 			continue;
-		}
-
-		// Copy stream
-		FILE *fin = fopen(path, "rb");
-		if (!fin) {
-			cap_error("fopen %s", path);
-			continue;
-		}
-
-		if (!capcat(stdout, fin)) {
-			cap_error("failed to catenate");
-		}
-		
-		if (fclose(fin) < 0) {
-			cap_error("failed to close file");
 		}
 	}
 
