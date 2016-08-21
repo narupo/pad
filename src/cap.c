@@ -360,7 +360,7 @@ capfork(struct cap *cap) {
 	}
 
 	char ppath[FILE_NPATH];
-	snprintf(ppath, sizeof ppath, "%s/cap-%s", bindir, cap->cmdargv[0]);
+	cap_fsolvefmt(ppath, sizeof ppath, "%s/cap-%s", bindir, cap->cmdargv[0]);
 
 	switch (fork()) {
 	case -1:
