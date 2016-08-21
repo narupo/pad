@@ -99,7 +99,7 @@ usage(void) {
 		"\n"
 		"The options are:\n"
 		"\n"
-		"    -h, --help    show usage\n"
+		"    -h, --help    show usage.\n"
 		"\n"
 	);
 	exit(1);
