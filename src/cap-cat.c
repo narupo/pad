@@ -70,7 +70,7 @@ main(int argc, char *argv[]) {
 		
 		char path[FILE_NPATH];
 		if (!makepath(path, sizeof path, cdpath, name)) {
-			cap_error("failed to make path by '%s'", path);
+			cap_error("failed to make path by '%s'", name);
 			continue;
 		}
 
