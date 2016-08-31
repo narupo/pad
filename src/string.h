@@ -68,7 +68,7 @@ cap_strdel(struct cap_string *self);
  *
  * @param[in] self
  */
-char *
+cap_string_type_t *
 cap_strescdel(struct cap_string *self);
 
 /**
@@ -220,7 +220,7 @@ cap_strpopf(struct cap_string *self);
  * @return failed to NULL
  */
 struct cap_string *
-cap_strapp(struct cap_string *self, const char *src);
+cap_strapp(struct cap_string *self, const cap_string_type_t *src);
 
 /**
  * Append stream at back of buffer in string
@@ -232,7 +232,7 @@ cap_strapp(struct cap_string *self, const char *src);
  * @return failed to NULL
  */
 struct cap_string *
-cap_strappfile(struct cap_string *self, FILE *fin);
+cap_strappstream(struct cap_string *self, FILE *fin);
 
 /**
  * Append other string at back of buffer in string
@@ -259,40 +259,34 @@ cap_strappother(struct cap_string *self, const struct cap_string *other);
  * @return failed to NULL
  */
 struct cap_string *
-cap_strappfmt(struct cap_string *self, char *buf, size_t nbuf, const char *fmt, ...);
+cap_strappfmt(struct cap_string *self, cap_string_type_t *buf, size_t nbuf, const cap_string_type_t *fmt, ...);
 
 /**
- * @deprecated This function can't get error state
- *
  * Strip elements at right of string
  *
  * @return success to pointer to self
  * @return failed to NULL
  */
 struct cap_string *
-cap_strrstrip(struct cap_string *self, const char *rems);
+cap_strrstrip(struct cap_string *self, const cap_string_type_t *rems);
 
 /**
- * @deprecated This function can't get error state
- *
  * Strip elements at left of string
  *
  * @return success to pointer to self
  * @return failed to NULL
  */
 struct cap_string *
-cap_strlstrip(struct cap_string *self, const char *rems);
+cap_strlstrip(struct cap_string *self, const cap_string_type_t *rems);
 
 /**
- * @deprecated This function can't get error state
- *
  * Strip elements at both sides of string
  *
  * @return success to pointer to self
  * @return failed to NULL
  */
 struct cap_string *
-cap_strstrip(struct cap_string *self, const char *rems);
+cap_strstrip(struct cap_string *self, const cap_string_type_t *rems);
 
 /**
  * Find token of string from front of buffer in string
@@ -303,21 +297,7 @@ cap_strstrip(struct cap_string *self, const char *rems);
  * @return found to pointer to memory of found string
  * @return not found to NULL
  */
-const char *
-cap_strfindconst(const struct cap_string *self, const char *target);
-
-/**
- * @deprecated Move to io.h
- *
- * Read from stream
- * Clear state of string before read
- *
- * @param[in] self
- * @param[in] fin pointer to memory of input stream
- *
- * @return success to number of read
- */
-int
-cap_strreadfile(struct cap_string *self, FILE *fin);
+const cap_string_type_t *
+cap_strfindc(const struct cap_string *self, const cap_string_type_t *target);
 
 #endif
