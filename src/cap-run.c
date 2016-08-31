@@ -22,8 +22,8 @@ readscriptline(char *dst, size_t dstsz, const char *path) {
 	char tmp[dstsz];
 	cap_fgetline(tmp, sizeof tmp, fin);
 
-	const char *needle = "#!";
-	char *at = strstr(tmp, "#!");
+	const char *needle = "!";
+	char *at = strstr(tmp, needle);
 	if (!at) {
 		fclose(fin);
 		return NULL;
