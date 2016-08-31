@@ -77,7 +77,7 @@ cap_strdel(struct cap_string *self) {
 	}
 }
 
-char *
+cap_string_type_t *
 cap_strescdel(struct cap_string *self) {
 	if (!self) {
 		return NULL;
@@ -178,7 +178,7 @@ cap_strclear(struct cap_string *self) {
 }
 
 struct cap_string *
-cap_strset(struct cap_string *self, const char *src) {
+cap_strset(struct cap_string *self, const cap_string_type_t *src) {
 	int srclen = strlen(src);
 
 	if (srclen >= self->length) {
@@ -324,7 +324,7 @@ cap_strapp(struct cap_string *self, const cap_string_type_t *src) {
 }
 
 struct cap_string *
-cap_strappfile(struct cap_string *self, FILE *fin) {
+cap_strappstream(struct cap_string *self, FILE *fin) {
 	for (int ch; (ch = fgetc(fin)) != EOF; ) {
 		if (!cap_strpushb(self, ch)) {
 			return NULL;
@@ -357,7 +357,7 @@ cap_strappother(struct cap_string *self, const struct cap_string *other) {
 }
 
 struct cap_string *
-cap_strappfmt(struct cap_string *self, char *buf, size_t nbuf, const char *fmt, ...) {
+cap_strappfmt(struct cap_string *self, cap_string_type_t *buf, size_t nbuf, const cap_string_type_t *fmt, ...) {
 	if (!self || !buf || !fmt || nbuf == 0) {
 		return NULL;
 	}
@@ -480,27 +480,12 @@ bmfind(
 #undef MAX
 
 const char *
-cap_strfindconst(const struct cap_string *self, const char *target) {
+cap_strfindc(const struct cap_string *self, const char *target) {
 	if (!self || !target) {
 		return NULL;
 	}
 
 	return bmfind(self->buffer, self->length, target, strlen(target));
-}
-
-/*************
-* str stream *
-*************/
-
-int
-cap_strreadfile(struct cap_string *self, FILE *fin) {
-	self->length = 0;
-
-	for (int ch; (ch = fgetc(fin)) != EOF; ) {
-		cap_strpushb(self, ch);
-	}
-
-	return self->length;
 }
 
 /**************
@@ -514,220 +499,75 @@ cap_strreadfile(struct cap_string *self, FILE *fin) {
 * str test *
 ***********/
 
+#include <stdio.h>
+
 #if defined(_TEST_STRING)
-
-#include "csvline.h"
-
-static struct cap_string *str;
-
-static void
-strinfo(const struct cap_string *s) {
-	printf("capa[%d] len[%d] buf[%s]\n", cap_strcapa(s), cap_strlen(s), cap_strgetc(s));
-	fflush(stdout);
-}
-
 static int
-test_newo(char *args[]) {
-	struct cap_string *s = cap_strnewother(str);
-	printf("copy: ");
-	strinfo(s);
-	cap_strdel(s);
+test_new(int argc, char *argv[]) {
+	struct cap_string *str = cap_strnew();
+	if (!str) {
+		return 1;
+	}
 
+	cap_strdel(str);
 	return 0;
 }
 
 static int
-test_clear(char *args[]) {
-	cap_strclear(str);
-
-	return 0;
-}
-
-static int
-test_pb(char *args[]) {
-	if (*args) {
-		for (char *ap = *args; *ap; ++ap) {
-			cap_strpushb(str, *ap);
-		}
+test_newother(int argc, char *argv[]) {
+	struct cap_string *src = cap_strnew();
+	if (!src) {
+		return 1;
 	}
 
-	return 0;
-}
-
-static int
-test_ppb(char *args[]) {
-	int npop = 1;
-	if (*args) {
-		npop = atoi(*args);
+	struct cap_string *dst = cap_strnewother(src);
+	if (!dst) {
+		cap_strdel(src);
+		return 2;
 	}
 
-	for (int i = 0; i < npop; ++i) {
-		cap_strpop_back(str);
+	if (strcmp(src->buffer, dst->buffer) != 0) {
+		cap_strdel(dst);
+		cap_strdel(src);
+		return 3;
 	}
 
-	return 0;
-}
-
-static int
-test_pf(char *args[]) {
-	if (*args) {
-		for (char *ap = *args; *ap; ++ap) {
-			cap_strpush_front(str, *ap);
-		}
-	}
-
-	return 0;
-}
-
-static int
-test_ppf(char *args[]) {
-	int npop = 1;
-	if (*args) {
-		npop = atoi(*args);
-	}
-
-	for (int i = 0; i < npop; ++i) {
-		cap_strpopf(str);
-	}
-
-	return 0;
-}
-
-static int
-test_resize(char *args[]) {
-	int newlen = 4;
-	if (*args) {
-		newlen = atoi(*args);
-	}
-
-	cap_strresize(str, newlen);
-
-	return 0;
-}
-
-static int
-test_aps(char *args[]) {
-	for (char **app = args; *app; ++app) {
-		cap_strapp(str, *app);
-	}
-
-	return 0;
-}
-
-static int
-test_apo(char *args[]) {
-	for (char **app = args; *app; ++app) {
-		struct cap_string *other = cap_strnew_from_string(*app);
-		cap_strappend_other(str, other);
-		cap_strdel(other);
-	}
-
-	return 0;
-}
-
-static int
-test_find(char *args[]) {
-	if (*args) {
-		const char *fnd = cap_strfind_const(str, *args);
-		printf("found[%s]\n", fnd);
-	}
-
-	return 0;
-}
-
-static int
-test_rst(char *args[]) {
-	if (*args) {
-		cap_strrstrip(str, *args);
-	}
-	return 0;
-}
-
-static int
-test_lst(char *args[]) {
-	if (*args) {
-		cap_strlstrip(str, *args);
-	}
-	return 0;
-}
-
-static int
-test_st(char *args[]) {
-	if (*args) {
-		cap_strstrip(str, *args);
-	}
+	cap_strdel(dst);
+	cap_strdel(src);
 	return 0;
 }
 
 int
 main(int argc, char *argv[]) {
-	static struct Command {
+	static const struct cmd {
 		const char *name;
-		int (*command)(char **);
-	} commands[] = {
-		{"newo", test_newo},
-		{"cl", test_clear},
-		{"re", test_resize},
-		{"pb", test_pb},
-		{"ppb", test_ppb},
-		{"pf", test_pf},
-		{"ppf", test_ppf},
-		{"aps", test_aps},
-		{"apo", test_apo},
-		{"rst", test_rst},
-		{"lst", test_lst},
-		{"st", test_st},
-		{"find", test_find},
+		int (*func)(int, char**);
+	} cmds[] = {
+		{"new", test_new},
+		{"newother", test_newother},
 		{},
 	};
 
-	char line[1024];
-	str = cap_strnew();
-
-	for (; fgets(line, sizeof line, stdin); ) {
-		size_t linelen = strlen(line);
-		if (line[linelen-1] == '\0') {
-			line[--linelen] = '\0';
+	if (argc < 2) {
+		fprintf(stderr,
+			"Usage: %s [command]\n"
+			"\n"
+			"The commands are:\n\n"
+		, argv[0]);
+		for (const struct cmd *p = cmds; p->name; ++p) {
+			fprintf(stderr, "    %s\n", p->name);
 		}
+		fprintf(stderr, "\n");
+		return 1;
+	}
 
-		for (struct Command* cur = commands; cur->name; ++cur) {
-			size_t namelen = strlen(cur->name);
-
-			if (strcmp(line, "q") == 0) {
-				goto done;
-
-			} else if (strcmp(line, "?") == 0) {
-				for (struct Command* c = commands; c->name; ++c) {
-					printf("%s\n", c->name);
-				}
-				printf("\n");
-				fflush(stdout);
-				break;
-
-			} else if (strncmp(line, cur->name, namelen) == 0) {
-				char *pcmd = line + namelen;
-				for (; *pcmd == ' '; ++pcmd) {
-				}
-
-				CsvLine* csvl = csvline_new_parse_line(pcmd, ' ');
-				int argc = csvline_length(csvl);
-				char **argv = csvline_escape_delete(csvl);
-
-				if (cur->command(argv) != 0) {
-					fprintf(stderr, "Failed to test of \"%s\"", line);
-				}
-				strinfo(str);
-
-				free_argv(argc, argv);
-				break;
-			}
+	for (const struct cmd *p = cmds; p->name; ++p) {
+		if (!strcmp(p->name, argv[1])) {
+			return p->func(argc-1, argv+1);
 		}
 	}
 
-done:
-	cap_strdel(str);
-	return 0;
+	fprintf(stderr, "Not found command of '%s'\n", argv[1]);
+	return 1;
 }
-
 #endif
-
