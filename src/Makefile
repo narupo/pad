@@ -11,6 +11,7 @@ CMDOBJS := $(CMDS:.c=.o)
 MODOBJS := $(MODS:.c=.o)
 DEPS := $(CMDS:.c=.d) $(MODS:.c=.d)
 BINDIR := ../bin
+TESTDIR := ../test
 
 all: cap cap-cat cap-cd cap-home cap-pwd \
 	cap-ls cap-alias cap-run
@@ -39,11 +40,14 @@ cap-alias: cap-alias.c $(MODOBJS)
 cap-run: cap-run.c $(MODOBJS)
 	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
 
+string: string.c
+	$(CC) -D_TEST_STRING $(CFLAGS) -o $(TESTDIR)/string $^ $(LIBS)
+
 util: util.c file.c error.c env.c string.c cl.c
-	$(CC) -D_TEST_UTIL $(CFLAGS) -o $(BINDIR)/test-util $^ $(LIBS)
+	$(CC) -D_TEST_UTIL $(CFLAGS) -o $(TESTDIR)/util $^ $(LIBS)
 
 cl: cl.c
-	$(CC) -D_TEST_CL $(CFLAGS) -o $(BINDIR)/test-cl $^ $(LIBS)
+	$(CC) -D_TEST_CL $(CFLAGS) -o $(TESTDIR)/cl $^ $(LIBS)
 
 .PHONY: clean depend
 
