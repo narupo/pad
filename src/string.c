@@ -694,6 +694,17 @@ makeargsby(const char *line) {
 static struct cap_string *kstr;
 
 static int
+test_del(int argc, char *argv[]) {
+	cap_strdel(kstr);
+	kstr = cap_strnew();
+	if (!kstr) {
+		return 1;
+	}
+
+	return 0;
+}
+
+static int
 test_escdel(int argc, char *argv[]) {
 	cap_string_type_t *buf = cap_strescdel(kstr);
 	if (!buf) {
@@ -789,6 +800,7 @@ main(int argc, char *argv[]) {
 		const char *name;
 		int (*run)(int, char**);
 	} cmds[] = {
+		{"del", test_del},
 		{"escdel", test_escdel},
 		{"new", test_new},
 		{"newother", test_newother},
@@ -846,17 +858,18 @@ main(int argc, char *argv[]) {
 		// Check status
 		if (status != 0) {
 			if (status < 0) {
-				fprintf(stderr, "failed: not found command '%s': result[%s]\n", cmdline, cap_strgetc(kstr));
+				fprintf(stderr, "failed: not found command '%s': str buf[%s]\n", cmdline, cap_strgetc(kstr));
 			} else {
-				fprintf(stderr, "failed: status %d: result[%s]\n", status, cap_strgetc(kstr));
+				fprintf(stderr, "failed: status %d: str buf[%s]\n", status, cap_strgetc(kstr));
 			}
 			goto error;
 		} else {
-			fprintf(stderr, "ok: '%s': result[%s]\n", cmdline, cap_strgetc(kstr));
+			fprintf(stderr, "ok: '%s': str buf[%s]\n", cmdline, cap_strgetc(kstr));
 		}
 	}
 
 done:
+	fprintf(stderr, "%s\n", cap_strgetc(kstr));
 	cap_strdel(kstr);
 	return 0;
 
