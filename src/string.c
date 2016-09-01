@@ -756,15 +756,67 @@ test_newother(int argc, char *argv[]) {
 	return 0;
 }
 
-int
-test_pushb(int argc, char *argv[]) {
-	if (!kstr) {
-		kstr = cap_strnew();
-		if (!kstr) {
-			return 1;
-		}
+static int
+test_len(int argc, char *argv[]) {
+	printf("len: %d\n", cap_strlen(kstr));
+	return 0;
+}
+
+static int
+test_capa(int argc, char *argv[]) {
+	printf("capa: %d\n", cap_strcapa(kstr));
+	return 0;
+}
+
+static int
+test_getc(int argc, char *argv[]) {
+	const char *s = cap_strgetc(kstr);
+	if (!s) {
+		return 1;
 	}
 
+	return 0;
+}
+
+static int
+test_empty(int argc, char *argv[]) {
+	printf("empty: %s\n", (cap_strempty(kstr) ? "true" : "false"));
+	return 0;
+}
+
+static int
+test_clear(int argc, char *argv[]) {
+	cap_strclear(kstr);
+	return 0;
+}
+
+static int
+test_set(int argc, char *argv[]) {
+	if (argc < 2) {
+		cap_strset(kstr, "");
+	} else {
+		cap_strset(kstr, argv[1]);
+	}
+	return 0;
+}
+
+static int
+test_resize(int argc, char *argv[]) {
+	if (argc < 2) {
+		return 0;
+	}
+	
+	int n = atoi(argv[1]);
+	if (n <= 0) {
+		return 1;
+	}
+
+	cap_strresize(kstr, n);
+	return 0;
+}
+
+static int
+test_pushb(int argc, char *argv[]) {
 	if (argc < 2) {
 		return 2;
 	}
@@ -776,15 +828,8 @@ test_pushb(int argc, char *argv[]) {
 	return 0;
 }
 
-int
+static int
 test_popb(int argc, char *argv[]) {
-	if (!kstr) {
-		kstr = cap_strnew();
-		if (!kstr) {
-			return 1;
-		}
-	}
-
 	if (!cap_strempty(kstr)) {
 		if (cap_strpopb(kstr) == '\0') {
 			return 2;
@@ -794,18 +839,85 @@ test_popb(int argc, char *argv[]) {
 	return 0;
 }
 
+static int
+test_pushf(int argc, char *argv[]) {
+	return 0;
+}
+
+static int
+test_popf(int argc, char *argv[]) {
+	return 0;
+}
+
+static int
+test_app(int argc, char *argv[]) {
+	return 0;
+}
+
+static int
+test_appstream(int argc, char *argv[]) {
+	return 0;
+}
+
+static int
+test_appother(int argc, char *argv[]) {
+	return 0;
+}
+
+static int
+test_appfmt(int argc, char *argv[]) {
+	return 0;
+}
+
+static int
+test_rstrip(int argc, char *argv[]) {
+	return 0;
+}
+
+static int
+test_lstrip(int argc, char *argv[]) {
+	return 0;
+}
+
+static int
+test_strip(int argc, char *argv[]) {
+	return 0;
+}
+
+static int
+test_findc(int argc, char *argv[]) {
+	return 0;
+}
+
 int
 main(int argc, char *argv[]) {
 	static const struct cmd {
 		const char *name;
 		int (*run)(int, char**);
 	} cmds[] = {
-		{"del", test_del},
-		{"escdel", test_escdel},
-		{"new", test_new},
-		{"newother", test_newother},
-		{"pushb", test_pushb},
-		{"popb", test_popb},
+		{"del", test_del}, 
+		{"escdel", test_escdel}, 
+		{"new", test_new}, 
+		{"newother", test_newother}, 
+		{"len", test_len}, 
+		{"capa", test_capa}, 
+		{"getc", test_getc}, 
+		{"empty", test_empty}, 
+		{"clear", test_clear}, 
+		{"set", test_set}, 
+		{"resize", test_resize}, 
+		{"pushb", test_pushb}, 
+		{"popb", test_popb}, 
+		{"pushf", test_pushf}, 
+		{"popf", test_popf}, 
+		{"app", test_app}, 
+		{"appstream", test_appstream}, 
+		{"appother", test_appother}, 
+		{"appfmt", test_appfmt}, 
+		{"rstrip", test_rstrip}, 
+		{"lstrip", test_lstrip}, 
+		{"strip", test_strip}, 
+		{"findc", test_findc},
 		{},
 	};
 
@@ -854,7 +966,7 @@ main(int argc, char *argv[]) {
 		freeargv(cmdargc, cmdargv);
 
 		// Check status
-		switch (statusa) {
+		switch (status) {
 		case 0: fprintf(stderr, "ok: '%s': str buf[%s]\n", cmdline, cap_strgetc(kstr)); break;
 		case -1: fprintf(stderr, "failed: not found command '%s': str buf[%s]\n", cmdline, cap_strgetc(kstr)); goto error;
 		default: fprintf(stderr, "failed: status %d: str buf[%s]\n", status, cap_strgetc(kstr)); goto error;
