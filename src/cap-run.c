@@ -56,7 +56,6 @@ main(int argc, char *argv[]) {
 	char spath[FILE_NPATH]; // Script path
 	cap_fsolvefmt(spath, sizeof spath, "%s/%s", varcd, argv[1]);
 	if (isoutofhome(spath)) {
-		freeargv(argc, argv);
 		cap_die("invalid script '%s'", spath);
 	}
 
