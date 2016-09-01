@@ -13,6 +13,10 @@
 
 char *
 capstrncat(char *dst, size_t dstsz, const char *src) {
+	if (!dst || dstsz <= 0 || !src) {
+		return NULL;
+	}
+
 	const char * dend = dst+dstsz-1; // -1 for final nul
 	char *dp = dst + strlen(dst);
 
@@ -25,6 +29,10 @@ capstrncat(char *dst, size_t dstsz, const char *src) {
 
 char *
 capstrcpywithout(char *dst, size_t dstsz, const char *src, const char *without) {
+	if (!dst || dstsz <= 0 || !src || !without) {
+		return NULL;
+	}
+	
 	size_t di = 0;
 	for (const char *p = src; *p; ++p) {
 		if (strchr(without, *p)) {
