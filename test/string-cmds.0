@@ -1,0 +1,5 @@
+new 123
+pushb abc
+popb
+popb
+q
