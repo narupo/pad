@@ -499,41 +499,287 @@ cap_strfindc(const struct cap_string *self, const char *target) {
 * str test *
 ***********/
 
-#include <stdio.h>
-
 #if defined(_TEST_STRING)
+#include <ctype.h>
+
+/************
+* test args *
+************/
+
+struct args {
+	int capa;
+	int len;
+	char **args;
+};
+
+static void
+argsdel(struct args *self) {
+	if (!self) {
+		return;
+	}
+
+	for (int i = 0; i < self->len; ++i) {
+		free(self->args[i]);
+	}
+	free(self->args);
+	free(self);
+}
+
+static char **
+argsescdel(struct args *self) {
+	if (!self) {
+		return NULL;
+	}
+
+	char **args = self->args;
+	free(self);
+
+	return args;
+}
+
+static struct args *
+argsnew(void) {
+	struct args *self = calloc(1, sizeof(struct args));
+	if (!self) {
+		return NULL;
+	}
+
+	self->capa = 4;
+	self->args = calloc(self->capa+1, sizeof(char *));
+	if (!self) {
+		return NULL;
+	}
+
+	return self;
+}
+
+static struct args *
+argsresize(struct args *self, int newcapa) {
+	if (!self || newcapa <= self->capa) {
+		return self;
+	}
+
+	char **tmp = realloc(self->args, sizeof(char *) * newcapa + sizeof(char *));
+	if (!tmp) {
+		return NULL;
+	}
+
+	self->capa = newcapa;
+	self->args = tmp;
+
+	return self;
+}
+
+static struct args *
+argspush(struct args *self, const char *arg) {
+	if (!self || !arg) {
+		return NULL;
+	}
+
+	if (self->len >= self->capa) {
+		if (!argsresize(self, self->capa*2)) {
+			return NULL;
+		}
+	}
+
+	char *cp = strdup(arg);
+	if (!cp) {
+		return NULL;
+	}
+
+	self->args[self->len++] = cp;
+	self->args[self->len] = NULL;
+
+	return self;
+}
+
+static void
+argsclear(struct args *self) {
+	if (!self) {
+		return;
+	}
+
+	for (int i = 0; i < self->len; ++i) {
+		free(self->args[i]);
+		self->args[i] = NULL;
+	}	
+
+	self->len = 0;
+}
+
+static const char *
+argsgetc(const struct args *self, int idx) {
+	if (idx >= self->len) {
+		return NULL;
+	}
+	return self->args[idx];
+}
+
+static int 
+argslen(const struct args *self) {
+	return self->len;
+}
+
+static void
+freeargv(int argc, char *argv[]) {
+	for (int i = 0; i < argc; ++i) {
+		free(argv[i]);
+	}
+	free(argv);
+}
+
+static void
+showargv(int argc, char *argv[]) {
+	for (int i = 0; i < argc; ++i) {
+		printf("[%d] = '%s'\n", i, argv[i]);
+	}
+}
+
+static void
+push(struct args *args, struct cap_string *str) {
+	if (cap_strempty(str)) {
+		return;
+	}
+
+	if (!argspush(args, cap_strgetc(str))) {
+		perror("argspush");
+		exit(1);
+	}
+
+	cap_strclear(str);
+}
+
+static struct args *
+makeargsby(const char *line) {
+	struct args *args = argsnew();
+	if (!args) {
+		perror("argsnew");
+		return NULL;
+	}
+
+	struct cap_string *tmp = cap_strnew();
+	if (!tmp) {
+		argsdel(args);
+		perror("cap_strnew");
+		return NULL;
+	}
+
+	const char *p = line;
+	int m = 0;
+	do {
+		int c = *p;
+		if (c == '\0') {
+			c = ' ';
+		}
+
+		switch (m) {
+		case 0: // First
+			if (isspace(c)) {
+				push(args, tmp);
+			} else {
+				cap_strpushb(tmp, c);
+			}
+		break;
+		}
+	} while (*p++);
+
+	cap_strdel(tmp);
+	return args;
+}
+
+/************
+* test main *
+************/
+
+static struct cap_string *kstr;
+
 static int
-test_new(int argc, char *argv[]) {
-	struct cap_string *str = cap_strnew();
-	if (!str) {
+test_escdel(int argc, char *argv[]) {
+	cap_string_type_t *buf = cap_strescdel(kstr);
+	if (!buf) {
 		return 1;
 	}
 
-	cap_strdel(str);
+	free(buf);
+
+	kstr = cap_strnew();
+	if (!kstr) {
+		return 2;
+	}
+
+	return 0;
+}
+
+static int
+test_new(int argc, char *argv[]) {
+	cap_strdel(kstr);
+	kstr = cap_strnew();
+	if (!kstr) {
+		return 1;
+	}
+
+	if (argc >= 2) {
+		cap_strset(kstr, argv[1]);
+	}
+
 	return 0;
 }
 
 static int
 test_newother(int argc, char *argv[]) {
-	struct cap_string *src = cap_strnew();
-	if (!src) {
+	if (!kstr) {
 		return 1;
 	}
 
-	struct cap_string *dst = cap_strnewother(src);
+	struct cap_string *dst = cap_strnewother(kstr);
 	if (!dst) {
-		cap_strdel(src);
 		return 2;
 	}
 
-	if (strcmp(src->buffer, dst->buffer) != 0) {
+	if (strcmp(kstr->buffer, dst->buffer) != 0) {
 		cap_strdel(dst);
-		cap_strdel(src);
 		return 3;
 	}
 
 	cap_strdel(dst);
-	cap_strdel(src);
+	return 0;
+}
+
+int
+test_pushb(int argc, char *argv[]) {
+	if (!kstr) {
+		kstr = cap_strnew();
+		if (!kstr) {
+			return 1;
+		}
+	}
+
+	if (argc < 2) {
+		return 2;
+	}
+
+	for (int i = 0, len = strlen(argv[1]); i < len; ++i) {
+		cap_strpushb(kstr, argv[1][i]);
+	}
+
+	return 0;
+}
+
+int
+test_popb(int argc, char *argv[]) {
+	if (!kstr) {
+		kstr = cap_strnew();
+		if (!kstr) {
+			return 1;
+		}
+	}
+
+	if (!cap_strempty(kstr)) {
+		if (cap_strpopb(kstr) == '\0') {
+			return 2;
+		}
+	}
+
 	return 0;
 }
 
@@ -541,33 +787,82 @@ int
 main(int argc, char *argv[]) {
 	static const struct cmd {
 		const char *name;
-		int (*func)(int, char**);
+		int (*run)(int, char**);
 	} cmds[] = {
+		{"escdel", test_escdel},
 		{"new", test_new},
 		{"newother", test_newother},
+		{"pushb", test_pushb},
+		{"popb", test_popb},
 		{},
 	};
 
-	if (argc < 2) {
-		fprintf(stderr,
-			"Usage: %s [command]\n"
-			"\n"
-			"The commands are:\n\n"
-		, argv[0]);
+	kstr = cap_strnew();
+	if (!kstr) {
+		goto error;
+	}
+
+	// Command loop
+	char cmdline[256];
+	for (; fgets(cmdline, sizeof cmdline, stdin); ) {
+		// Remove newline
+		size_t cmdlen = strlen(cmdline);
+		if (cmdline[cmdlen-1] == '\n') {
+			cmdline[--cmdlen] = '\0';
+		}
+
+		if (!strcasecmp(cmdline, "q")) {
+			goto done;
+		}
+
+		if (!strcasecmp(cmdline, "h")) {
+			for (const struct cmd *p = cmds; p->name; ++p) {
+				printf("%s\n", p->name);
+			}
+			continue;
+		}
+
+		// Command line to args
+		struct args *args = makeargsby(cmdline);
+		if (!args || argslen(args) <= 0) {
+			argsdel(args);
+			goto error;
+		}
+		int cmdargc = argslen(args);
+		char **cmdargv = argsescdel(args);
+
+		// Find command by input line. And execute
+		int status = -1;
 		for (const struct cmd *p = cmds; p->name; ++p) {
-			fprintf(stderr, "    %s\n", p->name);
+			if (!strcmp(p->name, cmdargv[0])) {
+				// showargv(cmdargc, cmdargv);
+				status = p->run(cmdargc, cmdargv);
+				break;
+			}
 		}
-		fprintf(stderr, "\n");
-		return 1;
+
+		freeargv(cmdargc, cmdargv);
+
+		// Check status
+		if (status != 0) {
+			if (status < 0) {
+				fprintf(stderr, "failed: not found command '%s': result[%s]\n", cmdline, cap_strgetc(kstr));
+			} else {
+				fprintf(stderr, "failed: status %d: result[%s]\n", status, cap_strgetc(kstr));
+			}
+			goto error;
+		} else {
+			fprintf(stderr, "ok: '%s': result[%s]\n", cmdline, cap_strgetc(kstr));
+		}
 	}
 
-	for (const struct cmd *p = cmds; p->name; ++p) {
-		if (!strcmp(p->name, argv[1])) {
-			return p->func(argc-1, argv+1);
-		}
-	}
+done:
+	cap_strdel(kstr);
+	return 0;
 
-	fprintf(stderr, "Not found command of '%s'\n", argv[1]);
+error:
+	perror("error");
+	cap_strdel(kstr);
 	return 1;
 }
 #endif
