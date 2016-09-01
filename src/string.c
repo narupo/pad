@@ -556,7 +556,7 @@ argsnew(void) {
 static struct args *
 argsresize(struct args *self, int newcapa) {
 	if (!self || newcapa <= self->capa) {
-		return self;
+		return NULL;
 	}
 
 	char **tmp = realloc(self->args, sizeof(char *) * newcapa + sizeof(char *));
@@ -825,9 +825,7 @@ main(int argc, char *argv[]) {
 
 		if (!strcasecmp(cmdline, "q")) {
 			goto done;
-		}
-
-		if (!strcasecmp(cmdline, "h")) {
+		} else if (!strcasecmp(cmdline, "h")) {
 			for (const struct cmd *p = cmds; p->name; ++p) {
 				printf("%s\n", p->name);
 			}
@@ -856,20 +854,15 @@ main(int argc, char *argv[]) {
 		freeargv(cmdargc, cmdargv);
 
 		// Check status
-		if (status != 0) {
-			if (status < 0) {
-				fprintf(stderr, "failed: not found command '%s': str buf[%s]\n", cmdline, cap_strgetc(kstr));
-			} else {
-				fprintf(stderr, "failed: status %d: str buf[%s]\n", status, cap_strgetc(kstr));
-			}
-			goto error;
-		} else {
-			fprintf(stderr, "ok: '%s': str buf[%s]\n", cmdline, cap_strgetc(kstr));
+		switch (statusa) {
+		case 0: fprintf(stderr, "ok: '%s': str buf[%s]\n", cmdline, cap_strgetc(kstr)); break;
+		case -1: fprintf(stderr, "failed: not found command '%s': str buf[%s]\n", cmdline, cap_strgetc(kstr)); goto error;
+		default: fprintf(stderr, "failed: status %d: str buf[%s]\n", status, cap_strgetc(kstr)); goto error;
 		}
 	}
 
 done:
-	fprintf(stderr, "%s\n", cap_strgetc(kstr));
+	fprintf(stderr, "done: %s\n", cap_strgetc(kstr));
 	cap_strdel(kstr);
 	return 0;
 
