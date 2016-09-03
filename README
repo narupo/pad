@@ -44,7 +44,7 @@ First step
 Catenate your snippet file
 --------------------------
 
- Do catenate your snippet file on your home directory.
+ Do catenate your snippet file of your home directory.
 
  $ cap cat mysnippet
 
