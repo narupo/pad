@@ -8,7 +8,7 @@
 #ifndef MAP_H
 #define MAP_H
 
-#define _GNU_SOURCE 1 /* In cap: map.h for the strdup */
+#define _GNU_SOURCE 1 /* cap: map.h: strdup */
 #include <stdbool.h>
 #include <ctype.h>
 
