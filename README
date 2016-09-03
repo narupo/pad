@@ -46,13 +46,14 @@ Catenate your snippet file
 
  Do catenate your snippet file of your home directory.
 
- $ cap cat mysnippet
+ $ cap cat mysnippet.txt
 
 
 Create alias for your snippet
---------------------------------
+-----------------------------
 
  Do create alias.
 
- $ cap alias mysnippet "cat mysnippet"
+ $ cap alias mysnippet "cat mysnippet.txt"
  $ cap mysnippet
+
