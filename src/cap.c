@@ -146,7 +146,7 @@ optsparse(struct opts *opts, int argc, char *argv[]) {
 		case 'h': opts->ishelp = true; break;
 		case 'v': opts->isversion = true; break;
 		case '?':
-		default: cap_log("error", "unknown option"); break;
+		default: return false; break;
 		}
 	}
 
