@@ -7,6 +7,8 @@
  */
 #include "cap.h"
 
+static const char CAP_VERSION[] = "cap version 0.9";
+
 /**
  * Structure for directory of ~/.cap/var/  
  *
@@ -15,14 +17,6 @@ struct var {
 	const char *envkey;
 	const char *fname;
 	char defval[FILE_NPATH];
-};
-
-/**
- * Program option values for command.
- *
- */
-struct opts {
-	bool ishelp;
 };
 
 static bool
@@ -102,6 +96,15 @@ varsinit(const char *vardir) {
 * cap *
 ******/
 
+/**
+ * Program option values for command.
+ *
+ */
+struct opts {
+	bool ishelp;
+	bool isversion;
+};
+
 struct cap {
 	int argc;
 	char **argv;
@@ -125,6 +128,7 @@ static bool
 optsparse(struct opts *opts, int argc, char *argv[]) {
 	static struct option longopts[] = {
 		{"help", no_argument, 0, 'h'},
+		{"version", no_argument, 0, 'v'},
 		{},
 	};
 
@@ -133,13 +137,14 @@ optsparse(struct opts *opts, int argc, char *argv[]) {
 	
 	for (;;) {
 		int optsindex;
-		int cur = getopt_long(argc, argv, "h", longopts, &optsindex);
+		int cur = getopt_long(argc, argv, "hv", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
 
 		switch (cur) {
 		case 'h': opts->ishelp = true; break;
+		case 'v': opts->isversion = true; break;
 		case '?':
 		default: cap_log("error", "unknown option"); break;
 		}
@@ -248,7 +253,7 @@ capinitenv(const struct cap *cap) {
 	char vardir[FILE_NPATH];
 	char homedir[FILE_NPATH];
 
-	cap_fsolve(caproot, sizeof caproot, "~/.cap"); // TODO
+	cap_fsolve(caproot, sizeof caproot, "~/.cap");
 	if (!cap_fexists(caproot)) {
 		cap_fmkdirq(caproot);
 	}
@@ -312,6 +317,7 @@ capusage(struct cap *cap) {
 		"The options are:\n"
 		"\n"
 		"    -h, --help    show usage.\n"
+		"    -v, --version show version.\n"
 		"\n"
 		"The commands are:\n"
 		"\n"
@@ -352,6 +358,18 @@ capusage(struct cap *cap) {
 }
 
 static void
+capversion(struct cap *cap) {
+	fflush(stdout);
+	fflush(stderr);
+
+	printf("%s\n", CAP_VERSION);
+	fflush(stdout);
+
+	capdel(cap);
+	exit(0);
+}
+
+static void
 capfork(struct cap *cap) {
 	char bindir[FILE_NPATH];
 	if (!cap_envget(bindir, sizeof bindir, "CAP_BINDIR")) {
@@ -382,13 +400,20 @@ capfork(struct cap *cap) {
 
 static void
 caprun(struct cap *cap) {
-	if (cap->cmdargc < 1 || cap->opts.ishelp) {
+	if (cap->opts.ishelp) {
 		capusage(cap);
+	}
 
-	} else if (cap->alcmdln) {
-		// cap_log("debug", "cap->alcmdln[%s]", cap->alcmdln);
+	if (cap->opts.isversion) {
+		capversion(cap);
+	}
+
+	if (cap->cmdargc < 1) {
+		capusage(cap);
+	}
+	
+	if (cap->alcmdln) {
 		safesystem(cap->alcmdln);
-
 	} else {
 		capfork(cap);
 	}
