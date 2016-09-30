@@ -248,7 +248,7 @@ capinitenv(const struct cap *cap) {
 	char vardir[FILE_NPATH];
 	char homedir[FILE_NPATH];
 
-	cap_fsolve(caproot, sizeof caproot, "~/.cap2"); // TODO
+	cap_fsolve(caproot, sizeof caproot, "~/.cap"); // TODO
 	if (!cap_fexists(caproot)) {
 		cap_fmkdirq(caproot);
 	}
