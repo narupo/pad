@@ -15,7 +15,7 @@
 /**
  * Initialize directory for the cap's variable files.
  * 
- * @param[in] vardir 
+ * @param[in] vardir string path of initialize directory
  * 
  * @return success to true
  * @return failed to false
