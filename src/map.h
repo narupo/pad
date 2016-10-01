@@ -1,6 +1,8 @@
 /**
  * Cap
  *
+ * B class
+ *
  * License: MIT
  *  Author: Aizawa Yuta
  *   Since: 2016

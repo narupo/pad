@@ -40,17 +40,24 @@ cap-alias: cap-alias.c $(MODOBJS)
 cap-run: cap-run.c $(MODOBJS)
 	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
 
+# A class
+
 string: string.c
 	$(CC) -D_TEST_STRING $(CFLAGS) -o $(TESTDIR)/string $^ $(LIBS)
-
-util: util.c file.c error.c env.c string.c cl.c
-	$(CC) -D_TEST_UTIL $(CFLAGS) -o $(TESTDIR)/util $^ $(LIBS)
 
 cl: cl.c
 	$(CC) -D_TEST_CL $(CFLAGS) -o $(TESTDIR)/cl $^ $(LIBS)
 
+# B class
+
+util: util.c file.c error.c env.c string.c cl.c
+	$(CC) -D_TEST_UTIL $(CFLAGS) -o $(TESTDIR)/util $^ $(LIBS)
+
 var: var.c file.c error.c env.c
 	$(CC) -D_TEST_VAR $(CFLAGS) -o $(TESTDIR)/var $^ $(LIBS)
+
+config: config.c map.c hash.c error.c string.c env.c
+	$(CC) -D_TEST_CONFIG $(CFLAGS) -o $(TESTDIR)/config $^ $(LIBS)
 
 .PHONY: clean depend
 
