@@ -15,7 +15,6 @@
 #include "util.h"
 #include "error.h"
 #include "file.h"
-#include "config.h"
 #include "env.h"
 
 #endif

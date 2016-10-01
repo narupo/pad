@@ -9,25 +9,6 @@
 
 static const char CAP_VERSION[] = "cap version 0.10";
 
-static bool
-writeconfig(const char *cnfpath) {
-	FILE *fout = fopen(cnfpath, "w");
-	if (!fout) {
-		return false;
-	}
-
-	char tmp[100];
-
-	fprintf(fout, "# Cap's constant config\n");
-	fprintf(fout, "ignore = \"%s\"\n", cap_fsolve(tmp, sizeof tmp, "/tmp"));
-
-	if (fclose(fout) != 0) {
-		return false;
-	}
-
-	return true;
-}
-
 /******
 * cap *
 ******/
@@ -185,18 +166,12 @@ capsolveopts(struct cap *cap, int ac, char *av[]) {
 static bool
 capinitenv(const struct cap *cap) {
 	char caproot[FILE_NPATH];
-	char cnfpath[FILE_NPATH];
 	char vardir[FILE_NPATH];
 	char homedir[FILE_NPATH];
 
 	cap_fsolve(caproot, sizeof caproot, "~/.cap");
 	if (!cap_fexists(caproot)) {
 		cap_fmkdirq(caproot);
-	}
-
-	snprintf(cnfpath, sizeof cnfpath, "%s/config", caproot);
-	if (!cap_fexists(cnfpath)) {
-		writeconfig(cnfpath);
 	}
 
 	snprintf(homedir, sizeof homedir, "%s/home", caproot);
@@ -210,7 +185,6 @@ capinitenv(const struct cap *cap) {
 	}
 
 	cap_envsetf("CAP_BINDIR", "/home/narupo/src/cap/bin"); // TODO
-	cap_envsetf("CAP_CONFPATH", cnfpath);
 	cap_envsetf("CAP_HOMEDIR", homedir);
 	cap_envsetf("CAP_VARDIR", vardir);
 	

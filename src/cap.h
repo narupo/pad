@@ -16,7 +16,6 @@
 
 #include "error.h"
 #include "file.h"
-#include "config.h"
 #include "array.h"
 #include "util.h"
 #include "env.h"
