@@ -94,7 +94,26 @@ cap_confnew(void) {
 	if (!self) {
 		return NULL;
 	}
+
+	self->map = cap_mapnew();
+	if (!self->map) {
+		free(self);
+		return NULL;
+	}
+
 	return self;
+}
+
+struct cap_config *
+cap_confnewload(void) {
+	char confpath[FILE_NPATH];
+	
+	if (!cap_envget(confpath, sizeof confpath, "CAP_CONFPATH")) {
+		cap_die("Not found environment variable of 'CAP_CONFPATH'");
+		return NULL;
+	}
+
+	return cap_confnewfile(confpath);
 }
 
 struct cap_config *
@@ -105,18 +124,6 @@ cap_confnewfile(const char *fname) {
 		return NULL;
 	}
 	return self;
-}
-
-struct cap_config *
-cap_confnewload(void) {
-	const char *confpath = getenv("CAP_CONFPATH");
-	if (!confpath) {
-		fprintf(stderr, "Not found environment variable of 'CAP_CONFPATH'\n");
-		fflush(stderr);
-		exit(1);
-		return NULL;
-	}
-	return cap_confnewfile(confpath);
 }
 
 bool
@@ -149,14 +156,51 @@ cap_confgetcp(const struct cap_config *self, const char *key) {
 	return cap_mapgetcp(self->map, key);
 }
 
-#if 0
-int main(int argc, char *argv[]) {
-	struct cap_config *conf = cap_confnew();
-	cap_confloadfile(conf, argv[1]);
-	cap_confshow(conf, stderr);
-	const char *fnd = cap_confgetc(conf, "editor");
-	fprintf(stderr, "Found[%s]\n", fnd);
+#if defined(_TEST_CONFIG)
+#include <stdio.h>
+
+static int
+test_confnewload(int argc, char *argv[]) {
+	struct cap_config *conf = cap_confnewload();
+	if (!conf) {
+		cap_error("failed to load config");
+		return 1;
+	}
+
 	cap_confdel(conf);
 	return 0;
+}
+
+int
+main(int argc, char *argv[]) {
+	static const struct cmd {
+		const char *name;
+		int (*func)(int, char**);
+	} cmds[] = {
+		{"confnewload", test_confnewload},
+		{},
+	};
+
+	if (argc < 2) {
+		fprintf(stderr,
+			"Usage: %s [command]\n"
+			"\n"
+			"The commands are:\n\n"
+		, argv[0]);
+		for (const struct cmd *p = cmds; p->name; ++p) {
+			fprintf(stderr, "    %s\n", p->name);
+		}
+		fprintf(stderr, "\n");
+		return 1;
+	}
+
+	for (const struct cmd *p = cmds; p->name; ++p) {
+		if (!strcmp(p->name, argv[1])) {
+			return p->func(argc-1, argv+1);
+		}
+	}
+
+	fprintf(stderr, "Not found command of '%s'\n", argv[1]);
+	return 1;
 }
 #endif

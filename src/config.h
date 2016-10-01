@@ -1,6 +1,10 @@
 /**
  * Cap
  *
+ * B class
+ *
+ * Contain BUG on mapdel at confdel.
+ *
  * License: MIT
  *  Author: Aizawa Yuta
  *   Since: 2016
@@ -12,9 +16,8 @@
 #include "error.h"
 #include "hash.h"
 #include "map.h"
-
-#include <stdio.h>
-#include <stdlib.h>
+#include "env.h"
+#include "file.h"
 
 struct cap_config;
 
@@ -38,8 +41,5 @@ cap_confgetc(const struct cap_config *self, const char *key);
 
 char *
 cap_confgetcp(const struct cap_config *self, const char *key);
-
-void 
-cap_confshow(const struct cap_config *self, FILE *fout);
 
 #endif
