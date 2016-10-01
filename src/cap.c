@@ -7,7 +7,7 @@
  */
 #include "cap.h"
 
-static const char CAP_VERSION[] = "cap version 0.9";
+static const char CAP_VERSION[] = "cap version 0.10";
 
 /**
  * Structure for directory of ~/.cap/var/  
