@@ -84,7 +84,6 @@ varsinit(const char *vardir) {
 	const struct var vars[] = {
 		{"CAP_VARHOME", "home", "/tmp"},
 		{"CAP_VARCD", "cd", "/tmp"},
-		{"CAP_VAREDITOR", "editor", "/usr/bin/vi"},
 		{},
 	};
 
