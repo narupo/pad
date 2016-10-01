@@ -20,5 +20,6 @@
 #include "array.h"
 #include "util.h"
 #include "env.h"
+#include "var.h"
 
 #endif

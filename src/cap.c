@@ -9,16 +9,6 @@
 
 static const char CAP_VERSION[] = "cap version 0.10";
 
-/**
- * Structure for directory of ~/.cap/var/  
- *
- */
-struct var {
-	const char *envkey;
-	const char *fname;
-	char defval[FILE_NPATH];
-};
-
 static bool
 writeconfig(const char *cnfpath) {
 	FILE *fout = fopen(cnfpath, "w");
@@ -36,59 +26,6 @@ writeconfig(const char *cnfpath) {
 	}
 
 	return true;
-}
-
-static bool
-varswrite(const struct var *vars, const char *vardir) {
-	char wrpath[FILE_NPATH]; // Write path
-	char sval[100]; // Solve value
-
-	for (const struct var *p = vars; p->envkey; ++p) {
-		cap_fsolvefmt(wrpath, sizeof wrpath, "%s/%s", vardir, p->fname);
-		if (cap_fexists(wrpath)) {
-			continue; // Don't over write
-		}
-
-		cap_fsolve(sval, sizeof sval, p->defval);
-		
-		if (!cap_fwriteline(sval, wrpath)) {
-			cap_log("error", "failed to write line to %s", wrpath);
-			continue;
-		}
-	}
-
-	return true;
-}
-
-static bool
-varsread(const struct var *vars, const char *vardir) {
-	char rdpath[FILE_NPATH]; // Read path
-	char val[100];
-
-	for (const struct var *p = vars; p->envkey; ++p) {
-		cap_fsolvefmt(rdpath, sizeof rdpath, "%s/%s", vardir, p->fname);
-		
-		if (!cap_freadline(val, sizeof val, rdpath)) {
-			cap_log("error", "failed to read line from %s", rdpath);
-			continue;
-		}
-
-		cap_envsetf(p->envkey, val);
-	}
-	
-	return true;
-}
-
-static bool
-varsinit(const char *vardir) {
-	const struct var vars[] = {
-		{"CAP_VARHOME", "home", "/tmp"},
-		{"CAP_VARCD", "cd", "/tmp"},
-		{},
-	};
-
-	varswrite(vars, vardir);
-	return varsread(vars, vardir);
 }
 
 /******
@@ -277,7 +214,7 @@ capinitenv(const struct cap *cap) {
 	cap_envsetf("CAP_HOMEDIR", homedir);
 	cap_envsetf("CAP_VARDIR", vardir);
 	
-	return varsinit(vardir);
+	return cap_varinit(vardir);
 }
 
 static struct cap *
