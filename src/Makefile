@@ -60,7 +60,7 @@ var: var.c file.c error.c env.c
 .PHONY: clean depend
 
 clean:
-	$(RM) $(CMDOBJS) $(MODOBJS) $(DEPS)
+	$(RM) $(BINS) $(CMDOBJS) $(MODOBJS) $(DEPS)
 
 install: $(BINS)
 	install -s $(BINS) $(BINDIR)
