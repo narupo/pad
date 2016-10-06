@@ -35,4 +35,14 @@
 src/test/*
 bin/
 doc/
+test/
+
+cap
+cap-alias
+cap-cat
+cap-cd
+cap-home
+cap-ls
+cap-pwd
+cap-run
 

@@ -168,6 +168,7 @@ capinitenv(const struct cap *cap) {
 	char caproot[FILE_NPATH];
 	char vardir[FILE_NPATH];
 	char homedir[FILE_NPATH];
+	const char bindir[] = "/usr/local/bin/";
 
 	cap_fsolve(caproot, sizeof caproot, "~/.cap");
 	if (!cap_fexists(caproot)) {
@@ -184,7 +185,11 @@ capinitenv(const struct cap *cap) {
 		cap_fmkdirq(vardir);
 	}
 
-	cap_envsetf("CAP_BINDIR", "/home/narupo/src/cap/bin"); // TODO
+	if (!cap_fexists(bindir)) {
+		cap_fmkdirq(bindir);
+	}
+
+	cap_envsetf("CAP_BINDIR", bindir);
 	cap_envsetf("CAP_HOMEDIR", homedir);
 	cap_envsetf("CAP_VARDIR", vardir);
 	
@@ -205,7 +210,6 @@ capnew(int argc, char *argv[]) {
 
 	if (!capsolveopts(cap, argc, argv)) {
 		capdel(cap);
-		freeargv(argc, argv);
 		return NULL;
 	}
 
