@@ -6,39 +6,40 @@ CMDS := cap.c cap-cat.c cap-cd.c cap-home.c cap-pwd.c \
 MODS := error.c file.c hash.c string.c file.c array.c \
 	socket.c util.c env.c cl.c var.c
 LIBS := -lm
+BINS := $(CMDS:.c=)
 HEADERS := $(CMDS:.c=.h)
 CMDOBJS := $(CMDS:.c=.o)
 MODOBJS := $(MODS:.c=.o)
 DEPS := $(CMDS:.c=.d) $(MODS:.c=.d)
-BINDIR := ../bin
+BINDIR := /usr/local/bin/
 TESTDIR := ../test
 
 all: cap cap-cat cap-cd cap-home cap-pwd \
 	cap-ls cap-alias cap-run
 
 cap: cap.c $(MODOBJS)
-	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
+	$(CC) $(CFLAGS) -o ./$@ $^ $(LIBS)
 
 cap-cat: cap-cat.c $(MODOBJS)
-	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
+	$(CC) $(CFLAGS) -o ./$@ $^ $(LIBS)
 
 cap-cd: cap-cd.c $(MODOBJS)
-	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
+	$(CC) $(CFLAGS) -o ./$@ $^ $(LIBS)
 
 cap-home: cap-home.c $(MODOBJS)
-	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
+	$(CC) $(CFLAGS) -o ./$@ $^ $(LIBS)
 
 cap-pwd: cap-pwd.c $(MODOBJS)
-	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
+	$(CC) $(CFLAGS) -o ./$@ $^ $(LIBS)
 
 cap-ls: cap-ls.c $(MODOBJS)
-	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
+	$(CC) $(CFLAGS) -o ./$@ $^ $(LIBS)
 
 cap-alias: cap-alias.c $(MODOBJS)
-	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
+	$(CC) $(CFLAGS) -o ./$@ $^ $(LIBS)
 
 cap-run: cap-run.c $(MODOBJS)
-	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
+	$(CC) $(CFLAGS) -o ./$@ $^ $(LIBS)
 
 # A class
 
@@ -59,7 +60,10 @@ var: var.c file.c error.c env.c
 .PHONY: clean depend
 
 clean:
-	$(RM) $(BINDIR)/cap $(BINDIR)/cap-* $(CMDOBJS) $(MODOBJS) $(DEPS)
+	$(RM) $(CMDOBJS) $(MODOBJS) $(DEPS)
+
+install: $(BINS)
+	install -s $(BINS) $(BINDIR)
 
 .c.o:
 	$(CC) $(CFLAGS) -c -MMD -MP $<
