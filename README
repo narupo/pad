@@ -7,53 +7,21 @@ What is Cap ?
  Cap is simple snippet manager for programmers. Cap is quick and clean on your file system.
 
 
-Usage
-=====
+Install
+-------
 
-Usage: cap [options] [command] [arguments]
-
-    Cap is simple snippet manager.
-
-The options are:
-
-    -h, --help    show usage.
-
-The commands are:
-
-    home     change home directory, or show.
-    cd       change current directory by relative of home.
-    pwd      show current directory.
-    ls       show list in current directory.
-    cat      catenate files and show.
-    run      run script.
-    alias    run alias command.
+	$ git clone https://github.com/narupo/cap
+	$ cd cap/src
+	$ make && sudo make install
 
 
 Example
-=======
+-------
 
-First step
-----------
+	$ cap
+	$ cap home
+	$ cap ls
 
- Set your home directory on Cap.
-
- $ cap home /path/to/my/home
- $ cap home
-
-
-Catenate your snippet file
---------------------------
-
- Do catenate your snippet file of your home directory.
-
- $ cap cat mysnippet.txt
-
-
-Create alias for your snippet
------------------------------
-
- Do create alias.
-
- $ cap alias mysnippet "cat mysnippet.txt"
- $ cap mysnippet
+	$ cap home /my/snippet/file/directory
+	$ cap ls
 
