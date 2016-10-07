@@ -7,7 +7,7 @@
  */
 #include "cap.h"
 
-static const char CAP_VERSION[] = "cap version 0.14";
+static const char CAP_VERSION[] = "cap version 0.15";
 
 /******
 * cap *
@@ -183,10 +183,6 @@ capinitenv(const struct cap *cap) {
 	snprintf(vardir, sizeof vardir, "%s/var", caproot);
 	if (!cap_fexists(vardir)) {
 		cap_fmkdirq(vardir);
-	}
-
-	if (!cap_fexists(bindir)) {
-		cap_fmkdirq(bindir);
 	}
 
 	cap_envsetf("CAP_BINDIR", bindir);
