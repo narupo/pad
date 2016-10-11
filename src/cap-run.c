@@ -56,7 +56,7 @@ main(int argc, char *argv[]) {
 	char spath[FILE_NPATH]; // Script path
 	cap_fsolvefmt(spath, sizeof spath, "%s/%s", varcd, argv[1]);
 	if (isoutofhome(spath)) {
-		cap_die("invalid script '%s'", spath);
+		cap_die("invalid script. '%s' is out of home.", spath);
 	}
 
 	char exesname[NSCRIPTNAME]; // Execute script name in file
