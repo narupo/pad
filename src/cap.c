@@ -86,6 +86,7 @@ capfixcmdargs(struct cap *cap) {
 		"alias",
 		NULL,
 	};
+	
 	const char *cmdname = cap->cmdargv[0];
 	if (!cmdname) {
 		return cap;
@@ -122,7 +123,7 @@ capfixcmdargs(struct cap *cap) {
 	cap_strapp(cmdln, "'");
 
 	cap->alcmdln = cap_strescdel(cmdln);
-	// cap_log("debug", "cap->alcmdln[%s]\n", cap->alcmdln);
+
 	return cap;
 }
 
@@ -155,7 +156,6 @@ capsolveopts(struct cap *cap, int ac, char *av[]) {
 	cap->argv = cap_arrescdel(args);
 	cap->cmdargc = cap_arrlen(cmdargs)-1; // -1 for final null
 	cap->cmdargv = cap_arrescdel(cmdargs);
-	// showargv(cap->cmdargc, cap->cmdargv);
 
 	// Fix command arguments
 	capfixcmdargs(cap);
@@ -259,7 +259,7 @@ capusage(struct cap *cap) {
 
 	fprintf(stderr,
 		"%s\n"
-		"Example:\n\n"
+		"Examples:\n\n"
 		"%s\n"
 	, usage, example);
 	
