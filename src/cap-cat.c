@@ -101,8 +101,13 @@ usage(void) {
 		"\n"
 		"    -h, --help    show usage.\n"
 		"\n"
+		"Examples:\n"
+		"\n"
+		"    $ cap cat f - g\n"
+		"    $ cap cat\n"
+		"\n"
 	);
-	exit(1);
+	exit(0);
 }
 
 /**
@@ -177,6 +182,11 @@ run(struct opts *opts) {
 	int ret = 0;
 	for (int i = 1; i < opts->argc; ++i) {
 		const char *name = opts->argv[i];
+
+		if (strcmp(name, "-") == 0) {
+			catstream(stdout, stdin);
+			continue;
+		}
 		
 		char path[FILE_NPATH];
 		if (!makepath(path, sizeof path, cdpath, name)) {
