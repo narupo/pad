@@ -45,7 +45,7 @@ static bool
 optsparse(struct opts *opts, int argc, char *argv[]) {
 	static struct option longopts[] = {
 		{"help", no_argument, 0, 'h'},
-		{"version", no_argument, 0, 'v'},
+		{"version", no_argument, 0, 'V'},
 		{},
 	};
 
@@ -54,14 +54,14 @@ optsparse(struct opts *opts, int argc, char *argv[]) {
 	
 	for (;;) {
 		int optsindex;
-		int cur = getopt_long(argc, argv, "hv", longopts, &optsindex);
+		int cur = getopt_long(argc, argv, "hV", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
 
 		switch (cur) {
 		case 'h': opts->ishelp = true; break;
-		case 'v': opts->isversion = true; break;
+		case 'V': opts->isversion = true; break;
 		case '?':
 		default: return false; break;
 		}
@@ -227,7 +227,7 @@ capusage(struct cap *cap) {
 		"The options are:\n"
 		"\n"
 		"    -h, --help       show usage.\n"
-		"    -v, --version    show version.\n"
+		"    -V, --version    show version.\n"
 		"\n"
 		"The commands are:\n"
 		"\n"
