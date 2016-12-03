@@ -186,7 +186,8 @@ cap_ftrunc(const char *path) {
 	return true;
 }
 
-char *cap_freadcp(FILE* fin) {
+char *
+cap_freadcp(FILE* fin) {
 	// Check arguments
 	if (!fin || feof(fin)) {
 		fprintf(stderr, "Invalid stream");
@@ -339,7 +340,8 @@ cap_dirnodenew(void) {
 * cap_dirnode getter *
 ***********************/
 
-const char *cap_dirnodename(const struct cap_dirnode *self) {
+const char *
+cap_dirnodename(const struct cap_dirnode *self) {
 #if defined(_CAP_WINDOWS)
 	return self->finddata.cFileName;
 #else
