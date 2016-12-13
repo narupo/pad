@@ -91,6 +91,10 @@ cap_arrpush(struct cap_array *arr, const char *str) {
 
 struct cap_array * 
 cap_arrmove(struct cap_array *arr, char *ptr) {
+	if (!arr || !ptr) {
+		return NULL;
+	}
+
 	if (arr->len >= arr->capa) {
 		if (!cap_arrresize(arr, arr->capa*2)) {
 			return NULL;
@@ -112,6 +116,10 @@ cap_arrcmp(const void *lh, const void *rh) {
 
 struct cap_array *
 cap_arrsort(struct cap_array *arr) {
+	if (!arr) {
+		return NULL;
+	}
+	
 	qsort(arr->arr, arr->len, sizeof(arr->arr[0]), cap_arrcmp);
 	return arr;
 }

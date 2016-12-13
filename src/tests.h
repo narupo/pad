@@ -8,6 +8,10 @@
 #ifndef TESTS_H
 #define TESTS_H
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE 1 /* cap: tests: strdup */
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
