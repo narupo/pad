@@ -200,18 +200,68 @@ test_array_arrpush(void) {
     cap_arrdel(arr);
 }
 
+void
+test_array_arrmove(void) {
+    struct cap_array *arr = cap_arrnew();
+    assert(arr != NULL);
+
+    assert(cap_arrmove(arr, NULL) == NULL);
+
+    char *ptr = strdup("string"); 
+    assert(ptr != NULL);
+    
+    assert(cap_arrmove(arr, ptr) != NULL);
+    assert(strcmp(cap_arrgetc(arr, 0), "string") == 0);
+
+    cap_arrdel(arr);
+}
+
+void
+test_array_arrsort(void) {
+    struct cap_array *arr = cap_arrnew();
+    assert(arr != NULL);
+
+    assert(cap_arrsort(NULL) == NULL);
+
+    assert(cap_arrpush(arr, "1") != NULL);
+    assert(cap_arrpush(arr, "2") != NULL);
+    assert(cap_arrpush(arr, "0") != NULL);
+
+    assert(cap_arrsort(arr) != NULL);
+    assert(strcmp(cap_arrgetc(arr, 0), "0") == 0);
+    assert(strcmp(cap_arrgetc(arr, 1), "1") == 0);
+    assert(strcmp(cap_arrgetc(arr, 2), "2") == 0);
+
+    cap_arrdel(arr);
+}
+
 /********
 * tests *
 ********/
 
-static struct testcase {
-    const char *module;
-    const char *func;
+struct testcase {
+    const char *name;
     void (*test)(void);
-} testcases[] = {
-    {"array", "arrnew", test_array_arrnew},
-    {"array", "arrescdel", test_array_arrescdel},
-    {"array", "arrpush", test_array_arrpush},
+};
+
+struct module {
+    const char *name;
+    const struct testcase *tests;
+};
+
+const struct testcase
+arraytests[] = {
+    {"arrnew", test_array_arrnew},
+    {"arrescdel", test_array_arrescdel},
+    {"arrpush", test_array_arrpush},
+    {"arrmove", test_array_arrmove},
+    {"arrsort", test_array_arrsort},
+    {},
+};
+
+const struct module
+modules[] = {
+    {"array", arraytests},
     {},
 };
 
@@ -224,25 +274,26 @@ run(const struct opts *opts) {
     int ntest = 0;
     clock_t start = clock();
 
-    for (const struct testcase *p = testcases; p->module; ++p) {
-        p->test();
-        ++ntest;
+    for (const struct module *m = modules; m->name; ++m) {
+        for (const struct testcase *t = m->tests; t->name; ++t) {
+            t->test();
+            ++ntest;
+        }
     }
     
     clock_t end = clock();
 
-    printf("Run %d test in %0.3lfs.\n", ntest, (double)(end-start)/CLOCKS_PER_SEC);
-    printf("\n");
-    printf("OK\n");
-
-    fflush(stderr);
     fflush(stdout);
+
+    fprintf(stderr, "Run %d test in %0.3lfs.\n", ntest, (double)(end-start)/CLOCKS_PER_SEC);
+    fprintf(stderr, "\n");
+    fprintf(stderr, "OK\n");
+    fflush(stderr);
 }
 
 int
 main(int argc, char *argv[]) {
     struct opts opts;
-
     if (parseopts(&opts, argc, argv) != 0) {
         die("failed to parse options");
     }

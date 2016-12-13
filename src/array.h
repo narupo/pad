@@ -10,6 +10,7 @@
 
 #undef _GNU_SOURCE
 #define _GNU_SOURCE 1 /* cap: array.h: strdup */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
