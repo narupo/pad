@@ -13,6 +13,10 @@ struct cap_array {
 	ssize_t capa;
 };
 
+enum {
+	CAP_ARRINITCAPA = 4,
+};
+
 void
 cap_arrdel(struct cap_array *arr) {
 	if (arr) {
@@ -31,7 +35,7 @@ cap_arrnew(void) {
 		return NULL;
 	}
 
-	arr->capa = 4;
+	arr->capa = CAP_ARRINITCAPA;
 	arr->arr = calloc(arr->capa+1, sizeof(struct cap_array *));
 	if (!arr->arr) {
 		free(arr);
@@ -43,6 +47,10 @@ cap_arrnew(void) {
 
 char **
 cap_arrescdel(struct cap_array *arr) {
+	if (!arr) {
+		return NULL;
+	}
+
 	char **esc = arr->arr;
 
 	free(arr);
@@ -65,6 +73,10 @@ cap_arrresize(struct cap_array *arr, ssize_t capa) {
 
 struct cap_array *
 cap_arrpush(struct cap_array *arr, const char *str) {
+	if (!arr || !str) {
+		return NULL;
+	}
+	
 	if (arr->len >= arr->capa) {
 		if (!cap_arrresize(arr, arr->capa*2)) {
 			return NULL;

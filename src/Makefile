@@ -14,10 +14,14 @@ DEPS := $(CMDS:.c=.d) $(MODS:.c=.d)
 BINDIR := /usr/local/bin/
 TESTDIR := ../test
 
-all: cap cap-cat cap-cd cap-home cap-pwd \
+all: cap tests \
+	cap-cat cap-cd cap-home cap-pwd \
 	cap-ls cap-alias cap-run
 
 cap: cap.c $(MODOBJS)
+	$(CC) $(CFLAGS) -o ./$@ $^ $(LIBS)
+
+tests: tests.c $(MODOBJS)
 	$(CC) $(CFLAGS) -o ./$@ $^ $(LIBS)
 
 cap-cat: cap-cat.c $(MODOBJS)
