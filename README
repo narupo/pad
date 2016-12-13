@@ -19,10 +19,16 @@ Install
 Example
 -------
 
-	$ cap
 	$ cap home
-	$ cap ls
-
 	$ cap home /my/snippet/file/directory
 	$ cap ls
+    $ cap cat snippet.txt
+
+
+History of branch
+=================
+
+    0.18 ... Add test cases.
+    0.0 ... Start project.
+    prototype ... Create prototype of Cap.
 
