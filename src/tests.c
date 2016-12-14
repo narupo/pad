@@ -249,7 +249,7 @@ struct module {
     const struct testcase *tests;
 };
 
-const struct testcase
+static const struct testcase
 arraytests[] = {
     {"arrnew", test_array_arrnew},
     {"arrescdel", test_array_arrescdel},
@@ -259,7 +259,7 @@ arraytests[] = {
     {},
 };
 
-const struct module
+static const struct module
 modules[] = {
     {"array", arraytests},
     {},
