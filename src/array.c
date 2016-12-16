@@ -126,23 +126,38 @@ cap_arrsort(struct cap_array *arr) {
 
 const char *
 cap_arrgetc(const struct cap_array *arr, int idx) {
+	if (!arr) {
+		return NULL;
+	}
+
 	if (idx >= arr->len || idx < 0) {
 		return NULL;
 	}
+
 	return arr->arr[idx];
 }
 
 ssize_t
 cap_arrlen(const struct cap_array *arr) {
+	if (!arr) {
+		return 0;
+	}
+
 	return arr->len;
 }
 
-void
+const struct cap_array *
 cap_arrshow(const struct cap_array *arr, FILE *fout) {
+	if (!arr || !fout) {
+		return NULL;
+	}
+
 	for (ssize_t i = 0; i < arr->len; ++i) {
 		fprintf(fout, "%s\n", arr->arr[i]);
 	}
 	fflush(fout);
+
+	return arr;
 }
 
 

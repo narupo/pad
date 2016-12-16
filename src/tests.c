@@ -235,6 +235,55 @@ test_array_arrsort(void) {
     cap_arrdel(arr);
 }
 
+void
+test_array_arrgetc(void) {
+    struct cap_array *arr = cap_arrnew();
+    assert(arr != NULL);
+
+    assert(cap_arrgetc(NULL, 0) == NULL);
+    assert(cap_arrgetc(arr, 0) == NULL);
+    assert(cap_arrgetc(arr, -1) == NULL);
+
+    assert(cap_arrpush(arr, "0") != NULL);
+    assert(cap_arrpush(arr, "1") != NULL);
+    assert(cap_arrpush(arr, "2") != NULL);
+
+    assert(strcmp(cap_arrgetc(arr, 0), "0") == 0);
+    assert(strcmp(cap_arrgetc(arr, 1), "1") == 0);
+    assert(strcmp(cap_arrgetc(arr, 2), "2") == 0);
+    assert(cap_arrgetc(arr, 3) == NULL);
+
+    cap_arrdel(arr);
+}
+
+void
+test_array_arrlen(void) {
+    struct cap_array *arr = cap_arrnew();
+    assert(arr != NULL);
+
+    assert(cap_arrlen(NULL) == 0);
+    assert(cap_arrlen(arr) == 0);
+
+    assert(cap_arrpush(arr, "0") != NULL);
+    assert(cap_arrpush(arr, "1") != NULL);
+    assert(cap_arrpush(arr, "2") != NULL);
+    assert(cap_arrlen(arr) == 3);
+
+    cap_arrdel(arr);
+}
+
+void
+test_array_arrshow(void) {
+    struct cap_array *arr = cap_arrnew();
+    assert(arr != NULL);
+
+    assert(cap_arrshow(NULL, stdout) == NULL);
+    assert(cap_arrshow(arr, NULL) == NULL);
+    assert(cap_arrshow(arr, stdout) != NULL);
+
+    cap_arrdel(arr);
+}
+
 /********
 * tests *
 ********/
@@ -256,6 +305,9 @@ arraytests[] = {
     {"arrpush", test_array_arrpush},
     {"arrmove", test_array_arrmove},
     {"arrsort", test_array_arrsort},
+    {"arrgetc", test_array_arrgetc},
+    {"arrlen", test_array_arrlen},
+    {"arrshow", test_array_arrshow},
     {},
 };
 
