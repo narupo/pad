@@ -112,8 +112,11 @@ cap_arrlen(const struct cap_array *self);
  * 
  * @param[in] *self 
  * @param[out] *fout pointer to destination stream
+ *
+ * @return success to pointer to self
+ * @return failed to NULL
  */
-void
+const struct cap_array *
 cap_arrshow(const struct cap_array *self, FILE *fout);
 
 #endif
