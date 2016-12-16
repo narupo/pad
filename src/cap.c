@@ -7,7 +7,7 @@
  */
 #include "cap.h"
 
-static const char CAP_VERSION[] = "cap version 0.17";
+static const char CAP_VERSION[] = "cap version 0.18";
 
 /******
 * cap *
