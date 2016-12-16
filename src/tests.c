@@ -205,13 +205,14 @@ test_array_arrmove(void) {
     struct cap_array *arr = cap_arrnew();
     assert(arr != NULL);
 
-    assert(cap_arrmove(arr, NULL) == NULL);
+    assert(cap_arrmove(arr, NULL) != NULL);
+    assert(cap_arrgetc(arr, 0) == NULL);
 
     char *ptr = strdup("string"); 
     assert(ptr != NULL);
     
     assert(cap_arrmove(arr, ptr) != NULL);
-    assert(strcmp(cap_arrgetc(arr, 0), "string") == 0);
+    assert(strcmp(cap_arrgetc(arr, 1), "string") == 0);
 
     cap_arrdel(arr);
 }

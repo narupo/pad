@@ -91,7 +91,7 @@ cap_arrpush(struct cap_array *arr, const char *str) {
 
 struct cap_array * 
 cap_arrmove(struct cap_array *arr, char *ptr) {
-	if (!arr || !ptr) {
+	if (!arr) {
 		return NULL;
 	}
 
