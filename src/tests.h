@@ -25,5 +25,6 @@
 #include <time.h>
 
 #include "array.h"
+#include "string.h"
 
 #endif

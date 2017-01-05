@@ -159,5 +159,3 @@ cap_arrshow(const struct cap_array *arr, FILE *fout) {
 
 	return arr;
 }
-
-
