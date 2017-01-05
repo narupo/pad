@@ -7,6 +7,10 @@
  */
 #include "tests.h"
 
+/********
+* utils *
+********/
+
 /**
  * Show error message and exit from process.
  *
@@ -79,6 +83,20 @@ warn(const char *fmt, ...) {
     va_end(args);
     fflush(stderr);
 }
+
+/********
+* tests *
+********/
+
+struct testcase {
+    const char *name;
+    void (*test)(void);
+};
+
+struct testmodule {
+    const char *name;
+    const struct testcase *tests;
+};
 
 /*******
 * opts *
@@ -285,20 +303,6 @@ test_array_arrshow(void) {
     cap_arrdel(arr);
 }
 
-/********
-* tests *
-********/
-
-struct testcase {
-    const char *name;
-    void (*test)(void);
-};
-
-struct module {
-    const char *name;
-    const struct testcase *tests;
-};
-
 static const struct testcase
 arraytests[] = {
     {"arrnew", test_array_arrnew},
@@ -312,9 +316,28 @@ arraytests[] = {
     {},
 };
 
-static const struct module
-modules[] = {
-    {"array", arraytests},
+/*********
+* string *
+*********/
+
+static void
+test_string_strdel(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    cap_strdel(s);
+}
+
+static void
+test_string_strnew(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    cap_strdel(s);
+}
+
+static const struct testcase
+stringtests[] = {
+    {"strdel", test_string_strdel},
+    {"strnew", test_string_strnew},
     {},
 };
 
@@ -322,12 +345,19 @@ modules[] = {
 * main *
 *******/
 
+static const struct testmodule
+testmodules[] = {
+    {"array", arraytests},
+    {"string", stringtests},
+    {},
+};
+
 static void
 run(const struct opts *opts) {
     int ntest = 0;
     clock_t start = clock();
 
-    for (const struct module *m = modules; m->name; ++m) {
+    for (const struct testmodule *m = testmodules; m->name; ++m) {
         for (const struct testcase *t = m->tests; t->name; ++t) {
             t->test();
             ++ntest;
