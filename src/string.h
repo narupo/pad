@@ -32,7 +32,7 @@
  * @return failed to pointer to NULL
  */
 char *
-capstrncat(char *dst, size_t dstsz, const char *src);
+capstrncat(char *dst, int dstsz, const char *src);
 
 /**
  * Copy string without specified string

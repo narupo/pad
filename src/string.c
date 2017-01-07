@@ -12,12 +12,12 @@
 ********/
 
 char *
-capstrncat(char *dst, size_t dstsz, const char *src) {
+capstrncat(char *dst, int dstsz, const char *src) {
 	if (!dst || dstsz <= 0 || !src) {
 		return NULL;
 	}
 
-	const char * dend = dst+dstsz-1; // -1 for final nul
+	const char *dend = dst+dstsz-1; // -1 for final nul
 	char *dp = dst + strlen(dst);
 
 	for (const char *sp = src; *sp && dp < dend; *dp++ = *sp++) {
