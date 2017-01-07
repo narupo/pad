@@ -321,6 +321,47 @@ arraytests[] = {
 *********/
 
 static void
+test_string(void) {
+}
+
+static void
+test_string_strncat(void) {
+    char dst[100] = {};
+
+    assert(capstrncat(dst, sizeof dst, NULL) == NULL);
+    assert(capstrncat(NULL, sizeof dst, "source") == NULL);
+    assert(capstrncat(dst, 0, "source") == NULL);
+
+    assert(capstrncat(dst, 3, "source") != NULL);
+    assert(strcmp(dst, "so") == 0);
+
+    *dst = '\0';
+    assert(capstrncat(dst, sizeof dst, "source") != NULL);
+    assert(strcmp(dst, "source") == 0);
+    assert(capstrncat(dst, sizeof dst, " is available.") != NULL);
+    assert(strcmp(dst, "source is available.") == 0);
+    assert(capstrncat(dst, sizeof dst, "") != NULL);
+    assert(strcmp(dst, "source is available.") == 0);
+}
+
+static void
+test_string_strcpywithout(void) {
+    char dst[100];
+
+    assert(capstrcpywithout(NULL, sizeof dst, "abc123def456", "") == NULL);
+    assert(capstrcpywithout(dst, 0, "abc123def456", "") == NULL);
+    assert(capstrcpywithout(dst, sizeof dst, NULL, "") == NULL);
+    assert(capstrcpywithout(dst, sizeof dst, "abc123def456", NULL) == NULL);
+
+    assert(capstrcpywithout(dst, sizeof dst, "abc123def456", "") != NULL);
+    assert(strcmp(dst, "abc123def456") == 0);
+    assert(capstrcpywithout(dst, sizeof dst, "abc123def456", "123456") != NULL);
+    assert(strcmp(dst, "abcdef") == 0);
+    assert(capstrcpywithout(dst, sizeof dst, "abc123def456", "abcdef") != NULL);
+    assert(strcmp(dst, "123456") == 0);
+}
+
+static void
 test_string_strdel(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
@@ -336,6 +377,8 @@ test_string_strnew(void) {
 
 static const struct testcase
 stringtests[] = {
+    {"strncat", test_string_strncat},
+    {"strcpywithout", test_string_strcpywithout},
     {"strdel", test_string_strdel},
     {"strnew", test_string_strnew},
     {},
