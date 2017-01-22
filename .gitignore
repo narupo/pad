@@ -33,7 +33,6 @@
 *.dSYM/
 
 src/test/*
-bin/
 doc/
 test/
 

@@ -369,19 +369,140 @@ test_string_strdel(void) {
 }
 
 static void
+test_string_strescdel(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    char *ptr = cap_strescdel(s);
+    assert(ptr != NULL);
+    free(ptr);
+}
+
+static void
 test_string_strnew(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
     cap_strdel(s);
 }
 
+static void
+test_string_strnewother(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+
+    cap_strdel(s);
+}
+
+static void
+test_string_capstrncat(void) {
+}
+
+static void
+test_string_capstrcpywithout(void) {
+}
+
+static void
+test_string_strlen(void) {
+}
+
+static void
+test_string_strcapa(void) {
+}
+
+static void
+test_string_strgetc(void) {
+}
+
+static void
+test_string_strempty(void) {
+}
+
+static void
+test_string_strclear(void) {
+}
+
+static void
+test_string_strset(void) {
+}
+
+static void
+test_string_strresize(void) {
+}
+
+static void
+test_string_strpushb(void) {
+}
+
+static void
+test_string_strpopb(void) {
+}
+
+static void
+test_string_strpushf(void) {
+}
+
+static void
+test_string_strpopf(void) {
+}
+
+static void
+test_string_strapp(void) {
+}
+
+static void
+test_string_strappstream(void) {
+}
+
+static void
+test_string_strappother(void) {
+}
+
+static void
+test_string_strappfmt(void) {
+}
+
+static void
+test_string_strrstrip(void) {
+}
+
+static void
+test_string_strlstrip(void) {
+}
+
+static void
+test_string_strstrip(void) {
+}
+
+static void
+test_string_strfindc(void) {
+}
+
 static const struct testcase
 stringtests[] = {
-    {"strncat", test_string_strncat},
-    {"strcpywithout", test_string_strcpywithout},
-    {"strdel", test_string_strdel},
-    {"strnew", test_string_strnew},
-    {},
+    {"string_capstrncat", test_string_capstrncat},
+    {"string_capstrcpywithout", test_string_capstrcpywithout},
+    {"string_strdel", test_string_strdel},
+    {"string_strescdel", test_string_strescdel},
+    {"string_strnew", test_string_strnew},
+    {"string_strnewother", test_string_strnewother},
+    {"string_strlen", test_string_strlen},
+    {"string_strcapa", test_string_strcapa},
+    {"string_strgetc", test_string_strgetc},
+    {"string_strempty", test_string_strempty},
+    {"string_strclear", test_string_strclear},
+    {"string_strset", test_string_strset},
+    {"string_strresize", test_string_strresize},
+    {"string_strpushb", test_string_strpushb},
+    {"string_strpopb", test_string_strpopb},
+    {"string_strpushf", test_string_strpushf},
+    {"string_strpopf", test_string_strpopf},
+    {"string_strapp", test_string_strapp},
+    {"string_strappstream", test_string_strappstream},
+    {"string_strappother", test_string_strappother},
+    {"string_strappfmt", test_string_strappfmt},
+    {"string_strrstrip", test_string_strrstrip},
+    {"string_strlstrip", test_string_strlstrip},
+    {"string_strstrip", test_string_strstrip},
+    {"string_strfindc", test_string_strfindc},
 };
 
 /*******
