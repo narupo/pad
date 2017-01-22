@@ -325,7 +325,7 @@ test_string(void) {
 }
 
 static void
-test_string_strncat(void) {
+test_string_capstrncat(void) {
     char dst[100] = {};
 
     assert(capstrncat(dst, sizeof dst, NULL) == NULL);
@@ -345,7 +345,7 @@ test_string_strncat(void) {
 }
 
 static void
-test_string_strcpywithout(void) {
+test_string_capstrcpywithout(void) {
     char dst[100];
 
     assert(capstrcpywithout(NULL, sizeof dst, "abc123def456", "") == NULL);
@@ -390,14 +390,6 @@ test_string_strnewother(void) {
     assert(s != NULL);
 
     cap_strdel(s);
-}
-
-static void
-test_string_capstrncat(void) {
-}
-
-static void
-test_string_capstrcpywithout(void) {
 }
 
 static void
