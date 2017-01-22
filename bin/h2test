@@ -1,0 +1,45 @@
+#!/usr/bin/python3
+# coding: utf-8
+import sys
+
+def isnewline(c):
+    return c in '\n'
+
+def f(fin, modname):
+    header = 'static void\n'
+    line = ''
+    funcs = []
+
+    while True:
+        c = fin.read(1)
+        if len(c) == 0:
+            break
+
+        if isnewline(c):
+            line = ''
+            continue
+
+        if c == '(':
+            func = 'test_'
+            if 'cap_' in line:
+                func += line.replace('cap_', modname + '_')
+            elif 'cap' in line:
+                func += line.replace('cap', modname + '_cap')
+            funcs.append(func)
+            print('{header}{func}(void) {{\n}}\n'.format(header=header, func=func))
+            line = ''
+            continue
+
+        line += c
+
+    print('static const struct testcase\n{modname}tests[] = {{'.format(modname=modname))
+    for func in funcs:
+        print('\t{{"{key}", {func}}},'.format(key=func.replace('test_', ''), func=func))
+    print('};')
+
+def main(args):
+    f(sys.stdin, 'string')
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
