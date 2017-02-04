@@ -26,5 +26,6 @@
 
 #include "array.h"
 #include "string.h"
+#include "file.h"
 
 #endif

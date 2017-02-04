@@ -511,6 +511,8 @@ static void
 test_string_strapp(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strapp(s, "1234") != NULL);
+    assert(strcmp(cap_strgetc(s), "1234") == 0);
     cap_strdel(s);
 }
 
@@ -518,6 +520,17 @@ static void
 test_string_strappstream(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+
+    char path[1024];
+    assert(cap_frealpath(path, sizeof path, ".") != NULL);
+    assert(capstrncat(path, sizeof path, "/tests.c") != NULL);
+    printf("path[%s]\n", path);
+
+    FILE *fin = fopen(path, "r");
+    assert(fin != NULL);
+    assert(cap_strappstream(s, fin) != NULL);
+    assert(fclose(fin) == 0);
+
     cap_strdel(s);
 }
 
@@ -525,6 +538,13 @@ static void
 test_string_strappother(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strset(s, "1234") != NULL);
+    struct cap_string *o = cap_strnew();
+    assert(o != NULL);
+    assert(cap_strset(o, "1234") != NULL);
+    assert(cap_strappother(s, o) != NULL);
+    assert(strcmp(cap_strgetc(s), "12341234") == 0);
+    cap_strdel(o);
     cap_strdel(s);
 }
 
@@ -532,6 +552,9 @@ static void
 test_string_strappfmt(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    char buf[1024];
+    assert(cap_strappfmt(s, buf, sizeof buf, "%s %d %c", "1234", 1, '2') != NULL);
+    assert(strcmp(cap_strgetc(s), "1234 1 2") == 0);
     cap_strdel(s);
 }
 
@@ -539,6 +562,9 @@ static void
 test_string_strrstrip(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strset(s, "1234") != NULL);
+    assert(cap_strrstrip(s, "34") != NULL);
+    assert(strcmp(cap_strgetc(s), "12") == 0);
     cap_strdel(s);
 }
 
@@ -546,6 +572,9 @@ static void
 test_string_strlstrip(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strset(s, "1234") != NULL);
+    assert(cap_strlstrip(s, "12") != NULL);
+    assert(strcmp(cap_strgetc(s), "34") == 0);
     cap_strdel(s);
 }
 
@@ -553,6 +582,9 @@ static void
 test_string_strstrip(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strset(s, "--1234--") != NULL);
+    assert(cap_strstrip(s, "-") != NULL);
+    assert(strcmp(cap_strgetc(s), "1234") == 0);
     cap_strdel(s);
 }
 
@@ -560,6 +592,11 @@ static void
 test_string_strfindc(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strset(s, "1234") != NULL);
+    const char *fnd = cap_strfindc(s, "23");
+    // printf("fnd[%s]\n", fnd);
+    assert(fnd != NULL);
+    assert(strcmp(fnd, "234") == 0);
     cap_strdel(s);
 }
 
