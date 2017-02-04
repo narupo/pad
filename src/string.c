@@ -333,6 +333,10 @@ cap_strapp(struct cap_string *self, const cap_string_type_t *src) {
 
 struct cap_string *
 cap_strappstream(struct cap_string *self, FILE *fin) {
+	if (!self || !fin) {
+		return NULL;
+	}
+	
 	for (int ch; (ch = fgetc(fin)) != EOF; ) {
 		if (!cap_strpushb(self, ch)) {
 			return NULL;
