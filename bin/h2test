@@ -35,6 +35,7 @@ def f(fin, modname):
     print('static const struct testcase\n{modname}tests[] = {{'.format(modname=modname))
     for func in funcs:
         print('\t{{"{key}", {func}}},'.format(key=func.replace('test_', ''), func=func))
+    print('\t{},');
     print('};')
 
 def main(args):
