@@ -104,8 +104,8 @@ cap_strnew(void) {
 	}
 
 	self->length = 0;
-	self->capacity = NCAPACITY + 1; // +1 for final nul
-	self->buffer = calloc(self->capacity, NCHAR);
+	self->capacity = NCAPACITY;
+	self->buffer = calloc(self->capacity + 1, NCHAR);
 	if (!self->buffer) {
 		free(self);
 		return NULL;
@@ -125,7 +125,7 @@ cap_strnewother(const struct cap_string *other) {
 
 	self->length = other->length;
 	self->capacity = other->capacity;
-	self->buffer = calloc(self->capacity, NCHAR);
+	self->buffer = calloc(self->capacity + 1, NCHAR);
 	if (!self->buffer) {
 		free(self);
 		return NULL;
@@ -205,25 +205,25 @@ cap_strset(struct cap_string *self, const cap_string_type_t *src) {
 }
 
 struct cap_string *
-cap_strresize(struct cap_string *self, int newlen) {
+cap_strresize(struct cap_string *self, int newcapa) {
 	if (!self) {
 		return NULL;
 	}
 
-	if (newlen < 0) {
-		newlen = 0;
+	if (newcapa < 0) {
+		newcapa = 0;
 	}
 
-	cap_string_type_t *tmp = (cap_string_type_t *) realloc(self->buffer, newlen * NCHAR + NCHAR);
+	cap_string_type_t *tmp = realloc(self->buffer, newcapa*NCHAR + NCHAR); // +NCHAR for final nil
 	if (!tmp) {
 		cap_strdel(self);
 		return NULL;
 	}
 
 	self->buffer = tmp;
-	self->capacity = newlen + 1; // +1 for final nul
-	if (newlen < self->length) {
-		self->length = newlen;
+	self->capacity = newcapa;
+	if (newcapa < self->length) {
+		self->length = newcapa;
 		self->buffer[self->length] = NIL;
 	}
 

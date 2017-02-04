@@ -321,10 +321,6 @@ arraytests[] = {
 *********/
 
 static void
-test_string(void) {
-}
-
-static void
 test_string_capstrncat(void) {
     char dst[100] = {};
 
@@ -388,84 +384,183 @@ static void
 test_string_strnewother(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
-
+    assert(cap_strset(s, "1234") != NULL);
+    struct cap_string *o = cap_strnewother(s);
+    assert(o != NULL);
+    assert(strcmp(cap_strgetc(o), "1234") == 0);
+    cap_strdel(o);
     cap_strdel(s);
 }
 
 static void
 test_string_strlen(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    assert(cap_strlen(s) == 0);
+    assert(cap_strapp(s, "abc") != NULL);
+    assert(cap_strlen(s) == 3);
+    cap_strdel(s);
 }
 
 static void
 test_string_strcapa(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    assert(cap_strcapa(s) == 4);
+    assert(cap_strapp(s, "1234") != NULL);
+    assert(cap_strcapa(s) == 8);
+    cap_strdel(s);
 }
 
 static void
 test_string_strgetc(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    assert(strcmp(cap_strgetc(s), "") == 0);
+    assert(cap_strapp(s, "1234") != NULL);
+    assert(strcmp(cap_strgetc(s), "1234") == 0);
+    cap_strdel(s);
 }
 
 static void
 test_string_strempty(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    assert(cap_strempty(s) == true);
+    assert(cap_strapp(s, "1234") != NULL);
+    assert(cap_strempty(s) == false);
+    cap_strdel(s);
 }
 
 static void
 test_string_strclear(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    assert(cap_strapp(s, "1234") != NULL);
+    assert(cap_strlen(s) == 4);
+    cap_strclear(s);
+    assert(cap_strlen(s) == 0);
+    cap_strdel(s);
 }
 
 static void
 test_string_strset(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    assert(cap_strset(s, "1234") != NULL);
+    assert(strcmp(cap_strgetc(s), "1234") == 0);
+    assert(cap_strset(s, "12") != NULL);
+    assert(strcmp(cap_strgetc(s), "12") == 0);
+    cap_strdel(s);
 }
 
 static void
 test_string_strresize(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    assert(cap_strcapa(s) == 4);
+    assert(cap_strresize(s, 4*2) != NULL);
+    assert(cap_strcapa(s) == 8);
+    cap_strdel(s);
 }
 
 static void
 test_string_strpushb(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    assert(cap_strpushb(s, '1') != NULL);
+    assert(cap_strpushb(s, '2') != NULL);
+    assert(strcmp(cap_strgetc(s), "12") == 0);
+    cap_strdel(s);
 }
 
 static void
 test_string_strpopb(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    assert(cap_strset(s, "1234") != NULL);
+    assert(strcmp(cap_strgetc(s), "1234") == 0);
+    assert(cap_strpopb(s) == '4');
+    assert(cap_strpopb(s) == '3');
+    assert(strcmp(cap_strgetc(s), "12") == 0);
+    cap_strdel(s);
 }
 
 static void
 test_string_strpushf(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    assert(cap_strpushf(s, '1') != NULL);
+    assert(cap_strpushf(s, '2') != NULL);
+    assert(strcmp(cap_strgetc(s), "21") == 0);
+    cap_strdel(s);
 }
 
 static void
 test_string_strpopf(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    assert(cap_strset(s, "1234") != NULL);
+    assert(cap_strpopf(s) == '1');
+    assert(cap_strpopf(s) == '2');
+    assert(strcmp(cap_strgetc(s), "34") == 0);
+    cap_strdel(s);
 }
 
 static void
 test_string_strapp(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    cap_strdel(s);
 }
 
 static void
 test_string_strappstream(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    cap_strdel(s);
 }
 
 static void
 test_string_strappother(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    cap_strdel(s);
 }
 
 static void
 test_string_strappfmt(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    cap_strdel(s);
 }
 
 static void
 test_string_strrstrip(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    cap_strdel(s);
 }
 
 static void
 test_string_strlstrip(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    cap_strdel(s);
 }
 
 static void
 test_string_strstrip(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    cap_strdel(s);
 }
 
 static void
 test_string_strfindc(void) {
+    struct cap_string *s = cap_strnew();
+    assert(s != NULL);
+    cap_strdel(s);
 }
 
 static const struct testcase
@@ -495,6 +590,7 @@ stringtests[] = {
     {"string_strlstrip", test_string_strlstrip},
     {"string_strstrip", test_string_strstrip},
     {"string_strfindc", test_string_strfindc},
+    {},
 };
 
 /*******
@@ -514,7 +610,9 @@ run(const struct opts *opts) {
     clock_t start = clock();
 
     for (const struct testmodule *m = testmodules; m->name; ++m) {
+        // printf("module '%s'\n", m->name);
         for (const struct testcase *t = m->tests; t->name; ++t) {
+            // printf("testing '%s'\n", t->name);
             t->test();
             ++ntest;
         }
