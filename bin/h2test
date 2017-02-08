@@ -137,13 +137,14 @@ class Tokenizer():
             self.addbuf(c)
 
 def backtrace_funcname(toks, ofsidx):
-    funcname = ''
-    for i in range(ofsidx, 0, -1):
-        t = toks[i]
-        if t == '\n':
-            break
-        funcname = t + funcname 
-    return funcname
+    return toks[ofsidx]
+    # funcname = ''
+    # for i in range(ofsidx, 0, -1):
+    #     t = toks[i]
+    #     if t == '\n':
+    #         break
+    #     funcname = t + funcname 
+    # return funcname
 
 def f(toks, modulename):
     m = 0
@@ -161,7 +162,7 @@ def f(toks, modulename):
                 m = 0
 
     for funcname in funcnames:
-        print('static void\ntest_{module}_{func}(void);\n'.format(
+        print('static void\ntest_{module}_{func}(void) {{\n}}\n'.format(
             module=modulename,
             func=funcname.replace('cap_', ''),
         ))
