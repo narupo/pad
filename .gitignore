@@ -46,4 +46,4 @@ cap-pwd
 cap-run
 tests
 
-
+*.pyc
