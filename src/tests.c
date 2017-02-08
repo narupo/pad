@@ -631,6 +631,150 @@ stringtests[] = {
 };
 
 /*******
+* file *
+*******/
+
+static void
+test_file_fclose(void) {
+}
+
+static void
+test_file_fopen(void) {
+}
+
+static void
+test_file_fcopy(void) {
+}
+
+static void
+test_file_fclosedir(void) {
+}
+
+static void
+test_file_fopendir(void) {
+}
+
+static void
+test_file_frealpath(void) {
+}
+
+static void
+test_file_fexists(void) {
+}
+
+static void
+test_file_fmkdirmode(void) {
+}
+
+static void
+test_file_fmkdirq(void) {
+}
+
+static void
+test_file_ftrunc(void) {
+}
+
+static void
+test_file_fsolve(void) {
+}
+
+static void
+test_file_fsolvecp(void) {
+}
+
+static void
+test_file_fsolvefmt(void) {
+}
+
+static void
+test_file_fisdir(void) {
+}
+
+static void
+test_file_freadcp(void) {
+}
+
+static void
+test_file_fsize(void) {
+}
+
+static void
+test_file_fsuffix(void) {
+}
+
+static void
+test_file_fdirname(void) {
+}
+
+static void
+test_file_fbasename(void) {
+}
+
+static void
+test_file_fgetline(void) {
+}
+
+static void
+test_file_freadline(void) {
+}
+
+static void
+test_file_fwriteline(void) {
+}
+
+static void
+test_file_dirnodedel(void) {
+}
+
+static void
+test_file_dirnodename(void) {
+}
+
+static void
+test_file_dirclose(void) {
+}
+
+static void
+test_file_diropen(void) {
+}
+
+static void
+test_file_dirread(void) {
+}
+
+static const struct testcase
+filetests[] = {
+    {"fclose", test_file_fclose},
+    {"fopen", test_file_fopen},
+    {"fcopy", test_file_fcopy},
+    {"fclosedir", test_file_fclosedir},
+    {"fopendir", test_file_fopendir},
+    {"frealpath", test_file_frealpath},
+    {"fexists", test_file_fexists},
+    {"fmkdirmode", test_file_fmkdirmode},
+    {"fmkdirq", test_file_fmkdirq},
+    {"ftrunc", test_file_ftrunc},
+    {"fsolve", test_file_fsolve},
+    {"fsolvecp", test_file_fsolvecp},
+    {"fsolvefmt", test_file_fsolvefmt},
+    {"fisdir", test_file_fisdir},
+    {"freadcp", test_file_freadcp},
+    {"fsize", test_file_fsize},
+    {"fsuffix", test_file_fsuffix},
+    {"fdirname", test_file_fdirname},
+    {"fbasename", test_file_fbasename},
+    {"fgetline", test_file_fgetline},
+    {"freadline", test_file_freadline},
+    {"fwriteline", test_file_fwriteline},
+    {"dirnodedel", test_file_dirnodedel},
+    {"dirnodename", test_file_dirnodename},
+    {"dirclose", test_file_dirclose},
+    {"diropen", test_file_diropen},
+    {"dirread", test_file_dirread},
+    {},
+};
+
+/*******
 * main *
 *******/
 
