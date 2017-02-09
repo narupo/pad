@@ -3,7 +3,7 @@
  *
  * License: MIT
  *  Author: Aizawa Yuta
- *   Since: 2016
+ *   Since: 2016, 2017
  */
 #include "tests.h"
 
@@ -524,7 +524,7 @@ test_string_strappstream(void) {
     char path[1024];
     assert(cap_frealpath(path, sizeof path, ".") != NULL);
     assert(capstrncat(path, sizeof path, "/tests.c") != NULL);
-    printf("path[%s]\n", path);
+    // printf("path[%s]\n", path);
 
     FILE *fin = fopen(path, "r");
     assert(fin != NULL);
@@ -634,16 +634,39 @@ stringtests[] = {
 * file *
 *******/
 
+static const char *
+get_test_finpath(void) {
+    static const char *src = "/tmp/cap.test.file";
+    static char path[1024];
+    assert(cap_fsolve(path, sizeof path, src) != NULL);
+    if (!cap_fexists(path)) {
+        FILE *f = cap_fopen(path, "w");
+        assert(f != NULL);
+        fprintf(f, "123abc456def\n");
+        fprintf(f, "123abc456def\n");
+        fprintf(f, "123abc456def\n");
+        assert(cap_fclose(f) == 0);
+    }
+    return path;
+}
+
 static void
 test_file_fclose(void) {
+    FILE* f = cap_fopen(get_test_finpath(), "r");
+    assert(f != NULL);
+    assert(cap_fclose(f) == 0);
 }
 
 static void
 test_file_fopen(void) {
+    test_file_fclose();
 }
 
 static void
 test_file_fcopy(void) {
+    FILE* f = cap_fopen(get_test_finpath(), "r");
+    assert(f != NULL);
+    assert(cap_fclose(f) == 0);
 }
 
 static void
@@ -782,6 +805,7 @@ static const struct testmodule
 testmodules[] = {
     {"array", arraytests},
     {"string", stringtests},
+    {"file", filetests},
     {},
 };
 
