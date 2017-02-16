@@ -650,6 +650,17 @@ get_test_finpath(void) {
     return path;
 }
 
+static const char *
+get_test_dirpath(void) {
+    static const char *src = "/tmp";
+    static char path[1024];
+    assert(cap_fsolve(path, sizeof path, src) != NULL);
+    if (!cap_fexists(path)) {
+        assert(cap_fmkdirq(path) == 0);
+    }
+    return path;
+}
+
 static void
 test_file_fclose(void) {
     FILE* f = cap_fopen(get_test_finpath(), "r");
@@ -664,17 +675,21 @@ test_file_fopen(void) {
 
 static void
 test_file_fcopy(void) {
-    FILE* f = cap_fopen(get_test_finpath(), "r");
+    FILE *f = cap_fopen(get_test_finpath(), "r");
     assert(f != NULL);
     assert(cap_fclose(f) == 0);
 }
 
 static void
 test_file_fclosedir(void) {
+    DIR *f = cap_fopendir(get_test_dirpath());
+    assert(f != NULL);
+    assert(cap_fclosedir(f) == 0);
 }
 
 static void
 test_file_fopendir(void) {
+    test_file_fclosedir();
 }
 
 static void
@@ -815,18 +830,16 @@ run(const struct opts *opts) {
     clock_t start = clock();
 
     for (const struct testmodule *m = testmodules; m->name; ++m) {
-        // printf("module '%s'\n", m->name);
+        printf("module '%s'\n", m->name);
         for (const struct testcase *t = m->tests; t->name; ++t) {
-            // printf("testing '%s'\n", t->name);
+            printf("testing '%s'\n", t->name);
             t->test();
             ++ntest;
         }
     }
     
     clock_t end = clock();
-
     fflush(stdout);
-
     fprintf(stderr, "Run %d test in %0.3lfs.\n", ntest, (double)(end-start)/CLOCKS_PER_SEC);
     fprintf(stderr, "\n");
     fprintf(stderr, "OK\n");
