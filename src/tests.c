@@ -694,10 +694,15 @@ test_file_fopendir(void) {
 
 static void
 test_file_frealpath(void) {
+    char path[1024];
+    assert(cap_frealpath(path, sizeof path, "/tmp/../tmp") != NULL);
+    assert(strcmp(path, "/tmp") == 0);
 }
 
 static void
 test_file_fexists(void) {
+    assert(cap_fexists("/tmp"));
+    assert(!cap_fexists("/nothing/directory"));
 }
 
 static void
