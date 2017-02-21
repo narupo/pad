@@ -707,22 +707,36 @@ test_file_fexists(void) {
 
 static void
 test_file_fmkdirmode(void) {
+    assert(!cap_fexists("/nothing/directory"));
 }
 
 static void
 test_file_fmkdirq(void) {
+    assert(cap_fmkdirq("/tmp") != 0);
 }
 
 static void
 test_file_ftrunc(void) {
+    const char *path = "/tmp/cap.ftrunc";
+    assert(!cap_fexists(path));
+    assert(cap_ftrunc(path));
+    assert(cap_fexists(path));
+    assert(remove(path) == 0);
 }
 
 static void
 test_file_fsolve(void) {
+    char path[1024];
+    assert(cap_fsolve(path, sizeof path, "/tmp/../tmp"));
+    assert(strcmp(path, "/tmp") == 0);
 }
 
 static void
 test_file_fsolvecp(void) {
+    char *path = cap_fsolvecp("/tmp/../tmp");
+    assert(path != NULL);
+    assert(strcmp(path, "/tmp") == 0);
+    free(path);
 }
 
 static void
