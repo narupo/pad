@@ -782,6 +782,7 @@ test_file_fsize(void) {
     FILE *fin = cap_fopen(get_test_finpath(), "r");
     assert(fin != NULL);
     assert(cap_fsize(fin) == get_test_finsize());
+    assert(cap_fclose(fin) == 0);
 }
 
 static void
@@ -823,28 +824,43 @@ test_file_freadline(void) {
 
 static void
 test_file_fwriteline(void) {
-    assert(cap_fwriteline(get_test_finpath(), get_test_fcontent()));
+    assert(cap_fwriteline(get_test_fcontent(), get_test_finpath()));
     test_file_freadline();
 }
 
 static void
 test_file_dirnodedel(void) {
+    struct cap_dir *dir = cap_diropen("/tmp");
+    assert(dir != NULL);
+
+    for (struct cap_dirnode *node; (node = cap_dirread(dir)); ) {
+
+        const char *dname = cap_dirnodename(node);
+        assert(dname != NULL);
+        cap_dirnodedel(node);
+    } 
+
+    assert(cap_dirclose(dir) == 0);
 }
 
 static void
 test_file_dirnodename(void) {
+    // test_file_dirclose
 }
 
 static void
 test_file_dirclose(void) {
+    // test_file_dirclose
 }
 
 static void
 test_file_diropen(void) {
+    // test_file_dirclose
 }
 
 static void
 test_file_dirread(void) {
+    // test_file_dirclose
 }
 
 static const struct testcase
