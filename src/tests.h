@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <assert.h>
 #include <string.h>
 #include <getopt.h>
@@ -27,5 +28,6 @@
 #include "array.h"
 #include "string.h"
 #include "file.h"
+#include "env.h"
 
 #endif
