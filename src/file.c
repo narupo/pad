@@ -250,8 +250,14 @@ cap_fdirname(char *dst, size_t dstsz, const char *path) {
 
 char *
 cap_fbasename(char *dst, size_t dstsz, const char *path) {
-	snprintf(dst, dstsz, "%s", path);
-	return basename(dst);
+	char tmp[dstsz];
+	snprintf(tmp, sizeof tmp, "%s", path);
+	char *p = basename(tmp);
+	if (!p) {
+		return p;
+	}
+	snprintf(dst, dstsz, "%s", p);
+	return dst;
 }
 
 int 
