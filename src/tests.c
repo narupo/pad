@@ -636,7 +636,12 @@ stringtests[] = {
 
 static const char *
 get_test_fcontent(void) {
-    return "12345678";
+    return "1234567\n";
+}
+
+static const char *
+get_test_fcontent_nonewline(void) {
+    return "1234567";
 }
 
 static const char *
@@ -781,6 +786,7 @@ static void
 test_file_fsize(void) {
     FILE *fin = cap_fopen(get_test_finpath(), "r");
     assert(fin != NULL);
+    printf("fsize[%ld] finsize[%d]\n", cap_fsize(fin), get_test_finsize());
     assert(cap_fsize(fin) == get_test_finsize());
     assert(cap_fclose(fin) == 0);
 }
@@ -809,9 +815,10 @@ test_file_fbasename(void) {
 static void
 test_file_fgetline(void) {
     FILE *fin = get_test_fin();
+    assert(fin != NULL);
     char line[1024];
     assert(cap_fgetline(line, sizeof line, fin) != EOF);
-    assert(strcmp(get_test_fcontent(), line) == 0);
+    assert(strcmp(get_test_fcontent_nonewline(), line) == 0);
     assert(cap_fclose(fin) == 0);
 }
 
@@ -819,12 +826,12 @@ static void
 test_file_freadline(void) {
     char line[1024];
     assert(cap_freadline(line, sizeof line, get_test_finpath()) != NULL);
-    assert(strcmp(line, get_test_fcontent()) == 0);
+    assert(strcmp(line, get_test_fcontent_nonewline()) == 0);
 }
 
 static void
 test_file_fwriteline(void) {
-    assert(cap_fwriteline(get_test_fcontent(), get_test_finpath()));
+    assert(cap_fwriteline(get_test_fcontent_nonewline(), get_test_finpath()));
     test_file_freadline();
 }
 
@@ -834,7 +841,6 @@ test_file_dirnodedel(void) {
     assert(dir != NULL);
 
     for (struct cap_dirnode *node; (node = cap_dirread(dir)); ) {
-
         const char *dname = cap_dirnodename(node);
         assert(dname != NULL);
         cap_dirnodedel(node);
@@ -895,6 +901,42 @@ filetests[] = {
     {},
 };
 
+/******
+* env *
+******/
+
+static void
+test_env_envget(void) {
+    char buf[1024];
+    assert(cap_envsetf("CAPTEST", "123") == 0);
+    assert(cap_envget(buf, sizeof buf, "NOTHING") == NULL);
+    assert(cap_envget(buf, sizeof buf, "CAPTEST"));
+}
+
+static void
+test_env_envset(void) {
+    char buf[1024];
+    assert(cap_envset("CAPTEST", "123", 1) == 0);
+    assert(cap_envget(buf, sizeof buf, "CAPTEST"));
+    assert(strcmp(buf, "123") == 0);
+}
+
+static void
+test_env_envsetf(void) {
+    char buf[1024];
+    assert(cap_envsetf("CAPTEST", "123") == 0);
+    assert(cap_envget(buf, sizeof buf, "CAPTEST"));
+    assert(strcmp(buf, "123") == 0);
+}
+
+static const struct testcase
+envtests[] = {
+    {"envget", test_env_envget},
+    {"envset", test_env_envset},
+    {"envsetf", test_env_envsetf},
+    {},
+};
+
 /*******
 * main *
 *******/
@@ -904,6 +946,7 @@ testmodules[] = {
     {"array", arraytests},
     {"string", stringtests},
     {"file", filetests},
+    {"env", envtests},
     {},
 };
 

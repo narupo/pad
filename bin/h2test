@@ -9,7 +9,6 @@ def isnewline(c):
 class Tokenizer():
 
     def __init__(self):
-        self.name = ''
         self.m = None
         self.buf = ''
         self.tokens = []
@@ -53,8 +52,7 @@ class Tokenizer():
             return False
         return self.isnewline(self.tokens[-1])
 
-    def parse(self, fin, name):
-        self.name = name
+    def parse(self, fin):
         self.m = self.m0
         self.s = Stream(fin.read())
         self.clearbuf()
@@ -180,11 +178,17 @@ def f(toks, modulename):
     print('};')
 
 def main(args):
+    if len(args) < 2:
+        print('need module name', file=sys.stderr)
+        return 1
+    
+    modname = args[1]
     tkr = Tokenizer()
-    toks = tkr.parse(sys.stdin, 'string')
-    # print(toks)
-    f(toks, 'file')
+    toks = tkr.parse(sys.stdin)
+    f(toks, modname)
+
     return 0
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
+
