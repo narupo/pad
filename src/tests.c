@@ -952,6 +952,105 @@ hashtests[] = {
     {},
 };
 
+/*****
+* cl *
+*****/
+
+static void
+test_cl_cldel(void) {
+    struct cap_cl *cl = cap_clnew();
+    assert(cl != NULL);
+    cap_cldel(cl);
+}
+
+static void
+test_cl_clescdel(void) {
+    struct cap_cl *cl = cap_clnew();
+    assert(cl != NULL);
+    size_t parrlen = cap_cllen(cl);
+    char **parr = cap_clescdel(cl);
+    assert(parr != NULL);
+    freeargv(parrlen, parr);
+}
+
+static void
+test_cl_clnew(void) {
+    // test_cl_cldel
+}
+
+static void
+test_cl_clresize(void) {
+    struct cap_cl *cl = cap_clnew();
+    assert(cl != NULL);
+    assert(cap_clcapa(cl) == 4);
+    assert(cap_clresize(cl, 8));
+    assert(cap_clcapa(cl) == 8);
+    cap_cldel(cl);
+}
+
+static void
+test_cl_clpush(void) {
+    struct cap_cl *cl = cap_clnew();
+    assert(cl != NULL);
+    assert(cap_cllen(cl) == 0);
+    assert(cap_clpush(cl, "123"));
+    assert(cap_clpush(cl, "223"));
+    assert(cap_clpush(cl, "323"));
+    assert(strcmp(cap_clgetc(cl, 1), "223") == 0);
+    assert(cap_cllen(cl) == 3);
+    cap_cldel(cl);
+}
+
+static void
+test_cl_clgetc(void) {
+}
+
+static void
+test_cl_clclear(void) {
+}
+
+static void
+test_cl_clparsestropts(void) {
+}
+
+static void
+test_cl_clparsestr(void) {
+}
+
+static void
+test_cl_clparseargvopts(void) {
+}
+
+static void
+test_cl_clparseargv(void) {
+}
+
+static void
+test_cl_clshow(void) {
+}
+
+static void
+test_cl_cllen(void) {
+}
+
+static const struct testcase
+cltests[] = {
+    {"cldel", test_cl_cldel},
+    {"clescdel", test_cl_clescdel},
+    {"clnew", test_cl_clnew},
+    {"clresize", test_cl_clresize},
+    {"clgetc", test_cl_clgetc},
+    {"clpush", test_cl_clpush},
+    {"clclear", test_cl_clclear},
+    {"clparsestropts", test_cl_clparsestropts},
+    {"clparsestr", test_cl_clparsestr},
+    {"clparseargvopts", test_cl_clparseargvopts},
+    {"clparseargv", test_cl_clparseargv},
+    {"clshow", test_cl_clshow},
+    {"cllen", test_cl_cllen},
+    {},
+};
+
 /*******
 * main *
 *******/
@@ -963,6 +1062,7 @@ testmodules[] = {
     {"file", filetests},
     {"env", envtests},
     {"hash", hashtests},
+    {"cl", cltests},
     {},
 };
 
@@ -999,3 +1099,4 @@ main(int argc, char *argv[]) {
 
     return 0;
 }
+
