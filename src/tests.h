@@ -29,5 +29,6 @@
 #include "string.h"
 #include "file.h"
 #include "env.h"
+#include "hash.h"
 
 #endif

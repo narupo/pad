@@ -786,7 +786,6 @@ static void
 test_file_fsize(void) {
     FILE *fin = cap_fopen(get_test_finpath(), "r");
     assert(fin != NULL);
-    printf("fsize[%ld] finsize[%d]\n", cap_fsize(fin), get_test_finsize());
     assert(cap_fsize(fin) == get_test_finsize());
     assert(cap_fclose(fin) == 0);
 }
@@ -938,6 +937,22 @@ envtests[] = {
 };
 
 /*******
+* hash *
+*******/
+
+static void
+test_hash_hashl(void) {
+    // printf("%ld\n", cap_hashl("123"));
+    assert(cap_hashl("123") == 586);
+}
+
+static const struct testcase
+hashtests[] = {
+    {"hashl", test_hash_hashl},
+    {},
+};
+
+/*******
 * main *
 *******/
 
@@ -947,6 +962,7 @@ testmodules[] = {
     {"string", stringtests},
     {"file", filetests},
     {"env", envtests},
+    {"hash", hashtests},
     {},
 };
 
