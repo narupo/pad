@@ -87,6 +87,19 @@ cap_cllen(const struct cap_cl *self) {
 	return self->len;
 }
 
+int
+cap_clcapa(const struct cap_cl *self) {
+	return self->capa;
+}
+
+const char *
+cap_clgetc(const struct cap_cl *self, int idx) {
+	if (idx < 0 || idx >= self->len) {
+		return NULL;
+	}	
+	return self->arr[idx];
+}
+
 /*********
 * string *
 *********/

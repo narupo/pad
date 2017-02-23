@@ -30,5 +30,7 @@
 #include "file.h"
 #include "env.h"
 #include "hash.h"
+#include "cl.h"
+#include "util.h"
 
 #endif

@@ -1,3 +1,12 @@
+/**
+ * Cap
+ *
+ * CL is Command Line.
+ *
+ * License: MIT
+ *  Author: Aizawa Yuta
+ *   Since: 2016
+ */
 #ifndef CL_H
 #define CL_H
 
@@ -39,7 +48,7 @@ cap_cldel(struct cap_cl *self);
  * 
  * @param[in] *self 
  * 
- * @return pointer to pointer to dynamic allocate memory of array like a argv
+ * @return pointer to pointer to dynamic allocate memory of array like a argv. User should be free(3)
  */
 char **
 cap_clescdel(struct cap_cl *self);
@@ -155,5 +164,27 @@ cap_clshow(const struct cap_cl *self, FILE *fout);
  */
 int
 cap_cllen(const struct cap_cl *self);
+
+/**
+ * Get capacity of cl
+ *
+ * @param[in] *self 
+ * 
+ * @return number of capacity of cl
+ */
+int
+cap_clcapa(const struct cap_cl *self);
+
+/**
+ * Get element in cl
+ *
+ * @param[in] *self
+ * @param[in] idx index of array
+ *
+ * @return success to pointer to element
+ * @return failed to NULL
+ */
+const char *
+cap_clgetc(const struct cap_cl *self, int idx);
 
 #endif
