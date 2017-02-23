@@ -15,7 +15,7 @@
 #include <time.h>
 
 enum {
-	HASH_NMOD = 701,
+	CAP_HASH_NMOD = 701,
 };
 
 /**
