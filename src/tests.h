@@ -32,5 +32,6 @@
 #include "hash.h"
 #include "cl.h"
 #include "util.h"
+#include "error.h"
 
 #endif

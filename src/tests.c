@@ -1051,6 +1051,45 @@ cltests[] = {
     {},
 };
 
+/********
+* error *
+********/
+
+static void
+test_error__log(void) {
+    char buf[BUFSIZ] = {0};
+    setbuf(stderr, buf);
+
+    _cap_log("file", 100, "func", "warn", "msg");
+    // assert(strcmp(buf, "")); // TODO
+    
+    setbuf(stderr, NULL);
+}
+
+static void
+test_error_die(void) {
+    // nothing todo
+}
+
+static void
+test_error_error(void) {
+    char buf[BUFSIZ] = {0};
+    setbuf(stderr, buf);
+
+    cap_error("this is error");
+    assert(strcmp(buf, ": This is error.\n") == 0);
+    
+    setbuf(stderr, NULL);
+}
+
+static const struct testcase
+errortests[] = {
+    {"_log", test_error__log},
+    {"die", test_error_die},
+    {"error", test_error_error},
+    {},
+};
+
 /*******
 * main *
 *******/
@@ -1063,6 +1102,7 @@ testmodules[] = {
     {"env", envtests},
     {"hash", hashtests},
     {"cl", cltests},
+    {"error", errortests},
     {},
 };
 
