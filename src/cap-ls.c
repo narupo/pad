@@ -46,7 +46,7 @@ capls(const char *path) {
 
 	struct cap_array *arr = dir2array(dir);
 	if (!arr) {
-		cap_log("error", "failed to read directory %s", path);
+		cap_error("failed to read directory %s", path);
 		return 1;
 	}
 
@@ -55,7 +55,7 @@ capls(const char *path) {
 	cap_arrdel(arr);
 
 	if (cap_dirclose(dir) < 0) {
-		cap_log("error", "failed to close directory %s", path);
+		cap_error("failed to close directory %s", path);
 		return 1;
 	}
 
