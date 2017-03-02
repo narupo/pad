@@ -1003,34 +1003,83 @@ test_cl_clpush(void) {
 
 static void
 test_cl_clgetc(void) {
+    struct cap_cl *cl = cap_clnew();
+    assert(cl != NULL);
+    assert(cap_clpush(cl, "123"));
+    assert(strcmp(cap_clgetc(cl, 0), "123") == 0);
+    cap_cldel(cl);
 }
 
 static void
 test_cl_clclear(void) {
+    struct cap_cl *cl = cap_clnew();
+    assert(cl != NULL);
+    assert(cap_clpush(cl, "123"));
+    assert(cap_clpush(cl, "223"));
+    assert(cap_cllen(cl) == 2);
+    cap_clclear(cl);
+    assert(cap_cllen(cl) == 0);
+    cap_cldel(cl);
 }
 
 static void
 test_cl_clparsestropts(void) {
+    struct cap_cl *cl = cap_clnew();
+    assert(cl != NULL);
+    assert(cap_clparsestropts(cl, "cmd -h -ab 123 --help 223", CL_WRAP | CL_ESCAPE));
+    assert(strcmp(cap_clgetc(cl, 0), "'cmd'") == 0);
+    assert(strcmp(cap_clgetc(cl, 1), "'-h'") == 0);
+    assert(strcmp(cap_clgetc(cl, 2), "'-ab'") == 0);
+    assert(strcmp(cap_clgetc(cl, 3), "'123'") == 0);
+    assert(strcmp(cap_clgetc(cl, 4), "'--help'") == 0);
+    assert(strcmp(cap_clgetc(cl, 5), "'223'") == 0);
+    cap_cldel(cl);
 }
 
 static void
 test_cl_clparsestr(void) {
+    struct cap_cl *cl = cap_clnew();
+    assert(cl != NULL);
+    assert(cap_clparsestr(cl, "cmd -h -ab 123 --help 223"));
+    assert(strcmp(cap_clgetc(cl, 0), "cmd") == 0);
+    assert(strcmp(cap_clgetc(cl, 1), "-h") == 0);
+    assert(strcmp(cap_clgetc(cl, 2), "-ab") == 0);
+    assert(strcmp(cap_clgetc(cl, 3), "123") == 0);
+    assert(strcmp(cap_clgetc(cl, 4), "--help") == 0);
+    assert(strcmp(cap_clgetc(cl, 5), "223") == 0);
+    cap_cldel(cl);
 }
 
 static void
 test_cl_clparseargvopts(void) {
+    struct cap_cl *cl = cap_clnew();
+    assert(cl != NULL);
+
+    cap_cldel(cl);
 }
 
 static void
 test_cl_clparseargv(void) {
+    struct cap_cl *cl = cap_clnew();
+    assert(cl != NULL);
+
+    cap_cldel(cl);
 }
 
 static void
 test_cl_clshow(void) {
+    struct cap_cl *cl = cap_clnew();
+    assert(cl != NULL);
+
+    cap_cldel(cl);
 }
 
 static void
 test_cl_cllen(void) {
+    struct cap_cl *cl = cap_clnew();
+    assert(cl != NULL);
+
+    cap_cldel(cl);
 }
 
 static const struct testcase
