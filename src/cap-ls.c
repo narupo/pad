@@ -7,12 +7,31 @@
  */
 #include "cap-ls.h"
 
+struct opts {
+    bool ishelp;
+    bool isall;
+} opts;
+
 static void
 arrdump(const struct cap_array *arr, FILE *fout) {
 	for (int i = 0; i < cap_arrlen(arr); ++i) {
 		fprintf(fout, "%s\n", cap_arrgetc(arr, i));
 	}
 	fflush(fout);
+}
+
+static bool
+isdotfile(const char *fname) {
+    if (opts.isall) {
+        return false;
+    }
+    
+    if (strcmp(fname, "..") == 0 ||
+        fname[0] == '.') {
+        return true;
+    }
+
+    return false;
 }
 
 static struct cap_array *
@@ -24,7 +43,10 @@ dir2array(struct cap_dir *dir) {
 
 	for (struct cap_dirnode *nd; (nd = cap_dirread(dir)); ) {
 		const char *name = cap_dirnodename(nd);
-		cap_arrpush(arr, name);
+        if (!isdotfile(name)) {
+            cap_arrpush(arr, name);
+            
+        }
 		cap_dirnodedel(nd);
 	}
 
@@ -62,20 +84,78 @@ capls(const char *path) {
 	return 0;
 }
 
+static bool
+optsparse(struct opts *self, int argc, char *argv[]) {
+    // Parse options
+    static struct option longopts[] = {
+        {"help", no_argument, 0, 'h'},
+        {"all", no_argument, 0, 'a'},
+        {},
+    };
+    optind = 0;
+
+    *self = (struct opts){};
+
+    for (;;) {
+        int optsindex;
+        int cur = getopt_long(argc, argv, "ha", longopts, &optsindex);
+        if (cur == -1) {
+            break;
+        }
+
+        switch (cur) {
+        case 'h': self->ishelp = true; break;
+        case 'a': self->isall = true; break;
+        case '?':
+        default:
+            return false;
+            break;
+        }
+    }
+
+    if (argc < optind) {
+        return false;
+    }
+
+    return true;
+}
+
+static void
+usage(void) {
+    fprintf(stderr,
+        "Usage: %s [options]\n"
+        "\n"
+        "The options are:\n"
+        "\n"
+        "   -h, --help    show usage.\n"
+        "   -a, --all     show all files\n"
+        "\n"
+    , getenv("CAP_PROCNAME"));
+    exit(0);
+}
+
 int
 main(int argc, char *argv[]) {
-	cap_envsetf("CAP_PROCNAME", "cap ls");
+    cap_envsetf("CAP_PROCNAME", "cap ls");
+
+    if (!optsparse(&opts, argc, argv)) {
+        cap_die("failed to parse options");
+    }
+
+    if (opts.ishelp) {
+        usage();
+    }
 
 	char cd[FILE_NPATH];
 	if (!cap_envget(cd, sizeof cd, "CAP_VARCD")) {
 		cap_die("need environment variable of cd");
 	}
 
-	if (argc < 2) {
+	if (optind-argc == 0) {
 		capls(cd);
 	} else {
 		char path[FILE_NPATH];
-		for (int i = 1; i < argc; ++i) {
+		for (int i = optind; i < argc; ++i) {
 			cap_fsolvefmt(path, sizeof path, "%s/%s", cd, argv[i]);
 			capls(path);
 		}
