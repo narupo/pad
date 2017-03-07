@@ -15,7 +15,7 @@ enum {
 };
 
 static bool
-varwrite(const struct cap_var *vars, const char *vardir) {
+varswrite(const struct cap_var *vars, const char *vardir) {
 	char wrpath[FILE_NPATH]; // Write path
 	char sval[VAR_NVALUE]; // Solve value
 
@@ -37,7 +37,7 @@ varwrite(const struct cap_var *vars, const char *vardir) {
 }
 
 static bool
-varread(const struct cap_var *vars, const char *vardir) {
+varsread(const struct cap_var *vars, const char *vardir) {
 	char rdpath[FILE_NPATH]; // Read path
 	char val[VAR_NVALUE];
 
@@ -63,8 +63,8 @@ cap_varinit(const char *vardir) {
 		{},
 	};
 
-	varwrite(vars, vardir);
-	return varread(vars, vardir);
+	varswrite(vars, vardir);
+	return varsread(vars, vardir);
 }
 
 #if defined(_TEST_VAR)

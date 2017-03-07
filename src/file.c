@@ -278,15 +278,24 @@ char *
 cap_freadline(char *dst, size_t dstsz, const char *path) {
 	FILE *fin = fopen(path, "rb");
 	if (!fin) {
+		if (dstsz) {
+			*dst = '\0';
+		}
 		return NULL;
 	}
 
 	if (cap_fgetline(dst, dstsz, fin) == EOF) {
 		fclose(fin);
+		if (dstsz) {
+			*dst = '\0';
+		}
 		return NULL;
 	}
 
 	if (fclose(fin) < 0) {
+		if (dstsz) {
+			*dst = '\0';
+		}
 		return NULL;
 	}
 

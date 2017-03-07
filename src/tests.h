@@ -33,5 +33,6 @@
 #include "cl.h"
 #include "util.h"
 #include "error.h"
+#include "var.h"
 
 #endif
