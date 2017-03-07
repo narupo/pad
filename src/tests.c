@@ -1139,6 +1139,136 @@ errortests[] = {
     {},
 };
 
+/******
+* var *
+******/
+
+static void
+test_var_init(void) {
+    const char *vardir = "/tmp/var";
+    if (!cap_fexists(vardir)) {
+        assert(cap_fmkdirq(vardir) == 0);
+    }
+    assert(cap_varinit(vardir));
+    
+    struct cap_dir *d = cap_diropen(vardir);
+    assert(d != NULL);
+
+    char line[1024];
+    char tmppath[1024];
+    for (struct cap_dirnode *n; (n = cap_dirread(d)); ) {
+        const char *fname = cap_dirnodename(n);
+        if (fname[0] == '.' || strcmp(fname, "..") == 0) {
+            cap_dirnodedel(n);
+            continue;
+        }
+
+        if (strcmp(fname, "home") == 0) {
+            assert(cap_fsolvefmt(tmppath, sizeof tmppath, "%s/%s", vardir, fname));
+            assert(cap_freadline(line, sizeof line, tmppath));
+            assert(strcmp(line, "/tmp") == 0);
+        } else if (strcmp(fname, "cd") == 0) {
+            assert(cap_fsolvefmt(tmppath, sizeof tmppath, "%s/%s", vardir, fname));
+            assert(cap_freadline(line, sizeof line, tmppath));
+            assert(strcmp(line, "/tmp") == 0);
+        } else {
+            assert(0 && "invalid file name");
+        }
+
+        cap_dirnodedel(n);
+    }
+
+    cap_dirclose(d);
+}
+
+static const struct testcase
+vartests[] = {
+    {"init", test_var_init},
+    {},
+};
+
+/*******
+* util *
+*******/
+
+static char **
+__create_testargv(int argc) {
+    char **argv = calloc(argc+1, sizeof(char*));
+    assert(argv != NULL);
+
+    for (int i = 0; i < argc; ++i) {
+        argv[i] = strdup("abc");
+    }
+
+    return argv;
+}
+
+static void
+test_util_freeargv(void) {
+    int argc = 2;
+    char **argv = __create_testargv(argc);
+    assert(argv != NULL);
+    freeargv(argc, argv);
+}
+
+static void
+test_util_showargv(void) {
+    char buf[1024] = {0};
+    setbuf(stdout, buf);
+
+    int argc = 2;
+    char **argv = __create_testargv(argc);
+    assert(argv != NULL);
+
+    showargv(argc, argv);
+    assert(strcmp(buf, "abc\n") == 0);
+
+    setbuf(stdout, NULL);
+    freeargv(argc, argv);
+}
+
+static void
+test_util_isoutofhome(void) {
+    assert(isoutofhome("/not/found/dir"));
+    assert(!isoutofhome(getenv("CAP_VARHOME")));
+}
+
+static void
+test_util_randrange(void) {
+    int min = 0;
+    int max = 10;
+    int n = randrange(min, max);
+    for (int i = min; i < max; ++i) {
+        if (n == i) {
+            return;
+        }
+    }
+
+    assert(0 && "invalid value range");
+}
+
+static void
+test_util_safesystem(void) {
+    const char *path = "/tmp/f";
+    if (cap_fexists(path)) {
+        assert(remove(path) == 0);
+    }
+    char cmd[1024];
+    assert(cap_fsolvefmt(cmd, sizeof cmd, "/bin/sh -c \"touch %s\"", path));
+    assert(safesystem(cmd) == 0);
+    assert(cap_fexists(path));
+}
+
+static const struct testcase
+utiltests[] = {
+    {"test_util_freeargv", test_util_freeargv},
+    {"test_util_showargv", test_util_showargv},
+    {"test_util_isoutofhome", test_util_isoutofhome},
+    {"test_util_randrange", test_util_randrange},
+    {"test_util_safesystem", test_util_safesystem},
+    {},
+};
+
 /*******
 * main *
 *******/
@@ -1152,6 +1282,8 @@ testmodules[] = {
     {"hash", hashtests},
     {"cl", cltests},
     {"error", errortests},
+    {"var", vartests},
+    {"util", utiltests},
     {},
 };
 

@@ -20,7 +20,7 @@ freeargv(int argc, char *argv[]) {
 void
 showargv(int argc, char *argv[]) {
 	for (int i = 0; i < argc; ++i) {
-		printf("[%d] = [%s]\n", i, argv[i]);
+		printf("%s\n", argv[i]);
 	}
 }
 
@@ -60,8 +60,6 @@ randrange(int min, int max) {
 
 int
 safesystem(const char *cmdline) {
-	// puts("-- safesystem");
-	// printf("cmdline[%s]\n", cmdline);
 	struct cap_cl *cl = cap_clnew();
 	if (!cap_clparsestropts(cl, cmdline, 0)) {
 		cap_cldel(cl);
@@ -70,8 +68,9 @@ safesystem(const char *cmdline) {
 
 	int argc = cap_cllen(cl);
 	char **argv = cap_clescdel(cl);
-	// puts("safesystem");
-	// showargv(argc, argv);
+	if (!argv) {
+		return -1;
+	}
 	
 	switch (fork()) {
 	case -1:
