@@ -28,7 +28,7 @@ bool
 isoutofhome(const char *pth) {
 	char hm[FILE_NPATH];
 	if (!cap_envget(hm, sizeof hm, "CAP_VARHOME")) {
-		cap_log("error", "invalid environment variable of 'CAP_VARHOME'");
+		cap_error("invalid environment variable of 'CAP_VARHOME'");
 		return true;
 	}
 
@@ -37,7 +37,7 @@ isoutofhome(const char *pth) {
 
 	if (!cap_fsolve(home, sizeof home, hm) ||
 		!cap_fsolve(path, sizeof path, pth)) {
-		cap_log("error", "failed to solve path");
+		cap_error("failed to solve path");
 		return true;
 	}
 

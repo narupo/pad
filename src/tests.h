@@ -5,8 +5,7 @@
  *  Author: Aizawa Yuta
  *   Since: 2016
  */
-#ifndef TESTS_H
-#define TESTS_H
+#pragma once
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE 1 /* cap: tests: strdup */
@@ -34,5 +33,3 @@
 #include "util.h"
 #include "error.h"
 #include "var.h"
-
-#endif
