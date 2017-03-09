@@ -122,13 +122,14 @@ usage(void) {
  */
 struct opts *
 optsparse(struct opts *self, int argc, char *argv[]) {
-	*self = (struct opts){};
-
 	// Parse options
 	static struct option longopts[] = {
 		{"help", no_argument, 0, 'h'},
 		{},
 	};
+
+	*self = (struct opts){};
+	opterr = 0;
 	optind = 0;
 
 	for (;;) {

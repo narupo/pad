@@ -110,14 +110,14 @@ static int
 parseopts(struct opts *opts, int argc, char *argv[]) {
     // Init opts
     *opts = (struct opts) {};
+    optind = 0;
+    opterr = 0;
 
     // Parse options
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
-        // {"fname", required_argument, 0, 'f'},
         {},
     };
-    optind = 0;
 
     for (;;) {
         int optsindex;

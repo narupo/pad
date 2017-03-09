@@ -50,15 +50,16 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 		{},
 	};
 
+	*opts = (struct opts){};
+	opterr = 0;
+	optind = 0;
+	
 	char hmpath[FILE_NPATH];
 	if (!cap_envget(hmpath, sizeof hmpath, "CAP_VARHOME")) {
 		cap_log("error", "invalid environ variables");
 		return NULL;
 	}
 
-	*opts = (struct opts){};
-	optind = 0;
-	
 	for (;;) {
 		int optsindex;
 		int cur = getopt_long(argc, argv, "he:i:d:r:", longopts, &optsindex);

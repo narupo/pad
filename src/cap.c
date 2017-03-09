@@ -51,6 +51,7 @@ optsparse(struct opts *opts, int argc, char *argv[]) {
 
     *opts = (struct opts){};
     optind = 0;
+    opterr = 0;
     
     for (;;) {
         int optsindex;
