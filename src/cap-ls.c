@@ -92,8 +92,9 @@ optsparse(struct opts *self, int argc, char *argv[]) {
         {"all", no_argument, 0, 'a'},
         {},
     };
-    optind = 0;
-
+    extern int opterr;
+    opterr = 0; // ignore error messages
+    optind = 0; // init index of parse
     *self = (struct opts){};
 
     for (;;) {
