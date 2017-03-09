@@ -42,12 +42,12 @@
 struct cap_socket;
 
 /**
- * Display parameters of socket
+ * Show parameters of socket to stderr
  *
  * @param[in] self
  */
 void
-cap_sockdisp(const struct cap_socket *self);
+cap_sockshow(const struct cap_socket *self);
 
 /**
  * Close socket

@@ -114,7 +114,7 @@ cap_sockmode2str(cap_sockmode_t mode) {
 }
 
 void
-cap_sockdisp(const struct cap_socket *self) {
+cap_sockshow(const struct cap_socket *self) {
 	socklog("socket host[%s] port[%s] mode[%s] socket[%d]\n"
 		, self->host, self->port, cap_sockmode2str(self->mode), self->socket);
 	fflush(stderr);
@@ -429,7 +429,7 @@ testtcpserv(int argc, char *argv[]) {
 		return 1;
 	}
 
-	cap_sockdisp(server);
+	cap_sockshow(server);
 
 	// Single I/O
 	socklog("accept...\n");
@@ -467,7 +467,7 @@ testtcpclient(int argc, char *argv[]) {
 		return 1;
 	}
 
-	cap_sockdisp(socket);
+	cap_sockshow(socket);
 
 	cap_socksendstr(socket,
 		"GET / HTTP/1.1\r\n"
