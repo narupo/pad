@@ -1,0 +1,14 @@
+/**
+ * Description.
+ *
+ * License: MIT
+ *  Author: Aizawa Yuta
+ *   Since: 2017
+ */
+#pragma once
+
+#include <getopt.h>
+
+#include "util.h"
+#include "string.h"
+#include "socket.h"
