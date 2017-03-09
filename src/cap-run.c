@@ -61,7 +61,6 @@ main(int argc, char *argv[]) {
 
 	char exesname[NSCRIPTNAME]; // Execute script name in file
 	readscriptline(exesname, sizeof exesname, spath);
-	// cap_log("debug", "exesname[%s]\n", exesname);
 
 	struct cap_string *cmdline = cap_strnew();
 	cap_strapp(cmdline, exesname);
@@ -72,7 +71,6 @@ main(int argc, char *argv[]) {
 		cap_strapp(cmdline, argv[i]);
 		cap_strapp(cmdline, " ");
 	}
-	// cap_log("debug", "exesname[%s] spath[%s] cmdline[%s]\n", exesname, spath, cap_strgetc(cmdline));
 
 	// Start process communication
 	safesystem(cap_strgetc(cmdline));
