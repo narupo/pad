@@ -1269,6 +1269,60 @@ utiltests[] = {
     {},
 };
 
+/*********
+* socket *
+*********/
+
+static void
+test_socket_sockdisp(void) {
+}
+
+static void
+test_socket_sockclose(void) {
+}
+
+static void
+test_socket_sockopen(void) {
+}
+
+static void
+test_socket_sockhost(void) {
+}
+
+static void
+test_socket_sockport(void) {
+}
+
+static void
+test_socket_sockaccept(void) {
+}
+
+static void
+test_socket_sockrecvstr(void) {
+}
+
+static void
+test_socket_socksendstr(void) {
+}
+
+static void
+test_socket_socksend(void) {
+}
+
+static const struct testcase
+sockettests[] = {
+	{"sockdisp", test_socket_sockdisp},
+	{"sockclose", test_socket_sockclose},
+	{"sockopen", test_socket_sockopen},
+	{"sockhost", test_socket_sockhost},
+	{"sockport", test_socket_sockport},
+	{"sockaccept", test_socket_sockaccept},
+	{"sockrecvstr", test_socket_sockrecvstr},
+	{"socksendstr", test_socket_socksendstr},
+	{"socksend", test_socket_socksend},
+	{},
+};
+
 /*******
 * main *
 *******/
@@ -1284,6 +1338,7 @@ testmodules[] = {
     {"error", errortests},
     {"var", vartests},
     {"util", utiltests},
+    {"socket", sockettests},
     {},
 };
 
