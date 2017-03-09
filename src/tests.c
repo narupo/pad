@@ -1213,7 +1213,7 @@ test_util_freeargv(void) {
 
 static void
 test_util_showargv(void) {
-    char buf[1024] = {0};
+    char buf[BUFSIZ] = {0};
     setbuf(stdout, buf);
 
     int argc = 2;
@@ -1274,23 +1274,41 @@ utiltests[] = {
 *********/
 
 static void
-test_socket_sockdisp(void) {
+test_socket_sockshow(void) {
+    struct cap_socket *s = cap_sockopen("localhost:80", "tcp-client");
+    assert(s != NULL);
+    char buf[BUFSIZ] = {0};
+    setbuf(stderr, buf);
+    cap_sockshow(s);
+    setbuf(stderr, NULL);
+    puts(buf);
+    assert(cap_sockclose(s) == 0);
 }
 
 static void
 test_socket_sockclose(void) {
+    // test_socket_sockshow
 }
 
 static void
 test_socket_sockopen(void) {
+    // test_socket_sockshow
 }
 
 static void
 test_socket_sockhost(void) {
+    struct cap_socket *s = cap_sockopen("localhost:80", "tcp-client");
+    assert(s != NULL);
+    assert(strcmp(cap_sockhost(s), "localhost") == 0);
+    assert(cap_sockclose(s) == 0);
 }
 
 static void
 test_socket_sockport(void) {
+    struct cap_socket *s = cap_sockopen("localhost:80", "tcp-client");
+    assert(s != NULL);
+    assert(strcmp(cap_sockport(s), "80") == 0);
+    assert(cap_sockclose(s) == 0);
 }
 
 static void
@@ -1311,7 +1329,7 @@ test_socket_socksend(void) {
 
 static const struct testcase
 sockettests[] = {
-	{"sockdisp", test_socket_sockdisp},
+	{"sockshow", test_socket_sockshow},
 	{"sockclose", test_socket_sockclose},
 	{"sockopen", test_socket_sockopen},
 	{"sockhost", test_socket_sockhost},
