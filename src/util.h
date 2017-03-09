@@ -5,8 +5,7 @@
  *  Author: Aizawa Yuta
  *   Since: 2016
  */
-#ifndef UTIL_H
-#define UTIL_H
+#pragma once
 
 /****************************************************
 * Util module is allow dependency to other modules. *
@@ -65,9 +64,9 @@ randrange(int min, int max);
 /**
  * Wrapper of system(3) for the safe execute.
  *
+ * @example safesystem("/bin/sh -c \"date\"");
+ *
  * @see system(3)
  */
 int
 safesystem(const char *cmdline);
-
-#endif
