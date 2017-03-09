@@ -1317,6 +1317,10 @@ test_socket_sockaccept(void) {
 
 static void
 test_socket_sockrecvstr(void) {
+    struct cap_socket *s = cap_sockopen("https://google.com:80", "tcp-client");
+    assert(s != NULL);
+    assert(cap_socksendstr(s, "GET / HTTP/1.1\r\n\r\n") >= 0);
+    assert(cap_sockclose(s) == 0);    
 }
 
 static void
@@ -1366,9 +1370,9 @@ run(const struct opts *opts) {
     clock_t start = clock();
 
     for (const struct testmodule *m = testmodules; m->name; ++m) {
-        printf("module '%s'\n", m->name);
+        printf("\n* module '%s'\n", m->name);
         for (const struct testcase *t = m->tests; t->name; ++t) {
-            printf("testing '%s'\n", t->name);
+            printf("- testing '%s'\n", t->name);
             t->test();
             ++ntest;
         }
