@@ -54,8 +54,8 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 	opterr = 0;
 	optind = 0;
 	
-	char hmpath[FILE_NPATH];
-	if (!cap_envget(hmpath, sizeof hmpath, "CAP_VARHOME")) {
+	char cdpath[FILE_NPATH];
+	if (!cap_envget(cdpath, sizeof cdpath, "CAP_VARCD")) {
 		cap_log("error", "invalid environ variables");
 		return NULL;
 	}
@@ -78,11 +78,7 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 		break;
 		case 'e':
 			opts->isexport = true;
-			if (!optarg) {
-				snprintf(opts->exppath, sizeof opts->exppath, "%s/.capalias", hmpath);
-			} else {
-				cap_fsolve(opts->exppath, sizeof opts->exppath, optarg);
-			}
+			cap_fsolve(opts->exppath, sizeof opts->exppath, optarg);
 		break;
 		case 'd':
 			opts->isdelete = true;
@@ -128,10 +124,10 @@ pathtofname(char *dst, size_t dstsz, const char *path) {
 
 static char *
 makealpath(char *dst, size_t dstsz) {
-	char hmdir[FILE_NPATH];
+	char aldir[FILE_NPATH];
 	char varhm[FILE_NPATH];
-	if (!cap_envget(hmdir, sizeof hmdir, "CAP_HOMEDIR") ||
-		!cap_envget(varhm, sizeof varhm, "CAP_VARHOME")) {
+	if (!cap_envget(aldir, sizeof aldir, "CAP_ALIASDIR") ||
+		!cap_envget(varhm, sizeof varhm, "CAP_VARCD")) {
 		cap_log("error", "invalid environ variables");
 		return NULL;
 	}
@@ -143,7 +139,7 @@ makealpath(char *dst, size_t dstsz) {
 	}
 
 	char path[FILE_NPATH];
-	snprintf(path, sizeof path, "%s/%s-alias", hmdir, fname);
+	snprintf(path, sizeof path, "%s/%s-alias", aldir, fname);
 
 	return cap_fsolve(dst, dstsz, path);
 }
@@ -742,9 +738,6 @@ alusage(void) {
 int
 main(int argc, char* argv[]) {
 	cap_envsetf("CAP_PROCNAME", "cap alias");
-
-	// cap_log("debug", "main");
-	// showargv(argc, argv);
 
 	struct opts opts;
 	if (!parseopts(&opts, argc, argv)) {
