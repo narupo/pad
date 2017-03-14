@@ -8,7 +8,18 @@
 #include "cap.h"
 
 static const char CAP_VERSION[] = "0.20";
-
+static const char *capcmds[] = {
+    "home",
+    "cat",
+    "cd",
+    "pwd",
+    "ls",
+    "run",
+    "alias",
+    "hub",
+    NULL,
+};
+    
 /******
 * cap *
 ******/
@@ -77,17 +88,6 @@ optsparse(struct opts *opts, int argc, char *argv[]) {
 
 static struct cap *
 capfixcmdargs(struct cap *cap) {
-    static const char *capcmds[] = {
-        "home",
-        "cat",
-        "cd",
-        "pwd",
-        "ls",
-        "run",
-        "alias",
-        NULL,
-    };
-    
     const char *cmdname = cap->cmdargv[0];
     if (!cmdname) {
         return cap;
@@ -241,6 +241,7 @@ capusage(struct cap *cap) {
         "    cat      catenate files and show.\n"
         "    run      run script.\n"
         "    alias    run alias command.\n"
+        "    hub      run hub.\n"
     ;
     static const char *examples[] = {
         "    $ cap home\n"
