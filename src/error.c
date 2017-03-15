@@ -23,7 +23,7 @@ _cap_log(const char *file, long line, const char *func, const char *type, const 
 		tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 
 	// Messages
-	fprintf(fout, ": %c%s: %s: %ld: In %s function", toupper(type[0]), type+1, file, line, func);
+	fprintf(fout, ": %c%s: %s: %ld: %s", toupper(type[0]), type+1, file, line, func);
 
 	if (errno != 0) {
 		fprintf(fout, ": %s", strerror(errno));
