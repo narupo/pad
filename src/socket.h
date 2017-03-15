@@ -5,8 +5,7 @@
  *  Author: Aizawa Yuta
  *   Since: 2016
  */
-#ifndef SOCKET_H
-#define SOCKET_H
+#pragma once
 
 #include <pthread.h>
 #include <unistd.h>
@@ -147,6 +146,3 @@ cap_socksendstr(struct cap_socket *self, const char *str);
  */
 int
 cap_socksend(struct cap_socket *self, const unsigned char *bytes, size_t size);
-
-#endif
-

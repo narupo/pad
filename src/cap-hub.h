@@ -8,6 +8,8 @@
 #pragma once
 
 #include <getopt.h>
+#include <stdint.h>
+#include <assert.h>
 
 #include "util.h"
 #include "string.h"
