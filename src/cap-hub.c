@@ -63,9 +63,6 @@ argsparsehostport(struct args *self, const uint8_t *hostport) {
         }
     }
 
-    if (bi && m == 1) {
-    }
-
     return true;
 }
 
@@ -77,7 +74,15 @@ argsparse(struct args *self, int argc, char *argv[]) {
         {},
     };
 
-    *self = (struct args){};
+    *self = (struct args){
+        .argc = 0,
+        .argv = NULL,
+        .ishelp = false,
+        .hostport = (const uint8_t *) "",
+        .host = "",
+        .port = -1,
+    };
+
     opterr = 0; // ignore error messages
     optind = 0; // init index of parse
 
@@ -186,10 +191,7 @@ apprun(struct app *self) {
         return 0;
     }
 
-    argsshow(&self->args);
-return 0;
-
-    struct cap_socket *serv = cap_sockopen("localhost:12345", "tcp-server");
+    struct cap_socket *serv = cap_sockopen((uint8_t *) self->args.hostport, (uint8_t *) "tcp-server");
     if (!serv) {
         cap_error("failed create socket");
         return 1;
