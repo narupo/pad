@@ -38,6 +38,93 @@ readscriptline(char *dst, size_t dstsz, const char *path) {
 	return dst;
 }
 
+struct opts {
+    bool ishelp;
+};
+
+static bool
+optsparse(struct opts *self, int argc, char *argv[]) {
+    // Parse options
+    static struct option longopts[] = {
+        {"help", no_argument, 0, 'h'},
+        {"fname", required_argument, 0, 'f'},
+        {},
+    };
+
+    extern int opterr;
+    opterr = 0; // ignore error messages
+    optind = 0; // init index of parse
+
+    for (;;) {
+        int optsindex;
+        int cur = getopt_long(argc, argv, "hf:", longopts, &optsindex);
+        if (cur == -1) {
+            break;
+        }
+
+        switch (cur) {
+        case 0: /* Long option only */ break;
+        case 'h': /* Help */ break;
+        case '?':
+        default: cap_error("Unknown option"); break;
+        }
+    }
+
+    if (argc < optind) {
+        cap_error("Failed to parse option");
+        return false;
+    }
+
+    return true;
+}
+
+static struct cap_array *
+fixargs(int argc, char *argv[]) {
+    const char *optslist[] = {
+        "-h",
+        "--help",
+        "-g",
+        "--global",
+        NULL,
+    };
+    int m = 0;
+
+    struct cap_array *args = cap_arrnew();
+    if (!args) {
+        return NULL;
+    }
+
+    for (int i = 0; i < argc; ++i) {
+        const char *arg = argv[i];
+        switch (m) {
+        case 0:
+            if (strcmp(arg, "run") == 0) {
+                cap_arrpush(args, arg);
+                m = 1;
+            }
+        break;
+        case 1: {
+            bool matched = false;
+            for (int i = 0; optslist[i]; ++i) {
+                if (strcmp(optslist[i], arg) == 0) {
+                    matched = true;
+                    break; // through
+                }
+            }
+            if (!matched) {
+                cap_arrpush(args, arg);
+                m = 2;                
+            }
+        } break;
+        case 2:
+            cap_arrpush(args, arg);
+        break;
+        }
+    }
+
+    return args;
+}
+
 int
 main(int argc, char *argv[]) {
 	cap_envsetf("CAP_PROCNAME", "cap run");
@@ -49,7 +136,7 @@ main(int argc, char *argv[]) {
 
 	char varcd[FILE_NPATH];
 	if (!cap_envget(varcd, sizeof varcd, "CAP_VARCD")) {
-		cap_log("error", "need environment variable of cd");
+		cap_error("need environment variable of cd");
 		return 1;
 	}
 
