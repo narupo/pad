@@ -19,5 +19,6 @@
 #include "string.h"
 #include "env.h"
 #include "util.h"
+#include "array.h"
 
 #endif
