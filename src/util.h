@@ -20,6 +20,7 @@
 #include "env.h"
 #include "string.h"
 #include "cl.h"
+#include "array.h"
 
 /**
  * Free argv memory.
@@ -70,3 +71,6 @@ randrange(int min, int max);
  */
 int
 safesystem(const char *cmdline);
+
+struct cap_array *
+argsbyoptind(int argc, char *argv[], int optind);
