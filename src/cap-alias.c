@@ -27,14 +27,15 @@ enum {
 **********/
 
 struct opts {
-	int argc; // Number of arguments without program name (argc - optind)
+	int nargs; // Number of arguments without program name (argc - optind)
+	int argc;
 	char **argv;
 	bool ishelp;
 	bool isdelete;
 	bool isimport;
 	bool isexport;
 	bool isrun;
-	bool isglobal;
+	const char *opensrc;
 	char *delname; // delete alias name
 	char *runarg; // run alias arg
 	char imppath[FILE_NPATH]; // import file path
@@ -53,7 +54,9 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 		{},
 	};
 
-	*opts = (struct opts){};
+	*opts = (struct opts) {
+		.opensrc = "local",
+	};
 	opterr = 0;
 	optind = 0;
 	
@@ -65,7 +68,7 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 
 	for (;;) {
 		int optsindex;
-		int cur = getopt_long(argc, argv, "he:i:d:r:", longopts, &optsindex);
+		int cur = getopt_long(argc, argv, "he:i:d:r:g", longopts, &optsindex);
 		if (cur == -1) {
 			break;
 		}
@@ -92,7 +95,7 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 			opts->runarg = strdup(optarg);
 		break;
 		case 'g':
-			opts->isglobal = true;
+			opts->opensrc = "global";
 		break;
 		case '?':
 		default: return NULL; break;
@@ -103,7 +106,8 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 		return NULL;
 	}
 
-	opts->argc = argc-optind;
+	opts->nargs = argc-optind;
+	opts->argc = argc;
 	opts->argv = argv;
 
 	return opts;
@@ -129,39 +133,54 @@ pathtohomename(char *dst, size_t dstsz, const char *path) {
 	return dst;
 }
 
+/**
+ * @param[in] src source "local" or "global"
+ */
 static char *
-makealpath(char *dst, size_t dstsz) {
-	char envdir[FILE_NPATH];
-	char varhm[FILE_NPATH];
-	if (!cap_envget(envdir, sizeof envdir, "CAP_ENVDIR") ||
-		!cap_envget(varhm, sizeof varhm, "CAP_VARCD")) {
-		cap_error("invalid environ variables CAP_ENVDIR or CAP_VARCD");
-		return NULL;
-	}
-
-	char homename[FILE_NPATH];
-	if (!pathtohomename(homename, sizeof homename, varhm)) {
-		cap_error("internal error");
-		return NULL;
-	}
-
-	char homepath[FILE_NPATH];
-	if (!cap_fsolvefmt(homepath, sizeof homepath, "%s/%s", envdir, homename)) {
-		cap_error("failed to solve file path");
-		return NULL;
-	}
-
-	if (!cap_fexists(homepath)) {
-		if (cap_fmkdirq(homepath) != 0) {
-			cap_error("failed to make directory \"%s\"", homepath);
+makealpath(char *dst, size_t dstsz, const char *src) {
+	if (strcmp(src, "local") == 0) {
+		char envdir[FILE_NPATH];
+		if (!cap_envget(envdir, sizeof envdir, "CAP_ENVDIR")) { 
+			cap_error("invalid environ variables CAP_ENVDIR");
 			return NULL;
 		}
+
+		char varcd[FILE_NPATH];
+		if (!cap_envget(varcd, sizeof varcd, "CAP_VARCD")) {
+			cap_error("invalid environ variables CAP_VARCD");
+			return NULL;
+		}
+
+		char homename[FILE_NPATH];
+		if (!pathtohomename(homename, sizeof homename, varcd)) {
+			cap_error("internal error");
+			return NULL;
+		}
+
+		char homepath[FILE_NPATH];
+		if (!cap_fsolvefmt(homepath, sizeof homepath, "%s/%s", envdir, homename)) {
+			cap_error("failed to solve file path");
+			return NULL;
+		}
+
+		if (!cap_fexists(homepath)) {
+			if (cap_fmkdirq(homepath) != 0) {
+				cap_error("failed to make directory \"%s\"", homepath);
+				return NULL;
+			}
+		}
+
+		char fpath[FILE_NPATH];
+		snprintf(fpath, sizeof fpath, "%s/alias", homepath);
+		return cap_fsolve(dst, dstsz, fpath);
+
+	} else if (strcmp(src, "global") == 0) {
+		return cap_fsolve(dst, dstsz, "~/.cap/alias");
+
+	} else {
+		cap_error("invalid source \"%s\"", src);
+		return NULL;
 	}
-
-	char fpath[FILE_NPATH];
-	snprintf(fpath, sizeof fpath, "%s/alias", homepath);
-
-	return cap_fsolve(dst, dstsz, fpath);
 }
 
 /*********
@@ -185,20 +204,25 @@ alfclose(struct alfile *alf) {
 	return ret;
 }
 
+/**
+ * @param[in] src source "local" or "global"
+ */
 static struct alfile *
-alfopen(const char *mode) {
-	struct alfile *alf = calloc(1, sizeof(*alf));
-	if (!alf) {
-		return NULL;
-	}
-
+alfopen(const char *src, const char *mode) {
+	// Create file
 	char path[FILE_NPATH];
-	if (!makealpath(path, sizeof path)) {
+	if (!makealpath(path, sizeof path, src)) {
 		return NULL;
 	}
 
 	if (!cap_fexists(path)) {
 		cap_ftrunc(path);
+	}
+
+	// Open file
+	struct alfile *alf = calloc(1, sizeof(*alf));
+	if (!alf) {
+		return NULL;
 	}
 
 	alf->fp = fopen(path, mode);
@@ -416,7 +440,7 @@ appshowls(const struct app *self) {
 		cap_die("failed to create record");
 	}
 
-	struct alfile *alf = alfopen("rb");
+	struct alfile *alf = alfopen(self->opts.opensrc, "rb");
 	if (!alf) {
 		recdel(tmprec);
 		recsdel(recs);
@@ -485,8 +509,8 @@ appshowls(const struct app *self) {
  * @return string pointer to dynamic allocate memory
  */
 static char *
-alreadcmdcp(const char *name) {
-	struct alfile *alf = alfopen("r+");
+appreadcmdcp(const struct app *self, const char *name) {
+	struct alfile *alf = alfopen(self->opts.opensrc, "r+");
 	if (!alf) {
 		cap_die("failed to open alias file");
 	}
@@ -520,7 +544,7 @@ alreadcmdcp(const char *name) {
 static int
 appshowcmd(struct app *self) {
 	const char *name = self->opts.argv[1];
-	char *cmd = alreadcmdcp(name);
+	char *cmd = appreadcmdcp(self, name);
 	if (!cmd) {
 		cap_die("not found alias name of '%s'", name);
 	}
@@ -532,16 +556,16 @@ appshowcmd(struct app *self) {
 
 static int
 appaddal(struct app *self) {
-	struct alfile *alf = alfopen("r+");
+	struct alfile *alf = alfopen(self->opts.opensrc, "r+");
 	if (!alf) {
 		cap_die("failed to open alias file");
 	}
 
 	char cname[ALF_CNAME];
-	snprintf(cname, sizeof cname, "%s", self->opts.argv[1]);
+	snprintf(cname, sizeof cname, "%s", self->opts.argv[self->opts.nargs]);
 	
 	char ccmd[ALF_CCMD] = {0};
-	for (int i = 2; i < self->opts.argc; ++i) {
+	for (int i = self->opts.nargs; i < self->opts.argc; ++i) {
 		capstrncat(ccmd, sizeof ccmd, self->opts.argv[i]);
 		capstrncat(ccmd, sizeof ccmd, " ");
 	}
@@ -589,7 +613,7 @@ done:
 
 static int
 appdelal(struct app *self) {
-	struct alfile *alf = alfopen("r+");
+	struct alfile *alf = alfopen(self->opts.opensrc, "r+");
 
 	for (; !alfeof(alf); ) {
 		const char *clmname = alfreadstr(alf, ALF_CNAME);
@@ -626,7 +650,7 @@ appimport(struct app *self) {
 		return 1;
 	}
 
-	struct alfile *fdst = alfopen("wb");
+	struct alfile *fdst = alfopen(self->opts.opensrc, "wb");
 	if (!fdst) {
 		fclose(fsrc);
 		cap_die("failed to open alias file");
@@ -656,7 +680,7 @@ appexport(struct app *self) {
 		cap_die("invalid export alias path '%s'", self->opts.exppath);
 	}
 
-	struct alfile *fsrc = alfopen("rb");
+	struct alfile *fsrc = alfopen(self->opts.opensrc, "rb");
 	if (!fsrc) {
 		cap_die("failed to open alias file");
 	}
@@ -701,7 +725,7 @@ apprun(struct app *self) {
 		*beg = '\0';
 	}
 
-	char *cmdcol = alreadcmdcp(name);
+	char *cmdcol = appreadcmdcp(self, name);
 	if (!cmdcol) {
 		cap_die("not found alias command of '%s'", name);
 		return 1;
@@ -794,13 +818,13 @@ appmain(struct app *self) {
 	} else if (self->opts.isrun) {
 		return apprun(self);
 
-	} else if (self->opts.argc == 0) {
+	} else if (self->opts.nargs == 0) {
 		return appshowls(self);
 
-	} else if (self->opts.argc == 1) {
+	} else if (self->opts.nargs == 1) {
 		return appshowcmd(self);
 
-	} else if (self->opts.argc >= 2) {
+	} else if (self->opts.nargs >= 2) {
 		return appaddal(self);
 	}
 
