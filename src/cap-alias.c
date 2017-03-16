@@ -27,9 +27,7 @@ enum {
 **********/
 
 struct opts {
-	int nargs; // Number of arguments without program name (argc - optind)
-	int argc;
-	char **argv;
+	struct cap_array *args;
 	bool ishelp;
 	bool isdelete;
 	bool isimport;
@@ -106,9 +104,10 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 		return NULL;
 	}
 
-	opts->nargs = argc-optind;
-	opts->argc = argc;
-	opts->argv = argv;
+	opts->args = argsbyoptind(argc, argv, optind);
+	if (!opts->args) {
+		return NULL;
+	}
 
 	return opts;
 }
@@ -544,7 +543,7 @@ appfindcmdcp(const char *findsrc, const char *fndname) {
 
 static int
 appshowcmd(struct app *self) {
-	const char *name = self->opts.argv[1];
+	const char *name = cap_arrgetc(self->opts.args, 1);
 	char *cmd = appfindcmdcp(self->opts.opensrc, name);
 	if (!cmd) {
 		cap_die("not found alias name of '%s'", name);
@@ -562,12 +561,12 @@ appaddal(struct app *self) {
 		cap_die("failed to open alias file");
 	}
 
-	char cname[ALF_CNAME];
-	snprintf(cname, sizeof cname, "%s", self->opts.argv[self->opts.nargs]);
+	char colname[ALF_CNAME];
+	snprintf(colname, sizeof colname, "%s", cap_arrgetc(self->opts.args, 1));
 	
 	char ccmd[ALF_CCMD] = {0};
-	for (int i = self->opts.nargs; i < self->opts.argc; ++i) {
-		capstrncat(ccmd, sizeof ccmd, self->opts.argv[i]);
+	for (int i = 2; i < cap_arrlen(self->opts.args); ++i) {
+		capstrncat(ccmd, sizeof ccmd, cap_arrgetc(self->opts.args, i));
 		capstrncat(ccmd, sizeof ccmd, " ");
 	}
 
@@ -584,7 +583,7 @@ appaddal(struct app *self) {
 			continue;
 		}
 
-		if (!strcmp(buf, cname)) {
+		if (!strcmp(buf, colname)) {
 			// Update command column
 			alfwrite(alf, ccmd, 1, sizeof ccmd);
 			goto done;
@@ -600,7 +599,7 @@ appaddal(struct app *self) {
 		alfseek(alf, ALF_RLEN*ern, SEEK_SET);
 	}
 
-	alfwrite(alf, cname, 1, sizeof cname);
+	alfwrite(alf, colname, 1, sizeof colname);
 	alfwrite(alf, ccmd, 1, sizeof ccmd);
 
 done:
@@ -785,6 +784,7 @@ appusage(const struct app *self) {
 static void
 appdel(struct app *self) {
 	if (self) {
+		cap_arrdel(self->opts.args);
 		free(self->opts.delname);
 		free(self->opts.runarg);
 		free(self);
@@ -823,13 +823,13 @@ appmain(struct app *self) {
 	} else if (self->opts.isrun) {
 		return apprun(self);
 
-	} else if (self->opts.nargs == 0) {
+	} else if (cap_arrlen(self->opts.args) == 1) {
 		return appshowls(self);
 
-	} else if (self->opts.nargs == 1) {
+	} else if (cap_arrlen(self->opts.args) == 2) {
 		return appshowcmd(self);
 
-	} else if (self->opts.nargs >= 2) {
+	} else if (cap_arrlen(self->opts.args) > 2) {
 		return appaddal(self);
 	}
 
