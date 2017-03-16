@@ -91,70 +91,22 @@ safesystem(const char *cmdline) {
 	return 0;
 }
 
-#if defined(_TEST_UTIL)
-static int
-test_randrange(int argc, char *argv[]) {
-	if (argc < 3) {
-		cap_die("need value of min, max");
+struct cap_array *
+argsbyoptind(int argc, char *argv[], int optind) {
+	struct cap_array *args = cap_arrnew();
+	
+	/* DO NOT DELETE FOR DEBUG.
+
+	printf("argc[%d] optind[%d]\n", argc, optind);
+	for (int i = 0; i < argc; ++i) {
+		printf("%d %s\n", i, argv[i]);
 	}
-	srand(time(NULL));
-	int min = atoi(argv[1]);
-	int max = atoi(argv[2]);
-	printf("%d\n", randrange(min, max));
-	return 0;
+	*/
+
+	cap_arrpush(args, argv[0]);
+	for (int i = optind; i < argc; ++i) {
+		cap_arrpush(args, argv[i]);
+	}
+
+	return args;
 }
-
-static int
-test_isoutofhome(int argc, char *argv[]) {
-	if (isoutofhome(argv[1])) {
-		puts("is out of home");
-	} else {
-		puts("not out of home");
-	}
-	return 0;
-}
-
-static int
-test_safesystem(int argc, char *argv[]) {
-	if (argc < 2) {
-		perror("Need command line string.");
-		return 1;
-	}
-
-	showargv(argc, argv);
-	puts("do safesystem");
-	return safesystem(argv[1]);
-}
-
-int
-main(int argc, char* argv[]) {
-	static const struct cmd {
-		const char *name;
-		int (*func)(int, char**);
-	} cmds[] = {
-		{"randrange", test_randrange},
-		{"isoutofhome", test_isoutofhome},
-		{"safesystem", test_safesystem},
-		{},
-	};
-
-	if (argc < 2) {
-		fprintf(stderr, "Usage: %s [command]\n\n", argv[0]);
-		fprintf(stderr, "The commands are:\n\n");
-		for (const struct cmd *p = cmds; p->name; ++p) {
-			fprintf(stderr, "    %s\n", p->name);
-		}
-		fprintf(stderr, "\n");
-		return 1;
-	}
-
-	for (const struct cmd *p = cmds; p->name; ++p) {
-		if (!strcmp(p->name, argv[1])) {
-			return p->func(--argc, ++argv);
-		}
-	}
-
-	fprintf(stderr, "Not found command of '%s'\n", argv[1]);
-	return 1;
-}
-#endif
