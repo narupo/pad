@@ -109,14 +109,6 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 	return opts;
 }
 
-/******
-* app *
-******/
-
-struct app {
-	struct opts opts;
-};
-
 /*******
 * utls *
 *******/
@@ -403,9 +395,13 @@ recsgetc(const struct records *self, int idx) {
 	return self->recs[idx];
 }
 
-/*************
-* al options *
-*************/
+/******
+* app *
+******/
+
+struct app {
+	struct opts opts;
+};
 
 static int
 appshowls(const struct app *self) {
@@ -617,6 +613,7 @@ appdelal(struct app *self) {
 static int
 appimport(struct app *self) {
 	char path[FILE_NPATH];
+
 	cap_fsolve(path, sizeof path, self->opts.imppath);
 	if (!cap_fexists(path)) {
 		cap_die("invalid import alias path '%s'", self->opts.imppath);
@@ -649,7 +646,6 @@ appimport(struct app *self) {
 		return 1;
 	}
 
-	// cap_log("debug", "copy alias file from '%s'", path);
 	return 0;
 }
 
@@ -684,7 +680,6 @@ appexport(struct app *self) {
 		return 1;
 	}
 
-	// cap_log("debug", "export alias file to '%s'", path);
 	return 0;
 }
 
@@ -784,34 +779,32 @@ appnew(int argc, char *argv[]) {
 
 static int
 appmain(struct app *self) {
-	int ret = 0;
-
 	if (self->opts.ishelp) {
-		ret = appusage(self);
+		return appusage(self);
 
 	} else if (self->opts.isimport) {
-		ret = appimport(self);
+		return appimport(self);
 
 	} else if (self->opts.isexport) {
-		ret = appexport(self);
+		return appexport(self);
 
 	} else if (self->opts.isdelete) {
-		ret = appdelal(self);
+		return appdelal(self);
 
 	} else if (self->opts.isrun) {
-		ret = apprun(self);
+		return apprun(self);
 
 	} else if (self->opts.argc == 0) {
-		ret = appshowls(self);
+		return appshowls(self);
 
 	} else if (self->opts.argc == 1) {
-		ret = appshowcmd(self);
+		return appshowcmd(self);
 
 	} else if (self->opts.argc >= 2) {
-		ret = appaddal(self);
+		return appaddal(self);
 	}
 
-	return ret;
+	return 0;
 }
 
 int
