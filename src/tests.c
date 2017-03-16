@@ -98,49 +98,6 @@ struct testmodule {
     const struct testcase *tests;
 };
 
-/*******
-* opts *
-*******/
-
-struct opts {
-    bool ishelp;
-};
-
-static int
-parseopts(struct opts *opts, int argc, char *argv[]) {
-    // Init opts
-    *opts = (struct opts) {};
-    optind = 0;
-    opterr = 0;
-
-    // Parse options
-    static struct option longopts[] = {
-        {"help", no_argument, 0, 'h'},
-        {},
-    };
-
-    for (;;) {
-        int optsindex;
-        int cur = getopt_long(argc, argv, "h", longopts, &optsindex);
-        if (cur == -1) {
-            break;
-        }
-
-        switch (cur) {
-        case 0: /* Long option only */ break;
-        case 'h': opts->ishelp = true; break;
-        case '?':
-        default: die("unknown option"); break;
-        }
-    }
-
-    if (argc < optind) {
-        die("failed to parse option");
-    }
-    
-    return 0;
-}
-
 /********
 * array *
 ********/
@@ -1259,6 +1216,46 @@ test_util_safesystem(void) {
     assert(cap_fexists(path));
 }
 
+static void
+test_util_argsbyoptind(void) {
+    char *argv[] = {
+        "program",
+        "arg1",
+        "-a",
+        "arg2",
+        "-b",
+        "barg",
+        NULL,
+    };
+    int argc = 0;
+    for (; argv[argc]; ++argc) {
+    }
+
+    struct option longopts[] = {
+        {"opt1", no_argument, 0, 'a'},
+        {"opt2", required_argument, 0, 'b'},
+        {},
+    };
+    const char *shortopts = "ab:";
+    opterr = 0;
+    optind = 0;
+
+    for (;;) {
+        int optsindex;
+        int cur = getopt_long(argc, argv, shortopts, longopts, &optsindex);
+        if (cur == -1) {
+            break;
+        }
+    }
+
+    struct cap_array *args = argsbyoptind(argc, argv, optind); 
+    // cap_arrshow(args, stdout);
+    assert(strcmp(cap_arrgetc(args, 0), "program") == 0);
+    assert(strcmp(cap_arrgetc(args, 1), "arg1") == 0);
+    assert(strcmp(cap_arrgetc(args, 2), "arg2") == 0);
+    cap_arrdel(args);
+}
+
 static const struct testcase
 utiltests[] = {
     {"test_util_freeargv", test_util_freeargv},
@@ -1266,6 +1263,7 @@ utiltests[] = {
     {"test_util_isoutofhome", test_util_isoutofhome},
     {"test_util_randrange", test_util_randrange},
     {"test_util_safesystem", test_util_safesystem},
+    {"test_util_argsbyoptind", test_util_argsbyoptind},
     {},
 };
 
@@ -1363,6 +1361,45 @@ testmodules[] = {
     {"socket", sockettests},
     {},
 };
+
+struct opts {
+    bool ishelp;
+};
+
+static int
+parseopts(struct opts *opts, int argc, char *argv[]) {
+    // Init opts
+    *opts = (struct opts) {};
+    optind = 0;
+    opterr = 0;
+
+    // Parse options
+    static struct option longopts[] = {
+        {"help", no_argument, 0, 'h'},
+        {},
+    };
+
+    for (;;) {
+        int optsindex;
+        int cur = getopt_long(argc, argv, "h", longopts, &optsindex);
+        if (cur == -1) {
+            break;
+        }
+
+        switch (cur) {
+        case 0: /* Long option only */ break;
+        case 'h': opts->ishelp = true; break;
+        case '?':
+        default: die("unknown option"); break;
+        }
+    }
+
+    if (argc < optind) {
+        die("failed to parse option");
+    }
+    
+    return 0;
+}
 
 static void
 run(const struct opts *opts) {
