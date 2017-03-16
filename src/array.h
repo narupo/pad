@@ -5,8 +5,7 @@
  *  Author: Aizawa Yuta
  *   Since: 2016
  */
-#ifndef ARRAY_H
-#define ARRAY_H
+#pragma once
 
 #undef _GNU_SOURCE
 #define _GNU_SOURCE 1 /* cap: array.h: strdup */
@@ -118,5 +117,3 @@ cap_arrlen(const struct cap_array *self);
  */
 const struct cap_array *
 cap_arrshow(const struct cap_array *self, FILE *fout);
-
-#endif
