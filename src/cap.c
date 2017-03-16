@@ -169,16 +169,16 @@ capinitenv(const struct cap *cap) {
     const char bindir[] = "/usr/local/bin/";
     char caproot[FILE_NPATH];
     char vardir[FILE_NPATH];
-    char aldir[FILE_NPATH];
+    char envdir[FILE_NPATH];
 
     cap_fsolve(caproot, sizeof caproot, "~/.cap");
     if (!cap_fexists(caproot)) {
         cap_fmkdirq(caproot);
     }
 
-    snprintf(aldir, sizeof aldir, "%s/alias", caproot);
-    if (!cap_fexists(aldir)) {
-        cap_fmkdirq(aldir);
+    snprintf(envdir, sizeof envdir, "%s/env", caproot);
+    if (!cap_fexists(envdir)) {
+        cap_fmkdirq(envdir);
     }
 
     snprintf(vardir, sizeof vardir, "%s/var", caproot);
@@ -187,7 +187,7 @@ capinitenv(const struct cap *cap) {
     }
 
     cap_envsetf("CAP_BINDIR", bindir);
-    cap_envsetf("CAP_ALIASDIR", aldir);
+    cap_envsetf("CAP_ENVDIR", envdir);
     cap_envsetf("CAP_VARDIR", vardir);
     
     return cap_varinit(vardir);

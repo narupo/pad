@@ -56,7 +56,7 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 	
 	char cdpath[FILE_NPATH];
 	if (!cap_envget(cdpath, sizeof cdpath, "CAP_VARCD")) {
-		cap_log("error", "invalid environ variables");
+		cap_error("invalid environ variables of CAP_VARCD");
 		return NULL;
 	}
 
@@ -107,7 +107,7 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 *******/
 
 static char *
-pathtofname(char *dst, size_t dstsz, const char *path) {
+pathtohomename(char *dst, size_t dstsz, const char *path) {
 	char tmp[dstsz];
 
 	// Remove 環境依存の文字
@@ -124,24 +124,37 @@ pathtofname(char *dst, size_t dstsz, const char *path) {
 
 static char *
 makealpath(char *dst, size_t dstsz) {
-	char aldir[FILE_NPATH];
+	char envdir[FILE_NPATH];
 	char varhm[FILE_NPATH];
-	if (!cap_envget(aldir, sizeof aldir, "CAP_ALIASDIR") ||
+	if (!cap_envget(envdir, sizeof envdir, "CAP_ENVDIR") ||
 		!cap_envget(varhm, sizeof varhm, "CAP_VARCD")) {
-		cap_log("error", "invalid environ variables");
+		cap_error("invalid environ variables CAP_ENVDIR or CAP_VARCD");
 		return NULL;
 	}
 
-	char fname[FILE_NPATH];
-	if (!pathtofname(fname, sizeof fname, varhm)) {
-		cap_die("error", "internal error");
+	char homename[FILE_NPATH];
+	if (!pathtohomename(homename, sizeof homename, varhm)) {
+		cap_error("internal error");
 		return NULL;
 	}
 
-	char path[FILE_NPATH];
-	snprintf(path, sizeof path, "%s/%s-alias", aldir, fname);
+	char homepath[FILE_NPATH];
+	if (!cap_fsolvefmt(homepath, sizeof homepath, "%s/%s", envdir, homename)) {
+		cap_error("failed to solve file path");
+		return NULL;
+	}
 
-	return cap_fsolve(dst, dstsz, path);
+	if (!cap_fexists(homepath)) {
+		if (cap_fmkdirq(homepath) != 0) {
+			cap_error("failed to make directory \"%s\"", homepath);
+			return NULL;
+		}
+	}
+
+	char fpath[FILE_NPATH];
+	snprintf(fpath, sizeof fpath, "%s/alias", homepath);
+
+	return cap_fsolve(dst, dstsz, fpath);
 }
 
 /*********
@@ -172,10 +185,11 @@ alfopen(const char *mode) {
 		return NULL;
 	}
 
-	char path[100];
+	char path[FILE_NPATH];
 	if (!makealpath(path, sizeof path)) {
 		return NULL;
 	}
+	printf("makealpath [%s]\n", path);
 
 	if (!cap_fexists(path)) {
 		cap_ftrunc(path);
@@ -413,16 +427,13 @@ alshowls(void) {
 			continue;
 		}
 		maxnamelen = (namelen > maxnamelen ? namelen : maxnamelen);
-		// printf("%s ", buf);
 		recsetname(tmprec, buf);
 
 		buf = alfreadstr(alf, ALF_CCMD);
 		if (!buf) {
 			break;
 		}
-		// printf("%s\n", buf);
 		recsetcmd(tmprec, buf);
-		// recshow(tmprec, stderr);
 
 		recsmove(recs, tmprec);
 		tmprec = recnew();
@@ -450,7 +461,7 @@ alshowls(void) {
 	recsdel(recs);
 
 	if (alfclose(alf) < 0) {
-		cap_log("error", "failed to close alias file");
+		cap_error("failed to close alias file");
 		return 1;
 	}
 
@@ -666,7 +677,6 @@ alexport(const char *drtpath) {
 
 static int
 alrun(const char *runarg) {
-	// cap_log("debug", "runarg[%s]", runarg);
 	char bindir[FILE_NPATH];
 	if (!cap_envget(bindir, sizeof bindir, "CAP_BINDIR")) {
 		cap_log("error", "need bin directory on environ");
@@ -703,7 +713,6 @@ alrun(const char *runarg) {
 	cap_strapp(cmdline, parg);
 
 	safesystem(cap_strgetc(cmdline));
-	// cap_log("debug", "cmdline[%s]", cap_strgetc(cmdline));
 	
 	cap_strdel(cmdline);
 	return 0;
