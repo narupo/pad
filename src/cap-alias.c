@@ -27,12 +27,14 @@ enum {
 **********/
 
 struct opts {
-	int nargs; // Number of arguments without program name (argc - optind)
+	int argc; // Number of arguments without program name (argc - optind)
+	char **argv;
 	bool ishelp;
 	bool isdelete;
 	bool isimport;
 	bool isexport;
 	bool isrun;
+	bool isglobal;
 	char *delname; // delete alias name
 	char *runarg; // run alias arg
 	char imppath[FILE_NPATH]; // import file path
@@ -47,6 +49,7 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 		{"import", required_argument, 0, 'i'},
 		{"delete", required_argument, 0, 'd'},
 		{"run", required_argument, 0, 'r'},
+		{"global", no_argument, 0, 'g'},
 		{},
 	};
 
@@ -87,7 +90,9 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 		case 'r':
 			opts->isrun = true;
 			opts->runarg = strdup(optarg);
-			// cap_log("debug", "runarg[%s]", opts->runarg);
+		break;
+		case 'g':
+			opts->isglobal = true;
 		break;
 		case '?':
 		default: return NULL; break;
@@ -98,9 +103,19 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
 		return NULL;
 	}
 
-	opts->nargs = argc - optind;
+	opts->argc = argc-optind;
+	opts->argv = argv;
+
 	return opts;
 }
+
+/******
+* app *
+******/
+
+struct app {
+	struct opts opts;
+};
 
 /*******
 * utls *
@@ -189,7 +204,6 @@ alfopen(const char *mode) {
 	if (!makealpath(path, sizeof path)) {
 		return NULL;
 	}
-	printf("makealpath [%s]\n", path);
 
 	if (!cap_fexists(path)) {
 		cap_ftrunc(path);
@@ -394,7 +408,7 @@ recsgetc(const struct records *self, int idx) {
 *************/
 
 static int
-alshowls(void) {
+appshowls(const struct app *self) {
 	struct records *recs = recsnewcapa(4);
 	if (!recs) {
 		cap_die("failed to create records");
@@ -508,7 +522,8 @@ alreadcmdcp(const char *name) {
 }
 
 static int
-alshowcmd(const char *name) {
+appshowcmd(struct app *self) {
+	const char *name = self->opts.argv[1];
 	char *cmd = alreadcmdcp(name);
 	if (!cmd) {
 		cap_die("not found alias name of '%s'", name);
@@ -520,18 +535,18 @@ alshowcmd(const char *name) {
 }
 
 static int
-aladdal(int argc, char *argv[]) {
+appaddal(struct app *self) {
 	struct alfile *alf = alfopen("r+");
 	if (!alf) {
 		cap_die("failed to open alias file");
 	}
 
 	char cname[ALF_CNAME];
-	snprintf(cname, sizeof cname, "%s", argv[1]);
+	snprintf(cname, sizeof cname, "%s", self->opts.argv[1]);
 	
 	char ccmd[ALF_CCMD] = {0};
-	for (int i = 2; i < argc; ++i) {
-		capstrncat(ccmd, sizeof ccmd, argv[i]);
+	for (int i = 2; i < self->opts.argc; ++i) {
+		capstrncat(ccmd, sizeof ccmd, self->opts.argv[i]);
 		capstrncat(ccmd, sizeof ccmd, " ");
 	}
 
@@ -566,7 +581,6 @@ aladdal(int argc, char *argv[]) {
 
 	alfwrite(alf, cname, 1, sizeof cname);
 	alfwrite(alf, ccmd, 1, sizeof ccmd);
-	// printf("ern[%d] cname[%s] ccmd[%s]\n", ern, cname, ccmd);
 
 done:
 	if (alfclose(alf) < 0) {
@@ -578,7 +592,7 @@ done:
 }
 
 static int
-aldelal(const char *name) {
+appdelal(struct app *self) {
 	struct alfile *alf = alfopen("r+");
 
 	for (; !alfeof(alf); ) {
@@ -586,9 +600,8 @@ aldelal(const char *name) {
 		if (!clmname) {
 			break;
 		}
-		// printf("clmname[%s]\n", clmname);
 
-		if (!strcmp(name, clmname)) {
+		if (!strcmp(self->opts.delname, clmname)) {
 			alfseek(alf, -ALF_CNAME, SEEK_CUR);
 			alfclear(alf, ALF_RLEN);
 			break;
@@ -602,11 +615,11 @@ aldelal(const char *name) {
 }
 
 static int
-alimport(const char *drtpath) {
+appimport(struct app *self) {
 	char path[FILE_NPATH];
-	cap_fsolve(path, sizeof path, drtpath);
+	cap_fsolve(path, sizeof path, self->opts.imppath);
 	if (!cap_fexists(path)) {
-		cap_die("invalid import alias path '%s'", drtpath);
+		cap_die("invalid import alias path '%s'", self->opts.imppath);
 		return 1;
 	}
 
@@ -641,10 +654,10 @@ alimport(const char *drtpath) {
 }
 
 static int
-alexport(const char *drtpath) {
+appexport(struct app *self) {
 	char path[FILE_NPATH];
-	if (!cap_fsolve(path, sizeof path, drtpath)) {
-		cap_die("invalid export alias path '%s'", drtpath);
+	if (!cap_fsolve(path, sizeof path, self->opts.exppath)) {
+		cap_die("invalid export alias path '%s'", self->opts.exppath);
 	}
 
 	struct alfile *fsrc = alfopen("rb");
@@ -676,7 +689,7 @@ alexport(const char *drtpath) {
 }
 
 static int
-alrun(const char *runarg) {
+apprun(struct app *self) {
 	char bindir[FILE_NPATH];
 	if (!cap_envget(bindir, sizeof bindir, "CAP_BINDIR")) {
 		cap_log("error", "need bin directory on environ");
@@ -684,7 +697,7 @@ alrun(const char *runarg) {
 	}
 
 	char name[ALF_CNAME];
-	const char *parg = runarg;
+	const char *parg = self->opts.runarg;
 	{
 		char *beg = name;
 		const char *end = name + sizeof(name) - 1;
@@ -719,7 +732,7 @@ alrun(const char *runarg) {
 }
 
 static int
-alusage(void) {
+appusage(const struct app *self) {
 	fprintf(stderr,
 		"Usage: cap alias [arguments] [options]\n"
 		"\n"
@@ -730,6 +743,7 @@ alusage(void) {
 		"    -i, --import    import alias file.\n"
 		"    -e, --export    export alias file.\n"
 		"    -r, --run       run command of alias.\n"
+		"    -g, --global    on global environment.\n"
 		"\n"
 		"Example:\n"
 		"\n"
@@ -744,43 +758,74 @@ alusage(void) {
 * main *
 *******/
 
+static void
+appdel(struct app *self) {
+	if (self) {
+		free(self->opts.delname);
+		free(self->opts.runarg);
+		free(self);
+	}
+}
+
+static struct app *
+appnew(int argc, char *argv[]) {
+	struct app *self = calloc(1, sizeof(*self));
+	if (!self) {
+		cap_error("failed to create app");
+		return NULL;
+	}
+
+	if (!parseopts(&self->opts, argc, argv)) {
+		cap_die("failed to parse options");
+	}
+
+	return self;
+}
+
+static int
+appmain(struct app *self) {
+	int ret = 0;
+
+	if (self->opts.ishelp) {
+		ret = appusage(self);
+
+	} else if (self->opts.isimport) {
+		ret = appimport(self);
+
+	} else if (self->opts.isexport) {
+		ret = appexport(self);
+
+	} else if (self->opts.isdelete) {
+		ret = appdelal(self);
+
+	} else if (self->opts.isrun) {
+		ret = apprun(self);
+
+	} else if (self->opts.argc == 0) {
+		ret = appshowls(self);
+
+	} else if (self->opts.argc == 1) {
+		ret = appshowcmd(self);
+
+	} else if (self->opts.argc >= 2) {
+		ret = appaddal(self);
+	}
+
+	return ret;
+}
+
 int
 main(int argc, char* argv[]) {
 	cap_envsetf("CAP_PROCNAME", "cap alias");
 
-	struct opts opts;
-	if (!parseopts(&opts, argc, argv)) {
-		cap_die("failed to parse options");
+	struct app *app = appnew(argc, argv);
+	if (!app) {
+		cap_die("failed to create app");
+		return 1;
 	}
 
-	int ret = 0;
-
-	if (opts.ishelp) {
-		ret = alusage();
-
-	} else if (opts.isimport) {
-		ret = alimport(opts.imppath);
-
-	} else if (opts.isexport) {
-		ret = alexport(opts.exppath);
-
-	} else if (opts.isdelete) {
-		ret = aldelal(opts.delname);
-		free(opts.delname);
-
-	} else if (opts.isrun) {
-		ret = alrun(opts.runarg);
-		free(opts.runarg);
-
-	} else if (opts.nargs == 0) {
-		ret = alshowls();
-
-	} else if (opts.nargs == 1) {
-		ret = alshowcmd(argv[1]);
-
-	} else if (opts.nargs >= 2) {
-		ret = aladdal(argc, argv);
-	}
+	int ret = appmain(app);
+	appdel(app);
 
 	return ret;
 }
