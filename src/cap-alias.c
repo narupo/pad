@@ -505,12 +505,13 @@ appshowls(const struct app *self) {
 /**
  * Read command by alias name
  *
+ * @param fndsrc "local" or "global"
  * @param string alias name
  * @return string pointer to dynamic allocate memory
  */
 static char *
-appreadcmdcp(const struct app *self, const char *name) {
-	struct alfile *alf = alfopen(self->opts.opensrc, "r+");
+appfindcmdcp(const char *findsrc, const char *fndname) {
+	struct alfile *alf = alfopen(findsrc, "r+");
 	if (!alf) {
 		cap_die("failed to open alias file");
 	}
@@ -521,7 +522,7 @@ appreadcmdcp(const struct app *self, const char *name) {
 			break;
 		}
 
-		if (strcmp(buf, name) != 0) {
+		if (strcmp(buf, fndname) != 0) {
 			alfreadstr(alf, ALF_CCMD);
 			continue;
 		}
@@ -544,7 +545,7 @@ appreadcmdcp(const struct app *self, const char *name) {
 static int
 appshowcmd(struct app *self) {
 	const char *name = self->opts.argv[1];
-	char *cmd = appreadcmdcp(self, name);
+	char *cmd = appfindcmdcp(self->opts.opensrc, name);
 	if (!cmd) {
 		cap_die("not found alias name of '%s'", name);
 	}
@@ -715,19 +716,23 @@ apprun(struct app *self) {
 		return 1;
 	}
 
-	char name[ALF_CNAME];
+	char cmdname[ALF_CNAME];
 	const char *parg = self->opts.runarg;
 	{
-		char *beg = name;
-		const char *end = name + sizeof(name) - 1;
+		char *beg = cmdname;
+		const char *end = cmdname + sizeof(cmdname) - 1;
 		for (; *parg && !isspace(*parg) && beg < end; *beg++ = *parg++) {
 		}
 		*beg = '\0';
 	}
 
-	char *cmdcol = appreadcmdcp(self, name);
+	// First find at local
+	char *cmdcol = appfindcmdcp("local", cmdname);
 	if (!cmdcol) {
-		cap_die("not found alias command of '%s'", name);
+		cmdcol = appfindcmdcp("global", cmdname);
+		if (!cmdcol) {
+			cap_error("not found command name \"%s\"", cmdname);
+		}
 		return 1;
 	}
 
@@ -737,7 +742,7 @@ apprun(struct app *self) {
 
 	struct cap_string *cmdline = cap_strnew();
 	if (!cmdline) {
-		cap_log("error", "failed to create cap string");
+		cap_error("failed to create cap string");
 		return 1;
 	}
 
