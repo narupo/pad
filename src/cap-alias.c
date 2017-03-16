@@ -33,7 +33,7 @@ struct opts {
 	bool isimport;
 	bool isexport;
 	bool isrun;
-	const char *opensrc;
+	const char *opensrc; // "local" or "global"
 	char *delname; // delete alias name
 	char *runarg; // run alias arg
 	char imppath[FILE_NPATH]; // import file path
