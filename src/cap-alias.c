@@ -711,7 +711,7 @@ static int
 apprun(struct app *self) {
 	char bindir[FILE_NPATH];
 	if (!cap_envget(bindir, sizeof bindir, "CAP_BINDIR")) {
-		cap_log("error", "need bin directory on environ");
+		cap_error("need bin directory on environ");
 		return 1;
 	}
 
@@ -734,8 +734,8 @@ apprun(struct app *self) {
 		cmdcol = appfindcmdcp(scope, cmdname);
 		if (!cmdcol) {
 			cap_error("not found command name \"%s\"", cmdname);
+			return 2;
 		}
-		return 1;
 	}
 
 	char cmdpath[FILE_NPATH];
@@ -745,7 +745,7 @@ apprun(struct app *self) {
 	struct cap_string *cmdline = cap_strnew();
 	if (!cmdline) {
 		cap_error("failed to create cap string");
-		return 1;
+		return 3;
 	}
 
 	cap_strapp(cmdline, cmdpath);
