@@ -752,6 +752,7 @@ apprun(struct app *self) {
 	cap_strapp(cmdline, parg);
 
 	cap_envsetf("CAP_SCOPE", scope);
+	cap_debug("scope[%s] cmdline[%s]\n", scope, cap_strgetc(cmdline));
 	safesystem(cap_strgetc(cmdline));
 	
 	cap_strdel(cmdline);
