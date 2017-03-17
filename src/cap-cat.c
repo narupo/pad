@@ -175,9 +175,24 @@ run(struct opts *opts) {
 		return catstream(stdout, stdin);
 	}
 
+	const char *scope = getenv("CAP_SCOPE");
+	if (!scope) {
+		cap_error("not found scope in environment");
+		return 1;
+	}
+
 	char cdpath[FILE_NPATH];
-	if (!cap_envget(cdpath, sizeof cdpath, "CAP_VARCD")) {
-		cap_die("need environment variable of cd");
+	if (strcasecmp(scope, "local") == 0) {
+		if (!cap_envget(cdpath, sizeof cdpath, "CAP_VARCD")) {
+			cap_die("need environment variable of cd");
+		}
+	} else if (strcasecmp(scope, "global") == 0) {
+		if (!cap_envget(cdpath, sizeof cdpath, "CAP_VARHOME")) {
+			cap_die("need environment variable of home");
+		}
+	} else {
+		cap_error("invalid scope \"%s\"", scope);
+		return 1;
 	}
 
 	int ret = 0;
