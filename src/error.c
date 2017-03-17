@@ -103,3 +103,21 @@ cap_die(const char *fmt, ...) {
 
 	exit(EXIT_FAILURE);
 }
+
+void
+cap_debug(const char *fmt, ...) {
+	const char *isdeb = getenv("CAP_DEBUG");
+	if (isdeb && *isdeb == '0') {
+		return;
+	}
+
+	char tmp[1024];
+	fmt = fmttoupper(tmp, sizeof tmp, fmt);
+
+	va_list ap;
+	va_start(ap, fmt);
+	errorap(ap, fmt);
+	va_end(ap);
+
+	exit(EXIT_FAILURE);
+}

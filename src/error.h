@@ -16,6 +16,7 @@
 #include <errno.h> 
 #include <time.h>
 #include <ctype.h>
+#include <strings.h>
 
 /**
  * Write log
@@ -60,5 +61,14 @@ cap_die(const char *fmt, ...);
  */
 void
 cap_error(const char *fmt, ...);
+
+/**
+ * Show debug message
+ * 
+ * @param[in] *fmt string of format
+ * @param[in] ... arguments of format
+ */
+void
+cap_debug(const char *fmt, ...);
 
 #endif
