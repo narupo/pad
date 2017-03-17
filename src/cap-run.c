@@ -65,9 +65,9 @@ optsparse(struct opts *self, int argc, char *argv[]) {
 
         switch (cur) {
         case 0: /* Long option only */ break;
-        case 'h': /* Help */ break;
+        case 'h': self->ishelp = true; break;
         case '?':
-        default: cap_error("Unknown option"); break;
+        default: cap_error("Unknown option \"%s\"", cur); break;
         }
     }
 
@@ -115,14 +115,30 @@ appmain(struct app *self) {
         return 1;
     }
 
-    char varcd[FILE_NPATH];
-    if (!cap_envget(varcd, sizeof varcd, "CAP_VARCD")) {
-        cap_error("need environment variable of cd");
+    const char *scope = getenv("CAP_SCOPE");
+    if (!scope) {
+        cap_error("not found scope in environment");
+        return 1;
+    }
+
+    char cdorhome[FILE_NPATH];
+    if (strcasecmp(scope, "local") == 0) {
+        if (!cap_envget(cdorhome, sizeof cdorhome, "CAP_VARCD")) {
+            cap_error("need environment variable of cd");
+            return 1;
+        }
+    } else if (strcasecmp(scope, "global") == 0) {
+        if (!cap_envget(cdorhome, sizeof cdorhome, "CAP_VARHOME")) {
+            cap_error("need environment variable of home");
+            return 1;
+        }
+    } else {
+        cap_error("invalid scope \"%s\"", scope);
         return 1;
     }
 
     char spath[FILE_NPATH]; // Script path
-    cap_fsolvefmt(spath, sizeof spath, "%s/%s", varcd, self->opts.argv[1]);
+    cap_fsolvefmt(spath, sizeof spath, "%s/%s", cdorhome, self->opts.argv[1]);
     if (isoutofhome(spath)) {
         cap_die("invalid script. '%s' is out of home.", spath);
     }
