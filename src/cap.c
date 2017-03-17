@@ -186,6 +186,7 @@ capinitenv(const struct cap *cap) {
         cap_fmkdirq(vardir);
     }
 
+    cap_envsetf("CAP_SCOPE", "local");
     cap_envsetf("CAP_BINDIR", bindir);
     cap_envsetf("CAP_ALIASDIR", aldir);
     cap_envsetf("CAP_VARDIR", vardir);
