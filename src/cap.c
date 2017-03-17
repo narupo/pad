@@ -186,6 +186,7 @@ capinitenv(const struct cap *cap) {
         cap_fmkdirq(vardir);
     }
 
+    cap_envsetf("CAP_DEBUG", "0");
     cap_envsetf("CAP_SCOPE", "local");
     cap_envsetf("CAP_BINDIR", bindir);
     cap_envsetf("CAP_ENVDIR", envdir);
@@ -327,6 +328,7 @@ caprun(struct cap *cap) {
     }
     
     if (cap->alcmdln) {
+        cap_debug("alcmdln[%s]", cap->alcmdln);
         safesystem(cap->alcmdln);
     } else {
         capfork(cap);
