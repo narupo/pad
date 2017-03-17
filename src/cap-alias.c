@@ -726,9 +726,12 @@ apprun(struct app *self) {
 	}
 
 	// First find at local
-	char *cmdcol = appfindcmdcp("local", cmdname);
+	const char *scope = "local";
+	char *cmdcol = appfindcmdcp(scope, cmdname);
 	if (!cmdcol) {
-		cmdcol = appfindcmdcp("global", cmdname);
+		// Next find at global
+		scope = "global";
+		cmdcol = appfindcmdcp(scope, cmdname);
 		if (!cmdcol) {
 			cap_error("not found command name \"%s\"", cmdname);
 		}
@@ -748,6 +751,7 @@ apprun(struct app *self) {
 	cap_strapp(cmdline, cmdpath);
 	cap_strapp(cmdline, parg);
 
+	cap_envsetf("CAP_SCOPE", scope);
 	safesystem(cap_strgetc(cmdline));
 	
 	cap_strdel(cmdline);
