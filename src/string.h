@@ -3,10 +3,9 @@
  *
  * License: MIT
  *  Author: Aizawa Yuta
- *   Since: 2016
+ *   Since: 2016, 2017
  */
-#ifndef STRING_H
-#define STRING_H
+#pragma once
 
 #define _GNU_SOURCE 1 /* cap: string.h: strdup */
 #include <stdio.h>
@@ -260,7 +259,7 @@ cap_strappother(struct cap_string *self, const struct cap_string *other);
  * @return failed to NULL
  */
 struct cap_string *
-cap_strappfmt(struct cap_string *self, cap_string_type_t *buf, size_t nbuf, const cap_string_type_t *fmt, ...);
+cap_strappfmt(struct cap_string *self, cap_string_type_t *buf, int32_t nbuf, const cap_string_type_t *fmt, ...);
 
 /**
  * Strip elements at right of string
@@ -300,5 +299,3 @@ cap_strstrip(struct cap_string *self, const cap_string_type_t *rems);
  */
 const cap_string_type_t *
 cap_strfindc(const struct cap_string *self, const cap_string_type_t *target);
-
-#endif
