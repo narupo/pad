@@ -713,23 +713,28 @@ test_file_fopendir(void) {
 static void
 test_file_frealpath(void) {
     char path[1024];
+    assert(cap_frealpath(NULL, sizeof path, "/tmp/../tmp") == NULL);
+    assert(cap_frealpath(path, 0, "/tmp/../tmp") == NULL);
+    assert(cap_frealpath(path, sizeof path, NULL) == NULL);
     assert(cap_frealpath(path, sizeof path, "/tmp/../tmp") != NULL);
     assert(strcmp(path, "/tmp") == 0);
 }
 
 static void
 test_file_fexists(void) {
+    assert(cap_fexists(NULL) == false);
     assert(cap_fexists("/tmp"));
     assert(!cap_fexists("/nothing/directory"));
 }
 
 static void
 test_file_fmkdirmode(void) {
-    assert(!cap_fexists("/nothing/directory"));
+    // TODO
 }
 
 static void
 test_file_fmkdirq(void) {
+    assert(cap_fmkdirq(NULL) != 0);
     assert(cap_fmkdirq("/tmp") != 0);
 }
 
@@ -737,6 +742,7 @@ static void
 test_file_ftrunc(void) {
     const char *path = "/tmp/cap.ftrunc";
     assert(!cap_fexists(path));
+    assert(!cap_ftrunc(NULL));
     assert(cap_ftrunc(path));
     assert(cap_fexists(path));
     assert(remove(path) == 0);
@@ -745,12 +751,16 @@ test_file_ftrunc(void) {
 static void
 test_file_fsolve(void) {
     char path[1024];
+    assert(cap_fsolve(NULL, sizeof path, "/tmp/../tmp") == NULL);
+    assert(cap_fsolve(path, 0, "/tmp/../tmp") == NULL);
+    assert(cap_fsolve(path, sizeof path, NULL) == NULL);
     assert(cap_fsolve(path, sizeof path, "/tmp/../tmp"));
     assert(strcmp(path, "/tmp") == 0);
 }
 
 static void
 test_file_fsolvecp(void) {
+    assert(!cap_fsolvecp(NULL));
     char *path = cap_fsolvecp("/tmp/../tmp");
     assert(path != NULL);
     assert(strcmp(path, "/tmp") == 0);
@@ -760,12 +770,17 @@ test_file_fsolvecp(void) {
 static void
 test_file_fsolvefmt(void) {
     char path[1024];
+    assert(cap_fsolvefmt(NULL, sizeof path, "/%s/../%s", "tmp", "tmp") == NULL);
+    assert(cap_fsolvefmt(path, 0, "/%s/../%s", "tmp", "tmp") == NULL);
+    assert(cap_fsolvefmt(path, sizeof path, NULL, "tmp", "tmp") == NULL);
+    assert(cap_fsolvefmt(path, sizeof path, "/%s/../%s", NULL) == NULL);
     assert(cap_fsolvefmt(path, sizeof path, "/%s/../%s", "tmp", "tmp"));
     assert(strcmp(path, "/tmp") == 0);
 }
 
 static void
 test_file_fisdir(void) {
+    assert(!cap_fisdir(NULL));
     assert(cap_fisdir("/tmp"));
     assert(!cap_fisdir("/not/found/directory"));
 }
@@ -774,6 +789,7 @@ static void
 test_file_freadcp(void) {
     FILE *fin = cap_fopen(get_test_finpath(), "r");
     assert(fin != NULL);
+    assert(!cap_freadcp(NULL));
     char *p = cap_freadcp(fin);
     cap_fclose(fin);
     assert(p != NULL);
@@ -784,12 +800,14 @@ static void
 test_file_fsize(void) {
     FILE *fin = cap_fopen(get_test_finpath(), "r");
     assert(fin != NULL);
+    assert(cap_fsize(NULL) == -1);
     assert(cap_fsize(fin) == get_test_finsize());
     assert(cap_fclose(fin) == 0);
 }
 
 static void
 test_file_fsuffix(void) {
+    assert(cap_fsuffix(NULL) == NULL);
     const char *suf = cap_fsuffix("/this/is/text/file.txt");
     assert(suf != NULL);
     assert(strcmp(suf, "txt") == 0);
@@ -798,6 +816,9 @@ test_file_fsuffix(void) {
 static void
 test_file_fdirname(void) {
     char name[128];
+    assert(cap_fdirname(NULL, sizeof name, "/dir/name/file") == NULL);
+    assert(cap_fdirname(name, 0, "/dir/name/file") == NULL);
+    assert(cap_fdirname(name, sizeof name, NULL) == NULL);
     assert(cap_fdirname(name, sizeof name, "/dir/name/file") != NULL);
     assert(strcmp(name, "/dir/name") == 0);
 }
@@ -805,6 +826,9 @@ test_file_fdirname(void) {
 static void
 test_file_fbasename(void) {
     char name[128];
+    assert(cap_fbasename(NULL, sizeof name, "/dir/name/file") == NULL);
+    assert(cap_fbasename(name, 0, "/dir/name/file") == NULL);
+    assert(cap_fbasename(name, sizeof name, NULL) == NULL);
     assert(cap_fbasename(name, sizeof name, "/dir/name/file") != NULL);
     assert(strcmp(name, "file") == 0);
 }
@@ -814,6 +838,9 @@ test_file_fgetline(void) {
     FILE *fin = get_test_fin();
     assert(fin != NULL);
     char line[1024];
+    assert(cap_fgetline(NULL, sizeof line, fin) == EOF);
+    assert(cap_fgetline(line, 0, fin) == EOF);
+    assert(cap_fgetline(line, sizeof line, NULL) == EOF);
     assert(cap_fgetline(line, sizeof line, fin) != EOF);
     assert(strcmp(get_test_fcontent_nonewline(), line) == 0);
     assert(cap_fclose(fin) == 0);
@@ -822,18 +849,28 @@ test_file_fgetline(void) {
 static void
 test_file_freadline(void) {
     char line[1024];
+    assert(cap_freadline(NULL, sizeof line, get_test_finpath()) == NULL);
+    assert(cap_freadline(line, 0, get_test_finpath()) == NULL);
+    assert(cap_freadline(line, sizeof line, NULL) == NULL);
     assert(cap_freadline(line, sizeof line, get_test_finpath()) != NULL);
     assert(strcmp(line, get_test_fcontent_nonewline()) == 0);
 }
 
 static void
 test_file_fwriteline(void) {
+    assert(cap_fwriteline(NULL, get_test_finpath()) == NULL);
+    assert(cap_fwriteline(get_test_fcontent_nonewline(), NULL) == NULL);
     assert(cap_fwriteline(get_test_fcontent_nonewline(), get_test_finpath()));
     test_file_freadline();
 }
 
 static void
 test_file_dirnodedel(void) {
+    cap_dirclose(NULL);
+    assert(cap_diropen(NULL) == NULL);
+    assert(cap_dirread(NULL) == NULL);
+    cap_dirnodedel(NULL);
+
     struct cap_dir *dir = cap_diropen("/tmp");
     assert(dir != NULL);
 
