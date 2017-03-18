@@ -174,7 +174,7 @@ cap_strgetc(const struct cap_string *self) {
 int32_t
 cap_strempty(const struct cap_string *self) {
 	if (!self) {
-		return -1;
+		return 0;
 	}
 	return self->length == 0;
 }
