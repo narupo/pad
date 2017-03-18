@@ -378,6 +378,7 @@ static void
 test_string_strgetc(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strgetc(NULL) == NULL);
     assert(strcmp(cap_strgetc(s), "") == 0);
     assert(cap_strapp(s, "1234") != NULL);
     assert(strcmp(cap_strgetc(s), "1234") == 0);
@@ -388,9 +389,10 @@ static void
 test_string_strempty(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
-    assert(cap_strempty(s) == true);
+    assert(cap_strempty(NULL) == 0);
+    assert(cap_strempty(s) == 1);
     assert(cap_strapp(s, "1234") != NULL);
-    assert(cap_strempty(s) == false);
+    assert(cap_strempty(s) == 0);
     cap_strdel(s);
 }
 
@@ -398,6 +400,8 @@ static void
 test_string_strclear(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strapp(NULL, "1234") == NULL);
+    assert(cap_strapp(s, NULL) == NULL);
     assert(cap_strapp(s, "1234") != NULL);
     assert(cap_strlen(s) == 4);
     cap_strclear(s);
@@ -409,6 +413,8 @@ static void
 test_string_strset(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strset(NULL, "1234") == NULL);
+    assert(cap_strset(s, NULL) == NULL);
     assert(cap_strset(s, "1234") != NULL);
     assert(strcmp(cap_strgetc(s), "1234") == 0);
     assert(cap_strset(s, "12") != NULL);
@@ -420,6 +426,7 @@ static void
 test_string_strresize(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strcapa(NULL) == -1);
     assert(cap_strcapa(s) == 4);
     assert(cap_strresize(s, 4*2) != NULL);
     assert(cap_strcapa(s) == 8);
@@ -430,6 +437,9 @@ static void
 test_string_strpushb(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strpushb(NULL, '1') == NULL);
+    assert(cap_strpushb(s, 0) == NULL);
+    assert(cap_strpushb(s, '\0') == NULL);
     assert(cap_strpushb(s, '1') != NULL);
     assert(cap_strpushb(s, '2') != NULL);
     assert(strcmp(cap_strgetc(s), "12") == 0);
@@ -440,6 +450,7 @@ static void
 test_string_strpopb(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strpopb(NULL) == '\0');
     assert(cap_strset(s, "1234") != NULL);
     assert(strcmp(cap_strgetc(s), "1234") == 0);
     assert(cap_strpopb(s) == '4');
@@ -452,6 +463,9 @@ static void
 test_string_strpushf(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strpushf(NULL, '1') == NULL);
+    assert(cap_strpushf(s, 0) == NULL);
+    assert(cap_strpushf(s, '\0') == NULL);
     assert(cap_strpushf(s, '1') != NULL);
     assert(cap_strpushf(s, '2') != NULL);
     assert(strcmp(cap_strgetc(s), "21") == 0);
@@ -462,6 +476,7 @@ static void
 test_string_strpopf(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strpopf(NULL) == '\0');
     assert(cap_strset(s, "1234") != NULL);
     assert(cap_strpopf(s) == '1');
     assert(cap_strpopf(s) == '2');
@@ -473,6 +488,8 @@ static void
 test_string_strapp(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strapp(NULL, "1234") == NULL);
+    assert(cap_strapp(s, NULL) == NULL);
     assert(cap_strapp(s, "1234") != NULL);
     assert(strcmp(cap_strgetc(s), "1234") == 0);
     cap_strdel(s);
@@ -483,6 +500,7 @@ test_string_strappstream(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
 
+
     char path[1024];
     assert(cap_frealpath(path, sizeof path, ".") != NULL);
     assert(capstrncat(path, sizeof path, "/tests.c") != NULL);
@@ -490,6 +508,8 @@ test_string_strappstream(void) {
 
     FILE *fin = fopen(path, "r");
     assert(fin != NULL);
+    assert(cap_strappstream(NULL, fin) == NULL);
+    assert(cap_strappstream(s, NULL) == NULL);
     assert(cap_strappstream(s, fin) != NULL);
     assert(fclose(fin) == 0);
 
@@ -504,6 +524,8 @@ test_string_strappother(void) {
     struct cap_string *o = cap_strnew();
     assert(o != NULL);
     assert(cap_strset(o, "1234") != NULL);
+    assert(cap_strappother(NULL, o) == NULL);
+    assert(cap_strappother(s, NULL) == NULL);
     assert(cap_strappother(s, o) != NULL);
     assert(strcmp(cap_strgetc(s), "12341234") == 0);
     cap_strdel(o);
@@ -515,6 +537,10 @@ test_string_strappfmt(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
     char buf[1024];
+    assert(cap_strappfmt(NULL, buf, sizeof buf, "%s", "test") == NULL);
+    assert(cap_strappfmt(s, NULL, sizeof buf, "%s", "test") == NULL);
+    assert(cap_strappfmt(s, buf, 0, "%s", "test") == NULL);
+    assert(cap_strappfmt(s, buf, sizeof buf, NULL, "test") == NULL);
     assert(cap_strappfmt(s, buf, sizeof buf, "%s %d %c", "1234", 1, '2') != NULL);
     assert(strcmp(cap_strgetc(s), "1234 1 2") == 0);
     cap_strdel(s);
@@ -525,6 +551,8 @@ test_string_strrstrip(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
     assert(cap_strset(s, "1234") != NULL);
+    assert(cap_strrstrip(NULL, "34") == NULL);
+    assert(cap_strrstrip(s, NULL) == NULL);
     assert(cap_strrstrip(s, "34") != NULL);
     assert(strcmp(cap_strgetc(s), "12") == 0);
     cap_strdel(s);
@@ -535,6 +563,8 @@ test_string_strlstrip(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
     assert(cap_strset(s, "1234") != NULL);
+    assert(cap_strlstrip(NULL, "12") == NULL);
+    assert(cap_strlstrip(s, NULL) == NULL);
     assert(cap_strlstrip(s, "12") != NULL);
     assert(strcmp(cap_strgetc(s), "34") == 0);
     cap_strdel(s);
@@ -545,6 +575,8 @@ test_string_strstrip(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
     assert(cap_strset(s, "--1234--") != NULL);
+    assert(cap_strstrip(NULL, "-") == NULL);
+    assert(cap_strstrip(s, NULL) == NULL);
     assert(cap_strstrip(s, "-") != NULL);
     assert(strcmp(cap_strgetc(s), "1234") == 0);
     cap_strdel(s);
@@ -555,8 +587,9 @@ test_string_strfindc(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
     assert(cap_strset(s, "1234") != NULL);
+    assert(cap_strfindc(NULL, "") == NULL);
+    assert(cap_strfindc(s, NULL) == NULL);
     const char *fnd = cap_strfindc(s, "23");
-    // printf("fnd[%s]\n", fnd);
     assert(fnd != NULL);
     assert(strcmp(fnd, "234") == 0);
     cap_strdel(s);
