@@ -680,6 +680,7 @@ static void
 test_file_fclose(void) {
     FILE* f = cap_fopen(get_test_finpath(), "r");
     assert(f != NULL);
+    assert(cap_fclose(NULL) != 0);
     assert(cap_fclose(f) == 0);
 }
 
@@ -692,6 +693,7 @@ static void
 test_file_fcopy(void) {
     FILE *f = cap_fopen(get_test_finpath(), "r");
     assert(f != NULL);
+    // TODO
     assert(cap_fclose(f) == 0);
 }
 
@@ -699,6 +701,7 @@ static void
 test_file_fclosedir(void) {
     DIR *f = cap_fopendir(get_test_dirpath());
     assert(f != NULL);
+    assert(cap_fclosedir(NULL) == -1);
     assert(cap_fclosedir(f) == 0);
 }
 
