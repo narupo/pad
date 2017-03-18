@@ -7,10 +7,31 @@
  */
 #include "file.h"
 
+int32_t
+cap_fclose(FILE *fp) {
+	if (!fp) {
+		return -1;
+	}
+
+	return fclose(fp);
+}
+
+FILE *
+cap_fopen(const char *path, const char *mode) {
+	if (!path || !mode) {
+		return NULL;
+	}
+
+	return fopen(path, mode);
+}
+
 bool
 cap_fcopy(FILE *dst, FILE *src) {
-	long tell = ftell(src);
+	if (!dst || !src) {
+		return false;
+	}
 
+	int64_t tell = ftell(src);
 	for (int c; (c = fgetc(src)) != EOF; fputc(c, dst)) {
 	}
 
@@ -19,38 +40,39 @@ cap_fcopy(FILE *dst, FILE *src) {
 }
 
 char *
-cap_frealpath(char *dst, size_t dstsize, const char *src) {
-#if defined(_CAP_WINDOWS)
-	char *fpart;
-
-	if (!GetFullPathName(src, dstsize, dst, &fpart)) {
+cap_frealpath(char *dst, uint32_t dstsz, const char *src) {
+	if (!dst || dstsz == 0 || !src) {
 		return NULL;
 	}
 
+#if defined(_CAP_WINDOWS)
+	char *fpart;
+	if (!GetFullPathName(src, dstsz, dst, &fpart)) {
+		return NULL;
+	}
 #else
 	errno = 0;
 
 	if (!realpath(src, dst)) {
 		if (errno == ENOENT) {
 			// Path is not exists
-			snprintf(dst, dstsize, "%s", src);
+			snprintf(dst, dstsz, "%s", src);
 		} else {
 			return NULL;
 		}
 	}
-
 #endif
 	return dst;
 }
 
 char *
-cap_fsolve(char *dst, size_t dstsz, const char *path) {
-	char tmp[FILE_NPATH];
-
+cap_fsolve(char *dst, uint32_t dstsz, const char *path) {
 	// Check arugments
-	if (!dst || !path) {
+	if (!dst || dstsz == 0 || !path) {
 		return NULL;
 	}
+
+	char tmp[FILE_NPATH];
 
 	// Solve '~'
 	if (path[0] == '~') {
@@ -90,7 +112,11 @@ cap_fsolvecp(const char *path) {
 }
 
 char *
-cap_fsolvefmt(char *dst, size_t dstsz, const char *fmt, ...) {
+cap_fsolvefmt(char *dst, uint32_t dstsz, const char *fmt, ...) {
+	if (!dst || dstsz == 0 || !fmt) {
+		return NULL;
+	}
+
 	va_list ap;
 	va_start(ap, fmt);
 	char tmp[FILE_NPATH];
@@ -99,47 +125,51 @@ cap_fsolvefmt(char *dst, size_t dstsz, const char *fmt, ...) {
 	return cap_fsolve(dst, dstsz, tmp);
 }
 
-FILE*
-cap_fopen(const char *path, const char *mode) {
-	return fopen(path, mode);
-}
-
-int
-cap_fclose(FILE* fp) {
-	return fclose(fp);
-}
-
 DIR*
 cap_fopendir(const char *path) {
+	if (!path) {
+		return NULL;
+	}
+
 	return opendir(path);
 }
 
-int
+int32_t
 cap_fclosedir(DIR* dir) {
+	if (!dir) {
+		return -1;
+	}
+
 	return closedir(dir);
 }
 
 bool
 cap_fexists(const char *path) {
+	if (!path) {
+		return false;
+	}
+
 	struct stat s;
 	int res = stat(path, &s);
 
 	if (res == -1) {
 		if (errno == ENOENT) {
-			goto notfound;
+			return false; // Does not exists
 		} else {
 			perror("stat");
 			exit(1);
 		}
 	}
-	return true;
 
-notfound:
-	return false;  // Does not exists
+	return true;
 }
 
 bool
 cap_fisdir(const char *path) {
+	if (!path) {
+		return false;
+	}
+
 	struct stat s;
 	int res = stat(path, &s);
 
@@ -147,9 +177,9 @@ cap_fisdir(const char *path) {
 		if (errno == ENOENT) {
 			;
 		} else {
-			// Error
+			// Error. Break through
 		}
-		goto notfound;
+		return false; // Doe's not exists 
 	} else {
 		if (S_ISDIR(s.st_mode)) {
 			return true;
@@ -158,12 +188,15 @@ cap_fisdir(const char *path) {
 		}
 	}
 
-notfound:
-	return false;
+	return false; // Impossible
 }
 
-int
+int32_t
 cap_fmkdirmode(const char *dirpath, mode_t mode) {
+	if (!dirpath) {
+		return -1;
+	}
+
 #if defined(_CAP_WINDOWS)
 	return mkdir(dirpath);
 #else
@@ -171,30 +204,38 @@ cap_fmkdirmode(const char *dirpath, mode_t mode) {
 #endif
 }
 
-int
+int32_t
 cap_fmkdirq(const char *path) {
+	if (!path) {
+		return -1;
+	}
+
 	return cap_fmkdirmode(path, S_IRUSR | S_IWUSR | S_IXUSR);
 }
 
 bool
 cap_ftrunc(const char *path) {
+	if (!path) {
+		return false;
+	}
+
 	FILE* fout = cap_fopen(path, "wb");
 	if (!fout) {
 		return false;
 	}
+
 	cap_fclose(fout);
+	
 	return true;
 }
 
 char *
 cap_freadcp(FILE* fin) {
-	// Check arguments
 	if (!fin || feof(fin)) {
-		fprintf(stderr, "Invalid stream");
 		return NULL;
 	}
 
-	size_t size = cap_fsize(fin);
+	uint32_t size = cap_fsize(fin);
 	char *dst = malloc(sizeof(char)*size+1); // +1 for final nul
 	if (!dst) {
 		return NULL;
@@ -214,10 +255,14 @@ cap_freadcp(FILE* fin) {
 	return dst;
 }
 
-long
+int64_t
 cap_fsize(FILE* fp) {
-	long curtel = ftell(fp);
-	long size = 0;
+	if (!fp) {
+		return -1;
+	}
+
+	int64_t curtel = ftell(fp);
+	int64_t size = 0;
 
 	fseek(fp, 0L, SEEK_SET);
 
@@ -226,47 +271,60 @@ cap_fsize(FILE* fp) {
 	}
 
 	fseek(fp, curtel, SEEK_SET);
+
 	return size;
 }
 
 const char *
 cap_fsuffix(const char *path) {
 	if (!path) {
-		return "";
+		return NULL;
 	}
 
 	const char *suf = strrchr(path, '.');
 	if (!suf) {
 		return path;
 	}
+
 	return suf + 1;
 }
 
 char *
-cap_fdirname(char *dst, size_t dstsz, const char *path) {
+cap_fdirname(char *dst, uint32_t dstsz, const char *path) {
+	if (!dst || dstsz == 0 || !path) {
+		return NULL;
+	}
+
 	snprintf(dst, dstsz, "%s", path);
+
 	return dirname(dst);
 }
 
 char *
-cap_fbasename(char *dst, size_t dstsz, const char *path) {
+cap_fbasename(char *dst, uint32_t dstsz, const char *path) {
+	if (!dst || dstsz == 0 || !path) {
+		return NULL;
+	}
+
 	char tmp[dstsz];
 	snprintf(tmp, sizeof tmp, "%s", path);
 	char *p = basename(tmp);
 	if (!p) {
 		return p;
 	}
+
 	snprintf(dst, dstsz, "%s", p);
+	
 	return dst;
 }
 
-int 
-cap_fgetline(char *dst, size_t dstsz, FILE *fin) {
+int32_t
+cap_fgetline(char *dst, uint32_t dstsz, FILE *fin) {
 	if (!fgets(dst, dstsz, fin)) {
 		return EOF;
 	}
 
-	int dstlen = strlen(dst);
+	int32_t dstlen = strlen(dst);
 	if (dst[dstlen-1] == '\n') {
 		dst[--dstlen] = '\0';
 	}
@@ -275,7 +333,11 @@ cap_fgetline(char *dst, size_t dstsz, FILE *fin) {
 }
 
 char *
-cap_freadline(char *dst, size_t dstsz, const char *path) {
+cap_freadline(char *dst, uint32_t dstsz, const char *path) {
+	if (!dst || dstsz == 0 || !path) {
+		return NULL;
+	}
+
 	FILE *fin = fopen(path, "rb");
 	if (!fin) {
 		if (dstsz) {
@@ -304,6 +366,10 @@ cap_freadline(char *dst, size_t dstsz, const char *path) {
 
 const char *
 cap_fwriteline(const char *line, const char *path) {
+	if (!line || !path) {
+		return NULL;
+	}
+
 	FILE *fout = fopen(path, "w");
 	if (!fout) {
 		return NULL;
@@ -357,6 +423,10 @@ cap_dirnodenew(void) {
 
 const char *
 cap_dirnodename(const struct cap_dirnode *self) {
+	if (!self) {
+		return NULL;
+	}
+
 #if defined(_CAP_WINDOWS)
 	return self->finddata.cFileName;
 #else
@@ -381,10 +451,10 @@ struct cap_dir {
 * struct cap_dir close and open *
 ***************************/
 
-int
+int32_t
 cap_dirclose(struct cap_dir *self) {
 	if (self) {
-		int ret = 0;
+		int32_t ret = 0;
 #if defined(_CAP_WINDOWS)
 		if (self->handle) {
 			ret = FindClose(self->handle);
@@ -435,9 +505,9 @@ cap_diropen(const char *path) {
 	return self;
 }
 
-/*******************
+/************************
 * struct cap_dir getter *
-*******************/
+************************/
 
 struct cap_dirnode *
 cap_dirread(struct cap_dir *self) {
@@ -477,109 +547,3 @@ cap_dirread(struct cap_dir *self) {
 
 	return node;
 }
-
-/************
-* file test *
-************/
-
-#if defined(_TEST_FILE)
-static int
-test_mkdir(int argc, char *argv[]) {
-	if (argc < 2) {
-		die("need path");
-	}
-
-	const char *path = argv[1];
-
-	if (cap_fexists(path)) {
-		printf("is exists [%s]\n", path);
-	} else {
-		printf("is not exists [%s]\n", path);
-		cap_fmkdirmode(path, S_IRUSR | S_IWUSR | S_IXUSR);
-	}
-
-	return 0;
-}
-
-static char *
-solve_path(char *dst, size_t dstsize, const char *path) {
-#if defined(_CAP_WINDOWS)
-	char *fpart;
-
-	if (!GetFullPathName(path, dstsize, dst, &fpart)) {
-		return NULL;
-	}
-#endif
-	return dst;
-}
-
-static int
-test_solve_path(int argc, char *argv[]) {
-	if (argc < 2) {
-		die("need path");
-	}
-
-	char dst[FILE_NPATH];
-	printf("[%s] -> \n[%s]\n", argv[1], cap_fsolve(dst, sizeof dst, argv[1]));
-
-	return 0;
-}
-
-static int
-test_directory(int argc, char *argv[]) {
-#if defined(_CAP_WINDOWS)
-	const char *dirpath = "C:/Windows/Temp";
-
-	if (argc >= 2) {
-		dirpath = argv[1];
-	}
-
-	struct cap_dir *dir = cap_diropen(dirpath);
-	if (!dir) {
-		fprintf(stderr, "Failed to open dir \"%s\"", dirpath);
-		return 1;
-	}
-
-	for (struct cap_dirnode * node; (node = cap_dirread(dir)); ) {
-		fprintf(stderr, "name[%s]\n", cap_dirnodename(node));
-		cap_dirnodedel(node);
-	}
-
-	fflush(stderr);
-	cap_dirclose(dir);
-	return 0;
-
-#else
-	const char *dirpath = "/tmp";
-
-	if (argc >= 2) {
-		dirpath = argv[1];
-	}
-
-	struct cap_dir *dir = cap_diropen(dirpath);
-	if (!dir) {
-		fprintf(stderr, "Failed to open dir \"%s\"", dirpath);
-		return 1;
-	}
-
-	for (struct cap_dirnode * node; (node = cap_dirread(dir)); ) {
-		printf("name[%s]\n", cap_dirnodename(node));
-		cap_dirnodedel(node);
-	}
-
-	cap_dirclose(dir);
-#endif
-	return 0;
-}
-
-int
-main(int argc, char *argv[]) {
-	// return test_solve_path(argc, argv);
-	int ret = test_directory(argc, argv);
-	if (ret != 0) {
-		caperr_display(stderr);
-	}
-
-	return ret;
-}
-#endif
