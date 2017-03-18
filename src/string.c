@@ -33,7 +33,7 @@ capstrcpywithout(char *dst, int32_t dstsz, const char *src, const char *without)
 		return NULL;
 	}
 	
-	size_t di = 0;
+	int32_t di = 0;
 	for (const char *p = src; *p; ++p) {
 		if (strchr(without, *p)) {
 			continue;
@@ -374,7 +374,7 @@ cap_strappother(struct cap_string *self, const struct cap_string *other) {
 }
 
 struct cap_string *
-cap_strappfmt(struct cap_string *self, cap_string_type_t *buf, size_t nbuf, const cap_string_type_t *fmt, ...) {
+cap_strappfmt(struct cap_string *self, cap_string_type_t *buf, int32_t nbuf, const cap_string_type_t *fmt, ...) {
 	if (!self || !buf || !fmt || nbuf == 0) {
 		return NULL;
 	}
@@ -456,31 +456,31 @@ cap_strstrip(struct cap_string *self, const cap_string_type_t *rems) {
 static const char *
 bmfind(
 	const char *restrict tex,
-	size_t texlen,
+	int32_t texlen,
 	const char *restrict pat,
-	size_t patlen
+	int32_t patlen
 ) {
-	size_t const max = CHAR_MAX+1;
+	int32_t const max = CHAR_MAX+1;
 	ssize_t texpos = 0;
 	ssize_t patpos = 0;
-	size_t table[max];
+	int32_t table[max];
 
 	if (texlen < patlen || patlen <= 0) {
 		return NULL;
 	}
 
-	for (size_t i = 0; i < max; ++i) {
+	for (int32_t i = 0; i < max; ++i) {
 		table[i] = patlen;
 	}
 
-	for (size_t i = 0; i < patlen; ++i) {
-		table[ (size_t)pat[i] ] = patlen-i-1;
+	for (int32_t i = 0; i < patlen; ++i) {
+		table[ (int32_t)pat[i] ] = patlen-i-1;
 	}
 
 	texpos = patlen-1;
 
 	while (texpos <= texlen) {
-		size_t curpos = texpos;
+		int32_t curpos = texpos;
 		patpos = patlen-1;
 		while (tex[texpos] == pat[patpos]) {
 			if (patpos <= 0) {
@@ -489,7 +489,7 @@ bmfind(
 			--patpos;
 			--texpos;
 		}
-		size_t index = (size_t)tex[texpos];
+		int32_t index = (int32_t)tex[texpos];
 		texpos = MAX(curpos+1, texpos + table[ index ]);
 	}
 	return NULL;
@@ -947,7 +947,7 @@ main(int argc, char *argv[]) {
 	char cmdline[256];
 	for (; fgets(cmdline, sizeof cmdline, stdin); ) {
 		// Remove newline
-		size_t cmdlen = strlen(cmdline);
+		int32_t cmdlen = strlen(cmdline);
 		if (cmdline[cmdlen-1] == '\n') {
 			cmdline[--cmdlen] = '\0';
 		}
