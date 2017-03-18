@@ -318,6 +318,7 @@ static void
 test_string_strdel(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    cap_strdel(NULL);
     cap_strdel(s);
 }
 
@@ -325,6 +326,7 @@ static void
 test_string_strescdel(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strescdel(NULL) == NULL);
     char *ptr = cap_strescdel(s);
     assert(ptr != NULL);
     free(ptr);
@@ -342,6 +344,7 @@ test_string_strnewother(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
     assert(cap_strset(s, "1234") != NULL);
+    assert(cap_strnewother(NULL) == NULL);
     struct cap_string *o = cap_strnewother(s);
     assert(o != NULL);
     assert(strcmp(cap_strgetc(o), "1234") == 0);
@@ -353,6 +356,7 @@ static void
 test_string_strlen(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strlen(NULL) == -1);
     assert(cap_strlen(s) == 0);
     assert(cap_strapp(s, "abc") != NULL);
     assert(cap_strlen(s) == 3);
@@ -363,6 +367,7 @@ static void
 test_string_strcapa(void) {
     struct cap_string *s = cap_strnew();
     assert(s != NULL);
+    assert(cap_strcapa(NULL) == -1);
     assert(cap_strcapa(s) == 4);
     assert(cap_strapp(s, "1234") != NULL);
     assert(cap_strcapa(s) == 8);

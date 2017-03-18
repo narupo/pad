@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <stdint.h>
 #include <stdarg.h>
 #include <limits.h>
 #include <unistd.h>
@@ -32,7 +33,7 @@
  * @return failed to pointer to NULL
  */
 char *
-capstrncat(char *dst, int dstsz, const char *src);
+capstrncat(char *dst, int32_t dstsz, const char *src);
 
 /**
  * Copy string without specified string
@@ -46,7 +47,7 @@ capstrncat(char *dst, int dstsz, const char *src);
  * @return failed to NULL
  */
 char *
-capstrcpywithout(char *dst, size_t dstsz, const char *src, const char *without);
+capstrcpywithout(char *dst, int32_t dstsz, const char *src, const char *without);
 
 /*************
 * cap_string *
@@ -97,7 +98,7 @@ cap_strnewother(const struct cap_string *other);
  *
  * @return number of length
  */
-int
+int32_t
 cap_strlen(const struct cap_string *self);
 
 /**
@@ -107,7 +108,7 @@ cap_strlen(const struct cap_string *self);
  *
  * @return number of capacity
  */
-int
+int32_t
 cap_strcapa(const struct cap_string *self);
 
 /**
@@ -128,7 +129,7 @@ cap_strgetc(const struct cap_string *self);
  * @return empty to true
  * @return not empty to false
  */
-int
+int32_t
 cap_strempty(const struct cap_string *self);
 
 /**
@@ -162,7 +163,7 @@ cap_strset(struct cap_string *self, const char *src);
  * @return failed to NULL
  */
 struct cap_string *
-cap_strresize(struct cap_string *self, int newlen);
+cap_strresize(struct cap_string *self, int32_t newlen);
 
 /**
  * Push data to back of buffer in string

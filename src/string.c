@@ -12,7 +12,7 @@
 ********/
 
 char *
-capstrncat(char *dst, int dstsz, const char *src) {
+capstrncat(char *dst, int32_t dstsz, const char *src) {
 	if (!dst || dstsz <= 0 || !src) {
 		return NULL;
 	}
@@ -28,7 +28,7 @@ capstrncat(char *dst, int dstsz, const char *src) {
 }
 
 char *
-capstrcpywithout(char *dst, size_t dstsz, const char *src, const char *without) {
+capstrcpywithout(char *dst, int32_t dstsz, const char *src, const char *without) {
 	if (!dst || dstsz <= 0 || !src || !without) {
 		return NULL;
 	}
@@ -118,6 +118,10 @@ cap_strnew(void) {
 
 struct cap_string *
 cap_strnewother(const struct cap_string *other) {
+	if (!other) {
+		return NULL;
+	}
+
 	struct cap_string *self = calloc(1, sizeof(struct cap_string));
 	if (!self) {
 		return NULL;
@@ -143,18 +147,18 @@ cap_strnewother(const struct cap_string *other) {
 * str getter *
 *************/
 
-int
+int32_t
 cap_strlen(const struct cap_string *self) {
 	if (!self) {
-		return 0;
+		return -1;
 	}
 	return self->length;
 }
 
-int
+int32_t
 cap_strcapa(const struct cap_string *self) {
 	if (!self) {
-		return 0;
+		return -1;
 	}
 	return self->capacity;
 }
@@ -162,15 +166,15 @@ cap_strcapa(const struct cap_string *self) {
 const cap_string_type_t *
 cap_strgetc(const struct cap_string *self) {
 	if (!self) {
-		return "";
+		return NULL;
 	}
 	return self->buffer;
 }
 
-int
+int32_t
 cap_strempty(const struct cap_string *self) {
 	if (!self) {
-		return 1;
+		return -1;
 	}
 	return self->length == 0;
 }
@@ -181,31 +185,38 @@ cap_strempty(const struct cap_string *self) {
 
 void
 cap_strclear(struct cap_string *self) {
+	if (!self) {
+		return;
+	}
+
 	self->length = 0;
 	self->buffer[self->length] = NIL;
 }
 
 struct cap_string *
 cap_strset(struct cap_string *self, const cap_string_type_t *src) {
-	int srclen = strlen(src);
+	if (!self || !src) {
+		return NULL;
+	}
 
+	int srclen = strlen(src);
 	if (srclen >= self->length) {
 		if (!cap_strresize(self, srclen)) {
 			return NULL;
 		}
 	}
-
 	self->length = srclen;
 
 	for (int i = 0; i < srclen; ++i) {
 		self->buffer[i] = src[i];
 	}
 	self->buffer[srclen] = NIL;
+
 	return self;
 }
 
 struct cap_string *
-cap_strresize(struct cap_string *self, int newcapa) {
+cap_strresize(struct cap_string *self, int32_t newcapa) {
 	if (!self) {
 		return NULL;
 	}
@@ -232,11 +243,7 @@ cap_strresize(struct cap_string *self, int newcapa) {
 
 struct cap_string *
 cap_strpushb(struct cap_string *self, cap_string_type_t ch) {
-	if (!self) {
-		return NULL;
-	}
-
-	if (ch == NIL) {
+	if (!self || ch == NIL) {
 		return NULL;
 	}
 
@@ -248,6 +255,7 @@ cap_strpushb(struct cap_string *self, cap_string_type_t ch) {
 
 	self->buffer[self->length++] = ch;
 	self->buffer[self->length] = NIL;
+
 	return self;
 }
 
@@ -278,7 +286,7 @@ cap_strpushf(struct cap_string *self, cap_string_type_t ch) {
 		}
 	}
 
-	for (int i = self->length; i > 0; --i) {
+	for (int32_t i = self->length; i > 0; --i) {
 		self->buffer[i] = self->buffer[i-1];
 	}
 
@@ -289,17 +297,13 @@ cap_strpushf(struct cap_string *self, cap_string_type_t ch) {
 
 cap_string_type_t
 cap_strpopf(struct cap_string *self) {
-	if (!self) {
-		return NIL;
-	}
-
-	if (self->length == 0) {
+	if (!self || self->length == 0) {
 		return NIL;
 	}
 
 	cap_string_type_t ret = self->buffer[0];
 
-	for (int i = 0; i < self->length-1; ++i) {
+	for (int32_t i = 0; i < self->length-1; ++i) {
 		self->buffer[i] = self->buffer[i+1];
 	}
 
@@ -315,7 +319,7 @@ cap_strapp(struct cap_string *self, const cap_string_type_t *src) {
 		return NULL;
 	}
 
-	int srclen = strlen(src);
+	int32_t srclen = strlen(src);
 
 	if (self->length + srclen >= self->capacity-1) {
 		if (!cap_strresize(self, (self->length + srclen) * 2)) {
@@ -337,7 +341,7 @@ cap_strappstream(struct cap_string *self, FILE *fin) {
 		return NULL;
 	}
 	
-	for (int ch; (ch = fgetc(fin)) != EOF; ) {
+	for (int32_t ch; (ch = fgetc(fin)) != EOF; ) {
 		if (!cap_strpushb(self, ch)) {
 			return NULL;
 		}
@@ -348,11 +352,12 @@ cap_strappstream(struct cap_string *self, FILE *fin) {
 
 struct cap_string *
 cap_strappother(struct cap_string *self, const struct cap_string *other) {
-	struct cap_string *ret = NULL;
 
 	if (!self || !other) {
-		return ret;
+		return NULL;
 	}
+
+	struct cap_string *ret = NULL;
 
 	if (self == other) {
 		cap_string_type_t *buf = (cap_string_type_t *) strdup(self->buffer);
@@ -376,10 +381,10 @@ cap_strappfmt(struct cap_string *self, cap_string_type_t *buf, size_t nbuf, cons
 
 	va_list args;
 	va_start(args, fmt);
-	int buflen = vsnprintf(buf, nbuf, fmt, args);
+	int32_t buflen = vsnprintf(buf, nbuf, fmt, args);
 	va_end(args);
 
-	for (int i = 0; i < buflen; ++i) {
+	for (int32_t i = 0; i < buflen; ++i) {
 		if (!cap_strpushb(self, buf[i])) {
 			return NULL;
 		}
@@ -394,7 +399,7 @@ cap_strrstrip(struct cap_string *self, const cap_string_type_t *rems) {
 		return NULL;
 	}
 
-	for (int i = self->length-1; i > 0; --i) {
+	for (int32_t i = self->length-1; i > 0; --i) {
 		if (strchr(rems, self->buffer[i])) {
 			self->buffer[i] = NIL;
 		} else {
