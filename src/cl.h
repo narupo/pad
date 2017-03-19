@@ -7,13 +7,13 @@
  *  Author: Aizawa Yuta
  *   Since: 2016
  */
-#ifndef CL_H
-#define CL_H
+#pragma once
 
 #define _GNU_SOURCE 1 /* cap: cl.h: strdup */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -72,7 +72,7 @@ cap_clnew(void);
  * @return failed to NULL
  */
 struct cap_cl *
-cap_clresize(struct cap_cl *self, int newcapa);
+cap_clresize(struct cap_cl *self, int32_t newcapa);
 
 /**
  * Push element with copy
@@ -105,7 +105,7 @@ cap_clclear(struct cap_cl *self);
  * @return failed to NULL
  */
 struct cap_cl *
-cap_clparsestropts(struct cap_cl *self, const char *cmdline, int opts);
+cap_clparsestropts(struct cap_cl *self, const char *cmdline, int32_t opts);
 
 /**
  * Parse string of command line
@@ -131,7 +131,7 @@ cap_clparsestr(struct cap_cl *self, const char *cmdline);
  * @return failed to NULL
  */
 struct cap_cl *
-cap_clparseargvopts(struct cap_cl *self, int argc, char *argv[], int opts);
+cap_clparseargvopts(struct cap_cl *self, int argc, char *argv[], int32_t opts);
 
 /**
  * Parse argv
@@ -162,7 +162,7 @@ cap_clshow(const struct cap_cl *self, FILE *fout);
  * 
  * @return number of length of cl
  */
-int
+int32_t
 cap_cllen(const struct cap_cl *self);
 
 /**
@@ -172,7 +172,7 @@ cap_cllen(const struct cap_cl *self);
  * 
  * @return number of capacity of cl
  */
-int
+int32_t
 cap_clcapa(const struct cap_cl *self);
 
 /**
@@ -185,6 +185,4 @@ cap_clcapa(const struct cap_cl *self);
  * @return failed to NULL
  */
 const char *
-cap_clgetc(const struct cap_cl *self, int idx);
-
-#endif
+cap_clgetc(const struct cap_cl *self, int32_t idx);

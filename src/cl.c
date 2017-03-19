@@ -1,15 +1,15 @@
 #include "cl.h"
 
 struct cap_cl {
-	int capa;
-	int len;
+	int32_t capa;
+	int32_t len;
 	char **arr;
 };
 
 void
 cap_cldel(struct cap_cl *self) {
 	if (self) {
-		for (int i = 0; i < self->len; ++i) {
+		for (int32_t i = 0; i < self->len; ++i) {
 			free(self->arr[i]);
 		}
 		free(self->arr);
@@ -36,7 +36,7 @@ cap_clnew(void) {
 
 	self->len = 0;
 	self->capa = 4;
-	self->arr = calloc(self->capa+1, sizeof(char*));
+	self->arr = calloc(self->capa+1, sizeof(char *));
 	if (!self->arr) {
 		return NULL;
 	}
@@ -45,12 +45,12 @@ cap_clnew(void) {
 }
 
 struct cap_cl *
-cap_clresize(struct cap_cl *self, int newcapa) {
-	if (newcapa <= self->capa) {
-		return NULL; // Unsupported
+cap_clresize(struct cap_cl *self, int32_t newcapa) {
+	if (!self || newcapa <= self->capa) {
+		return NULL; 
 	}
 
-	char **tmp = realloc(self->arr, sizeof(char*) * newcapa + sizeof(char*));
+	char **tmp = realloc(self->arr, sizeof(char *) * newcapa + sizeof(char *));
 	if (!tmp) {
 		return NULL;
 	}
@@ -63,6 +63,10 @@ cap_clresize(struct cap_cl *self, int newcapa) {
 
 struct cap_cl *
 cap_clpush(struct cap_cl *self, const char *str) {
+	if (!self || !str) {
+		return NULL;
+	}
+
 	if (self->len >= self->capa) {
 		if (!cap_clresize(self, self->capa*2)) {
 			return NULL;
@@ -75,28 +79,41 @@ cap_clpush(struct cap_cl *self, const char *str) {
 
 void
 cap_clclear(struct cap_cl *self) {
-	for (int i = 0; i < self->len; ++i) {
+	if (!self) {
+		return;
+	}
+
+	for (int32_t i = 0; i < self->len; ++i) {
 		free(self->arr[i]);
 		self->arr[i] = NULL;
 	}
 	self->len = 0;
 }
 
-int
+int32_t
 cap_cllen(const struct cap_cl *self) {
+	if (!self) {
+		return -1;
+	}
+
 	return self->len;
 }
 
-int
+int32_t
 cap_clcapa(const struct cap_cl *self) {
+	if (!self) {
+		return -1;
+	}
+
 	return self->capa;
 }
 
 const char *
-cap_clgetc(const struct cap_cl *self, int idx) {
-	if (idx < 0 || idx >= self->len) {
+cap_clgetc(const struct cap_cl *self, int32_t idx) {
+	if (!self || idx < 0 || idx >= self->len) {
 		return NULL;
 	}	
+
 	return self->arr[idx];
 }
 
@@ -105,8 +122,8 @@ cap_clgetc(const struct cap_cl *self, int idx) {
 *********/
 
 struct cl_string {
-	int capa;
-	int len;
+	int32_t capa;
+	int32_t len;
 	char *arr;
 };
 
@@ -137,7 +154,7 @@ cl_strnew(void) {
 }
 
 static struct cl_string *
-cl_strresize(struct cl_string *self, int newcapa) {
+cl_strresize(struct cl_string *self, int32_t newcapa) {
 	char *tmp = realloc(self->arr, sizeof(char) * newcapa + sizeof(char));
 	if (!tmp) {
 		perror("realloc");
@@ -166,7 +183,7 @@ cl_strpush(struct cl_string *self, char c) {
 
 static struct cl_string *
 cl_strset(struct cl_string *self, const char *src) {
-	int srclen = strlen(src);
+	int32_t srclen = strlen(src);
 
 	if (srclen >= self->len) {
 		if (!cl_strresize(self, srclen)) {
@@ -176,7 +193,7 @@ cl_strset(struct cl_string *self, const char *src) {
 
 	self->len = srclen;
 
-	for (int i = 0; i < srclen; ++i) {
+	for (int32_t i = 0; i < srclen; ++i) {
 		self->arr[i] = src[i];
 	}
 	self->arr[srclen] = '\0';
@@ -194,14 +211,14 @@ cl_strclear(struct cl_string *self) {
 	self->arr[self->len] = '\0';
 }
 
-static int
+static int32_t
 cl_strlen(const struct cl_string *self) {
 	return self->len;
 }
 
 static struct cl_string *
 cl_strapp(struct cl_string *self, const char *src) {
-	int srclen = strlen(src);
+	int32_t srclen = strlen(src);
 
 	if (self->len + srclen >= self->capa-1) {
 		if (!cl_strresize(self, (self->len + srclen) * 2)) {
@@ -218,19 +235,19 @@ cl_strapp(struct cl_string *self, const char *src) {
 }
 
 static bool
-isnormch(int c) {
+isnormch(int32_t c) {
 	return isalnum(c) || c == '-' || c == '_';
 }
 
 static bool
-ismetach(int c) {
+ismetach(int32_t c) {
 	return strchr("<>();&|", c) != NULL;
 }
 
 static void
-escapecpy(struct cl_string *dst, const struct cl_string *src, int opts) {
+escapecpy(struct cl_string *dst, const struct cl_string *src, int32_t opts) {
 	const char *srcval = cl_strgetc(src);
-	int m = 0;
+	int32_t m = 0;
 	for (const char *p = srcval; *p; ++p) {
 		if (*p == '\\') {
 			if (*++p == '\0') {
@@ -285,7 +302,7 @@ escapecpy(struct cl_string *dst, const struct cl_string *src, int opts) {
 }
 
 static void
-validatepush(struct cap_cl *cl, struct cl_string *src, int opts) {
+validatepush(struct cap_cl *cl, struct cl_string *src, int32_t opts) {
 	if (!cl_strlen(src)) {
 		return;
 	}
@@ -306,15 +323,14 @@ validatepush(struct cap_cl *cl, struct cl_string *src, int opts) {
 		cl_strpush(dst, '\'');
 	}
 
-// printf("dst[%s]\n", cl_strgetc(dst));//debug
 	cap_clpush(cl, cl_strgetc(dst));
 	cl_strdel(dst);
 	cl_strclear(src);
 }
 
 struct cap_cl *
-cap_clparsestropts(struct cap_cl *self, const char *drtsrc, int opts) {
-	int m = 0;
+cap_clparsestropts(struct cap_cl *self, const char *drtsrc, int32_t opts) {
+	int32_t m = 0;
 	const char *p = drtsrc;
 	struct cl_string *tmp = cl_strnew();
 	opts = (opts < 0 ? CL_ESCAPE : opts);
@@ -322,7 +338,7 @@ cap_clparsestropts(struct cap_cl *self, const char *drtsrc, int opts) {
 	cap_clclear(self);
 
 	do {
-		int c = *p;
+		int32_t c = *p;
 		if (c == '\0') {
 			validatepush(self, tmp, opts);
 			break;
@@ -477,13 +493,21 @@ cap_clparsestropts(struct cap_cl *self, const char *drtsrc, int opts) {
 
 struct cap_cl *
 cap_clparsestr(struct cap_cl *self, const char *drtcl) {
+	if (!self || !drtcl) {
+		return NULL;
+	}
+
 	return cap_clparsestropts(self, drtcl, -1);
 }
 
 struct cap_cl *
-cap_clparseargvopts(struct cap_cl *self, int argc, char *argv[], int opts) {
+cap_clparseargvopts(struct cap_cl *self, int32_t argc, char *argv[], int32_t opts) {
+	if (!self || argc <= 0 || !argv) {
+		return NULL;
+	}
+
 	struct cl_string *line = cl_strnew();
-	for (int i = 0; i < argc; ++i) {
+	for (int32_t i = 0; i < argc; ++i) {
 		cl_strpush(line, '\'');
 		for (const char *p = argv[i]; *p; ++p) {
 			if (*p == '\\') {
@@ -502,135 +526,29 @@ cap_clparseargvopts(struct cap_cl *self, int argc, char *argv[], int opts) {
 		cl_strpush(line, '\'');
 		cl_strpush(line, ' ');
 	}
+	
 	self = cap_clparsestropts(self, cl_strgetc(line), opts);
 	cl_strdel(line);
+
 	return self;	
 }
 
 struct cap_cl *
-cap_clparseargv(struct cap_cl *self, int argc, char *argv[]) {
+cap_clparseargv(struct cap_cl *self, int32_t argc, char *argv[]) {
+	if (!self || argc <= 0 || !argv) {
+		return NULL;
+	}
+
 	return cap_clparseargvopts(self, argc, argv, -1);
 }
 
 void
 cap_clshow(const struct cap_cl *self, FILE *fout) {
-	for (int i = 0; i < self->len; ++i) {
-		// fprintf(fout, "<arg index=\"%d\" value=\"%s\">\n", i, self->arr[i]);
+	if (!self || !fout) {
+		return;
+	}
+
+	for (int32_t i = 0; i < self->len; ++i) {
 		fprintf(fout, "[%d] = [%s]\n", i, self->arr[i]);
 	}
 }
-
-/*******
-* test *
-*******/
-
-#if defined(_TEST_CL)
-#include <stdio.h>
-
-static void
-freeargv(char *argv[]) {
-	for (char **a = argv; *a; ++a) {
-		free(*a);
-	}
-	free(argv);
-}
-
-static void
-showargv(char *argv[]) {
-	for (char **a = argv; *a; ++a) {
-		puts(*a);
-	}
-}
-
-static void 
-die(const char *fmt) {
-	perror(fmt);
-	exit(1);
-}
-
-static int
-test_parsestr(int argc, char *argv[]) {
-	if (argc < 2) {
-		die("need argv");
-	}
-
-	struct cap_cl *cl = cap_clnew();
-	cap_clparsestropts(cl, argv[1], CL_DEBUG | CL_ESCAPE);
-	cap_clshow(cl, stderr);
-	cap_cldel(cl);
-	printf("source [%s]\n", argv[1]);
-	return 0;
-}
-
-static int
-test_parseargv(int argc, char *argv[]) {
-	struct cap_cl *cl = cap_clnew();
-	cap_clparseargvopts(cl, argc, argv, CL_DEBUG | CL_ESCAPE);
-	cap_clshow(cl, stderr);
-	cap_cldel(cl);
-	return 0;
-}
-
-static int
-test_execv(int argc, char *argv[]) {
-	struct cap_cl *cl = cap_clnew();
-	showargv(argv);
-	cap_clparseargvopts(cl, argc, argv, CL_DEBUG | CL_ESCAPE);
-	char **av = cap_clescdel(cl);
-	showargv(av);
-
-	switch (fork()) {
-	case -1:
-		die("fork");
-	break;
-	case 0:
-		execv("/home/narupo/src/bottle/src/bin/args", av);
-		perror("execv");
-		freeargv(av);
-		_exit(1);
-	break;
-	default:
-		wait(NULL);
-		freeargv(av);
-		exit(0);
-	break;
-	}
-
-	return 0;
-}
-
-int
-main(int argc, char *argv[]) {
-	static const struct cmd {
-		const char *name;
-		int (*func)(int, char**);
-	} cmds[] = {
-		{"parsestr", test_parsestr},
-		{"parseargv", test_parseargv},
-		{"execv", test_execv},
-		{},
-	};
-
-	if (argc < 2) {
-		fprintf(stderr,
-			"Usage: %s [command]\n"
-			"\n"
-			"The commands are:\n\n"
-		, argv[0]);
-		for (const struct cmd *p = cmds; p->name; ++p) {
-			fprintf(stderr, "    %s\n", p->name);
-		}
-		fprintf(stderr, "\n");
-		return 1;
-	}
-
-	for (const struct cmd *p = cmds; p->name; ++p) {
-		if (!strcmp(p->name, argv[1])) {
-			return p->func(argc-1, argv+1);
-		}
-	}
-
-	fprintf(stderr, "Not found command of '%s'\n", argv[1]);
-	return 1;
-}
-#endif
