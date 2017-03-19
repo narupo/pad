@@ -773,7 +773,6 @@ test_file_fsolvefmt(void) {
     assert(cap_fsolvefmt(NULL, sizeof path, "/%s/../%s", "tmp", "tmp") == NULL);
     assert(cap_fsolvefmt(path, 0, "/%s/../%s", "tmp", "tmp") == NULL);
     assert(cap_fsolvefmt(path, sizeof path, NULL, "tmp", "tmp") == NULL);
-    assert(cap_fsolvefmt(path, sizeof path, "/%s/../%s", NULL) == NULL);
     assert(cap_fsolvefmt(path, sizeof path, "/%s/../%s", "tmp", "tmp"));
     assert(strcmp(path, "/tmp") == 0);
 }
