@@ -320,6 +320,10 @@ cap_fbasename(char *dst, uint32_t dstsz, const char *path) {
 
 int32_t
 cap_fgetline(char *dst, uint32_t dstsz, FILE *fin) {
+	if (!dst || dstsz == 0 || !fin) {
+		return EOF;
+	}
+
 	if (!fgets(dst, dstsz, fin)) {
 		return EOF;
 	}
@@ -483,6 +487,10 @@ cap_dirclose(struct cap_dir *self) {
 
 struct cap_dir *
 cap_diropen(const char *path) {
+	if (!path) {
+		return NULL;
+	}
+
 	struct cap_dir *self = calloc(1, sizeof(struct cap_dir));
 	if (!self) {
 		return NULL;
@@ -511,6 +519,10 @@ cap_diropen(const char *path) {
 
 struct cap_dirnode *
 cap_dirread(struct cap_dir *self) {
+	if (!self) {
+		return NULL;
+	}
+	
 	struct cap_dirnode * node = cap_dirnodenew();
 	if (!node) {
 		return NULL;
