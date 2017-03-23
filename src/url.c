@@ -1,7 +1,7 @@
 #include "url.h"
 
 struct cap_url {
-    char host[CAP_URL_NHOST];
+    uint8_t host[CAP_URL_NHOST];
     int32_t port;
 };
 
@@ -23,7 +23,7 @@ cap_urlnew(void) {
 }
 
 struct cap_url *
-cap_urlparse(struct cap_url *self, const char *url) {
+cap_urlparse(struct cap_url *self, const uint8_t *url) {
     if (!self || !url) {
         errno = EINVAL;
         return NULL;
@@ -34,8 +34,8 @@ cap_urlparse(struct cap_url *self, const char *url) {
 
     self->host[0] = '\0';
 
-    for (uint32_t i = 0; i < strlen(url)+1; ++i) {
-        char c = url[i]; // allow final nil
+    for (uint32_t i = 0; ; ++i) {
+        uint8_t c = url[i]; // allow final nil
 
         switch (m) {
         case 0:
@@ -70,12 +70,16 @@ cap_urlparse(struct cap_url *self, const char *url) {
             assert(0 && "impossible");
             break;
         }
+
+        if (c == '\0') {
+            break;
+        }
     }
 
     return self;
 }
 
-const char *
+const uint8_t *
 cap_urlhost(const struct cap_url *self) {
     if (!self) {
         errno = EINVAL;
