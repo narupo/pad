@@ -92,6 +92,64 @@ argsshow(const struct args *self) {
     printf("port %d\n", self->port);
 }
 
+/*********
+* thread *
+*********/
+
+struct worker {
+    struct cap_socket *sock;
+    uint8_t *buf;
+    int32_t bufsz;
+};
+
+static void
+wkrdel(struct worker *self) {
+    if (self) {
+        free(self);
+    }
+}
+
+static struct worker *
+wkrnew(void) {
+    struct worker *self = calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
+    
+    self->bufsz = 5012;
+    self->buf = calloc(self->bufsz, sizeof(*self->buf));
+    if (!self->buf) {
+        free(self);
+        return NULL;
+    }
+
+    return self;
+}
+
+static struct worker *
+wkrmvsock(struct worker *self, struct cap_socket *sock) {
+    if (!self || !sock) {
+        return NULL;
+    }
+    self->sock = sock;
+    return self;
+}
+
+static void *
+wkrstart(void *ptr) {
+    struct worker *self = ptr;
+
+    for (;;) {
+        if (!cap_sockrecvstr(self->sock, self->buf, self->bufsz)) {
+            break;
+        }
+        printf("[%s]\n", self->buf);
+    }
+
+    wkrdel(self);
+    return NULL;
+}
+
 /******
 * app *
 ******/
@@ -169,12 +227,21 @@ apprun(struct app *self) {
             continue;
         }
 
-        uint8_t buf[100];
-        cap_sockrecvstr(clie, buf, sizeof buf);
-        printf("buf[%s]\n", buf);
-        cap_socksendstr(clie, (uint8_t *)"ok");
+        struct worker *wkr = wkrnew();
+        if (!wkr) {
+            cap_error("failed to create worker");
+            cap_sockclose(clie);
+            continue;
+        }
+        wkrmvsock(wkr, clie);
 
-        cap_sockclose(clie);
+        pthread_t th;
+        if (pthread_create(&th, NULL, wkrstart, wkr) != 0) {
+            cap_error("failed to create thread");
+            wkrdel(wkr);
+            cap_sockclose(clie);
+            continue;
+        }
     }
 
     cap_sockclose(serv);
@@ -189,7 +256,7 @@ main(int argc, char *argv[]) {
     if (!app) {
         cap_die("failed to create application");
     }
-    int ret = apprun(app);
+    int32_t ret = apprun(app);
     appdel(app);
 
     return ret;
