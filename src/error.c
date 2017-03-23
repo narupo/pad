@@ -7,8 +7,45 @@
  */
 #include "error.h"
 
+static void
+errorap_unsafe(va_list ap, const char *fmt) {
+	fflush(stdout);
+
+	size_t fmtlen = strlen(fmt);
+	const char *procname = getenv("CAP_PROCNAME");
+	if (!procname) {
+		procname = "cap";
+	}
+	fprintf(stderr, "%s: ", procname);
+
+	if (errno != 0) {
+		fprintf(stderr, "%s. ", strerror(errno));
+	}
+	
+	if (fmtlen) {
+		vfprintf(stderr, fmt, ap);
+	}
+
+	if (fmtlen && fmt[fmtlen-1] != '.') {
+		fprintf(stderr, ".");
+	}
+
+	fprintf(stderr, "\n");
+	fflush(stderr);
+}
+
+static const char *
+fmttoupper_unsafe(char *dst, size_t dstsz, const char *fmt) {
+	if (isalpha(fmt[0])) {
+		snprintf(dst, dstsz, "%c%s", toupper(fmt[0]), fmt+1);
+		return dst;
+	}
+
+	return fmt;
+}
+
 bool
-_cap_log(const char *file, long line, const char *func, const char *type, const char *msg) {
+_cap_log_unsafe(const char *file, long line, const char *func, const char *type, const char *msg) {
 	// Check arguments
 	type = (type ? type : "type");
 	msg = (msg ? msg : "");
@@ -43,62 +80,25 @@ _cap_log(const char *file, long line, const char *func, const char *type, const 
 	return true;
 }
 
-static void
-errorap(va_list ap, const char *fmt) {
-	fflush(stdout);
-
-	size_t fmtlen = strlen(fmt);
-	const char *procname = getenv("CAP_PROCNAME");
-	if (!procname) {
-		procname = "cap";
-	}
-	fprintf(stderr, "%s: ", procname);
-
-	if (errno != 0) {
-		fprintf(stderr, "%s. ", strerror(errno));
-	}
-	
-	if (fmtlen) {
-		vfprintf(stderr, fmt, ap);
-	}
-
-	if (fmtlen && fmt[fmtlen-1] != '.') {
-		fprintf(stderr, ".");
-	}
-
-	fprintf(stderr, "\n");
-	fflush(stderr);
-}
-
-static const char *
-fmttoupper(char *dst, size_t dstsz, const char *fmt) {
-	if (isalpha(fmt[0])) {
-		snprintf(dst, dstsz, "%c%s", toupper(fmt[0]), fmt+1);
-		return dst;
-	}
-
-	return fmt;
-}
-
 void
 cap_error(const char *fmt, ...) {
 	char tmp[1024];
-	fmt = fmttoupper(tmp, sizeof tmp, fmt);
+	fmt = fmttoupper_unsafe(tmp, sizeof tmp, fmt);
 
 	va_list ap;
 	va_start(ap, fmt);
-	errorap(ap, fmt);
+	errorap_unsafe(ap, fmt);
 	va_end(ap);
 }
 
 void
 cap_die(const char *fmt, ...) {
 	char tmp[1024];
-	fmt = fmttoupper(tmp, sizeof tmp, fmt);
+	fmt = fmttoupper_unsafe(tmp, sizeof tmp, fmt);
 
 	va_list ap;
 	va_start(ap, fmt);
-	errorap(ap, fmt);
+	errorap_unsafe(ap, fmt);
 	va_end(ap);
 
 	exit(EXIT_FAILURE);
@@ -112,11 +112,11 @@ cap_debug(const char *fmt, ...) {
 	}
 
 	char tmp[1024];
-	fmt = fmttoupper(tmp, sizeof tmp, fmt);
+	fmt = fmttoupper_unsafe(tmp, sizeof tmp, fmt);
 
 	va_list ap;
 	va_start(ap, fmt);
-	errorap(ap, fmt);
+	errorap_unsafe(ap, fmt);
 	va_end(ap);
 
 	exit(EXIT_FAILURE);
