@@ -5,8 +5,7 @@
  *  Author: Aizawa Yuta
  *   Since: 2016
  */
-#ifndef ERROR_H
-#define ERROR_H
+#pragma once
 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -70,5 +69,3 @@ cap_error(const char *fmt, ...);
  */
 void
 cap_debug(const char *fmt, ...);
-
-#endif
