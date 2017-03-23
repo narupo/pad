@@ -1350,7 +1350,7 @@ utiltests[] = {
 
 static void
 test_socket_sockshow(void) {
-    struct cap_socket *s = cap_sockopen("localhost:80", "tcp-client");
+    struct cap_socket *s = cap_sockopen((uint8_t *) "localhost:80", (uint8_t *) "tcp-client");
     assert(s != NULL);
     char buf[BUFSIZ] = {0};
     setbuf(stderr, buf);
@@ -1372,17 +1372,17 @@ test_socket_sockopen(void) {
 
 static void
 test_socket_sockhost(void) {
-    struct cap_socket *s = cap_sockopen("localhost:80", "tcp-client");
+    struct cap_socket *s = cap_sockopen((uint8_t *) "localhost:80", (uint8_t *) "tcp-client");
     assert(s != NULL);
-    assert(strcmp(cap_sockhost(s), "localhost") == 0);
+    assert(strcmp((const char *) cap_sockhost(s), "localhost") == 0);
     assert(cap_sockclose(s) == 0);
 }
 
 static void
 test_socket_sockport(void) {
-    struct cap_socket *s = cap_sockopen("localhost:80", "tcp-client");
+    struct cap_socket *s = cap_sockopen((uint8_t *) "localhost:80",(uint8_t *) "tcp-client");
     assert(s != NULL);
-    assert(strcmp(cap_sockport(s), "80") == 0);
+    assert(strcmp((const char *) cap_sockport(s), "80") == 0);
     assert(cap_sockclose(s) == 0);
 }
 
@@ -1392,9 +1392,9 @@ test_socket_sockaccept(void) {
 
 static void
 test_socket_sockrecvstr(void) {
-    struct cap_socket *s = cap_sockopen("https://google.com:80", "tcp-client");
+    struct cap_socket *s = cap_sockopen((uint8_t *) "https://google.com:80",(uint8_t *) "tcp-client");
     assert(s != NULL);
-    assert(cap_socksendstr(s, "GET / HTTP/1.1\r\n\r\n") >= 0);
+    assert(cap_socksendstr(s, (const uint8_t *) "GET / HTTP/1.1\r\n\r\n") >= 0);
     assert(cap_sockclose(s) == 0);    
 }
 

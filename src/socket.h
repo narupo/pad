@@ -5,12 +5,12 @@
  *  Author: Aizawa Yuta
  *   Since: 2016
  */
-#ifndef SOCKET_H
-#define SOCKET_H
+#pragma once
 
 #include <pthread.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -58,7 +58,7 @@ cap_sockshow(const struct cap_socket *self);
  * @return success to number of zero
  * @return failed to under number of zero
  */
-int
+int32_t
 cap_sockclose(struct cap_socket *self);
 
 /**
@@ -74,7 +74,7 @@ cap_sockclose(struct cap_socket *self);
  * @return pointer to dynamic allocate memory of struct cap_socket
  */
 struct cap_socket *
-cap_sockopen(const char *src, const char *mode);
+cap_sockopen(const uint8_t *src, const uint8_t *mode);
 
 /**
  * Get host of C string by socket
@@ -83,7 +83,7 @@ cap_sockopen(const char *src, const char *mode);
  *
  * @return pointer to memory of C string
  */
-const char *
+const uint8_t *
 cap_sockhost(const struct cap_socket *self);
 
 /**
@@ -93,7 +93,7 @@ cap_sockhost(const struct cap_socket *self);
  *
  * @return pointer to memory of C string
  */
-const char *
+const uint8_t *
 cap_sockport(const struct cap_socket *self);
 
 /**
@@ -118,8 +118,8 @@ cap_sockaccept(const struct cap_socket *self);
  * @return success to number of recv size
  * @return failed to number of under of zero
  */
-int
-cap_sockrecvstr(struct cap_socket *self, char *dst, size_t dstsz);
+int32_t
+cap_sockrecvstr(struct cap_socket *self, uint8_t *dst, int32_t dstsz);
 
 /**
  * Wrapper of send(2)
@@ -131,8 +131,8 @@ cap_sockrecvstr(struct cap_socket *self, char *dst, size_t dstsz);
  * @return success to number of send size
  * @return failed to number of under of zero
  */
-int
-cap_socksendstr(struct cap_socket *self, const char *str);
+int32_t
+cap_socksendstr(struct cap_socket *self, const uint8_t *str);
 
 /**
  * Wrapper of send(2)
@@ -145,8 +145,5 @@ cap_socksendstr(struct cap_socket *self, const char *str);
  * @return success to number of send size
  * @return failed to number of under of zero
  */
-int
-cap_socksend(struct cap_socket *self, const unsigned char *bytes, size_t size);
-
-#endif
-
+int32_t
+cap_socksend(struct cap_socket *self, const uint8_t *bytes, int32_t size);

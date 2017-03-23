@@ -12,8 +12,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <stdint.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <limits.h>
 #include <unistd.h>
 
@@ -299,3 +299,23 @@ cap_strstrip(struct cap_string *self, const cap_string_type_t *rems);
  */
 const cap_string_type_t *
 cap_strfindc(const struct cap_string *self, const cap_string_type_t *target);
+
+/********
+* uint8 *
+********/
+
+static inline int32_t
+uint8len(const uint8_t *str) {
+    if (!str) {
+        return 0;
+    }
+    return strlen((const char *)str);
+}
+
+static inline int32_t
+uint8toint32(const uint8_t *str) {
+    if (!str) {
+        return 0;
+    }
+    return atoi((const char *)str);    
+}
