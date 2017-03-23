@@ -19,55 +19,7 @@ struct args {
 } args;
 
 static bool
-argsparsehostport(struct args *self, const uint8_t *hostport) {
-    uint8_t buf[ARGS_NBUF] = {0};
-    uint32_t bi = 0, m = 0;
-
-    self->host[0] = '\0';
-
-    for (int32_t i = 0; i < uint8len(hostport)+1; ++i) {
-        uint8_t c = hostport[i]; // allow final nil
-
-        switch (m) {
-        case 0:
-            switch (c) {
-            case ':':
-                buf[bi] = '\0';
-                memmove(self->host, buf, bi);
-                bi = 0;
-                m = 1;
-                break;
-            case '\0':
-                buf[bi] = '\0';
-                memmove(self->host, buf, bi);
-                break;
-            default:
-                buf[bi++] = c;
-                break;
-            }  
-            break;
-        case 1:
-            switch (c) {
-            case '\0':
-                buf[bi] = '\0';
-                self->port = uint8toint32(buf);
-                break;
-            default:
-                buf[bi++] = c;
-                break;
-            }
-            break;
-        default:
-            assert(0 && "impossible");
-            break;
-        }
-    }
-
-    return true;
-}
-
-static bool
-argsparse(struct args *self, int argc, char *argv[]) {
+argsparse(struct args *self, int argc, uint8_t *argv[]) {
     // Parse options
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
@@ -88,7 +40,7 @@ argsparse(struct args *self, int argc, char *argv[]) {
 
     for (;;) {
         int32_t optsindex;
-        int32_t cur = getopt_long(argc, argv, "h", longopts, &optsindex);
+        int32_t cur = getopt_long(argc, (char **) argv, "h", longopts, &optsindex);
         if (cur == -1) {
             break;
         }
@@ -109,10 +61,20 @@ argsparse(struct args *self, int argc, char *argv[]) {
     self->argv = (const uint8_t *const *) argv;
 
     if (self->argc >= 2) {
-        self->hostport = (const uint8_t *) self->argv[1];
-        if (!argsparsehostport(self, self->hostport)) {
-            cap_error("failed to parse host and port");
+        self->hostport = self->argv[1];
+        struct cap_url *url = cap_urlnew();
+        if (!url) {
+            return false;
         }
+
+        if (!cap_urlparse(url, self->hostport)) {
+            cap_error("failed to parse host and port");
+            cap_urldel(url);
+            return false;
+        }
+        memmove(self->host, cap_urlhost(url), uint8len(cap_urlhost(url)+1));
+        self->port = cap_urlport(url);
+        cap_urldel(url);
     }
 
     return true;
@@ -146,7 +108,7 @@ appdel(struct app *self) {
 }
 
 static struct app *
-appnew(int argc, char *argv[]) {
+appnew(int argc, uint8_t *argv[]) {
     struct app *self = calloc(1, sizeof(*self));
     if (!self) {
         cap_error("failed to allocate memory");
@@ -213,7 +175,7 @@ apprun(struct app *self) {
 }
 
 int
-main(int argc, char *argv[]) {
+main(int argc, uint8_t *argv[]) {
     cap_envsetf("CAP_PROCNAME", "cap hub");
 
     struct app *app = appnew(argc, argv);
