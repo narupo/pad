@@ -24,7 +24,7 @@ MODS := \
 	cl.c \
 	url.c \
 	var.c
-LIBS := -lm
+LIBS := -lm -lpthread
 BINS := $(CMDS:.c=)
 HEADERS := $(CMDS:.c=.h)
 CMDOBJS := $(CMDS:.c=.o)
