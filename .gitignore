@@ -44,6 +44,7 @@ cap-home
 cap-ls
 cap-pwd
 cap-run
+cap-hub
 tests
 
 *.pyc
