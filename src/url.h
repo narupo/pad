@@ -53,7 +53,7 @@ cap_urlnew(void);
  * @return failed to NULL
  */
 struct cap_url *
-cap_urlparse(struct cap_url *self, const char *url);
+cap_urlparse(struct cap_url *self, const uint8_t *url);
 
 /**
  * Get host name.
@@ -62,7 +62,7 @@ cap_urlparse(struct cap_url *self, const char *url);
  * @return success to pointer to host name
  * @return failed to NULL
  */
-const char *
+const uint8_t *
 cap_urlhost(const struct cap_url *self);
 
 /**
