@@ -1434,14 +1434,14 @@ test_url_urlnew(void) {
 
 static void
 test_url_urlparse(void) {
-    const char *src = "localhost:8000";
+    const uint8_t *src = (const uint8_t *) "localhost:8000";
     struct cap_url *o = cap_urlnew();
     assert(o != NULL);
     assert(cap_urlparse(NULL, src) == NULL);
     assert(cap_urlparse(o, NULL) == NULL);
     assert(cap_urlparse(o, src));
     assert(cap_urlhost(NULL) == NULL);
-    assert(strcmp(cap_urlhost(o), "localhost") == 0);
+    assert(memcmp(cap_urlhost(o), "localhost", strlen("localhost")) == 0);
     assert(cap_urlport(NULL) == -1);
     assert(cap_urlport(o) == 8000);
     cap_urldel(o);    
