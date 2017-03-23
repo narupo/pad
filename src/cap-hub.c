@@ -159,13 +159,20 @@ apprun(struct app *self) {
         return 1;
     }
 
+    printf("hostport[%s\n", self->args.hostport);
+
     for (;;) {
-        cap_log("server", "accept...");
+        cap_log("server", "accept");
         struct cap_socket *clie = cap_sockaccept(serv);
         if (!clie) {
             cap_error("failed to accept");
             continue;
         }
+
+        uint8_t buf[100];
+        cap_sockrecvstr(clie, buf, sizeof buf);
+        printf("buf[%s]\n", buf);
+        cap_socksendstr(clie, (uint8_t *)"ok");
 
         cap_sockclose(clie);
     }
@@ -175,10 +182,10 @@ apprun(struct app *self) {
 }
 
 int
-main(int argc, uint8_t *argv[]) {
+main(int argc, char *argv[]) {
     cap_envsetf("CAP_PROCNAME", "cap hub");
 
-    struct app *app = appnew(argc, argv);
+    struct app *app = appnew(argc, (uint8_t **) argv);
     if (!app) {
         cap_die("failed to create application");
     }
