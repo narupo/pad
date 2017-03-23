@@ -34,4 +34,5 @@
 #include "error.h"
 #include "var.h"
 #include "socket.h"
+#include "url.h"
 

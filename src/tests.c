@@ -1420,6 +1420,53 @@ sockettests[] = {
 	{},
 };
 
+static void
+test_url_urldel(void) {
+    struct cap_url *o = cap_urlnew();
+    assert(o != NULL);
+    cap_urldel(o);
+}
+
+static void
+test_url_urlnew(void) {
+    // cap_urldel
+}
+
+static void
+test_url_urlparse(void) {
+    const char *src = "localhost:8000";
+    struct cap_url *o = cap_urlnew();
+    assert(o != NULL);
+    assert(cap_urlparse(NULL, src) == NULL);
+    assert(cap_urlparse(o, NULL) == NULL);
+    assert(cap_urlparse(o, src));
+    assert(cap_urlhost(NULL) == NULL);
+    assert(strcmp(cap_urlhost(o), "localhost") == 0);
+    assert(cap_urlport(NULL) == -1);
+    assert(cap_urlport(o) == 8000);
+    cap_urldel(o);    
+}
+
+static void
+test_url_urlhost(void) {
+    // urlparse
+}
+
+static void
+test_url_urlport(void) {
+    // urlparse
+}
+
+static const struct testcase
+urltests[] = {
+    {"cap_urldel", test_url_urldel},
+    {"cap_urlnew", test_url_urlnew},
+    {"cap_urlparse", test_url_urlparse},
+    {"cap_urlhost", test_url_urlhost},
+    {"cap_urlport", test_url_urlport},
+    {},
+};
+
 /*******
 * main *
 *******/
@@ -1435,7 +1482,8 @@ testmodules[] = {
     {"error", errortests},
     {"var", vartests},
     {"util", utiltests},
-    {"socket", sockettests},
+    // {"socket", sockettests},
+    {"url", urltests},
     {},
 };
 
