@@ -20,12 +20,12 @@ typedef enum {
 	SOCKMODE_ACCEPTCLIENT,
 } cap_sockmode_t;
 
-static const char SOCKET_DEFAULT_PORT[] = "8000";
+static const uint8_t SOCKET_DEFAULT_PORT[] = "8000";
 
 struct cap_socket {
-	char host[SOCKET_NHOST];
-	char port[SOCKET_NPORT];
-	int socket;
+	uint8_t host[SOCKET_NHOST];
+	uint8_t port[SOCKET_NPORT];
+	int32_t socket;
 	cap_sockmode_t mode;
 };
 
@@ -33,14 +33,16 @@ struct cap_socket {
 * socket log *
 *************/
 
-void
-socklog(const char *fmt, ...) {
+#define socklog(...) __socklog(__LINE__, __func__, __VA_ARGS__);
+
+static void
+__socklog(int32_t lineno, const char *funcname, const char *fmt, ...) {
 	size_t fmtlen = strlen(fmt);
 	va_list args;
 	va_start(args, fmt);
 
 	fflush(stdout);
-	fprintf(stderr, "cap socket: ");
+	fprintf(stderr, "cap socket: %d: %s: ", lineno, funcname);
 
 	if (isalpha(fmt[0])) {
 		fprintf(stderr, "%c", toupper(fmt[0]));
@@ -92,35 +94,35 @@ wsasockinit(void) {
 *******************/
 
 static cap_sockmode_t
-cap_sockstr2mode(const char *mode) {
-	if (strcasecmp(mode, "tcp-server") == 0) {
+cap_sockstr2mode(const uint8_t *mode) {
+	if (strcasecmp((const char*) mode, "tcp-server") == 0) {
 		return SOCKMODE_TCPSERVER;
-	} else if (strcasecmp(mode, "tcp-client") == 0) {
+	} else if (strcasecmp((const char *) mode, "tcp-client") == 0) {
 		return SOCKMODE_TCPCLIENT;
 	} else {
 		return SOCKMODE_NULL;
 	}
 }
 
-static const char *
-cap_sockmode2str(cap_sockmode_t mode) {
+static const uint8_t *
+cap_sockmode2uint8(cap_sockmode_t mode) {
 	switch (mode) {
-	case SOCKMODE_NULL: return "null"; break;
-	case SOCKMODE_TCPCLIENT: return "tcp-client"; break;
-	case SOCKMODE_TCPSERVER: return "tcp-server"; break;
-	case SOCKMODE_ACCEPTCLIENT: return "tcp-accept-client"; break;
-	default: return "unknown"; break;
+	case SOCKMODE_NULL: return (const uint8_t*) "null"; break;
+	case SOCKMODE_TCPCLIENT: return (const uint8_t*) "tcp-client"; break;
+	case SOCKMODE_TCPSERVER: return (const uint8_t*) "tcp-server"; break;
+	case SOCKMODE_ACCEPTCLIENT: return (const uint8_t*) "tcp-accept-client"; break;
+	default: return (const uint8_t*) "unknown"; break;
 	}
 }
 
 void
 cap_sockshow(const struct cap_socket *self) {
 	socklog("socket host[%s] port[%s] mode[%s] socket[%d]\n"
-		, self->host, self->port, cap_sockmode2str(self->mode), self->socket);
+		, self->host, self->port, cap_sockmode2uint8(self->mode), self->socket);
 	fflush(stderr);
 }
 
-int
+int32_t
 cap_sockclose(struct cap_socket *self) {
 	if (self) {
 		// if (close(self->socket) < 0) {
@@ -148,7 +150,7 @@ cap_sockinittcpserver(struct cap_socket *self) {
 	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_flags = AI_PASSIVE;
 
-	if (getaddrinfo(NULL, self->port, &hints, &infores) != 0) {
+	if (getaddrinfo(NULL, (const char *) self->port, &hints, &infores) != 0) {
 		socklog("failed to getaddrinfo \"%s:%s\"", self->host, self->port);
 		free(self);
 		return NULL;
@@ -209,7 +211,7 @@ cap_sockinittcpclient(struct cap_socket *self) {
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = IPPROTO_TCP;
 
-	if (getaddrinfo(self->host, self->port, &hints, &infores) != 0) {
+	if (getaddrinfo((const char *) self->host, (const char *) self->port, &hints, &infores) != 0) {
 		socklog("failed to getaddrinfo \"%s:%s\"", self->host, self->port);
 		free(self);
 		return NULL;
@@ -246,13 +248,19 @@ cap_sockinittcpclient(struct cap_socket *self) {
 }
 
 static struct cap_socket *
-cap_sockparseopensrc(struct cap_socket *self, const char *src) {
-	char *dst = self->host;
-	int ndst = sizeof(self->host)-1;
-	int di = 0;
-	int m = 0;
+cap_sockparseopensrc(struct cap_socket *self, const uint8_t *src) {
+	if (!self || !src) {
+		socklog("invalid arguments");
+		errno = EINVAL;
+		return NULL;
+	}
 
-	for (const char *sp = src; *sp; ++sp) {
+	uint8_t *dst = self->host;
+	int32_t ndst = sizeof(self->host)-1;
+	int32_t di = 0;
+	int32_t m = 0;
+
+	for (const uint8_t *sp = src; *sp; ++sp) {
 		switch (m) {
 		case 0:
 			if (*sp == ':') {
@@ -268,7 +276,7 @@ cap_sockparseopensrc(struct cap_socket *self, const char *src) {
 			}
 			break;
 		case 1:
-			if (!isdigit((int) *sp)) {
+			if (!isdigit(*sp)) {
 				socklog("invalid port number of \"%s\"", src);
 				return NULL;
 			}
@@ -283,14 +291,20 @@ cap_sockparseopensrc(struct cap_socket *self, const char *src) {
 	}
 
 	if (self->port[0] == '\0') {
-		snprintf(self->port, sizeof self->port, "%s", SOCKET_DEFAULT_PORT);
+		snprintf((char *) self->port, sizeof self->port, "%s", SOCKET_DEFAULT_PORT);
 	}
 
 	return self;
 }
 
 struct cap_socket *
-cap_sockopen(const char *src, const char *mode) {
+cap_sockopen(const uint8_t *src, const uint8_t *mode) {
+	if (!src || !mode) {
+		socklog("invalid arguments");
+		errno = EINVAL;
+		return NULL;
+	}
+
 #if defined(_CAP_WINDOWS)
 	if (pthread_once(&wsasockonce, wsasockinit) != 0) {
 		socklog("failed to pthread once");
@@ -332,24 +346,40 @@ cap_sockopen(const char *src, const char *mode) {
 	return NULL;
 }
 
-const char *
+const uint8_t *
 cap_sockhost(const struct cap_socket *self) {
+	if (!self) {
+		socklog("invalid arguments");
+		errno = EINVAL;
+		return NULL;
+	}
 	return self->host;
 }
 
-const char *
+const uint8_t *
 cap_sockport(const struct cap_socket *self) {
+	if (!self) {
+		socklog("invalid arguments");
+		errno = EINVAL;
+		return NULL;
+	}
 	return self->port;
 }
 
 struct cap_socket *
 cap_sockaccept(const struct cap_socket *self) {
+	if (!self) {
+		socklog("invalid arguments");
+		errno = EINVAL;
+		return NULL;
+	}
+
 	if (self->mode != SOCKMODE_TCPSERVER) {
 		socklog("invalid mode on accept \"%s:%s\"", self->host, self->port);
 		return NULL;
 	}
 
-	int cliefd = accept(self->socket, NULL, NULL);
+	int32_t cliefd = accept(self->socket, NULL, NULL);
 	if (cliefd < 0) {
 		socklog("failed to accept \"%s:%s\"", self->host, self->port);
 		return NULL;
@@ -367,14 +397,15 @@ cap_sockaccept(const struct cap_socket *self) {
 	return client;
 }
 
-int
-cap_sockrecvstr(struct cap_socket *self, char *dst, size_t dstsz) {
-	if (!dst || dstsz < 1) {
+int32_t
+cap_sockrecvstr(struct cap_socket *self, uint8_t *dst, int32_t dstsz) {
+	if (!self || !dst || dstsz < 1) {
 		socklog("invalid arguments");
+		errno = EINVAL;
 		return -1;
 	}
 
-	int ret = recv(self->socket, dst, dstsz-1, 0);
+	int32_t ret = recv(self->socket, dst, dstsz-1, 0);
 	if (ret < 0) {
 		socklog("failed to read from socket [%d] by \"%s:%s\""
 			, self->socket, self->host, self->port);
@@ -386,10 +417,16 @@ cap_sockrecvstr(struct cap_socket *self, char *dst, size_t dstsz) {
 	return ret;
 }
 
-int
-cap_socksendstr(struct cap_socket *self, const char *str) {
-	int ret = 0;
-	size_t len = strlen(str);
+int32_t
+cap_socksendstr(struct cap_socket *self, const uint8_t *str) {
+	if (!self || !str) {
+		socklog("invalid arguments");
+		errno = EINVAL;
+		return -1;
+	}
+
+	int32_t ret = 0;
+	int32_t len = strlen((const char *) str);
 
 	ret = send(self->socket, str, len, 0);
 	if (ret < 0) {
@@ -400,9 +437,15 @@ cap_socksendstr(struct cap_socket *self, const char *str) {
 	return ret;
 }
 
-int 
-cap_socksend(struct cap_socket *self, const unsigned char *bytes, size_t size) {
-	int ret = 0;
+int32_t 
+cap_socksend(struct cap_socket *self, const uint8_t *bytes, int32_t size) {
+	if (!self || size <= 0) {
+		socklog("invalid arguments");
+		errno = EINVAL;
+		return -1;
+	}
+
+	int32_t ret = 0;
 
 #if defined(_CAP_WINDOWS)
 	ret = send(self->socket, (const char *)bytes, size, 0);
@@ -416,79 +459,3 @@ cap_socksend(struct cap_socket *self, const unsigned char *bytes, size_t size) {
 
 	return ret;
 }
-
-#if defined(_TEST_SOCKET)
-int
-testtcpserv(int argc, char *argv[]) {
-	if (argc < 2) {
-		return 1;
-	}
-
-	struct cap_socket *server = cap_sockopen(argv[1], "tcp-server");
-	if (!server) {
-		return 1;
-	}
-
-	cap_sockshow(server);
-
-	// Single I/O
-	socklog("accept...\n");
-	fflush(stderr);
-	struct cap_socket *client = cap_sockaccept(server);
-
-	for (;;) {
-
-		socklog("recv...\n");
-		fflush(stderr);
-
-		char buf[1024];
-		cap_sockrecvstr(client, buf, sizeof buf);
-		printf("buf[%s]\n", buf);
-		fflush(stdout);
-
-		if (strncmp(buf, "exit", 4) == 0) {
-			break;
-		}
-	}
-
-	cap_sockclose(client);
-	cap_sockclose(server);
-	return 0;
-}
-
-int
-testtcpclient(int argc, char *argv[]) {
-	if (argc < 2) {
-		return 1;
-	}
-
-	struct cap_socket *socket = cap_sockopen(argv[1], "tcp-client");
-	if (!socket) {
-		return 1;
-	}
-
-	cap_sockshow(socket);
-
-	cap_socksendstr(socket,
-		"GET / HTTP/1.1\r\n"
-		"Host: smile.com\r\n"
-		"\r\n\r\n"
-	);
-
-	char buf[1024];
-	cap_sockrecvstr(socket, buf, sizeof buf);
-	
-	printf("buf[%s]\n", buf);
-	fflush(stdout);
-	fflush(stderr);
-
-	cap_sockclose(socket);
-	return 0;
-}
-
-int main(int argc, char *argv[]) {
-    // return testtcpclient(argc, argv);
-    return testtcpserv(argc, argv);
-}
-#endif
-
