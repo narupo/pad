@@ -22,6 +22,7 @@ MODS := \
 	util.c \
 	env.c \
 	cl.c \
+	url.c \
 	var.c
 LIBS := -lm
 BINS := $(CMDS:.c=)
