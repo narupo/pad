@@ -41,7 +41,7 @@ struct opts {
 };
 
 static struct opts *
-parseopts(struct opts *opts, int argc, char *argv[]) {
+optsparse(struct opts *opts, int argc, char *argv[]) {
 	static struct option longopts[] = {
 		{"help", no_argument, 0, 'h'},
 		{"export", required_argument, 0, 'e'},
@@ -752,7 +752,6 @@ apprun(struct app *self) {
 	cap_strapp(cmdline, parg);
 
 	cap_envsetf("CAP_SCOPE", scope);
-	cap_debug("scope[%s] cmdline[%s]\n", scope, cap_strgetc(cmdline));
 	safesystem(cap_strgetc(cmdline));
 	
 	cap_strdel(cmdline);
@@ -804,7 +803,7 @@ appnew(int argc, char *argv[]) {
 		return NULL;
 	}
 
-	if (!parseopts(&self->opts, argc, argv)) {
+	if (!optsparse(&self->opts, argc, argv)) {
 		cap_die("failed to parse options");
 	}
 

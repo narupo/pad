@@ -62,6 +62,7 @@ int
 safesystem(const char *cmdline) {
 	struct cap_cl *cl = cap_clnew();
 	if (!cap_clparsestropts(cl, cmdline, 0)) {
+		cap_error("failed to parse command line \"%s\"", cmdline);
 		cap_cldel(cl);
 		return -1;
 	}
@@ -69,15 +70,18 @@ safesystem(const char *cmdline) {
 	int argc = cap_cllen(cl);
 	char **argv = cap_clescdel(cl);
 	if (!argv) {
+		cap_error("failed to escape and delete of clk");
 		return -1;
 	}
 	
 	switch (fork()) {
 	case -1:
+		cap_error("failed to fork");
 		return -1;
 	break;
 	case 0:
 		if (execv(argv[0], argv) == -1) {
+			cap_error("failed to safesystem");
 			freeargv(argc, argv);
 			_exit(1);
 		}

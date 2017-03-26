@@ -107,7 +107,7 @@ cap_die(const char *fmt, ...) {
 void
 cap_debug(const char *fmt, ...) {
 	const char *isdeb = getenv("CAP_DEBUG");
-	if (isdeb && *isdeb == '0') {
+	if (!isdeb || (isdeb && *isdeb == '0')) {
 		return;
 	}
 
@@ -118,6 +118,4 @@ cap_debug(const char *fmt, ...) {
 	va_start(ap, fmt);
 	errorap_unsafe(ap, fmt);
 	va_end(ap);
-
-	exit(EXIT_FAILURE);
 }
