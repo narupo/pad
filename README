@@ -24,10 +24,3 @@ Example
     $ cap ls
     $ cap cat snippet.txt
 
-
-History of branch
-=================
-
-         0.18 ... Add test cases.
-          0.0 ... Start project. Implementation of multi process.
-    prototype ... Create prototype of Cap. Implementation of multi thread.
