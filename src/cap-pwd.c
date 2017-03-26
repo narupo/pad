@@ -81,11 +81,12 @@ main(int argc, char *argv[]) {
             cap_error("invalid cd \"%s\" or home \"%s\"", cd, home);
             return 4;
         }
-        const char *p = cd + homelen;
-        if (*p == '/' || *p == '\\') {
-            ++p;
+        if (cdlen-homelen == 0) {
+            printf("/\n");
+        } else {
+            const char *p = cd + homelen;
+            printf("%s\n", p);
         }
-        printf("%s\n", p);
     }
 
 	return 0;
