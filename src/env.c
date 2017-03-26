@@ -42,6 +42,7 @@ cap_envget(char *dst, size_t dstsz, const char *name) {
 
 	const char *val = getenv(name);
 	if (!val) {
+		dounlock();
 		return NULL;
 	}
 
