@@ -33,10 +33,9 @@ writevarcd(const char *line) {
 }
 
 static bool
-docd(const char *drtpath) {
+cd(const char *drtpath) {
 	char newcd[FILE_NPATH];
 	cap_fsolve(newcd, sizeof newcd, drtpath);
-	// printf("newcd[%s]\n", newcd);
 
 	if (isoutofhome(newcd)) {
 		cap_die("'%s' is out of home", newcd);
@@ -63,7 +62,7 @@ main(int argc, char *argv[]) {
 			cap_die("need environment variable of home");
 		}
 
-		if (!docd(home)) {
+		if (!cd(home)) {
 			cap_die("failed to cd");
 		}
 		
@@ -74,11 +73,22 @@ main(int argc, char *argv[]) {
 	if (!readvarcd(varcd, sizeof varcd)) {
 		cap_die("failed to read var");
 	}
-	// printf("varcd[%s]\n", varcd);
 
+	char tmp[FILE_NPATH];
 	char path[FILE_NPATH];
-	cap_fsolvefmt(path, sizeof path, "%s/%s", varcd, argv[1]);
-	if (!docd(path)) {
+
+	if (argv[1][0] == '/' || argv[1][0] == '\\') {
+		// Absolute of home
+		if (!cap_envget(tmp, sizeof tmp, "CAP_VARHOME")) {
+			cap_die("failed to get environment variable of home");
+		}
+		cap_fsolvefmt(path, sizeof path, "%s/%s", tmp, argv[1]);
+	} else {
+		// Relative of cd
+		cap_fsolvefmt(path, sizeof path, "%s/%s", varcd, argv[1]);
+	}
+
+	if (!cd(path)) {
 		cap_die("failed to cd");
 	}
 
