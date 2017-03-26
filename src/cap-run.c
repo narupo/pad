@@ -39,56 +39,45 @@ readscriptline(char *dst, size_t dstsz, const char *path) {
 }
 
 struct opts {
-    int argc;
-    char **argv;
-    bool ishelp;
+    struct cap_array *args;
 };
 
-static bool
-optsparse(struct opts *self, int argc, char *argv[]) {
-    // Parse options
-    static struct option longopts[] = {
-        {"help", no_argument, 0, 'h'},
-        {},
-    };
+static void
+optsdel(struct opts *self) {
+    if (self) {
+        cap_arrdel(self->args);
+        free(self);
+    }
+}
 
-    extern int opterr;
-    opterr = 0; // ignore error messages
-    optind = 0; // init index of parse
-
-    for (;;) {
-        int optsindex;
-        int cur = getopt_long(argc, argv, "h", longopts, &optsindex);
-        if (cur == -1) {
-            break;
-        }
-
-        switch (cur) {
-        case 0: /* Long option only */ break;
-        case 'h': self->ishelp = true; break;
-        case '?':
-        default: cap_error("Unknown option \"%s\"", cur); break;
-        }
+static struct opts *
+optsnew(int argc, char *argv[]) {
+    struct opts *self = calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
     }
 
-    if (argc < optind) {
-        cap_error("Failed to parse option");
-        return false;
+    self->args = cap_arrnew();
+    if (!self->args) {
+        free(self);
+        return NULL;
     }
 
-    self->argc = argc;
-    self->argv = argv;
+    for (int32_t i = 0; i < argc; ++i) {
+        cap_arrpush(self->args, argv[i]);
+    }
 
-    return true;
+    return self;
 }
 
 struct app {
-    struct opts opts;
+    struct opts *opts;
 };
 
 static void
 appdel(struct app *self) {
     if (self) {
+        optsdel(self->opts);
         free(self);
     }
 }
@@ -100,7 +89,8 @@ appnew(int argc, char *argv[]) {
         return NULL;
     }
 
-    if (!optsparse(&self->opts, argc, argv)) {
+    self->opts = optsnew(argc, argv);
+    if (!self->opts) {
         free(self);
         return NULL;
     }
@@ -110,7 +100,7 @@ appnew(int argc, char *argv[]) {
 
 static int32_t
 appmain(struct app *self) {
-    if (self->opts.argc < 2) {
+    if (cap_arrlen(self->opts->args) < 1) {
         cap_error("need script name");
         return 1;
     }
@@ -118,41 +108,45 @@ appmain(struct app *self) {
     const char *scope = getenv("CAP_SCOPE");
     if (!scope) {
         cap_error("not found scope in environment");
-        return 1;
+        return 2;
     }
 
     char cdorhome[FILE_NPATH];
     if (strcasecmp(scope, "local") == 0) {
         if (!cap_envget(cdorhome, sizeof cdorhome, "CAP_VARCD")) {
             cap_error("need environment variable of cd");
-            return 1;
+            return 3;
         }
     } else if (strcasecmp(scope, "global") == 0) {
         if (!cap_envget(cdorhome, sizeof cdorhome, "CAP_VARHOME")) {
             cap_error("need environment variable of home");
-            return 1;
+            return 4;
         }
     } else {
         cap_error("invalid scope \"%s\"", scope);
-        return 1;
+        return 5;
     }
 
-    char spath[FILE_NPATH]; // Script path
-    cap_fsolvefmt(spath, sizeof spath, "%s/%s", cdorhome, self->opts.argv[1]);
+    // Create script path
+    char spath[FILE_NPATH];
+    cap_fsolvefmt(spath, sizeof spath, "%s/%s", cdorhome, cap_arrgetc(self->opts->args, 1));
     if (isoutofhome(spath)) {
         cap_die("invalid script. '%s' is out of home.", spath);
     }
 
-    char exesname[NSCRIPTNAME]; // Execute script name in file
+    // Read script line in file
+    char exesname[NSCRIPTNAME];
     readscriptline(exesname, sizeof exesname, spath);
 
+    // Create command line
     struct cap_string *cmdline = cap_strnew();
     cap_strapp(cmdline, exesname);
     cap_strapp(cmdline, " ");
     cap_strapp(cmdline, spath);
     cap_strapp(cmdline, " ");
-    for (int i = 2; i < self->opts.argc; ++i) {
-        cap_strapp(cmdline, self->opts.argv[i]);
+
+    for (int32_t i = 2; i < cap_arrlen(self->opts->args); ++i) {
+        cap_strapp(cmdline, cap_arrgetc(self->opts->args, i));
         cap_strapp(cmdline, " ");
     }
 
