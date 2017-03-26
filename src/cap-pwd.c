@@ -78,17 +78,19 @@ main(int argc, char *argv[]) {
     }
 
     if (opts.isnorm) {
+    	printf("%s\n", cd);
+    } else {
         int32_t homelen = strlen(home);
         int32_t cdlen = strlen(cd);
-        int32_t diflen = cdlen-homelen;
-        if (diflen < 0) {
+        if (cdlen-homelen < 0) {
             cap_error("invalid cd \"%s\" or home \"%s\"", cd, home);
             return 4;
         }
-        const char *p = cd + homelen+diflen;
+        const char *p = cd + homelen;
+        if (*p == '/' || *p == '\\') {
+            ++p;
+        }
         printf("%s\n", p);
-    } else {
-    	printf("%s\n", cd);
     }
 
 	return 0;
