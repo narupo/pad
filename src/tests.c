@@ -1143,7 +1143,7 @@ test_error__log(void) {
     char buf[BUFSIZ] = {0};
     setbuf(stderr, buf);
 
-    _cap_log("file", 100, "func", "warn", "msg");
+    _cap_log_unsafe("file", 100, "func", "warn", "msg");
     // assert(strcmp(buf, "")); // TODO
     
     setbuf(stderr, NULL);

@@ -9,6 +9,10 @@
 #define CAP_PWD_H
 
 #include <stdio.h>
+#include <getopt.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #include "error.h"
 #include "env.h"

@@ -30,7 +30,7 @@
  * @return failed to false
  */
 bool
-_cap_log(const char *file, long line, const char *func, const char *type, const char *msg);
+_cap_log_unsafe(const char *file, long line, const char *func, const char *type, const char *msg);
 
 /**
  * Write log
@@ -40,7 +40,7 @@ _cap_log(const char *file, long line, const char *func, const char *type, const 
 #define cap_log(type, ...) { \
 	char msg[1024]; \
 	snprintf(msg, sizeof msg, __VA_ARGS__); \
-	_cap_log(__FILE__, __LINE__, __func__, type, msg); \
+	_cap_log_unsafe(__FILE__, __LINE__, __func__, type, msg); \
 }
 
 /**
