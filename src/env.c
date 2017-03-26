@@ -15,7 +15,7 @@ static pthread_mutex_t
 envmtx = PTHREAD_MUTEX_INITIALIZER;
 
 static bool
-dounlock(void) {
+unlock(void) {
 	if (pthread_mutex_unlock(&envmtx) != 0) {
 		return false;
 	}
@@ -23,7 +23,7 @@ dounlock(void) {
 }
 
 static bool
-dolock(void) {
+lock(void) {
 	if (pthread_mutex_lock(&envmtx) != 0) {
 		return false;
 	}
@@ -36,31 +36,31 @@ dolock(void) {
 
 char *
 cap_envget(char *dst, size_t dstsz, const char *name) {
-	if (!dolock()) {
+	if (!lock()) {
 		return NULL;
 	}
 
 	const char *val = getenv(name);
 	if (!val) {
-		dounlock();
+		unlock();
 		return NULL;
 	}
 
 	snprintf(dst, dstsz, "%s", val);
 
-	dounlock();
+	unlock();
 	return dst;
 }
 
 int
 cap_envset(const char *name, const char *value, int overwrite) {
-	if (!dolock()) {
+	if (!lock()) {
 		return -1;
 	}
 
 	int ret = setenv(name, value, overwrite);
 
-	dounlock();
+	unlock();
 	return ret;
 }
 
