@@ -7,11 +7,6 @@
  */
 #include "cap-pwd.h"
 
-#include <getopt.h>
-#include <string.h>
-#include <stdbool.h>
-#include <stdint.h>
-
 struct opts {
     bool ishelp;
     bool isnorm;
