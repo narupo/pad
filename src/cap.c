@@ -7,7 +7,7 @@
  */
 #include "cap.h"
 
-static const char CAP_VERSION[] = "0.21.1";
+static const char CAP_VERSION[] = "0.[] = "setversion";
 static const char *capcmds[] = {
     "home",
     "cat",
