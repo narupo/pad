@@ -54,10 +54,10 @@ isoutofhome(const char *path);
 /**
  * Get random number of range.
  * 
- * @param[in] int min minimum number of range
- * @param[in] int max maximum number of range
+ * @param[in] min minimum number of range
+ * @param[in] max maximum number of range
  * 
- * @return int random number (n >= min && n <= max)
+ * @return random number (n >= min && n <= max)
  */
 int
 randrange(int min, int max);
@@ -72,5 +72,16 @@ randrange(int min, int max);
 int
 safesystem(const char *cmdline);
 
+/**
+ * Create array of arguments by argc and argv and optind.
+ *
+ * @param[in] argc
+ * @param[in] argv
+ * @param[in] optind @see getopt
+ *
+ * @return success to pointer to array
+ * @return failed to NULL
+ */
 struct cap_array *
 argsbyoptind(int argc, char *argv[], int optind);
+

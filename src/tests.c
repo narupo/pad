@@ -161,7 +161,6 @@ test_array_arrescdel(void) {
 
 void
 test_array_arrpush(void) {
-    // test
     struct cap_array *arr = cap_arrnew();
     assert(arr != NULL);
 
