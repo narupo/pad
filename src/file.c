@@ -414,16 +414,16 @@ cap_dirnodedel(struct cap_dirnode *self) {
 
 struct cap_dirnode *
 cap_dirnodenew(void) {
-	struct cap_dirnode *self = (struct cap_dirnode *) calloc(1, sizeof(struct cap_dirnode));
+	struct cap_dirnode *self = calloc(1, sizeof(struct cap_dirnode));
 	if (!self) {
 		return NULL;
 	}
 	return self;
 }
 
-/***********************
+/*********************
 * cap_dirnode getter *
-***********************/
+*********************/
 
 const char *
 cap_dirnodename(const struct cap_dirnode *self) {
@@ -438,9 +438,9 @@ cap_dirnodename(const struct cap_dirnode *self) {
 #endif
 }
 
-/*****************
+/**********************
 * file struct cap_dir *
-*****************/
+**********************/
 
 struct cap_dir {
 #if defined(_CAP_WINDOWS)
@@ -451,9 +451,9 @@ struct cap_dir {
 #endif
 };
 
-/***************************
+/********************************
 * struct cap_dir close and open *
-***************************/
+********************************/
 
 int32_t
 cap_dirclose(struct cap_dir *self) {
