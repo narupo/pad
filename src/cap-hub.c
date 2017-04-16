@@ -184,6 +184,8 @@ appnew(int argc, uint8_t *argv[]) {
 
 static void
 appusage(const struct app *self) {
+    self = NULL; // not used
+    
     fflush(stdout);
     fprintf(stderr,
         "Cap's hub.\n"
