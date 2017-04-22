@@ -152,12 +152,20 @@ main(int argc, char *argv[]) {
 		cap_die("need environment variable of cd");
 	}
 
+    char home[FILE_NPATH];
+    if (!cap_envget(home, sizeof home, "CAP_VARHOME")) {
+        cap_die("need environment variable of home");
+    }
+
 	if (optind-argc == 0) {
 		capls(cd);
 	} else {
 		char path[FILE_NPATH];
-		for (int i = optind; i < argc; ++i) {
-			cap_fsolvefmt(path, sizeof path, "%s/%s", cd, argv[i]);
+
+        for (int i = optind; i < argc; ++i) {
+            const char *arg = argv[i];
+            const char *org = (arg[0] == '/' ? home : cd);
+			cap_fsolvefmt(path, sizeof path, "%s/%s", org, arg);
 			capls(path);
 		}
 	}
