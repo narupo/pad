@@ -129,7 +129,7 @@ usage(void) {
         "The options are:\n"
         "\n"
         "   -h, --help    show usage.\n"
-        "   -a, --all     show all files\n"
+        "   -a, --all     show all files.\n"
         "\n"
     , getenv("CAP_PROCNAME"));
     exit(0);
