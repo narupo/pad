@@ -31,7 +31,7 @@ isdotfile(const char *fname) {
 }
 
 static struct cap_array *
-dir2array(struct cap_dir *dir) {
+dir2arr(struct cap_dir *dir) {
 	struct cap_array *arr = cap_arrnew();
 	if (!arr) {
 		return NULL;
@@ -62,7 +62,7 @@ capls(const char *path) {
 		return 1;
 	}
 
-	struct cap_array *arr = dir2array(dir);
+	struct cap_array *arr = dir2arr(dir);
 	if (!arr) {
 		cap_error("failed to read directory %s", path);
 		return 1;
