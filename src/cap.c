@@ -166,6 +166,8 @@ capsolveopts(struct cap *cap, int ac, char *av[]) {
 
 static bool
 capinitenv(const struct cap *cap) {
+    cap = NULL; // not used
+
     const char bindir[] = "/usr/local/bin/";
     char caproot[FILE_NPATH];
     char vardir[FILE_NPATH];
