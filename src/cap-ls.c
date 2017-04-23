@@ -22,10 +22,6 @@ arrdump(const struct cap_array *arr, FILE *fout) {
 
 static bool
 isdotfile(const char *fname) {
-    if (opts.isall) {
-        return false;
-    }
-    
     if (strcmp(fname, "..") == 0 ||
         fname[0] == '.') {
         return true;
@@ -43,10 +39,10 @@ dir2array(struct cap_dir *dir) {
 
 	for (struct cap_dirnode *nd; (nd = cap_dirread(dir)); ) {
 		const char *name = cap_dirnodename(nd);
-        if (!isdotfile(name)) {
-            cap_arrpush(arr, name);
-            
+        if (isdotfile(name) && !opts.isall) {
+            continue;            
         }
+        cap_arrpush(arr, name);
 		cap_dirnodedel(nd);
 	}
 
