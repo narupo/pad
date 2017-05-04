@@ -42,6 +42,10 @@ struct opts {
 
 static struct opts *
 optsparse(struct opts *opts, int argc, char *argv[]) {
+	/* TODO: Success to ...
+		$ cap al alg "alias -g"
+		$ cap alg
+	*/
 	static struct option longopts[] = {
 		{"help", no_argument, 0, 'h'},
 		{"export", required_argument, 0, 'e'},
