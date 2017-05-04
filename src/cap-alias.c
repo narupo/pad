@@ -709,14 +709,14 @@ appexport(struct app *self) {
 
 static int
 apprun(struct app *self) {
-    // Create bin path of commands
+	// Create bin path of commands
 	char bindir[FILE_NPATH];
 	if (!cap_envget(bindir, sizeof bindir, "CAP_BINDIR")) {
 		cap_error("need bin directory on environ");
 		return 1;
 	}
 
-    // Grep command name from argument of option
+	// Grep command name from argument of option
 	char cmdname[ALF_CNAME];
 	const char *parg = self->opts.runarg;
 	{
@@ -740,12 +740,12 @@ apprun(struct app *self) {
 		}
 	}
 
-    // Create command path
+	// Create command path
 	char cmdpath[FILE_NPATH];
 	snprintf(cmdpath, sizeof cmdpath, "%s/cap-%s", bindir, cmdcol);
 	free(cmdcol);
 
-    // Create command line for child process
+	// Create command line for child process
 	struct cap_string *cmdline = cap_strnew();
 	if (!cmdline) {
 		cap_error("failed to create cap string");
@@ -755,11 +755,11 @@ apprun(struct app *self) {
 	cap_strapp(cmdline, cmdpath);
 	cap_strapp(cmdline, parg);
 
-    // Execute child process
+	// Execute child process
 	cap_envsetf("CAP_SCOPE", scope);
 	safesystem(cap_strgetc(cmdline));
 	
-    // Done
+	// Done
 	cap_strdel(cmdline);
 	return 0;
 }
