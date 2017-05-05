@@ -16,7 +16,6 @@ static const char *capcmds[] = {
     "ls",
     "run",
     "alias",
-    "hub",
     NULL,
 };
     
@@ -245,7 +244,6 @@ capusage(struct cap *cap) {
         "    cat      catenate files and show.\n"
         "    run      run script.\n"
         "    alias    run alias command.\n"
-        "    hub      run hub.\n"
     ;
     static const char *examples[] = {
         "    $ cap home\n"
