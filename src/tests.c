@@ -1487,6 +1487,11 @@ __ltkr_openfin(void) {
 }
 
 static void
+__ltkr_fclose(FILE *fp) {
+    assert(fclose(fp) == 0);
+}
+
+static void
 test_ltkr_ltkrtokdel(void) {
     struct cap_ltkr *ltkr = cap_ltkrnew();
     assert(ltkr != NULL);
@@ -1496,7 +1501,7 @@ test_ltkr_ltkrtokdel(void) {
 
     FILE *fin = __ltkr_openfin();
     assert(cap_ltkrparsestream(ltkr, fin) != NULL);
-    fclose(fin);
+    __ltkr_fclose(fin);
     setbuf(stdout, NULL);
 
     cap_ltkrdel(ltkr);
