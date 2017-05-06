@@ -23,6 +23,7 @@ MODS := \
 	env.c \
 	cl.c \
 	url.c \
+    lang-tkr.c \
 	var.c
 LIBS := -lm -lpthread
 BINS := $(CMDS:.c=)
