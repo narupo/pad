@@ -1685,8 +1685,7 @@ run(const struct opts *opts) {
 
     if (opts->argc-opts->optind > 0) {
         start = clock();
-        modtest(opts->argv[opts->optind]);
-        ntest = 1;
+        ntest = modtest(opts->argv[opts->optind]);
         end = clock();
     } else {
         start = clock();
