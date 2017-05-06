@@ -1596,7 +1596,7 @@ struct opts {
     int32_t optind;
 };
 
-static int
+static int32_t
 parseopts(struct opts *opts, int argc, char *argv[]) {
     // Init opts
     *opts = (struct opts) {};
@@ -1679,7 +1679,7 @@ fulltests(void) {
 
 static void
 run(const struct opts *opts) {
-    int ntest = 0;
+    int32_t ntest = 0;
     clock_t start;
     clock_t end;
 
