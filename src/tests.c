@@ -1466,6 +1466,108 @@ urltests[] = {
     {},
 };
 
+/***********
+* lang-tkr *
+***********/
+
+static const char *
+__ltkr_fincontent(void) {
+    return "abc\nabc";
+}
+
+static FILE *
+__ltkr_openfin(void) {
+    const char *path = "/tmp/cap-ltkr-lang.txt";
+    if (!cap_fexists(path)) {
+        cap_fwriteline(__ltkr_fincontent(), path);
+    }
+    FILE *fin = fopen(path, "r");
+    assert(fin != NULL);
+    return fin;
+}
+
+static void
+test_ltkr_ltkrtokdel(void) {
+    struct cap_ltkr *ltkr = cap_ltkrnew();
+    assert(ltkr != NULL);
+
+    char stdoutbuf[1024] = {};
+    setbuf(stdout, stdoutbuf);
+
+    FILE *fin = __ltkr_openfin();
+    assert(cap_ltkrparsestream(ltkr, fin) != NULL);
+    fclose(fin);
+    setbuf(stdout, NULL);
+
+    cap_ltkrdel(ltkr);
+}
+
+static void
+test_ltkr_ltkrtoknewcapa(void) {
+}
+
+static void
+test_ltkr_ltkrtoknew(void) {
+}
+
+static void
+test_ltkr_ltkrtoknewstr(void) {
+}
+
+static void
+test_ltkr_ltkrtoksdel(void) {
+}
+
+static void
+test_ltkr_ltkrtoksnewcapa(void) {
+}
+
+static void
+test_ltkr_ltkrtoksnew(void) {
+}
+
+static void
+test_ltkr_ltkrtoksrecapa(void) {
+}
+
+static void
+test_ltkr_ltkrtoksmove(void) {
+}
+
+static void
+test_ltkr_ltkrtoksgetc(void) {
+}
+
+static void
+test_ltkr_ltkrdel(void) {
+}
+
+static void
+test_ltkr_ltkrnew(void) {
+}
+
+static void
+test_ltkr_ltkrparsestream(void) {
+}
+
+static const struct testcase
+ltkrtests[] = {
+    {"ltkrtokdel", test_ltkr_ltkrtokdel},
+    {"ltkrtoknewcapa", test_ltkr_ltkrtoknewcapa},
+    {"ltkrtoknew", test_ltkr_ltkrtoknew},
+    {"ltkrtoknewstr", test_ltkr_ltkrtoknewstr},
+    {"ltkrtoksdel", test_ltkr_ltkrtoksdel},
+    {"ltkrtoksnewcapa", test_ltkr_ltkrtoksnewcapa},
+    {"ltkrtoksnew", test_ltkr_ltkrtoksnew},
+    {"ltkrtoksrecapa", test_ltkr_ltkrtoksrecapa},
+    {"ltkrtoksmove", test_ltkr_ltkrtoksmove},
+    {"ltkrtoksgetc", test_ltkr_ltkrtoksgetc},
+    {"ltkrdel", test_ltkr_ltkrdel},
+    {"ltkrnew", test_ltkr_ltkrnew},
+    {"ltkrparsestream", test_ltkr_ltkrparsestream},
+    {},
+};
+
 /*******
 * main *
 *******/
@@ -1483,11 +1585,15 @@ testmodules[] = {
     {"util", utiltests},
     // {"socket", sockettests},
     {"url", urltests},
+    {"ltkr", ltkrtests},
     {},
 };
 
 struct opts {
     bool ishelp;
+    int32_t argc;
+    char **argv;
+    int32_t optind;
 };
 
 static int
@@ -1521,14 +1627,43 @@ parseopts(struct opts *opts, int argc, char *argv[]) {
     if (argc < optind) {
         die("failed to parse option");
     }
-    
+
+    opts->argc = argc;
+    opts->optind = optind;
+    opts->argv = argv;
+
     return 0;
 }
 
-static void
-run(const struct opts *opts) {
-    int ntest = 0;
-    clock_t start = clock();
+static int32_t
+modtest(const char *modname) {
+    int32_t ntest = 0;
+    const struct testmodule *fndmod = NULL;
+
+    for (const struct testmodule *m = testmodules; m->name; ++m) {
+        if (strcmp(modname, m->name) == 0) {
+            fndmod = m;
+        }
+    }
+
+    if (!fndmod) {
+        return 0;
+    }
+
+    printf("\n* module '%s'\n", fndmod->name);
+
+    for (const struct testcase *t = fndmod->tests; t->name; ++t) {
+        printf("- testing '%s'\n", t->name);
+        t->test();
+        ++ntest;
+    }
+
+    return ntest;    
+}
+
+static int32_t 
+fulltests(void) {
+    int32_t ntest = 0;
 
     for (const struct testmodule *m = testmodules; m->name; ++m) {
         printf("\n* module '%s'\n", m->name);
@@ -1538,12 +1673,32 @@ run(const struct opts *opts) {
             ++ntest;
         }
     }
-    
-    clock_t end = clock();
+
+    return ntest;
+}
+
+static void
+run(const struct opts *opts) {
+    int ntest = 0;
+    clock_t start;
+    clock_t end;
+
+    if (opts->argc-opts->optind > 0) {
+        start = clock();
+        modtest(opts->argv[opts->optind]);
+        ntest = 1;
+        end = clock();
+    } else {
+        start = clock();
+        ntest = fulltests();
+        end = clock();
+    }
+
     fflush(stdout);
     fprintf(stderr, "Run %d test in %0.3lfs.\n", ntest, (double)(end-start)/CLOCKS_PER_SEC);
     fprintf(stderr, "\n");
     fprintf(stderr, "OK\n");
+
     fflush(stderr);
 }
 
