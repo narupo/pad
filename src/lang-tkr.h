@@ -10,7 +10,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
 
 /******
 * tok *
@@ -53,6 +55,18 @@ cap_ltkrtoknew(void);
  */
 struct cap_ltkrtok * 
 cap_ltkrtoknewstr(const uint8_t *str);
+
+struct cap_ltkrtok *
+cap_ltkrtokresize(struct cap_ltkrtok *self, int32_t recapa);
+
+struct cap_ltkrtok *
+cap_ltkrtokpush(struct cap_ltkrtok *self, uint8_t c);
+
+const uint8_t *
+cap_ltkrtokgetc(const struct cap_ltkrtok *self);
+
+void
+cap_ltkrtokclear(struct cap_ltkrtok *self);
 
 /*******
 * toks *
@@ -118,6 +132,9 @@ cap_ltkrtoksmove(struct cap_ltkrtoks *self, struct cap_ltkrtok *tok);
  */
 const struct cap_ltkrtok * 
 cap_ltkrtoksgetc(const struct cap_ltkrtoks *self, int32_t idx);
+
+int32_t
+cap_ltkrtokslen(const struct cap_ltkrtoks *self);
 
 /******
 * tkr *

@@ -1508,67 +1508,18 @@ test_ltkr_ltkrtokdel(void) {
 }
 
 static void
-test_ltkr_ltkrtoknewcapa(void) {
-}
-
-static void
-test_ltkr_ltkrtoknew(void) {
-}
-
-static void
-test_ltkr_ltkrtoknewstr(void) {
-}
-
-static void
-test_ltkr_ltkrtoksdel(void) {
-}
-
-static void
-test_ltkr_ltkrtoksnewcapa(void) {
-}
-
-static void
-test_ltkr_ltkrtoksnew(void) {
-}
-
-static void
-test_ltkr_ltkrtoksrecapa(void) {
-}
-
-static void
-test_ltkr_ltkrtoksmove(void) {
-}
-
-static void
-test_ltkr_ltkrtoksgetc(void) {
-}
-
-static void
-test_ltkr_ltkrdel(void) {
-}
-
-static void
-test_ltkr_ltkrnew(void) {
-}
-
-static void
 test_ltkr_ltkrparsestream(void) {
+    struct cap_ltkr *a = cap_ltkrnew();
+    assert(a != NULL);
+    FILE *fin = __ltkr_openfin();
+    assert(cap_ltkrparsestream(a, fin) != NULL);
+    assert(fclose(fin) == 0);
+    cap_ltkrdel(a);
 }
 
 static const struct testcase
 ltkrtests[] = {
     {"ltkrtokdel", test_ltkr_ltkrtokdel},
-    {"ltkrtoknewcapa", test_ltkr_ltkrtoknewcapa},
-    {"ltkrtoknew", test_ltkr_ltkrtoknew},
-    {"ltkrtoknewstr", test_ltkr_ltkrtoknewstr},
-    {"ltkrtoksdel", test_ltkr_ltkrtoksdel},
-    {"ltkrtoksnewcapa", test_ltkr_ltkrtoksnewcapa},
-    {"ltkrtoksnew", test_ltkr_ltkrtoksnew},
-    {"ltkrtoksrecapa", test_ltkr_ltkrtoksrecapa},
-    {"ltkrtoksmove", test_ltkr_ltkrtoksmove},
-    {"ltkrtoksgetc", test_ltkr_ltkrtoksgetc},
-    {"ltkrdel", test_ltkr_ltkrdel},
-    {"ltkrnew", test_ltkr_ltkrnew},
     {"ltkrparsestream", test_ltkr_ltkrparsestream},
     {},
 };

@@ -21,6 +21,7 @@ cap_ltkrtokdel(struct cap_ltkrtok *self) {
         free(self);
     }
 }
+
 struct cap_ltkrtok *
 cap_ltkrtoknewcapa(int32_t capa) {
     if (capa < 0) {
@@ -68,6 +69,63 @@ cap_ltkrtoknewstr(const uint8_t *str) {
     self->len = len;
 
     return self;
+}
+
+struct cap_ltkrtok *
+cap_ltkrtokresize(struct cap_ltkrtok *self, int32_t recapa) {
+    if (!self || recapa < 0) {
+        return NULL;
+    }
+
+    if (recapa <= self->capa) {
+        return NULL;
+    }
+
+    uint8_t *p = realloc(self->tok, sizeof(*self->tok)*recapa+1);
+    if (!p) {
+        return NULL;
+    }
+
+    self->tok = p;
+    self->capa = recapa;
+
+    return self;
+}
+
+struct cap_ltkrtok *
+cap_ltkrtokpush(struct cap_ltkrtok *self, uint8_t c) {
+    if (!self) {
+        return NULL;
+    }
+
+    if (self->len >= self->capa) {
+        if (!cap_ltkrtokresize(self, self->capa*2)) {
+            return NULL;
+        }
+    }
+
+    self->tok[self->len++] = c;
+
+    return self;
+}
+
+const uint8_t *
+cap_ltkrtokgetc(const struct cap_ltkrtok *self) {
+    if (!self) {
+        return NULL;
+    }
+
+    return self->tok;
+}
+
+void
+cap_ltkrtokclear(struct cap_ltkrtok *self) {
+    if (!self) {
+        return;
+    }
+
+    self->len = 0;
+    self->tok[0] = '\0';
 }
 
 /*******
@@ -175,16 +233,28 @@ cap_ltkrtoksgetc(const struct cap_ltkrtoks *self, int32_t idx) {
     return self->toks[idx];
 }
 
+int32_t
+cap_ltkrtokslen(const struct cap_ltkrtoks *self) {
+    if (!self) {
+        return -1;
+    }
+    
+    return self->len;
+}
+
 /******
 * tkr *
 ******/
 
 typedef enum {
-    CAP_TKRMODE_FIRST,
+    CAP_LTKRMODE_FIRST,
+    CAP_LTKRMODE_FOUND_SPACE,
+    CAP_LTKRMODE_FOUND_SPACE_RECOVERY,
 } cap_ltkrmode_t;
 
 struct cap_ltkr {
     struct cap_ltkrtoks *toks;
+    struct cap_ltkrtok *tmptok;
     cap_ltkrmode_t m;
 };
 
@@ -192,6 +262,7 @@ void
 cap_ltkrdel(struct cap_ltkr *self) {
     if (self) {
         cap_ltkrtoksdel(self->toks);
+        cap_ltkrtokdel(self->tmptok);
         free(self);
     }
 }
@@ -209,22 +280,67 @@ cap_ltkrnew(void) {
         return NULL;
     }
 
+    self->tmptok = cap_ltkrtoknew();
+    if (!self->tmptok) {
+        cap_ltkrdel(self);
+        return NULL;
+    }
+    
     return self;
 }
 
 static struct cap_ltkr *
-__tkrclearstate(struct cap_ltkr *self) {
-    self->m = CAP_TKRMODE_FIRST;
+__ltkrclearstate(struct cap_ltkr *self) {
+    self->m = CAP_LTKRMODE_FIRST;
     return self;
 }
 
+static bool
+__ltkrisspace(int32_t c) {
+    return isspace(c);
+}
+
+static bool
+__ltkrsavetmptok(struct cap_ltkr *self) {
+    struct cap_ltkrtok *tmptok = self->tmptok;
+    if (!cap_ltkrtoksmove(self->toks, tmptok)) {
+        return false;
+    }
+    
+    self->tmptok = cap_ltkrtoknew();
+    if (!self->tmptok) {
+        return false;
+    }
+
+    return true;
+}
+
 static struct cap_ltkr *
-__tkrparsech(struct cap_ltkr *self, int32_t c) {
+__ltkrparsech(struct cap_ltkr *self, int32_t c) {
+
     switch (self->m) {
     default: break;
-    case CAP_TKRMODE_FIRST: break;
+    case CAP_LTKRMODE_FOUND_SPACE_RECOVERY:
+        self->m = CAP_LTKRMODE_FIRST;
+    case CAP_LTKRMODE_FIRST:
+        if (__ltkrisspace(c)) {
+            self->m = CAP_LTKRMODE_FOUND_SPACE;
+            if (!__ltkrsavetmptok(self)) {
+                return NULL;
+            }
+            cap_ltkrtokclear(self->tmptok);
+        } else {
+            cap_ltkrtokpush(self->tmptok, c);
+        }
+        break;
+    case CAP_LTKRMODE_FOUND_SPACE:
+        if (!__ltkrisspace(c)) {
+            cap_ltkrtokpush(self->tmptok, c);
+            self->m = CAP_LTKRMODE_FOUND_SPACE_RECOVERY;
+        }
+        break;
     }
-    fputc(c, stdout);
+
     return self;
 }
 
@@ -234,14 +350,19 @@ cap_ltkrparsestream(struct cap_ltkr *self, FILE *fin) {
         return NULL;
     }
 
-    if (!__tkrclearstate(self)) {
+    if (!__ltkrclearstate(self)) {
         return NULL;
     }
 
     for (int32_t c; (c = fgetc(fin)) != EOF; ) {
-        if (!__tkrparsech(self, c) || ferror(fin)) {
+        if (!__ltkrparsech(self, c) || ferror(fin)) {
             return NULL;
         }
+    }
+
+    // debug
+    for (int32_t i = 0; i < cap_ltkrtokslen(self->toks); ++i) {
+        printf("tok[%s]\n", cap_ltkrtokgetc(cap_ltkrtoksgetc(self->toks, i)));
     }
 
     return self;
