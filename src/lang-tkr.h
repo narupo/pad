@@ -68,6 +68,9 @@ cap_ltkrtokgetc(const struct cap_ltkrtok *self);
 void
 cap_ltkrtokclear(struct cap_ltkrtok *self);
 
+int32_t
+cap_ltkrtoklen(const struct cap_ltkrtok *self);
+
 /*******
 * toks *
 *******/
