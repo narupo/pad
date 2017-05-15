@@ -128,6 +128,15 @@ cap_ltkrtokclear(struct cap_ltkrtok *self) {
     self->tok[0] = '\0';
 }
 
+int32_t
+cap_ltkrtoklen(const struct cap_ltkrtok *self) {
+    if (!self) {
+        return -1;
+    }
+
+    return self->len;
+}
+
 /*******
 * toks *
 *******/
@@ -238,7 +247,7 @@ cap_ltkrtokslen(const struct cap_ltkrtoks *self) {
     if (!self) {
         return -1;
     }
-    
+
     return self->len;
 }
 
@@ -301,18 +310,25 @@ __ltkrisspace(int32_t c) {
 }
 
 static bool
+__ltkrissingletok(int32_t c) {
+    return strchr("\"\'{[(;:,.-+/%%^~", c);
+}
+
+static void
 __ltkrsavetmptok(struct cap_ltkr *self) {
+    if (cap_ltkrtoklen(self->tmptok) <= 0) {
+        return;
+    }
+
     struct cap_ltkrtok *tmptok = self->tmptok;
     if (!cap_ltkrtoksmove(self->toks, tmptok)) {
-        return false;
+        return;
     }
     
     self->tmptok = cap_ltkrtoknew();
     if (!self->tmptok) {
-        return false;
+        return;
     }
-
-    return true;
 }
 
 static struct cap_ltkr *
@@ -325,10 +341,12 @@ __ltkrparsech(struct cap_ltkr *self, int32_t c) {
     case CAP_LTKRMODE_FIRST:
         if (__ltkrisspace(c)) {
             self->m = CAP_LTKRMODE_FOUND_SPACE;
-            if (!__ltkrsavetmptok(self)) {
-                return NULL;
-            }
+            __ltkrsavetmptok(self);
             cap_ltkrtokclear(self->tmptok);
+        } else if (__ltkrissingletok(c)) {
+            __ltkrsavetmptok(self);
+            cap_ltkrtokpush(self->tmptok, c);
+            __ltkrsavetmptok(self);
         } else {
             cap_ltkrtokpush(self->tmptok, c);
         }
@@ -362,7 +380,7 @@ cap_ltkrparsestream(struct cap_ltkr *self, FILE *fin) {
 
     // debug
     for (int32_t i = 0; i < cap_ltkrtokslen(self->toks); ++i) {
-        printf("tok[%s]\n", cap_ltkrtokgetc(cap_ltkrtoksgetc(self->toks, i)));
+        printf("'%s'\n", cap_ltkrtokgetc(cap_ltkrtoksgetc(self->toks, i)));
     }
 
     return self;
