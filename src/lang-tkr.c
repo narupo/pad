@@ -256,9 +256,9 @@ cap_ltkrtokslen(const struct cap_ltkrtoks *self) {
 ******/
 
 typedef enum {
-    CAP_LTKRMODE_FIRST,
-    CAP_LTKRMODE_FOUND_SPACE,
-    CAP_LTKRMODE_FOUND_SPACE_RECOVERY,
+    CAP_LTKRMODE_FIRST = 'f',
+    CAP_LTKRMODE_FOUND_SPACE = 's',
+    CAP_LTKRMODE_FOUND_SPACE_RECOVERY = 'S',
 } cap_ltkrmode_t;
 
 struct cap_ltkr {
@@ -311,7 +311,7 @@ __ltkrisspace(int32_t c) {
 
 static bool
 __ltkrissingletok(int32_t c) {
-    return strchr("\"\'{[(;:,.-+/%%^~", c);
+    return strchr("\"\'{}[]();:,.-+/%%^~", c);
 }
 
 static void
@@ -334,6 +334,8 @@ __ltkrsavetmptok(struct cap_ltkr *self) {
 static struct cap_ltkr *
 __ltkrparsech(struct cap_ltkr *self, int32_t c) {
 
+    // printf("m[%c] c[%c]\n", self->m, c);
+
     switch (self->m) {
     default: break;
     case CAP_LTKRMODE_FOUND_SPACE_RECOVERY:
@@ -355,6 +357,10 @@ __ltkrparsech(struct cap_ltkr *self, int32_t c) {
         if (!__ltkrisspace(c)) {
             cap_ltkrtokpush(self->tmptok, c);
             self->m = CAP_LTKRMODE_FOUND_SPACE_RECOVERY;
+        } else if (__ltkrissingletok(c)) {
+            __ltkrsavetmptok(self);
+            cap_ltkrtokpush(self->tmptok, c);
+            __ltkrsavetmptok(self);
         }
         break;
     }
