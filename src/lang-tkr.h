@@ -18,6 +18,12 @@
 * tok *
 ******/
 
+typedef enum {
+    CAP_LTKRTOKTYPE_NIL = 0, /* Keep number of zero */
+    CAP_LTKRTOKTYPE_DIGIT = 'D',
+    CAP_LTKRTOKTYPE_ALPHA = 'A',
+} cap_ltkrtoktype_t;
+
 struct cap_ltkrtok;
 
 /**
@@ -70,6 +76,12 @@ cap_ltkrtokclear(struct cap_ltkrtok *self);
 
 int32_t
 cap_ltkrtoklen(const struct cap_ltkrtok *self);
+
+cap_ltkrtoktype_t
+cap_ltkrtoktype(const struct cap_ltkrtok *self);
+
+void
+cap_ltkrtoksettype(struct cap_ltkrtok *self, cap_ltkrtoktype_t type);
 
 /*******
 * toks *
