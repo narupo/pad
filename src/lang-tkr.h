@@ -22,6 +22,15 @@ typedef enum {
     CAP_LTKRTOKTYPE_NIL = 0, /* Keep number of zero */
     CAP_LTKRTOKTYPE_DIGIT = 'D',
     CAP_LTKRTOKTYPE_ALPHA = 'A',
+    CAP_LTKRTOKTYPE_DOT = '.',
+    CAP_LTKRTOKTYPE_LPAREN = '(',
+    CAP_LTKRTOKTYPE_RPAREN = ')',
+    CAP_LTKRTOKTYPE_LBRACE = '{',
+    CAP_LTKRTOKTYPE_RBRACE = '}',
+    CAP_LTKRTOKTYPE_LBRACKET = '[',
+    CAP_LTKRTOKTYPE_RBRACKET = ']',
+    CAP_LTKRTOKTYPE_DQ = '"',
+    CAP_LTKRTOKTYPE_SQ = '\'',
 } cap_ltkrtoktype_t;
 
 struct cap_ltkrtok;

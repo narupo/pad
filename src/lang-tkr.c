@@ -339,8 +339,8 @@ __isspace(int32_t c) {
 }
 
 static bool
-__issingletok(int32_t c) {
-    return strchr("\"\'{}[]();:,.-+/%%^~", c);
+__issinglechar(int32_t c) {
+    return strchr("\"\'{}[]()<>;:,._-+*/%%^~=!?", c);
 }
 
 static void
@@ -367,8 +367,6 @@ __parsech(struct cap_ltkr *self, int32_t c) {
 
     switch (self->m) {
     default: break;
-    case CAP_LTKRMODE_FOUND_DOT_ON_DIGIT_RECOVERY:
-    case CAP_LTKRMODE_FOUND_DIGIT_RECOVERY:
     case CAP_LTKRMODE_FOUND_SPACE_RECOVERY:
         self->m = CAP_LTKRMODE_FIRST;
     case CAP_LTKRMODE_FIRST:
@@ -376,14 +374,10 @@ __parsech(struct cap_ltkr *self, int32_t c) {
             self->m = CAP_LTKRMODE_FOUND_SPACE;
             __savetmptok(self);
             cap_ltkrtokclear(self->tmptok);
-        } else if (__issingletok(c)) {
+        } else if (__issinglechar(c)) {
             __savetmptok(self);
             cap_ltkrtokpush(self->tmptok, c);
             __savetmptok(self);
-        } else if (isdigit(c)) {
-            self-> m = CAP_LTKRMODE_FOUND_DIGIT;
-            __savetmptok(self);
-            cap_ltkrtokpush(self->tmptok, c);
         } else {
             cap_ltkrtokpush(self->tmptok, c);
         }
@@ -392,36 +386,31 @@ __parsech(struct cap_ltkr *self, int32_t c) {
         if (!__isspace(c)) {
             cap_ltkrtokpush(self->tmptok, c);
             self->m = CAP_LTKRMODE_FOUND_SPACE_RECOVERY;
-        } else if (__issingletok(c)) {
+        } else if (__issinglechar(c)) {
             __savetmptok(self);
             cap_ltkrtokpush(self->tmptok, c);
             __savetmptok(self);
-        }
-        break;
-    case CAP_LTKRMODE_FOUND_DIGIT:
-        if (c == '.') {
-            self->m = CAP_LTKRMODE_FOUND_DOT_ON_DIGIT;
-            cap_ltkrtokpush(self->tmptok, c);
-        } else if (isdigit(c)) {
-            cap_ltkrtokpush(self->tmptok, c);
-        } else {
-            __savetmptok(self);
-            self->m = CAP_LTKRMODE_FOUND_DIGIT_RECOVERY;
-            self->is_onemore = true;
-        }
-        break;
-    case CAP_LTKRMODE_FOUND_DOT_ON_DIGIT:
-        if (isdigit(c)) {
-            cap_ltkrtokpush(self->tmptok, c);
-        } else {
-            __savetmptok(self);
-            self->m = CAP_LTKRMODE_FOUND_DOT_ON_DIGIT_RECOVERY;
-            self->is_onemore = true;
         }
         break;
     }
 
     return self;
+}
+
+static cap_ltkrtoktype_t
+__singlechar2toktype(int32_t c) {
+    switch (c) {
+    default: return CAP_LTKRTOKTYPE_NIL; break;
+    case '.': return CAP_LTKRTOKTYPE_DOT; break;
+    case '(': return CAP_LTKRTOKTYPE_LPAREN; break;
+    case ')': return CAP_LTKRTOKTYPE_RPAREN; break;
+    case '[': return CAP_LTKRTOKTYPE_LBRACKET; break;
+    case ']': return CAP_LTKRTOKTYPE_RBRACKET; break;
+    case '{': return CAP_LTKRTOKTYPE_LBRACE; break;
+    case '}': return CAP_LTKRTOKTYPE_RBRACE; break;
+    case '"': return CAP_LTKRTOKTYPE_DQ; break;
+    case '\'': return CAP_LTKRTOKTYPE_SQ; break;
+    }
 }
 
 static cap_ltkrtoktype_t
@@ -432,13 +421,15 @@ __parsetoktype(const struct cap_ltkrtok *tok) {
         return CAP_LTKRTOKTYPE_DIGIT;
     } else if (isalpha(*p)) {
         return CAP_LTKRTOKTYPE_ALPHA;
+    } else if (__issinglechar(*p)) {
+        return __singlechar2toktype(*p);
     }
 
     return CAP_LTKRTOKTYPE_NIL;
 }
 
 void
-__settoktypes(struct cap_ltkr *self) {
+__rebuildtoks(struct cap_ltkr *self) {
     for (int32_t i = 0; i < cap_ltkrtokslen(self->toks); ++i) {
         struct cap_ltkrtok *tok = cap_ltkrtoksget(self->toks, i);
         cap_ltkrtoktype_t type = __parsetoktype(tok);
@@ -456,7 +447,7 @@ cap_ltkrparsestream(struct cap_ltkr *self, FILE *fin) {
         return NULL;
     }
 
-    // Parse tokens
+    /* 文字列を意味のあるトークン列に変換する。 */
     for (int32_t c; (c = fgetc(fin)) != EOF; ) {
     onemore:
         if (!__parsech(self, c) || ferror(fin)) {
@@ -468,7 +459,8 @@ cap_ltkrparsestream(struct cap_ltkr *self, FILE *fin) {
         }
     }
 
-    __settoktypes(self);
+    /* トークン列を再構成し、言語にとって意味のあるトークン列にする。*/
+    __rebuildtoks(self);
 
     // debug
     for (int32_t i = 0; i < cap_ltkrtokslen(self->toks); ++i) {
