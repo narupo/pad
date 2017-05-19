@@ -51,6 +51,23 @@ cap_ltkrtoknew(void) {
 }
 
 struct cap_ltkrtok *
+cap_ltkrtoknewother(const struct cap_ltkrtok *other) {
+    if (!other) {
+        return NULL;
+    }
+
+    struct cap_ltkrtok *self = cap_ltkrtoknewcapa(other->capa);
+    if (!self) {
+        return NULL;
+    }
+
+    memmove(self->tok, other->tok, other->len+1); // +1 for final nil
+    self->type = other->type;
+
+    return self;
+}
+
+struct cap_ltkrtok *
 cap_ltkrtoknewstr(const uint8_t *str) {
     if (!str) {
         return NULL;
@@ -70,6 +87,45 @@ cap_ltkrtoknewstr(const uint8_t *str) {
     self->len = len;
 
     return self;
+}
+
+struct cap_ltkrtok *
+cap_ltkrtokset(struct cap_ltkrtok *self, const uint8_t *tok) {
+    if (!self || !tok) {
+        return NULL;
+    }
+
+    int32_t i;
+    for (i = 0; tok[i]; ++i) {
+        if (i >= self->capa) {
+            if (!cap_ltkrtokresize(self, self->capa*2)) {
+                return NULL;
+            }
+        }
+        self->tok[i] = tok[i];
+    }
+    self->tok[i] = '\0';
+    self->len = i;
+
+    return self;
+}
+
+uint8_t *
+cap_ltkrtokget(struct cap_ltkrtok *self) {
+    if (!self) {
+        return NULL;
+    }
+
+    return self->tok;
+}
+
+const uint8_t *
+cap_ltkrtokgetc(const struct cap_ltkrtok *self) {
+    if (!self) {
+        return NULL;
+    }
+
+    return self->tok;
 }
 
 struct cap_ltkrtok *
@@ -94,6 +150,27 @@ cap_ltkrtokresize(struct cap_ltkrtok *self, int32_t recapa) {
 }
 
 struct cap_ltkrtok *
+cap_ltkrtokapp(struct cap_ltkrtok *self, const uint8_t *tok) {
+    int32_t toklen = 0;
+    for (; tok[toklen]; ++toklen) {
+    }
+
+    if (self->len+toklen >= self->capa) {
+        if (!cap_ltkrtokresize(self, self->capa*2)) {
+            return NULL;
+        }
+    }
+
+    int32_t i;
+    for (i = 0; i < toklen; ++i) {
+        self->tok[self->len++] = tok[i];
+    }
+    self->tok[self->len] = '\0';
+
+    return self;
+}
+
+struct cap_ltkrtok *
 cap_ltkrtokpush(struct cap_ltkrtok *self, uint8_t c) {
     if (!self) {
         return NULL;
@@ -108,15 +185,6 @@ cap_ltkrtokpush(struct cap_ltkrtok *self, uint8_t c) {
     self->tok[self->len++] = c;
 
     return self;
-}
-
-const uint8_t *
-cap_ltkrtokgetc(const struct cap_ltkrtok *self) {
-    if (!self) {
-        return NULL;
-    }
-
-    return self->tok;
 }
 
 void
@@ -252,6 +320,28 @@ cap_ltkrtoksmove(struct cap_ltkrtoks *self, struct cap_ltkrtok *tok) {
     return self;
 }
 
+struct cap_ltkrtoks *
+cap_ltkrtokspush(struct cap_ltkrtoks *self, const struct cap_ltkrtok *tok) {
+    if (!self || !tok) {
+        return NULL;
+    }
+
+    if (self->len >= self->capa) {
+        if (!cap_ltkrtoksrecapa(self, self->capa*2)) {
+            return NULL;
+        }
+    }
+
+    struct cap_ltkrtok *cptok = cap_ltkrtoknewother(tok);
+    if (!cptok) {
+        return NULL;
+    }
+
+    self->toks[self->len++] = cptok;
+
+    return self;
+}
+
 struct cap_ltkrtok *
 cap_ltkrtoksget(struct cap_ltkrtoks *self, int32_t idx) {
     if (!self || idx < 0 || idx >= self->len) {
@@ -284,9 +374,15 @@ cap_ltkrtokslen(const struct cap_ltkrtoks *self) {
 ******/
 
 typedef enum {
-    CAP_LTKRMODE_FIRST = 'f',
-    CAP_LTKRMODE_FOUND_SPACE = 's',
-    CAP_LTKRMODE_FOUND_SPACE_RECOVERY = 'S',
+    CAP_LTKRMODE_FIRST = 'F',
+    CAP_LTKRMODE_FOUND_SPACE = 'S',
+    CAP_LTKRMODE_FOUND_SPACE_RECOVERY = 's',
+    CAP_LTKRMODE_FOUND_DQ = 'Q',
+    CAP_LTKRMODE_FOUND_DQ_RECOVERY = 'q',
+    CAP_LTKRMODE_FOUND_DIGIT = 'D',
+    CAP_LTKRMODE_FOUND_DIGIT_RECOVERY = 'd',
+    CAP_LTKRMODE_DIGIT_NEED_DOTDIGIT = '.',
+    CAP_LTKRMODE_DIGIT_ONLY = '0',
 } cap_ltkrmode_t;
 
 struct cap_ltkr {
@@ -327,6 +423,18 @@ cap_ltkrnew(void) {
     return self;
 }
 
+struct cap_ltkr *
+cap_ltkrsettoks(struct cap_ltkr *self, struct cap_ltkrtoks *toks) {
+    if (!self || !toks) {
+        return NULL;
+    }
+
+    cap_ltkrtoksdel(self->toks);
+    self->toks = toks;
+
+    return self;
+}
+
 static struct cap_ltkr *
 __clearstate(struct cap_ltkr *self) {
     self->m = CAP_LTKRMODE_FIRST;
@@ -340,67 +448,14 @@ __isspace(int32_t c) {
 
 static bool
 __issinglechar(int32_t c) {
-    return strchr("\"\'{}[]()<>;:,._-+*/%%^~=!?", c);
-}
-
-static void
-__savetmptok(struct cap_ltkr *self) {
-    if (cap_ltkrtoklen(self->tmptok) <= 0) {
-        return;
-    }
-
-    struct cap_ltkrtok *tmptok = self->tmptok;
-    if (!cap_ltkrtoksmove(self->toks, tmptok)) {
-        return;
-    }
-    
-    self->tmptok = cap_ltkrtoknew();
-    if (!self->tmptok) {
-        return;
-    }
-}
-
-static struct cap_ltkr *
-__parsech(struct cap_ltkr *self, int32_t c) {
-
-    // printf("m[%c] c[%c]\n", self->m, c);
-
-    switch (self->m) {
-    default: break;
-    case CAP_LTKRMODE_FOUND_SPACE_RECOVERY:
-        self->m = CAP_LTKRMODE_FIRST;
-    case CAP_LTKRMODE_FIRST:
-        if (__isspace(c)) {
-            self->m = CAP_LTKRMODE_FOUND_SPACE;
-            __savetmptok(self);
-            cap_ltkrtokclear(self->tmptok);
-        } else if (__issinglechar(c)) {
-            __savetmptok(self);
-            cap_ltkrtokpush(self->tmptok, c);
-            __savetmptok(self);
-        } else {
-            cap_ltkrtokpush(self->tmptok, c);
-        }
-        break;
-    case CAP_LTKRMODE_FOUND_SPACE:
-        if (!__isspace(c)) {
-            cap_ltkrtokpush(self->tmptok, c);
-            self->m = CAP_LTKRMODE_FOUND_SPACE_RECOVERY;
-        } else if (__issinglechar(c)) {
-            __savetmptok(self);
-            cap_ltkrtokpush(self->tmptok, c);
-            __savetmptok(self);
-        }
-        break;
-    }
-
-    return self;
+    return strchr("\'{}[]()<>;:,._-+*/%%^~=!?\\", c);
 }
 
 static cap_ltkrtoktype_t
 __singlechar2toktype(int32_t c) {
     switch (c) {
     default: return CAP_LTKRTOKTYPE_NIL; break;
+    case '\\': return CAP_LTKRTOKTYPE_ESC; break;
     case '.': return CAP_LTKRTOKTYPE_DOT; break;
     case '(': return CAP_LTKRTOKTYPE_LPAREN; break;
     case ')': return CAP_LTKRTOKTYPE_RPAREN; break;
@@ -408,8 +463,12 @@ __singlechar2toktype(int32_t c) {
     case ']': return CAP_LTKRTOKTYPE_RBRACKET; break;
     case '{': return CAP_LTKRTOKTYPE_LBRACE; break;
     case '}': return CAP_LTKRTOKTYPE_RBRACE; break;
+    case '<': return CAP_LTKRTOKTYPE_LARROW; break;
+    case '>': return CAP_LTKRTOKTYPE_RARROW; break;
     case '"': return CAP_LTKRTOKTYPE_DQ; break;
     case '\'': return CAP_LTKRTOKTYPE_SQ; break;
+    case '+': return CAP_LTKRTOKTYPE_ADD; break;
+    case '=': return CAP_LTKRTOKTYPE_EQ; break;
     }
 }
 
@@ -420,7 +479,7 @@ __parsetoktype(const struct cap_ltkrtok *tok) {
     if (isdigit(*p)) {
         return CAP_LTKRTOKTYPE_DIGIT;
     } else if (isalpha(*p)) {
-        return CAP_LTKRTOKTYPE_ALPHA;
+        return CAP_LTKRTOKTYPE_IDENTIFY;
     } else if (__issinglechar(*p)) {
         return __singlechar2toktype(*p);
     }
@@ -428,13 +487,113 @@ __parsetoktype(const struct cap_ltkrtok *tok) {
     return CAP_LTKRTOKTYPE_NIL;
 }
 
-void
-__rebuildtoks(struct cap_ltkr *self) {
-    for (int32_t i = 0; i < cap_ltkrtokslen(self->toks); ++i) {
-        struct cap_ltkrtok *tok = cap_ltkrtoksget(self->toks, i);
-        cap_ltkrtoktype_t type = __parsetoktype(tok);
-        cap_ltkrtoksettype(tok, type);
+static void
+__savetmptok(struct cap_ltkr *self, cap_ltkrtoktype_t type) {
+    if (cap_ltkrtoklen(self->tmptok) <= 0) {
+        return;
     }
+
+    struct cap_ltkrtok *tmptok = self->tmptok;
+    cap_ltkrtoksettype(tmptok, type);
+
+    if (!cap_ltkrtoksmove(self->toks, tmptok)) {
+        return;
+    }
+    
+    self->tmptok = cap_ltkrtoknew();
+    if (!self->tmptok) {
+        return;
+    }
+}
+
+static inline void
+__savetmptokauto(struct cap_ltkr *self) {
+    __savetmptok(self, __parsetoktype(self->tmptok));
+}
+
+static struct cap_ltkr *
+__parsech(struct cap_ltkr *self, int32_t c) {
+
+    // printf("m[%c] c[%c]\n", self->m, c);
+
+    switch (self->m) {
+    default: break;
+    case CAP_LTKRMODE_FOUND_DIGIT_RECOVERY:
+    case CAP_LTKRMODE_FOUND_DQ_RECOVERY:
+    case CAP_LTKRMODE_FOUND_SPACE_RECOVERY:
+        self->m = CAP_LTKRMODE_FIRST;
+    case CAP_LTKRMODE_FIRST:
+        if (__isspace(c)) {
+            self->m = CAP_LTKRMODE_FOUND_SPACE;
+            __savetmptokauto(self);
+            cap_ltkrtokclear(self->tmptok);
+        } else if (__issinglechar(c)) {
+            __savetmptokauto(self);
+            cap_ltkrtokpush(self->tmptok, c);
+            __savetmptokauto(self);
+        } else if (c == '"') {
+            self->m = CAP_LTKRMODE_FOUND_DQ;
+        } else if (isdigit(c)) {
+            cap_ltkrtokpush(self->tmptok, c);
+            self->m = CAP_LTKRMODE_FOUND_DIGIT; 
+        } else {
+            cap_ltkrtokpush(self->tmptok, c);
+        }
+        break;
+    case CAP_LTKRMODE_FOUND_SPACE:
+        if (!__isspace(c)) {
+            cap_ltkrtokpush(self->tmptok, c);
+            self->m = CAP_LTKRMODE_FOUND_SPACE_RECOVERY;
+        } else if (__issinglechar(c)) {
+            __savetmptokauto(self);
+            cap_ltkrtokpush(self->tmptok, c);
+            __savetmptokauto(self);
+        }
+        break;
+    case CAP_LTKRMODE_FOUND_DQ:
+        if (c == '\\') {
+            cap_ltkrtokpush(self->tmptok, c);
+        } else if (c == '"') {
+            cap_ltkrtoksettype(self->tmptok, CAP_LTKRTOKTYPE_STRING);
+            __savetmptok(self, CAP_LTKRTOKTYPE_STRING);
+            self->m = CAP_LTKRMODE_FOUND_DQ_RECOVERY;
+        } else {
+            cap_ltkrtokpush(self->tmptok, c);
+        }
+        break;
+    case CAP_LTKRMODE_FOUND_DIGIT:
+        if (c == '.') {
+            self->m = CAP_LTKRMODE_DIGIT_NEED_DOTDIGIT;
+            cap_ltkrtokpush(self->tmptok, c);
+        } else if (isdigit(c)) {
+            cap_ltkrtokpush(self->tmptok, c);
+        } else {
+            __savetmptok(self, CAP_LTKRTOKTYPE_DIGIT);
+            self->m = CAP_LTKRMODE_FOUND_DIGIT_RECOVERY;
+            self->is_onemore = true;
+        }
+        break;
+    case CAP_LTKRMODE_DIGIT_ONLY:
+        if (isdigit(c)) {
+            cap_ltkrtokpush(self->tmptok, c);
+        } else {
+            __savetmptok(self, CAP_LTKRTOKTYPE_DIGIT);
+            self->m = CAP_LTKRMODE_FOUND_DIGIT_RECOVERY;            
+            self->is_onemore = true;
+        }
+        break;
+    case CAP_LTKRMODE_DIGIT_NEED_DOTDIGIT:
+        if (isdigit(c)) {
+            self->m = CAP_LTKRMODE_DIGIT_ONLY;
+            cap_ltkrtokpush(self->tmptok, c);            
+        } else {
+            /* Error: [数字][.]のあとに[数字]が続かない。 */
+            return NULL;
+        }
+        break;
+    }
+
+    return self;
 }
 
 struct cap_ltkr *
@@ -458,9 +617,6 @@ cap_ltkrparsestream(struct cap_ltkr *self, FILE *fin) {
             goto onemore;
         }
     }
-
-    /* トークン列を再構成し、言語にとって意味のあるトークン列にする。*/
-    __rebuildtoks(self);
 
     // debug
     for (int32_t i = 0; i < cap_ltkrtokslen(self->toks); ++i) {
