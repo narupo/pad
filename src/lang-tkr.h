@@ -37,6 +37,8 @@ typedef enum {
     CAP_LTKRTOKTYPE_DIGIT = 'D',
     CAP_LTKRTOKTYPE_IDENTIFY = 'I',
     CAP_LTKRTOKTYPE_STRING = 'S',
+    CAP_LTKRTOKTYPE_LCAPBRACE = 'c',
+    CAP_LTKRTOKTYPE_RCAPBRACE = 'C',
 } cap_ltkrtoktype_t;
 
 struct cap_ltkrtok;
