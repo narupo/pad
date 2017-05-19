@@ -752,6 +752,7 @@ cap_ltkrparsestream(struct cap_ltkr *self, FILE *fin) {
         return NULL;
     }
 
+    /* トーカナイザーの状態を初期化。 */
     if (!__clearstate(self)) {
         return NULL;
     }
@@ -766,6 +767,7 @@ cap_ltkrparsestream(struct cap_ltkr *self, FILE *fin) {
     /* 文字列を意味のあるトークン列に変換する。 */
     for (; !cap_strmeof(s) && __parse(self, s); ) {
     }
+    __savetmptok(self, CAP_LTKRTOKTYPE_OUTOFSCOPE);
 
     // debug
     for (int32_t i = 0; i < cap_ltkrtokslen(self->toks); ++i) {
