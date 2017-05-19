@@ -580,6 +580,7 @@ __singlechar2toktype(int32_t c) {
     default: return CAP_LTKRTOKTYPE_NIL; break;
     case '\\': return CAP_LTKRTOKTYPE_ESC; break;
     case '.': return CAP_LTKRTOKTYPE_DOT; break;
+    case ',': return CAP_LTKRTOKTYPE_COMMA; break;
     case '(': return CAP_LTKRTOKTYPE_LPAREN; break;
     case ')': return CAP_LTKRTOKTYPE_RPAREN; break;
     case '[': return CAP_LTKRTOKTYPE_LBRACKET; break;

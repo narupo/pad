@@ -22,6 +22,7 @@ typedef enum {
     CAP_LTKRTOKTYPE_NIL = 0, /* Keep number of zero */
     CAP_LTKRTOKTYPE_ESC = '\\',
     CAP_LTKRTOKTYPE_DOT = '.',
+    CAP_LTKRTOKTYPE_COMMA = ',',
     CAP_LTKRTOKTYPE_LPAREN = '(',
     CAP_LTKRTOKTYPE_RPAREN = ')',
     CAP_LTKRTOKTYPE_LBRACE = '{',
