@@ -573,7 +573,7 @@ __clearstate(struct cap_ltkr *self) {
 
 static bool
 __issinglechar(int32_t c) {
-    return strchr("@\'{}[]()<>;:,._-+*/%%^~=!?\\", c);
+    return strchr("@\'{}[]()<>;:,.-+*/%%^~=!?\\", c);
 }
 
 static cap_ltkrtoktype_t
@@ -594,6 +594,10 @@ __singlechar2toktype(int32_t c) {
     case '"': return CAP_LTKRTOKTYPE_DQ; break;
     case '\'': return CAP_LTKRTOKTYPE_SQ; break;
     case '+': return CAP_LTKRTOKTYPE_ADD; break;
+    case '-': return CAP_LTKRTOKTYPE_SUB; break;
+    case '*': return CAP_LTKRTOKTYPE_MUL; break;
+    case '/': return CAP_LTKRTOKTYPE_DIV; break;
+    case '%': return CAP_LTKRTOKTYPE_MOD; break;
     case '=': return CAP_LTKRTOKTYPE_EQ; break;
     case '?': return CAP_LTKRTOKTYPE_HATENA; break;
     case '!': return CAP_LTKRTOKTYPE_BIKKURI; break;
@@ -606,7 +610,7 @@ __parsetoktype(const struct cap_ltkrtok *tok) {
 
     if (isdigit(*p)) {
         return CAP_LTKRTOKTYPE_DIGIT;
-    } else if (isalpha(*p)) {
+    } else if (isalpha(*p) || *p == '_') {
         return CAP_LTKRTOKTYPE_IDENTIFY;
     } else if (__issinglechar(*p)) {
         return __singlechar2toktype(*p);
