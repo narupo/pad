@@ -1,5 +1,93 @@
 #include "lang-tkr.h"
 
+/*******
+* strm *
+*******/
+
+enum {
+    CAP_STRMEOF = -1,
+};
+
+typedef enum {
+    CAP_STRMSTREAM,
+    CAP_STRMSTRING,
+} cap_strmmode_t;
+
+struct cap_strm {
+    cap_strmmode_t mode;
+    FILE *fin;
+    const char *str;
+    int32_t len;
+    int32_t i;
+};
+
+void
+cap_strmdel(struct cap_strm *self) {
+    if (self) {
+        free(self);
+    }
+}
+
+struct cap_strm *
+cap_strmnew(void) {
+    struct cap_strm *self = calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
+
+    return self;
+}
+
+struct cap_strm *
+cap_strmsetmode(struct cap_strm *self, cap_strmmode_t mode, void *data) {
+    self->mode = mode;
+
+    switch (self->mode) {
+    case CAP_STRMSTREAM:
+        self->fin = data;
+        break;
+    case CAP_STRMSTRING:
+        self->str = data;
+        self->len = strlen(data);
+        self->i = 0;
+        break;
+    }
+
+    return self;
+}
+
+bool
+cap_strmeof(struct cap_strm *self) {
+    switch (self->mode) {
+    case CAP_STRMSTREAM:
+        return feof(self->fin);
+        break;
+    case CAP_STRMSTRING:
+        return (self->i >= self->len || self->i < 0);
+        break;
+    }
+}
+
+int32_t
+cap_strmget(struct cap_strm *self) {
+    if (cap_strmeof(self)) {
+        return CAP_STRMEOF;
+    }
+
+    switch (self->mode) {
+    case CAP_STRMSTREAM:
+        return fgetc(self->fin);
+        break;
+    case CAP_STRMSTRING:
+        if (self->i < self->len) {
+            return self->str[self->i++];
+        } else {
+            return CAP_STRMEOF;
+        }
+        break;
+    }
+}
+
 /******
 * tok *
 ******/
@@ -277,7 +365,7 @@ cap_ltkrtoksnew(void) {
 }
 
 struct cap_ltkrtoks *
-cap_ltkrtoksrecapa(struct cap_ltkrtoks *self, int32_t recapa) {
+cap_ltkrtoksresize(struct cap_ltkrtoks *self, int32_t recapa) {
     if (!self || recapa < 0) {
         return NULL;
     }
@@ -297,7 +385,7 @@ cap_ltkrtoksrecapa(struct cap_ltkrtoks *self, int32_t recapa) {
     self->capa = recapa;
 
     // Fill null
-    for (int32_t i = self->len; i < self->capa+1; ++i) {
+    for (int32_t i = self->len; i < self->capa; ++i) {
         self->toks[i] = NULL;
     }
 
@@ -311,7 +399,7 @@ cap_ltkrtoksmove(struct cap_ltkrtoks *self, struct cap_ltkrtok *tok) {
     }
 
     if (self->len >= self->capa) {
-        if (!cap_ltkrtoksrecapa(self, self->capa*2)) {
+        if (!cap_ltkrtoksresize(self, self->capa*2)) {
             return NULL;
         }
     }
@@ -327,7 +415,7 @@ cap_ltkrtokspush(struct cap_ltkrtoks *self, const struct cap_ltkrtok *tok) {
     }
 
     if (self->len >= self->capa) {
-        if (!cap_ltkrtoksrecapa(self, self->capa*2)) {
+        if (!cap_ltkrtoksresize(self, self->capa*2)) {
             return NULL;
         }
     }
@@ -448,7 +536,7 @@ __isspace(int32_t c) {
 
 static bool
 __issinglechar(int32_t c) {
-    return strchr("\'{}[]()<>;:,._-+*/%%^~=!?\\", c);
+    return strchr("@\'{}[]()<>;:,._-+*/%%^~=!?\\", c);
 }
 
 static cap_ltkrtoktype_t
@@ -512,9 +600,14 @@ __savetmptokauto(struct cap_ltkr *self) {
 }
 
 static struct cap_ltkr *
-__parsech(struct cap_ltkr *self, int32_t c) {
+__parse(struct cap_ltkr *self, struct cap_strm *s) {
+    int32_t c = cap_strmget(s);
+    if (c == CAP_STRMEOF) {
+        return NULL;
+    }
 
-    // printf("m[%c] c[%c]\n", self->m, c);
+    printf("m[%c] c[%c]\n", self->m, c);
+    fflush(stdout);
 
     switch (self->m) {
     default: break;
@@ -606,11 +699,18 @@ cap_ltkrparsestream(struct cap_ltkr *self, FILE *fin) {
         return NULL;
     }
 
+    /* ストリームを抽象化。*/
+    struct cap_strm *s = cap_strmnew();
+    if (!s) {
+        return NULL;
+    }
+    cap_strmsetmode(s, CAP_STRMSTREAM, fin);
+
     /* 文字列を意味のあるトークン列に変換する。 */
-    for (int32_t c; (c = fgetc(fin)) != EOF; ) {
+    for (; !cap_strmeof(s); ) {
     onemore:
-        if (!__parsech(self, c) || ferror(fin)) {
-            return NULL;
+        if (!__parse(self, s)) {
+            break;
         }
         if (self->is_onemore) {
             self->is_onemore = false;
@@ -624,5 +724,6 @@ cap_ltkrparsestream(struct cap_ltkr *self, FILE *fin) {
         printf("[%c] '%s'\n", cap_ltkrtoktype(tok), cap_ltkrtokgetc(tok));
     }
 
+    cap_strmdel(s);
     return self;
 }
