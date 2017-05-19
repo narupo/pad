@@ -6,17 +6,12 @@
 
 enum {
     CAP_STRMEOF = -1,
+    CAP_STRMINITCAPA = 1024,
 };
 
-typedef enum {
-    CAP_STRMSTREAM,
-    CAP_STRMSTRING,
-} cap_strmmode_t;
-
 struct cap_strm {
-    cap_strmmode_t mode;
-    FILE *fin;
-    const char *str;
+    uint8_t *buf;
+    int32_t capa;
     int32_t len;
     int32_t i;
 };
@@ -24,6 +19,7 @@ struct cap_strm {
 void
 cap_strmdel(struct cap_strm *self) {
     if (self) {
+        free(self->buf);
         free(self);
     }
 }
@@ -35,37 +31,65 @@ cap_strmnew(void) {
         return NULL;
     }
 
+    self->buf = calloc(CAP_STRMINITCAPA, sizeof(*self->buf));
+    if (!self->buf) {
+        free(self);
+        return NULL;
+    }
+
+    self->capa = CAP_STRMINITCAPA;
+
     return self;
 }
 
 struct cap_strm *
-cap_strmsetmode(struct cap_strm *self, cap_strmmode_t mode, void *data) {
-    self->mode = mode;
-
-    switch (self->mode) {
-    case CAP_STRMSTREAM:
-        self->fin = data;
-        break;
-    case CAP_STRMSTRING:
-        self->str = data;
-        self->len = strlen(data);
-        self->i = 0;
-        break;
+cap_strmresize(struct cap_strm *self, int32_t recapa) {
+    if (!self || recapa <= 0) {
+        return NULL;
     }
+
+    if (recapa <= self->capa) {
+        return NULL;
+    }
+
+    uint8_t *p = realloc(self->buf, sizeof(*self->buf)*recapa+1);
+    if (!p) {
+        return NULL;
+    }
+
+    self->buf = p;
+    self->buf[self->len] = '\0';
+    self->capa = recapa;
+
+    return self;
+}
+
+struct cap_strm *
+cap_strmloadstream(struct cap_strm *self, FILE *fin) {
+    if (!self || !fin) {
+        return NULL;
+    }
+
+    self->buf[0] = '\0';
+    self->len = 0;
+
+    for (int32_t c; (c = fgetc(fin)) != EOF; ) {
+        if (self->len >= self->capa) {
+            if (!cap_strmresize(self, self->capa*2)) {
+                return NULL;
+            }
+        }
+
+        self->buf[self->len++] = c;
+    }
+    self->buf[self->len] = '\0';
 
     return self;
 }
 
 bool
 cap_strmeof(struct cap_strm *self) {
-    switch (self->mode) {
-    case CAP_STRMSTREAM:
-        return feof(self->fin);
-        break;
-    case CAP_STRMSTRING:
-        return (self->i >= self->len || self->i < 0);
-        break;
-    }
+    return (self->i >= self->len || self->i < 0);
 }
 
 int32_t
@@ -74,18 +98,35 @@ cap_strmget(struct cap_strm *self) {
         return CAP_STRMEOF;
     }
 
-    switch (self->mode) {
-    case CAP_STRMSTREAM:
-        return fgetc(self->fin);
-        break;
-    case CAP_STRMSTRING:
-        if (self->i < self->len) {
-            return self->str[self->i++];
-        } else {
-            return CAP_STRMEOF;
-        }
-        break;
+    if (self->i < self->len) {
+        return self->buf[self->i++];
+    } else {
+        return CAP_STRMEOF;
     }
+}
+
+void
+cap_strmnext(struct cap_strm *self) {
+    if (!cap_strmeof(self)) {
+        self->i++;
+    }
+}
+
+void
+cap_strmprev(struct cap_strm *self) {
+    if (!cap_strmeof(self)) {
+        self->i--;
+    }
+}
+
+int32_t
+cap_strmcur(struct cap_strm *self, int32_t offs) {
+    int32_t idx = self->i+offs;
+    if (idx >= self->capa || idx < 0) {
+        return CAP_STRMEOF;
+    }
+
+    return self->buf[idx];
 }
 
 /******
@@ -477,7 +518,6 @@ struct cap_ltkr {
     struct cap_ltkrtoks *toks;
     struct cap_ltkrtok *tmptok;
     cap_ltkrmode_t m;
-    bool is_onemore;
 };
 
 void
@@ -527,11 +567,6 @@ static struct cap_ltkr *
 __clearstate(struct cap_ltkr *self) {
     self->m = CAP_LTKRMODE_FIRST;
     return self;
-}
-
-static bool
-__isspace(int32_t c) {
-    return isspace(c);
 }
 
 static bool
@@ -606,8 +641,7 @@ __parse(struct cap_ltkr *self, struct cap_strm *s) {
         return NULL;
     }
 
-    printf("m[%c] c[%c]\n", self->m, c);
-    fflush(stdout);
+    // printf("m[%c] c[%c]\n", self->m, c);
 
     switch (self->m) {
     default: break;
@@ -616,14 +650,24 @@ __parse(struct cap_ltkr *self, struct cap_strm *s) {
     case CAP_LTKRMODE_FOUND_SPACE_RECOVERY:
         self->m = CAP_LTKRMODE_FIRST;
     case CAP_LTKRMODE_FIRST:
-        if (__isspace(c)) {
+        if (isspace(c)) {
             self->m = CAP_LTKRMODE_FOUND_SPACE;
             __savetmptokauto(self);
             cap_ltkrtokclear(self->tmptok);
         } else if (__issinglechar(c)) {
-            __savetmptokauto(self);
-            cap_ltkrtokpush(self->tmptok, c);
-            __savetmptokauto(self);
+            if (c == '{' && cap_strmcur(s, 0) == '@') {
+                cap_ltkrtokpush(self->tmptok, c);
+                cap_ltkrtokpush(self->tmptok, cap_strmget(s));
+                __savetmptok(self, CAP_LTKRTOKTYPE_LCAPBRACE);
+            } else if (c == '@' && cap_strmcur(s, 0) == '}') {
+                cap_ltkrtokpush(self->tmptok, c);
+                cap_ltkrtokpush(self->tmptok, cap_strmget(s));
+                __savetmptok(self, CAP_LTKRTOKTYPE_RCAPBRACE);
+            } else {
+                __savetmptokauto(self);
+                cap_ltkrtokpush(self->tmptok, c);
+                __savetmptokauto(self);                
+            }
         } else if (c == '"') {
             self->m = CAP_LTKRMODE_FOUND_DQ;
         } else if (isdigit(c)) {
@@ -634,13 +678,9 @@ __parse(struct cap_ltkr *self, struct cap_strm *s) {
         }
         break;
     case CAP_LTKRMODE_FOUND_SPACE:
-        if (!__isspace(c)) {
-            cap_ltkrtokpush(self->tmptok, c);
+        if (!isspace(c)) {
             self->m = CAP_LTKRMODE_FOUND_SPACE_RECOVERY;
-        } else if (__issinglechar(c)) {
-            __savetmptokauto(self);
-            cap_ltkrtokpush(self->tmptok, c);
-            __savetmptokauto(self);
+            cap_strmprev(s);
         }
         break;
     case CAP_LTKRMODE_FOUND_DQ:
@@ -663,7 +703,7 @@ __parse(struct cap_ltkr *self, struct cap_strm *s) {
         } else {
             __savetmptok(self, CAP_LTKRTOKTYPE_DIGIT);
             self->m = CAP_LTKRMODE_FOUND_DIGIT_RECOVERY;
-            self->is_onemore = true;
+            cap_strmprev(s);
         }
         break;
     case CAP_LTKRMODE_DIGIT_ONLY:
@@ -672,7 +712,7 @@ __parse(struct cap_ltkr *self, struct cap_strm *s) {
         } else {
             __savetmptok(self, CAP_LTKRTOKTYPE_DIGIT);
             self->m = CAP_LTKRMODE_FOUND_DIGIT_RECOVERY;            
-            self->is_onemore = true;
+            cap_strmprev(s);
         }
         break;
     case CAP_LTKRMODE_DIGIT_NEED_DOTDIGIT:
@@ -704,18 +744,10 @@ cap_ltkrparsestream(struct cap_ltkr *self, FILE *fin) {
     if (!s) {
         return NULL;
     }
-    cap_strmsetmode(s, CAP_STRMSTREAM, fin);
+    cap_strmloadstream(s, fin);
 
     /* 文字列を意味のあるトークン列に変換する。 */
-    for (; !cap_strmeof(s); ) {
-    onemore:
-        if (!__parse(self, s)) {
-            break;
-        }
-        if (self->is_onemore) {
-            self->is_onemore = false;
-            goto onemore;
-        }
+    for (; !cap_strmeof(s) && __parse(self, s); ) {
     }
 
     // debug
