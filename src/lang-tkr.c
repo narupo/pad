@@ -512,6 +512,8 @@ typedef enum {
     CAP_LTKRMODE_FOUND_DIGIT_RECOVERY = 'd',
     CAP_LTKRMODE_DIGIT_NEED_DOTDIGIT = '.',
     CAP_LTKRMODE_DIGIT_ONLY = '0',
+    CAP_LTKRMODE_START_PARSE = 'P',
+    CAP_LTKRMODE_END_PARSE = 'p',
 } cap_ltkrmode_t;
 
 struct cap_ltkr {
@@ -593,6 +595,8 @@ __singlechar2toktype(int32_t c) {
     case '\'': return CAP_LTKRTOKTYPE_SQ; break;
     case '+': return CAP_LTKRTOKTYPE_ADD; break;
     case '=': return CAP_LTKRTOKTYPE_EQ; break;
+    case '?': return CAP_LTKRTOKTYPE_HATENA; break;
+    case '!': return CAP_LTKRTOKTYPE_BIKKURI; break;
     }
 }
 
@@ -642,33 +646,41 @@ __parse(struct cap_ltkr *self, struct cap_strm *s) {
         return NULL;
     }
 
-    // printf("m[%c] c[%c]\n", self->m, c);
+    printf("m[%c] c[%c]\n", self->m, c);
 
     switch (self->m) {
     default: break;
+    case CAP_LTKRMODE_END_PARSE:
+        self->m = CAP_LTKRMODE_FIRST;
+    case CAP_LTKRMODE_FIRST:
+        if (c == '{' && cap_strmcur(s, 0) == '@') {
+            __savetmptok(self, CAP_LTKRTOKTYPE_OUTOFSCOPE);
+            cap_ltkrtokpush(self->tmptok, c);
+            cap_ltkrtokpush(self->tmptok, cap_strmget(s));
+            __savetmptok(self, CAP_LTKRTOKTYPE_LCAPBRACE);
+            self->m = CAP_LTKRMODE_START_PARSE;
+        } else {
+            cap_ltkrtokpush(self->tmptok, c);
+        }
+        break;
     case CAP_LTKRMODE_FOUND_DIGIT_RECOVERY:
     case CAP_LTKRMODE_FOUND_DQ_RECOVERY:
     case CAP_LTKRMODE_FOUND_SPACE_RECOVERY:
-        self->m = CAP_LTKRMODE_FIRST;
-    case CAP_LTKRMODE_FIRST:
-        if (isspace(c)) {
+        self->m = CAP_LTKRMODE_START_PARSE;
+    case CAP_LTKRMODE_START_PARSE:
+        if (c == '@' && cap_strmcur(s, 0) == '}') {
+            cap_ltkrtokpush(self->tmptok, c);
+            cap_ltkrtokpush(self->tmptok, cap_strmget(s));
+            __savetmptok(self, CAP_LTKRTOKTYPE_RCAPBRACE);
+            self->m = CAP_LTKRMODE_END_PARSE;
+        } else if (isspace(c)) {
             self->m = CAP_LTKRMODE_FOUND_SPACE;
             __savetmptokauto(self);
             cap_ltkrtokclear(self->tmptok);
         } else if (__issinglechar(c)) {
-            if (c == '{' && cap_strmcur(s, 0) == '@') {
-                cap_ltkrtokpush(self->tmptok, c);
-                cap_ltkrtokpush(self->tmptok, cap_strmget(s));
-                __savetmptok(self, CAP_LTKRTOKTYPE_LCAPBRACE);
-            } else if (c == '@' && cap_strmcur(s, 0) == '}') {
-                cap_ltkrtokpush(self->tmptok, c);
-                cap_ltkrtokpush(self->tmptok, cap_strmget(s));
-                __savetmptok(self, CAP_LTKRTOKTYPE_RCAPBRACE);
-            } else {
-                __savetmptokauto(self);
-                cap_ltkrtokpush(self->tmptok, c);
-                __savetmptokauto(self);                
-            }
+            __savetmptokauto(self);
+            cap_ltkrtokpush(self->tmptok, c);
+            __savetmptokauto(self);                
         } else if (c == '"') {
             self->m = CAP_LTKRMODE_FOUND_DQ;
         } else if (isdigit(c)) {

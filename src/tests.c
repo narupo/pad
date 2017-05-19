@@ -19,6 +19,10 @@
  */
 static void
 die(const char *fmt, ...) {
+    if (!fmt) {
+        return;
+    }
+
     size_t fmtlen = strlen(fmt);
     va_list args;
     va_start(args, fmt);
@@ -56,6 +60,10 @@ die(const char *fmt, ...) {
  */
 static void
 warn(const char *fmt, ...) {
+    if (!fmt) {
+        return;
+    }
+    
     size_t fmtlen = strlen(fmt);
     va_list args;
     va_start(args, fmt);
@@ -1496,7 +1504,7 @@ test_ltkr_ltkrtokdel(void) {
     struct cap_ltkr *ltkr = cap_ltkrnew();
     assert(ltkr != NULL);
 
-    char stdoutbuf[1024] = {};
+    char stdoutbuf[1024*100] = {};
     setbuf(stdout, stdoutbuf);
 
     FILE *fin = __ltkr_openfin();
