@@ -209,3 +209,5 @@ cap_ltkrnew(void);
 struct cap_ltkr * 
 cap_ltkrparsestream(struct cap_ltkr *self, FILE *fin);
 
+struct cap_ltkrtoks *
+cap_ltkrgettoks(struct cap_ltkr *self);

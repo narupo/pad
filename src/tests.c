@@ -1480,15 +1480,17 @@ urltests[] = {
 
 static const char *
 __ltkr_fincontent(void) {
-    return "abc\nabc";
+    return 
+    "if (a == 0) {\n"
+    "  a *= 2;"
+    "}\n"
+    ;
 }
 
 static FILE *
 __ltkr_openfin(void) {
     const char *path = "/tmp/cap-ltkr-lang.txt";
-    if (!cap_fexists(path)) {
-        cap_fwriteline(__ltkr_fincontent(), path);
-    }
+    cap_fwriteline(__ltkr_fincontent(), path);
     FILE *fin = fopen(path, "r");
     assert(fin != NULL);
     return fin;
@@ -1522,6 +1524,12 @@ test_ltkr_ltkrparsestream(void) {
     FILE *fin = __ltkr_openfin();
     assert(cap_ltkrparsestream(a, fin) != NULL);
     assert(fclose(fin) == 0);
+
+    const struct cap_ltkrtoks *toks = cap_ltkrgettoks(a);
+    for (int i = 0; i < cap_ltkrtokslen(toks); ++i) {
+        const struct cap_ltkrtok *t = cap_ltkrtoksgetc(toks, i);
+        printf("[%c:%s]\n", cap_ltkrtoktype(t), cap_ltkrtokgetc(t));
+    }
     cap_ltkrdel(a);
 }
 

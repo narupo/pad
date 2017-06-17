@@ -778,3 +778,8 @@ cap_ltkrparsestream(struct cap_ltkr *self, FILE *fin) {
     cap_strmdel(s);
     return self;
 }
+
+struct cap_ltkrtoks *
+cap_ltkrgettoks(struct cap_ltkr *self) {
+    return self->toks;
+}
