@@ -1480,10 +1480,7 @@ urltests[] = {
 
 static const char *
 __ltkr_fincontent(void) {
-    return 
-    "if (a == 0) {\n"
-    "  a *= 2;"
-    "}\n"
+    return "123"
     ;
 }
 
@@ -1526,6 +1523,7 @@ test_ltkr_ltkrparsestream(void) {
     assert(fclose(fin) == 0);
 
     const struct cap_ltkrtoks *toks = cap_ltkrgettoks(a);
+    printf("parsed tokens.\n");
     for (int i = 0; i < cap_ltkrtokslen(toks); ++i) {
         const struct cap_ltkrtok *t = cap_ltkrtoksgetc(toks, i);
         printf("[%c:%s]\n", cap_ltkrtoktype(t), cap_ltkrtokgetc(t));
