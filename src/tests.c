@@ -1474,70 +1474,6 @@ urltests[] = {
     {},
 };
 
-/***********
-* lang-tkr *
-***********/
-
-static const char *
-__ltkr_fincontent(void) {
-    return "123"
-    ;
-}
-
-static FILE *
-__ltkr_openfin(void) {
-    const char *path = "/tmp/cap-ltkr-lang.txt";
-    cap_fwriteline(__ltkr_fincontent(), path);
-    FILE *fin = fopen(path, "r");
-    assert(fin != NULL);
-    return fin;
-}
-
-static void
-__ltkr_fclose(FILE *fp) {
-    assert(fclose(fp) == 0);
-}
-
-static void
-test_ltkr_ltkrtokdel(void) {
-    struct cap_ltkr *ltkr = cap_ltkrnew();
-    assert(ltkr != NULL);
-
-    char stdoutbuf[1024*100] = {};
-    setbuf(stdout, stdoutbuf);
-
-    FILE *fin = __ltkr_openfin();
-    assert(cap_ltkrparsestream(ltkr, fin) != NULL);
-    __ltkr_fclose(fin);
-    setbuf(stdout, NULL);
-
-    cap_ltkrdel(ltkr);
-}
-
-static void
-test_ltkr_ltkrparsestream(void) {
-    struct cap_ltkr *a = cap_ltkrnew();
-    assert(a != NULL);
-    FILE *fin = __ltkr_openfin();
-    assert(cap_ltkrparsestream(a, fin) != NULL);
-    assert(fclose(fin) == 0);
-
-    const struct cap_ltkrtoks *toks = cap_ltkrgettoks(a);
-    printf("parsed tokens.\n");
-    for (int i = 0; i < cap_ltkrtokslen(toks); ++i) {
-        const struct cap_ltkrtok *t = cap_ltkrtoksgetc(toks, i);
-        printf("[%c:%s]\n", cap_ltkrtoktype(t), cap_ltkrtokgetc(t));
-    }
-    cap_ltkrdel(a);
-}
-
-static const struct testcase
-ltkrtests[] = {
-    {"ltkrtokdel", test_ltkr_ltkrtokdel},
-    {"ltkrparsestream", test_ltkr_ltkrparsestream},
-    {},
-};
-
 /*******
 * main *
 *******/
@@ -1555,7 +1491,6 @@ testmodules[] = {
     {"util", utiltests},
     // {"socket", sockettests},
     {"url", urltests},
-    {"ltkr", ltkrtests},
     {},
 };
 
