@@ -11,6 +11,7 @@ typedef enum {
     T_SUB = '-', // -
     T_MUL = '*', // *
     T_MOD = '%', // %
+    T_DIV = '/', // /
     T_LPAREN = '(', // (
     T_RPAREN = ')', // )
     T_LBRA = '{', // {
@@ -22,6 +23,13 @@ typedef enum {
     T_FOR = 'F', // for
     T_IF = 'f', // if
     T_DIGIT = 'D', // digit (0 ~ )
+    T_NOT = '!', // !
+    T_NOTEQ = 'n', // !=
+    T_EQ = '=', // ==
+    T_LT = '<', // <
+    T_GT = '>', // >
+    T_LTEQ = 'L', // <=
+    T_GTEQ = 'G', // >=
 } token_t;
 
 struct token {
@@ -29,11 +37,6 @@ struct token {
     uint32_t index;
     char value[100];
 };
-
-static bool
-is_single_token(int32_t c) {
-    return strchr("!=/%(){}<>;.", c);
-}
 
 static void
 token_del(struct token *self) {
@@ -58,65 +61,19 @@ token_push(struct token *self, int32_t c) {
     return true;
 }
 
-struct tokenizer {
-    int32_t mode;
-};
-
 static bool
-is_digit(const char *str) {
-    for (char *c = str; *c; ++c) {
-        if (!isdigit(*c)) {
+token_set(struct token *self, const char *str) {
+    for (const char *p = str; *p; ++p) {
+        if (!token_push(self, *p)) {
             return false;
         }
     }
     return true;
 }
 
-static void
-adjust_token_type(struct token *tok) {
-    struct vt {
-        const char *value;
-        token_t type;
-    };
-    static const struct vt vt[] = {
-        { "{{", T_BLOCK_BEGIN },
-        { "}}", T_BLOCK_END },
-        { "=", T_AS },
-        { "+", T_ADD },
-        { "-", T_SUB },
-        { "*", T_MUL },
-        { "%%", T_MOD },
-        { "(", T_LPAREN },
-        { ")", T_RPAREN },
-        { "{", T_LBRA },
-        { "}", T_RBRA },
-        { ";", T_SCOLON },
-        { ":", T_COLON },
-        { "++", T_INC },
-        { "--", T_DEC },
-        { "for", T_FOR },
-        { "if", T_IF },
-        { NULL, T_NIL },
-    };
-
-    if (tok->type != T_NIL) {
-        return;
-    }
-
-    for (const struct vt *p = vt; p->value; ++p) {
-        if (strcmp(p->value, tok->value) == 0) {
-            tok->type = p->type;
-            return;
-        }
-    }
-
-    if (is_digit(tok->value)) {
-        tok->type = T_DIGIT;
-        return;
-    }
-
-    tok->type = T_IDENTIFIER;
-}
+struct tokenizer {
+    int32_t mode;
+};
 
 static struct token *
 tkr_read_token(struct tokenizer *self, FILE *fin) {
@@ -129,116 +86,220 @@ tkr_read_token(struct tokenizer *self, FILE *fin) {
             free(tok);
             return NULL;
         }
-
         // printf("m[%d] c[%c]\n", *m, c);
 
         switch (*m) {
         case 0: // first
-            if (c == '{') {
-                *m = 10;
-            } else {
-                fputc(c, stdout);
+            switch (c) {
+            case '{': *m = 10; break;
+            default: putchar(c); break;
             }
             break;
         case 10: // found '{'
-            if (c == '{') {
-                token_push(tok, c);
-                token_push(tok, c);
+            switch (c) {
+            case '{':
+                tok->type = T_BLOCK_BEGIN;
+                token_set(tok, "{{");
                 *m = 20;
                 goto end;
-            } else {
-                ungetc(c, fin);
+                break;
+            default:
+                putchar('{');
+                putchar(c);
                 *m = 0;
+                break;
             }
             break;
-        case 20: // skip spaces
-            if (!isspace(c)) {
-                ungetc(c, fin);
-                *m = 30;
-            }
-            break;
-        case 30: // enter of read token
+        case 20: // enter of block begin
             if (isspace(c)) {
-                *m = 20;
-                goto end;
-            } else if (c == '}') {
-                *m = 100;
-            } else if (c == '!') { // !=
-                int32_t next = fgetc(fin);
-                if (next == '=') {
-                    token_push(tok, c);
-                    token_push(tok, next);
-                    *m = 20;
-                    goto end;
-                } else {
-                    ungetc(next, fin);
-                    token_push(tok, c);
-                    *m = 20;
-                    goto end;
-                }
-            } else if (strchr("=+-", c)) { // repeat able single token
-                int32_t next = fgetc(fin);
-                if (next == c) {
-                    token_push(tok, c);
-                    token_push(tok, next);
-                    *m = 20;
-                    goto end;
-                } else {
-                    token_push(tok, c);
-                    ungetc(next, fin);
-                    *m = 20;
-                    goto end;
-                }
-            } else if (is_single_token(c)) {
+                break;
+            }
+
+            switch (c) {
+            case '}': *m = 30; break;
+            case '!': *m = 40; break;
+            case '=': *m = 50; break;
+            case '+': *m = 60; break;
+            case '-': *m = 70; break;
+            case '"': *m = 80; break;
+            case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+                *m = 90;
+                token_push(tok, c);
+                break;
+            case '<': *m = 100; break;
+            case '>': *m = 110; break;
+            case ':':
+            case ';':
+            case '*':
+            case '/':
+            case '%':
+            case '(': case ')':
+            case '{':
+                tok->type = c;
                 token_push(tok, c);
                 *m = 20;
                 goto end;
-            } else if (c == '"') {
-                *m = 50;
-            } else {
-                token_push(tok, c);
-                *m = 40;
+                break;
+            default:
+                if (isalpha(c) || c == '_') {
+                    *m = 120;
+                    token_push(tok, c);                    
+                } else {
+                    fprintf(stderr, "invalid character [%c]\n", c);
+                    exit(1);
+                }
+                break;
             }
             break;
-        case 40: // read token
-            if (isspace(c)) {
-                *m = 20;
+        case 30: // found '}'
+            switch (c) {
+            case '}':
+                tok->type = T_BLOCK_END;
+                token_set(tok, "}}");
+                *m = 0;
                 goto end;
-            } else if (is_single_token(c)) {
-                *m = 20;
+                break;
+            default:
                 ungetc(c, fin);
+                tok->type = T_RBRA;
+                token_set(tok, "}");
+                *m = 20;
                 goto end;
-            } else {
-                token_push(tok, c);
+                break;
             }
             break;
-        case 50: // read string token
-            if (c == '"') {
+        case 40: // found '!'
+            switch (c) {
+            case '=':
+                token_set(tok, "!=");
+                tok->type = T_NOTEQ;
+                *m = 20;
+                goto end;
+                break;
+            default:
+                ungetc(c, fin);
+                *m = 20;
+                tok->type = T_NOT;
+                token_set(tok, "!");
+                goto end;
+                break;
+            }
+            break;
+        case 50: // found '='
+            switch (c) {
+            case '=':
+                token_set(tok, "==");
+                *m = 20;
+                tok->type = T_EQ;
+                goto end;
+                break;
+            default:
+                ungetc(c, fin);
+                token_set(tok, "=");
+                tok->type = T_AS;
+                *m = 20;
+                goto end;
+                break;
+            }
+            break;
+        case 60: // found '+'
+            switch (c) {
+            case '+':
+                token_set(tok, "++");
+                tok->type = T_INC;
+                *m = 20;
+                goto end;
+                break;
+            default:
+                token_set(tok, "+");
+                tok->type = T_ADD;
+                *m = 20;
+                goto end;
+                break;
+            }
+            break;
+        case 70: // found '-'
+            switch (c) {
+            case '-':
+                token_set(tok, "--");
+                tok->type = T_DEC;
+                *m = 20;
+                goto end;
+                break;
+            default:
+                token_set(tok, "-");
+                tok->type = T_SUB;
+                *m = 20;
+                goto end;
+                break;
+            }
+            break;
+        case 80: // read string '"'
+            switch (c) {
+            case '"':
                 *m = 20;
                 tok->type = T_STRING;
                 goto end;
-            } else {
-                token_push(tok, c);
+                break;
+            default: token_push(tok, c); break;
             }
             break;
-        case 100: // found '}'
-            if (c == '}') {
-                *m = 0;
+        case 90: // found '0' ~ '9'
+            if (isdigit(c)) {
                 token_push(tok, c);
-                token_push(tok, c);
-                goto end;
             } else {
-                token_push(tok, '}');
                 ungetc(c, fin);
+                tok->type = T_DIGIT;
+                *m = 20;
+                goto end;
+            }
+            break;
+        case 100: // found '<'
+            switch (c) {
+            case '=':
+                token_set(tok, "<=");
+                tok->type = T_LTEQ;
+                *m = 20;
+                goto end;
+                break;
+            default:
+                token_set(tok, "<");
+                tok->type = T_LT;
+                *m = 20;
+                goto end;
+                break;
+            }
+            break;
+        case 110: // found '<'
+            switch (c) {
+            case '=':
+                token_set(tok, ">=");
+                tok->type = T_GTEQ;
+                *m = 20;
+                goto end;
+                break;
+            default:
+                token_set(tok, ">");
+                tok->type = T_GT;
+                *m = 20;
+                goto end;
+                break;
+            }
+            break;
+        case 120: // found alpha or '_'
+            if (isalpha(c) || c == '_' || isdigit(c)) {
+                token_push(tok, c);
+            } else {
+                ungetc(c, fin);
+                tok->type = T_IDENTIFIER;
                 *m = 20;
                 goto end;
             }
             break;
         }
     }
-end:
-    adjust_token_type(tok);
 
+end:
     return tok;
 }
 
