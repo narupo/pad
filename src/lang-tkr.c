@@ -133,7 +133,9 @@ tkr_read_token(struct tokenizer *self, FILE *fin) {
             case '*':
             case '/':
             case '%':
+            case '.':
             case '(': case ')':
+            case '[': case ']':
             case '{':
                 tok->type = c;
                 token_push(tok, c);
@@ -211,6 +213,7 @@ tkr_read_token(struct tokenizer *self, FILE *fin) {
                 goto end;
                 break;
             default:
+                ungetc(c, fin);
                 token_set(tok, "+");
                 tok->type = T_ADD;
                 *m = 20;
