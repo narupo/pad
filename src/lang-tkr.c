@@ -1,11 +1,27 @@
 #include "lang-tkr.h"
 
 typedef enum {
-    TOKEN_NIL = 0,
-    TOKEN_IDENTIFIER = 'I',
-    TOKEN_STRING = 'S', // "string"
-    TOKEN_BLOCK_BEGIN = 'B', // {{
-    TOKEN_BLOCK_END = 'E', // }}
+    T_NIL = 0,
+    T_IDENTIFIER = 'I',
+    T_STRING = 'S', // "string"
+    T_BLOCK_BEGIN = 'B', // {{
+    T_BLOCK_END = 'E', // }}
+    T_AS = '=', // =
+    T_ADD = '+', // +
+    T_SUB = '-', // -
+    T_MUL = '*', // *
+    T_MOD = '%', // %
+    T_LPAREN = '(', // (
+    T_RPAREN = ')', // )
+    T_LBRA = '{', // {
+    T_RBRA = '}', // }
+    T_SCOLON = ';', // ;
+    T_COLON = ':', // :
+    T_INC = 'i', // ++
+    T_DEC = 'd', // --
+    T_FOR = 'F', // for
+    T_IF = 'f', // if
+    T_DIGIT = 'D', // digit (0 ~ )
 } token_t;
 
 struct token {
@@ -16,7 +32,7 @@ struct token {
 
 static bool
 is_single_token(int32_t c) {
-    return strchr("/%();", c);
+    return strchr("!=/%(){}<>;.", c);
 }
 
 static void
@@ -46,6 +62,62 @@ struct tokenizer {
     int32_t mode;
 };
 
+static bool
+is_digit(const char *str) {
+    for (char *c = str; *c; ++c) {
+        if (!isdigit(*c)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static void
+adjust_token_type(struct token *tok) {
+    struct vt {
+        const char *value;
+        token_t type;
+    };
+    static const struct vt vt[] = {
+        { "{{", T_BLOCK_BEGIN },
+        { "}}", T_BLOCK_END },
+        { "=", T_AS },
+        { "+", T_ADD },
+        { "-", T_SUB },
+        { "*", T_MUL },
+        { "%%", T_MOD },
+        { "(", T_LPAREN },
+        { ")", T_RPAREN },
+        { "{", T_LBRA },
+        { "}", T_RBRA },
+        { ";", T_SCOLON },
+        { ":", T_COLON },
+        { "++", T_INC },
+        { "--", T_DEC },
+        { "for", T_FOR },
+        { "if", T_IF },
+        { NULL, T_NIL },
+    };
+
+    if (tok->type != T_NIL) {
+        return;
+    }
+
+    for (const struct vt *p = vt; p->value; ++p) {
+        if (strcmp(p->value, tok->value) == 0) {
+            tok->type = p->type;
+            return;
+        }
+    }
+
+    if (is_digit(tok->value)) {
+        tok->type = T_DIGIT;
+        return;
+    }
+
+    tok->type = T_IDENTIFIER;
+}
+
 static struct token *
 tkr_read_token(struct tokenizer *self, FILE *fin) {
     struct token *tok = token_new();
@@ -72,7 +144,6 @@ tkr_read_token(struct tokenizer *self, FILE *fin) {
             if (c == '{') {
                 token_push(tok, c);
                 token_push(tok, c);
-                tok->type = TOKEN_BLOCK_BEGIN;
                 *m = 20;
                 goto end;
             } else {
@@ -92,15 +163,31 @@ tkr_read_token(struct tokenizer *self, FILE *fin) {
                 goto end;
             } else if (c == '}') {
                 *m = 100;
-            } else if (strchr("=+-", c)) { // repeat able token
-                token_push(tok, c);
+            } else if (c == '!') { // !=
                 int32_t next = fgetc(fin);
-                if (next == c) {
+                if (next == '=') {
                     token_push(tok, c);
+                    token_push(tok, next);
                     *m = 20;
                     goto end;
                 } else {
                     ungetc(next, fin);
+                    token_push(tok, c);
+                    *m = 20;
+                    goto end;
+                }
+            } else if (strchr("=+-", c)) { // repeat able single token
+                int32_t next = fgetc(fin);
+                if (next == c) {
+                    token_push(tok, c);
+                    token_push(tok, next);
+                    *m = 20;
+                    goto end;
+                } else {
+                    token_push(tok, c);
+                    ungetc(next, fin);
+                    *m = 20;
+                    goto end;
                 }
             } else if (is_single_token(c)) {
                 token_push(tok, c);
@@ -128,7 +215,7 @@ tkr_read_token(struct tokenizer *self, FILE *fin) {
         case 50: // read string token
             if (c == '"') {
                 *m = 20;
-                tok->type = TOKEN_STRING;
+                tok->type = T_STRING;
                 goto end;
             } else {
                 token_push(tok, c);
@@ -137,19 +224,20 @@ tkr_read_token(struct tokenizer *self, FILE *fin) {
         case 100: // found '}'
             if (c == '}') {
                 *m = 0;
-                tok->type = TOKEN_BLOCK_END;
                 token_push(tok, c);
                 token_push(tok, c);
                 goto end;
             } else {
+                token_push(tok, '}');
                 ungetc(c, fin);
-                token_push(tok, c);
-                *m = 40;
+                *m = 20;
+                goto end;
             }
             break;
         }
     }
 end:
+    adjust_token_type(tok);
 
     return tok;
 }
