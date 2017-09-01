@@ -2,6 +2,7 @@
 
 typedef enum {
     T_NIL = 0,
+    T_PLAIN = 'p',
     T_IDENTIFIER = 'I',
     T_STRING = 'S', // "string"
     T_BLOCK_BEGIN = 'B', // {{
@@ -34,7 +35,7 @@ typedef enum {
 
 struct token {
     int32_t type;
-    uint32_t index;
+    uint32_t len;
     char value[100];
 };
 
@@ -52,12 +53,12 @@ token_new(void) {
 
 static bool
 token_push(struct token *self, int32_t c) {
-    if (self->index >= sizeof(self->value)-1) {
+    if (self->len >= sizeof(self->value)-1) {
         return false;
     }
 
-    self->value[self->index++] = c;
-    self->value[self->index] = '\0';
+    self->value[self->len++] = c;
+    self->value[self->len] = '\0';
     return true;
 }
 
@@ -83,32 +84,46 @@ tkr_read_token(struct tokenizer *self, FILE *fin) {
     for (;;) {
         int32_t c = fgetc(fin);
         if (c == EOF) {
-            free(tok);
-            return NULL;
+            if (tok->len > 0) {
+                goto end;
+            } else {
+                token_del(tok);
+                return NULL;
+            }
+            goto end;
         }
         // printf("m[%d] c[%c]\n", *m, c);
 
         switch (*m) {
         case 0: // first
             switch (c) {
-            case '{': *m = 10; break;
-            default: putchar(c); break;
+            case '{':
+                *m = 10;
+                break;
+            default:
+                token_push(tok, c);
+                break;
             }
             break;
         case 10: // found '{'
             switch (c) {
             case '{':
-                tok->type = T_BLOCK_BEGIN;
-                token_set(tok, "{{");
-                *m = 20;
+                tok->type = T_PLAIN;
+                *m = 11;
                 goto end;
                 break;
             default:
-                putchar('{');
-                putchar(c);
+                token_push(tok, '{');
+                token_push(tok, c);
                 *m = 0;
                 break;
             }
+            break;
+        case 11: // found '{{'
+            tok->type = T_BLOCK_BEGIN;
+            token_set(tok, "{{");
+            *m = 20;
+            goto end;
             break;
         case 20: // enter of block begin
             if (isspace(c)) {
