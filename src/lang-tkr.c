@@ -76,6 +76,23 @@ struct tokenizer {
     int32_t mode;
 };
 
+static void
+tkr_del(struct tokenizer *self) {
+    if (self) {
+        free(self);
+    }
+}
+
+static struct tokenizer *
+tkr_new(void) {
+    struct tokenizer *self = calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
+
+    return self;
+}
+
 static struct token *
 tkr_read_token(struct tokenizer *self, FILE *fin) {
     struct token *tok = token_new();
@@ -85,6 +102,7 @@ tkr_read_token(struct tokenizer *self, FILE *fin) {
         int32_t c = fgetc(fin);
         if (c == EOF) {
             if (tok->len > 0) {
+                tok->type = T_PLAIN;
                 goto end;
             } else {
                 token_del(tok);
@@ -321,9 +339,77 @@ end:
     return tok;
 }
 
+struct node {
+    struct node *lhs;
+    struct node *rhs;
+};
+
+void
+node_del(struct node *self) {
+    if (self) {
+        node_del(self->lhs);
+        node_del(self->rhs);
+        free(self);
+    }
+}
+
+struct node *
+node_new(void) {
+    struct node *self = calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
+
+    return self;
+}
+
+struct tree {
+    struct node *root;
+};
+
+void
+tree_del(struct tree *self) {
+    if (self) {
+        node_del(self->root);
+        free(self);
+    }
+}
+
+struct tree *
+tree_new(void) {
+    struct tree *self = calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
+
+    return self;
+}
+
+void
+tree_clear(struct tree *self) {
+    node_del(self->root);
+    self->root = NULL;
+}
+
+void
+tree_calc(struct tree *self) {
+}
+
+void
+tree_move(struct tree *self, struct node *node) {
+}
+
+struct node *
+token_to_node(struct token *tok) {
+    struct node *node = node_new();
+    return node;
+}
+
 static void
 parse(FILE *fin) {
-    struct tokenizer *tkr = calloc(1, sizeof(*tkr));
+    struct tokenizer *tkr = tkr_new();
+    struct tree *tree = tree_new();
+    int32_t m = 0;
 
     for (;;) {
         struct token *tok = tkr_read_token(tkr, fin);
@@ -331,11 +417,37 @@ parse(FILE *fin) {
             break;
         }
 
-        printf("token: type[%c] value[%s]\n", tok->type, tok->value);
+        switch (m) {
+        case 0: // first
+            switch (tok->type) {
+            case T_BLOCK_BEGIN:
+                m = 10;
+                tree_clear(tree);
+                break;
+            default:
+                printf("%s", tok->value);
+                break;
+            }
+            break;
+        case 10: // into the block
+            switch (tok->type) {
+            case T_BLOCK_END:
+                m = 0;
+                tree_calc(tree);
+                break;
+            default: {
+                struct node *node = token_to_node(tok);
+                tree_move(tree, node); 
+            } break;
+            }
+            break;
+        }
+
         token_del(tok);
     }
 
-    free(tkr);
+    tkr_del(tkr);
+    tree_del(tree);
 }
 
 #if 1
@@ -345,4 +457,3 @@ main(void) {
     return 0;
 }
 #endif
-
