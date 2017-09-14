@@ -8,6 +8,14 @@ class NilNode:
     def __init__(self):
         pass
 
+class TextNode:
+
+    def __init__(self):
+        self.value = None
+
+    def __str__(self):
+        return str(self.value)
+
 class ValueNode:
 
     def __init__(self):
@@ -31,6 +39,11 @@ class OperandNode:
         return int(self.value)
 
 class OperatorNode:
+    """オペレーターノードは必要があれば calc が呼び出される。
+    calc が呼ばれるたびに参照している変数を更新する。
+    その変数はシンボル・テーブルの参照になるので、
+    オペレーターノードはシンボル・テーブルを参照できる必要がある。
+    """
 
     def __init__(self):
         self.operator = None
@@ -145,10 +158,11 @@ class App:
 
     def traverse(self, node, dep=0, side='?'):
         if self.isdebug:
-            print('_' * dep, end='')
-            print(side, type(node))
+            print('_' * dep, side, type(node))
 
         if type(node) == ValueNode:
+            print(node.value)
+        elif type(node) == TextNode:
             print(node.value)
         elif type(node) == BinNode:
             self.traverse(node.lhs, dep=dep+1, side='L')
@@ -186,7 +200,7 @@ class App:
         return root
 
     def plain(self):
-        nplain = ValueNode()
+        nplain = TextNode()
         nplain.value = self.tkr.get()
         return nplain
 
@@ -407,7 +421,6 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
         nelse = self.code()
         self.tkr.get() # }
         return nelse
-
 
 def main():
     app = App()
