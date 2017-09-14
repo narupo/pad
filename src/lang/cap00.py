@@ -80,33 +80,39 @@ class VariableNode:
     def __init__(self):
         self.identifier = None
 
+class AssignNode:
+
+    def __init__(self):
+        self.lhs = None
+        self.rhs = None
+
 """
 program ::= [ plain | block ]*
 plain ::= !('{{'|'}}')
 block ::= '{{' [ code ]* '}}'
 code ::= statement | expr
 
-expr ::= term, [ ('+'|'-') term ]*
-term ::= factor, [ ('*'|'/') factor ]*
-factor ::= mono | '(' expr ')'
+expr ::= pm_expr, [ ('+'|'-') pm_expr ]*
+pm_expr ::= md_expr, [ ('*'|'/') md_expr ]*
+md_expr ::= mono | '(' expr ')'
 mono ::= number | variable
 number ::= [ 0-9]*
 variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
 
 statement ::= for-statement | if-statement | print-statement
 
-print-statement ::= 'print' '(' print-content ')'
-print-content ::= [ a-z|A-Z|0-9 ]*
+print_statement ::= 'print' '(' print_content ')'
+print_content ::= [ a_z|A_Z|0_9 ]*
 
-if-statement ::= ('if'|'elif') if-compare '{' code '}', if-else | if-elif
-if-compare ::= 1 | 0
-if-else ::= 'else' '{' code '}'
-if-elif ::= if-statement
+if_statement ::= ('if'|'elif') if_compare '{' code '}', if_else | if_elif
+if_compare ::= 1 | 0
+if_else ::= 'else' '{' code '}'
+if_elif ::= if_statement
 
-for-statement ::= for-statement-1 | for-statement-2
-for-statement-1 ::= 'for' '{' code '}'
-for-statement-2 ::= 'for' for-compare '{' code '}'
-for-statement-3 ::= 'for' for-init ';' for-compare ';' for-update '{' code '}'
+for_statement ::= for_statement_1 | for_statement_2
+for_statement_1 ::= 'for' '{' code '}'
+for_statement_2 ::= 'for' for_compare '{' code '}'
+for_statement_3 ::= 'for' for_init ';' for_compare ';' for_update '{' code '}'
 
 """
 class App:
@@ -115,13 +121,18 @@ class App:
         self.tkr = CapTokenizer()
         self.root = None
         self.isdebug = False
-        self.calc = None # 演算結果が入るレジスタ
+        self.symtab = {} # シンボルのテーブル
+        self.last_calc_result = None # 最後の演算結果が入るレジスタ
 
     def run(self):
         self.tkr.parse(sys.stdin)
         for t in self.tkr.toks: print(t)
         self.root = self.program()
         self.traverse(self.root, side='R')
+
+        print('_' * 32)
+        print('symtab', self.symtab)
+        print('last_calc_result', self.last_calc_result)
 
     def traverse(self, node, dep=0, side='?'):
         if self.isdebug:
@@ -145,7 +156,9 @@ class App:
                 self.traverse(node.nthen, dep+1, side='then')
             raise Exception('TODO')
         elif type(node) == OpNode:
-            print(node.calc())
+            self.last_calc_result = node.calc()
+        elif type(node) == AssignNode:
+            self.last_calc_result = self.symtab[node.lhs.identifier] = node.rhs.calc()
 
     def program(self):
         root = BinNode()
@@ -188,44 +201,64 @@ class App:
         return n
 
     """
-expr ::= term, op1 expr
-op1 ::= ('+'|'-')
-term ::= factor, op2 expr
-op2 ::= ('*'|'/')
-factor ::= mono | '(' expr ')'
+expr ::= ass_expr | pm_expr
+ass_expr :: = variable '=' pm_expr
+pm_expr ::= md_expr, pm_op pm_expr
+pm_op ::= ('+'|'_')
+md_expr ::= paren_expr, md_op pm_expr
+md_op ::= ('*'|'/')
+paren_expr ::= mono | '(' expr ')'
 mono ::= number | variable
 number ::= [ 0-9]*
 variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
     """
     def expr(self):
+        if self.tkr.cur(1) == '=':
+            return self.ass_expr()
+        else:
+            return self.pm_expr()
+
+    def variable(self):
+        root = VariableNode()
+        root.identifier = self.tkr.get()
+        return root
+
+    def ass_expr(self):
+        root = AssignNode()
+        root.lhs = self.variable()
+        self.tkr.get() # =
+        root.rhs = self.expr()
+        return root
+
+    def pm_expr(self):
         root = None
 
-        n1 = self.term()
+        n1 = self.md_expr()
         if self.tkr.cur() in ['+', '-']:
             root = OpNode()
             root.lhs = n1
             root.operand = self.tkr.get()
-            root.rhs = self.expr()
+            root.rhs = self.pm_expr()
         else:
             root = n1
 
         return root
 
-    def term(self):
+    def md_expr(self):
         root = None
 
-        n1 = self.factor()
+        n1 = self.paren_expr()
         if self.tkr.cur() in ['*', '/']:
             root = OpNode()
             root.lhs = n1
             root.operand = self.tkr.get()
-            root.rhs = self.expr()
+            root.rhs = self.pm_expr()
         else:
             root = n1
 
         return root
 
-    def factor(self):
+    def paren_expr(self):
         root = None
 
         if self.tkr.cur() == '(':
@@ -240,13 +273,12 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
     def mono(self):
         root = None
 
-        n1 = self.tkr.get()
+        n1 = self.tkr.cur()
         if n1.isdigit():
             root = ValueNode()
-            root.value = n1
+            root.value = self.tkr.get()
         else:
-            root = VariableNode()
-            root.identifier = n1
+            root = self.variable()
 
         return root
 
@@ -359,6 +391,7 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
 
     def if_compare(self):
         ncompare = ValueNode()
+        print('****', self.tkr.cur())
         ncompare.value = int(self.tkr.get())
         return ncompare
 
