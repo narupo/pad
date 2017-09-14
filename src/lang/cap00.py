@@ -22,31 +22,39 @@ class BinNode:
         self.lhs = None
         self.rhs = None
 
-class OpNode:
+class OperandNode:
 
     def __init__(self):
-        self.operand = None
+        self.value = None
+
+    def calc(self):
+        return int(self.value)
+
+class OperatorNode:
+
+    def __init__(self):
+        self.operator = None
         self.lhs = None
         self.rhs = None
 
     def __str__(self):
-        return str(self.operand)
+        return str(self.operator)
 
     def __calc(self, n, dep=0, side='?'):
         print('_' * dep, side, str(n))
-        if type(n) == OpNode:
+        if type(n) == OperatorNode:
             v = self.__calc(n.lhs, dep+1, 'L')
-            if n.operand == '+':
+            if n.operator == '+':
                 v += self.__calc(n.rhs, dep+1, 'R')
-            elif n.operand == '-':
+            elif n.operator == '-':
                 v -= self.__calc(n.rhs, dep+1, 'R')
-            elif n.operand == '*':
+            elif n.operator == '*':
                 v *= self.__calc(n.rhs, dep+1, 'R')
-            elif n.operand == '/':
+            elif n.operator == '/':
                 v /= self.__calc(n.rhs, dep+1, 'R')
             return v
-        elif type(n) == ValueNode:
-            return int(n.value)
+        elif type(n) == OperandNode:
+            return n.calc()
         elif type(n) == VariableNode:
             raise Exception('TODO')
         raise Exception('unsupported node')
@@ -122,17 +130,18 @@ class App:
         self.root = None
         self.isdebug = False
         self.symtab = {} # シンボルのテーブル
-        self.last_calc_result = None # 最後の演算結果が入るレジスタ
+        self.lcr = None # last calc result. 最後の演算結果が入るレジスタ
 
     def run(self):
         self.tkr.parse(sys.stdin)
-        for t in self.tkr.toks: print(t)
+        for t in self.tkr.toks:
+            print(t)
         self.root = self.program()
         self.traverse(self.root, side='R')
 
         print('_' * 32)
         print('symtab', self.symtab)
-        print('last_calc_result', self.last_calc_result)
+        print('lcr', self.lcr)
 
     def traverse(self, node, dep=0, side='?'):
         if self.isdebug:
@@ -145,7 +154,8 @@ class App:
             self.traverse(node.lhs, dep=dep+1, side='L')
             self.traverse(node.rhs, dep=dep+1, side='R')
         elif type(node) == IfNode:
-            if node.ncompare.value:
+            res = self.lcr = node.ncompare.calc()
+            if res:
                 self.traverse(node.nthen, dep+1, side='then')
             elif node.nelif:
                 self.traverse(node.nelif, dep+1, side='elif')
@@ -155,10 +165,10 @@ class App:
             while node.ncompare.value:
                 self.traverse(node.nthen, dep+1, side='then')
             raise Exception('TODO')
-        elif type(node) == OpNode:
-            self.last_calc_result = node.calc()
+        elif type(node) == OperatorNode:
+            self.lcr = node.calc()
         elif type(node) == AssignNode:
-            self.last_calc_result = self.symtab[node.lhs.identifier] = node.rhs.calc()
+            self.lcr = self.symtab[node.lhs.identifier] = node.rhs.calc()
 
     def program(self):
         root = BinNode()
@@ -235,9 +245,9 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
 
         n1 = self.md_expr()
         if self.tkr.cur() in ['+', '-']:
-            root = OpNode()
+            root = OperatorNode()
             root.lhs = n1
-            root.operand = self.tkr.get()
+            root.operator = self.tkr.get()
             root.rhs = self.pm_expr()
         else:
             root = n1
@@ -249,9 +259,9 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
 
         n1 = self.paren_expr()
         if self.tkr.cur() in ['*', '/']:
-            root = OpNode()
+            root = OperatorNode()
             root.lhs = n1
-            root.operand = self.tkr.get()
+            root.operator = self.tkr.get()
             root.rhs = self.pm_expr()
         else:
             root = n1
@@ -275,7 +285,7 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
 
         n1 = self.tkr.cur()
         if n1.isdigit():
-            root = ValueNode()
+            root = OperandNode()
             root.value = self.tkr.get()
         else:
             root = self.variable()
@@ -305,8 +315,7 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
         return ValueNode() # TODO
 
     def for_compare(self):
-        ncompare = ValueNode()
-        ncompare.value = 1
+        ncompare = self.expr()
         while self.tkr.cur() not in [';', '{']:
             self.tkr.get()
         return ncompare
@@ -390,10 +399,7 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
         return nif
 
     def if_compare(self):
-        ncompare = ValueNode()
-        print('****', self.tkr.cur())
-        ncompare.value = int(self.tkr.get())
-        return ncompare
+        return self.expr()
 
     def if_else(self):
         self.tkr.get() # else
