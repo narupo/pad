@@ -13,18 +13,14 @@ class TextNode:
     def __init__(self):
         self.value = None
 
-    def __str__(self):
-        return str(self.value)
-
 class ValueNode:
 
     def __init__(self):
         self.value = None
 
-    def __str__(self):
-        return str(self.value)
-
 class BinNode:
+    """左優先探索
+    """
 
     def __init__(self):
         self.lhs = None
@@ -108,32 +104,37 @@ class AssignNode:
         self.rhs = None
 
 """
-program ::= [ plain | block ]*
-plain ::= !('{{'|'}}')
-block ::= '{{' [ code ]* '}}'
-code ::= statement | expr
+program ::= [ plain | double_block ]*
 
-expr ::= pm_expr, [ ('+'|'-') pm_expr ]*
-pm_expr ::= md_expr, [ ('*'|'/') md_expr ]*
-md_expr ::= mono | '(' expr ')'
+expr ::= ass_expr | pm_expr
+ass_expr :: = variable '=' pm_expr
+pm_expr ::= md_expr, pm_op pm_expr
+pm_op ::= ('+'|'_')
+md_expr ::= paren_expr, md_op pm_expr
+md_op ::= ('*'|'/')
+paren_expr ::= mono | '(' expr ')'
 mono ::= number | variable
 number ::= [ 0-9]*
 variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
+
+plain ::= !('{{'|'}}')
+double_block ::= '{{' [ block ]* '}}'
+block ::= '{', statement | expr, '}'
 
 statement ::= for-statement | if-statement | print-statement
 
 print_statement ::= 'print' '(' print_content ')'
 print_content ::= [ a_z|A_Z|0_9 ]*
 
-if_statement ::= ('if'|'elif') if_compare '{' code '}', if_else | if_elif
+if_statement ::= ('if'|'elif') if_compare '{' block '}', if_else | if_elif
 if_compare ::= 1 | 0
-if_else ::= 'else' '{' code '}'
+if_else ::= 'else' '{' block '}'
 if_elif ::= if_statement
 
 for_statement ::= for_statement_1 | for_statement_2
-for_statement_1 ::= 'for' '{' code '}'
-for_statement_2 ::= 'for' for_compare '{' code '}'
-for_statement_3 ::= 'for' for_init ';' for_compare ';' for_update '{' code '}'
+for_statement_1 ::= 'for' '{' block '}'
+for_statement_2 ::= 'for' for_compare '{' block '}'
+for_statement_3 ::= 'for' for_init ';' for_compare ';' for_update '{' block '}'
 
 """
 class App:
@@ -147,25 +148,39 @@ class App:
 
     def run(self):
         self.tkr.parse(sys.stdin)
-        for t in self.tkr.toks:
-            print(t)
         self.root = self.program()
         self.traverse(self.root, side='R')
+
+        if self.isdebug:
+            self.dump_tree(self.root, side='R')
 
         print('_' * 32)
         print('symtab', self.symtab)
         print('lcr', self.lcr)
 
-    def traverse(self, node, dep=0, side='?'):
-        if self.isdebug:
-            print('_' * dep, side, type(node))
+    def dump_tree(self, node, dep=0, side='?'):
+        if node == None:
+            t = str(node)
+        else:
+            t = str(type(node)).split('.')[1].split("'")[0]
+        print(' |' * dep + t, side)
 
+        if type(node) == BinNode:
+            self.dump_tree(node.lhs, dep+1, side='lhs')
+            self.dump_tree(node.rhs, dep+1, side='rhs')
+        elif type(node) == IfNode:
+            self.dump_tree(node.ncompare, dep+1, side='ncompare')
+            self.dump_tree(node.nthen, dep+1, side='nthen')
+            self.dump_tree(node.nelif, dep+1, side='nelif')
+            self.dump_tree(node.nelse, dep+1, side='nelse')
+
+    def traverse(self, node, dep=0, side='?'):
         if type(node) == ValueNode:
             print(node.value)
         elif type(node) == TextNode:
             print(node.value)
         elif type(node) == BinNode:
-            self.traverse(node.lhs, dep=dep+1, side='L')
+            self.traverse(node.lhs, dep=dep+1, side='L') # 左優先
             self.traverse(node.rhs, dep=dep+1, side='R')
         elif type(node) == IfNode:
             res = self.lcr = node.ncompare.calc()
@@ -191,7 +206,7 @@ class App:
         while self.tkr.cur():
             cur = BinNode()
             if self.tkr.cur() == '{{':
-                cur.lhs = self.block()
+                cur.lhs = self.double_block()
             else:
                 cur.lhs = self.plain()
             prev.rhs = cur
@@ -199,43 +214,6 @@ class App:
 
         return root
 
-    def plain(self):
-        nplain = TextNode()
-        nplain.value = self.tkr.get()
-        return nplain
-
-    def block(self):
-        root = BinNode()
-        prev = root
-
-        self.tkr.get() # {{
-        while self.tkr.cur() != '}}':
-            cur = BinNode()
-            cur.lhs = self.code()
-            prev.rhs = cur
-            prev = cur
-        self.tkr.get() # }}
-
-        return root
-
-    def code(self):
-        n = self.statement()
-        if not n:
-            n = self.expr()
-        return n
-
-    """
-expr ::= ass_expr | pm_expr
-ass_expr :: = variable '=' pm_expr
-pm_expr ::= md_expr, pm_op pm_expr
-pm_op ::= ('+'|'_')
-md_expr ::= paren_expr, md_op pm_expr
-md_op ::= ('*'|'/')
-paren_expr ::= mono | '(' expr ')'
-mono ::= number | variable
-number ::= [ 0-9]*
-variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
-    """
     def expr(self):
         if self.tkr.cur(1) == '=':
             return self.ass_expr()
@@ -306,6 +284,49 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
 
         return root
 
+    def plain(self):
+        nplain = TextNode()
+        nplain.value = self.tkr.get()
+        return nplain
+
+    def double_block(self):
+        root = BinNode()
+        prev = root
+
+        self.tkr.get() # {{
+        while self.tkr.cur() != '}}':
+            cur = BinNode()
+            cur.lhs = self.block()
+            prev.rhs = cur
+            prev = cur
+        self.tkr.get() # }}
+
+        return root
+
+    """
+    {{
+        if 1 { print(aho) }
+    }}
+    {
+        if 1 { print(aho) }
+    }
+    """
+    def block(self):
+        root = BinNode()
+
+        if self.tkr.cur == '{':
+            self.tkr.get() # TODO: scope
+
+        root.lhs = self.statement()
+        if not root.lhs:
+            root.lhs = self.expr()
+
+        if self.tkr.cur() in ['}', '}}']:
+            return root
+
+        root.rhs = self.block()
+        return root
+
     def statement(self):
         if self.tkr.cur() == 'if':
             return self.if_statement()
@@ -341,7 +362,7 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
 
     def for_statement_1(self):
         """
-            for { code }
+            for { block }
         """
         nfor = ForNode()
 
@@ -350,14 +371,14 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
         nfor.ncompare.value = 1 # eternal loop
         self.tkr.get() # {
 
-        nfor.nthen = self.code()
+        nfor.nthen = self.block()
         self.tkr.get() # }
 
         return nfor
 
     def for_statement_2(self):
         """
-            for init; compare; update { code }
+            for init; compare; update { block }
         """
         nfor = ForNode()
 
@@ -369,14 +390,14 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
         nfor.nupdate = self.for_update()
         self.tkr.get() # {
 
-        nfor.nthen = self.code()
+        nfor.nthen = self.block()
         self.tkr.get() # }
 
         return nfor
 
     def for_statement_3(self):
         """
-            for compare { code }
+            for compare { block }
         """
         nfor = ForNode()
 
@@ -384,7 +405,7 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
         nfor.ncompare = self.for_compare()
         self.tkr.get() # {
 
-        nfor.nthen = self.code()
+        nfor.nthen = self.block()
         self.tkr.get() # }
 
         return nfor
@@ -403,7 +424,8 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
         self.tkr.get() # if
         nif.ncompare = self.if_compare()
         self.tkr.get() # {
-        nif.nthen = self.code()
+        nif.nthen = self.block()
+
         self.tkr.get() # }
         if self.tkr.cur() == 'else':
             nif.nelse = self.if_else()
@@ -418,7 +440,7 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
     def if_else(self):
         self.tkr.get() # else
         self.tkr.get() # {
-        nelse = self.code()
+        nelse = self.block()
         self.tkr.get() # }
         return nelse
 
