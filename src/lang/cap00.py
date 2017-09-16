@@ -118,23 +118,24 @@ number ::= [ 0-9]*
 variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
 
 plain ::= !('{{'|'}}')
-double_block ::= '{{' [ block ]* '}}'
-block ::= '{', statement | expr, '}'
+double_block ::= '{{' [ code ]* '}}'
+code ::= statement | expr | block
+block ::= '{' code '}'
 
 statement ::= for-statement | if-statement | print-statement
 
 print_statement ::= 'print' '(' print_content ')'
 print_content ::= [ a_z|A_Z|0_9 ]*
 
-if_statement ::= ('if'|'elif') if_compare '{' block '}', if_else | if_elif
+if_statement ::= ('if'|'elif') if_compare '{' code '}', if_else | if_elif
 if_compare ::= 1 | 0
-if_else ::= 'else' '{' block '}'
+if_else ::= 'else' '{' code '}'
 if_elif ::= if_statement
 
 for_statement ::= for_statement_1 | for_statement_2
-for_statement_1 ::= 'for' '{' block '}'
-for_statement_2 ::= 'for' for_compare '{' block '}'
-for_statement_3 ::= 'for' for_init ';' for_compare ';' for_update '{' block '}'
+for_statement_1 ::= 'for' '{' code '}'
+for_statement_2 ::= 'for' for_compare '{' code '}'
+for_statement_3 ::= 'for' for_init ';' for_compare ';' for_update '{' code '}'
 
 """
 class App:
@@ -296,35 +297,20 @@ class App:
         self.tkr.get() # {{
         while self.tkr.cur() != '}}':
             cur = BinNode()
-            cur.lhs = self.block()
+            cur.lhs = self.code()
             prev.rhs = cur
             prev = cur
         self.tkr.get() # }}
 
         return root
 
-    """
-    {{
-        if 1 { print(aho) }
-    }}
-    {
-        if 1 { print(aho) }
-    }
-    """
-    def block(self):
+    def code(self):
         root = BinNode()
-
-        if self.tkr.cur == '{':
-            self.tkr.get() # TODO: scope
 
         root.lhs = self.statement()
         if not root.lhs:
             root.lhs = self.expr()
 
-        if self.tkr.cur() in ['}', '}}']:
-            return root
-
-        root.rhs = self.block()
         return root
 
     def statement(self):
@@ -362,7 +348,7 @@ class App:
 
     def for_statement_1(self):
         """
-            for { block }
+            for { code }
         """
         nfor = ForNode()
 
@@ -371,14 +357,14 @@ class App:
         nfor.ncompare.value = 1 # eternal loop
         self.tkr.get() # {
 
-        nfor.nthen = self.block()
+        nfor.nthen = self.code()
         self.tkr.get() # }
 
         return nfor
 
     def for_statement_2(self):
         """
-            for init; compare; update { block }
+            for init; compare; update { code }
         """
         nfor = ForNode()
 
@@ -390,14 +376,14 @@ class App:
         nfor.nupdate = self.for_update()
         self.tkr.get() # {
 
-        nfor.nthen = self.block()
+        nfor.nthen = self.code()
         self.tkr.get() # }
 
         return nfor
 
     def for_statement_3(self):
         """
-            for compare { block }
+            for compare { code }
         """
         nfor = ForNode()
 
@@ -405,7 +391,7 @@ class App:
         nfor.ncompare = self.for_compare()
         self.tkr.get() # {
 
-        nfor.nthen = self.block()
+        nfor.nthen = self.code()
         self.tkr.get() # }
 
         return nfor
@@ -424,7 +410,7 @@ class App:
         self.tkr.get() # if
         nif.ncompare = self.if_compare()
         self.tkr.get() # {
-        nif.nthen = self.block()
+        nif.nthen = self.code()
 
         self.tkr.get() # }
         if self.tkr.cur() == 'else':
@@ -440,7 +426,7 @@ class App:
     def if_else(self):
         self.tkr.get() # else
         self.tkr.get() # {
-        nelse = self.block()
+        nelse = self.code()
         self.tkr.get() # }
         return nelse
 
