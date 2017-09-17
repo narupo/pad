@@ -97,6 +97,28 @@ class AssignNode(Node):
         self.lhs = None
         self.rhs = None
 
+class NamespaceNode(Node):
+    """ parent.child
+    """
+
+    def __init__(self, name='', tok=''):
+        super().__init__(name, tok)
+        self.lhs = None # str
+        self.rhs = None # other node
+
+class FuncNode(Node):
+
+    def __init__(self, name='', tok=''):
+        super().__init__(name, tok)
+        self.identifier = None # str
+        self.args = None # BinNode
+
+class IdentifierNode(Node):
+
+    def __init__(self, name='', tok=''):
+        super().__init__(name, tok)
+        self.identifier = None
+
 class App(Node):
 
     def __init__(self):
@@ -123,7 +145,9 @@ class App(Node):
             t = str(type(node)).split('.')[1].split("'")[0]
             name = node.name
             tok = node.tok
-        print(' |' * dep + t, side, name, tok)
+        print(' |' * dep + '{type}:{side} {name} {tok}'.format(
+            type=t, side=side, name=name, tok=tok,
+        ))
 
         if type(node) == BinNode:
             self.dump_tree(node.lhs, dep+1, side='lhs')
@@ -136,6 +160,12 @@ class App(Node):
         elif type(node) == OperatorNode:
             self.dump_tree(node.lhs, dep+1, side='lhs')
             self.dump_tree(node.rhs, dep+1, side='rhs')
+        elif type(node) == NamespaceNode:
+            self.dump_tree(node.lhs, dep+1, side='lhs')
+            self.dump_tree(node.rhs, dep+1, side='rhs')
+        elif type(node) == FuncNode:
+            self.dump_tree(node.identifier, dep+1, side='identifier')
+            self.dump_tree(node.args, dep+1, side='args')
 
     def traverse(self, node):
         if type(node) == TextNode:
@@ -213,8 +243,10 @@ class App(Node):
             return self.if_statement()
         elif self.cur() == '{':
             return self.block_statement()
+        elif self.cur() in ['}', '}}']:
+            return None
 
-        return None
+        return self.expr()
 
     def block_statement(self):
         root = BinNode('block_statement', self.cur())
@@ -326,19 +358,71 @@ class App(Node):
             root = self.expr()
             self.get() # ')'
         else:
-            root = self.mono()
+            root = self.operand()
 
         return root
 
-    def mono(self):
+    def operand(self):
         root = None
 
         n1 = self.cur()
         if n1.isdigit():
-            root = OperandNode('mono', self.cur())
-            root.value = self.get()
+            root = self.number()
+        else:
+            root = self.ababa()
+
+        return root
+
+    def number(self):
+        root = OperandNode('operand', self.cur())
+        root.value = self.get()
+        return root
+
+    def ababa(self):
+        root = None
+
+        if self.cur(1) == '.':
+            root = self.namespace()
+        elif self.cur(1) == '(':
+            root = self.func()
         else:
             root = self.variable()
+
+        return root
+
+    def identifier(self):
+        c = self.cur()[0]
+        if not c.isalpha() and c != '_':
+            raise SyntaxError(self.cur())
+
+        root = IdentifierNode('identifier', self.cur())
+        root.identifier = self.get()
+        return root
+
+    def namespace(self):
+        root = NamespaceNode('namespace', self.cur())
+        root.lhs = self.identifier()
+        root.rhs = self.ababa()
+        return root
+
+    def func(self):
+        root = FuncNode('func', self.cur())
+        root.identifier = self.identifier()
+
+        if self.get() != '(':
+            raise SyntaxError()
+
+        cur = root.args = BinNode()
+
+        while self.cur() != ')':
+            cur.lhs = self.operand()
+            if self.cur() == ',':
+                self.get()
+            cur.rhs = BinNode()
+            cur = cur.rhs
+
+        if self.get() != ')':
+            raise SyntaxError()
 
         return root
 

@@ -88,7 +88,7 @@ class CapTokenizer(Tokenizer):
                 elif c == '+':
                     self.push()
                     m = 100
-                elif c in ['=', ':', ';', '<', '>', '(', ')']:
+                elif c in ['=', ':', ';', '<', '>', '(', ')', '.', ',']:
                     self.push()
                     self.buf = c
                     self.push()
