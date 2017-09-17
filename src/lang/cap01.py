@@ -243,7 +243,7 @@ class App(Node):
             return self.if_statement()
         elif self.cur() == '{':
             return self.block_statement()
-        elif self.cur() in ['}', '}}']:
+        elif self.cur() in ['}', '}}']: # 終端記号
             return None
 
         return self.expr()
