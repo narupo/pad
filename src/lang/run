@@ -1,0 +1,2 @@
+#!/bin/bash
+./test/run && cat cap01.src | python3 cap01.py
