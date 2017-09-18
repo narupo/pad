@@ -32,18 +32,17 @@
 # Debug files
 *.dSYM/
 
-src/test/*
 doc/
 
-cap
-cap-alias
-cap-cat
-cap-cd
-cap-home
-cap-ls
-cap-pwd
-cap-run
-cap-hub
-tests
+src/cap
+src/cap-alias
+src/cap-cat
+src/cap-cd
+src/cap-home
+src/cap-ls
+src/cap-pwd
+src/cap-run
+src/cap-hub
+src/tests
 
 *.pyc
