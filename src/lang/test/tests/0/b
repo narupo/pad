@@ -1,0 +1,6 @@
+R:BinNode program {{}}
+ |lhs:TextNode plain {{}}
+ |rhs:None  
+________________________________
+symtab {}
+lcr None
