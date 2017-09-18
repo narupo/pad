@@ -1,0 +1,22 @@
+#!/bin/bash
+
+PY3=/usr/bin/python3
+DIFF=/usr/bin/diff
+CAT=/bin/cat
+
+pushd `dirname $0` > /dev/null
+PATH=`pwd`
+popd > /dev/null
+
+CAP=$PATH/../cap01.py
+
+for DIR in $PATH/tests/*; do
+    $CAT $DIR/case | $PY3 $CAP > $DIR/b
+
+    $DIFF $DIR/a $DIR/b
+    if [ $? -ne 0 ]; then
+        echo "出力結果が違います。"
+        echo "テストケース: $DIR/case"
+        exit 1
+    fi
+done

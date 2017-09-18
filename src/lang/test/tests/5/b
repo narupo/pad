@@ -1,0 +1,18 @@
+R:BinNode dblock {{
+ |lhs:BinNode code if
+ | |lhs:IfNode if_statement if
+ | | |ncompare:OperandNode operand 1
+ | | |nthen:BinNode code if
+ | | | |lhs:IfNode if_statement if
+ | | | | |ncompare:OperandNode operand 1
+ | | | | |nthen:None  
+ | | | | |nelif:None  
+ | | | | |nelse:None  
+ | | | |rhs:None  
+ | | |nelif:None  
+ | | |nelse:None  
+ | |rhs:None  
+ |rhs:None  
+________________________________
+symtab {}
+lcr 1

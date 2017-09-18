@@ -1,0 +1,8 @@
+R:BinNode dblock {{
+ |lhs:None  
+ |rhs:BinNode dblock {{
+ | |lhs:None  
+ | |rhs:None  
+________________________________
+symtab {}
+lcr None
