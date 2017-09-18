@@ -34,7 +34,6 @@
 
 src/test/*
 doc/
-test/
 
 cap
 cap-alias
