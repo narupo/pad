@@ -145,7 +145,7 @@ class App(Node):
             t = str(type(node)).split('.')[1].split("'")[0]
             name = node.name
             tok = node.tok
-        print(' |' * dep + '{type}:{side} {name} {tok}'.format(
+        print(' |' * dep + '{side}:{type} {name} {tok}'.format(
             type=t, side=side, name=name, tok=tok,
         ))
 
@@ -402,6 +402,8 @@ class App(Node):
     def namespace(self):
         root = NamespaceNode('namespace', self.cur())
         root.lhs = self.identifier()
+        if self.get() != '.':
+            raise SyntaxError(self.cur())
         root.rhs = self.ababa()
         return root
 
