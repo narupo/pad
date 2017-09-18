@@ -17,6 +17,8 @@ for DIR in $PATH/tests/*; do
     if [ $? -ne 0 ]; then
         echo "出力結果が違います。"
         echo "テストケース: $DIR/case"
+        echo "期待する結果: $DIR/a"
+        echo "出力された結果: $DIR/b"
         exit 1
     fi
 done
