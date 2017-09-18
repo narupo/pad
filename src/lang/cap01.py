@@ -169,7 +169,7 @@ class App(Node):
 
     def traverse(self, node):
         if type(node) == TextNode:
-            print(node.value)
+            pass
         elif type(node) == BinNode:
             self.traverse(node.lhs) # 左優先
             self.traverse(node.rhs)
