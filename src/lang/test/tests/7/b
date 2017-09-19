@@ -25,6 +25,3 @@ R:BinNode dblock {{
  | | |nelse:None  
  | |rhs:None  
  |rhs:None  
-________________________________
-symtab {}
-lcr 1

@@ -3,6 +3,3 @@ R:BinNode dblock {{
  |rhs:BinNode dblock {{
  | |lhs:None  
  | |rhs:None  
-________________________________
-symtab {}
-lcr None
