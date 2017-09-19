@@ -16,15 +16,13 @@ variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
 
 plain ::= !('{{'|'}}')
 dblock ::= '{{' code '}}'
-code ::= ( statement | expr | block ), code
-block ::= '{' code '}'
+code ::= statement, code
 
-statement ::= if-statement | print-statement
+statement ::= if-statement 
 
-print_statement ::= 'print' '(' print_content ')'
-print_content ::= [ a_z|A_Z|0_9 ]*
-
-if_statement ::= ('if'|'elif') if_compare '{' code '}', if_else | if_elif
-if_compare ::= 1 | 0
+if_statement ::= ('if'|'elif') if_compare ('{',':') code ('}','end'), if_else | if_elif
+if_compare ::= expr
 if_else ::= 'else' '{' code '}'
 if_elif ::= if_statement
+
+outer ::= '}}'  '{{'

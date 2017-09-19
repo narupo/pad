@@ -1,10 +1,10 @@
 {{
-    if 1 {
-        if 1 {
-        }
-        if 1 {
-        }
-        if 1 {
-        }
-    }
+    if 1:
+        if 1:
+        end
+        if 1:
+        end
+        if 1:
+        end
+    end
 }}
