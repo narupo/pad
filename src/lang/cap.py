@@ -134,6 +134,7 @@ class App(Node):
 
     def run(self):
         self.tkr.parse(sys.stdin)
+        print(self.tkr.toks)
         self.root = self.program()
         self.traverse(node=self.root, namesp='')
         self.dump_tree(node=self.root, side='R')
@@ -258,25 +259,10 @@ class App(Node):
     def statement(self):
         if self.cur() == 'if':
             return self.if_statement()
-        elif self.cur() == '{':
-            return self.block_statement()
-        elif self.cur() in ['}', '}}']: # 終端記号
+        elif self.cur() in ['end', '}}']: # 終端
             return None
 
         return self.expr()
-
-    def block_statement(self):
-        root = BinNode('block_statement', self.cur())
-
-        if self.get() != '{':
-            raise SyntaxError()
-
-        root.lhs = self.code()
-
-        if self.get() != '}':
-            raise SyntaxError()
-
-        return root
 
     def if_statement(self):
         nif = IfNode('if_statement', self.cur())
@@ -286,12 +272,12 @@ class App(Node):
 
         nif.ncompare = self.if_compare()
 
-        if self.get() != '{':
+        if self.get() != ':':
             raise SyntaxError()
 
         nif.nthen = self.code()
 
-        if self.get() != '}':
+        if self.get() != 'end':
             raise SyntaxError()
 
         if self.cur() == 'else':
