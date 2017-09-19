@@ -18,7 +18,7 @@ class TextNode(Node):
 
     def __init__(self, name='', tok=''):
         super().__init__(name, tok)
-        self.value = None
+        self.text = None
 
 class BinNode(Node):
     """左優先探索
@@ -33,14 +33,14 @@ class OperandNode(Node):
 
     def __init__(self, name='', tok=''):
         super().__init__(name, tok)
-        self.value = None
+        self.operand = None
 
-    def calc(self):
-        return int(self.value)
+    def value(self):
+        return int(self.operand)
 
 class OperatorNode(Node):
-    """オペレーターノードは必要があれば calc が呼び出される。
-    calc が呼ばれるたびに参照している変数を更新する。
+    """オペレーターノードは必要があれば value が呼び出される。
+    value が呼ばれるたびに参照している変数を更新する。
     その変数はシンボル・テーブルの参照になるので、
     オペレーターノードはシンボル・テーブルを参照できる必要がある。
     """
@@ -56,24 +56,24 @@ class OperatorNode(Node):
 
     def __calc(self, n):
         if type(n) == OperatorNode:
-            v = self.__calc(n.lhs)
+            v = self.__value(n.lhs)
             if n.operator == '+':
-                v += self.__calc(n.rhs)
+                v += self.__value(n.rhs)
             elif n.operator == '-':
-                v -= self.__calc(n.rhs)
+                v -= self.__value(n.rhs)
             elif n.operator == '*':
-                v *= self.__calc(n.rhs)
+                v *= self.__value(n.rhs)
             elif n.operator == '/':
-                v /= self.__calc(n.rhs)
+                v /= self.__value(n.rhs)
             return v
         elif type(n) == OperandNode:
-            return n.calc()
+            return n.value()
         elif type(n) == VariableNode:
             raise Exception('TODO')
         raise Exception('unsupported node')
 
-    def calc(self):
-        return self.__calc(self)
+    def value(self):
+        return self.__value(self)
 
 class IfNode(Node):
 
@@ -89,6 +89,9 @@ class VariableNode(Node):
     def __init__(self, name='', tok=''):
         super().__init__(name, tok)
         self.identifier = None
+
+    def value(self):
+        return self.identifier
 
 class AssignNode(Node):
 
@@ -106,7 +109,7 @@ class NamespaceNode(Node):
         self.lhs = None # str
         self.rhs = None # other node
 
-class FuncNode(Node):
+class CallerNode(Node):
 
     def __init__(self, name='', tok=''):
         super().__init__(name, tok)
@@ -165,7 +168,7 @@ class App(Node):
         elif type(node) == NamespaceNode:
             self.dump_tree(node.lhs, dep+1, side='lhs')
             self.dump_tree(node.rhs, dep+1, side='rhs')
-        elif type(node) == FuncNode:
+        elif type(node) == CallerNode:
             self.dump_tree(node.identifier, dep+1, side='identifier')
             self.dump_tree(node.args, dep+1, side='args')
 
@@ -176,7 +179,7 @@ class App(Node):
             self.traverse(node.lhs, namesp) # 左優先
             self.traverse(node.rhs, namesp)
         elif type(node) == IfNode:
-            res = self.lcr = node.ncompare.calc()
+            res = self.lcr = node.ncompare.value()
             if res:
                 self.traverse(node.nthen, namesp)
             elif node.nelif:
@@ -184,9 +187,21 @@ class App(Node):
             elif node.nelse:
                 self.traverse(node.nelse, namesp)
         elif type(node) == OperatorNode:
-            self.lcr = node.calc()
+            self.lcr = node.value()
         elif type(node) == AssignNode:
-            self.lcr = self.symtab[node.lhs.identifier] = node.rhs.calc()
+            self.lcr = self.symtab[node.lhs.identifier] = node.rhs.value()
+        elif type(node) == CallerNode:
+            funcname = node.identifier.identifier
+            args = []
+            self.grep_caller_args(node.args, args)
+            if funcname == 'print':
+                print(*args)
+
+    def grep_caller_args(self, binnode, args):
+        if binnode.rhs == None:
+            return
+        args.append(binnode.lhs.value())
+        self.grep_caller_args(binnode.rhs, args)
 
     def cur(self, ofs=0):
         return self.tkr.cur(ofs)
@@ -210,7 +225,7 @@ class App(Node):
 
     def plain(self):
         root = TextNode('plain', self.cur())
-        root.value = self.get()
+        root.text = self.get()
         return root
 
     def dblock(self):
@@ -377,14 +392,14 @@ class App(Node):
 
     def number(self):
         root = OperandNode('operand', self.cur())
-        root.value = self.get()
+        root.operand = self.get()
         return root
 
     def ababa(self):
         root = None
 
         if self.cur(1) == '(':
-            root = self.func()
+            root = self.caller()
         else:
             root = self.variable()
 
@@ -407,8 +422,8 @@ class App(Node):
         root.rhs = self.ababa()
         return root
 
-    def func(self):
-        root = FuncNode('func', self.cur())
+    def caller(self):
+        root = CallerNode('caller', self.cur())
         root.identifier = self.identifier()
 
         if self.get() != '(':

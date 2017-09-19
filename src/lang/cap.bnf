@@ -8,9 +8,9 @@ md_expr ::= paren_expr, md_op pm_expr
 md_op ::= ('*'|'/')
 paren_expr ::= operand | '(' expr ')'
 operand ::= number | ababa
-ababa ::= variable | func 
-func ::= func_name '(' func_args ')'
-func_args ::= [ operand, ',' ]*
+ababa ::= variable | caller 
+caller ::= caller_name '(' caller_args ')'
+caller_args ::= [ operand, ',' ]*
 number ::= [ 0-9 ]*
 variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
 
