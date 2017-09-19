@@ -8,7 +8,7 @@ pushd `dirname $0` > /dev/null
 PATH=`pwd`
 popd > /dev/null
 
-CAP=$PATH/../cap01.py
+CAP=$PATH/../cap.py
 
 for DIR in $PATH/tests/*; do
     $CAT $DIR/case | $PY3 $CAP > $DIR/b
