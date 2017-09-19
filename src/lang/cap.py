@@ -54,7 +54,7 @@ class OperatorNode(Node):
     def __str__(self):
         return str(self.operator)
 
-    def __calc(self, n):
+    def __value(self, n):
         if type(n) == OperatorNode:
             v = self.__value(n.lhs)
             if n.operator == '+':
