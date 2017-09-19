@@ -126,12 +126,14 @@ class App(Node):
         self.root = None
         self.symtab = {}
         self.lcr = None
+        self.namesp = {}
+        self.name = 'global'
 
     def run(self):
         self.tkr.parse(sys.stdin)
         self.root = self.program()
-        self.traverse(self.root)
-        self.dump_tree(self.root, side='R')
+        self.traverse(node=self.root, namesp='')
+        self.dump_tree(node=self.root, side='R')
         print('_' * 32)
         print('symtab', self.symtab)
         print('lcr', self.lcr)
@@ -147,7 +149,7 @@ class App(Node):
             tok = node.tok
         print(' |' * dep + '{side}:{type} {name} {tok}'.format(
             type=t, side=side, name=name, tok=tok,
-        ))
+        ), file=sys.stderr)
 
         if type(node) == BinNode:
             self.dump_tree(node.lhs, dep+1, side='lhs')
@@ -167,20 +169,20 @@ class App(Node):
             self.dump_tree(node.identifier, dep+1, side='identifier')
             self.dump_tree(node.args, dep+1, side='args')
 
-    def traverse(self, node):
+    def traverse(self, node, namesp):
         if type(node) == TextNode:
             pass
         elif type(node) == BinNode:
-            self.traverse(node.lhs) # 左優先
-            self.traverse(node.rhs)
+            self.traverse(node.lhs, namesp) # 左優先
+            self.traverse(node.rhs, namesp)
         elif type(node) == IfNode:
             res = self.lcr = node.ncompare.calc()
             if res:
-                self.traverse(node.nthen)
+                self.traverse(node.nthen, namesp)
             elif node.nelif:
-                self.traverse(node.nelif)
+                self.traverse(node.nelif, namesp)
             elif node.nelse:
-                self.traverse(node.nelse)
+                self.traverse(node.nelse, namesp)
         elif type(node) == OperatorNode:
             self.lcr = node.calc()
         elif type(node) == AssignNode:
@@ -381,9 +383,7 @@ class App(Node):
     def ababa(self):
         root = None
 
-        if self.cur(1) == '.':
-            root = self.namespace()
-        elif self.cur(1) == '(':
+        if self.cur(1) == '(':
             root = self.func()
         else:
             root = self.variable()

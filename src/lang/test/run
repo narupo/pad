@@ -11,7 +11,8 @@ popd > /dev/null
 CAP=$PATH/../cap.py
 
 for DIR in $PATH/tests/*; do
-    $CAT $DIR/case | $PY3 $CAP > $DIR/b
+    # 標準エラー出力をdiff用に保存
+    $CAT $DIR/case | $PY3 $CAP 2> $DIR/b 1> /dev/null
 
     $DIFF $DIR/a $DIR/b
     if [ $? -ne 0 ]; then

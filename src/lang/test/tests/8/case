@@ -1,0 +1,4 @@
+{{
+    func1(arg1)
+    func2(arg1, arg2)
+}}

@@ -1,2 +1,2 @@
 #!/bin/bash
-./test/run && cat cap.src | python3 cap.py
+./test/run && cat cap.src | python3 cap.py 2>&1 | less

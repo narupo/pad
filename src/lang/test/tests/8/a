@@ -1,0 +1,21 @@
+R:BinNode dblock {{
+ |lhs:BinNode code func1
+ | |lhs:FuncNode func func1
+ | | |identifier:IdentifierNode identifier func1
+ | | |args:BinNode  
+ | | | |lhs:VariableNode variable arg1
+ | | | |rhs:BinNode  
+ | | | | |lhs:None  
+ | | | | |rhs:None  
+ | |rhs:BinNode code func2
+ | | |lhs:FuncNode func func2
+ | | | |identifier:IdentifierNode identifier func2
+ | | | |args:BinNode  
+ | | | | |lhs:VariableNode variable arg1
+ | | | | |rhs:BinNode  
+ | | | | | |lhs:VariableNode variable arg2
+ | | | | | |rhs:BinNode  
+ | | | | | | |lhs:None  
+ | | | | | | |rhs:None  
+ | | |rhs:None  
+ |rhs:None  
