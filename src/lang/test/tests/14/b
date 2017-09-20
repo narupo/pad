@@ -1,0 +1,27 @@
+R:BinNode statement }}
+ |lhs:BlockTextNode block_statement {{
+ |rhs:BinNode statement if
+ | |lhs:IfNode if_statement if
+ | | |ncompare:OperandNode operand 1
+ | | |nthen:BinNode statement 1
+ | | | |lhs:OperatorNode pm_expr +
+ | | | | |lhs:OperandNode operand 1
+ | | | | |rhs:OperandNode operand 2
+ | | | |rhs:None  
+ | | |nelif:IfNode if_statement elif
+ | | | |ncompare:OperandNode operand 1
+ | | | |nthen:BinNode statement 1
+ | | | | |lhs:OperatorNode pm_expr +
+ | | | | | |lhs:OperandNode operand 1
+ | | | | | |rhs:OperandNode operand 2
+ | | | | |rhs:None  
+ | | | |nelif:None  
+ | | | |nelse:BinNode statement 1
+ | | | | |lhs:OperatorNode pm_expr +
+ | | | | | |lhs:OperandNode operand 1
+ | | | | | |rhs:OperandNode operand 2
+ | | | | |rhs:None  
+ | | |nelse:None  
+ | |rhs:BinNode statement }}
+ | | |lhs:BlockTextNode block_statement {{
+ | | |rhs:None  

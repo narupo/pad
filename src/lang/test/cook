@@ -1,0 +1,3 @@
+#!/bin/bash
+cat $1/case | python3 ../../cap.py
+
