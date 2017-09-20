@@ -1,3 +1,13 @@
-{{ if 1 + 2: }}
-
+123
+{{ if 0: }}
+true!
+{{ else: }}
+false!
 {{ end }}
+323
+
+{{
+    if 1:
+        print(aho-manuke)
+    end
+}}

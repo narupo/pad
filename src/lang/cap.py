@@ -20,6 +20,14 @@ class TextNode(Node):
         super().__init__(name, tok)
         self.text = None
 
+class BlockTextNode(Node):
+    """ '}}' text '{{'
+    """
+
+    def __init__(self, name='', tok=''):
+        super().__init__(name, tok)
+        self.text = None
+
 class BinNode(Node):
     """左優先探索
     """
@@ -93,13 +101,6 @@ class VariableNode(Node):
     def value(self):
         return self.identifier
 
-class AssignNode(Node):
-
-    def __init__(self, name='', tok=''):
-        super().__init__(name, tok)
-        self.lhs = None
-        self.rhs = None
-
 class NamespaceNode(Node):
     """ parent.child
     """
@@ -129,14 +130,14 @@ class App(Node):
         self.root = None
         self.symtab = {}
         self.lcr = None
-        self.namesp = {}
-        self.name = 'global'
 
     def run(self):
         self.tkr.parse(sys.stdin)
+        self.tkr.insert(0, '}}')
+        self.tkr.append('{{')
         print(self.tkr.toks)
         self.root = self.program()
-        self.traverse(node=self.root, namesp='')
+        self.traverse(node=self.root)
         self.dump_tree(node=self.root, side='R')
         print('_' * 32)
         print('symtab', self.symtab)
@@ -173,24 +174,26 @@ class App(Node):
             self.dump_tree(node.identifier, dep+1, side='identifier')
             self.dump_tree(node.args, dep+1, side='args')
 
-    def traverse(self, node, namesp):
-        if type(node) == TextNode:
-            pass
+    def traverse(self, node):
+        if type(node) == BlockTextNode:
+            print(node.text)
         elif type(node) == BinNode:
-            self.traverse(node.lhs, namesp) # 左優先
-            self.traverse(node.rhs, namesp)
+            self.traverse(node.lhs) # 左優先
+            self.traverse(node.rhs)
         elif type(node) == IfNode:
             res = self.lcr = node.ncompare.value()
             if res:
-                self.traverse(node.nthen, namesp)
-            elif node.nelif:
-                self.traverse(node.nelif, namesp)
-            elif node.nelse:
-                self.traverse(node.nelse, namesp)
+                self.traverse(node.nthen)
+            else:
+                if node.nelif:
+                    self.traverse(node.nelif)
+                elif node.nelse:
+                    self.traverse(node.nelse)
         elif type(node) == OperatorNode:
-            self.lcr = node.value()
-        elif type(node) == AssignNode:
-            self.lcr = self.symtab[node.lhs.identifier] = node.rhs.value()
+            if node.operator == '=':
+                self.lcr = self.symtab[node.lhs.identifier] = node.rhs.value()
+            else:
+                self.lcr = node.value()
         elif type(node) == CallerNode:
             funcname = node.identifier.identifier
             args = []
@@ -212,75 +215,59 @@ class App(Node):
 
     def program(self):
         root = None
-
-        if self.cur() == '{{':
-            root = self.dblock()
-        else:
-            root = BinNode('program', self.cur())
-            root.lhs = self.plain()
-
-        if self.cur():
-            root.rhs = self.program()
-
-        return root
-
-    def plain(self):
-        root = TextNode('plain', self.cur())
-        root.text = self.get()
-        return root
-
-    def dblock(self):
-        root = BinNode('dblock', self.cur())
-
-        if self.cur() != '{{':
-            raise SyntaxError(self.cur())
-        self.get()
-
-        root.lhs = self.code()
-
-        if self.cur() != '}}':
-            raise SyntaxError(self.cur())
-        self.get()
-
-        return root
-
-    def code(self):
-        root = BinNode('code', self.cur())
-
-        root.lhs = self.statement()
-        if root.lhs == None:
-            return None
-
-        if self.cur() != '}}':
-            root.rhs = self.code()
-
+        root = self.statement()
         return root
 
     def statement(self):
-        if self.cur() == 'if':
-            return self.if_statement()
-        elif self.cur() in ['end', '}}']: # 終端
+        if self.cur() in [None, 'elif', 'else', 'end']:
             return None
 
-        return self.expr()
+        root = BinNode('statement', self.cur())
+
+        if self.cur() == '}}':
+            root.lhs = self.block_statement()
+        elif self.cur() == 'if':
+            root.lhs = self.if_statement()
+        else:
+            root.lhs = self.expr()
+
+        root.rhs = self.statement()
+        return root
+
+    def block_statement(self):
+        if self.cur() == None:
+            return None
+
+        if self.get() != '}}':
+            raise SyntaxError(self.cur(-1))
+
+        root = BlockTextNode('block_statement', self.cur())
+        if self.cur() != '{{':
+            root.text = self.get()
+        else:
+            root.text = ''
+
+        if self.get() != '{{':
+            raise SyntaxError(self.cur(-1))        
+
+        return root
 
     def if_statement(self):
         nif = IfNode('if_statement', self.cur())
 
-        if self.get() != 'if':
-            raise SyntaxError()
+        if self.get() not in ['if', 'elif']:
+            raise SyntaxError(self.cur(-1))
 
         nif.ncompare = self.if_compare()
 
         if self.get() != ':':
-            raise SyntaxError()
+            raise SyntaxError(self.cur(-1))
 
-        nif.nthen = self.code()
+        nif.nthen = self.statement()
 
-        if self.get() != 'end':
-            raise SyntaxError()
-
-        if self.cur() == 'else':
+        if self.cur() == 'end':
+            self.get()
+        elif self.cur() == 'else':
             nif.nelse = self.if_else()
         elif self.cur() == 'elif':
             nif.nelif = self.if_statement()
@@ -297,12 +284,12 @@ class App(Node):
         if self.get() != 'else':
             raise SyntaxError()
 
-        if self.get() != '{':
+        if self.get() != ':':
             raise SyntaxError()
 
-        nelse = self.code()
-        
-        if self.get() != '}':
+        nelse = self.statement()
+
+        if self.get() != 'end':
             raise SyntaxError()
         
         return nelse
@@ -319,9 +306,9 @@ class App(Node):
         return root
 
     def ass_expr(self):
-        root = AssignNode('ass_expr', self.cur())
+        root = OperatorNode('ass_expr', self.cur(1))
         root.lhs = self.variable()
-        self.get() # =
+        root.operator = self.get() # =
         root.rhs = self.expr()
         return root
 
@@ -398,14 +385,6 @@ class App(Node):
 
         root = IdentifierNode('identifier', self.cur())
         root.identifier = self.get()
-        return root
-
-    def namespace(self):
-        root = NamespaceNode('namespace', self.cur())
-        root.lhs = self.identifier()
-        if self.get() != '.':
-            raise SyntaxError(self.cur())
-        root.rhs = self.ababa()
         return root
 
     def caller(self):

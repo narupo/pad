@@ -1,15 +1,3 @@
-R:BinNode dblock {{
- |lhs:BinNode code if
- | |lhs:IfNode if_statement if
- | | |ncompare:OperandNode operand 1
- | | |nthen:None  
- | | |nelif:None  
- | | |nelse:None  
- | |rhs:BinNode code if
- | | |lhs:IfNode if_statement if
- | | | |ncompare:OperandNode operand 1
- | | | |nthen:None  
- | | | |nelif:None  
- | | | |nelse:None  
- | | |rhs:None  
+R:BinNode statement }}
+ |lhs:BlockTextNode block_statement 123
  |rhs:None  

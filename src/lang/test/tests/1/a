@@ -1,5 +1,5 @@
-R:BinNode dblock {{
- |lhs:None  
- |rhs:BinNode dblock {{
- | |lhs:None  
+R:BinNode statement }}
+ |lhs:BlockTextNode block_statement {{
+ |rhs:BinNode statement }}
+ | |lhs:BlockTextNode block_statement {{
  | |rhs:None  

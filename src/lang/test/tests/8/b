@@ -1,21 +1,11 @@
-R:BinNode dblock {{
- |lhs:BinNode code func1
- | |lhs:CallerNode caller func1
- | | |identifier:IdentifierNode identifier func1
- | | |args:BinNode  
- | | | |lhs:VariableNode variable arg1
- | | | |rhs:BinNode  
- | | | | |lhs:None  
- | | | | |rhs:None  
- | |rhs:BinNode code func2
- | | |lhs:CallerNode caller func2
- | | | |identifier:IdentifierNode identifier func2
- | | | |args:BinNode  
- | | | | |lhs:VariableNode variable arg1
- | | | | |rhs:BinNode  
- | | | | | |lhs:VariableNode variable arg2
- | | | | | |rhs:BinNode  
- | | | | | | |lhs:None  
- | | | | | | |rhs:None  
+R:BinNode statement }}
+ |lhs:BlockTextNode block_statement {{
+ |rhs:BinNode statement var
+ | |lhs:OperatorNode ass_expr =
+ | | |lhs:VariableNode variable var
+ | | |rhs:OperatorNode pm_expr +
+ | | | |lhs:OperandNode operand 1
+ | | | |rhs:OperandNode operand 2
+ | |rhs:BinNode statement }}
+ | | |lhs:BlockTextNode block_statement {{
  | | |rhs:None  
- |rhs:None  

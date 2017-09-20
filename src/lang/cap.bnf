@@ -1,3 +1,27 @@
+    bin
+    / \
+  123 bin
+      /      \
+     if      bin
+    /  \     /  \
+  comp then 323 nil
+   |    |
+   1    bin
+       / 
+     plain 
+      |
+     223
+
+123
+{{ if 1: }}
+223
+{{ end }}
+323
+
+program ::= statement, program
+
+----
+
 program ::= plain | dblock, program
 
 expr ::= ass_expr | pm_expr
@@ -14,15 +38,11 @@ caller_args ::= [ operand, ',' ]*
 number ::= [ 0-9 ]*
 variable ::= [ a-z | A-Z | _ ]* [ 0-9 ]*
 
-plain ::= !('{{'|'}}')
-dblock ::= '{{' code '}}'
-code ::= statement, code
+statement ::= block_statement | if_statement | for_statement | expr
 
-statement ::= if-statement 
+block_statement ::= '}}' plain_text '{{'
 
-if_statement ::= ('if'|'elif') if_compare ('{',':') code ('}','end'), if_else | if_elif
+if_statement ::= ('if'|'elif') if_compare ':' code if_else | if_elif
 if_compare ::= expr
 if_else ::= 'else' '{' code '}'
 if_elif ::= if_statement
-
-outer ::= '}}'  '{{'
