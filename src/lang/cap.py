@@ -241,14 +241,25 @@ class App(Node):
         if self.get() != '}}':
             raise SyntaxError(self.cur(-1))
 
-        root = BlockTextNode('block_statement', self.cur())
-        if self.cur() != '{{':
-            root.text = self.get()
-        else:
-            root.text = ''
+        root = self.block_texts()
 
         if self.get() != '{{':
             raise SyntaxError(self.cur(-1))        
+
+        return root
+
+    def block_texts(self):
+        if self.cur() in [None, '{{']:
+            return None
+
+        root = BinNode('block_texts', self.cur())
+        root.lhs = BlockTextNode('block_texts', self.cur())
+
+        if self.cur() != '{{':
+            root.lhs.text = self.get()
+            root.rhs = self.block_texts()
+        else:
+            root.lhs.text = ''
 
         return root
 

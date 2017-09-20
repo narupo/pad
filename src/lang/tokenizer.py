@@ -33,6 +33,11 @@ class Stream:
 
 class Tokenizer():
 
+    def __init__(self):
+        self.toks = []
+        self.buf = ''
+        self.pos = 0
+
     def parse(self, fin):
         raise Exception()
 
@@ -48,11 +53,16 @@ class Tokenizer():
         self.pos += 1
         return t
 
+    def append(self, tok):
+        self.toks.append(tok)
+
+    def insert(self, ofs, tok):
+        self.toks.insert(ofs, tok)
+
 class SpaceTokenizer(Tokenizer):
 
     def __init__(self):
-        self.toks = []
-        self.pos = 0
+        super().__init__()
 
     def parse(self, fin):
         s = fin.read()
@@ -62,12 +72,10 @@ class SpaceTokenizer(Tokenizer):
 class CapTokenizer(Tokenizer):
 
     def __init__(self):
+        super().__init__()
         self.stream = None
-        self.toks = []
-        self.pos = 0
-        self.buf = ''
 
-    def push(self):
+    def _push_buf(self):
         if len(self.buf):
             self.toks.append(str(self.buf))
             self.buf = ''
@@ -84,26 +92,28 @@ class CapTokenizer(Tokenizer):
 
             if m == 0: # first
                 if c.isspace():
-                    self.push()
+                    self._push_buf()
                 elif c == '+':
-                    self.push()
+                    self._push_buf()
                     m = 100
                 elif c in ['=', ':', ';', '<', '>', '(', ')', '.', ',']:
-                    self.push()
+                    self._push_buf()
                     self.buf = c
-                    self.push()
+                    self._push_buf()
                 else:
                     self.buf += c
             elif m == 100: # +
                 if c == '+':
                     self.buf = '++'
-                    self.push()
+                    self._push_buf()
                     m = 0
                 else:
                     self.stream.prev()
                     self.buf = '+'
-                    self.push()
+                    self._push_buf()
                     m = 0
 
-        self.push()
+        self._push_buf()
 
+    def append(self, tok):
+        self.toks.append(tok)
