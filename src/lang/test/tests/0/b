@@ -1,3 +1,3 @@
 R:BinNode statement }}
- |lhs:BlockTextNode block_statement {{
+ |lhs:None  
  |rhs:None  
