@@ -73,6 +73,14 @@ class OperatorNode(Node):
                 v *= self.__value(n.rhs)
             elif n.operator == '/':
                 v /= self.__value(n.rhs)
+            elif n.operator == '<':
+                v = v < self.__value(n.rhs)
+            elif n.operator == '<=':
+                v = v <= self.__value(n.rhs)
+            elif n.operator == '>':
+                v = v > self.__value(n.rhs)
+            elif n.operator == '=>':
+                v = v >= self.__value(n.rhs)                
             return v
         elif type(n) == OperandNode:
             return n.value()
@@ -300,7 +308,7 @@ class App(Node):
         if self.cur(1) == '=':
             return self.ass_expr()
         else:
-            return self.pm_expr()
+            return self.cmp_expr()
 
     def variable(self):
         root = VariableNode('variable', self.cur())
@@ -308,10 +316,31 @@ class App(Node):
         return root
 
     def ass_expr(self):
-        root = OperatorNode('ass_expr', self.cur(1))
-        root.lhs = self.variable()
-        root.operator = self.get() # =
-        root.rhs = self.expr()
+        root = None
+
+        n1 = self.cmp_expr()
+        if self.cur() in ['=']:
+            root = OperatorNode('ass_expr', self.cur())
+            root.lhs = n1
+            root.operator = self.get()
+            root.rhs = self.ass_expr()
+        else:
+            root = n1
+
+        return root
+
+    def cmp_expr(self):
+        root = None
+
+        n1 = self.pm_expr()
+        if self.cur() in ['<', '<=', '=>', '>']:
+            root = OperatorNode('cmp_expr', self.cur())
+            root.lhs = n1
+            root.operator = self.get()
+            root.rhs = self.cmp_expr()
+        else:
+            root = n1
+
         return root
 
     def pm_expr(self):

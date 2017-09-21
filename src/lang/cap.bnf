@@ -1,31 +1,10 @@
-    bin
-    / \
-  123 bin
-      /      \
-     if      bin
-    /  \     /  \
-  comp then 323 nil
-   |    |
-   1    bin
-       / 
-     plain 
-      |
-     223
-
-123
-{{ if 1: }}
-223
-{{ end }}
-323
-
-program ::= statement, program
-
-----
-
 program ::= plain | dblock, program
 
 expr ::= ass_expr | pm_expr
-ass_expr :: = variable '=' pm_expr
+ass_expr :: = cmp_expr, ass_op ass_expr
+ass_op ::= '='
+cmp_expr ::= pm_expr, cmp_op cmp_expr
+cmp_op ::= ('<'|'<='|'=>'|'>')
 pm_expr ::= md_expr, pm_op pm_expr
 pm_op ::= ('+'|'_')
 md_expr ::= paren_expr, md_op pm_expr
