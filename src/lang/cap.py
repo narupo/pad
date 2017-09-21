@@ -310,11 +310,6 @@ class App(Node):
         else:
             return self.cmp_expr()
 
-    def variable(self):
-        root = VariableNode('variable', self.cur())
-        root.identifier = self.get()
-        return root
-
     def ass_expr(self):
         root = None
 
@@ -425,18 +420,23 @@ class App(Node):
         if self.get() != '(':
             raise SyntaxError()
 
-        cur = root.args = BinNode()
+        cur = root.args = BinNode('caller', self.cur())
 
         while self.cur() != ')':
             cur.lhs = self.operand()
             if self.cur() == ',':
                 self.get()
-            cur.rhs = BinNode()
+            cur.rhs = BinNode('caller', self.cur())
             cur = cur.rhs
 
         if self.get() != ')':
             raise SyntaxError()
 
+        return root
+
+    def variable(self):
+        root = VariableNode('variable', self.cur())
+        root.identifier = self.get()
         return root
 
 def main():
