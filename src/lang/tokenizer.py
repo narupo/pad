@@ -75,7 +75,7 @@ class CapTokenizer(Tokenizer):
         super().__init__()
         self.stream = None
 
-    def _push_buf(self):
+    def _push_tok(self):
         if len(self.buf):
             self.toks.append(str(self.buf))
             self.buf = ''
@@ -92,28 +92,54 @@ class CapTokenizer(Tokenizer):
 
             if m == 0: # first
                 if c.isspace():
-                    self._push_buf()
+                    self._push_tok()
                 elif c == '+':
-                    self._push_buf()
+                    self._push_tok()
                     m = 100
-                elif c in ['=', ':', ';', '<', '>', '(', ')', '.', ',']:
-                    self._push_buf()
+                elif c == '<':
+                    self._push_tok()
+                    m = 200
+                elif c == '>':
+                    self._push_tok()
+                    m = 300
+                elif c in [':', ';', '(', ')', '.', ',']:
+                    self._push_tok()
                     self.buf = c
-                    self._push_buf()
+                    self._push_tok()
                 else:
                     self.buf += c
-            elif m == 100: # +
+            elif m == 100: # found '+'
                 if c == '+':
                     self.buf = '++'
-                    self._push_buf()
+                    self._push_tok()
                     m = 0
                 else:
                     self.stream.prev()
                     self.buf = '+'
-                    self._push_buf()
+                    self._push_tok()
                     m = 0
-
-        self._push_buf()
+            elif m == 200: # found '<'
+                if c == '=':
+                    self.buf = '<='
+                    self._push_tok()
+                    m = 0
+                else:
+                    self.buf = '<'
+                    self._push_tok()
+                    self.stream.prev()
+                    m = 0
+            elif m == 300: # found '>'
+                if c == '=':
+                    self.buf = '>='
+                    self._push_tok()
+                    m = 0
+                else:
+                    self.buf = '>'
+                    self._push_tok()
+                    self.stream.prev()
+                    m = 0
+            
+        self._push_tok()
 
     def append(self, tok):
         self.toks.append(tok)
