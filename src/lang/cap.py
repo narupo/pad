@@ -194,11 +194,10 @@ class App(Node):
             res = g.lcr = node.ncompare.value()
             if res:
                 self.traverse(node.nthen)
-            else:
-                if node.nelif:
-                    self.traverse(node.nelif)
-                elif node.nelse:
-                    self.traverse(node.nelse)
+            elif node.nelif:
+                self.traverse(node.nelif)
+            elif node.nelse:
+                self.traverse(node.nelse)
         elif type(node) == OperatorNode:
             if node.operator == '=':
                 if type(node.lhs) == VariableNode:
