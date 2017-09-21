@@ -3,6 +3,10 @@
 import sys
 from tokenizer import CapTokenizer
 
+class g:
+    symtab = {} # Symbol table
+    lcr = None # Last Calculation Result
+
 class Node:
 
     def __init__(self, name='', tok=''):
@@ -85,7 +89,7 @@ class OperatorNode(Node):
         elif type(n) == OperandNode:
             return n.value()
         elif type(n) == VariableNode:
-            raise Exception('TODO')
+            return n.value()
         raise Exception('unsupported node')
 
     def value(self):
@@ -136,8 +140,6 @@ class App(Node):
     def __init__(self):
         self.tkr = CapTokenizer()
         self.root = None
-        self.symtab = {}
-        self.lcr = None
 
     def run(self):
         self.tkr.parse(sys.stdin)
@@ -148,8 +150,8 @@ class App(Node):
         self.traverse(node=self.root)
         self.dump_tree(node=self.root, side='R')
         print('_' * 32)
-        print('symtab', self.symtab)
-        print('lcr', self.lcr)
+        print('symtab', g.symtab)
+        print('lcr', g.lcr)
 
     def dump_tree(self, node, dep=0, side='?'):
         if node == None:
@@ -189,7 +191,7 @@ class App(Node):
             self.traverse(node.lhs) # 左優先
             self.traverse(node.rhs)
         elif type(node) == IfNode:
-            res = self.lcr = node.ncompare.value()
+            res = g.lcr = node.ncompare.value()
             if res:
                 self.traverse(node.nthen)
             else:
@@ -199,9 +201,12 @@ class App(Node):
                     self.traverse(node.nelse)
         elif type(node) == OperatorNode:
             if node.operator == '=':
-                self.lcr = self.symtab[node.lhs.identifier] = node.rhs.value()
+                if type(node.lhs) == VariableNode:
+                    g.lcr = g.symtab[node.lhs.identifier] = node.rhs.value()
+                else:
+                    raise SyntaxError('can\'t assign to left')
             else:
-                self.lcr = node.value()
+                g.lcr = node.value()
         elif type(node) == CallerNode:
             funcname = node.identifier.identifier
             args = []
