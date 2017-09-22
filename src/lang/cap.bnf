@@ -26,12 +26,8 @@ if_compare ::= expr
 if_else ::= 'else' ':' code 'end'
 if_elif ::= if_statement
 
-   for
-   / \       \     \
-init compare update then
-
 for_statement ::= for_1 | for_2
 for_1 ::= 'for' ':' code 'end'
-for_2 ::= for_3 | for_4
-for_3 ::= 'for' for_compare ':' code 'end'
-for_4 ::= 'for' expr ';' expr ';' expr ':' code 'end'
+for_what ::= for_2 | for_3
+for_2 ::= 'for' for_compare ':' code 'end'
+for_3 ::= 'for' expr ';' expr ';' expr ':' code 'end'
