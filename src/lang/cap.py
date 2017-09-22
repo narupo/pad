@@ -390,6 +390,8 @@ class App(Node):
             if self.get() != 'end':
                 raise SyntaxError(self.cur())
         else:
+            root.ninit = expr
+            
             if self.get() != ';':
                 raise SyntaxError(self.cur())
 
