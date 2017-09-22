@@ -183,6 +183,11 @@ class App(Node):
             self.dump_tree(node.nthen, dep+1, side='nthen')
             self.dump_tree(node.nelif, dep+1, side='nelif')
             self.dump_tree(node.nelse, dep+1, side='nelse')
+        elif type(node) == ForNode:
+            self.dump_tree(node.ninit, dep+1, side='ninit')
+            self.dump_tree(node.ncompare, dep+1, side='ncompare')
+            self.dump_tree(node.nupdate, dep+1, side='nupdate')
+            self.dump_tree(node.nthen, dep+1, side='nthen')
         elif type(node) == OperatorNode:
             self.dump_tree(node.lhs, dep+1, side='lhs')
             self.dump_tree(node.rhs, dep+1, side='rhs')
@@ -207,6 +212,19 @@ class App(Node):
                 self.traverse(node.nelif)
             elif node.nelse:
                 self.traverse(node.nelse)
+        elif type(node) == ForNode:
+            if node.ninit:
+                self.traverse(node.ninit)
+            
+            i = 0
+            while node.ncompare.value():
+                self.traverse(node.nthen)
+                self.traverse(node.nupdate)
+                if i >= 5:
+                    print('debugging: break from loop.')
+                    break
+                i += 1
+
         elif type(node) == OperatorNode:
             if node.operator == '=':
                 if type(node.lhs) == VariableNode:
@@ -320,20 +338,12 @@ class App(Node):
         return nelse
 
     def for_statement(self):
-        """
-for_statement ::= for_1 | for_2 | for_3
-for_1 ::= 'for' ':' code 'end'
-for_2 ::= 'for' expr ':' code 'end'
-for_3 ::= 'for' expr ';' expr ';' expr ':' code 'end'
-        """
         if self.cur() != 'for':
             raise SyntaxError(self.cur())
 
         if self.cur(1) == ':':
             return self.for_1()
-        elif self.cur(2) == ':':
-            return self.for_2()
-        return self.for_3()
+        return self.for_what()
 
     def for_1(self):
         root = None
@@ -355,49 +365,38 @@ for_3 ::= 'for' expr ';' expr ';' expr ':' code 'end'
 
         return root
 
-    def for_2(self):
-        root = ForNode('for_2', self.cur())
+    def for_what(self):
+        root = ForNode('for_what', self.cur())
 
         if self.get() != 'for':
             raise SyntaxError(self.cur())
 
-        root.ncompare = self.expr()
+        expr = self.expr()
 
-        if self.get() != ':':
-            raise SyntaxError(self.cur())
+        if self.cur() == ':':
+            self.get() # ':'
+            root.ncompare = expr
+            root.nthen = self.statement()
+            if self.get() != 'end':
+                raise SyntaxError(self.cur())
+        else:
+            if self.get() != ';':
+                raise SyntaxError(self.cur())
 
-        root.nthen = self.statement()
+            root.ncompare = self.expr()
 
-        if self.get() != 'end':
-            raise SyntaxError(self.cur())
+            if self.get() != ';':
+                raise SyntaxError(self.cur())
 
-        return root
+            root.nupdate = self.expr()
 
-    def for_3(self):
-        root = ForNode('for_3', self.cur())
+            if self.get() != ':':
+                raise SyntaxError(self.cur())
 
-        if self.get() != 'for':
-            raise SyntaxError(self.cur())
+            root.nthen = self.statement()
 
-        root.ninit = self.expr()
-
-        if self.get() != ';':
-            raise SyntaxError(self.cur())
-
-        root.ncompare = self.expr()
-
-        if self.get() != ';':
-            raise SyntaxError(self.cur())
-
-        root.nupdate = self.expr()
-
-        if self.get() != ':':
-            raise SyntaxError(self.cur())
-
-        root.nthen = self.statement()
-
-        if self.get() != 'end':
-            raise SyntaxError(self.cur())        
+            if self.get() != 'end':
+                raise SyntaxError(self.cur())        
 
         return root
 
