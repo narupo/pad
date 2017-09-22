@@ -402,10 +402,7 @@ for_3 ::= 'for' expr ';' expr ';' expr ':' code 'end'
         return root
 
     def expr(self):
-        if self.cur(1) == '=':
-            return self.ass_expr()
-        else:
-            return self.cmp_expr()
+        return self.ass_expr()
 
     def ass_expr(self):
         root = None
