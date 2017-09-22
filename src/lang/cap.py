@@ -85,11 +85,14 @@ class OperatorNode(Node):
                 v = v > self.__value(n.rhs)
             elif n.operator == '=>':
                 v = v >= self.__value(n.rhs)                
+
             return v
         elif type(n) == OperandNode:
             return n.value()
         elif type(n) == VariableNode:
-            return n.value()
+            if n.identifier not in g.symtab.keys():
+                g.symtab[n.identifier] = 0
+            return g.symtab[n.identifier]
         raise Exception('unsupported node')
 
     def value(self):
@@ -216,19 +219,26 @@ class App(Node):
             if node.ninit:
                 self.traverse(node.ninit)
             
-            i = 0
             while node.ncompare.value():
                 self.traverse(node.nthen)
                 self.traverse(node.nupdate)
-                if i >= 5:
-                    print('debugging: break from loop.')
-                    break
-                i += 1
 
         elif type(node) == OperatorNode:
             if node.operator == '=':
                 if type(node.lhs) == VariableNode:
                     g.lcr = g.symtab[node.lhs.identifier] = node.rhs.value()
+                else:
+                    raise SyntaxError('can\'t assign to left')
+            elif node.operator == '+=':
+                if type(node.lhs) == VariableNode:
+                    g.symtab[node.lhs.identifier] += node.rhs.value()
+                    g.lcr = g.symtab[node.lhs.identifier]
+                else:
+                    raise SyntaxError('can\'t assign to left')
+            elif node.operator == '-=':
+                if type(node.lhs) == VariableNode:
+                    g.symtab[node.lhs.identifier] -= node.rhs.value()
+                    g.lcr = g.symtab[node.lhs.identifier]
                 else:
                     raise SyntaxError('can\'t assign to left')
             else:
@@ -407,7 +417,7 @@ class App(Node):
         root = None
 
         n1 = self.cmp_expr()
-        if self.cur() in ['=']:
+        if self.cur() in ['=', '+=', '-=']:
             root = OperatorNode('ass_expr', self.cur())
             root.lhs = n1
             root.operator = self.get()
