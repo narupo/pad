@@ -21,7 +21,17 @@ statement ::= block_statement | if_statement | for_statement | expr
 
 block_statement ::= '}}' plain_text '{{'
 
-if_statement ::= ('if'|'elif') if_compare ':' code if_else | if_elif
+if_statement ::= ('if'|'elif') if_compare ':' statement, 'end' | if_else | if_elif
 if_compare ::= expr
-if_else ::= 'else' '{' code '}'
+if_else ::= 'else' ':' code 'end'
 if_elif ::= if_statement
+
+   for
+   / \       \     \
+init compare update then
+
+for_statement ::= for_1 | for_2
+for_1 ::= 'for' ':' code 'end'
+for_2 ::= for_3 | for_4
+for_3 ::= 'for' for_compare ':' code 'end'
+for_4 ::= 'for' expr ';' expr ';' expr ':' code 'end'
