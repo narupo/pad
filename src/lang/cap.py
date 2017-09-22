@@ -376,7 +376,7 @@ class App(Node):
         return root
 
     def for_what(self):
-        root = ForNode('for_what', self.cur())
+        root = None
 
         if self.get() != 'for':
             raise SyntaxError(self.cur())
@@ -384,14 +384,17 @@ class App(Node):
         expr = self.expr()
 
         if self.cur() == ':':
+            root = ForNode('for_2', self.cur())
+
             self.get() # ':'
             root.ncompare = expr
             root.nthen = self.statement()
             if self.get() != 'end':
                 raise SyntaxError(self.cur())
         else:
+            root = ForNode('for_3', self.cur())
             root.ninit = expr
-            
+
             if self.get() != ';':
                 raise SyntaxError(self.cur())
 
