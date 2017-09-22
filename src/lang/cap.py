@@ -83,7 +83,7 @@ class OperatorNode(Node):
                 v = v <= self.__value(n.rhs)
             elif n.operator == '>':
                 v = v > self.__value(n.rhs)
-            elif n.operator == '=>':
+            elif n.operator == '>=':
                 v = v >= self.__value(n.rhs)                
 
             return v
@@ -431,7 +431,7 @@ class App(Node):
         root = None
 
         n1 = self.pm_expr()
-        if self.cur() in ['<', '<=', '=>', '>']:
+        if self.cur() in ['<', '<=', '>=', '>']:
             root = OperatorNode('cmp_expr', self.cur())
             root.lhs = n1
             root.operator = self.get()

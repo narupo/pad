@@ -1,5 +1,7 @@
 {{
     for i = 0; i < 10; i += 1:
-        print("aho")
+        if i >= 5:
+            print("aho")
+        end
     end
 }}

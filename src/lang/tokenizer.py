@@ -96,6 +96,9 @@ class CapTokenizer(Tokenizer):
                 elif c == '+':
                     self._push_tok()
                     m = 100
+                elif c == '-':
+                    self._push_tok()
+                    m = 150
                 elif c == '<':
                     self._push_tok()
                     m = 200
@@ -113,9 +116,27 @@ class CapTokenizer(Tokenizer):
                     self.buf = '++'
                     self._push_tok()
                     m = 0
+                elif c == '=':
+                    self.buf = '+='
+                    self._push_tok()
+                    m = 0
                 else:
                     self.stream.prev()
                     self.buf = '+'
+                    self._push_tok()
+                    m = 0
+            elif m == 150: # found '-'
+                if c == '-':
+                    self.buf = '--'
+                    self._push_tok()
+                    m = 0
+                elif c == '=':
+                    self.buf = '-='
+                    self._push_tok()
+                    m = 0
+                else:
+                    self.stream.prev()
+                    self.buf = '-'
                     self._push_tok()
                     m = 0
             elif m == 200: # found '<'
