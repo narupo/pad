@@ -123,7 +123,7 @@ class VariableNode(Node):
         self.identifier = None
 
     def value(self):
-        return self.identifier
+        return g.symtab[self.identifier]
 
 class NamespaceNode(Node):
     """ parent.child
