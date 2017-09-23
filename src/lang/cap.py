@@ -219,9 +219,14 @@ class App(Node):
             if node.ninit:
                 self.traverse(node.ninit)
             
+            i = 0 # TODO
             while node.ncompare.value():
                 self.traverse(node.nthen)
                 self.traverse(node.nupdate)
+                if i > 100:
+                    print('break from loop for debug')
+                    break
+                i += 1
 
         elif type(node) == OperatorNode:
             if node.operator == '=':
