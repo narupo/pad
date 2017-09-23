@@ -1,3 +1,5 @@
+text
 {{ for: }}
-text1
+text
 {{ end }}
+text
