@@ -125,6 +125,27 @@ class VariableNode(Node):
     def value(self):
         return g.symtab[self.identifier]
 
+class StringNode(Node):
+
+    def __init__(self, name='', tok=''):
+        super().__init__(name, tok)
+        self.__string = None
+
+    @property
+    def string(self):
+        pass
+
+    @string.setter
+    def string(self, string):
+        self.__string = string
+
+    @string.getter
+    def string(self):
+        return self.__string
+
+    def value(self):
+        return self.__string
+
 class NamespaceNode(Node):
     """ parent.child
     """
@@ -513,7 +534,7 @@ class App(Node):
         if self.cur(1) == '(':
             root = self.caller()
         else:
-            root = self.variable()
+            root = self.var_or_str()
 
         return root
 
@@ -545,6 +566,18 @@ class App(Node):
         if self.get() != ')':
             raise SyntaxError()
 
+        return root
+
+    def var_or_str(self):
+        if self.cur()[0] == '"':
+            return self.string()
+        else:
+            return self.variable()
+
+    def string(self):
+        string = self.get()[1:-1]
+        root = StringNode('string', string)
+        root.string = string
         return root
 
     def variable(self):
