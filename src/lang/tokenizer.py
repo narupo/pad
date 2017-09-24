@@ -78,13 +78,21 @@ class CapTokenizer(Tokenizer):
     def _push_tok(self):
         if len(self.buf):
             self.toks.append(str(self.buf))
-            self.buf = ''
+            self._set_buf('')
 
-    def parse(self, fin):
-        self.stream = Stream(fin.read())
+    def _set_buf(self, buf):
+        self.buf = buf
+
+    def _add_buf(self, c):
+        self.buf += c
+
+    def _clear(self):
         self.toks = []
         self.pos = 0
         self.buf = ''
+
+    def parse(self, fin):
+        self.stream = Stream(fin.read())
         m = 0
 
         while not self.stream.eof():
@@ -107,58 +115,68 @@ class CapTokenizer(Tokenizer):
                     m = 300
                 elif c in [':', ';', '(', ')', '.', ',']:
                     self._push_tok()
-                    self.buf = c
+                    self._add_buf(c)
                     self._push_tok()
+                elif c == '"':
+                    self._add_buf(c)
+                    m = 500
                 else:
-                    self.buf += c
+                    self._add_buf(c)
             elif m == 100: # found '+'
                 if c == '+':
-                    self.buf = '++'
+                    self._set_buf('++')
                     self._push_tok()
                     m = 0
                 elif c == '=':
-                    self.buf = '+='
+                    self._set_buf('+=')
                     self._push_tok()
                     m = 0
                 else:
                     self.stream.prev()
-                    self.buf = '+'
+                    self._set_buf('+')
                     self._push_tok()
                     m = 0
             elif m == 150: # found '-'
                 if c == '-':
-                    self.buf = '--'
+                    self._set_buf('--')
                     self._push_tok()
                     m = 0
                 elif c == '=':
-                    self.buf = '-='
+                    self._set_buf('-=')
                     self._push_tok()
                     m = 0
                 else:
                     self.stream.prev()
-                    self.buf = '-'
+                    self._set_buf('-')
                     self._push_tok()
                     m = 0
             elif m == 200: # found '<'
                 if c == '=':
-                    self.buf = '<='
+                    self._set_buf('<=')
                     self._push_tok()
                     m = 0
                 else:
-                    self.buf = '<'
+                    self._set_buf('<')
                     self._push_tok()
                     self.stream.prev()
                     m = 0
             elif m == 300: # found '>'
                 if c == '=':
-                    self.buf = '>='
+                    self._set_buf('>=')
                     self._push_tok()
                     m = 0
                 else:
-                    self.buf = '>'
+                    self._set_buf('>')
                     self._push_tok()
                     self.stream.prev()
                     m = 0
+            elif m == 500: # found '"'
+                if c == '"':
+                    self._add_buf(c)
+                    self._push_tok()
+                    m = 0
+                else:
+                    self._add_buf(c)
             
         self._push_tok()
 
