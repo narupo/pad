@@ -1,0 +1,14 @@
+THIS IS {TEXT 1}
+
+{{
+    for counter_1 = 0; counter_1 < 10; ++counter_1 {
+        print("Hello, World!")
+    }
+}}
+
+THIS IS TEXT 2
+
+{{
+}}
+
+THIS IS TEXT 3
