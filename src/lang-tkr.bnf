@@ -1,0 +1,16 @@
+<syntax> ::= {{ <elem>+ }}
+<elem> ::= 
+
+#include <stdio.h>
+
+int
+main(void) {
+{{ if cap.args[0] == "hello-world" : }}
+    printf("Hello, World!\n");
+{{ elif cap.args[0] == "bubble" : }}
+    printf("Bubble\n");
+{{ else : }}
+    // Nothing TODO
+{{ end }}
+    return 0;
+}
