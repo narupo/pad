@@ -1,0 +1,29 @@
+print(test_of_if_statement)
+
+if 1 {
+    print(then!!)
+}
+
+if 0 {
+    print(???)
+} elif 1 {
+    print(elif!!)
+}
+
+if 0 {
+    print(???)
+} elif 0 {
+    print(???)
+} else {
+    print(else!!)
+}
+
+if 1 {
+    print(one)
+    if 1 {
+        print(two)
+        if 1 {
+            print(three)
+        }
+    }
+}
