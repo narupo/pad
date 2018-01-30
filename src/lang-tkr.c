@@ -450,7 +450,7 @@ parse(FILE *fin) {
     tree_del(tree);
 }
 
-#if 1
+#if 0
 int
 main(void) {
     parse(stdin);
