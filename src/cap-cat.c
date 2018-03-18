@@ -66,6 +66,7 @@ setindent(const struct opts *opts, char *buf, size_t bufsize) {
 		}
 
 		memset(buf, ' ', opts->tabspaces);
+		buf[opts->tabspaces] = '\0';
 	}
 
 	return true;
@@ -246,7 +247,7 @@ run(struct opts *opts) {
 		usage();
 	}
 
-	if (opts->argc < 2) {
+	if (opts->argc - opts->optind < 2) {
 		return catstream(opts, stdout, stdin);
 	}
 
