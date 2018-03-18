@@ -247,7 +247,7 @@ run(struct opts *opts) {
 		usage();
 	}
 
-	if (opts->argc - opts->optind < 2) {
+	if (opts->argc - opts->optind + 1 < 2) {
 		return catstream(opts, stdout, stdin);
 	}
 
