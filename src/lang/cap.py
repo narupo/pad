@@ -329,8 +329,6 @@ class App(Node):
 
         return root
 
-        return root
-
     def if_statement(self):
         nif = IfNode('if_statement', self.cur())
 
