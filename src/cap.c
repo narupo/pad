@@ -101,7 +101,7 @@ capfixcmdargs(struct cap *cap) {
     // Not found command. Re-build command for cap-alias
     char bindir[FILE_NPATH];
     if (!cap_envget(bindir, sizeof bindir, "CAP_BINDIR")) {
-        cap_log("error", "need bin directory path on environ");
+        cap_error("need bin directory path on environ");
         return NULL;
     }
 
@@ -302,7 +302,7 @@ capfork(struct cap *cap) {
     break;
     case 0: // Child
         if (execv(ppath, cap->cmdargv) < 0) {
-            cap_log("error", "failed to execute of %s", ppath);
+            cap_error("failed to execute of %s", ppath);
             _exit(1);
         }
     break;
@@ -346,5 +346,6 @@ main(int argc, char *argv[]) {
 
     caprun(cap);
     capdel(cap);
+
     return 0;
 }
