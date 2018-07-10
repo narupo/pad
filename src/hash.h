@@ -9,7 +9,6 @@
 #define HASH_H
 
 #include <stdio.h>
-#include <crypt.h>
 #include <pthread.h>
 #include <string.h>
 #include <time.h>
