@@ -156,7 +156,7 @@ usage(void) {
 	fprintf(stderr,
 		"Usage: cap cat [options] [files]\n"
 		"\n"
-		"    Catenate files.\n"
+		"    Concatenate files.\n"
 		"\n"
 		"The options are:\n"
 		"\n"
