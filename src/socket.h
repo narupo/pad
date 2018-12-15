@@ -26,6 +26,9 @@
 
 #if defined(_CAP_WINDOWS)
 #  include <windows.h>
+#  define _WIN32_WINNT 0x501
+#  include <winsock2.h>
+#  include <ws2tcpip.h>
 #else
 #  undef _BSD_SOURCE
 #  define _BSD_SOURCE 1 /* cap: socket.h: netdb.h */
