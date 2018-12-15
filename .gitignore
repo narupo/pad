@@ -29,6 +29,9 @@
 *.x86_64
 *.hex
 
+# Dump files
+*.exe.stackdump
+
 # Debug files
 *.dSYM/
 
