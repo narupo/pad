@@ -6,4 +6,4 @@
 #include "lib/error.h"
 
 void *
-cap_ecalloc(size_t nelems, size_t size);
+mem_ecalloc(size_t nelems, size_t size);

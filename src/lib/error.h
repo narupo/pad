@@ -30,17 +30,17 @@
  * @return failed to false
  */
 bool
-_cap_log_unsafe(const char *file, long line, const char *func, const char *type, const char *msg);
+_log_unsafe(const char *file, long line, const char *func, const char *type, const char *msg);
 
 /**
  * Write log
  * 
  * @param[in] type string of log type (examples 'error', 'debug', etc...)
  */
-#define cap_log(type, ...) { \
+#define err_log(type, ...) { \
 	char msg[1024]; \
 	snprintf(msg, sizeof msg, __VA_ARGS__); \
-	_cap_log_unsafe(__FILE__, __LINE__, __func__, type, msg); \
+	_log_unsafe(__FILE__, __LINE__, __func__, type, msg); \
 }
 
 /**
@@ -50,7 +50,7 @@ _cap_log_unsafe(const char *file, long line, const char *func, const char *type,
  * @param[in] ... arguments of format
  */
 void
-cap_die(const char *fmt, ...);
+err_die(const char *fmt, ...);
 
 /**
  * Show error message
@@ -59,7 +59,7 @@ cap_die(const char *fmt, ...);
  * @param[in] ... arguments of format
  */
 void
-cap_error(const char *fmt, ...);
+err_error(const char *fmt, ...);
 
 /**
  * Show debug message
@@ -68,4 +68,4 @@ cap_error(const char *fmt, ...);
  * @param[in] ... arguments of format
  */
 void
-cap_debug(const char *fmt, ...);
+err_debug(const char *fmt, ...);
