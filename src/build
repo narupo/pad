@@ -1,9 +1,0 @@
-#!/bin/bash
-gcc -std=c11 -I$HOME/shared/cap/src -o cap \
-    app.c \
-    lib/memory.c \
-    lib/error.c \
-    lib/file.c \
-    modules/util.c \
-    modules/env.c \
-
