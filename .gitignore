@@ -36,6 +36,7 @@
 *.dSYM/
 
 doc/
+build/
 
 src/cap
 src/cap-alias

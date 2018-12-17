@@ -20,7 +20,6 @@ struct app {
     int argc;
     char **argv;
     struct opts opts;
-    struct env *env;
 };
 
 static bool
@@ -62,19 +61,8 @@ app_parse_opts(struct app *self) {
 static void
 app_del(struct app *self) {
     if (self) {
-        env_del(self->env);
         free(self);
     }
-}
-
-static void
-app_init_env(struct app *self) {
-    if (self->env) {
-        env_del(self->env);
-    }
-
-    self->env = env_new();
-    env_set(self->env, "CAP_VERSION", "0.22.0");
 }
 
 static struct app *
@@ -83,8 +71,6 @@ app_new(int argc, char *argv[]) {
 
     self->argc = argc;
     self->argv = argv;
-
-    app_init_env(self);
 
     if (!app_parse_opts(self)) {
         app_del(self);
@@ -151,7 +137,7 @@ app_version(struct app *self) {
     fflush(stdout);
     fflush(stderr);
 
-    printf("%s\n", env_get(self->env, "CAP_VERSION"));
+    printf("%s\n", CAP_VERSION);
     fflush(stdout);
 
     app_del(self);
