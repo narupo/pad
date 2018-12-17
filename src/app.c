@@ -16,6 +16,11 @@ struct opts {
     bool isversion;
 };
 
+struct args {
+    int argc;
+    char **argv;
+};
+
 struct app {
     int argc;
     char **argv;
@@ -46,7 +51,7 @@ app_parse_opts(struct app *self) {
         case 'V': self->opts.isversion = true; break;
         case '?':
         default:
-            cap_error("invalid option");
+            err_error("invalid option");
             return false; break;
         }
     }
@@ -67,7 +72,7 @@ app_del(struct app *self) {
 
 static struct app *
 app_new(int argc, char *argv[]) {
-    struct app *self = cap_ecalloc(1, sizeof(*self));
+    struct app *self = mem_ecalloc(1, sizeof(*self));
 
     self->argc = argc;
     self->argv = argv;
@@ -137,7 +142,7 @@ app_version(struct app *self) {
     fflush(stdout);
     fflush(stderr);
 
-    printf("%s\n", CAP_VERSION);
+    printf("%s\n", VERSION);
     fflush(stdout);
 
     app_del(self);
@@ -158,6 +163,9 @@ app_run(struct app *self) {
         app_usage(self);
     }
 
+    cmdargs *args = cmdargs_new();
+    cmdargs_parse(args, self->argc, self->argv);
+
     return 0;
 }
 
@@ -165,7 +173,7 @@ int
 main(int argc, char *argv[]) {
     struct app *app = app_new(argc, argv);
     if (!app) {
-        cap_die("failed to start application");
+        err_die("failed to start application");
     }
 
     int result = app_run(app);

@@ -44,7 +44,7 @@ fmttoupper_unsafe(char *dst, size_t dstsz, const char *fmt) {
 }
 
 bool
-_cap_log_unsafe(const char *file, long line, const char *func, const char *type, const char *msg) {
+_log_unsafe(const char *file, long line, const char *func, const char *type, const char *msg) {
 	// Check arguments
 	type = (type ? type : "type");
 	msg = (msg ? msg : "");
@@ -80,18 +80,7 @@ _cap_log_unsafe(const char *file, long line, const char *func, const char *type,
 }
 
 void
-cap_error(const char *fmt, ...) {
-	char tmp[1024];
-	fmt = fmttoupper_unsafe(tmp, sizeof tmp, fmt);
-
-	va_list ap;
-	va_start(ap, fmt);
-	errorap_unsafe(ap, fmt);
-	va_end(ap);
-}
-
-void
-cap_die(const char *fmt, ...) {
+err_die(const char *fmt, ...) {
 	char tmp[1024];
 	fmt = fmttoupper_unsafe(tmp, sizeof tmp, fmt);
 
@@ -104,7 +93,18 @@ cap_die(const char *fmt, ...) {
 }
 
 void
-cap_debug(const char *fmt, ...) {
+err_error(const char *fmt, ...) {
+	char tmp[1024];
+	fmt = fmttoupper_unsafe(tmp, sizeof tmp, fmt);
+
+	va_list ap;
+	va_start(ap, fmt);
+	errorap_unsafe(ap, fmt);
+	va_end(ap);
+}
+
+void
+err_debug(const char *fmt, ...) {
 	const char *isdeb = getenv("CAP_DEBUG");
 	if (!isdeb || (isdeb && *isdeb == '0')) {
 		return;
