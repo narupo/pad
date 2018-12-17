@@ -25,6 +25,17 @@ cmdargs_parse(cmdargs *self, int app_argc, char *app_argv[]) {
 
     cstring_array *args = cstrarr_new();
 
+    for (int i = 1; i < app_argc; ++i) {
+        cstrarr_push(args, app_argv[i]);
+    }
+    cstrarr_move(args, NULL);
+
+    freeargv(self->argc, self->argv);
+
+    self->argc = cstrarr_len(args)-1;
+    self->argv = cstrarr_escdel(args);
+
+    showargv(self->argc, self->argv);
 
     return self;
 }

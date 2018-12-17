@@ -16,11 +16,6 @@ struct opts {
     bool isversion;
 };
 
-struct args {
-    int argc;
-    char **argv;
-};
-
 struct app {
     int argc;
     char **argv;
