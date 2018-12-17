@@ -8,4 +8,3 @@
 #include "lib/memory.h"
 
 #include "modules/util.h"
-#include "modules/env.h"
