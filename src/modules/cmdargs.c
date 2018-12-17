@@ -35,7 +35,5 @@ cmdargs_parse(cmdargs *self, int app_argc, char *app_argv[]) {
     self->argc = cstrarr_len(args)-1;
     self->argv = cstrarr_escdel(args);
 
-    showargv(self->argc, self->argv);
-
     return self;
 }
