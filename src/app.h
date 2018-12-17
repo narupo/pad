@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <getopt.h>
 
+#include "constant.h"
+
 #include "lib/memory.h"
 
 #include "modules/util.h"
