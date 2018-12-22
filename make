@@ -1,5 +1,5 @@
 #!/bin/bash
-gcc -std=c11 -I$HOME/shared/cap/src -o build/cap \
+gcc -std=c11 -I$HOME/shared/cap/src -c \
     src/app.c \
     src/lib/memory.c \
     src/lib/error.c \
@@ -10,4 +10,6 @@ gcc -std=c11 -I$HOME/shared/cap/src -o build/cap \
     src/modules/cmdargs.c \
     src/modules/commands/homecmd.c \
 
+mv ./*.o build/
+gcc -std=c11 -o build/cap ./build/*.o
 
