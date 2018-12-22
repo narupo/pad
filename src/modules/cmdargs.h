@@ -4,13 +4,16 @@
 #include "modules/util.h"
 
 struct cmdargs;
-typedef struct cmdargs cmdargs;
+typedef struct cmdargs cmdargs_t;
 
 void
-cmdargs_del(cmdargs *self);
+cmdargs_del(cmdargs_t *self);
 
-cmdargs *
+cmdargs_t *
 cmdargs_new(void);
 
-cmdargs *
-cmdargs_parse(cmdargs *self, int app_argc, char *app_argv[]);
+cmdargs_t *
+cmdargs_parse(cmdargs_t *self, int app_argc, char *app_argv[]);
+
+const char *
+cmdargs_get_cmdname(const cmdargs_t *self);

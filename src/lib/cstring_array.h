@@ -17,12 +17,12 @@
 
 #include "lib/memory.h"
 
-/****************
-* cstring_array *
-****************/
+/******************
+* cstring_array_t *
+******************/
 
 struct cstring_array;
-typedef struct cstring_array cstring_array;
+typedef struct cstring_array cstring_array_t;
 
 /**
  * Destruct array
@@ -30,7 +30,7 @@ typedef struct cstring_array cstring_array;
  * @param[in] *self 
  */
 void 
-cstrarr_del(cstring_array *self);
+cstrarr_del(cstring_array_t *self);
 
 /**
  * Destruct array with move semantics
@@ -41,7 +41,7 @@ cstrarr_del(cstring_array *self);
  * @return pointer to array like a argv
  */
 char **
-cstrarr_escdel(cstring_array *self);
+cstrarr_escdel(cstring_array_t *self);
 
 /**
  * Construct array
@@ -49,7 +49,7 @@ cstrarr_escdel(cstring_array *self);
  * @return success to pointer to dynamic allocate memory of array
  * @return failed to NULL
  */
-cstring_array * 
+cstring_array_t * 
 cstrarr_new(void);
 
 /**
@@ -61,8 +61,8 @@ cstrarr_new(void);
  * @return success to pointer to self
  * @return failed to NULL
  */
-cstring_array * 
-cstrarr_push(cstring_array *self, const char *str);
+cstring_array_t * 
+cstrarr_push(cstring_array_t *self, const char *str);
 
 /**
  * Move pointer to dynamic allocate memory to array with move semantics
@@ -73,8 +73,8 @@ cstrarr_push(cstring_array *self, const char *str);
  * @return success to pointer to self
  * @return failed to NULL
  */
-cstring_array * 
-cstrarr_move(cstring_array *self, char *ptr);
+cstring_array_t * 
+cstrarr_move(cstring_array_t *self, char *ptr);
 
 /**
  * Sort elements
@@ -84,8 +84,8 @@ cstrarr_move(cstring_array *self, char *ptr);
  * @return success to pointer to self
  * @return failed to NULL
  */
-cstring_array * 
-cstrarr_sort(cstring_array *self);
+cstring_array_t * 
+cstrarr_sort(cstring_array_t *self);
 
 /**
  * Get element in array by index
@@ -97,7 +97,7 @@ cstrarr_sort(cstring_array *self);
  * @return failed to NULL
  */
 const char *
-cstrarr_getc(const cstring_array *self, int idx);
+cstrarr_getc(const cstring_array_t *self, int idx);
 
 /**
  * Get number of length of array
@@ -107,7 +107,7 @@ cstrarr_getc(const cstring_array *self, int idx);
  * @return number of length of array
  */
 ssize_t
-cstrarr_len(const cstring_array *self); 
+cstrarr_len(const cstring_array_t *self); 
 
 /**
  * Dump array to stream
@@ -118,5 +118,5 @@ cstrarr_len(const cstring_array *self);
  * @return success to pointer to self
  * @return failed to NULL
  */
-const cstring_array *
-cstrarr_show(const cstring_array *self, FILE *fout);
+const cstring_array_t *
+cstrarr_show(const cstring_array_t *self, FILE *fout);
