@@ -5,10 +5,9 @@
 #include <stdbool.h>
 #include <getopt.h>
 
-#include "constant.h"
-
 #include "lib/memory.h"
 
+#include "modules/constant.h"
 #include "modules/util.h"
 #include "modules/cmdargs.h"
 
