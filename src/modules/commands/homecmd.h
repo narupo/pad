@@ -1,6 +1,8 @@
 #pragma once
 
 #include "lib/memory.h"
+#include "lib/file.h"
+
 #include "modules/cmdargs.h"
 
 struct homecmd;
