@@ -48,3 +48,13 @@ cmdargs_get_cmdname(const cmdargs_t *self) {
 
     return self->argv[0];
 }
+
+int
+cmdargs_get_argc(cmdargs_t *self) {
+    return self->argc;
+}
+
+char **
+cmdargs_get_argv(cmdargs_t *self) {
+    return self->argv;
+}

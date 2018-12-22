@@ -8,6 +8,7 @@
 #include "lib/memory.h"
 
 #include "modules/constant.h"
+#include "modules/config.h"
 #include "modules/util.h"
 #include "modules/cmdargs.h"
 #include "modules/commands/homecmd.h"
