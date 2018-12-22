@@ -3,12 +3,12 @@
  *
  * License: MIT
  *  Author: Aizawa Yuta
- *   Since: 2016
+ *   Since: 2016, 2017, 2018
  */
 #include "file.h"
 
 int32_t
-cap_fclose(FILE *fp) {
+file_close(FILE *fp) {
 	if (!fp) {
 		return -1;
 	}
@@ -17,7 +17,7 @@ cap_fclose(FILE *fp) {
 }
 
 FILE *
-cap_fopen(const char *path, const char *mode) {
+file_open(const char *path, const char *mode) {
 	if (!path || !mode) {
 		return NULL;
 	}
@@ -26,7 +26,7 @@ cap_fopen(const char *path, const char *mode) {
 }
 
 bool
-cap_fcopy(FILE *dst, FILE *src) {
+file_copy(FILE *dst, FILE *src) {
 	if (!dst || !src) {
 		return false;
 	}
@@ -40,7 +40,7 @@ cap_fcopy(FILE *dst, FILE *src) {
 }
 
 char *
-cap_frealpath(char *dst, uint32_t dstsz, const char *src) {
+file_realpath(char *dst, uint32_t dstsz, const char *src) {
 	if (!dst || dstsz == 0 || !src) {
 		return NULL;
 	}
@@ -66,7 +66,7 @@ cap_frealpath(char *dst, uint32_t dstsz, const char *src) {
 }
 
 char *
-cap_fsolve(char *dst, uint32_t dstsz, const char *path) {
+file_solve(char *dst, uint32_t dstsz, const char *path) {
 	// Check arugments
 	if (!dst || dstsz == 0 || !path) {
 		return NULL;
@@ -81,7 +81,7 @@ cap_fsolve(char *dst, uint32_t dstsz, const char *path) {
 		snprintf(tmp, sizeof tmp, "%s", path);
 	}
 
-	if (!cap_frealpath(dst, dstsz, tmp)) {
+	if (!file_realpath(dst, dstsz, tmp)) {
 		return NULL;
 	}
 
@@ -89,7 +89,7 @@ cap_fsolve(char *dst, uint32_t dstsz, const char *path) {
 }
 
 char *
-cap_fsolvecp(const char *path) {
+file_solvecp(const char *path) {
 	// Check arguments
 	if (!path) {
 		return NULL;
@@ -102,7 +102,7 @@ cap_fsolvecp(const char *path) {
 	}
 
 	// Solve
-	char *res = cap_fsolve(dst, FILE_NPATH, path);
+	char *res = file_solve(dst, FILE_NPATH, path);
 	if (!res) {
 		free(dst);
 		return NULL;
@@ -112,7 +112,7 @@ cap_fsolvecp(const char *path) {
 }
 
 char *
-cap_fsolvefmt(char *dst, uint32_t dstsz, const char *fmt, ...) {
+file_solvefmt(char *dst, uint32_t dstsz, const char *fmt, ...) {
 	if (!dst || dstsz == 0 || !fmt) {
 		return NULL;
 	}
@@ -122,11 +122,11 @@ cap_fsolvefmt(char *dst, uint32_t dstsz, const char *fmt, ...) {
 	char tmp[FILE_NPATH];
 	vsnprintf(tmp, sizeof tmp, fmt, ap);
 	va_end(ap);
-	return cap_fsolve(dst, dstsz, tmp);
+	return file_solve(dst, dstsz, tmp);
 }
 
 DIR*
-cap_fopendir(const char *path) {
+file_opendir(const char *path) {
 	if (!path) {
 		return NULL;
 	}
@@ -135,7 +135,7 @@ cap_fopendir(const char *path) {
 }
 
 int32_t
-cap_fclosedir(DIR* dir) {
+file_closedir(DIR* dir) {
 	if (!dir) {
 		return -1;
 	}
@@ -144,7 +144,7 @@ cap_fclosedir(DIR* dir) {
 }
 
 bool
-cap_fexists(const char *path) {
+file_exists(const char *path) {
 	if (!path) {
 		return false;
 	}
@@ -165,7 +165,7 @@ cap_fexists(const char *path) {
 }
 
 bool
-cap_fisdir(const char *path) {
+file_isdir(const char *path) {
 	if (!path) {
 		return false;
 	}
@@ -192,7 +192,7 @@ cap_fisdir(const char *path) {
 }
 
 int32_t
-cap_fmkdirmode(const char *dirpath, mode_t mode) {
+file_mkdirmode(const char *dirpath, mode_t mode) {
 	if (!dirpath) {
 		return -1;
 	}
@@ -205,37 +205,37 @@ cap_fmkdirmode(const char *dirpath, mode_t mode) {
 }
 
 int32_t
-cap_fmkdirq(const char *path) {
+file_mkdirq(const char *path) {
 	if (!path) {
 		return -1;
 	}
 
-	return cap_fmkdirmode(path, S_IRUSR | S_IWUSR | S_IXUSR);
+	return file_mkdirmode(path, S_IRUSR | S_IWUSR | S_IXUSR);
 }
 
 bool
-cap_ftrunc(const char *path) {
+file_trunc(const char *path) {
 	if (!path) {
 		return false;
 	}
 
-	FILE* fout = cap_fopen(path, "wb");
+	FILE* fout = file_open(path, "wb");
 	if (!fout) {
 		return false;
 	}
 
-	cap_fclose(fout);
+	file_close(fout);
 	
 	return true;
 }
 
 char *
-cap_freadcp(FILE* fin) {
+file_readcp(FILE* fin) {
 	if (!fin || feof(fin)) {
 		return NULL;
 	}
 
-	uint32_t size = cap_fsize(fin);
+	uint32_t size = file_size(fin);
 	char *dst = malloc(sizeof(char)*size+1); // +1 for final nul
 	if (!dst) {
 		return NULL;
@@ -256,7 +256,7 @@ cap_freadcp(FILE* fin) {
 }
 
 int64_t
-cap_fsize(FILE* fp) {
+file_size(FILE* fp) {
 	if (!fp) {
 		return -1;
 	}
@@ -276,7 +276,7 @@ cap_fsize(FILE* fp) {
 }
 
 const char *
-cap_fsuffix(const char *path) {
+file_suffix(const char *path) {
 	if (!path) {
 		return NULL;
 	}
@@ -290,7 +290,7 @@ cap_fsuffix(const char *path) {
 }
 
 char *
-cap_fdirname(char *dst, uint32_t dstsz, const char *path) {
+file_dirname(char *dst, uint32_t dstsz, const char *path) {
 	if (!dst || dstsz == 0 || !path) {
 		return NULL;
 	}
@@ -301,7 +301,7 @@ cap_fdirname(char *dst, uint32_t dstsz, const char *path) {
 }
 
 char *
-cap_fbasename(char *dst, uint32_t dstsz, const char *path) {
+file_basename(char *dst, uint32_t dstsz, const char *path) {
 	if (!dst || dstsz == 0 || !path) {
 		return NULL;
 	}
@@ -319,7 +319,7 @@ cap_fbasename(char *dst, uint32_t dstsz, const char *path) {
 }
 
 int32_t
-cap_fgetline(char *dst, uint32_t dstsz, FILE *fin) {
+file_getline(char *dst, uint32_t dstsz, FILE *fin) {
 	if (!dst || dstsz == 0 || !fin) {
 		return EOF;
 	}
@@ -337,7 +337,7 @@ cap_fgetline(char *dst, uint32_t dstsz, FILE *fin) {
 }
 
 char *
-cap_freadline(char *dst, uint32_t dstsz, const char *path) {
+file_readline(char *dst, uint32_t dstsz, const char *path) {
 	if (!dst || dstsz == 0 || !path) {
 		return NULL;
 	}
@@ -350,7 +350,7 @@ cap_freadline(char *dst, uint32_t dstsz, const char *path) {
 		return NULL;
 	}
 
-	if (cap_fgetline(dst, dstsz, fin) == EOF) {
+	if (file_getline(dst, dstsz, fin) == EOF) {
 		fclose(fin);
 		if (dstsz) {
 			*dst = '\0';
@@ -369,7 +369,7 @@ cap_freadline(char *dst, uint32_t dstsz, const char *path) {
 }
 
 const char *
-cap_fwriteline(const char *line, const char *path) {
+file_writeline(const char *line, const char *path) {
 	if (!line || !path) {
 		return NULL;
 	}
@@ -390,10 +390,10 @@ cap_fwriteline(const char *line, const char *path) {
 }
 
 /*********************
-* file cap_dirnode *
+* file file_dirnode *
 *********************/
 
-struct cap_dirnode {
+struct file_dirnode {
 #if defined(_CAP_WINDOWS)
 	WIN32_FIND_DATA finddata;
 #else
@@ -402,19 +402,19 @@ struct cap_dirnode {
 };
 
 /*******************************
-* cap_dirnode delete and new *
+* file_dirnode delete and new *
 *******************************/
 
 void
-cap_dirnodedel(struct cap_dirnode *self) {
+file_dirnodedel(struct file_dirnode *self) {
 	if (self) {
 		free(self);
 	}
 }
 
-struct cap_dirnode *
-cap_dirnodenew(void) {
-	struct cap_dirnode *self = calloc(1, sizeof(struct cap_dirnode));
+struct file_dirnode *
+file_dirnodenew(void) {
+	struct file_dirnode *self = calloc(1, sizeof(struct file_dirnode));
 	if (!self) {
 		return NULL;
 	}
@@ -422,11 +422,11 @@ cap_dirnodenew(void) {
 }
 
 /*********************
-* cap_dirnode getter *
+* file_dirnode getter *
 *********************/
 
 const char *
-cap_dirnodename(const struct cap_dirnode *self) {
+file_dirnodename(const struct file_dirnode *self) {
 	if (!self) {
 		return NULL;
 	}
@@ -439,10 +439,10 @@ cap_dirnodename(const struct cap_dirnode *self) {
 }
 
 /**********************
-* file struct cap_dir *
+* file struct file_dir *
 **********************/
 
-struct cap_dir {
+struct file_dir {
 #if defined(_CAP_WINDOWS)
 	HANDLE handle;
 	char dirpath[FILE_NPATH];
@@ -452,11 +452,11 @@ struct cap_dir {
 };
 
 /********************************
-* struct cap_dir close and open *
+* struct file_dir close and open *
 ********************************/
 
 int32_t
-cap_dirclose(struct cap_dir *self) {
+file_dirclose(struct file_dir *self) {
 	if (self) {
 		int32_t ret = 0;
 #if defined(_CAP_WINDOWS)
@@ -485,19 +485,19 @@ cap_dirclose(struct cap_dir *self) {
 	return -1;
 }
 
-struct cap_dir *
-cap_diropen(const char *path) {
+struct file_dir *
+file_diropen(const char *path) {
 	if (!path) {
 		return NULL;
 	}
 
-	struct cap_dir *self = calloc(1, sizeof(struct cap_dir));
+	struct file_dir *self = calloc(1, sizeof(struct file_dir));
 	if (!self) {
 		return NULL;
 	}
 
 #if defined(_CAP_WINDOWS)
-	if (!cap_fexists(path)) {
+	if (!file_exists(path)) {
 		return NULL;
 	}
 	self->handle = NULL;
@@ -514,16 +514,16 @@ cap_diropen(const char *path) {
 }
 
 /************************
-* struct cap_dir getter *
+* struct file_dir getter *
 ************************/
 
-struct cap_dirnode *
-cap_dirread(struct cap_dir *self) {
+struct file_dirnode *
+file_dirread(struct file_dir *self) {
 	if (!self) {
 		return NULL;
 	}
 	
-	struct cap_dirnode * node = cap_dirnodenew();
+	struct file_dirnode * node = file_dirnodenew();
 	if (!node) {
 		return NULL;
 	}
@@ -531,14 +531,14 @@ cap_dirread(struct cap_dir *self) {
 #if defined(_CAP_WINDOWS)
 	if (!self->handle) {
 		if ((self->handle = FindFirstFile(self->dirpath, &node->finddata)) == INVALID_HANDLE_VALUE) {
-			cap_dirnodedel(node);
+			file_dirnodedel(node);
 			return NULL;
 
 		}
 
 	} else {
 		if (!FindNextFile(self->handle, &node->finddata)) {
-			cap_dirnodedel(node);
+			file_dirnodedel(node);
 			return NULL; // Done to find
 		}
 	}
@@ -547,11 +547,11 @@ cap_dirread(struct cap_dir *self) {
 	errno = 0;
 	if (!(node->node = readdir(self->directory))) {
 		if (errno != 0) {
-			cap_dirnodedel(node);
+			file_dirnodedel(node);
 			return NULL;
 		} else {
 			// Done to readdir
-			cap_dirnodedel(node);
+			file_dirnodedel(node);
 			return NULL;
 		}
 	}

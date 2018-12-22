@@ -3,7 +3,7 @@
  *
  * License: MIT
  *  Author: Aizawa Yuta
- *   Since: 2016, 2017
+ *   Since: 2016, 2017, 2018
  */
 #pragma once
 
@@ -50,13 +50,13 @@ enum {
  * Wrapper of fclose
  */
 int32_t
-cap_fclose(FILE *fp);
+file_close(FILE *fp);
 
 /**
  * Wrapper of fopen
  */
 FILE *
-cap_fopen(const char *name, const char *mode);
+file_open(const char *name, const char *mode);
 
 /**
  * Copy stream
@@ -66,19 +66,19 @@ cap_fopen(const char *name, const char *mode);
  * @return bool success to true, failed to false
  */
 bool
-cap_fcopy(FILE *dst, FILE *src);
+file_copy(FILE *dst, FILE *src);
 
 /**
  * Wrapper of closedir
  */
 int32_t
-cap_fclosedir(DIR* dir);
+file_closedir(DIR* dir);
 
 /**
  * Wrapper of opendir
  */
 DIR *
-cap_fopendir(const char *path);
+file_opendir(const char *path);
 
 /**
  * Wrapper of realpath (UNIX's API)
@@ -91,7 +91,7 @@ cap_fopendir(const char *path);
  * @return failed to NULL
 */
 char *
-cap_frealpath(char *dst, uint32_t dstsz, const char *src);
+file_realpath(char *dst, uint32_t dstsz, const char *src);
 
 /**
  * Check exists file
@@ -101,19 +101,19 @@ cap_frealpath(char *dst, uint32_t dstsz, const char *src);
  * @return is not exists to false
  */
 bool
-cap_fexists(const char *path);
+file_exists(const char *path);
 
 /**
  * Wrapper of mkdir
  */
 int32_t
-cap_fmkdirmode(const char *path, mode_t mode);
+file_mkdirmode(const char *path, mode_t mode);
 
 /**
  * Wrapper of mkdir without mode for the quickly
  */
 int32_t
-cap_fmkdirq(const char *path);
+file_mkdirq(const char *path);
 
 /**
  * Create empty file on file-system
@@ -124,7 +124,7 @@ cap_fmkdirq(const char *path);
  * @return failed to false
  */
 bool
-cap_ftrunc(const char *path);
+file_trunc(const char *path);
 
 /**
  * Get normalized file path
@@ -137,7 +137,7 @@ cap_ftrunc(const char *path);
  * @return failed to NULL
  */
 char *
-cap_fsolve(char *dst, uint32_t dstsz, const char *path);
+file_solve(char *dst, uint32_t dstsz, const char *path);
 
 /**
  * Get normalized file path with copy
@@ -148,7 +148,7 @@ cap_fsolve(char *dst, uint32_t dstsz, const char *path);
  * @return failed to NULL
  */
 char *
-cap_fsolvecp(const char *path);
+file_solvecp(const char *path);
 
 /**
  * Get normalized file path by string format
@@ -163,7 +163,7 @@ cap_fsolvecp(const char *path);
  * @return failed to NULL
  */
 char *
-cap_fsolvefmt(char *dst, uint32_t dstsz, const char *fmt, ...);
+file_solvefmt(char *dst, uint32_t dstsz, const char *fmt, ...);
 
 /**
  * Check file is directory
@@ -173,7 +173,7 @@ cap_fsolvefmt(char *dst, uint32_t dstsz, const char *fmt, ...);
  * @return is not directory to false
  */
 bool
-cap_fisdir(const char *path);
+file_isdir(const char *path);
 
 /**
  * Read all string from stream
@@ -183,7 +183,7 @@ cap_fisdir(const char *path);
  * @return failed to pointer to NULL
  */
 char *
-cap_freadcp(FILE *fin);
+file_readcp(FILE *fin);
 
 /**
  * Get file size
@@ -194,7 +194,7 @@ cap_freadcp(FILE *fin);
  * @return failed to under of zero
  */
 int64_t
-cap_fsize(FILE *stream);
+file_size(FILE *stream);
 
 /**
  * Get suffix in file path
@@ -205,7 +205,7 @@ cap_fsize(FILE *stream);
  * @return failed to NULL
  */
 const char *
-cap_fsuffix(const char *path);
+file_suffix(const char *path);
 
 /**
  * Get directory name in path
@@ -218,7 +218,7 @@ cap_fsuffix(const char *path);
  * @return failed to NULL
  */
 char *
-cap_fdirname(char *dst, uint32_t dstsz, const char *path);
+file_dirname(char *dst, uint32_t dstsz, const char *path);
 
 /**
  * Get base name in path 
@@ -231,7 +231,7 @@ cap_fdirname(char *dst, uint32_t dstsz, const char *path);
  * @return failed to NULL
  */
 char *
-cap_fbasename(char *dst, uint32_t dstsz, const char *path);
+file_basename(char *dst, uint32_t dstsz, const char *path);
 
 /**
  * Get line of string from stream
@@ -244,7 +244,7 @@ cap_fbasename(char *dst, uint32_t dstsz, const char *path);
  * @return end of file or failed to EOF
  */
 int32_t
-cap_fgetline(char *dst, uint32_t dstsz, FILE *fin);
+file_getline(char *dst, uint32_t dstsz, FILE *fin);
 
 /**
  * Read first line in file
@@ -257,7 +257,7 @@ cap_fgetline(char *dst, uint32_t dstsz, FILE *fin);
  * @return failed to NULL
  */
 char *
-cap_freadline(char *dst, uint32_t dstsz, const char *path);
+file_readline(char *dst, uint32_t dstsz, const char *path);
 
 /**
  * Write first line to file
@@ -269,13 +269,13 @@ cap_freadline(char *dst, uint32_t dstsz, const char *path);
  * @return failed to NULL
  */
 const char *
-cap_fwriteline(const char *line, const char *path);
+file_writeline(const char *line, const char *path);
 
 /**************
-* cap_dirnode *
+* file_dirnode *
 **************/
 
-struct cap_dirnode;
+struct file_dirnode;
 
 /**
  * Delete node of dynamic allocate memory
@@ -283,7 +283,7 @@ struct cap_dirnode;
  * @param self
 */
 void
-cap_dirnodedel(struct cap_dirnode *self);
+file_dirnodedel(struct file_dirnode *self);
 
 /**
  * Get name of node
@@ -294,13 +294,13 @@ cap_dirnodedel(struct cap_dirnode *self);
  * @return failed to NULL
 */
 const char *
-cap_dirnodename(const struct cap_dirnode* self);
+file_dirnodename(const struct file_dirnode* self);
 
-/**********
-* cap_dir *
-**********/
+/***********
+* file_dir *
+***********/
 
-struct cap_dir;
+struct file_dir;
 
 /**
  * Close directory
@@ -311,26 +311,26 @@ struct cap_dir;
  * @return failed to number of under of zero
 */
 int32_t
-cap_dirclose(struct cap_dir *self);
+file_dirclose(struct file_dir *self);
 
 /**
  * Open directory
  *
  * @param path path of directory
  *
- * @return success to pointer to struct cap_dir
+ * @return success to pointer to struct file_dir
  * @return failed to NULL
 */
-struct cap_dir *
-cap_diropen(const char *path);
+struct file_dir *
+file_diropen(const char *path);
 
 /**
  * Read next node in directory
  *
  * @param self
  *
- * @return success to pointer to struct cap_dirnode
+ * @return success to pointer to struct file_dirnode
  * @return failed or end of read to NULL
 */
-struct cap_dirnode *
-cap_dirread(struct cap_dir *self);
+struct file_dirnode *
+file_dirread(struct file_dir *self);
