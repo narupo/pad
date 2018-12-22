@@ -20,6 +20,7 @@ struct app {
     int argc;
     char **argv;
     cmdargs_t *cmdargs;
+    config_t *config;
     struct opts opts;
 };
 
@@ -64,9 +65,22 @@ app_parse_opts(app_t *self) {
 static void
 app_del(app_t *self) {
     if (self) {
+        config_del(self->config);
         cmdargs_del(self->cmdargs);
         free(self);
     }
+}
+
+static bool
+app_init_config(app_t *self) {
+    // In case of UNIX/Linux
+    file_solve(self->config->var_cd_path, sizeof self->config->var_cd_path, "~/.cap/var/cd");
+    file_solve(self->config->var_home_path, sizeof self->config->var_home_path, "~/.cap/var/home");
+
+    // In case of Windows
+    // TODO
+
+    return true;
 }
 
 static app_t *
@@ -75,6 +89,13 @@ app_new(int argc, char *argv[]) {
 
     self->argc = argc;
     self->argv = argv;
+
+    self->config = config_new();
+    if (!app_init_config(self)) {
+        err_error("failed to configuration");
+        app_del(self);
+        return NULL;
+    }
 
     self->cmdargs = cmdargs_new();
     if (!cmdargs_parse(self->cmdargs, self->argc, self->argv)) {
@@ -180,7 +201,8 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
 static int
 app_execute_command_by_name(app_t *self, const char *name) {
     if (!strcmp(name, "home")) {
-        homecmd_t *homecmd = homecmd_new(self->cmdargs);
+        homecmd_t *homecmd = homecmd_new(self->config, self->cmdargs);
+        self->config = NULL; // moved
         self->cmdargs = NULL; // moved
         int result = homecmd_run(homecmd);
         homecmd_del(homecmd);

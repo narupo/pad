@@ -17,3 +17,9 @@ cmdargs_parse(cmdargs_t *self, int app_argc, char *app_argv[]);
 
 const char *
 cmdargs_get_cmdname(const cmdargs_t *self);
+
+int
+cmdargs_get_argc(cmdargs_t *self);
+
+char **
+cmdargs_get_argv(cmdargs_t *self);
