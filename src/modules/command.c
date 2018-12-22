@@ -1,23 +1,21 @@
 #include "command.h"
 
 struct command {
-    int argc;
-    char **argv;
+    cmdargs_t *cmdargs;
 };
 
 void
-command_del(struct command *self) {
+command_del(struct command_t *self) {
     if (self) {
         free(self);
     }
 }
 
-struct command *
-command_new(int argc, char *argv[]) {
-    struct command *self = cap_ecalloc(1, sizeof(*self));
+struct command_t *
+command_new(cmdargs_t *move_cmdargs) {
+    struct command_t *self = cap_ecalloc(1, sizeof(*self));
 
-    self->argc = argc;
-    self->argv = argv;
+    self->cmdargs = move_cmdargs;
 
     return self;
 }

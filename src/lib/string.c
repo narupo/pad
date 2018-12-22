@@ -78,7 +78,7 @@ enum {
 *********************/
 
 void
-str_del(string *self) {
+str_del(string_t *self) {
 	if (self) {
 		free(self->buffer);
 		free(self);
@@ -86,7 +86,7 @@ str_del(string *self) {
 }
 
 string_type_t *
-str_escdel(string *self) {
+str_escdel(string_t *self) {
 	if (!self) {
 		return NULL;
 	}
@@ -96,9 +96,9 @@ str_escdel(string *self) {
 	return buf;
 }
 
-string *
+string_t *
 str_new(void) {
-	string *self = calloc(1, sizeof(string));
+	string_t *self = calloc(1, sizeof(string_t));
 	if (!self) {
 		return NULL;
 	}
@@ -116,13 +116,13 @@ str_new(void) {
 	return self;
 }
 
-string *
-str_newother(const string *other) {
+string_t *
+str_newother(const string_t *other) {
 	if (!other) {
 		return NULL;
 	}
 
-	string *self = calloc(1, sizeof(string));
+	string_t *self = calloc(1, sizeof(string_t));
 	if (!self) {
 		return NULL;
 	}
@@ -148,7 +148,7 @@ str_newother(const string *other) {
 *************/
 
 int32_t
-str_len(const string *self) {
+str_len(const string_t *self) {
 	if (!self) {
 		return -1;
 	}
@@ -156,7 +156,7 @@ str_len(const string *self) {
 }
 
 int32_t
-str_capa(const string *self) {
+str_capa(const string_t *self) {
 	if (!self) {
 		return -1;
 	}
@@ -164,7 +164,7 @@ str_capa(const string *self) {
 }
 
 const string_type_t *
-str_getc(const string *self) {
+str_getc(const string_t *self) {
 	if (!self) {
 		return NULL;
 	}
@@ -172,7 +172,7 @@ str_getc(const string *self) {
 }
 
 int32_t
-str_empty(const string *self) {
+str_empty(const string_t *self) {
 	if (!self) {
 		return 0;
 	}
@@ -184,7 +184,7 @@ str_empty(const string *self) {
 *************/
 
 void
-str_clear(string *self) {
+str_clear(string_t *self) {
 	if (!self) {
 		return;
 	}
@@ -193,8 +193,8 @@ str_clear(string *self) {
 	self->buffer[self->length] = NIL;
 }
 
-string *
-str_set(string *self, const string_type_t *src) {
+string_t *
+str_set(string_t *self, const string_type_t *src) {
 	if (!self || !src) {
 		return NULL;
 	}
@@ -215,8 +215,8 @@ str_set(string *self, const string_type_t *src) {
 	return self;
 }
 
-string *
-str_resize(string *self, int32_t newcapa) {
+string_t *
+str_resize(string_t *self, int32_t newcapa) {
 	if (!self) {
 		return NULL;
 	}
@@ -241,8 +241,8 @@ str_resize(string *self, int32_t newcapa) {
 	return self;
 }
 
-string *
-str_pushb(string *self, string_type_t ch) {
+string_t *
+str_pushb(string_t *self, string_type_t ch) {
 	if (!self || ch == NIL) {
 		return NULL;
 	}
@@ -260,7 +260,7 @@ str_pushb(string *self, string_type_t ch) {
 }
 
 string_type_t
-str_popb(string *self) {
+str_popb(string_t *self) {
 	if (!self) {
 		return NIL;
 	}
@@ -274,8 +274,8 @@ str_popb(string *self) {
 	return NIL;
 }
 
-string *
-str_pushf(string *self, string_type_t ch) {
+string_t *
+str_pushf(string_t *self, string_type_t ch) {
 	if (!self || ch == NIL) {
 		return NULL;
 	}
@@ -296,7 +296,7 @@ str_pushf(string *self, string_type_t ch) {
 }
 
 string_type_t
-str_popf(string *self) {
+str_popf(string_t *self) {
 	if (!self || self->length == 0) {
 		return NIL;
 	}
@@ -313,8 +313,8 @@ str_popf(string *self) {
 	return ret;
 }
 
-string *
-str_app(string *self, const string_type_t *src) {
+string_t *
+str_app(string_t *self, const string_type_t *src) {
 	if (!self || !src) {
 		return NULL;
 	}
@@ -335,8 +335,8 @@ str_app(string *self, const string_type_t *src) {
 	return self;
 }
 
-string *
-str_appstream(string *self, FILE *fin) {
+string_t *
+str_appstream(string_t *self, FILE *fin) {
 	if (!self || !fin) {
 		return NULL;
 	}
@@ -350,14 +350,14 @@ str_appstream(string *self, FILE *fin) {
 	return self;
 }
 
-string *
-str_appother(string *self, const string *other) {
+string_t *
+str_appother(string_t *self, const string_t *other) {
 
 	if (!self || !other) {
 		return NULL;
 	}
 
-	string *ret = NULL;
+	string_t *ret = NULL;
 
 	if (self == other) {
 		string_type_t *buf = (string_type_t *) strdup(self->buffer);
@@ -373,8 +373,8 @@ str_appother(string *self, const string *other) {
 	return ret;
 }
 
-string *
-str_appfmt(string *self, string_type_t *buf, int32_t nbuf, const string_type_t *fmt, ...) {
+string_t *
+str_appfmt(string_t *self, string_type_t *buf, int32_t nbuf, const string_type_t *fmt, ...) {
 	if (!self || !buf || !fmt || nbuf == 0) {
 		return NULL;
 	}
@@ -393,8 +393,8 @@ str_appfmt(string *self, string_type_t *buf, int32_t nbuf, const string_type_t *
 	return self;
 }
 
-string *
-str_rstrip(string *self, const string_type_t *rems) {
+string_t *
+str_rstrip(string_t *self, const string_type_t *rems) {
 	if (!self || !rems) {
 		return NULL;
 	}
@@ -410,8 +410,8 @@ str_rstrip(string *self, const string_type_t *rems) {
 	return self;
 }
 
-string *
-str_lstrip(string *self, const string_type_t *rems) {
+string_t *
+str_lstrip(string_t *self, const string_type_t *rems) {
 	if (!self || !rems) {
 		return NULL;
 	}
@@ -427,8 +427,8 @@ str_lstrip(string *self, const string_type_t *rems) {
 	return self;
 }
 
-string *
-str_strip(string *self, const string_type_t *rems) {
+string_t *
+str_strip(string_t *self, const string_type_t *rems) {
 	if (!str_rstrip(self, rems)) {
 		return NULL;
 	}
@@ -497,7 +497,7 @@ bmfind(
 #undef MAX
 
 const char *
-str_findc(const string *self, const char *target) {
+str_findc(const string_t *self, const char *target) {
 	if (!self || !target) {
 		return NULL;
 	}
@@ -653,7 +653,7 @@ showargv(int argc, char *argv[]) {
 }
 
 static void
-push(struct args *args, string *str) {
+push(struct args *args, string_t *str) {
 	if (str_empty(str)) {
 		return;
 	}
@@ -674,7 +674,7 @@ makeargsby(const char *line) {
 		return NULL;
 	}
 
-	string *tmp = str_new();
+	string_t *tmp = str_new();
 	if (!tmp) {
 		argsdel(args);
 		perror("str_new");
@@ -708,7 +708,7 @@ makeargsby(const char *line) {
 * test main *
 ************/
 
-static string *kstr;
+static string_t *kstr;
 
 static int
 test_del(int argc, char *argv[]) {
@@ -759,7 +759,7 @@ test_newother(int argc, char *argv[]) {
 		return 1;
 	}
 
-	string *dst = str_newother(kstr);
+	string_t *dst = str_newother(kstr);
 	if (!dst) {
 		return 2;
 	}

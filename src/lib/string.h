@@ -48,12 +48,12 @@ strapp(char *dst, int32_t dstsz, const char *src);
 char *
 strcpywithout(char *dst, int32_t dstsz, const char *src, const char *without);
 
-/*********
-* string *
-*********/
+/***********
+* string_t *
+***********/
 
 struct string;
-typedef struct string string;
+typedef struct string string_t;
 typedef char string_type_t;
 
 /**
@@ -62,7 +62,7 @@ typedef char string_type_t;
  * @param[in] self
  */
 void
-str_del(string *self);
+str_del(string_t *self);
 
 /**
  * Destring with move semantics
@@ -70,14 +70,14 @@ str_del(string *self);
  * @param[in] self
  */
 string_type_t *
-str_escdel(string *self);
+str_escdel(string_t *self);
 
 /**
  * Constring
  *
  * @return pointer to dynamic allocate memory of string
  */
-string *
+string_t *
 str_new(void);
 
 /**
@@ -88,8 +88,8 @@ str_new(void);
  *
  * @return pointer to dynamic allocate memory of string
  */
-string *
-str_newother(const string *other);
+string_t *
+str_newother(const string_t *other);
 
 /**
  * Get number of length of buffer in string
@@ -99,7 +99,7 @@ str_newother(const string *other);
  * @return number of length
  */
 int32_t
-str_len(const string *self);
+str_len(const string_t *self);
 
 /**
  * Get number of capacity of buffer in string
@@ -109,7 +109,7 @@ str_len(const string *self);
  * @return number of capacity
  */
 int32_t
-str_capa(const string *self);
+str_capa(const string_t *self);
 
 /**
  * Get read-only pointer to buffer in string
@@ -119,7 +119,7 @@ str_capa(const string *self);
  * @return pointer to memory of buffer in string
  */
 const string_type_t *
-str_getc(const string *self);
+str_getc(const string_t *self);
 
 /**
  * Check empty of buffer in string
@@ -130,7 +130,7 @@ str_getc(const string *self);
  * @return not empty to false
  */
 int32_t
-str_empty(const string *self);
+str_empty(const string_t *self);
 
 /**
  * Clear buffer in string
@@ -139,7 +139,7 @@ str_empty(const string *self);
  * @param[in] self
  */
 void
-str_clear(string *self);
+str_clear(string_t *self);
 
 /**
  * Set c string to buffer of string
@@ -150,8 +150,8 @@ str_clear(string *self);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string *
-str_set(string *self, const char *src);
+string_t *
+str_set(string_t *self, const char *src);
 
 /**
  * Resize buffer in string by number of new length of buffer
@@ -162,8 +162,8 @@ str_set(string *self, const char *src);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string *
-str_resize(string *self, int32_t newlen);
+string_t *
+str_resize(string_t *self, int32_t newlen);
 
 /**
  * Push data to back of buffer in string
@@ -174,8 +174,8 @@ str_resize(string *self, int32_t newlen);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string *
-str_pushb(string *self, string_type_t ch);
+string_t *
+str_pushb(string_t *self, string_type_t ch);
 
 /**
  * Pop data at back of buffer in string
@@ -186,7 +186,7 @@ str_pushb(string *self, string_type_t ch);
  * @return failed to NIL
  */
 string_type_t
-str_popb(string *self);
+str_popb(string_t *self);
 
 /**
  * Push data at front of buffer in string
@@ -197,8 +197,8 @@ str_popb(string *self);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string *
-str_pushf(string *self, string_type_t ch);
+string_t *
+str_pushf(string_t *self, string_type_t ch);
 
 /**
  * Pop data at front of buffer in string
@@ -209,7 +209,7 @@ str_pushf(string *self, string_type_t ch);
  * @return failed to NIL
  */
 string_type_t
-str_popf(string *self);
+str_popf(string_t *self);
 
 /**
  * Append c string at back of buffer in string
@@ -220,8 +220,8 @@ str_popf(string *self);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string *
-str_app(string *self, const string_type_t *src);
+string_t *
+str_app(string_t *self, const string_type_t *src);
 
 /**
  * Append stream at back of buffer in string
@@ -232,8 +232,8 @@ str_app(string *self, const string_type_t *src);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string *
-str_appstream(string *self, FILE *fin);
+string_t *
+str_appstream(string_t *self, FILE *fin);
 
 /**
  * Append other string at back of buffer in string
@@ -244,8 +244,8 @@ str_appstream(string *self, FILE *fin);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string *
-str_appother(string *self, const string *other);
+string_t *
+str_appother(string_t *self, const string_t *other);
 
 /**
  * Append format string at back of buffer in string
@@ -259,8 +259,8 @@ str_appother(string *self, const string *other);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string *
-str_appfmt(string *self, string_type_t *buf, int32_t nbuf, const string_type_t *fmt, ...);
+string_t *
+str_appfmt(string_t *self, string_type_t *buf, int32_t nbuf, const string_type_t *fmt, ...);
 
 /**
  * Strip elements at right of string
@@ -268,8 +268,8 @@ str_appfmt(string *self, string_type_t *buf, int32_t nbuf, const string_type_t *
  * @return success to pointer to self
  * @return failed to NULL
  */
-string *
-str_rstrip(string *self, const string_type_t *rems);
+string_t *
+str_rstrip(string_t *self, const string_type_t *rems);
 
 /**
  * Strip elements at left of string
@@ -277,8 +277,8 @@ str_rstrip(string *self, const string_type_t *rems);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string *
-str_lstrip(string *self, const string_type_t *rems);
+string_t *
+str_lstrip(string_t *self, const string_type_t *rems);
 
 /**
  * Strip elements at both sides of string
@@ -286,8 +286,8 @@ str_lstrip(string *self, const string_type_t *rems);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string *
-str_strip(string *self, const string_type_t *rems);
+string_t *
+str_strip(string_t *self, const string_type_t *rems);
 
 /**
  * Find token of string from front of buffer in string
@@ -299,7 +299,7 @@ str_strip(string *self, const string_type_t *rems);
  * @return not found to NULL
  */
 const string_type_t *
-str_findc(const string *self, const string_type_t *target);
+str_findc(const string_t *self, const string_type_t *target);
 
 /********
 * uint8 *

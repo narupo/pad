@@ -18,7 +18,7 @@ enum {
 };
 
 void
-cstrarr_del(cstring_array *arr) {
+cstrarr_del(cstring_array_t *arr) {
 	if (arr) {
 		for (ssize_t i = 0; i < arr->len; ++i) {
 			free(arr->arr[i]);
@@ -28,18 +28,18 @@ cstrarr_del(cstring_array *arr) {
 	}
 }
 
-cstring_array *
+cstring_array_t *
 cstrarr_new(void) {
-	cstring_array *arr = mem_ecalloc(1, sizeof(cstring_array));
+	cstring_array_t *arr = mem_ecalloc(1, sizeof(cstring_array_t));
 
 	arr->capa = CAP_ARRINITCAPA;
-	arr->arr = mem_ecalloc(arr->capa+1, sizeof(cstring_array *));
+	arr->arr = mem_ecalloc(arr->capa+1, sizeof(cstring_array_t *));
 
 	return arr;
 }
 
 char **
-cstrarr_escdel(cstring_array *arr) {
+cstrarr_escdel(cstring_array_t *arr) {
 	if (!arr) {
 		return NULL;
 	}
@@ -51,8 +51,8 @@ cstrarr_escdel(cstring_array *arr) {
 	return esc;
 }
 
-cstring_array *
-cstrarr_resize(cstring_array *arr, ssize_t capa) {
+cstring_array_t *
+cstrarr_resize(cstring_array_t *arr, ssize_t capa) {
 	ssize_t size = sizeof(arr->arr[0]);
 	char **tmp = realloc(arr->arr, size*capa + size);
 	if (!tmp) {
@@ -64,8 +64,8 @@ cstrarr_resize(cstring_array *arr, ssize_t capa) {
 	return arr;
 }
 
-cstring_array *
-cstrarr_push(cstring_array *arr, const char *str) {
+cstring_array_t *
+cstrarr_push(cstring_array_t *arr, const char *str) {
 	if (!arr || !str) {
 		return NULL;
 	}
@@ -82,8 +82,8 @@ cstrarr_push(cstring_array *arr, const char *str) {
 	return arr;
 }
 
-cstring_array * 
-cstrarr_move(cstring_array *arr, char *ptr) {
+cstring_array_t * 
+cstrarr_move(cstring_array_t *arr, char *ptr) {
 	if (!arr) {
 		return NULL;
 	}
@@ -107,8 +107,8 @@ cstrarr_cmp(const void *lh, const void *rh) {
 	return strcmp(ls, rs);
 }
 
-cstring_array *
-cstrarr_sort(cstring_array *arr) {
+cstring_array_t *
+cstrarr_sort(cstring_array_t *arr) {
 	if (!arr) {
 		return NULL;
 	}
@@ -118,7 +118,7 @@ cstrarr_sort(cstring_array *arr) {
 }
 
 const char *
-cstrarr_getc(const cstring_array *arr, int idx) {
+cstrarr_getc(const cstring_array_t *arr, int idx) {
 	if (!arr) {
 		return NULL;
 	}
@@ -131,7 +131,7 @@ cstrarr_getc(const cstring_array *arr, int idx) {
 }
 
 ssize_t
-cstrarr_len(const cstring_array *arr) {
+cstrarr_len(const cstring_array_t *arr) {
 	if (!arr) {
 		return 0;
 	}
@@ -139,8 +139,8 @@ cstrarr_len(const cstring_array *arr) {
 	return arr->len;
 }
 
-const cstring_array *
-cstrarr_show(const cstring_array *arr, FILE *fout) {
+const cstring_array_t *
+cstrarr_show(const cstring_array_t *arr, FILE *fout) {
 	if (!arr || !fout) {
 		return NULL;
 	}

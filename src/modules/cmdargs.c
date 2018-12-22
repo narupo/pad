@@ -6,24 +6,26 @@ struct cmdargs {
 };
 
 void
-cmdargs_del(cmdargs *self) {
-    freeargv(self->argc, self->argv);
-    free(self);
+cmdargs_del(cmdargs_t *self) {
+    if (self) {
+        freeargv(self->argc, self->argv);
+        free(self);
+    }
 }
 
-cmdargs *
+cmdargs_t *
 cmdargs_new(void) {
-    cmdargs *self = mem_ecalloc(1, sizeof(*self));
+    cmdargs_t *self = mem_ecalloc(1, sizeof(*self));
     return self;
 }
 
-cmdargs *
-cmdargs_parse(cmdargs *self, int app_argc, char *app_argv[]) {
+cmdargs_t *
+cmdargs_parse(cmdargs_t *self, int app_argc, char *app_argv[]) {
     if (app_argc < 2) {
         return self;
     }
 
-    cstring_array *args = cstrarr_new();
+    cstring_array_t *args = cstrarr_new();
 
     for (int i = 1; i < app_argc; ++i) {
         cstrarr_push(args, app_argv[i]);
@@ -36,4 +38,13 @@ cmdargs_parse(cmdargs *self, int app_argc, char *app_argv[]) {
     self->argv = cstrarr_escdel(args);
 
     return self;
+}
+
+const char *
+cmdargs_get_cmdname(const cmdargs_t *self) {
+    if (self->argc <= 0) {
+        return NULL;
+    }
+
+    return self->argv[0];
 }

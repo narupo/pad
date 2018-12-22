@@ -10,4 +10,5 @@
 #include "modules/constant.h"
 #include "modules/util.h"
 #include "modules/cmdargs.h"
+#include "modules/commands/homecmd.h"
 

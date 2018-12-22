@@ -19,11 +19,14 @@ struct opts {
 struct app {
     int argc;
     char **argv;
+    cmdargs_t *cmdargs;
     struct opts opts;
 };
 
+typedef struct app app_t;
+
 static bool
-app_parse_opts(struct app *self) {
+app_parse_opts(app_t *self) {
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"version", no_argument, 0, 'V'},
@@ -59,18 +62,26 @@ app_parse_opts(struct app *self) {
 }
 
 static void
-app_del(struct app *self) {
+app_del(app_t *self) {
     if (self) {
+        cmdargs_del(self->cmdargs);
         free(self);
     }
 }
 
-static struct app *
+static app_t *
 app_new(int argc, char *argv[]) {
-    struct app *self = mem_ecalloc(1, sizeof(*self));
+    app_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->argc = argc;
     self->argv = argv;
+
+    self->cmdargs = cmdargs_new();
+    if (!cmdargs_parse(self->cmdargs, self->argc, self->argv)) {
+        err_error("failed to parse command arguments");
+        app_del(self);
+        return NULL;
+    }
 
     if (!app_parse_opts(self)) {
         app_del(self);
@@ -81,7 +92,7 @@ app_new(int argc, char *argv[]) {
 }
 
 static void
-app_usage(struct app *app) {
+app_usage(app_t *app) {
     static const char usage[] =
         "Cap is simple snippet manager.\n"
         "\n"
@@ -133,7 +144,7 @@ app_usage(struct app *app) {
 }
 
 static void
-app_version(struct app *self) {
+app_version(app_t *self) {
     fflush(stdout);
     fflush(stderr);
 
@@ -144,8 +155,62 @@ app_version(struct app *self) {
     exit(0);
 }
 
+static bool
+app_is_cap_cmdname(const app_t *self, const char *cmdname) {
+    static const char *capcmdnames[] = {
+        "home",
+        "cd",
+        "pwd",
+        "ls",
+        "cat",
+        "run",
+        "alias",
+        NULL,
+    };
+
+    for (const char **p = capcmdnames; *p; ++p) {
+        if (!strcmp(cmdname, *p)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 static int
-app_run(struct app *self) {
+app_execute_command_by_name(app_t *self, const char *name) {
+    if (!strcmp(name, "home")) {
+        homecmd_t *homecmd = homecmd_new(self->cmdargs);
+        self->cmdargs = NULL; // moved
+        int result = homecmd_run(homecmd);
+        homecmd_del(homecmd);
+        return result;
+    } else if (!strcmp(name, "cd")) {
+
+    } else if (!strcmp(name, "pwd")) {
+
+    } else if (!strcmp(name, "ls")) {
+
+    } else if (!strcmp(name, "cat")) {
+
+    } else if (!strcmp(name, "run")) {
+
+    } else if (!strcmp(name, "alias")) {
+
+    } 
+
+    err_error("invalid command name \"%s\"", name);
+    return -1;
+}
+
+static int
+app_execute_alias_by_name(app_t *self, const char *name) {
+    puts("run alias");
+    return 0;
+}
+
+static int
+app_run(app_t *self) {
     if (self->opts.ishelp) {
         app_usage(self);
     }
@@ -158,15 +223,22 @@ app_run(struct app *self) {
         app_usage(self);
     }
 
-    cmdargs *args = cmdargs_new();
-    cmdargs_parse(args, self->argc, self->argv);
+    const char *cmdname = cmdargs_get_cmdname(self->cmdargs);
+    if (!cmdname) {
+        err_error("command name is null");
+        return -1; // impossible
+    }
 
-    return 0;
+    if (app_is_cap_cmdname(self, cmdname)) {
+        return app_execute_command_by_name(self, cmdname);
+    }
+
+    return app_execute_alias_by_name(self, cmdname);
 }
 
 int
 main(int argc, char *argv[]) {
-    struct app *app = app_new(argc, argv);
+    app_t *app = app_new(argc, argv);
     if (!app) {
         err_die("failed to start application");
     }
