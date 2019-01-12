@@ -1,4 +1,4 @@
-#include "modules/commands/homecmd.h"
+#include "modules/commands/home.h"
 
 struct homecmd {
     config_t *config;
@@ -40,10 +40,7 @@ homecmd_run(homecmd_t *self) {
         err_die("%s is not a directory", newhome);
     }
 
-    // Update var/home
     file_writeline(newhome, self->config->var_home_path);
-
-    // Update var/cd
     file_writeline(newhome, self->config->var_cd_path);
 
     return 0;

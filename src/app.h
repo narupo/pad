@@ -11,5 +11,5 @@
 #include "modules/config.h"
 #include "modules/util.h"
 #include "modules/cmdargs.h"
-#include "modules/commands/homecmd.h"
+#include "modules/commands/home.h"
 
