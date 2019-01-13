@@ -59,6 +59,8 @@ struct pwdcmd {
 void
 pwdcmd_del(pwdcmd_t *self) {
 	if (self) {
+		config_del(self->config);
+		cmdargs_del(self->cmdargs);
 		free(self);
 	}
 }

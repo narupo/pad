@@ -8,6 +8,8 @@ struct cdcmd {
 void
 cdcmd_del(cdcmd_t *self) {
 	if (self) {
+		config_del(self->config);
+		cmdargs_del(self->cmdargs);
 		free(self);
 	}
 }
