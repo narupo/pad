@@ -9,8 +9,9 @@ gcc -std=c11 -I/mnt/c/src/cap/src -c \
     src/modules/config.c \
     src/modules/util.c \
     src/modules/cmdargs.c \
-    src/modules/commands/home.c\
-    src/modules/commands/cd.c\
+    src/modules/commands/home.c \
+    src/modules/commands/cd.c \
+    src/modules/commands/pwd.c \
 
 rm -rf ./build/
 mkdir build
