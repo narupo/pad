@@ -1,3 +1,10 @@
+/**
+ * Cap
+ *
+ * License: MIT
+ *  Author: Aizawa Yuta
+ *   Since: 2016, 2018
+ */
 #pragma once
 
 #include "lib/memory.h"
