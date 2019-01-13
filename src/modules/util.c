@@ -24,25 +24,24 @@ showargv(int argc, char *argv[]) {
 	}
 }
 
-/*
 bool
-isoutofhome(const char *pth) {
+isoutofhome(const char *varhome, const char *pth) {
 	char hm[FILE_NPATH];
-	if (!cap_envget(hm, sizeof hm, "CAP_VARHOME")) {
-		cap_error("invalid environment variable of 'CAP_VARHOME'");
+	if (!file_readline(hm, sizeof hm, varhome)) {
+		err_error("invalid environment variable of varhome");
 		return true;
 	}
 
 	char home[FILE_NPATH];
 	char path[FILE_NPATH];
 
-	if (!cap_fsolve(home, sizeof home, hm) ||
-		!cap_fsolve(path, sizeof path, pth)) {
-		cap_error("failed to solve path");
+	if (!file_solve(home, sizeof home, hm) ||
+		!file_solve(path, sizeof path, pth)) {
+		err_error("failed to solve path");
 		return true;
 	}
 
-	if (!cap_fexists(path)) {
+	if (!file_exists(path)) {
 		return true;
 	}
 
@@ -53,7 +52,6 @@ isoutofhome(const char *pth) {
 
 	return false;
 }
-*/
 
 int
 randrange(int min, int max) {
