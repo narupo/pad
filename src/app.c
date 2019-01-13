@@ -208,7 +208,12 @@ app_execute_command_by_name(app_t *self, const char *name) {
         homecmd_del(homecmd);
         return result;
     } else if (!strcmp(name, "cd")) {
-
+        cdcmd_t *cdcmd = cdcmd_new(self->config, self->cmdargs);
+        self->config = NULL; // moved
+        self->cmdargs = NULL; // moved
+        int result = cdcmd_run(cdcmd);
+        cdcmd_del(cdcmd);
+        return result;
     } else if (!strcmp(name, "pwd")) {
 
     } else if (!strcmp(name, "ls")) {

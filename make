@@ -10,7 +10,9 @@ gcc -std=c11 -I/mnt/c/src/cap/src -c \
     src/modules/util.c \
     src/modules/cmdargs.c \
     src/modules/commands/home.c\
+    src/modules/commands/cd.c\
 
+rm -rf ./build/
 mkdir build
 mv ./*.o build/
 gcc -std=c11 -o build/cap ./build/*.o

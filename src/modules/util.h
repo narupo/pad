@@ -16,8 +16,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-// #include "file.h"
-#include "error.h"
+#include "lib/file.h"
+#include "lib/error.h"
 // #include "env.h"
 // #include "string.h"
 // #include "cl.h"
@@ -44,13 +44,14 @@ showargv(int argc, char *argv[]);
 /**
  * Check path is out of cap's home?
  *
+ * @param[in] string varhome path of var home
  * @param[in] string path check path
  *
  * @return bool is out of home to true
  * @return bool is not out of home to false
  */
 bool
-isoutofhome(const char *path);
+isoutofhome(const char *varhome, const char *path);
 
 /**
  * Get random number of range.
