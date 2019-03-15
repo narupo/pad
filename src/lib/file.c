@@ -45,7 +45,7 @@ file_realpath(char *dst, uint32_t dstsz, const char *src) {
 		return NULL;
 	}
 
-#if defined(_CAP_WINDOWS)
+#if defined(_FILE_WINDOWS)
 	char *fpart;
 	if (!GetFullPathName(src, dstsz, dst, &fpart)) {
 		return NULL;
@@ -66,21 +66,43 @@ file_realpath(char *dst, uint32_t dstsz, const char *src) {
 }
 
 char *
+file_get_user_home(char *dst, uint32_t dstsz) {
+#ifdef _FILE_WINDOWS	
+	const char *key = "HOMEPATH";
+#else
+	const char *key = "HOME";
+#endif
+	const char *home = getenv(key);
+	if (home == NULL) {
+		return NULL;
+	}
+	snprintf(dst, dstsz, "%s", home);	
+	return dst;
+}
+
+char *
 file_solve(char *dst, uint32_t dstsz, const char *path) {
 	// Check arugments
 	if (!dst || dstsz == 0 || !path) {
 		return NULL;
 	}
 
-	char tmp[FILE_NPATH];
+	char tmp[FILE_NPATH*2];
 
 	// Solve '~'
 	if (path[0] == '~') {
-		snprintf(tmp, sizeof tmp, "%s/%s", getenv("HOME"), path+1);
+		char home[FILE_NPATH];
+		if (!file_get_user_home(home, sizeof home)) {
+			return NULL;
+		}
+		const char *p = path;
+		for (;*p == '~' || *p == '/'; ++p);
+		snprintf(tmp, sizeof tmp, "%s/%s", home, p);
 	} else {
 		snprintf(tmp, sizeof tmp, "%s", path);
 	}
 
+	// Get real path
 	if (!file_realpath(dst, dstsz, tmp)) {
 		return NULL;
 	}
@@ -197,7 +219,7 @@ file_mkdirmode(const char *dirpath, mode_t mode) {
 		return -1;
 	}
 
-#if defined(_CAP_WINDOWS)
+#if defined(_FILE_WINDOWS)
 	return mkdir(dirpath);
 #else
 	return mkdir(dirpath, mode);
@@ -394,7 +416,7 @@ file_writeline(const char *line, const char *path) {
 *********************/
 
 struct file_dirnode {
-#if defined(_CAP_WINDOWS)
+#if defined(_FILE_WINDOWS)
 	WIN32_FIND_DATA finddata;
 #else
 	struct dirent* node;
@@ -431,7 +453,7 @@ file_dirnodename(const struct file_dirnode *self) {
 		return NULL;
 	}
 
-#if defined(_CAP_WINDOWS)
+#if defined(_FILE_WINDOWS)
 	return self->finddata.cFileName;
 #else
 	return self->node->d_name;
@@ -443,7 +465,7 @@ file_dirnodename(const struct file_dirnode *self) {
 **********************/
 
 struct file_dir {
-#if defined(_CAP_WINDOWS)
+#if defined(_FILE_WINDOWS)
 	HANDLE handle;
 	char dirpath[FILE_NPATH];
 #else
@@ -459,7 +481,7 @@ int32_t
 file_dirclose(struct file_dir *self) {
 	if (self) {
 		int32_t ret = 0;
-#if defined(_CAP_WINDOWS)
+#if defined(_FILE_WINDOWS)
 		if (self->handle) {
 			ret = FindClose(self->handle);
 			if (ret == 0) {
@@ -496,7 +518,7 @@ file_diropen(const char *path) {
 		return NULL;
 	}
 
-#if defined(_CAP_WINDOWS)
+#if defined(_FILE_WINDOWS)
 	if (!file_exists(path)) {
 		return NULL;
 	}
@@ -528,7 +550,7 @@ file_dirread(struct file_dir *self) {
 		return NULL;
 	}
 
-#if defined(_CAP_WINDOWS)
+#if defined(_FILE_WINDOWS)
 	if (!self->handle) {
 		if ((self->handle = FindFirstFile(self->dirpath, &node->finddata)) == INVALID_HANDLE_VALUE) {
 			file_dirnodedel(node);

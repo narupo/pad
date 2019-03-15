@@ -18,6 +18,7 @@ $(TARGET): build/app.o \
 	build/lib_error.o \
 	build/lib_memory.o \
 	build/lib_file.o \
+	build/lib_cstring.o \
 	build/lib_string.o \
 	build/lib_cstring_array.o \
 	build/modules_config.o \
@@ -38,6 +39,9 @@ build/lib_memory.o: src/lib/memory.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/lib_file.o: src/lib/file.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/lib_cstring.o: src/lib/cstring.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/lib_string.o: src/lib/string.c
