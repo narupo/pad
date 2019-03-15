@@ -2,30 +2,32 @@
 
 struct homecmd {
     config_t *config;
-    cmdargs_t *cmdargs;
+    int argc;
+    char **argv;
 };
 
 void
 homecmd_del(homecmd_t *self) {
     if (self) {
         config_del(self->config);
-        cmdargs_del(self->cmdargs);
+        freeargv(self->argc, self->argv);
         free(self);
     }
 }
 
 homecmd_t *
-homecmd_new(config_t *move_config, cmdargs_t *move_cmdargs) {
+homecmd_new(config_t *move_config, int argc, char *argv[]) {
     homecmd_t *self = mem_ecalloc(1, sizeof(*self));
     self->config = move_config;
-    self->cmdargs = move_cmdargs;
+    self->argc = argc;
+    self->argv = argv;
     return self;
 }
 
 int
 homecmd_run(homecmd_t *self) {
-    int argc = cmdargs_get_argc(self->cmdargs);
-    char **argv = cmdargs_get_argv(self->cmdargs);
+    int argc = self->argc;
+    char **argv = self->argv;
 
     if (argc < 2) {
         char line[FILE_NPATH];

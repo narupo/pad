@@ -3,7 +3,7 @@
  *
  * License: MIT
  *  Author: Aizawa Yuta
- *   Since: 2016, 2018
+ *   Since: 2016
  */
 #include "modules/commands/pwd.h"
 
@@ -12,8 +12,15 @@ struct opts {
     bool isnorm;
 };
 
+struct pwdcmd {
+    config_t *config;
+    int argc;
+    char **argv;
+    struct opts opts;
+};
+
 static bool
-optsparse(struct opts *self, int argc, char *argv[]) {
+pwdcmd_parse_opts(pwdcmd_t *self) {
     // Parse options
     struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
@@ -22,6 +29,7 @@ optsparse(struct opts *self, int argc, char *argv[]) {
     };
     const char *shortopts = "hn";
 
+    self->opts = (struct opts){0};
     extern int opterr;
     extern int optind;
     opterr = 0; // ignore error messages
@@ -29,21 +37,21 @@ optsparse(struct opts *self, int argc, char *argv[]) {
 
     for (;;) {
         int optsindex;
-        int cur = getopt_long(argc, argv, shortopts, longopts, &optsindex);
+        int cur = getopt_long(self->argc, self->argv, shortopts, longopts, &optsindex);
         if (cur == -1) {
             break;
         }
 
         switch (cur) {
         case 0: /* Long option only */ break;
-        case 'h': self->ishelp = true; break;
-        case 'n': self->isnorm = true; break;
+        case 'h': self->opts.ishelp = true; break;
+        case 'n': self->opts.isnorm = true; break;
         case '?':
         default: perror("Unknown option"); break;
         }
     }
 
-    if (argc < optind) {
+    if (self->argc < optind) {
         perror("Failed to parse option");
         return false;
     }
@@ -51,35 +59,27 @@ optsparse(struct opts *self, int argc, char *argv[]) {
     return true;
 }
 
-struct pwdcmd {
-	config_t *config;
-	cmdargs_t *cmdargs;
-};
-
 void
 pwdcmd_del(pwdcmd_t *self) {
 	if (self) {
 		config_del(self->config);
-		cmdargs_del(self->cmdargs);
+        freeargv(self->argc, self->argv);
 		free(self);
 	}
 }
 
 pwdcmd_t *
-pwdcmd_new(config_t *config, cmdargs_t *cmdargs) {
+pwdcmd_new(config_t *config, int argc, char **move_argv) {
 	pwdcmd_t *self = mem_ecalloc(1, sizeof(*self));
 	self->config = config;
-	self->cmdargs = cmdargs;
+    self->argc = argc;
+    self->argv = move_argv;
 	return self;
 }
 
 int
 pwdcmd_run(pwdcmd_t *self) {
-	int argc = cmdargs_get_argc(self->cmdargs);
-	char **argv = cmdargs_get_argv(self->cmdargs);
-
-    struct opts opts = {0};
-    if (!optsparse(&opts, argc, argv)) {
+    if (!pwdcmd_parse_opts(self)) {
         err_error("failed to parse option");
         return 1;
     }
@@ -96,7 +96,7 @@ pwdcmd_run(pwdcmd_t *self) {
         return 3;
     }
 
-    if (opts.isnorm) {
+    if (self->opts.isnorm) {
     	printf("%s\n", cd);
     } else {
         int32_t homelen = strlen(home);

@@ -7,9 +7,6 @@
  */
 #pragma once
 
-struct pwdcmd;
-typedef struct pwdcmd pwdcmd_t;
-
 #include <stdio.h>
 #include <getopt.h>
 #include <string.h>
@@ -20,14 +17,17 @@ typedef struct pwdcmd pwdcmd_t;
 #include "lib/error.h"
 #include "lib/file.h"
 
+#include "modules/util.h"
 #include "modules/config.h"
-#include "modules/cmdargs.h"
+
+struct pwdcmd;
+typedef struct pwdcmd pwdcmd_t;
 
 void
 pwdcmd_del(pwdcmd_t *self);
 
 pwdcmd_t *
-pwdcmd_new(config_t *config, cmdargs_t *cmdargs);
+pwdcmd_new(config_t *config, int argc, char **move_argv);
 
 int
 pwdcmd_run(pwdcmd_t *self);

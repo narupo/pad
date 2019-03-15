@@ -7,7 +7,8 @@ struct opts {
 
 struct lscmd {
     config_t *config;
-    cmdargs_t *cmdargs;
+    int argc;
+    char **argv;
     struct opts opts;
 };
 
@@ -15,7 +16,7 @@ void
 lscmd_del(lscmd_t *self) {
     if (self) {
         config_del(self->config);
-        cmdargs_del(self->cmdargs);
+        freeargv(self->argc, self->argv);
         free(self);
     }
 }
@@ -33,12 +34,9 @@ lscmd_parse_opts(lscmd_t *self) {
     opterr = 0; // ignore error messages
     optind = 0; // init index of parse
 
-    int argc = cmdargs_get_argc(self->cmdargs);
-    char **argv = cmdargs_get_argv(self->cmdargs);
-
     for (;;) {
         int optsindex;
-        int cur = getopt_long(argc, argv, "ha", longopts, &optsindex);
+        int cur = getopt_long(self->argc, self->argv, "ha", longopts, &optsindex);
         if (cur == -1) {
             break;
         }
@@ -53,7 +51,7 @@ lscmd_parse_opts(lscmd_t *self) {
         }
     }
 
-    if (argc < optind) {
+    if (self->argc < optind) {
         return false;
     }
 
@@ -74,11 +72,12 @@ lscmd_usage(const lscmd_t *self) {
 }
 
 lscmd_t *
-lscmd_new(config_t *move_config, cmdargs_t *move_cmdargs) {
+lscmd_new(config_t *move_config, int argc, char **move_argv) {
     lscmd_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->config = move_config;
-    self->cmdargs = move_cmdargs;
+    self->argc = argc;
+    self->argv = move_argv;
 
     if (!lscmd_parse_opts(self)) {
         lscmd_del(self);
@@ -89,7 +88,7 @@ lscmd_new(config_t *move_config, cmdargs_t *move_cmdargs) {
 }
 
 static void
-lscmd_arrdump(const lscmd_t *_, const struct cstring_array_t *arr, FILE *fout) {
+lscmd_arrdump(const lscmd_t *_, const cstring_array_t *arr, FILE *fout) {
     for (int i = 0; i < cstrarr_len(arr); ++i) {
         fprintf(fout, "%s\n", cstrarr_getc(arr, i));
     }
@@ -106,9 +105,9 @@ lscmd_isdotfile(const lscmd_t *_, const char *fname) {
     return false;
 }
 
-static struct cstring_array_t *
+static cstring_array_t *
 lscmd_dir2arr(const lscmd_t *self, struct file_dir *dir) {
-    struct cstring_array_t *arr = cstrarr_new();
+    cstring_array_t *arr = cstrarr_new();
     if (!arr) {
         return NULL;
     }
@@ -138,7 +137,7 @@ lscmd_ls(const lscmd_t *self, const char *path) {
         return 2;
     }
 
-    struct cstring_array_t *arr = lscmd_dir2arr(self, dir);
+    cstring_array_t *arr = lscmd_dir2arr(self, dir);
     if (!arr) {
         err_error("failed to read directory %s", path);
         return 3;
@@ -158,9 +157,6 @@ lscmd_ls(const lscmd_t *self, const char *path) {
 
 int
 lscmd_run(lscmd_t *self) {
-    int argc = cmdargs_get_argc(self->cmdargs);
-    char **argv = cmdargs_get_argv(self->cmdargs);
-
     if (self->opts.ishelp) {
         lscmd_usage(self);
         return 0;
@@ -178,13 +174,13 @@ lscmd_run(lscmd_t *self) {
         return 2;
     }
 
-    if (optind-argc == 0) {
+    if (optind - self->argc == 0) {
         return lscmd_ls(self, cd);
     } else {
         char path[FILE_NPATH];
 
-        for (int i = optind; i < argc; ++i) {
-            const char *arg = argv[i];
+        for (int i = optind; i < self->argc; ++i) {
+            const char *arg = self->argv[i];
             const char *org = (arg[0] == '/' ? home : cd);
             file_solvefmt(path, sizeof path, "%s/%s", org, arg);
             lscmd_ls(self, path);

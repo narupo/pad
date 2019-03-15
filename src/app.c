@@ -16,10 +16,14 @@ struct opts {
     bool isversion;
 };
 
+/**
+ * Application structure.
+ */
 struct app {
     int argc;
     char **argv;
-    cmdargs_t *cmdargs;
+    int cmd_argc;
+    char **cmd_argv;
     config_t *config;
     struct opts opts;
 };
@@ -68,7 +72,8 @@ static void
 app_del(app_t *self) {
     if (self) {
         config_del(self->config);
-        cmdargs_del(self->cmdargs);
+        freeargv(self->argc, self->argv);
+        freeargv(self->cmd_argc, self->cmd_argv);
         free(self);
     }
 }
@@ -158,12 +163,55 @@ app_deploy_env(const app_t *self) {
     return true;
 }
 
+static bool
+app_parse_args(app_t *self, int argc, char *argv[]) {
+    cstring_array_t *app_args = cstrarr_new();
+    cstring_array_t *cmd_args = cstrarr_new();
+
+    int m = 0;
+    for (int i = 0; i < argc; ++i) {
+        const char *arg = argv[i];
+        switch (m) {
+        case 0:
+            if (strcmp(arg, "cap") == 0) {
+                cstrarr_push(app_args, arg);
+            } else {
+                err_error("invalid application name");
+                cstrarr_push(app_args, "cap");
+            }
+            m = 10;
+            break;
+        case 10:
+            if (arg[0] == '-') {
+                cstrarr_push(app_args, arg);
+            } else {
+                cstrarr_push(cmd_args, arg);
+                m = 20;
+            }
+            break;
+        case 20:
+            cstrarr_push(cmd_args, arg);
+            break;
+        }
+    }
+
+    self->argc = cstrarr_len(app_args);
+    self->argv = cstrarr_escdel(app_args);
+    self->cmd_argc = cstrarr_len(cmd_args);
+    self->cmd_argv = cstrarr_escdel(cmd_args);
+
+    return true;
+}
+
 static app_t *
 app_new(int argc, char *argv[]) {
     app_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->argc = argc;
-    self->argv = argv;
+    if (!app_parse_args(self, argc, argv)) {
+        err_error("failed to parse arguments");
+        app_del(self);
+        return NULL;
+    }
 
     if (!app_deploy_env(self)) {
         err_error("failed to deploy environment at file systems");
@@ -174,13 +222,6 @@ app_new(int argc, char *argv[]) {
     self->config = config_new();
     if (!app_init_config(self)) {
         err_error("failed to configuration");
-        app_del(self);
-        return NULL;
-    }
-
-    self->cmdargs = cmdargs_new();
-    if (!cmdargs_parse(self->cmdargs, self->argc, self->argv)) {
-        err_error("failed to parse command arguments");
         app_del(self);
         return NULL;
     }
@@ -282,30 +323,30 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
 static int
 app_execute_command_by_name(app_t *self, const char *name) {
     if (!strcmp(name, "home")) {
-        homecmd_t *homecmd = homecmd_new(self->config, self->cmdargs);
+        homecmd_t *homecmd = homecmd_new(self->config, self->cmd_argc, self->cmd_argv);
         self->config = NULL; // moved
-        self->cmdargs = NULL; // moved
+        self->cmd_argv = NULL; // moved
         int result = homecmd_run(homecmd);
         homecmd_del(homecmd);
         return result;
     } else if (!strcmp(name, "cd")) {
-        cdcmd_t *cdcmd = cdcmd_new(self->config, self->cmdargs);
+        cdcmd_t *cdcmd = cdcmd_new(self->config, self->cmd_argc, self->cmd_argv);
         self->config = NULL; // moved
-        self->cmdargs = NULL; // moved
+        self->cmd_argv = NULL; // moved
         int result = cdcmd_run(cdcmd);
         cdcmd_del(cdcmd);
         return result;
     } else if (!strcmp(name, "pwd")) {
-        pwdcmd_t *pwdcmd = pwdcmd_new(self->config, self->cmdargs);
+        pwdcmd_t *pwdcmd = pwdcmd_new(self->config, self->cmd_argc, self->cmd_argv);
         self->config = NULL; // moved
-        self->cmdargs = NULL; // moved
+        self->cmd_argv = NULL; // moved
         int result = pwdcmd_run(pwdcmd);
         pwdcmd_del(pwdcmd);
         return result;
     } else if (!strcmp(name, "ls")) {
-        lscmd_t *lscmd = lscmd_new(self->config, self->cmdargs);
+        lscmd_t *lscmd = lscmd_new(self->config, self->cmd_argc, self->cmd_argv);
         self->config = NULL; // moved
-        self->cmdargs = NULL; // moved
+        self->cmd_argv = NULL; // moved
         int result = lscmd_run(lscmd);
         lscmd_del(lscmd);
         return result;
@@ -337,11 +378,11 @@ app_run(app_t *self) {
         app_version(self);
     }
 
-    if (self->argc < 2) {
+    if (self->cmd_argc == 0) {
         app_usage(self);
     }
 
-    const char *cmdname = cmdargs_get_cmdname(self->cmdargs);
+    const char *cmdname = self->cmd_argv[0];
     if (!cmdname) {
         err_error("command name is null");
         return -1; // impossible
