@@ -34,10 +34,12 @@ app_parse_opts(app_t *self) {
         {},
     };
 
+    // init status
     self->opts = (struct opts){0};
     optind = 0;
     opterr = 0;
     
+    // parse options
     for (;;) {
         int optsindex;
         int cur = getopt_long(self->argc, self->argv, "hV", longopts, &optsindex);
@@ -79,6 +81,8 @@ app_init_config(app_t *self) {
 
     // In case of Windows
     // TODO
+    printf("var cd path [%s]\n", self->config->var_cd_path);
+    printf("var home path [%s]\n", self->config->var_home_path);
 
     return true;
 }
@@ -169,7 +173,7 @@ app_version(app_t *self) {
     fflush(stdout);
     fflush(stderr);
 
-    printf("%s\n", VERSION);
+    printf("%s\n", _VERSION);
     fflush(stdout);
 
     app_del(self);

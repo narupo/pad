@@ -3,7 +3,7 @@
  *
  * License: MIT
  *  Author: Aizawa Yuta
- *   Since: 2016, 2017, 2018
+ *   Since: 2016
  */
 #pragma once
 
@@ -25,12 +25,12 @@
 #include <libgen.h>
 
 #if defined(_WIN32) || defined(_WIN64)
-# define _CAP_WINDOWS 1 /* cap: file.h */
+# define _FILE_WINDOWS 1 /* cap: file.h */
 #else
-# undef _CAP_WINDOWS
+# undef _FILE_WINDOWS
 #endif
 
-#if defined(_CAP_WINDOWS)
+#if defined(_FILE_WINDOWS)
 # include <windows.h>
 #endif
 
@@ -125,6 +125,17 @@ file_mkdirq(const char *path);
  */
 bool
 file_trunc(const char *path);
+
+/**
+ * Get user's home directory path
+ *
+ * @param[in] dst destination of path
+ * @param[in] dstsz size of destination
+ * @return success to pointer to dst
+ * @return failed to NULL
+ */
+char *
+file_get_user_home(char *dst, uint32_t dstsz);
 
 /**
  * Get normalized file path
@@ -271,9 +282,9 @@ file_readline(char *dst, uint32_t dstsz, const char *path);
 const char *
 file_writeline(const char *line, const char *path);
 
-/**************
+/***************
 * file_dirnode *
-**************/
+***************/
 
 struct file_dirnode;
 
@@ -281,7 +292,7 @@ struct file_dirnode;
  * Delete node of dynamic allocate memory
  *
  * @param self
-*/
+ */
 void
 file_dirnodedel(struct file_dirnode *self);
 
@@ -292,7 +303,7 @@ file_dirnodedel(struct file_dirnode *self);
  *
  * @return success to pointer to name
  * @return failed to NULL
-*/
+ */
 const char *
 file_dirnodename(const struct file_dirnode* self);
 
@@ -309,7 +320,7 @@ struct file_dir;
  *
  * @return success to number of zero
  * @return failed to number of under of zero
-*/
+ */
 int32_t
 file_dirclose(struct file_dir *self);
 
@@ -320,7 +331,7 @@ file_dirclose(struct file_dir *self);
  *
  * @return success to pointer to struct file_dir
  * @return failed to NULL
-*/
+ */
 struct file_dir *
 file_diropen(const char *path);
 
@@ -331,6 +342,6 @@ file_diropen(const char *path);
  *
  * @return success to pointer to struct file_dirnode
  * @return failed or end of read to NULL
-*/
+ */
 struct file_dirnode *
 file_dirread(struct file_dir *self);
