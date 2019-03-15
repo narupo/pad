@@ -103,12 +103,16 @@ runcmd_run(runcmd_t *self) {
     char spath[FILE_NPATH];
     file_solvefmt(spath, sizeof spath, "%s/%s", cdorhome, self->argv[1]);
     if (isoutofhome(self->config->var_home_path, spath)) {
-        err_die("invalid script. '%s' is out of home.", spath);
+        err_error("invalid script. '%s' is out of home.", spath);
+        return 6;
     }
 
     // Read script line in file
     char exesname[NSCRIPTNAME];
-    runcmd_read_script_line(self, exesname, sizeof exesname, spath);
+    if (!runcmd_read_script_line(self, exesname, sizeof exesname, spath)) {
+        err_error("failed to read script line");
+        return 7;
+    }
 
     // Create command line
     string_t *cmdline = str_new();

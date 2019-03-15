@@ -104,8 +104,6 @@ safesystem(const char *cmdline) {
 		err_error("failed to escape and delete of clk");
 		return -1;
 	}
-
-	showargv(argc, argv);
 	
 	switch (fork()) {
 	case -1:
