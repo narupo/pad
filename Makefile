@@ -24,13 +24,15 @@ $(TARGET): build/app.o \
 	build/lib_cstring.o \
 	build/lib_string.o \
 	build/lib_cstring_array.o \
+	build/lib_cl.o \
 	build/modules_config.o \
 	build/modules_util.o \
 	build/modules_commands_home.o \
 	build/modules_commands_cd.o \
 	build/modules_commands_pwd.o \
 	build/modules_commands_ls.o \
-	build/modules_commands_cat.o
+	build/modules_commands_cat.o \
+	build/modules_commands_run.o
 	$(CC) $(CFLAGS) build/*.o -o build/cap.exe
 
 build/app.o: src/app.c
@@ -54,6 +56,9 @@ build/lib_string.o: src/lib/string.c
 build/lib_cstring_array.o: src/lib/cstring_array.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+build/lib_cl.o: src/lib/cl.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
 build/modules_config.o: src/modules/config.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -73,6 +78,9 @@ build/modules_commands_ls.o: src/modules/commands/ls.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules_commands_cat.o: src/modules/commands/cat.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/modules_commands_run.o: src/modules/commands/run.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean

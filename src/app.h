@@ -16,3 +16,4 @@
 #include "modules/commands/pwd.h"
 #include "modules/commands/ls.h"
 #include "modules/commands/cat.h"
+#include "modules/commands/run.h"

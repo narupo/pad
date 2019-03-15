@@ -216,7 +216,7 @@ app_new(int argc, char *argv[]) {
     }
 
     if (!app_deploy_env(self)) {
-        err_error("failed to deploy environment at file systems");
+        err_error("failed to deploy environment at file system");
         app_del(self);
         return NULL;
     }
@@ -349,13 +349,18 @@ app_execute_command_by_name(app_t *self, const char *name) {
         catcmd_del(cmd);
         return result;
     } else if (!strcmp(name, "run")) {
-
+        runcmd_t *cmd = runcmd_new(self->config, self->cmd_argc, self->cmd_argv);
+        self->config = NULL; // moved
+        self->cmd_argv = NULL; // moved
+        int result = runcmd_run(cmd);
+        runcmd_del(cmd);
+        return result;
     } else if (!strcmp(name, "alias")) {
 
     } 
 
     err_error("invalid command name \"%s\"", name);
-    return -1;
+    return 1;
 }
 
 static int

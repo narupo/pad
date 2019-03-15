@@ -1,5 +1,8 @@
 #include "modules/commands/cat.h"
 
+/**
+ * Structure of options
+ */
 struct opts {
     bool ishelp;
     int indent;
@@ -7,6 +10,9 @@ struct opts {
     bool istab;
 };
 
+/**
+ * Structure of command
+ */
 struct catcmd {
     config_t *config;
     int argc;
@@ -72,6 +78,11 @@ catcmd_parse_opts(catcmd_t *self) {
     return self;
 }
 
+/**
+ * Destruct command
+ *
+ * @param[in] pointer to allocate memory of command
+ */
 void
 catcmd_del(catcmd_t *self) {
     if (self) {
@@ -81,6 +92,14 @@ catcmd_del(catcmd_t *self) {
     }
 }
 
+/**
+ * Construct command
+ *
+ * @param[in] move_config pointer to config with move semantics
+ * @param[in] argc number of arguments
+ * @param[in] move_argv pointer to string array with move semantics
+ * @return pointer to allocate memory of command
+ */
 catcmd_t *
 catcmd_new(config_t *move_config, int argc, char **move_argv) {
     catcmd_t *self = mem_ecalloc(1, sizeof(*self));
@@ -137,7 +156,7 @@ catcmd_makepath(catcmd_t *self, char *dst, size_t dstsz, const char *cdpath, con
  * @return failed to false
  */
 static bool
-setindent(catcmd_t *self, char *buf, size_t bufsize) {
+catcmd_setindent(catcmd_t *self, char *buf, size_t bufsize) {
     if (self->opts.istab) {
         buf[0] = '\t';
         buf[1] = '\0';
@@ -175,7 +194,7 @@ catcmd_catstream(catcmd_t *self, FILE *fout, FILE *fin) {
         switch (m) {
         case 0: { // Indent mode
             char str[100] = {0};
-            if (!setindent(self, str, sizeof str)) {
+            if (!catcmd_setindent(self, str, sizeof str)) {
                 return 1;
             }
 

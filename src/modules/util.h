@@ -17,6 +17,13 @@
 
 #include "lib/file.h"
 #include "lib/error.h"
+#include "lib/cl.h"
+
+#include "modules/constant.h"
+
+#ifdef _CAP_WINDOWS
+# include <windows.h>
+#endif
 
 /**
  * Free allocate memory of argv.
