@@ -24,3 +24,16 @@ cstr_copy(char *dst, uint32_t dstsz, const char *src) {
 
     return dst;
 }
+
+char *
+cstr_pop_newline(char *s) {
+    if (!s) {
+        return NULL;
+    }
+
+    for (char *p = s+strlen(s)-1; p >= s && (*p == '\r' || *p == '\n'); --p) {
+        *p = '\0';
+    }
+    
+    return s;
+}

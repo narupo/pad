@@ -5,3 +5,7 @@
 
 char *
 cstr_copy(char *dst, uint32_t dstsz, const char *src);
+
+char *
+cstr_pop_newline(char *p);
+
