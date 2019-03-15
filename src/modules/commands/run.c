@@ -110,14 +110,15 @@ runcmd_run(runcmd_t *self) {
     // Read script line in file
     char exesname[NSCRIPTNAME];
     if (!runcmd_read_script_line(self, exesname, sizeof exesname, spath)) {
-        err_error("failed to read script line");
-        return 7;
+        exesname[0] = '\0';
     }
 
     // Create command line
     string_t *cmdline = str_new();
-    str_app(cmdline, exesname);
-    str_app(cmdline, " ");
+    if (strlen(exesname)) {
+        str_app(cmdline, exesname);
+        str_app(cmdline, " ");
+    }
     str_app(cmdline, spath);
     str_app(cmdline, " ");
 
