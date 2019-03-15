@@ -68,15 +68,25 @@ file_realpath(char *dst, uint32_t dstsz, const char *src) {
 char *
 file_get_user_home(char *dst, uint32_t dstsz) {
 #ifdef _FILE_WINDOWS	
-	const char *key = "HOMEPATH";
-#else
-	const char *key = "HOME";
-#endif
-	const char *home = getenv(key);
-	if (home == NULL) {
+	const char *drive = getenv("HOMEDRIVE");
+	if (!drive) {
 		return NULL;
 	}
-	snprintf(dst, dstsz, "%s", home);	
+
+	const char *userhome = getenv("HOMEPATH");
+	if (!userhome) {
+		return NULL;
+	}
+
+	snprintf(dst, dstsz, "%s%s", drive, userhome);	
+#else
+	const char *userhome = getenv("HOME");
+	if (!userhome) {
+		return NULL;
+	}
+
+	snprintf(dst, dstsz, "%s", userhome);	
+#endif
 	return dst;
 }
 

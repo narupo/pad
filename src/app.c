@@ -75,14 +75,85 @@ app_del(app_t *self) {
 
 static bool
 app_init_config(app_t *self) {
-    // In case of UNIX/Linux
-    file_solve(self->config->var_cd_path, sizeof self->config->var_cd_path, "~/.cap/var/cd");
-    file_solve(self->config->var_home_path, sizeof self->config->var_home_path, "~/.cap/var/home");
+    if (!file_solve(self->config->var_cd_path, sizeof self->config->var_cd_path, "~/.cap/var/cd")) {
+        err_error("failed to create path of cd of variable");
+        return false;
+    }
 
-    // In case of Windows
-    // TODO
-    printf("var cd path [%s]\n", self->config->var_cd_path);
-    printf("var home path [%s]\n", self->config->var_home_path);
+    if (!file_solve(self->config->var_home_path, sizeof self->config->var_home_path, "~/.cap/var/home")) {
+        err_error("failed to create path of home of variable");
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Deploy Cap's environment at user's file system
+ *
+ * @param[in] self
+ * @return success to true
+ * @return failed to false
+ */
+static bool
+app_deploy_env(const app_t *self) {
+    char userhome[FILE_NPATH];
+    if (!file_get_user_home(userhome, sizeof userhome)) {
+        err_error("failed to get user's home directory. what is your file system?");
+        return false;
+    }
+
+    // make application directory
+    char appdir[FILE_NPATH];
+    if (!file_solvefmt(appdir, sizeof appdir, "%s/.cap", userhome)) {
+        err_error("faield to create application directory path");
+        return false;
+    }
+
+    if (!file_exists(appdir)) {
+        if (file_mkdirq(appdir) != 0) {
+            err_error("failed to make application directory");
+            return false;
+        }
+    }
+
+    // make variable directory
+    char vardir[FILE_NPATH];
+    if (!file_solvefmt(vardir, sizeof vardir, "%s/var", appdir)) {
+        err_error("failed to create path of variable");
+        return false;
+    }
+
+    if (!file_exists(vardir)) {
+        if (file_mkdirq(vardir) != 0) {
+            err_error("failed to make variable directory");
+            return false;
+        }
+    }
+
+    // make variable files
+    char tmp[FILE_NPATH];
+    if (!file_solvefmt(tmp, sizeof tmp, "%s/cd", vardir)) {
+        err_error("failed to create path of cd variable");
+        return false;
+    }
+    if (!file_exists(tmp)) {
+        if (!file_writeline(userhome, tmp)) {
+            err_error("failed to write file to cd of variable");
+            return false;
+        }
+    }
+
+    if (!file_solvefmt(tmp, sizeof tmp, "%s/home", vardir)) {
+        err_error("failed to create path of home variable");
+        return false;
+    }
+    if (!file_exists(tmp)) {
+        if (!file_writeline(userhome, tmp)) {
+            err_error("failed to write file to home of variable");
+            return false;
+        }
+    }
 
     return true;
 }
@@ -93,6 +164,12 @@ app_new(int argc, char *argv[]) {
 
     self->argc = argc;
     self->argv = argv;
+
+    if (!app_deploy_env(self)) {
+        err_error("failed to deploy environment at file systems");
+        app_del(self);
+        return NULL;
+    }
 
     self->config = config_new();
     if (!app_init_config(self)) {
@@ -173,7 +250,7 @@ app_version(app_t *self) {
     fflush(stdout);
     fflush(stderr);
 
-    printf("%s\n", _VERSION);
+    printf("%s\n", _CAP_VERSION);
     fflush(stdout);
 
     app_del(self);
