@@ -281,9 +281,6 @@ app_usage(app_t *app) {
         "Examples:\n\n"
         "%s\n"
     , usage, example);
-    
-    app_del(app);
-    exit(0);
 }
 
 static void
@@ -293,9 +290,6 @@ app_version(app_t *self) {
 
     printf("%s\n", _CAP_VERSION);
     fflush(stdout);
-
-    app_del(self);
-    exit(0);
 }
 
 static bool
@@ -372,20 +366,23 @@ static int
 app_run(app_t *self) {
     if (self->opts.ishelp) {
         app_usage(self);
+        return 0;
     }
 
     if (self->opts.isversion) {
         app_version(self);
+        return 0;
     }
 
     if (self->cmd_argc == 0) {
         app_usage(self);
+        return 0;
     }
 
     const char *cmdname = self->cmd_argv[0];
     if (!cmdname) {
         err_error("command name is null");
-        return -1; // impossible
+        return 1; // impossible
     }
 
     if (app_is_cap_cmdname(self, cmdname)) {
