@@ -303,7 +303,12 @@ app_execute_command_by_name(app_t *self, const char *name) {
         pwdcmd_del(pwdcmd);
         return result;
     } else if (!strcmp(name, "ls")) {
-
+        lscmd_t *lscmd = lscmd_new(self->config, self->cmdargs);
+        self->config = NULL; // moved
+        self->cmdargs = NULL; // moved
+        int result = lscmd_run(lscmd);
+        lscmd_del(lscmd);
+        return result;
     } else if (!strcmp(name, "cat")) {
 
     } else if (!strcmp(name, "run")) {

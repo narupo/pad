@@ -15,3 +15,4 @@
 #include "modules/commands/home.h"
 #include "modules/commands/cd.h"
 #include "modules/commands/pwd.h"
+#include "modules/commands/ls.h"
