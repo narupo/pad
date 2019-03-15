@@ -105,12 +105,21 @@ file_exists(const char *path);
 
 /**
  * Wrapper of mkdir
+ *
+ * @param[in] path path on file system
+ * @param[in] mode mode of make
+ * @return success to number of 0
+ * @return failed to number of -1
  */
 int32_t
 file_mkdirmode(const char *path, mode_t mode);
 
 /**
  * Wrapper of mkdir without mode for the quickly
+ *
+ * @param[in] path path on file system
+ * @return success to number of 0
+ * @return failed to number of -1
  */
 int32_t
 file_mkdirq(const char *path);

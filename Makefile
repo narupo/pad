@@ -1,4 +1,7 @@
-# https://itchyny.hatenablog.com/entry/20120213/1329135107
+# REFERENCES:
+#
+# 	https://itchyny.hatenablog.com/entry/20120213/1329135107
+#
 RM := del
 RMDIR := rmdir /s /q
 MKDIR_P := mkdir -p
