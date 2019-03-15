@@ -230,7 +230,8 @@ catcmd_catfile(catcmd_t *self, FILE *fout, const char *path) {
 
 /**
  * Show usage and exit from proccess
- * 
+ *
+ * @param[in] self
  */
 static void
 catcmd_usage(const catcmd_t *self) {
