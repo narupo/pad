@@ -406,7 +406,7 @@ file_writeline(const char *line, const char *path) {
 		return NULL;
 	}
 
-	FILE *fout = fopen(path, "w");
+	FILE *fout = fopen(path, "wb");
 	if (!fout) {
 		return NULL;
 	}
