@@ -29,19 +29,33 @@ homecmd_run(homecmd_t *self) {
 
     if (argc < 2) {
         char line[FILE_NPATH];
-        file_readline(line, sizeof line, self->config->var_home_path);
+        if (!file_readline(line, sizeof line, self->config->var_home_path)) {
+            err_error("failed to read line of home of variable");
+            return 1;
+        }
         printf("%s\n", line);
         return 0;
     }
 
     char newhome[FILE_NPATH];
-    file_solve(newhome, sizeof newhome, argv[1]);
+    if (!file_solve(newhome, sizeof newhome, argv[1])) {
+        err_error("failed to solve path from \"%s\"", argv[1]);
+        return 2;
+    }
     if (!file_isdir(newhome)) {
-        err_die("%s is not a directory", newhome);
+        err_error("%s is not a directory", newhome);
+        return 3;
     }
 
-    file_writeline(newhome, self->config->var_home_path);
-    file_writeline(newhome, self->config->var_cd_path);
+    if (!file_writeline(newhome, self->config->var_home_path)) {
+        err_error("failed to write line to home variable");
+        return 4;
+    }
+
+    if (!file_writeline(newhome, self->config->var_cd_path)) {
+        err_error("failed to write line to cd variable");
+        return 5;
+    }
 
     return 0;
 }
