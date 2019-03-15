@@ -26,7 +26,6 @@ $(TARGET): build/app.o \
 	build/lib_cstring_array.o \
 	build/modules_config.o \
 	build/modules_util.o \
-	build/modules_cmdargs.o \
 	build/modules_commands_home.o \
 	build/modules_commands_cd.o \
 	build/modules_commands_pwd.o \
@@ -58,9 +57,6 @@ build/modules_config.o: src/modules/config.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules_util.o: src/modules/util.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-build/modules_cmdargs.o: src/modules/cmdargs.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules_commands_home.o: src/modules/commands/home.c

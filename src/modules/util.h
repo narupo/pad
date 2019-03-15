@@ -7,24 +7,19 @@
  */
 #pragma once
 
-/****************************************************
-* Util module is allow dependency to other modules. *
-****************************************************/
+/***************************************************
+* Util module is allow dependency to other modules *
+***************************************************/
 
-// #define _GNU_SOURCE 1 /* cap: util.h: getenv */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
 #include "lib/file.h"
 #include "lib/error.h"
-// #include "env.h"
-// #include "string.h"
-// #include "cl.h"
-// #include "array.h"
 
 /**
- * Free argv memory.
+ * Free allocate memory of argv.
  * 
  * @param[in] argc    
  * @param[in] *argv[] 
