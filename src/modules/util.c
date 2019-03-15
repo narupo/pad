@@ -42,7 +42,6 @@ isoutofhome(const char *varhome, const char *pth) {
 	}
 
 	if (!file_exists(path)) {
-		printf("path[%s]\n", path); // ERROR: CRLF が原因
 		return true;
 	}
 

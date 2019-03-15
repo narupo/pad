@@ -4,6 +4,7 @@
 #include "lib/file.h"
 
 struct config {
+    int scope;
     char var_cd_path[FILE_NPATH];
     char var_home_path[FILE_NPATH];
 };
