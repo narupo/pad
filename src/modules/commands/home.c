@@ -32,7 +32,7 @@ homecmd_run(homecmd_t *self) {
     if (argc < 2) {
         char line[FILE_NPATH];
         if (!file_readline(line, sizeof line, self->config->var_home_path)) {
-            err_error("failed to read line of home of variable");
+            err_error("failed to read line from home of variable");
             return 1;
         }
         printf("%s\n", line);

@@ -7,3 +7,6 @@
 #else
 # undef _CAP_WINDOWS
 #endif
+
+static const int CAP_SCOPE_LOCAL = 1;
+static const int CAP_SCOPE_GLOBAL = 2;

@@ -3,7 +3,7 @@
  *
  * License: MIT
  *  Author: Aizawa Yuta
- *   Since: 2016, 2018
+ *   Since: 2016
  */
 #include "app.h"
 
@@ -80,6 +80,8 @@ app_del(app_t *self) {
 
 static bool
 app_init_config(app_t *self) {
+    self->config->scope = CAP_SCOPE_LOCAL;
+
     if (!file_solve(self->config->var_cd_path, sizeof self->config->var_cd_path, "~/.cap/var/cd")) {
         err_error("failed to create path of cd of variable");
         return false;
@@ -173,12 +175,7 @@ app_parse_args(app_t *self, int argc, char *argv[]) {
         const char *arg = argv[i];
         switch (m) {
         case 0:
-            if (strcmp(arg, "cap") == 0) {
-                cstrarr_push(app_args, arg);
-            } else {
-                err_error("invalid application name");
-                cstrarr_push(app_args, "cap");
-            }
+            cstrarr_push(app_args, arg);
             m = 10;
             break;
         case 10:
@@ -213,6 +210,11 @@ app_new(int argc, char *argv[]) {
         return NULL;
     }
 
+    if (!app_parse_opts(self)) {
+        app_del(self);
+        return NULL;
+    }
+
     if (!app_deploy_env(self)) {
         err_error("failed to deploy environment at file systems");
         app_del(self);
@@ -222,11 +224,6 @@ app_new(int argc, char *argv[]) {
     self->config = config_new();
     if (!app_init_config(self)) {
         err_error("failed to configuration");
-        app_del(self);
-        return NULL;
-    }
-
-    if (!app_parse_opts(self)) {
         app_del(self);
         return NULL;
     }
@@ -324,28 +321,33 @@ app_execute_command_by_name(app_t *self, const char *name) {
         homecmd_del(homecmd);
         return result;
     } else if (!strcmp(name, "cd")) {
-        cdcmd_t *cdcmd = cdcmd_new(self->config, self->cmd_argc, self->cmd_argv);
+        cdcmd_t *cmd = cdcmd_new(self->config, self->cmd_argc, self->cmd_argv);
         self->config = NULL; // moved
         self->cmd_argv = NULL; // moved
-        int result = cdcmd_run(cdcmd);
-        cdcmd_del(cdcmd);
+        int result = cdcmd_run(cmd);
+        cdcmd_del(cmd);
         return result;
     } else if (!strcmp(name, "pwd")) {
-        pwdcmd_t *pwdcmd = pwdcmd_new(self->config, self->cmd_argc, self->cmd_argv);
+        pwdcmd_t *cmd = pwdcmd_new(self->config, self->cmd_argc, self->cmd_argv);
         self->config = NULL; // moved
         self->cmd_argv = NULL; // moved
-        int result = pwdcmd_run(pwdcmd);
-        pwdcmd_del(pwdcmd);
+        int result = pwdcmd_run(cmd);
+        pwdcmd_del(cmd);
         return result;
     } else if (!strcmp(name, "ls")) {
-        lscmd_t *lscmd = lscmd_new(self->config, self->cmd_argc, self->cmd_argv);
+        lscmd_t *cmd = lscmd_new(self->config, self->cmd_argc, self->cmd_argv);
         self->config = NULL; // moved
         self->cmd_argv = NULL; // moved
-        int result = lscmd_run(lscmd);
-        lscmd_del(lscmd);
+        int result = lscmd_run(cmd);
+        lscmd_del(cmd);
         return result;
     } else if (!strcmp(name, "cat")) {
-
+        catcmd_t *cmd = catcmd_new(self->config, self->cmd_argc, self->cmd_argv);
+        self->config = NULL; // moved
+        self->cmd_argv = NULL; // moved
+        int result = catcmd_run(cmd);
+        catcmd_del(cmd);
+        return result;
     } else if (!strcmp(name, "run")) {
 
     } else if (!strcmp(name, "alias")) {
