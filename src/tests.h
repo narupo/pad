@@ -8,7 +8,7 @@
 #pragma once
 
 #ifndef _GNU_SOURCE
-#define _GNU_SOURCE 1 /* cap: tests: strdup */
+# define _GNU_SOURCE 1 /* cap: tests: strdup */
 #endif
 
 #include <stdio.h>
