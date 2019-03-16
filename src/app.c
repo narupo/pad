@@ -356,7 +356,12 @@ app_execute_command_by_name(app_t *self, const char *name) {
         runcmd_del(cmd);
         return result;
     } else if (!strcmp(name, "alias")) {
-
+        alcmd_t *cmd = alcmd_new(self->config, self->cmd_argc, self->cmd_argv);
+        self->config = NULL; // moved
+        self->cmd_argv = NULL; // moved
+        int result = alcmd_run(cmd);
+        alcmd_del(cmd);
+        return result;
     } 
 
     err_error("invalid command name \"%s\"", name);
