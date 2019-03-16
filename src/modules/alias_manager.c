@@ -62,6 +62,7 @@ almgr_new(const config_t *config) {
  */
 static almgr_t *
 almgr_load_alias_list(almgr_t *self, int scope) {
+    // TODO
     return self;
 }
 
