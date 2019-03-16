@@ -27,6 +27,7 @@ $(TARGET): build/app.o \
 	build/lib_cl.o \
 	build/modules_config.o \
 	build/modules_util.o \
+	build/modules_alias_manager.o \
 	build/modules_commands_home.o \
 	build/modules_commands_cd.o \
 	build/modules_commands_pwd.o \
@@ -64,6 +65,9 @@ build/modules_config.o: src/modules/config.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules_util.o: src/modules/util.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/modules_alias_manager.o: src/modules/alias_manager.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules_commands_home.o: src/modules/commands/home.c
