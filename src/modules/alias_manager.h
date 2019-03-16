@@ -1,5 +1,10 @@
 #pragma once
 
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "lib/error.h"
 #include "lib/memory.h"
 
 #include "modules/config.h"
