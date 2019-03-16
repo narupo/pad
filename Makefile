@@ -32,7 +32,8 @@ $(TARGET): build/app.o \
 	build/modules_commands_pwd.o \
 	build/modules_commands_ls.o \
 	build/modules_commands_cat.o \
-	build/modules_commands_run.o
+	build/modules_commands_run.o \
+	build/modules_commands_alias.o
 	$(CC) $(CFLAGS) build/*.o -o build/cap.exe
 
 build/app.o: src/app.c
@@ -81,6 +82,9 @@ build/modules_commands_cat.o: src/modules/commands/cat.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules_commands_run.o: src/modules/commands/run.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/modules_commands_alias.o: src/modules/commands/alias.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean

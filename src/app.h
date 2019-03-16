@@ -17,3 +17,4 @@
 #include "modules/commands/ls.h"
 #include "modules/commands/cat.h"
 #include "modules/commands/run.h"
+#include "modules/commands/alias.h"
