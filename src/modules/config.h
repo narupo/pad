@@ -5,6 +5,7 @@
 
 struct config {
     int scope;
+    int recursion_count;
     char var_cd_path[FILE_NPATH];
     char var_home_path[FILE_NPATH];
 };

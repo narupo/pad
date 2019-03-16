@@ -8,6 +8,13 @@
 #include "app.h"
 
 /**
+ * Numbers
+ */
+enum {
+    MAX_RECURSION_LIMIT = 8,
+};
+
+/**
  * Program option values for command.
  *
  */
@@ -29,6 +36,9 @@ struct app {
 };
 
 typedef struct app app_t;
+
+static int
+app_run(app_t *self);
 
 static bool
 app_parse_opts(app_t *self) {
@@ -81,6 +91,7 @@ app_del(app_t *self) {
 static bool
 app_init_config(app_t *self) {
     self->config->scope = CAP_SCOPE_LOCAL;
+    self->config->recursion_count = 0;
 
     if (!file_solve(self->config->var_cd_path, sizeof self->config->var_cd_path, "~/.cap/var/cd")) {
         err_error("failed to create path of cd of variable");
@@ -211,6 +222,7 @@ app_new(int argc, char *argv[]) {
     }
 
     if (!app_parse_opts(self)) {
+        err_error("failed to parse options");
         app_del(self);
         return NULL;
     }
@@ -370,8 +382,65 @@ app_execute_command_by_name(app_t *self, const char *name) {
 
 static int
 app_execute_alias_by_name(app_t *self, const char *name) {
-    puts("run alias");
-    return 0;
+    almgr_t *almgr = almgr_new(self->config);
+
+    // find alias value by name
+    char val[1024];
+    int scope = CAP_SCOPE_LOCAL;
+    if (!almgr_find_alias_value(almgr, val, sizeof val, name, CAP_SCOPE_LOCAL)) {
+        if (!almgr_find_alias_value(almgr, val, sizeof val, name, CAP_SCOPE_GLOBAL)) {
+            err_error("not found alias \"%s\"", name);
+            return 1;
+        } else {
+            scope = CAP_SCOPE_GLOBAL;
+        }
+    } else {
+        scope = CAP_SCOPE_LOCAL;
+    }
+    almgr_del(almgr);
+
+    // create cap's command line with alias value
+    string_t *cmdline = str_new();
+
+    str_app(cmdline, "cap ");
+    str_app(cmdline, val);
+    str_app(cmdline, " ");
+    for (int i = 1; i < self->cmd_argc; ++i) {
+        str_app(cmdline, self->cmd_argv[i]);
+        str_app(cmdline, " ");
+    }
+    str_popb(cmdline);
+
+    // convert command to application's arguments
+    cl_t *cl = cl_new();
+    cl_parse_str(cl, str_getc(cmdline));
+    str_del(cmdline);
+
+    int argc = cl_len(cl);
+    char **argv = cl_escdel(cl);
+
+    // re-parse application's arguments
+    freeargv(self->argc, self->argv);
+    freeargv(self->cmd_argc, self->cmd_argv);
+
+    if (!app_parse_args(self, argc, argv)) {
+        err_error("failed to parse arguments");
+        return 2;
+    }
+    freeargv(argc, argv);
+
+    // reset scope (extends environment)
+    self->config->scope = scope;
+
+    // increment recursion count for safety
+    self->config->recursion_count++;
+
+    // run application
+    if (self->config->recursion_count >= MAX_RECURSION_LIMIT) {
+        err_error("reached recursion limit");
+        return 3;
+    }
+    return app_run(self);
 }
 
 static int
