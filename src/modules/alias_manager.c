@@ -1,10 +1,16 @@
 #include "modules/alias_manager.h"
 
+/**
+ * Numbers
+ */
 enum {
     ALIAS_KV_NKEY = 128,
     ALIAS_KV_NVAL = 128,
 };
 
+/**
+ * Structure of alias_kv
+ */
 struct alias_kv {
     char key[ALIAS_KV_NKEY];
     char val[ALIAS_KV_NVAL];
@@ -12,6 +18,9 @@ struct alias_kv {
 
 typedef struct alias_kv alkv_t;
 
+/**
+ * Structure of alias_manager
+ */
 struct alias_manager {
     const config_t *config;
     alkv_t **alkvs;
