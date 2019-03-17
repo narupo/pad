@@ -32,3 +32,6 @@
 #include "lib/error.h"
 
 #include "modules/util.h"
+
+#include "modules/lang/tokens.h"
+#include "modules/lang/tokenizer.h"

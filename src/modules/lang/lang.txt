@@ -1,0 +1,119 @@
+{@
+import alias
+
+alias.set("dtl", "run bin/date-line")
+alias.set("cln", "run bin/comment-line")
+@}
+
+----
+
+{@ 
+els = [1, 2, 3]
+els.append(4)
+@}
+
+{@ for el in els: @}
+<li>
+  <a href="">{{ el }}</a>
+  {@ if el == 2: @}
+    <div>{{ el }}</div>
+  {@ endif @}
+</li>
+{@ endfor @}
+
+----
+
+{@
+import home
+
+if home.get() == "/tmp":
+  print("not supported directory")
+  exit()
+elif home.get() == "C:\\":
+  print("welcome windows user!")
+else:
+  print("unsupported directory")
+  home.set("/tmp")
+endif
+@}
+
+----
+
+{@
+import cat
+
+if cd("aa"):
+  result = cat("banana")
+  print(result)
+
+  result = cat("banana", "mona", "bird")
+  print(result)
+endif
+@}
+
+----
+
+{@
+import alias
+
+for i = 0; i < 10; ++i:
+  result = alias.run("dtl")
+  if i >= 5:
+    print("over!")
+  else:
+    print(result)
+  endif
+endfor
+@}
+
+----
+capの実行
+
+  $ cap cat a.html -n 10 --title Title --headline Headline --content c.html
+
+a.htmlの中身
+
+{@
+import args
+import short_opts
+import long_opts
+import cat
+import path
+import die
+
+print(args.get(0)) // -> a.html
+
+num = short_opts.get("n", 1)
+title = long_opts.get("title", "No title")
+headline = long_opts.get("headline", "Hello, World!")
+content_fname = long_opts.get("content", null)
+
+if title == "aho":
+  title = "* " + title + " *"
+endif
+
+content = ""
+if content_fname:
+  if !path.exists(content_fname):
+    die("not found content file")
+  endif
+  content = cat(content_fname, long_opts={
+    "name": "Taro",
+    "sex": "Male",
+  })
+endif
+@}
+
+<html>
+<head>
+  <title>{{ title }}</title>
+</head>
+<body>
+  <h1>{{ headline }}</h1>
+  <div>
+    {@ for i = 0; i < num; ++i: @}
+      {{ content }}
+    {@ endfor @}
+  </div>
+</body>
+</html>
