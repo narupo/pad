@@ -17,10 +17,6 @@ errorap_unsafe(va_list ap, const char *fmt) {
 		fprintf(stderr, "%s: ", procname);
 	}
 
-	if (errno != 0) {
-		fprintf(stderr, "%s. ", strerror(errno));
-	}
-	
 	if (fmtlen) {
 		vfprintf(stderr, fmt, ap);
 	}
@@ -29,6 +25,10 @@ errorap_unsafe(va_list ap, const char *fmt) {
 		fprintf(stderr, ".");
 	}
 
+	if (errno != 0) {
+		fprintf(stderr, " %s. ", strerror(errno));
+	}
+	
 	fprintf(stderr, "\n");
 	fflush(stderr);
 }
