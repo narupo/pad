@@ -1,9 +1,24 @@
 #include "modules/lang/ast.h"
 
+/*
+    BNF
+
+'{@' formula '@}' | program
+
+    program ::= ( code-block | text ) program 
+    code-block ::= '{@' formula '@}'
+    text ::= .*
+    formula ::= ( import | caller ) | formula
+    import ::= 'import' identifier
+    caller ::= identifier ( '.' identifier )+ '(' args ')'
+    args ::= identifier | ',' args
+    identifier ::= ( [a-z] | [0-9] | _ )+ 
+
+*/
+
 struct ast {
     token_t **tokens;
     token_t **ptr;
-    int32_t tokens_index;
     node_t *root;
 };
 
@@ -22,6 +37,12 @@ ast_new(void) {
 
 static node_t *
 ast_program(ast_t *self) {
+    if (!*self->ptr) {
+        return NULL;
+    }
+
+    token_t *t = *self->ptr++;
+    
     return NULL; // TODO
 }
 
