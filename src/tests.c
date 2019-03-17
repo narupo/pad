@@ -1498,6 +1498,205 @@ urltests[] = {
 };
 */
 
+/************
+* tokenizer *
+************/
+
+static void
+test_tkr_new(void) {
+    tkr_t *tkr = tkr_new();
+    tkr_del(tkr);
+}
+
+static void
+test_tkr_parse(void) {
+    tkr_t *tkr = tkr_new();
+    const token_t *token;
+
+    // test of realloc of tokens
+    tkr_parse(tkr, "{@{@{@{@{@{@{@{@");
+    assert(tkr_tokens_len(tkr) == 8);
+
+    tkr_parse(tkr, "");
+    assert(tkr_has_error(tkr) == false);
+    assert(tkr_tokens_len(tkr) == 0);
+
+    tkr_parse(tkr, "{");
+    assert(tkr_has_error(tkr) == true);
+    assert(strcmp(tkr_error_detail(tkr), "invalid syntax. single '{' is not supported") == 0);
+
+    tkr_parse(tkr, "{@");
+    assert(tkr_tokens_len(tkr) == 1);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_LBRACEAT);
+
+    tkr_parse(tkr, "{@{@");
+    assert(tkr_tokens_len(tkr) == 2);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token_get_type(token) == TOKEN_TYPE_LBRACEAT);
+
+    tkr_parse(tkr, "@");
+    assert(tkr_has_error(tkr) == true);
+    assert(strcmp(tkr_error_detail(tkr), "invalid syntax. single '@' is not supported") == 0);
+
+    tkr_parse(tkr, "@}");
+    assert(tkr_tokens_len(tkr) == 1);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_RBRACEAT);
+
+    tkr_parse(tkr, "@}@}");
+    assert(tkr_tokens_len(tkr) == 2);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_RBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token_get_type(token) == TOKEN_TYPE_RBRACEAT);
+
+    tkr_parse(tkr, "{@@}");
+    assert(tkr_tokens_len(tkr) == 2);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token_get_type(token) == TOKEN_TYPE_RBRACEAT);
+
+    tkr_parse(tkr, ".");
+    assert(tkr_tokens_len(tkr) == 1);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_DOT_OPE);
+
+    tkr_parse(tkr, "..");
+    assert(tkr_tokens_len(tkr) == 2);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_DOT_OPE);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token_get_type(token) == TOKEN_TYPE_DOT_OPE);
+
+    tkr_parse(tkr, ",");
+    assert(tkr_tokens_len(tkr) == 1);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_COMMA);
+
+    tkr_parse(tkr, ",,");
+    assert(tkr_tokens_len(tkr) == 2);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_COMMA);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token_get_type(token) == TOKEN_TYPE_COMMA);
+
+    tkr_parse(tkr, "(");
+    assert(tkr_tokens_len(tkr) == 1);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_LPAREN);
+
+    tkr_parse(tkr, ")");
+    assert(tkr_tokens_len(tkr) == 1);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_RPAREN);
+
+    tkr_parse(tkr, "()");
+    assert(tkr_tokens_len(tkr) == 2);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_LPAREN);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token_get_type(token) == TOKEN_TYPE_RPAREN);
+
+    tkr_parse(tkr, "a");
+    assert(tkr_tokens_len(tkr) == 1);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_IDENTIFIER);
+    assert(strcmp(token_getc_text(token), "a") == 0);
+
+    tkr_parse(tkr, "abc");
+    assert(tkr_tokens_len(tkr) == 1);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_IDENTIFIER);
+    assert(strcmp(token_getc_text(token), "abc") == 0);
+
+    tkr_parse(tkr, "abc123");
+    assert(tkr_tokens_len(tkr) == 1);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_IDENTIFIER);
+    assert(strcmp(token_getc_text(token), "abc123") == 0);
+
+    tkr_parse(tkr, "abc_123");
+    assert(tkr_tokens_len(tkr) == 1);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_IDENTIFIER);
+    assert(strcmp(token_getc_text(token), "abc_123") == 0);
+
+    // TODO: fix to digit
+    tkr_parse(tkr, "123");
+    assert(tkr_tokens_len(tkr) == 1);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_IDENTIFIER);
+    assert(strcmp(token_getc_text(token), "123") == 0);
+
+    tkr_parse(tkr, "\"\"");
+    assert(tkr_tokens_len(tkr) == 1);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_DQ_STRING);
+    assert(strcmp(token_getc_text(token), "") == 0);
+
+    tkr_parse(tkr, "\"abc\"");
+    assert(tkr_tokens_len(tkr) == 1);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_DQ_STRING);
+    assert(strcmp(token_getc_text(token), "abc") == 0);
+
+    tkr_parse(tkr, "\"abc\"\"bbc\"");
+    assert(tkr_tokens_len(tkr) == 2);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_DQ_STRING);
+    assert(strcmp(token_getc_text(token), "abc") == 0);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token_get_type(token) == TOKEN_TYPE_DQ_STRING);
+    assert(strcmp(token_getc_text(token), "bbc") == 0);
+
+    tkr_parse(tkr, "{@ import alias\n"
+        "alias.set(\"dtl\", \"run bin/date-line\") @}");
+    assert(tkr_tokens_len(tkr) == 12);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token_get_type(token) == TOKEN_TYPE_IDENTIFIER);
+    assert(strcmp(token_getc_text(token), "import") == 0);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token_get_type(token) == TOKEN_TYPE_IDENTIFIER);
+    assert(strcmp(token_getc_text(token), "alias") == 0);
+    token = tkr_tokens_getc(tkr, 3);
+    assert(token_get_type(token) == TOKEN_TYPE_IDENTIFIER);
+    assert(strcmp(token_getc_text(token), "alias") == 0);
+    token = tkr_tokens_getc(tkr, 4);
+    assert(token_get_type(token) == TOKEN_TYPE_DOT_OPE);
+    token = tkr_tokens_getc(tkr, 5);
+    assert(token_get_type(token) == TOKEN_TYPE_IDENTIFIER);
+    assert(strcmp(token_getc_text(token), "set") == 0);
+    token = tkr_tokens_getc(tkr, 6);
+    assert(token_get_type(token) == TOKEN_TYPE_LPAREN);
+    token = tkr_tokens_getc(tkr, 7);
+    assert(token_get_type(token) == TOKEN_TYPE_DQ_STRING);
+    assert(strcmp(token_getc_text(token), "dtl") == 0);
+    token = tkr_tokens_getc(tkr, 8);
+    assert(token_get_type(token) == TOKEN_TYPE_COMMA);
+    token = tkr_tokens_getc(tkr, 9);
+    assert(token_get_type(token) == TOKEN_TYPE_DQ_STRING);
+    assert(strcmp(token_getc_text(token), "run bin/date-line") == 0);
+    token = tkr_tokens_getc(tkr, 10);
+    assert(token_get_type(token) == TOKEN_TYPE_RPAREN);
+    token = tkr_tokens_getc(tkr, 11);
+    assert(token_get_type(token) == TOKEN_TYPE_RBRACEAT);
+
+    tkr_del(tkr);
+}
+
+static const struct testcase
+tokenizer_tests[] = {
+    {"tkr_new", test_tkr_new},
+    {"tkr_parse", test_tkr_parse},
+    {0},
+};
+
 /*******
 * main *
 *******/
@@ -1515,6 +1714,7 @@ testmodules[] = {
     // {"util", utiltests},
     // {"socket", sockettests},
     // {"url", urltests},
+    {"tokenizer", tokenizer_tests},
     {},
 };
 

@@ -3,17 +3,21 @@
 # 	https://itchyny.hatenablog.com/entry/20120213/1329135107
 #
 RM := del
+# RM := rm
 RMDIR := rmdir /s /q
+# RMDIR := rm -rf
 MKDIR := mkdir
 SEP := \\
+# SEP := /
 CC := gcc
+INCLUDE := src
 CFLAGS := -Wall \
 	-g \
 	-O0 \
 	-std=c11 \
 	-Wno-unused-function \
 	-D_DEBUG \
-	-ID:/src/cap/src
+	-I$(INCLUDE)
 
 # $(warning $(wildcard src/*.c))
 
@@ -29,6 +33,7 @@ init:
 	$(MKDIR) build$(SEP)lib
 	$(MKDIR) build$(SEP)modules
 	$(MKDIR) build$(SEP)modules$(SEP)commands
+	$(MKDIR) build$(SEP)modules$(SEP)lang
 
 tests: build/tests.o \
 	build/lib/error.o \
@@ -47,11 +52,14 @@ tests: build/tests.o \
 	build/modules/commands/ls.o \
 	build/modules/commands/cat.o \
 	build/modules/commands/run.o \
-	build/modules/commands/alias.o
+	build/modules/commands/alias.o \
+	build/modules/lang/tokens.o \
+	build/modules/lang/tokenizer.o
 	$(CC) $(CFLAGS) -o build/tests \
 		build/tests.o \
 		build/lib/*.o \
-		build/modules/*.o
+		build/modules/*.o \
+		build/modules/lang/*.o
 
 build/tests.o: src/tests.c src/tests.h
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -73,7 +81,9 @@ cap: build/app.o \
 	build/modules/commands/ls.o \
 	build/modules/commands/cat.o \
 	build/modules/commands/run.o \
-	build/modules/commands/alias.o
+	build/modules/commands/alias.o \
+	build/modules/lang/tokens.o \
+	build/modules/lang/tokenizer.o
 	$(CC) $(CFLAGS) -o build/cap \
 		build/app.o \
 		build/lib/*.o \
@@ -132,5 +142,11 @@ build/modules/commands/run.o: src/modules/commands/run.c src/modules/commands/ru
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules/commands/alias.o: src/modules/commands/alias.c src/modules/commands/alias.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/modules/lang/tokenizer.o: src/modules/lang/tokenizer.c src/modules/lang/tokenizer.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/modules/lang/tokens.o: src/modules/lang/tokens.c src/modules/lang/tokens.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
