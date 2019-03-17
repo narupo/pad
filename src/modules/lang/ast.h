@@ -1,6 +1,13 @@
 #pragma once
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+#include "lib/memory.h"
+
 #include "modules/lang/tokens.h"
+#include "modules/lang/nodes.h"
 
 struct ast;
 typedef struct ast ast_t;
@@ -30,4 +37,4 @@ ast_new(void);
  * @return failed to pointer to NULL
  */
 ast_t *
-ast_parse(token_t *tokens[]);
+ast_parse(ast_t *self, token_t *tokens[]);

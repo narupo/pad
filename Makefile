@@ -54,7 +54,9 @@ tests: build/tests.o \
 	build/modules/commands/run.o \
 	build/modules/commands/alias.o \
 	build/modules/lang/tokens.o \
-	build/modules/lang/tokenizer.o
+	build/modules/lang/tokenizer.o \
+	build/modules/lang/nodes.o \
+	build/modules/lang/ast.o
 	$(CC) $(CFLAGS) -o build/tests \
 		build/tests.o \
 		build/lib/*.o \
@@ -83,7 +85,9 @@ cap: build/app.o \
 	build/modules/commands/run.o \
 	build/modules/commands/alias.o \
 	build/modules/lang/tokens.o \
-	build/modules/lang/tokenizer.o
+	build/modules/lang/tokenizer.o \
+	build/modules/lang/nodes.o \
+	build/modules/lang/ast.o
 	$(CC) $(CFLAGS) -o build/cap \
 		build/app.o \
 		build/lib/*.o \
@@ -150,3 +154,8 @@ build/modules/lang/tokenizer.o: src/modules/lang/tokenizer.c src/modules/lang/to
 build/modules/lang/tokens.o: src/modules/lang/tokens.c src/modules/lang/tokens.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+build/modules/lang/nodes.o: src/modules/lang/nodes.c src/modules/lang/nodes.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/modules/lang/ast.o: src/modules/lang/ast.c src/modules/lang/ast.h
+	$(CC) $(CFLAGS) -c $< -o $@
