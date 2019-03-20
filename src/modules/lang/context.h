@@ -26,6 +26,9 @@ ctx_get_alias(context_t *self, const char *key);
 context_t *
 ctx_pushb_buf(context_t *self, const char *str);
 
+const char *
+ctx_getc_buf(const context_t *self);
+
 void
 ctx_import_alias(context_t *self);
 

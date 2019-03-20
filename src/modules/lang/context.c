@@ -80,6 +80,11 @@ ctx_pushb_buf(context_t *self, const char *str) {
     str_app(self->buf, str);
 }
 
+const char *
+ctx_getc_buf(const context_t *self) {
+    return str_getc(self->buf);
+}
+
 void
 ctx_import_alias(context_t *self) {
     self->imported_alias = true;

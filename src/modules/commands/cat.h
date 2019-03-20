@@ -4,10 +4,14 @@
 
 #include "lib/memory.h"
 #include "lib/file.h"
+#include "lib/string.h"
 
 #include "modules/constant.h"
 #include "modules/util.h"
 #include "modules/config.h"
+#include "modules/lang/tokenizer.h"
+#include "modules/lang/ast.h"
+#include "modules/lang/context.h"
 
 struct catcmd;
 typedef struct catcmd catcmd_t;
