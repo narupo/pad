@@ -8,13 +8,17 @@
 #include "error.h"
 
 static void
-errorap_unsafe(va_list ap, const char *fmt) {
+errorap_unsafe(const char *title, va_list ap, const char *fmt) {
 	fflush(stdout);
 
 	size_t fmtlen = strlen(fmt);
 	const char *procname = getenv("CAP_PROCNAME");
 	if (procname) {
 		fprintf(stderr, "%s: ", procname);
+	}
+
+	if (title != NULL && strlen(title)) {
+		fprintf(stderr, "%c%s: ", toupper(title[0]), title+1);
 	}
 
 	if (fmtlen) {
@@ -86,7 +90,7 @@ err_die(const char *fmt, ...) {
 
 	va_list ap;
 	va_start(ap, fmt);
-	errorap_unsafe(ap, fmt);
+	errorap_unsafe(NULL, ap, fmt);
 	va_end(ap);
 
 	exit(EXIT_FAILURE);
@@ -99,7 +103,18 @@ err_error(const char *fmt, ...) {
 
 	va_list ap;
 	va_start(ap, fmt);
-	errorap_unsafe(ap, fmt);
+	errorap_unsafe("error", ap, fmt);
+	va_end(ap);
+}
+
+void
+err_warn(const char *fmt, ...) {
+	char tmp[1024];
+	fmt = fmttoupper_unsafe(tmp, sizeof tmp, fmt);
+
+	va_list ap;
+	va_start(ap, fmt);
+	errorap_unsafe("warn", ap, fmt);
 	va_end(ap);
 }
 
@@ -115,6 +130,6 @@ err_debug(const char *fmt, ...) {
 
 	va_list ap;
 	va_start(ap, fmt);
-	errorap_unsafe(ap, fmt);
+	errorap_unsafe("debug", ap, fmt);
 	va_end(ap);
 }

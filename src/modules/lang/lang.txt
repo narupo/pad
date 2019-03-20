@@ -5,6 +5,8 @@ alias.set("dtl", "run bin/date-line")
 alias.set("cln", "run bin/comment-line")
 @}
 
+{{ abc }}
+
 ----
 
 {@ 
@@ -17,6 +19,7 @@ els.append(4)
   <a href="">{{ el }}</a>
   {@ if el == 2: @}
     <div>{{ el }}</div>
+    <div>{{ unpack(el) }}
   {@ endif @}
 </li>
 {@ endfor @}

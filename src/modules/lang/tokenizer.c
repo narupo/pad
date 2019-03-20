@@ -46,7 +46,8 @@ tkr_new(void) {
 
 static void
 tkr_resize_tokens(tkr_t *self, int32_t capa) {
-    self->tokens = mem_erealloc(self->tokens, sizeof(token_t *)*capa+1); // +1 for final null
+    size_t byte = sizeof(token_t *);
+    self->tokens = mem_erealloc(self->tokens, byte*capa +byte); // +byte for final null
     self->tokens_capa = capa;
 }
 
@@ -58,6 +59,14 @@ tkr_move_token(tkr_t *self, token_t *move_token) {
 
     self->tokens[self->tokens_len++] = move_token;
     self->tokens[self->tokens_len] = NULL;
+}
+
+static void
+tkr_set_error_detail(tkr_t *self, const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(self->error_detail, sizeof self->error_detail, fmt, ap);
+    va_end(ap);
 }
 
 static token_t *
@@ -90,7 +99,7 @@ done:
         err_die("impossible");
     } else if (m == 10) {
         self->has_error = true;
-        snprintf(self->error_detail, sizeof self->error_detail, "invalid syntax. single '{' is not supported");
+        tkr_set_error_detail(self, "invalid syntax. single '{' is not supported");
     } else if (m == 20) {
         return token_new(TOKEN_TYPE_LDOUBLE_BRACE);
     } else if (m == 30) {
@@ -127,7 +136,7 @@ done:
         err_die("impossible. should be begin by '}'");
     } else if (m == 10) {
         self->has_error = true;
-        snprintf(self->error_detail, sizeof self->error_detail, "invalid syntax. single '}' is not supported");
+        tkr_set_error_detail(self, "invalid syntax. single '}' is not supported");
     } else if (m == 20) {
         return token_new(TOKEN_TYPE_RDOUBLE_BRACE);
     }
@@ -163,7 +172,7 @@ done:
         err_die("impossible");
     } else if (m == 10) {
         self->has_error = true;
-        snprintf(self->error_detail, sizeof self->error_detail, "invalid syntax. single '@' is not supported");
+        tkr_set_error_detail(self, "invalid syntax. single '@' is not supported");
     } else if (m == 20) {
         return token_new(TOKEN_TYPE_RBRACEAT);
     }
@@ -354,7 +363,7 @@ tkr_parse(tkr_t *self, const char *src) {
                 // pass
             } else {
                 self->has_error = true;
-                snprintf(self->error_detail, sizeof self->error_detail, "syntax error. unsupported character \"%c\"", c);
+                tkr_set_error_detail(self, "syntax error. unsupported character \"%c\"", c);
                 goto fail;
             }
         } else if (m == 20) {
@@ -385,11 +394,14 @@ tkr_parse(tkr_t *self, const char *src) {
                 tkr_move_token(self, token_new(TOKEN_TYPE_LPAREN));
             } else if (c == ')') {
                 tkr_move_token(self, token_new(TOKEN_TYPE_RPAREN));
+            } else if ((c == '\n') || (c == '\r' && *self->ptr == '\n')) {
+                self->has_error = true;
+                tkr_set_error_detail(self, "unsupported to newline");
             } else if (isspace(c)) {
                 // pass
             } else {
                 self->has_error = true;
-                snprintf(self->error_detail, sizeof self->error_detail, "syntax error. unsupported character \"%c\"", c);
+                tkr_set_error_detail(self, "syntax error. unsupported character \"%c\"", c);
                 goto fail;
             }
         }
@@ -405,7 +417,7 @@ tkr_parse(tkr_t *self, const char *src) {
     if (m == 10 || m == 20) {
         // on the way of '{@' or '{{'
         self->has_error = true;
-        snprintf(self->error_detail, sizeof self->error_detail, "not closed by block");
+        tkr_set_error_detail(self, "not closed by block");
         goto fail;
     }
 
@@ -432,6 +444,11 @@ tkr_has_error(const tkr_t *self) {
 }
 
 const char *
-tkr_error_detail(const tkr_t *self) {
+tkr_get_error_detail(const tkr_t *self) {
     return self->error_detail;
+}
+
+token_t **
+tkr_get_tokens(tkr_t *self) {
+    return self->tokens;
 }

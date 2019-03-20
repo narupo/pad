@@ -80,4 +80,14 @@ tkr_has_error(const tkr_t *self);
  * @return string
  */
 const char *
-tkr_error_detail(const tkr_t *self);
+tkr_get_error_detail(const tkr_t *self);
+
+/**
+ * Get tokens from tokenizer
+ *
+ * @param[in] self pointer to dynamic allocate memory of tkr_t
+ * 
+ * @return pointer to array of pointer to token
+ */
+token_t **
+tkr_get_tokens(tkr_t *self);

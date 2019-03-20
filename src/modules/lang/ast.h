@@ -38,3 +38,31 @@ ast_new(void);
  */
 ast_t *
 ast_parse(ast_t *self, token_t *tokens[]);
+
+void
+ast_set_debug(ast_t *self, bool debug);
+
+/**
+ * Clear data in AST
+ *
+ * @param[in] self pointer to dynamic allocate memory of ast_t
+ *
+ */
+void
+ast_clear(ast_t *self);
+
+/**
+ * Get error detail in AST parser
+ *
+ * @param[in] self pointer to dynamic allocate memory of ast_t
+ *
+ * @return pointer to string
+ */
+const char *
+ast_get_error_detail(const ast_t *self);
+
+const node_t *
+ast_getc_root(const ast_t *self);
+
+bool
+ast_has_error(const ast_t *self);
