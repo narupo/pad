@@ -2,12 +2,12 @@
 #
 # 	https://itchyny.hatenablog.com/entry/20120213/1329135107
 #
-# RM := del
-RM := rm
-# RMDIR := rmdir /s /q
-RMDIR := rm -rf
-# SEP := \\
-SEP := /
+RM := del
+# RM := rm
+RMDIR := rmdir /s /q
+# RMDIR := rm -rf
+SEP := \\
+# SEP := /
 MKDIR := mkdir
 CC := gcc
 INCLUDE := src
@@ -96,7 +96,8 @@ cap: build/app.o \
 		build/app.o \
 		build/lib/*.o \
 		build/modules/*.o \
-		build/modules/commands/*.o
+		build/modules/commands/*.o \
+		build/modules/lang/*.o
 
 build/app.o: src/app.c src/app.h
 	$(CC) $(CFLAGS) -c $< -o $@

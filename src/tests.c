@@ -2057,7 +2057,6 @@ test_ast_parse(void) {
 
 static void
 test_ast_parse_context(void) {
-    // with context
     tokenizer_t *tkr = tkr_new();
     ast_t *ast = ast_new();
     context_t *ctx = ctx_new();

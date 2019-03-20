@@ -220,34 +220,6 @@ catcmd_catstream(catcmd_t *self, FILE *fout, FILE *fin) {
 }
 
 /**
- * Catenate file content to fout
- * 
- * @param[in] *fout destination buffer
- * @param[in] *path file path
- * 
- * @return success to true
- * @return failed to false
- */
-static bool
-catcmd_catfile(catcmd_t *self, FILE *fout, const char *path) {
-    FILE *fin = fopen(path, "rb");
-    if (!fin) {
-        return false;
-    }
-
-    if (catcmd_catstream(self, fout, fin) != 0) {
-        fclose(fin);
-        return false;
-    }
-    
-    if (fclose(fin) < 0) {
-        return false;
-    }
-
-    return true;
-}
-
-/**
  * Show usage and exit from proccess
  *
  * @param[in] self
@@ -274,6 +246,105 @@ catcmd_usage(const catcmd_t *self) {
     );
 }
 
+static string_t *
+catcmd_read_stream(catcmd_t *self, FILE *fin) {
+    string_t *buf = str_new();
+
+    for (; !feof(fin); ) {
+        str_pushb(buf, fgetc(fin));
+    }
+
+    return buf;
+}
+
+static bool
+catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
+    bool ret = true;
+    tokenizer_t *tkr = tkr_new();
+    ast_t *ast = ast_new();
+    context_t *ctx = ctx_new();
+
+    tkr_parse(tkr, str_getc(buf));
+    if (tkr_has_error(tkr)) {
+        err_error(tkr_get_error_detail(tkr));
+        ret = false;
+        goto fail;
+    }
+
+    ast_parse(ast, tkr_get_tokens(tkr));
+    if (ast_has_error(ast)) {
+        err_error(ast_get_error_detail(ast));
+        ret = false;
+        goto fail;
+    }
+
+    ast_traverse(ast, ctx);
+    if (ast_has_error(ast)) {
+        err_error(ast_get_error_detail(ast));
+        ret = false;
+        goto fail;        
+    }
+
+    // set indent
+    string_t *out = str_new();
+    const char *p = ctx_getc_buf(ctx);
+    int m = 0;
+    for (; *p; ) {
+        char c = *p++;
+
+        switch (m) {
+        case 0: { // Indent mode
+            char str[100] = {0};
+            if (!catcmd_setindent(self, str, sizeof str)) {
+                return false;
+            }
+
+            for (int i = 0; i < self->opts.indent; ++i) {
+                str_app(out, str);
+            }
+
+            str_pushb(out, c);
+            if (c != '\n') {
+                m = 1;
+            }
+        } break;
+        case 1: { // Stream mode
+            str_pushb(out, c);
+            if (c == '\n') {
+                m = 0;
+            }
+        } break;
+        }
+    }
+
+    printf("%s", str_getc(out));
+    fflush(fout);
+
+fail:
+    tkr_del(tkr);
+    ast_del(ast);
+    ctx_del(ctx);
+    str_del(out);
+    return ret;
+}
+
+static string_t *
+catcmd_read_file(catcmd_t *self, const char *path) {
+    FILE *fin = fopen(path, "rb");
+    if (fin == NULL) {
+        return NULL;
+    }
+
+    string_t *buf = catcmd_read_stream(self, fin);    
+
+    if (fclose(fin) < 0) {
+        str_del(buf);
+        return NULL;
+    }
+
+    return buf;
+}
+
 /**
  * Execute command
  *
@@ -289,7 +360,10 @@ catcmd_run(catcmd_t *self) {
     }
 
     if (self->argc - self->optind + 1 < 2) {
-        return catcmd_catstream(self, stdout, stdin);
+        string_t *stdinbuf = catcmd_read_stream(self, stdin);
+        catcmd_write_stream(self, stdout, stdinbuf);
+        str_del(stdinbuf);
+        return 0;
     }
 
     char cdpath[FILE_NPATH];
@@ -311,7 +385,9 @@ catcmd_run(catcmd_t *self) {
         const char *name = self->argv[i];
 
         if (strcmp(name, "-") == 0) {
-            catcmd_catstream(self, stdout, stdin);
+            string_t *stdinbuf = catcmd_read_stream(self, stdin);
+            catcmd_write_stream(self, stdout, stdinbuf);
+            str_del(stdinbuf);
             continue;
         }
         
@@ -322,11 +398,14 @@ catcmd_run(catcmd_t *self) {
             continue;
         }
 
-        if (!catcmd_catfile(self, stdout, path)) {
+        string_t *filebuf = catcmd_read_file(self, path);
+        if (filebuf == NULL) {
             ++ret;
-            err_error("failed to catenate of '%s'", path);
+            err_error("failed to read file from \"%s\"", path);
             continue;
         }
+        catcmd_write_stream(self, stdout, filebuf);
+        str_del(filebuf);
     }
 
     return ret;
