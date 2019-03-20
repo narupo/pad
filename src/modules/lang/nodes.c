@@ -24,7 +24,7 @@ struct formula_node {
 };
 
 struct import_node {
-    char *identifier;
+    char package[1024];
 };
 
 struct caller_node {
@@ -74,6 +74,22 @@ caller_node_pushb_arg(caller_node_t *self, const char *str) {
     return self;
 }
 
+const char *
+caller_node_identifiers_getc(const caller_node_t *self, size_t idx) {
+    if (idx >= self->il_pos) {
+        return NULL;
+    }
+    return self->identifier_list[idx];
+}
+
+const char *
+caller_node_args_getc(const caller_node_t *self, size_t idx) {
+    if (idx >= self->args_pos) {
+        return NULL;
+    }
+    return self->args[idx];    
+}
+
 /***************
 * import_node *
 ***************/
@@ -83,17 +99,25 @@ import_node_del(import_node_t *self) {
     if (self == NULL) {
         return;
     }
-    free(self->identifier);
     free(self);
 }
 
 import_node_t *
-import_node_new(const char *identifier) {
+import_node_new(const char *package) {
     import_node_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->identifier = strdup(identifier);
+    snprintf(self->package, sizeof(self->package), "%s", package);
 
     return self;
+}
+
+const char *
+import_node_getc_package(const import_node_t *self) {
+    if (self == NULL) {
+        err_warn("reference to null pointer in get package of import node");
+        return NULL;
+    }
+    return self->package;
 }
 
 /**********

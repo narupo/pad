@@ -43,6 +43,7 @@ tests: build/tests.o \
 	build/lib/string.o \
 	build/lib/cstring_array.o \
 	build/lib/cl.o \
+	build/lib/format.o \
 	build/modules/config.o \
 	build/modules/util.o \
 	build/modules/alias_manager.o \
@@ -74,6 +75,7 @@ cap: build/app.o \
 	build/lib/string.o \
 	build/lib/cstring_array.o \
 	build/lib/cl.o \
+	build/lib/format.o \
 	build/modules/config.o \
 	build/modules/util.o \
 	build/modules/alias_manager.o \
@@ -116,6 +118,9 @@ build/lib/cstring_array.o: src/lib/cstring_array.c src/lib/cstring_array.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/lib/cl.o: src/lib/cl.c src/lib/cl.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/lib/format.o: src/lib/format.c src/lib/format.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules/config.o: src/modules/config.c src/modules/config.h

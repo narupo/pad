@@ -1851,11 +1851,13 @@ static void
 test_ast_parse(void) {
     tkr_t *tkr = tkr_new();
     ast_t *ast = ast_new();
-    const node_t *root;
+    const node_t *root, *node;
     const bin_node_t *bin;
     const code_block_node_t *cbn;
     const text_block_node_t *tbn;
     const formula_node_t *fn;
+    const caller_node_t *cn;
+    const import_node_t *in;
 
     tkr_parse(tkr, "{@@}");
     ast_parse(ast, tkr_get_tokens(tkr));
@@ -1879,6 +1881,29 @@ test_ast_parse(void) {
     tbn = node_getc_real(bin_node_getc_lhs(bin));
     assert(strcmp(text_block_node_getc_text(tbn), "abc") == 0);
 
+    tkr_parse(tkr, "{@\nfunc()\n@}");
+    // ast_set_debug(ast, true);
+    ast_parse(ast, tkr_get_tokens(tkr));
+    test_ast_show_error(ast);
+    assert(ast_has_error(ast) == false);
+    root = ast_getc_root(ast);
+    assert(node_getc_type(root) == NODE_TYPE_BIN);
+    bin = node_getc_real(root);
+    assert(node_getc_type(bin_node_getc_lhs(bin)) == NODE_TYPE_CODE_BLOCK);
+    assert(node_getc_type(bin_node_getc_rhs(bin)) == NODE_TYPE_INVALID);
+    cbn = node_getc_real(bin_node_getc_lhs(bin));
+    fn = node_getc_real(code_block_node_getc_formula(cbn));
+    assert(fn != NULL);
+    assert(node_getc_type(formula_node_getc_lhs(fn)) == NODE_TYPE_CALLER);
+    cn = node_getc_real(formula_node_getc_lhs(fn));
+    assert(strcmp(caller_node_identifiers_getc(cn, 0), "func") == 0);
+
+    tkr_parse(tkr, "{@\nfunc(\n@}");
+    // ast_set_debug(ast, true);
+    ast_parse(ast, tkr_get_tokens(tkr));
+    assert(ast_has_error(ast) == true);
+    assert(strcmp(ast_get_error_detail(ast), "Syntax error. Not found ')' in caller") == 0);
+
     tkr_parse(tkr, "{@\nalias.set()\n@}");
     // ast_set_debug(ast, true);
     ast_parse(ast, tkr_get_tokens(tkr));
@@ -1893,18 +1918,53 @@ test_ast_parse(void) {
     fn = node_getc_real(code_block_node_getc_formula(cbn));
     assert(fn != NULL);
     assert(node_getc_type(formula_node_getc_lhs(fn)) == NODE_TYPE_CALLER);
+    cn = node_getc_real(formula_node_getc_lhs(fn));
+    assert(strcmp(caller_node_identifiers_getc(cn, 0), "alias") == 0);
+    assert(strcmp(caller_node_identifiers_getc(cn, 1), "set") == 0);
 
-    // tkr_parse(tkr, "{@\nalias.get(\"dtl\")\n@}");
-    // ast_parse(ast, tkr_get_tokens(tkr));
-    // assert(ast_has_error(ast) == false);
+    tkr_parse(tkr, "{@\nalias.set(\"dtl\", \"run bin/date-line\")\n@}");
+    // ast_set_debug(ast, true);
+    ast_parse(ast, tkr_get_tokens(tkr));
+    test_ast_show_error(ast);
+    assert(ast_has_error(ast) == false);
+    root = ast_getc_root(ast);
+    assert(node_getc_type(root) == NODE_TYPE_BIN);
+    bin = node_getc_real(root);
+    assert(node_getc_type(bin_node_getc_lhs(bin)) == NODE_TYPE_CODE_BLOCK);
+    assert(node_getc_type(bin_node_getc_rhs(bin)) == NODE_TYPE_INVALID);
+    cbn = node_getc_real(bin_node_getc_lhs(bin));
+    fn = node_getc_real(code_block_node_getc_formula(cbn));
+    assert(fn != NULL);
+    assert(node_getc_type(formula_node_getc_lhs(fn)) == NODE_TYPE_CALLER);
+    cn = node_getc_real(formula_node_getc_lhs(fn));
+    assert(strcmp(caller_node_identifiers_getc(cn, 0), "alias") == 0);
+    assert(strcmp(caller_node_identifiers_getc(cn, 1), "set") == 0);
+    assert(strcmp(caller_node_args_getc(cn, 0), "dtl") == 0);
+    assert(strcmp(caller_node_args_getc(cn, 1), "run bin/date-line") == 0);
 
-    // tkr_parse(tkr, "{@\nalias.set(\"dtl\", \"run bin/date-line\")\n@}");
-    // ast_parse(ast, tkr_get_tokens(tkr));
-    // assert(ast_has_error(ast) == false);
+    tkr_parse(tkr, "{@\nalias.get(\"dtl\")\n@}");
+    ast_parse(ast, tkr_get_tokens(tkr));
+    assert(ast_has_error(ast) == false);
 
-    // tkr_parse(tkr, "{@\nimport aho\n@}");
-    // ast_parse(ast, tkr_get_tokens(tkr));
-    // assert(ast_has_error(ast) == false);
+    tkr_parse(tkr, "{@\nimport alias\n@}");
+    ast_parse(ast, tkr_get_tokens(tkr));
+    assert(ast_has_error(ast) == false);
+    root = ast_getc_root(ast);
+    assert(node_getc_type(root) == NODE_TYPE_BIN);
+    bin = node_getc_real(root);
+    assert(node_getc_type(bin_node_getc_lhs(bin)) == NODE_TYPE_CODE_BLOCK);
+    assert(node_getc_type(bin_node_getc_rhs(bin)) == NODE_TYPE_INVALID);    
+    cbn = node_getc_real(bin_node_getc_lhs(bin));
+    fn = node_getc_real(code_block_node_getc_formula(cbn));
+    assert(fn != NULL);
+    assert(node_getc_type(formula_node_getc_lhs(fn)) == NODE_TYPE_IMPORT);
+    in = node_getc_real(formula_node_getc_lhs(fn));
+    assert(strcmp(import_node_getc_package(in), "alias") == 0);
+
+    tkr_parse(tkr, "{@\nimport\n@}");
+    ast_parse(ast, tkr_get_tokens(tkr));
+    assert(ast_has_error(ast) == true);
+    assert(strcmp(ast_get_error_detail(ast), "Syntax error. Invalid token in import") == 0);
 
     ast_del(ast);
     tkr_del(tkr);

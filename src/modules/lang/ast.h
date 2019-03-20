@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "lib/memory.h"
+#include "lib/format.h"
 
 #include "modules/lang/tokens.h"
 #include "modules/lang/nodes.h"
