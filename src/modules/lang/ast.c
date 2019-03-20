@@ -98,12 +98,15 @@ ast_getc_root(const ast_t *self) {
 
 static void
 ast_set_error_detail(ast_t *self, const char *fmt, ...) {
+    char tmp[ERR_DETAIL_SIZE];
     self->has_error = true;
 
     va_list ap;
     va_start(ap, fmt);
-    vsnprintf(self->error_detail, sizeof self->error_detail, fmt, ap);
+    vsnprintf(tmp, sizeof tmp, fmt, ap);
     va_end(ap);
+
+    fmt_capitalize_text(self->error_detail, sizeof self->error_detail, tmp);
 }
 
 static void
@@ -200,6 +203,11 @@ ast_caller(ast_t *self) {
             }
             bef = 20;
         }
+    }
+
+    if (token_get_type(*(self->ptr-1)) != TOKEN_TYPE_RPAREN) {
+        ast_set_error_detail(self, "syntax error. not found ')' in caller");
+        return NULL;
     }
 
     return node_new(NODE_TYPE_CALLER, caller_node);

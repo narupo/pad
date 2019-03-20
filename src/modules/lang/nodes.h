@@ -55,6 +55,12 @@ caller_node_pushb_identifier(caller_node_t *self, const char *identifier);
 caller_node_t *
 caller_node_pushb_arg(caller_node_t *self, const char *str);
 
+const char *
+caller_node_identifiers_getc(const caller_node_t *self, size_t idx);
+
+const char *
+caller_node_args_getc(const caller_node_t *self, size_t idx);
+
 /**************
 * import_node *
 **************/
@@ -63,7 +69,10 @@ void
 import_node_del(import_node_t *self);
 
 import_node_t *
-import_node_new(const char *identifier);
+import_node_new(const char *package);
+
+const char *
+import_node_getc_package(const import_node_t *self);
 
 /***************
 * formula_node *
