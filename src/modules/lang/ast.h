@@ -9,6 +9,7 @@
 
 #include "modules/lang/tokens.h"
 #include "modules/lang/nodes.h"
+#include "modules/lang/context.h"
 
 struct ast;
 typedef struct ast ast_t;
@@ -39,6 +40,9 @@ ast_new(void);
  */
 ast_t *
 ast_parse(ast_t *self, token_t *tokens[]);
+
+void
+ast_traverse(ast_t *self, context_t *ctx);
 
 void
 ast_set_debug(ast_t *self, bool debug);

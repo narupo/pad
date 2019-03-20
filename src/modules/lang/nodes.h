@@ -58,8 +58,14 @@ caller_node_pushb_arg(caller_node_t *self, const char *str);
 const char *
 caller_node_identifiers_getc(const caller_node_t *self, size_t idx);
 
+size_t 
+caller_node_identifiers_len(const caller_node_t *self);
+
 const char *
 caller_node_args_getc(const caller_node_t *self, size_t idx);
+
+size_t
+caller_node_args_len(const caller_node_t *self);
 
 /**************
 * import_node *
