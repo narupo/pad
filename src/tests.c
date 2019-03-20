@@ -1504,13 +1504,13 @@ urltests[] = {
 
 static void
 test_tkr_new(void) {
-    tkr_t *tkr = tkr_new();
+    tokenizer_t *tkr = tkr_new();
     tkr_del(tkr);
 }
 
 static void
 test_tkr_parse(void) {
-    tkr_t *tkr = tkr_new();
+    tokenizer_t *tkr = tkr_new();
     const token_t *token;
 
     tkr_parse(tkr, "abc");
@@ -1849,7 +1849,7 @@ test_ast_show_error(const ast_t *ast) {
 
 static void
 test_ast_parse(void) {
-    tkr_t *tkr = tkr_new();
+    tokenizer_t *tkr = tkr_new();
     ast_t *ast = ast_new();
     const node_t *root, *node;
     const bin_node_t *bin, *bin2;
@@ -2053,16 +2053,72 @@ test_ast_parse(void) {
     assert(strcmp(caller_node_identifiers_getc(cn, 1), "set") == 0);
     assert(strcmp(caller_node_args_getc(cn, 0), "dtl") == 0);
     assert(strcmp(caller_node_args_getc(cn, 1), "run bin/date-line") == 0);
+}
 
+static void
+test_ast_parse_context(void) {
+    // with context
+    tokenizer_t *tkr = tkr_new();
+    ast_t *ast = ast_new();
+    context_t *ctx = ctx_new();
+
+    tkr_parse(tkr, "{@\nimport alias\nalias.set(\"dtl\", \"run bin/date-line\") @}");
+    ast_parse(ast, tkr_get_tokens(tkr));
+    assert(ast_has_error(ast) == false);
+    ast_traverse(ast, ctx);
+    assert(strcmp(ctx_get_alias(ctx, "dtl"), "run bin/date-line") == 0);
+    assert(ctx_get_imported_alias(ctx) == true);
+    ctx_clear(ctx);
+
+    tkr_parse(tkr, "{@\nalias.set(\"dtl\", \"run bin/date-line\") @}");
+    ast_parse(ast, tkr_get_tokens(tkr));
+    ast_traverse(ast, ctx);
+    assert(ast_has_error(ast) == true);
+    assert(strcmp(ast_get_error_detail(ast), "Import error. Alias is not imported") == 0);
+    ctx_clear(ctx);
+
+    tkr_parse(tkr, "{@\nimport alias\nalias.set() @}");
+    ast_parse(ast, tkr_get_tokens(tkr));
+    ast_traverse(ast, ctx);
+    assert(ast_has_error(ast) == true);
+    assert(strcmp(ast_get_error_detail(ast), "Invalid argument. Set method of alias need two arguments") == 0);
+    ctx_clear(ctx);
+
+    tkr_parse(tkr, "{@\nimport alias\nalias() @}");
+    ast_parse(ast, tkr_get_tokens(tkr));
+    ast_traverse(ast, ctx);
+    assert(ast_has_error(ast) == true);
+    assert(strcmp(ast_get_error_detail(ast), "Call error. Alias is not callable") == 0);
+    ctx_clear(ctx);
+
+    tkr_parse(tkr, "{@\n"
+        "import alias\n"
+        "alias.set(\"dtl\", \"run bin/date-line\")\n"
+        "alias.set(\"aaa\", \"bbb\")\n"
+        "@}");
+    ast_parse(ast, tkr_get_tokens(tkr));
+    assert(ast_has_error(ast) == false);
+    ast_traverse(ast, ctx);
+    assert(strcmp(ctx_get_alias(ctx, "dtl"), "run bin/date-line") == 0);
+    assert(strcmp(ctx_get_alias(ctx, "aaa"), "bbb") == 0);
+    assert(ctx_get_imported_alias(ctx) == true);
+    ctx_clear(ctx);
+
+    ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
 }
 
 static const struct testcase
 ast_tests[] = {
-    {"ast_parse", test_ast_parse, false},
+    {"ast_parse", test_ast_parse},
+    {"ast_parse_context", test_ast_parse_context},
     {0},
 };
+
+/**********
+* context *
+**********/
 
 /*******
 * main *
@@ -2191,7 +2247,7 @@ run(const struct opts *opts) {
     }
 
     fflush(stdout);
-    fprintf(stderr, "Run %d test in %0.3lfs.\n", ntest, (double)(end-start)/CLOCKS_PER_SEC);
+    fprintf(stderr, "\nRun %d test in %0.3lfs.\n", ntest, (double)(end-start)/CLOCKS_PER_SEC);
     fprintf(stderr, "\n");
     fprintf(stderr, "OK\n");
 

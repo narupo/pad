@@ -17,7 +17,7 @@ struct tokenizer {
 };
 
 void
-tkr_del(tkr_t *self) {
+tkr_del(tokenizer_t *self) {
     if (self) {
         for (int32_t i = 0; i < self->tokens_len; ++i) {
             token_del(self->tokens[i]);
@@ -28,9 +28,9 @@ tkr_del(tkr_t *self) {
     }
 }
 
-tkr_t *
+tokenizer_t *
 tkr_new(void) {
-    tkr_t *self = mem_ecalloc(1, sizeof(*self));
+    tokenizer_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->has_error = false;
     self->error_detail[0] = '\0';
@@ -45,14 +45,14 @@ tkr_new(void) {
 }
 
 static void
-tkr_resize_tokens(tkr_t *self, int32_t capa) {
+tkr_resize_tokens(tokenizer_t *self, int32_t capa) {
     size_t byte = sizeof(token_t *);
     self->tokens = mem_erealloc(self->tokens, byte*capa +byte); // +byte for final null
     self->tokens_capa = capa;
 }
 
 static void
-tkr_move_token(tkr_t *self, token_t *move_token) {
+tkr_move_token(tokenizer_t *self, token_t *move_token) {
     if (self->tokens_len >= self->tokens_capa) {
         tkr_resize_tokens(self, self->tokens_capa*2);
     }
@@ -62,7 +62,7 @@ tkr_move_token(tkr_t *self, token_t *move_token) {
 }
 
 static void
-tkr_set_error_detail(tkr_t *self, const char *fmt, ...) {
+tkr_set_error_detail(tokenizer_t *self, const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(self->error_detail, sizeof self->error_detail, fmt, ap);
@@ -70,7 +70,7 @@ tkr_set_error_detail(tkr_t *self, const char *fmt, ...) {
 }
 
 static token_t *
-tkr_read_lbrace(tkr_t *self) {
+tkr_read_lbrace(tokenizer_t *self) {
     int m = 0;
 
     for (; *self->ptr ;) {
@@ -109,7 +109,7 @@ done:
 }
 
 static token_t *
-tkr_read_rbrace(tkr_t *self) {
+tkr_read_rbrace(tokenizer_t *self) {
     int m = 0;
 
     for (; *self->ptr ;) {
@@ -145,7 +145,7 @@ done:
 }
 
 static token_t *
-tkr_read_atmark(tkr_t *self) {
+tkr_read_atmark(tokenizer_t *self) {
     int m = 0;
 
     for (; *self->ptr ;) {
@@ -180,7 +180,7 @@ done:
 }
 
 static void
-tkr_clear_tokens(tkr_t *self) {
+tkr_clear_tokens(tokenizer_t *self) {
     for (int i = 0; i < self->tokens_len; ++i) {
         token_del(self->tokens[i]);
         self->tokens[i] = NULL;
@@ -189,12 +189,12 @@ tkr_clear_tokens(tkr_t *self) {
 }
 
 static bool
-tkr_is_identifier_char(tkr_t *self, int c) {
+tkr_is_identifier_char(tokenizer_t *self, int c) {
     return isalpha(c) || isdigit(c) || c == '_';
 }
 
 static token_t *
-tkr_read_identifier(tkr_t *self) {
+tkr_read_identifier(tokenizer_t *self) {
     string_t *buf = str_new();
 
     for (; *self->ptr; ) {
@@ -217,7 +217,7 @@ tkr_read_identifier(tkr_t *self) {
 }
 
 static token_t *
-tkr_read_dq_string(tkr_t *self) {
+tkr_read_dq_string(tokenizer_t *self) {
     int m = 0;
 
     if (*self->ptr != '"') {
@@ -255,7 +255,7 @@ done: {
 }
 
 static token_t *
-tkr_parse_identifier(tkr_t *self) {
+tkr_parse_identifier(tokenizer_t *self) {
     token_t *token = tkr_read_identifier(self);
     if (self->has_error) {
         token_del(token);
@@ -266,7 +266,7 @@ tkr_parse_identifier(tkr_t *self) {
 }
 
 static token_t *
-tkr_parse_dq_string(tkr_t *self) {
+tkr_parse_dq_string(tokenizer_t *self) {
     token_t *token = tkr_read_dq_string(self);
     if (self->has_error) {
         token_del(token);
@@ -276,8 +276,8 @@ tkr_parse_dq_string(tkr_t *self) {
     return token;
 }
 
-tkr_t *
-tkr_parse(tkr_t *self, const char *src) {
+tokenizer_t *
+tkr_parse(tokenizer_t *self, const char *src) {
     self->src = src;
     self->ptr = src;
     self->has_error = false;
@@ -426,12 +426,12 @@ fail:
 }
 
 int32_t
-tkr_tokens_len(const tkr_t *self) {
+tkr_tokens_len(const tokenizer_t *self) {
     return self->tokens_len;
 }
 
 const token_t *
-tkr_tokens_getc(tkr_t *self, int32_t index) {
+tkr_tokens_getc(tokenizer_t *self, int32_t index) {
     if (index < 0 || index >= self->tokens_len) {
         return NULL;
     }
@@ -439,16 +439,16 @@ tkr_tokens_getc(tkr_t *self, int32_t index) {
 }
 
 bool
-tkr_has_error(const tkr_t *self) {
+tkr_has_error(const tokenizer_t *self) {
     return self->has_error;
 }
 
 const char *
-tkr_get_error_detail(const tkr_t *self) {
+tkr_get_error_detail(const tokenizer_t *self) {
     return self->error_detail;
 }
 
 token_t **
-tkr_get_tokens(tkr_t *self) {
+tkr_get_tokens(tokenizer_t *self) {
     return self->tokens;
 }

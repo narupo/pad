@@ -90,6 +90,16 @@ caller_node_args_getc(const caller_node_t *self, size_t idx) {
     return self->args[idx];    
 }
 
+size_t 
+caller_node_identifiers_len(const caller_node_t *self) {
+    return self->il_pos;
+}
+
+size_t
+caller_node_args_len(const caller_node_t *self) {
+    return self->args_pos;
+}
+
 /***************
 * import_node *
 ***************/

@@ -23,6 +23,7 @@ struct ast {
     token_t **tokens;
     token_t **ptr;
     node_t *root;
+    context_t *context;
     char error_detail[ERR_DETAIL_SIZE];
     bool has_error;
     bool debug;
@@ -343,6 +344,86 @@ ast_parse(ast_t *self, token_t *tokens[]) {
     ast_clear(self);
     self->root = ast_program(self);
     return self;
+}
+
+static void
+_ast_traverse(ast_t *self, node_t *node) {
+    if (node == NULL) {
+        return; 
+    }
+
+    switch (node_getc_type(node)) {
+    default: {
+        err_die("impossible. unsupported node type %d", node_getc_type(node));
+    } break;
+    case NODE_TYPE_BIN: {
+        bin_node_t *bn = node_get_real(node);
+        _ast_traverse(self, bin_node_get_lhs(bn));
+        _ast_traverse(self, bin_node_get_rhs(bn));
+        return;
+    } break;
+    case NODE_TYPE_CODE_BLOCK: {
+        code_block_node_t *cbn = node_get_real(node);
+        _ast_traverse(self, code_block_node_get_formula(cbn));
+        return;
+    } break;
+    case NODE_TYPE_TEXT_BLOCK: {
+        text_block_node_t *tbn = node_get_real(node);
+        const char *text = text_block_node_getc_text(tbn);
+        ctx_pushb_buf(self->context, text);
+        return;
+    } break;
+    case NODE_TYPE_FORMULA: {
+        formula_node_t *fn = node_get_real(node);
+        _ast_traverse(self, formula_node_get_lhs(fn));
+        _ast_traverse(self, formula_node_get_rhs(fn));
+        return;
+    } break;
+    case NODE_TYPE_IMPORT: {
+        import_node_t *in = node_get_real(node);
+        const char *package = import_node_getc_package(in);
+        if (!strcmp(package, "alias")) {
+            ctx_import_alias(self->context);
+        } else {
+            ast_set_error_detail(self, "import error. not found package of \"%s\"", package);
+            return;
+        }
+        return;
+    } break;
+    case NODE_TYPE_CALLER: {
+        caller_node_t *cn = node_get_real(node);
+        const char *package = caller_node_identifiers_getc(cn, 0);
+        if (!strcmp(package, "alias")) {
+            if (!ctx_get_imported_alias(self->context)) {
+                ast_set_error_detail(self, "import error. alias is not imported");
+                return;
+            }
+            const char *method = caller_node_identifiers_getc(cn, 1);
+            if (method == NULL) {
+                ast_set_error_detail(self, "call error. alias is not callable");
+                return;
+            } else if (!strcmp(method, "set")) {
+                const char *key = caller_node_args_getc(cn, 0);
+                const char *val = caller_node_args_getc(cn, 1);
+                if (key == NULL || val == NULL) {
+                    ast_set_error_detail(self, "invalid argument. set method of alias need two arguments");
+                    return;
+                }
+                ctx_set_alias(self->context, key, val);
+            }
+        } else {
+            ast_set_error_detail(self, "import error. unknown package name \"%s\"", package);
+            return;
+        }
+
+    } break;
+    }
+}
+
+void
+ast_traverse(ast_t *self, context_t *context) {
+    self->context = context;
+    _ast_traverse(self, self->root);
 }
 
 void
