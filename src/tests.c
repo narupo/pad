@@ -1543,16 +1543,17 @@ test_tkr_parse(void) {
     tkr_parse(tkr, "{@{");
     assert(tkr_tokens_len(tkr) == 1);
     assert(tkr_has_error(tkr) == true);
-    assert(strcmp(tkr_error_detail(tkr), "syntax error. unsupported character \"{\"") == 0);
+    assert(strcmp(tkr_get_error_detail(tkr), "syntax error. unsupported character \"{\"") == 0);
     
     tkr_parse(tkr, "{@");
     assert(tkr_tokens_len(tkr) == 1);
+    assert(tkr_has_error(tkr) == true);
     token = tkr_tokens_getc(tkr, 0);
     assert(token_get_type(token) == TOKEN_TYPE_LBRACEAT);
 
     tkr_parse(tkr, "{@@");
     assert(tkr_has_error(tkr) == true);
-    assert(strcmp(tkr_error_detail(tkr), "invalid syntax. single '@' is not supported") == 0);
+    assert(strcmp(tkr_get_error_detail(tkr), "invalid syntax. single '@' is not supported") == 0);
 
     tkr_parse(tkr, "{@@}");
     assert(tkr_tokens_len(tkr) == 2);
@@ -1753,7 +1754,77 @@ test_tkr_parse(void) {
     token = tkr_tokens_getc(tkr, 0);
     assert(token_get_type(token) == TOKEN_TYPE_LDOUBLE_BRACE);
     assert(tkr_has_error(tkr) == true);
-    assert(strcmp(tkr_error_detail(tkr), "not closed by block") == 0);
+    assert(strcmp(tkr_get_error_detail(tkr), "not closed by block") == 0);
+
+    tkr_parse(tkr, "{{}}");
+    assert(tkr_tokens_len(tkr) == 2);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_LDOUBLE_BRACE);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token_get_type(token) == TOKEN_TYPE_RDOUBLE_BRACE);
+
+    tkr_parse(tkr, "{{\n}}");
+    assert(tkr_tokens_len(tkr) == 1);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_LDOUBLE_BRACE);
+    assert(tkr_has_error(tkr) == true);
+    assert(strcmp(tkr_get_error_detail(tkr), "unsupported to newline") == 0);
+
+    tkr_parse(tkr, "{{abc}}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_LDOUBLE_BRACE);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token_get_type(token) == TOKEN_TYPE_IDENTIFIER);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token_get_type(token) == TOKEN_TYPE_RDOUBLE_BRACE);
+
+    tkr_parse(tkr, "{{abc123}}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_LDOUBLE_BRACE);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token_get_type(token) == TOKEN_TYPE_IDENTIFIER);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token_get_type(token) == TOKEN_TYPE_RDOUBLE_BRACE);
+
+    tkr_parse(tkr, "{{abc_123}}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_LDOUBLE_BRACE);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token_get_type(token) == TOKEN_TYPE_IDENTIFIER);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token_get_type(token) == TOKEN_TYPE_RDOUBLE_BRACE);
+
+    // TODO: fix to digit
+    tkr_parse(tkr, "{{ 123 }}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_LDOUBLE_BRACE);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token_get_type(token) == TOKEN_TYPE_IDENTIFIER);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token_get_type(token) == TOKEN_TYPE_RDOUBLE_BRACE);
+
+    tkr_parse(tkr, "{{ alias.run(\"dtl\") }}");
+    assert(tkr_tokens_len(tkr) == 8);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token_get_type(token) == TOKEN_TYPE_LDOUBLE_BRACE);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token_get_type(token) == TOKEN_TYPE_IDENTIFIER);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token_get_type(token) == TOKEN_TYPE_DOT_OPE);
+    token = tkr_tokens_getc(tkr, 3);
+    assert(token_get_type(token) == TOKEN_TYPE_IDENTIFIER);
+    token = tkr_tokens_getc(tkr, 4);
+    assert(token_get_type(token) == TOKEN_TYPE_LPAREN);
+    token = tkr_tokens_getc(tkr, 5);
+    assert(token_get_type(token) == TOKEN_TYPE_DQ_STRING);
+    token = tkr_tokens_getc(tkr, 6);
+    assert(token_get_type(token) == TOKEN_TYPE_RPAREN);
+    token = tkr_tokens_getc(tkr, 7);
+    assert(token_get_type(token) == TOKEN_TYPE_RDOUBLE_BRACE);
 
     tkr_del(tkr);
 }
@@ -1762,6 +1833,86 @@ static const struct testcase
 tokenizer_tests[] = {
     {"tkr_new", test_tkr_new},
     {"tkr_parse", test_tkr_parse},
+    {0},
+};
+
+/******
+* ast *
+******/
+
+static void
+test_ast_show_error(const ast_t *ast) {
+    if (ast_has_error(ast)) {
+        printf("error detail[%s]\n", ast_get_error_detail(ast));
+    }
+}
+
+static void
+test_ast_parse(void) {
+    tkr_t *tkr = tkr_new();
+    ast_t *ast = ast_new();
+    const node_t *root;
+    const bin_node_t *bin;
+    const code_block_node_t *cbn;
+    const text_block_node_t *tbn;
+    const formula_node_t *fn;
+
+    tkr_parse(tkr, "{@@}");
+    ast_parse(ast, tkr_get_tokens(tkr));
+    assert(ast_has_error(ast) == false);
+    root = ast_getc_root(ast);
+    assert(node_getc_type(root) == NODE_TYPE_BIN);
+    bin = node_getc_real(root);
+    assert(node_getc_type(bin_node_getc_lhs(bin)) == NODE_TYPE_CODE_BLOCK);
+    assert(node_getc_type(bin_node_getc_rhs(bin)) == NODE_TYPE_INVALID);
+    cbn = node_getc_real(bin_node_getc_lhs(bin));
+    assert(code_block_node_getc_formula(cbn) == NULL);
+
+    tkr_parse(tkr, "abc");
+    ast_parse(ast, tkr_get_tokens(tkr));
+    assert(ast_has_error(ast) == false);
+    root = ast_getc_root(ast);
+    assert(node_getc_type(root) == NODE_TYPE_BIN);
+    bin = node_getc_real(root);
+    assert(node_getc_type(bin_node_getc_lhs(bin)) == NODE_TYPE_TEXT_BLOCK);
+    assert(node_getc_type(bin_node_getc_rhs(bin)) == NODE_TYPE_INVALID);
+    tbn = node_getc_real(bin_node_getc_lhs(bin));
+    assert(strcmp(text_block_node_getc_text(tbn), "abc") == 0);
+
+    tkr_parse(tkr, "{@\nalias.set()\n@}");
+    // ast_set_debug(ast, true);
+    ast_parse(ast, tkr_get_tokens(tkr));
+    test_ast_show_error(ast);
+    assert(ast_has_error(ast) == false);
+    root = ast_getc_root(ast);
+    assert(node_getc_type(root) == NODE_TYPE_BIN);
+    bin = node_getc_real(root);
+    assert(node_getc_type(bin_node_getc_lhs(bin)) == NODE_TYPE_CODE_BLOCK);
+    assert(node_getc_type(bin_node_getc_rhs(bin)) == NODE_TYPE_INVALID);
+    cbn = node_getc_real(bin_node_getc_lhs(bin));
+    fn = node_getc_real(code_block_node_getc_formula(cbn));
+    assert(fn != NULL);
+    assert(node_getc_type(formula_node_getc_lhs(fn)) == NODE_TYPE_CALLER);
+
+    // tkr_parse(tkr, "{@\nalias.get(\"dtl\")\n@}");
+    // ast_parse(ast, tkr_get_tokens(tkr));
+    // assert(ast_has_error(ast) == false);
+
+    // tkr_parse(tkr, "{@\nalias.set(\"dtl\", \"run bin/date-line\")\n@}");
+    // ast_parse(ast, tkr_get_tokens(tkr));
+    // assert(ast_has_error(ast) == false);
+
+    // tkr_parse(tkr, "{@\nimport aho\n@}");
+    // ast_parse(ast, tkr_get_tokens(tkr));
+    // assert(ast_has_error(ast) == false);
+
+    ast_del(ast);
+    tkr_del(tkr);
+}
+
+static const struct testcase
+ast_tests[] = {
+    {"ast_parse", test_ast_parse, false},
     {0},
 };
 
@@ -1783,6 +1934,7 @@ testmodules[] = {
     // {"socket", sockettests},
     // {"url", urltests},
     {"tokenizer", tokenizer_tests},
+    {"ast", ast_tests},
     {},
 };
 

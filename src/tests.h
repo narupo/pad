@@ -35,3 +35,5 @@
 
 #include "modules/lang/tokens.h"
 #include "modules/lang/tokenizer.h"
+#include "modules/lang/nodes.h"
+#include "modules/lang/ast.h"

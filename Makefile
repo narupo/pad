@@ -2,13 +2,13 @@
 #
 # 	https://itchyny.hatenablog.com/entry/20120213/1329135107
 #
-RM := del
-# RM := rm
-RMDIR := rmdir /s /q
-# RMDIR := rm -rf
+# RM := del
+RM := rm
+# RMDIR := rmdir /s /q
+RMDIR := rm -rf
+# SEP := \\
+SEP := /
 MKDIR := mkdir
-SEP := \\
-# SEP := /
 CC := gcc
 INCLUDE := src
 CFLAGS := -Wall \

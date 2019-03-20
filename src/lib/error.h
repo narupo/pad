@@ -62,6 +62,15 @@ void
 err_error(const char *fmt, ...);
 
 /**
+ * Show warning message
+ * 
+ * @param[in] *fmt string of format
+ * @param[in] ... arguments of format
+ */
+void
+err_warn(const char *fmt, ...);
+
+/**
  * Show debug message
  * 
  * @param[in] *fmt string of format

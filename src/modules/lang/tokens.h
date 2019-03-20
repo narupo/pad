@@ -3,6 +3,7 @@
 #include "lib/memory.h"
 
 enum {
+    TOKEN_TYPE_INVALID = -1,
     TOKEN_TYPE_TEXT_BLOCK = 1,
     TOKEN_TYPE_BLOCK = 10,
     TOKEN_TYPE_LBRACEAT = 20,
@@ -17,10 +18,7 @@ enum {
     TOKEN_TYPE_DQ_STRING = 70,
 };
 
-struct token {
-    int type;
-    char *text;
-};
+struct token;
 typedef struct token token_t;
 
 /**
@@ -66,3 +64,13 @@ token_get_type(const token_t *self);
  */
 const char *
 token_getc_text(const token_t *self);
+
+/**
+ * Copy text from token
+ *
+ * @param[in] self pointer to dynamic allocate memory of token_t
+ *
+ * @return pointer to dynamic allocate memory of text
+ */
+char *
+token_copy_text(const token_t *self);
