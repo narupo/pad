@@ -50,3 +50,12 @@ almgr_new(const config_t *config);
  */
 almgr_t *
 almgr_find_alias_value(almgr_t *self, char *dst, uint32_t dstsz, const char *key, int scope);
+
+bool
+almgr_has_error(const almgr_t *self);
+
+void
+almgr_clear_error(almgr_t *self);
+
+const char *
+almgr_get_error_detail(const almgr_t *self);

@@ -6,6 +6,7 @@
 enum {
     ALIAS_KV_NKEY = 128,
     ALIAS_KV_NVAL = 128,
+    ERR_DETAIL_SIZE = 1024,
 };
 
 /**
@@ -29,6 +30,7 @@ struct alias_manager {
     tokenizer_t *tkr;
     ast_t *ast;
     context_t *context;
+    char error_detail[ERR_DETAIL_SIZE];
 };
 
 void
@@ -61,6 +63,14 @@ almgr_new(const config_t *config) {
     return self;
 }
 
+static void
+almgr_set_error_detail(almgr_t *self, const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(self->error_detail, sizeof self->error_detail, fmt, ap);
+    va_end(ap);
+}
+
 static char *
 almgr_create_resource_path(almgr_t *self, char *dst, size_t dstsz, int scope) {
     char tmp[FILE_NPATH];
@@ -71,16 +81,16 @@ almgr_create_resource_path(almgr_t *self, char *dst, size_t dstsz, int scope) {
     } else if (scope == CAP_SCOPE_GLOBAL) {
         srcpath = self->config->var_home_path;
     } else {
-        err_error("invalid scope");
+        almgr_set_error_detail(self, "invalid scope");
         return NULL;
     }
 
     if (file_readline(tmp, sizeof tmp, srcpath) == NULL) {
-        err_error("failed to read line from %s", (scope == CAP_SCOPE_LOCAL ? "local" : "global"));
+        almgr_set_error_detail(self, "failed to read line from %s", (scope == CAP_SCOPE_LOCAL ? "local" : "global"));
         return NULL;
     }
     if (file_solvefmt(dst, dstsz, "%s/.caprc", tmp) == NULL) {
-        err_error("failed to solve dst of resource file");
+        almgr_set_error_detail(self, "failed to solve dst of resource file");
         return NULL;
     }
 
@@ -100,7 +110,7 @@ static almgr_t *
 almgr_load_alias_list(almgr_t *self, int scope) {
     char path[FILE_NPATH];
     if (almgr_create_resource_path(self, path, sizeof path, scope) == NULL) {
-        err_error("failed to create path by scope %d", scope);
+        almgr_set_error_detail(self, "failed to create path by scope %d", scope);
         return NULL;
     }
     if (!file_exists(path)) {
@@ -116,14 +126,14 @@ almgr_load_alias_list(almgr_t *self, int scope) {
 
     tkr_parse(self->tkr, src);
     if (tkr_has_error(self->tkr)) {
-        err_error(tkr_get_error_detail(self->tkr));
+        almgr_set_error_detail(self, tkr_get_error_detail(self->tkr));
         ret = NULL;
         goto fail;
     }
 
     ast_parse(self->ast, tkr_get_tokens(self->tkr));
     if (ast_has_error(self->ast)) {
-        err_error(ast_get_error_detail(self->ast));
+        almgr_set_error_detail(self, ast_get_error_detail(self->ast));
         ret = NULL;
         goto fail;
     }
@@ -131,7 +141,7 @@ almgr_load_alias_list(almgr_t *self, int scope) {
     ctx_clear(self->context);
     ast_traverse(self->ast, self->context);
     if (ast_has_error(self->ast)) {
-        err_error(ast_get_error_detail(self->ast));
+        almgr_set_error_detail(self, ast_get_error_detail(self->ast));
         ret = NULL;
         goto fail;
     }
@@ -157,4 +167,19 @@ almgr_find_alias_value(almgr_t *self, char *dst, uint32_t dstsz, const char *key
 
     snprintf(dst, dstsz, "%s", val);
     return self;
+}
+
+bool
+almgr_has_error(const almgr_t *self) {
+    return self->error_detail[0] != '\0';
+}
+
+void
+almgr_clear_error(almgr_t *self) {
+    self->error_detail[0] = '\0';
+}
+
+const char *
+almgr_get_error_detail(const almgr_t *self) {
+    return self->error_detail;
 }

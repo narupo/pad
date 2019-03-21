@@ -1902,7 +1902,14 @@ test_ast_parse(void) {
     // ast_set_debug(ast, true);
     ast_parse(ast, tkr_get_tokens(tkr));
     assert(ast_has_error(ast) == true);
-    assert(strcmp(ast_get_error_detail(ast), "Syntax error. Not found ')' in caller") == 0);
+    assert(strcmp(ast_get_error_detail(ast), "syntax error. not supported token 21 in caller") == 0);
+    // ast_set_debug(ast, false);
+
+    tkr_parse(tkr, "{@\nfunc(\"aaa\",\n@}");
+    // ast_set_debug(ast, true);
+    ast_parse(ast, tkr_get_tokens(tkr));
+    assert(ast_has_error(ast) == true);
+    assert(strcmp(ast_get_error_detail(ast), "syntax error. not supported token 21 in caller") == 0);
 
     tkr_parse(tkr, "{@\nalias.set()\n@}");
     // ast_set_debug(ast, true);
@@ -1964,7 +1971,7 @@ test_ast_parse(void) {
     tkr_parse(tkr, "{@\nimport\n@}");
     ast_parse(ast, tkr_get_tokens(tkr));
     assert(ast_has_error(ast) == true);
-    assert(strcmp(ast_get_error_detail(ast), "Syntax error. Invalid token in import") == 0);
+    assert(strcmp(ast_get_error_detail(ast), "syntax error. invalid token in import") == 0);
 
     tkr_parse(tkr, "{@\nimport aaa\n@}{@\nimport bbb\n@}");
     ast_parse(ast, tkr_get_tokens(tkr));
@@ -2073,21 +2080,21 @@ test_ast_parse_context(void) {
     ast_parse(ast, tkr_get_tokens(tkr));
     ast_traverse(ast, ctx);
     assert(ast_has_error(ast) == true);
-    assert(strcmp(ast_get_error_detail(ast), "Import error. Alias is not imported") == 0);
+    assert(strcmp(ast_get_error_detail(ast), "import error. alias is not imported") == 0);
     ctx_clear(ctx);
 
     tkr_parse(tkr, "{@\nimport alias\nalias.set() @}");
     ast_parse(ast, tkr_get_tokens(tkr));
     ast_traverse(ast, ctx);
     assert(ast_has_error(ast) == true);
-    assert(strcmp(ast_get_error_detail(ast), "Invalid argument. Set method of alias need two arguments") == 0);
+    assert(strcmp(ast_get_error_detail(ast), "invalid argument. set method of alias need two arguments") == 0);
     ctx_clear(ctx);
 
     tkr_parse(tkr, "{@\nimport alias\nalias() @}");
     ast_parse(ast, tkr_get_tokens(tkr));
     ast_traverse(ast, ctx);
     assert(ast_has_error(ast) == true);
-    assert(strcmp(ast_get_error_detail(ast), "Call error. Alias is not callable") == 0);
+    assert(strcmp(ast_get_error_detail(ast), "call error. alias is not callable") == 0);
     ctx_clear(ctx);
 
     tkr_parse(tkr, "{@\n"
