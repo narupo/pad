@@ -2,12 +2,15 @@
 #
 # 	https://itchyny.hatenablog.com/entry/20120213/1329135107
 #
-RM := del
-# RM := rm
-RMDIR := rmdir /s /q
-# RMDIR := rm -rf
-SEP := \\
-# SEP := /
+ifeq ($(OS), Windows_NT)
+	RM := del
+	RMDIR := rmdir /s /q
+	SEP := \\
+else
+	RM := rm
+	RMDIR := rm -rf
+	SEP := /
+endif
 MKDIR := mkdir
 CC := gcc
 INCLUDE := src
