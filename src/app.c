@@ -389,8 +389,13 @@ app_execute_alias_by_name(app_t *self, const char *name) {
     int scope = CAP_SCOPE_LOCAL;
     if (almgr_find_alias_value(almgr, val, sizeof val, name, scope) == NULL) {
         scope = CAP_SCOPE_GLOBAL;
+        almgr_clear_error(almgr);
         if (almgr_find_alias_value(almgr, val, sizeof val, name, scope) == NULL) {
-            err_error("not found alias \"%s\"", name);
+            if (almgr_has_error(almgr)) {
+                err_error("not found alias \"%s\". %s", name, almgr_get_error_detail(almgr));
+            } else {
+                err_error("not found alias \"%s\"", name);
+            }
             return 1;
         }
     }

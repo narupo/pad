@@ -20,13 +20,13 @@ enum {
 };
 
 struct ast {
-    token_t **tokens;
-    token_t **ptr;
-    node_t *root;
-    context_t *context;
-    char error_detail[ERR_DETAIL_SIZE];
-    bool has_error;
-    bool debug;
+    token_t **tokens; // token list with null at the last
+    token_t **ptr; // pointer to tokens
+    node_t *root; // pointer to root
+    context_t *context; // context. update when traverse tree
+    char error_detail[ERR_DETAIL_SIZE]; // error detail
+    bool has_error; // if has error to true
+    bool debug; // if do debug to true
 };
 
 void
@@ -99,15 +99,12 @@ ast_getc_root(const ast_t *self) {
 
 static void
 ast_set_error_detail(ast_t *self, const char *fmt, ...) {
-    char tmp[ERR_DETAIL_SIZE];
     self->has_error = true;
 
     va_list ap;
     va_start(ap, fmt);
-    vsnprintf(tmp, sizeof tmp, fmt, ap);
+    vsnprintf(self->error_detail, sizeof self->error_detail, fmt, ap);
     va_end(ap);
-
-    fmt_capitalize_text(self->error_detail, sizeof self->error_detail, tmp);
 }
 
 static void
@@ -203,6 +200,9 @@ ast_caller(ast_t *self) {
                 return NULL;
             }
             bef = 20;
+        } else {
+            ast_set_error_detail(self, "syntax error. not supported token %d in caller", type);
+            return NULL;
         }
     }
 
