@@ -1851,7 +1851,7 @@ static void
 test_ast_parse(void) {
     tokenizer_t *tkr = tkr_new();
     ast_t *ast = ast_new();
-    const node_t *root, *node;
+    const node_t *root;
     const bin_node_t *bin, *bin2;
     const code_block_node_t *cbn;
     const text_block_node_t *tbn;

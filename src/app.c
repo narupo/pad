@@ -387,15 +387,12 @@ app_execute_alias_by_name(app_t *self, const char *name) {
     // find alias value by name
     char val[1024];
     int scope = CAP_SCOPE_LOCAL;
-    if (!almgr_find_alias_value(almgr, val, sizeof val, name, CAP_SCOPE_LOCAL)) {
-        if (!almgr_find_alias_value(almgr, val, sizeof val, name, CAP_SCOPE_GLOBAL)) {
+    if (almgr_find_alias_value(almgr, val, sizeof val, name, scope) == NULL) {
+        scope = CAP_SCOPE_GLOBAL;
+        if (almgr_find_alias_value(almgr, val, sizeof val, name, scope) == NULL) {
             err_error("not found alias \"%s\"", name);
             return 1;
-        } else {
-            scope = CAP_SCOPE_GLOBAL;
         }
-    } else {
-        scope = CAP_SCOPE_LOCAL;
     }
     almgr_del(almgr);
 

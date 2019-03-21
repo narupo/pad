@@ -287,6 +287,22 @@ file_readcp(FILE* fin) {
 	return dst;
 }
 
+char *
+file_readcp_from_path(const char *path) {
+	FILE *fin = fopen(path, "rb");
+	if (fin == NULL) {
+		return NULL;
+	}
+
+	char *content = file_readcp(fin);
+
+	if (fclose(fin) == EOF) {
+		return NULL;
+	}
+
+	return content;
+}
+
 int64_t
 file_size(FILE* fp) {
 	if (!fp) {
