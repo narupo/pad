@@ -1,13 +1,17 @@
 #pragma once
 
 #include <getopt.h>
+#include <string.h>
+#include <stdbool.h>
 
 #include "lib/memory.h"
 #include "lib/file.h"
 #include "lib/cstring_array.h"
 
+#include "modules/constant.h"
 #include "modules/util.h"
 #include "modules/config.h"
+#include "modules/alias_manager.h"
 
 struct alcmd;
 typedef struct alcmd alcmd_t;
