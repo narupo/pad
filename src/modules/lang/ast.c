@@ -404,12 +404,12 @@ _ast_traverse(ast_t *self, node_t *node) {
                 return;
             } else if (!strcmp(method, "set")) {
                 const char *key = caller_node_args_getc(cn, 0);
-                const char *val = caller_node_args_getc(cn, 1);
-                if (key == NULL || val == NULL) {
+                const char *value = caller_node_args_getc(cn, 1);
+                if (key == NULL || value == NULL) {
                     ast_set_error_detail(self, "invalid argument. set method of alias need two arguments");
                     return;
                 }
-                ctx_set_alias(self->context, key, val);
+                ctx_set_alias(self->context, key, value);
             }
         } else {
             ast_set_error_detail(self, "import error. unknown package name \"%s\"", package);

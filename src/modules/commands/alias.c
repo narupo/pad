@@ -96,7 +96,9 @@ alcmd_show_list(const alcmd_t *self) {
 
     if (almgr_load_alias_list(almgr, CAP_SCOPE_LOCAL) == NULL) {
         if (almgr_load_alias_list(almgr, CAP_SCOPE_GLOBAL) == NULL) {
-            err_error("failed to load alias list");
+            if (almgr_has_error(almgr)) {
+                err_error(almgr_get_error_detail(almgr));
+            }
             almgr_del(almgr);
             return 1;
         }
