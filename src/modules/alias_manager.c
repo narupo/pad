@@ -26,6 +26,9 @@ struct alias_manager {
     alkv_t **alkvs;
     int32_t alkvs_len;
     int32_t alkvs_capa;
+    tokenizer_t *tkr;
+    ast_t *ast;
+    context_t *context;
 };
 
 void
@@ -34,6 +37,9 @@ almgr_del(almgr_t *self) {
         for (int i = 0; i < self->alkvs_len; ++i) {
             free(self->alkvs[i]);
         }
+        ast_del(self->ast);
+        tkr_del(self->tkr);
+        ctx_del(self->context);
         free(self);
     }
 }
@@ -48,7 +54,37 @@ almgr_new(const config_t *config) {
     self->alkvs_capa = 8;
     self->alkvs = mem_ecalloc(self->alkvs_capa, sizeof(alkv_t *));
 
+    self->tkr = tkr_new();
+    self->ast = ast_new();
+    self->context = ctx_new();
+
     return self;
+}
+
+static char *
+almgr_create_resource_path(almgr_t *self, char *dst, size_t dstsz, int scope) {
+    char tmp[FILE_NPATH];
+    const char *srcpath;
+
+    if (scope == CAP_SCOPE_LOCAL) {
+        srcpath = self->config->var_cd_path;
+    } else if (scope == CAP_SCOPE_GLOBAL) {
+        srcpath = self->config->var_home_path;
+    } else {
+        err_error("invalid scope");
+        return NULL;
+    }
+
+    if (file_readline(tmp, sizeof tmp, srcpath) == NULL) {
+        err_error("failed to read line from %s", (scope == CAP_SCOPE_LOCAL ? "local" : "global"));
+        return NULL;
+    }
+    if (file_solvefmt(dst, dstsz, "%s/.caprc", tmp) == NULL) {
+        err_error("failed to solve dst of resource file");
+        return NULL;
+    }
+
+    return dst;
 }
 
 /**
@@ -62,29 +98,63 @@ almgr_new(const config_t *config) {
  */
 static almgr_t *
 almgr_load_alias_list(almgr_t *self, int scope) {
-    // TODO
-    return self;
+    char path[FILE_NPATH];
+    if (almgr_create_resource_path(self, path, sizeof path, scope) == NULL) {
+        err_error("failed to create path by scope %d", scope);
+        return NULL;
+    }
+    if (!file_exists(path)) {
+        return self; // nothing to do
+    }
+
+    char *src = file_readcp_from_path(path);
+    if (src == NULL) {
+        return NULL;
+    }
+
+    almgr_t *ret = self;
+
+    tkr_parse(self->tkr, src);
+    if (tkr_has_error(self->tkr)) {
+        err_error(tkr_get_error_detail(self->tkr));
+        ret = NULL;
+        goto fail;
+    }
+
+    ast_parse(self->ast, tkr_get_tokens(self->tkr));
+    if (ast_has_error(self->ast)) {
+        err_error(ast_get_error_detail(self->ast));
+        ret = NULL;
+        goto fail;
+    }
+
+    ctx_clear(self->context);
+    ast_traverse(self->ast, self->context);
+    if (ast_has_error(self->ast)) {
+        err_error(ast_get_error_detail(self->ast));
+        ret = NULL;
+        goto fail;
+    }
+
+fail:
+    free(src);
+    return ret;
 }
 
 almgr_t *
 almgr_find_alias_value(almgr_t *self, char *dst, uint32_t dstsz, const char *key, int scope) {
 
     // load alias list
-    if (!almgr_load_alias_list(self, scope)) {
-        err_error("failed to load alias list");
+    if (almgr_load_alias_list(self, scope) == NULL) {
         return NULL;
     }
 
     // find alias value by key
-    for (int i = 0; i < self->alkvs_len; ++i) {
-        alkv_t *alkv = self->alkvs[i];
-        if (!strcmp(alkv->key, key)) {
-            snprintf(dst, dstsz, "%s", alkv->val);
-            return self;
-        }
+    const char *val = ctx_get_alias(self->context, key);
+    if (val == NULL) {
+        return NULL;
     }
 
-    strcpy(dst, "run bin/date-line"); // TODO: remove me!
-    return self; // TODO: remove me!
-    return NULL;
+    snprintf(dst, dstsz, "%s", val);
+    return self;
 }

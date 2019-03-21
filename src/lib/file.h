@@ -206,6 +206,16 @@ char *
 file_readcp(FILE *fin);
 
 /**
+ * Read all string from stream
+ *
+ * @param[in] path source file path
+ * @return success to pointer to read string (nul terminated)
+ * @return failed to pointer to NULL
+ */
+char *
+file_readcp_from_path(const char *path);
+
+/**
  * Get file size
  * 
  * @param[in] *stream pointer to FILE

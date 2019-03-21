@@ -7,7 +7,12 @@
 #include "lib/error.h"
 #include "lib/memory.h"
 
+#include "modules/constant.h"
 #include "modules/config.h"
+
+#include "modules/lang/tokenizer.h"
+#include "modules/lang/ast.h"
+#include "modules/lang/context.h"
 
 struct alias_manager;
 typedef struct alias_manager almgr_t;

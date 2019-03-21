@@ -9,7 +9,7 @@
 
 static char *
 capitalize_text(char *dst, size_t dstsz, const char *text) {
-    int m = 0;
+    int m = 0, savem = 0;
     char *dp = dst;
     char *dpend = dst + (dstsz-1);
     const char *p = text;
@@ -20,6 +20,14 @@ capitalize_text(char *dst, size_t dstsz, const char *text) {
         case 0: // first
             if (isspace(c)) {
                 *dp++ = c;
+            } else if (c == '\'') {
+                *dp++ = c;
+                savem = m;
+                m = 100;
+            } else if (c == '"') {
+                *dp++ = c;
+                savem = m;
+                m = 110;
             } else {
                 if (isalpha(c)) {
                     *dp++ = toupper(c);
@@ -33,6 +41,14 @@ capitalize_text(char *dst, size_t dstsz, const char *text) {
             if (c == '.') {
                 *dp++ = c;
                 m = 20;
+            } else if (c == '\'') {
+                *dp++ = c;
+                savem = m;
+                m = 100;
+            } else if (c == '"') {
+                *dp++ = c;
+                savem = m;
+                m = 110;
             } else {
                 *dp++ = c;
             }
@@ -41,9 +57,29 @@ capitalize_text(char *dst, size_t dstsz, const char *text) {
             if (isalpha(c)) {
                 *dp++ = toupper(c);
                 m = 10;
+            } else if (c == '\'') {
+                *dp++ = c;
+                savem = m;
+                m = 100;
+            } else if (c == '"') {
+                *dp++ = c;
+                savem = m;
+                m = 110;
             } else {
                 *dp++ = c;
             }
+            break;
+        case 100: // found "'"
+            if (c == '\'') {
+                m = savem;
+            }
+            *dp++ = c;
+            break;
+        case 110: // found '"'
+            if (c == '"') {
+                m = savem;
+            }
+            *dp++ = c;
             break;
         }
     }
