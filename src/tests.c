@@ -2072,7 +2072,7 @@ test_ast_parse_context(void) {
     ast_parse(ast, tkr_get_tokens(tkr));
     assert(ast_has_error(ast) == false);
     ast_traverse(ast, ctx);
-    assert(strcmp(ctx_get_alias(ctx, "dtl"), "run bin/date-line") == 0);
+    assert(strcmp(ctx_get_alias_value(ctx, "dtl"), "run bin/date-line") == 0);
     assert(ctx_get_imported_alias(ctx) == true);
     ctx_clear(ctx);
 
@@ -2105,8 +2105,8 @@ test_ast_parse_context(void) {
     ast_parse(ast, tkr_get_tokens(tkr));
     assert(ast_has_error(ast) == false);
     ast_traverse(ast, ctx);
-    assert(strcmp(ctx_get_alias(ctx, "dtl"), "run bin/date-line") == 0);
-    assert(strcmp(ctx_get_alias(ctx, "aaa"), "bbb") == 0);
+    assert(strcmp(ctx_get_alias_value(ctx, "dtl"), "run bin/date-line") == 0);
+    assert(strcmp(ctx_get_alias_value(ctx, "aaa"), "bbb") == 0);
     assert(ctx_get_imported_alias(ctx) == true);
     ctx_clear(ctx);
 

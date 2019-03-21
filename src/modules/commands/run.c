@@ -69,7 +69,7 @@ runcmd_read_script_line(runcmd_t *self, char *dst, size_t dstsz, const char *pat
     snprintf(dst, dstsz, "%s", at);
 
     // done
-    if (fclose(fin) < 0) {
+    if (fclose(fin) == EOF) {
         return NULL;
     }
 
@@ -108,15 +108,15 @@ runcmd_run(runcmd_t *self) {
     }
 
     // Read script line in file
-    char exesname[NSCRIPTNAME];
-    if (!runcmd_read_script_line(self, exesname, sizeof exesname, spath)) {
-        exesname[0] = '\0';
+    char script[NSCRIPTNAME];
+    if (!runcmd_read_script_line(self, script, sizeof script, spath)) {
+        script[0] = '\0';
     }
 
     // Create command line
     string_t *cmdline = str_new();
-    if (strlen(exesname)) {
-        str_app(cmdline, exesname);
+    if (strlen(script)) {
+        str_app(cmdline, script);
         str_app(cmdline, " ");
     }
     str_app(cmdline, spath);

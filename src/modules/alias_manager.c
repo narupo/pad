@@ -4,29 +4,14 @@
  * Numbers
  */
 enum {
-    ALIAS_KV_NKEY = 128,
-    ALIAS_KV_NVAL = 128,
     ERR_DETAIL_SIZE = 1024,
 };
-
-/**
- * Structure of alias_kv
- */
-struct alias_kv {
-    char key[ALIAS_KV_NKEY];
-    char val[ALIAS_KV_NVAL];
-};
-
-typedef struct alias_kv alkv_t;
 
 /**
  * Structure of alias_manager
  */
 struct alias_manager {
     const config_t *config;
-    alkv_t **alkvs;
-    int32_t alkvs_len;
-    int32_t alkvs_capa;
     tokenizer_t *tkr;
     ast_t *ast;
     context_t *context;
@@ -36,9 +21,6 @@ struct alias_manager {
 void
 almgr_del(almgr_t *self) {
     if (self) {
-        for (int i = 0; i < self->alkvs_len; ++i) {
-            free(self->alkvs[i]);
-        }
         ast_del(self->ast);
         tkr_del(self->tkr);
         ctx_del(self->context);
@@ -51,10 +33,6 @@ almgr_new(const config_t *config) {
     almgr_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->config = config;
-
-    self->alkvs_len = 0;
-    self->alkvs_capa = 8;
-    self->alkvs = mem_ecalloc(self->alkvs_capa, sizeof(alkv_t *));
 
     self->tkr = tkr_new();
     self->ast = ast_new();
@@ -97,16 +75,7 @@ almgr_create_resource_path(almgr_t *self, char *dst, size_t dstsz, int scope) {
     return dst;
 }
 
-/**
- * Load alias list by scope
- *
- * @param[in] self pointer to dynamic allocate memory of almgr_t
- * @param[in] scope number of scope of environment
- *
- * @return success to pointer to dynamic allocate memory of almgr_t
- * @return failed to NULL
- */
-static almgr_t *
+almgr_t *
 almgr_load_alias_list(almgr_t *self, int scope) {
     char path[FILE_NPATH];
     if (almgr_create_resource_path(self, path, sizeof path, scope) == NULL) {
@@ -153,19 +122,18 @@ fail:
 
 almgr_t *
 almgr_find_alias_value(almgr_t *self, char *dst, uint32_t dstsz, const char *key, int scope) {
-
     // load alias list
     if (almgr_load_alias_list(self, scope) == NULL) {
         return NULL;
     }
 
     // find alias value by key
-    const char *val = ctx_get_alias(self->context, key);
-    if (val == NULL) {
+    const char *value = ctx_get_alias_value(self->context, key);
+    if (value == NULL) {
         return NULL;
     }
 
-    snprintf(dst, dstsz, "%s", val);
+    snprintf(dst, dstsz, "%s", value);
     return self;
 }
 
@@ -182,4 +150,9 @@ almgr_clear_error(almgr_t *self) {
 const char *
 almgr_get_error_detail(const almgr_t *self) {
     return self->error_detail;
+}
+
+const almap_t *
+almgr_getc_almap(const almgr_t *self) {
+    return ctx_getc_almap(self->context);
 }

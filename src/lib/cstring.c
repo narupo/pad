@@ -17,10 +17,12 @@ cstr_copy(char *dst, uint32_t dstsz, const char *src) {
         return dst;
     }
 
-    const char *enddp = dst + dstsz;
-    for (char *dp = dst; *src && dp < enddp; ++dp, ++src) {
+    const char *dstend = dst + dstsz - 1;
+    char *dp = dst;
+    for (; *src && dp < dstend; ++dp, ++src) {
         *dp = *src;
     }
+    *dp = '\0';
 
     return dst;
 }

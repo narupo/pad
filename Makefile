@@ -50,6 +50,8 @@ tests: build/tests.o \
 	build/modules/config.o \
 	build/modules/util.o \
 	build/modules/alias_manager.o \
+	build/modules/alias.o \
+	build/modules/alias_map.o \
 	build/modules/commands/home.o \
 	build/modules/commands/cd.o \
 	build/modules/commands/pwd.o \
@@ -83,6 +85,8 @@ cap: build/app.o \
 	build/modules/config.o \
 	build/modules/util.o \
 	build/modules/alias_manager.o \
+	build/modules/alias.o \
+	build/modules/alias_map.o \
 	build/modules/commands/home.o \
 	build/modules/commands/cd.o \
 	build/modules/commands/pwd.o \
@@ -138,6 +142,12 @@ build/modules/util.o: src/modules/util.c src/modules/util.h
 build/modules/alias_manager.o: src/modules/alias_manager.c src/modules/alias_manager.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+build/modules/alias.o: src/modules/alias.c src/modules/alias.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/modules/alias_map.o: src/modules/alias_map.c src/modules/alias_map.h
+	$(CC) $(CFLAGS) -c $< -o $@
+	
 build/modules/commands/home.o: src/modules/commands/home.c src/modules/commands/home.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -173,3 +183,4 @@ build/modules/lang/ast.o: src/modules/lang/ast.c src/modules/lang/ast.h
 
 build/modules/lang/context.o: src/modules/lang/context.c src/modules/lang/context.h
 	$(CC) $(CFLAGS) -c $< -o $@
+
