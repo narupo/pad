@@ -83,11 +83,13 @@ almgr_load_alias_list(almgr_t *self, int scope) {
         return NULL;
     }
     if (!file_exists(path)) {
-        return self; // nothing to do
+        almgr_set_error_detail(self, "not found file \"%s\"", path);
+        return NULL;
     }
 
     char *src = file_readcp_from_path(path);
     if (src == NULL) {
+        almgr_set_error_detail(self, "failed to read content from file \"%s\"", path);
         return NULL;
     }
 

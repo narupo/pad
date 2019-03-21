@@ -78,6 +78,7 @@ almap_clear(almap_t *self) {
         self->map[i].key[0] = '\0';
         self->map[i].value[0] = '\0';
     }
+    self->len = 0;
 }
 
 size_t
