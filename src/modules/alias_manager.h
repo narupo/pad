@@ -74,3 +74,6 @@ almgr_get_error_detail(const almgr_t *self);
 
 const almap_t *
 almgr_getc_almap(const almgr_t *self);
+
+const context_t *
+almgr_getc_context(const almgr_t *self);

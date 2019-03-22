@@ -158,3 +158,8 @@ const almap_t *
 almgr_getc_almap(const almgr_t *self) {
     return ctx_getc_almap(self->context);
 }
+
+const context_t *
+almgr_getc_context(const almgr_t *self) {
+    return self->context;
+}
