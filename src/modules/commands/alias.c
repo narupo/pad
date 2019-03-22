@@ -104,7 +104,8 @@ alcmd_show_list(const alcmd_t *self) {
         }
     }
 
-    const almap_t *almap = almgr_getc_almap(almgr);
+    const context_t *ctx = almgr_getc_context(almgr);
+    const almap_t *almap = ctx_getc_almap(ctx);
     for (int i = 0; i < almap_len(almap); ++i) {
         const alias_t *alias = almap_getc_index(almap, i);
         if (alias == NULL) {
