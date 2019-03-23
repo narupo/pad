@@ -2,6 +2,7 @@
 
 struct opts {
     bool ishelp;
+    bool isglobal;
 };
 
 struct alcmd {
@@ -16,10 +17,10 @@ alcmd_parse_opts(alcmd_t *self) {
     // Parse options
     static const struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
-        // {"fname", required_argument, 0, 'f'},
+        {"global", required_argument, 0, 'g'},
         {},
     };
-    static const char *shortopts = "h";
+    static const char *shortopts = "hg";
 
     self->opts = (struct opts){0};
 
@@ -38,6 +39,7 @@ alcmd_parse_opts(alcmd_t *self) {
         switch (cur) {
         case 0: /* long option only */ break;
         case 'h': self->opts.ishelp = true; break;
+        case 'g': self->opts.isglobal = true; break;
         case '?':
         default: err_die("Unknown option"); break;
         }
@@ -60,6 +62,7 @@ alcmd_show_usage(const alcmd_t *self) {
         "The options are:\n"
         "\n"
         "    -h, --help    show usage.\n"
+        "    -g, --global  scope to global.\n"
         "\n"
         );
     fflush(stdout);
@@ -94,8 +97,16 @@ int
 alcmd_show_list(const alcmd_t *self) {
     almgr_t *almgr = almgr_new(self->config);
 
-    if (almgr_load_alias_list(almgr, CAP_SCOPE_LOCAL) == NULL) {
+    if (self->opts.isglobal) {
         if (almgr_load_alias_list(almgr, CAP_SCOPE_GLOBAL) == NULL) {
+            if (almgr_has_error(almgr)) {
+                err_error(almgr_get_error_detail(almgr));
+            }
+            almgr_del(almgr);
+            return 1;
+        }
+    } else {
+        if (almgr_load_alias_list(almgr, CAP_SCOPE_LOCAL) == NULL) {
             if (almgr_has_error(almgr)) {
                 err_error(almgr_get_error_detail(almgr));
             }
