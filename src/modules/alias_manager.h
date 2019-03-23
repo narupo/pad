@@ -72,7 +72,7 @@ almgr_clear_error(almgr_t *self);
 const char *
 almgr_get_error_detail(const almgr_t *self);
 
-const almap_t *
+const dict_t *
 almgr_getc_almap(const almgr_t *self);
 
 const context_t *

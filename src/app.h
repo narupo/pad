@@ -20,3 +20,4 @@
 #include "modules/commands/cat.h"
 #include "modules/commands/run.h"
 #include "modules/commands/alias.h"
+#include "modules/commands/edit.h"
