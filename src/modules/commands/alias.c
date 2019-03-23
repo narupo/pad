@@ -156,6 +156,7 @@ alcmd_show_alias_value(alcmd_t *self, const char *key) {
         return 1;
     }
     puts(value);
+    fflush(stdout);
     return 0;
 }
 
