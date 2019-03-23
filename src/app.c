@@ -417,7 +417,9 @@ app_execute_alias_by_name(app_t *self, const char *name) {
     str_app(cmdline, val);
     str_app(cmdline, " ");
     for (int i = 1; i < self->cmd_argc; ++i) {
+        str_app(cmdline, "\"");
         str_app(cmdline, self->cmd_argv[i]);
+        str_app(cmdline, "\"");
         str_app(cmdline, " ");
     }
     str_popb(cmdline);

@@ -123,7 +123,9 @@ runcmd_run(runcmd_t *self) {
     str_app(cmdline, " ");
 
     for (int32_t i = 2; i < self->argc; ++i) {
+        str_app(cmdline, "\"");
         str_app(cmdline, self->argv[i]);
+        str_app(cmdline, "\"");
         str_app(cmdline, " ");
     }
     str_popb(cmdline);
