@@ -384,6 +384,8 @@ _ast_traverse(ast_t *self, node_t *node) {
         const char *package = import_node_getc_package(in);
         if (!strcmp(package, "alias")) {
             ctx_import_alias(self->context);
+        } else if (!strcmp(package, "config")) {
+            ctx_import_config(self->context);            
         } else {
             ast_set_error_detail(self, "import error. not found package of \"%s\"", package);
             return;
@@ -410,6 +412,24 @@ _ast_traverse(ast_t *self, node_t *node) {
                     return;
                 }
                 ctx_set_alias(self->context, key, value);
+            }
+        } else if (!strcmp(package, "config")) {
+            if (!ctx_get_imported_config(self->context)) {
+                ast_set_error_detail(self, "import error. config is not imported");
+                return;                
+            }            
+            const char *method = caller_node_identifiers_getc(cn, 1);
+            if (method == NULL) {
+                ast_set_error_detail(self, "call error. config is not callable");
+                return;
+            } else if (!strcmp(method, "set")) {
+                const char *key = caller_node_args_getc(cn, 0);
+                const char *value = caller_node_args_getc(cn, 1);
+                if (key == NULL || value == NULL) {
+                    ast_set_error_detail(self, "invalid argument. set method of config need two arguments");
+                    return;
+                }
+                ctx_set_config(self->context, key, value);
             }
         } else {
             ast_set_error_detail(self, "import error. unknown package name \"%s\"", package);

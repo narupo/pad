@@ -47,11 +47,10 @@ tests: build/tests.o \
 	build/lib/cstring_array.o \
 	build/lib/cl.o \
 	build/lib/format.o \
+	build/lib/dict.o \
 	build/modules/config.o \
 	build/modules/util.o \
 	build/modules/alias_manager.o \
-	build/modules/alias.o \
-	build/modules/alias_map.o \
 	build/modules/commands/home.o \
 	build/modules/commands/cd.o \
 	build/modules/commands/pwd.o \
@@ -59,6 +58,7 @@ tests: build/tests.o \
 	build/modules/commands/cat.o \
 	build/modules/commands/run.o \
 	build/modules/commands/alias.o \
+	build/modules/commands/edit.o \
 	build/modules/lang/tokens.o \
 	build/modules/lang/tokenizer.o \
 	build/modules/lang/nodes.o \
@@ -82,11 +82,10 @@ cap: build/app.o \
 	build/lib/cstring_array.o \
 	build/lib/cl.o \
 	build/lib/format.o \
+	build/lib/dict.o \
 	build/modules/config.o \
 	build/modules/util.o \
 	build/modules/alias_manager.o \
-	build/modules/alias.o \
-	build/modules/alias_map.o \
 	build/modules/commands/home.o \
 	build/modules/commands/cd.o \
 	build/modules/commands/pwd.o \
@@ -94,6 +93,7 @@ cap: build/app.o \
 	build/modules/commands/cat.o \
 	build/modules/commands/run.o \
 	build/modules/commands/alias.o \
+	build/modules/commands/edit.o \
 	build/modules/lang/tokens.o \
 	build/modules/lang/tokenizer.o \
 	build/modules/lang/nodes.o \
@@ -133,6 +133,9 @@ build/lib/cl.o: src/lib/cl.c src/lib/cl.h
 build/lib/format.o: src/lib/format.c src/lib/format.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+build/lib/dict.o: src/lib/dict.c src/lib/dict.h
+	$(CC) $(CFLAGS) -c $< -o $@
+	
 build/modules/config.o: src/modules/config.c src/modules/config.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -142,12 +145,6 @@ build/modules/util.o: src/modules/util.c src/modules/util.h
 build/modules/alias_manager.o: src/modules/alias_manager.c src/modules/alias_manager.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/modules/alias.o: src/modules/alias.c src/modules/alias.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-build/modules/alias_map.o: src/modules/alias_map.c src/modules/alias_map.h
-	$(CC) $(CFLAGS) -c $< -o $@
-	
 build/modules/commands/home.o: src/modules/commands/home.c src/modules/commands/home.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -167,6 +164,9 @@ build/modules/commands/run.o: src/modules/commands/run.c src/modules/commands/ru
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules/commands/alias.o: src/modules/commands/alias.c src/modules/commands/alias.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/modules/commands/edit.o: src/modules/commands/edit.c src/modules/commands/edit.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules/lang/tokenizer.o: src/modules/lang/tokenizer.c src/modules/lang/tokenizer.h

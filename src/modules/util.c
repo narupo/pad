@@ -86,7 +86,7 @@ safesystem(const char *cmdline) {
 
     // Wait until child process exits.
     WaitForSingleObject(pi.hProcess, INFINITE);
-
+    
     // Close process and thread handles. 
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);

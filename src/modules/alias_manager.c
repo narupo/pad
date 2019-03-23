@@ -154,7 +154,7 @@ almgr_get_error_detail(const almgr_t *self) {
     return self->error_detail;
 }
 
-const almap_t *
+const dict_t *
 almgr_getc_almap(const almgr_t *self) {
     return ctx_getc_almap(self->context);
 }

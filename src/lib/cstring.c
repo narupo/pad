@@ -39,3 +39,26 @@ cstr_pop_newline(char *s) {
     
     return s;
 }
+
+char *
+cstr_cat(char *dst, uint32_t dstsz, const char *str) {
+    if (dst == NULL || str == NULL) {
+        return NULL;
+    }
+    
+    char *dstend = dst + dstsz - 1;
+    char *dp = dst;
+    for (; dp < dstend; ) {
+        if (*dp++ == '\0') {
+            --dp;
+            break;
+        }
+    }
+
+    for (; dp < dstend && *str; ) {
+        *dp++ = *str++;
+    }
+    *dp = '\0';
+
+    return dst;
+}

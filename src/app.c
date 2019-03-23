@@ -259,13 +259,14 @@ app_usage(app_t *app) {
         "\n"
         "The commands are:\n"
         "\n"
-        "    home     change home directory, or show.\n"
-        "    cd       change current directory by relative of home.\n"
-        "    pwd      show current directory.\n"
-        "    ls       show list in current directory.\n"
-        "    cat      catenate files and show.\n"
-        "    run      run script.\n"
-        "    alias    run alias command.\n"
+        "    home     Change home directory, or show.\n"
+        "    cd       Change current directory by relative of home.\n"
+        "    pwd      Show current directory.\n"
+        "    ls       Show list in current directory.\n"
+        "    cat      Concatenate files and show.\n"
+        "    run      Run script.\n"
+        "    alias    Run alias command.\n"
+        "    edit     Run editor with file name.\n"
     ;
     static const char *examples[] = {
         "    $ cap home\n"
@@ -311,6 +312,7 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
         "cat",
         "run",
         "alias",
+        "edit",
         NULL,
     };
 
@@ -373,6 +375,13 @@ app_execute_command_by_name(app_t *self, const char *name) {
         self->cmd_argv = NULL; // moved
         int result = alcmd_run(cmd);
         alcmd_del(cmd);
+        return result;
+    } else if (!strcmp(name, "edit")) {
+        editcmd_t *cmd = editcmd_new(self->config, self->cmd_argc, self->cmd_argv);
+        self->config = NULL; // moved
+        self->cmd_argv = NULL; // moved
+        int result = editcmd_run(cmd);
+        editcmd_del(cmd);
         return result;
     } 
 
