@@ -8,8 +8,10 @@ struct opts {
 struct alcmd {
     config_t *config;
     int argc;
+    int optind;
     char **argv;
     struct opts opts;
+    almgr_t *almgr;
 };
 
 static alcmd_t *
@@ -50,6 +52,8 @@ alcmd_parse_opts(alcmd_t *self) {
         return NULL;
     }
 
+    self->optind = optind;
+
     return self;
 }
 
@@ -71,6 +75,7 @@ alcmd_show_usage(const alcmd_t *self) {
 void
 alcmd_del(alcmd_t *self) {
     if (self) {
+        almgr_del(self->almgr);
         config_del(self->config);
         freeargv(self->argc, self->argv);
         free(self);
@@ -84,6 +89,7 @@ alcmd_new(config_t *move_config, int argc, char **move_argv) {
     self->config = move_config;
     self->argc = argc;
     self->argv = move_argv;
+    self->almgr = almgr_new(self->config);
 
     if (alcmd_parse_opts(self) == NULL) {
         err_die("failed to parse options");
@@ -93,29 +99,42 @@ alcmd_new(config_t *move_config, int argc, char **move_argv) {
     return self;
 }
 
-int
-alcmd_show_list(const alcmd_t *self) {
-    almgr_t *almgr = almgr_new(self->config);
-
+static alcmd_t *
+alcmd_load_alias_list_by_opts(alcmd_t* self) {
     if (self->opts.isglobal) {
-        if (almgr_load_alias_list(almgr, CAP_SCOPE_GLOBAL) == NULL) {
-            if (almgr_has_error(almgr)) {
-                err_error(almgr_get_error_detail(almgr));
+        if (almgr_load_alias_list(self->almgr, CAP_SCOPE_GLOBAL) == NULL) {
+            if (almgr_has_error(self->almgr)) {
+                err_error(almgr_get_error_detail(self->almgr));
             }
-            almgr_del(almgr);
-            return 1;
+            almgr_del(self->almgr);
+            return NULL;
         }
     } else {
-        if (almgr_load_alias_list(almgr, CAP_SCOPE_LOCAL) == NULL) {
-            if (almgr_has_error(almgr)) {
-                err_error(almgr_get_error_detail(almgr));
+        if (almgr_load_alias_list(self->almgr, CAP_SCOPE_LOCAL) == NULL) {
+            if (almgr_has_error(self->almgr)) {
+                err_error(almgr_get_error_detail(self->almgr));
             }
-            almgr_del(almgr);
-            return 1;
+            almgr_del(self->almgr);
+            return NULL;
         }
     }
+    return self;
+}
 
-    const context_t *ctx = almgr_getc_context(almgr);
+static const char *
+alcmd_getc_value(alcmd_t *self, const char *key) {
+    const context_t *ctx = almgr_getc_context(self->almgr);
+    const dict_t *almap = ctx_getc_almap(ctx);
+    const dict_item_t *item = dict_getc(almap, key);
+    if (item == NULL) {
+        return NULL;
+    }
+    return item->value;
+}
+
+static int
+alcmd_show_list(alcmd_t *self) {
+    const context_t *ctx = almgr_getc_context(self->almgr);
     const dict_t *almap = ctx_getc_almap(ctx);
     for (int i = 0; i < dict_len(almap); ++i) {
         const dict_item_t *alias = dict_getc_index(almap, i);
@@ -126,7 +145,17 @@ alcmd_show_list(const alcmd_t *self) {
     }
     fflush(stdout);
 
-    almgr_del(almgr);
+    return 0;
+}
+
+static int
+alcmd_show_alias_value(alcmd_t *self, const char *key) {
+    const char *value = alcmd_getc_value(self, key);
+    if (value == NULL) {
+        err_error("not found alias \"%s\"", key);
+        return 1;
+    }
+    puts(value);
     return 0;
 }
 
@@ -135,6 +164,14 @@ alcmd_run(alcmd_t *self) {
     if (self->opts.ishelp) {
         alcmd_show_usage(self);
         return 0;
+    }
+
+    if (alcmd_load_alias_list_by_opts(self) == NULL) {
+        return 1;
+    }
+
+    if (self->argc - self->optind >= 1) {
+        return alcmd_show_alias_value(self, self->argv[self->optind]);
     }
 
     return alcmd_show_list(self);
