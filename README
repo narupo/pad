@@ -11,10 +11,10 @@ What is Cap ?
  Cap is quick and clean on your file system.
 
 
-Install
-=======
+Build
+=====
 
-How to install of Cap.
+How to build of Cap.
 
 
 UNIX
@@ -69,9 +69,9 @@ Example
 Resource file
 =============
 
- Cap is supported resource file with Cap's template language.
- You should be create '.caprc' at home directory or current directory and write 
-the following.
+ Cap is supporting resource file with Cap's template language.
+ You should be create '.caprc' at home directory (of course, that is Cap's home)
+or current directory, and write the following.
 
     {@
         import config
