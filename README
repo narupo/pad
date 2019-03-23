@@ -1,24 +1,44 @@
 Cap
 ===
 
+ Welcome to Cap's documentation.
+
 
 What is Cap ?
--------------
+=============
 
  Cap is virtual environment manager for programmer's snippet codes.
  Cap is quick and clean on your file system.
 
 
 Install
--------
+=======
+
+How to install of Cap.
+
+
+UNIX
+----
 
     $ git clone https://github.com/narupo/cap
-    $ cd cap/src
-    $ make && sudo make install
+    $ cd cap
+    $ make init && make
+    $ ./build/cap -h
+
+
+Windows
+-------
+
+ Using MinGW's make.
+
+    $ git clone https://github.com/narupo/cap
+    $ cd cap
+    $ mingw32-make init && mingw32-make
+    $ ./build/cap -h    
 
 
 Example
--------
+=======
 
  Set your home directory. That is origin of position of virtual environment.
 
@@ -40,3 +60,25 @@ Example
  Change environment.
 
     $ cap cd next/env
+
+ Run script.
+
+    $ cap run bin/hello_world.py
+
+
+Resource file
+=============
+
+ Cap is supported resource file with Cap's template language.
+ You should be create '.caprc' at home directory or current directory and write 
+the following.
+
+    {@
+        import config
+        import alias
+
+        config.set("editor", "subl")
+
+        alias.set("hw", "run hello_world.py")
+        alias.set("banana", "cat banana.txt")
+    @}
