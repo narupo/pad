@@ -136,12 +136,27 @@ static int
 alcmd_show_list(alcmd_t *self) {
     const context_t *ctx = almgr_getc_context(self->almgr);
     const dict_t *almap = ctx_getc_almap(ctx);
+    int keymaxlen = 0;
+
+#undef max
+#define max(a, b) (a > b ? a : b);
+
     for (int i = 0; i < dict_len(almap); ++i) {
         const dict_item_t *alias = dict_getc_index(almap, i);
         if (alias == NULL) {
             continue;
         }
-        printf("%s %s\n", alias->key, alias->value);
+        keymaxlen = max(strlen(alias->key), keymaxlen);
+    }
+
+#undef max
+
+    for (int i = 0; i < dict_len(almap); ++i) {
+        const dict_item_t *alias = dict_getc_index(almap, i);
+        if (alias == NULL) {
+            continue;
+        }
+        printf("%-*s %s\n", keymaxlen, alias->key, alias->value);
     }
     fflush(stdout);
 
