@@ -15,7 +15,7 @@ enum {
 };
 
 /**
- * Program option values for command.
+ * Program option.
  *
  */
 struct opts {

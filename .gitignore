@@ -36,6 +36,7 @@
 *.dSYM/
 
 doc/
+doc/note.txt
 build/
 
 src/cap
