@@ -339,9 +339,9 @@ ast_program(ast_t *self) {
 
 ast_t *
 ast_parse(ast_t *self, token_t *tokens[]) {
+    ast_clear(self);
     self->tokens = tokens;
     self->ptr = tokens;
-    ast_clear(self);
     self->root = ast_program(self);
     return self;
 }
