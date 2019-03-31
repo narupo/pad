@@ -1,0 +1,8 @@
+{@
+    import alias
+@}
+This is text block.
+{@
+    import config
+@}
+This is text block (2).
