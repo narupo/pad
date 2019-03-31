@@ -4,12 +4,38 @@ from nodes import *
 from context import Context
 
 '''
-    BNF
+    BNF 0.0.0
 
     program ::= ( code-block | text-block ) program 
     code-block ::= '{@' formula '@}'
     text-block ::= .*
     formula ::= ( import | caller ), formula
+    import ::= 'import' identifier
+    caller ::= identifier ( '.' identifier )+ '(' args ')'
+    args ::= string | ',' args
+    string ::= '"' .* '"'
+    identifier ::= ( [a-z] | [0-9] | _ )+ 
+
+    2019-04-01 03:23:29 曇のち雪 1~10°
+    ==================================
+    BNF 0.1.0
+
+    + は新規追加したところ
+    ^ は更新
+
+    program ::= block, program 
+    + block ::= text-block | code-block | ref-block 
+    text-block ::= .*
+    code-block ::= '{@' {formula}* '@}'
+    + ref-block ::= '{{' ref-expr '}}'
+    + ref-expr ::= {{ ref-stmt }} 
+    + ref-stmt ::= identifier
+    ^ formula ::= ( expr | import | caller ), formula
+    + expr ::= assign-expr
+    + assign-expr ::= assignable-operand assign-operator operand
+    + assign-operator ::= '='
+    + assignable-operand ::= identifier
+    + operand ::= identifier | string
     import ::= 'import' identifier
     caller ::= identifier ( '.' identifier )+ '(' args ')'
     args ::= string | ',' args
