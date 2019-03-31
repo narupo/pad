@@ -169,7 +169,7 @@ tkr_read_atmark(tokenizer_t *self) {
 
 done:
     if (m == 0) {
-        err_die("impossible");
+        err_die("impossible. mode is first");
     } else if (m == 10) {
         self->has_error = true;
         tkr_set_error_detail(self, "invalid syntax. single '@' is not supported");
@@ -325,7 +325,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
             } else {
                 str_pushb(self->buf, c);
             }
-        } else if (m == 10) {
+        } else if (m == 10) { // found '{@'
             if (c == '"') {
                 self->ptr--;
                 token_t *token = tkr_read_dq_string(self);
@@ -366,7 +366,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 tkr_set_error_detail(self, "syntax error. unsupported character \"%c\"", c);
                 goto fail;
             }
-        } else if (m == 20) {
+        } else if (m == 20) { // found '{{'
             if (c == '}' && *self->ptr == '}') {
                 self->ptr--;
                 token_t *token = tkr_read_rbrace(self);
