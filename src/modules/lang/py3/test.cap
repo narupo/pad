@@ -1,7 +1,9 @@
 {@
     var = "THIS IS VAR"
+    windows_script = "C:\\virtualenv\\bin\\python"
+    linux_script = "/virtualenv/bin/python"
 @}
-This is text {{ var }}.
+This is text {{ windows_script }}.
 {@
     var = "OVERWRITE"
 @}
