@@ -60,6 +60,9 @@ class Tokenizer:
                     s.get()
                     self.tokens.append(Token(kind='rdbrace', value='}}'))
                     m = 'text block'                    
+                elif self.is_identifier_char(c):
+                    s.prev()
+                    self.read_identifier()
             elif m == 'code block':
                 if c == '@' and s.cur() == '}':
                     s.get()
