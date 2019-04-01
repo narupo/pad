@@ -27,17 +27,15 @@ from context import Context
     + block ::= text-block | code-block | ref-block 
     text-block ::= .*
     code-block ::= '{@' {formula}* '@}'
-    + ref-block ::= '{{' ref-expr '}}'
-    + ref-expr ::= {{ ref-stmt }} 
-    + ref-stmt ::= identifier
-    ^ formula ::= ( expr | import | caller ), formula
+    + ref-block ::= '{{' identifier '}}'
+    ^ formula ::= ( expr | import-stmt | caller-stmt ), formula
     + expr ::= assign-expr
     + assign-expr ::= assignable-operand assign-operator operand
     + assign-operator ::= '='
     + assignable-operand ::= identifier
     + operand ::= identifier | string
-    import ::= 'import' identifier
-    caller ::= identifier ( '.' identifier )+ '(' args ')'
+    import-stmt ::= 'import' identifier
+    caller-stmt ::= identifier ( '.' identifier )+ '(' args ')'
     args ::= string | ',' args
     string ::= '"' .* '"'
     identifier ::= ( [a-z] | [0-9] | _ )+ 
@@ -54,6 +52,9 @@ class AST:
         pass
 
     class NameError(NameError):
+        pass
+
+    class ReferenceError(RuntimeError):
         pass
 
     def parse(self, tokens, debug=False):
@@ -73,22 +74,56 @@ class AST:
         if isinstance(node, BinNode):
             self._traverse(node.lhs)
             self._traverse(node.rhs)
-        elif isinstance(node, CodeBlockNode):
-            self._traverse(node.formula)
+
+        elif isinstance(node, BlockNode):
+            self._traverse(node.text_block)
+            self._traverse(node.code_block)
+            self._traverse(node.ref_block)
+
         elif isinstance(node, TextBlockNode):
             self.context.buffer += node.text
+
+        elif isinstance(node, CodeBlockNode):
+            self._traverse(node.formula)
+
+        elif isinstance(node, RefBlockNode):
+            self.traverse_ref_block(node)
+
         elif isinstance(node, FormulaNode):
-            if node.import_:
+            if node.expr:
+                self._traverse(node.expr)
+            elif node.import_:
                 self._traverse(node.import_)
             elif node.caller:
                 self._traverse(node.caller)
             self._traverse(node.formula)
+
+        elif isinstance(node, ExprNode):
+            self._traverse(node.assign_expr)
+
+        elif isinstance(node, AssignExprNode):
+            self.traverse_assign_expr(node)
+
         elif isinstance(node, ImportNode):
             self.traverse_import(node)
+
         elif isinstance(node, CallerNode):
             self.traverse_caller(node)
+
         else:
             raise AST.ModuleError('impossible. not supported node', type(node))
+
+    def traverse_assign_expr(self, node):
+        symkey = node.assignable_operand.identifier
+        if node.assign_operator.operator == '=':
+            if node.operand.identifier:
+                self.context.syms[symkey] = self.context.syms[node.operand.identifier]
+            elif node.operand.string:
+                self.context.syms[symkey] = node.operand.string
+             
+    def traverse_ref_block(self, node):
+        if node.identifier in self.context.syms.keys():
+            self.context.buffer += self.context.syms[node.identifier]
 
     def traverse_import(self, node):
         if node.identifier == 'alias':
@@ -142,13 +177,53 @@ class AST:
             return None
 
         node = BinNode()
-        node.lhs = self.code_block()
-        if node.lhs is None:
-            node.lhs = self.text_block()
-            if node.lhs is None:
-                raise AST.SyntaxError('not supported token: %s' % str(self.strm.cur()))
-
+        node.lhs = self.block()
         node.rhs = self.program()
+        return node
+
+    def block(self):
+        self.show_parse('block')
+        if self.strm.eof():
+            return None
+        
+        node = BlockNode()
+
+        node.code_block = self.code_block()
+        if node.code_block:
+            return node
+
+        node.ref_block = self.ref_block()
+        if node.ref_block:
+            return node
+
+        node.text_block = self.text_block()    
+        if node.text_block:
+            return node
+
+        raise AST.SyntaxError('not supported token: %s' % str(self.strm.cur()))
+
+    def ref_block(self):
+        self.show_parse('ref_block')
+        if self.strm.eof():
+            return None
+
+        node = RefBlockNode()
+
+        t = self.strm.get()
+        if t.kind != 'ldbrace':
+            self.strm.prev()
+            return None
+
+        t = self.strm.get()
+        if t.kind == 'identifier':
+            node.identifier = t.value
+        elif t.kind == 'rdbrace':
+            return node
+
+        t = self.strm.get()
+        if t.kind != 'rdbrace':
+            raise AST.SyntaxError('not found "%s"' % t.text)
+
         return node
 
     def code_block(self):
@@ -194,15 +269,87 @@ class AST:
             return None
         
         node = FormulaNode()
-        node.import_ = self.import_()
+        t = self.strm.cur()
+        if t.kind == 'import':
+            node.import_ = self.import_()
+
         if node.import_ is None:
             node.caller = self.caller()
-            if not self.strm.eof() and node.caller is None:
-                return None
+            if node.caller is None:
+                node.expr = self.expr()
+                if not self.strm.eof() and node.expr is None:
+                    return None
 
         node.formula = self.formula()
         return node
 
+    def expr(self):
+        self.show_parse('expr')
+        if self.strm.eof():
+            return None
+        
+        node = ExprNode()
+        node.assign_expr = self.assign_expr()
+
+        return node
+
+    def assign_expr(self):
+        self.show_parse('assign_expr')
+        if self.strm.eof():
+            return None
+
+        node = AssignExprNode()
+        node.assignable_operand = self.assignable_operand()
+        node.assign_operator = self.assign_operator()
+        node.operand = self.operand()
+
+        return node
+
+    def operand(self):
+        self.show_parse('operand')
+        if self.strm.eof():
+            return None
+
+        node = OperandNode()
+        t = self.strm.get()
+        if t.kind == 'identifier':
+            node.identifier = t.value
+        elif t.kind == 'string':
+            node.string = t.value
+        else:
+            self.strm.prev()
+            return None
+
+        return node
+        
+    def assign_operator(self):
+        self.show_parse('assign_operator')
+        if self.strm.eof():
+            return None
+
+        t = self.strm.get()
+        if t.kind != 'operator':
+            self.strm.prev()
+            return None
+
+        node = AssignOperatorNode()
+        node.operator = t.value
+        return node
+        
+    def assignable_operand(self):
+        self.show_parse('assignable_operand')
+        if self.strm.eof():
+            return None
+
+        node = AssignableOperandNode()
+        t = self.strm.get()
+        if t.kind != 'identifier':
+            self.strm.prev()
+            return None
+
+        node.identifier = t.value
+        return node
+                
     def import_(self):
         self.show_parse('import')
         if self.strm.eof():
@@ -230,6 +377,24 @@ class AST:
         if self.strm.eof():
             return None
         
+        # find lparen
+        i = self.strm.index
+        found = False
+        while not self.strm.eof():
+            t = self.strm.get()
+            if t.kind == 'identifier':
+                pass
+            elif t.kind == 'operator' and t.value == '.':
+                pass
+            elif t.kind == 'lparen':
+                found = True
+                break
+            else:
+                break
+        self.strm.index = i
+        if not found:
+            return None
+
         node = CallerNode()
         save_index = self.strm.index
 

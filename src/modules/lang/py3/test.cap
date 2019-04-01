@@ -1,8 +1,10 @@
 {@
-    import alias
+    var = "THIS IS VAR"
 @}
-This is text block.
+This is text {{ var }}.
 {@
-    import config
+    var = "OVERWRITE"
 @}
-This is text block (2).
+This is text block (2) {{ var }}.
+{@ var2 = "VAR2" @}
+{{ var2 }}

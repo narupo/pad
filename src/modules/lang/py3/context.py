@@ -6,3 +6,4 @@ class Context:
         self.imported_config = False
         self.alias_map = {}
         self.config_map = {}
+        self.syms = {} # symbol table
