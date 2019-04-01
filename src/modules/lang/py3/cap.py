@@ -11,13 +11,20 @@ def main():
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
     sys.stdin = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
 
-    src = sys.stdin.read()
-    tokenizer = Tokenizer()
-    tokens = tokenizer.parse(src)
-    ast = AST()
-    ast.parse(tokens)
-    context = ast.traverse()
-    print(context.buffer)
+    try:
+        src = sys.stdin.read()
+        tokenizer = Tokenizer()
+        tokens = tokenizer.parse(src)
+        ast = AST()
+        ast.parse(tokens)
+        context = ast.traverse()
+        print(context.buffer)
+    except Tokenizer.ParseError as e:
+        print(e)
+        sys.exit(1)
+    except AST.SyntaxError as e:
+        print(e)
+        sys.exit(2)
 
     sys.exit(0)
 

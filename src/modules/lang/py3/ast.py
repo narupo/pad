@@ -221,8 +221,8 @@ class AST:
             return node
 
         t = self.strm.get()
-        if t.kind != 'rdbrace':
-            raise AST.SyntaxError('not found "%s"' % t.text)
+        if t == Stream.EOF or t.kind != 'rdbrace':
+            raise AST.SyntaxError('not found "rdbrace"')
 
         return node
 
