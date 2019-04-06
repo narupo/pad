@@ -2,22 +2,18 @@ class Node:
     pass
 
 
-class BinNode(Node):
-    def __init__(self):
-        self.lhs = None
-        self.rhs = None
-
-
 class BlockNode(Node):
     def __init__(self):
         self.text_block = None
         self.code_block = None
         self.ref_block = None
+        self.block = None
 
 
 class ExprNode(Node):
     def __init__(self):
         self.assign_expr = None
+        self.digit = None
 
 
 class AssignExprNode(Node):
@@ -61,6 +57,7 @@ class TextBlockNode(Node):
 class FormulaNode(Node):
     def __init__(self):
         self.expr = None
+        self.if_ = None
         self.import_ = None
         self.caller = None
         self.formula = None
@@ -76,3 +73,22 @@ class CallerNode(Node):
         self.identifiers = []
         self.args = []
 
+
+class IfNode(Node):
+    def __init__(self):
+        self.expr = None
+        self.block = None
+        self.formula = None
+        self.elif_ = None
+        self.else_ = None
+
+
+class ElseNode(Node):
+    def __init__(self):
+        self.block = None
+        self.formula = None
+
+
+class DigitNode(Node):
+    def __init__(self):
+        self.value = None

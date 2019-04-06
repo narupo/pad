@@ -17,7 +17,7 @@ from context import Context
     identifier ::= ( [a-z] | [0-9] | _ )+ 
 
     2019-04-01 03:23:29 曇のち雪 1~10°
-    ==================================
+    =================================
     BNF 0.1.0
 
     + は新規追加したところ
@@ -38,6 +38,34 @@ from context import Context
     caller-stmt ::= identifier ( '.' identifier )+ '(' args ')'
     args ::= string | ',' args
     string ::= '"' .* '"'
+    identifier ::= ( [a-z] | [0-9] | _ )+ 
+
+    2019-04-02 05:37:52 曇のち雪
+    ===========================
+    BNF 0.2.0
+
+    + は新規追加したところ
+    ^ は更新
+
+    program ::= block, program 
+    ^ block ::= text-block | code-block | ref-block, block
+    text-block ::= .*
+    code-block ::= '{@' {formula}* '@}'
+    ref-block ::= '{{' identifier '}}'
+    ^ formula ::= ( expr | if-stmt | import-stmt | caller-stmt ), formula
+    + if-stmt ::= 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    + elif-stmt ::= 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    + else-stmt ::= 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+    ^ expr ::= assign-expr | digit
+    assign-expr ::= assignable-operand assign-operator operand
+    assign-operator ::= '='
+    assignable-operand ::= identifier
+    operand ::= identifier | string
+    import-stmt ::= 'import' identifier
+    caller-stmt ::= identifier ( '.' identifier )+ '(' args ')'
+    args ::= string | ',' args
+    string ::= '"' .* '"'
+    + digit ::= [0-9]+
     identifier ::= ( [a-z] | [0-9] | _ )+ 
 '''
 
@@ -60,10 +88,11 @@ class AST:
     def parse(self, tokens, debug=False):
         self.debug_parse = debug
         self.strm = Stream(tokens)
-        self.root = self.program()
+        self.root = self.block(dep=0)
 
     def traverse(self):
         self.context = Context()
+        self.last_expr_val = 0
         self._traverse(self.root)
         return self.context
 
@@ -71,14 +100,11 @@ class AST:
         if node is None:
             return
 
-        if isinstance(node, BinNode):
-            self._traverse(node.lhs)
-            self._traverse(node.rhs)
-
-        elif isinstance(node, BlockNode):
+        if isinstance(node, BlockNode):
             self._traverse(node.text_block)
             self._traverse(node.code_block)
             self._traverse(node.ref_block)
+            self._traverse(node.block)
 
         elif isinstance(node, TextBlockNode):
             self.context.buffer += node.text
@@ -91,15 +117,41 @@ class AST:
 
         elif isinstance(node, FormulaNode):
             if node.expr:
+                self.last_expr_val = 0
                 self._traverse(node.expr)
             elif node.import_:
                 self._traverse(node.import_)
             elif node.caller:
                 self._traverse(node.caller)
+            elif node.if_:
+                self._traverse(node.if_)
             self._traverse(node.formula)
 
+        elif isinstance(node, IfNode):
+            self.last_expr_val = 0
+            self._traverse(node.expr)
+            if self.last_expr_val:
+                if node.formula:
+                    self._traverse(node.formula)
+                elif node.block:
+                    self._traverse(node.block)
+            else:
+                if node.elif_:
+                    self._traverse(node.elif_)
+                elif node.else_:
+                    self._traverse(node.else_)
+
+        elif isinstance(node, ElseNode):
+            if node.block:
+                self._traverse(node.block)
+            elif node.formula:
+                self._traverse(node.formula)
+
         elif isinstance(node, ExprNode):
-            self._traverse(node.assign_expr)
+            if node.assign_expr:
+                self._traverse(node.assign_expr)
+            elif node.digit:
+                self.last_expr_val = node.digit.value
 
         elif isinstance(node, AssignExprNode):
             self.traverse_assign_expr(node)
@@ -118,8 +170,10 @@ class AST:
         if node.assign_operator.operator == '=':
             if node.operand.identifier:
                 self.context.syms[symkey] = self.context.syms[node.operand.identifier]
+                self.last_expr_val = self.context.syms[symkey]
             elif node.operand.string:
                 self.context.syms[symkey] = node.operand.string
+                self.last_expr_val = self.context.syms[symkey]
              
     def traverse_ref_block(self, node):
         if node.identifier in self.context.syms.keys():
@@ -166,44 +220,34 @@ class AST:
             cmd = node.args[1]
             self.context.config_map[name] = cmd
 
-    def show_parse(self, name):
+    def show_parse(self, name, dep):
         if self.debug_parse:
             t = self.strm.cur()
-            print(name + ': ' + str(t))
+            print(dep, name + ': ' + str(t))
 
-    def program(self):
-        self.show_parse('program')
-        if self.strm.eof():
-            return None
-
-        node = BinNode()
-        node.lhs = self.block()
-        node.rhs = self.program()
-        return node
-
-    def block(self):
-        self.show_parse('block')
+    def block(self, dep=0):
+        self.show_parse('block', dep=dep)
         if self.strm.eof():
             return None
         
+        t = self.strm.cur()
+        if t.kind in ('rbraceat', 'end', 'if', 'elif', 'else'):
+            return None
+
         node = BlockNode()
 
-        node.code_block = self.code_block()
-        if node.code_block:
-            return node
+        node.code_block = self.code_block(dep=dep+1)
+        if node.code_block is None:
+            node.ref_block = self.ref_block(dep=dep+1)
+            if node.ref_block is None:
+                node.text_block = self.text_block(dep=dep+1)
 
-        node.ref_block = self.ref_block()
-        if node.ref_block:
-            return node
+        node.block = self.block(dep=dep+1)
 
-        node.text_block = self.text_block()    
-        if node.text_block:
-            return node
+        return node
 
-        raise AST.SyntaxError('not supported token: %s' % str(self.strm.cur()))
-
-    def ref_block(self):
-        self.show_parse('ref_block')
+    def ref_block(self, dep=0):
+        self.show_parse('ref_block', dep=dep)
         if self.strm.eof():
             return None
 
@@ -226,8 +270,8 @@ class AST:
 
         return node
 
-    def code_block(self):
-        self.show_parse('code_block')
+    def code_block(self, dep=0):
+        self.show_parse('code_block', dep=dep)
         if self.strm.eof():
             return None
 
@@ -237,16 +281,22 @@ class AST:
             return None
 
         node = CodeBlockNode()
-        node.formula = self.formula()
+        node.formula = self.formula(dep=dep+1)
 
         t = self.strm.get()
-        if t == Stream.EOF or t.kind != 'rbraceat':
-            raise AST.SyntaxError('not found "@}" in code block')
+        if t == Stream.EOF:
+            raise AST.SyntaxError('reached EOF in code block')
+        if t.kind in ('end'):
+            return None
+        elif t.kind in ('ldbrace', 'else', 'elif'):
+            self.strm.prev()
+        elif t.kind != 'rbraceat':
+            raise AST.SyntaxError('not found "@}" in code block. token is %s' % t)
 
         return node
 
-    def text_block(self):
-        self.show_parse('text_block')
+    def text_block(self, dep=0):
+        self.show_parse('text_block', dep=dep)
         if self.strm.eof():
             return None
         
@@ -260,53 +310,153 @@ class AST:
 
         return node
 
-    def formula(self):
-        self.show_parse('formula')
+    def formula(self, dep=0):
+        self.show_parse('formula', dep=dep)
         if self.strm.eof():
             return None
-
-        if self.strm.cur().kind == 'rbraceat':
-            return None
         
+        t = self.strm.cur()
+        if t.kind in ('rbraceat', 'ldbrace', 'end', 'elif', 'else'):
+            return None
+
         node = FormulaNode()
         t = self.strm.cur()
         if t.kind == 'import':
-            node.import_ = self.import_()
-
-        if node.import_ is None:
-            node.caller = self.caller()
+            node.import_ = self.import_(dep=dep+1)
+        elif t.kind == 'if':
+            node.if_ = self.if_(dep=dep+1)
+        else:
+            node.caller = self.caller(dep=dep+1)
             if node.caller is None:
-                node.expr = self.expr()
+                node.expr = self.expr(dep=dep+1)
                 if not self.strm.eof() and node.expr is None:
                     return None
 
-        node.formula = self.formula()
+        node.formula = self.formula(dep=dep+1)
         return node
 
-    def expr(self):
-        self.show_parse('expr')
+    def if_(self, dep=0, first_symbol='if'):
+        self.show_parse('if', dep=dep)
+        if self.strm.eof():
+            return None
+
+        t = self.strm.get()
+        if t.kind != first_symbol:
+            return None
+
+        node = IfNode()
+        node.expr = self.expr(dep=dep+1)
+        if node.expr is None:
+            raise AST.SyntaxError('invalid if statement. not found expression')
+
+        t = self.strm.get()
+        if t.kind != 'colon':
+            raise AST.SyntaxError('invalid if statement. not found colon')
+
+        t = self.strm.get()
+        if t.kind == 'rbraceat': # @}
+            node.block = self.block(dep=dep+1)
+        else:
+            self.strm.prev()
+            node.formula = self.formula(dep=dep+1)
+
+        t = self.strm.get()
+        if t.kind != 'lbraceat':
+            self.strm.prev()
+
+        t = self.strm.get()
+        if t.kind == 'end':
+            pass
+        elif t.kind == 'elif':
+            self.strm.prev()
+            node.elif_ = self.if_(dep=dep+1, first_symbol='elif')
+        elif t.kind == 'else':
+            self.strm.prev()
+            node.else_ = self.else_(dep=dep+1)
+        else:
+            self.strm.prev()
+
+        return node
+
+    def else_(self, dep=0):
+        self.show_parse('else', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = ElseNode()
+
+        t = self.strm.get()
+        if t.kind != 'else':
+            raise AST.SyntaxError('invalid else statement. not found "else"')
+
+        t = self.strm.get()
+        if t.kind != 'colon':
+            raise AST.SyntaxError('invalid else statement. not found colon')
+
+        t = self.strm.get()
+        if t.kind == 'rbraceat':
+            node.block = self.block(dep=dep+1)
+        else:
+            self.strm.prev()
+            node.formula = self.formula(dep=dep+1)
+
+        t = self.strm.get()
+        if t.kind != 'lbraceat':
+            self.strm.prev()
+
+        t = self.strm.get()
+        if t.kind == 'end':
+            pass
+        else:
+            self.strm.prev()
+
+        return node
+
+    def expr(self, dep=0):
+        self.show_parse('expr', dep=dep)
         if self.strm.eof():
             return None
         
         node = ExprNode()
-        node.assign_expr = self.assign_expr()
+
+        t = self.strm.get()
+        if t.kind == 'digit':
+            self.strm.prev()
+            node.digit = self.digit(dep=dep+1)
+        else:
+            self.strm.prev()
+            node.assign_expr = self.assign_expr(dep=dep+1)
 
         return node
 
-    def assign_expr(self):
-        self.show_parse('assign_expr')
+    def digit(self, dep=0):
+        self.show_parse('digit', dep=dep)
+        if self.strm.eof():
+            return None
+
+        t = self.strm.get()
+        if t.kind != 'digit':
+            raise AST.ModuleError('not found digit')
+
+        node = DigitNode()
+        node.value = t.value
+
+        return node
+
+    def assign_expr(self, dep=0):
+        self.show_parse('assign_expr', dep=dep)
         if self.strm.eof():
             return None
 
         node = AssignExprNode()
-        node.assignable_operand = self.assignable_operand()
-        node.assign_operator = self.assign_operator()
-        node.operand = self.operand()
+        node.assignable_operand = self.assignable_operand(dep=dep+1)
+        node.assign_operator = self.assign_operator(dep=dep+1)
+        node.operand = self.operand(dep=dep+1)
 
         return node
 
-    def operand(self):
-        self.show_parse('operand')
+    def operand(self, dep=0):
+        self.show_parse('operand', dep=dep)
         if self.strm.eof():
             return None
 
@@ -322,8 +472,8 @@ class AST:
 
         return node
         
-    def assign_operator(self):
-        self.show_parse('assign_operator')
+    def assign_operator(self, dep=0):
+        self.show_parse('assign_operator', dep=dep)
         if self.strm.eof():
             return None
 
@@ -336,8 +486,8 @@ class AST:
         node.operator = t.value
         return node
         
-    def assignable_operand(self):
-        self.show_parse('assignable_operand')
+    def assignable_operand(self, dep=0):
+        self.show_parse('assignable_operand', dep=dep)
         if self.strm.eof():
             return None
 
@@ -350,8 +500,8 @@ class AST:
         node.identifier = t.value
         return node
                 
-    def import_(self):
-        self.show_parse('import')
+    def import_(self, dep=0):
+        self.show_parse('import', dep=dep)
         if self.strm.eof():
             return None
         
@@ -368,12 +518,12 @@ class AST:
         node.identifier = t.value
         return node
 
-    def caller(self):
+    def caller(self, dep=0):
         """
         ここがしんどい
         もっと抽象化するべき
         """
-        self.show_parse('caller')
+        self.show_parse('caller', dep=dep)
         if self.strm.eof():
             return None
         

@@ -79,9 +79,14 @@ class Tokenizer:
                     self.tokens.append(Token(kind='lparen', value='('))
                 elif c == ')':
                     self.tokens.append(Token(kind='rparen', value=')'))
+                elif c == ':':
+                    self.tokens.append(Token(kind='colon', value=':'))
                 elif c == '"':
                     s.prev()
                     self.read_string()
+                elif c.isdigit():
+                    s.prev()
+                    self.read_digit()
                 elif self.is_identifier_char(c):
                     s.prev()
                     self.read_identifier()
@@ -95,6 +100,20 @@ class Tokenizer:
             buf = ''
 
         return self.tokens
+
+    def read_digit(self):
+        buf = ''
+        while not self.strm.eof():
+            c = self.strm.get()
+            if not c.isdigit():
+                self.strm.prev()
+                break
+            buf += c
+
+        if not len(buf):
+            raise Tokenizer.ModuleError('not found digit')
+
+        self.tokens.append(Token(kind='digit', value=int(buf)))
 
     def read_assign(self):
         c = self.strm.get()
@@ -132,6 +151,8 @@ class Tokenizer:
             t.kind = 'elif'
         elif t.value == 'else':
             t.kind = 'else'
+        elif t.value == 'end':
+            t.kind = 'end'
 
         self.tokens.append(t)
 

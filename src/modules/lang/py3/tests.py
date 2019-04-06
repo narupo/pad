@@ -188,6 +188,15 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[2].kind, 'rbraceat')
         self.assertEqual(ts[2].value, '@}')
 
+        ts = t.parse('{@ 123 @}')
+        self.assertEqual(len(ts), 3)
+        self.assertEqual(ts[0].kind, 'lbraceat')
+        self.assertEqual(ts[0].value, '{@')
+        self.assertEqual(ts[1].kind, 'digit')
+        self.assertEqual(ts[1].value, 123)
+        self.assertEqual(ts[2].kind, 'rbraceat')
+        self.assertEqual(ts[2].value, '@}')
+
     def test_ast(self):
         t = Tokenizer()
         a = AST()
@@ -197,132 +206,264 @@ class Test(unittest.TestCase):
 
         a.parse(t.parse('abc'))
         c = a.traverse()
-        self.assertEqual(type(a.root), BinNode)
-        self.assertEqual(type(a.root.lhs), BlockNode)
-        self.assertEqual(type(a.root.lhs.text_block), TextBlockNode)
-        self.assertEqual(a.root.lhs.text_block.text, 'abc')
 
         a.parse(t.parse('{@ import alias @}'))
         c = a.traverse()
-        self.assertEqual(type(a.root), BinNode)
-        self.assertEqual(type(a.root.lhs), BlockNode)
-        self.assertEqual(type(a.root.lhs.code_block), CodeBlockNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula), FormulaNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula.import_), ImportNode)
-        self.assertEqual(a.root.lhs.code_block.formula.import_.identifier, 'alias')
-        self.assertEqual(c.imported_alias, True)
 
         a.parse(t.parse('aaa{@ import alias @}bbb{@ import config @}ccc'))
         c = a.traverse()
-        self.assertEqual(type(a.root), BinNode)
-        self.assertEqual(type(a.root.lhs), BlockNode)
-        self.assertEqual(type(a.root.lhs.text_block), TextBlockNode)
-        self.assertEqual(a.root.lhs.text_block.text, 'aaa')
-        self.assertEqual(type(a.root.rhs), BinNode)
-        self.assertEqual(type(a.root.rhs.lhs), BlockNode)
-        self.assertEqual(type(a.root.rhs.lhs.code_block), CodeBlockNode)
-        self.assertEqual(type(a.root.rhs.lhs.code_block.formula), FormulaNode)
-        self.assertEqual(type(a.root.rhs.lhs.code_block.formula.import_), ImportNode)
-        self.assertEqual(a.root.rhs.lhs.code_block.formula.import_.identifier, 'alias')
-        self.assertEqual(type(a.root.rhs.rhs), BinNode)
-        self.assertEqual(type(a.root.rhs.rhs.lhs), BlockNode)
-        self.assertEqual(type(a.root.rhs.rhs.lhs.text_block), TextBlockNode)
-        self.assertEqual(a.root.rhs.rhs.lhs.text_block.text, 'bbb')
-        self.assertEqual(type(a.root.rhs.rhs.rhs), BinNode)
-        self.assertEqual(type(a.root.rhs.rhs.rhs.lhs), BlockNode)
-        self.assertEqual(type(a.root.rhs.rhs.rhs.lhs.code_block), CodeBlockNode)
-        self.assertEqual(type(a.root.rhs.rhs.rhs.lhs.code_block.formula), FormulaNode)
-        self.assertEqual(type(a.root.rhs.rhs.rhs.lhs.code_block.formula.import_), ImportNode)
-        self.assertEqual(a.root.rhs.rhs.rhs.lhs.code_block.formula.import_.identifier, 'config')
-        self.assertEqual(type(a.root.rhs.rhs.rhs.rhs), BinNode)
-        self.assertEqual(type(a.root.rhs.rhs.rhs.rhs.lhs), BlockNode)
-        self.assertEqual(type(a.root.rhs.rhs.rhs.rhs.lhs.text_block), TextBlockNode)
-        self.assertEqual(a.root.rhs.rhs.rhs.rhs.lhs.text_block.text, 'ccc')
 
         a.parse(t.parse('''{@
             import alias
             alias.set("dtl", "run bin/date-line/date-line.py")
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(a.root), BinNode)
-        self.assertEqual(type(a.root.lhs), BlockNode)
-        self.assertEqual(type(a.root.lhs.code_block), CodeBlockNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula), FormulaNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula.import_), ImportNode)
-        self.assertEqual(a.root.lhs.code_block.formula.import_.identifier, 'alias')
-        self.assertEqual(type(a.root.lhs.code_block.formula.formula), FormulaNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula.formula.caller), CallerNode)
-        self.assertEqual(a.root.lhs.code_block.formula.formula.caller.identifiers[0], 'alias')
-        self.assertEqual(a.root.lhs.code_block.formula.formula.caller.identifiers[1], 'set')
-        self.assertEqual(len(a.root.lhs.code_block.formula.formula.caller.args), 2)
-        self.assertEqual(a.root.lhs.code_block.formula.formula.caller.args[0], 'dtl')
-        self.assertEqual(a.root.lhs.code_block.formula.formula.caller.args[1], 'run bin/date-line/date-line.py')
-        self.assertEqual(c.imported_alias, True)
-        self.assertEqual(c.alias_map.get('dtl', None), 'run bin/date-line/date-line.py')
 
         a.parse(t.parse('''{@
             import config
             config.set("editor", "subl")
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(a.root), BinNode)
-        self.assertEqual(type(a.root.lhs), BlockNode)
-        self.assertEqual(type(a.root.lhs.code_block), CodeBlockNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula), FormulaNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula.import_), ImportNode)
-        self.assertEqual(a.root.lhs.code_block.formula.import_.identifier, 'config')
-        self.assertEqual(type(a.root.lhs.code_block.formula.formula), FormulaNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula.formula.caller), CallerNode)
-        self.assertEqual(a.root.lhs.code_block.formula.formula.caller.identifiers[0], 'config')
-        self.assertEqual(a.root.lhs.code_block.formula.formula.caller.identifiers[1], 'set')
-        self.assertEqual(len(a.root.lhs.code_block.formula.formula.caller.args), 2)
-        self.assertEqual(a.root.lhs.code_block.formula.formula.caller.args[0], 'editor')
-        self.assertEqual(a.root.lhs.code_block.formula.formula.caller.args[1], 'subl')
-        self.assertEqual(c.imported_config, True)
-        self.assertEqual(c.config_map.get('editor', None), 'subl')
 
         a.parse(t.parse('''{@
             a = "s"
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(a.root), BinNode)
-        self.assertEqual(type(a.root.lhs), BlockNode)
-        self.assertEqual(type(a.root.lhs.code_block), CodeBlockNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula), FormulaNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula.expr), ExprNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula.expr.assign_expr), AssignExprNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula.expr.assign_expr.assignable_operand), AssignableOperandNode)
-        self.assertEqual(a.root.lhs.code_block.formula.expr.assign_expr.assignable_operand.identifier, 'a')
-        self.assertEqual(type(a.root.lhs.code_block.formula.expr.assign_expr.assign_operator), AssignOperatorNode)
-        self.assertEqual(a.root.lhs.code_block.formula.expr.assign_expr.assign_operator.operator, '=')
-        self.assertEqual(type(a.root.lhs.code_block.formula.expr.assign_expr.operand), OperandNode)
-        self.assertEqual(a.root.lhs.code_block.formula.expr.assign_expr.operand.string, 's')
-        self.assertEqual(c.syms.get('a'), 's')
-
-        a.parse(t.parse('''{{ a }}'''))
-        self.assertEqual(type(a.root), BinNode)
-        self.assertEqual(type(a.root.lhs), BlockNode)
-        self.assertEqual(type(a.root.lhs.ref_block), RefBlockNode)
-        self.assertEqual(a.root.lhs.ref_block.identifier, 'a')
 
         a.parse(t.parse('''{@
             a = "s"
 @}{{ a }}'''))
         c = a.traverse()
-        self.assertEqual(type(a.root), BinNode)
-        self.assertEqual(type(a.root.lhs), BlockNode)
-        self.assertEqual(type(a.root.lhs.code_block), CodeBlockNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula), FormulaNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula.expr), ExprNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula.expr.assign_expr), AssignExprNode)
-        self.assertEqual(type(a.root.lhs.code_block.formula.expr.assign_expr.assignable_operand), AssignableOperandNode)
-        self.assertEqual(a.root.lhs.code_block.formula.expr.assign_expr.assignable_operand.identifier, 'a')
-        self.assertEqual(type(a.root.lhs.code_block.formula.expr.assign_expr.assign_operator), AssignOperatorNode)
-        self.assertEqual(a.root.lhs.code_block.formula.expr.assign_expr.assign_operator.operator, '=')
-        self.assertEqual(type(a.root.lhs.code_block.formula.expr.assign_expr.operand), OperandNode)
-        self.assertEqual(a.root.lhs.code_block.formula.expr.assign_expr.operand.string, 's')
-        self.assertEqual(type(a.root.rhs), BinNode)
-        self.assertEqual(type(a.root.rhs.lhs), BlockNode)
-        self.assertEqual(type(a.root.rhs.lhs.ref_block), RefBlockNode)
-        self.assertEqual(c.syms.get('a'), 's')
-        self.assertEqual(c.buffer, 's')
+
+        a.parse(t.parse('''{@
+            if 1:
+                v = "s"
+            end
+@}'''))
+        c = a.traverse()
+
+        a.parse(t.parse('''{@
+            if 1:
+                v = "a"
+            elif 2:
+                v = "b"
+            else:
+                v = "c"
+            end
+@}'''))
+        c = a.traverse()
+
+        a.parse(t.parse('''{@
+            if 1:
+                if 2:
+                    v = "a"
+                end
+            end
+@}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+
+        a.parse(t.parse('''{@
+            if 0:
+            else:
+                if 2:
+                    v = "abc"
+                end
+            end
+@}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'abc')
+
+        a.parse(t.parse('''{@ if 1: @}{@ end @}'''))
+        c = a.traverse()
+
+        a.parse(t.parse('''{@ if 0: @}{@ elif 1: @}{@ v = "a" @}{@ end @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+
+        a.parse(t.parse('''{@ if 0: @}{@ elif 0: @}{@ else: @}{@ v = "a" @}{@ end @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+
+        a.parse(t.parse('''{@ v = "a" @}{@ if 1: @}{@ if 2: @}{{ v }}{@ end @}{@ end @}bbb'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(c.buffer, "abbb")
+
+        a.parse(t.parse('''{@ v = "a" @}{@ if 1: @}{{ v }}{{ v }}{@ end @}'''))
+
+        a.parse(t.parse('''{@
+    v = "cat"
+    if 1:
+        @}{{ v }}{@
+    end
+    if 1:
+    end
+@}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'cat')
+        self.assertEqual(c.buffer, 'cat')
+
+        a.parse(t.parse('''{@ v = "a" @}
+{@ if 1: @}
+{{ v }}
+{@ end @}
+bbb'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(c.buffer, "\n\na\n\nbbb")
+
+        a.parse(t.parse('''{@ if 0: @}{@ else: @}{@ v = "a" @}{@ end @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+
+        a.parse(t.parse('''{@ if 1: @}abc{@ end @}'''))
+        c = a.traverse()
+
+        a.parse(t.parse('''{@ v = "a" @}{@ if 1: @}{{ v }}{@ end @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(c.buffer, 'a')
+
+        a.parse(t.parse('''{@ v = "a" @}{@ if 0: @}{@ else: @}{{ v }}{@ end @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(c.buffer, 'a')
+
+        a.parse(t.parse('''
+            {@ if 0: @}
+            {@ else: @}
+                {@ v = "a" @}
+            {@ end @}
+'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+
+        a.parse(t.parse('''
+            {@ if 0: @}
+            {@ elif 1: @}
+                {@ v = "a" @}
+            {@ end @}
+'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+
+        a.parse(t.parse('''{@ if 1: @}{@ if 2: @}{@ v = "a" @}{@ end @}{@ end @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+
+        a.parse(t.parse('''
+            {@ if 1: @}
+                {@ if 2: @}
+                    {@ v = "a" @}
+                {@ end @}
+            {@ end @}
+'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+
+        a.parse(t.parse('''
+            {@ if 1: @}
+                {@ if 0: @}
+                {@ elif 1: @}
+                    {@ v = "a" @}
+                {@ end @}
+            {@ end @}
+'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+
+        a.parse(t.parse('''
+            {@ if 1: @}
+                {@ if 0: @}
+                {@ elif 0: @}
+                {@ else: @}
+                    {@ v = "a" @}
+                {@ end @}
+            {@ end @}
+'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+
+        a.parse(t.parse('''
+            {@ if 1: @}
+                {@ if 0: @}
+                {@ elif 1: @}
+                    {@ v = "a" @}
+                {@ end @}
+            {@ end @}
+'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+
+        a.parse(t.parse('''{@
+            if 1:
+                if 2:
+                    v = "a"
+                end
+            end
+@}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+
+        a.parse(t.parse('''{@
+            if 1:
+                if 2:
+                    v1 = "a"
+                end
+            else:
+                if 0:
+                elif 4:
+                    v2 = "b"
+                end
+            end
+@}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v1'], 'a')
+
+        a.parse(t.parse('''
+            {@  if 1:
+                    if 2: @}
+                        {@ v = "a" @}
+            {@      end
+                end @}
+'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+
+        c = a.traverse()
+        a.parse(t.parse('''{@
+            if 1:
+                v = "a"
+            elif 0:
+                v = "b"
+            else:
+                v = "c"
+            end
+@}{{ a }}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+
+        a.parse(t.parse('''{@
+            if 0:
+                v = "a"
+            elif 1:
+                v = "b"
+            else:
+                v = "c"
+            end
+@}{{ a }}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'b')
+
+        a.parse(t.parse('''{@
+            if 0:
+                v = "a"
+            elif 0:
+                v = "b"
+            else:
+                v = "c"
+            end
+@}{{ a }}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'c')
