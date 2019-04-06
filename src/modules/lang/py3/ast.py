@@ -47,8 +47,7 @@ from context import Context
     + は新規追加したところ
     ^ は更新
 
-    program ::= block, program 
-    ^ block ::= text-block | code-block | ref-block, block
+    ^ block ::= ( text-block | code-block | ref-block ), block
     text-block ::= .*
     code-block ::= '{@' {formula}* '@}'
     ref-block ::= '{{' identifier '}}'
