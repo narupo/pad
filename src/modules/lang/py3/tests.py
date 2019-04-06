@@ -206,34 +206,42 @@ class Test(unittest.TestCase):
 
         a.parse(t.parse('abc'))
         c = a.traverse()
+        self.assertEqual(a.root.text_block.text, 'abc')
 
         a.parse(t.parse('{@ import alias @}'))
         c = a.traverse()
+        self.assertEqual(c.imported_alias, True)
 
         a.parse(t.parse('aaa{@ import alias @}bbb{@ import config @}ccc'))
         c = a.traverse()
+        self.assertEqual(c.imported_alias, True)
+        self.assertEqual(c.imported_config, True)
 
         a.parse(t.parse('''{@
             import alias
             alias.set("dtl", "run bin/date-line/date-line.py")
 @}'''))
         c = a.traverse()
+        self.assertEqual(c.alias_map['dtl'], 'run bin/date-line/date-line.py')
 
         a.parse(t.parse('''{@
             import config
             config.set("editor", "subl")
 @}'''))
         c = a.traverse()
+        self.assertEqual(c.config_map['editor'], 'subl')
 
         a.parse(t.parse('''{@
             a = "s"
 @}'''))
         c = a.traverse()
+        self.assertEqual(c.syms['a'], 's')
 
         a.parse(t.parse('''{@
             a = "s"
 @}{{ a }}'''))
         c = a.traverse()
+        self.assertEqual(c.syms['a'], 's')
 
         a.parse(t.parse('''{@
             if 1:
@@ -241,6 +249,7 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
+        self.assertEqual(c.syms['v'], 's')
 
         a.parse(t.parse('''{@
             if 1:
@@ -252,6 +261,7 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
 
         a.parse(t.parse('''{@
             if 1:
