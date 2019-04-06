@@ -10,3 +10,34 @@ This is text {{ windows_script }}.
 This is text block (2) {{ var }}.
 {@ var2 = "VAR2" @}
 {{ var2 }}
+
+{@
+    var = "saru"
+    if 1:
+        var = "Saru"
+    elif 2:
+        var = "ssaarruu"
+    else:
+        var = "SARU"
+    end
+@}
+
+{{ var }}
+
+{@ v = "a" @}
+{@ if 1: @}
+    {@ if 2: @}
+        {{ v }}
+    {@ end @}
+{@ end @}
+bbb
+
+{@
+    v = "cat"
+    if 1:
+        @}{{ v }}abc{@
+    end
+    if 1:
+    end
+@}
+

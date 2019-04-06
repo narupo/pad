@@ -4,4 +4,4 @@ class Token:
         self.value = value
 
     def __str__(self):
-        return '{0}:{1}'.format(self.kind, self.value)
+        return '<{0},{1}>'.format(self.kind, self.value)
