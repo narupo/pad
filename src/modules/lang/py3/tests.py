@@ -263,11 +263,72 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.syms['v'], '')
 
+        a.parse(t.parse('''{@
+            v = "v"
+            v = "v2"
+@}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'v2')
+
+        a.parse(t.parse('''{@
+            v = "v"
+            v = ""
+            v = "v2"
+@}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'v2')
+
+        a.parse(t.parse('''{@ v = "v" @}
+{@ v = "" @}
+'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], '')
+
+        a.parse(t.parse('''{@ v = "v" @}
+{@ v = "" @}
+{@ v = "v2" @}
+'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'v2')
+
+        a.parse(t.parse('''{@ v = "" @}
+{@ v = "v" @}
+'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'v')
+
     def test_ast_if(self):
         t = Tokenizer()
         a = AST()
 
         a.parse(t.parse('{@ if 1: @}abc{@ end @}'))
+        c = a.traverse()
+        self.assertEqual(c.buffer, 'abc')
+
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('{@ if 1 @}{@ end @}'))
+
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('{@ if @}{@ end @}'))
+
+        # with self.assertRaises(AST.SyntaxError):
+        #     a.parse(t.parse('{@ if 1: @}{@ @}'), debug=True)
+
+        a.parse(t.parse('{@ if 1: v = "v" end @}'))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'v')
+
+        a.parse(t.parse('{@ if 0: v = "v" else: v = "v2" end @}'))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'v2')
+
+        a.parse(t.parse('{@ if 0: v = "v" elif 1: v = "v2" end @}'))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'v2')
+
+        a.parse(t.parse('{@ if 0: v = "v" elif 0: v = "v2" else: v = "v3" end @}'))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'v3')
 
         a.parse(t.parse('''{@
             if 1:
