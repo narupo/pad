@@ -197,7 +197,7 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[2].kind, 'rbraceat')
         self.assertEqual(ts[2].value, '@}')
 
-    def test_ast(self):
+    def test_ast_basic(self):
         t = Tokenizer()
         a = AST()
 
@@ -207,6 +207,10 @@ class Test(unittest.TestCase):
         a.parse(t.parse('abc'))
         c = a.traverse()
         self.assertEqual(a.root.text_block.text, 'abc')
+
+    def test_ast_import(self):
+        t = Tokenizer()
+        a = AST()
 
         a.parse(t.parse('{@ import alias @}'))
         c = a.traverse()
@@ -222,8 +226,6 @@ class Test(unittest.TestCase):
         self.assertEqual(c.imported_alias, True)
         self.assertEqual(c.imported_config, True)
 
-        a.parse(t.parse('{@ if 1: @}abc{@ end @}'))
-
         a.parse(t.parse('''{@
             import alias
             alias.set("dtl", "run bin/date-line/date-line.py")
@@ -238,6 +240,10 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.config_map['editor'], 'subl')
 
+    def test_ast_expr(self):
+        t = Tokenizer()
+        a = AST()
+
         a.parse(t.parse('''{@
             a = "s"
 @}'''))
@@ -249,6 +255,19 @@ class Test(unittest.TestCase):
 @}{{ a }}'''))
         c = a.traverse()
         self.assertEqual(c.syms['a'], 's')
+
+        a.parse(t.parse('''{@
+            v = "v"
+            v = ""
+@}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], '')
+
+    def test_ast_if(self):
+        t = Tokenizer()
+        a = AST()
+
+        a.parse(t.parse('{@ if 1: @}abc{@ end @}'))
 
         a.parse(t.parse('''{@
             if 1:
@@ -330,7 +349,6 @@ bbb'''))
         self.assertEqual(c.syms['v'], 'a')
         self.assertEqual(c.buffer, "\n\na\n\nbbb")
 
-        # TODO
         a.parse(t.parse('''{@
     v = "a"
     if 1:
@@ -509,3 +527,22 @@ c'''))
 @}{{ a }}'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'c')
+
+        a.parse(t.parse('''{@
+            if 0:
+                v1 = "v1"
+            elif 1:
+                v2 = "v2"
+                if 0:
+                    v3 = "v3"
+                else:
+                    v4 = "v4"
+                end
+            end
+@}{{ a }}'''))
+        c = a.traverse()
+        self.assertEqual('v1' not in c.syms.keys(), True)
+        self.assertEqual(c.syms['v2'], 'v2')
+        self.assertEqual('v3' not in c.syms.keys(), True)
+        self.assertEqual(c.syms['v4'], 'v4')
+
