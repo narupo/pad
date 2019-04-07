@@ -1,12 +1,5 @@
 {@
     v = "saru"
-    v = ""
+    v = "Saru"
 @}
-v is: {{ v }}
-
-{@
-    if 1:
-        v = "Saru"
-    end
-@}
-v is: {{ v }}
+{{ v }}
