@@ -217,6 +217,13 @@ class Test(unittest.TestCase):
         self.assertEqual(c.imported_alias, True)
         self.assertEqual(c.imported_config, True)
 
+        a.parse(t.parse('{@ import alias @}{@ import config @}'))
+        c = a.traverse()
+        self.assertEqual(c.imported_alias, True)
+        self.assertEqual(c.imported_config, True)
+
+        a.parse(t.parse('{@ if 1: @}abc{@ end @}'))
+
         a.parse(t.parse('''{@
             import alias
             alias.set("dtl", "run bin/date-line/date-line.py")
@@ -322,6 +329,20 @@ bbb'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'a')
         self.assertEqual(c.buffer, "\n\na\n\nbbb")
+
+        # TODO
+        a.parse(t.parse('''{@
+    v = "a"
+    if 1:
+        v = "b"
+        @}{{ v }}{@
+    end
+@}
+c'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'b')
+        self.assertEqual(c.buffer, 'b\nc')
+
 
         a.parse(t.parse('''{@ if 0: @}{@ else: @}{@ v = "a" @}{@ end @}'''))
         c = a.traverse()
@@ -432,13 +453,24 @@ bbb'''))
         self.assertEqual(c.syms['v1'], 'a')
 
         a.parse(t.parse('''
-            {@  if 1:
-                    if 2: @}
-                        {@ v = "a" @}
-            {@      end
-                end @}
-'''))
+            {@ if 1: @}{@ if 2: @}{@ v = "a" @}{@ end @}{@ end @}
+        '''))
         c = a.traverse()
+        self.assertEqual(c.syms['v'], 'a')
+
+        a.parse(t.parse('''{@  if 1: if 2: @}{@ v = "a" @}{@ end end @}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.root), BlockNode)
+        self.assertEqual(type(a.root.code_block), CodeBlockNode)
+        self.assertEqual(type(a.root.code_block.formula), FormulaNode)
+        self.assertEqual(type(a.root.code_block.formula.if_), IfNode)
+        self.assertEqual(a.root.code_block.formula.if_.expr.digit.value, 1)
+        self.assertEqual(type(a.root.code_block.formula.if_.formula), FormulaNode)
+        self.assertEqual(type(a.root.code_block.formula.if_.formula.if_), IfNode)
+        self.assertEqual(a.root.code_block.formula.if_.formula.if_.expr.digit.value, 2)
+        self.assertEqual(type(a.root.code_block.formula.if_.formula.if_.block), BlockNode)
+        self.assertEqual(type(a.root.code_block.formula.if_.formula.if_.block.code_block), CodeBlockNode)
+        self.assertEqual(type(a.root.code_block.formula.if_.formula.if_.block.code_block.formula), FormulaNode)
         self.assertEqual(c.syms['v'], 'a')
 
         c = a.traverse()

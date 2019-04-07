@@ -51,7 +51,7 @@ from context import Context
     text-block ::= .*
     code-block ::= '{@' {formula}* '@}'
     ref-block ::= '{{' identifier '}}'
-    ^ formula ::= ( expr | if-stmt | import-stmt | caller-stmt ), formula
+    ^ formula ::= ( expr | if-stmt | import-stmt | caller-stmt ), ( formula | '@}' block '{@' )
     + if-stmt ::= 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
     + elif-stmt ::= 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
     + else-stmt ::= 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
@@ -89,27 +89,33 @@ class AST:
         self.strm = Stream(tokens)
         self.root = self.block(dep=0)
 
-    def traverse(self):
+    def traverse(self, debug=False):
+        self.debug_traverse = debug
         self.context = Context()
         self.last_expr_val = 0
-        self._traverse(self.root)
+        self._traverse(self.root, dep=0)
         return self.context
 
-    def _traverse(self, node):
+    def show_traverse(self, node, dep):
+        if self.debug_traverse:
+            print(('_'*dep) + str(dep) + ' ' + str(node).split('.')[1].split(' ')[0])
+
+    def _traverse(self, node, dep):
         if node is None:
             return
+        self.show_traverse(node, dep)
 
         if isinstance(node, BlockNode):
-            self._traverse(node.text_block)
-            self._traverse(node.code_block)
-            self._traverse(node.ref_block)
-            self._traverse(node.block)
+            self._traverse(node.text_block, dep=dep+1)
+            self._traverse(node.code_block, dep=dep+1)
+            self._traverse(node.ref_block, dep=dep+1)
+            self._traverse(node.block, dep=dep+1)
 
         elif isinstance(node, TextBlockNode):
             self.context.buffer += node.text
 
         elif isinstance(node, CodeBlockNode):
-            self._traverse(node.formula)
+            self._traverse(node.formula, dep=dep+1)
 
         elif isinstance(node, RefBlockNode):
             self.traverse_ref_block(node)
@@ -117,38 +123,42 @@ class AST:
         elif isinstance(node, FormulaNode):
             if node.expr:
                 self.last_expr_val = 0
-                self._traverse(node.expr)
+                self._traverse(node.expr, dep=dep+1)
             elif node.import_:
-                self._traverse(node.import_)
+                self._traverse(node.import_, dep=dep+1)
             elif node.caller:
-                self._traverse(node.caller)
+                self._traverse(node.caller, dep=dep+1)
             elif node.if_:
-                self._traverse(node.if_)
-            self._traverse(node.formula)
+                self._traverse(node.if_, dep=dep+1)
+
+            if node.formula:
+                self._traverse(node.formula, dep=dep+1)
+            elif node.block:
+                self._traverse(node.block, dep=dep+1)
 
         elif isinstance(node, IfNode):
             self.last_expr_val = 0
-            self._traverse(node.expr)
+            self._traverse(node.expr, dep=dep+1)
             if self.last_expr_val:
                 if node.formula:
-                    self._traverse(node.formula)
+                    self._traverse(node.formula, dep=dep+1)
                 elif node.block:
-                    self._traverse(node.block)
+                    self._traverse(node.block, dep=dep+1)
             else:
                 if node.elif_:
-                    self._traverse(node.elif_)
+                    self._traverse(node.elif_, dep=dep+1)
                 elif node.else_:
-                    self._traverse(node.else_)
+                    self._traverse(node.else_, dep=dep+1)
 
         elif isinstance(node, ElseNode):
             if node.block:
-                self._traverse(node.block)
+                self._traverse(node.block, dep=dep+1)
             elif node.formula:
-                self._traverse(node.formula)
+                self._traverse(node.formula, dep=dep+1)
 
         elif isinstance(node, ExprNode):
             if node.assign_expr:
-                self._traverse(node.assign_expr)
+                self._traverse(node.assign_expr, dep=dep+1)
             elif node.digit:
                 self.last_expr_val = node.digit.value
 
@@ -242,7 +252,6 @@ class AST:
                 node.text_block = self.text_block(dep=dep+1)
 
         node.block = self.block(dep=dep+1)
-
         return node
 
     def ref_block(self, dep=0):
@@ -284,13 +293,11 @@ class AST:
 
         t = self.strm.get()
         if t == Stream.EOF:
-            raise AST.SyntaxError('reached EOF in code block')
-        if t.kind in ('end'):
-            return None
+            pass
+        elif t.kind in ('end'):
+            return node
         elif t.kind in ('ldbrace', 'else', 'elif'):
             self.strm.prev()
-        elif t.kind != 'rbraceat':
-            raise AST.SyntaxError('not found "@}" in code block. token is %s' % t)
 
         return node
 
@@ -331,7 +338,23 @@ class AST:
                 if not self.strm.eof() and node.expr is None:
                     return None
 
-        node.formula = self.formula(dep=dep+1)
+        t = self.strm.get()
+        if t == Stream.EOF:
+            return node
+
+        if t.kind == 'rbraceat' and self.strm.cur() != Stream.EOF:
+            node.block = self.block(dep=dep+1)
+            t = self.strm.get()
+            if t == Stream.EOF:
+                pass
+            elif t.kind == 'lbraceat':
+                pass
+            else:
+                self.strm.prev()
+        else:
+            self.strm.prev()
+            node.formula = self.formula(dep=dep+1)
+
         return node
 
     def if_(self, dep=0, first_symbol='if'):
@@ -360,6 +383,9 @@ class AST:
             node.formula = self.formula(dep=dep+1)
 
         t = self.strm.get()
+        if t == Stream.EOF:
+            return node
+
         if t.kind != 'lbraceat':
             self.strm.prev()
 
@@ -400,6 +426,8 @@ class AST:
             node.formula = self.formula(dep=dep+1)
 
         t = self.strm.get()
+        if t == Stream.EOF:
+            return node
         if t.kind != 'lbraceat':
             self.strm.prev()
 
