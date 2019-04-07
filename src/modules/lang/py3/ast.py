@@ -177,10 +177,10 @@ class AST:
     def traverse_assign_expr(self, node):
         symkey = node.assignable_operand.identifier
         if node.assign_operator.operator == '=':
-            if node.operand.identifier:
+            if node.operand.identifier != None:
                 self.context.syms[symkey] = self.context.syms[node.operand.identifier]
                 self.last_expr_val = self.context.syms[symkey]
-            elif node.operand.string:
+            elif node.operand.string != None:
                 self.context.syms[symkey] = node.operand.string
                 self.last_expr_val = self.context.syms[symkey]
              
