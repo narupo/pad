@@ -208,9 +208,23 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(a.root.text_block.text, 'abc')
 
+        a.parse(t.parse('{@'))
+
+        a.parse(t.parse('{@ v = "v"'))
+
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('{@ 1: @}'))
+
     def test_ast_import(self):
         t = Tokenizer()
         a = AST()
+
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('{@ import @}'))
+
+        a.parse(t.parse('{@ import alias'))
+        c = a.traverse()
+        self.assertEqual(c.imported_alias, True)
 
         a.parse(t.parse('{@ import alias @}'))
         c = a.traverse()
