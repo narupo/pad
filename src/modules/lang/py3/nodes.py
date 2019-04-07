@@ -61,6 +61,7 @@ class FormulaNode(Node):
         self.import_ = None
         self.caller = None
         self.formula = None
+        self.block = None
 
 
 class ImportNode(Node):

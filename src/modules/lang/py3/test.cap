@@ -35,9 +35,15 @@ bbb
 {@
     v = "cat"
     if 1:
-        @}{{ v }}abc{@
-    end
-    if 1:
+        v = "dog"
+        @}{{ v }}{@
     end
 @}
+aaa
 
+{@
+    last_name = "Tanaka"
+    first_name = "Taro"
+@}
+
+{{ first_name }}.{{ last_name }}
