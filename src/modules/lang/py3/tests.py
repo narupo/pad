@@ -436,7 +436,6 @@ c'''))
         self.assertEqual(c.syms['v'], 'b')
         self.assertEqual(c.buffer, 'b\nc')
 
-
         a.parse(t.parse('''{@ if 0: @}{@ else: @}{@ v = "a" @}{@ end @}'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'a')
@@ -566,6 +565,16 @@ c'''))
         self.assertEqual(type(a.root.code_block.formula.if_.formula.if_.block.code_block.formula), FormulaNode)
         self.assertEqual(c.syms['v'], 'a')
 
+        a.parse(t.parse('''{@ if 1: @}aaa{@ if 2: @}bbb{@ v = "ccc" @}{{ v }}{@ end @}ddd{@ end @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'ccc')
+        self.assertEqual(c.buffer, 'aaabbbcccddd')
+
+        a.parse(t.parse('''aaa{@ if 1: @}bbb{@ if 2: @}ccc{@ v = "ddd" @}{{ v }}{@ end @}eee{@ end @}fff'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'ddd')
+        self.assertEqual(c.buffer, 'aaabbbcccdddeeefff')
+
         c = a.traverse()
         a.parse(t.parse('''{@
             if 1:
@@ -621,3 +630,66 @@ c'''))
         self.assertEqual('v3' not in c.syms.keys(), True)
         self.assertEqual(c.syms['v4'], 'v4')
 
+        a.parse(t.parse('''{@
+            if 1:
+                if 2:
+                    if 3:
+                        v = "v"
+                    end
+                end
+            end
+@}{{ a }}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'v')
+
+        a.parse(t.parse('''{@
+            if 1:
+                if 2:
+                    if 3:
+                        v = "v"
+                    end
+                    v = "v2"
+                end
+            end
+@}{{ a }}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'v2')
+
+        a.parse(t.parse('''{@
+            if 1:
+                if 2:
+                    if 3:
+                        v = "v"
+                    end
+                end
+                v = "v2"
+            end
+@}{{ a }}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'v2')
+
+        a.parse(t.parse('''{@
+            if 1:
+                v = "v"
+                if 2:
+                    if 3:
+                        v = "v2"
+                    end
+                end
+            end
+@}{{ a }}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'v2')
+
+        a.parse(t.parse('''{@
+            if 1:
+                v = "v"
+                if 2:
+                    v = "v2"
+                    if 3:
+                    end
+                end
+            end
+@}{{ a }}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 'v2')
