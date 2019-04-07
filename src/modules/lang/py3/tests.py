@@ -311,8 +311,8 @@ class Test(unittest.TestCase):
         with self.assertRaises(AST.SyntaxError):
             a.parse(t.parse('{@ if @}{@ end @}'))
 
-        # with self.assertRaises(AST.SyntaxError):
-        #     a.parse(t.parse('{@ if 1: @}{@ @}'), debug=True)
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('{@ if 1: @}{@ @}'))
 
         a.parse(t.parse('{@ if 1: v = "v" end @}'))
         c = a.traverse()
