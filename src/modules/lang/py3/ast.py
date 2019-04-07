@@ -296,6 +296,7 @@ class AST:
         if t == Stream.EOF:
             pass
         elif t.kind in ('end'):
+            self.strm.prev()
             return node
         elif t.kind in ('ldbrace', 'else', 'elif'):
             self.strm.prev()
@@ -385,7 +386,7 @@ class AST:
 
         t = self.strm.get()
         if t == Stream.EOF:
-            return node
+            raise AST.SyntaxError('reached EOF in if statement')
 
         if t.kind != 'lbraceat':
             self.strm.prev()
@@ -400,7 +401,7 @@ class AST:
             self.strm.prev()
             node.else_ = self.else_(dep=dep+1)
         else:
-            self.strm.prev()
+            raise AST.SyntaxError('not ended in if statement. token is %s' % t)
 
         return node
 
