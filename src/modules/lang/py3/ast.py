@@ -326,6 +326,8 @@ class AST:
         t = self.strm.cur()
         if t.kind in ('rbraceat', 'ldbrace', 'end', 'elif', 'else'):
             return None
+        if t.kind in ('colon'):
+            raise AST.SyntaxError('found "%s". invalid formula.' % t)
 
         node = FormulaNode()
         t = self.strm.cur()
