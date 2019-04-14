@@ -68,9 +68,6 @@ class Tokenizer:
                     s.get()
                     self.tokens.append(Token(kind='rbraceat', value='@}'))
                     m = 'text block'
-                elif c == '=':
-                    s.prev()
-                    self.read_assign()
                 elif c == '.':
                     self.tokens.append(Token(kind='operator', value='.'))
                 elif c == ',':
@@ -81,6 +78,28 @@ class Tokenizer:
                     self.tokens.append(Token(kind='rparen', value=')'))
                 elif c == ':':
                     self.tokens.append(Token(kind='colon', value=':'))
+                elif c == '=':
+                    s.prev()
+                    self.read_assign()
+                elif c == '!':
+                    s.prev()
+                    self.read_not()
+                elif c == '<':
+                    s.prev()
+                    self.read_lt()
+                elif c == '>':
+                    s.prev()
+                    self.read_gt()
+                elif c == '+':
+                    s.prev()
+                    self.read_add()
+                elif c == '-':
+                    s.prev()
+                    self.read_sub()
+                elif c == '*':
+                    self.tokens.append(Token(kind='operator', value='*'))
+                elif c == '/':
+                    self.tokens.append(Token(kind='operator', value='/'))
                 elif c == '"':
                     s.prev()
                     self.read_string()
@@ -100,6 +119,66 @@ class Tokenizer:
             buf = ''
 
         return self.tokens
+
+    def read_add(self):
+        c = self.strm.get()
+        if c != '+':
+            raise Tokenizer.ModuleError('not found "+"')
+
+        c = self.strm.get()
+        if c == '+':
+            self.tokens.append(Token(kind='operator', value='++'))
+        else:
+            self.strm.prev()
+            self.tokens.append(Token(kind='operator', value='+'))
+
+    def read_sub(self):
+        c = self.strm.get()
+        if c != '-':
+            raise Tokenizer.ModuleError('not found "-"')
+
+        c = self.strm.get()
+        if c == '-':
+            self.tokens.append(Token(kind='operator', value='--'))
+        else:
+            self.strm.prev()
+            self.tokens.append(Token(kind='operator', value='-'))
+
+    def read_gt(self):
+        c = self.strm.get()
+        if c != '>':
+            raise Tokenizer.ModuleError('not found ">"')
+
+        c = self.strm.get()
+        if c == '=':
+            self.tokens.append(Token(kind='comp_op', value='>='))
+        else:
+            self.strm.prev()
+            self.tokens.append(Token(kind='comp_op', value='>'))
+
+    def read_lt(self):
+        c = self.strm.get()
+        if c != '<':
+            raise Tokenizer.ModuleError('not found "<"')
+
+        c = self.strm.get()
+        if c == '=':
+            self.tokens.append(Token(kind='comp_op', value='<='))
+        else:
+            self.strm.prev()
+            self.tokens.append(Token(kind='comp_op', value='<'))
+
+    def read_not(self):
+        c = self.strm.get()
+        if c != '!':
+            raise Tokenizer.ModuleError('not found "!"')
+
+        c = self.strm.get()
+        if c == '=':
+            self.tokens.append(Token(kind='comp_op', value='!='))
+        else:
+            self.strm.prev()
+            self.tokens.append(Token(kind='comp_op', value='!'))
 
     def read_digit(self):
         buf = ''
@@ -122,7 +201,7 @@ class Tokenizer:
 
         c = self.strm.get()
         if c == '=':
-            self.tokens.append(Token(kind='compare', value='=='))
+            self.tokens.append(Token(kind='comp_op', value='=='))
         else:
             self.strm.prev()
             self.tokens.append(Token(kind='operator', value='='))

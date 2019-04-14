@@ -35,7 +35,7 @@ class AssignOperatorNode(Node):
 
 class OperandNode(Node):
     def __init__(self):
-        self.identifier = None
+        self.expr = None
         self.string = None
 
 
@@ -56,7 +56,8 @@ class TextBlockNode(Node):
 
 class FormulaNode(Node):
     def __init__(self):
-        self.expr = None
+        self.comparison = None
+        self.assign_expr = None
         self.if_ = None
         self.import_ = None
         self.caller = None
@@ -75,9 +76,16 @@ class CallerNode(Node):
         self.args = []
 
 
-class IfNode(Node):
+class ComparisonNode(Node):
     def __init__(self):
         self.expr = None
+        self.op = None
+        self.comparison = None
+
+
+class IfNode(Node):
+    def __init__(self):
+        self.comparison = None
         self.block = None
         self.formula = None
         self.elif_ = None
@@ -93,3 +101,26 @@ class ElseNode(Node):
 class DigitNode(Node):
     def __init__(self):
         self.value = None
+
+
+class ExprNode(Node):
+    def __init__(self):
+        self.term = None
+        self.op = None
+        self.expr = None
+
+
+class TermNode(Node):
+    def __init__(self):
+        self.factor = None
+        self.op = None
+        self.term = None
+
+
+class FactorNode(Node):
+    def __init__(self):
+        self.digit = None
+        self.identifier = None
+        self.string = None
+        self.expr = None
+

@@ -7,3 +7,4 @@ class Context:
         self.alias_map = {}
         self.config_map = {}
         self.syms = {} # symbol table
+        self.last_expr_val = 0
