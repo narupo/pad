@@ -60,17 +60,12 @@ editcmd_create_resouce_path(editcmd_t *self, char *path, uint32_t pathsz, int sc
 }
 
 editcmd_t *
-editcmd_read_editor(editcmd_t *self) {
+editcmd_read_editor(editcmd_t *self, int scope) {
     // parse resource file
-    int scope = CAP_SCOPE_LOCAL;
     char path[FILE_NPATH];
 
-    if (editcmd_create_resouce_path(self, path, sizeof path, scope) == NULL) {
-        scope = CAP_SCOPE_GLOBAL;
-        if (editcmd_create_resouce_path(self, path, sizeof path, scope) == NULL) {
-            err_error("failed to create resource path");
-            return NULL;
-        }
+    if (!editcmd_create_resouce_path(self, path, sizeof path, scope)) {
+        return NULL;
     }
 
     char *content = file_readcp_from_path(path);
@@ -134,9 +129,13 @@ editcmd_run(editcmd_t *self) {
         fname = self->argv[1];
     }
 
-    if (!editcmd_read_editor(self)) {
-        err_die("not found editor. please setting at resource file");
-        return 1;
+    if (!editcmd_read_editor(self, CAP_SCOPE_LOCAL)) {
+        // not found at local, next find at global
+        if (!editcmd_read_editor(self, CAP_SCOPE_GLOBAL)) {
+            // editor is not setting
+            err_die("not found editor. please setting at resource file");
+            return 1;
+        }
     }
 
     cstr_cat(self->cmdline, sizeof self->cmdline, self->editor);
