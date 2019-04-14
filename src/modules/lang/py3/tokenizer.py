@@ -77,8 +77,6 @@ class Tokenizer:
                     s.get()
                     self.tokens.append(Token(kind='rbraceat', value='@}'))
                     m = 'text block'
-                    if s.cur() == '\n':
-                        s.get() # ignore newline after "@}"
                 elif c == '.':
                     self.tokens.append(Token(kind='operator', value='.'))
                 elif c == ',':

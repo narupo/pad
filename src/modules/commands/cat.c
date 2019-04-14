@@ -65,7 +65,10 @@ catcmd_parse_opts(catcmd_t *self) {
         case 'T': self->opts.tabspaces = atoi(optarg); break;
         case 't': self->opts.istab = true; break;
         case '?':
-        default: return NULL; break;
+        default:
+            err_die("unsupported option");
+            return NULL;
+            break;
         }
     }
 

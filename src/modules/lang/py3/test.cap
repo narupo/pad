@@ -6,13 +6,13 @@
 @}
 <html>
 <head>
-{@ if os == "Linux": @}
-    <title>{{ linux_title }}</title>
-{@ elif os == "Windows": @}
-    <title>{{ windows_title }}</title>
-{@ else: @}
-    <title>{{ other_title }}</title>
-{@ end @}
+    {@ if os == "Linux": @}
+        <title>{{ linux_title }}</title>
+    {@ elif os == "Windows": @}
+        <title>{{ windows_title }}</title>
+    {@ else: @}
+        <title>{{ other_title }}</title>
+    {@ end @}
 </head>
 <body>
     <title>{{ opts.get("title") }}</title>
@@ -21,14 +21,18 @@
             {{ opts.get("content") }}
         </div>
     </main>
+    <div>
+    {@ if opts.get("verbose"): @}
+        This case is verbose.
+        This case is verbose.
+        This case is verbose.
+        This case is verbose.
+    {@ else: @}
+        This is not verbose
+    {@ end @}
+    </div>
 </body>
 </html>
-
-{@ if opts.get("verbose"): @}
-    This case is verbose.
-{@ else: @}
-    This is not verbose
-{@ end @}
 
 class {{ opts.get("class-name") }}:
     def __init__(self):
@@ -36,4 +40,3 @@ class {{ opts.get("class-name") }}:
 
 class {{ opts.get("a") }}:
     pass
-    
