@@ -1,5 +1,8 @@
 #pragma once
 
+#include <getopt.h>
+#include <string.h>
+
 #include "lib/memory.h"
 #include "lib/file.h"
 #include "lib/string.h"
