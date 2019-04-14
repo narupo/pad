@@ -42,14 +42,14 @@ editcmd_parse_opts(editcmd_t *self) {
         case 'g': self->opts.is_global = true; break;
         case '?':
         default:
-            err_error("Unsupported option");
+            err_error("unsupported option");
             return NULL;
             break;
         }
     }
 
     if (self->argc < optind) {
-        err_error("Failed to parse option");
+        err_error("failed to parse option");
         return NULL;
     }
 
