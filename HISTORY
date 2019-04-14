@@ -1,3 +1,4 @@
+0.24.2 ... implementation of BNF 0.2.2, and fix edit command
 0.24.1 ... implementation of BNF 0.2.1 of language. expr and etc
 0.24.0 ... implementation of BNF 0.2.0 of language
 0.23.0 ... start develop for a language
