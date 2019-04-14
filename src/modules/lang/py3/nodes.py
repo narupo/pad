@@ -18,12 +18,12 @@ class ExprNode(Node):
 
 class AssignExprNode(Node):
     def __init__(self):
-        self.assignable_operand = None
+        self.assign_operand_lhs = None
         self.assign_operator = None
-        self.operand = None
+        self.assign_operand_rhs = None
 
 
-class AssignableOperandNode(Node):
+class AssignOperandLhsNode(Node):
     def __init__(self):
         self.identifier = None
 
@@ -33,7 +33,7 @@ class AssignOperatorNode(Node):
         self.operator = None
 
 
-class OperandNode(Node):
+class AssignOperandRhsNode(Node):
     def __init__(self):
         self.expr = None
         self.string = None
