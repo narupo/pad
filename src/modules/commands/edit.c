@@ -120,7 +120,7 @@ editcmd_create_open_fname(editcmd_t *self, const char *fname) {
         return NULL;
     }
 
-    if (file_solvefmt(self->open_fname, sizeof self->open_fname, "%s/%s", path, fname) == NULL) {
+    if (!file_solvefmt(self->open_fname, sizeof self->open_fname, "%s/%s", path, fname)) {
         return NULL;
     }
 
