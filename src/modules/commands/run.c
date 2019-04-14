@@ -131,7 +131,7 @@ runcmd_run(runcmd_t *self) {
     str_popb(cmdline);
 
     // Start process communication
-    safesystem(str_getc(cmdline));
+    safesystem(str_getc(cmdline), SAFESYSTEM_DEFAULT);
     
     // Done
     str_del(cmdline);
