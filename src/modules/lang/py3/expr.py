@@ -117,6 +117,7 @@ class FactorNode:
 '''
 BNF:
 
+(v = 2) * 2
     expr: term '+' expr | term '-' expr | term
     term: factor '*' term | factor '/' term | factor
     factor: '(' expr ')' | digit

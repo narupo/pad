@@ -67,6 +67,38 @@ from context import Context
     string ::= '"' .* '"'
     + digit ::= [0-9]+
     identifier ::= ( [a-z] | [0-9] | _ )+ 
+
+    2019-04-02 05:37:52 曇のち雪
+    ===========================
+    BNF 0.2.1
+    式の実装
+
+    + は新規追加したところ
+    ^ は更新
+
+    block ::= ( text-block | code-block | ref-block ), block
+    text-block ::= .*
+    code-block ::= '{@' {formula}* '@}'
+    ref-block ::= '{{' identifier '}}'
+    ^ formula ::= ( expr | assign-expr | if-stmt | import-stmt | caller-stmt ), ( formula | '@}' block '{@' )
+    ^ if-stmt ::= 'if' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    elif-stmt ::= 'elif' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    else-stmt ::= 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+    + comparison ::= expr comp_op comparison | expr
+    + cmp-op ::= '==' | '!=' | '<' | '>' | '<=' | '>='
+    ^ expr ::= term '+' expr | term '-' + expr | term
+    + term ::= factor '*' term | factor '/' term | factor
+    + factor ::= digit | identifier | string | '(' expr ')'
+    assign-expr ::= assignable-operand assign-operator operand
+    assign-operator ::= '='
+    assignable-operand ::= identifier
+    ^ operand ::= expr | string
+    import-stmt ::= 'import' identifier
+    caller-stmt ::= identifier ( '.' identifier )+ '(' args ')'
+    args ::= string | ',' args
+    string ::= '"' .* '"'
+    digit ::= [0-9]+
+    identifier ::= ( [a-z] | [0-9] | _ )+ 
 '''
 
 class AST:
@@ -85,6 +117,9 @@ class AST:
     class ReferenceError(RuntimeError):
         pass
 
+    class TypeError(TypeError):
+        pass
+
     def parse(self, tokens, debug=False):
         self.debug_parse = debug
         self.strm = Stream(tokens)
@@ -93,7 +128,6 @@ class AST:
     def traverse(self, debug=False):
         self.debug_traverse = debug
         self.context = Context()
-        self.last_expr_val = 0
         self._traverse(self.root, dep=0)
         return self.context
 
@@ -119,12 +153,14 @@ class AST:
             self._traverse(node.formula, dep=dep+1)
 
         elif isinstance(node, RefBlockNode):
-            self.traverse_ref_block(node)
+            self.traverse_ref_block(node, dep=dep+1)
 
         elif isinstance(node, FormulaNode):
-            if node.expr:
-                self.last_expr_val = 0
-                self._traverse(node.expr, dep=dep+1)
+            if node.comparison:
+                self.context.last_expr_val = self._traverse(node.comparison, dep=dep+1)
+                return self.context.last_expr_val
+            elif node.assign_expr:
+                self._traverse(node.assign_expr, dep=dep+1)
             elif node.import_:
                 self._traverse(node.import_, dep=dep+1)
             elif node.caller:
@@ -137,10 +173,33 @@ class AST:
             elif node.block:
                 self._traverse(node.block, dep=dep+1)
 
+        elif isinstance(node, ComparisonNode):
+            if node.expr and node.comparison:
+                lval = self._traverse(node.expr, dep=dep+1)
+                rval = self._traverse(node.comparison, dep=dep+1)
+                if node.op == '>':
+                    return lval > rval
+                elif node.op == '<':
+                    return lval < rval
+                elif node.op == '>=':
+                    return lval >= rval
+                elif node.op == '<=':
+                    return lval <= rval
+                elif node.op == '==':
+                    return lval == rval
+                elif node.op == '!=':
+                    return lval != rval
+                else:
+                    raise AST.ModuleError('unsupported comparison operator "%s"' % node.op)
+
+            elif node.expr:
+                return self._traverse(node.expr, dep=dep+1)
+            else:
+                raise AST.ModuleError('unsupported node %s in comparison' % str(node))
+
         elif isinstance(node, IfNode):
-            self.last_expr_val = 0
-            self._traverse(node.expr, dep=dep+1)
-            if self.last_expr_val:
+            result = self._traverse(node.comparison, dep=dep+1)
+            if result:
                 if node.formula:
                     self._traverse(node.formula, dep=dep+1)
                 elif node.block:
@@ -158,38 +217,81 @@ class AST:
                 self._traverse(node.formula, dep=dep+1)
 
         elif isinstance(node, ExprNode):
-            if node.assign_expr:
-                self._traverse(node.assign_expr, dep=dep+1)
-            elif node.digit:
-                self.last_expr_val = node.digit.value
+            if node.term and node.expr:
+                lval = self._traverse(node.term, dep=dep+1)
+                rval = self._traverse(node.expr, dep=dep+1)
+                if not isinstance(lval, (int, float)):
+                    raise AST.TypeError('invalid type of lvalue of expression. type is %s' % type(lval))
+                if not isinstance(rval, (int, float)):
+                    raise AST.TypeError('invalid type of rvalue of expression. type is %s' % type(rval))
+                if node.op == '+':
+                    return lval + rval
+                elif node.op == '-':
+                    return lval - rval
+                else:
+                    raise AST.ModuleError('unsupported operation "%s" in traverse expr' % node.op)
+            elif node.term:
+                return self._traverse(node.term, dep=dep+1)
+            else:
+                raise AST.ModuleError('programming error. impossible case in traverse expr')
+
+        elif isinstance(node, TermNode):
+            if node.factor and node.term:
+                lval = self._traverse(node.factor, dep=dep+1)
+                rval = self._traverse(node.term, dep=dep+1)
+                if node.op == '*':
+                    return lval * rval
+                elif node.op == '/':
+                    return lval / rval
+                else:
+                    raise AST.ModuleError('unsupported operation "%s" in traverse term' % node.op)
+            elif node.factor:
+                return self._traverse(node.factor, dep=dep+1)
+            else:
+                raise AST.ModuleError('programming error. impossible case in traverse term')
+
+        elif isinstance(node, FactorNode):
+            if node.expr != None:
+                return self._traverse(node.expr, dep=dep+1)
+            elif node.identifier != None:
+                if node.identifier not in self.context.syms.keys():
+                    raise AST.ReferenceError('%s is not defined' % node.identifier)
+                return self.context.syms[node.identifier]
+            elif node.digit != None:
+                return self._traverse(node.digit, dep=dep+1)
+            elif node.string != None:
+                return node.string
+
+        elif isinstance(node, DigitNode):
+            return node.value
 
         elif isinstance(node, AssignExprNode):
-            self.traverse_assign_expr(node)
+            self.traverse_assign_expr(node, dep+1)
 
         elif isinstance(node, ImportNode):
-            self.traverse_import(node)
+            self.traverse_import(node, dep+1)
 
         elif isinstance(node, CallerNode):
-            self.traverse_caller(node)
+            self.traverse_caller(node, dep+1)
 
         else:
             raise AST.ModuleError('impossible. not supported node', type(node))
 
-    def traverse_assign_expr(self, node):
+    def traverse_assign_expr(self, node, dep):
         symkey = node.assignable_operand.identifier
         if node.assign_operator.operator == '=':
-            if node.operand.identifier != None:
-                self.context.syms[symkey] = self.context.syms[node.operand.identifier]
-                self.last_expr_val = self.context.syms[symkey]
+            if node.operand.expr != None:
+                self.context.syms[symkey] = self._traverse(node.operand.expr, dep+1)
+                self.context.last_expr_val = self.context.syms[symkey]
             elif node.operand.string != None:
                 self.context.syms[symkey] = node.operand.string
-                self.last_expr_val = self.context.syms[symkey]
+                self.context.last_expr_val = self.context.syms[symkey]
              
-    def traverse_ref_block(self, node):
+    def traverse_ref_block(self, node, dep):
         if node.identifier in self.context.syms.keys():
-            self.context.buffer += self.context.syms[node.identifier]
+            self.context.buffer += str(self.context.syms[node.identifier])
 
-    def traverse_import(self, node):
+    def traverse_import(self, node, dep):
         if node.identifier == 'alias':
             self.context.imported_alias = True 
         elif node.identifier == 'config':
@@ -197,7 +299,7 @@ class AST:
         else:
             raise AST.ImportError('can not import package "%s"' % node.identifier)
 
-    def traverse_caller(self, node):
+    def traverse_caller(self, node, dep):
         first = node.identifiers[0]
         if first == 'alias':
             self.call_alias_package(node)
@@ -338,9 +440,15 @@ class AST:
         else:
             node.caller = self.caller(dep=dep+1)
             if node.caller is None:
-                node.expr = self.expr(dep=dep+1)
-                if not self.strm.eof() and node.expr is None:
-                    return None
+                t2 = self.strm.cur(1)
+                if t2.value == '=':
+                    node.assign_expr = self.assign_expr(dep=dep+1)
+                    if not self.strm.eof() and node.assign_expr is None:
+                        return None
+                else:
+                    node.comparison = self.comparison(dep=dep+1)
+                    if not self.strm.eof() and node.comparison is None:
+                        return None
 
         t = self.strm.get()
         if t == Stream.EOF:
@@ -361,6 +469,24 @@ class AST:
 
         return node
 
+    def comparison(self, dep=0):
+        self.show_parse('comparison', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = ComparisonNode()
+        node.expr = self.expr(dep=dep+1)
+        t = self.strm.get()
+        if t == Stream.EOF:
+            return node
+        elif t.kind != 'comp_op':
+            self.strm.prev()
+            return node
+        node.op = t.value
+
+        node.comparison = self.comparison(dep=dep+1)
+        return node
+
     def if_(self, dep=0, first_symbol='if'):
         self.show_parse('if', dep=dep)
         if self.strm.eof():
@@ -371,9 +497,9 @@ class AST:
             return None
 
         node = IfNode()
-        node.expr = self.expr(dep=dep+1)
-        if node.expr is None:
-            raise AST.SyntaxError('invalid if statement. not found expression')
+        node.comparison = self.comparison(dep=dep+1)
+        if node.comparison is None:
+            raise AST.SyntaxError('invalid if statement. not found comparison')
 
         t = self.strm.get()
         if t.kind != 'colon':
@@ -449,16 +575,66 @@ class AST:
             return None
         
         node = ExprNode()
+        node.term = self.term(dep=dep+1)
 
         t = self.strm.get()
-        if t.kind == 'digit':
+        if t == Stream.EOF:
+            return node
+        elif t.value not in ('+', '-'):
             self.strm.prev()
-            node.digit = self.digit(dep=dep+1)
+            return node
+        node.op = t.value
+
+        node.expr = self.expr(dep=dep+1)
+        return node
+
+    def term(self, dep=0):
+        self.show_parse('term', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = TermNode()
+        node.factor = self.factor(dep=dep+1)
+
+        t = self.strm.get()
+        if t == Stream.EOF:
+            return node
+        elif t.value not in ('*', '/'):
+            self.strm.prev()
+            return node
+        node.op = t.value
+
+        node.term = self.term(dep=dep+1)
+        return node
+
+    def factor(self, dep=0):
+        self.show_parse('factor', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = FactorNode()
+        t = self.strm.get()
+        if t == Stream.EOF:
+            raise AST.SyntaxError('reached EOF in factor')
+        elif t.kind == 'lparen':
+            node.expr = self.expr(dep=dep+1)
+            t = self.strm.get()
+            if t == Stream.EOF:
+                raise AST.SyntaxError('not found rparen in factor. reached EOF')
+            if t.kind != 'rparen':
+                raise AST.SyntaxError('not found rparen in factor. token is %s' % t)
+        elif t.kind == 'digit':
+            node.digit = DigitNode()
+            node.digit.value = t.value
+        elif t.kind == 'identifier':
+            node.identifier = t.value
+        elif t.kind == 'string':
+            node.string = t.value
         else:
             self.strm.prev()
-            node.assign_expr = self.assign_expr(dep=dep+1)
+            return None
 
-        return node
+        return node 
 
     def digit(self, dep=0):
         self.show_parse('digit', dep=dep)
@@ -493,13 +669,13 @@ class AST:
 
         node = OperandNode()
         t = self.strm.get()
-        if t.kind == 'identifier':
-            node.identifier = t.value
-        elif t.kind == 'string':
+        if t.kind == 'string':
             node.string = t.value
         else:
             self.strm.prev()
-            return None
+            node.expr = self.expr(dep=dep+1)
+            if node.expr is None:
+                return None
 
         return node
         

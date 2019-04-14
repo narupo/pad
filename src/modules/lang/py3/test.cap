@@ -1,6 +1,17 @@
 {@
-    v = "s"
-    v = ""
-    v = "S"
+    os = "UNIX"
+    linux_title = "Welcome Penguin"
+    windows_title = "Welcome DOS"
+    other_title = "Welcome unknown"
 @}
-{{ v }}
+<html>
+<head>
+{@ if os == "Linux": @}
+    <title>{{ linux_title }}</title>
+{@ elif os == "Windows": @}
+    <title>{{ windows_title }}</title>
+{@ else: @}
+    <title>{{ other_title }}</title>
+{@ end @}
+</head>
+</html>
