@@ -1,13 +1,60 @@
 #include "modules/commands/edit.h"
 
+struct opts {
+    bool is_global;
+};
+
 struct editcmd {
     config_t *config;
+    struct opts opts;
     int argc;
     char **argv;
     char editor[1024];
     char cmdline[2048];
     char open_fname[1024];
 };
+
+editcmd_t *
+editcmd_parse_opts(editcmd_t *self) {
+    // Parse options
+    static struct option longopts[] = {
+        {"help", no_argument, 0, 'h'},
+        {"global", no_argument, 0, 'g'},
+        {},
+    };
+
+    self->opts = (struct opts){0};
+
+    extern int opterr;
+    opterr = 0; // ignore error messages
+    optind = 0; // init index of parse
+
+    for (;;) {
+        int optsindex;
+        int cur = getopt_long(self->argc, self->argv, "hg", longopts, &optsindex);
+        if (cur == -1) {
+            break;
+        }
+
+        switch (cur) {
+        case 0: /* Long option only */ break;
+        case 'h': /* Help */ break;
+        case 'g': self->opts.is_global = true; break;
+        case '?':
+        default:
+            err_error("Unsupported option");
+            return NULL;
+            break;
+        }
+    }
+
+    if (self->argc < optind) {
+        err_error("Failed to parse option");
+        return NULL;
+    }
+
+    return self;
+}
 
 void
 editcmd_del(editcmd_t *self) {
@@ -26,6 +73,10 @@ editcmd_new(config_t *move_config, int argc, char **move_argv) {
     self->config = move_config;
     self->argc = argc;
     self->argv = move_argv;
+
+    if (!editcmd_parse_opts(self)) {
+        err_die("failed to parse options");
+    }
 
     return self;
 }
@@ -126,16 +177,23 @@ int
 editcmd_run(editcmd_t *self) {
     const char *fname = NULL;
     if (self->argc >= 2) {
-        fname = self->argv[1];
+        fname = self->argv[optind];
     }
 
-    if (!editcmd_read_editor(self, CAP_SCOPE_LOCAL)) {
-        // not found at local, next find at global
+    if (self->opts.is_global) {
         if (!editcmd_read_editor(self, CAP_SCOPE_GLOBAL)) {
-            // editor is not setting
             err_die("not found editor. please setting at resource file");
             return 1;
-        }
+        }        
+    } else {
+        if (!editcmd_read_editor(self, CAP_SCOPE_LOCAL)) {
+            // not found at local, next find at global
+            if (!editcmd_read_editor(self, CAP_SCOPE_GLOBAL)) {
+                // editor is not setting
+                err_die("not found editor. please setting at resource file");
+                return 1;
+            }
+        }        
     }
 
     cstr_cat(self->cmdline, sizeof self->cmdline, self->editor);
