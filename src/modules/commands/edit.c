@@ -162,7 +162,18 @@ fail:
 editcmd_t *
 editcmd_create_open_fname(editcmd_t *self, const char *fname) {
     char path[FILE_NPATH];
-    if (!file_readline(path, sizeof path, self->config->var_cd_path)) {
+    const char *srcpath;
+
+    if (self->config->scope == CAP_SCOPE_LOCAL) {
+        srcpath = self->config->var_cd_path;
+    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
+        srcpath = self->config->var_home_path;
+    } else {
+        err_die("impossible. invalid scope");
+        return NULL;
+    }
+    
+    if (!file_readline(path, sizeof path, srcpath)) {
         return NULL;
     }
 
