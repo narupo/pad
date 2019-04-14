@@ -3,7 +3,7 @@
  *
  * License: MIT
  *  Author: Aizawa Yuta
- *   Since: 2016, 2018
+ *   Since: 2016
  */
 #include "util.h"
 
@@ -59,37 +59,78 @@ randrange(int min, int max) {
 }
 
 int
-safesystem(const char *cmdline) {
+safesystem(const char *cmdline, int option) {
 #ifdef _CAP_WINDOWS
-    STARTUPINFO si;
-    PROCESS_INFORMATION pi;
-
-    ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
-    ZeroMemory(&pi, sizeof(pi));
+    int flag = 0;
+    switch (option) {
+    case SAFESYSTEM_EDIT:
+        // option for edit command
+        flag = CREATE_NEW_CONSOLE;
+        break;
+    case SAFESYSTEM_DEFAULT:
+    default:
+        flag = 0;
+        break;
+    }
+    
+    PROCESS_INFORMATION pi = {0};
+    STARTUPINFO si = { sizeof(STARTUPINFO) };
 
     // Start the child process. 
-    if (!CreateProcess(NULL,   // No module name (use command line)
-        (char *)cmdline,        // Command line
-        NULL,           // Process handle not inheritable
-        NULL,           // Thread handle not inheritable
-        FALSE,          // Set handle inheritance to FALSE
-        0,              // No creation flags
-        NULL,           // Use parent's environment block
-        NULL,           // Use parent's starting directory 
-        &si,            // Pointer to STARTUPINFO structure
-        &pi)            // Pointer to PROCESS_INFORMATION structure
+    if (!CreateProcessA(NULL, // No module name (use command line)
+        (char *) cmdline, // Command line
+        NULL, // Process handle not inheritable
+        NULL, // Thread handle not inheritable
+        FALSE, // Set handle inheritance to FALSE
+        flag, // No creation flags
+        NULL, // Use parent's environment block
+        NULL, // Use parent's starting directory 
+        &si, // Pointer to STARTUPINFO structure
+        &pi) // Pointer to PROCESS_INFORMATION structure
     ) {
         err_error("failed to create sub process");
         return 1;
     }
 
-    // Wait until child process exits.
-    WaitForSingleObject(pi.hProcess, INFINITE);
-    
-    // Close process and thread handles. 
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
+    if (option & SAFESYSTEM_EDIT) {
+        // case of edit command, to not wait exit of child process
+        return 0;
+    }
+
+    // success to fork
+    HANDLE child_process = pi.hProcess;
+    if (!CloseHandle(pi.hThread)) {
+        err_error("failed to close handle");
+        return 1;
+    }
+
+    // wait for child process
+    DWORD r = WaitForSingleObject(child_process, INFINITE);
+    switch(r) {
+    case WAIT_FAILED:
+        err_error("child process was failed");
+        return 1;
+    case WAIT_ABANDONED:
+        err_error("child process was abandoned");
+        return 1;
+    case WAIT_OBJECT_0: // success
+        break;
+    case WAIT_TIMEOUT:
+        err_error("child process was timeout");
+        return 1;
+    default:
+        return 1;
+    }
+
+    // get exit code of child process
+    DWORD exit_code;
+    if (!GetExitCodeProcess(child_process, &exit_code)) {
+        err_error("failed to get exit code of child process");
+        return 1;
+    }
+
+    return exit_code;
+
 #else
 	cl_t *cl = cl_new();
 	if (!cl_parse_str_opts(cl, cmdline, 0)) {
@@ -122,8 +163,9 @@ safesystem(const char *cmdline) {
 		wait(NULL);
 	break;
 	}
+
+    return 0;
 #endif
-	return 0;
 }
 
 /*

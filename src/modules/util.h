@@ -25,6 +25,11 @@
 # include <windows.h>
 #endif
 
+enum {
+    SAFESYSTEM_DEFAULT = 0,
+    SAFESYSTEM_EDIT = 1,
+};
+
 /**
  * Free allocate memory of argv.
  * 
@@ -70,11 +75,13 @@ randrange(int min, int max);
  * Wrapper of system(3) for the safe execute.
  *
  * @example safesystem("/bin/sh -c \"date\"");
- *
  * @see system(3)
+ * @param[in] cmdline command line
+ * @param[in] option option of fork
+ * @return success to 0
  */
 int
-safesystem(const char *cmdline);
+safesystem(const char *cmdline, int option);
 
 /**
  * Create array of arguments by argc and argv and optind.
