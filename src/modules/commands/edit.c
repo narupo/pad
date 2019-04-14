@@ -149,7 +149,8 @@ editcmd_run(editcmd_t *self) {
         cstr_cat(self->cmdline, sizeof self->cmdline, self->open_fname);
     }
 
-    safesystem(self->cmdline);
+    safesystem(self->cmdline, SAFESYSTEM_EDIT);
 
     return 0;
 }
+
