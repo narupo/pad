@@ -11,7 +11,7 @@ struct editcmd {
 
 void
 editcmd_del(editcmd_t *self) {
-    if (self == NULL) {
+    if (!self) {
         return;
     }
     config_del(self->config);
@@ -35,11 +35,11 @@ editcmd_create_resouce_path(editcmd_t *self, char *path, uint32_t pathsz, int sc
     char srcpath[FILE_NPATH];
 
     if (scope == CAP_SCOPE_LOCAL) {
-        if (file_readline(srcpath, sizeof srcpath, self->config->var_cd_path) == NULL) {
+        if (!file_readline(srcpath, sizeof srcpath, self->config->var_cd_path)) {
             err_die("failed to read line from cd of variable");
         }
     } else if (scope == CAP_SCOPE_GLOBAL) {
-        if (file_readline(srcpath, sizeof srcpath, self->config->var_home_path) == NULL) {
+        if (!file_readline(srcpath, sizeof srcpath, self->config->var_home_path)) {
             err_die("failed to read line from home of variable");
         }
     } else {
@@ -47,7 +47,7 @@ editcmd_create_resouce_path(editcmd_t *self, char *path, uint32_t pathsz, int sc
         return NULL;
     }
 
-    if (file_solvefmt(path, pathsz, "%s/.caprc", srcpath) == NULL) {
+    if (!file_solvefmt(path, pathsz, "%s/.caprc", srcpath)) {
         err_die("failed to solve path");
         return NULL;
     }
@@ -74,7 +74,7 @@ editcmd_read_editor(editcmd_t *self) {
     }
 
     char *content = file_readcp_from_path(path);
-    if (content == NULL) {
+    if (!content) {
         err_die("failed to read content from \"%s\"", path);
         return NULL;
     }
@@ -84,12 +84,12 @@ editcmd_read_editor(editcmd_t *self) {
     ast_t *ast = ast_new();
     context_t *ctx = ctx_new();
 
-    if (tkr_parse(tkr, content) == NULL) {
+    if (!tkr_parse(tkr, content)) {
         ret = NULL;
         goto fail;
     }
 
-    if (ast_parse(ast, tkr_get_tokens(tkr)) == NULL) {
+    if (!ast_parse(ast, tkr_get_tokens(tkr))) {
         ret = NULL;
         goto fail;
     }
@@ -98,7 +98,7 @@ editcmd_read_editor(editcmd_t *self) {
 
     const dict_t *confmap = ctx_getc_confmap(ctx);
     const dict_item_t *item = dict_getc(confmap, "editor");
-    if (item == NULL) {
+    if (!item) {
         ret = NULL;
         goto fail;
     }
@@ -116,7 +116,7 @@ fail:
 editcmd_t *
 editcmd_create_open_fname(editcmd_t *self, const char *fname) {
     char path[FILE_NPATH];
-    if (file_readline(path, sizeof path, self->config->var_cd_path) == NULL) {
+    if (!file_readline(path, sizeof path, self->config->var_cd_path)) {
         return NULL;
     }
 
@@ -134,14 +134,14 @@ editcmd_run(editcmd_t *self) {
         fname = self->argv[1];
     }
 
-    if (editcmd_read_editor(self) == NULL) {
+    if (!editcmd_read_editor(self)) {
         err_die("not found editor. please setting at resource file");
         return 1;
     }
 
     cstr_cat(self->cmdline, sizeof self->cmdline, self->editor);
-    if (fname != NULL) {
-        if (editcmd_create_open_fname(self, fname) == NULL) {
+    if (fname) {
+        if (!editcmd_create_open_fname(self, fname)) {
             err_die("failed to create open file name");
             return 2;
         }        
