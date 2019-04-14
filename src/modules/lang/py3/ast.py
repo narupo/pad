@@ -99,6 +99,38 @@ from context import Context
     string ::= '"' .* '"'
     digit ::= [0-9]+
     identifier ::= ( [a-z] | [0-9] | _ )+ 
+
+    2019-04-14 11:20:12 曇のち雨
+    ============================
+    BNF 0.2.2
+    lopts の実装
+
+    + は新規追加したところ
+    ^ は更新
+
+    block ::= ( text-block | code-block | ref-block ), block
+    text-block ::= .*
+    code-block ::= '{@' {formula}* '@}'
+    ref-block ::= '{{' identifier '}}'
+    formula ::= ( expr | assign-expr | if-stmt | import-stmt | caller-stmt ), ( formula | '@}' block '{@' )
+    if-stmt ::= 'if' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    elif-stmt ::= 'elif' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    else-stmt ::= 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+    comparison ::= expr comp_op comparison | expr
+    cmp-op ::= '==' | '!=' | '<' | '>' | '<=' | '>='
+    expr ::= term '+' expr | term '-' + expr | term
+    term ::= factor '*' term | factor '/' term | factor
+    factor ::= digit | identifier | string | '(' expr ')'
+    ^ assign-expr ::= assign-operand-lhs assign-operator assign-operand-rhs
+    assign-operator ::= '='
+    ^ assign-operand-lhs ::= identifier
+    ^ assign-operand-rhs ::= expr | string
+    import-stmt ::= 'import' identifier
+    caller-stmt ::= identifier ( '.' identifier )+ '(' args ')'
+    args ::= string | ',' args
+    string ::= '"' .* '"'
+    digit ::= [0-9]+
+    identifier ::= ( [a-z] | [0-9] | _ )+ 
 '''
 
 class AST:
@@ -278,13 +310,13 @@ class AST:
             raise AST.ModuleError('impossible. not supported node', type(node))
 
     def traverse_assign_expr(self, node, dep):
-        symkey = node.assignable_operand.identifier
+        symkey = node.assign_operand_lhs.identifier
         if node.assign_operator.operator == '=':
-            if node.operand.expr != None:
-                self.context.syms[symkey] = self._traverse(node.operand.expr, dep+1)
+            if node.assign_operand_rhs.expr != None:
+                self.context.syms[symkey] = self._traverse(node.assign_operand_rhs.expr, dep+1)
                 self.context.last_expr_val = self.context.syms[symkey]
-            elif node.operand.string != None:
-                self.context.syms[symkey] = node.operand.string
+            elif node.assign_operand_rhs.string != None:
+                self.context.syms[symkey] = node.assign_operand_rhs.string
                 self.context.last_expr_val = self.context.syms[symkey]
              
     def traverse_ref_block(self, node, dep):
@@ -656,18 +688,18 @@ class AST:
             return None
 
         node = AssignExprNode()
-        node.assignable_operand = self.assignable_operand(dep=dep+1)
+        node.assign_operand_lhs = self.assign_operand_lhs(dep=dep+1)
         node.assign_operator = self.assign_operator(dep=dep+1)
-        node.operand = self.operand(dep=dep+1)
+        node.assign_operand_rhs = self.assign_operand_rhs(dep=dep+1)
 
         return node
 
-    def operand(self, dep=0):
-        self.show_parse('operand', dep=dep)
+    def assign_operand_rhs(self, dep=0):
+        self.show_parse('assign_operand_rhs', dep=dep)
         if self.strm.eof():
             return None
 
-        node = OperandNode()
+        node = AssignOperandRhsNode()
         t = self.strm.get()
         if t.kind == 'string':
             node.string = t.value
@@ -693,12 +725,12 @@ class AST:
         node.operator = t.value
         return node
         
-    def assignable_operand(self, dep=0):
-        self.show_parse('assignable_operand', dep=dep)
+    def assign_operand_lhs(self, dep=0):
+        self.show_parse('assign_operand_lhs', dep=dep)
         if self.strm.eof():
             return None
 
-        node = AssignableOperandNode()
+        node = AssignOperandLhsNode()
         t = self.strm.get()
         if t.kind != 'identifier':
             self.strm.prev()

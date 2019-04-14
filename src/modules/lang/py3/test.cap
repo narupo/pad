@@ -14,4 +14,12 @@
     <title>{{ other_title }}</title>
 {@ end @}
 </head>
+<body>
+    <title>{{ lopts.get("title") }}</title>
+</body>
 </html>
+
+
+class {{ lopts.get("class-name") }}:
+    def __init__(self):
+        pass
