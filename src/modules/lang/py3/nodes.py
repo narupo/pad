@@ -21,6 +21,7 @@ class AssignExprNode(Node):
         self.assign_operand_lhs = None
         self.assign_operator = None
         self.assign_operand_rhs = None
+        self.assign_expr = None
 
 
 class AssignOperandLhsNode(Node):
@@ -37,11 +38,14 @@ class AssignOperandRhsNode(Node):
     def __init__(self):
         self.expr = None
         self.string = None
+        self.identifier = None
+        self.callable = None
 
 
 class RefBlockNode(Node):
     def __init__(self):
         self.identifier = None
+        self.callable = None
 
 
 class CodeBlockNode(Node):
@@ -123,4 +127,30 @@ class FactorNode(Node):
         self.identifier = None
         self.string = None
         self.expr = None
+        self.callable = None
+
+
+class CallableNode(Node):
+    def __init__(self):
+        self.caller_list = None
+        self.args = None
+
+
+class CallerListNode(Node):
+    def __init__(self):
+        self.identifier = None
+        self.caller_list = None
+
+
+class ArgsNode(Node):
+    def __init__(self):
+        self.arg = None
+        self.args = None
+
+
+class ArgNode(Node):
+    def __init__(self):
+        self.digit = None
+        self.string = None
+        self.identifier = None
 

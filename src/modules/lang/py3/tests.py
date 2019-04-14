@@ -50,6 +50,25 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[2].kind, 'rdbrace')
         self.assertEqual(ts[2].value, '}}')
 
+        ts = t.parse('{{ opts.get("") }}')
+        self.assertEqual(len(ts), 8)
+        self.assertEqual(ts[0].kind, 'ldbrace')
+        self.assertEqual(ts[0].value, '{{')
+        self.assertEqual(ts[1].kind, 'identifier')
+        self.assertEqual(ts[1].value, 'opts')
+        self.assertEqual(ts[2].kind, 'operator')
+        self.assertEqual(ts[2].value, '.')
+        self.assertEqual(ts[3].kind, 'identifier')
+        self.assertEqual(ts[3].value, 'get')
+        self.assertEqual(ts[4].kind, 'lparen')
+        self.assertEqual(ts[4].value, '(')
+        self.assertEqual(ts[5].kind, 'string')
+        self.assertEqual(ts[5].value, '')
+        self.assertEqual(ts[6].kind, 'rparen')
+        self.assertEqual(ts[6].value, ')')
+        self.assertEqual(ts[7].kind, 'rdbrace')
+        self.assertEqual(ts[7].value, '}}')
+
         ts = t.parse('aaa{@bbb@}ccc{@ddd@}eee')
         self.assertEqual(len(ts), 9)
         self.assertEqual(ts[0].kind, 'text-block')
@@ -426,8 +445,8 @@ class Test(unittest.TestCase):
         self.assertEqual(c.syms['v'], 3)
 
         a.parse(t.parse('''{@
-            v = 1 + 2
-            v = v + 3
+            a = 1 + 2
+            v = a + 3
         @}'''))
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 6)
@@ -494,6 +513,10 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.syms['v'], 3)
 
+        a.parse(t.parse('{@ v = v = 1 @}'))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 1)
+
         a.parse(t.parse('{@ v = 1 + 2 * 3 @}'))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 7)
@@ -501,6 +524,10 @@ class Test(unittest.TestCase):
         a.parse(t.parse('{@ v = (1 + 2) * 3 @}'))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 9)
+
+        a.parse(t.parse('{@ v = opts.get("a") @}'))
+        c = a.traverse(opts={ 'a': 'b' })
+        self.assertEqual(c.syms['v'], "b")
 
     def test_ast_comparison(self):
         t = Tokenizer()
@@ -708,7 +735,7 @@ class Test(unittest.TestCase):
 bbb'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'a')
-        self.assertEqual(c.buffer, "\n\na\n\nbbb")
+        self.assertEqual(c.buffer, "a\nbbb")
 
         a.parse(t.parse('''{@
     v = "a"
@@ -720,7 +747,7 @@ bbb'''))
 c'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'b')
-        self.assertEqual(c.buffer, 'b\nc')
+        self.assertEqual(c.buffer, 'bc')
 
         a.parse(t.parse('''{@ if 0: @}{@ else: @}{@ v = "a" @}{@ end @}'''))
         c = a.traverse()
@@ -968,3 +995,17 @@ c'''))
 @}{{ a }}'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'v2')
+
+    def test_ast_opts(self):
+        a = AST()
+        t = Tokenizer()
+        opts = {}
+        opts['get-me'] = 'I am superman'
+
+        a.parse(t.parse('{{ opts.get("get-me") }}'))
+        c = a.traverse(opts=opts)
+        self.assertEqual(c.buffer, 'I am superman')
+
+        a.parse(t.parse('{@ if opts.get("get-me"): @}I am superman{@ end @}'))
+        c = a.traverse(opts=opts)
+        self.assertEqual(c.buffer, 'I am superman')
