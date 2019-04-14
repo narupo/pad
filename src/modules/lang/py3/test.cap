@@ -1,5 +1,5 @@
 {@
-    os = "UNIX"
+    os = opts.get("os")
     linux_title = "Welcome Penguin"
     windows_title = "Welcome DOS"
     other_title = "Welcome unknown"
@@ -15,11 +15,25 @@
 {@ end @}
 </head>
 <body>
-    <title>{{ lopts.get("title") }}</title>
+    <title>{{ opts.get("title") }}</title>
+    <main>
+        <div class="content">
+            {{ opts.get("content") }}
+        </div>
+    </main>
 </body>
 </html>
 
+{@ if opts.get("verbose"): @}
+    This case is verbose.
+{@ else: @}
+    This is not verbose
+{@ end @}
 
-class {{ lopts.get("class-name") }}:
+class {{ opts.get("class-name") }}:
     def __init__(self):
         pass
+
+class {{ opts.get("a") }}:
+    pass
+    

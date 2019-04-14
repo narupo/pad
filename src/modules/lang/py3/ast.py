@@ -108,29 +108,33 @@ from context import Context
     + は新規追加したところ
     ^ は更新
 
-    block ::= ( text-block | code-block | ref-block ), block
-    text-block ::= .*
-    code-block ::= '{@' {formula}* '@}'
-    ref-block ::= '{{' identifier '}}'
-    formula ::= ( expr | assign-expr | if-stmt | import-stmt | caller-stmt ), ( formula | '@}' block '{@' )
-    if-stmt ::= 'if' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
-    elif-stmt ::= 'elif' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
-    else-stmt ::= 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
-    comparison ::= expr comp_op comparison | expr
-    cmp-op ::= '==' | '!=' | '<' | '>' | '<=' | '>='
-    expr ::= term '+' expr | term '-' + expr | term
-    term ::= factor '*' term | factor '/' term | factor
-    factor ::= digit | identifier | string | '(' expr ')'
-    ^ assign-expr ::= assign-operand-lhs assign-operator assign-operand-rhs
-    assign-operator ::= '='
-    ^ assign-operand-lhs ::= identifier
-    ^ assign-operand-rhs ::= expr | string
-    import-stmt ::= 'import' identifier
-    caller-stmt ::= identifier ( '.' identifier )+ '(' args ')'
-    args ::= string | ',' args
-    string ::= '"' .* '"'
-    digit ::= [0-9]+
-    identifier ::= ( [a-z] | [0-9] | _ )+ 
+    block: ( text-block | code-block | ref-block ), block
+    text-block: .*
+    code-block: '{@' {formula}* '@}'
+    ^ ref-block: '{{' ( identifier | callable ) '}}'
+    + callable: caller-list '(' args ')'
+    + caller-list: identifier '.' caller-list | identifier
+    + args: arg ',' args | arg
+    + arg: digit | string | identifier
+    formula: ( expr | assign-expr | if-stmt | import-stmt | caller-stmt ), ( formula | '@}' block '{@' )
+    if-stmt: 'if' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    elif-stmt: 'elif' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+    comparison: expr comp_op comparison | expr
+    cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
+    expr: term '+' expr | term '-' expr | term
+    term: factor '*' term | factor '/' term | factor
+    ^ factor: digit | identifier | string | callable | '(' expr ')'
+    ^ assign-expr: assign-operand-lhs assign-operator assign-expr | assign-oeprand-rhs
+    assign-operator: '='
+    ^ assign-operand-lhs: identifier
+    ^ assign-operand-rhs: expr | string | identifier | callable
+    import-stmt: 'import' identifier
+    caller-stmt: identifier ( '.' identifier )+ '(' args ')'
+    args: string | ',' args
+    string: '"' .* '"'
+    digit: [0-9]+
+    identifier: ( [a-z] | [0-9] | _ )+ 
 '''
 
 class AST:
@@ -157,8 +161,9 @@ class AST:
         self.strm = Stream(tokens)
         self.root = self.block(dep=0)
 
-    def traverse(self, debug=False):
+    def traverse(self, debug=False, opts=None):
         self.debug_traverse = debug
+        self.opts = opts
         self.context = Context()
         self._traverse(self.root, dep=0)
         return self.context
@@ -283,22 +288,24 @@ class AST:
                 raise AST.ModuleError('programming error. impossible case in traverse term')
 
         elif isinstance(node, FactorNode):
-            if node.expr != None:
+            if node.expr:
                 return self._traverse(node.expr, dep=dep+1)
             elif node.identifier != None:
                 if node.identifier not in self.context.syms.keys():
                     raise AST.ReferenceError('%s is not defined' % node.identifier)
                 return self.context.syms[node.identifier]
-            elif node.digit != None:
+            elif node.digit:
                 return self._traverse(node.digit, dep=dep+1)
             elif node.string != None:
                 return node.string
+            elif node.callable:
+                return self._traverse(node.callable, dep=dep+1)
 
         elif isinstance(node, DigitNode):
             return node.value
 
         elif isinstance(node, AssignExprNode):
-            self.traverse_assign_expr(node, dep+1)
+            return self.traverse_assign_expr(node, dep+1)
 
         elif isinstance(node, ImportNode):
             self.traverse_import(node, dep+1)
@@ -306,22 +313,50 @@ class AST:
         elif isinstance(node, CallerNode):
             self.traverse_caller(node, dep+1)
 
+        elif isinstance(node, CallableNode):
+            package = node.caller_list.identifier
+            if package == 'opts':
+                if node.caller_list.caller_list.identifier == 'get':
+                    if self.opts and node.args.arg.string in self.opts.keys():
+                        return self.opts[node.args.arg.string]
+                    else:
+                        return ''
+
         else:
             raise AST.ModuleError('impossible. not supported node', type(node))
 
     def traverse_assign_expr(self, node, dep):
-        symkey = node.assign_operand_lhs.identifier
-        if node.assign_operator.operator == '=':
-            if node.assign_operand_rhs.expr != None:
-                self.context.syms[symkey] = self._traverse(node.assign_operand_rhs.expr, dep+1)
-                self.context.last_expr_val = self.context.syms[symkey]
-            elif node.assign_operand_rhs.string != None:
-                self.context.syms[symkey] = node.assign_operand_rhs.string
-                self.context.last_expr_val = self.context.syms[symkey]
+        lhs = node.assign_operand_lhs
+        op = node.assign_operator
+        rhs = node.assign_operand_rhs
+        assexpr = node.assign_expr
+        if lhs is None and rhs:
+            if rhs.expr:
+                return self._traverse(rhs.expr, dep+1)
+            elif rhs.callable:
+                return self._traverse(rhs.callable, dep+1)
+            elif rhs.string != None:
+                return rhs.string
+            elif rhs.identifier != None:
+                if rhs.identifier not in self.context.syms.keys():
+                    raise AST.ReferenceError('"%s" is not defined' % rhs.identifier)
+        elif lhs and op and assexpr:
+            if op.operator == '=':
+                self.context.syms[lhs.identifier] = self._traverse(assexpr, dep=dep+1)
+                self.context.last_expr_val = self.context.syms[lhs.identifier]
+                return self.context.syms[lhs.identifier]
+            else:
+                raise AST.ModuleError('unsupported operator "%s"' % op.operator)
+        else:
+            raise AST.ModuleError('invalid case in traverse assign expr')
              
     def traverse_ref_block(self, node, dep):
-        if node.identifier in self.context.syms.keys():
-            self.context.buffer += str(self.context.syms[node.identifier])
+        if node.identifier != None:
+            if node.identifier in self.context.syms.keys():
+                self.context.buffer += str(self.context.syms[node.identifier])
+        elif node.callable:
+            result = self._traverse(node.callable, dep=dep+1)
+            self.context.buffer += str(result)
 
     def traverse_import(self, node, dep):
         if node.identifier == 'alias':
@@ -403,13 +438,98 @@ class AST:
 
         t = self.strm.get()
         if t.kind == 'identifier':
-            node.identifier = t.value
+            t2 = self.strm.cur()
+            if t2 == Stream.EOF:
+                raise AST.SyntaxError('reference block not closed')
+            elif t2.value in ('.', '('):
+                self.strm.prev()
+                node.callable = self.callable()
+            else:
+                node.identifier = t.value
         elif t.kind == 'rdbrace':
             return node
 
         t = self.strm.get()
         if t == Stream.EOF or t.kind != 'rdbrace':
             raise AST.SyntaxError('not found "rdbrace"')
+
+        return node
+
+    def callable(self, dep=0):
+        self.show_parse('callable', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = CallableNode()
+        node.caller_list = self.caller_list()
+
+        t = self.strm.get()
+        if t.value != '(':
+            raise AST.SyntaxError('not found "(" in callable')
+        
+        node.args = self.args()
+
+        t = self.strm.get()
+        if t.value != ')':
+            raise AST.SyntaxError('not found ")" in callable')
+        
+        return node
+
+    def caller_list(self, dep=0):
+        self.show_parse('caller_list', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = CallerListNode()
+        t = self.strm.get()
+        if t == Stream.EOF:
+            raise AST.SyntaxError('reached EOF in caller list')
+        elif t.kind == 'identifier':
+            node.identifier = t.value
+        else:
+            raise AST.SyntaxError('invalid token "%s"' % t)
+
+        t = self.strm.get()
+        if t.value == '.':
+            node.caller_list = self.caller_list()
+        else:
+            self.strm.prev()
+
+        return node
+
+    def args(self, dep=0):
+        self.show_parse('args', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = ArgsNode()
+        node.arg = self.arg()
+        t = self.strm.get()
+        if t.value == ',':
+            node.args = self.args()
+        else:
+            self.strm.prev()
+
+        return node
+
+    def arg(self, dep=0):
+        self.show_parse('arg', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = ArgNode()
+        t = self.strm.get()
+        if t == Stream.EOF:
+            raise AST.SyntaxError('reached EOF in argument')
+        elif t.kind == 'digit':
+            node.digit = DigitNode()
+            node.digit.value = t.value
+        elif t.kind == 'string':
+            node.string = t.value
+        elif t.kind == 'identifier':
+            node.identifier = t.value
+        else:
+            raise AST.SyntaxError('not supported argument type "%s"' % t)
 
         return node
 
@@ -659,7 +779,12 @@ class AST:
             node.digit = DigitNode()
             node.digit.value = t.value
         elif t.kind == 'identifier':
-            node.identifier = t.value
+            self.strm.prev()
+            if self.is_callable(dep=dep+1):
+                node.callable = self.callable(dep=dep+1)
+            else:
+                t = self.strm.get()
+                node.identifier = t.value
         elif t.kind == 'string':
             node.string = t.value
         else:
@@ -667,6 +792,33 @@ class AST:
             return None
 
         return node 
+
+    def is_callable(self, dep):
+        self.show_parse('is_callable', dep=dep)
+        if self.strm.eof():
+            return None
+
+        ret = True
+        i = self.strm.index
+
+        while not self.strm.eof():
+            t = self.strm.get()
+            if t == Stream.EOF:
+                ret = False
+                break
+            elif t.kind == 'identifier':
+                pass
+            elif t.value == '.':
+                pass
+            elif t.value == '(':
+                break
+            else:
+                ret = False
+                break
+
+        self.strm.index = i
+        return ret
+
 
     def digit(self, dep=0):
         self.show_parse('digit', dep=dep)
@@ -688,9 +840,18 @@ class AST:
             return None
 
         node = AssignExprNode()
+        i = self.strm.index
         node.assign_operand_lhs = self.assign_operand_lhs(dep=dep+1)
-        node.assign_operator = self.assign_operator(dep=dep+1)
-        node.assign_operand_rhs = self.assign_operand_rhs(dep=dep+1)
+        if node.assign_operand_lhs:
+            node.assign_operator = self.assign_operator(dep=dep+1)
+            if node.assign_operator is None:
+                node.assign_operand_lhs = None
+                self.strm.index = i
+                node.assign_operand_rhs = self.assign_operand_rhs(dep=dep+1)
+            else:
+                node.assign_expr = self.assign_expr(dep=dep+1)
+        else:
+            node.assign_operand_rhs = self.assign_operand_rhs(dep=dep+1)
 
         return node
 
@@ -703,6 +864,15 @@ class AST:
         t = self.strm.get()
         if t.kind == 'string':
             node.string = t.value
+        elif t.kind == 'identifier':
+            self.strm.prev()
+            if self.is_callable(dep=dep+1):
+                node.callable = self.callable()
+            else:
+                node.expr = self.expr(dep=dep+1)
+                if node.expr is None:
+                    t = self.strm.get()
+                    node.identifier = t.value
         else:
             self.strm.prev()
             node.expr = self.expr(dep=dep+1)
@@ -717,7 +887,7 @@ class AST:
             return None
 
         t = self.strm.get()
-        if t.kind != 'operator':
+        if t.value != '=':
             self.strm.prev()
             return None
 
@@ -728,6 +898,8 @@ class AST:
     def assign_operand_lhs(self, dep=0):
         self.show_parse('assign_operand_lhs', dep=dep)
         if self.strm.eof():
+            return None
+        elif self.is_callable(dep=dep+1):
             return None
 
         node = AssignOperandLhsNode()

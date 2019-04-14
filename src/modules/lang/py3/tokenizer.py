@@ -63,11 +63,22 @@ class Tokenizer:
                 elif self.is_identifier_char(c):
                     s.prev()
                     self.read_identifier()
+                elif c == '(':
+                    self.tokens.append(Token(kind='lparen', value='('))
+                elif c == ')':
+                    self.tokens.append(Token(kind='rparen', value=')'))
+                elif c == '.':
+                    self.tokens.append(Token(kind='operator', value='.'))
+                elif c == '"':
+                    s.prev()
+                    self.read_string()
             elif m == 'code block':
                 if c == '@' and s.cur() == '}':
                     s.get()
                     self.tokens.append(Token(kind='rbraceat', value='@}'))
                     m = 'text block'
+                    if s.cur() == '\n':
+                        s.get() # ignore newline after "@}"
                 elif c == '.':
                     self.tokens.append(Token(kind='operator', value='.'))
                 elif c == ',':
