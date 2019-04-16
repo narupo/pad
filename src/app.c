@@ -40,6 +40,13 @@ typedef struct app app_t;
 static int
 app_run(app_t *self);
 
+/**
+ * Parse options
+ *
+ * @param[in] self
+ * @return success to true
+ * @return failed to false
+ */
 static bool
 app_parse_opts(app_t *self) {
     static struct option longopts[] = {
@@ -78,6 +85,11 @@ app_parse_opts(app_t *self) {
     return true;
 }
 
+/**
+ * Destruct module
+ *
+ * @param[in] self
+ */
 static void
 app_del(app_t *self) {
     if (self) {
@@ -88,6 +100,13 @@ app_del(app_t *self) {
     }
 }
 
+/**
+ * Initialize config object
+ *
+ * @param[in] self
+ * @return success to true
+ * @return failed to false
+ */
 static bool
 app_init_config(app_t *self) {
     self->config->scope = CAP_SCOPE_LOCAL;
@@ -176,6 +195,16 @@ app_deploy_env(const app_t *self) {
     return true;
 }
 
+/**
+ * Parse arguments
+ *
+ * @param[in]  self   
+ * @param[in]  argc    
+ * @param[in]  argv 
+ *
+ * @return success to true
+ * @return failed to false
+ */
 static bool
 app_parse_args(app_t *self, int argc, char *argv[]) {
     cstring_array_t *app_args = cstrarr_new();
@@ -211,6 +240,15 @@ app_parse_args(app_t *self, int argc, char *argv[]) {
     return true;
 }
 
+/**
+ * Construct module
+ *
+ * @param[in] argc
+ * @param[in] argv
+ *
+ * @return success to pointer to dynamic allocate memory to app_t
+ * @return failed to NULL
+ */
 static app_t *
 app_new(int argc, char *argv[]) {
     app_t *self = mem_ecalloc(1, sizeof(*self));
@@ -243,6 +281,11 @@ app_new(int argc, char *argv[]) {
     return self;
 }
 
+/**
+ * Show usage of module
+ *
+ * @param[in] app 
+ */
 static void
 app_usage(app_t *app) {
     static const char usage[] =
@@ -293,6 +336,11 @@ app_usage(app_t *app) {
     , usage, example);
 }
 
+/**
+ * Show version of module
+ *
+ * @param[in] self
+ */
 static void
 app_version(app_t *self) {
     fflush(stdout);
@@ -302,6 +350,15 @@ app_version(app_t *self) {
     fflush(stdout);
 }
 
+/**
+ * Check if the argument is the command name of Cap
+ *
+ * @param[in] self
+ * @param[in] cmdname command name
+ *
+ * @return If the cmdname is the command name of Cap to true
+ * @return If the cmdname not is the command name of Cap to false
+ */
 static bool
 app_is_cap_cmdname(const app_t *self, const char *cmdname) {
     static const char *capcmdnames[] = {
@@ -325,6 +382,15 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
     return false;
 }
 
+/**
+ * Execute command by command name
+ *
+ * @param[in] self
+ * @param[in] name command name
+ *
+ * @return success to 0
+ * @return failed to not 0
+ */
 static int
 app_execute_command_by_name(app_t *self, const char *name) {
     if (!strcmp(name, "home")) {
@@ -389,6 +455,15 @@ app_execute_command_by_name(app_t *self, const char *name) {
     return 1;
 }
 
+/**
+ * Execute alias by alias name
+ *
+ * @param[in] self
+ * @param[in] name alias name
+ *
+ * @return success to 0
+ * @return failed to not 0
+ */
 static int
 app_execute_alias_by_name(app_t *self, const char *name) {
     almgr_t *almgr = almgr_new(self->config);
@@ -456,6 +531,14 @@ app_execute_alias_by_name(app_t *self, const char *name) {
     return app_run(self);
 }
 
+/**
+ * Run module
+ *
+ * @param[in] self
+ *
+ * @return success to 0
+ * @return failed to not 0
+ */
 static int
 app_run(app_t *self) {
     if (self->opts.ishelp) {
@@ -486,6 +569,15 @@ app_run(app_t *self) {
     return app_execute_alias_by_name(self, cmdname);
 }
 
+/**
+ * Main routine
+ *
+ * @param[in] argc
+ * @param[in] argv
+ *
+ * @return success to 0
+ * @return failed to not 0
+ */
 int
 main(int argc, char *argv[]) {
     app_t *app = app_new(argc, argv);
