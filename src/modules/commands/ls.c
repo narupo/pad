@@ -61,13 +61,14 @@ lscmd_parse_opts(lscmd_t *self) {
 static void
 lscmd_usage(const lscmd_t *self) {
     fprintf(stderr,
-        "Usage: cap ls [options]\n"
+        "Usage:\n"
+        "\n"
+        "    cap ls [options]\n"
         "\n"
         "The options are:\n"
         "\n"
-        "   -h, --help    show usage.\n"
-        "   -a, --all     show all files.\n"
-        "\n"
+        "    -h, --help    show usage.\n"
+        "    -a, --all     show all files.\n"
     );
 }
 

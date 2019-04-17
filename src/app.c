@@ -297,19 +297,20 @@ app_usage(app_t *app) {
         "\n"
         "The options are:\n"
         "\n"
-        "    -h, --help       show usage.\n"
-        "    -V, --version    show version.\n"
+        "    -h, --help       show usage\n"
+        "    -V, --version    show version\n"
         "\n"
         "The commands are:\n"
         "\n"
-        "    home     Change home directory, or show.\n"
-        "    cd       Change current directory by relative of home.\n"
-        "    pwd      Show current directory.\n"
-        "    ls       Show list in current directory.\n"
-        "    cat      Concatenate files and show.\n"
-        "    run      Run script.\n"
-        "    alias    Run alias command.\n"
-        "    edit     Run editor with file name.\n"
+        "    home     Change home directory, or show\n"
+        "    cd       Change current directory by relative of home\n"
+        "    pwd      Show current directory\n"
+        "    ls       Show list in current directory\n"
+        "    cat      Concatenate files and show\n"
+        "    run      Run script\n"
+        "    alias    Run alias command\n"
+        "    edit     Run editor with file name\n"
+        "    mkdir    Make directory at environment\n"
     ;
     static const char *examples[] = {
         "    $ cap home\n"
@@ -322,6 +323,9 @@ app_usage(app_t *app) {
         "    $ cap cat path/to/code/file.c\n"
         "    $ cap ls path/to/code\n"
         ,
+        "    $ cap mkdir path/to/dir\n"
+        "    $ cap edit path/to/dir/file.txt\n"
+        ,
     };
     const int exmlen = sizeof(examples)/sizeof(*examples);
     const char *example = NULL;
@@ -332,7 +336,7 @@ app_usage(app_t *app) {
     fprintf(stderr,
         "%s\n"
         "Examples:\n\n"
-        "%s\n"
+        "%s"
     , usage, example);
 }
 
