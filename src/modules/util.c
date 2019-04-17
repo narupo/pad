@@ -77,7 +77,7 @@ safesystem(const char *cmdline, int option) {
     STARTUPINFO si = { sizeof(STARTUPINFO) };
 
     // Start the child process. 
-    if (!CreateProcessA(NULL, // No module name (use command line)
+    if (!CreateProcess(NULL, // No module name (use command line)
         (char *) cmdline, // Command line
         NULL, // Process handle not inheritable
         NULL, // Thread handle not inheritable
