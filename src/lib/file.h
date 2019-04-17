@@ -188,6 +188,17 @@ int32_t
 file_remove(const char *path);
 
 /**
+ * Wrapper of rename
+ *
+ * @param[in] path string of path
+ *
+ * @return success to 0
+ * @return failed to not 0
+ */
+int32_t
+file_rename(const char *old, const char *new);
+
+/**
  * Get normalized file path with copy
  *
  * @param[in] path String of solve target
