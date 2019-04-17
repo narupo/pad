@@ -60,6 +60,7 @@ tests: build/tests.o \
 	build/modules/commands/alias.o \
 	build/modules/commands/edit.o \
 	build/modules/commands/mkdir.o \
+	build/modules/commands/rm.o \
 	build/modules/lang/tokens.o \
 	build/modules/lang/tokenizer.o \
 	build/modules/lang/nodes.o \
@@ -96,6 +97,7 @@ cap: build/app.o \
 	build/modules/commands/alias.o \
 	build/modules/commands/edit.o \
 	build/modules/commands/mkdir.o \
+	build/modules/commands/rm.o \
 	build/modules/lang/tokens.o \
 	build/modules/lang/tokenizer.o \
 	build/modules/lang/nodes.o \
@@ -172,6 +174,9 @@ build/modules/commands/edit.o: src/modules/commands/edit.c src/modules/commands/
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules/commands/mkdir.o: src/modules/commands/mkdir.c src/modules/commands/mkdir.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/modules/commands/rm.o: src/modules/commands/rm.c src/modules/commands/rm.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules/lang/tokenizer.o: src/modules/lang/tokenizer.c src/modules/lang/tokenizer.h

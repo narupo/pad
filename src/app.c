@@ -16,7 +16,6 @@ enum {
 
 /**
  * Program option.
- *
  */
 struct opts {
     bool ishelp;
@@ -311,6 +310,7 @@ app_usage(app_t *app) {
         "    alias    Run alias command\n"
         "    edit     Run editor with file name\n"
         "    mkdir    Make directory at environment\n"
+        "    rm       Remove file or directory from environment\n"
     ;
     static const char *examples[] = {
         "    $ cap home\n"
@@ -336,7 +336,7 @@ app_usage(app_t *app) {
     fprintf(stderr,
         "%s\n"
         "Examples:\n\n"
-        "%s"
+        "%s\n"
     , usage, example);
 }
 
@@ -375,6 +375,7 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
         "alias",
         "edit",
         "mkdir",
+        "rm",
         NULL,
     };
 
@@ -460,6 +461,13 @@ app_execute_command_by_name(app_t *self, const char *name) {
         self->cmd_argv = NULL; // moved
         int result = mkdircmd_run(cmd);
         mkdircmd_del(cmd);
+        return result;
+    } else if (!strcmp(name, "rm")) {
+        rmcmd_t *cmd = rmcmd_new(self->config, self->cmd_argc, self->cmd_argv);
+        self->config = NULL; // moved
+        self->cmd_argv = NULL; // moved
+        int result = rmcmd_run(cmd);
+        rmcmd_del(cmd);
         return result;
     }
 

@@ -93,6 +93,7 @@ mkdircmd_show_usage(mkdircmd_t *self) {
         "    -h, --help       show usage\n"
         "    -p, --parents    not error if existing, make parent directories as needed\n"
         "    -g, --global     origin at global (Cap's home directory)\n"
+        "\n"
     );
     fflush(stderr);
 }
