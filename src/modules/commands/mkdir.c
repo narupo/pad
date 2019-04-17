@@ -62,6 +62,8 @@ mkdircmd_del(mkdircmd_t *self) {
     if (!self) {
         return;
     }
+    freeargv(self->argc, self->argv);
+    config_del(self->config);
     free(self);
 }
 
