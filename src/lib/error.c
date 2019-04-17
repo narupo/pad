@@ -3,7 +3,7 @@
  *
  * License: MIT
  *  Author: Aizawa Yuta
- *   Since: 2016, 2018
+ *   Since: 2016
  */
 #include "error.h"
 
@@ -71,13 +71,13 @@ capitalize_text(char *dst, size_t dstsz, const char *text) {
             break;
         case 100: // found "'"
             if (c == '\'') {
-                m = savem;
+                m = 10;
             }
             *dp++ = c;
             break;
         case 110: // found '"'
             if (c == '"') {
-                m = savem;
+                m = 10;
             }
             *dp++ = c;
             break;
