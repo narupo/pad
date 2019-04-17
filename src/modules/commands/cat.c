@@ -269,21 +269,21 @@ catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
 
     tkr_parse(tkr, str_getc(buf));
     if (tkr_has_error(tkr)) {
-        err_error(tkr_get_error_detail(tkr));
+        err_error("failed to parse tokens. %s", tkr_get_error_detail(tkr));
         ret = false;
         goto fail;
     }
 
     ast_parse(ast, tkr_get_tokens(tkr));
     if (ast_has_error(ast)) {
-        err_error(ast_get_error_detail(ast));
+        err_error("failed to parse AST. %s", ast_get_error_detail(ast));
         ret = false;
         goto fail;
     }
 
     ast_traverse(ast, ctx);
     if (ast_has_error(ast)) {
-        err_error(ast_get_error_detail(ast));
+        err_error("failed to traverse AST %s", ast_get_error_detail(ast));
         ret = false;
         goto fail;        
     }
@@ -402,7 +402,7 @@ catcmd_run(catcmd_t *self) {
         }
 
         string_t *filebuf = catcmd_read_file(self, path);
-        if (filebuf == NULL) {
+        if (!filebuf) {
             ++ret;
             err_error("failed to read file from \"%s\"", path);
             continue;
