@@ -157,6 +157,20 @@ file_solvefmt(char *dst, uint32_t dstsz, const char *fmt, ...) {
 	return file_solve(dst, dstsz, tmp);
 }
 
+int32_t
+file_remove(const char *path) {
+#ifdef _FILE_WINDOWS
+	if (file_isdir(path)) {
+		if (RemoveDirectory(path)) {
+			return 0; // success
+		} else {
+			return 1;
+		}
+	}
+#endif
+	return remove(path);
+}
+
 DIR*
 file_opendir(const char *path) {
 	if (!path) {

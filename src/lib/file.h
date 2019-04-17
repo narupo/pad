@@ -177,6 +177,17 @@ char *
 file_solve(char *dst, uint32_t dstsz, const char *path);
 
 /**
+ * Wrapper of remove
+ *
+ * @param[in] path string of path
+ *
+ * @return success to 0
+ * @return failed to not 0
+ */
+int32_t
+file_remove(const char *path);
+
+/**
  * Get normalized file path with copy
  *
  * @param[in] path String of solve target
