@@ -67,6 +67,7 @@ alcmd_show_usage(const alcmd_t *self) {
         "\n"
         "    -h, --help    show usage.\n"
         "    -g, --global  scope to global.\n"
+        "\n"
     );
     fflush(stdout);
 }

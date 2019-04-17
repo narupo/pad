@@ -69,6 +69,7 @@ lscmd_usage(const lscmd_t *self) {
         "\n"
         "    -h, --help    show usage.\n"
         "    -a, --all     show all files.\n"
+        "\n"
     );
 }
 
