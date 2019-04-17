@@ -257,10 +257,6 @@ class AST:
             if node.term and node.expr:
                 lval = self._traverse(node.term, dep=dep+1)
                 rval = self._traverse(node.expr, dep=dep+1)
-                if not isinstance(lval, (int, float)):
-                    raise AST.TypeError('invalid type of lvalue of expression. type is %s' % type(lval))
-                if not isinstance(rval, (int, float)):
-                    raise AST.TypeError('invalid type of rvalue of expression. type is %s' % type(rval))
                 if node.op == '+':
                     return lval + rval
                 elif node.op == '-':

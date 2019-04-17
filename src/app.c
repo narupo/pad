@@ -575,7 +575,7 @@ app_run(app_t *self) {
         app_usage(self);
         return 0;
     }
-
+    
     const char *cmdname = self->cmd_argv[0];
     if (!cmdname) {
         err_error("command name is null");
