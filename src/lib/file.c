@@ -245,6 +245,26 @@ file_mkdirq(const char *path) {
 	return file_mkdirmode(path, S_IRUSR | S_IWUSR | S_IXUSR);
 }
 
+int32_t
+file_mkdirsq(const char *path) {
+	if (!path) {
+		return -1;
+	}
+
+	char tmp[strlen(path)+1];
+	int i = 0;
+	for (const char *p = path; *p && i < FILE_NPATH; ++p) {
+		tmp[i++] = *p;
+		tmp[i] = '\0';
+		if (*p == FILE_SEP && !file_exists(tmp)) {
+			file_mkdirq(tmp);
+		}
+	}
+
+	file_mkdirq(tmp);
+	return 0;
+}
+
 bool
 file_trunc(const char *path) {
 	if (!path) {
