@@ -23,3 +23,4 @@
 #include "modules/commands/edit.h"
 #include "modules/commands/mkdir.h"
 #include "modules/commands/rm.h"
+#include "modules/commands/mv.h"

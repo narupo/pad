@@ -171,6 +171,11 @@ file_remove(const char *path) {
 	return remove(path);
 }
 
+int32_t
+file_rename(const char *old, const char *new) {
+	return rename(old, new);
+}
+
 DIR*
 file_opendir(const char *path) {
 	if (!path) {
