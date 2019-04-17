@@ -34,6 +34,13 @@
 # include <windows.h>
 #endif
 
+#undef FILE_SEP
+#if defined(_FILE_WINDOWS)
+# define FILE_SEP ('\\')
+#else
+# define FILE_SEP ('/')
+#endif
+
 /***************
 * file numbers *
 ***************/
@@ -123,6 +130,16 @@ file_mkdirmode(const char *path, mode_t mode);
  */
 int32_t
 file_mkdirq(const char *path);
+
+/**
+ * Make directories quickly
+ *
+ * @param[in] path path on file system
+ * @return success to number of 0
+ * @return failed to number of -1
+ */
+int32_t
+file_mkdirsq(const char *path);
 
 /**
  * Create empty file on file-system

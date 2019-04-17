@@ -370,6 +370,7 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
         "run",
         "alias",
         "edit",
+        "mkdir",
         NULL,
     };
 
@@ -449,7 +450,14 @@ app_execute_command_by_name(app_t *self, const char *name) {
         int result = editcmd_run(cmd);
         editcmd_del(cmd);
         return result;
-    } 
+    } else if (!strcmp(name, "mkdir")) {
+        mkdircmd_t *cmd = mkdircmd_new(self->config, self->cmd_argc, self->cmd_argv);
+        self->config = NULL; // moved
+        self->cmd_argv = NULL; // moved
+        int result = mkdircmd_run(cmd);
+        mkdircmd_del(cmd);
+        return result;
+    }
 
     err_error("invalid command name \"%s\"", name);
     return 1;

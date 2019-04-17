@@ -21,3 +21,4 @@
 #include "modules/commands/run.h"
 #include "modules/commands/alias.h"
 #include "modules/commands/edit.h"
+#include "modules/commands/mkdir.h"
