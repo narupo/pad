@@ -82,13 +82,15 @@ void
 mkdircmd_show_usage(mkdircmd_t *self) {
     fflush(stdout);
     fflush(stderr);
-    fprintf(stderr, "Usage: cap mkdir [path] [options...]\n"
+    fprintf(stderr, "Usage:\n"
+        "\n"
+        "    cap mkdir [path] [options...]\n"
         "\n"
         "The options are:\n"
         "\n"
-        "   -h, --help       show usage\n"
-        "   -p, --parents    not error if existing, make parent directories as needed\n"
-        "   -g, --global     origin at global (Cap's home directory)\n"
+        "    -h, --help       show usage\n"
+        "    -p, --parents    not error if existing, make parent directories as needed\n"
+        "    -g, --global     origin at global (Cap's home directory)\n"
     );
     fflush(stderr);
 }
