@@ -19,7 +19,7 @@ struct mkdircmd {
 
 void
 mkdircmd_parse_opts(mkdircmd_t *self) {
-    // Parse options
+    // parse options
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"parents", no_argument, 0, 'p'},
@@ -39,7 +39,7 @@ mkdircmd_parse_opts(mkdircmd_t *self) {
         }
 
         switch (cur) {
-        case 0: /* Long option only */ break;
+        case 0: /* long option only */ break;
         case 'h': self->opts.is_help = true; break;
         case 'p': self->opts.is_parents = true; break;
         case 'g': self->opts.is_global = true; break;
