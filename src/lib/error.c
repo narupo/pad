@@ -9,7 +9,7 @@
 
 static char *
 capitalize_text(char *dst, size_t dstsz, const char *text) {
-    int m = 0, savem = 0;
+    int m = 0;
     char *dp = dst;
     char *dpend = dst + (dstsz-1);
     const char *p = text;
@@ -22,11 +22,9 @@ capitalize_text(char *dst, size_t dstsz, const char *text) {
                 *dp++ = c;
             } else if (c == '\'') {
                 *dp++ = c;
-                savem = m;
                 m = 100;
             } else if (c == '"') {
                 *dp++ = c;
-                savem = m;
                 m = 110;
             } else {
                 if (isalpha(c)) {
@@ -43,11 +41,9 @@ capitalize_text(char *dst, size_t dstsz, const char *text) {
                 m = 20;
             } else if (c == '\'') {
                 *dp++ = c;
-                savem = m;
                 m = 100;
             } else if (c == '"') {
                 *dp++ = c;
-                savem = m;
                 m = 110;
             } else {
                 *dp++ = c;
@@ -59,11 +55,9 @@ capitalize_text(char *dst, size_t dstsz, const char *text) {
                 m = 10;
             } else if (c == '\'') {
                 *dp++ = c;
-                savem = m;
                 m = 100;
             } else if (c == '"') {
                 *dp++ = c;
-                savem = m;
                 m = 110;
             } else {
                 *dp++ = c;
