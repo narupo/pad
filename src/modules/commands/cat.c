@@ -230,9 +230,9 @@ catcmd_catstream(catcmd_t *self, FILE *fout, FILE *fin) {
 static void
 catcmd_usage(const catcmd_t *self) {
     fprintf(stderr,
-        "Usage: cap cat [options] [files]\n"
+        "Usage:\n"
         "\n"
-        "    Concatenate files.\n"
+        "    cap cat [options] [files]\n"
         "\n"
         "The options are:\n"
         "\n"
