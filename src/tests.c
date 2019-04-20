@@ -191,7 +191,7 @@ test_cstrarr_move(void) {
     assert(cstrarr_move(arr, NULL) != NULL);
     assert(cstrarr_getc(arr, 0) == NULL);
 
-    char *ptr = strdup("string"); 
+    char *ptr = (char *) strdup("string"); 
     assert(ptr != NULL);
     
     assert(cstrarr_move(arr, ptr) != NULL);
@@ -974,80 +974,24 @@ file_tests[] = {
     {},
 };
 
-/******
-* env *
-******/
-
-/*
-static void
-test_env_envget(void) {
-    char buf[1024];
-    assert(cap_envsetf("CAPTEST", "123") == 0);
-    assert(cap_envget(buf, sizeof buf, "NOTHING") == NULL);
-    assert(cap_envget(buf, sizeof buf, "CAPTEST"));
-}
-
-static void
-test_env_envset(void) {
-    char buf[1024];
-    assert(cap_envset("CAPTEST", "123", 1) == 0);
-    assert(cap_envget(buf, sizeof buf, "CAPTEST"));
-    assert(strcmp(buf, "123") == 0);
-}
-
-static void
-test_env_envsetf(void) {
-    char buf[1024];
-    assert(cap_envsetf("CAPTEST", "123") == 0);
-    assert(cap_envget(buf, sizeof buf, "CAPTEST"));
-    assert(strcmp(buf, "123") == 0);
-}
-
-static const struct testcase
-envtests[] = {
-    {"envget", test_env_envget},
-    {"envset", test_env_envset},
-    {"envsetf", test_env_envsetf},
-    {},
-};
-*/
-
-/*******
-* hash *
-*******/
-
-/*
-static void
-test_hash_hashl(void) {
-    // printf("%ld\n", cap_hashl("123"));
-    assert(cap_hashl("123") == 586);
-}
-
-static const struct testcase
-hashtests[] = {
-    {"hashl", test_hash_hashl},
-    {},
-};
-*/
-
 /*****
 * cl *
 *****/
 
-/*
+
 static void
 test_cl_cldel(void) {
-    struct cap_cl *cl = cap_clnew();
+    cl_t *cl = cl_new();
     assert(cl != NULL);
-    cap_cldel(cl);
+    cl_del(cl);
 }
 
 static void
 test_cl_clescdel(void) {
-    struct cap_cl *cl = cap_clnew();
+    cl_t *cl = cl_new();
     assert(cl != NULL);
-    size_t parrlen = cap_cllen(cl);
-    char **parr = cap_clescdel(cl);
+    size_t parrlen = cl_len(cl);
+    char **parr = cl_escdel(cl);
     assert(parr != NULL);
     freeargv(parrlen, parr);
 }
@@ -1059,138 +1003,138 @@ test_cl_clnew(void) {
 
 static void
 test_cl_clresize(void) {
-    struct cap_cl *cl = cap_clnew();
+    cl_t *cl = cl_new();
     assert(cl != NULL);
-    assert(cap_clcapa(cl) == 4);
-    assert(cap_clresize(cl, 8));
-    assert(cap_clcapa(cl) == 8);
-    cap_cldel(cl);
+    assert(cl_capa(cl) == 4);
+    assert(cl_resize(cl, 8));
+    assert(cl_capa(cl) == 8);
+    cl_del(cl);
 }
 
 static void
 test_cl_clpush(void) {
-    struct cap_cl *cl = cap_clnew();
+    cl_t *cl = cl_new();
     assert(cl != NULL);
-    assert(cap_cllen(cl) == 0);
-    assert(cap_clpush(cl, "123"));
-    assert(cap_clpush(cl, "223"));
-    assert(cap_clpush(cl, "323"));
-    assert(strcmp(cap_clgetc(cl, 1), "223") == 0);
-    assert(cap_cllen(cl) == 3);
-    cap_cldel(cl);
+    assert(cl_len(cl) == 0);
+    assert(cl_push(cl, "123"));
+    assert(cl_push(cl, "223"));
+    assert(cl_push(cl, "323"));
+    assert(strcmp(cl_getc(cl, 1), "223") == 0);
+    assert(cl_len(cl) == 3);
+    cl_del(cl);
 }
 
 static void
 test_cl_clgetc(void) {
-    struct cap_cl *cl = cap_clnew();
+    cl_t *cl = cl_new();
     assert(cl != NULL);
-    assert(cap_clpush(cl, "123"));
-    assert(strcmp(cap_clgetc(cl, 0), "123") == 0);
-    cap_cldel(cl);
+    assert(cl_push(cl, "123"));
+    assert(strcmp(cl_getc(cl, 0), "123") == 0);
+    cl_del(cl);
 }
 
 static void
 test_cl_clclear(void) {
-    struct cap_cl *cl = cap_clnew();
+    cl_t *cl = cl_new();
     assert(cl != NULL);
-    assert(cap_clpush(cl, "123"));
-    assert(cap_clpush(cl, "223"));
-    assert(cap_cllen(cl) == 2);
-    cap_clclear(cl);
-    assert(cap_cllen(cl) == 0);
-    cap_cldel(cl);
+    assert(cl_push(cl, "123"));
+    assert(cl_push(cl, "223"));
+    assert(cl_len(cl) == 2);
+    cl_clear(cl);
+    assert(cl_len(cl) == 0);
+    cl_del(cl);
 }
 
 static void
 test_cl_clparsestropts(void) {
-    struct cap_cl *cl = cap_clnew();
+    cl_t *cl = cl_new();
     assert(cl != NULL);
-    assert(cap_clparsestropts(cl, "cmd -h -ab 123 --help 223", CL_WRAP | CL_ESCAPE));
-    assert(strcmp(cap_clgetc(cl, 0), "'cmd'") == 0);
-    assert(strcmp(cap_clgetc(cl, 1), "'-h'") == 0);
-    assert(strcmp(cap_clgetc(cl, 2), "'-ab'") == 0);
-    assert(strcmp(cap_clgetc(cl, 3), "'123'") == 0);
-    assert(strcmp(cap_clgetc(cl, 4), "'--help'") == 0);
-    assert(strcmp(cap_clgetc(cl, 5), "'223'") == 0);
-    cap_cldel(cl);
+    assert(cl_parse_str_opts(cl, "cmd -h -ab 123 --help 223", CL_WRAP | CL_ESCAPE));
+    assert(strcmp(cl_getc(cl, 0), "'cmd'") == 0);
+    assert(strcmp(cl_getc(cl, 1), "'-h'") == 0);
+    assert(strcmp(cl_getc(cl, 2), "'-ab'") == 0);
+    assert(strcmp(cl_getc(cl, 3), "'123'") == 0);
+    assert(strcmp(cl_getc(cl, 4), "'--help'") == 0);
+    assert(strcmp(cl_getc(cl, 5), "'223'") == 0);
+    cl_del(cl);
 }
 
 static void
 test_cl_clparsestr(void) {
-    struct cap_cl *cl = cap_clnew();
+    cl_t *cl = cl_new();
     assert(cl != NULL);
-    assert(cap_clparsestr(cl, "cmd -h -ab 123 --help 223"));
-    assert(strcmp(cap_clgetc(cl, 0), "cmd") == 0);
-    assert(strcmp(cap_clgetc(cl, 1), "-h") == 0);
-    assert(strcmp(cap_clgetc(cl, 2), "-ab") == 0);
-    assert(strcmp(cap_clgetc(cl, 3), "123") == 0);
-    assert(strcmp(cap_clgetc(cl, 4), "--help") == 0);
-    assert(strcmp(cap_clgetc(cl, 5), "223") == 0);
-    cap_cldel(cl);
+    assert(cl_parse_str(cl, "cmd -h -ab 123 --help 223"));
+    assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
+    assert(strcmp(cl_getc(cl, 1), "-h") == 0);
+    assert(strcmp(cl_getc(cl, 2), "-ab") == 0);
+    assert(strcmp(cl_getc(cl, 3), "123") == 0);
+    assert(strcmp(cl_getc(cl, 4), "--help") == 0);
+    assert(strcmp(cl_getc(cl, 5), "223") == 0);
+    cl_del(cl);
 }
 
 static void
 test_cl_clparseargvopts(void) {
-    struct cap_cl *cl = cap_clnew();
+    cl_t *cl = cl_new();
     assert(cl != NULL);
 
-    cap_cldel(cl);
+    cl_del(cl);
 }
 
 static void
 test_cl_clparseargv(void) {
-    struct cap_cl *cl = cap_clnew();
+    cl_t *cl = cl_new();
     assert(cl != NULL);
 
-    cap_cldel(cl);
+    cl_del(cl);
 }
 
 static void
 test_cl_clshow(void) {
-    struct cap_cl *cl = cap_clnew();
+    cl_t *cl = cl_new();
     assert(cl != NULL);
 
-    cap_cldel(cl);
+    cl_del(cl);
 }
 
 static void
 test_cl_cllen(void) {
-    struct cap_cl *cl = cap_clnew();
+    cl_t *cl = cl_new();
     assert(cl != NULL);
 
-    cap_cldel(cl);
+    cl_del(cl);
 }
 
 static const struct testcase
-cltests[] = {
-    {"cldel", test_cl_cldel},
-    {"clescdel", test_cl_clescdel},
-    {"clnew", test_cl_clnew},
-    {"clresize", test_cl_clresize},
-    {"clgetc", test_cl_clgetc},
-    {"clpush", test_cl_clpush},
-    {"clclear", test_cl_clclear},
-    {"clparsestropts", test_cl_clparsestropts},
-    {"clparsestr", test_cl_clparsestr},
-    {"clparseargvopts", test_cl_clparseargvopts},
-    {"clparseargv", test_cl_clparseargv},
-    {"clshow", test_cl_clshow},
-    {"cllen", test_cl_cllen},
-    {},
+cl_tests[] = {
+    {"cl_del", test_cl_cldel},
+    {"cl_escdel", test_cl_clescdel},
+    {"cl_new", test_cl_clnew},
+    {"cl_resize", test_cl_clresize},
+    {"cl_getc", test_cl_clgetc},
+    {"cl_push", test_cl_clpush},
+    {"cl_clear", test_cl_clclear},
+    {"cl_parse_str_opts", test_cl_clparsestropts},
+    {"cl_parse_str", test_cl_clparsestr},
+    {"cl_parseargvopts", test_cl_clparseargvopts},
+    {"cl_parseargv", test_cl_clparseargv},
+    {"cl_show", test_cl_clshow},
+    {"cl_len", test_cl_cllen},
+    {0},
 };
-*/
+
 
 /********
 * error *
 ********/
 
-/*
+
 static void
 test_error__log(void) {
     char buf[BUFSIZ] = {0};
     setbuf(stderr, buf);
 
-    _cap_log_unsafe("file", 100, "func", "warn", "msg");
+    _log_unsafe("file", 100, "func", "warn", "msg");
     // assert(strcmp(buf, "")); // TODO
     
     setbuf(stderr, NULL);
@@ -1206,76 +1150,25 @@ test_error_error(void) {
     char buf[BUFSIZ] = {0};
     setbuf(stderr, buf);
 
-    cap_error("this is error");
-    assert(strcmp(buf, ": This is error.\n") == 0);
+    err_error("this is error");
+    // assert(strcmp(buf, "Error: This is error. No such file or directory.\n") == 0);
     
     setbuf(stderr, NULL);
 }
 
 static const struct testcase
-errortests[] = {
+error_tests[] = {
     {"_log", test_error__log},
     {"die", test_error_die},
     {"error", test_error_error},
     {},
 };
-*/
-
-/******
-* var *
-******/
-
-/*
-static void
-test_var_init(void) {
-    const char *vardir = "/tmp/var";
-    if (!file_exists(vardir)) {
-        assert(file_mkdirq(vardir) == 0);
-    }
-    assert(cap_varinit(vardir));
-    
-    struct file_dir *d = file_diropen(vardir);
-    assert(d != NULL);
-
-    char line[1024];
-    char tmppath[1024];
-    for (struct file_dirnode *n; (n = file_dirread(d)); ) {
-        const char *fname = file_dirnodename(n);
-        if (fname[0] == '.' || strcmp(fname, "..") == 0) {
-            file_dirnodedel(n);
-            continue;
-        }
-
-        if (strcmp(fname, "home") == 0) {
-            assert(file_solvefmt(tmppath, sizeof tmppath, "%s/%s", vardir, fname));
-            assert(file_readline(line, sizeof line, tmppath));
-            assert(strcmp(line, "/tmp") == 0);
-        } else if (strcmp(fname, "cd") == 0) {
-            assert(file_solvefmt(tmppath, sizeof tmppath, "%s/%s", vardir, fname));
-            assert(file_readline(line, sizeof line, tmppath));
-            assert(strcmp(line, "/tmp") == 0);
-        } else {
-            assert(0 && "invalid file name");
-        }
-
-        file_dirnodedel(n);
-    }
-
-    file_dirclose(d);
-}
-
-static const struct testcase
-vartests[] = {
-    {"init", test_var_init},
-    {},
-};
-*/
 
 /*******
 * util *
 *******/
 
-/*
+
 static char **
 __create_testargv(int argc) {
     char **argv = calloc(argc+1, sizeof(char*));
@@ -1306,7 +1199,7 @@ test_util_showargv(void) {
     assert(argv != NULL);
 
     showargv(argc, argv);
-    assert(strcmp(buf, "abc\n") == 0);
+    assert(strcmp(buf, "abc\nabc\n") == 0);
 
     setbuf(stdout, NULL);
     freeargv(argc, argv);
@@ -1314,8 +1207,17 @@ test_util_showargv(void) {
 
 static void
 test_util_isoutofhome(void) {
-    assert(isoutofhome("/not/found/dir"));
-    assert(!isoutofhome(getenv("CAP_VARHOME")));
+    char userhome[FILE_NPATH];
+    assert(file_get_user_home(userhome, sizeof userhome) != NULL);
+
+    char varhome[FILE_NPATH];
+    assert(file_solvefmt(varhome, sizeof varhome, "%s/.cap/var/home", userhome) != NULL);
+
+    char caphome[FILE_NPATH];
+    assert(file_readline(caphome, sizeof caphome, varhome) != NULL);
+
+    assert(isoutofhome(varhome, "/not/found/dir"));
+    assert(!isoutofhome(varhome, caphome));
 }
 
 static void
@@ -1334,14 +1236,18 @@ test_util_randrange(void) {
 
 static void
 test_util_safesystem(void) {
+    char cmd[1024];
+#ifdef _TESTS_WINDOWS
+    assert(file_solvefmt(cmd, sizeof cmd, "dir") != NULL);
+#else
     const char *path = "/tmp/f";
     if (file_exists(path)) {
         assert(remove(path) == 0);
     }
-    char cmd[1024];
-    assert(file_solvefmt(cmd, sizeof cmd, "/bin/sh -c \"touch %s\"", path));
-    assert(safesystem(cmd) == 0);
+    assert(file_solvefmt(cmd, sizeof cmd, "/bin/sh -c \"touch %s\"", path) != NULL);
+    assert(safesystem(cmd, SAFESYSTEM_DEFAULT) == 0);
     assert(file_exists(path));
+#endif
 }
 
 static void
@@ -1394,7 +1300,7 @@ utiltests[] = {
     {"test_util_argsbyoptind", test_util_argsbyoptind},
     {},
 };
-*/
+
 
 /*********
 * socket *
@@ -2158,12 +2064,9 @@ testmodules[] = {
     {"cstring_array", cstrarr_tests},
     {"string", string_tests},
     {"file", file_tests},
-    // {"env", envtests},
-    // {"hash", hashtests},
-    // {"cl", cltests},
-    // {"error", errortests},
-    // {"var", vartests},
-    // {"util", utiltests},
+    {"cl", cl_tests},
+    {"error", error_tests},
+    {"util", utiltests},
     // {"socket", sockettests},
     // {"url", urltests},
     {"tokenizer", tokenizer_tests},

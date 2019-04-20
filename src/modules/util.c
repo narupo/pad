@@ -168,10 +168,10 @@ safesystem(const char *cmdline, int option) {
 #endif
 }
 
-/*
-struct cap_array *
+
+cstring_array_t *
 argsbyoptind(int argc, char *argv[], int optind) {
-	struct cap_array *args = cap_arrnew();
+	cstring_array_t *args = cstrarr_new();
 	
 	// DO NOT DELETE FOR DEBUG.
 	//
@@ -179,13 +179,12 @@ argsbyoptind(int argc, char *argv[], int optind) {
 	// for (int i = 0; i < argc; ++i) {
 	// 	printf("%d %s\n", i, argv[i]);
 	// }
-	
 
-	cap_arrpush(args, argv[0]);
+	cstrarr_push(args, argv[0]);
 	for (int i = optind; i < argc; ++i) {
-		cap_arrpush(args, argv[i]);
+		cstrarr_push(args, argv[i]);
 	}
 
 	return args;
 }
-*/
+

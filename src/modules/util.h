@@ -18,6 +18,7 @@
 #include "lib/file.h"
 #include "lib/error.h"
 #include "lib/cl.h"
+#include "lib/cstring_array.h"
 
 #include "modules/constant.h"
 
@@ -93,6 +94,6 @@ safesystem(const char *cmdline, int option);
  * @return success to pointer to array
  * @return failed to NULL
  */
-struct cap_array *
+cstring_array_t *
 argsbyoptind(int argc, char *argv[], int optind);
 
