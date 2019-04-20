@@ -110,7 +110,7 @@ struct testmodule {
 * array *
 ********/
 
-/*
+
 void
 _freeescarr(char **arr) {
     for (char **p = arr; *p; ++p) {
@@ -129,21 +129,21 @@ _countescarr(char **arr) {
 }
 
 void
-test_array_arrnew(void) {
-    struct cap_array *arr = cap_arrnew();
+test_cstrarr_new(void) {
+    cstring_array_t *arr = cstrarr_new();
     assert(arr != NULL);
-    cap_arrdel(arr);
+    cstrarr_del(arr);
 }
 
 void
-test_array_arrescdel(void) {
+test_cstrarr_escdel(void) {
     // test
-    struct cap_array *arr = cap_arrnew();
+    cstring_array_t *arr = cstrarr_new();
     assert(arr != NULL);
 
-    assert(cap_arrescdel(NULL) == NULL);
+    assert(cstrarr_escdel(NULL) == NULL);
 
-    char **escarr = cap_arrescdel(arr);
+    char **escarr = cstrarr_escdel(arr);
     assert(escarr != NULL);
 
     int i;
@@ -153,14 +153,14 @@ test_array_arrescdel(void) {
     _freeescarr(escarr);
 
     // test
-    arr = cap_arrnew();
+    arr = cstrarr_new();
     assert(arr != NULL);
 
-    assert(cap_arrpush(arr, "0") != NULL);
-    assert(cap_arrpush(arr, "1") != NULL);
-    assert(cap_arrpush(arr, "2") != NULL);
+    assert(cstrarr_push(arr, "0") != NULL);
+    assert(cstrarr_push(arr, "1") != NULL);
+    assert(cstrarr_push(arr, "2") != NULL);
 
-    escarr = cap_arrescdel(arr);
+    escarr = cstrarr_escdel(arr);
     assert(_countescarr(escarr) == 3);
     assert(strcmp(escarr[0], "0") == 0);
     assert(strcmp(escarr[1], "1") == 0);
@@ -169,480 +169,473 @@ test_array_arrescdel(void) {
 }
 
 void
-test_array_arrpush(void) {
-    struct cap_array *arr = cap_arrnew();
+test_cstrarr_push(void) {
+    cstring_array_t *arr = cstrarr_new();
     assert(arr != NULL);
 
-    assert(cap_arrpush(NULL, "1") == NULL);
-    assert(cap_arrpush(arr, NULL) == NULL);
-    assert(cap_arrpush(arr, "") != NULL);
-    assert(cap_arrpush(arr, "1") != NULL);
+    assert(cstrarr_push(NULL, "1") == NULL);
+    assert(cstrarr_push(arr, NULL) == NULL);
+    assert(cstrarr_push(arr, "") != NULL);
+    assert(cstrarr_push(arr, "1") != NULL);
 
-    assert(cap_arrlen(arr) == 2);
+    assert(cstrarr_len(arr) == 2);
 
-    cap_arrdel(arr);
+    cstrarr_del(arr);
 }
 
 void
-test_array_arrmove(void) {
-    struct cap_array *arr = cap_arrnew();
+test_cstrarr_move(void) {
+    cstring_array_t *arr = cstrarr_new();
     assert(arr != NULL);
 
-    assert(cap_arrmove(arr, NULL) != NULL);
-    assert(cap_arrgetc(arr, 0) == NULL);
+    assert(cstrarr_move(arr, NULL) != NULL);
+    assert(cstrarr_getc(arr, 0) == NULL);
 
     char *ptr = strdup("string"); 
     assert(ptr != NULL);
     
-    assert(cap_arrmove(arr, ptr) != NULL);
-    assert(strcmp(cap_arrgetc(arr, 1), "string") == 0);
+    assert(cstrarr_move(arr, ptr) != NULL);
+    assert(strcmp(cstrarr_getc(arr, 1), "string") == 0);
 
-    cap_arrdel(arr);
+    cstrarr_del(arr);
 }
 
 void
-test_array_arrsort(void) {
-    struct cap_array *arr = cap_arrnew();
+test_cstrarr_sort(void) {
+    cstring_array_t *arr = cstrarr_new();
     assert(arr != NULL);
 
-    assert(cap_arrsort(NULL) == NULL);
+    assert(cstrarr_sort(NULL) == NULL);
 
-    assert(cap_arrpush(arr, "1") != NULL);
-    assert(cap_arrpush(arr, "2") != NULL);
-    assert(cap_arrpush(arr, "0") != NULL);
+    assert(cstrarr_push(arr, "1") != NULL);
+    assert(cstrarr_push(arr, "2") != NULL);
+    assert(cstrarr_push(arr, "0") != NULL);
 
-    assert(cap_arrsort(arr) != NULL);
-    assert(strcmp(cap_arrgetc(arr, 0), "0") == 0);
-    assert(strcmp(cap_arrgetc(arr, 1), "1") == 0);
-    assert(strcmp(cap_arrgetc(arr, 2), "2") == 0);
+    assert(cstrarr_sort(arr) != NULL);
+    assert(strcmp(cstrarr_getc(arr, 0), "0") == 0);
+    assert(strcmp(cstrarr_getc(arr, 1), "1") == 0);
+    assert(strcmp(cstrarr_getc(arr, 2), "2") == 0);
 
-    cap_arrdel(arr);
+    cstrarr_del(arr);
 }
 
 void
-test_array_arrgetc(void) {
-    struct cap_array *arr = cap_arrnew();
+test_cstrarr_getc(void) {
+    cstring_array_t *arr = cstrarr_new();
     assert(arr != NULL);
 
-    assert(cap_arrgetc(NULL, 0) == NULL);
-    assert(cap_arrgetc(arr, 0) == NULL);
-    assert(cap_arrgetc(arr, -1) == NULL);
+    assert(cstrarr_getc(NULL, 0) == NULL);
+    assert(cstrarr_getc(arr, 0) == NULL);
+    assert(cstrarr_getc(arr, -1) == NULL);
 
-    assert(cap_arrpush(arr, "0") != NULL);
-    assert(cap_arrpush(arr, "1") != NULL);
-    assert(cap_arrpush(arr, "2") != NULL);
+    assert(cstrarr_push(arr, "0") != NULL);
+    assert(cstrarr_push(arr, "1") != NULL);
+    assert(cstrarr_push(arr, "2") != NULL);
 
-    assert(strcmp(cap_arrgetc(arr, 0), "0") == 0);
-    assert(strcmp(cap_arrgetc(arr, 1), "1") == 0);
-    assert(strcmp(cap_arrgetc(arr, 2), "2") == 0);
-    assert(cap_arrgetc(arr, 3) == NULL);
+    assert(strcmp(cstrarr_getc(arr, 0), "0") == 0);
+    assert(strcmp(cstrarr_getc(arr, 1), "1") == 0);
+    assert(strcmp(cstrarr_getc(arr, 2), "2") == 0);
+    assert(cstrarr_getc(arr, 3) == NULL);
 
-    cap_arrdel(arr);
+    cstrarr_del(arr);
 }
 
 void
-test_array_arrlen(void) {
-    struct cap_array *arr = cap_arrnew();
+test_cstrarr_len(void) {
+    cstring_array_t *arr = cstrarr_new();
     assert(arr != NULL);
 
-    assert(cap_arrlen(NULL) == 0);
-    assert(cap_arrlen(arr) == 0);
+    assert(cstrarr_len(NULL) == 0);
+    assert(cstrarr_len(arr) == 0);
 
-    assert(cap_arrpush(arr, "0") != NULL);
-    assert(cap_arrpush(arr, "1") != NULL);
-    assert(cap_arrpush(arr, "2") != NULL);
-    assert(cap_arrlen(arr) == 3);
+    assert(cstrarr_push(arr, "0") != NULL);
+    assert(cstrarr_push(arr, "1") != NULL);
+    assert(cstrarr_push(arr, "2") != NULL);
+    assert(cstrarr_len(arr) == 3);
 
-    cap_arrdel(arr);
+    cstrarr_del(arr);
 }
 
 void
-test_array_arrshow(void) {
-    struct cap_array *arr = cap_arrnew();
+test_cstrarr_show(void) {
+    cstring_array_t *arr = cstrarr_new();
     assert(arr != NULL);
 
-    assert(cap_arrshow(NULL, stdout) == NULL);
-    assert(cap_arrshow(arr, NULL) == NULL);
-    assert(cap_arrshow(arr, stdout) != NULL);
+    assert(cstrarr_show(NULL, stdout) == NULL);
+    assert(cstrarr_show(arr, NULL) == NULL);
+    assert(cstrarr_show(arr, stdout) != NULL);
 
-    cap_arrdel(arr);
+    cstrarr_del(arr);
 }
 
 static const struct testcase
-arraytests[] = {
-    {"arrnew", test_array_arrnew},
-    {"arrescdel", test_array_arrescdel},
-    {"arrpush", test_array_arrpush},
-    {"arrmove", test_array_arrmove},
-    {"arrsort", test_array_arrsort},
-    {"arrgetc", test_array_arrgetc},
-    {"arrlen", test_array_arrlen},
-    {"arrshow", test_array_arrshow},
+cstrarr_tests[] = {
+    {"cstrarr_new", test_cstrarr_new},
+    {"cstrarr_escdel", test_cstrarr_escdel},
+    {"cstrarr_push", test_cstrarr_push},
+    {"cstrarr_move", test_cstrarr_move},
+    {"cstrarr_sort", test_cstrarr_sort},
+    {"cstrarr_getc", test_cstrarr_getc},
+    {"cstrarr_len", test_cstrarr_len},
+    {"cstrarr_show", test_cstrarr_show},
     {},
 };
-
-*/
 
 /*********
 * string *
 *********/
 
-/*
 static void
-test_string_capstrncat(void) {
+test_string_strapp(void) {
     char dst[100] = {};
 
-    assert(capstrncat(dst, sizeof dst, NULL) == NULL);
-    assert(capstrncat(NULL, sizeof dst, "source") == NULL);
-    assert(capstrncat(dst, 0, "source") == NULL);
+    assert(strapp(dst, sizeof dst, NULL) == NULL);
+    assert(strapp(NULL, sizeof dst, "source") == NULL);
+    assert(strapp(dst, 0, "source") == NULL);
 
-    assert(capstrncat(dst, 3, "source") != NULL);
+    assert(strapp(dst, 3, "source") != NULL);
     assert(strcmp(dst, "so") == 0);
 
     *dst = '\0';
-    assert(capstrncat(dst, sizeof dst, "source") != NULL);
+    assert(strapp(dst, sizeof dst, "source") != NULL);
     assert(strcmp(dst, "source") == 0);
-    assert(capstrncat(dst, sizeof dst, " is available.") != NULL);
+    assert(strapp(dst, sizeof dst, " is available.") != NULL);
     assert(strcmp(dst, "source is available.") == 0);
-    assert(capstrncat(dst, sizeof dst, "") != NULL);
+    assert(strapp(dst, sizeof dst, "") != NULL);
     assert(strcmp(dst, "source is available.") == 0);
 }
 
 static void
-test_string_capstrcpywithout(void) {
+test_string_strcpywithout(void) {
     char dst[100];
 
-    assert(capstrcpywithout(NULL, sizeof dst, "abc123def456", "") == NULL);
-    assert(capstrcpywithout(dst, 0, "abc123def456", "") == NULL);
-    assert(capstrcpywithout(dst, sizeof dst, NULL, "") == NULL);
-    assert(capstrcpywithout(dst, sizeof dst, "abc123def456", NULL) == NULL);
+    assert(strcpywithout(NULL, sizeof dst, "abc123def456", "") == NULL);
+    assert(strcpywithout(dst, 0, "abc123def456", "") == NULL);
+    assert(strcpywithout(dst, sizeof dst, NULL, "") == NULL);
+    assert(strcpywithout(dst, sizeof dst, "abc123def456", NULL) == NULL);
 
-    assert(capstrcpywithout(dst, sizeof dst, "abc123def456", "") != NULL);
+    assert(strcpywithout(dst, sizeof dst, "abc123def456", "") != NULL);
     assert(strcmp(dst, "abc123def456") == 0);
-    assert(capstrcpywithout(dst, sizeof dst, "abc123def456", "123456") != NULL);
+    assert(strcpywithout(dst, sizeof dst, "abc123def456", "123456") != NULL);
     assert(strcmp(dst, "abcdef") == 0);
-    assert(capstrcpywithout(dst, sizeof dst, "abc123def456", "abcdef") != NULL);
+    assert(strcpywithout(dst, sizeof dst, "abc123def456", "abcdef") != NULL);
     assert(strcmp(dst, "123456") == 0);
 }
 
 static void
-test_string_strdel(void) {
-    struct cap_string *s = cap_strnew();
+test_str_del(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    cap_strdel(NULL);
-    cap_strdel(s);
+    str_del(NULL);
+    str_del(s);
 }
 
 static void
-test_string_strescdel(void) {
-    struct cap_string *s = cap_strnew();
+test_str_escdel(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strescdel(NULL) == NULL);
-    char *ptr = cap_strescdel(s);
+    assert(str_escdel(NULL) == NULL);
+    char *ptr = str_escdel(s);
     assert(ptr != NULL);
     free(ptr);
 }
 
 static void
-test_string_strnew(void) {
-    struct cap_string *s = cap_strnew();
+test_str_new(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    cap_strdel(s);
+    str_del(s);
 }
 
 static void
-test_string_strnewother(void) {
-    struct cap_string *s = cap_strnew();
+test_str_newother(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strset(s, "1234") != NULL);
-    assert(cap_strnewother(NULL) == NULL);
-    struct cap_string *o = cap_strnewother(s);
+    assert(str_set(s, "1234") != NULL);
+    assert(str_newother(NULL) == NULL);
+    string_t *o = str_newother(s);
     assert(o != NULL);
-    assert(strcmp(cap_strgetc(o), "1234") == 0);
-    cap_strdel(o);
-    cap_strdel(s);
+    assert(strcmp(str_getc(o), "1234") == 0);
+    str_del(o);
+    str_del(s);
 }
 
 static void
-test_string_strlen(void) {
-    struct cap_string *s = cap_strnew();
+test_str_len(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strlen(NULL) == -1);
-    assert(cap_strlen(s) == 0);
-    assert(cap_strapp(s, "abc") != NULL);
-    assert(cap_strlen(s) == 3);
-    cap_strdel(s);
+    assert(str_len(NULL) == -1);
+    assert(str_len(s) == 0);
+    assert(str_app(s, "abc") != NULL);
+    assert(str_len(s) == 3);
+    str_del(s);
 }
 
 static void
-test_string_strcapa(void) {
-    struct cap_string *s = cap_strnew();
+test_str_capa(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strcapa(NULL) == -1);
-    assert(cap_strcapa(s) == 4);
-    assert(cap_strapp(s, "1234") != NULL);
-    assert(cap_strcapa(s) == 8);
-    cap_strdel(s);
+    assert(str_capa(NULL) == -1);
+    assert(str_capa(s) == 4);
+    assert(str_app(s, "1234") != NULL);
+    assert(str_capa(s) == 8);
+    str_del(s);
 }
 
 static void
-test_string_strgetc(void) {
-    struct cap_string *s = cap_strnew();
+test_str_getc(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strgetc(NULL) == NULL);
-    assert(strcmp(cap_strgetc(s), "") == 0);
-    assert(cap_strapp(s, "1234") != NULL);
-    assert(strcmp(cap_strgetc(s), "1234") == 0);
-    cap_strdel(s);
+    assert(str_getc(NULL) == NULL);
+    assert(strcmp(str_getc(s), "") == 0);
+    assert(str_app(s, "1234") != NULL);
+    assert(strcmp(str_getc(s), "1234") == 0);
+    str_del(s);
 }
 
 static void
-test_string_strempty(void) {
-    struct cap_string *s = cap_strnew();
+test_str_empty(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strempty(NULL) == 0);
-    assert(cap_strempty(s) == 1);
-    assert(cap_strapp(s, "1234") != NULL);
-    assert(cap_strempty(s) == 0);
-    cap_strdel(s);
+    assert(str_empty(NULL) == 0);
+    assert(str_empty(s) == 1);
+    assert(str_app(s, "1234") != NULL);
+    assert(str_empty(s) == 0);
+    str_del(s);
 }
 
 static void
-test_string_strclear(void) {
-    struct cap_string *s = cap_strnew();
+test_str_clear(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strapp(NULL, "1234") == NULL);
-    assert(cap_strapp(s, NULL) == NULL);
-    assert(cap_strapp(s, "1234") != NULL);
-    assert(cap_strlen(s) == 4);
-    cap_strclear(s);
-    assert(cap_strlen(s) == 0);
-    cap_strdel(s);
+    assert(str_app(NULL, "1234") == NULL);
+    assert(str_app(s, NULL) == NULL);
+    assert(str_app(s, "1234") != NULL);
+    assert(str_len(s) == 4);
+    str_clear(s);
+    assert(str_len(s) == 0);
+    str_del(s);
 }
 
 static void
-test_string_strset(void) {
-    struct cap_string *s = cap_strnew();
+test_str_set(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strset(NULL, "1234") == NULL);
-    assert(cap_strset(s, NULL) == NULL);
-    assert(cap_strset(s, "1234") != NULL);
-    assert(strcmp(cap_strgetc(s), "1234") == 0);
-    assert(cap_strset(s, "12") != NULL);
-    assert(strcmp(cap_strgetc(s), "12") == 0);
-    cap_strdel(s);
+    assert(str_set(NULL, "1234") == NULL);
+    assert(str_set(s, NULL) == NULL);
+    assert(str_set(s, "1234") != NULL);
+    assert(strcmp(str_getc(s), "1234") == 0);
+    assert(str_set(s, "12") != NULL);
+    assert(strcmp(str_getc(s), "12") == 0);
+    str_del(s);
 }
 
 static void
-test_string_strresize(void) {
-    struct cap_string *s = cap_strnew();
+test_str_resize(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strcapa(NULL) == -1);
-    assert(cap_strcapa(s) == 4);
-    assert(cap_strresize(s, 4*2) != NULL);
-    assert(cap_strcapa(s) == 8);
-    cap_strdel(s);
+    assert(str_capa(NULL) == -1);
+    assert(str_capa(s) == 4);
+    assert(str_resize(s, 4*2) != NULL);
+    assert(str_capa(s) == 8);
+    str_del(s);
 }
 
 static void
-test_string_strpushb(void) {
-    struct cap_string *s = cap_strnew();
+test_str_pushb(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strpushb(NULL, '1') == NULL);
-    assert(cap_strpushb(s, 0) == NULL);
-    assert(cap_strpushb(s, '\0') == NULL);
-    assert(cap_strpushb(s, '1') != NULL);
-    assert(cap_strpushb(s, '2') != NULL);
-    assert(strcmp(cap_strgetc(s), "12") == 0);
-    cap_strdel(s);
+    assert(str_pushb(NULL, '1') == NULL);
+    assert(str_pushb(s, 0) == NULL);
+    assert(str_pushb(s, '\0') == NULL);
+    assert(str_pushb(s, '1') != NULL);
+    assert(str_pushb(s, '2') != NULL);
+    assert(strcmp(str_getc(s), "12") == 0);
+    str_del(s);
 }
 
 static void
-test_string_strpopb(void) {
-    struct cap_string *s = cap_strnew();
+test_str_popb(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strpopb(NULL) == '\0');
-    assert(cap_strset(s, "1234") != NULL);
-    assert(strcmp(cap_strgetc(s), "1234") == 0);
-    assert(cap_strpopb(s) == '4');
-    assert(cap_strpopb(s) == '3');
-    assert(strcmp(cap_strgetc(s), "12") == 0);
-    cap_strdel(s);
+    assert(str_popb(NULL) == '\0');
+    assert(str_set(s, "1234") != NULL);
+    assert(strcmp(str_getc(s), "1234") == 0);
+    assert(str_popb(s) == '4');
+    assert(str_popb(s) == '3');
+    assert(strcmp(str_getc(s), "12") == 0);
+    str_del(s);
 }
 
 static void
-test_string_strpushf(void) {
-    struct cap_string *s = cap_strnew();
+test_str_pushf(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strpushf(NULL, '1') == NULL);
-    assert(cap_strpushf(s, 0) == NULL);
-    assert(cap_strpushf(s, '\0') == NULL);
-    assert(cap_strpushf(s, '1') != NULL);
-    assert(cap_strpushf(s, '2') != NULL);
-    assert(strcmp(cap_strgetc(s), "21") == 0);
-    cap_strdel(s);
+    assert(str_pushf(NULL, '1') == NULL);
+    assert(str_pushf(s, 0) == NULL);
+    assert(str_pushf(s, '\0') == NULL);
+    assert(str_pushf(s, '1') != NULL);
+    assert(str_pushf(s, '2') != NULL);
+    assert(strcmp(str_getc(s), "21") == 0);
+    str_del(s);
 }
 
 static void
-test_string_strpopf(void) {
-    struct cap_string *s = cap_strnew();
+test_str_popf(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strpopf(NULL) == '\0');
-    assert(cap_strset(s, "1234") != NULL);
-    assert(cap_strpopf(s) == '1');
-    assert(cap_strpopf(s) == '2');
-    assert(strcmp(cap_strgetc(s), "34") == 0);
-    cap_strdel(s);
+    assert(str_popf(NULL) == '\0');
+    assert(str_set(s, "1234") != NULL);
+    assert(str_popf(s) == '1');
+    assert(str_popf(s) == '2');
+    assert(strcmp(str_getc(s), "34") == 0);
+    str_del(s);
 }
 
 static void
-test_string_strapp(void) {
-    struct cap_string *s = cap_strnew();
+test_str_app(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strapp(NULL, "1234") == NULL);
-    assert(cap_strapp(s, NULL) == NULL);
-    assert(cap_strapp(s, "1234") != NULL);
-    assert(strcmp(cap_strgetc(s), "1234") == 0);
-    cap_strdel(s);
+    assert(str_app(NULL, "1234") == NULL);
+    assert(str_app(s, NULL) == NULL);
+    assert(str_app(s, "1234") != NULL);
+    assert(strcmp(str_getc(s), "1234") == 0);
+    str_del(s);
 }
 
 static void
-test_string_strappstream(void) {
-    struct cap_string *s = cap_strnew();
+test_str_appstream(void) {
+    string_t *s = str_new();
     assert(s != NULL);
 
 
+    char curdir[1024];
     char path[1024];
-    assert(cap_frealpath(path, sizeof path, ".") != NULL);
-    assert(capstrncat(path, sizeof path, "/tests.c") != NULL);
-    // printf("path[%s]\n", path);
+    assert(file_realpath(curdir, sizeof curdir, ".") != NULL);
+    assert(file_solvefmt(path, sizeof path, "%s/src/tests.c", curdir) != NULL);
 
     FILE *fin = fopen(path, "r");
     assert(fin != NULL);
-    assert(cap_strappstream(NULL, fin) == NULL);
-    assert(cap_strappstream(s, NULL) == NULL);
-    assert(cap_strappstream(s, fin) != NULL);
+    assert(str_appstream(NULL, fin) == NULL);
+    assert(str_appstream(s, NULL) == NULL);
+    assert(str_appstream(s, fin) != NULL);
     assert(fclose(fin) == 0);
 
-    cap_strdel(s);
+    str_del(s);
 }
 
 static void
-test_string_strappother(void) {
-    struct cap_string *s = cap_strnew();
+test_str_appother(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strset(s, "1234") != NULL);
-    struct cap_string *o = cap_strnew();
+    assert(str_set(s, "1234") != NULL);
+    string_t *o = str_new();
     assert(o != NULL);
-    assert(cap_strset(o, "1234") != NULL);
-    assert(cap_strappother(NULL, o) == NULL);
-    assert(cap_strappother(s, NULL) == NULL);
-    assert(cap_strappother(s, o) != NULL);
-    assert(strcmp(cap_strgetc(s), "12341234") == 0);
-    cap_strdel(o);
-    cap_strdel(s);
+    assert(str_set(o, "1234") != NULL);
+    assert(str_appother(NULL, o) == NULL);
+    assert(str_appother(s, NULL) == NULL);
+    assert(str_appother(s, o) != NULL);
+    assert(strcmp(str_getc(s), "12341234") == 0);
+    str_del(o);
+    str_del(s);
 }
 
 static void
-test_string_strappfmt(void) {
-    struct cap_string *s = cap_strnew();
+test_str_appfmt(void) {
+    string_t *s = str_new();
     assert(s != NULL);
     char buf[1024];
-    assert(cap_strappfmt(NULL, buf, sizeof buf, "%s", "test") == NULL);
-    assert(cap_strappfmt(s, NULL, sizeof buf, "%s", "test") == NULL);
-    assert(cap_strappfmt(s, buf, 0, "%s", "test") == NULL);
-    assert(cap_strappfmt(s, buf, sizeof buf, NULL, "test") == NULL);
-    assert(cap_strappfmt(s, buf, sizeof buf, "%s %d %c", "1234", 1, '2') != NULL);
-    assert(strcmp(cap_strgetc(s), "1234 1 2") == 0);
-    cap_strdel(s);
+    assert(str_appfmt(NULL, buf, sizeof buf, "%s", "test") == NULL);
+    assert(str_appfmt(s, NULL, sizeof buf, "%s", "test") == NULL);
+    assert(str_appfmt(s, buf, 0, "%s", "test") == NULL);
+    assert(str_appfmt(s, buf, sizeof buf, NULL, "test") == NULL);
+    assert(str_appfmt(s, buf, sizeof buf, "%s %d %c", "1234", 1, '2') != NULL);
+    assert(strcmp(str_getc(s), "1234 1 2") == 0);
+    str_del(s);
 }
 
 static void
-test_string_strrstrip(void) {
-    struct cap_string *s = cap_strnew();
+test_str_rstrip(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strset(s, "1234") != NULL);
-    assert(cap_strrstrip(NULL, "34") == NULL);
-    assert(cap_strrstrip(s, NULL) == NULL);
-    assert(cap_strrstrip(s, "34") != NULL);
-    assert(strcmp(cap_strgetc(s), "12") == 0);
-    cap_strdel(s);
+    assert(str_set(s, "1234") != NULL);
+    assert(str_rstrip(NULL, "34") == NULL);
+    assert(str_rstrip(s, NULL) == NULL);
+    assert(str_rstrip(s, "34") != NULL);
+    assert(strcmp(str_getc(s), "12") == 0);
+    str_del(s);
 }
 
 static void
-test_string_strlstrip(void) {
-    struct cap_string *s = cap_strnew();
+test_str_lstrip(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strset(s, "1234") != NULL);
-    assert(cap_strlstrip(NULL, "12") == NULL);
-    assert(cap_strlstrip(s, NULL) == NULL);
-    assert(cap_strlstrip(s, "12") != NULL);
-    assert(strcmp(cap_strgetc(s), "34") == 0);
-    cap_strdel(s);
+    assert(str_set(s, "1234") != NULL);
+    assert(str_lstrip(NULL, "12") == NULL);
+    assert(str_lstrip(s, NULL) == NULL);
+    assert(str_lstrip(s, "12") != NULL);
+    assert(strcmp(str_getc(s), "34") == 0);
+    str_del(s);
 }
 
 static void
-test_string_strstrip(void) {
-    struct cap_string *s = cap_strnew();
+test_str_strip(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strset(s, "--1234--") != NULL);
-    assert(cap_strstrip(NULL, "-") == NULL);
-    assert(cap_strstrip(s, NULL) == NULL);
-    assert(cap_strstrip(s, "-") != NULL);
-    assert(strcmp(cap_strgetc(s), "1234") == 0);
-    cap_strdel(s);
+    assert(str_set(s, "--1234--") != NULL);
+    assert(str_strip(NULL, "-") == NULL);
+    assert(str_strip(s, NULL) == NULL);
+    assert(str_strip(s, "-") != NULL);
+    assert(strcmp(str_getc(s), "1234") == 0);
+    str_del(s);
 }
 
 static void
-test_string_strfindc(void) {
-    struct cap_string *s = cap_strnew();
+test_str_findc(void) {
+    string_t *s = str_new();
     assert(s != NULL);
-    assert(cap_strset(s, "1234") != NULL);
-    assert(cap_strfindc(NULL, "") == NULL);
-    assert(cap_strfindc(s, NULL) == NULL);
-    const char *fnd = cap_strfindc(s, "23");
+    assert(str_set(s, "1234") != NULL);
+    assert(str_findc(NULL, "") == NULL);
+    assert(str_findc(s, NULL) == NULL);
+    const char *fnd = str_findc(s, "23");
     assert(fnd != NULL);
     assert(strcmp(fnd, "234") == 0);
-    cap_strdel(s);
+    str_del(s);
 }
 
 static const struct testcase
-stringtests[] = {
-    {"capstrncat", test_string_capstrncat},
-    {"capstrcpywithout", test_string_capstrcpywithout},
-    {"strdel", test_string_strdel},
-    {"strescdel", test_string_strescdel},
-    {"strnew", test_string_strnew},
-    {"strnewother", test_string_strnewother},
-    {"strlen", test_string_strlen},
-    {"strcapa", test_string_strcapa},
-    {"strgetc", test_string_strgetc},
-    {"strempty", test_string_strempty},
-    {"strclear", test_string_strclear},
-    {"strset", test_string_strset},
-    {"strresize", test_string_strresize},
-    {"strpushb", test_string_strpushb},
-    {"strpopb", test_string_strpopb},
-    {"strpushf", test_string_strpushf},
-    {"strpopf", test_string_strpopf},
+string_tests[] = {
     {"strapp", test_string_strapp},
-    {"strappstream", test_string_strappstream},
-    {"strappother", test_string_strappother},
-    {"strappfmt", test_string_strappfmt},
-    {"strrstrip", test_string_strrstrip},
-    {"strlstrip", test_string_strlstrip},
-    {"strstrip", test_string_strstrip},
-    {"strfindc", test_string_strfindc},
+    {"strcpywithout", test_string_strcpywithout},
+    {"str_del", test_str_del},
+    {"str_escdel", test_str_escdel},
+    {"str_new", test_str_new},
+    {"str_newother", test_str_newother},
+    {"str_len", test_str_len},
+    {"str_capa", test_str_capa},
+    {"str_getc", test_str_getc},
+    {"str_empty", test_str_empty},
+    {"str_clear", test_str_clear},
+    {"str_set", test_str_set},
+    {"str_resize", test_str_resize},
+    {"str_pushb", test_str_pushb},
+    {"str_popb", test_str_popb},
+    {"str_pushf", test_str_pushf},
+    {"str_popf", test_str_popf},
+    {"str_app", test_str_app},
+    {"str_appstream", test_str_appstream},
+    {"str_appother", test_str_appother},
+    {"str_appfmt", test_str_appfmt},
+    {"str_rstrip", test_str_rstrip},
+    {"str_lstrip", test_str_lstrip},
+    {"str_strip", test_str_strip},
+    {"str_findc", test_str_findc},
     {},
 };
-
-*/
 
 /*******
 * file *
 *******/
-
-/*
 
 static const char *
 get_test_fcontent(void) {
@@ -656,21 +649,36 @@ get_test_fcontent_nonewline(void) {
 
 static const char *
 get_test_finpath(void) {
-    static const char *src = "/tmp/cap.test.file";
-    static char path[1024];
-    assert(cap_fsolve(path, sizeof path, src) != NULL);
-    if (!cap_fexists(path)) {
-        FILE *f = cap_fopen(path, "w");
+    static char path[FILE_NPATH];
+
+#ifdef _TESTS_WINDOWS
+    char tmp[FILE_NPATH];
+    assert(file_get_user_home(tmp, sizeof tmp) != NULL);
+    assert(file_solvefmt(path, sizeof path, "%s/cap.test.file", tmp) != NULL);
+#else
+    assert(file_solve(path, sizeof path, "/tmp/cap.test.file") != NULL);
+#endif
+
+    if (!file_exists(path)) {
+        FILE *f = file_open(path, "wb");
         assert(f != NULL);
         fprintf(f, "%s", get_test_fcontent());
-        assert(cap_fclose(f) == 0);
+        assert(file_close(f) == 0);
     }
     return path;
 }
 
+static void
+remove_test_file(void) {
+    const char *path = get_test_finpath();
+    if (file_exists(path)) {
+        assert(file_remove(path) == 0);
+    }
+}
+
 static FILE *
 get_test_fin(void) {
-    FILE *fin = cap_fopen(get_test_finpath(), "r");
+    FILE *fin = file_open(get_test_finpath(), "rb");
     assert(fin != NULL);
     return fin;
 }
@@ -682,219 +690,236 @@ get_test_finsize(void) {
 
 static const char *
 get_test_dirpath(void) {
-    static const char *src = "/tmp";
-    static char path[1024];
-    assert(cap_fsolve(path, sizeof path, src) != NULL);
-    if (!cap_fexists(path)) {
-        assert(cap_fmkdirq(path) == 0);
-    }
+    static char path[FILE_NPATH];
+#ifdef _TESTS_WINDOWS
+    assert(file_get_user_home(path, sizeof path) != NULL);
+#else
+    assert(file_solve(path, sizeof path, "/tmp") != NULL);
+#endif
     return path;
 }
 
 static void
-test_file_fclose(void) {
-    FILE* f = cap_fopen(get_test_finpath(), "r");
+test_file_close(void) {
+    FILE* f = file_open(get_test_finpath(), "rb");
     assert(f != NULL);
-    assert(cap_fclose(NULL) != 0);
-    assert(cap_fclose(f) == 0);
+    assert(file_close(NULL) != 0);
+    assert(file_close(f) == 0);
 }
 
 static void
-test_file_fopen(void) {
-    test_file_fclose();
+test_file_open(void) {
+    test_file_close();
 }
 
 static void
-test_file_fcopy(void) {
-    FILE *f = cap_fopen(get_test_finpath(), "r");
+test_file_copy(void) {
+    FILE *f = file_open(get_test_finpath(), "rb");
     assert(f != NULL);
     // TODO
-    assert(cap_fclose(f) == 0);
+    assert(file_close(f) == 0);
 }
 
 static void
-test_file_fclosedir(void) {
-    DIR *f = cap_fopendir(get_test_dirpath());
+test_file_closedir(void) {
+    DIR *f = file_opendir(get_test_dirpath());
     assert(f != NULL);
-    assert(cap_fclosedir(NULL) == -1);
-    assert(cap_fclosedir(f) == 0);
+    assert(file_closedir(NULL) == -1);
+    assert(file_closedir(f) == 0);
 }
 
 static void
-test_file_fopendir(void) {
-    test_file_fclosedir();
+test_file_opendir(void) {
+    test_file_closedir();
 }
 
 static void
-test_file_frealpath(void) {
-    char path[1024];
-    assert(cap_frealpath(NULL, sizeof path, "/tmp/../tmp") == NULL);
-    assert(cap_frealpath(path, 0, "/tmp/../tmp") == NULL);
-    assert(cap_frealpath(path, sizeof path, NULL) == NULL);
-    assert(cap_frealpath(path, sizeof path, "/tmp/../tmp") != NULL);
-    assert(strcmp(path, "/tmp") == 0);
+test_file_realpath(void) {
+    char path[FILE_NPATH];
+
+    assert(file_realpath(NULL, sizeof path, "/tmp/../tmp") == NULL);
+    assert(file_realpath(path, 0, "/tmp/../tmp") == NULL);
+    assert(file_realpath(path, sizeof path, NULL) == NULL);
+
+    char userhome[FILE_NPATH];
+    assert(file_get_user_home(userhome, sizeof userhome));
+
+    char src[FILE_NPATH] = {0};
+    snprintf(src, sizeof src, "%s%c..", userhome, FILE_SEP);
+    assert(file_realpath(path, sizeof path, src) != NULL);
 }
 
 static void
-test_file_fexists(void) {
-    assert(cap_fexists(NULL) == false);
-    assert(cap_fexists("/tmp"));
-    assert(!cap_fexists("/nothing/directory"));
+test_file_exists(void) {
+    assert(file_exists(NULL) == false);
+    assert(file_exists(get_test_dirpath()));
+    assert(!file_exists("/nothing/directory"));
 }
 
 static void
-test_file_fmkdirmode(void) {
+test_file_mkdirmode(void) {
     // TODO
 }
 
 static void
-test_file_fmkdirq(void) {
-    assert(cap_fmkdirq(NULL) != 0);
-    assert(cap_fmkdirq("/tmp") != 0);
+test_file_mkdirq(void) {
+    assert(file_mkdirq(NULL) != 0);
 }
 
 static void
-test_file_ftrunc(void) {
-    const char *path = "/tmp/cap.ftrunc";
-    assert(!cap_fexists(path));
-    assert(!cap_ftrunc(NULL));
-    assert(cap_ftrunc(path));
-    assert(cap_fexists(path));
-    assert(remove(path) == 0);
+test_file_trunc(void) {
+    char path[FILE_NPATH];
+    char userhome[FILE_NPATH];
+    assert(file_get_user_home(userhome, sizeof userhome) != NULL);
+    assert(file_solvefmt(path, sizeof path, "%s/cap.ftrunc") != NULL);
+
+    assert(!file_exists(path));
+    assert(!file_trunc(NULL));
+    assert(file_trunc(path));
+    assert(file_exists(path));
+    assert(file_remove(path) == 0);
 }
 
 static void
-test_file_fsolve(void) {
-    char path[1024];
-    assert(cap_fsolve(NULL, sizeof path, "/tmp/../tmp") == NULL);
-    assert(cap_fsolve(path, 0, "/tmp/../tmp") == NULL);
-    assert(cap_fsolve(path, sizeof path, NULL) == NULL);
-    assert(cap_fsolve(path, sizeof path, "/tmp/../tmp"));
-    assert(strcmp(path, "/tmp") == 0);
+test_file_solve(void) {
+    char path[FILE_NPATH];
+    assert(file_solve(NULL, sizeof path, "/tmp/../tmp") == NULL);
+    assert(file_solve(path, 0, "/tmp/../tmp") == NULL);
+    assert(file_solve(path, sizeof path, NULL) == NULL);
+    assert(file_solve(path, sizeof path, get_test_dirpath()) != NULL);
 }
 
 static void
-test_file_fsolvecp(void) {
-    assert(!cap_fsolvecp(NULL));
-    char *path = cap_fsolvecp("/tmp/../tmp");
+test_file_solvecp(void) {
+    assert(!file_solvecp(NULL));
+    char *path = file_solvecp(get_test_dirpath());
     assert(path != NULL);
-    assert(strcmp(path, "/tmp") == 0);
+    assert(strcmp(path, get_test_dirpath()) == 0);
     free(path);
 }
 
 static void
-test_file_fsolvefmt(void) {
+test_file_solvefmt(void) {
     char path[1024];
-    assert(cap_fsolvefmt(NULL, sizeof path, "/%s/../%s", "tmp", "tmp") == NULL);
-    assert(cap_fsolvefmt(path, 0, "/%s/../%s", "tmp", "tmp") == NULL);
-    assert(cap_fsolvefmt(path, sizeof path, NULL, "tmp", "tmp") == NULL);
-    assert(cap_fsolvefmt(path, sizeof path, "/%s/../%s", "tmp", "tmp"));
-    assert(strcmp(path, "/tmp") == 0);
+    assert(file_solvefmt(NULL, sizeof path, "/%s/../%s", "tmp", "tmp") == NULL);
+    assert(file_solvefmt(path, 0, "/%s/../%s", "tmp", "tmp") == NULL);
+    assert(file_solvefmt(path, sizeof path, NULL, "tmp", "tmp") == NULL);
+    assert(file_solvefmt(path, sizeof path, "%s", get_test_dirpath()) != NULL);
 }
 
 static void
-test_file_fisdir(void) {
-    assert(!cap_fisdir(NULL));
-    assert(cap_fisdir("/tmp"));
-    assert(!cap_fisdir("/not/found/directory"));
+test_file_isdir(void) {
+    assert(!file_isdir(NULL));
+    assert(file_isdir(get_test_dirpath()));
+    assert(!file_isdir("/not/found/directory"));
 }
 
 static void
-test_file_freadcp(void) {
-    FILE *fin = cap_fopen(get_test_finpath(), "r");
+test_file_readcp(void) {
+    FILE *fin = file_open(get_test_finpath(), "rb");
     assert(fin != NULL);
-    assert(!cap_freadcp(NULL));
-    char *p = cap_freadcp(fin);
-    cap_fclose(fin);
+    assert(!file_readcp(NULL));
+    char *p = file_readcp(fin);
+    file_close(fin);
     assert(p != NULL);
     free(p);
 }
 
 static void
-test_file_fsize(void) {
-    FILE *fin = cap_fopen(get_test_finpath(), "r");
+test_file_size(void) {
+    FILE *fin = file_open(get_test_finpath(), "rb");
     assert(fin != NULL);
-    assert(cap_fsize(NULL) == -1);
-    assert(cap_fsize(fin) == get_test_finsize());
-    assert(cap_fclose(fin) == 0);
+    assert(file_size(NULL) == -1);
+    assert(file_size(fin) == get_test_finsize());
+    assert(file_close(fin) == 0);
 }
 
 static void
-test_file_fsuffix(void) {
-    assert(cap_fsuffix(NULL) == NULL);
-    const char *suf = cap_fsuffix("/this/is/text/file.txt");
+test_file_suffix(void) {
+    assert(file_suffix(NULL) == NULL);
+    const char *suf = file_suffix("/this/is/text/file.txt");
     assert(suf != NULL);
     assert(strcmp(suf, "txt") == 0);
 }
 
 static void
-test_file_fdirname(void) {
-    char name[128];
-    assert(cap_fdirname(NULL, sizeof name, "/dir/name/file") == NULL);
-    assert(cap_fdirname(name, 0, "/dir/name/file") == NULL);
-    assert(cap_fdirname(name, sizeof name, NULL) == NULL);
-    assert(cap_fdirname(name, sizeof name, "/dir/name/file") != NULL);
-    assert(strcmp(name, "/dir/name") == 0);
+test_file_dirname(void) {
+    char name[FILE_NPATH];
+    char userhome[FILE_NPATH];
+    char path[FILE_NPATH];
+    assert(file_get_user_home(userhome, sizeof userhome));
+    assert(file_solvefmt(path, sizeof path, "%s/file", userhome));
+
+    assert(file_dirname(NULL, sizeof name, path) == NULL);
+    assert(file_dirname(name, 0, path) == NULL);
+    assert(file_dirname(name, sizeof name, NULL) == NULL);
+    assert(file_dirname(name, sizeof name, path) != NULL);
+    assert(strcmp(name, userhome) == 0);
 }
 
 static void
-test_file_fbasename(void) {
-    char name[128];
-    assert(cap_fbasename(NULL, sizeof name, "/dir/name/file") == NULL);
-    assert(cap_fbasename(name, 0, "/dir/name/file") == NULL);
-    assert(cap_fbasename(name, sizeof name, NULL) == NULL);
-    assert(cap_fbasename(name, sizeof name, "/dir/name/file") != NULL);
+test_file_basename(void) {
+    char name[FILE_NPATH];
+    char userhome[FILE_NPATH];
+    char path[FILE_NPATH];
+    assert(file_get_user_home(userhome, sizeof userhome));
+    assert(file_solvefmt(path, sizeof path, "%s/file", userhome));
+
+    assert(file_basename(NULL, sizeof name, path) == NULL);
+    assert(file_basename(name, 0, path) == NULL);
+    assert(file_basename(name, sizeof name, NULL) == NULL);
+    assert(file_basename(name, sizeof name, path) != NULL);
     assert(strcmp(name, "file") == 0);
 }
 
 static void
-test_file_fgetline(void) {
+test_file_getline(void) {
     FILE *fin = get_test_fin();
     assert(fin != NULL);
     char line[1024];
-    assert(cap_fgetline(NULL, sizeof line, fin) == EOF);
-    assert(cap_fgetline(line, 0, fin) == EOF);
-    assert(cap_fgetline(line, sizeof line, NULL) == EOF);
-    assert(cap_fgetline(line, sizeof line, fin) != EOF);
+    assert(file_getline(NULL, sizeof line, fin) == EOF);
+    assert(file_getline(line, 0, fin) == EOF);
+    assert(file_getline(line, sizeof line, NULL) == EOF);
+    assert(file_getline(line, sizeof line, fin) != EOF);
     assert(strcmp(get_test_fcontent_nonewline(), line) == 0);
-    assert(cap_fclose(fin) == 0);
+    assert(file_close(fin) == 0);
 }
 
 static void
-test_file_freadline(void) {
+test_file_readline(void) {
     char line[1024];
-    assert(cap_freadline(NULL, sizeof line, get_test_finpath()) == NULL);
-    assert(cap_freadline(line, 0, get_test_finpath()) == NULL);
-    assert(cap_freadline(line, sizeof line, NULL) == NULL);
-    assert(cap_freadline(line, sizeof line, get_test_finpath()) != NULL);
+    assert(file_readline(NULL, sizeof line, get_test_finpath()) == NULL);
+    assert(file_readline(line, 0, get_test_finpath()) == NULL);
+    assert(file_readline(line, sizeof line, NULL) == NULL);
+    assert(file_readline(line, sizeof line, get_test_finpath()) != NULL);
     assert(strcmp(line, get_test_fcontent_nonewline()) == 0);
 }
 
 static void
-test_file_fwriteline(void) {
-    assert(cap_fwriteline(NULL, get_test_finpath()) == NULL);
-    assert(cap_fwriteline(get_test_fcontent_nonewline(), NULL) == NULL);
-    assert(cap_fwriteline(get_test_fcontent_nonewline(), get_test_finpath()));
-    test_file_freadline();
+test_file_writeline(void) {
+    assert(file_writeline(NULL, get_test_finpath()) == NULL);
+    assert(file_writeline(get_test_fcontent_nonewline(), NULL) == NULL);
+    assert(file_writeline(get_test_fcontent_nonewline(), get_test_finpath()));
+    test_file_readline();
 }
 
 static void
 test_file_dirnodedel(void) {
-    cap_dirclose(NULL);
-    assert(cap_diropen(NULL) == NULL);
-    assert(cap_dirread(NULL) == NULL);
-    cap_dirnodedel(NULL);
+    file_dirclose(NULL);
+    assert(file_diropen(NULL) == NULL);
+    assert(file_dirread(NULL) == NULL);
+    file_dirnodedel(NULL);
 
-    struct cap_dir *dir = cap_diropen("/tmp");
+    struct file_dir *dir = file_diropen(get_test_dirpath());
     assert(dir != NULL);
 
-    for (struct cap_dirnode *node; (node = cap_dirread(dir)); ) {
-        const char *dname = cap_dirnodename(node);
+    for (struct file_dirnode *node; (node = file_dirread(dir)); ) {
+        const char *dname = file_dirnodename(node);
         assert(dname != NULL);
-        cap_dirnodedel(node);
+        file_dirnodedel(node);
     } 
 
-    assert(cap_dirclose(dir) == 0);
+    assert(file_dirclose(dir) == 0);
 }
 
 static void
@@ -918,38 +943,36 @@ test_file_dirread(void) {
 }
 
 static const struct testcase
-filetests[] = {
-    {"fclose", test_file_fclose},
-    {"fopen", test_file_fopen},
-    {"fcopy", test_file_fcopy},
-    {"fclosedir", test_file_fclosedir},
-    {"fopendir", test_file_fopendir},
-    {"frealpath", test_file_frealpath},
-    {"fexists", test_file_fexists},
-    {"fmkdirmode", test_file_fmkdirmode},
-    {"fmkdirq", test_file_fmkdirq},
-    {"ftrunc", test_file_ftrunc},
-    {"fsolve", test_file_fsolve},
-    {"fsolvecp", test_file_fsolvecp},
-    {"fsolvefmt", test_file_fsolvefmt},
-    {"fisdir", test_file_fisdir},
-    {"freadcp", test_file_freadcp},
-    {"fsize", test_file_fsize},
-    {"fsuffix", test_file_fsuffix},
-    {"fdirname", test_file_fdirname},
-    {"fbasename", test_file_fbasename},
-    {"fgetline", test_file_fgetline},
-    {"freadline", test_file_freadline},
-    {"fwriteline", test_file_fwriteline},
-    {"dirnodedel", test_file_dirnodedel},
-    {"dirnodename", test_file_dirnodename},
-    {"dirclose", test_file_dirclose},
-    {"diropen", test_file_diropen},
-    {"dirread", test_file_dirread},
+file_tests[] = {
+    {"file_close", test_file_close},
+    {"file_open", test_file_open},
+    {"file_copy", test_file_copy},
+    {"file_closedir", test_file_closedir},
+    {"file_opendir", test_file_opendir},
+    {"file_realpath", test_file_realpath},
+    {"file_exists", test_file_exists},
+    {"file_mkdirmode", test_file_mkdirmode},
+    {"file_mkdirq", test_file_mkdirq},
+    {"file_trunc", test_file_trunc},
+    {"file_solve", test_file_solve},
+    {"file_solvecp", test_file_solvecp},
+    {"file_solvefmt", test_file_solvefmt},
+    {"file_isdir", test_file_isdir},
+    {"file_readcp", test_file_readcp},
+    {"file_size", test_file_size},
+    {"file_suffix", test_file_suffix},
+    {"file_dirname", test_file_dirname},
+    {"file_basename", test_file_basename},
+    {"file_getline", test_file_getline},
+    {"file_readline", test_file_readline},
+    {"file_writeline", test_file_writeline},
+    {"file_dirnodedel", test_file_dirnodedel},
+    {"file_dirnodename", test_file_dirnodename},
+    {"file_dirclose", test_file_dirclose},
+    {"file_diropen", test_file_diropen},
+    {"file_dirread", test_file_dirread},
     {},
 };
-
-*/
 
 /******
 * env *
@@ -1206,39 +1229,39 @@ errortests[] = {
 static void
 test_var_init(void) {
     const char *vardir = "/tmp/var";
-    if (!cap_fexists(vardir)) {
-        assert(cap_fmkdirq(vardir) == 0);
+    if (!file_exists(vardir)) {
+        assert(file_mkdirq(vardir) == 0);
     }
     assert(cap_varinit(vardir));
     
-    struct cap_dir *d = cap_diropen(vardir);
+    struct file_dir *d = file_diropen(vardir);
     assert(d != NULL);
 
     char line[1024];
     char tmppath[1024];
-    for (struct cap_dirnode *n; (n = cap_dirread(d)); ) {
-        const char *fname = cap_dirnodename(n);
+    for (struct file_dirnode *n; (n = file_dirread(d)); ) {
+        const char *fname = file_dirnodename(n);
         if (fname[0] == '.' || strcmp(fname, "..") == 0) {
-            cap_dirnodedel(n);
+            file_dirnodedel(n);
             continue;
         }
 
         if (strcmp(fname, "home") == 0) {
-            assert(cap_fsolvefmt(tmppath, sizeof tmppath, "%s/%s", vardir, fname));
-            assert(cap_freadline(line, sizeof line, tmppath));
+            assert(file_solvefmt(tmppath, sizeof tmppath, "%s/%s", vardir, fname));
+            assert(file_readline(line, sizeof line, tmppath));
             assert(strcmp(line, "/tmp") == 0);
         } else if (strcmp(fname, "cd") == 0) {
-            assert(cap_fsolvefmt(tmppath, sizeof tmppath, "%s/%s", vardir, fname));
-            assert(cap_freadline(line, sizeof line, tmppath));
+            assert(file_solvefmt(tmppath, sizeof tmppath, "%s/%s", vardir, fname));
+            assert(file_readline(line, sizeof line, tmppath));
             assert(strcmp(line, "/tmp") == 0);
         } else {
             assert(0 && "invalid file name");
         }
 
-        cap_dirnodedel(n);
+        file_dirnodedel(n);
     }
 
-    cap_dirclose(d);
+    file_dirclose(d);
 }
 
 static const struct testcase
@@ -1312,13 +1335,13 @@ test_util_randrange(void) {
 static void
 test_util_safesystem(void) {
     const char *path = "/tmp/f";
-    if (cap_fexists(path)) {
+    if (file_exists(path)) {
         assert(remove(path) == 0);
     }
     char cmd[1024];
-    assert(cap_fsolvefmt(cmd, sizeof cmd, "/bin/sh -c \"touch %s\"", path));
+    assert(file_solvefmt(cmd, sizeof cmd, "/bin/sh -c \"touch %s\"", path));
     assert(safesystem(cmd) == 0);
-    assert(cap_fexists(path));
+    assert(file_exists(path));
 }
 
 static void
@@ -1353,12 +1376,12 @@ test_util_argsbyoptind(void) {
         }
     }
 
-    struct cap_array *args = argsbyoptind(argc, argv, optind); 
-    // cap_arrshow(args, stdout);
-    assert(strcmp(cap_arrgetc(args, 0), "program") == 0);
-    assert(strcmp(cap_arrgetc(args, 1), "arg1") == 0);
-    assert(strcmp(cap_arrgetc(args, 2), "arg2") == 0);
-    cap_arrdel(args);
+    cstring_array_t *args = argsbyoptind(argc, argv, optind); 
+    // cstrarr_show(args, stdout);
+    assert(strcmp(cstrarr_getc(args, 0), "program") == 0);
+    assert(strcmp(cstrarr_getc(args, 1), "arg1") == 0);
+    assert(strcmp(cstrarr_getc(args, 2), "arg2") == 0);
+    cstrarr_del(args);
 }
 
 static const struct testcase
@@ -2132,9 +2155,9 @@ ast_tests[] = {
 
 static const struct testmodule
 testmodules[] = {
-    // {"array", arraytests},
-    // {"string", stringtests},
-    // {"file", filetests},
+    {"cstring_array", cstrarr_tests},
+    {"string", string_tests},
+    {"file", file_tests},
     // {"env", envtests},
     // {"hash", hashtests},
     // {"cl", cltests},
@@ -2260,6 +2283,11 @@ run(const struct opts *opts) {
     fflush(stderr);
 }
 
+static void
+cleanup(void) {
+    remove_test_file();
+}
+
 int
 main(int argc, char *argv[]) {
     struct opts opts;
@@ -2268,6 +2296,7 @@ main(int argc, char *argv[]) {
     }
 
     run(&opts);
+    cleanup();
 
     return 0;
 }

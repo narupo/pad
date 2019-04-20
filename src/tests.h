@@ -11,6 +11,10 @@
 # define _GNU_SOURCE 1 /* cap: tests: strdup */
 #endif
 
+#if defined(_WIN32) || defined(_WIN64)
+# define _TESTS_WINDOWS
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
