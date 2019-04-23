@@ -20,6 +20,7 @@ typedef enum {
     RMCMD_ERR_REMOVE_FILE,
     RMCMD_ERR_READ_CD,
     RMCMD_ERR_OUTOFHOME,
+    RMCMD_ERR_CLOSEDIR,
 } rmcmd_errno_t;
 
 struct rmcmd;
