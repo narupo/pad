@@ -114,7 +114,7 @@ rmcmd_what(const rmcmd_t *self) {
 
 static bool
 rmcmd_remove_r(rmcmd_t *self, const char *dirpath) {
-    if (isoutofhome(self->config->var_home_path, dirpath)) {
+    if (is_out_of_home(self->config->home_path, dirpath)) {
         strappfmt(self->what, sizeof self->what, "\"%s\" is out of home.", dirpath);
         self->errno_ = RMCMD_ERR_OUTOFHOME;
         return false;
@@ -145,7 +145,7 @@ rmcmd_remove_r(rmcmd_t *self, const char *dirpath) {
             self->errno_ = RMCMD_ERR_SOLVEPATH;
         }
 
-        if (isoutofhome(self->config->var_home_path, path)) {
+        if (is_out_of_home(self->config->home_path, path)) {
             strappfmt(self->what, sizeof self->what, "\"%s\" is out of home.", path);
             self->errno_ = RMCMD_ERR_OUTOFHOME;
             return false;            
@@ -197,7 +197,7 @@ rmcmd_rmr(rmcmd_t *self) {
             return 1;
         }
 
-        if (isoutofhome(self->config->var_home_path, path)) {
+        if (is_out_of_home(self->config->home_path, path)) {
             strappfmt(self->what, sizeof self->what, "\"%s\" is out of home.", path);
             self->errno_ = RMCMD_ERR_OUTOFHOME;
             return 1;            
@@ -230,7 +230,7 @@ rmcmd_rm(rmcmd_t *self) {
             return 1;
         }
 
-        if (isoutofhome(self->config->var_home_path, path)) {
+        if (is_out_of_home(self->config->home_path, path)) {
             strappfmt(self->what, sizeof self->what, "\"%s\" is out of home.", path);
             self->errno_ = RMCMD_ERR_OUTOFHOME;
             return 1;
