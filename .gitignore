@@ -38,16 +38,7 @@
 doc/
 doc/note.txt
 build/
-
-src/cap
-src/cap-alias
-src/cap-cat
-src/cap-cd
-src/cap-home
-src/cap-ls
-src/cap-pwd
-src/cap-run
-src/cap-hub
-src/tests
+test_bak/
 
 *.pyc
+

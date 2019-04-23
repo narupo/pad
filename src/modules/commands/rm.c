@@ -142,28 +142,32 @@ rmcmd_remove_r(rmcmd_t *self, const char *dirpath) {
         char path[FILE_NPATH];
         if (!file_solvefmt(path, sizeof path, "%s/%s", dirpath, dirname)) {
             strappfmt(self->what, sizeof self->what, "failed to solve path by \"%s\".", dirname);
-            self->errno_ = RMCMD_ERR_SOLVEPATH;            
+            self->errno_ = RMCMD_ERR_SOLVEPATH;
         }
 
         if (file_isdir(path)) {
-            // is directory
             if (!rmcmd_remove_r(self, path)) {
                 return false;
             }
-            // directory is empty
+            // directory is empty, remove directory
             if (file_remove(path) != 0) {
                 strappfmt(self->what, sizeof self->what, "failed to remove file \"%s\".", path);
                 self->errno_ = RMCMD_ERR_REMOVE_FILE;
                 return false;
             }            
         } else {
-            // is file
             if (file_remove(path) != 0) {
                 strappfmt(self->what, sizeof self->what, "failed to remove file \"%s\".", path);
                 self->errno_ = RMCMD_ERR_REMOVE_FILE;
                 return false;
             }
         }
+    }
+
+    if (file_dirclose(dir) != 0) {
+        strappfmt(self->what, sizeof self->what, "failed to close directory \"%s\".", dirpath);
+        self->errno_ = RMCMD_ERR_CLOSEDIR;        
+        return false;
     }
 
     return true;

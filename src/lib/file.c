@@ -164,7 +164,7 @@ file_remove(const char *path) {
 		if (RemoveDirectory(path)) {
 			return 0; // success
 		} else {
-			return 1;
+			return remove(path);
 		}
 	}
 #endif
