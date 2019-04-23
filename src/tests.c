@@ -286,63 +286,63 @@ cstrarr_tests[] = {
 *********/
 
 static void
-test_string_strapp(void) {
+test_cstring_cstr_app(void) {
     char dst[100] = {};
 
-    assert(strapp(dst, sizeof dst, NULL) == NULL);
-    assert(strapp(NULL, sizeof dst, "source") == NULL);
-    assert(strapp(dst, 0, "source") == NULL);
+    assert(cstr_app(dst, sizeof dst, NULL) == NULL);
+    assert(cstr_app(NULL, sizeof dst, "source") == NULL);
+    assert(cstr_app(dst, 0, "source") == NULL);
 
-    assert(strapp(dst, 3, "source") != NULL);
+    assert(cstr_app(dst, 3, "source") != NULL);
     assert(strcmp(dst, "so") == 0);
 
     *dst = '\0';
-    assert(strapp(dst, sizeof dst, "source") != NULL);
+    assert(cstr_app(dst, sizeof dst, "source") != NULL);
     assert(strcmp(dst, "source") == 0);
-    assert(strapp(dst, sizeof dst, " is available.") != NULL);
+    assert(cstr_app(dst, sizeof dst, " is available.") != NULL);
     assert(strcmp(dst, "source is available.") == 0);
-    assert(strapp(dst, sizeof dst, "") != NULL);
+    assert(cstr_app(dst, sizeof dst, "") != NULL);
     assert(strcmp(dst, "source is available.") == 0);
 }
 
 static void
-test_string_strappfmt(void) {
+test_cstring_cstr_appfmt(void) {
     char dst[100] = {};
 
-    assert(strappfmt(dst, sizeof dst, NULL) == NULL);
-    assert(strappfmt(NULL, sizeof dst, "source") == NULL);
-    assert(strappfmt(dst, 0, "source") == NULL);
+    assert(cstr_appfmt(dst, sizeof dst, NULL) == NULL);
+    assert(cstr_appfmt(NULL, sizeof dst, "source") == NULL);
+    assert(cstr_appfmt(dst, 0, "source") == NULL);
 
-    assert(strappfmt(dst, 3, "source") != NULL);
+    assert(cstr_appfmt(dst, 3, "source") != NULL);
     assert(strcmp(dst, "so") == 0);
 
     *dst = '\0';
-    assert(strappfmt(dst, sizeof dst, "source") != NULL);
+    assert(cstr_appfmt(dst, sizeof dst, "source") != NULL);
     assert(strcmp(dst, "source") == 0);
-    assert(strappfmt(dst, sizeof dst, " is available.") != NULL);
+    assert(cstr_appfmt(dst, sizeof dst, " is available.") != NULL);
     assert(strcmp(dst, "source is available.") == 0);
-    assert(strappfmt(dst, sizeof dst, "") != NULL);
+    assert(cstr_appfmt(dst, sizeof dst, "") != NULL);
     assert(strcmp(dst, "source is available.") == 0);
 
     *dst = '\0';
-    assert(strappfmt(dst, sizeof dst, "n %d is %c", 10, 'i') != NULL);
+    assert(cstr_appfmt(dst, sizeof dst, "n %d is %c", 10, 'i') != NULL);
     assert(strcmp(dst, "n 10 is i") == 0);
 }
 
 static void
-test_string_strcpywithout(void) {
+test_cstring_cstr_cpywithout(void) {
     char dst[100];
 
-    assert(strcpywithout(NULL, sizeof dst, "abc123def456", "") == NULL);
-    assert(strcpywithout(dst, 0, "abc123def456", "") == NULL);
-    assert(strcpywithout(dst, sizeof dst, NULL, "") == NULL);
-    assert(strcpywithout(dst, sizeof dst, "abc123def456", NULL) == NULL);
+    assert(cstr_cpywithout(NULL, sizeof dst, "abc123def456", "") == NULL);
+    assert(cstr_cpywithout(dst, 0, "abc123def456", "") == NULL);
+    assert(cstr_cpywithout(dst, sizeof dst, NULL, "") == NULL);
+    assert(cstr_cpywithout(dst, sizeof dst, "abc123def456", NULL) == NULL);
 
-    assert(strcpywithout(dst, sizeof dst, "abc123def456", "") != NULL);
+    assert(cstr_cpywithout(dst, sizeof dst, "abc123def456", "") != NULL);
     assert(strcmp(dst, "abc123def456") == 0);
-    assert(strcpywithout(dst, sizeof dst, "abc123def456", "123456") != NULL);
+    assert(cstr_cpywithout(dst, sizeof dst, "abc123def456", "123456") != NULL);
     assert(strcmp(dst, "abcdef") == 0);
-    assert(strcpywithout(dst, sizeof dst, "abc123def456", "abcdef") != NULL);
+    assert(cstr_cpywithout(dst, sizeof dst, "abc123def456", "abcdef") != NULL);
     assert(strcmp(dst, "123456") == 0);
 }
 
@@ -629,9 +629,9 @@ test_str_findc(void) {
 
 static const struct testcase
 string_tests[] = {
-    {"strapp", test_string_strapp},
-    {"strappfmt", test_string_strappfmt},
-    {"strcpywithout", test_string_strcpywithout},
+    {"cstr_app", test_cstring_cstr_app},
+    {"cstr_appfmt", test_cstring_cstr_appfmt},
+    {"cstr_cpywithout", test_cstring_cstr_cpywithout},
     {"str_del", test_str_del},
     {"str_escdel", test_str_escdel},
     {"str_new", test_str_new},

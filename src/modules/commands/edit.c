@@ -207,14 +207,14 @@ editcmd_run(editcmd_t *self) {
         }        
     }
 
-    cstr_cat(self->cmdline, sizeof self->cmdline, self->editor);
+    cstr_app(self->cmdline, sizeof self->cmdline, self->editor);
     if (fname) {
         if (!editcmd_create_open_fname(self, fname)) {
             err_die("failed to create open file name");
             return 2;
         }        
-        cstr_cat(self->cmdline, sizeof self->cmdline, " ");
-        cstr_cat(self->cmdline, sizeof self->cmdline, self->open_fname);
+        cstr_app(self->cmdline, sizeof self->cmdline, " ");
+        cstr_app(self->cmdline, sizeof self->cmdline, self->open_fname);
     }
 
     safesystem(self->cmdline, SAFESYSTEM_EDIT);
