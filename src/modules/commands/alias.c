@@ -43,12 +43,12 @@ alcmd_parse_opts(alcmd_t *self) {
         case 'h': self->opts.ishelp = true; break;
         case 'g': self->opts.isglobal = true; break;
         case '?':
-        default: err_die("Unknown option"); break;
+        default: err_die("unknown option"); break;
         }
     }
 
     if (self->argc < optind) {
-        err_die("Failed to parse option");
+        err_die("failed to parse option");
         return NULL;
     }
 
@@ -91,7 +91,7 @@ alcmd_new(config_t *move_config, int argc, char **move_argv) {
     self->argv = move_argv;
     self->almgr = almgr_new(self->config);
 
-    if (alcmd_parse_opts(self) == NULL) {
+    if (!alcmd_parse_opts(self)) {
         err_die("failed to parse options");
         return NULL;
     }
@@ -102,7 +102,7 @@ alcmd_new(config_t *move_config, int argc, char **move_argv) {
 static alcmd_t *
 alcmd_load_alias_list_by_opts(alcmd_t* self) {
     if (self->opts.isglobal) {
-        if (almgr_load_alias_list(self->almgr, CAP_SCOPE_GLOBAL) == NULL) {
+        if (!almgr_load_alias_list(self->almgr, CAP_SCOPE_GLOBAL)) {
             if (almgr_has_error(self->almgr)) {
                 err_error(almgr_get_error_detail(self->almgr));
             }
@@ -110,7 +110,7 @@ alcmd_load_alias_list_by_opts(alcmd_t* self) {
             return NULL;
         }
     } else {
-        if (almgr_load_alias_list(self->almgr, CAP_SCOPE_LOCAL) == NULL) {
+        if (!almgr_load_alias_list(self->almgr, CAP_SCOPE_LOCAL)) {
             if (almgr_has_error(self->almgr)) {
                 err_error(almgr_get_error_detail(self->almgr));
             }
@@ -126,7 +126,7 @@ alcmd_getc_value(alcmd_t *self, const char *key) {
     const context_t *ctx = almgr_getc_context(self->almgr);
     const dict_t *almap = ctx_getc_almap(ctx);
     const dict_item_t *item = dict_getc(almap, key);
-    if (item == NULL) {
+    if (!item) {
         return NULL;
     }
     return item->value;
@@ -143,7 +143,7 @@ alcmd_show_list(alcmd_t *self) {
 
     for (int i = 0; i < dict_len(almap); ++i) {
         const dict_item_t *alias = dict_getc_index(almap, i);
-        if (alias == NULL) {
+        if (!alias) {
             continue;
         }
         keymaxlen = max(strlen(alias->key), keymaxlen);
@@ -153,7 +153,7 @@ alcmd_show_list(alcmd_t *self) {
 
     for (int i = 0; i < dict_len(almap); ++i) {
         const dict_item_t *alias = dict_getc_index(almap, i);
-        if (alias == NULL) {
+        if (!alias) {
             continue;
         }
         printf("%-*s %s\n", keymaxlen, alias->key, alias->value);
@@ -166,7 +166,7 @@ alcmd_show_list(alcmd_t *self) {
 static int
 alcmd_show_alias_value(alcmd_t *self, const char *key) {
     const char *value = alcmd_getc_value(self, key);
-    if (value == NULL) {
+    if (!value) {
         err_error("not found alias \"%s\"", key);
         return 1;
     }
@@ -182,7 +182,7 @@ alcmd_run(alcmd_t *self) {
         return 0;
     }
 
-    if (alcmd_load_alias_list_by_opts(self) == NULL) {
+    if (!alcmd_load_alias_list_by_opts(self)) {
         return 1;
     }
 
