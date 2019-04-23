@@ -7,100 +7,98 @@
  */
 #include "error.h"
 
-static char *
-capitalize_text(char *dst, size_t dstsz, const char *text) {
+void
+err_fix_text(char *dst, uint32_t dstsz, const char *src, bool debug) {
+    char *dst2 = mem_ecalloc(1, sizeof(char)*dstsz);
+    const char *dend = dst2+dstsz-1;
+    const char *sp = src;
+    char *dp = dst2;
     int m = 0;
-    char *dp = dst;
-    char *dpend = dst + (dstsz-1);
-    const char *p = text;
 
-    for (; *p && dp < dpend; ) {
-        char c = *p++;
-        switch (m) {
-        case 0: // first
-            if (isspace(c)) {
-                *dp++ = c;
-            } else if (c == '\'') {
-                *dp++ = c;
+    for (; *sp && dp < dend; ++sp) {
+        if (debug) {
+            printf("m[%d] c[%c]\n", m, *sp);
+        }
+
+        if (m == 0) {
+            if (isspace(*sp)) {
+                // pass
+            } else if (*sp == '"') {
+                *dp++ = *sp;
                 m = 100;
-            } else if (c == '"') {
-                *dp++ = c;
-                m = 110;
             } else {
-                if (isalpha(c)) {
-                    *dp++ = toupper(c);
+                if (isalpha(*sp)) {
+                    *dp++ = toupper(*sp);
                 } else {
-                    *dp++ = c;
+                    *dp++ = *sp;
                 }
                 m = 10;
             }
-            break;
-        case 10: // found character
-            if (c == '.') {
-                *dp++ = c;
-                m = 20;
-            } else if (c == '\'') {
-                *dp++ = c;
+        } else if (m == 10) { // found printable character
+            if (*sp == '"') {
+                *dp++ = *sp;
                 m = 100;
-            } else if (c == '"') {
-                *dp++ = c;
-                m = 110;
+            } else if (*sp == '.') {
+                *dp++ = *sp;
+                m = 150;
             } else {
-                *dp++ = c;
+                *dp++ = *sp;
             }
-            break;
-        case 20: // found '.'
-            if (isalpha(c)) {
-                *dp++ = toupper(c);
+        } else if (m == 100) { // found string
+            if (*sp == '"') {
+                *dp++ = *sp;
                 m = 10;
-            } else if (c == '\'') {
-                *dp++ = c;
+            } else {
+                *dp++ = *sp;
+            }
+        } else if (m == 150) { // found .
+            if (isspace(*sp)) {
+                // pass
+            } else if (*sp == '.') {
+                // pass
+            } else if (*sp == '"') {
+                *dp++ = ' '; // add space after dot
+                *dp++ = *sp;
                 m = 100;
-            } else if (c == '"') {
-                *dp++ = c;
-                m = 110;
             } else {
-                *dp++ = c;
-            }
-            break;
-        case 100: // found "'"
-            if (c == '\'') {
+                *dp++ = ' '; // add space after dot
+                if (isalpha(*sp)) {
+                    *dp++ = toupper(*sp);
+                } else {
+                    *dp++ = *sp;
+                }
                 m = 10;
             }
-            *dp++ = c;
-            break;
-        case 110: // found '"'
-            if (c == '"') {
-                m = 10;
-            }
-            *dp++ = c;
-            break;
         }
     }
 
+    if (*(dp-1) != '.') {
+        *dp++ = '.';
+    }
     *dp = '\0';
-    return dst;
+
+    memmove(dst, dst2, dstsz);
+    free(dst2);
 }
 
 static void
 errorap_unsafe(const char *title, va_list ap, const char *fmt) {
 	fflush(stdout);
 
-	size_t fmtlen = strlen(fmt);
+	uint32_t fmtlen = strlen(fmt);
 
 	if (title != NULL && strlen(title)) {
 		fprintf(stderr, "%c%s: ", toupper(title[0]), title+1);
 	}
 
 	if (fmtlen) {
-		char tmp[1024*5] = {0};
+        char tmp[1024*5] = {0};
 		vsnprintf(tmp, sizeof tmp, fmt, ap);
-		capitalize_text(tmp, sizeof tmp, tmp);
+        err_fix_text(tmp, sizeof tmp, tmp, false);
 		fprintf(stderr, "%s", tmp);
-	}
-
-	if (fmtlen && fmt[fmtlen-1] != '.') {
-		fprintf(stderr, ".");
+        if (strlen(tmp) && tmp[strlen(tmp)-1] != '.') {
+            fprintf(stderr, ".");
+        }
 	}
 
 	if (errno != 0) {
@@ -112,7 +110,7 @@ errorap_unsafe(const char *title, va_list ap, const char *fmt) {
 }
 
 static const char *
-fmttoupper_unsafe(char *dst, size_t dstsz, const char *fmt) {
+fmttoupper_unsafe(char *dst, uint32_t dstsz, const char *fmt) {
 	if (isalpha(fmt[0])) {
 		snprintf(dst, dstsz, "%c%s", toupper(fmt[0]), fmt+1);
 		return dst;
@@ -128,7 +126,7 @@ _log_unsafe(const char *file, long line, const char *func, const char *type, con
 	msg = (msg ? msg : "");
 
 	FILE *fout = stderr;
-	size_t msglen = strlen(msg);
+	uint32_t msglen = strlen(msg);
 
 	// Datetime
 	time_t tim = time(NULL);

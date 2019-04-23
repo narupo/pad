@@ -11,12 +11,15 @@ struct opts {
 struct rmcmd {
     config_t *config;
     int argc;
-    char **argv;
     int optind;
+    rmcmd_errno_t errno_;
+    char **argv;
     struct opts opts;
+    char what[1024];
+    char parpath[FILE_NPATH]; // parent path. path of cd or home
 };
 
-void
+static bool
 rmcmd_parse_opts(rmcmd_t *self) {
     // parse options
     static struct option longopts[] = {
@@ -40,15 +43,21 @@ rmcmd_parse_opts(rmcmd_t *self) {
         case 'h': self->opts.is_help = true; break;
         case 'r': self->opts.is_recursive = true; break;
         case '?':
-        default: err_die("unknown option"); break;
+        default:
+            strappfmt(self->what, sizeof self->what, "unknown option.");
+            self->errno_ = RMCMD_ERR_UNKNOWN_OPTS;
+            return false;
         }
     }
 
     if (self->argc < optind) {
-        err_die("failed to parse option");
+        strappfmt(self->what, sizeof self->what, "failed to parse option.");
+        self->errno_ = RMCMD_ERR_PARSE_OPTS;
+        return false;
     }
 
     self->optind = optind;
+    return true;
 }
 
 void
@@ -69,12 +78,14 @@ rmcmd_new(config_t *move_config, int argc, char **move_argv) {
     self->argc = argc;
     self->argv = move_argv;
 
-    rmcmd_parse_opts(self);
+    if (!rmcmd_parse_opts(self)) {
+        return self;
+    }
 
     return self;
 }
 
-void
+static void
 rmcmd_show_usage(rmcmd_t *self) {
     fflush(stdout);
     fflush(stderr);
@@ -91,32 +102,116 @@ rmcmd_show_usage(rmcmd_t *self) {
     fflush(stderr);
 }
 
-int
+rmcmd_errno_t
+rmcmd_errno(const rmcmd_t *self) {
+    return self->errno_;
+}
+
+const char *
+rmcmd_what(const rmcmd_t *self) {
+    return self->what;
+}
+
+static bool
+rmcmd_remove_r(rmcmd_t *self, const char *dirpath) {
+    if (isoutofhome(self->config->var_home_path, dirpath)) {
+        strappfmt(self->what, sizeof self->what, "\"%s\" is out of home.", dirpath);
+        self->errno_ = RMCMD_ERR_OUTOFHOME;
+        return false;
+    }
+
+    if (!file_isdir(dirpath)) {
+        strappfmt(self->what, sizeof self->what, "\"%s\" is not a directory.", dirpath);
+        self->errno_ = RMCMD_ERR_OPENDIR;
+        return false;
+    }
+
+    file_dir_t *dir = file_diropen(dirpath);
+    if (!dir) {
+        strappfmt(self->what, sizeof self->what, "failed to open directory \"%s\".", dirpath);
+        self->errno_ = RMCMD_ERR_OPENDIR;
+        return false;
+    }
+
+    for (file_dirnode_t *node; (node = file_dirread(dir)); ) {
+        const char *dirname = file_dirnodename(node);
+        if (!strcmp(dirname, ".") || !strcmp(dirname, "..")) {
+            continue;
+        }
+
+        char path[FILE_NPATH];
+        if (!file_solvefmt(path, sizeof path, "%s/%s", dirpath, dirname)) {
+            strappfmt(self->what, sizeof self->what, "failed to solve path by \"%s\".", dirname);
+            self->errno_ = RMCMD_ERR_SOLVEPATH;            
+        }
+
+        if (file_isdir(path)) {
+            // is directory
+            if (!rmcmd_remove_r(self, path)) {
+                return false;
+            }
+            // directory is empty
+            if (file_remove(path) != 0) {
+                strappfmt(self->what, sizeof self->what, "failed to remove file \"%s\".", path);
+                self->errno_ = RMCMD_ERR_REMOVE_FILE;
+                return false;
+            }            
+        } else {
+            // is file
+            if (file_remove(path) != 0) {
+                strappfmt(self->what, sizeof self->what, "failed to remove file \"%s\".", path);
+                self->errno_ = RMCMD_ERR_REMOVE_FILE;
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+static int
 rmcmd_rmr(rmcmd_t *self) {
-    puts("TODO");
+    for (int i = self->optind; i < self->argc; ++i) {
+        const char *argpath = self->argv[i];
+        char path[FILE_NPATH];
+    
+        if (!file_solvefmt(path, sizeof path, "%s/%s", self->parpath, argpath)) {
+            strappfmt(self->what, sizeof self->what, "failed to solve path from \"%s\".", argpath);
+            self->errno_ = RMCMD_ERR_SOLVEPATH;
+            return 1;
+        }
+
+        if (!rmcmd_remove_r(self, path)) {
+            strappfmt(self->what, sizeof self->what, "could not delete recusively.");
+            return 1;
+        }
+    }
+
     return 0;
 }
 
-int
+static int
 rmcmd_rm(rmcmd_t *self) {
-    char parpath[FILE_NPATH];
-    char path[FILE_NPATH];
-
-    if (!file_readline(parpath, sizeof parpath, self->config->var_cd_path)) {
-        err_error("failed to read line from cd of variable");
-        return 1;
-    }
-
     for (int i = self->optind; i < self->argc; ++i) {
         const char *argpath = self->argv[i];
-        if (!file_solvefmt(path, sizeof path, "%s/%s", parpath, argpath)) {
-            err_error("failed to solve path");
-            return 2;
+        char path[FILE_NPATH];
+    
+        if (!file_solvefmt(path, sizeof path, "%s/%s", self->parpath, argpath)) {
+            strappfmt(self->what, sizeof self->what, "failed to solve path.");
+            self->errno_ = RMCMD_ERR_SOLVEPATH;
+            return 1;
+        }
+
+        if (isoutofhome(self->config->var_home_path, path)) {
+            strappfmt(self->what, sizeof self->what, "\"%s\" is out of home.", path);
+            self->errno_ = RMCMD_ERR_OUTOFHOME;
+            return 1;
         }
 
         if (file_remove(path) != 0) {
-            err_error("failed to remove \"%s\"", path);
-            return 3;
+            strappfmt(self->what, sizeof self->what, "failed to remove \"%s\".", path);
+            self->errno_ = RMCMD_ERR_REMOVE_FILE;
+            return 1;
         }
     }
 
@@ -133,6 +228,12 @@ rmcmd_run(rmcmd_t *self) {
     if (self->opts.is_help) {
         rmcmd_show_usage(self);
         return 0;        
+    }
+
+    if (!file_readline(self->parpath, sizeof self->parpath, self->config->var_cd_path)) {
+        strappfmt(self->what, sizeof self->what, "failed to read line from cd of variable.");
+        self->errno_ = RMCMD_ERR_READ_CD;
+        return 1;
     }
 
     if (self->opts.is_recursive) {

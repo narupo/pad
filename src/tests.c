@@ -306,6 +306,30 @@ test_string_strapp(void) {
 }
 
 static void
+test_string_strappfmt(void) {
+    char dst[100] = {};
+
+    assert(strappfmt(dst, sizeof dst, NULL) == NULL);
+    assert(strappfmt(NULL, sizeof dst, "source") == NULL);
+    assert(strappfmt(dst, 0, "source") == NULL);
+
+    assert(strappfmt(dst, 3, "source") != NULL);
+    assert(strcmp(dst, "so") == 0);
+
+    *dst = '\0';
+    assert(strappfmt(dst, sizeof dst, "source") != NULL);
+    assert(strcmp(dst, "source") == 0);
+    assert(strappfmt(dst, sizeof dst, " is available.") != NULL);
+    assert(strcmp(dst, "source is available.") == 0);
+    assert(strappfmt(dst, sizeof dst, "") != NULL);
+    assert(strcmp(dst, "source is available.") == 0);
+
+    *dst = '\0';
+    assert(strappfmt(dst, sizeof dst, "n %d is %c", 10, 'i') != NULL);
+    assert(strcmp(dst, "n 10 is i") == 0);
+}
+
+static void
 test_string_strcpywithout(void) {
     char dst[100];
 
@@ -606,6 +630,7 @@ test_str_findc(void) {
 static const struct testcase
 string_tests[] = {
     {"strapp", test_string_strapp},
+    {"strappfmt", test_string_strappfmt},
     {"strcpywithout", test_string_strcpywithout},
     {"str_del", test_str_del},
     {"str_escdel", test_str_escdel},
@@ -1123,11 +1148,34 @@ cl_tests[] = {
     {0},
 };
 
-
 /********
 * error *
 ********/
 
+static void
+test_error_fix_text(void) {
+    char buf[BUFSIZ] = {0};
+
+    err_fix_text(buf, sizeof buf, "text", false);
+    assert(strcmp(buf, "Text.") == 0);
+    buf[0] = '\0';
+
+    err_fix_text(buf, sizeof buf, "text.text", false);
+    assert(strcmp(buf, "Text. Text.") == 0);
+    buf[0] = '\0';
+
+    err_fix_text(buf, sizeof buf, "text. text", true);
+    assert(strcmp(buf, "Text. Text.") == 0);
+    buf[0] = '\0';
+
+    err_fix_text(buf, sizeof buf, "text.     text", false);
+    assert(strcmp(buf, "Text. Text.") == 0);
+    buf[0] = '\0';
+
+    err_fix_text(buf, sizeof buf, "Failed to open directory \"/path/to/dir\".failed to remove recursive.", false);
+    assert(strcmp(buf, "Failed to open directory \"/path/to/dir\". Failed to remove recursive.") == 0);
+    buf[0] = '\0';
+}
 
 static void
 test_error__log(void) {
@@ -1158,6 +1206,7 @@ test_error_error(void) {
 
 static const struct testcase
 error_tests[] = {
+    {"fix_text", test_error_fix_text},
     {"_log", test_error__log},
     {"die", test_error_die},
     {"error", test_error_error},

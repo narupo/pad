@@ -11,11 +11,14 @@
 #include <stdlib.h> 
 #include <stdarg.h> 
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h> 
 #include <errno.h> 
 #include <time.h>
 #include <ctype.h>
 #include <strings.h>
+
+#include "lib/memory.h"
 
 /**
  * Write log
@@ -78,3 +81,14 @@ err_warn(const char *fmt, ...);
  */
 void
 err_debug(const char *fmt, ...);
+
+/**
+ * Fix text by error format
+ *
+ * @param[in] dst   pointer to destination
+ * @param[in] dstsz number of size of destination
+ * @param[in] src   source text
+ * @param[in] debug if debug to true
+ */
+void
+err_fix_text(char *dst, uint32_t dstsz, const char *src, bool debug);

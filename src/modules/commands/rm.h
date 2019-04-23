@@ -11,6 +11,17 @@
 #include "modules/util.h"
 #include "modules/config.h"
 
+typedef enum {
+    RMCMD_ERR_NOERR = 0,
+    RMCMD_ERR_UNKNOWN_OPTS,
+    RMCMD_ERR_PARSE_OPTS,
+    RMCMD_ERR_OPENDIR,
+    RMCMD_ERR_SOLVEPATH,
+    RMCMD_ERR_REMOVE_FILE,
+    RMCMD_ERR_READ_CD,
+    RMCMD_ERR_OUTOFHOME,
+} rmcmd_errno_t;
+
 struct rmcmd;
 typedef struct rmcmd rmcmd_t;
 
@@ -22,3 +33,9 @@ rmcmd_new(config_t *move_config, int argc, char **move_argv);
 
 int
 rmcmd_run(rmcmd_t *self);
+
+rmcmd_errno_t
+rmcmd_errno(const rmcmd_t *self);
+
+const char *
+rmcmd_what(const rmcmd_t *self);

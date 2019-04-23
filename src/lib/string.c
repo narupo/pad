@@ -28,6 +28,21 @@ strapp(char *dst, int32_t dstsz, const char *src) {
 }
 
 char *
+strappfmt(char *dst, int32_t dstsz, const char *fmt, ...) {
+	if (!dst || dstsz <= 0 || !fmt) {
+		return NULL;
+	}
+
+	char tmp[STR_FMT_SIZE];
+	va_list ap;
+	va_start(ap, fmt);
+	vsnprintf(tmp, sizeof tmp, fmt, ap);
+	va_end(ap);
+
+	return strapp(dst, dstsz, tmp);
+}
+
+char *
 strcpywithout(char *dst, int32_t dstsz, const char *src, const char *without) {
 	if (!dst || dstsz <= 0 || !src || !without) {
 		return NULL;
