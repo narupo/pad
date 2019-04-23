@@ -345,6 +345,7 @@ file_writeline(const char *line, const char *path);
 ***************/
 
 struct file_dirnode;
+typedef struct file_dirnode file_dirnode_t;
 
 /**
  * Delete node of dynamic allocate memory
@@ -352,7 +353,7 @@ struct file_dirnode;
  * @param self
  */
 void
-file_dirnodedel(struct file_dirnode *self);
+file_dirnodedel(file_dirnode_t *self);
 
 /**
  * Get name of node
@@ -363,13 +364,14 @@ file_dirnodedel(struct file_dirnode *self);
  * @return failed to NULL
  */
 const char *
-file_dirnodename(const struct file_dirnode* self);
+file_dirnodename(const file_dirnode_t* self);
 
 /***********
 * file_dir *
 ***********/
 
 struct file_dir;
+typedef struct file_dir file_dir_t;
 
 /**
  * Close directory
@@ -380,17 +382,17 @@ struct file_dir;
  * @return failed to number of under of zero
  */
 int32_t
-file_dirclose(struct file_dir *self);
+file_dirclose(file_dir_t *self);
 
 /**
  * Open directory
  *
  * @param path path of directory
  *
- * @return success to pointer to struct file_dir
+ * @return success to pointer to file_dir_t
  * @return failed to NULL
  */
-struct file_dir *
+file_dir_t *
 file_diropen(const char *path);
 
 /**
@@ -398,8 +400,8 @@ file_diropen(const char *path);
  *
  * @param self
  *
- * @return success to pointer to struct file_dirnode
+ * @return success to pointer to file_dirnode_t
  * @return failed or end of read to NULL
  */
-struct file_dirnode *
-file_dirread(struct file_dir *self);
+file_dirnode_t *
+file_dirread(file_dir_t *self);

@@ -493,15 +493,15 @@ struct file_dirnode {
 *******************************/
 
 void
-file_dirnodedel(struct file_dirnode *self) {
+file_dirnodedel(file_dirnode_t *self) {
 	if (self) {
 		free(self);
 	}
 }
 
-struct file_dirnode *
+file_dirnode_t *
 file_dirnodenew(void) {
-	struct file_dirnode *self = calloc(1, sizeof(struct file_dirnode));
+	file_dirnode_t *self = calloc(1, sizeof(file_dirnode_t));
 	if (!self) {
 		return NULL;
 	}
@@ -513,7 +513,7 @@ file_dirnodenew(void) {
 *********************/
 
 const char *
-file_dirnodename(const struct file_dirnode *self) {
+file_dirnodename(const file_dirnode_t *self) {
 	if (!self) {
 		return NULL;
 	}
@@ -543,7 +543,7 @@ struct file_dir {
 ********************************/
 
 int32_t
-file_dirclose(struct file_dir *self) {
+file_dirclose(file_dir_t *self) {
 	if (self) {
 		int32_t ret = 0;
 #if defined(_FILE_WINDOWS)
@@ -572,13 +572,13 @@ file_dirclose(struct file_dir *self) {
 	return -1;
 }
 
-struct file_dir *
+file_dir_t *
 file_diropen(const char *path) {
 	if (!path) {
 		return NULL;
 	}
 
-	struct file_dir *self = calloc(1, sizeof(struct file_dir));
+	file_dir_t *self = calloc(1, sizeof(file_dir_t));
 	if (!self) {
 		return NULL;
 	}
@@ -600,17 +600,17 @@ file_diropen(const char *path) {
 	return self;
 }
 
-/************************
-* struct file_dir getter *
-************************/
+/********************
+* file_dir_t getter *
+********************/
 
-struct file_dirnode *
-file_dirread(struct file_dir *self) {
+file_dirnode_t *
+file_dirread(file_dir_t *self) {
 	if (!self) {
 		return NULL;
 	}
 	
-	struct file_dirnode * node = file_dirnodenew();
+	file_dirnode_t * node = file_dirnodenew();
 	if (!node) {
 		return NULL;
 	}
