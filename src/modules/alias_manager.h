@@ -63,17 +63,51 @@ almgr_find_alias_value(almgr_t *self, char *dst, uint32_t dstsz, const char *key
 almgr_t *
 almgr_load_alias_list(almgr_t *self, int scope);
 
+/**
+ * Check if has error
+ *
+ * @param[in] self pointer to dynamic allocate memory of almgr_t
+ *
+ * @return if has error to true
+ * @return if not has error to false
+ */
 bool
 almgr_has_error(const almgr_t *self);
 
+/**
+ * Clear error 
+ *
+ * @param[in] self pointer to dynamic allocate memory of almgr_t
+ */
 void
 almgr_clear_error(almgr_t *self);
 
+/**
+ * Get error detail
+ *
+ * @param[in] self pointer to dynamic allocate memory of almgr_t
+ *
+ * @return pointer to string of error detail
+ */
 const char *
 almgr_get_error_detail(const almgr_t *self);
 
+/**
+ * Get alias map
+ *
+ * @param[in] self pointer to dynamic allocate memory of almgr_t
+ *
+ * @return pointer to dict_t
+ */
 const dict_t *
 almgr_getc_almap(const almgr_t *self);
 
+/**
+ * Get context
+ *
+ * @param[in] self pointer to dynamic allocate memory of almgr_t
+ *
+ * @return pointer to context_t
+ */
 const context_t *
 almgr_getc_context(const almgr_t *self);
