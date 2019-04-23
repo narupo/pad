@@ -322,6 +322,7 @@ app_usage(app_t *app) {
         "    mkdir    Make directory at environment\n"
         "    rm       Remove file or directory from environment\n"
         "    mv       Rename file on environment\n"
+        "    cp       Copy file\n"
     ;
     static const char *examples[] = {
         "    $ cap home\n"
@@ -388,6 +389,7 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
         "mkdir",
         "rm",
         "mv",
+        "cp",
         NULL,
     };
 
@@ -491,6 +493,13 @@ app_execute_command_by_name(app_t *self, const char *name) {
         self->cmd_argv = NULL; // moved
         int result = mvcmd_run(cmd);
         mvcmd_del(cmd);
+        return result;
+    } else if (!strcmp(name, "cp")) {
+        cpcmd_t *cmd = cpcmd_new(self->config, self->cmd_argc, self->cmd_argv);
+        self->config = NULL; // moved
+        self->cmd_argv = NULL; // moved
+        int result = cpcmd_run(cmd);
+        cpcmd_del(cmd);
         return result;
     }
 
