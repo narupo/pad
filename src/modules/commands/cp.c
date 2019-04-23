@@ -27,7 +27,7 @@ struct cpcmd {
     config_t *config;
     int argc;
     int optind;
-    int errno_;
+    cpcmd_errno_t errno_;
     char **argv;
     struct opts opts;
     char what[2048];
@@ -167,14 +167,14 @@ cpcmd_solve_path(cpcmd_t *self, char *dst, size_t dstsz, const char *path) {
 
 static bool
 cpcmd_copy_file(cpcmd_t *self, const char *dst_path, const char *src_path) {
-    FILE *srcfp = file_open(src_path, "rb");
-    if (!srcfp) {
-        cpcmd_set_err(self, CPCMD_ERR_OPENFILE, "failed to open source file \"%s\"", src_path);
-        return false;
-    }
     FILE *dstfp = file_open(dst_path, "wb");
     if (!dstfp) {
         cpcmd_set_err(self, CPCMD_ERR_OPENFILE, "failed to open destination file \"%s\"", dst_path);
+        return false;
+    }
+    FILE *srcfp = file_open(src_path, "rb");
+    if (!srcfp) {
+        cpcmd_set_err(self, CPCMD_ERR_OPENFILE, "failed to open source file \"%s\"", src_path);
         return false;
     }
     if (!file_copy(dstfp, srcfp)) {
