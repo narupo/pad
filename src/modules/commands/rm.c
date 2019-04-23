@@ -145,13 +145,19 @@ rmcmd_remove_r(rmcmd_t *self, const char *dirpath) {
             self->errno_ = RMCMD_ERR_SOLVEPATH;
         }
 
+        if (isoutofhome(self->config->var_home_path, path)) {
+            strappfmt(self->what, sizeof self->what, "\"%s\" is out of home.", path);
+            self->errno_ = RMCMD_ERR_OUTOFHOME;
+            return false;            
+        }
+
         if (file_isdir(path)) {
             if (!rmcmd_remove_r(self, path)) {
                 return false;
             }
             // directory is empty, remove directory
             if (file_remove(path) != 0) {
-                strappfmt(self->what, sizeof self->what, "failed to remove file \"%s\".", path);
+                strappfmt(self->what, sizeof self->what, "failed to remove directory \"%s\".", path);
                 self->errno_ = RMCMD_ERR_REMOVE_FILE;
                 return false;
             }            
@@ -178,6 +184,12 @@ rmcmd_rmr(rmcmd_t *self) {
     for (int i = self->optind; i < self->argc; ++i) {
         const char *argpath = self->argv[i];
         char path[FILE_NPATH];
+
+        if (!strcmp(argpath, ".") || !strcmp(argpath, "..")) {
+            strappfmt(self->what, sizeof self->what, "refusing to remove '.' or '..'");
+            self->errno_ = RMCMD_ERR_REMOVE_FILE;
+            return 1;
+        }
     
         if (!file_solvefmt(path, sizeof path, "%s/%s", self->parpath, argpath)) {
             strappfmt(self->what, sizeof self->what, "failed to solve path from \"%s\".", argpath);
@@ -185,10 +197,22 @@ rmcmd_rmr(rmcmd_t *self) {
             return 1;
         }
 
+        if (isoutofhome(self->config->var_home_path, path)) {
+            strappfmt(self->what, sizeof self->what, "\"%s\" is out of home.", path);
+            self->errno_ = RMCMD_ERR_OUTOFHOME;
+            return 1;            
+        }
+
         if (!rmcmd_remove_r(self, path)) {
             strappfmt(self->what, sizeof self->what, "could not delete recusively.");
             return 1;
         }
+
+        if (file_remove(path) != 0) {
+            strappfmt(self->what, sizeof self->what, "failed to remove directory \"%s\".", path);
+            self->errno_ = RMCMD_ERR_REMOVE_FILE;
+            return false;
+        }            
     }
 
     return 0;
