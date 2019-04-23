@@ -121,6 +121,16 @@ app_init_config(app_t *self) {
         return false;
     }
 
+    if (!file_readline(self->config->cd_path, sizeof self->config->cd_path, self->config->var_cd_path)) {
+        err_error("failed to read line from cd of variable");
+        return false;
+    }
+
+    if (!file_readline(self->config->home_path, sizeof self->config->home_path, self->config->var_home_path)) {
+        err_error("failed to read line from home of variable");
+        return false;
+    }
+
     return true;
 }
 
@@ -175,7 +185,7 @@ app_deploy_env(const app_t *self) {
     }
     if (!file_exists(tmp)) {
         if (!file_writeline(userhome, tmp)) {
-            err_error("failed to write file to cd of variable");
+            err_error("failed to write line to cd of variable");
             return false;
         }
     }
@@ -186,7 +196,7 @@ app_deploy_env(const app_t *self) {
     }
     if (!file_exists(tmp)) {
         if (!file_writeline(userhome, tmp)) {
-            err_error("failed to write file to home of variable");
+            err_error("failed to write line to home of variable");
             return false;
         }
     }

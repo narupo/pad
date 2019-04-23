@@ -50,6 +50,8 @@ void
 showargv(int argc, char *argv[]);
 
 /**
+ * @deprecated
+ *
  * Check path is out of cap's home?
  *
  * @param[in] string varhome path of var home
@@ -60,6 +62,18 @@ showargv(int argc, char *argv[]);
  */
 bool
 isoutofhome(const char *varhome, const char *path);
+
+/**
+ * Check path is out of cap's home?
+ *
+ * @param[in] string varhome path of var home
+ * @param[in] string path check path
+ *
+ * @return bool is out of home to true
+ * @return bool is not out of home to false
+ */
+bool
+is_out_of_home(const char *homepath, const char *path);
 
 /**
  * Get random number of range.
