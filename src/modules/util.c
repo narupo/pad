@@ -37,7 +37,6 @@ isoutofhome(const char *varhome, const char *pth) {
 
 	if (!file_solve(home, sizeof home, hm) ||
 		!file_solve(path, sizeof path, pth)) {
-		err_error("failed to solve path");
 		return true;
 	}
 
