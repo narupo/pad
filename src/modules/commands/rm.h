@@ -6,6 +6,7 @@
 #include "lib/memory.h"
 #include "lib/file.h"
 #include "lib/string.h"
+#include "lib/cstring.h"
 
 #include "modules/constant.h"
 #include "modules/util.h"

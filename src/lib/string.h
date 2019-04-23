@@ -25,51 +25,6 @@ enum {
     STR_FMT_SIZE = 2048,
 };
 
-/********
-* utils *
-********/
-
-/**
- * Concatenate source strings to destination
- *
- * @param[out] dst pointer to destination buffer
- * @param[in] dstsz size of destination buffer
- * @param[in] src source string
- *
- * @return success to pointer to dst
- * @return failed to pointer to NULL
- */
-char *
-strapp(char *dst, int32_t dstsz, const char *src);
-
-/**
- * Concatenate source format to destination
- *
- * @param[out] dst pointer to destination buffer
- * @param[in] dstsz size of destination buffer
- * @param[in] fmt source string
- * @param[in] ... arguments
- *
- * @return success to pointer to dst
- * @return failed to pointer to NULL
- */
-char *
-strappfmt(char *dst, int32_t dstsz, const char *fmt, ...);
-
-/**
- * Copy string without specified string
- * 
- * @param[out] dst destination buffer
- * @param[in] dstsz size of destination buffer
- * @param[in] src source string for copy
- * @param[in] without specified string
- * 
- * @return success to pointer to destination buffer
- * @return failed to NULL
- */
-char *
-strcpywithout(char *dst, int32_t dstsz, const char *src, const char *without);
-
 /***********
 * string_t *
 ***********/

@@ -7,13 +7,11 @@
  */
 #pragma once
 
-#ifndef _GNU_SOURCE
-# define _GNU_SOURCE 1 /* cap: tests: strdup */
-#endif
-
 #if defined(_WIN32) || defined(_WIN64)
 # define _TESTS_WINDOWS
 #endif
+
+#define _SVID_SOURCE 1 /* cap: tests: strdup */
 
 #include <stdio.h>
 #include <stdlib.h>
