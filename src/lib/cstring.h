@@ -6,9 +6,27 @@
 #include <string.h>
 #include <stdint.h>
 
+/**
+ * Copy string at destination buffer
+ *
+ * @param[in] dst   pointer to destination buffer
+ * @param[in] dstsz size of destination buffer
+ * @param[in] src   source string
+ *
+ * @return success to pointer to destination buffer
+ * @return failed to pointer to NULL
+ */
 char *
 cstr_copy(char *dst, uint32_t dstsz, const char *src);
 
+/**
+ * Pop newline from back of string
+ *
+ * @param[in] p pointer to string
+ *
+ * @return success to pointer to string
+ * @return failed to pointer to NULL
+ */
 char *
 cstr_pop_newline(char *p);
 
