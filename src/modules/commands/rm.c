@@ -266,9 +266,7 @@ rmcmd_run(rmcmd_t *self) {
 
     if (self->opts.is_recursive) {
         return rmcmd_rmr(self);
-    } else {
-        return rmcmd_rm(self);
     }
 
-    return 0; // impossible
+    return rmcmd_rm(self);
 }
