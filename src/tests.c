@@ -888,13 +888,13 @@ test_file_basename(void) {
     char userhome[FILE_NPATH];
     char path[FILE_NPATH];
     assert(file_get_user_home(userhome, sizeof userhome));
-    assert(file_solvefmt(path, sizeof path, "%s/file", userhome));
+    assert(file_solvefmt(path, sizeof path, "%s/file.txt", userhome));
 
     assert(file_basename(NULL, sizeof name, path) == NULL);
     assert(file_basename(name, 0, path) == NULL);
     assert(file_basename(name, sizeof name, NULL) == NULL);
     assert(file_basename(name, sizeof name, path) != NULL);
-    assert(strcmp(name, "file") == 0);
+    assert(strcmp(name, "file.txt") == 0);
 }
 
 static void
