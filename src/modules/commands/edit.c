@@ -20,7 +20,7 @@ editcmd_parse_opts(editcmd_t *self) {
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"global", no_argument, 0, 'g'},
-        {},
+        {0},
     };
 
     self->opts = (struct opts){0};
@@ -81,82 +81,16 @@ editcmd_new(config_t *move_config, int argc, char **move_argv) {
     return self;
 }
 
-char *
-editcmd_create_resouce_path(editcmd_t *self, char *path, uint32_t pathsz, int scope) {
-    char srcpath[FILE_NPATH];
-
-    if (scope == CAP_SCOPE_LOCAL) {
-        if (!file_readline(srcpath, sizeof srcpath, self->config->var_cd_path)) {
-            err_die("failed to read line from cd of variable");
-        }
-    } else if (scope == CAP_SCOPE_GLOBAL) {
-        if (!file_readline(srcpath, sizeof srcpath, self->config->var_home_path)) {
-            err_die("failed to read line from home of variable");
-        }
-    } else {
-        err_die("impossible. invalid scope");
-        return NULL;
-    }
-
-    if (!file_solvefmt(path, pathsz, "%s/.caprc", srcpath)) {
-        err_die("failed to solve path");
-        return NULL;
-    }
-
-    if (!file_exists(path)) {
-        return NULL;
-    }
-
-    return path;
-}
-
 editcmd_t *
-editcmd_read_editor(editcmd_t *self, int scope) {
-    // parse resource file
-    char path[FILE_NPATH];
-
-    if (!editcmd_create_resouce_path(self, path, sizeof path, scope)) {
+editcmd_read_editor(editcmd_t *self) {
+    self->editor[0] = '\0';
+    if (!file_readline(self->editor, sizeof self->editor, self->config->var_editor_path)) {
         return NULL;
     }
-
-    char *content = file_readcp_from_path(path);
-    if (!content) {
-        err_die("failed to read content from \"%s\"", path);
+    if (!strlen(self->editor)) {
         return NULL;
     }
-
-    editcmd_t *ret = self;
-    tokenizer_t *tkr = tkr_new();
-    ast_t *ast = ast_new();
-    context_t *ctx = ctx_new();
-
-    if (!tkr_parse(tkr, content)) {
-        ret = NULL;
-        goto fail;
-    }
-
-    if (!ast_parse(ast, tkr_get_tokens(tkr))) {
-        ret = NULL;
-        goto fail;
-    }
-
-    ast_traverse(ast, ctx);
-
-    const dict_t *confmap = ctx_getc_confmap(ctx);
-    const dict_item_t *item = dict_getc(confmap, "editor");
-    if (!item) {
-        ret = NULL;
-        goto fail;
-    }
-
-    cstr_copy(self->editor, sizeof self->editor, item->value);
-
-fail:
-    free(content);
-    tkr_del(tkr);
-    ast_del(ast);
-    ctx_del(ctx);
-    return ret;
+    return self;
 }
 
 editcmd_t *
@@ -191,21 +125,10 @@ editcmd_run(editcmd_t *self) {
         fname = self->argv[optind];
     }
 
-    if (self->opts.is_global) {
-        if (!editcmd_read_editor(self, CAP_SCOPE_GLOBAL)) {
-            err_die("not found editor. please setting at resource file");
-            return 1;
-        }        
-    } else {
-        if (!editcmd_read_editor(self, CAP_SCOPE_LOCAL)) {
-            // not found at local, next find at global
-            if (!editcmd_read_editor(self, CAP_SCOPE_GLOBAL)) {
-                // editor is not setting
-                err_die("not found editor. please setting at resource file");
-                return 1;
-            }
-        }        
-    }
+    if (!editcmd_read_editor(self)) {
+        err_die("not found editor. please setting with 'cap editor' command");
+        return 1;
+    }        
 
     cstr_app(self->cmdline, sizeof self->cmdline, self->editor);
     if (fname) {
