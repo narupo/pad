@@ -327,9 +327,17 @@ cpcmd_cp2(cpcmd_t *self, const char *to, const char *from) {
     if (!cpcmd_solve_path(self, src_path, sizeof src_path, from)) {
         return false;
     }
+    if (from[0] == ':' && is_out_of_home(self->config->home_path, src_path)) {
+        cpcmd_set_err(self, CPCMD_ERR_OUTOFHOME, "\"%s\" is out of home", from);
+        return false;
+    }
 
     char dst_path[FILE_NPATH];
     if (!cpcmd_solve_path(self, dst_path, sizeof dst_path, to)) {
+        return false;
+    }
+    if (to[0] == ':' && is_out_of_home(self->config->home_path, dst_path)) {
+        cpcmd_set_err(self, CPCMD_ERR_OUTOFHOME, "\"%s\" is out of home", to);
         return false;
     }
 
