@@ -52,9 +52,9 @@ touchcmd_parse_opts(touchcmd_t *self) {
     // parse options
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
-        {},
+        {0},
     };
-
+    
     self->opts = (struct opts){0};
 
     extern int opterr;

@@ -20,12 +20,13 @@ struct alias_manager {
 
 void
 almgr_del(almgr_t *self) {
-    if (self) {
-        ast_del(self->ast);
-        tkr_del(self->tkr);
-        ctx_del(self->context);
-        free(self);
+    if (!self) {
+        return;
     }
+    ast_del(self->ast);
+    tkr_del(self->tkr);
+    ctx_del(self->context);
+    free(self);
 }
 
 almgr_t *
