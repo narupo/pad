@@ -59,6 +59,7 @@ tests: build/tests.o \
 	build/modules/commands/run.o \
 	build/modules/commands/alias.o \
 	build/modules/commands/edit.o \
+	build/modules/commands/editor.o \
 	build/modules/commands/mkdir.o \
 	build/modules/commands/rm.o \
 	build/modules/commands/mv.o \
@@ -99,6 +100,7 @@ cap: build/app.o \
 	build/modules/commands/run.o \
 	build/modules/commands/alias.o \
 	build/modules/commands/edit.o \
+	build/modules/commands/editor.o \
 	build/modules/commands/mkdir.o \
 	build/modules/commands/rm.o \
 	build/modules/commands/mv.o \
@@ -177,6 +179,9 @@ build/modules/commands/alias.o: src/modules/commands/alias.c src/modules/command
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules/commands/edit.o: src/modules/commands/edit.c src/modules/commands/edit.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/modules/commands/editor.o: src/modules/commands/editor.c src/modules/commands/editor.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules/commands/mkdir.o: src/modules/commands/mkdir.c src/modules/commands/mkdir.h

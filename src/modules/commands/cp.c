@@ -85,7 +85,7 @@ cpcmd_parse_opts(cpcmd_t *self) {
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"recusive", required_argument, 0, 'r'},
-        {},
+        {0},
     };
 
     self->opts = (struct opts){0};

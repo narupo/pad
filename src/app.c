@@ -51,7 +51,7 @@ app_parse_opts(app_t *self) {
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"version", no_argument, 0, 'V'},
-        {},
+        {0},
     };
 
     // init status
@@ -115,9 +115,12 @@ app_init_config(app_t *self) {
         err_error("failed to create path of cd of variable");
         return false;
     }
-
     if (!file_solve(self->config->var_home_path, sizeof self->config->var_home_path, "~/.cap/var/home")) {
         err_error("failed to create path of home of variable");
+        return false;
+    }
+    if (!file_solve(self->config->var_editor_path, sizeof self->config->var_editor_path, "~/.cap/var/editor")) {
+        err_error("failed to create path of editor of variable");
         return false;
     }
 
@@ -125,9 +128,12 @@ app_init_config(app_t *self) {
         err_error("failed to read line from cd of variable");
         return false;
     }
-
     if (!file_readline(self->config->home_path, sizeof self->config->home_path, self->config->var_home_path)) {
         err_error("failed to read line from home of variable");
+        return false;
+    }
+    if (!file_readline(self->config->editor, sizeof self->config->editor, self->config->var_editor_path)) {
+        err_error("failed to read line from editor of variable");
         return false;
     }
 
@@ -178,24 +184,35 @@ app_deploy_env(const app_t *self) {
     }
 
     // make variable files
-    char tmp[FILE_NPATH];
-    if (!file_solvefmt(tmp, sizeof tmp, "%s/cd", vardir)) {
+    char path[FILE_NPATH];
+    if (!file_solvefmt(path, sizeof path, "%s/cd", vardir)) {
         err_error("failed to create path of cd variable");
         return false;
     }
-    if (!file_exists(tmp)) {
-        if (!file_writeline(userhome, tmp)) {
+    if (!file_exists(path)) {
+        if (!file_writeline(userhome, path)) {
             err_error("failed to write line to cd of variable");
             return false;
         }
     }
 
-    if (!file_solvefmt(tmp, sizeof tmp, "%s/home", vardir)) {
+    if (!file_solvefmt(path, sizeof path, "%s/home", vardir)) {
         err_error("failed to create path of home variable");
         return false;
     }
-    if (!file_exists(tmp)) {
-        if (!file_writeline(userhome, tmp)) {
+    if (!file_exists(path)) {
+        if (!file_writeline(userhome, path)) {
+            err_error("failed to write line to home of variable");
+            return false;
+        }
+    }
+
+    if (!file_solvefmt(path, sizeof path, "%s/editor", vardir)) {
+        err_error("failed to create path of home variable");
+        return false;
+    }
+    if (!file_exists(path)) {
+        if (!file_writeline("", path)) {
             err_error("failed to write line to home of variable");
             return false;
         }
@@ -319,6 +336,7 @@ app_usage(app_t *app) {
         "    run      Run script\n"
         "    alias    Run alias command\n"
         "    edit     Run editor with file name\n"
+        "    editor   Set editor or show\n"
         "    mkdir    Make directory at environment\n"
         "    rm       Remove file or directory from environment\n"
         "    mv       Rename file on environment\n"
@@ -386,6 +404,7 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
         "run",
         "alias",
         "edit",
+        "editor",
         "mkdir",
         "rm",
         "mv",
@@ -469,6 +488,13 @@ app_execute_command_by_name(app_t *self, const char *name) {
         self->cmd_argv = NULL; // moved
         int result = editcmd_run(cmd);
         editcmd_del(cmd);
+        return result;
+    } else if (!strcmp(name, "editor")) {
+        editorcmd_t *cmd = editorcmd_new(self->config, self->cmd_argc, self->cmd_argv);
+        self->config = NULL; // moved
+        self->cmd_argv = NULL; // moved
+        int result = editorcmd_run(cmd);
+        editorcmd_del(cmd);
         return result;
     } else if (!strcmp(name, "mkdir")) {
         mkdircmd_t *cmd = mkdircmd_new(self->config, self->cmd_argc, self->cmd_argv);
