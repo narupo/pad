@@ -52,7 +52,6 @@ touchcmd_parse_opts(touchcmd_t *self) {
     // parse options
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
-        {"fname", required_argument, 0, 'f'},
         {},
     };
 
@@ -65,7 +64,7 @@ touchcmd_parse_opts(touchcmd_t *self) {
 
     for (;;) {
         int optsindex;
-        int cur = getopt_long(self->argc, self->argv, "hf:", longopts, &optsindex);
+        int cur = getopt_long(self->argc, self->argv, "h", longopts, &optsindex);
         if (cur == -1) {
             break;
         }
@@ -73,7 +72,6 @@ touchcmd_parse_opts(touchcmd_t *self) {
         switch (cur) {
         case 0: /* long option only */ break;
         case 'h': self->opts.is_help = true; break;
-        case 'f': printf("%s\n", optarg); break;
         case '?':
         default:
             err_die("unknown option");
