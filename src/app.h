@@ -25,3 +25,4 @@
 #include "modules/commands/rm.h"
 #include "modules/commands/mv.h"
 #include "modules/commands/cp.h"
+#include "modules/commands/touch.h"

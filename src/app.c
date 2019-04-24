@@ -323,6 +323,7 @@ app_usage(app_t *app) {
         "    rm       Remove file or directory from environment\n"
         "    mv       Rename file on environment\n"
         "    cp       Copy file\n"
+        "    touch    Create empty file\n"
     ;
     static const char *examples[] = {
         "    $ cap home\n"
@@ -361,7 +362,6 @@ static void
 app_version(app_t *self) {
     fflush(stdout);
     fflush(stderr);
-
     printf("%s\n", _CAP_VERSION);
     fflush(stdout);
 }
@@ -390,6 +390,7 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
         "rm",
         "mv",
         "cp",
+        "touch",
         NULL,
     };
 
@@ -500,6 +501,13 @@ app_execute_command_by_name(app_t *self, const char *name) {
         self->cmd_argv = NULL; // moved
         int result = cpcmd_run(cmd);
         cpcmd_del(cmd);
+        return result;
+    } else if (!strcmp(name, "touch")) {
+        touchcmd_t *cmd = touchcmd_new(self->config, self->cmd_argc, self->cmd_argv);
+        self->config = NULL; // moved
+        self->cmd_argv = NULL; // moved
+        int result = touchcmd_run(cmd);
+        touchcmd_del(cmd);
         return result;
     }
 
