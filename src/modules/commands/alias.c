@@ -74,12 +74,13 @@ alcmd_show_usage(const alcmd_t *self) {
 
 void
 alcmd_del(alcmd_t *self) {
-    if (self) {
-        almgr_del(self->almgr);
-        config_del(self->config);
-        freeargv(self->argc, self->argv);
-        free(self);
+    if (!self) {
+        return;
     }
+    almgr_del(self->almgr);
+    config_del(self->config);
+    freeargv(self->argc, self->argv);
+    free(self);
 }
 
 alcmd_t *
@@ -106,7 +107,6 @@ alcmd_load_alias_list_by_opts(alcmd_t* self) {
             if (almgr_has_error(self->almgr)) {
                 err_error(almgr_get_error_detail(self->almgr));
             }
-            almgr_del(self->almgr);
             return NULL;
         }
     } else {
@@ -114,7 +114,6 @@ alcmd_load_alias_list_by_opts(alcmd_t* self) {
             if (almgr_has_error(self->almgr)) {
                 err_error(almgr_get_error_detail(self->almgr));
             }
-            almgr_del(self->almgr);
             return NULL;
         }
     }
