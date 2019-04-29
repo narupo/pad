@@ -6,7 +6,6 @@ extern int optind;
 struct opts {
     bool is_help;
     bool is_parents;
-    bool is_global;
 };
 
 struct mkdircmd {
@@ -23,7 +22,6 @@ mkdircmd_parse_opts(mkdircmd_t *self) {
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"parents", no_argument, 0, 'p'},
-        {"global", no_argument, 0, 'g'},
         {},
     };
 
@@ -33,7 +31,7 @@ mkdircmd_parse_opts(mkdircmd_t *self) {
 
     for (;;) {
         int optsindex;
-        int cur = getopt_long(self->argc, self->argv, "hpg", longopts, &optsindex);
+        int cur = getopt_long(self->argc, self->argv, "hp", longopts, &optsindex);
         if (cur == -1) {
             break;
         }
@@ -42,7 +40,6 @@ mkdircmd_parse_opts(mkdircmd_t *self) {
         case 0: /* long option only */ break;
         case 'h': self->opts.is_help = true; break;
         case 'p': self->opts.is_parents = true; break;
-        case 'g': self->opts.is_global = true; break;
         case '?':
         default:
             err_die("unsupported option");
@@ -92,7 +89,6 @@ mkdircmd_show_usage(mkdircmd_t *self) {
         "\n"
         "    -h, --help       show usage\n"
         "    -p, --parents    not error if existing, make parent directories as needed\n"
-        "    -g, --global     origin at global (Cap's home directory)\n"
         "\n"
     );
     fflush(stderr);
@@ -105,11 +101,7 @@ mkdircmd_mkdirp(mkdircmd_t *self) {
     char parpath[FILE_NPATH];
     char path[FILE_NPATH];
 
-    if (self->opts.is_global) {
-        parsrc = self->config->var_home_path;
-    } else {
-        parsrc = self->config->var_cd_path;
-    }
+    parsrc = self->config->var_cd_path;
 
     if (!file_readline(parpath, sizeof parpath, parsrc)) {
         err_error("failed to read line from cd of varialble");
@@ -136,11 +128,7 @@ mkdircmd_mkdir(mkdircmd_t *self) {
     char parpath[FILE_NPATH];
     char path[FILE_NPATH];
 
-    if (self->opts.is_global) {
-        parsrc = self->config->var_home_path;
-    } else {
-        parsrc = self->config->var_cd_path;
-    }
+    parsrc = self->config->var_cd_path;
 
     if (!file_readline(parpath, sizeof parpath, parsrc)) {
         err_error("failed to read line from cd of varialble");
