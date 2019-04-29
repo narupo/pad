@@ -7,7 +7,7 @@ Cap
 What is Cap ?
 =============
 
- Cap is virtual environment manager for programmer's snippet codes.
+ Cap is file manager for programmer's snippet codes.
  Cap is quick and clean on your file system.
 
 
@@ -40,10 +40,10 @@ Windows
 Example
 =======
 
- Set your home directory. That is origin of position of virtual environment.
+ Set your home directory. That is origin of position of environment.
 
-    $ cap home
     $ cap home /my/snippet/file/directory
+    $ cap home
 
  Check current environment.
 
@@ -55,7 +55,7 @@ Example
  
  Get file content.
 
-    $ cap cat myfile
+    $ cap cat myfile.txt
 
  Change environment.
 
@@ -65,6 +65,17 @@ Example
 
     $ cap run bin/hello_world.py
 
+ Set editor.
+
+    $ cap editor /usr/bin/vim
+
+ Edit file by editor.
+
+    $ cap edit /path/to/file.txt
+
+ Edit resource file in current environment.
+
+    $ cap edit .caprc
 
 Resource file
 =============
@@ -74,11 +85,7 @@ Resource file
 or current directory, and write the following.
 
     {@
-        import config
         import alias
-
-        config.set("editor", "subl")
-
-        alias.set("hw", "run hello_world.py")
+        alias.set("hw", "run bin/hello_world.py")
         alias.set("banana", "cat banana.txt")
     @}
