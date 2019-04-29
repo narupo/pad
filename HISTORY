@@ -1,3 +1,4 @@
+0.30.0 ... implementation of cp command
 0.26.0 ... implementation of rm command
 0.25.0 ... implementation of mkdir command
 0.24.2 ... implementation of BNF 0.2.2, and fix edit command
