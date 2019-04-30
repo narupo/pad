@@ -96,3 +96,25 @@ cstr_cpywithout(char *dst, int32_t dstsz, const char *src, const char *without) 
     return dst;
 }
 
+char *
+cstr_edup(const char *src) {
+    if (!src) {
+        fprintf(stderr, "invalid source string in cstr_edup\n");
+        fflush(stderr);
+        exit(1);
+    }
+
+    uint32_t nelems = strlen(src)+1;
+    char *dst = malloc(sizeof(src[0]) * nelems);
+    if (!dst) {
+        fprintf(stderr, "failed to allocate memory in cstr_edup\n");
+        fflush(stderr);
+        exit(1);
+    }
+
+    strcpy(dst, src);
+    dst[nelems-1] = '\0';
+
+    return dst;
+}
+

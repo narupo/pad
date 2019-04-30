@@ -191,7 +191,7 @@ test_cstrarr_move(void) {
     assert(cstrarr_move(arr, NULL) != NULL);
     assert(cstrarr_getc(arr, 0) == NULL);
 
-    char *ptr = (char *) strdup("string"); 
+    char *ptr = cstr_edup("string"); 
     assert(ptr != NULL);
     
     assert(cstrarr_move(arr, ptr) != NULL);
@@ -344,6 +344,13 @@ test_cstring_cstr_cpywithout(void) {
     assert(strcmp(dst, "abcdef") == 0);
     assert(cstr_cpywithout(dst, sizeof dst, "abc123def456", "abcdef") != NULL);
     assert(strcmp(dst, "123456") == 0);
+}
+
+static void
+test_cstring_cstr_edup(void) {
+    char *p = cstr_edup("string");
+    assert(strcmp(p, "string") == 0);
+    free(p);
 }
 
 static void
@@ -632,6 +639,7 @@ string_tests[] = {
     {"cstr_app", test_cstring_cstr_app},
     {"cstr_appfmt", test_cstring_cstr_appfmt},
     {"cstr_cpywithout", test_cstring_cstr_cpywithout},
+    {"cstr_edup", test_cstring_cstr_edup},
     {"str_del", test_str_del},
     {"str_escdel", test_str_escdel},
     {"str_new", test_str_new},
@@ -1224,7 +1232,7 @@ __create_testargv(int argc) {
     assert(argv != NULL);
 
     for (int i = 0; i < argc; ++i) {
-        argv[i] = strdup("abc");
+        argv[i] = cstr_edup("abc");
     }
 
     return argv;

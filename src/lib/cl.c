@@ -72,7 +72,7 @@ cl_push(cl_t *self, const char *str) {
             return NULL;
         }
     }
-    self->arr[self->len++] = strdup(str);
+    self->arr[self->len++] = cstr_edup(str);
     self->arr[self->len] = NULL;
     return self;
 }

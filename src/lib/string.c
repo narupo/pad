@@ -319,7 +319,7 @@ str_appother(string_t *self, const string_t *other) {
 	string_t *ret = NULL;
 
 	if (self == other) {
-		string_type_t *buf = (string_type_t *) strdup(self->buffer);
+		string_type_t *buf = cstr_edup(self->buffer);
 		if (!buf) {
 			return ret;
 		}
@@ -558,7 +558,7 @@ argspush(struct args *self, const char *arg) {
 		}
 	}
 
-	char *cp = strdup(arg);
+	char *cp = cstr_edup(arg);
 	if (!cp) {
 		return NULL;
 	}
