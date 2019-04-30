@@ -16,6 +16,7 @@
 #include <unistd.h>
 
 #include "lib/memory.h"
+#include "lib/cstring.h"
 
 /******************
 * cstring_array_t *

@@ -2,7 +2,9 @@
 
 #define _GNU_SOURCE 1
 #include <string.h>
+
 #include "lib/memory.h"
+#include "lib/string.h"
 
 enum {
     TOKEN_TYPE_INVALID = -1,

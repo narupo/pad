@@ -135,6 +135,49 @@ from context import Context
     string: '"' .* '"'
     digit: [0-9]+
     identifier: ( [a-z] | [0-9] | _ )+ 
+
+    2019-04-14 11:20:12 曇のち雨
+    ============================
+    BNF 0.3.0
+    for の実装
+    id-expr の実装
+
+    + は新規追加したところ
+    ^ は更新
+
+    block: ( text-block | code-block | ref-block ), block
+    text-block: .*
+    code-block: '{@' {formula}* '@}'
+    ref-block: '{{' ( identifier | callable ) '}}'
+    callable: caller-list '(' args ')'
+    caller-list: identifier '.' caller-list | identifier
+    args: arg ',' args | arg
+    arg: digit | string | identifier
+    ^ formula: ( expr | assign-expr | if-stmt | for-stmt | import-stmt | caller-stmt ), ( formula | '@}' block '{@' )
+    if-stmt: 'if' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    elif-stmt: 'elif' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+    + for-stmt: 'for' expr ';' comparison ';' expr ':' ( formual | '@}' block '{@' ) 'end'
+    comparison: expr cmp-op comparison | expr
+    cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
+    expr: term '+' expr | term '-' expr | term
+    term: factor '*' term | factor '/' term | factor
+    ^ factor: digit | identifier | string | callable | id-expr | '(' assign-expr ')' | '(' expr ')'
+    + id-expr: increment-expr | decrement-expr
+    + increment-expr: ( '++' identifier | identifier '++' )
+    + decrement-expr: ( '--' identifier | identifier '--' )
+    assign-expr: assign-operand-lhs assign-operator assign-expr | assign-oeprand-rhs
+    assign-operator: '='
+    assign-operand-lhs: identifier
+    assign-operand-rhs: expr | string | identifier | callable
+    import-stmt: 'import' identifier
+    caller-stmt: identifier ( '.' identifier )+ '(' args ')'
+    args: string | ',' args
+    string: '"' .* '"'
+    digit: [0-9]+
+    identifier: ( [a-z] | [0-9] | _ )+ 
+
+    i++ + 10
 '''
 
 class AST:

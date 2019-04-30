@@ -70,3 +70,14 @@ cstr_appfmt(char *dst, int32_t dstsz, const char *fmt, ...);
  */
 char *
 cstr_cpywithout(char *dst, int32_t dstsz, const char *src, const char *without);
+
+/**
+ * Duplicate string
+ * If allocate memory is error then exit program
+ *
+ * @param[in] src source string
+ *
+ * @return success to pointer to string of dynamic allocate memory
+ */
+char *
+cstr_edup(const char *src);

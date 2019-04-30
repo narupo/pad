@@ -76,7 +76,7 @@ cstrarr_push(cstring_array_t *arr, const char *str) {
 		}
 	}
 
-	arr->arr[arr->len++] = strdup(str);
+	arr->arr[arr->len++] = cstr_edup(str);
 	arr->arr[arr->len] = NULL;
 
 	return arr;

@@ -38,5 +38,5 @@ class {{ opts.get("class-name") }}:
     def __init__(self):
         pass
 
-class {{ opts.get("a") }}:
+class {{ opts.get("0") }}:
     pass

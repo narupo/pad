@@ -43,5 +43,5 @@ token_getc_text(const token_t *self) {
 
 char *
 token_copy_text(const token_t *self) {
-    return strdup(self->text); 
+    return cstr_edup(self->text); 
 }
