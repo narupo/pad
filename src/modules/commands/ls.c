@@ -108,13 +108,13 @@ lscmd_isdotfile(const lscmd_t *_, const char *fname) {
 }
 
 static cstring_array_t *
-lscmd_dir2arr(const lscmd_t *self, struct file_dir *dir) {
+lscmd_dir2arr(const lscmd_t *self, file_dir_t *dir) {
     cstring_array_t *arr = cstrarr_new();
     if (!arr) {
         return NULL;
     }
 
-    for (struct file_dirnode *nd; (nd = file_dirread(dir)); ) {
+    for (file_dirnode_t *nd; (nd = file_dirread(dir)); ) {
         const char *name = file_dirnodename(nd);
         if (lscmd_isdotfile(self, name) && !self->opts.isall) {
             continue;            
@@ -133,15 +133,15 @@ lscmd_ls(const lscmd_t *self, const char *path) {
         return 1;
     }
     
-    struct file_dir *dir = file_diropen(path);
+    file_dir_t *dir = file_diropen(path);
     if (!dir) {
-        err_error("failed to open directory %s", path);
+        err_error("failed to open directory \"%s\"", path);
         return 2;
     }
 
     cstring_array_t *arr = lscmd_dir2arr(self, dir);
     if (!arr) {
-        err_error("failed to read directory %s", path);
+        err_error("failed to read directory \"%s\"", path);
         return 3;
     }
 
@@ -150,7 +150,7 @@ lscmd_ls(const lscmd_t *self, const char *path) {
     cstrarr_del(arr);
 
     if (file_dirclose(dir) < 0) {
-        err_error("failed to close directory %s", path);
+        err_error("failed to close directory \"%s\"", path);
         return 4;
     }
 
