@@ -27,3 +27,4 @@
 #include "modules/commands/mv.h"
 #include "modules/commands/cp.h"
 #include "modules/commands/touch.h"
+#include "modules/commands/snippet.h"
