@@ -137,6 +137,11 @@ app_init_config(app_t *self) {
         return false;
     }
 
+    if (!file_solve(self->config->codes_dir_path, sizeof self->config->codes_dir_path, "~/.cap/codes")) {
+        err_error("failed to solve path for snippet codes directory path");
+        return false;
+    }
+
     return true;
 }
 
@@ -214,6 +219,19 @@ app_deploy_env(const app_t *self) {
     if (!file_exists(path)) {
         if (!file_writeline("", path)) {
             err_error("failed to write line to home of variable");
+            return false;
+        }
+    }
+
+    // make snippets directory
+    char codesdir[FILE_NPATH];
+    if (!file_solvefmt(codesdir, sizeof codesdir, "%s/codes", appdir)) {
+        err_error("failed to solve path for snippet codes directory");
+        return false;
+    }
+    if (!file_exists(codesdir)) {
+        if (file_mkdirq(codesdir) != 0) {
+            err_error("failed to make directory for snippet codes directory");
             return false;
         }
     }
@@ -342,6 +360,7 @@ app_usage(app_t *app) {
         "    mv       Rename file on environment\n"
         "    cp       Copy file\n"
         "    touch    Create empty file\n"
+        "    snippet  Save or show snippet\n"
     ;
     static const char *examples[] = {
         "    $ cap home\n"
@@ -410,6 +429,7 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
         "mv",
         "cp",
         "touch",
+        "snippet",
         NULL,
     };
 
@@ -534,6 +554,13 @@ app_execute_command_by_name(app_t *self, const char *name) {
         self->cmd_argv = NULL; // moved
         int result = touchcmd_run(cmd);
         touchcmd_del(cmd);
+        return result;
+    } else if (!strcmp(name, "snippet")) {
+        snptcmd_t *cmd = snptcmd_new(self->config, self->cmd_argc, self->cmd_argv);
+        self->config = NULL; // moved
+        self->cmd_argv = NULL; // moved
+        int result = snptcmd_run(cmd);
+        snptcmd_del(cmd);
         return result;
     }
 
