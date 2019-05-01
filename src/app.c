@@ -360,7 +360,7 @@ app_usage(app_t *app) {
         "    mv       Rename file on environment\n"
         "    cp       Copy file\n"
         "    touch    Create empty file\n"
-        "    snippet  Save or show snippet\n"
+        "    snippet  Save or show snippet codes\n"
     ;
     static const char *examples[] = {
         "    $ cap home\n"
