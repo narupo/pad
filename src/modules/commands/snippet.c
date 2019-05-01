@@ -29,7 +29,7 @@ static void
 snptcmd_show_usage(snptcmd_t *self) {
     fflush(stdout);
     fflush(stderr);
-    fprintf(stderr, "Save or show snippet codes."
+    fprintf(stderr, "Save or show snippet codes.\n"
         "\n"
         "Usage:\n"
         "\n"
