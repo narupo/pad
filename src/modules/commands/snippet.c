@@ -158,7 +158,7 @@ snptcmd_add(snptcmd_t *self) {
 
     FILE *fout = file_open(path, "wb");
     if (!fout) {
-        err_error("failed to open file \"%s\"", path);
+        err_error("failed to open snippet \"%s\"", name);
         return 1;
     }
 
@@ -183,7 +183,7 @@ snptcmd_show(snptcmd_t *self) {
 
     FILE *fin = file_open(path, "rb");
     if (!fin) {
-        err_error("failed to open file \"%s\"", path);
+        err_error("failed to open snippet \"%s\"", name);
         return 1;
     }
 
