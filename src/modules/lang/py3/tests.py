@@ -408,12 +408,6 @@ class Test(unittest.TestCase):
         t = Tokenizer()
         a = AST()
 
-        a.parse(t.parse('{@ v = 1 + 2 @}'))
-        c = a.traverse()
-        self.assertEqual(c.last_expr_val, 3)
-        self.assertEqual(c.syms['v'], 3)
-        return
-
         a.parse(t.parse('{@ 1 + 2 @}'))
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 3)
@@ -445,6 +439,11 @@ class Test(unittest.TestCase):
         with self.assertRaises(AST.SyntaxError):
             a.parse(t.parse('{@ (1 + 2 @}'))
 
+        a.parse(t.parse('{@ v = 1 + 2 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 3)
+        self.assertEqual(c.syms['v'], 3)
+    
         a.parse(t.parse('''{@
             a = 1 + 2
             v = a + 3
@@ -467,11 +466,59 @@ class Test(unittest.TestCase):
 
         a.parse(t.parse('''{@
             v = 1
+            ++v
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 2)
+        self.assertEqual(c.last_expr_val, 2)
+
+        a.parse(t.parse('''{@
+            v = 1
             v--
         @}'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 0)
         self.assertEqual(c.last_expr_val, 1)
+
+        a.parse(t.parse('''{@
+            v = 1
+            --v
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 0)
+        self.assertEqual(c.last_expr_val, 0)
+
+        a.parse(t.parse('''{@
+            v = 1
+            ++v + 2
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 2)
+        self.assertEqual(c.last_expr_val, 4)
+
+        a.parse(t.parse('''{@
+            v = 1
+            v++ + 2
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 2)
+        self.assertEqual(c.last_expr_val, 3)
+
+        a.parse(t.parse('''{@
+            v = 1
+            --v + 2
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 0)
+        self.assertEqual(c.last_expr_val, 2)
+
+        a.parse(t.parse('''{@
+            v = 1
+            v-- + 2
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 0)
+        self.assertEqual(c.last_expr_val, 3)
 
     def test_ast_assign(self):
         t = Tokenizer()
