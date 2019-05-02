@@ -189,7 +189,6 @@ safesystem(const char *cmdline, int option) {
 #endif
 }
 
-
 cstring_array_t *
 argsbyoptind(int argc, char *argv[], int optind) {
 	cstring_array_t *args = cstrarr_new();
