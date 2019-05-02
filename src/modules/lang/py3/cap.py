@@ -52,7 +52,9 @@ def main():
         tokens = tokenizer.parse(src)
         ast = AST()
         ast.parse(tokens)
-        context = ast.traverse(opts=opts)
+        context = ast.traverse(
+            opts=opts,
+        )
         print(context.buffer)
     except Tokenizer.ParseError as e:
         print(e)

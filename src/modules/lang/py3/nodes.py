@@ -18,10 +18,10 @@ class ExprNode(Node):
 
 class AssignExprNode(Node):
     def __init__(self):
-        self.assign_operand_lhs = None
-        self.assign_operator = None
-        self.assign_operand_rhs = None
-        self.assign_expr = None
+        self.ideitfier = None # str
+        self.assign_operator = None # str
+        self.assign_expr = None # Node
+        self.expr = None # Node
 
 
 class AssignOperandLhsNode(Node):
@@ -128,6 +128,15 @@ class FactorNode(Node):
         self.string = None
         self.expr = None
         self.callable = None
+        self.assign_expr = None
+        self.id_expr = None
+
+
+class IdExprNode(Node):
+    def __init__(self):
+        self.front_or_back = None # str. 'front' to front, 'back' to back
+        self.identifier = None # str
+        self.operator = None # str
 
 
 class CallableNode(Node):
