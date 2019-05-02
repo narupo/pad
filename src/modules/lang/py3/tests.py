@@ -408,6 +408,12 @@ class Test(unittest.TestCase):
         t = Tokenizer()
         a = AST()
 
+        a.parse(t.parse('{@ v = 1 + 2 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 3)
+        self.assertEqual(c.syms['v'], 3)
+        return
+
         a.parse(t.parse('{@ 1 + 2 @}'))
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 3)
@@ -439,11 +445,6 @@ class Test(unittest.TestCase):
         with self.assertRaises(AST.SyntaxError):
             a.parse(t.parse('{@ (1 + 2 @}'))
 
-        a.parse(t.parse('{@ v = 1 + 2 @}'))
-        c = a.traverse()
-        self.assertEqual(c.last_expr_val, 3)
-        self.assertEqual(c.syms['v'], 3)
-
         a.parse(t.parse('''{@
             a = 1 + 2
             v = a + 3
@@ -451,6 +452,26 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 6)
         self.assertEqual(c.syms['v'], 6)
+
+    def test_ast_id_expr(self):
+        t = Tokenizer()
+        a = AST()
+
+        a.parse(t.parse('''{@
+            v = 1
+            v++
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 2)
+        self.assertEqual(c.last_expr_val, 1)
+
+        a.parse(t.parse('''{@
+            v = 1
+            v--
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 0)
+        self.assertEqual(c.last_expr_val, 1)
 
     def test_ast_assign(self):
         t = Tokenizer()
@@ -528,6 +549,15 @@ class Test(unittest.TestCase):
         a.parse(t.parse('{@ v = opts.get("a") @}'))
         c = a.traverse(opts={ 'a': 'b' })
         self.assertEqual(c.syms['v'], "b")
+
+        # 以下の式はPython3ではエラーになる
+        # PHP7, Ruby2.3ではエラーにならずlast_expr_valは2
+        a.parse(t.parse('''{@
+            1 + v = 1
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 1)
+        self.assertEqual(c.last_expr_val, 2)
 
     def test_ast_comparison(self):
         t = Tokenizer()
@@ -735,7 +765,7 @@ class Test(unittest.TestCase):
 bbb'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'a')
-        self.assertEqual(c.buffer, "a\nbbb")
+        self.assertEqual(c.buffer, "\n\na\n\nbbb")
 
         a.parse(t.parse('''{@
     v = "a"
@@ -747,7 +777,7 @@ bbb'''))
 c'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'b')
-        self.assertEqual(c.buffer, 'bc')
+        self.assertEqual(c.buffer, 'b\nc')
 
         a.parse(t.parse('''{@ if 0: @}{@ else: @}{@ v = "a" @}{@ end @}'''))
         c = a.traverse()

@@ -141,6 +141,7 @@ from context import Context
     BNF 0.3.0
     for の実装
     id-expr の実装
+    リファクタリング
 
     + は新規追加したところ
     ^ は更新
@@ -157,19 +158,15 @@ from context import Context
     if-stmt: 'if' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
     elif-stmt: 'elif' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
     else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
-    + for-stmt: 'for' expr ';' comparison ';' expr ':' ( formual | '@}' block '{@' ) 'end'
+    + for-stmt: 'for' expr ';' comparison ';' expr ':' ( formula | '@}' block '{@' ) 'end'
     comparison: expr cmp-op comparison | expr
     cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
     expr: term '+' expr | term '-' expr | term
     term: factor '*' term | factor '/' term | factor
-    ^ factor: digit | identifier | string | callable | id-expr | '(' assign-expr ')' | '(' expr ')'
-    + id-expr: increment-expr | decrement-expr
-    + increment-expr: ( '++' identifier | identifier '++' )
-    + decrement-expr: ( '--' identifier | identifier '--' )
-    assign-expr: assign-operand-lhs assign-operator assign-expr | assign-oeprand-rhs
-    assign-operator: '='
-    assign-operand-lhs: identifier
-    assign-operand-rhs: expr | string | identifier | callable
+    ^ factor: digit | identifier | string | callable | id-expr | assign-expr | '(' expr ')'
+    + id-expr: identifier ('++' | '--') | ('++' | '--') identifier
+    ^ assign-expr: identifier assign-operator assign-expr | expr
+    ^ assign-operator: '='
     import-stmt: 'import' identifier
     caller-stmt: identifier ( '.' identifier )+ '(' args ')'
     args: string | ',' args
@@ -238,9 +235,8 @@ class AST:
         elif isinstance(node, FormulaNode):
             if node.comparison:
                 self.context.last_expr_val = self._traverse(node.comparison, dep=dep+1)
-                return self.context.last_expr_val
             elif node.assign_expr:
-                self._traverse(node.assign_expr, dep=dep+1)
+                self.context.last_expr_val = self._traverse(node.assign_expr, dep=dep+1)
             elif node.import_:
                 self._traverse(node.import_, dep=dep+1)
             elif node.caller:
@@ -339,6 +335,15 @@ class AST:
                 return node.string
             elif node.callable:
                 return self._traverse(node.callable, dep=dep+1)
+            elif node.assign_expr:
+                return self._traverse(node.assign_expr, dep=dep+1)
+            elif node.id_expr:
+                return self._traverse(node.id_expr, dep=dep+1)
+            else:
+                raise AST.ModuleError('impossible. invalid case in factor node')
+
+        elif isinstance(node, IdExprNode):
+            return self.traverse_id_expr(node, dep+1)
 
         elif isinstance(node, DigitNode):
             return node.value
@@ -364,30 +369,40 @@ class AST:
         else:
             raise AST.ModuleError('impossible. not supported node', type(node))
 
-    def traverse_assign_expr(self, node, dep):
-        lhs = node.assign_operand_lhs
-        op = node.assign_operator
-        rhs = node.assign_operand_rhs
-        assexpr = node.assign_expr
-        if lhs is None and rhs:
-            if rhs.expr:
-                return self._traverse(rhs.expr, dep+1)
-            elif rhs.callable:
-                return self._traverse(rhs.callable, dep+1)
-            elif rhs.string != None:
-                return rhs.string
-            elif rhs.identifier != None:
-                if rhs.identifier not in self.context.syms.keys():
-                    raise AST.ReferenceError('"%s" is not defined' % rhs.identifier)
-        elif lhs and op and assexpr:
-            if op.operator == '=':
-                self.context.syms[lhs.identifier] = self._traverse(assexpr, dep=dep+1)
-                self.context.last_expr_val = self.context.syms[lhs.identifier]
-                return self.context.syms[lhs.identifier]
-            else:
-                raise AST.ModuleError('unsupported operator "%s"' % op.operator)
+    def traverse_id_expr(self, node, dep):
+        if node.identifier not in self.context.syms.keys():
+            raise AST.SyntaxError('"%s" is not defined' % node.identifier)
+
+        if node.front_or_back == 'front':
+            if node.operator == '++':
+                self.context.syms[node.identifier] += 1
+                return self.context.syms[node.identifier]
+            elif node.operator == '--':
+                self.context.syms[node.identifier] -= 1
+                return self.context.syms[node.identifier]
+
+        elif node.front_or_back == 'back':
+            if node.operator == '++':
+                ret = self.context.syms[node.identifier]
+                self.context.syms[node.identifier] += 1
+                return ret
+            elif node.operator == '--':
+                ret = self.context.syms[node.identifier]
+                self.context.syms[node.identifier] -= 1
+                return ret
+
         else:
-            raise AST.ModuleError('invalid case in traverse assign expr')
+            raise AST.ModuleError('impossible. invalid front or back value "%s"' % node.front_or_back)
+
+    def traverse_assign_expr(self, node, dep):
+        if node.expr:
+            return self._traverse(node.expr, dep=dep+1)
+
+        if node.assign_operator == '=':
+            self.context.syms[node.identifier] = self._traverse(node.assign_expr, dep=dep+1)
+            return self.context.syms[node.identifier]
+
+        raise AST.ModuleError('invalid operator %s' % node.assign_operator)
              
     def traverse_ref_block(self, node, dep):
         if node.identifier != None:
@@ -817,13 +832,23 @@ class AST:
         elif t.kind == 'digit':
             node.digit = DigitNode()
             node.digit.value = t.value
-        elif t.kind == 'identifier':
+        elif t.value in ('++', '--'):
             self.strm.prev()
-            if self.is_callable(dep=dep+1):
-                node.callable = self.callable(dep=dep+1)
+            node.id_expr = self.id_expr(dep=dep+1)
+        elif t.kind == 'identifier':
+            if self.is_assign_op(self.strm.cur()):
+                self.strm.prev()
+                node.assign_expr = self.assign_expr(dep=dep+1)
+            elif self.strm.cur().value in ('++', '--'):
+                self.strm.prev()
+                node.id_expr = self.id_expr(dep=dep+1)
             else:
-                t = self.strm.get()
-                node.identifier = t.value
+                self.strm.prev()
+                if self.is_callable(dep=dep+1):
+                    node.callable = self.callable(dep=dep+1)
+                else:
+                    t = self.strm.get()
+                    node.identifier = t.value
         elif t.kind == 'string':
             node.string = t.value
         else:
@@ -832,6 +857,32 @@ class AST:
 
         return node 
 
+    def id_expr(self, dep):
+        self.show_parse('id_expr', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = IdExprNode()
+        tok = self.strm.get()
+        if tok.kind == 'identifier':
+            node.front_or_back = 'back'
+            node.identifier = tok.value
+            tok = self.strm.get()
+            if tok.value not in ('++', '--'):
+                raise AST.SyntaxError('not found operator in inc-dec expression')
+            node.operator = tok.value
+        else:
+            if tok.value not in ('++', '--'):
+                raise AST.SyntaxError('not found operator in inc-dec expression 2')            
+            node.front_or_back = 'front'
+            node.operator = tok.value
+            tok = self.strm.get()
+            if tok.kind != 'identifier':
+                raise AST.SyntaxError('not found identifier in inc-dec expression')
+            node.identifier = tok.value
+
+        return node
+        
     def is_callable(self, dep):
         self.show_parse('is_callable', dep=dep)
         if self.strm.eof():
@@ -873,83 +924,29 @@ class AST:
 
         return node
 
+    # ^ assign-expr: identifier assign-operator assign-expr | expr
     def assign_expr(self, dep=0):
         self.show_parse('assign_expr', dep=dep)
         if self.strm.eof():
             return None
 
         node = AssignExprNode()
-        i = self.strm.index
-        node.assign_operand_lhs = self.assign_operand_lhs(dep=dep+1)
-        if node.assign_operand_lhs:
-            node.assign_operator = self.assign_operator(dep=dep+1)
-            if node.assign_operator is None:
-                node.assign_operand_lhs = None
-                self.strm.index = i
-                node.assign_operand_rhs = self.assign_operand_rhs(dep=dep+1)
-            else:
-                node.assign_expr = self.assign_expr(dep=dep+1)
+        if self.strm.cur().kind == 'identifier' and self.is_assign_op(self.strm.cur(1)):
+            tok = self.strm.get()
+            node.identifier = tok.value
+            tok = self.strm.get()
+            node.assign_operator = tok.value
+            node.assign_expr = self.assign_expr(dep=dep+1)
         else:
-            node.assign_operand_rhs = self.assign_operand_rhs(dep=dep+1)
-
-        return node
-
-    def assign_operand_rhs(self, dep=0):
-        self.show_parse('assign_operand_rhs', dep=dep)
-        if self.strm.eof():
-            return None
-
-        node = AssignOperandRhsNode()
-        t = self.strm.get()
-        if t.kind == 'string':
-            node.string = t.value
-        elif t.kind == 'identifier':
-            self.strm.prev()
-            if self.is_callable(dep=dep+1):
-                node.callable = self.callable()
-            else:
-                node.expr = self.expr(dep=dep+1)
-                if node.expr is None:
-                    t = self.strm.get()
-                    node.identifier = t.value
-        else:
-            self.strm.prev()
             node.expr = self.expr(dep=dep+1)
-            if node.expr is None:
-                return None
 
         return node
-        
-    def assign_operator(self, dep=0):
-        self.show_parse('assign_operator', dep=dep)
-        if self.strm.eof():
-            return None
 
-        t = self.strm.get()
-        if t.value != '=':
-            self.strm.prev()
-            return None
+    def is_assign_op(self, tok):
+        if tok == Stream.EOF:
+            return False
+        return tok.value in ('=')
 
-        node = AssignOperatorNode()
-        node.operator = t.value
-        return node
-        
-    def assign_operand_lhs(self, dep=0):
-        self.show_parse('assign_operand_lhs', dep=dep)
-        if self.strm.eof():
-            return None
-        elif self.is_callable(dep=dep+1):
-            return None
-
-        node = AssignOperandLhsNode()
-        t = self.strm.get()
-        if t.kind != 'identifier':
-            self.strm.prev()
-            return None
-
-        node.identifier = t.value
-        return node
-                
     def import_(self, dep=0):
         self.show_parse('import', dep=dep)
         if self.strm.eof():
