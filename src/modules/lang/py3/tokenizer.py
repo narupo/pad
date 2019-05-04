@@ -121,7 +121,14 @@ class Tokenizer:
                 elif c == '*':
                     self.tokens.append(Token(kind='operator', value='*'))
                 elif c == '/':
-                    self.tokens.append(Token(kind='operator', value='/'))
+                    if s.cur() == '/':
+                        s.get()
+                        self.read_at_newline()
+                    elif s.cur() == '*':
+                        s.get()
+                        self.read_at_starslash()
+                    else:
+                        self.tokens.append(Token(kind='operator', value='/'))
                 elif c == '"':
                     s.prev()
                     self.read_string()
@@ -141,6 +148,22 @@ class Tokenizer:
             buf = ''
 
         return self.tokens
+
+    def read_at_newline(self):
+        while not self.strm.eof():
+            c = self.strm.get()
+            if c == '\r' and self.strm.cur() == '\n':
+                self.strm.get()
+                return
+            elif c == '\n':
+                return
+
+    def read_at_starslash(self):
+        while not self.strm.eof():
+            c = self.strm.get()
+            if c == '*' and self.strm.cur() == '/':
+                self.strm.get()
+                return
 
     def read_add(self):
         c = self.strm.get()
