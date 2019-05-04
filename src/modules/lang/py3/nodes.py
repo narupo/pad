@@ -74,9 +74,9 @@ class FormulaNode(Node):
         self.if_ = None # Node
         self.for_ = None # Node
         self.import_ = None # Node
-        self.caller = None # Node
         self.formula = None # Node
         self.block = None # Node
+        self.callable = None # Node
 
 
 class ImportNode(Node):
