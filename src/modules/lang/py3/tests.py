@@ -235,6 +235,58 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[4].kind, 'rbraceat')
         self.assertEqual(ts[4].value, '@}')
 
+        ts = t.parse('{@ a & b @}')
+        self.assertEqual(len(ts), 5)
+        self.assertEqual(ts[0].kind, 'lbraceat')
+        self.assertEqual(ts[0].value, '{@')
+        self.assertEqual(ts[1].kind, 'identifier')
+        self.assertEqual(ts[1].value, 'a')
+        self.assertEqual(ts[2].kind, 'operator')
+        self.assertEqual(ts[2].value, '&')
+        self.assertEqual(ts[3].kind, 'identifier')
+        self.assertEqual(ts[3].value, 'b')
+        self.assertEqual(ts[4].kind, 'rbraceat')
+        self.assertEqual(ts[4].value, '@}')
+
+        ts = t.parse('{@ a && b @}')
+        self.assertEqual(len(ts), 5)
+        self.assertEqual(ts[0].kind, 'lbraceat')
+        self.assertEqual(ts[0].value, '{@')
+        self.assertEqual(ts[1].kind, 'identifier')
+        self.assertEqual(ts[1].value, 'a')
+        self.assertEqual(ts[2].kind, 'operator')
+        self.assertEqual(ts[2].value, '&&')
+        self.assertEqual(ts[3].kind, 'identifier')
+        self.assertEqual(ts[3].value, 'b')
+        self.assertEqual(ts[4].kind, 'rbraceat')
+        self.assertEqual(ts[4].value, '@}')
+
+        ts = t.parse('{@ a | b @}')
+        self.assertEqual(len(ts), 5)
+        self.assertEqual(ts[0].kind, 'lbraceat')
+        self.assertEqual(ts[0].value, '{@')
+        self.assertEqual(ts[1].kind, 'identifier')
+        self.assertEqual(ts[1].value, 'a')
+        self.assertEqual(ts[2].kind, 'operator')
+        self.assertEqual(ts[2].value, '|')
+        self.assertEqual(ts[3].kind, 'identifier')
+        self.assertEqual(ts[3].value, 'b')
+        self.assertEqual(ts[4].kind, 'rbraceat')
+        self.assertEqual(ts[4].value, '@}')
+
+        ts = t.parse('{@ a || b @}')
+        self.assertEqual(len(ts), 5)
+        self.assertEqual(ts[0].kind, 'lbraceat')
+        self.assertEqual(ts[0].value, '{@')
+        self.assertEqual(ts[1].kind, 'identifier')
+        self.assertEqual(ts[1].value, 'a')
+        self.assertEqual(ts[2].kind, 'operator')
+        self.assertEqual(ts[2].value, '||')
+        self.assertEqual(ts[3].kind, 'identifier')
+        self.assertEqual(ts[3].value, 'b')
+        self.assertEqual(ts[4].kind, 'rbraceat')
+        self.assertEqual(ts[4].value, '@}')
+
         ts = t.parse('{@ a + b @}')
         self.assertEqual(len(ts), 5)
         self.assertEqual(ts[0].kind, 'lbraceat')
@@ -460,6 +512,46 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 6)
         self.assertEqual(c.syms['v'], 6)
+
+        a.parse(t.parse('{@ 1 && 1 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 1)
+
+        a.parse(t.parse('{@ 1 && 0 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 0)
+
+        a.parse(t.parse('{@ 0 && 0 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 0)
+
+        a.parse(t.parse('{@ 1 || 0 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 1)
+
+        a.parse(t.parse('{@ 0 || 0 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 0)
+
+        a.parse(t.parse('{@ 1 + 1 && 1 + 1 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 2)
+
+        a.parse(t.parse('{@ 2 * 2 && 4 / 2 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 2)
+
+        a.parse(t.parse('{@ 1 && 1 && 1 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 1)
+
+        a.parse(t.parse('{@ 1 && 1 && 0 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 0)
+
+        a.parse(t.parse('{@ 1 || 1 || 1 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 1)
 
     def test_ast_id_expr(self):
         t = Tokenizer()
@@ -1163,6 +1255,45 @@ c'''))
 @}{{ a }}'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'v2')
+
+        a.parse(t.parse('''{@
+            if 1 && 1:
+                v = 1
+            end
+@}{{ v }}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 1)
+        self.assertEqual(c.buffer, '1')
+
+        a.parse(t.parse('''{@
+            if 1 || 1:
+                v = 1
+            end
+@}{{ v }}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 1)
+        self.assertEqual(c.buffer, '1')
+
+        a.parse(t.parse('''{@
+            v = 1
+            if v && v:
+                v = 2
+            end
+@}{{ v }}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 2)
+        self.assertEqual(c.buffer, '2')
+
+        a.parse(t.parse('''{@
+            a = 1
+            b = 1
+            if a && b:
+                a = 2
+            end
+@}{{ a }}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['a'], 2)
+        self.assertEqual(c.buffer, '2')
 
     def test_ast_opts(self):
         a = AST()

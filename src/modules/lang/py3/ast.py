@@ -174,7 +174,39 @@ import sys
     digit: [0-9]+
     identifier: ( [a-z] | [0-9] | _ )+ 
 
-    i++ + 10
+    BNF 0.3.1
+    comparison の修正
+
+    + は新規追加したところ
+    ^ は更新
+
+    block: ( text-block | code-block | ref-block ), block
+    text-block: .*
+    code-block: '{@' {formula}* '@}'
+    ref-block: '{{' ( identifier | callable ) '}}'
+    callable: caller-list '(' args ')'
+    caller-list: identifier '.' caller-list | identifier
+    args: arg ',' args | arg
+    arg: digit | string | identifier
+    formula: ( expr | assign-expr | if-stmt | for-stmt | import-stmt | callable ), ( formula | '@}' block '{@' )
+    if-stmt: 'if' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    elif-stmt: 'elif' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+    for-stmt: 'for' expr ';' comparison ';' expr ':' ( formula | '@}' block '{@' ) 'end'
+    comparison: expr cmp-op comparison | expr
+    cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
+    expr: term '+' expr | term '-' expr | term
+    term: kamiyu '*' term | kamiyu '/' term | kamiyu
+    kamiyu: factor '&&' kamiyu | factor '||' kamiyu | factor
+    ^ factor: digit | identifier | string | callable | id-expr | assign-expr | '(' expr ')'
+    id-expr: identifier ('++' | '--') | ('++' | '--') identifier
+    assign-expr: identifier assign-operator assign-expr | expr
+    assign-operator: '='
+    import-stmt: 'import' identifier
+    args: string | ',' args
+    string: '"' .* '"'
+    digit: [0-9]+
+    identifier: ( [a-z] | [0-9] | _ )+ 
 '''
 
 class AST:
@@ -298,19 +330,34 @@ class AST:
                 self._traverse(node.formula, dep=dep+1)
 
         elif isinstance(node, ExprNode):
-            if node.term and node.expr:
-                lval = self._traverse(node.term, dep=dep+1)
+            if node.kamiyu and node.expr:
+                lval = self._traverse(node.kamiyu, dep=dep+1)
                 rval = self._traverse(node.expr, dep=dep+1)
+                if node.op == '&&':
+                    return lval and rval
+                elif node.op == '||':
+                    return lval or rval
+                else:
+                    raise AST.ModuleError('unsupported operation "%s" in traverse expr' % node.op)
+            elif node.kamiyu:
+                return self._traverse(node.kamiyu, dep=dep+1)
+            else:
+                raise AST.ModuleError('programming error. impossible case in traverse expr')
+
+        elif isinstance(node, KamiyuNode):
+            if node.term and node.kamiyu:
+                lval = self._traverse(node.term, dep=dep+1)
+                rval = self._traverse(node.kamiyu, dep=dep+1)
                 if node.op == '+':
                     return lval + rval
                 elif node.op == '-':
                     return lval - rval
                 else:
-                    raise AST.ModuleError('unsupported operation "%s" in traverse expr' % node.op)
+                    raise AST.ModuleError('unsupported operation "%s" in traverse kamiyu' % node.op)
             elif node.term:
                 return self._traverse(node.term, dep=dep+1)
             else:
-                raise AST.ModuleError('programming error. impossible case in traverse expr')
+                raise AST.ModuleError('programming error. impossible case in traverse kamiyu')
 
         elif isinstance(node, TermNode):
             if node.factor and node.term:
@@ -833,6 +880,25 @@ class AST:
             return None
         
         node = ExprNode()
+        node.kamiyu = self.kamiyu(dep=dep+1)
+
+        t = self.strm.get()
+        if t == Stream.EOF:
+            return node
+        elif t.value not in ('&&', '||'):
+            self.strm.prev()
+            return node
+        node.op = t.value
+
+        node.expr = self.expr(dep=dep+1)
+        return node
+
+    def kamiyu(self, dep):
+        self.show_parse('kamiyu', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = KamiyuNode()
         node.term = self.term(dep=dep+1)
 
         t = self.strm.get()
@@ -843,7 +909,7 @@ class AST:
             return node
         node.op = t.value
 
-        node.expr = self.expr(dep=dep+1)
+        node.kamiyu = self.kamiyu(dep=dep+1)
         return node
 
     def term(self, dep):
