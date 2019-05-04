@@ -477,7 +477,7 @@ class AST:
     def show_parse(self, name, dep):
         if self.debug_parse:
             t = self.strm.cur()
-            print(dep, name + ': ' + str(t))
+            print(dep*'| ', name + ': ' + str(t))
 
     def block(self, dep=0):
         self.show_parse('block', dep=dep)
@@ -486,6 +486,7 @@ class AST:
         
         t = self.strm.cur()
         if t.kind in ('rbraceat', 'end', 'if', 'elif', 'else'):
+            if self.debug_parse: print('found end', self.strm.cur())
             return None
 
         node = BlockNode()
@@ -725,7 +726,9 @@ class AST:
             raise AST.SyntaxError('not found ":" in for statement')
 
         tok = self.strm.get()
-        if tok.kind == 'rbraceat':
+        if tok.kind == 'end':
+            pass
+        elif tok.kind == 'rbraceat':
             node.block = self.block(dep=dep+1)
             tok = self.strm.get()
             if tok.kind != 'end':
