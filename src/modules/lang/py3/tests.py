@@ -782,6 +782,15 @@ class Test(unittest.TestCase):
         self.assertEqual(c.syms['j'], 2)
         self.assertEqual(c.buffer, 'aaaa')
 
+        ts = t.parse('''{@
+            for i = 0; i < 1; ++i:
+            end
+@}i = {{ i }}''')
+        a.parse(ts)
+        c = a.traverse()
+        self.assertEqual(c.syms['i'], 1)
+        self.assertEqual(c.buffer, 'i = 1')
+
     def test_ast_if(self):
         t = Tokenizer()
         a = AST()

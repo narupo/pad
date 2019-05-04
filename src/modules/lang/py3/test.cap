@@ -1,7 +1,6 @@
 {@
-    os = opts.get("os")
-    linux_title = "Welcome Penguin"
-    windows_title = "Welcome DOS"
-    other_title = "Welcome unknown"
+    v = 0
+    for i = 0; i < 4; ++i:
+    end
 @}
-{: linux_title :}
+v = {: v :}
