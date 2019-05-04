@@ -553,6 +553,14 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 1)
 
+        a.parse(t.parse('{@ a = 1, b = 2 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, (1, 2))
+
+        a.parse(t.parse('{@ a = 1, b = 2, c = 3 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, (1, 2, 3))
+
     def test_ast_id_expr(self):
         t = Tokenizer()
         a = AST()
@@ -883,6 +891,17 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.syms['i'], 1)
         self.assertEqual(c.buffer, 'v = 0')
+
+        a.parse(t.parse('''{@
+            v = 0
+            for i = 0, j = 0; i < 4; ++i, ++j:
+                v = v + i
+            end
+@}v = {{ v }}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['i'], 4)
+        self.assertEqual(c.syms['j'], 4)
+        self.assertEqual(c.buffer, 'v = 6')
 
     def test_ast_not_expr(self):
         t = Tokenizer()

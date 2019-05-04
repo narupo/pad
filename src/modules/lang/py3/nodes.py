@@ -10,6 +10,12 @@ class BlockNode(Node):
         self.block = None
 
 
+class ExprListNode(Node):
+    def __init__(self):
+        self.expr = None # Node
+        self.expr_list = None # Node
+
+
 class ExprNode(Node):
     def __init__(self):
         self.assign_expr = None
@@ -60,16 +66,16 @@ class TextBlockNode(Node):
 
 class ForNode(Node):
     def __init__(self):
-        self.init_expr = None # Node
+        self.init_expr_list = None # Node
         self.comp_expr = None # Node
-        self.update_expr = None # Node
+        self.update_expr_list = None # Node
         self.block = None # Node
         self.formula = None # Node
 
 
 class FormulaNode(Node):
     def __init__(self):
-        self.expr = None # Node
+        self.expr_list = None # Node
         self.assign_expr = None # Node
         self.if_ = None # Node
         self.for_ = None # Node
