@@ -486,7 +486,6 @@ class AST:
         
         t = self.strm.cur()
         if t.kind in ('rbraceat', 'end', 'if', 'elif', 'else'):
-            if self.debug_parse: print('found end', self.strm.cur())
             return None
 
         node = BlockNode()
@@ -732,10 +731,13 @@ class AST:
             node.block = self.block(dep=dep+1)
             tok = self.strm.get()
             if tok.kind != 'end':
-                raise AST.SyntaxError('not found "end" in for statement. token is %s' % tok)
+                raise AST.SyntaxError('not found "end" in for statement (1). token is %s' % tok)
         else:
             self.strm.prev()
             node.formula = self.formula(dep=dep+1)
+            tok = self.strm.get()
+            if tok.kind != 'end':
+                raise AST.SyntaxError('not found "end" in for statement (2). token is %s' % tok)
 
         return node
 
