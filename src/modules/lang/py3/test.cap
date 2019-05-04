@@ -1,12 +1,15 @@
 {@
-    v = 0
+    a = 0, b = 0
     for i = 0; i < 10; ++i:
-        v = v + i
+        a = a + i
+        b = a * (b + i)
     end
 @}
-v = {$ v $}
+a = {$ a $}
+b = {$ b $}
 
 {@
+    v = 0
     for i = 0; i < 100; ++i:
         v = v + i
     end

@@ -174,6 +174,8 @@ import sys
     digit: [0-9]+
     identifier: ( [a-z] | [0-9] | _ )+ 
 
+    2019-05-05 08:04:09 晴のち曇
+    ===========================
     BNF 0.3.1
     comparison の修正
 
@@ -199,6 +201,43 @@ import sys
     kamiyu: term '+' kamiyu | term '-' kamiyu | term
     term: factor '*' term | factor '/' term | factor
     ^ factor: digit | identifier | string | callable | id-expr | assign-expr | not-expr | '(' expr ')'
+    id-expr: identifier ('++' | '--') | ('++' | '--') identifier
+    assign-expr: identifier assign-operator assign-expr | expr
+    assign-operator: '='
+    import-stmt: 'import' identifier
+    args: string | ',' args
+    string: '"' .* '"'
+    digit: [0-9]+
+    identifier: ( [a-z] | [0-9] | _ )+ 
+
+    2019-05-05 08:04:23 晴のち曇
+    ===========================
+    BNF 0.3.1
+    comparison の修正
+
+    + は新規追加したところ
+    ^ は更新
+
+    block: ( text-block | code-block | ref-block ), block
+    text-block: .*
+    code-block: '{@' {formula}* '@}'
+    ref-block: '{{' ( identifier | callable ) '}}'
+    callable: caller-list '(' args ')'
+    caller-list: identifier '.' caller-list | identifier
+    args: arg ',' args | arg
+    arg: digit | string | identifier
+    formula: ( expr-list | if-stmt | for-stmt | import-stmt | callable ), ( formula | '@}' block '{@' )
+    if-stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    elif-stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+    ^ for-stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
+    cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
+    + expr-list: expr ',' expr-list | expr
+    expr: gorasu ( '&&' | '||' ) expr | gorasu
+    gorasu: kamiyu cmp-op gorasu | kamiyu
+    kamiyu: term ('+' | '-' ) kamiyu | term
+    term: factor ( '*' | '/' ) term | factor
+    factor: digit | identifier | string | callable | id-expr | assign-expr | not-expr | '(' expr ')'
     id-expr: identifier ('++' | '--') | ('++' | '--') identifier
     assign-expr: identifier assign-operator assign-expr | expr
     assign-operator: '='
@@ -265,8 +304,12 @@ class AST:
             self.traverse_ref_block(node, dep=dep+1)
 
         elif isinstance(node, FormulaNode):
-            if node.expr:
-                self.context.last_expr_val = self._traverse(node.expr, dep=dep+1)
+            if node.expr_list:
+                result = self._traverse(node.expr_list, dep=dep+1)
+                if isinstance(result, tuple) and len(result) == 1:
+                    self.context.last_expr_val = result[0]
+                else:
+                    self.context.last_expr_val = result
             elif node.import_:
                 self._traverse(node.import_, dep=dep+1)
             elif node.for_:
@@ -302,6 +345,9 @@ class AST:
                 self._traverse(node.block, dep=dep+1)
             elif node.formula:
                 self._traverse(node.formula, dep=dep+1)
+
+        elif isinstance(node, ExprListNode):
+            return self.traverse_expr_list(node, dep=dep+1)
 
         elif isinstance(node, ExprNode):
             if node.gorasu and node.expr:
@@ -417,6 +463,16 @@ class AST:
         else:
             raise AST.ModuleError('impossible. not supported node', type(node))
 
+    def traverse_expr_list(self, node, dep):
+        results = []
+        result = self._traverse(node.expr, dep=dep+1)
+        results.append(result)
+        if node.expr_list:
+            result = self.traverse_expr_list(node.expr_list, dep=dep+1)
+            for el in result:
+                results.append(el)
+        return tuple(results)
+
     def traverse_callable(self, node, dep):
         package = node.caller_list.identifier
         if package == 'opts':
@@ -431,7 +487,7 @@ class AST:
                 return None
 
     def traverse_for(self, node, dep):
-        self._traverse(node.init_expr, dep=dep+1)
+        self._traverse(node.init_expr_list, dep=dep+1)
         while True:
             if node.comp_expr:
                 result = self._traverse(node.comp_expr, dep=dep+1)
@@ -443,7 +499,7 @@ class AST:
             elif node.formula:
                 self._traverse(node.formula, dep=dep+1)
 
-            self._traverse(node.update_expr, dep=dep+1)
+            self._traverse(node.update_expr_list, dep=dep+1)
 
     def traverse_id_expr(self, node, dep):
         if node.identifier not in self.context.syms.keys():
@@ -696,8 +752,8 @@ class AST:
             i = self.strm.index
             node.callable = self.callable(dep=dep+1)
             if node.callable is None:
-                node.expr = self.expr(dep=dep+1)
-                if not self.strm.eof() and node.expr is None:
+                node.expr_list = self.expr_list(dep=dep+1)
+                if not self.strm.eof() and node.expr_list is None:
                     return None
 
         t = self.strm.get()
@@ -729,7 +785,7 @@ class AST:
             raise AST.ModuleError('impossible. not found "for" token')
 
         node = ForNode()
-        node.init_expr = self.expr(dep=dep+1)
+        node.init_expr_list = self.expr_list(dep=dep+1)
         tok = self.strm.get()
         if tok.kind != 'semicolon':
             raise AST.SyntaxError('not found ";" at initialize expression in for statement')
@@ -739,7 +795,7 @@ class AST:
         if tok.kind != 'semicolon':
             raise AST.SyntaxError('not found ";" at comparison in for statement')
 
-        node.update_expr = self.expr(dep=dep+1)
+        node.update_expr_list = self.expr_list(dep=dep+1)
         tok = self.strm.get()
         if tok.kind != 'colon':
             raise AST.SyntaxError('not found ":" in for statement')
@@ -860,6 +916,29 @@ class AST:
         t = self.strm.get()
         if t.kind == 'end':
             pass
+        else:
+            self.strm.prev()
+
+        return node
+
+    def expr_list(self, dep):
+        self.show_parse('expr_list', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = ExprListNode()
+
+        i = self.strm.index
+        node.expr = self.expr(dep=dep+1)
+        if node.expr is None:
+            self.strm.index = i
+            return None
+
+        tok = self.strm.get()
+        if tok == Stream.EOF:
+            return None
+        elif tok.kind == 'comma':
+            node.expr_list = self.expr_list(dep=dep+1)
         else:
             self.strm.prev()
 
