@@ -188,11 +188,11 @@ import sys
     caller-list: identifier '.' caller-list | identifier
     args: arg ',' args | arg
     arg: digit | string | identifier
-    formula: ( expr | assign-expr | if-stmt | for-stmt | import-stmt | callable ), ( formula | '@}' block '{@' )
-    ^ if-stmt: 'if' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
-    ^ elif-stmt: 'elif' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    formula: ( expr | if-stmt | for-stmt | import-stmt | callable ), ( formula | '@}' block '{@' )
+    ^ if-stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    ^ elif-stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
     else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
-    ^ for-stmt: 'for' expr ';' comparison ';' expr ':' ( formula | '@}' block '{@' ) 'end'
+    ^ for-stmt: 'for' expr ';' expr ';' expr ':' ( formula | '@}' block '{@' ) 'end'
     cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
     ^ expr: gorasu '&&' expr | gorasu '||' expr | gorasu
     + gorasu: kamiyu cmp-op gorasu | kamiyu

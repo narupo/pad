@@ -21,3 +21,13 @@ v = {$ v $}
     {$ opts.get("title") $} is title.
     {$ opts.get("title") $}: {$ title $}{$ i $}.
 {@ end @}
+
+{@
+    a = "aho"
+    b = "manuke"
+    c = ""
+    if a == "aho" && b == "manuke":
+        c = "ok"
+    end
+@}
+c = {$ c $}
