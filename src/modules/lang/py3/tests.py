@@ -111,6 +111,24 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[2].kind, 'rbraceat')
         self.assertEqual(ts[2].value, '@}')
 
+        ts = t.parse('{@ : @}')
+        self.assertEqual(len(ts), 3)
+        self.assertEqual(ts[0].kind, 'lbraceat')
+        self.assertEqual(ts[0].value, '{@')
+        self.assertEqual(ts[1].kind, 'colon')
+        self.assertEqual(ts[1].value, ':')
+        self.assertEqual(ts[2].kind, 'rbraceat')
+        self.assertEqual(ts[2].value, '@}')
+
+        ts = t.parse('{@ ; @}')
+        self.assertEqual(len(ts), 3)
+        self.assertEqual(ts[0].kind, 'lbraceat')
+        self.assertEqual(ts[0].value, '{@')
+        self.assertEqual(ts[1].kind, 'semicolon')
+        self.assertEqual(ts[1].value, ';')
+        self.assertEqual(ts[2].kind, 'rbraceat')
+        self.assertEqual(ts[2].value, '@}')
+
         ts = t.parse('{@ ( @}')
         self.assertEqual(len(ts), 3)
         self.assertEqual(ts[0].kind, 'lbraceat')
@@ -443,7 +461,7 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 3)
         self.assertEqual(c.syms['v'], 3)
-    
+
         a.parse(t.parse('''{@
             a = 1 + 2
             v = a + 3
@@ -606,6 +624,15 @@ class Test(unittest.TestCase):
         self.assertEqual(c.syms['v'], 1)
         self.assertEqual(c.last_expr_val, 2)
 
+        a.parse(t.parse('''{@
+            i = 0
+            v = 0
+            v = v + i
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 0)
+        self.assertEqual(c.last_expr_val, 0)
+
     def test_ast_comparison(self):
         t = Tokenizer()
         a = AST()
@@ -700,6 +727,60 @@ class Test(unittest.TestCase):
         a.parse(t.parse('{@ "a" == "a" == "a" @}'))
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 0)
+
+    def test_ast_for(self):
+        t = Tokenizer()
+        a = AST()
+
+        # a.parse(t.parse('''{@
+        #     for ;;:
+        #     end
+        # @}'''))
+        # c = a.traverse()
+
+        a.parse(t.parse('''{@
+            i = 0
+            for ; i < 10;:
+                i = i + 1
+            end
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['i'], 10)
+
+        a.parse(t.parse('''{@
+            for i = 0; i < 10; ++i:
+            end
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['i'], 10)
+
+        a.parse(t.parse('''{@
+            for i = 10; i > 0; --i:
+            end
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['i'], 0)
+
+        a.parse(t.parse('''{@
+            v = 0
+            for i = 0; i < 10; ++i:
+                v = v + i
+            end
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['i'], 10)
+        self.assertEqual(c.syms['v'], 45)
+
+        a.parse(t.parse('''{@ for i = 0; i < 10; ++i: @}a{@ end @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['i'], 10)
+        self.assertEqual(c.buffer, 'aaaaaaaaaa')
+
+        a.parse(t.parse('''{@ for i = 0; i < 2; ++i: @}{@ for j = 0; j < 2; ++j: @}a{@ end @}{@ end @}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['i'], 2)
+        self.assertEqual(c.syms['j'], 2)
+        self.assertEqual(c.buffer, 'aaaa')
 
     def test_ast_if(self):
         t = Tokenizer()

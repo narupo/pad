@@ -48,7 +48,10 @@ def main():
     try:
         opts = create_opts()
         src = sys.stdin.read()
-        tokenizer = Tokenizer()
+        tokenizer = Tokenizer(
+            ldbrace_value='{:',
+            rdbrace_value=':}',
+        )
         tokens = tokenizer.parse(src)
         ast = AST()
         ast.parse(tokens)

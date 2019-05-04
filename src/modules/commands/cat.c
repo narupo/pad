@@ -263,7 +263,7 @@ catcmd_read_stream(catcmd_t *self, FILE *fin) {
 static bool
 catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
     bool ret = true;
-    tokenizer_t *tkr = tkr_new();
+    tokenizer_t *tkr = tkr_new(tkropt_new());
     ast_t *ast = ast_new();
     context_t *ctx = ctx_new();
 

@@ -58,15 +58,25 @@ class TextBlockNode(Node):
         self.text = None
 
 
+class ForNode(Node):
+    def __init__(self):
+        self.init_expr = None # Node
+        self.comparison = None # Node
+        self.update_expr = None # Node
+        self.block = None # Node
+        self.formula = None # Node
+
+
 class FormulaNode(Node):
     def __init__(self):
-        self.comparison = None
-        self.assign_expr = None
-        self.if_ = None
-        self.import_ = None
-        self.caller = None
-        self.formula = None
-        self.block = None
+        self.comparison = None # Node
+        self.assign_expr = None # Node
+        self.if_ = None # Node
+        self.for_ = None # Node
+        self.import_ = None # Node
+        self.caller = None # Node
+        self.formula = None # Node
+        self.block = None # Node
 
 
 class ImportNode(Node):
