@@ -155,7 +155,7 @@ import sys
     caller-list: identifier '.' caller-list | identifier
     args: arg ',' args | arg
     arg: digit | string | identifier
-    ^ formula: ( expr | assign-expr | if-stmt | for-stmt | import-stmt | caller-stmt ), ( formula | '@}' block '{@' )
+    ^ formula: ( expr | assign-expr | if-stmt | for-stmt | import-stmt | callable ), ( formula | '@}' block '{@' )
     if-stmt: 'if' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
     elif-stmt: 'elif' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
     else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
@@ -169,7 +169,6 @@ import sys
     ^ assign-expr: identifier assign-operator assign-expr | expr
     ^ assign-operator: '='
     import-stmt: 'import' identifier
-    caller-stmt: identifier ( '.' identifier )+ '(' args ')'
     args: string | ',' args
     string: '"' .* '"'
     digit: [0-9]+
@@ -240,12 +239,12 @@ class AST:
                 self.context.last_expr_val = self._traverse(node.assign_expr, dep=dep+1)
             elif node.import_:
                 self._traverse(node.import_, dep=dep+1)
-            elif node.caller:
-                self._traverse(node.caller, dep=dep+1)
             elif node.for_:
                 self._traverse(node.for_, dep=dep+1)
             elif node.if_:
                 self._traverse(node.if_, dep=dep+1)
+            elif node.callable:
+                self._traverse(node.callable, dep=dep+1)
 
             if node.formula:
                 self._traverse(node.formula, dep=dep+1)
@@ -364,16 +363,23 @@ class AST:
             self.traverse_caller(node, dep+1)
 
         elif isinstance(node, CallableNode):
-            package = node.caller_list.identifier
-            if package == 'opts':
-                if node.caller_list.caller_list.identifier == 'get':
-                    if self.opts and node.args.arg.string in self.opts.keys():
-                        return self.opts[node.args.arg.string]
-                    else:
-                        return ''
+            return self.traverse_callable(node, dep+1)
 
         else:
             raise AST.ModuleError('impossible. not supported node', type(node))
+
+    def traverse_callable(self, node, dep):
+        package = node.caller_list.identifier
+        if package == 'opts':
+            if node.caller_list.caller_list.identifier == 'get':
+                if self.opts and node.args.arg.string in self.opts.keys():
+                    return self.opts[node.args.arg.string]
+                else:
+                    return ''
+        elif package == 'alias':
+            if node.caller_list.caller_list.identifier == 'set':
+                self.context.alias_map[node.args.arg.string] = node.args.args.arg.string
+                return None
 
     def traverse_for(self, node, dep):
         self._traverse(node.init_expr, dep=dep+1)
@@ -436,50 +442,15 @@ class AST:
     def traverse_import(self, node, dep):
         if node.identifier == 'alias':
             self.context.imported_alias = True 
-        elif node.identifier == 'config':
-            self.context.imported_config = True
         else:
             raise AST.ImportError('can not import package "%s"' % node.identifier)
-
-    def traverse_caller(self, node, dep):
-        first = node.identifiers[0]
-        if first == 'alias':
-            self.call_alias_package(node)
-        elif first == 'config':
-            self.call_config_package(node)
-        else:
-            raise AST.NameError('"%s" is not defined' % first)
-
-    def call_alias_package(self, node):
-        if not self.context.imported_alias:
-            raise AST.ImportError('alias is not imported')
-
-        method = node.identifiers[1]
-        if method == 'set':
-            if len(node.args) != 2:
-                AST.SyntaxError('alias.set need two arguments')
-            name = node.args[0]
-            cmd = node.args[1]
-            self.context.alias_map[name] = cmd
-
-    def call_config_package(self, node):
-        if not self.context.imported_config:
-            raise AST.ImportError('config is not imported')
-
-        method = node.identifiers[1]
-        if method == 'set':
-            if len(node.args) != 2:
-                AST.SyntaxError('config.set need two arguments')
-            name = node.args[0]
-            cmd = node.args[1]
-            self.context.config_map[name] = cmd
 
     def show_parse(self, name, dep):
         if self.debug_parse:
             t = self.strm.cur()
-            print(dep*'| ', name + ': ' + str(t))
+            print(dep, name + ': ' + str(t))
 
-    def block(self, dep=0):
+    def block(self, dep):
         self.show_parse('block', dep=dep)
         if self.strm.eof():
             return None
@@ -499,7 +470,7 @@ class AST:
         node.block = self.block(dep=dep+1)
         return node
 
-    def ref_block(self, dep=0):
+    def ref_block(self, dep):
         self.show_parse('ref_block', dep=dep)
         if self.strm.eof():
             return None
@@ -518,7 +489,7 @@ class AST:
                 raise AST.SyntaxError('reference block not closed')
             elif t2.value in ('.', '('):
                 self.strm.prev()
-                node.callable = self.callable()
+                node.callable = self.callable(dep=dep+1)
             else:
                 node.identifier = t.value
         elif t.kind == 'rdbrace':
@@ -530,19 +501,25 @@ class AST:
 
         return node
 
-    def callable(self, dep=0):
+    def callable(self, dep):
         self.show_parse('callable', dep=dep)
         if self.strm.eof():
             return None
 
         node = CallableNode()
-        node.caller_list = self.caller_list()
+
+        i = self.strm.index
+        node.caller_list = self.caller_list(dep=dep+1)
+        if node.caller_list is None:
+            self.strm.index = i
+            return None
 
         t = self.strm.get()
         if t.value != '(':
-            raise AST.SyntaxError('not found "(" in callable')
+            self.strm.index = i
+            return None
         
-        node.args = self.args()
+        node.args = self.args(dep=dep+1)
 
         t = self.strm.get()
         if t.value != ')':
@@ -550,7 +527,7 @@ class AST:
         
         return node
 
-    def caller_list(self, dep=0):
+    def caller_list(self, dep):
         self.show_parse('caller_list', dep=dep)
         if self.strm.eof():
             return None
@@ -562,32 +539,32 @@ class AST:
         elif t.kind == 'identifier':
             node.identifier = t.value
         else:
-            raise AST.SyntaxError('invalid token "%s"' % t)
+            return None
 
         t = self.strm.get()
         if t.value == '.':
-            node.caller_list = self.caller_list()
+            node.caller_list = self.caller_list(dep=dep+1)
         else:
             self.strm.prev()
 
         return node
 
-    def args(self, dep=0):
+    def args(self, dep):
         self.show_parse('args', dep=dep)
         if self.strm.eof():
             return None
 
         node = ArgsNode()
-        node.arg = self.arg()
+        node.arg = self.arg(dep=dep+1)
         t = self.strm.get()
         if t.value == ',':
-            node.args = self.args()
+            node.args = self.args(dep=dep+1)
         else:
             self.strm.prev()
 
         return node
 
-    def arg(self, dep=0):
+    def arg(self, dep):
         self.show_parse('arg', dep=dep)
         if self.strm.eof():
             return None
@@ -608,7 +585,7 @@ class AST:
 
         return node
 
-    def code_block(self, dep=0):
+    def code_block(self, dep):
         self.show_parse('code_block', dep=dep)
         if self.strm.eof():
             return None
@@ -632,7 +609,7 @@ class AST:
 
         return node
 
-    def text_block(self, dep=0):
+    def text_block(self, dep):
         self.show_parse('text_block', dep=dep)
         if self.strm.eof():
             return None
@@ -647,7 +624,7 @@ class AST:
 
         return node
 
-    def formula(self, dep=0):
+    def formula(self, dep):
         self.show_parse('formula', dep=dep)
         if self.strm.eof():
             return None
@@ -667,8 +644,10 @@ class AST:
         elif t.kind == 'for':
             node.for_ = self.for_(dep=dep+1)
         else:
-            node.caller = self.caller(dep=dep+1)
-            if node.caller is None:
+            i = self.strm.index
+            node.callable = self.callable(dep=dep+1)
+            if node.callable is None:
+                self.strm.index = i
                 t2 = self.strm.cur(1)
                 if t2.value == '=':
                     node.assign_expr = self.assign_expr(dep=dep+1)
@@ -698,8 +677,7 @@ class AST:
 
         return node
 
-    # for-stmt: 'for' expr ';' comparison ';' expr ':' ( formula | '@}' block '{@' ) 'end'
-    def for_(self, dep=0):
+    def for_(self, dep):
         self.show_parse('for_', dep=dep)
         if self.strm.eof():
             return None
@@ -741,7 +719,7 @@ class AST:
 
         return node
 
-    def comparison(self, dep=0):
+    def comparison(self, dep):
         self.show_parse('comparison', dep=dep)
         if self.strm.eof():
             return None
@@ -763,7 +741,7 @@ class AST:
         node.comparison = self.comparison(dep=dep+1)
         return node
 
-    def if_(self, dep=0, first_symbol='if'):
+    def if_(self, dep, first_symbol='if'):
         self.show_parse('if', dep=dep)
         if self.strm.eof():
             return None
@@ -809,7 +787,7 @@ class AST:
 
         return node
 
-    def else_(self, dep=0):
+    def else_(self, dep):
         self.show_parse('else', dep=dep)
         if self.strm.eof():
             return None
@@ -845,7 +823,7 @@ class AST:
 
         return node
 
-    def expr(self, dep=0):
+    def expr(self, dep):
         self.show_parse('expr', dep=dep)
         if self.strm.eof():
             return None
@@ -868,7 +846,7 @@ class AST:
         node.expr = self.expr(dep=dep+1)
         return node
 
-    def term(self, dep=0):
+    def term(self, dep):
         self.show_parse('term', dep=dep)
         if self.strm.eof():
             return None
@@ -887,7 +865,7 @@ class AST:
         node.term = self.term(dep=dep+1)
         return node
 
-    def factor(self, dep=0):
+    def factor(self, dep):
         self.show_parse('factor', dep=dep)
         if self.strm.eof():
             return None
@@ -984,7 +962,7 @@ class AST:
         return ret
 
 
-    def digit(self, dep=0):
+    def digit(self, dep):
         self.show_parse('digit', dep=dep)
         if self.strm.eof():
             return None
@@ -999,7 +977,7 @@ class AST:
         return node
 
     # ^ assign-expr: identifier assign-operator assign-expr | expr
-    def assign_expr(self, dep=0):
+    def assign_expr(self, dep):
         self.show_parse('assign_expr', dep=dep)
         if self.strm.eof():
             return None
@@ -1021,7 +999,7 @@ class AST:
             return False
         return tok.value in ('=')
 
-    def import_(self, dep=0):
+    def import_(self, dep):
         self.show_parse('import', dep=dep)
         if self.strm.eof():
             return None
@@ -1038,54 +1016,3 @@ class AST:
 
         node.identifier = t.value
         return node
-
-    def caller(self, dep=0):
-        """
-        ここがしんどい
-        もっと抽象化するべき
-        """
-        self.show_parse('caller', dep=dep)
-        if self.strm.eof():
-            return None
-        
-        # find lparen
-        i = self.strm.index
-        found = False
-        while not self.strm.eof():
-            t = self.strm.get()
-            if t.kind == 'identifier':
-                pass
-            elif t.kind == 'operator' and t.value == '.':
-                pass
-            elif t.kind == 'lparen':
-                found = True
-                break
-            else:
-                break
-        self.strm.index = i
-        if not found:
-            return None
-
-        node = CallerNode()
-        save_index = self.strm.index
-
-        while not self.strm.eof():
-            t = self.strm.get()
-            if t.kind == 'identifier':
-                node.identifiers.append(t.value)
-            elif t.kind == 'lparen':
-                break
-
-        if not len(node.identifiers):
-            self.strm.index = save_index
-            return None
-
-        while not self.strm.eof():
-            t = self.strm.get()
-            if t.kind == 'string':
-                node.args.append(t.value)
-            elif t.kind == 'rparen':
-                break
-
-        return node
-

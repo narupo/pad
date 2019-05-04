@@ -398,15 +398,13 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.imported_alias, True)
 
-        a.parse(t.parse('aaa{@ import alias @}bbb{@ import config @}ccc'))
+        a.parse(t.parse('aaa{@ import alias @}bbb{@ import alias @}ccc'))
         c = a.traverse()
         self.assertEqual(c.imported_alias, True)
-        self.assertEqual(c.imported_config, True)
 
-        a.parse(t.parse('{@ import alias @}{@ import config @}'))
+        a.parse(t.parse('{@ import alias @}{@ import alias @}'))
         c = a.traverse()
         self.assertEqual(c.imported_alias, True)
-        self.assertEqual(c.imported_config, True)
 
         a.parse(t.parse('''{@
             import alias
@@ -414,13 +412,6 @@ class Test(unittest.TestCase):
 @}'''))
         c = a.traverse()
         self.assertEqual(c.alias_map['dtl'], 'run bin/date-line/date-line.py')
-
-        a.parse(t.parse('''{@
-            import config
-            config.set("editor", "subl")
-@}'''))
-        c = a.traverse()
-        self.assertEqual(c.config_map['editor'], 'subl')
 
     def test_ast_expr(self):
         t = Tokenizer()
