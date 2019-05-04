@@ -9,6 +9,27 @@
 
 #include "modules/lang/tokens.h"
 
+/*******************
+* tokenizer_option *
+*******************/
+
+struct tokenizer_option {
+    const char *ldbrace_value;
+    const char *rdbrace_value;
+};
+
+typedef struct tokenizer_option tokenizer_option_t;
+
+void
+tkropt_del(tokenizer_option_t *self);
+
+tokenizer_option_t *
+tkropt_new(void);
+
+/************
+* tokenizer *
+************/
+
 struct tokenizer;
 typedef struct tokenizer tokenizer_t;
 
@@ -27,7 +48,7 @@ tkr_del(tokenizer_t *self);
  * @return failed to pointer to NULL
  */
 tokenizer_t *
-tkr_new(void);
+tkr_new(tokenizer_option_t *option);
 
 /**
  * Parse string and build tokens

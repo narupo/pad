@@ -5,6 +5,22 @@ enum {
     INIT_TOKENS_CAPA = 4,
 };
 
+void
+tkropt_del(tokenizer_option_t *self) {
+    if (!self) {
+        return;
+    }
+    free(self);
+}
+
+tokenizer_option_t *
+tkropt_new(void) {
+    tokenizer_option_t *self = mem_ecalloc(1, sizeof(*self));    
+    self->ldbrace_value = "{{";
+    self->rdbrace_value = "}}";
+    return self;
+}
+
 struct tokenizer {
     bool has_error;
     char error_detail[ERR_DETAIL_SIZE];
@@ -14,6 +30,7 @@ struct tokenizer {
     string_t *buf;
     int32_t tokens_len;
     int32_t tokens_capa;
+    tokenizer_option_t *option;
 };
 
 void
@@ -24,12 +41,13 @@ tkr_del(tokenizer_t *self) {
         }
         free(self->tokens);
         str_del(self->buf);
+        tkropt_del(self->option);
         free(self);
     }
 }
 
 tokenizer_t *
-tkr_new(void) {
+tkr_new(tokenizer_option_t *option) {
     tokenizer_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->has_error = false;
@@ -40,6 +58,7 @@ tkr_new(void) {
     self->tokens = mem_ecalloc(self->tokens_capa+1, sizeof(token_t *)); // +1 for final null
 
     self->buf = str_new();
+    self->option = option;
 
     return self;
 }
@@ -291,14 +310,9 @@ tkr_parse(tokenizer_t *self, const char *src) {
         char c = *self->ptr++;
         if (m == 0) {
             if (c == '{' && *self->ptr == '@') {
-                self->ptr--;
-                token_t *token = tkr_read_lbrace(self);
-                if (self->has_error) {
-                    token_del(token);
-                    goto fail;
-                }
-                if (token_get_type(token) == TOKEN_TYPE_LBRACEAT &&
-                    str_len(self->buf)) {
+                self->ptr++;
+                token_t *token = token_new(TOKEN_TYPE_LBRACEAT);
+                if (str_len(self->buf)) {
                     token_t *textblock = token_new(TOKEN_TYPE_TEXT_BLOCK);
                     token_move_text(textblock, str_escdel(self->buf));
                     tkr_move_token(self, textblock);
@@ -306,22 +320,6 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 }
                 tkr_move_token(self, token);
                 m = 10;
-            } else if (c == '{' && *self->ptr == '{') {
-                self->ptr--;
-                token_t *token = tkr_read_lbrace(self);
-                if (self->has_error) {
-                    token_del(token);
-                    goto fail;
-                }
-                if (token_get_type(token) == TOKEN_TYPE_LDOUBLE_BRACE &&
-                    str_len(self->buf)) {
-                    token_t *textblock = token_new(TOKEN_TYPE_TEXT_BLOCK);
-                    token_move_text(textblock, str_escdel(self->buf));
-                    tkr_move_token(self, textblock);
-                    self->buf = str_new();
-                }
-                tkr_move_token(self, token);
-                m = 20;
             } else {
                 str_pushb(self->buf, c);
             }
@@ -363,45 +361,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 // pass
             } else {
                 self->has_error = true;
-                tkr_set_error_detail(self, "syntax error. unsupported character \"%c\"", c);
-                goto fail;
-            }
-        } else if (m == 20) { // found '{{'
-            if (c == '}' && *self->ptr == '}') {
-                self->ptr--;
-                token_t *token = tkr_read_rbrace(self);
-                if (self->has_error) {
-                    token_del(token);
-                    goto fail;
-                }
-                tkr_move_token(self, token);
-                m = 0;
-            } else if (tkr_is_identifier_char(self, c)) {
-                self->ptr--;
-                if (!tkr_parse_identifier(self)) {
-                    goto fail;
-                }
-            } else if (c == '"') {
-                self->ptr--;
-                if (!tkr_parse_dq_string(self)) {
-                    goto fail;
-                }
-            } else if (c == '.') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_DOT_OPE));
-            } else if (c == ',') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_COMMA));
-            } else if (c == '(') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_LPAREN));
-            } else if (c == ')') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_RPAREN));
-            } else if ((c == '\n') || (c == '\r' && *self->ptr == '\n')) {
-                self->has_error = true;
-                tkr_set_error_detail(self, "unsupported to newline");
-            } else if (isspace(c)) {
-                // pass
-            } else {
-                self->has_error = true;
-                tkr_set_error_detail(self, "syntax error. unsupported character \"%c\"", c);
+                tkr_set_error_detail(self, "syntax error. unsupported character \"%c\" 1", c);
                 goto fail;
             }
         }

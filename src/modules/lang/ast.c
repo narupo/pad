@@ -325,7 +325,7 @@ ast_program(ast_t *self) {
             return NULL;
         }
     } else {
-        ast_set_error_detail(self, "syntax error. invalid token type %d", token_get_type(t));
+        ast_set_error_detail(self, "syntax error. invalid token type %d (1)", token_get_type(t));
         return NULL;
     }
 

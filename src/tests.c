@@ -1490,13 +1490,15 @@ urltests[] = {
 
 static void
 test_tkr_new(void) {
-    tokenizer_t *tkr = tkr_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
     tkr_del(tkr);
 }
 
 static void
 test_tkr_parse(void) {
-    tokenizer_t *tkr = tkr_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
     const token_t *token;
 
     tkr_parse(tkr, "abc");
@@ -1835,7 +1837,8 @@ test_ast_show_error(const ast_t *ast) {
 
 static void
 test_ast_parse(void) {
-    tokenizer_t *tkr = tkr_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
     ast_t *ast = ast_new();
     const node_t *root;
     const bin_node_t *bin, *bin2;
@@ -2050,7 +2053,8 @@ test_ast_parse(void) {
 
 static void
 test_ast_parse_context(void) {
-    tokenizer_t *tkr = tkr_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
     ast_t *ast = ast_new();
     context_t *ctx = ctx_new();
 

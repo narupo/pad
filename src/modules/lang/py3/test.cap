@@ -4,39 +4,4 @@
     windows_title = "Welcome DOS"
     other_title = "Welcome unknown"
 @}
-<html>
-<head>
-    {@ if os == "Linux": @}
-        <title>{{ linux_title }}</title>
-    {@ elif os == "Windows": @}
-        <title>{{ windows_title }}</title>
-    {@ else: @}
-        <title>{{ other_title }}</title>
-    {@ end @}
-</head>
-<body>
-    <title>{{ opts.get("title") }}</title>
-    <main>
-        <div class="content">
-            {{ opts.get("content") }}
-        </div>
-    </main>
-    <div>
-    {@ if opts.get("verbose"): @}
-        This case is verbose.
-        This case is verbose.
-        This case is verbose.
-        This case is verbose.
-    {@ else: @}
-        This is not verbose
-    {@ end @}
-    </div>
-</body>
-</html>
-
-class {{ opts.get("class-name") }}:
-    def __init__(self):
-        pass
-
-class {{ opts.get("0") }}:
-    pass
+{: linux_title :}

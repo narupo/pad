@@ -29,6 +29,17 @@ class Tokenizer:
     class ModuleError(RuntimeError):
         pass
 
+    def __init__(self, ldbrace_value='{{', rdbrace_value='}}'):
+        self.strm = None
+        self.tokens = []
+
+        if len(ldbrace_value) != 2:
+            raise ValueError('invalid ldbrace value "%s"', ldbrace_value)
+        if len(rdbrace_value) != 2:
+            raise ValueError('invalid rdbrace value "%s"', rdbrace_value)
+        self.ldbrace_value = ldbrace_value
+        self.rdbrace_value = rdbrace_value
+
     def parse(self, src):
         self.strm = Stream(src)
         self.tokens = []
@@ -46,19 +57,19 @@ class Tokenizer:
                     s.get()
                     self.tokens.append(Token(kind='lbraceat', value='{@'))
                     m = 'code block'
-                elif c == '{' and s.cur() == '{':
+                elif c == self.ldbrace_value[0] and s.cur() == self.ldbrace_value[1]:
                     if len(buf):
                         self.tokens.append(Token(kind='text-block', value=buf))
                         buf = ''
                     s.get()
-                    self.tokens.append(Token(kind='ldbrace', value='{{'))
+                    self.tokens.append(Token(kind='ldbrace', value=self.ldbrace_value))
                     m = 'ref block'
                 else:
                     buf += c
             elif m == 'ref block':
-                if c == '}' and s.cur() == '}':
+                if c == self.rdbrace_value[0] and s.cur() == self.rdbrace_value[1]:
                     s.get()
-                    self.tokens.append(Token(kind='rdbrace', value='}}'))
+                    self.tokens.append(Token(kind='rdbrace', value=self.rdbrace_value))
                     m = 'text block'                    
                 elif self.is_identifier_char(c):
                     s.prev()
@@ -87,6 +98,8 @@ class Tokenizer:
                     self.tokens.append(Token(kind='rparen', value=')'))
                 elif c == ':':
                     self.tokens.append(Token(kind='colon', value=':'))
+                elif c == ';':
+                    self.tokens.append(Token(kind='semicolon', value=';'))
                 elif c == '=':
                     s.prev()
                     self.read_assign()
@@ -121,7 +134,7 @@ class Tokenizer:
                 elif c.isspace():
                     pass
                 else:
-                    raise Tokenizer.ParseError('unsupprted character %s' % c)
+                    raise Tokenizer.ParseError('unsupported character "%s"' % c)
 
         if len(buf):
             self.tokens.append(Token(kind='text-block', value=buf))
@@ -233,6 +246,8 @@ class Tokenizer:
 
         if t.value == 'import':
             t.kind = 'import'
+        elif t.value == 'for':
+            t.kind = 'for'
         elif t.value == 'if':
             t.kind = 'if'
         elif t.value == 'elif':
@@ -258,32 +273,6 @@ class Tokenizer:
                 t.value += c
 
         self.tokens.append(t)
-
-    def read_lbrace(self):
-        c = self.strm.get()
-        if c != '{':
-            raise Tokenizer.ModuleError('not found "{"')
-
-        c = self.strm.get()
-        if c == '{':
-            self.tokens.append(Token(kind='ldbrace', value='{{'))
-        elif c == '@':
-            self.tokens.append(Token(kind='lbraceat', value='{@'))
-        else:
-            self.strm.prev()
-            self.tokens.append(Token(kind='lbrace', value='{'))
-
-    def read_rbrace(self):
-        c = self.strm.get()
-        if c != '}':
-            raise Tokenizer.ModuleError('not found "}"')
-
-        c = self.strm.get()
-        if c == '}':
-            self.tokens.append(Token(kind='rdbrace', value='}}'))
-        else:
-            self.strm.prev()
-            self.tokens.append(Token(kind='rbrace', value='}'))
 
     def read_at(self):
         c = self.strm.get()

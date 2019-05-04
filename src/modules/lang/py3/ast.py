@@ -2,6 +2,7 @@ from stream import Stream
 from tokens import Token
 from nodes import *
 from context import Context
+import sys
 
 '''
     BNF 0.0.0
@@ -241,6 +242,8 @@ class AST:
                 self._traverse(node.import_, dep=dep+1)
             elif node.caller:
                 self._traverse(node.caller, dep=dep+1)
+            elif node.for_:
+                self._traverse(node.for_, dep=dep+1)
             elif node.if_:
                 self._traverse(node.if_, dep=dep+1)
 
@@ -272,6 +275,9 @@ class AST:
                 return self._traverse(node.expr, dep=dep+1)
             else:
                 raise AST.ModuleError('unsupported node %s in comparison' % str(node))
+
+        elif isinstance(node, ForNode):
+            self.traverse_for(node, dep=dep+1) 
 
         elif isinstance(node, IfNode):
             result = self._traverse(node.comparison, dep=dep+1)
@@ -368,6 +374,21 @@ class AST:
 
         else:
             raise AST.ModuleError('impossible. not supported node', type(node))
+
+    def traverse_for(self, node, dep):
+        self._traverse(node.init_expr, dep=dep+1)
+        while True:
+            if node.comparison:
+                result = self._traverse(node.comparison, dep=dep+1)
+                if not result:
+                    break
+
+            if node.block:
+                self._traverse(node.block, dep=dep+1)
+            elif node.formula:
+                self._traverse(node.formula, dep=dep+1)
+
+            self._traverse(node.update_expr, dep=dep+1)
 
     def traverse_id_expr(self, node, dep):
         if node.identifier not in self.context.syms.keys():
@@ -643,6 +664,8 @@ class AST:
             node.import_ = self.import_(dep=dep+1)
         elif t.kind == 'if':
             node.if_ = self.if_(dep=dep+1)
+        elif t.kind == 'for':
+            node.for_ = self.for_(dep=dep+1)
         else:
             node.caller = self.caller(dep=dep+1)
             if node.caller is None:
@@ -675,11 +698,53 @@ class AST:
 
         return node
 
+    # for-stmt: 'for' expr ';' comparison ';' expr ':' ( formula | '@}' block '{@' ) 'end'
+    def for_(self, dep=0):
+        self.show_parse('for_', dep=dep)
+        if self.strm.eof():
+            return None
+    
+        tok = self.strm.get()
+        if tok.kind != 'for':
+            raise AST.ModuleError('impossible. not found "for" token')
+
+        node = ForNode()
+        node.init_expr = self.expr(dep=dep+1)
+        tok = self.strm.get()
+        if tok.kind != 'semicolon':
+            raise AST.SyntaxError('not found ";" at initialize expression in for statement')
+
+        node.comparison = self.comparison(dep=dep+1)
+        tok = self.strm.get()
+        if tok.kind != 'semicolon':
+            raise AST.SyntaxError('not found ";" at comparison in for statement')
+
+        node.update_expr = self.expr(dep=dep+1)
+        tok = self.strm.get()
+        if tok.kind != 'colon':
+            raise AST.SyntaxError('not found ":" in for statement')
+
+        tok = self.strm.get()
+        if tok.kind == 'rbraceat':
+            node.block = self.block(dep=dep+1)
+            tok = self.strm.get()
+            if tok.kind != 'end':
+                raise AST.SyntaxError('not found "end" in for statement. token is %s' % tok)
+        else:
+            self.strm.prev()
+            node.formula = self.formula(dep=dep+1)
+
+        return node
+
     def comparison(self, dep=0):
         self.show_parse('comparison', dep=dep)
         if self.strm.eof():
             return None
 
+        tok = self.strm.cur()
+        if tok.kind in ('colon', 'semicolon'):
+            return None
+        
         node = ComparisonNode()
         node.expr = self.expr(dep=dep+1)
         t = self.strm.get()
@@ -778,6 +843,10 @@ class AST:
     def expr(self, dep=0):
         self.show_parse('expr', dep=dep)
         if self.strm.eof():
+            return None
+
+        tok = self.strm.cur()
+        if tok.kind in ('colon', 'semicolon'):
             return None
         
         node = ExprNode()
