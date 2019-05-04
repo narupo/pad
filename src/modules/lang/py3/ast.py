@@ -189,16 +189,16 @@ import sys
     args: arg ',' args | arg
     arg: digit | string | identifier
     formula: ( expr | assign-expr | if-stmt | for-stmt | import-stmt | callable ), ( formula | '@}' block '{@' )
-    if-stmt: 'if' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
-    elif-stmt: 'elif' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    ^ if-stmt: 'if' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    ^ elif-stmt: 'elif' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
     else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
-    for-stmt: 'for' expr ';' comparison ';' expr ':' ( formula | '@}' block '{@' ) 'end'
-    comparison: expr cmp-op comparison | expr
+    ^ for-stmt: 'for' expr ';' comparison ';' expr ':' ( formula | '@}' block '{@' ) 'end'
     cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
-    expr: term '+' expr | term '-' expr | term
-    term: kamiyu '*' term | kamiyu '/' term | kamiyu
-    kamiyu: factor '&&' kamiyu | factor '||' kamiyu | factor
-    ^ factor: digit | identifier | string | callable | id-expr | assign-expr | '(' expr ')'
+    ^ expr: gorasu '&&' expr | gorasu '||' expr | gorasu
+    + gorasu: kamiyu cmp-op gorasu | kamiyu
+    kamiyu: term '+' kamiyu | term '-' kamiyu | term
+    term: factor '*' term | factor '/' term | factor
+    ^ factor: digit | identifier | string | callable | id-expr | assign-expr | not-expr | '(' expr ')'
     id-expr: identifier ('++' | '--') | ('++' | '--') identifier
     assign-expr: identifier assign-operator assign-expr | expr
     assign-operator: '='
@@ -265,10 +265,8 @@ class AST:
             self.traverse_ref_block(node, dep=dep+1)
 
         elif isinstance(node, FormulaNode):
-            if node.comparison:
-                self.context.last_expr_val = self._traverse(node.comparison, dep=dep+1)
-            elif node.assign_expr:
-                self.context.last_expr_val = self._traverse(node.assign_expr, dep=dep+1)
+            if node.expr:
+                self.context.last_expr_val = self._traverse(node.expr, dep=dep+1)
             elif node.import_:
                 self._traverse(node.import_, dep=dep+1)
             elif node.for_:
@@ -283,35 +281,11 @@ class AST:
             elif node.block:
                 self._traverse(node.block, dep=dep+1)
 
-        elif isinstance(node, ComparisonNode):
-            if node.expr and node.comparison:
-                lval = self._traverse(node.expr, dep=dep+1)
-                rval = self._traverse(node.comparison, dep=dep+1)
-                if node.op == '>':
-                    return lval > rval
-                elif node.op == '<':
-                    return lval < rval
-                elif node.op == '>=':
-                    return lval >= rval
-                elif node.op == '<=':
-                    return lval <= rval
-                elif node.op == '==':
-                    return lval == rval
-                elif node.op == '!=':
-                    return lval != rval
-                else:
-                    raise AST.ModuleError('unsupported comparison operator "%s"' % node.op)
-
-            elif node.expr:
-                return self._traverse(node.expr, dep=dep+1)
-            else:
-                raise AST.ModuleError('unsupported node %s in comparison' % str(node))
-
         elif isinstance(node, ForNode):
             self.traverse_for(node, dep=dep+1) 
 
         elif isinstance(node, IfNode):
-            result = self._traverse(node.comparison, dep=dep+1)
+            result = self._traverse(node.expr, dep=dep+1)
             if result:
                 if node.formula:
                     self._traverse(node.formula, dep=dep+1)
@@ -330,8 +304,8 @@ class AST:
                 self._traverse(node.formula, dep=dep+1)
 
         elif isinstance(node, ExprNode):
-            if node.kamiyu and node.expr:
-                lval = self._traverse(node.kamiyu, dep=dep+1)
+            if node.gorasu and node.expr:
+                lval = self._traverse(node.gorasu, dep=dep+1)
                 rval = self._traverse(node.expr, dep=dep+1)
                 if node.op == '&&':
                     return lval and rval
@@ -339,10 +313,33 @@ class AST:
                     return lval or rval
                 else:
                     raise AST.ModuleError('unsupported operation "%s" in traverse expr' % node.op)
+            elif node.gorasu:
+                return self._traverse(node.gorasu, dep=dep+1)
+            else:
+                raise AST.ModuleError('programming error. impossible case in traverse expr')
+
+        elif isinstance(node, GorasuNode):
+            if node.kamiyu and node.gorasu:
+                lval = self._traverse(node.kamiyu, dep=dep+1)
+                rval = self._traverse(node.gorasu, dep=dep+1)
+                if node.op == '>':
+                    return lval > rval
+                elif node.op == '<':
+                    return lval < rval
+                elif node.op == '>=':
+                    return lval >= rval
+                elif node.op == '<=':
+                    return lval <= rval
+                elif node.op == '==':
+                    return lval == rval
+                elif node.op == '!=':
+                    return lval != rval
+                else:
+                    raise AST.ModuleError('unsupported gorasu operator "%s"' % node.op)
             elif node.kamiyu:
                 return self._traverse(node.kamiyu, dep=dep+1)
             else:
-                raise AST.ModuleError('programming error. impossible case in traverse expr')
+                raise AST.ModuleError('unsupported node %s in gorasu' % str(node))
 
         elif isinstance(node, KamiyuNode):
             if node.term and node.kamiyu:
@@ -391,8 +388,13 @@ class AST:
                 return self._traverse(node.assign_expr, dep=dep+1)
             elif node.id_expr:
                 return self._traverse(node.id_expr, dep=dep+1)
+            elif node.not_expr:
+                return self._traverse(node.not_expr, dep=dep+1)
             else:
                 raise AST.ModuleError('impossible. invalid case in factor node')
+
+        elif isinstance(node, NotExprNode):
+            return not self._traverse(node.expr, dep=dep+1)
 
         elif isinstance(node, IdExprNode):
             return self.traverse_id_expr(node, dep+1)
@@ -431,8 +433,8 @@ class AST:
     def traverse_for(self, node, dep):
         self._traverse(node.init_expr, dep=dep+1)
         while True:
-            if node.comparison:
-                result = self._traverse(node.comparison, dep=dep+1)
+            if node.comp_expr:
+                result = self._traverse(node.comp_expr, dep=dep+1)
                 if not result:
                     break
 
@@ -694,16 +696,9 @@ class AST:
             i = self.strm.index
             node.callable = self.callable(dep=dep+1)
             if node.callable is None:
-                self.strm.index = i
-                t2 = self.strm.cur(1)
-                if t2.value == '=':
-                    node.assign_expr = self.assign_expr(dep=dep+1)
-                    if not self.strm.eof() and node.assign_expr is None:
-                        return None
-                else:
-                    node.comparison = self.comparison(dep=dep+1)
-                    if not self.strm.eof() and node.comparison is None:
-                        return None
+                node.expr = self.expr(dep=dep+1)
+                if not self.strm.eof() and node.expr is None:
+                    return None
 
         t = self.strm.get()
         if t == Stream.EOF:
@@ -739,7 +734,7 @@ class AST:
         if tok.kind != 'semicolon':
             raise AST.SyntaxError('not found ";" at initialize expression in for statement')
 
-        node.comparison = self.comparison(dep=dep+1)
+        node.comp_expr = self.expr(dep=dep+1)
         tok = self.strm.get()
         if tok.kind != 'semicolon':
             raise AST.SyntaxError('not found ";" at comparison in for statement')
@@ -798,9 +793,9 @@ class AST:
             return None
 
         node = IfNode()
-        node.comparison = self.comparison(dep=dep+1)
-        if node.comparison is None:
-            raise AST.SyntaxError('invalid if statement. not found comparison')
+        node.expr = self.expr(dep=dep+1)
+        if node.expr is None:
+            raise AST.SyntaxError('invalid if statement. not found expr')
 
         t = self.strm.get()
         if t.kind != 'colon':
@@ -880,7 +875,7 @@ class AST:
             return None
         
         node = ExprNode()
-        node.kamiyu = self.kamiyu(dep=dep+1)
+        node.gorasu = self.gorasu(dep=dep+1)
 
         t = self.strm.get()
         if t == Stream.EOF:
@@ -891,6 +886,25 @@ class AST:
         node.op = t.value
 
         node.expr = self.expr(dep=dep+1)
+        return node
+
+    def gorasu(self, dep):
+        self.show_parse('expr', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = GorasuNode()
+        node.kamiyu = self.kamiyu(dep=dep+1)
+
+        t = self.strm.get()
+        if t == Stream.EOF:
+            return node
+        elif t.value not in ('==', '!=', '<', '>', '<=', '>='):
+            self.strm.prev()
+            return node
+        node.op = t.value
+
+        node.gorasu = self.gorasu(dep=dep+1)
         return node
 
     def kamiyu(self, dep):
@@ -969,11 +983,27 @@ class AST:
                     node.identifier = t.value
         elif t.kind == 'string':
             node.string = t.value
+        elif t.value == '!':
+            self.strm.prev()
+            node.not_expr = self.not_expr(dep=dep+1)
         else:
             self.strm.prev()
             return None
 
         return node 
+
+    def not_expr(self, dep):
+        self.show_parse('not_expr', dep=dep)
+        if self.strm.eof():
+            return None    
+
+        node = NotExprNode()
+        tok = self.strm.get()
+        if tok.value != '!':
+            raise AST.ModuleError('impossible. not found "!" in not expr')
+
+        node.expr = self.expr(dep=dep+1)
+        return node
 
     def id_expr(self, dep):
         self.show_parse('id_expr', dep=dep)

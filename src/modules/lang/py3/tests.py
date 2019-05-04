@@ -884,6 +884,30 @@ class Test(unittest.TestCase):
         self.assertEqual(c.syms['i'], 1)
         self.assertEqual(c.buffer, 'v = 0')
 
+    def test_ast_not_expr(self):
+        t = Tokenizer()
+        a = AST()
+
+        a.parse(t.parse('{@ v = !0 @}'))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 1)
+
+        a.parse(t.parse('{@ v = !1 @}'))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], False)
+
+        a.parse(t.parse('{@ v = !0 + 1 @}'))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], False) # Fix me on the C implementation
+
+        a.parse(t.parse('{@ v = (!0) + 1 @}'))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], 2)
+
+        a.parse(t.parse('{@ v = !"str" @}'))
+        c = a.traverse()
+        self.assertEqual(c.syms['v'], False)
+
     def test_ast_if(self):
         t = Tokenizer()
         a = AST()

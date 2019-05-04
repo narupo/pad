@@ -17,7 +17,7 @@ v = {$ v $}
     title = "This is title of document"
 @}
 
-{@ for i = 4; i > 0 && i != 2; --i: @}
+{@ for i = 4; i; --i: @}
     {$ opts.get("title") $} is title.
     {$ opts.get("title") $}: {$ title $}{$ i $}.
 {@ end @}

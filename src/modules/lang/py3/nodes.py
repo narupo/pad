@@ -61,7 +61,7 @@ class TextBlockNode(Node):
 class ForNode(Node):
     def __init__(self):
         self.init_expr = None # Node
-        self.comparison = None # Node
+        self.comp_expr = None # Node
         self.update_expr = None # Node
         self.block = None # Node
         self.formula = None # Node
@@ -69,7 +69,7 @@ class ForNode(Node):
 
 class FormulaNode(Node):
     def __init__(self):
-        self.comparison = None # Node
+        self.expr = None # Node
         self.assign_expr = None # Node
         self.if_ = None # Node
         self.for_ = None # Node
@@ -90,16 +90,9 @@ class CallerNode(Node):
         self.args = []
 
 
-class ComparisonNode(Node):
-    def __init__(self):
-        self.expr = None
-        self.op = None
-        self.comparison = None
-
-
 class IfNode(Node):
     def __init__(self):
-        self.comparison = None
+        self.expr = None
         self.block = None
         self.formula = None
         self.elif_ = None
@@ -119,9 +112,16 @@ class DigitNode(Node):
 
 class ExprNode(Node):
     def __init__(self):
-        self.kamiyu = None
+        self.gorasu = None
         self.op = None
         self.expr = None
+
+
+class GorasuNode(Node):
+    def __init__(self):
+        self.kamiyu = None # Node
+        self.op = None # str
+        self.gorasu = None # Node
 
 
 class KamiyuNode(Node):
@@ -140,13 +140,19 @@ class TermNode(Node):
 
 class FactorNode(Node):
     def __init__(self):
-        self.digit = None
-        self.identifier = None
-        self.string = None
-        self.expr = None
-        self.callable = None
-        self.assign_expr = None
-        self.id_expr = None
+        self.digit = None # int
+        self.identifier = None # str
+        self.string = None # str
+        self.expr = None # Node
+        self.callable = None # Node
+        self.assign_expr = None # Node
+        self.id_expr = None # Node
+        self.not_expr = None # Node
+
+
+class NotExprNode(Node):
+    def __init__(self):
+        self.expr = None # Node
 
 
 class IdExprNode(Node):
