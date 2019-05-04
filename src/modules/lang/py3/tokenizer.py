@@ -129,6 +129,18 @@ class Tokenizer:
                         self.read_at_starslash()
                     else:
                         self.tokens.append(Token(kind='operator', value='/'))
+                elif c == '&':
+                    if s.cur() == '&':
+                        s.get()
+                        self.tokens.append(Token(kind='operator', value='&&'))
+                    else:
+                        self.tokens.append(Token(kind='operator', value='&'))
+                elif c == '|':
+                    if s.cur() == '|':
+                        s.get()
+                        self.tokens.append(Token(kind='operator', value='||'))
+                    else:
+                        self.tokens.append(Token(kind='operator', value='|'))
                 elif c == '"':
                     s.prev()
                     self.read_string()

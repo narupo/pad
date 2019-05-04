@@ -4,11 +4,20 @@
         v = v + i
     end
 @}
-v = {: v :}
+v = {$ v $}
 
 {@
     for i = 0; i < 100; ++i:
         v = v + i
     end
 @}
-v = {: v :}
+v = {$ v $}
+
+{@
+    title = "This is title of document"
+@}
+
+{@ for i = 4; i > 0 && i != 2; --i: @}
+    {$ opts.get("title") $} is title.
+    {$ opts.get("title") $}: {$ title $}{$ i $}.
+{@ end @}

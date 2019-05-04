@@ -119,14 +119,21 @@ class DigitNode(Node):
 
 class ExprNode(Node):
     def __init__(self):
-        self.term = None
+        self.kamiyu = None
         self.op = None
         self.expr = None
 
 
+class KamiyuNode(Node):
+    def __init__(self):
+        self.term = None # Node
+        self.op = None # str
+        self.kamiyu = None # Node
+
+
 class TermNode(Node):
     def __init__(self):
-        self.factor = None
+        self.kamiyu = None
         self.op = None
         self.term = None
 
