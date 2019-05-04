@@ -1,6 +1,7 @@
 {@
+    /* this is comment block */
     v = 0
-    for i = 0; i < 4; ++i:
+    for i = 0; i < 4; ++i: // this is comment line
     end
 @}
 v = {: v :}
