@@ -1,38 +1,5 @@
 {@
-    a = 0, b = 0
-    a = 0, c = 10 * 2
-    for i = 0; i < 10; ++i:
-        a = a + i
-        b = a * (b + i)
+    def myfunc():
+        v = 0
     end
 @}
-a: {$ a $}
-b: {$ b $}
-c: {$ c $}
-
-{@
-    v = 0
-    for i = 0; i < 100; ++i:
-        v = v + i
-    end
-@}
-v = {$ v $}
-
-{@
-    title = "This is title of document"
-@}
-
-{@ for i = 4; i; --i: @}
-    {$ opts.get("title") $} is title.
-    {$ opts.get("title") $}: {$ title $}{$ i $}.
-{@ end @}
-
-{@
-    a = "aho"
-    b = "manuke"
-    c = ""
-    if a == "aho" && b == "manuke":
-        c = "ok"
-    end
-@}
-c = {$ c $}

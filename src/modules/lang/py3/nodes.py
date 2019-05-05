@@ -50,8 +50,7 @@ class AssignOperandRhsNode(Node):
 
 class RefBlockNode(Node):
     def __init__(self):
-        self.identifier = None
-        self.callable = None
+        self.expr = None
 
 
 class CodeBlockNode(Node):
@@ -73,12 +72,45 @@ class ForNode(Node):
         self.formula = None # Node
 
 
+class DefFuncNode(Node):
+    def __init__(self):
+        self.identifier = None # str
+        self.dmy_args = None # Node
+        self.formula = None # Node
+
+
+class DmyArgs:
+    def __init__(self):
+        self.dmy_arg = None # Node
+        self.dmy_args = None # Node
+
+    def dmy_args_to_list(self):
+        lis = []
+        if self.dmy_arg:
+            lis.append(self.dmy_arg.identifier)
+        self._dmy_args_to_list(self.dmy_args, lis)
+        return lis
+
+    def _dmy_args_to_list(self, dmy_args, lis):
+        if dmy_args is None:
+            return
+        if dmy_args.dmy_arg:
+            lis.append(dmy_args.dmy_arg.identifier)
+        self._dmy_args_to_list(dmy_args.dmy_args, lis)
+
+
+class DmyArg:
+    def __init__(self):
+        self.identifier = None # str
+
+
 class FormulaNode(Node):
     def __init__(self):
         self.expr_list = None # Node
         self.assign_expr = None # Node
         self.if_ = None # Node
         self.for_ = None # Node
+        self.def_func = None # Node
         self.import_ = None # Node
         self.formula = None # Node
         self.block = None # Node
@@ -174,10 +206,10 @@ class CallableNode(Node):
         self.args = None
 
 
-class CallerListNode(Node):
+class NameListNode(Node):
     def __init__(self):
         self.identifier = None
-        self.caller_list = None
+        self.name_list = None
 
 
 class ArgsNode(Node):
@@ -188,7 +220,5 @@ class ArgsNode(Node):
 
 class ArgNode(Node):
     def __init__(self):
-        self.digit = None
-        self.string = None
-        self.identifier = None
+        self.expr = None
 

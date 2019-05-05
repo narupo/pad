@@ -246,7 +246,58 @@ import sys
     string: '"' .* '"'
     digit: [0-9]+
     identifier: ( [a-z] | [0-9] | _ )+ 
+
+    2019-05-05 10:07:00 晴のち曇
+    ===========================
+    BNF 0.3.2
+    関数の追加
+    ref_block のリファクタリング
+    args のリファクタリング
+    caller-list を name-list に変更
+
+    + は新規追加したところ
+    ^ は更新
+
+    block: ( text-block | code-block | ref-block ), block
+    text-block: .*
+    code-block: '{@' {formula}* '@}'
+    ^ ref-block: '{{' expr '}}'
+    ^ callable: name-list '(' args ')'
+    ^ name-list: identifier '.' name-list | identifier
+    args: arg ',' args | arg
+    arg: digit | string | identifier
+    ^ formula: ( expr-list | if-stmt | for-stmt | import-stmt | callable | def-func ), ( formula | '@}' block '{@' )
+    + def-func: 'def' identifier '(' dmy-args ')' ':' formula 'end'
+    if-stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    elif-stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+    for-stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
+    cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
+    expr-list: expr ',' expr-list | expr
+    expr: gorasu ( '&&' | '||' ) expr | gorasu
+    gorasu: kamiyu cmp-op gorasu | kamiyu
+    kamiyu: term ('+' | '-' ) kamiyu | term
+    term: factor ( '*' | '/' ) term | factor
+    factor: digit | identifier | string | callable | id-expr | assign-expr | not-expr | '(' expr ')'
+    id-expr: identifier ('++' | '--') | ('++' | '--') identifier
+    assign-expr: identifier assign-operator assign-expr | expr
+    assign-operator: '='
+    import-stmt: 'import' identifier
+    + dmy-args: dmy-arg ',' dmy-args | dmy-arg
+    + dmy-arg: identifier
+    ^ args: arg ',' args | arg
+    + arg: expr
+    string: '"' .* '"'
+    digit: [0-9]+
+    identifier: ( [a-z] | [0-9] | _ )+ 
 '''
+
+
+class Function:
+    def __init__(self, name, dmy_args):
+        self.name = name
+        self.dmy_args = dmy_args
+
 
 class AST:
     class ModuleError(RuntimeError):
@@ -316,6 +367,8 @@ class AST:
                 self._traverse(node.for_, dep=dep+1)
             elif node.if_:
                 self._traverse(node.if_, dep=dep+1)
+            elif node.def_func:
+                self._traverse(node.def_func, dep=dep+1)
             elif node.callable:
                 self._traverse(node.callable, dep=dep+1)
 
@@ -326,6 +379,9 @@ class AST:
 
         elif isinstance(node, ForNode):
             self.traverse_for(node, dep=dep+1) 
+
+        elif isinstance(node, DefFuncNode):
+            self.traverse_def_func(node, dep=dep+1)
 
         elif isinstance(node, IfNode):
             result = self._traverse(node.expr, dep=dep+1)
@@ -463,6 +519,9 @@ class AST:
         else:
             raise AST.ModuleError('impossible. not supported node', type(node))
 
+    def traverse_def_func(self, node, dep):
+        self.context.funcs[node.identifier] = node
+
     def traverse_expr_list(self, node, dep):
         results = []
         result = self._traverse(node.expr, dep=dep+1)
@@ -474,17 +533,30 @@ class AST:
         return tuple(results)
 
     def traverse_callable(self, node, dep):
-        package = node.caller_list.identifier
-        if package == 'opts':
-            if node.caller_list.caller_list.identifier == 'get':
-                if self.opts and node.args.arg.string in self.opts.keys():
-                    return self.opts[node.args.arg.string]
+        firstname = node.name_list.identifier
+        if firstname == 'opts':
+            if node.name_list.name_list.identifier == 'get':
+                identifier = self._traverse(node.args.arg.expr, dep=dep+1)
+                if not isinstance(identifier, str):
+                    raise AST.SyntaxError('invalid argument for opts.get')
+                if self.opts and identifier in self.opts.keys():
+                    return self.opts[identifier]
                 else:
                     return ''
-        elif package == 'alias':
-            if node.caller_list.caller_list.identifier == 'set':
-                self.context.alias_map[node.args.arg.string] = node.args.args.arg.string
+        elif firstname == 'alias':
+            if node.name_list.name_list.identifier == 'set':
+                identifier = self._traverse(node.args.arg.expr, dep=dep+1)
+                value = self._traverse(node.args.args.arg.expr, dep=dep+1)
+                if not isinstance(identifier, str) or not isinstance(value, str):
+                    raise AST.SyntaxError('invalid argument for alias.set')
+                self.context.alias_map[identifier] = value
                 return None
+        else:
+            if firstname not in self.context.funcs.keys():
+                raise AST.ReferenceError('"%s" is not defined' % firstname)
+            node = self.context.funcs[firstname]
+            return self._traverse(node.formula, dep=dep+1)
+
 
     def traverse_for(self, node, dep):
         self._traverse(node.init_expr_list, dep=dep+1)
@@ -537,11 +609,8 @@ class AST:
         raise AST.ModuleError('invalid operator %s' % node.assign_operator)
              
     def traverse_ref_block(self, node, dep):
-        if node.identifier != None:
-            if node.identifier in self.context.syms.keys():
-                self.context.buffer += str(self.context.syms[node.identifier])
-        elif node.callable:
-            result = self._traverse(node.callable, dep=dep+1)
+        if node.expr != None:
+            result = self._traverse(node.expr, dep=dep+1)
             self.context.buffer += str(result)
 
     def traverse_import(self, node, dep):
@@ -588,17 +657,11 @@ class AST:
             return None
 
         t = self.strm.get()
-        if t.kind == 'identifier':
-            t2 = self.strm.cur()
-            if t2 == Stream.EOF:
-                raise AST.SyntaxError('reference block not closed')
-            elif t2.value in ('.', '('):
-                self.strm.prev()
-                node.callable = self.callable(dep=dep+1)
-            else:
-                node.identifier = t.value
-        elif t.kind == 'rdbrace':
+        if t.kind == 'rdbrace':
             return node
+        else:
+            self.strm.prev()
+            node.expr = self.expr(dep=dep+1)
 
         t = self.strm.get()
         if t == Stream.EOF or t.kind != 'rdbrace':
@@ -614,8 +677,8 @@ class AST:
         node = CallableNode()
 
         i = self.strm.index
-        node.caller_list = self.caller_list(dep=dep+1)
-        if node.caller_list is None:
+        node.name_list = self.name_list(dep=dep+1)
+        if node.name_list is None:
             self.strm.index = i
             return None
 
@@ -632,12 +695,12 @@ class AST:
         
         return node
 
-    def caller_list(self, dep):
-        self.show_parse('caller_list', dep=dep)
+    def name_list(self, dep):
+        self.show_parse('name_list', dep=dep)
         if self.strm.eof():
             return None
 
-        node = CallerListNode()
+        node = NameListNode()
         t = self.strm.get()
         if t == Stream.EOF:
             raise AST.SyntaxError('reached EOF in caller list')
@@ -648,7 +711,7 @@ class AST:
 
         t = self.strm.get()
         if t.value == '.':
-            node.caller_list = self.caller_list(dep=dep+1)
+            node.name_list = self.name_list(dep=dep+1)
         else:
             self.strm.prev()
 
@@ -678,15 +741,9 @@ class AST:
         t = self.strm.get()
         if t == Stream.EOF:
             raise AST.SyntaxError('reached EOF in argument')
-        elif t.kind == 'digit':
-            node.digit = DigitNode()
-            node.digit.value = t.value
-        elif t.kind == 'string':
-            node.string = t.value
-        elif t.kind == 'identifier':
-            node.identifier = t.value
         else:
-            raise AST.SyntaxError('not supported argument type "%s"' % t)
+            self.strm.prev()
+            node.expr = self.expr(dep=dep+1)
 
         return node
 
@@ -748,6 +805,8 @@ class AST:
             node.if_ = self.if_(dep=dep+1)
         elif t.kind == 'for':
             node.for_ = self.for_(dep=dep+1)
+        elif t.kind == 'def':
+            node.def_func = self.def_func(dep=dep+1)
         else:
             i = self.strm.index
             node.callable = self.callable(dep=dep+1)
@@ -772,6 +831,86 @@ class AST:
         else:
             self.strm.prev()
             node.formula = self.formula(dep=dep+1)
+
+        return node
+
+    def def_func(self, dep):
+        self.show_parse('def_func', dep=dep)
+        if self.strm.eof():
+            return None
+
+        tok = self.strm.get()
+        if tok == Stream.EOF:
+            raise AST.ModuleError('impossible. reached EOF in function')
+        elif tok.kind != 'def':
+            raise AST.ModuleError('impossible. not found "def" in function')
+
+        tok = self.strm.get()
+        if tok == Stream.EOF:
+            raise AST.SyntaxError('reached EOF. invalid syntax in function')
+        elif tok.kind != 'identifier':
+            raise AST.SyntaxError('need name in function')
+
+        node = DefFuncNode()
+        node.identifier = tok.value
+
+        tok = self.strm.get()
+        if tok == Stream.EOF:
+            raise AST.SyntaxError('reached EOF. invalid syntax in function (2)')
+        elif tok.kind != 'lparen':
+            raise AST.SyntaxError('not found left paren in function')
+
+        node.dmy_args = self.dmy_args(dep=dep+1)
+        
+        tok = self.strm.get()
+        if tok == Stream.EOF:
+            raise AST.SyntaxError('reached EOF. invalid syntax in function (3)')
+        elif tok.kind != 'rparen':
+            raise AST.SyntaxError('not found right paren in function')
+
+        tok = self.strm.get()
+        if tok == Stream.EOF:
+            raise AST.SyntaxError('reached EOF. invalid syntax in function (4)')
+        elif tok.kind != 'colon':
+            raise AST.SyntaxError('not found colon in function')
+
+        node.formula = self.formula(dep=dep+1)
+
+        tok = self.strm.get()
+        if tok == Stream.EOF:
+            raise AST.SyntaxError('reached EOF. invalid syntax in function (5)')
+        elif tok.kind != 'end':
+            raise AST.SyntaxError('not found "end" in function')
+
+        return node
+
+    def dmy_args(self, dep):
+        self.show_parse('dmy_args', dep=dep)
+        if self.strm.eof():
+            return None
+
+        tok = self.strm.get()
+        if tok == Stream.EOF:
+            raise AST.SyntaxError('reached EOF. invalid syntax in dummy arguments')
+        elif tok.kind == 'rparen':
+            self.strm.prev()
+            return None
+        elif tok.kind != 'identifier':
+            raise AST.SyntaxError('invalid argument in dummy arguments. token is %s' % tok)
+
+        node = DmyArgs()
+        node.dmy_arg = DmyArg()
+        node.dmy_arg.identifier = tok.value
+
+        tok = self.strm.get()
+        if tok.kind == 'rparen':
+            self.strm.prev()
+            return node
+        elif tok.kind != 'comma':
+            self.strm.prev()
+            return None
+
+        node.dmy_args = self.dmy_args(dep=dep+1)
 
         return node
 
