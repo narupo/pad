@@ -291,6 +291,8 @@ class Tokenizer:
             t.kind = 'else'
         elif t.value == 'end':
             t.kind = 'end'
+        elif t.value == 'def':
+            t.kind = 'def'
 
         self.tokens.append(t)
 

@@ -458,12 +458,53 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.imported_alias, True)
 
+    def test_ast_alias(self):
+        t = Tokenizer()
+        a = AST()
+
         a.parse(t.parse('''{@
             import alias
             alias.set("dtl", "run bin/date-line/date-line.py")
 @}'''))
-        c = a.traverse()
-        self.assertEqual(c.alias_map['dtl'], 'run bin/date-line/date-line.py')
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('''{@
+                import alias
+                alias.set(1, "run bin/date-line/date-line.py")
+            @}'''))
+            a.traverse()
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('''{@
+                import alias
+                alias.set("dtl", 1)
+            @}'''))
+            a.traverse()
+
+    def test_ast_opts(self):
+        t = Tokenizer()
+        a = AST()
+
+        a.parse(t.parse('''{@
+            v = opts.get("name")
+@}{{ v }}'''))
+        c = a.traverse(opts={
+            'name': 'value',
+        })
+        self.assertEqual(c.buffer, 'value')
+
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('''{@
+                opts.get(1)
+            @}'''))
+            a.traverse(opts={
+                'name': 'value',
+            })
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('''{@
+                opts.get("unknown")
+            @}'''))
+            a.traverse(opts={
+                'name': 'value',
+            })
 
     def test_ast_expr(self):
         t = Tokenizer()
@@ -628,6 +669,72 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.syms['v'], 0)
         self.assertEqual(c.last_expr_val, 3)
+
+    def test_ast_def_func(self):
+        t = Tokenizer()
+        a = AST()
+
+        a.parse(t.parse('''{@
+            def f():
+            end
+@}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.funcs['f']), DefFuncNode)
+
+        a.parse(t.parse('''{@
+            def f1():
+            end
+            def f2():
+            end
+@}'''))
+        a.parse(t.parse('''{@
+            def f1():
+            end
+@}abc{@
+            def f2():
+            end
+@}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.funcs['f1']), DefFuncNode)
+        self.assertEqual(type(c.funcs['f2']), DefFuncNode)
+        self.assertEqual(c.buffer, 'abc')
+
+        a.parse(t.parse('''{@
+            def f(arg1):
+            end
+@}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.funcs['f']), DefFuncNode)
+        self.assertEqual(c.funcs['f'].dmy_args.dmy_arg.identifier, 'arg1')
+
+        a.parse(t.parse('''{@
+            def f(arg1, arg2):
+            end
+@}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.funcs['f']), DefFuncNode)
+        self.assertEqual(c.funcs['f'].dmy_args.dmy_arg.identifier, 'arg1')
+        self.assertEqual(c.funcs['f'].dmy_args.dmy_args.dmy_arg.identifier, 'arg2')
+
+        a.parse(t.parse('''{@
+            def f():
+                v = 1
+            end
+@}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.funcs['f']), DefFuncNode)
+        with self.assertRaises(KeyError):
+            self.assertEqual(c.syms['v'], 1)
+
+        a.parse(t.parse('''{@
+            def f():
+                v = 1
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.funcs['f']), DefFuncNode)
+        self.assertEqual(c.syms['v'], 1)
+        self.assertEqual(c.buffer, 'None')
 
     def test_ast_assign(self):
         t = Tokenizer()
@@ -1196,9 +1303,10 @@ c'''))
             else:
                 v = "c"
             end
-@}{{ a }}'''))
+@}{{ v }}'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(c.buffer, 'a')
 
         a.parse(t.parse('''{@
             if 0:
@@ -1208,9 +1316,10 @@ c'''))
             else:
                 v = "c"
             end
-@}{{ a }}'''))
+@}{{ v }}'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'b')
+        self.assertEqual(c.buffer, 'b')
 
         a.parse(t.parse('''{@
             if 0:
@@ -1220,9 +1329,10 @@ c'''))
             else:
                 v = "c"
             end
-@}{{ a }}'''))
+@}{{ v }}'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'c')
+        self.assertEqual(c.buffer, 'c')
 
         a.parse(t.parse('''{@
             if 0:
@@ -1235,12 +1345,13 @@ c'''))
                     v4 = "v4"
                 end
             end
-@}{{ a }}'''))
+@}{{ v4 }}'''))
         c = a.traverse()
         self.assertEqual('v1' not in c.syms.keys(), True)
         self.assertEqual(c.syms['v2'], 'v2')
         self.assertEqual('v3' not in c.syms.keys(), True)
         self.assertEqual(c.syms['v4'], 'v4')
+        self.assertEqual(c.buffer, 'v4')
 
         a.parse(t.parse('''{@
             if 1:
@@ -1250,9 +1361,10 @@ c'''))
                     end
                 end
             end
-@}{{ a }}'''))
+@}{{ v }}'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'v')
+        self.assertEqual(c.buffer, 'v')
 
         a.parse(t.parse('''{@
             if 1:
@@ -1263,9 +1375,10 @@ c'''))
                     v = "v2"
                 end
             end
-@}{{ a }}'''))
+@}{{ v }}'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'v2')
+        self.assertEqual(c.buffer, 'v2')
 
         a.parse(t.parse('''{@
             if 1:
@@ -1276,9 +1389,10 @@ c'''))
                 end
                 v = "v2"
             end
-@}{{ a }}'''))
+@}{{ v }}'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'v2')
+        self.assertEqual(c.buffer, 'v2')
 
         a.parse(t.parse('''{@
             if 1:
@@ -1289,9 +1403,10 @@ c'''))
                     end
                 end
             end
-@}{{ a }}'''))
+@}{{ v }}'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'v2')
+        self.assertEqual(c.buffer, 'v2')
 
         a.parse(t.parse('''{@
             if 1:
@@ -1302,9 +1417,10 @@ c'''))
                     end
                 end
             end
-@}{{ a }}'''))
+@}{{ v }}'''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'v2')
+        self.assertEqual(c.buffer, 'v2')
 
         a.parse(t.parse('''{@
             if 1 && 1:
