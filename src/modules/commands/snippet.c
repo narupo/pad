@@ -193,7 +193,7 @@ snptcmd_show(snptcmd_t *self) {
         return 1;
     }
 
-    puts(content);
+    printf("%s", content);
     free(content);
     return 0;
 }
