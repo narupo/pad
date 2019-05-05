@@ -720,9 +720,7 @@ app_run(app_t *self) {
     }
 
     int result = app_execute_alias_by_name(self, cmdname);
-    if (result == 0) {
-        return result;
-    } else if (result == -1) {
+    if (result == -1) {
         return app_execute_snippet(self, cmdname);
     }
     return result;
