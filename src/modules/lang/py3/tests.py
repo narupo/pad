@@ -640,6 +640,13 @@ class Test(unittest.TestCase):
         self.assertEqual(c.syms['a'], 's')
 
         a.parse(t.parse('''{@
+            a = 0 b = 1
+@}'''))
+        c = a.traverse()
+        self.assertEqual(c.syms['a'], 0)
+        self.assertEqual(c.syms['b'], 1)
+
+        a.parse(t.parse('''{@
             a = "s"
 @}{{ a }}'''))
         c = a.traverse()
