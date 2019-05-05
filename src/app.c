@@ -588,12 +588,7 @@ app_execute_alias_by_name(app_t *self, const char *name) {
         scope = CAP_SCOPE_GLOBAL;
         almgr_clear_error(almgr);
         if (almgr_find_alias_value(almgr, val, sizeof val, name, scope) == NULL) {
-            if (almgr_has_error(almgr)) {
-                err_error("not found alias \"%s\". %s", name, almgr_get_error_detail(almgr));
-            } else {
-                err_error("not found alias \"%s\"", name);
-            }
-            return 1;
+            return -1;
         }
     }
     almgr_del(almgr);
@@ -626,7 +621,7 @@ app_execute_alias_by_name(app_t *self, const char *name) {
 
     if (!app_parse_args(self, argc, argv)) {
         err_error("failed to parse arguments");
-        return 2;
+        return 1;
     }
     freeargv(argc, argv);
 
@@ -639,9 +634,54 @@ app_execute_alias_by_name(app_t *self, const char *name) {
     // run application
     if (self->config->recursion_count >= MAX_RECURSION_LIMIT) {
         err_error("reached recursion limit");
-        return 3;
+        return 1;
     }
     return app_run(self);
+}
+
+/**
+ * Show snippet code by name
+ *
+ * @param[in] self pointer to app_t
+ * @param[in] name snippet name
+ *
+ * @return success to 0
+ * @return failed to not 0
+ */
+static int
+app_execute_snippet(app_t *self, const char *name) {
+    file_dir_t *dir = file_diropen(self->config->codes_dir_path);
+    if (!dir) {
+        err_error("failed to open directory \"%s\"", self->config->codes_dir_path);
+        return 1;
+    }
+
+    for (file_dirnode_t *node; (node = file_dirread(dir)); ) {
+        const char *fname = file_dirnodename(node);
+        if (!strcmp(fname, ".") || !strcmp(fname, "..")) {
+            continue;
+        }
+        if (!strcmp(fname, name)) {
+            char path[FILE_NPATH];
+            if (!file_solvefmt(path, sizeof path, "%s/%s", self->config->codes_dir_path, fname)) {
+                err_error("failed to solve path for snippet file");
+                goto fail;
+            }
+            char *content = file_readcp_from_path(path);
+            if (!content) {
+                err_error("failed to read from snippet \"%s\"", fname);
+                goto fail;
+            }
+            printf("%s", content);
+            free(content);
+            return 0;
+
+        }
+    }
+
+fail:
+    file_dirclose(dir);
+    return 1;
 }
 
 /**
@@ -679,7 +719,13 @@ app_run(app_t *self) {
         return app_execute_command_by_name(self, cmdname);
     }
 
-    return app_execute_alias_by_name(self, cmdname);
+    int result = app_execute_alias_by_name(self, cmdname);
+    if (result == 0) {
+        return result;
+    } else if (result == -1) {
+        return app_execute_snippet(self, cmdname);
+    }
+    return result;
 }
 
 /**

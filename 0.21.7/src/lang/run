@@ -1,6 +1,0 @@
-#!/bin/bash
-if [ "$1" == "d" ]; then
-    cat cap.src | python3 cap.py
-else
-    ./test/run && cat cap.src | python3 cap.py 2>&1 | less
-fi

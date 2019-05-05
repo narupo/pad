@@ -1,9 +1,0 @@
-R:BinNode statement }}
- |lhs:BlockTextNode block_statement {{
- |rhs:BinNode statement 1
- | |lhs:OperandNode operand 1
- | |rhs:BinNode statement 2
- | | |lhs:OperandNode operand 2
- | | |rhs:BinNode statement }}
- | | | |lhs:BlockTextNode block_statement {{
- | | | |rhs:None  
