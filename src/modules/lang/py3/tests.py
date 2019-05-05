@@ -6,7 +6,12 @@ import unittest
 
 
 class Test(unittest.TestCase):
+    def setUp(self):
+        self.silent = False
+
     def test_tokenizer(self):
+        if self.silent: return
+
         t = Tokenizer()
         
         ts = t.parse('')
@@ -418,6 +423,8 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[4].value, '@}')        
 
     def test_ast_basic(self):
+        if self.silent: return
+
         t = Tokenizer()
         a = AST()
 
@@ -436,6 +443,8 @@ class Test(unittest.TestCase):
             a.parse(t.parse('{@ 1: @}'))
 
     def test_ast_import(self):
+        if self.silent: return
+        
         t = Tokenizer()
         a = AST()
 
@@ -459,6 +468,8 @@ class Test(unittest.TestCase):
         self.assertEqual(c.imported_alias, True)
 
     def test_ast_alias(self):
+        if self.silent: return
+        
         t = Tokenizer()
         a = AST()
 
@@ -480,6 +491,8 @@ class Test(unittest.TestCase):
             a.traverse()
 
     def test_ast_opts(self):
+        if self.silent: return
+        
         t = Tokenizer()
         a = AST()
 
@@ -507,6 +520,8 @@ class Test(unittest.TestCase):
             })
 
     def test_ast_expr(self):
+        if self.silent: return
+        
         t = Tokenizer()
         a = AST()
 
@@ -603,6 +618,8 @@ class Test(unittest.TestCase):
         self.assertEqual(c.last_expr_val, (1, 2, 3))
 
     def test_ast_id_expr(self):
+        if self.silent: return
+        
         t = Tokenizer()
         a = AST()
 
@@ -670,7 +687,45 @@ class Test(unittest.TestCase):
         self.assertEqual(c.syms['v'], 0)
         self.assertEqual(c.last_expr_val, 3)
 
+    def test_ast_call_stmt(self):
+        if self.silent: return
+        
+        t = Tokenizer()
+        a = AST()
+
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('''{@
+                def f():
+                    return 1
+                end
+                a, b = f()
+            @}'''))
+            c = a.traverse()
+
+        a.parse(t.parse('''{@
+            def f():
+                return 1
+            end
+            a = f()
+@}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+        self.assertEqual(c.syms['a'], 1)
+
+        a.parse(t.parse('''{@
+            def f():
+                return 1, 2
+            end
+            a, b = f()
+@}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+        self.assertEqual(c.syms['a'], 1)
+        self.assertEqual(c.syms['b'], 2)
+
     def test_ast_callable(self):
+        if self.silent: return
+        
         t = Tokenizer()
         a = AST()
 
@@ -683,6 +738,8 @@ class Test(unittest.TestCase):
         self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
 
     def test_ast_def_func(self):
+        if self.silent: return
+        
         t = Tokenizer()
         a = AST()
 
@@ -715,6 +772,10 @@ class Test(unittest.TestCase):
             def f2():
             end
 @}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.def_funcs['f1']), DefFuncNode)
+        self.assertEqual(type(c.def_funcs['f2']), DefFuncNode)
+
         a.parse(t.parse('''{@
             def f1():
             end
@@ -762,9 +823,64 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
         self.assertEqual(c.syms['v'], 1)
-        self.assertEqual(c.buffer, 'None')
+        self.assertEqual(c.buffer, '')
+
+        a.parse(t.parse('''{@
+            def f():
+                return 1
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+        self.assertEqual(c.buffer, '1')
+
+        a.parse(t.parse('''{@
+            def f():
+                v = 1
+                return v
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+        self.assertEqual(c.syms['v'], 1)
+        self.assertEqual(c.buffer, '1')
+
+        a.parse(t.parse('''{@
+            def f():
+                return 1
+            end
+            v = f()
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+        self.assertEqual(c.syms['v'], 1)
+        self.assertEqual(c.buffer, '1')
+
+        a.parse(t.parse('''{@
+            def f():
+                return 1 + 2
+            end
+            v = f()
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+        self.assertEqual(c.syms['v'], 3)
+        self.assertEqual(c.buffer, '3')
+
+#         a.parse(t.parse('''{@
+#             def f(arg1):
+#                 v = arg1
+#             end
+#             f("arg1")
+# @}'''))
+#         c = a.traverse()
+#         self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+#         self.assertEqual(c.syms['v'], 1)
+#         self.assertEqual(c.buffer, 'None')
 
     def test_ast_assign(self):
+        if self.silent: return
+        
         t = Tokenizer()
         a = AST()
 
@@ -823,8 +939,7 @@ class Test(unittest.TestCase):
         self.assertEqual(c.syms['v'], 'v2')
 
         a.parse(t.parse('''{@ v = "" @}
-{@ v = "v" @}
-'''))
+{@ v = "v" @} '''))
         c = a.traverse()
         self.assertEqual(c.syms['v'], 'v')
         
@@ -867,6 +982,8 @@ class Test(unittest.TestCase):
         self.assertEqual(c.last_expr_val, 0)
 
     def test_ast_comparison(self):
+        if self.silent: return
+        
         t = Tokenizer()
         a = AST()
 
@@ -962,6 +1079,8 @@ class Test(unittest.TestCase):
         self.assertEqual(c.last_expr_val, 0)
 
     def test_ast_for(self):
+        if self.silent: return
+        
         t = Tokenizer()
         a = AST()
 
@@ -1046,6 +1165,8 @@ class Test(unittest.TestCase):
         self.assertEqual(c.buffer, 'v = 6')
 
     def test_ast_not_expr(self):
+        if self.silent: return
+        
         t = Tokenizer()
         a = AST()
 
@@ -1070,6 +1191,8 @@ class Test(unittest.TestCase):
         self.assertEqual(c.syms['v'], False)
 
     def test_ast_if(self):
+        if self.silent: return
+        
         t = Tokenizer()
         a = AST()
 
@@ -1490,8 +1613,11 @@ c'''))
         self.assertEqual(c.buffer, '2')
 
     def test_ast_opts(self):
+        if self.silent: return
+        
         a = AST()
         t = Tokenizer()
+
         opts = {}
         opts['get-me'] = 'I am superman'
 

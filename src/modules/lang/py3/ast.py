@@ -333,6 +333,57 @@ import sys
     string: '"' .* '"'
     digit: [0-9]+
     identifier: ( [a-z] | [0-9] | _ )+ 
+
+    2019-05-05 21:23:59 曇り
+    =======================
+    BNF 0.3.3
+    return の実装
+
+    + は新規追加したところ
+    ^ は更新
+
+    f(f())
+    a = f()
+    a = f(f())
+    a, b = f()
+    
+    block: ( text-block | code-block | ref-block ), block
+    text-block: .*
+    code-block: '{@' {formula}* '@}'
+    ref-block: '{{' expr '}}'
+    callable: name-list '(' args ')'
+    name-list: identifier '.' name-list | identifier
+    args: arg ',' args | arg
+    arg: digit | string | identifier
+    ^ func_formula: ( formula | return-stmt ), func_formula
+    return-stmt: 'return' expr-list
+    formula: ( expr-list | if-stmt | for-stmt | import-stmt | call-stmt | def-func ), ( formula | '@}' block '{@' )
+    def-func: 'def' identifier '(' dmy-args ')' ':' func_formula 'end'
+    + call-stmt: result-list '=' callable | callable
+    + result-list: identifier ',' result-list | identifier
+    if-stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    elif-stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+    for-stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
+    cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
+    expr-list: expr ',' expr-list | expr
+    expr: gorasu ( '&&' | '||' ) expr | gorasu
+    gorasu: kamiyu cmp-op gorasu | kamiyu
+    kamiyu: term ('+' | '-' ) kamiyu | term
+    term: factor ( '*' | '/' ) term | factor
+    factor: digit | identifier | string | callable | id-expr | assign-expr | not-expr | '(' expr ')'
+    + not-expr: '!' expr
+    id-expr: identifier ('++' | '--') | ('++' | '--') identifier
+    assign-expr: identifier assign-operator assign-expr | expr
+    assign-operator: '='
+    import-stmt: 'import' identifier
+    dmy-args: dmy-arg ',' dmy-args | dmy-arg
+    dmy-arg: identifier
+    args: arg ',' args | arg
+    arg: expr
+    string: '"' .* '"'
+    digit: [0-9]+
+    identifier: ( [a-z] | [0-9] | _ )+ 
 '''
 
 
@@ -373,6 +424,14 @@ class AST:
         self._traverse(self.root, dep=0)
         return self.context
 
+    def dp(self, *args, **kwargs):
+        if self.debug_parse:
+            print(*args, **kwargs)
+    
+    def dt(self, *args, **kwargs):
+        if self.debug_traverse:
+            print(*args, **kwargs)
+
     def show_traverse(self, node, dep):
         if self.debug_traverse:
             print(('_'*dep) + str(dep) + ' ' + str(node).split('.')[1].split(' ')[0])
@@ -401,6 +460,7 @@ class AST:
             return self.traverse_func_formula(node, dep=dep+1)
 
         elif isinstance(node, FormulaNode):
+            # DO NOT RETURN
             if node.expr_list:
                 result = self._traverse(node.expr_list, dep=dep+1)
                 if isinstance(result, tuple) and len(result) == 1:
@@ -415,13 +475,17 @@ class AST:
                 self._traverse(node.if_, dep=dep+1)
             elif node.def_func:
                 self._traverse(node.def_func, dep=dep+1)
-            elif node.callable:
-                self._traverse(node.callable, dep=dep+1)
+            elif node.call_stmt:
+                self._traverse(node.call_stmt, dep=dep+1)
 
+            # RETURN OK
             if node.formula:
-                self._traverse(node.formula, dep=dep+1)
+                return self._traverse(node.formula, dep=dep+1)
             elif node.block:
                 self._traverse(node.block, dep=dep+1)
+
+        elif isinstance(node, CallNode):
+            return self.traverse_call_stmt(node, dep=dep+1)
 
         elif isinstance(node, ForNode):
             self.traverse_for(node, dep=dep+1) 
@@ -568,18 +632,39 @@ class AST:
         else:
             raise AST.ModuleError('impossible. not supported node', type(node))
 
+    def traverse_call_stmt(self, node, dep):
+        if node.result_list and node.callable:
+            identifiers = node.result_list.to_list()
+            result = self._traverse(node.callable, dep=dep+1)
+            if isinstance(result, tuple):
+                if len(identifiers) != len(result):
+                    raise AST.SyntaxError('invalid call statement. not same length')
+                for i in range(len(identifiers)):
+                    self.context.syms[identifiers[i]] = result[i]
+            elif len(identifiers) >= 2:
+                raise AST.SyntaxError('invalid call statement. not same length (2)')
+            else:
+                self.context.syms[identifiers[0]] = result
+            return None
+        elif node.callable:
+            return self._traverse(node.callable, dep=dep+1)
+        else:
+            AST.ModuleError('impossible. programing error. invalid state of node in call statement')
+
     def traverse_return(self, node, dep):
         return self._traverse(node.expr_list, dep=dep+1)
 
     def traverse_func_formula(self, node, dep):
         if node.formula:
-            return self._traverse(node.formula, dep=dep+1)
+            self._traverse(node.formula, dep=dep+1)
         elif node.return_:
             return self._traverse(node.return_, dep=dep+1)
-        else:
-            raise AST.ModuleError('impossible. programing error. invalid state of func formula node')
+
+        if node.func_formula:
+            return self._traverse(node.func_formula, dep=dep+1)
 
     def traverse_def_func(self, node, dep):
+        # DO NOT CALL _traverse with node.func_formula
         self.context.def_funcs[node.identifier] = node
 
     def traverse_expr_list(self, node, dep):
@@ -587,8 +672,8 @@ class AST:
         result = self._traverse(node.expr, dep=dep+1)
         results.append(result)
         if node.expr_list:
-            result = self.traverse_expr_list(node.expr_list, dep=dep+1)
-            for el in result:
+            els = self.traverse_expr_list(node.expr_list, dep=dep+1)
+            for el in els:
                 results.append(el)
         return tuple(results)
 
@@ -615,8 +700,11 @@ class AST:
             if firstname not in self.context.def_funcs.keys():
                 raise AST.ReferenceError('"%s" is not defined' % firstname)
             node = self.context.def_funcs[firstname]
-            node.results = self._traverse(node.func_formula, dep=dep+1)
-            return node.results
+            self.dt('call "%s" function' % firstname)
+            results = self._traverse(node.func_formula, dep=dep+1)
+            if isinstance(results, tuple) and len(results) == 1:
+                return results[0]
+            return results
 
     def traverse_for(self, node, dep):
         self._traverse(node.init_expr_list, dep=dep+1)
@@ -671,7 +759,8 @@ class AST:
     def traverse_ref_block(self, node, dep):
         if node.expr != None:
             result = self._traverse(node.expr, dep=dep+1)
-            self.context.buffer += str(result)
+            if result is not None:
+                self.context.buffer += str(result)
 
     def traverse_import(self, node, dep):
         if node.identifier == 'alias':
@@ -846,15 +935,52 @@ class AST:
 
         return node
 
+    def return_(self, dep):
+        self.show_parse('return_', dep=dep)
+        if self.strm.eof():
+            return None
+
+        tok = self.strm.get()
+        if tok.kind != 'jmp' and tok.value != 'return':
+            raise AST.ModuleError('impossible. not found "return" in return statement')
+
+        node = ReturnNode()
+        node.expr_list = self.expr_list(dep=dep+1)
+
+        return node
+
+    def func_formula(self, dep):
+        self.show_parse('func_formula', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = FuncFormulaNode()
+
+        tok = self.strm.get()
+        if tok.kind in ('end'):
+            self.strm.prev()
+            return None
+        elif tok.kind == 'jmp' and tok.value == 'return':
+            self.strm.prev()
+            node.return_ = self.return_(dep=dep+1)
+        else:
+            self.strm.prev()
+            node.formula = self.formula(dep=dep+1)
+
+        node.func_formula = self.func_formula(dep=dep+1)
+        return node
+
     def formula(self, dep):
         self.show_parse('formula', dep=dep)
         if self.strm.eof():
             return None
         
         t = self.strm.cur()
-        if t.kind in ('rbraceat', 'ldbrace', 'end', 'elif', 'else'):
+        if t.kind == 'jmp' and t.value == 'return':
             return None
-        if t.kind in ('colon'):
+        elif t.kind in ('rbraceat', 'ldbrace', 'end', 'elif', 'else'):
+            return None
+        elif t.kind in ('colon'):
             raise AST.SyntaxError('found "%s". invalid formula.' % t)
 
         node = FormulaNode()
@@ -869,8 +995,8 @@ class AST:
             node.def_func = self.def_func(dep=dep+1)
         else:
             i = self.strm.index
-            node.callable = self.callable(dep=dep+1)
-            if node.callable is None:
+            node.call_stmt = self.call_stmt(dep=dep+1)
+            if node.call_stmt is None:
                 node.expr_list = self.expr_list(dep=dep+1)
                 if not self.strm.eof() and node.expr_list is None:
                     return None
@@ -941,37 +1067,6 @@ class AST:
             raise AST.SyntaxError('reached EOF. invalid syntax in function (5)')
         elif tok.kind != 'end':
             raise AST.SyntaxError('not found "end" in function')
-
-        return node
-
-    def func_formula(self, dep):
-        self.show_parse('func_formula', dep=dep)
-        if self.strm.eof():
-            return None
-
-        node = FuncFormulaNode()
-
-        tok = self.strm.get()
-        if tok.kind == 'jmp' and tok.value == 'return':
-            self.strm.prev()
-            node.return_ = self.return_(dep=dep+1)
-        else:
-            self.strm.prev()
-            node.formula = self.formula(dep=dep+1)
-
-        return node
-
-    def return_(self, dep):
-        self.show_parse('return_', dep=dep)
-        if self.strm.eof():
-            return None
-
-        tok = self.strm.get()
-        if tok.kind != 'jmp' and tok.value != 'return':
-            raise AST.ModuleError('impossible. not found "return" in return statement')
-
-        node = ReturnNode()
-        node.expr_list = self.expr_list(dep=dep+1)
 
         return node
 
@@ -1067,6 +1162,70 @@ class AST:
         node.op = t.value
 
         node.comparison = self.comparison(dep=dep+1)
+        return node
+
+    def call_stmt(self, dep):
+        self.show_parse('call_stmt', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = CallNode()
+
+        m = 'first'
+        i = self.strm.index
+        while not self.strm.eof():
+            t = self.strm.get()
+            if m == 'first':
+                if t.kind == 'operator' and t.value == '=':
+                    m = 'found ='
+                elif t.kind == 'lparen':
+                    m = 'found callable'
+                    break
+            elif m == 'found =':
+                if t.kind == 'lparen':
+                    m = 'found call stmt'
+                    break
+        self.strm.index = i
+
+        if m == 'found call stmt':
+            node.result_list = self.result_list(dep=dep+1)
+            tok = self.strm.get()
+            if tok.kind != 'operator' and tok.value != '=':
+                raise AST.SyntaxError('not found "=" operator in call statement. token is %s' % tok)
+            node.callable = self.callable(dep=dep+1)
+            if node.callable is None:
+                self.strm.index = i
+                return None
+        elif m == 'found callable':
+            node.callable = self.callable(dep=dep+1)
+            if node.callable is None:
+                self.strm.index = i
+                return None
+        else:
+            return None
+
+        return node
+
+    def result_list(self, dep):
+        self.show_parse('result_list', dep=dep)
+        if self.strm.eof():
+            return None
+
+        tok = self.strm.get()
+        if tok.kind != 'identifier':
+            self.strm.prev()
+            return None
+
+        node = ResultListNode()
+        node.identifier = tok.value
+
+        tok = self.strm.get()
+        if tok.kind != 'comma':
+            self.strm.prev()
+            return node
+
+        node.result_list = self.result_list(dep=dep+1)
+
         return node
 
     def if_(self, dep, first_symbol='if'):

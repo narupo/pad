@@ -1,5 +1,14 @@
 {@
-    def myfunc():
-        v = 0
+    def parse_document(doc):
+        return 1, 2
+    end
+
+    doc = "this is document"
+    result, err = parse_document(doc)
+    if err != 0:
+        result = "failed"
     end
 @}
+source document: {$ doc $}
+parse result: {$ result $}
+error detail: {$ err $}

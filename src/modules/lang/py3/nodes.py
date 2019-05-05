@@ -72,12 +72,37 @@ class ForNode(Node):
         self.formula = None # Node
 
 
+class CallNode(Node):
+    def __init__(self):
+        self.result_list = None # Node
+        self.callable = None # Node
+
+
+class ResultListNode(Node):
+    def __init__(self):
+        self.identifier = None # str
+        self.result_list = None # Node
+
+    def to_list(self):
+        identifiers = []
+        if self.identifier:
+            identifiers.append(self.identifier)
+        self._to_list(self.result_list, identifiers)
+        return identifiers
+
+    def _to_list(self, result_list, identifiers):
+        if result_list is None:
+            return
+        if result_list.identifier:
+            identifiers.append(result_list.identifier)
+        self._to_list(result_list.result_list, identifiers)
+
+
 class DefFuncNode(Node):
     def __init__(self):
         self.identifier = None # str
         self.dmy_args = None # Node
         self.func_formula = None # Node
-        self.results = None # (int, str, list, dict) data of results of traverse
 
 
 class DmyArgs:
@@ -114,6 +139,7 @@ class FuncFormulaNode(Node):
     def __init__(self):
         self.formula = None # Node
         self.return_ = None # Node
+        self.func_formula = None # Node
 
 
 class FormulaNode(Node):
@@ -126,7 +152,7 @@ class FormulaNode(Node):
         self.import_ = None # Node
         self.formula = None # Node
         self.block = None # Node
-        self.callable = None # Node
+        self.call_stmt = None # Node
 
 
 class ImportNode(Node):
