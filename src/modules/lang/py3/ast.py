@@ -290,6 +290,49 @@ import sys
     string: '"' .* '"'
     digit: [0-9]+
     identifier: ( [a-z] | [0-9] | _ )+ 
+
+    2019-05-05 20:34:53 晴のち曇
+    ===========================
+    BNF 0.3.3
+    return の実装
+
+    + は新規追加したところ
+    ^ は更新
+
+    block: ( text-block | code-block | ref-block ), block
+    text-block: .*
+    code-block: '{@' {formula}* '@}'
+    ref-block: '{{' expr '}}'
+    callable: name-list '(' args ')'
+    name-list: identifier '.' name-list | identifier
+    args: arg ',' args | arg
+    arg: digit | string | identifier
+    + func_formula: formula | return-stmt
+    + return-stmt: 'return' expr-list
+    formula: ( expr-list | if-stmt | for-stmt | import-stmt | callable | def-func ), ( formula | '@}' block '{@' )
+    def-func: 'def' identifier '(' dmy-args ')' ':' func_formula 'end'
+    if-stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    elif-stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+    else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+    for-stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
+    cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
+    expr-list: expr ',' expr-list | expr
+    expr: gorasu ( '&&' | '||' ) expr | gorasu
+    gorasu: kamiyu cmp-op gorasu | kamiyu
+    kamiyu: term ('+' | '-' ) kamiyu | term
+    term: factor ( '*' | '/' ) term | factor
+    factor: digit | identifier | string | callable | id-expr | assign-expr | not-expr | '(' expr ')'
+    id-expr: identifier ('++' | '--') | ('++' | '--') identifier
+    assign-expr: identifier assign-operator assign-expr | expr
+    assign-operator: '='
+    import-stmt: 'import' identifier
+    dmy-args: dmy-arg ',' dmy-args | dmy-arg
+    dmy-arg: identifier
+    args: arg ',' args | arg
+    arg: expr
+    string: '"' .* '"'
+    digit: [0-9]+
+    identifier: ( [a-z] | [0-9] | _ )+ 
 '''
 
 
@@ -354,6 +397,9 @@ class AST:
         elif isinstance(node, RefBlockNode):
             self.traverse_ref_block(node, dep=dep+1)
 
+        elif isinstance(node, FuncFormulaNode):
+            return self.traverse_func_formula(node, dep=dep+1)
+
         elif isinstance(node, FormulaNode):
             if node.expr_list:
                 result = self._traverse(node.expr_list, dep=dep+1)
@@ -382,6 +428,9 @@ class AST:
 
         elif isinstance(node, DefFuncNode):
             self.traverse_def_func(node, dep=dep+1)
+
+        elif isinstance(node, ReturnNode):
+            return self.traverse_return(node, dep=dep+1)
 
         elif isinstance(node, IfNode):
             result = self._traverse(node.expr, dep=dep+1)
@@ -519,8 +568,19 @@ class AST:
         else:
             raise AST.ModuleError('impossible. not supported node', type(node))
 
+    def traverse_return(self, node, dep):
+        return self._traverse(node.expr_list, dep=dep+1)
+
+    def traverse_func_formula(self, node, dep):
+        if node.formula:
+            return self._traverse(node.formula, dep=dep+1)
+        elif node.return_:
+            return self._traverse(node.return_, dep=dep+1)
+        else:
+            raise AST.ModuleError('impossible. programing error. invalid state of func formula node')
+
     def traverse_def_func(self, node, dep):
-        self.context.funcs[node.identifier] = node
+        self.context.def_funcs[node.identifier] = node
 
     def traverse_expr_list(self, node, dep):
         results = []
@@ -552,11 +612,11 @@ class AST:
                 self.context.alias_map[identifier] = value
                 return None
         else:
-            if firstname not in self.context.funcs.keys():
+            if firstname not in self.context.def_funcs.keys():
                 raise AST.ReferenceError('"%s" is not defined' % firstname)
-            node = self.context.funcs[firstname]
-            return self._traverse(node.formula, dep=dep+1)
-
+            node = self.context.def_funcs[firstname]
+            node.results = self._traverse(node.func_formula, dep=dep+1)
+            return node.results
 
     def traverse_for(self, node, dep):
         self._traverse(node.init_expr_list, dep=dep+1)
@@ -874,13 +934,44 @@ class AST:
         elif tok.kind != 'colon':
             raise AST.SyntaxError('not found colon in function')
 
-        node.formula = self.formula(dep=dep+1)
+        node.func_formula = self.func_formula(dep=dep+1)
 
         tok = self.strm.get()
         if tok == Stream.EOF:
             raise AST.SyntaxError('reached EOF. invalid syntax in function (5)')
         elif tok.kind != 'end':
             raise AST.SyntaxError('not found "end" in function')
+
+        return node
+
+    def func_formula(self, dep):
+        self.show_parse('func_formula', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = FuncFormulaNode()
+
+        tok = self.strm.get()
+        if tok.kind == 'jmp' and tok.value == 'return':
+            self.strm.prev()
+            node.return_ = self.return_(dep=dep+1)
+        else:
+            self.strm.prev()
+            node.formula = self.formula(dep=dep+1)
+
+        return node
+
+    def return_(self, dep):
+        self.show_parse('return_', dep=dep)
+        if self.strm.eof():
+            return None
+
+        tok = self.strm.get()
+        if tok.kind != 'jmp' and tok.value != 'return':
+            raise AST.ModuleError('impossible. not found "return" in return statement')
+
+        node = ReturnNode()
+        node.expr_list = self.expr_list(dep=dep+1)
 
         return node
 

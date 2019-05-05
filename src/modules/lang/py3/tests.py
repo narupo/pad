@@ -670,6 +670,18 @@ class Test(unittest.TestCase):
         self.assertEqual(c.syms['v'], 0)
         self.assertEqual(c.last_expr_val, 3)
 
+    def test_ast_callable(self):
+        t = Tokenizer()
+        a = AST()
+
+        a.parse(t.parse('''{@
+            def f():
+                return 1, 2
+            end
+@}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+
     def test_ast_def_func(self):
         t = Tokenizer()
         a = AST()
@@ -679,7 +691,23 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.funcs['f']), DefFuncNode)
+        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+
+        a.parse(t.parse('''{@
+            def f():
+                return 1
+            end
+@}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+
+        a.parse(t.parse('''{@
+            def f():
+                return 1, 2
+            end
+@}'''))
+        c = a.traverse()
+        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
 
         a.parse(t.parse('''{@
             def f1():
@@ -695,8 +723,8 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.funcs['f1']), DefFuncNode)
-        self.assertEqual(type(c.funcs['f2']), DefFuncNode)
+        self.assertEqual(type(c.def_funcs['f1']), DefFuncNode)
+        self.assertEqual(type(c.def_funcs['f2']), DefFuncNode)
         self.assertEqual(c.buffer, 'abc')
 
         a.parse(t.parse('''{@
@@ -704,17 +732,17 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.funcs['f']), DefFuncNode)
-        self.assertEqual(c.funcs['f'].dmy_args.dmy_arg.identifier, 'arg1')
+        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+        self.assertEqual(c.def_funcs['f'].dmy_args.dmy_arg.identifier, 'arg1')
 
         a.parse(t.parse('''{@
             def f(arg1, arg2):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.funcs['f']), DefFuncNode)
-        self.assertEqual(c.funcs['f'].dmy_args.dmy_arg.identifier, 'arg1')
-        self.assertEqual(c.funcs['f'].dmy_args.dmy_args.dmy_arg.identifier, 'arg2')
+        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+        self.assertEqual(c.def_funcs['f'].dmy_args.dmy_arg.identifier, 'arg1')
+        self.assertEqual(c.def_funcs['f'].dmy_args.dmy_args.dmy_arg.identifier, 'arg2')
 
         a.parse(t.parse('''{@
             def f():
@@ -722,7 +750,7 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.funcs['f']), DefFuncNode)
+        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
         with self.assertRaises(KeyError):
             self.assertEqual(c.syms['v'], 1)
 
@@ -732,7 +760,7 @@ class Test(unittest.TestCase):
             end
 @}{{ f() }}'''))
         c = a.traverse()
-        self.assertEqual(type(c.funcs['f']), DefFuncNode)
+        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
         self.assertEqual(c.syms['v'], 1)
         self.assertEqual(c.buffer, 'None')
 

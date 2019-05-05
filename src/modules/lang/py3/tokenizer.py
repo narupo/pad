@@ -293,6 +293,8 @@ class Tokenizer:
             t.kind = 'end'
         elif t.value == 'def':
             t.kind = 'def'
+        elif t.value == 'return':
+            t.kind = 'jmp'
 
         self.tokens.append(t)
 
