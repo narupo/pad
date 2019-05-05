@@ -76,7 +76,8 @@ class DefFuncNode(Node):
     def __init__(self):
         self.identifier = None # str
         self.dmy_args = None # Node
-        self.formula = None # Node
+        self.func_formula = None # Node
+        self.results = None # (int, str, list, dict) data of results of traverse
 
 
 class DmyArgs:
@@ -102,6 +103,17 @@ class DmyArgs:
 class DmyArg:
     def __init__(self):
         self.identifier = None # str
+
+
+class ReturnNode(Node):
+    def __init__(self):
+        self.expr_list = None # Node
+
+
+class FuncFormulaNode(Node):
+    def __init__(self):
+        self.formula = None # Node
+        self.return_ = None # Node
 
 
 class FormulaNode(Node):
