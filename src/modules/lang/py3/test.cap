@@ -6,5 +6,11 @@
 
     v = 0
     result = parse(v)
+
+    def fix(src, opt):
+        if opt == 0:
+            return "aho"
+        end
+    end
 @}
 result: {$ result $}

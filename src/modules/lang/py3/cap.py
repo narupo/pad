@@ -56,10 +56,10 @@ def main():
         tokens = tokenizer.parse(src)
         ast = AST()
         ast.parse(tokens)
-        ast.traverse(
+        c = ast.traverse(
             opts=opts,
         )
-        print(context.buffer)
+        print(c.buffer)
     except Tokenizer.ParseError as e:
         print(e)
         sys.exit(1)
