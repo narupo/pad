@@ -1,14 +1,38 @@
 {@
-    def parse_document(doc):
-        return 1, 2
+    def parseDoc(doc): end
+
+    parseDoc("doc")
+
+    def parseDoc(doc):
+        err = 0
+        if doc == "this is document":
+            err = "invalid document"
+        end
+
+        v = 0
+        for i = 0; i < 10; ++i:
+            v = v + i
+        end
+
+        return v, err
     end
+    def func(arg1, arg2): v = 0 for i = 0; i < 100; ++i: v = v + i end return v end
+    v = func()
+
+    /* def join(a, b):
+        return a + b
+    end
+    ab = join("aho", "manuke") */
 
     doc = "this is document"
-    result, err = parse_document(doc)
+    status = "success"
+    result, err = parseDoc(doc)
     if err != 0:
-        result = "failed"
+        status = "failed"
     end
 @}
+v: {$ v $}
 source document: {$ doc $}
 parse result: {$ result $}
 error detail: {$ err $}
+status: {$ status $}
