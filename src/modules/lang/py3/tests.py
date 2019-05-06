@@ -979,16 +979,30 @@ class Test(unittest.TestCase):
         self.assertEqual(a.current_scope.syms['f'].syms['f2'].syms['v'], 2)
         self.assertEqual(c.buffer, '2')
 
-#         a.parse(t.parse('''{@
-#             def f(arg1):
-#                 v = arg1
-#             end
-#             f("arg1")
-# @}'''))
-#         c = a.traverse()
-#         self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
-#         self.assertEqual(a.current_scope.syms['v'], 1)
-#         self.assertEqual(c.buffer, 'None')
+        a.parse(t.parse('''{@
+            def f(arg1):
+                v = arg1
+            end
+            f("arg1")
+@}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['f'].syms['arg1'], 'arg1')
+        self.assertEqual(a.current_scope.syms['f'].syms['v'], 'arg1')
+
+        a.parse(t.parse('''{@
+            def f(arg1, arg2):
+                a = arg1
+                b = arg2
+            end
+            f("arg1", "arg2")
+@}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['f'].syms['arg1'], 'arg1')
+        self.assertEqual(a.current_scope.syms['f'].syms['arg2'], 'arg2')
+        self.assertEqual(a.current_scope.syms['f'].syms['a'], 'arg1')
+        self.assertEqual(a.current_scope.syms['f'].syms['b'], 'arg2')
 
     def test_ast_assign(self):
         if self.silent: return

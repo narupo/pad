@@ -56,9 +56,7 @@ def main():
         tokens = tokenizer.parse(src)
         ast = AST()
         ast.parse(tokens)
-        context = Context()
         ast.traverse(
-            context=context,
             opts=opts,
         )
         print(context.buffer)
