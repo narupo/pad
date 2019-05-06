@@ -835,6 +835,81 @@ class Test(unittest.TestCase):
 
         a.parse(t.parse('''{@
             def f():
+                if 1:
+                    return 1
+                end
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(c.buffer, '1')
+
+        a.parse(t.parse('''{@
+            def f():
+                if 0:
+                    return 1
+                end
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(c.buffer, '')
+
+        a.parse(t.parse('''{@
+            def f():
+                if 0:
+                    return 1
+                elif 1:
+                    return 2
+                end
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(c.buffer, '2')
+
+        a.parse(t.parse('''{@
+            def f():
+                if 0:
+                    return 1
+                elif 0:
+                    return 2
+                end
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(c.buffer, '')
+
+        a.parse(t.parse('''{@
+            def f():
+                if 1:
+                    if 1:
+                        return 1
+                    end
+                end
+                return 0
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(c.buffer, '1')
+
+        a.parse(t.parse('''{@
+            def f():
+                if 0:
+                    return 1
+                else:
+                    return 2
+                end
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(c.buffer, '2')
+
+        a.parse(t.parse('''{@
+            def f():
                 v = 1
                 return v
             end
