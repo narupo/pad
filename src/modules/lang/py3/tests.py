@@ -17,6 +17,25 @@ class Test(unittest.TestCase):
         ts = t.parse('')
         self.assertEqual(len(ts), 0)
 
+        ts = t.parse('{{ fix("src", 0) }}')
+        self.assertEqual(len(ts), 8)
+        self.assertEqual(ts[0].kind, 'ldbrace')
+        self.assertEqual(ts[0].value, '{{')
+        self.assertEqual(ts[1].kind, 'identifier')
+        self.assertEqual(ts[1].value, 'fix')
+        self.assertEqual(ts[2].kind, 'lparen')
+        self.assertEqual(ts[2].value, '(')
+        self.assertEqual(ts[3].kind, 'string')
+        self.assertEqual(ts[3].value, 'src')
+        self.assertEqual(ts[4].kind, 'comma')
+        self.assertEqual(ts[4].value, ',')
+        self.assertEqual(ts[5].kind, 'digit')
+        self.assertEqual(ts[5].value, 0)
+        self.assertEqual(ts[6].kind, 'rparen')
+        self.assertEqual(ts[6].value, ')')
+        self.assertEqual(ts[7].kind, 'rdbrace')
+        self.assertEqual(ts[7].value, '}}')
+
         ts = t.parse('abc+/%123')
         self.assertEqual(len(ts), 1)
         self.assertEqual(ts[0].kind, 'text-block')
@@ -1124,6 +1143,50 @@ class Test(unittest.TestCase):
         self.assertEqual(c.buffer, 'lvalrval')
 
         a.parse(t.parse('''{@
+            def f(arg):
+                return arg
+            end
+            a = f(0) + 1
+@}{{ a }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['f'].syms['arg'], 0)
+        self.assertEqual(c.buffer, '1')
+
+        a.parse(t.parse('''{@
+            def f(arg):
+                return arg
+            end
+            a = f(0) + f(1)
+@}{{ a }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['f'].syms['arg'], 1)
+        self.assertEqual(c.buffer, '1')
+
+        a.parse(t.parse('''{@
+            def f(arg):
+                return arg
+            end
+            a = f("lval") + f("rval")
+@}{{ a }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['f'].syms['arg'], 'rval')
+        self.assertEqual(c.buffer, 'lvalrval')
+
+        a.parse(t.parse('''{@
+            def f(arg):
+                return arg
+            end
+            a = f("1") + "2" + f("3")
+@}{{ a }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['f'].syms['arg'], '3')
+        self.assertEqual(c.buffer, '123')
+
+        a.parse(t.parse('''{@
             def f(arg1, arg2):
                 a = arg1
                 b = arg2
@@ -1152,6 +1215,13 @@ class Test(unittest.TestCase):
                 f("arg1", "arg2")
     @}'''))
             c = a.traverse()
+
+        a.parse(t.parse('''{@
+            def f(src, opt):
+            end
+@}{{ f("arg", 0) }}'''))
+        c = a.traverse()
+        self.assertEqual(c.buffer, '')
 
     def test_ast_return(self):
         if self.silent: return
@@ -1260,6 +1330,10 @@ class Test(unittest.TestCase):
         a.parse(t.parse('{@ v = opts.get("a") @}'))
         c = a.traverse(opts={ 'a': 'b' })
         self.assertEqual(a.current_scope.syms['v'], "b")
+
+        a.parse(t.parse('{@ v = "a" + "b" @}'))
+        c = a.traverse()
+        self.assertEqual(a.current_scope.syms['v'], "ab")
 
         # 以下の式はPython3ではエラーになる
         # PHP7, Ruby2.3ではエラーにならずlast_expr_valは2
@@ -1461,6 +1535,16 @@ class Test(unittest.TestCase):
         self.assertEqual(a.current_scope.syms['i'], 4)
         self.assertEqual(a.current_scope.syms['j'], 4)
         self.assertEqual(c.buffer, 'v = 6')
+
+        a.parse(t.parse('''{@
+            s = "a"
+            for i = 0; i < 2; ++i:
+                s = s + ","
+            end
+@}s = {{ s }}'''))
+        c = a.traverse()
+        self.assertEqual(a.current_scope.syms['i'], 2)
+        self.assertEqual(c.buffer, 's = a,,')
 
     def test_ast_not_expr(self):
         if self.silent: return
