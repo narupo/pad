@@ -656,8 +656,10 @@ class AST:
 
     def traverse_func_formula(self, node, dep):
         if node.formula:
+            # DOT NOT RETURN
             self._traverse(node.formula, dep=dep+1)
         elif node.return_:
+            # ALWAYS RETURN
             return self._traverse(node.return_, dep=dep+1)
 
         if node.func_formula:
