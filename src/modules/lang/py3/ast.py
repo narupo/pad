@@ -752,18 +752,35 @@ class AST:
                 self.context.alias_map[identifier] = value
                 return None
         else:
-            node = self.find_sym(firstname)
-            self.dt('found sym', node)
+            def_func = self.find_sym(firstname)
+            if not isinstance(def_func, DefFuncNode):
+                raise AST.ReferenceError('"%s" is not callable' % firstname)
 
-            self.scope_list.append(node)
+            self.export_args_to_def_func(def_func, def_func.dmy_args, node.args, dep=dep+1)
+
+            self.scope_list.append(def_func)
             self.dt('call "%s" function' % firstname)
-            result = self._trav(node.func_formula, dep=dep+1)
+            result = self._trav(def_func.func_formula, dep=dep+1)
             self.dt("function result:", result)
             self.scope_list.pop()
 
             if isinstance(result, tuple) and len(result) == 1:
                 return result[0]
             return result
+
+    def export_args_to_def_func(self, def_func, dmy_args, args, dep):
+        """
+        dmy_args, args を def_func の syms に展開する
+        """
+        if dmy_args and args:
+            if args.arg and dmy_args.dmy_arg:
+                result = self._trav(args.arg.expr, dep=dep+1)
+                def_func.syms[dmy_args.dmy_arg.identifier] = result
+                self.export_args_to_def_func(def_func, dmy_args.dmy_args, args.args, dep=dep+1)
+        elif dmy_args is None and args is None:
+            return None
+        else:
+            AST.SyntaxError('not same length of function arguments')
 
     def find_sym(self, key):
         for scope in self.scope_list[::-1]:

@@ -245,24 +245,24 @@ class IdExprNode(Node):
 
 class CallableNode(Node):
     def __init__(self):
-        self.caller_list = None
-        self.args = None
+        self.name_list = None # Node
+        self.args = None # Node
         self.syms = {} # symbol table
 
 
 class NameListNode(Node):
     def __init__(self):
-        self.identifier = None
-        self.name_list = None
+        self.identifier = None # str
+        self.name_list = None # Node
 
 
 class ArgsNode(Node):
     def __init__(self):
-        self.arg = None
-        self.args = None
+        self.arg = None # Node
+        self.args = None # Node
 
 
 class ArgNode(Node):
     def __init__(self):
-        self.expr = None
+        self.expr = None # Node
 
