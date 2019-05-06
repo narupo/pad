@@ -1098,6 +1098,10 @@ class Test(unittest.TestCase):
         self.assertEqual(c.buffer, '2')
 
         a.parse(t.parse('''{@
+            f("lval") + "rval"
+@}'''))
+
+        a.parse(t.parse('''{@
             def f(arg1):
                 v = arg1
             end
@@ -1107,6 +1111,17 @@ class Test(unittest.TestCase):
         self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
         self.assertEqual(a.current_scope.syms['f'].syms['arg1'], 'arg1')
         self.assertEqual(a.current_scope.syms['f'].syms['v'], 'arg1')
+
+        a.parse(t.parse('''{@
+            def f(arg):
+                return arg
+            end
+            a = f("lval") + "rval"
+@}{{ a }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['f'].syms['arg'], 'lval')
+        self.assertEqual(c.buffer, 'lvalrval')
 
         a.parse(t.parse('''{@
             def f(arg1, arg2):

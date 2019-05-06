@@ -76,10 +76,10 @@ class ForNode(Node):
         self.formula = None # Node
 
 
-class CallNode(Node):
+class AssignNode(Node):
     def __init__(self):
         self.result_list = None # Node
-        self.callable = None # Node
+        self.expr = None # Node
 
 
 class ResultListNode(Node):
