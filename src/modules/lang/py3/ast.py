@@ -385,6 +385,7 @@ import sys
     BNF 0.3.4
     func_formula の削除
     formula に return を移動
+    call_stmt を assign_stmt に修正
 
     + は新規追加したところ
     ^ は更新
@@ -398,9 +399,9 @@ import sys
     args: arg ',' args | arg
     arg: digit | string | identifier
     return_stmt: 'return' expr_list
-    formula: ( expr_list | if_stmt | for_stmt | import_stmt | return_stmt | call_stmt | def_func ), ( formula | '@}' block '{@' )
+    ^ formula: ( expr_list | if_stmt | for_stmt | import_stmt | return_stmt | assign_stmt | def_func ), ( formula | '@}' block '{@' )
     def_func: 'def' identifier '(' dmy_args ')' ':' formula 'end'
-    call_stmt: result_list '=' callable | callable
+    assign_stmt: result_list '=' expr | expr
     result_list: identifier ',' result_list | identifier
     if_stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
     elif_stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
@@ -413,7 +414,7 @@ import sys
     kamiyu: term ('+' | '-' ) kamiyu | term
     term: factor ( '*' | '/' ) term | factor
     factor: digit | identifier | string | callable | id_expr | assign_expr | not_expr | '(' expr ')'
-    + not_expr: '!' expr
+    not_expr: '!' expr
     id_expr: identifier ('++' | '--') | ('++' | '--') identifier
     assign_expr: identifier assign_operator assign_expr | expr
     assign_operator: '='
@@ -507,8 +508,8 @@ class AST:
         elif isinstance(node, FormulaNode):
             return self.trav_formula(node, dep=dep+1)
 
-        elif isinstance(node, CallNode):
-            return self.trav_call_stmt(node, dep=dep+1)
+        elif isinstance(node, AssignNode):
+            return self.trav_assign(node, dep=dep+1)
 
         elif isinstance(node, ForNode):
             return self.trav_for(node, dep=dep+1) 
@@ -577,55 +578,20 @@ class AST:
         self.context.buffer += node.text
         return node.text
 
-    def trav_factor(self, node, dep):
-        if node.expr:
-            return self._trav(node.expr, dep=dep+1)
-        elif node.identifier != None:
-            return self.find_sym(node.identifier)
-        elif node.digit:
-            return self._trav(node.digit, dep=dep+1)
-        elif node.string != None:
-            return node.string
-        elif node.callable:
-            return self._trav(node.callable, dep=dep+1)
-        elif node.assign_expr:
-            return self._trav(node.assign_expr, dep=dep+1)
-        elif node.id_expr:
-            return self._trav(node.id_expr, dep=dep+1)
-        elif node.not_expr:
-            return self._trav(node.not_expr, dep=dep+1)
-        else:
-            raise AST.ModuleError('impossible. invalid case in factor node')
-
-    def trav_term(self, node, dep):
-        if node.factor and node.term:
-            lval = self._trav(node.factor, dep=dep+1)
-            rval = self._trav(node.term, dep=dep+1)
-            if node.op == '*':
-                return lval * rval
-            elif node.op == '/':
-                return lval / rval
+    def trav_expr(self, node, dep):
+        if node.gorasu and node.expr:
+            lval = self._trav(node.gorasu, dep=dep+1)
+            rval = self._trav(node.expr, dep=dep+1)
+            if node.op == '&&':
+                return lval and rval
+            elif node.op == '||':
+                return lval or rval
             else:
-                raise AST.ModuleError('unsupported operation "%s" in traverse term' % node.op)
-        elif node.factor:
-            return self._trav(node.factor, dep=dep+1)
+                raise AST.ModuleError('unsupported operation "%s" in traverse expr' % node.op)
+        elif node.gorasu:
+            return self._trav(node.gorasu, dep=dep+1)
         else:
-            raise AST.ModuleError('programming error. impossible case in traverse term')
-
-    def trav_kamiyu(self, node, dep):
-        if node.term and node.kamiyu:
-            lval = self._trav(node.term, dep=dep+1)
-            rval = self._trav(node.kamiyu, dep=dep+1)
-            if node.op == '+':
-                return lval + rval
-            elif node.op == '-':
-                return lval - rval
-            else:
-                raise AST.ModuleError('unsupported operation "%s" in traverse kamiyu' % node.op)
-        elif node.term:
-            return self._trav(node.term, dep=dep+1)
-        else:
-            raise AST.ModuleError('programming error. impossible case in traverse kamiyu')
+            raise AST.ModuleError('programming error. impossible case in traverse expr')
 
     def trav_gorasu(self, node, dep):
         if node.kamiyu and node.gorasu:
@@ -650,20 +616,56 @@ class AST:
         else:
             raise AST.ModuleError('unsupported node %s in gorasu' % str(node))
 
-    def trav_expr(self, node, dep):
-        if node.gorasu and node.expr:
-            lval = self._trav(node.gorasu, dep=dep+1)
-            rval = self._trav(node.expr, dep=dep+1)
-            if node.op == '&&':
-                return lval and rval
-            elif node.op == '||':
-                return lval or rval
+    def trav_kamiyu(self, node, dep):
+        if node.term and node.kamiyu:
+            lval = self._trav(node.term, dep=dep+1)
+            rval = self._trav(node.kamiyu, dep=dep+1)
+            self.dt('lval, rval', lval, rval)
+            if node.op == '+':
+                return lval + rval
+            elif node.op == '-':
+                return lval - rval
             else:
-                raise AST.ModuleError('unsupported operation "%s" in traverse expr' % node.op)
-        elif node.gorasu:
-            return self._trav(node.gorasu, dep=dep+1)
+                raise AST.ModuleError('unsupported operation "%s" in traverse kamiyu' % node.op)
+        elif node.term:
+            return self._trav(node.term, dep=dep+1)
         else:
-            raise AST.ModuleError('programming error. impossible case in traverse expr')
+            raise AST.ModuleError('programming error. impossible case in traverse kamiyu')
+
+    def trav_term(self, node, dep):
+        if node.factor and node.term:
+            lval = self._trav(node.factor, dep=dep+1)
+            rval = self._trav(node.term, dep=dep+1)
+            if node.op == '*':
+                return lval * rval
+            elif node.op == '/':
+                return lval / rval
+            else:
+                raise AST.ModuleError('unsupported operation "%s" in traverse term' % node.op)
+        elif node.factor:
+            return self._trav(node.factor, dep=dep+1)
+        else:
+            raise AST.ModuleError('programming error. impossible case in traverse term')
+
+    def trav_factor(self, node, dep):
+        if node.expr:
+            return self._trav(node.expr, dep=dep+1)
+        elif node.identifier != None:
+            return self.find_sym(node.identifier)
+        elif node.digit:
+            return self._trav(node.digit, dep=dep+1)
+        elif node.string != None:
+            return node.string
+        elif node.callable:
+            return self._trav(node.callable, dep=dep+1)
+        elif node.assign_expr:
+            return self._trav(node.assign_expr, dep=dep+1)
+        elif node.id_expr:
+            return self._trav(node.id_expr, dep=dep+1)
+        elif node.not_expr:
+            return self._trav(node.not_expr, dep=dep+1)
+        else:
+            raise AST.ModuleError('impossible. invalid case in factor node')
 
     def trav_else(self, node, dep):
         if node.block:
@@ -706,8 +708,8 @@ class AST:
             return None # ALWAYS RETURN 
         elif node.def_func:
             self._trav(node.def_func, dep=dep+1)
-        elif node.call_stmt:
-            self._trav(node.call_stmt, dep=dep+1)
+        elif node.assign_stmt:
+            self._trav(node.assign_stmt, dep=dep+1)
 
         if self.returned:
             return None
@@ -730,10 +732,10 @@ class AST:
             return self._trav(node.block, dep=dep+1)
         return result
 
-    def trav_call_stmt(self, node, dep):
-        if node.result_list and node.callable:
+    def trav_assign(self, node, dep):
+        if node.result_list and node.expr:
             identifiers = node.result_list.to_list()
-            result = self._trav(node.callable, dep=dep+1)
+            result = self._trav(node.expr, dep=dep+1)
             if isinstance(result, tuple):
                 if len(identifiers) != len(result):
                     raise AST.SyntaxError('invalid call statement. not same length')
@@ -744,8 +746,8 @@ class AST:
             else:
                 self.scope_list[-1].syms[identifiers[0]] = result
             return result
-        elif node.callable:
-            return self._trav(node.callable, dep=dep+1)
+        elif node.expr:
+            return self._trav(node.expr, dep=dep+1)
         else:
             AST.ModuleError('impossible. programing error. invalid state of node in call statement')
 
@@ -1103,8 +1105,8 @@ class AST:
             node.return_ = self.return_(dep=dep+1)
         else:
             i = self.strm.index
-            node.call_stmt = self.call_stmt(dep=dep+1)
-            if node.call_stmt is None:
+            node.assign_stmt = self.assign_stmt(dep=dep+1)
+            if node.assign_stmt is None:
                 node.expr_list = self.expr_list(dep=dep+1)
                 if not self.strm.eof() and node.expr_list is None:
                     return None
@@ -1272,12 +1274,12 @@ class AST:
         node.comparison = self.comparison(dep=dep+1)
         return node
 
-    def call_stmt(self, dep):
-        self.show_parse('call_stmt', dep=dep)
+    def assign_stmt(self, dep):
+        self.show_parse('assign_stmt', dep=dep)
         if self.strm.eof():
             return None
 
-        node = CallNode()
+        node = AssignNode()
 
         m = 'first'
         i = self.strm.index
@@ -1300,16 +1302,12 @@ class AST:
             tok = self.strm.get()
             if tok.kind != 'operator' and tok.value != '=':
                 raise AST.SyntaxError('not found "=" operator in call statement. token is %s' % tok)
-            node.callable = self.callable(dep=dep+1)
-            if node.callable is None:
-                self.strm.index = i
-                return None
-        elif m == 'found callable':
-            node.callable = self.callable(dep=dep+1)
-            if node.callable is None:
+            node.expr = self.expr(dep=dep+1)
+            if node.expr is None:
                 self.strm.index = i
                 return None
         else:
+            # do not process for callable
             return None
 
         return node
@@ -1450,8 +1448,12 @@ class AST:
         if tok.kind in ('colon', 'semicolon'):
             return None
         
+        i = self.strm.index
         node = ExprNode()
         node.gorasu = self.gorasu(dep=dep+1)
+        if node.gorasu is None:
+            self.strm.index = i
+            return None
 
         t = self.strm.get()
         if t == Stream.EOF:
@@ -1469,8 +1471,12 @@ class AST:
         if self.strm.eof():
             return None
 
+        i = self.strm.index
         node = GorasuNode()
         node.kamiyu = self.kamiyu(dep=dep+1)
+        if node.kamiyu is None:
+            self.strm.index = i
+            return None
 
         t = self.strm.get()
         if t == Stream.EOF:
@@ -1488,8 +1494,12 @@ class AST:
         if self.strm.eof():
             return None
 
+        i = self.strm.index
         node = KamiyuNode()
         node.term = self.term(dep=dep+1)
+        if node.term is None:
+            self.strm.index = i
+            return None
 
         t = self.strm.get()
         if t == Stream.EOF:
@@ -1507,8 +1517,12 @@ class AST:
         if self.strm.eof():
             return None
 
+        i = self.strm.index
         node = TermNode()
         node.factor = self.factor(dep=dep+1)
+        if node.factor is None:
+            self.strm.index = i
+            return None
 
         t = self.strm.get()
         if t == Stream.EOF:
