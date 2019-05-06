@@ -307,10 +307,10 @@ import sys
     name-list: identifier '.' name-list | identifier
     args: arg ',' args | arg
     arg: digit | string | identifier
-    + func_formula: formula | return-stmt
+    + func-formula: formula | return-stmt
     + return-stmt: 'return' expr-list
     formula: ( expr-list | if-stmt | for-stmt | import-stmt | callable | def-func ), ( formula | '@}' block '{@' )
-    def-func: 'def' identifier '(' dmy-args ')' ':' func_formula 'end'
+    def-func: 'def' identifier '(' dmy-args ')' ':' func-formula 'end'
     if-stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
     elif-stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
     else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
@@ -355,10 +355,10 @@ import sys
     name-list: identifier '.' name-list | identifier
     args: arg ',' args | arg
     arg: digit | string | identifier
-    ^ func_formula: ( formula | return-stmt ), func_formula
+    ^ func-formula: ( formula | return-stmt ), func-formula
     return-stmt: 'return' expr-list
     formula: ( expr-list | if-stmt | for-stmt | import-stmt | call-stmt | def-func ), ( formula | '@}' block '{@' )
-    def-func: 'def' identifier '(' dmy-args ')' ':' func_formula 'end'
+    def-func: 'def' identifier '(' dmy-args ')' ':' func-formula 'end'
     + call-stmt: result-list '=' callable | callable
     + result-list: identifier ',' result-list | identifier
     if-stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
@@ -412,6 +412,9 @@ class AST:
     class TypeError(TypeError):
         pass
 
+    class NotFoundSymbol(RuntimeError):
+        pass
+
     def parse(self, tokens, debug=False):
         self.debug_parse = debug
         self.strm = Stream(tokens)
@@ -421,8 +424,13 @@ class AST:
         self.debug_traverse = debug
         self.opts = opts
         self.context = Context()
+        self.scope_list = [self.root]
         self._trav(self.root, dep=0)
         return self.context
+
+    @property
+    def current_scope(self):
+        return self.scope_list[-1] # most back of scope
 
     def dp(self, *args, **kwargs):
         if self.debug_parse:
@@ -434,7 +442,7 @@ class AST:
 
     def show_trav(self, node, dep):
         if self.debug_traverse:
-            print(('_'*dep) + str(dep) + ' ' + str(node).split('.')[1].split(' ')[0])
+            print(('|'*dep) + str(dep) + ' ' + str(node).split('.')[1].split(' ')[0])
 
     def _trav(self, node, dep):
         if node is None:
@@ -533,9 +541,7 @@ class AST:
         if node.expr:
             return self._trav(node.expr, dep=dep+1)
         elif node.identifier != None:
-            if node.identifier not in self.context.syms.keys():
-                raise AST.ReferenceError('%s is not defined' % node.identifier)
-            return self.context.syms[node.identifier]
+            return self.find_sym(node.identifier)
         elif node.digit:
             return self._trav(node.digit, dep=dep+1)
         elif node.string != None:
@@ -686,11 +692,11 @@ class AST:
                 if len(identifiers) != len(result):
                     raise AST.SyntaxError('invalid call statement. not same length')
                 for i in range(len(identifiers)):
-                    self.context.syms[identifiers[i]] = result[i]
+                    self.scope_list[-1].syms[identifiers[i]] = result[i]
             elif len(identifiers) >= 2:
                 raise AST.SyntaxError('invalid call statement. not same length (2)')
             else:
-                self.context.syms[identifiers[0]] = result
+                self.scope_list[-1].syms[identifiers[0]] = result
             return result
         elif node.callable:
             return self._trav(node.callable, dep=dep+1)
@@ -701,21 +707,20 @@ class AST:
         return self._trav(node.expr_list, dep=dep+1)
 
     def trav_func_formula(self, node, dep):
-        result = None
         if node.formula:
-            result = self._trav(node.formula, dep=dep+1)
+            self._trav(node.formula, dep=dep+1)
         elif node.return_:
-            result = self._trav(node.return_, dep=dep+1)
+            return self._trav(node.return_, dep=dep+1)
 
         if node.func_formula:
             return self._trav(node.func_formula, dep=dep+1)
-        return result
+        return None
 
     def trav_def_func(self, node, dep):
         # DO NOT CALL _trav with node.func_formula
         # This is called by callable
-        self.context.def_funcs[node.identifier] = node
-        return node.identifier
+        self.scope_list[-1].syms[node.identifier] = node
+        return None
 
     def trav_expr_list(self, node, dep):
         results = []
@@ -747,14 +752,24 @@ class AST:
                 self.context.alias_map[identifier] = value
                 return None
         else:
-            if firstname not in self.context.def_funcs.keys():
-                raise AST.ReferenceError('"%s" is not defined' % firstname)
-            node = self.context.def_funcs[firstname]
+            node = self.find_sym(firstname)
+            self.dt('found sym', node)
+
+            self.scope_list.append(node)
             self.dt('call "%s" function' % firstname)
-            results = self._trav(node.func_formula, dep=dep+1)
-            if isinstance(results, tuple) and len(results) == 1:
-                return results[0]
-            return results
+            result = self._trav(node.func_formula, dep=dep+1)
+            self.dt("function result:", result)
+            self.scope_list.pop()
+
+            if isinstance(result, tuple) and len(result) == 1:
+                return result[0]
+            return result
+
+    def find_sym(self, key):
+        for scope in self.scope_list[::-1]:
+            if key in scope.syms.keys():
+                return scope.syms[key]
+        raise AST.NotFoundSymbol('"%s" is not found in symbol table' % key)
 
     def trav_for(self, node, dep):
         result = None
@@ -774,25 +789,25 @@ class AST:
         return result
 
     def trav_id_expr(self, node, dep):
-        if node.identifier not in self.context.syms.keys():
+        if node.identifier not in self.scope_list[-1].syms.keys():
             raise AST.SyntaxError('"%s" is not defined' % node.identifier)
 
         if node.front_or_back == 'front':
             if node.operator == '++':
-                self.context.syms[node.identifier] += 1
-                return self.context.syms[node.identifier]
+                self.scope_list[-1].syms[node.identifier] += 1
+                return self.scope_list[-1].syms[node.identifier]
             elif node.operator == '--':
-                self.context.syms[node.identifier] -= 1
-                return self.context.syms[node.identifier]
+                self.scope_list[-1].syms[node.identifier] -= 1
+                return self.scope_list[-1].syms[node.identifier]
 
         elif node.front_or_back == 'back':
             if node.operator == '++':
-                ret = self.context.syms[node.identifier]
-                self.context.syms[node.identifier] += 1
+                ret = self.scope_list[-1].syms[node.identifier]
+                self.scope_list[-1].syms[node.identifier] += 1
                 return ret
             elif node.operator == '--':
-                ret = self.context.syms[node.identifier]
-                self.context.syms[node.identifier] -= 1
+                ret = self.scope_list[-1].syms[node.identifier]
+                self.scope_list[-1].syms[node.identifier] -= 1
                 return ret
 
         else:
@@ -803,8 +818,8 @@ class AST:
             return self._trav(node.expr, dep=dep+1)
 
         if node.assign_operator == '=':
-            self.context.syms[node.identifier] = self._trav(node.assign_expr, dep=dep+1)
-            return self.context.syms[node.identifier]
+            self.scope_list[-1].syms[node.identifier] = self._trav(node.assign_expr, dep=dep+1)
+            return self.scope_list[-1].syms[node.identifier]
 
         raise AST.ModuleError('invalid operator %s' % node.assign_operator)
              

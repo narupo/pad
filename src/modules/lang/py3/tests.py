@@ -432,7 +432,7 @@ class Test(unittest.TestCase):
         self.assertEqual(a.root, None)
 
         a.parse(t.parse('abc'))
-        c = a.traverse()
+        a.traverse()
         self.assertEqual(a.root.text_block.text, 'abc')
 
         a.parse(t.parse('{@'))
@@ -559,7 +559,7 @@ class Test(unittest.TestCase):
         a.parse(t.parse('{@ v = 1 + 2 @}'))
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 3)
-        self.assertEqual(c.syms['v'], 3)
+        self.assertEqual(a.current_scope.syms['v'], 3)
 
         a.parse(t.parse('''{@
             a = 1 + 2
@@ -567,7 +567,7 @@ class Test(unittest.TestCase):
         @}'''))
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 6)
-        self.assertEqual(c.syms['v'], 6)
+        self.assertEqual(a.current_scope.syms['v'], 6)
 
         a.parse(t.parse('{@ 1 && 1 @}'))
         c = a.traverse()
@@ -628,7 +628,7 @@ class Test(unittest.TestCase):
             v++
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 2)
+        self.assertEqual(a.current_scope.syms['v'], 2)
         self.assertEqual(c.last_expr_val, 1)
 
         a.parse(t.parse('''{@
@@ -636,7 +636,7 @@ class Test(unittest.TestCase):
             ++v
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 2)
+        self.assertEqual(a.current_scope.syms['v'], 2)
         self.assertEqual(c.last_expr_val, 2)
 
         a.parse(t.parse('''{@
@@ -644,7 +644,7 @@ class Test(unittest.TestCase):
             v--
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 0)
+        self.assertEqual(a.current_scope.syms['v'], 0)
         self.assertEqual(c.last_expr_val, 1)
 
         a.parse(t.parse('''{@
@@ -652,7 +652,7 @@ class Test(unittest.TestCase):
             --v
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 0)
+        self.assertEqual(a.current_scope.syms['v'], 0)
         self.assertEqual(c.last_expr_val, 0)
 
         a.parse(t.parse('''{@
@@ -660,7 +660,7 @@ class Test(unittest.TestCase):
             ++v + 2
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 2)
+        self.assertEqual(a.current_scope.syms['v'], 2)
         self.assertEqual(c.last_expr_val, 4)
 
         a.parse(t.parse('''{@
@@ -668,7 +668,7 @@ class Test(unittest.TestCase):
             v++ + 2
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 2)
+        self.assertEqual(a.current_scope.syms['v'], 2)
         self.assertEqual(c.last_expr_val, 3)
 
         a.parse(t.parse('''{@
@@ -676,7 +676,7 @@ class Test(unittest.TestCase):
             --v + 2
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 0)
+        self.assertEqual(a.current_scope.syms['v'], 0)
         self.assertEqual(c.last_expr_val, 2)
 
         a.parse(t.parse('''{@
@@ -684,7 +684,7 @@ class Test(unittest.TestCase):
             v-- + 2
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 0)
+        self.assertEqual(a.current_scope.syms['v'], 0)
         self.assertEqual(c.last_expr_val, 3)
 
     def test_ast_call_stmt(self):
@@ -709,8 +709,8 @@ class Test(unittest.TestCase):
             a = f()
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
-        self.assertEqual(c.syms['a'], 1)
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['a'], 1)
 
         a.parse(t.parse('''{@
             def f():
@@ -719,9 +719,9 @@ class Test(unittest.TestCase):
             a, b = f()
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
-        self.assertEqual(c.syms['a'], 1)
-        self.assertEqual(c.syms['b'], 2)
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['a'], 1)
+        self.assertEqual(a.current_scope.syms['b'], 2)
 
     def test_ast_callable(self):
         if self.silent: return
@@ -735,7 +735,7 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
 
     def test_ast_def_func(self):
         if self.silent: return
@@ -748,7 +748,7 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
 
         a.parse(t.parse('''{@
             def f():
@@ -756,7 +756,7 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
 
         a.parse(t.parse('''{@
             def f():
@@ -764,7 +764,7 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
 
         a.parse(t.parse('''{@
             def f1():
@@ -773,8 +773,8 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f1']), DefFuncNode)
-        self.assertEqual(type(c.def_funcs['f2']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f1']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f2']), DefFuncNode)
 
         a.parse(t.parse('''{@
             def f1():
@@ -784,8 +784,8 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f1']), DefFuncNode)
-        self.assertEqual(type(c.def_funcs['f2']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f1']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f2']), DefFuncNode)
         self.assertEqual(c.buffer, 'abc')
 
         a.parse(t.parse('''{@
@@ -793,17 +793,17 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
-        self.assertEqual(c.def_funcs['f'].dmy_args.dmy_arg.identifier, 'arg1')
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['f'].dmy_args.dmy_arg.identifier, 'arg1')
 
         a.parse(t.parse('''{@
             def f(arg1, arg2):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
-        self.assertEqual(c.def_funcs['f'].dmy_args.dmy_arg.identifier, 'arg1')
-        self.assertEqual(c.def_funcs['f'].dmy_args.dmy_args.dmy_arg.identifier, 'arg2')
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['f'].dmy_args.dmy_arg.identifier, 'arg1')
+        self.assertEqual(a.current_scope.syms['f'].dmy_args.dmy_args.dmy_arg.identifier, 'arg2')
 
         a.parse(t.parse('''{@
             def f():
@@ -811,9 +811,9 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
         with self.assertRaises(KeyError):
-            self.assertEqual(c.syms['v'], 1)
+            self.assertEqual(a.current_scope.syms['v'], 1)
 
         a.parse(t.parse('''{@
             def f():
@@ -821,9 +821,8 @@ class Test(unittest.TestCase):
             end
 @}{{ f() }}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
-        self.assertEqual(c.syms['v'], 1)
-        self.assertEqual(c.buffer, '1')
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(c.buffer, '')
 
         a.parse(t.parse('''{@
             def f():
@@ -831,7 +830,7 @@ class Test(unittest.TestCase):
             end
 @}{{ f() }}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
         self.assertEqual(c.buffer, '1')
 
         a.parse(t.parse('''{@
@@ -841,8 +840,7 @@ class Test(unittest.TestCase):
             end
 @}{{ f() }}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
-        self.assertEqual(c.syms['v'], 1)
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
         self.assertEqual(c.buffer, '1')
 
         a.parse(t.parse('''{@
@@ -852,8 +850,8 @@ class Test(unittest.TestCase):
             v = f()
 @}{{ f() }}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
-        self.assertEqual(c.syms['v'], 1)
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['v'], 1)
         self.assertEqual(c.buffer, '1')
 
         a.parse(t.parse('''{@
@@ -863,9 +861,123 @@ class Test(unittest.TestCase):
             v = f()
 @}{{ f() }}'''))
         c = a.traverse()
-        self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
-        self.assertEqual(c.syms['v'], 3)
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['v'], 3)
         self.assertEqual(c.buffer, '3')
+
+        a.parse(t.parse('''{@
+            def f():
+                v = 1
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['f'].syms['v'], 1)
+        self.assertEqual(c.buffer, '')
+
+        a.parse(t.parse('''{@
+            v = 1
+            def f():
+                a = 2
+                return v
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['v'], 1)
+        self.assertEqual(a.current_scope.syms['f'].syms['a'], 2)
+        self.assertEqual(c.buffer, '1')
+
+        a.parse(t.parse('''{@
+            v = 1
+            def f():
+                return v
+            end
+            def f2():
+                return v + 1
+            end
+@}{{ f() }}, {{ f2() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['v'], 1)
+        self.assertEqual(c.buffer, '1, 2')
+
+        a.parse(t.parse('''{@
+            def f():
+                v = 1
+                def f2():
+                    v = 2
+                end
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f'].syms['f2']), DefFuncNode)
+        self.assertEqual(c.buffer, '')
+
+        a.parse(t.parse('''{@
+            def f():
+                v = 1
+                def f2():
+                    v = 2
+                end
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f'].syms['f2']), DefFuncNode)
+        self.assertEqual(c.buffer, '')
+
+        a.parse(t.parse('''{@
+            def f():
+                v = 1
+                def f2():
+                    v = 2
+                end
+                return f2()
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f'].syms['f2']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['f'].syms['f2'].syms['v'], 2)
+        self.assertEqual(c.buffer, '')
+
+        a.parse(t.parse('''{@
+            def f():
+                v = 1
+                def f2():
+                    v = 2
+                    return v
+                end
+                return f2()
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f'].syms['f2']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['f'].syms['f2'].syms['v'], 2)
+        self.assertEqual(c.buffer, '2')
+
+        a.parse(t.parse('''{@
+            def f():
+                v = 1
+                def f2():
+                    v = 2
+                    return v
+                end
+                return f2()
+            end
+            def f2():
+                return f()
+            end
+@}{{ f2() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f2']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['f'].syms['f2']), DefFuncNode)
+        self.assertEqual(a.current_scope.syms['f'].syms['f2'].syms['v'], 2)
+        self.assertEqual(c.buffer, '2')
 
 #         a.parse(t.parse('''{@
 #             def f(arg1):
@@ -874,8 +986,8 @@ class Test(unittest.TestCase):
 #             f("arg1")
 # @}'''))
 #         c = a.traverse()
-#         self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
-#         self.assertEqual(c.syms['v'], 1)
+#         self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+#         self.assertEqual(a.current_scope.syms['v'], 1)
 #         self.assertEqual(c.buffer, 'None')
 
     def test_ast_assign(self):
@@ -888,34 +1000,34 @@ class Test(unittest.TestCase):
             a = "s"
 @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['a'], 's')
+        self.assertEqual(a.current_scope.syms['a'], 's')
 
         a.parse(t.parse('''{@
             a = 0 b = 1
 @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['a'], 0)
-        self.assertEqual(c.syms['b'], 1)
+        self.assertEqual(a.current_scope.syms['a'], 0)
+        self.assertEqual(a.current_scope.syms['b'], 1)
 
         a.parse(t.parse('''{@
             a = "s"
 @}{{ a }}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['a'], 's')
+        self.assertEqual(a.current_scope.syms['a'], 's')
 
         a.parse(t.parse('''{@
             v = "v"
             v = ""
 @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], '')
+        self.assertEqual(a.current_scope.syms['v'], '')
 
         a.parse(t.parse('''{@
             v = "v"
             v = "v2"
 @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'v2')
+        self.assertEqual(a.current_scope.syms['v'], 'v2')
 
         a.parse(t.parse('''{@
             v = "v"
@@ -923,45 +1035,45 @@ class Test(unittest.TestCase):
             v = "v2"
 @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'v2')
+        self.assertEqual(a.current_scope.syms['v'], 'v2')
 
         a.parse(t.parse('''{@ v = "v" @}
 {@ v = "" @}
 '''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], '')
+        self.assertEqual(a.current_scope.syms['v'], '')
 
         a.parse(t.parse('''{@ v = "v" @}
 {@ v = "" @}
 {@ v = "v2" @}
 '''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'v2')
+        self.assertEqual(a.current_scope.syms['v'], 'v2')
 
         a.parse(t.parse('''{@ v = "" @}
 {@ v = "v" @} '''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'v')
+        self.assertEqual(a.current_scope.syms['v'], 'v')
         
         a.parse(t.parse('{@ v = 1 + 2 @}'))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 3)
+        self.assertEqual(a.current_scope.syms['v'], 3)
 
         a.parse(t.parse('{@ v = v = 1 @}'))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 1)
+        self.assertEqual(a.current_scope.syms['v'], 1)
 
         a.parse(t.parse('{@ v = 1 + 2 * 3 @}'))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 7)
+        self.assertEqual(a.current_scope.syms['v'], 7)
 
         a.parse(t.parse('{@ v = (1 + 2) * 3 @}'))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 9)
+        self.assertEqual(a.current_scope.syms['v'], 9)
 
         a.parse(t.parse('{@ v = opts.get("a") @}'))
         c = a.traverse(opts={ 'a': 'b' })
-        self.assertEqual(c.syms['v'], "b")
+        self.assertEqual(a.current_scope.syms['v'], "b")
 
         # 以下の式はPython3ではエラーになる
         # PHP7, Ruby2.3ではエラーにならずlast_expr_valは2
@@ -969,7 +1081,7 @@ class Test(unittest.TestCase):
             1 + v = 1
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 1)
+        self.assertEqual(a.current_scope.syms['v'], 1)
         self.assertEqual(c.last_expr_val, 2)
 
         a.parse(t.parse('''{@
@@ -978,7 +1090,7 @@ class Test(unittest.TestCase):
             v = v + i
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 0)
+        self.assertEqual(a.current_scope.syms['v'], 0)
         self.assertEqual(c.last_expr_val, 0)
 
     def test_ast_comparison(self):
@@ -1097,21 +1209,21 @@ class Test(unittest.TestCase):
             end
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['i'], 10)
+        self.assertEqual(a.current_scope.syms['i'], 10)
 
         a.parse(t.parse('''{@
             for i = 0; i < 10; ++i:
             end
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['i'], 10)
+        self.assertEqual(a.current_scope.syms['i'], 10)
 
         a.parse(t.parse('''{@
             for i = 10; i > 0; --i:
             end
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['i'], 0)
+        self.assertEqual(a.current_scope.syms['i'], 0)
 
         a.parse(t.parse('''{@
             v = 0
@@ -1120,18 +1232,18 @@ class Test(unittest.TestCase):
             end
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['i'], 10)
-        self.assertEqual(c.syms['v'], 45)
+        self.assertEqual(a.current_scope.syms['i'], 10)
+        self.assertEqual(a.current_scope.syms['v'], 45)
 
         a.parse(t.parse('''{@ for i = 0; i < 10; ++i: @}a{@ end @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['i'], 10)
+        self.assertEqual(a.current_scope.syms['i'], 10)
         self.assertEqual(c.buffer, 'aaaaaaaaaa')
 
         a.parse(t.parse('''{@ for i = 0; i < 2; ++i: @}{@ for j = 0; j < 2; ++j: @}a{@ end @}{@ end @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['i'], 2)
-        self.assertEqual(c.syms['j'], 2)
+        self.assertEqual(a.current_scope.syms['i'], 2)
+        self.assertEqual(a.current_scope.syms['j'], 2)
         self.assertEqual(c.buffer, 'aaaa')
 
         ts = t.parse('''{@
@@ -1140,7 +1252,7 @@ class Test(unittest.TestCase):
 @}i = {{ i }}''')
         a.parse(ts)
         c = a.traverse()
-        self.assertEqual(c.syms['i'], 1)
+        self.assertEqual(a.current_scope.syms['i'], 1)
         self.assertEqual(c.buffer, 'i = 1')
 
         a.parse(t.parse('''{@
@@ -1150,7 +1262,7 @@ class Test(unittest.TestCase):
             end
 @}v = {{ v }}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['i'], 1)
+        self.assertEqual(a.current_scope.syms['i'], 1)
         self.assertEqual(c.buffer, 'v = 0')
 
         a.parse(t.parse('''{@
@@ -1160,8 +1272,8 @@ class Test(unittest.TestCase):
             end
 @}v = {{ v }}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['i'], 4)
-        self.assertEqual(c.syms['j'], 4)
+        self.assertEqual(a.current_scope.syms['i'], 4)
+        self.assertEqual(a.current_scope.syms['j'], 4)
         self.assertEqual(c.buffer, 'v = 6')
 
     def test_ast_not_expr(self):
@@ -1172,23 +1284,23 @@ class Test(unittest.TestCase):
 
         a.parse(t.parse('{@ v = !0 @}'))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 1)
+        self.assertEqual(a.current_scope.syms['v'], 1)
 
         a.parse(t.parse('{@ v = !1 @}'))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], False)
+        self.assertEqual(a.current_scope.syms['v'], False)
 
         a.parse(t.parse('{@ v = !0 + 1 @}'))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], False) # Fix me on the C implementation
+        self.assertEqual(a.current_scope.syms['v'], False) # Fix me on the C implementation
 
         a.parse(t.parse('{@ v = (!0) + 1 @}'))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 2)
+        self.assertEqual(a.current_scope.syms['v'], 2)
 
         a.parse(t.parse('{@ v = !"str" @}'))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], False)
+        self.assertEqual(a.current_scope.syms['v'], False)
 
     def test_ast_if(self):
         if self.silent: return
@@ -1211,19 +1323,19 @@ class Test(unittest.TestCase):
 
         a.parse(t.parse('{@ if 1: v = "v" end @}'))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'v')
+        self.assertEqual(a.current_scope.syms['v'], 'v')
 
         a.parse(t.parse('{@ if 0: v = "v" else: v = "v2" end @}'))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'v2')
+        self.assertEqual(a.current_scope.syms['v'], 'v2')
 
         a.parse(t.parse('{@ if 0: v = "v" elif 1: v = "v2" end @}'))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'v2')
+        self.assertEqual(a.current_scope.syms['v'], 'v2')
 
         a.parse(t.parse('{@ if 0: v = "v" elif 0: v = "v2" else: v = "v3" end @}'))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'v3')
+        self.assertEqual(a.current_scope.syms['v'], 'v3')
 
         a.parse(t.parse('''{@
             if 1:
@@ -1231,7 +1343,7 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 's')
+        self.assertEqual(a.current_scope.syms['v'], 's')
 
         a.parse(t.parse('''{@
             if 1:
@@ -1243,7 +1355,7 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
 
         a.parse(t.parse('''{@
             if 1:
@@ -1253,7 +1365,7 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
 
         a.parse(t.parse('''{@
             if 0:
@@ -1264,22 +1376,22 @@ class Test(unittest.TestCase):
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'abc')
+        self.assertEqual(a.current_scope.syms['v'], 'abc')
 
         a.parse(t.parse('''{@ if 1: @}{@ end @}'''))
         c = a.traverse()
 
         a.parse(t.parse('''{@ if 0: @}{@ elif 1: @}{@ v = "a" @}{@ end @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
 
         a.parse(t.parse('''{@ if 0: @}{@ elif 0: @}{@ else: @}{@ v = "a" @}{@ end @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
 
         a.parse(t.parse('''{@ v = "a" @}{@ if 1: @}{@ if 2: @}{{ v }}{@ end @}{@ end @}bbb'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
         self.assertEqual(c.buffer, "abbb")
 
         a.parse(t.parse('''{@ v = "a" @}{@ if 1: @}{{ v }}{{ v }}{@ end @}'''))
@@ -1293,7 +1405,7 @@ class Test(unittest.TestCase):
     end
 @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'cat')
+        self.assertEqual(a.current_scope.syms['v'], 'cat')
         self.assertEqual(c.buffer, 'cat')
 
         a.parse(t.parse('''{@ v = "a" @}
@@ -1302,7 +1414,7 @@ class Test(unittest.TestCase):
 {@ end @}
 bbb'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
         self.assertEqual(c.buffer, "\n\na\n\nbbb")
 
         a.parse(t.parse('''{@
@@ -1314,24 +1426,24 @@ bbb'''))
 @}
 c'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'b')
+        self.assertEqual(a.current_scope.syms['v'], 'b')
         self.assertEqual(c.buffer, 'b\nc')
 
         a.parse(t.parse('''{@ if 0: @}{@ else: @}{@ v = "a" @}{@ end @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
 
         a.parse(t.parse('''{@ if 1: @}abc{@ end @}'''))
         c = a.traverse()
 
         a.parse(t.parse('''{@ v = "a" @}{@ if 1: @}{{ v }}{@ end @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
         self.assertEqual(c.buffer, 'a')
 
         a.parse(t.parse('''{@ v = "a" @}{@ if 0: @}{@ else: @}{{ v }}{@ end @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
         self.assertEqual(c.buffer, 'a')
 
         a.parse(t.parse('''
@@ -1341,7 +1453,7 @@ c'''))
             {@ end @}
 '''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
 
         a.parse(t.parse('''
             {@ if 0: @}
@@ -1350,11 +1462,11 @@ c'''))
             {@ end @}
 '''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
 
         a.parse(t.parse('''{@ if 1: @}{@ if 2: @}{@ v = "a" @}{@ end @}{@ end @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
 
         a.parse(t.parse('''
             {@ if 1: @}
@@ -1364,7 +1476,7 @@ c'''))
             {@ end @}
 '''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
 
         a.parse(t.parse('''
             {@ if 1: @}
@@ -1375,7 +1487,7 @@ c'''))
             {@ end @}
 '''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
 
         a.parse(t.parse('''
             {@ if 1: @}
@@ -1387,7 +1499,7 @@ c'''))
             {@ end @}
 '''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
 
         a.parse(t.parse('''
             {@ if 1: @}
@@ -1398,7 +1510,7 @@ c'''))
             {@ end @}
 '''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
 
         a.parse(t.parse('''{@
             if 1:
@@ -1408,7 +1520,7 @@ c'''))
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
 
         a.parse(t.parse('''{@
             if 1:
@@ -1423,26 +1535,26 @@ c'''))
             end
 @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v1'], 'a')
+        self.assertEqual(a.current_scope.syms['v1'], 'a')
 
         a.parse(t.parse('''
             {@ if 1: @}{@ if 2: @}{@ v = "a" @}{@ end @}{@ end @}
         '''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
 
         a.parse(t.parse('''{@  if 1: if 2: @}{@ v = "a" @}{@ end end @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
 
         a.parse(t.parse('''{@ if 1: @}aaa{@ if 2: @}bbb{@ v = "ccc" @}{{ v }}{@ end @}ddd{@ end @}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'ccc')
+        self.assertEqual(a.current_scope.syms['v'], 'ccc')
         self.assertEqual(c.buffer, 'aaabbbcccddd')
 
         a.parse(t.parse('''aaa{@ if 1: @}bbb{@ if 2: @}ccc{@ v = "ddd" @}{{ v }}{@ end @}eee{@ end @}fff'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'ddd')
+        self.assertEqual(a.current_scope.syms['v'], 'ddd')
         self.assertEqual(c.buffer, 'aaabbbcccdddeeefff')
 
         c = a.traverse()
@@ -1456,7 +1568,7 @@ c'''))
             end
 @}{{ v }}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'a')
+        self.assertEqual(a.current_scope.syms['v'], 'a')
         self.assertEqual(c.buffer, 'a')
 
         a.parse(t.parse('''{@
@@ -1469,7 +1581,7 @@ c'''))
             end
 @}{{ v }}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'b')
+        self.assertEqual(a.current_scope.syms['v'], 'b')
         self.assertEqual(c.buffer, 'b')
 
         a.parse(t.parse('''{@
@@ -1482,7 +1594,7 @@ c'''))
             end
 @}{{ v }}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'c')
+        self.assertEqual(a.current_scope.syms['v'], 'c')
         self.assertEqual(c.buffer, 'c')
 
         a.parse(t.parse('''{@
@@ -1498,10 +1610,10 @@ c'''))
             end
 @}{{ v4 }}'''))
         c = a.traverse()
-        self.assertEqual('v1' not in c.syms.keys(), True)
-        self.assertEqual(c.syms['v2'], 'v2')
-        self.assertEqual('v3' not in c.syms.keys(), True)
-        self.assertEqual(c.syms['v4'], 'v4')
+        self.assertEqual('v1' not in a.current_scope.syms.keys(), True)
+        self.assertEqual(a.current_scope.syms['v2'], 'v2')
+        self.assertEqual('v3' not in a.current_scope.syms.keys(), True)
+        self.assertEqual(a.current_scope.syms['v4'], 'v4')
         self.assertEqual(c.buffer, 'v4')
 
         a.parse(t.parse('''{@
@@ -1514,7 +1626,7 @@ c'''))
             end
 @}{{ v }}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'v')
+        self.assertEqual(a.current_scope.syms['v'], 'v')
         self.assertEqual(c.buffer, 'v')
 
         a.parse(t.parse('''{@
@@ -1528,7 +1640,7 @@ c'''))
             end
 @}{{ v }}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'v2')
+        self.assertEqual(a.current_scope.syms['v'], 'v2')
         self.assertEqual(c.buffer, 'v2')
 
         a.parse(t.parse('''{@
@@ -1542,7 +1654,7 @@ c'''))
             end
 @}{{ v }}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'v2')
+        self.assertEqual(a.current_scope.syms['v'], 'v2')
         self.assertEqual(c.buffer, 'v2')
 
         a.parse(t.parse('''{@
@@ -1556,7 +1668,7 @@ c'''))
             end
 @}{{ v }}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'v2')
+        self.assertEqual(a.current_scope.syms['v'], 'v2')
         self.assertEqual(c.buffer, 'v2')
 
         a.parse(t.parse('''{@
@@ -1570,7 +1682,7 @@ c'''))
             end
 @}{{ v }}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 'v2')
+        self.assertEqual(a.current_scope.syms['v'], 'v2')
         self.assertEqual(c.buffer, 'v2')
 
         a.parse(t.parse('''{@
@@ -1579,7 +1691,7 @@ c'''))
             end
 @}{{ v }}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 1)
+        self.assertEqual(a.current_scope.syms['v'], 1)
         self.assertEqual(c.buffer, '1')
 
         a.parse(t.parse('''{@
@@ -1588,7 +1700,7 @@ c'''))
             end
 @}{{ v }}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 1)
+        self.assertEqual(a.current_scope.syms['v'], 1)
         self.assertEqual(c.buffer, '1')
 
         a.parse(t.parse('''{@
@@ -1598,7 +1710,7 @@ c'''))
             end
 @}{{ v }}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['v'], 2)
+        self.assertEqual(a.current_scope.syms['v'], 2)
         self.assertEqual(c.buffer, '2')
 
         a.parse(t.parse('''{@
@@ -1609,7 +1721,7 @@ c'''))
             end
 @}{{ a }}'''))
         c = a.traverse()
-        self.assertEqual(c.syms['a'], 2)
+        self.assertEqual(a.current_scope.syms['a'], 2)
         self.assertEqual(c.buffer, '2')
 
     def test_ast_opts(self):

@@ -16,13 +16,13 @@
 
         return v, err
     end
-    def func(arg1, arg2): v = 0 for i = 0; i < 100; ++i: v = v + i end return v end
-    v = func()
 
-    /* def join(a, b):
+    /*
+    def join(a, b):
         return a + b
     end
-    ab = join("aho", "manuke") */
+    ab = join("aho", "manuke")
+    */
 
     doc = "this is document"
     status = "success"

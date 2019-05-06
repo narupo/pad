@@ -4,6 +4,7 @@ import sys
 import io
 from tokenizer import Tokenizer
 from ast import AST
+from context import Context
 
 
 def create_opts():
@@ -55,7 +56,9 @@ def main():
         tokens = tokenizer.parse(src)
         ast = AST()
         ast.parse(tokens)
-        context = ast.traverse(
+        context = Context()
+        ast.traverse(
+            context=context,
             opts=opts,
         )
         print(context.buffer)
