@@ -40,7 +40,12 @@ class Tokenizer:
         self.ldbrace_value = ldbrace_value
         self.rdbrace_value = rdbrace_value
 
-    def parse(self, src):
+    def show_parse(self, *args, **kwargs):
+        if self.debug_parse:
+            print(*args, **kwargs)
+
+    def parse(self, src, debug=False):
+        self.debug_parse = debug
         self.strm = Stream(src)
         self.tokens = []
 
@@ -49,6 +54,7 @@ class Tokenizer:
         buf = ''
         while not s.eof():
             c = s.get()
+            self.show_parse('m', m, ', c', c)
             if m == 'text block':
                 if c == '{' and s.cur() == '@':
                     if len(buf):
@@ -71,6 +77,9 @@ class Tokenizer:
                     s.get()
                     self.tokens.append(Token(kind='rdbrace', value=self.rdbrace_value))
                     m = 'text block'                    
+                elif c.isdigit():
+                    s.prev()
+                    self.read_digit()
                 elif self.is_identifier_char(c):
                     s.prev()
                     self.read_identifier()
@@ -80,6 +89,8 @@ class Tokenizer:
                     self.tokens.append(Token(kind='rparen', value=')'))
                 elif c == '.':
                     self.tokens.append(Token(kind='operator', value='.'))
+                elif c == ',':
+                    self.tokens.append(Token(kind='comma', value=','))
                 elif c == '"':
                     s.prev()
                     self.read_string()

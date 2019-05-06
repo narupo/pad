@@ -620,7 +620,6 @@ class AST:
         if node.term and node.kamiyu:
             lval = self._trav(node.term, dep=dep+1)
             rval = self._trav(node.kamiyu, dep=dep+1)
-            self.dt('lval, rval', lval, rval)
             if node.op == '+':
                 return lval + rval
             elif node.op == '-':
@@ -833,6 +832,7 @@ class AST:
         result = None
         self._trav(node.init_expr_list, dep=dep+1)
         while True:
+            self.dt('for loop')
             if node.comp_expr:
                 result = self._trav(node.comp_expr, dep=dep+1)
                 if not result:
@@ -841,6 +841,7 @@ class AST:
             if node.block:
                 self._trav(node.block, dep=dep+1)
             elif node.formula:
+                self.dt(self.scope_list[-1].syms)
                 self._trav(node.formula, dep=dep+1)
 
             self._trav(node.update_expr_list, dep=dep+1)
@@ -969,7 +970,7 @@ class AST:
 
         t = self.strm.get()
         if t.value != ')':
-            raise AST.SyntaxError('not found ")" in callable')
+            raise AST.SyntaxError('not found ")" in callable. token is %s' % t)
         
         return node
 

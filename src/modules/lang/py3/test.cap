@@ -1,16 +1,7 @@
 {@
-    def parse(src):
-        s = src
-        return s
-    end
-
-    v = 0
-    result = parse(v)
-
-    def fix(src, opt):
-        if opt == 0:
-            return "aho"
-        end
+    s = "a"
+    for i = 0; i < 2; ++i:
+        s = s + ","
     end
 @}
-result: {$ result $}
+{$ s $}
