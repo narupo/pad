@@ -11,6 +11,7 @@ class BlockNode(Node):
         self.code_block = None
         self.ref_block = None
         self.block = None
+        self.syms = {} # symbol table
 
 
 class ExprListNode(Node):
@@ -106,9 +107,7 @@ class DefFuncNode(Node):
         self.identifier = None # str
         self.dmy_args = None # Node
         self.func_formula = None # Node
-
-    def create_context(self):
-        func_content = FuncContext()
+        self.syms = {} # symbol table
 
 
 class DmyArgs:
@@ -248,6 +247,7 @@ class CallableNode(Node):
     def __init__(self):
         self.caller_list = None
         self.args = None
+        self.syms = {} # symbol table
 
 
 class NameListNode(Node):
