@@ -823,7 +823,7 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(type(c.def_funcs['f']), DefFuncNode)
         self.assertEqual(c.syms['v'], 1)
-        self.assertEqual(c.buffer, '')
+        self.assertEqual(c.buffer, '1')
 
         a.parse(t.parse('''{@
             def f():

@@ -1,3 +1,6 @@
+from context import Context
+
+
 class Node:
     pass
 
@@ -103,6 +106,9 @@ class DefFuncNode(Node):
         self.identifier = None # str
         self.dmy_args = None # Node
         self.func_formula = None # Node
+
+    def create_context(self):
+        func_content = FuncContext()
 
 
 class DmyArgs:

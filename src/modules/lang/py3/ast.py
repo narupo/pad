@@ -421,7 +421,7 @@ class AST:
         self.debug_traverse = debug
         self.opts = opts
         self.context = Context()
-        self._traverse(self.root, dep=0)
+        self._trav(self.root, dep=0)
         return self.context
 
     def dp(self, *args, **kwargs):
@@ -432,210 +432,256 @@ class AST:
         if self.debug_traverse:
             print(*args, **kwargs)
 
-    def show_traverse(self, node, dep):
+    def show_trav(self, node, dep):
         if self.debug_traverse:
             print(('_'*dep) + str(dep) + ' ' + str(node).split('.')[1].split(' ')[0])
 
-    def _traverse(self, node, dep):
+    def _trav(self, node, dep):
         if node is None:
             return
-        self.show_traverse(node, dep)
+        self.show_trav(node, dep)
 
         if isinstance(node, BlockNode):
-            self._traverse(node.text_block, dep=dep+1)
-            self._traverse(node.code_block, dep=dep+1)
-            self._traverse(node.ref_block, dep=dep+1)
-            self._traverse(node.block, dep=dep+1)
+            return self.trav_block(node, dep=dep+1)
 
         elif isinstance(node, TextBlockNode):
-            self.context.buffer += node.text
+            return self.trav_text_block(node, dep=dep+1)
 
         elif isinstance(node, CodeBlockNode):
-            self._traverse(node.formula, dep=dep+1)
+            return self._trav(node.formula, dep=dep+1)
 
         elif isinstance(node, RefBlockNode):
-            self.traverse_ref_block(node, dep=dep+1)
+            return self.trav_ref_block(node, dep=dep+1)
 
         elif isinstance(node, FuncFormulaNode):
-            return self.traverse_func_formula(node, dep=dep+1)
+            return self.trav_func_formula(node, dep=dep+1)
 
         elif isinstance(node, FormulaNode):
-            # DO NOT RETURN
-            if node.expr_list:
-                result = self._traverse(node.expr_list, dep=dep+1)
-                if isinstance(result, tuple) and len(result) == 1:
-                    self.context.last_expr_val = result[0]
-                else:
-                    self.context.last_expr_val = result
-            elif node.import_:
-                self._traverse(node.import_, dep=dep+1)
-            elif node.for_:
-                self._traverse(node.for_, dep=dep+1)
-            elif node.if_:
-                self._traverse(node.if_, dep=dep+1)
-            elif node.def_func:
-                self._traverse(node.def_func, dep=dep+1)
-            elif node.call_stmt:
-                self._traverse(node.call_stmt, dep=dep+1)
-
-            # RETURN OK
-            if node.formula:
-                return self._traverse(node.formula, dep=dep+1)
-            elif node.block:
-                self._traverse(node.block, dep=dep+1)
+            return self.trav_formula(node, dep=dep+1)
 
         elif isinstance(node, CallNode):
-            return self.traverse_call_stmt(node, dep=dep+1)
+            return self.trav_call_stmt(node, dep=dep+1)
 
         elif isinstance(node, ForNode):
-            self.traverse_for(node, dep=dep+1) 
+            return self.trav_for(node, dep=dep+1) 
 
         elif isinstance(node, DefFuncNode):
-            self.traverse_def_func(node, dep=dep+1)
+            return self.trav_def_func(node, dep=dep+1)
 
         elif isinstance(node, ReturnNode):
-            return self.traverse_return(node, dep=dep+1)
+            return self.trav_return(node, dep=dep+1)
 
         elif isinstance(node, IfNode):
-            result = self._traverse(node.expr, dep=dep+1)
-            if result:
-                if node.formula:
-                    self._traverse(node.formula, dep=dep+1)
-                elif node.block:
-                    self._traverse(node.block, dep=dep+1)
-            else:
-                if node.elif_:
-                    self._traverse(node.elif_, dep=dep+1)
-                elif node.else_:
-                    self._traverse(node.else_, dep=dep+1)
+            return self.trav_if(node, dep=dep+1)
 
         elif isinstance(node, ElseNode):
-            if node.block:
-                self._traverse(node.block, dep=dep+1)
-            elif node.formula:
-                self._traverse(node.formula, dep=dep+1)
+            return self.trav_else(node, dep=dep+1)
 
         elif isinstance(node, ExprListNode):
-            return self.traverse_expr_list(node, dep=dep+1)
+            return self.trav_expr_list(node, dep=dep+1)
 
         elif isinstance(node, ExprNode):
-            if node.gorasu and node.expr:
-                lval = self._traverse(node.gorasu, dep=dep+1)
-                rval = self._traverse(node.expr, dep=dep+1)
-                if node.op == '&&':
-                    return lval and rval
-                elif node.op == '||':
-                    return lval or rval
-                else:
-                    raise AST.ModuleError('unsupported operation "%s" in traverse expr' % node.op)
-            elif node.gorasu:
-                return self._traverse(node.gorasu, dep=dep+1)
-            else:
-                raise AST.ModuleError('programming error. impossible case in traverse expr')
+            return self.trav_expr(node, dep=dep+1)
 
         elif isinstance(node, GorasuNode):
-            if node.kamiyu and node.gorasu:
-                lval = self._traverse(node.kamiyu, dep=dep+1)
-                rval = self._traverse(node.gorasu, dep=dep+1)
-                if node.op == '>':
-                    return lval > rval
-                elif node.op == '<':
-                    return lval < rval
-                elif node.op == '>=':
-                    return lval >= rval
-                elif node.op == '<=':
-                    return lval <= rval
-                elif node.op == '==':
-                    return lval == rval
-                elif node.op == '!=':
-                    return lval != rval
-                else:
-                    raise AST.ModuleError('unsupported gorasu operator "%s"' % node.op)
-            elif node.kamiyu:
-                return self._traverse(node.kamiyu, dep=dep+1)
-            else:
-                raise AST.ModuleError('unsupported node %s in gorasu' % str(node))
+            return self.trav_gorasu(node, dep=dep+1)
 
         elif isinstance(node, KamiyuNode):
-            if node.term and node.kamiyu:
-                lval = self._traverse(node.term, dep=dep+1)
-                rval = self._traverse(node.kamiyu, dep=dep+1)
-                if node.op == '+':
-                    return lval + rval
-                elif node.op == '-':
-                    return lval - rval
-                else:
-                    raise AST.ModuleError('unsupported operation "%s" in traverse kamiyu' % node.op)
-            elif node.term:
-                return self._traverse(node.term, dep=dep+1)
-            else:
-                raise AST.ModuleError('programming error. impossible case in traverse kamiyu')
+            return self.trav_kamiyu(node, dep=dep+1)
 
         elif isinstance(node, TermNode):
-            if node.factor and node.term:
-                lval = self._traverse(node.factor, dep=dep+1)
-                rval = self._traverse(node.term, dep=dep+1)
-                if node.op == '*':
-                    return lval * rval
-                elif node.op == '/':
-                    return lval / rval
-                else:
-                    raise AST.ModuleError('unsupported operation "%s" in traverse term' % node.op)
-            elif node.factor:
-                return self._traverse(node.factor, dep=dep+1)
-            else:
-                raise AST.ModuleError('programming error. impossible case in traverse term')
+            return self.trav_term(node, dep=dep+1)
 
         elif isinstance(node, FactorNode):
-            if node.expr:
-                return self._traverse(node.expr, dep=dep+1)
-            elif node.identifier != None:
-                if node.identifier not in self.context.syms.keys():
-                    raise AST.ReferenceError('%s is not defined' % node.identifier)
-                return self.context.syms[node.identifier]
-            elif node.digit:
-                return self._traverse(node.digit, dep=dep+1)
-            elif node.string != None:
-                return node.string
-            elif node.callable:
-                return self._traverse(node.callable, dep=dep+1)
-            elif node.assign_expr:
-                return self._traverse(node.assign_expr, dep=dep+1)
-            elif node.id_expr:
-                return self._traverse(node.id_expr, dep=dep+1)
-            elif node.not_expr:
-                return self._traverse(node.not_expr, dep=dep+1)
-            else:
-                raise AST.ModuleError('impossible. invalid case in factor node')
+            return self.trav_factor(node, dep=dep+1)
 
         elif isinstance(node, NotExprNode):
-            return not self._traverse(node.expr, dep=dep+1)
+            return self.trav_not_expr(node, dep=dep+1)
 
         elif isinstance(node, IdExprNode):
-            return self.traverse_id_expr(node, dep+1)
+            return self.trav_id_expr(node, dep+1)
 
         elif isinstance(node, DigitNode):
-            return node.value
+            return self.trav_digit(node, dep=dep+1)
 
         elif isinstance(node, AssignExprNode):
-            return self.traverse_assign_expr(node, dep+1)
+            return self.trav_assign_expr(node, dep+1)
 
         elif isinstance(node, ImportNode):
-            self.traverse_import(node, dep+1)
+            return self.trav_import(node, dep+1)
 
         elif isinstance(node, CallerNode):
-            self.traverse_caller(node, dep+1)
+            return self.trav_caller(node, dep+1)
 
         elif isinstance(node, CallableNode):
-            return self.traverse_callable(node, dep+1)
+            return self.trav_callable(node, dep+1)
 
         else:
             raise AST.ModuleError('impossible. not supported node', type(node))
 
-    def traverse_call_stmt(self, node, dep):
+    def trav_digit(self, node, dep):
+        return node.value
+
+    def trav_not_expr(self, node, dep):
+        return not self._trav(node.expr, dep=dep+1)
+
+    def trav_text_block(self, node, dep):
+        self.context.buffer += node.text
+        return node.text
+
+    def trav_factor(self, node, dep):
+        if node.expr:
+            return self._trav(node.expr, dep=dep+1)
+        elif node.identifier != None:
+            if node.identifier not in self.context.syms.keys():
+                raise AST.ReferenceError('%s is not defined' % node.identifier)
+            return self.context.syms[node.identifier]
+        elif node.digit:
+            return self._trav(node.digit, dep=dep+1)
+        elif node.string != None:
+            return node.string
+        elif node.callable:
+            return self._trav(node.callable, dep=dep+1)
+        elif node.assign_expr:
+            return self._trav(node.assign_expr, dep=dep+1)
+        elif node.id_expr:
+            return self._trav(node.id_expr, dep=dep+1)
+        elif node.not_expr:
+            return self._trav(node.not_expr, dep=dep+1)
+        else:
+            raise AST.ModuleError('impossible. invalid case in factor node')
+
+    def trav_term(self, node, dep):
+        if node.factor and node.term:
+            lval = self._trav(node.factor, dep=dep+1)
+            rval = self._trav(node.term, dep=dep+1)
+            if node.op == '*':
+                return lval * rval
+            elif node.op == '/':
+                return lval / rval
+            else:
+                raise AST.ModuleError('unsupported operation "%s" in traverse term' % node.op)
+        elif node.factor:
+            return self._trav(node.factor, dep=dep+1)
+        else:
+            raise AST.ModuleError('programming error. impossible case in traverse term')
+
+    def trav_kamiyu(self, node, dep):
+        if node.term and node.kamiyu:
+            lval = self._trav(node.term, dep=dep+1)
+            rval = self._trav(node.kamiyu, dep=dep+1)
+            if node.op == '+':
+                return lval + rval
+            elif node.op == '-':
+                return lval - rval
+            else:
+                raise AST.ModuleError('unsupported operation "%s" in traverse kamiyu' % node.op)
+        elif node.term:
+            return self._trav(node.term, dep=dep+1)
+        else:
+            raise AST.ModuleError('programming error. impossible case in traverse kamiyu')
+
+    def trav_gorasu(self, node, dep):
+        if node.kamiyu and node.gorasu:
+            lval = self._trav(node.kamiyu, dep=dep+1)
+            rval = self._trav(node.gorasu, dep=dep+1)
+            if node.op == '>':
+                return lval > rval
+            elif node.op == '<':
+                return lval < rval
+            elif node.op == '>=':
+                return lval >= rval
+            elif node.op == '<=':
+                return lval <= rval
+            elif node.op == '==':
+                return lval == rval
+            elif node.op == '!=':
+                return lval != rval
+            else:
+                raise AST.ModuleError('unsupported gorasu operator "%s"' % node.op)
+        elif node.kamiyu:
+            return self._trav(node.kamiyu, dep=dep+1)
+        else:
+            raise AST.ModuleError('unsupported node %s in gorasu' % str(node))
+
+    def trav_expr(self, node, dep):
+        if node.gorasu and node.expr:
+            lval = self._trav(node.gorasu, dep=dep+1)
+            rval = self._trav(node.expr, dep=dep+1)
+            if node.op == '&&':
+                return lval and rval
+            elif node.op == '||':
+                return lval or rval
+            else:
+                raise AST.ModuleError('unsupported operation "%s" in traverse expr' % node.op)
+        elif node.gorasu:
+            return self._trav(node.gorasu, dep=dep+1)
+        else:
+            raise AST.ModuleError('programming error. impossible case in traverse expr')
+
+    def trav_else(self, node, dep):
+        if node.block:
+            return self._trav(node.block, dep=dep+1)
+        elif node.formula:
+            return self._trav(node.formula, dep=dep+1)        
+
+    def trav_if(self, node, dep):
+        result = self._trav(node.expr, dep=dep+1)
+        if result:
+            if node.formula:
+                result = self._trav(node.formula, dep=dep+1)
+            elif node.block:
+                result = self._trav(node.block, dep=dep+1)
+        else:
+            if node.elif_:
+                result = self._trav(node.elif_, dep=dep+1)
+            elif node.else_:
+                result = self._trav(node.else_, dep=dep+1)        
+        return result
+
+    def trav_formula(self, node, dep):
+        # DO NOT RETURN
+        result = None
+        if node.expr_list:
+            result = self._trav(node.expr_list, dep=dep+1)
+            if isinstance(result, tuple) and len(result) == 1:
+                self.context.last_expr_val = result[0]
+            else:
+                self.context.last_expr_val = result
+        elif node.import_:
+            result = self._trav(node.import_, dep=dep+1)
+        elif node.for_:
+            result = self._trav(node.for_, dep=dep+1)
+        elif node.if_:
+            result = self._trav(node.if_, dep=dep+1)
+        elif node.def_func:
+            result = self._trav(node.def_func, dep=dep+1)
+        elif node.call_stmt:
+            result = self._trav(node.call_stmt, dep=dep+1)
+
+        # RETURN OK
+        if node.formula:
+            return self._trav(node.formula, dep=dep+1)
+        elif node.block:
+            return self._trav(node.block, dep=dep+1)
+        return result
+
+    def trav_block(self, node, dep):
+        result = None
+        if node.text_block:
+            result = self._trav(node.text_block, dep=dep+1)
+        elif node.code_block:
+            result = self._trav(node.code_block, dep=dep+1)
+        elif node.ref_block:
+            result = self._trav(node.ref_block, dep=dep+1)
+        if node.block:
+            return self._trav(node.block, dep=dep+1)
+        return result
+
+    def trav_call_stmt(self, node, dep):
         if node.result_list and node.callable:
             identifiers = node.result_list.to_list()
-            result = self._traverse(node.callable, dep=dep+1)
+            result = self._trav(node.callable, dep=dep+1)
             if isinstance(result, tuple):
                 if len(identifiers) != len(result):
                     raise AST.SyntaxError('invalid call statement. not same length')
@@ -645,45 +691,47 @@ class AST:
                 raise AST.SyntaxError('invalid call statement. not same length (2)')
             else:
                 self.context.syms[identifiers[0]] = result
-            return None
+            return result
         elif node.callable:
-            return self._traverse(node.callable, dep=dep+1)
+            return self._trav(node.callable, dep=dep+1)
         else:
             AST.ModuleError('impossible. programing error. invalid state of node in call statement')
 
-    def traverse_return(self, node, dep):
-        return self._traverse(node.expr_list, dep=dep+1)
+    def trav_return(self, node, dep):
+        return self._trav(node.expr_list, dep=dep+1)
 
-    def traverse_func_formula(self, node, dep):
+    def trav_func_formula(self, node, dep):
+        result = None
         if node.formula:
-            # DOT NOT RETURN
-            self._traverse(node.formula, dep=dep+1)
+            result = self._trav(node.formula, dep=dep+1)
         elif node.return_:
-            # ALWAYS RETURN
-            return self._traverse(node.return_, dep=dep+1)
+            result = self._trav(node.return_, dep=dep+1)
 
         if node.func_formula:
-            return self._traverse(node.func_formula, dep=dep+1)
+            return self._trav(node.func_formula, dep=dep+1)
+        return result
 
-    def traverse_def_func(self, node, dep):
-        # DO NOT CALL _traverse with node.func_formula
+    def trav_def_func(self, node, dep):
+        # DO NOT CALL _trav with node.func_formula
+        # This is called by callable
         self.context.def_funcs[node.identifier] = node
+        return node.identifier
 
-    def traverse_expr_list(self, node, dep):
+    def trav_expr_list(self, node, dep):
         results = []
-        result = self._traverse(node.expr, dep=dep+1)
+        result = self._trav(node.expr, dep=dep+1)
         results.append(result)
         if node.expr_list:
-            els = self.traverse_expr_list(node.expr_list, dep=dep+1)
+            els = self.trav_expr_list(node.expr_list, dep=dep+1)
             for el in els:
                 results.append(el)
         return tuple(results)
 
-    def traverse_callable(self, node, dep):
+    def trav_callable(self, node, dep):
         firstname = node.name_list.identifier
         if firstname == 'opts':
             if node.name_list.name_list.identifier == 'get':
-                identifier = self._traverse(node.args.arg.expr, dep=dep+1)
+                identifier = self._trav(node.args.arg.expr, dep=dep+1)
                 if not isinstance(identifier, str):
                     raise AST.SyntaxError('invalid argument for opts.get')
                 if self.opts and identifier in self.opts.keys():
@@ -692,8 +740,8 @@ class AST:
                     return ''
         elif firstname == 'alias':
             if node.name_list.name_list.identifier == 'set':
-                identifier = self._traverse(node.args.arg.expr, dep=dep+1)
-                value = self._traverse(node.args.args.arg.expr, dep=dep+1)
+                identifier = self._trav(node.args.arg.expr, dep=dep+1)
+                value = self._trav(node.args.args.arg.expr, dep=dep+1)
                 if not isinstance(identifier, str) or not isinstance(value, str):
                     raise AST.SyntaxError('invalid argument for alias.set')
                 self.context.alias_map[identifier] = value
@@ -703,27 +751,29 @@ class AST:
                 raise AST.ReferenceError('"%s" is not defined' % firstname)
             node = self.context.def_funcs[firstname]
             self.dt('call "%s" function' % firstname)
-            results = self._traverse(node.func_formula, dep=dep+1)
+            results = self._trav(node.func_formula, dep=dep+1)
             if isinstance(results, tuple) and len(results) == 1:
                 return results[0]
             return results
 
-    def traverse_for(self, node, dep):
-        self._traverse(node.init_expr_list, dep=dep+1)
+    def trav_for(self, node, dep):
+        result = None
+        self._trav(node.init_expr_list, dep=dep+1)
         while True:
             if node.comp_expr:
-                result = self._traverse(node.comp_expr, dep=dep+1)
+                result = self._trav(node.comp_expr, dep=dep+1)
                 if not result:
                     break
 
             if node.block:
-                self._traverse(node.block, dep=dep+1)
+                self._trav(node.block, dep=dep+1)
             elif node.formula:
-                self._traverse(node.formula, dep=dep+1)
+                self._trav(node.formula, dep=dep+1)
 
-            self._traverse(node.update_expr_list, dep=dep+1)
+            self._trav(node.update_expr_list, dep=dep+1)
+        return result
 
-    def traverse_id_expr(self, node, dep):
+    def trav_id_expr(self, node, dep):
         if node.identifier not in self.context.syms.keys():
             raise AST.SyntaxError('"%s" is not defined' % node.identifier)
 
@@ -748,27 +798,31 @@ class AST:
         else:
             raise AST.ModuleError('impossible. invalid front or back value "%s"' % node.front_or_back)
 
-    def traverse_assign_expr(self, node, dep):
+    def trav_assign_expr(self, node, dep):
         if node.expr:
-            return self._traverse(node.expr, dep=dep+1)
+            return self._trav(node.expr, dep=dep+1)
 
         if node.assign_operator == '=':
-            self.context.syms[node.identifier] = self._traverse(node.assign_expr, dep=dep+1)
+            self.context.syms[node.identifier] = self._trav(node.assign_expr, dep=dep+1)
             return self.context.syms[node.identifier]
 
         raise AST.ModuleError('invalid operator %s' % node.assign_operator)
              
-    def traverse_ref_block(self, node, dep):
+    def trav_ref_block(self, node, dep):
+        result = None
         if node.expr != None:
-            result = self._traverse(node.expr, dep=dep+1)
+            result = self._trav(node.expr, dep=dep+1)
             if result is not None:
                 self.context.buffer += str(result)
+        return result
 
-    def traverse_import(self, node, dep):
+    def trav_import(self, node, dep):
+        result = None
         if node.identifier == 'alias':
             self.context.imported_alias = True 
         else:
             raise AST.ImportError('can not import package "%s"' % node.identifier)
+        return result
 
     def show_parse(self, name, dep):
         if self.debug_parse:
