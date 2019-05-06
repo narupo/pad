@@ -341,11 +341,6 @@ import sys
 
     + は新規追加したところ
     ^ は更新
-
-    f(f())
-    a = f()
-    a = f(f())
-    a, b = f()
     
     block: ( text-block | code-block | ref-block ), block
     text-block: .*
@@ -379,6 +374,52 @@ import sys
     import-stmt: 'import' identifier
     dmy-args: dmy-arg ',' dmy-args | dmy-arg
     dmy-arg: identifier
+    args: arg ',' args | arg
+    arg: expr
+    string: '"' .* '"'
+    digit: [0-9]+
+    identifier: ( [a-z] | [0-9] | _ )+ 
+
+    2019-05-05 21:23:59 曇り
+    =======================
+    BNF 0.3.4
+    func_formula の削除
+    formula に return を移動
+
+    + は新規追加したところ
+    ^ は更新
+    
+    block: ( text_block | code_block | ref_block ), block
+    text_block: .*
+    code_block: '{@' {formula}* '@}'
+    ref_block: '{{' expr '}}'
+    callable: name_list '(' args ')'
+    name_list: identifier '.' name_list | identifier
+    args: arg ',' args | arg
+    arg: digit | string | identifier
+    return_stmt: 'return' expr_list
+    formula: ( expr_list | if_stmt | for_stmt | import_stmt | return_stmt | call_stmt | def_func ), ( formula | '@}' block '{@' )
+    def_func: 'def' identifier '(' dmy_args ')' ':' formula 'end'
+    call_stmt: result_list '=' callable | callable
+    result_list: identifier ',' result_list | identifier
+    if_stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
+    elif_stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
+    else_stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+    for_stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
+    cmp_op: '==' | '!=' | '<' | '>' | '<=' | '>='
+    expr_list: expr ',' expr_list | expr
+    expr: gorasu ( '&&' | '||' ) expr | gorasu
+    gorasu: kamiyu cmp_op gorasu | kamiyu
+    kamiyu: term ('+' | '-' ) kamiyu | term
+    term: factor ( '*' | '/' ) term | factor
+    factor: digit | identifier | string | callable | id_expr | assign_expr | not_expr | '(' expr ')'
+    + not_expr: '!' expr
+    id_expr: identifier ('++' | '--') | ('++' | '--') identifier
+    assign_expr: identifier assign_operator assign_expr | expr
+    assign_operator: '='
+    import_stmt: 'import' identifier
+    dmy_args: dmy_arg ',' dmy_args | dmy_arg
+    dmy_arg: identifier
     args: arg ',' args | arg
     arg: expr
     string: '"' .* '"'
@@ -424,7 +465,9 @@ class AST:
         self.debug_traverse = debug
         self.opts = opts
         self.context = Context()
-        self.scope_list = [self.root]
+        self.scope_list = [self.root] # scope chain, element is Node
+        self.return_result = None # result value of return statement
+        self.returned = False # flag of case of return statement
         self._trav(self.root, dep=0)
         return self.context
 
@@ -460,9 +503,6 @@ class AST:
 
         elif isinstance(node, RefBlockNode):
             return self.trav_ref_block(node, dep=dep+1)
-
-        elif isinstance(node, FuncFormulaNode):
-            return self.trav_func_formula(node, dep=dep+1)
 
         elif isinstance(node, FormulaNode):
             return self.trav_formula(node, dep=dep+1)
@@ -646,8 +686,7 @@ class AST:
         return result
 
     def trav_formula(self, node, dep):
-        # DO NOT RETURN
-        result = None
+        # formula is DO NOT RETURN
         if node.expr_list:
             result = self._trav(node.expr_list, dep=dep+1)
             if isinstance(result, tuple) and len(result) == 1:
@@ -655,22 +694,29 @@ class AST:
             else:
                 self.context.last_expr_val = result
         elif node.import_:
-            result = self._trav(node.import_, dep=dep+1)
+            self._trav(node.import_, dep=dep+1)
         elif node.for_:
-            result = self._trav(node.for_, dep=dep+1)
+            self._trav(node.for_, dep=dep+1)
         elif node.if_:
-            result = self._trav(node.if_, dep=dep+1)
+            self._trav(node.if_, dep=dep+1)
+        elif node.return_:
+            # SET RETURN VALUE
+            self.return_result = self._trav(node.return_, dep=dep+1)
+            self.returned = True # SET FLAG
+            return None # ALWAYS RETURN 
         elif node.def_func:
-            result = self._trav(node.def_func, dep=dep+1)
+            self._trav(node.def_func, dep=dep+1)
         elif node.call_stmt:
-            result = self._trav(node.call_stmt, dep=dep+1)
+            self._trav(node.call_stmt, dep=dep+1)
 
-        # RETURN OK
+        if self.returned:
+            return None
+
         if node.formula:
-            return self._trav(node.formula, dep=dep+1)
+            self._trav(node.formula, dep=dep+1)
         elif node.block:
-            return self._trav(node.block, dep=dep+1)
-        return result
+            self._trav(node.block, dep=dep+1)
+        return None
 
     def trav_block(self, node, dep):
         result = None
@@ -706,18 +752,8 @@ class AST:
     def trav_return(self, node, dep):
         return self._trav(node.expr_list, dep=dep+1)
 
-    def trav_func_formula(self, node, dep):
-        if node.formula:
-            self._trav(node.formula, dep=dep+1)
-        elif node.return_:
-            return self._trav(node.return_, dep=dep+1)
-
-        if node.func_formula:
-            return self._trav(node.func_formula, dep=dep+1)
-        return None
-
     def trav_def_func(self, node, dep):
-        # DO NOT CALL _trav with node.func_formula
+        # DO NOT CALL _trav with node.formula
         # This is called by callable
         self.scope_list[-1].syms[node.identifier] = node
         return None
@@ -759,14 +795,17 @@ class AST:
             self.export_args_to_def_func(def_func, def_func.dmy_args, node.args, dep=dep+1)
 
             self.scope_list.append(def_func)
+            self.return_result = None
+            self.returned = False
             self.dt('call "%s" function' % firstname)
-            result = self._trav(def_func.func_formula, dep=dep+1)
-            self.dt("function result:", result)
+            self._trav(def_func.formula, dep=dep+1)
             self.scope_list.pop()
+            self.returned = False
 
-            if isinstance(result, tuple) and len(result) == 1:
-                return result[0]
-            return result
+            self.dt("function result:", self.return_result)
+            if isinstance(self.return_result, tuple) and len(self.return_result) == 1:
+                return self.return_result[0]
+            return self.return_result
 
     def export_args_to_def_func(self, def_func, dmy_args, args, dep):
         """
@@ -780,7 +819,7 @@ class AST:
         elif dmy_args is None and args is None:
             return None
         else:
-            AST.SyntaxError('not same length of function arguments')
+            raise AST.SyntaxError('not same length of function arguments')
 
     def find_sym(self, key):
         for scope in self.scope_list[::-1]:
@@ -958,6 +997,8 @@ class AST:
         self.show_parse('args', dep=dep)
         if self.strm.eof():
             return None
+        elif self.strm.cur().kind == 'rparen':
+            return None
 
         node = ArgsNode()
         node.arg = self.arg(dep=dep+1)
@@ -1037,36 +1078,13 @@ class AST:
 
         return node
 
-    def func_formula(self, dep):
-        self.show_parse('func_formula', dep=dep)
-        if self.strm.eof():
-            return None
-
-        node = FuncFormulaNode()
-
-        tok = self.strm.get()
-        if tok.kind in ('end'):
-            self.strm.prev()
-            return None
-        elif tok.kind == 'jmp' and tok.value == 'return':
-            self.strm.prev()
-            node.return_ = self.return_(dep=dep+1)
-        else:
-            self.strm.prev()
-            node.formula = self.formula(dep=dep+1)
-
-        node.func_formula = self.func_formula(dep=dep+1)
-        return node
-
     def formula(self, dep):
         self.show_parse('formula', dep=dep)
         if self.strm.eof():
             return None
         
         t = self.strm.cur()
-        if t.kind == 'jmp' and t.value == 'return':
-            return None
-        elif t.kind in ('rbraceat', 'ldbrace', 'end', 'elif', 'else'):
+        if t.kind in ('rbraceat', 'ldbrace', 'end', 'elif', 'else'):
             return None
         elif t.kind in ('colon'):
             raise AST.SyntaxError('found "%s". invalid formula.' % t)
@@ -1081,6 +1099,8 @@ class AST:
             node.for_ = self.for_(dep=dep+1)
         elif t.kind == 'def':
             node.def_func = self.def_func(dep=dep+1)
+        elif t.kind == 'jmp' and t.value == 'return':
+            node.return_ = self.return_(dep=dep+1)
         else:
             i = self.strm.index
             node.call_stmt = self.call_stmt(dep=dep+1)
@@ -1148,7 +1168,7 @@ class AST:
         elif tok.kind != 'colon':
             raise AST.SyntaxError('not found colon in function')
 
-        node.func_formula = self.func_formula(dep=dep+1)
+        node.formula = self.formula(dep=dep+1)
 
         tok = self.strm.get()
         if tok == Stream.EOF:

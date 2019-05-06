@@ -106,7 +106,7 @@ class DefFuncNode(Node):
     def __init__(self):
         self.identifier = None # str
         self.dmy_args = None # Node
-        self.func_formula = None # Node
+        self.formula = None # Node
         self.syms = {} # symbol table
 
 
@@ -140,19 +140,13 @@ class ReturnNode(Node):
         self.expr_list = None # Node
 
 
-class FuncFormulaNode(Node):
-    def __init__(self):
-        self.formula = None # Node
-        self.return_ = None # Node
-        self.func_formula = None # Node
-
-
 class FormulaNode(Node):
     def __init__(self):
         self.expr_list = None # Node
         self.assign_expr = None # Node
         self.if_ = None # Node
         self.for_ = None # Node
+        self.return_ = None # Node
         self.def_func = None # Node
         self.import_ = None # Node
         self.formula = None # Node

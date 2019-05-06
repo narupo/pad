@@ -752,6 +752,14 @@ class Test(unittest.TestCase):
 
         a.parse(t.parse('''{@
             def f():
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(c.buffer, '')
+
+        a.parse(t.parse('''{@
+            def f():
                 return 1
             end
 @}'''))
@@ -902,6 +910,41 @@ class Test(unittest.TestCase):
                 else:
                     return 2
                 end
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(c.buffer, '2')
+
+        a.parse(t.parse('''{@
+            def f():
+                if 0:
+                    return 1
+                end
+
+                return 2
+
+                if 1:
+                    return 3
+                end
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['f']), DefFuncNode)
+        self.assertEqual(c.buffer, '2')
+
+        a.parse(t.parse('''{@
+            def f():
+                if 0:
+                    return 1
+                end
+                def f2():
+                    if 1:
+                        return 2
+                    end
+                    return 0
+                end
+                return f2()
             end
 @}{{ f() }}'''))
         c = a.traverse()
@@ -1078,6 +1121,45 @@ class Test(unittest.TestCase):
         self.assertEqual(a.current_scope.syms['f'].syms['arg2'], 'arg2')
         self.assertEqual(a.current_scope.syms['f'].syms['a'], 'arg1')
         self.assertEqual(a.current_scope.syms['f'].syms['b'], 'arg2')
+
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('''{@
+                def f(arg1, arg2):
+                end
+                f("arg1")
+    @}'''))
+            c = a.traverse()
+
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('''{@
+                def f(arg1):
+                end
+                f("arg1", "arg2")
+    @}'''))
+            c = a.traverse()
+
+    def test_ast_return(self):
+        if self.silent: return
+        
+        t = Tokenizer()
+        a = AST()
+
+        a.parse(t.parse('''{@
+            v = 0
+            return 1
+            v = 1
+@}{{ v }}'''))
+        c = a.traverse()
+        self.assertEqual(a.current_scope.syms['v'], 0)
+        self.assertEqual(c.buffer, '')
+
+        a.parse(t.parse('''{@
+            def f():
+                return 1
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(c.buffer, '1')
 
     def test_ast_assign(self):
         if self.silent: return
