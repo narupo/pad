@@ -1364,6 +1364,16 @@ class Test(unittest.TestCase):
         self.assertEqual(a.current_scope.syms['v'], 0)
         self.assertEqual(c.last_expr_val, 0)
 
+    def test_ast_assign_expr(self):
+        if self.silent: return
+        t = Tokenizer()
+        a = AST()
+
+        a.parse(t.parse('{@ a = 0 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 0)        
+        self.assertEqual(a.current_scope.syms['a'], 0)        
+
     def test_ast_comparison(self):
         if self.silent: return
         
