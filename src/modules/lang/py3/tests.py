@@ -1223,6 +1223,17 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.buffer, '')
 
+        a.parse(t.parse('''{@
+            def b():
+                return "this is b"
+            end
+            a = b
+@}{{ a() }}'''))
+        c = a.traverse()
+        self.assertEqual(type(a.current_scope.syms['a']), DefFuncNode)
+        self.assertEqual(type(a.current_scope.syms['b']), DefFuncNode)
+        self.assertEqual(c.buffer, 'this is b')
+
     def test_ast_return(self):
         if self.silent: return
         
