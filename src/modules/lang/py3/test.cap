@@ -1,7 +1,14 @@
 {@
-    s = "a"
-    for i = 0; i < 2; ++i:
-        s = s + ","
+    def ncat(s1, s2, n):
+        for i = 0; i < n; ++i:
+            if i >= 2:
+                return s1
+            end
+            s1 = s1 + " " + s2
+        end
+        return s1
     end
 @}
-{$ s $}
+
+{$ ncat("my name is", "cat", 1) $}
+{$ ncat("my name is", "dog", 3) $}
