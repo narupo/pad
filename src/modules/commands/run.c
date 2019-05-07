@@ -103,7 +103,7 @@ runcmd_run(runcmd_t *self) {
     char spath[FILE_NPATH];
     file_solvefmt(spath, sizeof spath, "%s/%s", cdorhome, self->argv[1]);
     if (isoutofhome(self->config->var_home_path, spath)) {
-        err_error("invalid script. '%s' is out of home.", spath);
+        err_error("invalid script. \"%s\" is out of home.", spath);
         return 6;
     }
 
