@@ -721,7 +721,11 @@ app_run(app_t *self) {
 
     int result = app_execute_alias_by_name(self, cmdname);
     if (result == -1) {
-        return app_execute_snippet(self, cmdname);
+        result = app_execute_snippet(self, cmdname);
+        if (result != 0) {
+            err_error("\"%s\" is not found", cmdname);
+            return result;
+        }
     }
     return result;
 }
