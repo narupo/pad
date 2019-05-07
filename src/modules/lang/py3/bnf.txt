@@ -1,0 +1,466 @@
+BNF 0.0.0
+
+program ::= ( code-block | text-block ) program 
+code-block ::= '{@' formula '@}'
+text-block ::= .*
+formula ::= ( import | caller ), formula
+import ::= 'import' identifier
+caller ::= identifier ( '.' identifier )+ '(' args ')'
+args ::= string | ',' args
+string ::= '"' .* '"'
+identifier ::= ( [a-z] | [0-9] | _ )+ 
+
+2019-04-01 03:23:29 曇のち雪 1~10°
+=================================
+BNF 0.1.0
+
++ is add sentense
+^ is update sentence
+
+program ::= block, program 
++ block ::= text-block | code-block | ref-block 
+text-block ::= .*
+code-block ::= '{@' {formula}* '@}'
++ ref-block ::= '{{' identifier '}}'
+^ formula ::= ( expr | import-stmt | caller-stmt ), formula
++ expr ::= assign-expr
++ assign-expr ::= assignable-operand assign-operator operand
++ assign-operator ::= '='
++ assignable-operand ::= identifier
++ operand ::= identifier | string
+import-stmt ::= 'import' identifier
+caller-stmt ::= identifier ( '.' identifier )+ '(' args ')'
+args ::= string | ',' args
+string ::= '"' .* '"'
+identifier ::= ( [a-z] | [0-9] | _ )+ 
+
+2019-04-02 05:37:52 曇のち雪
+===========================
+BNF 0.2.0
+if 文の追加とそれに関連する修正など
+
++ is add sentense
+^ is update sentence
+
+^ block ::= ( text-block | code-block | ref-block ), block
+text-block ::= .*
+code-block ::= '{@' {formula}* '@}'
+ref-block ::= '{{' identifier '}}'
+^ formula ::= ( expr | if-stmt | import-stmt | caller-stmt ), ( formula | '@}' block '{@' )
++ if-stmt ::= 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
++ elif-stmt ::= 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
++ else-stmt ::= 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+^ expr ::= assign-expr | digit
+assign-expr ::= assignable-operand assign-operator operand
+assign-operator ::= '='
+assignable-operand ::= identifier
+operand ::= identifier | string
+import-stmt ::= 'import' identifier
+caller-stmt ::= identifier ( '.' identifier )+ '(' args ')'
+args ::= string | ',' args
+string ::= '"' .* '"'
++ digit ::= [0-9]+
+identifier ::= ( [a-z] | [0-9] | _ )+ 
+
+2019-04-02 05:37:52 曇のち雪
+===========================
+BNF 0.2.1
+式の実装
+
++ is add sentense
+^ is update sentence
+
+block ::= ( text-block | code-block | ref-block ), block
+text-block ::= .*
+code-block ::= '{@' {formula}* '@}'
+ref-block ::= '{{' identifier '}}'
+^ formula ::= ( expr | assign-expr | if-stmt | import-stmt | caller-stmt ), ( formula | '@}' block '{@' )
+^ if-stmt ::= 'if' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+elif-stmt ::= 'elif' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+else-stmt ::= 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
++ comparison ::= expr comp_op comparison | expr
++ cmp-op ::= '==' | '!=' | '<' | '>' | '<=' | '>='
+^ expr ::= term '+' expr | term '-' + expr | term
++ term ::= factor '*' term | factor '/' term | factor
++ factor ::= digit | identifier | string | '(' expr ')'
+assign-expr ::= assignable-operand assign-operator operand
+assign-operator ::= '='
+assignable-operand ::= identifier
+^ operand ::= expr | string
+import-stmt ::= 'import' identifier
+caller-stmt ::= identifier ( '.' identifier )+ '(' args ')'
+args ::= string | ',' args
+string ::= '"' .* '"'
+digit ::= [0-9]+
+identifier ::= ( [a-z] | [0-9] | _ )+ 
+
+2019-04-14 11:20:12 曇のち雨
+============================
+BNF 0.2.2
+lopts の実装
+
++ is add sentense
+^ is update sentence
+
+block: ( text-block | code-block | ref-block ), block
+text-block: .*
+code-block: '{@' {formula}* '@}'
+^ ref-block: '{{' ( identifier | callable ) '}}'
++ callable: caller-list '(' args ')'
++ caller-list: identifier '.' caller-list | identifier
++ args: arg ',' args | arg
++ arg: digit | string | identifier
+formula: ( expr | assign-expr | if-stmt | import-stmt | caller-stmt ), ( formula | '@}' block '{@' )
+if-stmt: 'if' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+elif-stmt: 'elif' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+comparison: expr comp_op comparison | expr
+cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
+expr: term '+' expr | term '-' expr | term
+term: factor '*' term | factor '/' term | factor
+^ factor: digit | identifier | string | callable | '(' expr ')'
+^ assign-expr: assign-operand-lhs assign-operator assign-expr | assign-oeprand-rhs
+assign-operator: '='
+^ assign-operand-lhs: identifier
+^ assign-operand-rhs: expr | string | identifier | callable
+import-stmt: 'import' identifier
+caller-stmt: identifier ( '.' identifier )+ '(' args ')'
+args: string | ',' args
+string: '"' .* '"'
+digit: [0-9]+
+identifier: ( [a-z] | [0-9] | _ )+ 
+
+2019-04-14 11:20:12 曇のち雨
+============================
+BNF 0.3.0
+for の実装
+id-expr の実装
+リファクタリング
+
++ is add sentense
+^ is update sentence
+
+block: ( text-block | code-block | ref-block ), block
+text-block: .*
+code-block: '{@' {formula}* '@}'
+ref-block: '{{' ( identifier | callable ) '}}'
+callable: caller-list '(' args ')'
+caller-list: identifier '.' caller-list | identifier
+args: arg ',' args | arg
+arg: digit | string | identifier
+^ formula: ( expr | assign-expr | if-stmt | for-stmt | import-stmt | callable ), ( formula | '@}' block '{@' )
+if-stmt: 'if' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+elif-stmt: 'elif' comparison ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
++ for-stmt: 'for' expr ';' comparison ';' expr ':' ( formula | '@}' block '{@' ) 'end'
+comparison: expr cmp-op comparison | expr
+cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
+expr: term '+' expr | term '-' expr | term
+term: factor '*' term | factor '/' term | factor
+^ factor: digit | identifier | string | callable | id-expr | assign-expr | '(' expr ')'
++ id-expr: identifier ('++' | '--') | ('++' | '--') identifier
+^ assign-expr: identifier assign-operator assign-expr | expr
+^ assign-operator: '='
+import-stmt: 'import' identifier
+args: string | ',' args
+string: '"' .* '"'
+digit: [0-9]+
+identifier: ( [a-z] | [0-9] | _ )+ 
+
+2019-05-05 08:04:09 晴のち曇
+===========================
+BNF 0.3.1
+comparison の修正
+
++ is add sentense
+^ is update sentence
+
+block: ( text-block | code-block | ref-block ), block
+text-block: .*
+code-block: '{@' {formula}* '@}'
+ref-block: '{{' ( identifier | callable ) '}}'
+callable: caller-list '(' args ')'
+caller-list: identifier '.' caller-list | identifier
+args: arg ',' args | arg
+arg: digit | string | identifier
+formula: ( expr | if-stmt | for-stmt | import-stmt | callable ), ( formula | '@}' block '{@' )
+^ if-stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+^ elif-stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+^ for-stmt: 'for' expr ';' expr ';' expr ':' ( formula | '@}' block '{@' ) 'end'
+cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
+^ expr: gorasu '&&' expr | gorasu '||' expr | gorasu
++ gorasu: kamiyu cmp-op gorasu | kamiyu
+kamiyu: term '+' kamiyu | term '-' kamiyu | term
+term: factor '*' term | factor '/' term | factor
+^ factor: digit | identifier | string | callable | id-expr | assign-expr | not-expr | '(' expr ')'
+id-expr: identifier ('++' | '--') | ('++' | '--') identifier
+assign-expr: identifier assign-operator assign-expr | expr
+assign-operator: '='
+import-stmt: 'import' identifier
+args: string | ',' args
+string: '"' .* '"'
+digit: [0-9]+
+identifier: ( [a-z] | [0-9] | _ )+ 
+
+2019-05-05 08:04:23 晴のち曇
+===========================
+BNF 0.3.1
+comparison の修正
+
++ is add sentense
+^ is update sentence
+
+block: ( text-block | code-block | ref-block ), block
+text-block: .*
+code-block: '{@' {formula}* '@}'
+ref-block: '{{' ( identifier | callable ) '}}'
+callable: caller-list '(' args ')'
+caller-list: identifier '.' caller-list | identifier
+args: arg ',' args | arg
+arg: digit | string | identifier
+formula: ( expr-list | if-stmt | for-stmt | import-stmt | callable ), ( formula | '@}' block '{@' )
+if-stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+elif-stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+^ for-stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
+cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
++ expr-list: expr ',' expr-list | expr
+expr: gorasu ( '&&' | '||' ) expr | gorasu
+gorasu: kamiyu cmp-op gorasu | kamiyu
+kamiyu: term ('+' | '-' ) kamiyu | term
+term: factor ( '*' | '/' ) term | factor
+factor: digit | identifier | string | callable | id-expr | assign-expr | not-expr | '(' expr ')'
+id-expr: identifier ('++' | '--') | ('++' | '--') identifier
+assign-expr: identifier assign-operator assign-expr | expr
+assign-operator: '='
+import-stmt: 'import' identifier
+args: string | ',' args
+string: '"' .* '"'
+digit: [0-9]+
+identifier: ( [a-z] | [0-9] | _ )+ 
+
+2019-05-05 10:07:00 晴のち曇
+===========================
+BNF 0.3.2
+関数の追加
+ref_block のリファクタリング
+args のリファクタリング
+caller-list を name-list に変更
+
++ is add sentense
+^ is update sentence
+
+block: ( text-block | code-block | ref-block ), block
+text-block: .*
+code-block: '{@' {formula}* '@}'
+^ ref-block: '{{' expr '}}'
+^ callable: name-list '(' args ')'
+^ name-list: identifier '.' name-list | identifier
+args: arg ',' args | arg
+arg: digit | string | identifier
+^ formula: ( expr-list | if-stmt | for-stmt | import-stmt | callable | def-func ), ( formula | '@}' block '{@' )
++ def-func: 'def' identifier '(' dmy-args ')' ':' formula 'end'
+if-stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+elif-stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+for-stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
+cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
+expr-list: expr ',' expr-list | expr
+expr: gorasu ( '&&' | '||' ) expr | gorasu
+gorasu: kamiyu cmp-op gorasu | kamiyu
+kamiyu: term ('+' | '-' ) kamiyu | term
+term: factor ( '*' | '/' ) term | factor
+factor: digit | identifier | string | callable | id-expr | assign-expr | not-expr | '(' expr ')'
+id-expr: identifier ('++' | '--') | ('++' | '--') identifier
+assign-expr: identifier assign-operator assign-expr | expr
+assign-operator: '='
+import-stmt: 'import' identifier
++ dmy-args: dmy-arg ',' dmy-args | dmy-arg
++ dmy-arg: identifier
+^ args: arg ',' args | arg
++ arg: expr
+string: '"' .* '"'
+digit: [0-9]+
+identifier: ( [a-z] | [0-9] | _ )+ 
+
+2019-05-05 20:34:53 晴のち曇
+===========================
+BNF 0.3.3
+return の実装
+
++ is add sentense
+^ is update sentence
+
+block: ( text-block | code-block | ref-block ), block
+text-block: .*
+code-block: '{@' {formula}* '@}'
+ref-block: '{{' expr '}}'
+callable: name-list '(' args ')'
+name-list: identifier '.' name-list | identifier
+args: arg ',' args | arg
+arg: digit | string | identifier
++ func-formula: formula | return-stmt
++ return-stmt: 'return' expr-list
+formula: ( expr-list | if-stmt | for-stmt | import-stmt | callable | def-func ), ( formula | '@}' block '{@' )
+def-func: 'def' identifier '(' dmy-args ')' ':' func-formula 'end'
+if-stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+elif-stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+for-stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
+cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
+expr-list: expr ',' expr-list | expr
+expr: gorasu ( '&&' | '||' ) expr | gorasu
+gorasu: kamiyu cmp-op gorasu | kamiyu
+kamiyu: term ('+' | '-' ) kamiyu | term
+term: factor ( '*' | '/' ) term | factor
+factor: digit | identifier | string | callable | id-expr | assign-expr | not-expr | '(' expr ')'
+id-expr: identifier ('++' | '--') | ('++' | '--') identifier
+assign-expr: identifier assign-operator assign-expr | expr
+assign-operator: '='
+import-stmt: 'import' identifier
+dmy-args: dmy-arg ',' dmy-args | dmy-arg
+dmy-arg: identifier
+args: arg ',' args | arg
+arg: expr
+string: '"' .* '"'
+digit: [0-9]+
+identifier: ( [a-z] | [0-9] | _ )+ 
+
+2019-05-05 21:23:59 曇り
+=======================
+BNF 0.3.3
+return の実装
+
++ is add sentense
+^ is update sentence
+
+block: ( text-block | code-block | ref-block ), block
+text-block: .*
+code-block: '{@' {formula}* '@}'
+ref-block: '{{' expr '}}'
+callable: name-list '(' args ')'
+name-list: identifier '.' name-list | identifier
+args: arg ',' args | arg
+arg: digit | string | identifier
+^ func-formula: ( formula | return-stmt ), func-formula
+return-stmt: 'return' expr-list
+formula: ( expr-list | if-stmt | for-stmt | import-stmt | call-stmt | def-func ), ( formula | '@}' block '{@' )
+def-func: 'def' identifier '(' dmy-args ')' ':' func-formula 'end'
++ call-stmt: result-list '=' callable | callable
++ result-list: identifier ',' result-list | identifier
+if-stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+elif-stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif-stmt | else-stmt )
+else-stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+for-stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
+cmp-op: '==' | '!=' | '<' | '>' | '<=' | '>='
+expr-list: expr ',' expr-list | expr
+expr: gorasu ( '&&' | '||' ) expr | gorasu
+gorasu: kamiyu cmp-op gorasu | kamiyu
+kamiyu: term ('+' | '-' ) kamiyu | term
+term: factor ( '*' | '/' ) term | factor
+factor: digit | identifier | string | callable | id-expr | assign-expr | not-expr | '(' expr ')'
++ not-expr: '!' expr
+id-expr: identifier ('++' | '--') | ('++' | '--') identifier
+assign-expr: identifier assign-operator assign-expr | expr
+assign-operator: '='
+import-stmt: 'import' identifier
+dmy-args: dmy-arg ',' dmy-args | dmy-arg
+dmy-arg: identifier
+args: arg ',' args | arg
+arg: expr
+string: '"' .* '"'
+digit: [0-9]+
+identifier: ( [a-z] | [0-9] | _ )+ 
+
+2019-05-05 21:23:59 曇り
+=======================
+BNF 0.3.4
+func_formula の削除
+formula に return を移動
+call_stmt を assign_stmt に修正
+
++ is add sentense
+^ is update sentence
+
+block: ( text_block | code_block | ref_block ), block
+text_block: .*
+code_block: '{@' {formula}* '@}'
+ref_block: '{{' expr '}}'
+callable: name_list '(' args ')'
+name_list: identifier '.' name_list | identifier
+args: arg ',' args | arg
+arg: digit | string | identifier
+return_stmt: 'return' expr_list
+^ formula: ( expr_list | if_stmt | for_stmt | import_stmt | return_stmt | assign_stmt | def_func ), ( formula | '@}' block '{@' )
+def_func: 'def' identifier '(' dmy_args ')' ':' formula 'end'
+assign_stmt: result_list '=' expr | expr
+result_list: identifier ',' result_list | identifier
+if_stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
+elif_stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
+else_stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+for_stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
+cmp_op: '==' | '!=' | '<' | '>' | '<=' | '>='
+expr_list: expr ',' expr_list | expr
+expr: gorasu ( '&&' | '||' ) expr | gorasu
+gorasu: kamiyu cmp_op gorasu | kamiyu
+kamiyu: term ('+' | '-' ) kamiyu | term
+term: factor ( '*' | '/' ) term | factor
+factor: digit | identifier | string | callable | id_expr | assign_expr | not_expr | '(' expr ')'
+not_expr: '!' expr
+id_expr: identifier ('++' | '--') | ('++' | '--') identifier
+assign_expr: identifier assign_operator assign_expr | expr
+assign_operator: '='
+import_stmt: 'import' identifier
+dmy_args: dmy_arg ',' dmy_args | dmy_arg
+dmy_arg: identifier
+args: arg ',' args | arg
+arg: expr
+string: '"' .* '"'
+digit: [0-9]+
+identifier: ( [a-z] | [0-9] | _ )+ 
+
+2019-05-08 08:02:47 晴れ
+=======================
+BNF 0.3.5
+update assign_expr
+
++ is add sentense
+^ is update sentence
+
+block: ( text_block | code_block | ref_block ), block
+text_block: .*
+code_block: '{@' {formula}* '@}'
+ref_block: '{{' expr '}}'
+callable: name_list '(' args ')'
+name_list: identifier '.' name_list | identifier
+args: arg ',' args | arg
+arg: digit | string | identifier
+return_stmt: 'return' expr_list
+^ formula: ( expr_list | if_stmt | for_stmt | import_stmt | return_stmt | assign_stmt | def_func ), ( formula | '@}' block '{@' )
+def_func: 'def' identifier '(' dmy_args ')' ':' formula 'end'
+assign_stmt: result_list '=' expr | expr
+result_list: identifier ',' result_list | identifier
+if_stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
+elif_stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
+else_stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+for_stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
+cmp_op: '==' | '!=' | '<' | '>' | '<=' | '>='
+expr_list: expr ',' expr_list | expr
+expr: gorasu ( '&&' | '||' ) expr | gorasu
+gorasu: kamiyu cmp_op gorasu | kamiyu
+kamiyu: term ('+' | '-' ) kamiyu | term
+term: factor ( '*' | '/' ) term | factor
+factor: digit | identifier | string | callable | id_expr | assign_expr | not_expr | '(' expr ')'
+not_expr: '!' expr
+id_expr: identifier ('++' | '--') | ('++' | '--') identifier
+assign_expr: identifier assign_operator assign_expr | expr
+^ assign_operator: '=' | '+=' | '-=' | '*=' | '/=' | '%='
+import_stmt: 'import' identifier
+dmy_args: dmy_arg ',' dmy_args | dmy_arg
+dmy_arg: identifier
+args: arg ',' args | arg
+arg: expr
+string: '"' .* '"'
+digit: [0-9]+
+identifier: ( [a-z] | [0-9] | _ )+ 
