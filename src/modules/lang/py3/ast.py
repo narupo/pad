@@ -735,8 +735,6 @@ class AST:
             t = self.strm.get()
             # このデータは必要？
             node.newline = t.value
-        elif t.kind == 'comma':
-            self.strm.get()
         else:
             i = self.strm.index
             node.assign_stmt_line = self.assign_stmt_line(dep=dep+1)
