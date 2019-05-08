@@ -36,7 +36,7 @@ cdcmd_cd(cdcmd_t *self, const char *drtpath) {
 	char newcd[FILE_NPATH];
 	file_solve(newcd, sizeof newcd, drtpath);
 
-	if (isoutofhome(self->config->var_home_path, newcd)) {
+	if (is_out_of_home(self->config->home_path, newcd)) {
 		err_die("'%s' is out of home", newcd);
 	}
 
@@ -53,35 +53,33 @@ cdcmd_cd(cdcmd_t *self, const char *drtpath) {
 
 int
 cdcmd_run(cdcmd_t *self) {
-	int argc = self->argc;
-	char **argv = self->argv;
-
-	const char *varcdpath = self->config->var_cd_path;
-	const char *varhomepath = self->config->var_home_path;
-	char varcdval[FILE_NPATH];
-	char varhomeval[FILE_NPATH];
-	if (!file_readline(varcdval, sizeof varcdval, varcdpath)) {
-		err_die("invalid var cd path");
-	}
-	if (!file_readline(varhomeval, sizeof varhomeval, varhomepath)) {
-		err_die("invalid var home path");
-	}
-
-	if (argc < 2) {
-		if (!cdcmd_cd(self, varhomeval)) {
+	if (self->argc < 2) {
+		if (!cdcmd_cd(self, self->config->home_path)) {
 			err_die("failed to cd");
 		}
 		return 0;
 	}
 
+	const char *argpath = self->argv[1];
+	const char *org;
 	char path[FILE_NPATH];
 
-	if (argv[1][0] == '/' || argv[1][0] == '\\') {
+	if (argpath[0] == '/' || argpath[0] == '\\') {
 		// Absolute of home
-		file_solvefmt(path, sizeof path, "%s/%s", varhomeval, argv[1]);
+		org = self->config->home_path;
 	} else {
 		// Relative of cd
-		file_solvefmt(path, sizeof path, "%s/%s", varcdval, argv[1]);
+		org = self->config->cd_path;
+	}
+
+	if (!strcmp(argpath, "/")) {
+		if (!file_solvefmt(path, sizeof path, "%s", org)) {
+			err_die("failed to solve path");
+		}
+	} else {
+		if (!file_solvefmt(path, sizeof path, "%s/%s", org, argpath)) {
+			err_die("failed to solve path (2)");
+		}		
 	}
 
 	if (!cdcmd_cd(self, path)) {
