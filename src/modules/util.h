@@ -27,24 +27,25 @@
 #endif
 
 enum {
-    SAFESYSTEM_DEFAULT = 0,
-    SAFESYSTEM_EDIT = 1,
+    SAFESYSTEM_DEFAULT = 1 << 0,
+    SAFESYSTEM_EDIT = 1 << 1,
+    SAFESYSTEM_DETACH = 1 << 2
 };
 
 /**
  * Free allocate memory of argv.
- * 
- * @param[in] argc    
- * @param[in] *argv[] 
+ *
+ * @param[in] argc
+ * @param[in] *argv[]
  */
 void
 freeargv(int argc, char *argv[]);
 
 /**
  * Show argv values.
- * 
- * @param[in] argc    
- * @param[in] *argv[] 
+ *
+ * @param[in] argc
+ * @param[in] *argv[]
  */
 void
 showargv(int argc, char *argv[]);
@@ -77,10 +78,10 @@ is_out_of_home(const char *homepath, const char *path);
 
 /**
  * Get random number of range.
- * 
+ *
  * @param[in] min minimum number of range
  * @param[in] max maximum number of range
- * 
+ *
  * @return random number (n >= min && n <= max)
  */
 int

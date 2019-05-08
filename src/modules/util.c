@@ -83,21 +83,17 @@ int
 safesystem(const char *cmdline, int option) {
 #ifdef _CAP_WINDOWS
     int flag = 0;
-    switch (option) {
-    case SAFESYSTEM_EDIT:
+    if (option & SAFESYSTEM_EDIT) {
         // option for edit command
         flag = CREATE_NEW_CONSOLE;
-        break;
-    case SAFESYSTEM_DEFAULT:
-    default:
+    } else {
         flag = 0;
-        break;
     }
-    
+
     PROCESS_INFORMATION pi = {0};
     STARTUPINFO si = { sizeof(STARTUPINFO) };
 
-    // Start the child process. 
+    // Start the child process.
     if (!CreateProcess(NULL, // No module name (use command line)
         (char *) cmdline, // Command line
         NULL, // Process handle not inheritable
@@ -105,7 +101,7 @@ safesystem(const char *cmdline, int option) {
         FALSE, // Set handle inheritance to FALSE
         flag, // No creation flags
         NULL, // Use parent's environment block
-        NULL, // Use parent's starting directory 
+        NULL, // Use parent's starting directory
         &si, // Pointer to STARTUPINFO structure
         &pi) // Pointer to PROCESS_INFORMATION structure
     ) {
@@ -115,6 +111,11 @@ safesystem(const char *cmdline, int option) {
 
     if (option & SAFESYSTEM_EDIT) {
         // case of edit command, to not wait exit of child process
+        return 0;
+    }
+
+    if (option & SAFESYSTEM_DETACH) {
+        // not wait child process
         return 0;
     }
 
@@ -166,7 +167,7 @@ safesystem(const char *cmdline, int option) {
 		err_error("failed to escape and delete of clk");
 		return -1;
 	}
-	
+
 	switch (fork()) {
 	case -1:
 		err_error("failed to fork");
@@ -192,7 +193,7 @@ safesystem(const char *cmdline, int option) {
 cstring_array_t *
 argsbyoptind(int argc, char *argv[], int optind) {
 	cstring_array_t *args = cstrarr_new();
-	
+
 	// DO NOT DELETE FOR DEBUG.
 	//
 	// printf("argc[%d] optind[%d]\n", argc, optind);
