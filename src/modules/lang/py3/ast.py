@@ -1104,7 +1104,7 @@ class AST:
         t = self.strm.get()
         if t == Stream.EOF:
             return node
-        elif t.value not in ('==', '!=', '<', '>', '<=', '>='):
+        elif not self.is_comp_op(t):
             self.strm.prev()
             return node
         node.op = t.value
