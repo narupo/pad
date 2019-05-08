@@ -626,6 +626,22 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 2)
 
+        a.parse(t.parse('{@ 4 % 2 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 0)
+
+        a.parse(t.parse('{@ 2 * 3 / 2 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 3)
+
+        a.parse(t.parse('{@ 2 * 3 / 2 % 3 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 0)
+
+        a.parse(t.parse('{@ 2 * 3 / (2 % 3) @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 3)
+
         a.parse(t.parse('{@ 1 + 2 * 3 @}'))
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 7)
@@ -757,12 +773,6 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(a.current_scope.syms['a'], 3)
         self.assertEqual(c.last_expr_val, 3)
-
-        # a.parse(t.parse('''{@
-        #     4 % 2
-        # @}'''))
-        # c = a.traverse()
-        # self.assertEqual(c.last_expr_val, 0)
 
     def test_ast_id_expr(self):
         if self.silent: return

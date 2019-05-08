@@ -424,6 +424,7 @@ identifier: ( [a-z] | [0-9] | _ )+
 =======================
 BNF 0.3.5
 update assign_expr
+update term for mod (%) operator
 
 + is add sentense
 ^ is update sentence
@@ -449,7 +450,8 @@ cmp_op: '==' | '!=' | '<' | '>' | '<=' | '>='
 expr_list: expr ',' expr_list | expr
 expr: gorasu ( '&&' | '||' ) expr | gorasu
 gorasu: kamiyu cmp_op gorasu | kamiyu
-kamiyu: term ('+' | '-' ) kamiyu | term
+^ kamiyu: mod ('+' | '-' ) kamiyu | mod
++ mod: term '%' mod | term
 term: factor ( '*' | '/' ) term | factor
 factor: digit | identifier | string | callable | id_expr | assign_expr | not_expr | '(' expr ')'
 not_expr: '!' expr
