@@ -97,15 +97,17 @@ mkdircmd_show_usage(mkdircmd_t *self) {
 int
 mkdircmd_mkdirp(mkdircmd_t *self) {
     const char *argpath = self->argv[self->optind];
-    const char *parsrc;
-    char parpath[FILE_NPATH];
+    const char* parpath;
     char path[FILE_NPATH];
 
-    parsrc = self->config->var_cd_path;
-
-    if (!file_readline(parpath, sizeof parpath, parsrc)) {
-        err_error("failed to read line from cd of varialble");
-        return 1;
+    if (argpath[0] == '/') {
+        parpath = self->config->home_path;
+    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
+        parpath = self->config->cd_path;
+    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
+        parpath = self->config->home_path;
+    } else {
+        err_die("impossible. invalid state in mkdirp");
     }
 
     if (!file_solvefmt(path, sizeof path, "%s/%s", parpath, argpath)) {
@@ -124,15 +126,17 @@ mkdircmd_mkdirp(mkdircmd_t *self) {
 int
 mkdircmd_mkdir(mkdircmd_t *self) {
     const char *argpath = self->argv[self->optind];
-    const char *parsrc;
-    char parpath[FILE_NPATH];
+    const char *parpath;
     char path[FILE_NPATH];
 
-    parsrc = self->config->var_cd_path;
-
-    if (!file_readline(parpath, sizeof parpath, parsrc)) {
-        err_error("failed to read line from cd of varialble");
-        return 1;
+    if (argpath[0] == '/') {
+        parpath = self->config->home_path;
+    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
+        parpath = self->config->cd_path;
+    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
+        parpath = self->config->home_path;
+    } else {
+        err_die("impossible. invalid state in mkdirp");
     }
 
     if (!file_solvefmt(path, sizeof path, "%s/%s", parpath, argpath)) {
