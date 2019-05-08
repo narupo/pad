@@ -52,7 +52,7 @@ class AST:
     def dp(self, *args, **kwargs):
         if self.debug_parse:
             print(*args, **kwargs)
-    
+
     def dt(self, *args, **kwargs):
         if self.debug_traverse:
             print(*args, **kwargs)
@@ -85,7 +85,7 @@ class AST:
             return self.trav_assign(node, dep=dep+1)
 
         elif isinstance(node, ForNode):
-            return self.trav_for(node, dep=dep+1) 
+            return self.trav_for(node, dep=dep+1)
 
         elif isinstance(node, DefFuncNode):
             return self.trav_def_func(node, dep=dep+1)
@@ -263,7 +263,7 @@ class AST:
         if node.block:
             return self._trav(node.block, dep=dep+1)
         elif node.formula:
-            return self._trav(node.formula, dep=dep+1)        
+            return self._trav(node.formula, dep=dep+1)
 
     def trav_if(self, node, dep):
         result = self._trav(node.expr, dep=dep+1)
@@ -276,7 +276,7 @@ class AST:
             if node.elif_:
                 result = self._trav(node.elif_, dep=dep+1)
             elif node.else_:
-                result = self._trav(node.else_, dep=dep+1)        
+                result = self._trav(node.else_, dep=dep+1)
         return result
 
     def trav_formula(self, node, dep):
@@ -297,7 +297,7 @@ class AST:
             # SET RETURN VALUE
             self.return_result = self._trav(node.return_, dep=dep+1)
             self.returned = True # SET FLAG
-            return None # ALWAYS RETURN 
+            return None # ALWAYS RETURN
         elif node.def_func:
             self._trav(node.def_func, dep=dep+1)
         elif node.assign_stmt:
@@ -496,7 +496,7 @@ class AST:
             return self.scope_list[-1].syms[node.identifier]
 
         raise AST.ModuleError('invalid operator %s' % node.assign_operator)
-             
+
     def trav_ref_block(self, node, dep):
         result = None
         if node.expr != None:
@@ -508,7 +508,7 @@ class AST:
     def trav_import(self, node, dep):
         result = None
         if node.identifier == 'alias':
-            self.context.imported_alias = True 
+            self.context.imported_alias = True
         else:
             raise AST.ImportError('can not import package "%s"' % node.identifier)
         return result
@@ -522,7 +522,7 @@ class AST:
         self.show_parse('block', dep=dep)
         if self.strm.eof():
             return None
-        
+
         t = self.strm.cur()
         if t.kind in ('rbraceat', 'end', 'if', 'elif', 'else'):
             return None
@@ -580,13 +580,13 @@ class AST:
         if t.value != '(':
             self.strm.index = i
             return None
-        
+
         node.args = self.args(dep=dep+1)
 
         t = self.strm.get()
         if t.value != ')':
             raise AST.SyntaxError('not found ")" in callable. token is %s' % t)
-        
+
         return node
 
     def name_list(self, dep):
@@ -671,7 +671,7 @@ class AST:
         self.show_parse('text_block', dep=dep)
         if self.strm.eof():
             return None
-        
+
         t = self.strm.get()
         if t.kind != 'text-block':
             self.strm.prev()
@@ -700,7 +700,7 @@ class AST:
         self.show_parse('formula', dep=dep)
         if self.strm.eof():
             return None
-        
+
         t = self.strm.cur()
         if t.kind in ('rbraceat', 'ldbrace', 'end', 'elif', 'else'):
             return None
@@ -773,7 +773,7 @@ class AST:
             raise AST.SyntaxError('not found left paren in function')
 
         node.dmy_args = self.dmy_args(dep=dep+1)
-        
+
         tok = self.strm.get()
         if tok == Stream.EOF:
             raise AST.SyntaxError('reached EOF. invalid syntax in function (3)')
@@ -830,7 +830,7 @@ class AST:
         self.show_parse('for_', dep=dep)
         if self.strm.eof():
             return None
-    
+
         tok = self.strm.get()
         if tok.kind != 'for':
             raise AST.ModuleError('impossible. not found "for" token')
@@ -876,7 +876,7 @@ class AST:
         tok = self.strm.cur()
         if tok.kind in ('colon', 'semicolon'):
             return None
-        
+
         node = ComparisonNode()
         node.expr = self.expr(dep=dep+1)
         t = self.strm.get()
@@ -1063,7 +1063,7 @@ class AST:
         tok = self.strm.cur()
         if tok.kind in ('colon', 'semicolon'):
             return None
-        
+
         i = self.strm.index
         node = ExprNode()
         node.gorasu = self.gorasu(dep=dep+1)
@@ -1219,12 +1219,12 @@ class AST:
             self.strm.prev()
             return None
 
-        return node 
+        return node
 
     def not_expr(self, dep):
         self.show_parse('not_expr', dep=dep)
         if self.strm.eof():
-            return None    
+            return None
 
         node = NotExprNode()
         tok = self.strm.get()
@@ -1250,7 +1250,7 @@ class AST:
             node.operator = tok.value
         else:
             if tok.value not in ('++', '--'):
-                raise AST.SyntaxError('not found operator in inc-dec expression 2')            
+                raise AST.SyntaxError('not found operator in inc-dec expression 2')
             node.front_or_back = 'front'
             node.operator = tok.value
             tok = self.strm.get()
@@ -1259,7 +1259,7 @@ class AST:
             node.identifier = tok.value
 
         return node
-        
+
     def is_callable(self, dep):
         self.show_parse('is_callable', dep=dep)
         if self.strm.eof():
@@ -1327,7 +1327,7 @@ class AST:
         self.show_parse('import', dep=dep)
         if self.strm.eof():
             return None
-        
+
         node = ImportNode()
         t = self.strm.get()
         if t.kind != 'import':

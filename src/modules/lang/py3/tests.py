@@ -13,7 +13,7 @@ class Test(unittest.TestCase):
         if self.silent: return
 
         t = Tokenizer()
-        
+
         ts = t.parse('')
         self.assertEqual(len(ts), 0)
 
@@ -297,7 +297,7 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[3].value, 1)
         self.assertEqual(ts[4].kind, 'rbraceat')
         self.assertEqual(ts[4].value, '@}')
-        
+
         ts = t.parse('{@ a /= 1 @}')
         self.assertEqual(len(ts), 5)
         self.assertEqual(ts[0].kind, 'lbraceat')
@@ -310,7 +310,7 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[3].value, 1)
         self.assertEqual(ts[4].kind, 'rbraceat')
         self.assertEqual(ts[4].value, '@}')
-        
+
         ts = t.parse('{@ a %= 1 @}')
         self.assertEqual(len(ts), 5)
         self.assertEqual(ts[0].kind, 'lbraceat')
@@ -440,7 +440,7 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[3].kind, 'digit')
         self.assertEqual(ts[3].value, 0)
         self.assertEqual(ts[4].kind, 'rbraceat')
-        self.assertEqual(ts[4].value, '@}')        
+        self.assertEqual(ts[4].value, '@}')
 
         ts = t.parse('{@ 0 != 0 @}')
         self.assertEqual(len(ts), 5)
@@ -453,7 +453,7 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[3].kind, 'digit')
         self.assertEqual(ts[3].value, 0)
         self.assertEqual(ts[4].kind, 'rbraceat')
-        self.assertEqual(ts[4].value, '@}')        
+        self.assertEqual(ts[4].value, '@}')
 
         ts = t.parse('{@ 0 > 0 @}')
         self.assertEqual(len(ts), 5)
@@ -466,7 +466,7 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[3].kind, 'digit')
         self.assertEqual(ts[3].value, 0)
         self.assertEqual(ts[4].kind, 'rbraceat')
-        self.assertEqual(ts[4].value, '@}')        
+        self.assertEqual(ts[4].value, '@}')
 
         ts = t.parse('{@ 0 < 0 @}')
         self.assertEqual(len(ts), 5)
@@ -479,7 +479,7 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[3].kind, 'digit')
         self.assertEqual(ts[3].value, 0)
         self.assertEqual(ts[4].kind, 'rbraceat')
-        self.assertEqual(ts[4].value, '@}')        
+        self.assertEqual(ts[4].value, '@}')
 
         ts = t.parse('{@ 0 >= 0 @}')
         self.assertEqual(len(ts), 5)
@@ -492,7 +492,7 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[3].kind, 'digit')
         self.assertEqual(ts[3].value, 0)
         self.assertEqual(ts[4].kind, 'rbraceat')
-        self.assertEqual(ts[4].value, '@}')        
+        self.assertEqual(ts[4].value, '@}')
 
         ts = t.parse('{@ 0 <= 0 @}')
         self.assertEqual(len(ts), 5)
@@ -505,7 +505,7 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[3].kind, 'digit')
         self.assertEqual(ts[3].value, 0)
         self.assertEqual(ts[4].kind, 'rbraceat')
-        self.assertEqual(ts[4].value, '@}')        
+        self.assertEqual(ts[4].value, '@}')
 
     def test_ast_basic(self):
         if self.silent: return
@@ -529,7 +529,7 @@ class Test(unittest.TestCase):
 
     def test_ast_import(self):
         if self.silent: return
-        
+
         t = Tokenizer()
         a = AST()
 
@@ -554,7 +554,7 @@ class Test(unittest.TestCase):
 
     def test_ast_alias(self):
         if self.silent: return
-        
+
         t = Tokenizer()
         a = AST()
 
@@ -577,7 +577,7 @@ class Test(unittest.TestCase):
 
     def test_ast_opts(self):
         if self.silent: return
-        
+
         t = Tokenizer()
         a = AST()
 
@@ -606,7 +606,7 @@ class Test(unittest.TestCase):
 
     def test_ast_expr(self):
         if self.silent: return
-        
+
         t = Tokenizer()
         a = AST()
 
@@ -668,6 +668,7 @@ class Test(unittest.TestCase):
         @}'''))
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 6)
+        self.assertEqual(a.current_scope.syms['a'], 3)
         self.assertEqual(a.current_scope.syms['v'], 6)
 
         a.parse(t.parse('{@ 1 && 1 @}'))
@@ -776,7 +777,7 @@ class Test(unittest.TestCase):
 
     def test_ast_id_expr(self):
         if self.silent: return
-        
+
         t = Tokenizer()
         a = AST()
 
@@ -846,7 +847,7 @@ class Test(unittest.TestCase):
 
     def test_ast_call_stmt(self):
         if self.silent: return
-        
+
         t = Tokenizer()
         a = AST()
 
@@ -882,7 +883,7 @@ class Test(unittest.TestCase):
 
     def test_ast_callable(self):
         if self.silent: return
-        
+
         t = Tokenizer()
         a = AST()
 
@@ -896,7 +897,7 @@ class Test(unittest.TestCase):
 
     def test_ast_def_func(self):
         if self.silent: return
-        
+
         t = Tokenizer()
         a = AST()
 
@@ -1374,7 +1375,7 @@ class Test(unittest.TestCase):
 
     def test_ast_return(self):
         if self.silent: return
-        
+
         t = Tokenizer()
         a = AST()
 
@@ -1397,7 +1398,7 @@ class Test(unittest.TestCase):
 
     def test_ast_assign(self):
         if self.silent: return
-        
+
         t = Tokenizer()
         a = AST()
 
@@ -1459,7 +1460,7 @@ class Test(unittest.TestCase):
 {@ v = "v" @} '''))
         c = a.traverse()
         self.assertEqual(a.current_scope.syms['v'], 'v')
-        
+
         a.parse(t.parse('{@ v = 1 + 2 @}'))
         c = a.traverse()
         self.assertEqual(a.current_scope.syms['v'], 3)
@@ -1504,14 +1505,25 @@ class Test(unittest.TestCase):
 
     def test_ast_assign_expr(self):
         if self.silent: return
-        
+
         t = Tokenizer()
         a = AST()
 
         a.parse(t.parse('{@ a = 0 @}'))
         c = a.traverse()
-        self.assertEqual(c.last_expr_val, 0)        
-        self.assertEqual(a.current_scope.syms['a'], 0)        
+        self.assertEqual(c.last_expr_val, 0)
+        self.assertEqual(a.current_scope.syms['a'], 0)
+
+        a.parse(t.parse('{@ a = 0 b = 1 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 1)
+        self.assertEqual(a.current_scope.syms['a'], 0)
+        self.assertEqual(a.current_scope.syms['b'], 1)
+
+        a.parse(t.parse('{@ a = 0 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 0)
+        self.assertEqual(a.current_scope.syms['a'], 0)
 
         with self.assertRaises(AST.ReferenceError):
             a.parse(t.parse('{@ a += 1 @}'))
@@ -1559,6 +1571,14 @@ class Test(unittest.TestCase):
 
         a.parse(t.parse('''{@
             a = 2
+            a *= a
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 4)
+        self.assertEqual(a.current_scope.syms['a'], 4)
+
+        a.parse(t.parse('''{@
+            a = 2
             a /= 2
         @}'''))
         c = a.traverse()
@@ -1575,7 +1595,7 @@ class Test(unittest.TestCase):
 
     def test_ast_comparison(self):
         if self.silent: return
-        
+
         t = Tokenizer()
         a = AST()
 
@@ -1605,7 +1625,7 @@ class Test(unittest.TestCase):
 
         a.parse(t.parse('''{@
             v = 0
-            v == 0 
+            v == 0
         @}'''))
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 1)
@@ -1672,7 +1692,7 @@ class Test(unittest.TestCase):
 
     def test_ast_for(self):
         if self.silent: return
-        
+
         t = Tokenizer()
         a = AST()
 
@@ -1768,7 +1788,7 @@ class Test(unittest.TestCase):
 
     def test_ast_not_expr(self):
         if self.silent: return
-        
+
         t = Tokenizer()
         a = AST()
 
@@ -1794,7 +1814,7 @@ class Test(unittest.TestCase):
 
     def test_ast_if(self):
         if self.silent: return
-        
+
         t = Tokenizer()
         a = AST()
 
@@ -2216,7 +2236,7 @@ c'''))
 
     def test_ast_opts(self):
         if self.silent: return
-        
+
         a = AST()
         t = Tokenizer()
 
