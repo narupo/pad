@@ -19,8 +19,6 @@ struct catcmd {
     char **argv;
     struct opts opts;
     int optind;
-    char cdpath[FILE_NPATH];
-    char homepath[FILE_NPATH];
 };
 
 /**
@@ -136,11 +134,11 @@ static char *
 catcmd_makepath(catcmd_t *self, char *dst, size_t dstsz, const char *name) {
     const char *org;
     if (name[0] == '/') {
-        org = self->homepath;
+        org = self->config->home_path;
     } else if (self->config->scope == CAP_SCOPE_LOCAL) {
-        org = self->cdpath;
+        org = self->config->cd_path;
     } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
-        org = self->homepath;
+        org = self->config->home_path;
     } else {
         err_die("impossible. invalid state in make path");
     }
@@ -379,14 +377,6 @@ catcmd_run(catcmd_t *self) {
         catcmd_write_stream(self, stdout, stdinbuf);
         str_del(stdinbuf);
         return 0;
-    }
-
-    if (!file_readline(self->cdpath, sizeof self->cdpath, self->config->var_cd_path)) {
-        err_die("need environment variable of cd");
-    }
-
-    if (!file_readline(self->homepath, sizeof self->homepath, self->config->var_home_path)) {
-        err_die("need environment variable of home");
     }
 
     int ret = 0;
