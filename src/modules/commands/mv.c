@@ -90,21 +90,36 @@ int
 mvcmd_mv(mvcmd_t *self) {
     const char *old = self->argv[self->optind];
     const char *new = self->argv[self->optind+1];
-    char parpath[FILE_NPATH];
+    const char *org;
     char oldpath[FILE_NPATH];
     char newpath[FILE_NPATH];
 
-    if (!file_readline(parpath, sizeof parpath, self->config->var_cd_path)) {
-        err_error("failed to read line from cd of variable");
-        return 1;
+    if (old[0] == '/') {
+        org = self->config->home_path;
+    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
+        org = self->config->cd_path;
+    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
+        org = self->config->home_path;
+    } else {
+        err_die("impossible. invalid state in mv");
     }
 
-    if (!file_solvefmt(oldpath, sizeof oldpath, "%s/%s", parpath, old)) {
+    if (!file_solvefmt(oldpath, sizeof oldpath, "%s/%s", org, old)) {
         err_error("failed to solve path for old");
         return 2;
     }
 
-    if (!file_solvefmt(newpath, sizeof newpath, "%s/%s", parpath, new)) {
+    if (new[0] == '/') {
+        org = self->config->home_path;
+    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
+        org = self->config->cd_path;
+    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
+        org = self->config->home_path;
+    } else {
+        err_die("impossible. invalid state in mv (2)");
+    }
+
+    if (!file_solvefmt(newpath, sizeof newpath, "%s/%s", org, new)) {
         err_error("failed to solve path for new");
         return 3;
     }
