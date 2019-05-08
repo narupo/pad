@@ -129,8 +129,8 @@ runcmd_run(runcmd_t *self) {
 
     // Start process communication
     int option = SAFESYSTEM_DEFAULT;
-    const char *dodetach = getenv("CAP_RUN_DETACH");
-    if (dodetach && dodetach[0] == '1') {
+    const char *detach = getenv("CAP_RUN_DETACH");
+    if (detach && detach[0] == '1') {
         option |= SAFESYSTEM_DETACH;
     }
 
