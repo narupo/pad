@@ -471,6 +471,7 @@ identifier: ( [a-z] | [0-9] | _ )+
 =======================
 BNF 0.3.6
 add newline token
+add expr_line
 
 + is add sentense
 ^ is update sentence
@@ -484,8 +485,9 @@ name_list: identifier '.' name_list | identifier
 args: arg ',' args | arg
 arg: digit | string | identifier
 return_stmt: 'return' expr_list
-^ formula: ( expr_list | if_stmt | for_stmt | import_stmt | return_stmt | assign_stmt | def_func | newline ), ( formula | '@}' block '{@' )
+^ formula: ( expr_line | if_stmt | for_stmt | import_stmt | return_stmt | assign_stmt_line | def_func | newline | comma ), ( formula | '@}' block '{@' )
 def_func: 'def' identifier '(' dmy_args ')' ':' formula 'end'
++ assign_stmt_line: assign_stmt ( newline | ',' | '@}' | 'end' | 'else' | 'elif')
 assign_stmt: result_list '=' expr | expr
 result_list: identifier ',' result_list | identifier
 if_stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
@@ -493,6 +495,7 @@ elif_stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | e
 else_stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
 for_stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
 comp_op: '==' | '!=' | '<' | '>' | '<=' | '>='
++ expr_line: expr_list ( newline | '@}' | 'end' | 'else' | 'elif' )
 expr_list: expr ',' expr_list | expr
 expr: gorasu ( '&&' | '||' ) expr | gorasu
 gorasu: kamiyu comp_op gorasu | kamiyu

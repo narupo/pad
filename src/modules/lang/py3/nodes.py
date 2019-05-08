@@ -14,6 +14,12 @@ class BlockNode(Node):
         self.syms = {} # symbol table
 
 
+class ExprLineNode(Node):
+    def __init__(self):
+        self.expr_list = None # Node
+        self.newline = None # str
+
+
 class ExprListNode(Node):
     def __init__(self):
         self.expr = None # Node
@@ -76,7 +82,12 @@ class ForNode(Node):
         self.formula = None # Node
 
 
-class AssignNode(Node):
+class AssignStmtLineNode(Node):
+    def __init__(self):
+        self.assign_stmt = None # Node
+
+
+class AssignStmtNode(Node):
     def __init__(self):
         self.result_list = None # Node
         self.expr = None # Node
@@ -142,9 +153,9 @@ class ReturnNode(Node):
 
 class FormulaNode(Node):
     def __init__(self):
-        self.expr_list = None # Node
+        self.expr_line = None # Node
         self.assign_expr = None # Node
-        self.assign_stmt = None # Node
+        self.assign_stmt_line = None # Node
         self.if_ = None # Node
         self.for_ = None # Node
         self.return_ = None # Node

@@ -714,15 +714,20 @@ class Test(unittest.TestCase):
 
         a.parse(t.parse('{@ a = 1, b = 2 @}'))
         c = a.traverse()
-        self.assertEqual(c.last_expr_val, (1, 2))
+        self.assertEqual(a.current_scope.syms['a'], 1)
+        self.assertEqual(a.current_scope.syms['b'], 2)
+        self.assertEqual(c.last_expr_val, 2)
 
         a.parse(t.parse('{@ a = 1, b = 2, c = 3 @}'))
         c = a.traverse()
-        self.assertEqual(c.last_expr_val, (1, 2, 3))
+        self.assertEqual(a.current_scope.syms['a'], 1)
+        self.assertEqual(a.current_scope.syms['b'], 2)
+        self.assertEqual(a.current_scope.syms['c'], 3)
+        self.assertEqual(c.last_expr_val, 3)
 
         a.parse(t.parse('{@ a = 0, a += 1 @}{{ a }}'))
         c = a.traverse()
-        self.assertEqual(c.last_expr_val, (0, 1))
+        self.assertEqual(c.last_expr_val, 1)
         self.assertEqual(c.buffer, '1')
 
         a.parse(t.parse('''{@
@@ -777,7 +782,7 @@ class Test(unittest.TestCase):
         self.assertEqual(c.last_expr_val, 3)
 
     def test_ast_id_expr(self):
-        if self.silent: return
+        # if self.silent: return
 
         t = Tokenizer()
         a = AST()
@@ -1409,12 +1414,11 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(a.current_scope.syms['a'], 's')
 
-        a.parse(t.parse('''{@
-            a = 0 b = 1
-@}'''))
-        c = a.traverse()
-        self.assertEqual(a.current_scope.syms['a'], 0)
-        self.assertEqual(a.current_scope.syms['b'], 1)
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('''{@
+                a = 0 b = 1
+    @}'''))
+            c = a.traverse()
 
         a.parse(t.parse('''{@
             a = "s"
@@ -1514,12 +1518,6 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 0)
         self.assertEqual(a.current_scope.syms['a'], 0)
-
-        a.parse(t.parse('{@ a = 0 b = 1 @}'))
-        c = a.traverse()
-        self.assertEqual(c.last_expr_val, 1)
-        self.assertEqual(a.current_scope.syms['a'], 0)
-        self.assertEqual(a.current_scope.syms['b'], 1)
 
         a.parse(t.parse('{@ a = 0 @}'))
         c = a.traverse()
