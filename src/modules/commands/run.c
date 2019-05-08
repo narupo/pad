@@ -83,25 +83,22 @@ runcmd_run(runcmd_t *self) {
         return 1;
     }
 
-    char cdorhome[FILE_NPATH];
-    if (self->config->scope == CAP_SCOPE_LOCAL) {
-        if (!file_readline(cdorhome, sizeof cdorhome, self->config->var_cd_path)) {
-            err_error("need environment variable of cd");
-            return 3;
-        }
+    const char *argpath = self->argv[1];
+    const char *org;
+
+    if (argpath[0] == '/') {
+        org = self->config->home_path;
+    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
+        org = self->config->cd_path;
     } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
-        if (!file_readline(cdorhome, sizeof cdorhome, self->config->var_home_path)) {
-            err_error("need environment variable of home");
-            return 4;
-        }
+        org = self->config->home_path;
     } else {
-        err_error("invalid scope \"%d\"", self->config->scope);
-        return 5;
+        err_die("impossible. invalid state in run");
     }
 
     // Create script path
     char spath[FILE_NPATH];
-    file_solvefmt(spath, sizeof spath, "%s/%s", cdorhome, self->argv[1]);
+    file_solvefmt(spath, sizeof spath, "%s/%s", org, argpath);
     if (isoutofhome(self->config->var_home_path, spath)) {
         err_error("invalid script. \"%s\" is out of home.", spath);
         return 6;
