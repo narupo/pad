@@ -146,9 +146,9 @@ class DmyArg:
         self.identifier = None # str
 
 
-class ReturnNode(Node):
+class ReturnStmtNode(Node):
     def __init__(self):
-        self.expr_list = None # Node
+        self.expr_line = None # Node
 
 
 class FormulaNode(Node):
