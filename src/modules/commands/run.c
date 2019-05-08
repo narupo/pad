@@ -128,8 +128,14 @@ runcmd_run(runcmd_t *self) {
     str_popb(cmdline);
 
     // Start process communication
+    int option = SAFESYSTEM_DEFAULT;
+    const char *dodetach = getenv("CAP_RUN_DETACH");
+    if (dodetach && dodetach[0] == '1') {
+        option |= SAFESYSTEM_DETACH;
+    }
+
     safesystem(str_getc(cmdline), SAFESYSTEM_DEFAULT);
-    
+
     // Done
     str_del(cmdline);
     return 0;
