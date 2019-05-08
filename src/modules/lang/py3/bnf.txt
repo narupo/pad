@@ -487,7 +487,7 @@ name_list: identifier '.' name_list | identifier
 args: arg ',' args | arg
 arg: digit | string | identifier
 ^ return_stmt: 'return' expr_line
-^ formula: ( expr_line | if_stmt | for_stmt | import_stmt | return_stmt | assign_stmt_line | def_func | newline | comma ), ( formula | '@}' block '{@' )
+^ formula: ( expr_line | if_stmt | for_stmt | import_stmt | return_stmt | assign_stmt_line | def_func | newline ), ( formula | '@}' block '{@' )
 def_func: 'def' identifier '(' dmy_args ')' ':' formula 'end'
 + assign_stmt_line: assign_stmt ( newline | ',' | '@}' | 'end' | 'else' | 'elif')
 assign_stmt: result_list '=' expr | expr
