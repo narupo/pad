@@ -1,6 +1,6 @@
 BNF 0.0.0
 
-program ::= ( code-block | text-block ) program 
+program ::= ( code-block | text-block ) program
 code-block ::= '{@' formula '@}'
 text-block ::= .*
 formula ::= ( import | caller ), formula
@@ -8,7 +8,7 @@ import ::= 'import' identifier
 caller ::= identifier ( '.' identifier )+ '(' args ')'
 args ::= string | ',' args
 string ::= '"' .* '"'
-identifier ::= ( [a-z] | [0-9] | _ )+ 
+identifier ::= ( [a-z] | [0-9] | _ )+
 
 2019-04-01 03:23:29 曇のち雪 1~10°
 =================================
@@ -17,8 +17,8 @@ BNF 0.1.0
 + is add sentense
 ^ is update sentence
 
-program ::= block, program 
-+ block ::= text-block | code-block | ref-block 
+program ::= block, program
++ block ::= text-block | code-block | ref-block
 text-block ::= .*
 code-block ::= '{@' {formula}* '@}'
 + ref-block ::= '{{' identifier '}}'
@@ -32,7 +32,7 @@ import-stmt ::= 'import' identifier
 caller-stmt ::= identifier ( '.' identifier )+ '(' args ')'
 args ::= string | ',' args
 string ::= '"' .* '"'
-identifier ::= ( [a-z] | [0-9] | _ )+ 
+identifier ::= ( [a-z] | [0-9] | _ )+
 
 2019-04-02 05:37:52 曇のち雪
 ===========================
@@ -60,7 +60,7 @@ caller-stmt ::= identifier ( '.' identifier )+ '(' args ')'
 args ::= string | ',' args
 string ::= '"' .* '"'
 + digit ::= [0-9]+
-identifier ::= ( [a-z] | [0-9] | _ )+ 
+identifier ::= ( [a-z] | [0-9] | _ )+
 
 2019-04-02 05:37:52 曇のち雪
 ===========================
@@ -92,7 +92,7 @@ caller-stmt ::= identifier ( '.' identifier )+ '(' args ')'
 args ::= string | ',' args
 string ::= '"' .* '"'
 digit ::= [0-9]+
-identifier ::= ( [a-z] | [0-9] | _ )+ 
+identifier ::= ( [a-z] | [0-9] | _ )+
 
 2019-04-14 11:20:12 曇のち雨
 ============================
@@ -128,7 +128,7 @@ caller-stmt: identifier ( '.' identifier )+ '(' args ')'
 args: string | ',' args
 string: '"' .* '"'
 digit: [0-9]+
-identifier: ( [a-z] | [0-9] | _ )+ 
+identifier: ( [a-z] | [0-9] | _ )+
 
 2019-04-14 11:20:12 曇のち雨
 ============================
@@ -165,7 +165,7 @@ import-stmt: 'import' identifier
 args: string | ',' args
 string: '"' .* '"'
 digit: [0-9]+
-identifier: ( [a-z] | [0-9] | _ )+ 
+identifier: ( [a-z] | [0-9] | _ )+
 
 2019-05-05 08:04:09 晴のち曇
 ===========================
@@ -201,7 +201,7 @@ import-stmt: 'import' identifier
 args: string | ',' args
 string: '"' .* '"'
 digit: [0-9]+
-identifier: ( [a-z] | [0-9] | _ )+ 
+identifier: ( [a-z] | [0-9] | _ )+
 
 2019-05-05 08:04:23 晴のち曇
 ===========================
@@ -238,7 +238,7 @@ import-stmt: 'import' identifier
 args: string | ',' args
 string: '"' .* '"'
 digit: [0-9]+
-identifier: ( [a-z] | [0-9] | _ )+ 
+identifier: ( [a-z] | [0-9] | _ )+
 
 2019-05-05 10:07:00 晴のち曇
 ===========================
@@ -282,7 +282,7 @@ import-stmt: 'import' identifier
 + arg: expr
 string: '"' .* '"'
 digit: [0-9]+
-identifier: ( [a-z] | [0-9] | _ )+ 
+identifier: ( [a-z] | [0-9] | _ )+
 
 2019-05-05 20:34:53 晴のち曇
 ===========================
@@ -325,7 +325,7 @@ args: arg ',' args | arg
 arg: expr
 string: '"' .* '"'
 digit: [0-9]+
-identifier: ( [a-z] | [0-9] | _ )+ 
+identifier: ( [a-z] | [0-9] | _ )+
 
 2019-05-05 21:23:59 曇り
 =======================
@@ -371,7 +371,7 @@ args: arg ',' args | arg
 arg: expr
 string: '"' .* '"'
 digit: [0-9]+
-identifier: ( [a-z] | [0-9] | _ )+ 
+identifier: ( [a-z] | [0-9] | _ )+
 
 2019-05-05 21:23:59 曇り
 =======================
@@ -418,7 +418,7 @@ args: arg ',' args | arg
 arg: expr
 string: '"' .* '"'
 digit: [0-9]+
-identifier: ( [a-z] | [0-9] | _ )+ 
+identifier: ( [a-z] | [0-9] | _ )+
 
 2019-05-08 08:02:47 晴れ
 =======================
@@ -465,4 +465,52 @@ args: arg ',' args | arg
 arg: expr
 string: '"' .* '"'
 digit: [0-9]+
-identifier: ( [a-z] | [0-9] | _ )+ 
+identifier: ( [a-z] | [0-9] | _ )+
+
+2019-05-08 08:02:47 晴れ
+=======================
+BNF 0.3.6
+add newline token
+
++ is add sentense
+^ is update sentence
+
+block: ( text_block | code_block | ref_block ), block
+text_block: .*
+^ code_block: '{@' formula '@}'
+ref_block: '{{' expr '}}'
+callable: name_list '(' args ')'
+name_list: identifier '.' name_list | identifier
+args: arg ',' args | arg
+arg: digit | string | identifier
+return_stmt: 'return' expr_list
+^ formula: ( expr_list | if_stmt | for_stmt | import_stmt | return_stmt | assign_stmt | def_func | newline ), ( formula | '@}' block '{@' )
+def_func: 'def' identifier '(' dmy_args ')' ':' formula 'end'
+assign_stmt: result_list '=' expr | expr
+result_list: identifier ',' result_list | identifier
+if_stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
+elif_stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
+else_stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+for_stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
+cmp_op: '==' | '!=' | '<' | '>' | '<=' | '>='
+expr_list: expr ',' expr_list | expr
+expr: gorasu ( '&&' | '||' ) expr | gorasu
+gorasu: kamiyu cmp_op gorasu | kamiyu
+kamiyu: mod ('+' | '-' ) kamiyu | mod
+mod: term '%' mod | term
+term: factor ( '*' | '/' ) term | factor
+factor: digit | identifier | string | callable | id_expr | assign_expr | not_expr | '(' expr ')'
+not_expr: '!' expr
+id_expr: identifier ('++' | '--') | ('++' | '--') identifier
+assign_expr: identifier assign_operator assign_expr | expr
+assign_operator: '=' | '+=' | '-=' | '*=' | '/=' | '%='
+import_stmt: 'import' identifier
+dmy_args: dmy_arg ',' dmy_args | dmy_arg
+dmy_arg: identifier
+args: arg ',' args | arg
+arg: expr
+string: '"' .* '"'
+digit: [0-9]+
+identifier: ( [a-z] | [0-9] | _ )+
+newline: '\r\n' | '\n'
+

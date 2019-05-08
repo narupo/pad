@@ -2,7 +2,7 @@
 {@
     import config
     config.set("editor", "subl")
-    
+
     import run
     linux_script = "/virtualenv/bin/python"
     windows_script = "C:\\virtualenv/bin/python"
@@ -76,7 +76,7 @@ class Tokenizer:
                 if c == self.rdbrace_value[0] and s.cur() == self.rdbrace_value[1]:
                     s.get()
                     self.tokens.append(Token(kind='rdbrace', value=self.rdbrace_value))
-                    m = 'text block'                    
+                    m = 'text block'
                 elif c.isdigit():
                     s.prev()
                     self.read_digit()
@@ -99,6 +99,12 @@ class Tokenizer:
                     s.get()
                     self.tokens.append(Token(kind='rbraceat', value='@}'))
                     m = 'text block'
+                elif c == '\n':
+                    s.prev()
+                    self.read_newline()
+                elif c == '\r' and s.cur() == '\n':
+                    s.prev()
+                    self.read_newline()
                 elif c == '.':
                     self.tokens.append(Token(kind='operator', value='.'))
                 elif c == ',':
@@ -177,6 +183,19 @@ class Tokenizer:
 
         return self.tokens
 
+    def read_newline(self):
+        c = self.strm.get()
+        if c == '\n':
+            self.tokens.append(Token(kind='newline', value='\n'))
+        elif c == '\r':
+            c = self.strm.get()
+            if c == '\n':
+                self.tokens.append(Token(kind='newline', value='\r\n'))
+            else:
+                raise AST.ModuleError('impossible. not found "\n" in read newline')
+        else:
+            raise AST.ModuleError('impossible. invalid character in read newline')
+
     def read_at_newline(self):
         while not self.strm.eof():
             c = self.strm.get()
@@ -253,7 +272,7 @@ class Tokenizer:
             self.tokens.append(Token(kind='operator', value='%='))
         else:
             self.tokens.append(Token(kind='operator', value='%'))
-    
+
 
     def read_mod(self):
         c = self.strm.get()
@@ -265,7 +284,7 @@ class Tokenizer:
             self.tokens.append(Token(kind='operator', value='%='))
         else:
             self.tokens.append(Token(kind='operator', value='%'))
-    
+
     def read_gt(self):
         c = self.strm.get()
         if c != '>':

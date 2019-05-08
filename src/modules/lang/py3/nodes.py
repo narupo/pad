@@ -144,6 +144,7 @@ class FormulaNode(Node):
     def __init__(self):
         self.expr_list = None # Node
         self.assign_expr = None # Node
+        self.assign_stmt = None # Node
         self.if_ = None # Node
         self.for_ = None # Node
         self.return_ = None # Node
@@ -152,6 +153,7 @@ class FormulaNode(Node):
         self.formula = None # Node
         self.block = None # Node
         self.call_stmt = None # Node
+        self.newline = None # str
 
 
 class ImportNode(Node):

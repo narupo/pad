@@ -562,6 +562,7 @@ class Test(unittest.TestCase):
             import alias
             alias.set("dtl", "run bin/date-line/date-line.py")
 @}'''))
+
         with self.assertRaises(AST.SyntaxError):
             a.parse(t.parse('''{@
                 import alias
