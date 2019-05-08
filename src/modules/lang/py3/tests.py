@@ -1602,6 +1602,14 @@ class Test(unittest.TestCase):
         self.assertEqual(a.current_scope.syms['d'], 3)
         self.assertEqual(c.last_expr_val, (2, 3))
 
+        a.parse(t.parse('''{@
+            a = "a"
+            a += "bc"
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(a.current_scope.syms['a'], 'abc')
+        self.assertEqual(c.last_expr_val, 'abc')
+
     def test_ast_assign_expr(self):
         if self.silent: return
 
