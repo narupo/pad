@@ -1,23 +1,3 @@
-"""
-{@
-    import config
-    config.set("editor", "subl")
-
-    import run
-    linux_script = "/virtualenv/bin/python"
-    windows_script = "C:\\virtualenv/bin/python"
-    if os.getName() == 'Windows':
-        run.bind(windows_script, "bin/script.py")
-    elif os.getName() == 'Linux':
-        run.bind(linux_script, "bin/script")
-    else:
-        print('error')
-    end
-@}
-
-{{ linux_script }}
-
-"""
 from stream import Stream
 from tokens import Token
 
@@ -49,139 +29,131 @@ class Tokenizer:
         self.strm = Stream(src)
         self.tokens = []
 
-        s = self.strm
         m = 'text block'
         buf = ''
-        while not s.eof():
-            c = s.get()
-            self.show_parse('m', m, ', c', c)
+        while not self.strm.eof():
+            c = self.strm.get()
+            self.show_parse('m[%s] c[%s]' % (m, c))
+
             if m == 'text block':
-                if c == '{' and s.cur() == '@':
+                if c == '{' and self.strm.cur() == '@':
                     if len(buf):
                         self.tokens.append(Token(kind='text-block', value=buf))
                         buf = ''
-                    s.get()
+                    self.strm.get()
                     self.tokens.append(Token(kind='lbraceat', value='{@'))
                     m = 'code block'
-                elif c == self.ldbrace_value[0] and s.cur() == self.ldbrace_value[1]:
+                elif c == self.ldbrace_value[0] and self.strm.cur() == self.ldbrace_value[1]:
                     if len(buf):
                         self.tokens.append(Token(kind='text-block', value=buf))
                         buf = ''
-                    s.get()
+                    self.strm.get()
                     self.tokens.append(Token(kind='ldbrace', value=self.ldbrace_value))
                     m = 'ref block'
                 else:
                     buf += c
             elif m == 'ref block':
-                if c == self.rdbrace_value[0] and s.cur() == self.rdbrace_value[1]:
-                    s.get()
+                if c == self.rdbrace_value[0] and self.strm.cur() == self.rdbrace_value[1]:
+                    self.strm.get()
                     self.tokens.append(Token(kind='rdbrace', value=self.rdbrace_value))
                     m = 'text block'
-                elif c.isdigit():
-                    s.prev()
-                    self.read_digit()
-                elif self.is_identifier_char(c):
-                    s.prev()
-                    self.read_identifier()
-                elif c == '(':
-                    self.tokens.append(Token(kind='lparen', value='('))
-                elif c == ')':
-                    self.tokens.append(Token(kind='rparen', value=')'))
-                elif c == '.':
-                    self.tokens.append(Token(kind='operator', value='.'))
-                elif c == ',':
-                    self.tokens.append(Token(kind='comma', value=','))
-                elif c == '"':
-                    s.prev()
-                    self.read_string()
+                else:
+                    self.strm.prev()
+                    self.read_union()
             elif m == 'code block':
-                if c == '@' and s.cur() == '}':
-                    s.get()
+                if c == '@' and self.strm.cur() == '}':
+                    self.strm.get()
                     self.tokens.append(Token(kind='rbraceat', value='@}'))
                     m = 'text block'
                 elif c == '\n':
-                    s.prev()
+                    self.strm.prev()
                     self.read_newline()
-                elif c == '\r' and s.cur() == '\n':
-                    s.prev()
+                elif c == '\r' and self.strm.cur() == '\n':
+                    self.strm.prev()
                     self.read_newline()
-                elif c == '.':
-                    self.tokens.append(Token(kind='operator', value='.'))
-                elif c == ',':
-                    self.tokens.append(Token(kind='comma', value=','))
-                elif c == '(':
-                    self.tokens.append(Token(kind='lparen', value='('))
-                elif c == ')':
-                    self.tokens.append(Token(kind='rparen', value=')'))
                 elif c == ':':
                     self.tokens.append(Token(kind='colon', value=':'))
                 elif c == ';':
                     self.tokens.append(Token(kind='semicolon', value=';'))
-                elif c == '=':
-                    s.prev()
-                    self.read_assign()
-                elif c == '!':
-                    s.prev()
-                    self.read_not()
-                elif c == '<':
-                    s.prev()
-                    self.read_lt()
-                elif c == '>':
-                    s.prev()
-                    self.read_gt()
-                elif c == '+':
-                    s.prev()
-                    self.read_add()
-                elif c == '-':
-                    s.prev()
-                    self.read_sub()
-                elif c == '*':
-                    s.prev()
-                    self.read_mul()
-                elif c == '/':
-                    if s.cur() == '/':
-                        s.get()
-                        self.read_at_newline()
-                    elif s.cur() == '*':
-                        s.get()
-                        self.read_at_starslash()
-                    else:
-                        s.prev()
-                        self.read_div()
-                elif c == '%':
-                    s.prev()
-                    self.read_mod()
-                elif c == '&':
-                    if s.cur() == '&':
-                        s.get()
-                        self.tokens.append(Token(kind='operator', value='&&'))
-                    else:
-                        self.tokens.append(Token(kind='operator', value='&'))
-                elif c == '|':
-                    if s.cur() == '|':
-                        s.get()
-                        self.tokens.append(Token(kind='operator', value='||'))
-                    else:
-                        self.tokens.append(Token(kind='operator', value='|'))
-                elif c == '"':
-                    s.prev()
-                    self.read_string()
-                elif c.isdigit():
-                    s.prev()
-                    self.read_digit()
-                elif self.is_identifier_char(c):
-                    s.prev()
-                    self.read_identifier()
-                elif c.isspace():
-                    pass
                 else:
-                    raise Tokenizer.ParseError('unsupported character "%s"' % c)
+                    self.strm.prev()
+                    self.read_union()
 
         if len(buf):
             self.tokens.append(Token(kind='text-block', value=buf))
             buf = ''
 
         return self.tokens
+
+    def read_union(self):
+        c = self.strm.get()
+        if c == '=':
+            self.strm.prev()
+            self.read_assign()
+        elif c == '!':
+            self.strm.prev()
+            self.read_not()
+        elif c == '<':
+            self.strm.prev()
+            self.read_lt()
+        elif c == '>':
+            self.strm.prev()
+            self.read_gt()
+        elif c == '+':
+            self.strm.prev()
+            self.read_add()
+        elif c == '-':
+            self.strm.prev()
+            self.read_sub()
+        elif c == '*':
+            self.strm.prev()
+            self.read_mul()
+        elif c == '/':
+            if self.strm.cur() == '/':
+                self.strm.get()
+                self.read_at_newline()
+            elif self.strm.cur() == '*':
+                self.strm.get()
+                self.read_at_starslash()
+            else:
+                self.strm.prev()
+                self.read_div()
+        elif c == '%':
+            self.strm.prev()
+            self.read_mod()
+        elif c == '&':
+            if self.strm.cur() == '&':
+                self.strm.get()
+                self.tokens.append(Token(kind='operator', value='&&'))
+            else:
+                self.tokens.append(Token(kind='operator', value='&'))
+        elif c == '|':
+            if self.strm.cur() == '|':
+                self.strm.get()
+                self.tokens.append(Token(kind='operator', value='||'))
+            else:
+                self.tokens.append(Token(kind='operator', value='|'))
+        elif c == '.':
+            self.tokens.append(Token(kind='operator', value='.'))
+        elif c == ',':
+            self.tokens.append(Token(kind='comma', value=','))
+        elif c == '(':
+            self.tokens.append(Token(kind='lparen', value='('))
+        elif c == ')':
+            self.tokens.append(Token(kind='rparen', value=')'))
+        elif c == '"':
+            self.strm.prev()
+            self.read_string()
+        elif c.isdigit():
+            self.strm.prev()
+            self.read_digit()
+        elif self.is_identifier_char(c):
+            self.strm.prev()
+            self.read_identifier()
+        elif c.isspace():
+            pass
+        else:
+            raise Tokenizer.ParseError('unsupported character "%s"' % c)
 
     def read_newline(self):
         c = self.strm.get()

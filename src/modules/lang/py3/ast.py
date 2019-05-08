@@ -515,6 +515,7 @@ class AST:
             result = self._trav(node.expr, dep=dep+1)
             if result is not None:
                 self.context.buffer += str(result)
+                self.context.last_expr_val = result
         return result
 
     def trav_import_stmt(self, node, dep):
