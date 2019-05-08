@@ -81,8 +81,11 @@ class AST:
         elif isinstance(node, FormulaNode):
             return self.trav_formula(node, dep=dep+1)
 
-        elif isinstance(node, AssignNode):
-            return self.trav_assign(node, dep=dep+1)
+        elif isinstance(node, AssignStmtLineNode):
+            return self.trav_assign_stmt_line(node, dep=dep+1)
+
+        elif isinstance(node, AssignStmtNode):
+            return self.trav_assign_stmt(node, dep=dep+1)
 
         elif isinstance(node, ForNode):
             return self.trav_for(node, dep=dep+1)
@@ -98,6 +101,9 @@ class AST:
 
         elif isinstance(node, ElseNode):
             return self.trav_else(node, dep=dep+1)
+
+        elif isinstance(node, ExprLineNode):
+            return self.trav_expr_line(node, dep=dep+1)
 
         elif isinstance(node, ExprListNode):
             return self.trav_expr_list(node, dep=dep+1)
@@ -281,8 +287,8 @@ class AST:
 
     def trav_formula(self, node, dep):
         # formula is DO NOT RETURN
-        if node.expr_list:
-            result = self._trav(node.expr_list, dep=dep+1)
+        if node.expr_line:
+            result = self._trav(node.expr_line, dep=dep+1)
             if isinstance(result, tuple) and len(result) == 1:
                 self.context.last_expr_val = result[0]
             else:
@@ -300,8 +306,8 @@ class AST:
             return None # ALWAYS RETURN
         elif node.def_func:
             self._trav(node.def_func, dep=dep+1)
-        elif node.assign_stmt:
-            result = self._trav(node.assign_stmt, dep=dep+1)
+        elif node.assign_stmt_line:
+            result = self._trav(node.assign_stmt_line, dep=dep+1)
             self.context.last_expr_val = result
 
         if self.returned:
@@ -325,7 +331,10 @@ class AST:
             return self._trav(node.block, dep=dep+1)
         return result
 
-    def trav_assign(self, node, dep):
+    def trav_assign_stmt_line(self, node, dep):
+        return self._trav(node.assign_stmt, dep=dep+1)
+
+    def trav_assign_stmt(self, node, dep):
         if node.result_list and node.expr:
             identifiers = node.result_list.to_list()
             result = self._trav(node.expr, dep=dep+1)
@@ -352,6 +361,9 @@ class AST:
         # This is called by callable
         self.scope_list[-1].syms[node.identifier] = node
         return None
+
+    def trav_expr_line(self, node, dep):
+        return self._trav(node.expr_list, dep=dep+1)
 
     def trav_expr_list(self, node, dep):
         results = []
@@ -723,12 +735,14 @@ class AST:
             t = self.strm.get()
             # このデータは必要？
             node.newline = t.value
+        elif t.kind == 'comma':
+            self.strm.get()
         else:
             i = self.strm.index
-            node.assign_stmt = self.assign_stmt(dep=dep+1)
-            if node.assign_stmt is None:
-                node.expr_list = self.expr_list(dep=dep+1)
-                if not self.strm.eof() and node.expr_list is None:
+            node.assign_stmt_line = self.assign_stmt_line(dep=dep+1)
+            if node.assign_stmt_line is None:
+                node.expr_line = self.expr_line(dep=dep+1)
+                if not self.strm.eof() and node.expr_line is None:
                     return None
 
         t = self.strm.get()
@@ -897,40 +911,67 @@ class AST:
     def is_comp_op(self, tok):
         return tok.kind == 'operator' and tok.value in ('==', '!=', '<', '>', '<=', '>=')
 
+    def assign_stmt_line(self, dep):
+        self.show_parse('assign_stmt_line', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = AssignStmtLineNode()
+        i = self.strm.index
+
+        node.assign_stmt = self.assign_stmt(dep=dep+1)
+        if node.assign_stmt is None:
+            self.strm.index = i
+            return None
+
+        tok = self.strm.get()
+        if tok == Stream.EOF:
+            pass
+        elif tok.kind in ('newline', 'comma'):
+            # read it
+            pass
+        elif tok.kind in ('rbraceat', 'end', 'else', 'elif'):
+            self.strm.prev()
+        else:
+            raise AST.SyntaxError('not found newline at assign statement line')
+
+        return node
+
     def assign_stmt(self, dep):
         self.show_parse('assign_stmt', dep=dep)
         if self.strm.eof():
             return None
 
-        node = AssignNode()
+        node = AssignStmtNode()
 
-        m = 'first'
+        found_assign_op = False
         i = self.strm.index
+
         while not self.strm.eof():
             t = self.strm.get()
-            if m == 'first':
-                if t.kind == 'operator' and t.value == '=':
-                    m = 'found ='
-                elif t.kind == 'lparen':
-                    m = 'found callable'
-                    break
-            elif m == 'found =':
-                if t.kind == 'lparen':
-                    m = 'found call stmt'
-                    break
+            if t.kind == 'newline':
+                break
+            elif t.kind == 'operator' and t.value == '=':
+                found_assign_op = True
+                break
         self.strm.index = i
 
-        if m == 'found call stmt':
-            node.result_list = self.result_list(dep=dep+1)
-            tok = self.strm.get()
-            if tok.kind != 'operator' and tok.value != '=':
-                raise AST.SyntaxError('not found "=" operator in call statement. token is %s' % tok)
-            node.expr = self.expr(dep=dep+1)
-            if node.expr is None:
-                self.strm.index = i
-                return None
-        else:
-            # do not process for callable
+        if not found_assign_op:
+            return None
+
+        i = self.strm.index
+        node.result_list = self.result_list(dep=dep+1)
+        if node.result_list is None:
+            self.strm.index = i
+            return None
+
+        tok = self.strm.get()
+        if not (tok.kind == 'operator' and tok.value == '='):
+            raise AST.SyntaxError('not found "=" in assign statement')
+
+        node.expr = self.expr(dep=dep+1)
+        if node.expr is None:
+            self.strm.index = i
             return None
 
         return node
@@ -1036,6 +1077,31 @@ class AST:
             pass
         else:
             self.strm.prev()
+
+        return node
+
+    def expr_line(self, dep):
+        self.show_parse('expr_line', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = ExprLineNode()
+
+        i = self.strm.index
+        node.expr_list = self.expr_list(dep=dep+1)
+        if node.expr_list is None:
+            self.strm.index = i
+            return None
+
+        tok = self.strm.get()
+        if tok == Stream.EOF:
+            return node
+        elif tok.kind == 'newline':
+            node.newline = tok.value
+        elif tok.kind in ('rbraceat', 'end', 'else', 'elif'):
+            self.strm.prev()
+        else:
+            raise AST.SyntaxError('not found newline')
 
         return node
 
