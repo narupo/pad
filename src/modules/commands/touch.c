@@ -118,9 +118,20 @@ touchcmd_new(config_t *move_config, int argc, char **move_argv) {
 static int
 touchcmd_touch(touchcmd_t *self) {
     const char *argpath = self->argv[self->optind];
+    const char *org;
     char path[FILE_NPATH];
 
-    if (!file_solvefmt(path, sizeof path, "%s/%s", self->config->cd_path, argpath)) {
+    if (argpath[0] == '/') {
+        org = self->config->home_path;
+    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
+        org = self->config->cd_path;
+    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
+        org = self->config->home_path;
+    } else {
+        err_die("impossible. invalid state in touch");
+    }
+
+    if (!file_solvefmt(path, sizeof path, "%s/%s", org, argpath)) {
         err_error("failed to solve path by \"%s\"", argpath);
         return 1;
     }
