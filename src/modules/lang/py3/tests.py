@@ -1402,6 +1402,30 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.buffer, '1')
 
+        a.parse(t.parse('''{@
+            def f():
+                return 1, 2
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(c.buffer, '(1, 2)')
+
+        a.parse(t.parse('''{@
+            def f():
+                return 1+2, 2+3
+            end
+@}{{ f() }}'''))
+        c = a.traverse()
+        self.assertEqual(c.buffer, '(3, 5)')
+
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('''{@
+                def f():
+                    return 1 2
+                end
+    @}{{ f() }}'''))
+            c = a.traverse()
+
     def test_ast_assign(self):
         if self.silent: return
 

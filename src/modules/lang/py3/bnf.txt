@@ -472,6 +472,7 @@ identifier: ( [a-z] | [0-9] | _ )+
 BNF 0.3.6
 add newline token
 add expr_line
+update return_stmt
 
 + is add sentense
 ^ is update sentence
@@ -484,7 +485,7 @@ callable: name_list '(' args ')'
 name_list: identifier '.' name_list | identifier
 args: arg ',' args | arg
 arg: digit | string | identifier
-return_stmt: 'return' expr_list
+^ return_stmt: 'return' expr_line
 ^ formula: ( expr_line | if_stmt | for_stmt | import_stmt | return_stmt | assign_stmt_line | def_func | newline | comma ), ( formula | '@}' block '{@' )
 def_func: 'def' identifier '(' dmy_args ')' ':' formula 'end'
 + assign_stmt_line: assign_stmt ( newline | ',' | '@}' | 'end' | 'else' | 'elif')

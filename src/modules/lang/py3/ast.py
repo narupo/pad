@@ -93,7 +93,7 @@ class AST:
         elif isinstance(node, DefFuncNode):
             return self.trav_def_func(node, dep=dep+1)
 
-        elif isinstance(node, ReturnNode):
+        elif isinstance(node, ReturnStmtNode):
             return self.trav_return(node, dep=dep+1)
 
         elif isinstance(node, IfNode):
@@ -354,7 +354,7 @@ class AST:
             AST.ModuleError('impossible. programing error. invalid state of node in call statement')
 
     def trav_return(self, node, dep):
-        return self._trav(node.expr_list, dep=dep+1)
+        return self._trav(node.expr_line, dep=dep+1)
 
     def trav_def_func(self, node, dep):
         # DO NOT CALL _trav with node.formula
@@ -703,8 +703,8 @@ class AST:
         if tok.kind != 'jmp' and tok.value != 'return':
             raise AST.ModuleError('impossible. not found "return" in return statement')
 
-        node = ReturnNode()
-        node.expr_list = self.expr_list(dep=dep+1)
+        node = ReturnStmtNode()
+        node.expr_line = self.expr_line(dep=dep+1)
 
         return node
 
