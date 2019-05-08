@@ -134,7 +134,7 @@ runcmd_run(runcmd_t *self) {
         option |= SAFESYSTEM_DETACH;
     }
 
-    safesystem(str_getc(cmdline), SAFESYSTEM_DEFAULT);
+    safesystem(str_getc(cmdline), option);
 
     // Done
     str_del(cmdline);
