@@ -472,6 +472,7 @@ identifier: ( [a-z] | [0-9] | _ )+
 BNF 0.3.6
 add newline token
 add expr_line
+add assign_stmt_line
 update return_stmt
 
 + is add sentense

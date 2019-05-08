@@ -73,7 +73,7 @@ class TextBlockNode(Node):
         self.text = None
 
 
-class ForNode(Node):
+class ForStmtNode(Node):
     def __init__(self):
         self.init_expr_list = None # Node
         self.comp_expr = None # Node
@@ -156,18 +156,18 @@ class FormulaNode(Node):
         self.expr_line = None # Node
         self.assign_expr = None # Node
         self.assign_stmt_line = None # Node
-        self.if_ = None # Node
-        self.for_ = None # Node
+        self.if_stmt = None # Node
+        self.for_stmt = None # Node
         self.return_ = None # Node
         self.def_func = None # Node
-        self.import_ = None # Node
+        self.import_stmt = None # Node
         self.formula = None # Node
         self.block = None # Node
         self.call_stmt = None # Node
         self.newline = None # str
 
 
-class ImportNode(Node):
+class ImportStmtNode(Node):
     def __init__(self):
         self.identifier = None
 
@@ -178,16 +178,16 @@ class CallerNode(Node):
         self.args = []
 
 
-class IfNode(Node):
+class IfStmtNode(Node):
     def __init__(self):
         self.expr = None
         self.block = None
         self.formula = None
-        self.elif_ = None
-        self.else_ = None
+        self.elif_stmt = None
+        self.else_stmt = None
 
 
-class ElseNode(Node):
+class ElseStmtNode(Node):
     def __init__(self):
         self.block = None
         self.formula = None
