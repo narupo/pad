@@ -130,7 +130,8 @@ class Tokenizer:
                     s.prev()
                     self.read_sub()
                 elif c == '*':
-                    self.tokens.append(Token(kind='operator', value='*'))
+                    s.prev()
+                    self.read_mul()
                 elif c == '/':
                     if s.cur() == '/':
                         s.get()
@@ -139,7 +140,11 @@ class Tokenizer:
                         s.get()
                         self.read_at_starslash()
                     else:
-                        self.tokens.append(Token(kind='operator', value='/'))
+                        s.prev()
+                        self.read_div()
+                elif c == '%':
+                    s.prev()
+                    self.read_mod()
                 elif c == '&':
                     if s.cur() == '&':
                         s.get()
@@ -196,6 +201,8 @@ class Tokenizer:
         c = self.strm.get()
         if c == '+':
             self.tokens.append(Token(kind='operator', value='++'))
+        elif c == '=':
+            self.tokens.append(Token(kind='operator', value='+='))
         else:
             self.strm.prev()
             self.tokens.append(Token(kind='operator', value='+'))
@@ -208,10 +215,57 @@ class Tokenizer:
         c = self.strm.get()
         if c == '-':
             self.tokens.append(Token(kind='operator', value='--'))
+        elif c == '=':
+            self.tokens.append(Token(kind='operator', value='-='))
         else:
             self.strm.prev()
             self.tokens.append(Token(kind='operator', value='-'))
 
+    def read_mul(self):
+        c = self.strm.get()
+        if c != '*':
+            raise Tokenizer.ModuleError('not found "*"')
+
+        if self.strm.cur() == '=':
+            self.strm.get()
+            self.tokens.append(Token(kind='operator', value='*='))
+        else:
+            self.tokens.append(Token(kind='operator', value='*'))
+
+    def read_div(self):
+        c = self.strm.get()
+        if c != '/':
+            raise Tokenizer.ModuleError('not found "/"')
+
+        if self.strm.cur() == '=':
+            self.strm.get()
+            self.tokens.append(Token(kind='operator', value='/='))
+        else:
+            self.tokens.append(Token(kind='operator', value='/'))
+
+    def read_mod(self):
+        c = self.strm.get()
+        if c != '%':
+            raise Tokenizer.ModuleError('not found "%"')
+
+        if self.strm.cur() == '=':
+            self.strm.get()
+            self.tokens.append(Token(kind='operator', value='%='))
+        else:
+            self.tokens.append(Token(kind='operator', value='%'))
+    
+
+    def read_mod(self):
+        c = self.strm.get()
+        if c != '%':
+            raise Tokenizer.ModuleError('not found "%"')
+
+        if self.strm.cur() == '=':
+            self.strm.get()
+            self.tokens.append(Token(kind='operator', value='%='))
+        else:
+            self.tokens.append(Token(kind='operator', value='%'))
+    
     def read_gt(self):
         c = self.strm.get()
         if c != '>':

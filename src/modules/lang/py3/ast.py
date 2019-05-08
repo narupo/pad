@@ -449,6 +449,31 @@ class AST:
         if node.assign_operator == '=':
             self.scope_list[-1].syms[node.identifier] = self._trav(node.assign_expr, dep=dep+1)
             return self.scope_list[-1].syms[node.identifier]
+        elif node.assign_operator == '+=':
+            if node.identifier not in self.scope_list[-1].syms.keys():
+                raise AST.ReferenceError('"%s" is not defined' % node.identifier)
+            self.scope_list[-1].syms[node.identifier] += self._trav(node.assign_expr, dep=dep+1)
+            return self.scope_list[-1].syms[node.identifier]
+        elif node.assign_operator == '-=':
+            if node.identifier not in self.scope_list[-1].syms.keys():
+                raise AST.ReferenceError('"%s" is not defined' % node.identifier)
+            self.scope_list[-1].syms[node.identifier] -= self._trav(node.assign_expr, dep=dep+1)
+            return self.scope_list[-1].syms[node.identifier]
+        elif node.assign_operator == '*=':
+            if node.identifier not in self.scope_list[-1].syms.keys():
+                raise AST.ReferenceError('"%s" is not defined' % node.identifier)
+            self.scope_list[-1].syms[node.identifier] *= self._trav(node.assign_expr, dep=dep+1)
+            return self.scope_list[-1].syms[node.identifier]
+        elif node.assign_operator == '/=':
+            if node.identifier not in self.scope_list[-1].syms.keys():
+                raise AST.ReferenceError('"%s" is not defined' % node.identifier)
+            self.scope_list[-1].syms[node.identifier] /= self._trav(node.assign_expr, dep=dep+1)
+            return self.scope_list[-1].syms[node.identifier]
+        elif node.assign_operator == '%=':
+            if node.identifier not in self.scope_list[-1].syms.keys():
+                raise AST.ReferenceError('"%s" is not defined' % node.identifier)
+            self.scope_list[-1].syms[node.identifier] %= self._trav(node.assign_expr, dep=dep+1)
+            return self.scope_list[-1].syms[node.identifier]
 
         raise AST.ModuleError('invalid operator %s' % node.assign_operator)
              
@@ -1233,7 +1258,6 @@ class AST:
 
         return node
 
-    # ^ assign-expr: identifier assign-operator assign-expr | expr
     def assign_expr(self, dep):
         self.show_parse('assign_expr', dep=dep)
         if self.strm.eof():
@@ -1254,7 +1278,7 @@ class AST:
     def is_assign_op(self, tok):
         if tok == Stream.EOF:
             return False
-        return tok.value in ('=')
+        return tok.kind == 'operator' and tok.value in ('=', '+=', '-=', '*=', '/=', '%=')
 
     def import_(self, dep):
         self.show_parse('import', dep=dep)
