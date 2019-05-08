@@ -245,7 +245,7 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[2].kind, 'rbraceat')
         self.assertEqual(ts[2].value, '@}')
 
-        # operators
+        # assign_expr
         ts = t.parse('{@ a = b @}')
         self.assertEqual(len(ts), 5)
         self.assertEqual(ts[0].kind, 'lbraceat')
@@ -259,6 +259,72 @@ class Test(unittest.TestCase):
         self.assertEqual(ts[4].kind, 'rbraceat')
         self.assertEqual(ts[4].value, '@}')
 
+        ts = t.parse('{@ a += 1 @}')
+        self.assertEqual(len(ts), 5)
+        self.assertEqual(ts[0].kind, 'lbraceat')
+        self.assertEqual(ts[0].value, '{@')
+        self.assertEqual(ts[1].kind, 'identifier')
+        self.assertEqual(ts[1].value, 'a')
+        self.assertEqual(ts[2].kind, 'operator')
+        self.assertEqual(ts[2].value, '+=')
+        self.assertEqual(ts[3].kind, 'digit')
+        self.assertEqual(ts[3].value, 1)
+        self.assertEqual(ts[4].kind, 'rbraceat')
+        self.assertEqual(ts[4].value, '@}')
+
+        ts = t.parse('{@ a -= 1 @}')
+        self.assertEqual(len(ts), 5)
+        self.assertEqual(ts[0].kind, 'lbraceat')
+        self.assertEqual(ts[0].value, '{@')
+        self.assertEqual(ts[1].kind, 'identifier')
+        self.assertEqual(ts[1].value, 'a')
+        self.assertEqual(ts[2].kind, 'operator')
+        self.assertEqual(ts[2].value, '-=')
+        self.assertEqual(ts[3].kind, 'digit')
+        self.assertEqual(ts[3].value, 1)
+        self.assertEqual(ts[4].kind, 'rbraceat')
+        self.assertEqual(ts[4].value, '@}')
+
+        ts = t.parse('{@ a *= 1 @}')
+        self.assertEqual(len(ts), 5)
+        self.assertEqual(ts[0].kind, 'lbraceat')
+        self.assertEqual(ts[0].value, '{@')
+        self.assertEqual(ts[1].kind, 'identifier')
+        self.assertEqual(ts[1].value, 'a')
+        self.assertEqual(ts[2].kind, 'operator')
+        self.assertEqual(ts[2].value, '*=')
+        self.assertEqual(ts[3].kind, 'digit')
+        self.assertEqual(ts[3].value, 1)
+        self.assertEqual(ts[4].kind, 'rbraceat')
+        self.assertEqual(ts[4].value, '@}')
+        
+        ts = t.parse('{@ a /= 1 @}')
+        self.assertEqual(len(ts), 5)
+        self.assertEqual(ts[0].kind, 'lbraceat')
+        self.assertEqual(ts[0].value, '{@')
+        self.assertEqual(ts[1].kind, 'identifier')
+        self.assertEqual(ts[1].value, 'a')
+        self.assertEqual(ts[2].kind, 'operator')
+        self.assertEqual(ts[2].value, '/=')
+        self.assertEqual(ts[3].kind, 'digit')
+        self.assertEqual(ts[3].value, 1)
+        self.assertEqual(ts[4].kind, 'rbraceat')
+        self.assertEqual(ts[4].value, '@}')
+        
+        ts = t.parse('{@ a %= 1 @}')
+        self.assertEqual(len(ts), 5)
+        self.assertEqual(ts[0].kind, 'lbraceat')
+        self.assertEqual(ts[0].value, '{@')
+        self.assertEqual(ts[1].kind, 'identifier')
+        self.assertEqual(ts[1].value, 'a')
+        self.assertEqual(ts[2].kind, 'operator')
+        self.assertEqual(ts[2].value, '%=')
+        self.assertEqual(ts[3].kind, 'digit')
+        self.assertEqual(ts[3].value, 1)
+        self.assertEqual(ts[4].kind, 'rbraceat')
+        self.assertEqual(ts[4].value, '@}')
+
+        # operators
         ts = t.parse('{@ a & b @}')
         self.assertEqual(len(ts), 5)
         self.assertEqual(ts[0].kind, 'lbraceat')
@@ -635,6 +701,27 @@ class Test(unittest.TestCase):
         a.parse(t.parse('{@ a = 1, b = 2, c = 3 @}'))
         c = a.traverse()
         self.assertEqual(c.last_expr_val, (1, 2, 3))
+
+        a.parse(t.parse('{@ a = 0, a += 1 @}{{ a }}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, (0, 1))
+        self.assertEqual(c.buffer, '1')
+
+        a.parse(t.parse('''{@
+            a = 0
+            a = (a += 1) - 1
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 0)
+
+        # Python3ではエラーになる
+        # Rubyでは1
+        # a.parse(t.parse('''{@
+        #     a = 0
+        #     a = (a += 1) + (a -= 1)
+        # @}'''))
+        # c = a.traverse()
+        # self.assertEqual(c.last_expr_val, 1)
 
     def test_ast_id_expr(self):
         if self.silent: return
@@ -1366,6 +1453,7 @@ class Test(unittest.TestCase):
 
     def test_ast_assign_expr(self):
         if self.silent: return
+        
         t = Tokenizer()
         a = AST()
 
@@ -1373,6 +1461,66 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(c.last_expr_val, 0)        
         self.assertEqual(a.current_scope.syms['a'], 0)        
+
+        with self.assertRaises(AST.ReferenceError):
+            a.parse(t.parse('{@ a += 1 @}'))
+            c = a.traverse()
+
+        with self.assertRaises(AST.ReferenceError):
+            a.parse(t.parse('{@ a -= 1 @}'))
+            c = a.traverse()
+
+        with self.assertRaises(AST.ReferenceError):
+            a.parse(t.parse('{@ a *= 1 @}'))
+            c = a.traverse()
+
+        with self.assertRaises(AST.ReferenceError):
+            a.parse(t.parse('{@ a /= 1 @}'))
+            c = a.traverse()
+
+        with self.assertRaises(AST.ReferenceError):
+            a.parse(t.parse('{@ a %= 1 @}'))
+            c = a.traverse()
+
+        a.parse(t.parse('''{@
+            a = 0
+            a += 1
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 1)
+        self.assertEqual(a.current_scope.syms['a'], 1)
+
+        a.parse(t.parse('''{@
+            a = 1
+            a -= 1
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 0)
+        self.assertEqual(a.current_scope.syms['a'], 0)
+
+        a.parse(t.parse('''{@
+            a = 2
+            a *= 2
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 4)
+        self.assertEqual(a.current_scope.syms['a'], 4)
+
+        a.parse(t.parse('''{@
+            a = 2
+            a /= 2
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 1)
+        self.assertEqual(a.current_scope.syms['a'], 1)
+
+        a.parse(t.parse('''{@
+            a = 2
+            a %= 2
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 0)
+        self.assertEqual(a.current_scope.syms['a'], 0)
 
     def test_ast_comparison(self):
         if self.silent: return
