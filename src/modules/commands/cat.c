@@ -19,6 +19,8 @@ struct catcmd {
     char **argv;
     struct opts opts;
     int optind;
+    char cdpath[FILE_NPATH];
+    char homepath[FILE_NPATH];
 };
 
 /**
@@ -125,15 +127,25 @@ catcmd_new(config_t *move_config, int argc, char **move_argv) {
  * 
  * @param[in] *dst destination buffer
  * @param[in] dstsz size of destination buffer
- * @param[in] *cdpath string of cd path
  * @param[in] *name string of name
  * 
  * @return success to pointer to destination buffer
  * @return failed to NULL
  */
 static char *
-catcmd_makepath(catcmd_t *self, char *dst, size_t dstsz, const char *cdpath, const char *name) {
-    if (!file_solvefmt(dst, dstsz, "%s/%s", cdpath, name)) {
+catcmd_makepath(catcmd_t *self, char *dst, size_t dstsz, const char *name) {
+    const char *org;
+    if (name[0] == '/') {
+        org = self->homepath;
+    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
+        org = self->cdpath;
+    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
+        org = self->homepath;
+    } else {
+        err_die("impossible. invalid state in make path");
+    }
+
+    if (!file_solvefmt(dst, dstsz, "%s/%s", org, name)) {
         return NULL;
     }
 
@@ -369,18 +381,12 @@ catcmd_run(catcmd_t *self) {
         return 0;
     }
 
-    char cdpath[FILE_NPATH];
-    if (self->config->scope == CAP_SCOPE_LOCAL) {
-        if (!file_readline(cdpath, sizeof cdpath, self->config->var_cd_path)) {
-            err_die("need environment variable of cd");
-        }
-    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
-        if (!file_readline(cdpath, sizeof cdpath, self->config->var_home_path)) {
-            err_die("need environment variable of home");
-        }
-    } else {
-        err_error("invalid scope \"%s\"", self->config->scope);
-        return 1;
+    if (!file_readline(self->cdpath, sizeof self->cdpath, self->config->var_cd_path)) {
+        err_die("need environment variable of cd");
+    }
+
+    if (!file_readline(self->homepath, sizeof self->homepath, self->config->var_home_path)) {
+        err_die("need environment variable of home");
     }
 
     int ret = 0;
@@ -395,9 +401,9 @@ catcmd_run(catcmd_t *self) {
         }
         
         char path[FILE_NPATH];
-        if (!catcmd_makepath(self, path, sizeof path, cdpath, name)) {
+        if (!catcmd_makepath(self, path, sizeof path, name)) {
             ++ret;
-            err_error("failed to make path by '%s'", name);
+            err_error("failed to make path by \"%s\"", name);
             continue;
         }
 
