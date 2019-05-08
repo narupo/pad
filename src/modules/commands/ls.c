@@ -184,7 +184,11 @@ lscmd_run(lscmd_t *self) {
         for (int i = optind; i < self->argc; ++i) {
             const char *arg = self->argv[i];
             const char *org = (arg[0] == '/' ? home : cd);
-            file_solvefmt(path, sizeof path, "%s/%s", org, arg);
+            if (!strcmp(arg, "/")) {
+                file_solvefmt(path, sizeof path, "%s", org);
+            } else {
+                file_solvefmt(path, sizeof path, "%s/%s", org, arg);
+            }
             lscmd_ls(self, path);
         }
     }
