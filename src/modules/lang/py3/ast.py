@@ -719,6 +719,9 @@ class AST:
             node.def_func = self.def_func(dep=dep+1)
         elif t.kind == 'jmp' and t.value == 'return':
             node.return_ = self.return_(dep=dep+1)
+        elif t.kind == 'newline':
+            t = self.strm.get()
+            node.newline = t.value
         else:
             i = self.strm.index
             node.assign_stmt = self.assign_stmt(dep=dep+1)
