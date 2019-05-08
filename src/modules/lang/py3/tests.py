@@ -781,8 +781,67 @@ class Test(unittest.TestCase):
         self.assertEqual(a.current_scope.syms['a'], 3)
         self.assertEqual(c.last_expr_val, 3)
 
+        a.parse(t.parse('{{ 1+2 }}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 3)
+
+        a.parse(t.parse('{{ 1-2 }}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, -1)
+
+        a.parse(t.parse('{{ 1*2 }}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 2)
+
+        a.parse(t.parse('{{ 2/2 }}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 1)
+
+        a.parse(t.parse('{{ 1+2-3 }}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 0)
+
+        a.parse(t.parse('{{ 2+2-3*4/4%3 }}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 4)
+
+        a.parse(t.parse('{{ 1<2 }}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, True)
+
+        a.parse(t.parse('{{ 1>2 }}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, False)
+
+        a.parse(t.parse('{{ 1>=2 }}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, False)
+
+        a.parse(t.parse('{{ 1<=2 }}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, True)
+
+        a.parse(t.parse('''{@
+            def f():
+                return 1
+            end
+        @}{{ f()+1 }}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 2)
+
+        a.parse(t.parse('''{@
+            def f1():
+                return 1
+            end
+            def f2():
+                return 2
+            end
+        @}{{ f1()+f2() }}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 3)
+
     def test_ast_id_expr(self):
-        # if self.silent: return
+        if self.silent: return
 
         t = Tokenizer()
         a = AST()
@@ -1531,6 +1590,17 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(a.current_scope.syms['v'], 0)
         self.assertEqual(c.last_expr_val, 0)
+
+        a.parse(t.parse('''{@
+            def f(): return 2,3 end
+            a = 0, b = 1, c,d = f()
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(a.current_scope.syms['a'], 0)
+        self.assertEqual(a.current_scope.syms['b'], 1)
+        self.assertEqual(a.current_scope.syms['c'], 2)
+        self.assertEqual(a.current_scope.syms['d'], 3)
+        self.assertEqual(c.last_expr_val, (2, 3))
 
     def test_ast_assign_expr(self):
         if self.silent: return
