@@ -716,12 +716,53 @@ class Test(unittest.TestCase):
 
         # Python3ではエラーになる
         # Rubyでは1
+        a.parse(t.parse('''{@
+            a = 0
+            a = (a += 1) + (a -= 1)
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(a.current_scope.syms['a'], 1)
+        self.assertEqual(c.last_expr_val, 1)
+
+        a.parse(t.parse('''{@
+            a = 2
+            a = (a -= 1) + (a += 1)
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(a.current_scope.syms['a'], 3)
+        self.assertEqual(c.last_expr_val, 3)
+
+        a.parse(t.parse('''{@
+            a = 2
+            a = (a *= 2) + (a /= 2)
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(a.current_scope.syms['a'], 6)
+        self.assertEqual(c.last_expr_val, 6)
+
+        a.parse(t.parse('''{@
+            a = 2
+            a = 1 + (a *= 2) / 2
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(a.current_scope.syms['a'], 3)
+        self.assertEqual(c.last_expr_val, 3)
+
+        # Python3ではエラー
+        # Ruby2, PHP7では合法
+        a.parse(t.parse('''{@
+            a = 2
+            a = 1 + a *= 2 / 2
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(a.current_scope.syms['a'], 3)
+        self.assertEqual(c.last_expr_val, 3)
+
         # a.parse(t.parse('''{@
-        #     a = 0
-        #     a = (a += 1) + (a -= 1)
+        #     4 % 2
         # @}'''))
         # c = a.traverse()
-        # self.assertEqual(c.last_expr_val, 1)
+        # self.assertEqual(c.last_expr_val, 0)
 
     def test_ast_id_expr(self):
         if self.silent: return

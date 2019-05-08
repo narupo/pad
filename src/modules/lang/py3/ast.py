@@ -278,7 +278,8 @@ class AST:
         elif node.def_func:
             self._trav(node.def_func, dep=dep+1)
         elif node.assign_stmt:
-            self._trav(node.assign_stmt, dep=dep+1)
+            result = self._trav(node.assign_stmt, dep=dep+1)
+            self.context.last_expr_val = result
 
         if self.returned:
             return None
@@ -368,12 +369,10 @@ class AST:
             self.scope_list.append(def_func)
             self.return_result = None
             self.returned = False
-            self.dt('call "%s" function' % firstname)
             self._trav(def_func.formula, dep=dep+1)
             self.scope_list.pop()
             self.returned = False
 
-            self.dt("function result:", self.return_result)
             if isinstance(self.return_result, tuple) and len(self.return_result) == 1:
                 return self.return_result[0]
             return self.return_result
@@ -402,7 +401,6 @@ class AST:
         result = None
         self._trav(node.init_expr_list, dep=dep+1)
         while True:
-            self.dt('for loop')
             if node.comp_expr:
                 result = self._trav(node.comp_expr, dep=dep+1)
                 if not result:
@@ -411,7 +409,6 @@ class AST:
             if node.block:
                 self._trav(node.block, dep=dep+1)
             elif node.formula:
-                self.dt(self.scope_list[-1].syms)
                 self._trav(node.formula, dep=dep+1)
 
             self._trav(node.update_expr_list, dep=dep+1)
