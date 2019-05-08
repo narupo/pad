@@ -492,10 +492,10 @@ if_stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_
 elif_stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
 else_stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
 for_stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
-cmp_op: '==' | '!=' | '<' | '>' | '<=' | '>='
+comp_op: '==' | '!=' | '<' | '>' | '<=' | '>='
 expr_list: expr ',' expr_list | expr
 expr: gorasu ( '&&' | '||' ) expr | gorasu
-gorasu: kamiyu cmp_op gorasu | kamiyu
+gorasu: kamiyu comp_op gorasu | kamiyu
 kamiyu: mod ('+' | '-' ) kamiyu | mod
 mod: term '%' mod | term
 term: factor ( '*' | '/' ) term | factor
@@ -512,5 +512,5 @@ arg: expr
 string: '"' .* '"'
 digit: [0-9]+
 identifier: ( [a-z] | [0-9] | _ )+
-newline: '\r\n' | '\n'
++ newline: '\r\n' | '\n'
 
