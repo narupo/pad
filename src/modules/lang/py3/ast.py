@@ -27,6 +27,9 @@ class AST:
     class NotFoundSymbol(RuntimeError):
         pass
 
+    class ZeroDivision(RuntimeError):
+        pass
+
     def parse(self, tokens, debug=False):
         self.debug_parse = debug
         self.strm = Stream(tokens)
@@ -108,6 +111,9 @@ class AST:
         elif isinstance(node, KamiyuNode):
             return self.trav_kamiyu(node, dep=dep+1)
 
+        elif isinstance(node, ModNode):
+            return self.trav_mod(node, dep=dep+1)
+
         elif isinstance(node, TermNode):
             return self.trav_term(node, dep=dep+1)
 
@@ -187,8 +193,8 @@ class AST:
             raise AST.ModuleError('unsupported node %s in gorasu' % str(node))
 
     def trav_kamiyu(self, node, dep):
-        if node.term and node.kamiyu:
-            lval = self._trav(node.term, dep=dep+1)
+        if node.mod and node.kamiyu:
+            lval = self._trav(node.mod, dep=dep+1)
             rval = self._trav(node.kamiyu, dep=dep+1)
             if node.op == '+':
                 return lval + rval
@@ -196,10 +202,25 @@ class AST:
                 return lval - rval
             else:
                 raise AST.ModuleError('unsupported operation "%s" in traverse kamiyu' % node.op)
+        elif node.mod:
+            return self._trav(node.mod, dep=dep+1)
+        else:
+            raise AST.ModuleError('programming error. impossible case in traverse kamiyu')
+
+    def trav_mod(self, node, dep):
+        if node.term and node.mod:
+            lval = self._trav(node.term, dep=dep+1)
+            rval = self._trav(node.mod, dep=dep+1)
+            if node.op == '%':
+                if rval == 0:
+                    raise AST.ZeroDivision('zero division error')
+                return lval % rval
+            else:
+                raise AST.ModuleError('unsupported operation "%s" in traverse mod' % node.op)
         elif node.term:
             return self._trav(node.term, dep=dep+1)
         else:
-            raise AST.ModuleError('programming error. impossible case in traverse kamiyu')
+            raise AST.ModuleError('programming error. impossible case in traverse mod')
 
     def trav_term(self, node, dep):
         if node.factor and node.term:
@@ -208,6 +229,8 @@ class AST:
             if node.op == '*':
                 return lval * rval
             elif node.op == '/':
+                if rval == 0:
+                    raise AST.ZeroDivision('zero division error')
                 return lval / rval
             else:
                 raise AST.ModuleError('unsupported operation "%s" in traverse term' % node.op)
@@ -1089,8 +1112,8 @@ class AST:
 
         i = self.strm.index
         node = KamiyuNode()
-        node.term = self.term(dep=dep+1)
-        if node.term is None:
+        node.mod = self.mod(dep=dep+1)
+        if node.mod is None:
             self.strm.index = i
             return None
 
@@ -1103,6 +1126,29 @@ class AST:
         node.op = t.value
 
         node.kamiyu = self.kamiyu(dep=dep+1)
+        return node
+
+    def mod(self, dep):
+        self.show_parse('mod', dep=dep)
+        if self.strm.eof():
+            return None
+
+        i = self.strm.index
+        node = ModNode()
+        node.term = self.term(dep=dep+1)
+        if node.term is None:
+            self.strm.index = i
+            return None
+
+        t = self.strm.get()
+        if t == Stream.EOF:
+            return node
+        elif t.value not in ('%'):
+            self.strm.prev()
+            return node
+        node.op = t.value
+
+        node.mod = self.mod(dep=dep+1)
         return node
 
     def term(self, dep):

@@ -201,16 +201,23 @@ class GorasuNode(Node):
 
 class KamiyuNode(Node):
     def __init__(self):
-        self.term = None # Node
+        self.mod = None # Node
         self.op = None # str
         self.kamiyu = None # Node
 
 
+class ModNode(Node):
+    def __init__(self):
+        self.term = None # Node
+        self.op = None # str
+        self.mod = None # Node
+
+
 class TermNode(Node):
     def __init__(self):
-        self.kamiyu = None
-        self.op = None
-        self.term = None
+        self.kamiyu = None # Node
+        self.op = None # str
+        self.term = None # Node
 
 
 class FactorNode(Node):
