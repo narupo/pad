@@ -98,7 +98,9 @@ editcmd_create_open_fname(editcmd_t *self, const char *fname) {
     char path[FILE_NPATH];
     const char *srcpath;
 
-    if (self->config->scope == CAP_SCOPE_LOCAL) {
+    if (fname[0] == '/') {
+        srcpath = self->config->var_home_path;
+    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
         srcpath = self->config->var_cd_path;
     } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
         srcpath = self->config->var_home_path;
