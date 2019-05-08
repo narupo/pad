@@ -163,8 +163,19 @@ cpcmd_solve_path(cpcmd_t *self, char *dst, size_t dstsz, const char *path) {
     if (path[0] == ':') {
         // the path on the Cap's environment
         const char *src_path = path+1;
-        const char *pardir = self->config->cd_path;
-        if (!file_solvefmt(dst, dstsz, "%s/%s", pardir, src_path)) {
+        const char *org;
+
+        if (src_path[0] == '/') {
+            org = self->config->home_path;
+        } else if (self->config->scope == CAP_SCOPE_LOCAL) {
+            org = self->config->cd_path;
+        } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
+            org = self->config->home_path;
+        } else {
+            err_die("impossible. invalid state in solve path");
+        }
+
+        if (!file_solvefmt(dst, dstsz, "%s/%s", org, src_path)) {
             cpcmd_set_err(self, CPCMD_ERR_SOLVEPATH, "failed to solve path from \"%s\"", path);
             return NULL;
         }
