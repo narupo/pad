@@ -721,6 +721,7 @@ class AST:
             node.return_ = self.return_(dep=dep+1)
         elif t.kind == 'newline':
             t = self.strm.get()
+            # このデータは必要？
             node.newline = t.value
         else:
             i = self.strm.index
@@ -885,13 +886,16 @@ class AST:
         t = self.strm.get()
         if t == Stream.EOF:
             return node
-        elif t.kind != 'comp_op':
+        elif not self.is_comp_op(t.kind):
             self.strm.prev()
             return node
         node.op = t.value
 
         node.comparison = self.comparison(dep=dep+1)
         return node
+
+    def is_comp_op(self, tok):
+        return tok.kind == 'operator' and tok.value in ('==', '!=', '<', '>', '<=', '>=')
 
     def assign_stmt(self, dep):
         self.show_parse('assign_stmt', dep=dep)
@@ -1123,7 +1127,7 @@ class AST:
         t = self.strm.get()
         if t == Stream.EOF:
             return node
-        elif t.value not in ('+', '-'):
+        elif not (t.kind == 'operator' and t.value in ('+', '-')):
             self.strm.prev()
             return node
         node.op = t.value
@@ -1146,7 +1150,7 @@ class AST:
         t = self.strm.get()
         if t == Stream.EOF:
             return node
-        elif t.value not in ('%'):
+        elif not (t.kind == 'operator' and t.value in ('%')):
             self.strm.prev()
             return node
         node.op = t.value
@@ -1169,7 +1173,7 @@ class AST:
         t = self.strm.get()
         if t == Stream.EOF:
             return node
-        elif t.value not in ('*', '/'):
+        elif not (t.kind == 'operator' and t.value in ('*', '/')):
             self.strm.prev()
             return node
         node.op = t.value

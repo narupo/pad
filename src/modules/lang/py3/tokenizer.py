@@ -292,10 +292,10 @@ class Tokenizer:
 
         c = self.strm.get()
         if c == '=':
-            self.tokens.append(Token(kind='comp_op', value='>='))
+            self.tokens.append(Token(kind='operator', value='>='))
         else:
             self.strm.prev()
-            self.tokens.append(Token(kind='comp_op', value='>'))
+            self.tokens.append(Token(kind='operator', value='>'))
 
     def read_lt(self):
         c = self.strm.get()
@@ -304,10 +304,10 @@ class Tokenizer:
 
         c = self.strm.get()
         if c == '=':
-            self.tokens.append(Token(kind='comp_op', value='<='))
+            self.tokens.append(Token(kind='operator', value='<='))
         else:
             self.strm.prev()
-            self.tokens.append(Token(kind='comp_op', value='<'))
+            self.tokens.append(Token(kind='operator', value='<'))
 
     def read_not(self):
         c = self.strm.get()
@@ -316,10 +316,10 @@ class Tokenizer:
 
         c = self.strm.get()
         if c == '=':
-            self.tokens.append(Token(kind='comp_op', value='!='))
+            self.tokens.append(Token(kind='operator', value='!='))
         else:
             self.strm.prev()
-            self.tokens.append(Token(kind='comp_op', value='!'))
+            self.tokens.append(Token(kind='operator', value='!'))
 
     def read_digit(self):
         buf = ''
@@ -342,7 +342,7 @@ class Tokenizer:
 
         c = self.strm.get()
         if c == '=':
-            self.tokens.append(Token(kind='comp_op', value='=='))
+            self.tokens.append(Token(kind='operator', value='=='))
         else:
             self.strm.prev()
             self.tokens.append(Token(kind='operator', value='='))
