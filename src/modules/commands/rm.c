@@ -16,7 +16,6 @@ struct rmcmd {
     char **argv;
     struct opts opts;
     char what[1024];
-    char parpath[FILE_NPATH]; // parent path. path of cd or home
 };
 
 static bool
@@ -183,6 +182,7 @@ static int
 rmcmd_rmr(rmcmd_t *self) {
     for (int i = self->optind; i < self->argc; ++i) {
         const char *argpath = self->argv[i];
+        const char *org;
         char path[FILE_NPATH];
 
         if (!strcmp(argpath, ".") || !strcmp(argpath, "..")) {
@@ -191,7 +191,17 @@ rmcmd_rmr(rmcmd_t *self) {
             return 1;
         }
     
-        if (!file_solvefmt(path, sizeof path, "%s/%s", self->parpath, argpath)) {
+        if (argpath[0] == '/') {
+            org = self->config->home_path;
+        } else if (self->config->scope == CAP_SCOPE_LOCAL) {
+            org = self->config->cd_path;
+        } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
+            org = self->config->home_path;
+        } else {
+            err_die("impossible. invalid state in rmr");
+        }
+
+        if (!file_solvefmt(path, sizeof path, "%s/%s", org, argpath)) {
             cstr_appfmt(self->what, sizeof self->what, "failed to solve path from \"%s\".", argpath);
             self->errno_ = RMCMD_ERR_SOLVEPATH;
             return 1;
@@ -222,9 +232,20 @@ static int
 rmcmd_rm(rmcmd_t *self) {
     for (int i = self->optind; i < self->argc; ++i) {
         const char *argpath = self->argv[i];
+        const char *org;
         char path[FILE_NPATH];
     
-        if (!file_solvefmt(path, sizeof path, "%s/%s", self->parpath, argpath)) {
+        if (argpath[0] == '/') {
+            org = self->config->home_path;
+        } else if (self->config->scope == CAP_SCOPE_LOCAL) {
+            org = self->config->cd_path;
+        } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
+            org = self->config->home_path;
+        } else {
+            err_die("impossible. invalid state in rm");
+        }
+
+        if (!file_solvefmt(path, sizeof path, "%s/%s", org, argpath)) {
             cstr_appfmt(self->what, sizeof self->what, "failed to solve path.");
             self->errno_ = RMCMD_ERR_SOLVEPATH;
             return 1;
@@ -256,12 +277,6 @@ rmcmd_run(rmcmd_t *self) {
     if (self->opts.is_help) {
         rmcmd_show_usage(self);
         return 0;        
-    }
-
-    if (!file_readline(self->parpath, sizeof self->parpath, self->config->var_cd_path)) {
-        cstr_appfmt(self->what, sizeof self->what, "failed to read line from cd of variable.");
-        self->errno_ = RMCMD_ERR_READ_CD;
-        return 1;
     }
 
     if (self->opts.is_recursive) {
