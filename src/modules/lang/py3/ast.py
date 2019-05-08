@@ -87,8 +87,8 @@ class AST:
         elif isinstance(node, AssignStmtNode):
             return self.trav_assign_stmt(node, dep=dep+1)
 
-        elif isinstance(node, ForNode):
-            return self.trav_for(node, dep=dep+1)
+        elif isinstance(node, ForStmtNode):
+            return self.trav_for_stmt(node, dep=dep+1)
 
         elif isinstance(node, DefFuncNode):
             return self.trav_def_func(node, dep=dep+1)
@@ -96,11 +96,11 @@ class AST:
         elif isinstance(node, ReturnStmtNode):
             return self.trav_return(node, dep=dep+1)
 
-        elif isinstance(node, IfNode):
-            return self.trav_if(node, dep=dep+1)
+        elif isinstance(node, IfStmtNode):
+            return self.trav_if_stmt(node, dep=dep+1)
 
-        elif isinstance(node, ElseNode):
-            return self.trav_else(node, dep=dep+1)
+        elif isinstance(node, ElseStmtNode):
+            return self.trav_else_stmt(node, dep=dep+1)
 
         elif isinstance(node, ExprLineNode):
             return self.trav_expr_line(node, dep=dep+1)
@@ -138,8 +138,8 @@ class AST:
         elif isinstance(node, AssignExprNode):
             return self.trav_assign_expr(node, dep+1)
 
-        elif isinstance(node, ImportNode):
-            return self.trav_import(node, dep+1)
+        elif isinstance(node, ImportStmtNode):
+            return self.trav_import_stmt(node, dep+1)
 
         elif isinstance(node, CallerNode):
             return self.trav_caller(node, dep+1)
@@ -265,13 +265,13 @@ class AST:
         else:
             raise AST.ModuleError('impossible. invalid case in factor node')
 
-    def trav_else(self, node, dep):
+    def trav_else_stmt(self, node, dep):
         if node.block:
             return self._trav(node.block, dep=dep+1)
         elif node.formula:
             return self._trav(node.formula, dep=dep+1)
 
-    def trav_if(self, node, dep):
+    def trav_if_stmt(self, node, dep):
         result = self._trav(node.expr, dep=dep+1)
         if result:
             if node.formula:
@@ -279,10 +279,10 @@ class AST:
             elif node.block:
                 result = self._trav(node.block, dep=dep+1)
         else:
-            if node.elif_:
-                result = self._trav(node.elif_, dep=dep+1)
-            elif node.else_:
-                result = self._trav(node.else_, dep=dep+1)
+            if node.elif_stmt:
+                result = self._trav(node.elif_stmt, dep=dep+1)
+            elif node.else_stmt:
+                result = self._trav(node.else_stmt, dep=dep+1)
         return result
 
     def trav_formula(self, node, dep):
@@ -293,12 +293,12 @@ class AST:
                 self.context.last_expr_val = result[0]
             else:
                 self.context.last_expr_val = result
-        elif node.import_:
-            self._trav(node.import_, dep=dep+1)
-        elif node.for_:
-            self._trav(node.for_, dep=dep+1)
-        elif node.if_:
-            self._trav(node.if_, dep=dep+1)
+        elif node.import_stmt:
+            self._trav(node.import_stmt, dep=dep+1)
+        elif node.for_stmt:
+            self._trav(node.for_stmt, dep=dep+1)
+        elif node.if_stmt:
+            self._trav(node.if_stmt, dep=dep+1)
         elif node.return_:
             # SET RETURN VALUE
             self.return_result = self._trav(node.return_, dep=dep+1)
@@ -432,7 +432,7 @@ class AST:
                 return scope.syms[key]
         raise AST.NotFoundSymbol('"%s" is not found in symbol table' % key)
 
-    def trav_for(self, node, dep):
+    def trav_for_stmt(self, node, dep):
         result = None
         self._trav(node.init_expr_list, dep=dep+1)
         while True:
@@ -517,7 +517,7 @@ class AST:
                 self.context.buffer += str(result)
         return result
 
-    def trav_import(self, node, dep):
+    def trav_import_stmt(self, node, dep):
         result = None
         if node.identifier == 'alias':
             self.context.imported_alias = True
@@ -722,11 +722,11 @@ class AST:
         node = FormulaNode()
         t = self.strm.cur()
         if t.kind == 'import':
-            node.import_ = self.import_(dep=dep+1)
+            node.import_stmt = self.import_stmt(dep=dep+1)
         elif t.kind == 'if':
-            node.if_ = self.if_(dep=dep+1)
+            node.if_stmt = self.if_stmt(dep=dep+1)
         elif t.kind == 'for':
-            node.for_ = self.for_(dep=dep+1)
+            node.for_stmt = self.for_stmt(dep=dep+1)
         elif t.kind == 'def':
             node.def_func = self.def_func(dep=dep+1)
         elif t.kind == 'jmp' and t.value == 'return':
@@ -844,8 +844,8 @@ class AST:
 
         return node
 
-    def for_(self, dep):
-        self.show_parse('for_', dep=dep)
+    def for_stmt(self, dep):
+        self.show_parse('for_stmt', dep=dep)
         if self.strm.eof():
             return None
 
@@ -853,7 +853,7 @@ class AST:
         if tok.kind != 'for':
             raise AST.ModuleError('impossible. not found "for" token')
 
-        node = ForNode()
+        node = ForStmtNode()
         node.init_expr_list = self.expr_list(dep=dep+1)
         tok = self.strm.get()
         if tok.kind != 'semicolon':
@@ -998,7 +998,7 @@ class AST:
 
         return node
 
-    def if_(self, dep, first_symbol='if'):
+    def if_stmt(self, dep, first_symbol='if'):
         self.show_parse('if', dep=dep)
         if self.strm.eof():
             return None
@@ -1007,7 +1007,7 @@ class AST:
         if t.kind != first_symbol:
             return None
 
-        node = IfNode()
+        node = IfStmtNode()
         node.expr = self.expr(dep=dep+1)
         if node.expr is None:
             raise AST.SyntaxError('invalid if statement. not found expr')
@@ -1035,21 +1035,21 @@ class AST:
             pass
         elif t.kind == 'elif':
             self.strm.prev()
-            node.elif_ = self.if_(dep=dep+1, first_symbol='elif')
+            node.elif_stmt = self.if_stmt(dep=dep+1, first_symbol='elif')
         elif t.kind == 'else':
             self.strm.prev()
-            node.else_ = self.else_(dep=dep+1)
+            node.else_stmt = self.else_stmt(dep=dep+1)
         else:
             raise AST.SyntaxError('not ended in if statement. token is %s' % t)
 
         return node
 
-    def else_(self, dep):
+    def else_stmt(self, dep):
         self.show_parse('else', dep=dep)
         if self.strm.eof():
             return None
 
-        node = ElseNode()
+        node = ElseStmtNode()
 
         t = self.strm.get()
         if t.kind != 'else':
@@ -1396,12 +1396,12 @@ class AST:
             return False
         return tok.kind == 'operator' and tok.value in ('=', '+=', '-=', '*=', '/=', '%=')
 
-    def import_(self, dep):
+    def import_stmt(self, dep):
         self.show_parse('import', dep=dep)
         if self.strm.eof():
             return None
 
-        node = ImportNode()
+        node = ImportStmtNode()
         t = self.strm.get()
         if t.kind != 'import':
             self.strm.prev()
