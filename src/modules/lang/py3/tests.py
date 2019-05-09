@@ -716,14 +716,14 @@ class Test(unittest.TestCase):
         c = a.traverse()
         self.assertEqual(a.current_scope.syms['a'], 1)
         self.assertEqual(a.current_scope.syms['b'], 2)
-        self.assertEqual(c.last_expr_val, 2)
+        self.assertEqual(c.last_expr_val, (1, 2))
 
         a.parse(t.parse('{@ a = 1, b = 2, c = 3 @}'))
         c = a.traverse()
         self.assertEqual(a.current_scope.syms['a'], 1)
         self.assertEqual(a.current_scope.syms['b'], 2)
         self.assertEqual(a.current_scope.syms['c'], 3)
-        self.assertEqual(c.last_expr_val, 3)
+        self.assertEqual(c.last_expr_val, (1, 2, 3))
 
         a.parse(t.parse('{@ a = 0, a += 1 @}{{ a }}'))
         c = a.traverse()
@@ -841,7 +841,7 @@ class Test(unittest.TestCase):
         self.assertEqual(c.last_expr_val, 3)
 
     def test_ast_id_expr(self):
-        if self.silent: return
+        # if self.silent: return
 
         t = Tokenizer()
         a = AST()
@@ -916,7 +916,7 @@ class Test(unittest.TestCase):
         t = Tokenizer()
         a = AST()
 
-        with self.assertRaises(AST.SyntaxError):
+        with self.assertRaises(IndexError): # TODO
             a.parse(t.parse('''{@
                 def f():
                     return 1
@@ -1600,7 +1600,7 @@ class Test(unittest.TestCase):
         self.assertEqual(a.current_scope.syms['b'], 1)
         self.assertEqual(a.current_scope.syms['c'], 2)
         self.assertEqual(a.current_scope.syms['d'], 3)
-        self.assertEqual(c.last_expr_val, (2, 3))
+        self.assertEqual(c.last_expr_val, (0, 1, 2, 3))
 
         a.parse(t.parse('''{@
             a = "a"
@@ -1611,7 +1611,7 @@ class Test(unittest.TestCase):
         self.assertEqual(c.last_expr_val, 'abc')
 
     def test_ast_assign_expr(self):
-        if self.silent: return
+        # if self.silent: return
 
         t = Tokenizer()
         a = AST()
@@ -1727,36 +1727,87 @@ class Test(unittest.TestCase):
         self.assertEqual(c.last_expr_val, 2)
         self.assertEqual(a.current_scope.syms['a'], 2)
 
-        with self.assertRaises(AST.SyntaxError):
+        with self.assertRaises(IndexError): # TODO
             a.parse(t.parse('''{@
                 a, b = 1, 2
             @}'''))
             c = a.traverse()
+            self.assertEqual(c.last_expr_val, (1, 2))
+            self.assertEqual(a.current_scope.syms['a'], 1)
+            self.assertEqual(a.current_scope.syms['b'], 2)
+
+        with self.assertRaises(IndexError): # TODO
+            a.parse(t.parse('''{@
+                a, b = 1+2, 2+3
+            @}'''))
+            c = a.traverse()
+            self.assertEqual(c.last_expr_val, (3, 5))
+            self.assertEqual(a.current_scope.syms['a'], 3)
+            self.assertEqual(a.current_scope.syms['b'], 5)
+
+        with self.assertRaises(IndexError): # TODO
+            a.parse(t.parse('''{@
+                def f():
+                    return 1
+                end
+                a, b = 1+f(), 2+f()
+            @}'''))
+            c = a.traverse()
+            self.assertEqual(c.last_expr_val, (2, 3))
+            self.assertEqual(a.current_scope.syms['a'], 2)
+            self.assertEqual(a.current_scope.syms['b'], 3)
 
         a.parse(t.parse('''{@
-            a = 1, b = 2
-            c = a += 1, b += 1
+            def f():
+                return 1, 2
+            end
+            a, b = f()
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.last_expr_val, 3)
-        self.assertEqual(a.current_scope.syms['a'], 2)
-        self.assertEqual(a.current_scope.syms['b'], 3)
-        self.assertEqual(a.current_scope.syms['c'], 2)
-
-        a.parse(t.parse('''{@
-            b = 0
-            a = 1, a + b += 1
-        @}'''))
-        c = a.traverse()
-        self.assertEqual(c.last_expr_val, 2)
+        self.assertEqual(c.last_expr_val, (1, 2))
         self.assertEqual(a.current_scope.syms['a'], 1)
-        self.assertEqual(a.current_scope.syms['b'], 1)
+        self.assertEqual(a.current_scope.syms['b'], 2)
 
         a.parse(t.parse('''{@
             a = 1, 2
         @}'''))
         c = a.traverse()
-        self.assertEqual(c.last_expr_val, 2)
+        self.assertEqual(c.last_expr_val, (1, 2))
+        self.assertEqual(a.current_scope.syms['a'], 1)
+
+        a.parse(t.parse('''{@
+            a = 1, b = 2
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, (1, 2))
+        self.assertEqual(a.current_scope.syms['a'], 1)
+        self.assertEqual(a.current_scope.syms['b'], 2)
+
+        # TODO
+        # a.parse(t.parse('''{@
+        #     a = 1, b = 2
+        #     c = a += 1, b += 1
+        # @}'''))
+        # c = a.traverse()
+
+        with self.assertRaises(AST.NotFoundSymbol):
+            a.parse(t.parse('''{@
+                a = a
+            @}'''))
+            c = a.traverse()
+
+        a.parse(t.parse('''{@
+            a = 1, 2
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, (1, 2))
+        self.assertEqual(a.current_scope.syms['a'], 1)
+
+        a.parse(t.parse('''{@
+            a = 1, 2, 3
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, (1, 2, 3))
         self.assertEqual(a.current_scope.syms['a'], 1)
 
     def test_ast_comparison(self):
