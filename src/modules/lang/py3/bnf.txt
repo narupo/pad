@@ -577,3 +577,58 @@ digit: [0-9]+
 identifier: ( [a-z] | [0-9] | _ )+
 newline: '\r\n' | '\n'
 
+
+2019-05-10 04:23:25 晴れ 8~25°
+=============================
+BNF 0.3.8
+
++ is add sentense
+- is deleted sentence
+^ is update sentence
+
+block: ( text_block | code_block | ref_block ), block
+text_block: .*
+code_block: '{@' formula '@}'
+ref_block: '{{' expr '}}'
+callable: name_list '(' args ')'
+name_list: identifier '.' name_list | identifier
+args: arg ',' args | arg
+arg: digit | string | identifier
+return_stmt: 'return' expr_line
+^ formula: ( assign_stmt_line | if_stmt | for_stmt | import_stmt | return_stmt | def_func | newline ), ( formula | '@}' block '{@' )
+def_func: 'def' identifier '(' dmy_args ')' ':' formula 'end'
+
+if_stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
+elif_stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
+else_stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
+for_stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
+
++ assign_stmt: identifier_list '=' expr_line | expr_line
+identifier_list: identifier ',' identifier_list | identifier
+
+expr_line: expr_list ( EOF, newline | '@}' | 'end' | 'else' | 'elif' )
+expr_list: expr ',' expr_list | expr
+
+^ assign_expr: identifier assign_op assign_expr | expr
+assign_op: '=' | '+=' | '-=' | '*=' | '/=' | '%='
+
+^ expr: gorasu ('&&' | '||') expr | gorasu
+gorasu: kamiyu comp_op gorasu | kamiyu
+kamiyu: mod ('+' | '-' ) kamiyu | mod
+mod: term '%' mod | term
+term: factor ( '*' | '/' ) term | factor
+^ factor: digit | identifier | string | callable | id_expr | not_expr | assign_expr | '(' expr ')'
+comp_op: '==' | '!=' | '<' | '>' | '<=' | '>='
+
+not_expr: '!' expr
+id_expr: identifier ('++' | '--') | ('++' | '--') identifier
+import_stmt: 'import' identifier
+dmy_args: dmy_arg ',' dmy_args | dmy_arg
+dmy_arg: identifier
+args: arg ',' args | arg
+arg: expr
+string: '"' .* '"'
+digit: [0-9]+
+identifier: ( [a-z] | [0-9] | _ )+
+newline: '\r\n' | '\n'
+EOF: -1
