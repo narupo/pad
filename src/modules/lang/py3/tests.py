@@ -1694,6 +1694,71 @@ class Test(unittest.TestCase):
         self.assertEqual(c.last_expr_val, 0)
         self.assertEqual(a.current_scope.syms['a'], 0)
 
+        a.parse(t.parse('''{@
+            a = 1
+            a = a = 2
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 2)
+        self.assertEqual(a.current_scope.syms['a'], 2)
+
+        # Python3ではエラー
+        # Ruby2, PHP7では合法
+        a.parse(t.parse('''{@
+            a = 1
+            a = a += 2
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 3)
+        self.assertEqual(a.current_scope.syms['a'], 3)
+
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('''{@
+                a = 1
+                a = a += 2 -= 1
+            @}'''))
+            c = a.traverse()
+
+        a.parse(t.parse('''{@
+            a = 1
+            a = a = 2
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 2)
+        self.assertEqual(a.current_scope.syms['a'], 2)
+
+        with self.assertRaises(AST.SyntaxError):
+            a.parse(t.parse('''{@
+                a, b = 1, 2
+            @}'''))
+            c = a.traverse()
+
+        a.parse(t.parse('''{@
+            a = 1, b = 2
+            c = a += 1, b += 1
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 3)
+        self.assertEqual(a.current_scope.syms['a'], 2)
+        self.assertEqual(a.current_scope.syms['b'], 3)
+        self.assertEqual(a.current_scope.syms['c'], 2)
+
+        a.parse(t.parse('''{@
+            b = 0
+            a = 1, a + b += 1
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 2)
+        self.assertEqual(a.current_scope.syms['a'], 1)
+        self.assertEqual(a.current_scope.syms['b'], 1)
+
+        a.parse(t.parse('''{@
+            a = 1, 2
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, 2)
+        self.assertEqual(a.current_scope.syms['a'], 1)
+
     def test_ast_comparison(self):
         if self.silent: return
 

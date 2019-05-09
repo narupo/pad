@@ -89,28 +89,28 @@ class AssignStmtLineNode(Node):
 
 class AssignStmtNode(Node):
     def __init__(self):
-        self.result_list = None # Node
+        self.identifier_list = None # Node
         self.expr = None # Node
 
 
-class ResultListNode(Node):
+class IdentifierListNode(Node):
     def __init__(self):
         self.identifier = None # str
-        self.result_list = None # Node
+        self.identifier_list = None # Node
 
     def to_list(self):
         identifiers = []
         if self.identifier:
             identifiers.append(self.identifier)
-        self._to_list(self.result_list, identifiers)
+        self._to_list(self.identifier_list, identifiers)
         return identifiers
 
-    def _to_list(self, result_list, identifiers):
-        if result_list is None:
+    def _to_list(self, identifier_list, identifiers):
+        if identifier_list is None:
             return
-        if result_list.identifier:
-            identifiers.append(result_list.identifier)
-        self._to_list(result_list.result_list, identifiers)
+        if identifier_list.identifier:
+            identifiers.append(identifier_list.identifier)
+        self._to_list(identifier_list.identifier_list, identifiers)
 
 
 class DefFuncNode(Node):
