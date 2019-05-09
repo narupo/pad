@@ -557,13 +557,13 @@ expr_list: expr ',' expr_list | expr
 identifier_list: identifier ',' identifier_list | identifier
 assign_op: '=' | '+=' | '-=' | '*=' | '/=' | '%='
 
-comp_op: '==' | '!=' | '<' | '>' | '<=' | '>='
 expr: gorasu ( '&&' | '||' ) expr | gorasu
 gorasu: kamiyu comp_op gorasu | kamiyu
 kamiyu: mod ('+' | '-' ) kamiyu | mod
 mod: term '%' mod | term
 term: factor ( '*' | '/' ) term | factor
 factor: digit | identifier | string | callable | id_expr | assign_expr | not_expr | '(' expr ')'
+comp_op: '==' | '!=' | '<' | '>' | '<=' | '>='
 
 not_expr: '!' expr
 id_expr: identifier ('++' | '--') | ('++' | '--') identifier
