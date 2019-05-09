@@ -17,7 +17,6 @@ class BlockNode(Node):
 class ExprLineNode(Node):
     def __init__(self):
         self.expr_list = None # Node
-        self.newline = None # str
 
 
 class ExprListNode(Node):
@@ -32,9 +31,15 @@ class ExprNode(Node):
         self.digit = None
 
 
+class AssignStmtNode(Node):
+    def __init__(self):
+        self.identifier_list = None # Node
+        self.expr_line = None # Node
+
+
 class AssignExprNode(Node):
     def __init__(self):
-        self.ideitfier_list = None # str
+        self.ideitfier = None # str
         self.assign_operator = None # str
         self.assign_expr = None # Node
         self.expr = None # Node
@@ -142,7 +147,7 @@ class ReturnStmtNode(Node):
 
 class FormulaNode(Node):
     def __init__(self):
-        self.expr_line = None # Node
+        self.assign_stmt = None # Node
         self.if_stmt = None # Node
         self.for_stmt = None # Node
         self.return_ = None # Node

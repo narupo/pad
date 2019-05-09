@@ -129,6 +129,9 @@ class AST:
         elif isinstance(node, DigitNode):
             return self.trav_digit(node, dep=dep+1)
 
+        elif isinstance(node, AssignStmtNode):
+            return self.trav_assign_stmt(node, dep+1)
+
         elif isinstance(node, AssignExprNode):
             return self.trav_assign_expr(node, dep+1)
 
@@ -281,8 +284,8 @@ class AST:
 
     def trav_formula(self, node, dep):
         # formula is DO NOT RETURN
-        if node.expr_line:
-            result = self._trav(node.expr_line, dep=dep+1)
+        if node.assign_stmt:
+            result = self._trav(node.assign_stmt, dep=dep+1)
             if isinstance(result, tuple) and len(result) == 1:
                 self.context.last_expr_val = result[0]
             else:
@@ -324,18 +327,23 @@ class AST:
 
     def trav_assign_stmt(self, node, dep):
         if node.identifier_list and node.expr_line:
-            identifiers = node.identifier_list.to_list()
+            idfs = node.identifier_list.to_list()
             result = self._trav(node.expr_line, dep=dep+1)
             if isinstance(result, tuple):
-                self.dt('result', result)
-                if len(identifiers) != len(result):
-                    raise AST.SyntaxError('invalid call statement. not same length')
-                for i in range(len(identifiers)):
-                    self.scope_chain[-1].syms[identifiers[i]] = result[i]
-            elif len(identifiers) >= 2:
+                if len(idfs) == 1:
+                    if len(result) == 1:
+                        self.scope_chain[-1].syms[idfs[0]] = result[0]
+                    else:
+                        self.scope_chain[-1].syms[idfs[0]] = result
+                elif len(idfs) > len(result):
+                    raise AST.SyntaxError('can not assign')
+                else:
+                    for i in range(len(idfs)):
+                        self.scope_chain[-1].syms[idfs[i]] = result[i]
+            elif len(idfs) >= 2:
                 raise AST.SyntaxError('invalid call statement. not same length (2)')
             else:
-                self.scope_chain[-1].syms[identifiers[0]] = result
+                self.scope_chain[-1].syms[idfs[0]] = result
             return result
         elif node.expr_line:
             return self._trav(node.expr_line, dep=dep+1)
@@ -442,77 +450,61 @@ class AST:
         return result
 
     def trav_id_expr(self, node, dep):
-        if node.identifier not in self.scope_chain[-1].syms.keys():
-            raise AST.SyntaxError('"%s" is not defined' % node.identifier)
+        idfr = node.identifier
+        if idfr not in self.scope_chain[-1].syms.keys():
+            raise AST.SyntaxError('"%s" is not defined' % idfr)
 
         if node.front_or_back == 'front':
             if node.operator == '++':
-                self.scope_chain[-1].syms[node.identifier] += 1
-                return self.scope_chain[-1].syms[node.identifier]
+                self.scope_chain[-1].syms[idfr] += 1
+                return self.scope_chain[-1].syms[idfr]
             elif node.operator == '--':
-                self.scope_chain[-1].syms[node.identifier] -= 1
-                return self.scope_chain[-1].syms[node.identifier]
+                self.scope_chain[-1].syms[idfr] -= 1
+                return self.scope_chain[-1].syms[idfr]
 
         elif node.front_or_back == 'back':
             if node.operator == '++':
-                ret = self.scope_chain[-1].syms[node.identifier]
-                self.scope_chain[-1].syms[node.identifier] += 1
+                ret = self.scope_chain[-1].syms[idfr]
+                self.scope_chain[-1].syms[idfr] += 1
                 return ret
             elif node.operator == '--':
-                ret = self.scope_chain[-1].syms[node.identifier]
-                self.scope_chain[-1].syms[node.identifier] -= 1
+                ret = self.scope_chain[-1].syms[idfr]
+                self.scope_chain[-1].syms[idfr] -= 1
                 return ret
 
         else:
             raise AST.ModuleError('impossible. invalid front or back value "%s"' % node.front_or_back)
 
     def is_lt(self, data):
-        return isinstance(data, tuple) or isinstance(data, list)
+        return isinstance(data, list) or isinstance(data, tuple)
 
     def trav_assign_expr(self, node, dep):
         if node.expr:
             return self._trav(node.expr, dep=dep+1)
 
-        i = 0
-        idfs = node.identifier_list.to_list()
+        idfr = node.identifier
         result = self._trav(node.assign_expr, dep=dep+1)
-        if not self.is_lt(result):
-            result = [result]
 
-        ret = []
-        if len(idfs) == 1 and node.assign_operator == '=':
-            if len(result) == 1:
-                self.scope_chain[-1].syms[idfs[0]] = result[0]
-            else:
-                self.scope_chain[-1].syms[idfs[0]] = result
-            ret.extend(result)
+        if node.assign_operator == '=':
+            self.scope_chain[-1].syms[idfr] = result
         else:
-            for i in range(len(idfs)):
-                if node.assign_operator == '=':
-                    self.scope_chain[-1].syms[idfs[i]] = result[i]
-                else:
-                    if idfs[i] not in self.scope_chain[-1].syms.keys():
-                        raise AST.ReferenceError('"%s" is not defined' % idfs[i])
+            if idfr not in self.scope_chain[-1].syms.keys():
+                raise AST.ReferenceError('"%s" is not defined' % idfr)
 
-                    if node.assign_operator == '+=':
-                        self.scope_chain[-1].syms[idfs[i]] += result[i]
-                    elif node.assign_operator == '-=':
-                        self.scope_chain[-1].syms[idfs[i]] -= result[i]
-                    elif node.assign_operator == '*=':
-                        self.scope_chain[-1].syms[idfs[i]] *= result[i]
-                    elif node.assign_operator == '/=':
-                        self.scope_chain[-1].syms[idfs[i]] /= result[i]
-                    elif node.assign_operator == '%=':
-                        self.scope_chain[-1].syms[idfs[i]] %= result[i]
-                    else:
-                        raise AST.ModuleError('invalid operator %s' % node.assign_operator)
-                ret.append(self.scope_chain[-1].syms[idfs[i]])
+            if node.assign_operator == '+=':
+                self.scope_chain[-1].syms[idfr] += result
+            elif node.assign_operator == '-=':
+                self.scope_chain[-1].syms[idfr] -= result
+            elif node.assign_operator == '*=':
+                self.scope_chain[-1].syms[idfr] *= result
+            elif node.assign_operator == '/=':
+                self.scope_chain[-1].syms[idfr] /= result
+            elif node.assign_operator == '%=':
+                self.scope_chain[-1].syms[idfr] %= result
+            else:
+                raise AST.ModuleError('invalid operator %s' % node.assign_operator)
 
-        if len(ret) == 0:
-            return None
-        elif len(ret) == 1:
-            return ret[0]
-        return ret
+        return self.scope_chain[-1].syms[idfr]
 
     def trav_ref_block(self, node, dep):
         result = None
@@ -714,6 +706,96 @@ class AST:
 
         return node
 
+    def is_assign_stmt(self, dep):
+        self.show_parse('is_assign_stmt', dep=dep)
+
+        m = 'first'
+        i = self.strm.index
+
+        while True:
+            tok = self.strm.get()
+            if m == 'first':
+                if tok.kind == 'identifier':
+                    m = 'found identifier'
+                else:
+                    self.strm.index = i
+                    return False
+            elif m == 'found identifier':
+                if tok.kind == 'comma':
+                    m = 'found comma'
+                elif tok.kind == 'operator' and tok.value == '=':
+                    m = 'found ='
+                else:
+                    self.strm.index = i
+                    return False
+            elif m == 'found comma':
+                if tok.kind == 'identifier':
+                    m = 'found identifier'
+                else:
+                    self.strm.index = i
+                    return False
+            elif m == 'found =':
+                if tok == Stream.EOF or tok.kind in ('newline', 'rbraceat', 'end', 'else', 'elif'):
+                    self.strm.index = i
+                    return True
+                elif tok.kind == 'comma':
+                    m = 'found comma after ='
+            elif m == 'found comma after =':
+                if tok == Stream.EOF:
+                    raise AST.SyntaxError('invalid syntax')
+                elif tok.kind in ('identifier', 'string', 'digit'):
+                    self.strm.index = i
+                    return False
+                else:
+                    self.strm.index = i
+                    return False
+            else:
+                raise AST.ModuleError('invalid mode "%s"' % m)
+
+            if tok == Stream.EOF:
+                break
+
+        self.strm.index = i
+        return False
+
+    def assign_stmt(self, dep):
+        self.show_parse('assign_stmt', dep=dep)
+        if self.strm.eof():
+            return None
+
+        node = AssignStmtNode()
+        i = self.strm.index
+
+        node.identifier_list = self.identifier_list(dep=dep+1)
+        if node.identifier_list is None:
+            self.strm.index = i
+            node.expr_line = self.expr_line(dep=dep+1)
+            if node.expr_line is None:
+                self.strm.index = i
+                return None
+            return node
+
+        tok = self.strm.get()
+        if tok == Stream.EOF:
+            self.strm.index = i
+            return None
+        elif not (tok.kind == 'operator' and tok.value == '='):
+            self.strm.index = i
+            node.identifier_list = None
+            node.expr_line = self.expr_line(dep=dep+1)
+            if node.expr_line is None:
+                self.strm.index = i
+                return None
+            return node
+
+        node.expr_line = self.expr_line(dep=dep+1)
+        if node.expr_line is None:
+            node.identifier_list = None
+            self.strm.index = i
+            return None
+
+        return node
+
     def formula(self, dep):
         self.show_parse('formula', dep=dep)
         if self.strm.eof():
@@ -741,8 +823,9 @@ class AST:
             self.strm.get()
         else:
             i = self.strm.index
-            node.expr_line = self.expr_line(dep=dep+1)
-            if node.expr_line is None:
+            node.assign_stmt = self.assign_stmt(dep=dep+1)
+            if node.assign_stmt is None:
+                self.dp(self.strm.cur(), self.strm.cur(1), self.strm.cur(2))
                 self.strm.index = i
                 return None
 
@@ -1008,10 +1091,8 @@ class AST:
             return None
 
         tok = self.strm.get()
-        if tok == Stream.EOF:
-            return node
-        elif tok.kind == 'newline':
-            node.newline = tok.value
+        if tok == Stream.EOF or tok.kind == 'newline':
+            pass
         elif tok.kind in ('rbraceat', 'end', 'else', 'elif'):
             self.strm.prev()
         else:
@@ -1349,10 +1430,12 @@ class AST:
         i = self.strm.index
 
         if self.is_assign_expr(dep=dep+1):
-            node.identifier_list = self.identifier_list(dep=dep+1)
-            if node.identifier_list is None:
+            tok = self.strm.get()
+            if tok.kind != 'identifier':
                 self.strm.index = i
                 return None
+
+            node.identifier = tok.value
 
             tok = self.strm.get()
             if not self.is_assign_op(tok):
