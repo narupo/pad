@@ -34,7 +34,7 @@ class ExprNode(Node):
 
 class AssignExprNode(Node):
     def __init__(self):
-        self.ideitfier = None # str
+        self.ideitfier_list = None # str
         self.assign_operator = None # str
         self.assign_expr = None # Node
         self.expr = None # Node
@@ -80,17 +80,6 @@ class ForStmtNode(Node):
         self.update_expr_list = None # Node
         self.block = None # Node
         self.formula = None # Node
-
-
-class AssignStmtLineNode(Node):
-    def __init__(self):
-        self.assign_stmt = None # Node
-
-
-class AssignStmtNode(Node):
-    def __init__(self):
-        self.identifier_list = None # Node
-        self.expr = None # Node
 
 
 class IdentifierListNode(Node):
@@ -154,8 +143,6 @@ class ReturnStmtNode(Node):
 class FormulaNode(Node):
     def __init__(self):
         self.expr_line = None # Node
-        self.assign_expr = None # Node
-        self.assign_stmt_line = None # Node
         self.if_stmt = None # Node
         self.for_stmt = None # Node
         self.return_ = None # Node
@@ -164,7 +151,6 @@ class FormulaNode(Node):
         self.formula = None # Node
         self.block = None # Node
         self.call_stmt = None # Node
-        self.newline = None # str
 
 
 class ImportStmtNode(Node):
