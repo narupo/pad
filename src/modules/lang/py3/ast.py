@@ -39,7 +39,7 @@ class AST:
         self.debug_traverse = debug
         self.opts = opts
         self.context = Context()
-        self.scope_list = [self.root] # scope chain, element is Node
+        self.scope_chain = [self.root] # scope chain, element is Node
         self.return_result = None # result value of return statement
         self.returned = False # flag of case of return statement
         self._trav(self.root, dep=0)
@@ -47,7 +47,7 @@ class AST:
 
     @property
     def current_scope(self):
-        return self.scope_list[-1] # most back of scope
+        return self.scope_chain[-1] # most back of scope
 
     def dp(self, *args, **kwargs):
         if self.debug_parse:
@@ -335,18 +335,18 @@ class AST:
         return self._trav(node.assign_stmt, dep=dep+1)
 
     def trav_assign_stmt(self, node, dep):
-        if node.result_list and node.expr:
-            identifiers = node.result_list.to_list()
+        if node.identifier_list and node.expr:
+            identifiers = node.identifier_list.to_list()
             result = self._trav(node.expr, dep=dep+1)
             if isinstance(result, tuple):
                 if len(identifiers) != len(result):
                     raise AST.SyntaxError('invalid call statement. not same length')
                 for i in range(len(identifiers)):
-                    self.scope_list[-1].syms[identifiers[i]] = result[i]
+                    self.scope_chain[-1].syms[identifiers[i]] = result[i]
             elif len(identifiers) >= 2:
                 raise AST.SyntaxError('invalid call statement. not same length (2)')
             else:
-                self.scope_list[-1].syms[identifiers[0]] = result
+                self.scope_chain[-1].syms[identifiers[0]] = result
             return result
         elif node.expr:
             return self._trav(node.expr, dep=dep+1)
@@ -359,7 +359,7 @@ class AST:
     def trav_def_func(self, node, dep):
         # DO NOT CALL _trav with node.formula
         # This is called by callable
-        self.scope_list[-1].syms[node.identifier] = node
+        self.scope_chain[-1].syms[node.identifier] = node
         return None
 
     def trav_expr_line(self, node, dep):
@@ -401,11 +401,11 @@ class AST:
 
             self.export_args_to_def_func(def_func, def_func.dmy_args, node.args, dep=dep+1)
 
-            self.scope_list.append(def_func)
+            self.scope_chain.append(def_func)
             self.return_result = None
             self.returned = False
             self._trav(def_func.formula, dep=dep+1)
-            self.scope_list.pop()
+            self.scope_chain.pop()
             self.returned = False
 
             if isinstance(self.return_result, tuple) and len(self.return_result) == 1:
@@ -427,7 +427,7 @@ class AST:
             raise AST.SyntaxError('not same length of function arguments')
 
     def find_sym(self, key):
-        for scope in self.scope_list[::-1]:
+        for scope in self.scope_chain[::-1]:
             if key in scope.syms.keys():
                 return scope.syms[key]
         raise AST.NotFoundSymbol('"%s" is not found in symbol table' % key)
@@ -450,25 +450,25 @@ class AST:
         return result
 
     def trav_id_expr(self, node, dep):
-        if node.identifier not in self.scope_list[-1].syms.keys():
+        if node.identifier not in self.scope_chain[-1].syms.keys():
             raise AST.SyntaxError('"%s" is not defined' % node.identifier)
 
         if node.front_or_back == 'front':
             if node.operator == '++':
-                self.scope_list[-1].syms[node.identifier] += 1
-                return self.scope_list[-1].syms[node.identifier]
+                self.scope_chain[-1].syms[node.identifier] += 1
+                return self.scope_chain[-1].syms[node.identifier]
             elif node.operator == '--':
-                self.scope_list[-1].syms[node.identifier] -= 1
-                return self.scope_list[-1].syms[node.identifier]
+                self.scope_chain[-1].syms[node.identifier] -= 1
+                return self.scope_chain[-1].syms[node.identifier]
 
         elif node.front_or_back == 'back':
             if node.operator == '++':
-                ret = self.scope_list[-1].syms[node.identifier]
-                self.scope_list[-1].syms[node.identifier] += 1
+                ret = self.scope_chain[-1].syms[node.identifier]
+                self.scope_chain[-1].syms[node.identifier] += 1
                 return ret
             elif node.operator == '--':
-                ret = self.scope_list[-1].syms[node.identifier]
-                self.scope_list[-1].syms[node.identifier] -= 1
+                ret = self.scope_chain[-1].syms[node.identifier]
+                self.scope_chain[-1].syms[node.identifier] -= 1
                 return ret
 
         else:
@@ -479,33 +479,33 @@ class AST:
             return self._trav(node.expr, dep=dep+1)
 
         if node.assign_operator == '=':
-            self.scope_list[-1].syms[node.identifier] = self._trav(node.assign_expr, dep=dep+1)
-            return self.scope_list[-1].syms[node.identifier]
+            self.scope_chain[-1].syms[node.identifier] = self._trav(node.assign_expr, dep=dep+1)
+            return self.scope_chain[-1].syms[node.identifier]
         elif node.assign_operator == '+=':
-            if node.identifier not in self.scope_list[-1].syms.keys():
+            if node.identifier not in self.scope_chain[-1].syms.keys():
                 raise AST.ReferenceError('"%s" is not defined' % node.identifier)
-            self.scope_list[-1].syms[node.identifier] += self._trav(node.assign_expr, dep=dep+1)
-            return self.scope_list[-1].syms[node.identifier]
+            self.scope_chain[-1].syms[node.identifier] += self._trav(node.assign_expr, dep=dep+1)
+            return self.scope_chain[-1].syms[node.identifier]
         elif node.assign_operator == '-=':
-            if node.identifier not in self.scope_list[-1].syms.keys():
+            if node.identifier not in self.scope_chain[-1].syms.keys():
                 raise AST.ReferenceError('"%s" is not defined' % node.identifier)
-            self.scope_list[-1].syms[node.identifier] -= self._trav(node.assign_expr, dep=dep+1)
-            return self.scope_list[-1].syms[node.identifier]
+            self.scope_chain[-1].syms[node.identifier] -= self._trav(node.assign_expr, dep=dep+1)
+            return self.scope_chain[-1].syms[node.identifier]
         elif node.assign_operator == '*=':
-            if node.identifier not in self.scope_list[-1].syms.keys():
+            if node.identifier not in self.scope_chain[-1].syms.keys():
                 raise AST.ReferenceError('"%s" is not defined' % node.identifier)
-            self.scope_list[-1].syms[node.identifier] *= self._trav(node.assign_expr, dep=dep+1)
-            return self.scope_list[-1].syms[node.identifier]
+            self.scope_chain[-1].syms[node.identifier] *= self._trav(node.assign_expr, dep=dep+1)
+            return self.scope_chain[-1].syms[node.identifier]
         elif node.assign_operator == '/=':
-            if node.identifier not in self.scope_list[-1].syms.keys():
+            if node.identifier not in self.scope_chain[-1].syms.keys():
                 raise AST.ReferenceError('"%s" is not defined' % node.identifier)
-            self.scope_list[-1].syms[node.identifier] /= self._trav(node.assign_expr, dep=dep+1)
-            return self.scope_list[-1].syms[node.identifier]
+            self.scope_chain[-1].syms[node.identifier] /= self._trav(node.assign_expr, dep=dep+1)
+            return self.scope_chain[-1].syms[node.identifier]
         elif node.assign_operator == '%=':
-            if node.identifier not in self.scope_list[-1].syms.keys():
+            if node.identifier not in self.scope_chain[-1].syms.keys():
                 raise AST.ReferenceError('"%s" is not defined' % node.identifier)
-            self.scope_list[-1].syms[node.identifier] %= self._trav(node.assign_expr, dep=dep+1)
-            return self.scope_list[-1].syms[node.identifier]
+            self.scope_chain[-1].syms[node.identifier] %= self._trav(node.assign_expr, dep=dep+1)
+            return self.scope_chain[-1].syms[node.identifier]
 
         raise AST.ModuleError('invalid operator %s' % node.assign_operator)
 
@@ -927,7 +927,7 @@ class AST:
         if tok == Stream.EOF:
             pass
         elif tok.kind in ('newline', 'comma'):
-            # read it
+            # throw away
             pass
         elif tok.kind in ('rbraceat', 'end', 'else', 'elif'):
             self.strm.prev()
@@ -959,8 +959,8 @@ class AST:
             return None
 
         i = self.strm.index
-        node.result_list = self.result_list(dep=dep+1)
-        if node.result_list is None:
+        node.identifier_list = self.identifier_list(dep=dep+1)
+        if node.identifier_list is None:
             self.strm.index = i
             return None
 
@@ -975,8 +975,8 @@ class AST:
 
         return node
 
-    def result_list(self, dep):
-        self.show_parse('result_list', dep=dep)
+    def identifier_list(self, dep):
+        self.show_parse('identifier_list', dep=dep)
         if self.strm.eof():
             return None
 
@@ -985,7 +985,7 @@ class AST:
             self.strm.prev()
             return None
 
-        node = ResultListNode()
+        node = IdentifierListNode()
         node.identifier = tok.value
 
         tok = self.strm.get()
@@ -993,7 +993,7 @@ class AST:
             self.strm.prev()
             return node
 
-        node.result_list = self.result_list(dep=dep+1)
+        node.identifier_list = self.identifier_list(dep=dep+1)
 
         return node
 

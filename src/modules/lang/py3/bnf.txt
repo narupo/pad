@@ -474,6 +474,7 @@ add newline token
 add expr_line
 add assign_stmt_line
 update return_stmt
+rename result_list to identifier_list
 
 + is add sentense
 ^ is update sentence
@@ -487,18 +488,24 @@ name_list: identifier '.' name_list | identifier
 args: arg ',' args | arg
 arg: digit | string | identifier
 ^ return_stmt: 'return' expr_line
-^ formula: ( expr_line | if_stmt | for_stmt | import_stmt | return_stmt | assign_stmt_line | def_func | newline ), ( formula | '@}' block '{@' )
+^ formula: ( expr_line | assign_stmt_line | if_stmt | for_stmt | import_stmt | return_stmt | def_func | newline ), ( formula | '@}' block '{@' )
 def_func: 'def' identifier '(' dmy_args ')' ':' formula 'end'
+
 + assign_stmt_line: assign_stmt ( newline | ',' | '@}' | 'end' | 'else' | 'elif')
-assign_stmt: result_list '=' expr | expr
-result_list: identifier ',' result_list | identifier
+assign_stmt: identifier_list '=' expr | expr
+identifier_list: identifier ',' identifier_list | identifier
+
++ expr_line: expr_list ( newline | '@}' | 'end' | 'else' | 'elif' )
+expr_list: expr ',' expr_list | expr
+
+assign_expr: identifier assign_operator assign_expr | expr
+assign_operator: '=' | '+=' | '-=' | '*=' | '/=' | '%='
+
 if_stmt: 'if' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
 elif_stmt: 'elif' expr ':' ( formula | '@}' block '{@' ) ( 'end' | elif_stmt | else_stmt )
 else_stmt: 'else' ':' '@}'? ( block | formula ) '@}'? 'end'
 for_stmt: 'for' expr_list ';' expr ';' expr_list ':' ( formula | '@}' block '{@' ) 'end'
 comp_op: '==' | '!=' | '<' | '>' | '<=' | '>='
-+ expr_line: expr_list ( newline | '@}' | 'end' | 'else' | 'elif' )
-expr_list: expr ',' expr_list | expr
 expr: gorasu ( '&&' | '||' ) expr | gorasu
 gorasu: kamiyu comp_op gorasu | kamiyu
 kamiyu: mod ('+' | '-' ) kamiyu | mod
@@ -507,8 +514,6 @@ term: factor ( '*' | '/' ) term | factor
 factor: digit | identifier | string | callable | id_expr | assign_expr | not_expr | '(' expr ')'
 not_expr: '!' expr
 id_expr: identifier ('++' | '--') | ('++' | '--') identifier
-assign_expr: identifier assign_operator assign_expr | expr
-assign_operator: '=' | '+=' | '-=' | '*=' | '/=' | '%='
 import_stmt: 'import' identifier
 dmy_args: dmy_arg ',' dmy_args | dmy_arg
 dmy_arg: identifier
