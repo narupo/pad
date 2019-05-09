@@ -108,7 +108,7 @@ editcmd_create_open_fname(editcmd_t *self, const char *fname) {
         err_die("impossible. invalid scope");
         return NULL;
     }
-    
+
     if (!file_readline(path, sizeof path, srcpath)) {
         return NULL;
     }
@@ -130,14 +130,14 @@ editcmd_run(editcmd_t *self) {
     if (!editcmd_read_editor(self)) {
         err_die("not found editor. please setting with 'cap editor' command");
         return 1;
-    }        
+    }
 
     cstr_app(self->cmdline, sizeof self->cmdline, self->editor);
     if (fname) {
         if (!editcmd_create_open_fname(self, fname)) {
             err_die("failed to create open file name");
             return 2;
-        }        
+        }
         cstr_app(self->cmdline, sizeof self->cmdline, " ");
         cstr_app(self->cmdline, sizeof self->cmdline, self->open_fname);
     }
@@ -146,4 +146,3 @@ editcmd_run(editcmd_t *self) {
 
     return 0;
 }
-
