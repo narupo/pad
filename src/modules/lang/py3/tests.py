@@ -1788,12 +1788,15 @@ class Test(unittest.TestCase):
         self.assertEqual(c.last_expr_val, (1, 2))
         self.assertEqual(a.current_scope.syms['a'], (1, 2))
 
-        # TODO
-        # a.parse(t.parse('''{@
-        #     a = 1, b = 2
-        #     c = a += 1, b += 1
-        # @}'''))
-        # c = a.traverse()
+        a.parse(t.parse('''{@
+            a = 1, b = 2
+            c = a += 1, b += 1
+        @}'''))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, (2, 3))
+        self.assertEqual(a.current_scope.syms['a'], 2)
+        self.assertEqual(a.current_scope.syms['b'], 3)
+        self.assertEqual(a.current_scope.syms['c'], (2, 3))
 
         with self.assertRaises(AST.NotFoundSymbol):
             a.parse(t.parse('''{@
