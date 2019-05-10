@@ -228,12 +228,17 @@ class FactorNode(Node):
     def __init__(self):
         self.digit = None # int
         self.identifier = None # str
+        self.nil = None # Node
         self.string = None # str
         self.expr = None # Node
         self.callable = None # Node
         self.assign_expr = None # Node
         self.id_expr = None # Node
         self.not_expr = None # Node
+
+
+class NilNode(Node):
+    pass
 
 
 class NotExprNode(Node):

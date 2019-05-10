@@ -120,6 +120,9 @@ class AST:
         elif isinstance(node, FactorNode):
             return self.trav_factor(node, dep=dep+1)
 
+        elif isinstance(node, NilNode):
+            return self.trav_nil(node, dep=dep+1)
+
         elif isinstance(node, NotExprNode):
             return self.trav_not_expr(node, dep=dep+1)
 
@@ -245,6 +248,8 @@ class AST:
     def trav_factor(self, node, dep):
         if node.expr:
             return self._trav(node.expr, dep=dep+1)
+        elif node.nil:
+            return self._trav(node.nil, dep=dep+1)
         elif node.identifier != None:
             return self.find_sym(node.identifier)
         elif node.digit:
@@ -261,6 +266,9 @@ class AST:
             return self._trav(node.not_expr, dep=dep+1)
         else:
             raise AST.ModuleError('impossible. invalid case in factor node')
+
+    def trav_nil(self, node, dep):
+        return None
 
     def trav_else_stmt(self, node, dep):
         if node.block:
@@ -335,13 +343,13 @@ class AST:
                         self.scope_chain[-1].syms[idfs[0]] = result[0]
                     else:
                         self.scope_chain[-1].syms[idfs[0]] = result
-                elif len(idfs) > len(result):
-                    raise AST.SyntaxError('can not assign')
+                elif len(idfs) != len(result):
+                    raise AST.SyntaxError('can not assign. not same length')
                 else:
                     for i in range(len(idfs)):
                         self.scope_chain[-1].syms[idfs[i]] = result[i]
             elif len(idfs) >= 2:
-                raise AST.SyntaxError('invalid call statement. not same length (2)')
+                raise AST.SyntaxError('can not assign. not same length (2)')
             else:
                 self.scope_chain[-1].syms[idfs[0]] = result
             return result
@@ -510,9 +518,9 @@ class AST:
         result = None
         if node.expr != None:
             result = self._trav(node.expr, dep=dep+1)
+            self.context.last_expr_val = result
             if result is not None:
                 self.context.buffer += str(result)
-                self.context.last_expr_val = result
         return result
 
     def trav_import_stmt(self, node, dep):
@@ -1263,9 +1271,12 @@ class AST:
         elif t.kind == 'digit':
             node.digit = DigitNode()
             node.digit.value = t.value
-        elif t.value in ('++', '--'):
+        elif t.kind == 'operator' and t.value in ('++', '--'):
             self.strm.prev()
             node.id_expr = self.id_expr(dep=dep+1)
+        elif t.kind == 'nil':
+            self.strm.prev()
+            node.nil = self.nil(dep=dep+1)
         elif t.kind == 'identifier':
             self.strm.prev()
             if self.is_assign_expr(dep=dep+1):
@@ -1280,7 +1291,7 @@ class AST:
                     node.identifier = t.value
         elif t.kind == 'string':
             node.string = t.value
-        elif t.value == '!':
+        elif t.kind == 'operator' and t.value == '!':
             self.strm.prev()
             node.not_expr = self.not_expr(dep=dep+1)
         else:
@@ -1288,6 +1299,17 @@ class AST:
             return None
 
         return node
+
+    def nil(self, dep):
+        self.show_parse('nil', dep=dep)
+        if self.strm.eof():
+            return None
+
+        tok = self.strm.get()
+        if tok.kind != 'nil':
+            raise AST.ModuleError('not found "nil"')
+
+        return NilNode()
 
     def not_expr(self, dep):
         self.show_parse('not_expr', dep=dep)
