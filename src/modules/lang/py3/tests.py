@@ -918,6 +918,10 @@ class Test(unittest.TestCase):
         self.assertEqual(a.current_scope.syms['a'], 1)
 
         a.parse(t.parse('''{@
+            a, b
+@}'''))
+
+        a.parse(t.parse('''{@
             def f():
                 return 1, 2
             end
@@ -1713,24 +1717,20 @@ class Test(unittest.TestCase):
         self.assertEqual(c.last_expr_val, 2)
         self.assertEqual(a.current_scope.syms['a'], 2)
 
-        # TODO
-        # これは expr_list として処理されるべき
-        # assign_stmt としてパースされてる
-        # モードではなく再帰的に is_assign_stmt してみては？
-        if False:
-            a.parse(t.parse('{@ a = 1, b = 2 @}'))
-            c = a.traverse()
-            self.assertEqual(c.last_expr_val, (1, 2))
-            self.assertEqual(a.current_scope.syms['a'], 1)
-            self.assertEqual(a.current_scope.syms['b'], 2)
+        a.parse(t.parse('{@ a = 1, b = 2 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, (1, 2))
+        self.assertEqual(a.current_scope.syms['a'], 1)
+        self.assertEqual(a.current_scope.syms['b'], 2)
 
-            a.parse(t.parse('{@ a = 1, b = 2, c = 3 @}'))
-            c = a.traverse()
-            self.assertEqual(c.last_expr_val, (1, 2, 3))
-            self.assertEqual(a.current_scope.syms['a'], 1)
-            self.assertEqual(a.current_scope.syms['b'], 2)
-            self.assertEqual(a.current_scope.syms['c'], 3)
+        a.parse(t.parse('{@ a = 1, b = 2, c = 3 @}'))
+        c = a.traverse()
+        self.assertEqual(c.last_expr_val, (1, 2, 3))
+        self.assertEqual(a.current_scope.syms['a'], 1)
+        self.assertEqual(a.current_scope.syms['b'], 2)
+        self.assertEqual(a.current_scope.syms['c'], 3)
 
+        with self.assertRaises(AST.ReferenceError):
             a.parse(t.parse('{@ a = 0, a += 1 @}{{ a }}'))
             c = a.traverse()
             self.assertEqual(c.last_expr_val, 1)
