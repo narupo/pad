@@ -706,56 +706,51 @@ class AST:
 
         return node
 
-    def is_assign_stmt(self, dep):
-        self.show_parse('is_assign_stmt', dep=dep)
+    def is_expr_line(self, dep):
+        """
+        文脈(改行または終端要素まで)が expr_line なら True を返す
+        strm の index を呼び出し前に保存し、呼び出し後に復帰させる必要がある
 
-        m = 'first'
-        i = self.strm.index
+        expr_line:
 
-        while True:
-            tok = self.strm.get()
-            if m == 'first':
-                if tok.kind == 'identifier':
-                    m = 'found identifier'
-                else:
-                    self.strm.index = i
-                    return False
-            elif m == 'found identifier':
-                if tok.kind == 'comma':
-                    m = 'found comma'
-                elif tok.kind == 'operator' and tok.value == '=':
-                    m = 'found ='
-                else:
-                    self.strm.index = i
-                    return False
-            elif m == 'found comma':
-                if tok.kind == 'identifier':
-                    m = 'found identifier'
-                else:
-                    self.strm.index = i
-                    return False
-            elif m == 'found =':
-                if tok == Stream.EOF or tok.kind in ('newline', 'rbraceat', 'end', 'else', 'elif'):
-                    self.strm.index = i
-                    return True
-                elif tok.kind == 'comma':
-                    m = 'found comma after ='
-            elif m == 'found comma after =':
-                if tok == Stream.EOF:
-                    raise AST.SyntaxError('invalid syntax')
-                elif tok.kind in ('identifier', 'string', 'digit'):
-                    self.strm.index = i
-                    return False
-                else:
-                    self.strm.index = i
-                    return False
-            else:
-                raise AST.ModuleError('invalid mode "%s"' % m)
+            a = 1
+            a = 1, b = 2
 
-            if tok == Stream.EOF:
-                break
+        assign stmt:
 
-        self.strm.index = i
+            a, b = 1, 2
+        """
+        self.show_parse('is_expr_line', dep=dep)
+        if self.strm.eof():
+            return True
+        elif self.strm.cur().kind in ('newline', 'rbraceat', 'end', 'elif', 'else'):
+            return True
+
+        tok = self.strm.get()
+        if tok == Stream.EOF:
+            return False
+        elif tok.kind != 'identifier':
+            return False
+
+        tok = self.strm.get()
+        if tok == Stream.EOF:
+            return False
+        elif tok.kind == 'operator' and tok.value == '=':
+            pass
+        else:
+            return False
+
+        expr = self.expr(dep=dep+1)
+        if expr is None:
+            return False
+
+        tok = self.strm.get()
+        if tok == Stream.EOF:
+            return True
+        elif tok.kind in ('newline', 'rbraceat', 'end', 'elif', 'else'):
+            return True
+        elif tok.kind == 'comma':
+            return self.is_expr_line(dep=dep+1)
         return False
 
     def assign_stmt(self, dep):
@@ -764,7 +759,15 @@ class AST:
             return None
 
         node = AssignStmtNode()
+
         i = self.strm.index
+        if self.is_expr_line(dep=dep+1):
+            self.strm.index = i
+            node.expr_line = self.expr_line(dep=dep+1)
+            if node.expr_line is None:
+                return None
+            return node
+        self.strm.index = i
 
         node.identifier_list = self.identifier_list(dep=dep+1)
         if node.identifier_list is None:
@@ -825,7 +828,6 @@ class AST:
             i = self.strm.index
             node.assign_stmt = self.assign_stmt(dep=dep+1)
             if node.assign_stmt is None:
-                self.dp(self.strm.cur(), self.strm.cur(1), self.strm.cur(2))
                 self.strm.index = i
                 return None
 
@@ -1096,7 +1098,7 @@ class AST:
         elif tok.kind in ('rbraceat', 'end', 'else', 'elif'):
             self.strm.prev()
         else:
-            raise AST.SyntaxError('not found newline. token is %s' % tok)
+            raise AST.SyntaxError('not found end element. token is %s' % tok)
 
         return node
 
@@ -1352,7 +1354,6 @@ class AST:
         self.strm.index = i
         return ret
 
-
     def digit(self, dep):
         self.show_parse('digit', dep=dep)
         if self.strm.eof():
@@ -1404,20 +1405,23 @@ class AST:
         if self.strm.eof():
             return None
 
+        node = IdentifierListNode()
+        i = self.strm.index
+
         tok = self.strm.get()
         if tok.kind != 'identifier':
-            self.strm.prev()
+            self.strm.index = i
             return None
 
-        node = IdentifierListNode()
         node.identifier = tok.value
 
         tok = self.strm.get()
-        if tok.kind != 'comma':
+        if tok.kind == 'comma':
+            node.identifier_list = self.identifier_list(dep=dep+1)
+            if node.identifier_list is None:
+                raise AST.SyntaxError('invalid syntax in identifier list')
+        else:
             self.strm.prev()
-            return node
-
-        node.identifier_list = self.identifier_list(dep=dep+1)
 
         return node
 
