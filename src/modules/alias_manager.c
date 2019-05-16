@@ -65,11 +65,11 @@ almgr_create_resource_path(almgr_t *self, char *dst, size_t dstsz, int scope) {
         return NULL;
     }
 
-    if (file_readline(tmp, sizeof tmp, srcpath) == NULL) {
+    if (!file_readline(tmp, sizeof tmp, srcpath)) {
         almgr_set_error_detail(self, "failed to read line from %s", (scope == CAP_SCOPE_LOCAL ? "local" : "global"));
         return NULL;
     }
-    if (file_solvefmt(dst, dstsz, "%s/.caprc", tmp) == NULL) {
+    if (!file_solvefmt(dst, dstsz, "%s/.caprc", tmp)) {
         almgr_set_error_detail(self, "failed to solve dst of resource file");
         return NULL;
     }
@@ -80,7 +80,7 @@ almgr_create_resource_path(almgr_t *self, char *dst, size_t dstsz, int scope) {
 almgr_t *
 almgr_load_alias_list(almgr_t *self, int scope) {
     char path[FILE_NPATH];
-    if (almgr_create_resource_path(self, path, sizeof path, scope) == NULL) {
+    if (!almgr_create_resource_path(self, path, sizeof path, scope)) {
         almgr_set_error_detail(self, "failed to create path by scope %d", scope);
         return NULL;
     }
@@ -90,7 +90,7 @@ almgr_load_alias_list(almgr_t *self, int scope) {
     }
 
     char *src = file_readcp_from_path(path);
-    if (src == NULL) {
+    if (!src) {
         almgr_set_error_detail(self, "failed to read content from file \"%s\"", path);
         return NULL;
     }
@@ -126,14 +126,13 @@ fail:
 
 almgr_t *
 almgr_find_alias_value(almgr_t *self, char *dst, uint32_t dstsz, const char *key, int scope) {
-    // load alias list
-    if (almgr_load_alias_list(self, scope) == NULL) {
+    if (!almgr_load_alias_list(self, scope)) {
         return NULL;
     }
 
     // find alias value by key
     const char *value = ctx_get_alias_value(self->context, key);
-    if (value == NULL) {
+    if (!value) {
         return NULL;
     }
 
