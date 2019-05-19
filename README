@@ -112,5 +112,5 @@ the editor. Like a `cap-subl3` plugin (https://github.com/narupo/cap-subl3).
                                  ...       ... 
 
  Cap's resource detaching from the editor. Your snippet codes be separated from
-the editor. So, your snippet codes be long life in file system.
+the editor.
  So, your snippet codes become long life on the file system years and years. 
