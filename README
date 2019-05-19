@@ -99,19 +99,18 @@ home) or current directory, and write the following.
  This is function of alias of Cap.
 
 
-Cap + Plugin of editors
-=======================
+Cap + Plugin of editor
+======================
 
- Of course, Cap is needing plugin for editors. And you will be call to Cap on
-your editor. Like a `cap-subl3` plugin (https://github.com/narupo/cap-subl3).
+ Of course, Cap is needing plugin for the editor. And you will call Cap from
+the editor. Like a `cap-subl3` plugin (https://github.com/narupo/cap-subl3).
 
-    Cap +-- Plugin + Editor
-        |
-        +-- Plugin + Editor
-        |
-        +-- Plugin + Editor
-        |
-        ...
+    Snippet codes --+-- Windows --+-- Cap --+-- Plugin + Editor
+                    |             |         |
+                    +--- UNIX ----+         +-- Plugin + Editor
+                                  |         |
+                                 ...       ... 
 
- Cap's resource detaching from editors. Your snippet codes be separated from
-your editor.
+ Cap's resource detaching from the editor. Your snippet codes be separated from
+the editor. So, your snippet codes be long life in file system.
+ So, your snippet codes become long life on the file system years and years. 
