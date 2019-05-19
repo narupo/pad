@@ -77,6 +77,7 @@ Example
 
     $ cap edit .caprc
 
+
 Resource file
 =============
 
@@ -89,3 +90,26 @@ or current directory, and write the following.
         alias.set("hw", "run bin/hello_world.py")
         alias.set("banana", "cat banana.txt")
     @}
+
+ And execute the following.
+
+    $ cap hw
+    $ cap banana
+
+ This is function of alias of Cap.
+
+
+Cap + Plugin of editors
+=======================
+
+ Of course, Cap is needing plugin for editors. And you will be call to Cap on your editor. Like a `cap-subl3` plugin (https://github.com/narupo/cap-subl3).
+
+    Cap +-- Plugin + Editor
+        |
+        +-- Plugin + Editor
+        |
+        +-- Plugin + Editor
+        |
+        ...
+
+ Cap's resource detaching from editors. Your snippet codes be separated from your editor.
