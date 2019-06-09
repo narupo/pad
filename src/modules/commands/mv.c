@@ -12,7 +12,7 @@ struct mvcmd {
     struct opts opts;
 };
 
-void
+static void
 mvcmd_parse_opts(mvcmd_t *self) {
     // parse options
     static struct option longopts[] = {
@@ -70,7 +70,7 @@ mvcmd_new(config_t *move_config, int argc, char **move_argv) {
     return self;
 }
 
-void
+static void
 mvcmd_show_usage(mvcmd_t *self) {
     fflush(stdout);
     fflush(stderr);
@@ -86,7 +86,7 @@ mvcmd_show_usage(mvcmd_t *self) {
     fflush(stderr);
 }
 
-int 
+static int 
 mvcmd_mv(mvcmd_t *self) {
     const char *old = self->argv[self->optind];
     const char *new = self->argv[self->optind+1];
