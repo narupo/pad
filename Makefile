@@ -1,7 +1,3 @@
-# REFERENCES:
-#
-# 	https://itchyny.hatenablog.com/entry/20120213/1329135107
-#
 ifeq ($(OS), Windows_NT)
 	RM := del
 	RMDIR := rmdir /s /q
@@ -73,9 +69,38 @@ tests: build/tests.o \
 	build/modules/lang/ast.o
 	$(CC) $(CFLAGS) -o build/tests \
 		build/tests.o \
-		build/lib/*.o \
-		build/modules/*.o \
-		build/modules/lang/*.o
+		build/lib/error.o \
+		build/lib/memory.o \
+		build/lib/file.o \
+		build/lib/cstring.o \
+		build/lib/string.o \
+		build/lib/cstring_array.o \
+		build/lib/cl.o \
+		build/lib/format.o \
+		build/lib/dict.o \
+		build/modules/config.o \
+		build/modules/util.o \
+		build/modules/alias_manager.o \
+		build/modules/commands/home.o \
+		build/modules/commands/cd.o \
+		build/modules/commands/pwd.o \
+		build/modules/commands/ls.o \
+		build/modules/commands/cat.o \
+		build/modules/commands/run.o \
+		build/modules/commands/alias.o \
+		build/modules/commands/edit.o \
+		build/modules/commands/editor.o \
+		build/modules/commands/mkdir.o \
+		build/modules/commands/rm.o \
+		build/modules/commands/mv.o \
+		build/modules/commands/cp.o \
+		build/modules/commands/touch.o \
+		build/modules/commands/snippet.o \
+		build/modules/lang/tokens.o \
+		build/modules/lang/tokenizer.o \
+		build/modules/lang/nodes.o \
+		build/modules/lang/context.o \
+		build/modules/lang/ast.o
 
 build/tests.o: src/tests.c src/tests.h
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -115,10 +140,38 @@ cap: build/app.o \
 	build/modules/lang/ast.o
 	$(CC) $(CFLAGS) -o build/cap \
 		build/app.o \
-		build/lib/*.o \
-		build/modules/*.o \
-		build/modules/commands/*.o \
-		build/modules/lang/*.o
+		build/lib/error.o \
+		build/lib/memory.o \
+		build/lib/file.o \
+		build/lib/cstring.o \
+		build/lib/string.o \
+		build/lib/cstring_array.o \
+		build/lib/cl.o \
+		build/lib/format.o \
+		build/lib/dict.o \
+		build/modules/config.o \
+		build/modules/util.o \
+		build/modules/alias_manager.o \
+		build/modules/commands/home.o \
+		build/modules/commands/cd.o \
+		build/modules/commands/pwd.o \
+		build/modules/commands/ls.o \
+		build/modules/commands/cat.o \
+		build/modules/commands/run.o \
+		build/modules/commands/alias.o \
+		build/modules/commands/edit.o \
+		build/modules/commands/editor.o \
+		build/modules/commands/mkdir.o \
+		build/modules/commands/rm.o \
+		build/modules/commands/mv.o \
+		build/modules/commands/cp.o \
+		build/modules/commands/touch.o \
+		build/modules/commands/snippet.o \
+		build/modules/lang/tokens.o \
+		build/modules/lang/tokenizer.o \
+		build/modules/lang/nodes.o \
+		build/modules/lang/context.o \
+		build/modules/lang/ast.o
 
 build/app.o: src/app.c src/app.h
 	$(CC) $(CFLAGS) -c $< -o $@
