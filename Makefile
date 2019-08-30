@@ -8,15 +8,19 @@ else
 	SEP := /
 endif
 MKDIR := mkdir
-CC := gcc
+MINGW_GCC := D:/bin/MinGW/bin/gcc.exe
+TDM_GCC := C:/"Program Files (x86)"/TDM-GCC/bin/gcc.exe
+CC := $(MINGW_GCC)
 INCLUDE := src
 CFLAGS := -Wall \
 	-g \
-	-O0 \
+	-O3 \
 	-std=c11 \
 	-Wno-unused-function \
 	-D_DEBUG \
-	-I$(INCLUDE)
+	-I$(INCLUDE) \
+	--static \
+	-mtune=skylake
 
 # $(warning $(wildcard src/*.c))
 
@@ -33,6 +37,10 @@ init:
 	$(MKDIR) build$(SEP)modules
 	$(MKDIR) build$(SEP)modules$(SEP)commands
 	$(MKDIR) build$(SEP)modules$(SEP)lang
+
+.PHONY: cc
+cc:
+	$(CC) -v
 
 tests: build/tests.o \
 	build/lib/error.o \
