@@ -29,7 +29,7 @@ touchcmd_show_usage(touchcmd_t *self) {
     fflush(stderr);
     fprintf(stderr, "Usage:\n"
         "\n"
-        "    cap touch [options...]\n"
+        "    cap touch [options]... [file]\n"
         "\n"
         "The options are:\n"
         "\n"
@@ -116,8 +116,7 @@ touchcmd_new(config_t *move_config, int argc, char **move_argv) {
 }
 
 static int
-touchcmd_touch(touchcmd_t *self) {
-    const char *argpath = self->argv[self->optind];
+touchcmd_touch(touchcmd_t *self, const char *argpath) {
     const char *org;
     char path[FILE_NPATH];
 
@@ -144,6 +143,16 @@ touchcmd_touch(touchcmd_t *self) {
     return 0;
 }
 
+static int
+touchcmd_touch_all(touchcmd_t *self) {
+    for (int i = self->optind; i < self->argc; ++i) {
+        const char *argpath = self->argv[i];
+        touchcmd_touch(self, argpath);
+    }
+
+    return 0;
+}
+
 int
 touchcmd_run(touchcmd_t *self) {
     if (self->argc < self->optind+1) {
@@ -156,5 +165,5 @@ touchcmd_run(touchcmd_t *self) {
         return 1;        
     }
 
-    return touchcmd_touch(self);
+    return touchcmd_touch_all(self);
 }
