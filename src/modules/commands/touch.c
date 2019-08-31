@@ -29,7 +29,7 @@ touchcmd_show_usage(touchcmd_t *self) {
     fflush(stderr);
     fprintf(stderr, "Usage:\n"
         "\n"
-        "    cap touch [options]... [file]\n"
+        "    cap touch [options]... [file]...\n"
         "\n"
         "The options are:\n"
         "\n"
