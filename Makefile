@@ -8,9 +8,7 @@ else
 	SEP := /
 endif
 MKDIR := mkdir
-MINGW_GCC := D:/bin/MinGW/bin/gcc.exe
-TDM_GCC := C:/"Program Files (x86)"/TDM-GCC/bin/gcc.exe
-CC := $(MINGW_GCC)
+CC := gcc
 INCLUDE := src
 CFLAGS := -Wall \
 	-g \
@@ -20,7 +18,6 @@ CFLAGS := -Wall \
 	-D_DEBUG \
 	-I$(INCLUDE) \
 	--static \
-	-mtune=skylake
 
 # $(warning $(wildcard src/*.c))
 
