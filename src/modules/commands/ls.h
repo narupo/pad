@@ -8,6 +8,7 @@
 
 #include "modules/util.h"
 #include "modules/config.h"
+#include "modules/symlink.h"
 
 struct lscmd;
 typedef struct lscmd lscmd_t;
