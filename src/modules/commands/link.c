@@ -201,10 +201,6 @@ linkcmd_link(linkcmd_t *self) {
         return 1;        
     }
 
-    printf("line[%s]\n", line);
-    printf("dstpath[%s]\n", dstpath);
-    printf("linkname[%s]\n", linkname);
-    printf("cappath[%s]\n", cappath);
     return 0;
 }
 
