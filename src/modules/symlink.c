@@ -13,7 +13,7 @@ is_contain_header(char *data, uint32_t datasz) {
 
 static const char *
 read_sympath(config_t *config, char *sympath, uint32_t sympathsz, const char *path) {
-    FILE *fin = fopen(path, "rb");
+    FILE *fin = fopen(path, "r");
     if (!fin) {
         return NULL;
     }
@@ -101,7 +101,11 @@ __symlink_follow_path(config_t *config, char *dst, uint32_t dstsz, const char *a
     char sympath[FILE_NPATH];
 
     string_t *path = str_new();
-
+#ifdef _CAP_WINDOWS
+    // append drive letter
+    str_pushb(path, normpath[0]);
+    str_app(path, ":\\");
+#endif
     for (char **toksp = toks; *toksp; ++toksp) {
         str_pushb(path, FILE_SEP);
         str_app(path, *toksp);
