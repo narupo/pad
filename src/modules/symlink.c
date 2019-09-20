@@ -54,7 +54,7 @@ read_sympath(config_t *config, char *sympath, uint32_t sympathsz, const char *pa
     return sympath;
 }
 
-void
+static void
 fix_path_seps(char *dst, uint32_t dstsz, const char *src) {
 #ifdef _CAP_WINDOWS
     char replace_sep = '/';
