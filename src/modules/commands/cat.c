@@ -259,6 +259,14 @@ catcmd_usage(const catcmd_t *self) {
     );
 }
 
+/**
+ * Read content from stream
+ *
+ * @param[in] *self pointer to catcmd_t
+ * @param[in] *fin pointer to FILE of source
+ *
+ * @return pointer to content
+ */
 static string_t *
 catcmd_read_stream(catcmd_t *self, FILE *fin) {
     string_t *buf = str_new();
@@ -270,6 +278,15 @@ catcmd_read_stream(catcmd_t *self, FILE *fin) {
     return buf;
 }
 
+/**
+ * Write buffer at stream
+ *
+ * @param[in] *self pointer to catcmd_t
+ * @param[in] *fout pointer to FILE of destination
+ * @param[in] *buf pointer to buffer
+ *
+ * @return success to true, failed to false
+ */
 static bool
 catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
     bool ret = true;
@@ -341,6 +358,14 @@ fail:
     return ret;
 }
 
+/**
+ * Read content of file of path
+ *
+ * @param[in] *self pointer to catcmd_t
+ * @param[in] *path path of file
+ *
+ * @return pointer to string_t
+ */
 static string_t *
 catcmd_read_file(catcmd_t *self, const char *path) {
     FILE *fin = fopen(path, "rb");
