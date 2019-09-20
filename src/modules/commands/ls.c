@@ -164,30 +164,26 @@ lscmd_run(lscmd_t *self) {
         return 0;
     }
 
-    char cd[FILE_NPATH];
-    if (!file_readline(cd, sizeof cd, self->config->var_cd_path)) {
-        err_error("failed to read line from cd of variable");
-        return 1;
-    }
-
-    char home[FILE_NPATH];
-    if (!file_readline(home, sizeof home, self->config->var_home_path)) {
-        err_error("failed to read line from home of variable");
-        return 2;
-    }
-
     if (optind - self->argc == 0) {
-        return lscmd_ls(self, cd);
+        return lscmd_ls(self, self->config->cd_path);
     } else {
         char path[FILE_NPATH];
 
         for (int i = optind; i < self->argc; ++i) {
             const char *arg = self->argv[i];
-            const char *org = (arg[0] == '/' ? home : cd);
+            const char *org = (arg[0] == '/' ? self->config->home_path : self->config->cd_path);
             if (!strcmp(arg, "/")) {
-                file_solvefmt(path, sizeof path, "%s", org);
+                char tmppath[FILE_NPATH];
+                snprintf(tmppath, sizeof tmppath, "%s", org);
+                if (!symlink_follow_path(self->config, path, sizeof path, tmppath)) {
+                    continue;
+                }
             } else {
-                file_solvefmt(path, sizeof path, "%s/%s", org, arg);
+                char tmppath[FILE_NPATH];
+                snprintf(tmppath, sizeof tmppath, "%s/%s", org, arg);
+                if (!symlink_follow_path(self->config, path, sizeof path, tmppath)) {
+                    continue;
+                }
             }
             lscmd_ls(self, path);
         }
