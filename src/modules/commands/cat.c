@@ -121,7 +121,7 @@ catcmd_new(config_t *move_config, int argc, char **move_argv) {
 }
 
 /**
- * Make file path for catenate
+ * Make file path for concatenate
  * 
  * @param[in] *dst destination buffer
  * @param[in] dstsz size of destination buffer
@@ -186,7 +186,7 @@ catcmd_setindent(catcmd_t *self, char *buf, size_t bufsize) {
 }
 
 /**
- * Catenate fin to fout
+ * Concatenate fin to fout
  * 
  * @param[in] *fout destination stream
  * @param[in] *fin source stream
