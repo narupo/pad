@@ -20,26 +20,30 @@ read_sympath(config_t *config, char *sympath, uint32_t sympathsz, const char *pa
         return NULL;
     }
 
-    char data[FILE_NPATH + 100 + 1] = {0};
-    uint32_t datasz = fread(data, sizeof(char), sizeof(data)-1, fin);
+    uint32_t symheaderlen = strlen(symlink_header);
+    char line[FILE_NPATH + symheaderlen + 1];
+    if (!fgets(line, sizeof line, fin)) {
+        return NULL;
+    }
+    uint32_t linelen = strlen(line);
+    if (line[linelen-1] == '\n') {
+        line[--linelen] = '\0';
+    }
+
     if (fclose(fin) < 0) {
         return NULL;
     }
-    data[sizeof(data)-1] = '\0'; // for safety
 
-    if (!is_contain_header(data, datasz)) {
+    if (!is_contain_header(line, linelen)) {
         return NULL;
     }
 
-    const char *p = strchr(data, ':');
+    const char *p = strchr(line, ':');
     if (!p) {
         return NULL;
     }
     ++p;
-    datasz -= strlen(symlink_header);
-    for (; *p == ' '; ++p) {
-        --datasz;
-    }
+    for (; *p == ' '; ++p) ;
 
     char cappath[FILE_NPATH];
     for (int i = 0; i < sizeof(cappath)-1 && *p; ++i, ++p) {
