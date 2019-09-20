@@ -142,19 +142,18 @@ __symlink_follow_path(config_t *config, char *dst, uint32_t dstsz, const char *a
         goto fail;
     }
 
+#define cleanup() { \
+    for (char **toksp = toks; *toksp; ++toksp) { \
+        free(*toksp); \
+    } \
+    free(toks); \
+    str_del(path); \
+}
 done:
-    for (char **toksp = toks; *toksp; ++toksp) {
-        free(*toksp);
-    }
-    free(toks);
-    str_del(path);
+    cleanup();
     return dst;
 fail:
-    for (char **toksp = toks; *toksp; ++toksp) {
-        free(*toksp);
-    }
-    free(toks);
-    str_del(path);
+    cleanup();
     return NULL;
 }
 
