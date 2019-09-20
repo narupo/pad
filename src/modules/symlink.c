@@ -45,7 +45,7 @@ read_sympath(config_t *config, char *sympath, uint32_t sympathsz, const char *pa
         cappath[i+1] = '\0';
     }
 
-    // home path
+    // origin is home path
     const char *org = config->home_path;
     if (!file_solvefmt(sympath, sympathsz, "%s/%s", org, cappath)) {
         return NULL;

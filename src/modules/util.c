@@ -74,6 +74,24 @@ is_out_of_home(const char *homepath, const char *argpath) {
     return false;
 }
 
+bool
+is_out_of_home_no_exists(const char *homepath, const char *argpath) {
+    char home[FILE_NPATH];
+    char path[FILE_NPATH];
+
+    if (!file_solve(home, sizeof home, homepath) ||
+        !file_solve(path, sizeof path, argpath)) {
+        return true;
+    }
+
+    size_t homelen = strlen(home);
+    if (strncmp(home, path, homelen)) {
+        return true;
+    }
+
+    return false;
+}
+
 int
 randrange(int min, int max) {
 	return min + (int)(rand() * (max - min + 1.0) / (1.0 + RAND_MAX));
