@@ -1,7 +1,5 @@
 #include "modules/symlink.h"
 
-static const char *symlink_header = "cap symlink:";
-
 static const char *
 skip_drive_letter(const char *path) {
     const char *found = strchr(path, ':');
@@ -10,7 +8,7 @@ skip_drive_letter(const char *path) {
 
 static bool
 is_contain_header(char *data, uint32_t datasz) {
-    return memcmp(data, symlink_header, strlen(symlink_header)) == 0;
+    return memcmp(data, SYMLINK_HEADER, strlen(SYMLINK_HEADER)) == 0;
 }
 
 static const char *
@@ -20,16 +18,12 @@ read_sympath(config_t *config, char *sympath, uint32_t sympathsz, const char *pa
         return NULL;
     }
 
-    uint32_t symheaderlen = strlen(symlink_header);
+    uint32_t symheaderlen = strlen(SYMLINK_HEADER);
     char line[FILE_NPATH + symheaderlen + 1];
-    if (!fgets(line, sizeof line, fin)) {
+    int32_t linelen = file_getline(line, sizeof line, fin);
+    if (linelen == EOF) {
         return NULL;
     }
-    uint32_t linelen = strlen(line);
-    if (line[linelen-1] == '\n') {
-        line[--linelen] = '\0';
-    }
-
     if (fclose(fin) < 0) {
         return NULL;
     }
@@ -167,5 +161,15 @@ symlink_follow_path(config_t *config, char *dst, uint32_t dstsz, const char *abs
     }
     dst[0] = '\0';
     return __symlink_follow_path(config, dst, dstsz, abspath, 0);
+}
+
+bool
+symlink_is_link_file(const char *path) {
+    char line[FILE_NPATH + 100];
+    if (!file_readline(line, sizeof line, path)) {
+        return false;
+    }
+
+    return is_contain_header(line, strlen(line));
 }
 
