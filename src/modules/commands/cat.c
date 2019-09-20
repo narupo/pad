@@ -146,7 +146,7 @@ catcmd_makepath(catcmd_t *self, char *dst, size_t dstsz, const char *name) {
     char drtpath[FILE_NPATH];
     snprintf(drtpath, sizeof drtpath, "%s/%s", org, name);
 
-    if (!symlink_follow_path(dst, dstsz, drtpath)) {
+    if (!symlink_follow_path(self->config, dst, dstsz, drtpath)) {
         return NULL;
     }
 
