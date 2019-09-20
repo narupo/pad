@@ -14,7 +14,7 @@ is_contain_header(char *data, uint32_t datasz) {
 }
 
 static const char *
-read_sympath(char *sympath, uint32_t sympathsz, const char *path) {
+read_sympath(config_t *config, char *sympath, uint32_t sympathsz, const char *path) {
     FILE *fin = fopen(path, "rb");
     if (!fin) {
         return NULL;
@@ -41,9 +41,16 @@ read_sympath(char *sympath, uint32_t sympathsz, const char *path) {
         --datasz;
     }
 
-    for (int i = 0; i < sympathsz-1 && *p; ++i, ++p) {
-        sympath[i] = *p;
-        sympath[i+1] = '\0';
+    char cappath[FILE_NPATH];
+    for (int i = 0; i < sizeof(cappath)-1 && *p; ++i, ++p) {
+        cappath[i] = *p;
+        cappath[i+1] = '\0';
+    }
+
+    // home path
+    const char *org = config->home_path;
+    if (!file_solvefmt(sympath, sympathsz, "%s/%s", org, cappath)) {
+        return NULL;
     }
 
     return sympath;
@@ -70,7 +77,7 @@ fix_path_seps(char *dst, uint32_t dstsz, const char *src) {
 }
 
 static char *
-__symlink_follow_path(char *dst, uint32_t dstsz, const char *abspath, int dep) {
+__symlink_follow_path(config_t *config, char *dst, uint32_t dstsz, const char *abspath, int dep) {
     if (dep >= 8) {
         return NULL;
     }
@@ -106,7 +113,7 @@ __symlink_follow_path(char *dst, uint32_t dstsz, const char *abspath, int dep) {
         }
 
         sympath[0] = '\0';
-        if (!read_sympath(sympath, sizeof sympath, str_getc(path))) {
+        if (!read_sympath(config, sympath, sizeof sympath, str_getc(path))) {
             continue;
         }
         // printf("sympath[%s]\n", sympath);
@@ -129,7 +136,7 @@ __symlink_follow_path(char *dst, uint32_t dstsz, const char *abspath, int dep) {
         str_app(path, *toksp);
     }
 
-    if (!__symlink_follow_path(dst, dstsz, str_getc(path), dep+1)) {
+    if (!__symlink_follow_path(config, dst, dstsz, str_getc(path), dep+1)) {
         goto fail;
     }
 
@@ -150,11 +157,11 @@ fail:
 }
 
 char *
-symlink_follow_path(char *dst, uint32_t dstsz, const char *abspath) {
+symlink_follow_path(config_t *config, char *dst, uint32_t dstsz, const char *abspath) {
     if (!dst || !dstsz || !abspath) {
         return NULL;
     }
     dst[0] = '\0';
-    return __symlink_follow_path(dst, dstsz, abspath, 0);
+    return __symlink_follow_path(config, dst, dstsz, abspath, 0);
 }
 
