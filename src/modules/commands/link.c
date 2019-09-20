@@ -149,8 +149,8 @@ linkcmd_unlink(linkcmd_t *self) {
         return 1;
     }
 
-    if (!file_exists(path)) {
-        err_error("\"%s\" is not exists", linkname);
+    if (is_out_of_home(self->config->home_path, path)) {
+        err_error("\"%s\" is out of home", linkname);
         return 1;
     }
 
@@ -177,6 +177,11 @@ linkcmd_link(linkcmd_t *self) {
     const char *linkname = self->argv[self->optind];
     const char *cappath = self->argv[self->optind+1];
 
+    if (strstr(linkname, "..")) {
+        err_error("Cap's symbolic link is not allow relative path");
+        return 1;
+    }
+
     const char *org = NULL;
     if (linkname[0] == FILE_SEP) {
         org = self->config->home_path;
@@ -197,8 +202,8 @@ linkcmd_link(linkcmd_t *self) {
         return 1;
     }
 
-    if (file_exists(dstpath)) {
-        err_error("\"%s\" is already exists", linkname);
+    if (is_out_of_home_no_exists(self->config->home_path, dstpath)) {
+        err_error("\"%s\" is out of home", linkname);
         return 1;
     }
 
