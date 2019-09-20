@@ -361,6 +361,7 @@ app_usage(app_t *app) {
         "    cp         Copy file\n"
         "    touch      Create empty file\n"
         "    snippet    Save or show snippet codes\n"
+        "    link       Create symbolic link\n"
     ;
     static const char *examples[] = {
         "    $ cap home\n"
@@ -430,6 +431,7 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
         "cp",
         "touch",
         "snippet",
+        "link",
         NULL,
     };
 
@@ -561,6 +563,13 @@ app_execute_command_by_name(app_t *self, const char *name) {
         self->cmd_argv = NULL; // moved
         int result = snptcmd_run(cmd);
         snptcmd_del(cmd);
+        return result;
+    } else if (!strcmp(name, "link")) {
+        linkcmd_t *cmd = linkcmd_new(self->config, self->cmd_argc, self->cmd_argv);
+        self->config = NULL; // moved
+        self->cmd_argv = NULL; // moved
+        int result = linkcmd_run(cmd);
+        linkcmd_del(cmd);
         return result;
     }
 

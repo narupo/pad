@@ -28,3 +28,4 @@
 #include "modules/commands/cp.h"
 #include "modules/commands/touch.h"
 #include "modules/commands/snippet.h"
+#include "modules/commands/link.h"

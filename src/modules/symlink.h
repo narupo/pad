@@ -25,6 +25,8 @@
 #include "modules/constant.h"
 #include "modules/config.h"
 
+#define SYMLINK_HEADER "cap symlink:"
+
 /**
  * Follow path for symbolic links and save real path at destination
  *
@@ -36,3 +38,14 @@
  */
 char *
 symlink_follow_path(config_t *config, char *dst, uint32_t dstsz, const char *drtpath);
+
+/**
+ * Check file is Cap's symbolic link
+ *
+ * @param[in] *path pointer to path
+ *
+ * @return file is link to true, else false
+ */
+bool
+symlink_is_link_file(const char *path);
+
