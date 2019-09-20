@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 /**
  * Copy string at destination buffer
@@ -81,3 +82,25 @@ cstr_cpywithout(char *dst, int32_t dstsz, const char *src, const char *without);
  */
 char *
 cstr_edup(const char *src);
+
+/**
+ * Split path by separator character
+ *
+ * @param[in] *str pointer to string
+ * @param[in] sep separator character
+ *
+ * @return success to tokens of dynamic allocate memory, failed to NULL
+ */
+char **
+cstr_split(const char *str, char sep);
+
+/**
+ * Split path by separator character ignore empty string
+ *
+ * @param[in] *str pointer to string
+ * @param[in] sep separator character
+ *
+ * @return success to tokens of dynamic allocate memory, failed to NULL
+ */
+char **
+cstr_split_ignore_empty(const char *str, char sep);
