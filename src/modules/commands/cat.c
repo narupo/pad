@@ -143,7 +143,10 @@ catcmd_makepath(catcmd_t *self, char *dst, size_t dstsz, const char *name) {
         err_die("impossible. invalid state in make path");
     }
 
-    if (!file_solvefmt(dst, dstsz, "%s/%s", org, name)) {
+    char drtpath[FILE_NPATH];
+    snprintf(drtpath, sizeof drtpath, "%s/%s", org, name);
+
+    if (!symlink_follow_path(dst, dstsz, drtpath)) {
         return NULL;
     }
 
