@@ -201,7 +201,10 @@ rmcmd_rmr(rmcmd_t *self) {
             err_die("impossible. invalid state in rmr");
         }
 
-        if (!file_solvefmt(path, sizeof path, "%s/%s", org, argpath)) {
+        char drtpath[FILE_NPATH];
+        snprintf(drtpath, sizeof drtpath, "%s/%s", org, argpath);
+
+        if (!symlink_follow_path(self->config, path, sizeof path, drtpath)) {
             cstr_appfmt(self->what, sizeof self->what, "failed to solve path from \"%s\".", argpath);
             self->errno_ = RMCMD_ERR_SOLVEPATH;
             return 1;
@@ -245,7 +248,10 @@ rmcmd_rm(rmcmd_t *self) {
             err_die("impossible. invalid state in rm");
         }
 
-        if (!file_solvefmt(path, sizeof path, "%s/%s", org, argpath)) {
+        char drtpath[FILE_NPATH];
+        snprintf(drtpath, sizeof drtpath, "%s/%s", org, argpath);
+
+        if (!symlink_follow_path(self->config, path, sizeof path, drtpath)) {
             cstr_appfmt(self->what, sizeof self->what, "failed to solve path.");
             self->errno_ = RMCMD_ERR_SOLVEPATH;
             return 1;
