@@ -113,7 +113,10 @@ editcmd_create_open_fname(editcmd_t *self, const char *fname) {
         return NULL;
     }
 
-    if (!file_solvefmt(self->open_fname, sizeof self->open_fname, "%s/%s", path, fname)) {
+    char tmppath[FILE_NPATH];
+    snprintf(tmppath, sizeof tmppath, "%s/%s", path, fname);
+
+    if (!symlink_follow_path(self->config, self->open_fname, sizeof self->open_fname, tmppath)) {
         return NULL;
     }
 
@@ -136,7 +139,7 @@ editcmd_run(editcmd_t *self) {
     if (fname) {
         if (!editcmd_create_open_fname(self, fname)) {
             err_die("failed to create open file name");
-            return 2;
+            return 1;
         }
         cstr_app(self->cmdline, sizeof self->cmdline, " ");
         cstr_app(self->cmdline, sizeof self->cmdline, self->open_fname);
