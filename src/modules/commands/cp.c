@@ -160,31 +160,36 @@ cpcmd_set_err(cpcmd_t *self, cpcmd_errno_t errno_, const char *fmt, ...) {
 
 static char *
 cpcmd_solve_path(cpcmd_t *self, char *dst, size_t dstsz, const char *path) {
+    char tmppath[FILE_NPATH];
+
     if (path[0] == ':') {
-        // the path on the Cap's environment
-        const char *src_path = path+1;
-        const char *org;
-
-        if (src_path[0] == '/') {
-            org = self->config->home_path;
-        } else if (self->config->scope == CAP_SCOPE_LOCAL) {
-            org = self->config->cd_path;
-        } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
-            org = self->config->home_path;
-        } else {
-            err_die("impossible. invalid state in solve path");
-        }
-
-        if (!file_solvefmt(dst, dstsz, "%s/%s", org, src_path)) {
-            cpcmd_set_err(self, CPCMD_ERR_SOLVEPATH, "failed to solve path from \"%s\"", path);
-            return NULL;
-        }
-    } else {
         // the path on the user's file system
-        if (!file_solve(dst, dstsz, path)) {
-            cpcmd_set_err(self, CPCMD_ERR_SOLVEPATH, "failed to solve path from \"%s\"", path);
+        const char *pth = path+1;
+        if (!file_solve(dst, dstsz, pth)) {
+            cpcmd_set_err(self, CPCMD_ERR_SOLVEPATH, "failed to solve path from \"%s\"", pth);
             return NULL;
         }
+        return dst;
+    }
+
+    // the path on the Cap's environment
+    const char *src_path = path;
+    const char *org = NULL;
+
+    if (src_path[0] == '/') {
+        org = self->config->home_path;
+    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
+        org = self->config->cd_path;
+    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
+        org = self->config->home_path;
+    } else {
+        err_die("impossible. invalid state in solve path");
+    }
+
+    snprintf(tmppath, sizeof tmppath, "%s/%s", org, src_path);
+    if (!symlink_follow_path(self->config, dst, dstsz, tmppath)) {
+        cpcmd_set_err(self, CPCMD_ERR_SOLVEPATH, "failed to solve path from \"%s\"", path);
+        return NULL;
     }
 
     return dst;
@@ -197,15 +202,18 @@ cpcmd_copy_file(cpcmd_t *self, const char *dst_path, const char *src_path) {
         cpcmd_set_err(self, CPCMD_ERR_OPENFILE, "failed to open destination file \"%s\"", dst_path);
         return false;
     }
+
     FILE *srcfp = file_open(src_path, "rb");
     if (!srcfp) {
         cpcmd_set_err(self, CPCMD_ERR_OPENFILE, "failed to open source file \"%s\"", src_path);
         return false;
     }
+
     if (!file_copy(dstfp, srcfp)) {
         cpcmd_set_err(self, CPCMD_ERR_COPY, "failed to copy file from \"%s\" to \"%s\"", src_path, dst_path);
         return false;
     }
+
     file_close(dstfp);
     file_close(srcfp);
     return true;
@@ -226,13 +234,18 @@ cpcmd_copy_r(cpcmd_t *self, const char *dst_path, const char *src_path) {
         }
 
         char norm_src_path[FILE_NPATH];
-        if (!file_solvefmt(norm_src_path, sizeof norm_src_path, "%s/%s", src_path, fname)) {
+        char tmppath[FILE_NPATH];
+
+        snprintf(tmppath, sizeof tmppath, "%s/%s", src_path, fname);
+        if (!symlink_follow_path(self->config, norm_src_path, sizeof norm_src_path, tmppath)) {
             cpcmd_set_err(self, CPCMD_ERR_SOLVEPATH, "failed to solve source path by \"%s\"", fname);
             goto fail;
         }
 
         char norm_dst_path[FILE_NPATH];
-        if (!file_solvefmt(norm_dst_path, sizeof norm_dst_path, "%s/%s", dst_path, fname)) {
+
+        snprintf(tmppath, sizeof tmppath, "%s/%s", dst_path, fname);
+        if (!symlink_follow_path(self->config, norm_dst_path, sizeof norm_dst_path, tmppath)) {
             cpcmd_set_err(self, CPCMD_ERR_SOLVEPATH, "failed to solve destination path by \"%s\"", fname);
             goto fail;
         }
@@ -268,7 +281,7 @@ cpcmd_cp_src2dst_r(cpcmd_t *self, const char *dst_path, const char *src_path) {
     //      dst_path を mkdir
     //          作成したディレクトリ以下に src の親ディレクトリ以下をコピーする
     if (!file_isdir(src_path)) {
-        cpcmd_set_err(self, CPCMD_ERR_COPY, "\"%s\" is not a directory", src_path);
+        cpcmd_set_err(self, CPCMD_ERR_COPY, "\"%s\" is not a directory (1)", src_path);
         return false;
     }
 
@@ -284,7 +297,7 @@ cpcmd_cp_src2dst_r(cpcmd_t *self, const char *dst_path, const char *src_path) {
             }
             return cpcmd_copy_r(self, dstdirpath, src_path);
         } else {
-            cpcmd_set_err(self, CPCMD_ERR_COPY, "\"%s\" is not a directory", dst_path);
+            cpcmd_set_err(self, CPCMD_ERR_COPY, "\"%s\" is not a directory (2)", dst_path);
             return false;            
         }
     } else {
@@ -315,7 +328,10 @@ cpcmd_cp_src2dst(cpcmd_t *self, const char *dst_path, const char *src_path) {
         }
 
         char newdstpath[FILE_NPATH];
-        if (!file_solvefmt(newdstpath, sizeof newdstpath, "%s/%s", dst_path, basename)) {
+        char tmppath[FILE_NPATH];
+
+        snprintf(tmppath, sizeof tmppath, "%s/%s", dst_path, basename);
+        if (!symlink_follow_path(self->config, newdstpath, sizeof newdstpath, tmppath)) {
             cpcmd_set_err(self, CPCMD_ERR_SOLVEPATH, "failed to solve path from \"%s\"", basename);
             return false;            
         }
@@ -338,7 +354,7 @@ cpcmd_cp2(cpcmd_t *self, const char *to, const char *from) {
     if (!cpcmd_solve_path(self, src_path, sizeof src_path, from)) {
         return false;
     }
-    if (from[0] == ':' && is_out_of_home(self->config->home_path, src_path)) {
+    if (from[0] != ':' && is_out_of_home(self->config->home_path, src_path)) {
         cpcmd_set_err(self, CPCMD_ERR_OUTOFHOME, "\"%s\" is out of home", from);
         return false;
     }
@@ -347,8 +363,9 @@ cpcmd_cp2(cpcmd_t *self, const char *to, const char *from) {
     if (!cpcmd_solve_path(self, dst_path, sizeof dst_path, to)) {
         return false;
     }
-    if (to[0] == ':' && is_out_of_home(self->config->home_path, dst_path)) {
-        cpcmd_set_err(self, CPCMD_ERR_OUTOFHOME, "\"%s\" is out of home", to);
+
+    if (to[0] != ':' && is_out_of_home(self->config->home_path, dst_path)) {
+        cpcmd_set_err(self, CPCMD_ERR_OUTOFHOME, "\"%s\" is out of home (2)", to);
         return false;
     }
 
@@ -370,10 +387,7 @@ cpcmd_cp(cpcmd_t *self) {
         }
     } else {
         const char *to = self->argv[self->argc-1];
-        if (!file_isdir(to)) {
-            cpcmd_set_err(self, CPCMD_ERR_COPY, "\"%s\" is not a directory", to);
-            return 1;
-        }
+
         for (int i = self->optind; i < self->argc-1; ++i) {
             const char *from = self->argv[i];
             if (!cpcmd_cp2(self, to, from)) {
