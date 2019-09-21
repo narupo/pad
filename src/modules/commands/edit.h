@@ -7,10 +7,9 @@
 #include "lib/file.h"
 #include "lib/string.h"
 #include "lib/cstring.h"
-
 #include "modules/util.h"
 #include "modules/config.h"
-
+#include "modules/symlink.h"
 #include "modules/lang/tokenizer.h"
 #include "modules/lang/ast.h"
 #include "modules/lang/context.h"
