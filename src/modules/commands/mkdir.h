@@ -10,6 +10,7 @@
 #include "modules/constant.h"
 #include "modules/config.h"
 #include "modules/util.h"
+#include "modules/symlink.h"
 
 struct mkdircmd;
 typedef struct mkdircmd mkdircmd_t;
