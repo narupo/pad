@@ -9,6 +9,7 @@
 #include "modules/constant.h"
 #include "modules/util.h"
 #include "modules/config.h"
+#include "modules/symlink.h"
 
 struct runcmd;
 typedef struct runcmd runcmd_t;

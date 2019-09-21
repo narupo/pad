@@ -97,11 +97,18 @@ runcmd_run(runcmd_t *self) {
     }
 
     // Create script path
+    char tmppath[FILE_NPATH];
+    snprintf(tmppath, sizeof tmppath, "%s/%s", org, argpath);
+
     char spath[FILE_NPATH];
-    file_solvefmt(spath, sizeof spath, "%s/%s", org, argpath);
-    if (isoutofhome(self->config->var_home_path, spath)) {
+    if (!symlink_follow_path(self->config, spath, sizeof spath, tmppath)) {
+        err_error("failed to follow path");
+        return 1;
+    }
+
+    if (is_out_of_home(self->config->home_path, spath)) {
         err_error("invalid script. \"%s\" is out of home.", spath);
-        return 6;
+        return 1;
     }
 
     // Read script line in file
