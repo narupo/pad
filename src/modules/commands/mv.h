@@ -10,6 +10,7 @@
 #include "modules/constant.h"
 #include "modules/util.h"
 #include "modules/config.h"
+#include "modules/symlink.h"
 
 struct mvcmd;
 typedef struct mvcmd mvcmd_t;
