@@ -17,7 +17,6 @@ CFLAGS := -Wall \
 	-Wno-unused-function \
 	-D_DEBUG \
 	-I$(INCLUDE) \
-	--static \
 
 # $(warning $(wildcard src/*.c))
 
@@ -52,6 +51,7 @@ tests: build/tests.o \
 	build/modules/config.o \
 	build/modules/util.o \
 	build/modules/alias_manager.o \
+	build/modules/symlink.o \
 	build/modules/commands/home.o \
 	build/modules/commands/cd.o \
 	build/modules/commands/pwd.o \
@@ -67,6 +67,7 @@ tests: build/tests.o \
 	build/modules/commands/cp.o \
 	build/modules/commands/touch.o \
 	build/modules/commands/snippet.o \
+	build/modules/commands/link.o \
 	build/modules/lang/tokens.o \
 	build/modules/lang/tokenizer.o \
 	build/modules/lang/nodes.o \
@@ -86,6 +87,7 @@ tests: build/tests.o \
 		build/modules/config.o \
 		build/modules/util.o \
 		build/modules/alias_manager.o \
+		build/modules/symlink.o \
 		build/modules/commands/home.o \
 		build/modules/commands/cd.o \
 		build/modules/commands/pwd.o \
@@ -101,6 +103,7 @@ tests: build/tests.o \
 		build/modules/commands/cp.o \
 		build/modules/commands/touch.o \
 		build/modules/commands/snippet.o \
+		build/modules/commands/link.o \
 		build/modules/lang/tokens.o \
 		build/modules/lang/tokenizer.o \
 		build/modules/lang/nodes.o \
@@ -123,6 +126,7 @@ cap: build/app.o \
 	build/modules/config.o \
 	build/modules/util.o \
 	build/modules/alias_manager.o \
+	build/modules/symlink.o \
 	build/modules/commands/home.o \
 	build/modules/commands/cd.o \
 	build/modules/commands/pwd.o \
@@ -138,6 +142,7 @@ cap: build/app.o \
 	build/modules/commands/cp.o \
 	build/modules/commands/touch.o \
 	build/modules/commands/snippet.o \
+	build/modules/commands/link.o \
 	build/modules/lang/tokens.o \
 	build/modules/lang/tokenizer.o \
 	build/modules/lang/nodes.o \
@@ -157,6 +162,7 @@ cap: build/app.o \
 		build/modules/config.o \
 		build/modules/util.o \
 		build/modules/alias_manager.o \
+		build/modules/symlink.o \
 		build/modules/commands/home.o \
 		build/modules/commands/cd.o \
 		build/modules/commands/pwd.o \
@@ -172,6 +178,7 @@ cap: build/app.o \
 		build/modules/commands/cp.o \
 		build/modules/commands/touch.o \
 		build/modules/commands/snippet.o \
+		build/modules/commands/link.o \
 		build/modules/lang/tokens.o \
 		build/modules/lang/tokenizer.o \
 		build/modules/lang/nodes.o \
@@ -217,6 +224,9 @@ build/modules/util.o: src/modules/util.c src/modules/util.h
 build/modules/alias_manager.o: src/modules/alias_manager.c src/modules/alias_manager.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+build/modules/symlink.o: src/modules/symlink.c src/modules/symlink.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 build/modules/commands/home.o: src/modules/commands/home.c src/modules/commands/home.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -260,6 +270,9 @@ build/modules/commands/touch.o: src/modules/commands/touch.c src/modules/command
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules/commands/snippet.o: src/modules/commands/snippet.c src/modules/commands/snippet.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/modules/commands/link.o: src/modules/commands/link.c src/modules/commands/link.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules/lang/tokenizer.o: src/modules/lang/tokenizer.c src/modules/lang/tokenizer.h
