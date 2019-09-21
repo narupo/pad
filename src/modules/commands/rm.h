@@ -11,6 +11,7 @@
 #include "modules/constant.h"
 #include "modules/util.h"
 #include "modules/config.h"
+#include "modules/symlink.h"
 
 typedef enum {
     RMCMD_ERR_NOERR = 0,
