@@ -119,6 +119,7 @@ static int
 touchcmd_touch(touchcmd_t *self, const char *argpath) {
     const char *org;
     char path[FILE_NPATH];
+    char tmppath[FILE_NPATH];
 
     if (argpath[0] == '/') {
         org = self->config->home_path;
@@ -130,7 +131,8 @@ touchcmd_touch(touchcmd_t *self, const char *argpath) {
         err_die("impossible. invalid state in touch");
     }
 
-    if (!file_solvefmt(path, sizeof path, "%s/%s", org, argpath)) {
+    snprintf(tmppath, sizeof tmppath, "%s/%s", org, argpath);
+    if (!symlink_follow_path(self->config, path, sizeof path, tmppath)) {
         err_error("failed to solve path by \"%s\"", argpath);
         return 1;
     }
