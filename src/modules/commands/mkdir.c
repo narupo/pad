@@ -110,14 +110,17 @@ mkdircmd_mkdirp(mkdircmd_t *self) {
         err_die("impossible. invalid state in mkdirp");
     }
 
-    if (!file_solvefmt(path, sizeof path, "%s/%s", parpath, argpath)) {
-        err_error("failed to solve path");
-        return 2;
+    char tmppath[FILE_NPATH];
+    snprintf(tmppath, sizeof tmppath, "%s/%s", parpath, argpath);
+
+    if (!symlink_follow_path(self->config, path, sizeof path, tmppath)) {
+        err_error("failed to follow path");
+        return 1;
     }
 
     if (file_mkdirsq(path) != 0) {
         err_error("failed to create directory \"%s\"", path);
-        return 3;
+        return 1;
     }
 
     return 0;
@@ -139,19 +142,22 @@ mkdircmd_mkdir(mkdircmd_t *self) {
         err_die("impossible. invalid state in mkdirp");
     }
 
-    if (!file_solvefmt(path, sizeof path, "%s/%s", parpath, argpath)) {
-        err_error("failed to solve path");
-        return 2;
+    char tmppath[FILE_NPATH];
+    snprintf(tmppath, sizeof tmppath, "%s/%s", parpath, argpath);
+
+    if (!symlink_follow_path(self->config, path, sizeof path, tmppath)) {
+        err_error("failed to follow path");
+        return 1;
     }
 
     if (file_exists(path)) {
         err_error("failed to create directory. \"%s\" is exists", path);
-        return 3;
+        return 1;
     }
 
     if (file_mkdirq(path) != 0) {
         err_error("failed to create directory \"%s\"", path);
-        return 4;
+        return 1;
     }
 
     return 0;
