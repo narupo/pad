@@ -106,10 +106,12 @@ mvcmd_mv_file_to_dir(mvcmd_t *self, const char *fname, const char *dirname) {
     const char *org;
     char srcpath[FILE_NPATH];
     char dstpath[FILE_NPATH];
+    char tmppath[FILE_NPATH];
 
     org = mvcmd_get_org_by(self, fname);
 
-    if (!file_solvefmt(srcpath, sizeof srcpath, "%s/%s", org, fname)) {
+    snprintf(tmppath, sizeof tmppath, "%s/%s", org, fname);
+    if (!symlink_follow_path(self->config, srcpath, sizeof srcpath, tmppath)) {
         err_error("failed to solve path for source file name");
         return false;
     }
@@ -126,17 +128,8 @@ mvcmd_mv_file_to_dir(mvcmd_t *self, const char *fname, const char *dirname) {
         return false;
     }
 
-    char dirpath[FILE_NPATH];
-    if (!file_solvefmt(dirpath, sizeof dirpath, "%s/%s", org, dirname)) {
-        err_error("failed to solve path for directory path");
-        return false;
-    }
-    if (!file_isdir(dirpath)) {
-        err_error("\"%s\" is not a directory", dirname);
-        return false;
-    }
-
-    if (!file_solvefmt(dstpath, sizeof dstpath, "%s/%s/%s", org, dirname, basename)) {
+    snprintf(tmppath, sizeof tmppath, "%s/%s/%s", org, dirname, basename);
+    if (!symlink_follow_path(self->config, dstpath, sizeof dstpath, tmppath)) {
         err_error("failed to solve path for dirname");
         return false;
     }
@@ -168,24 +161,26 @@ static int
 mvcmd_mv_file_to_other(mvcmd_t *self) {
     const char *srcfname = self->argv[self->optind];
     const char *dst = self->argv[self->optind+1];
-    const char *org;
+    const char *org = mvcmd_get_org_by(self, srcfname);
 
-    org = mvcmd_get_org_by(self, srcfname);
-
+    char tmppath[FILE_NPATH];
     char srcpath[FILE_NPATH];
-    if (!file_solvefmt(srcpath, sizeof srcpath, "%s/%s", org, srcfname)) {
-        err_error("failed to solve path for source file name");
+
+    snprintf(tmppath, sizeof tmppath, "%s/%s", org, srcfname);
+    if (!symlink_follow_path(self->config, srcpath, sizeof srcpath, tmppath)) {
+        err_error("failed to follow path for source file name");
         return 1;
     }
     if (!file_exists(srcpath)) {
-        err_error("\"%s\" is not exists", srcfname);
+        err_error("\"%s\" is not exists. can not move to other", srcfname);
         return 1;
     }
 
     org = mvcmd_get_org_by(self, dst);
 
     char dstpath[FILE_NPATH];
-    if (!file_solvefmt(dstpath, sizeof dstpath, "%s/%s", org, dst)) {
+    snprintf(tmppath, sizeof tmppath, "%s/%s", org, dst);
+    if (!symlink_follow_path(self->config, dstpath, sizeof dstpath, tmppath)) {
         err_error("failed to solve path for source file name");
         return 1;
     }
@@ -195,10 +190,6 @@ mvcmd_mv_file_to_other(mvcmd_t *self) {
     if (dstpath[dstpathlen-1] == FILE_SEP) {
         dstpath[dstpathlen-1] = '\0';
     }
-    if (!file_exists(dstpath)) {
-        err_error("\"%s\" is not exists", dst);
-        return 1;
-    }
 
     // if dst path is directory then switch to process of directory
     if (file_isdir(dstpath)) {
@@ -207,11 +198,14 @@ mvcmd_mv_file_to_other(mvcmd_t *self) {
             err_error("failed to get basename in file to other");
             return 1;
         }
+
         char dstpath2[FILE_NPATH];
-        if (!file_solvefmt(dstpath2, sizeof dstpath2, "%s/%s", dstpath, basename)) {
-            err_error("failed to solve path for second destination path in file to other");
+        snprintf(tmppath, sizeof tmppath, "%s/%s", dstpath, basename);
+        if (!symlink_follow_path(self->config, dstpath2, sizeof dstpath2, tmppath)) {
+            err_error("failed to follow path for second destination path in file to other");
             return 1;
         }        
+
         if (file_rename(srcpath, dstpath2) != 0) {
             err_error("failed to rename \"%s\" to \"%s\"", srcpath, dstpath2);
             return 1;
