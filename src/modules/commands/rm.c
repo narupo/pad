@@ -222,35 +222,42 @@ rmcmd_rmr(rmcmd_t *self) {
 }
 
 static int
-rmcmd_rm(rmcmd_t *self) {
-    for (int i = self->optind; i < self->argc; ++i) {
-        char path[FILE_NPATH];
-        const char *argpath = self->argv[i];
-        const char *org = get_origin(self->config, argpath);
-    
-        char drtpath[FILE_NPATH];
-        snprintf(drtpath, sizeof drtpath, "%s/%s", org, argpath);
+rmcmd_rm(rmcmd_t *self, const char *argpath) {
+    char path[FILE_NPATH];
+    const char *org = get_origin(self->config, argpath);
 
-        if (!symlink_follow_path(self->config, path, sizeof path, drtpath)) {
-            cstr_appfmt(self->what, sizeof self->what, "failed to solve path.");
-            self->errno_ = RMCMD_ERR_SOLVEPATH;
-            return 1;
-        }
+    char drtpath[FILE_NPATH];
+    snprintf(drtpath, sizeof drtpath, "%s/%s", org, argpath);
 
-        if (is_out_of_home(self->config->home_path, path)) {
-            cstr_appfmt(self->what, sizeof self->what, "\"%s\" is out of home.", path);
-            self->errno_ = RMCMD_ERR_OUTOFHOME;
-            return 1;
-        }
-
-        if (file_remove(path) != 0) {
-            cstr_appfmt(self->what, sizeof self->what, "failed to remove \"%s\".", path);
-            self->errno_ = RMCMD_ERR_REMOVE_FILE;
-            return 1;
-        }
+    if (!symlink_follow_path(self->config, path, sizeof path, drtpath)) {
+        cstr_appfmt(self->what, sizeof self->what, "failed to solve path.");
+        self->errno_ = RMCMD_ERR_SOLVEPATH;
+        return 1;
     }
 
-    return 0;
+    if (is_out_of_home(self->config->home_path, path)) {
+        cstr_appfmt(self->what, sizeof self->what, "\"%s\" is out of home.", path);
+        self->errno_ = RMCMD_ERR_OUTOFHOME;
+        return 1;
+    }
+
+    if (file_remove(path) != 0) {
+        cstr_appfmt(self->what, sizeof self->what, "failed to remove \"%s\".", path);
+        self->errno_ = RMCMD_ERR_REMOVE_FILE;
+        return 1;
+    }
+}
+
+static int
+rmcmd_rm_all(rmcmd_t *self) {
+    int ret = 0;
+    
+    for (int i = self->optind; i < self->argc; ++i) {
+        const char *argpath = self->argv[i];
+        ret += rmcmd_rm(self, argpath);
+    }
+
+    return ret;
 }
 
 int
@@ -269,5 +276,5 @@ rmcmd_run(rmcmd_t *self) {
         return rmcmd_rmr(self);
     }
 
-    return rmcmd_rm(self);
+    return rmcmd_rm_all(self);
 }
