@@ -227,3 +227,16 @@ argsbyoptind(int argc, char *argv[], int optind) {
 	return args;
 }
 
+const char *
+get_origin(const config_t *config, const char *path) {
+    if (path[0] == FILE_SEP) {
+        return config->home_path;
+    } else if (config->scope == CAP_SCOPE_LOCAL) {
+        return config->cd_path;
+    } else if (config->scope == CAP_SCOPE_GLOBAL) {
+        return config->home_path;
+    }
+    err_die("impossible. invalid state in get origin");
+    return NULL;
+}
+
