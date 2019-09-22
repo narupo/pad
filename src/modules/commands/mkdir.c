@@ -97,21 +97,11 @@ mkdircmd_show_usage(mkdircmd_t *self) {
 int
 mkdircmd_mkdirp(mkdircmd_t *self) {
     const char *argpath = self->argv[self->optind];
-    const char* parpath;
+    const char* org = get_origin(self->config, argpath);
     char path[FILE_NPATH];
 
-    if (argpath[0] == '/') {
-        parpath = self->config->home_path;
-    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
-        parpath = self->config->cd_path;
-    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
-        parpath = self->config->home_path;
-    } else {
-        err_die("impossible. invalid state in mkdirp");
-    }
-
     char tmppath[FILE_NPATH];
-    snprintf(tmppath, sizeof tmppath, "%s/%s", parpath, argpath);
+    snprintf(tmppath, sizeof tmppath, "%s/%s", org, argpath);
 
     if (!symlink_follow_path(self->config, path, sizeof path, tmppath)) {
         err_error("failed to follow path");
@@ -129,21 +119,11 @@ mkdircmd_mkdirp(mkdircmd_t *self) {
 int
 mkdircmd_mkdir(mkdircmd_t *self) {
     const char *argpath = self->argv[self->optind];
-    const char *parpath;
+    const char *org = get_origin(self->config, argpath);
     char path[FILE_NPATH];
 
-    if (argpath[0] == '/') {
-        parpath = self->config->home_path;
-    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
-        parpath = self->config->cd_path;
-    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
-        parpath = self->config->home_path;
-    } else {
-        err_die("impossible. invalid state in mkdirp");
-    }
-
     char tmppath[FILE_NPATH];
-    snprintf(tmppath, sizeof tmppath, "%s/%s", parpath, argpath);
+    snprintf(tmppath, sizeof tmppath, "%s/%s", org, argpath);
 
     if (!symlink_follow_path(self->config, path, sizeof path, tmppath)) {
         err_error("failed to follow path");
