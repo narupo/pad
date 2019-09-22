@@ -130,6 +130,8 @@ argsbyoptind(int argc, char *argv[], int optind);
  * pathとconfigのscopeから基点となるパスを取得する
  * 取得するパスはconfig->home_pathかconfig->cd_pathのいずれかである
  * pathの先頭がセパレータ、つまりpathが絶対パスであるとき、戻り値はconfig->home_pathである
+ * このpathはCap環境上のパスである
+ * つまり、pathが絶対パスの場合、path[0]は必ず'/'になる
  * scopeが不正の場合、プログラムを終了する
  *
  * @param[in] *config pointer to config_t

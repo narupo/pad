@@ -228,8 +228,8 @@ argsbyoptind(int argc, char *argv[], int optind) {
 }
 
 const char *
-get_origin(const config_t *config, const char *path) {
-    if (path[0] == FILE_SEP) {
+get_origin(const config_t *config, const char *cap_path) {
+    if (cap_path[0] == '/') {
         return config->home_path;
     } else if (config->scope == CAP_SCOPE_LOCAL) {
         return config->cd_path;
@@ -239,4 +239,3 @@ get_origin(const config_t *config, const char *path) {
     err_die("impossible. invalid state in get origin");
     return NULL;
 }
-

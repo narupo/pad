@@ -84,17 +84,7 @@ runcmd_run(runcmd_t *self) {
     }
 
     const char *argpath = self->argv[1];
-    const char *org;
-
-    if (argpath[0] == '/') {
-        org = self->config->home_path;
-    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
-        org = self->config->cd_path;
-    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
-        org = self->config->home_path;
-    } else {
-        err_die("impossible. invalid state in run");
-    }
+    const char *org = get_origin(self->config, argpath);
 
     // Create script path
     char tmppath[FILE_NPATH];
