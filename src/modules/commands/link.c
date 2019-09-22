@@ -130,11 +130,8 @@ linkcmd_unlink(linkcmd_t *self) {
     const char *linkname = self->argv[self->optind];
     const char *org = get_origin(self->config, linkname);
 
-    char tmppath[FILE_NPATH];
-    snprintf(tmppath, sizeof tmppath, "%s/%s", org, linkname);
-
     char path[FILE_NPATH];
-    if (!file_solve(path, sizeof path, tmppath)) {
+    if (!file_solvefmt(path, sizeof path, "%s/%s", org, linkname)) {
         err_error("failed to solve path");
         return 1;
     }
@@ -165,23 +162,13 @@ linkcmd_link(linkcmd_t *self) {
     }
 
     const char *linkname = self->argv[self->optind];
-    const char *cappath = self->argv[self->optind+1];
-
     if (strstr(linkname, "..")) {
         err_error("Cap's symbolic link is not allow relative path");
         return 1;
     }
 
-    const char *org = NULL;
-    if (linkname[0] == FILE_SEP) {
-        org = self->config->home_path;
-    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
-        org = self->config->cd_path;
-    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
-        org = self->config->home_path;
-    } else {
-        err_die("impossible. invalid state in unlink");
-    }
+    const char *cappath = self->argv[self->optind+1];
+    const char *org = get_origin(self->config, linkname);
 
     char tmppath[FILE_NPATH];
     snprintf(tmppath, sizeof tmppath, "%s/%s", org, linkname);
