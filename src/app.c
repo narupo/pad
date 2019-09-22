@@ -591,12 +591,12 @@ app_execute_alias_by_name(app_t *self, const char *name) {
     almgr_t *almgr = almgr_new(self->config);
 
     // find alias value by name
+    // find first from local scope
+    // not found to find from global scope
     char val[1024];
-    int scope = CAP_SCOPE_LOCAL;
-    if (almgr_find_alias_value(almgr, val, sizeof val, name, scope) == NULL) {
-        scope = CAP_SCOPE_GLOBAL;
+    if (almgr_find_alias_value(almgr, val, sizeof val, name, CAP_SCOPE_LOCAL) == NULL) {
         almgr_clear_error(almgr);
-        if (almgr_find_alias_value(almgr, val, sizeof val, name, scope) == NULL) {
+        if (almgr_find_alias_value(almgr, val, sizeof val, name, CAP_SCOPE_GLOBAL) == NULL) {
             return -1;
         }
     }
@@ -633,9 +633,6 @@ app_execute_alias_by_name(app_t *self, const char *name) {
         return 1;
     }
     freeargv(argc, argv);
-
-    // reset scope (extends environment)
-    self->config->scope = scope;
 
     // increment recursion count for safety
     self->config->recursion_count++;
