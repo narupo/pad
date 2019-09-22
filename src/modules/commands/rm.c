@@ -182,26 +182,16 @@ static int
 rmcmd_rmr(rmcmd_t *self) {
     for (int i = self->optind; i < self->argc; ++i) {
         const char *argpath = self->argv[i];
-        const char *org;
-        char path[FILE_NPATH];
-
         if (!strcmp(argpath, ".") || !strcmp(argpath, "..")) {
             cstr_appfmt(self->what, sizeof self->what, "refusing to remove '.' or '..'");
             self->errno_ = RMCMD_ERR_REMOVE_FILE;
             return 1;
         }
-    
-        if (argpath[0] == '/') {
-            org = self->config->home_path;
-        } else if (self->config->scope == CAP_SCOPE_LOCAL) {
-            org = self->config->cd_path;
-        } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
-            org = self->config->home_path;
-        } else {
-            err_die("impossible. invalid state in rmr");
-        }
 
+        const char *org = get_origin(self->config, argpath);
+        char path[FILE_NPATH];
         char drtpath[FILE_NPATH];
+        
         snprintf(drtpath, sizeof drtpath, "%s/%s", org, argpath);
 
         if (!symlink_follow_path(self->config, path, sizeof path, drtpath)) {
@@ -234,20 +224,10 @@ rmcmd_rmr(rmcmd_t *self) {
 static int
 rmcmd_rm(rmcmd_t *self) {
     for (int i = self->optind; i < self->argc; ++i) {
-        const char *argpath = self->argv[i];
-        const char *org;
         char path[FILE_NPATH];
+        const char *argpath = self->argv[i];
+        const char *org = get_origin(self->config, argpath);
     
-        if (argpath[0] == '/') {
-            org = self->config->home_path;
-        } else if (self->config->scope == CAP_SCOPE_LOCAL) {
-            org = self->config->cd_path;
-        } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
-            org = self->config->home_path;
-        } else {
-            err_die("impossible. invalid state in rm");
-        }
-
         char drtpath[FILE_NPATH];
         snprintf(drtpath, sizeof drtpath, "%s/%s", org, argpath);
 
