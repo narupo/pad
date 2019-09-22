@@ -170,11 +170,8 @@ linkcmd_link(linkcmd_t *self) {
     const char *cappath = self->argv[self->optind+1];
     const char *org = get_origin(self->config, linkname);
 
-    char tmppath[FILE_NPATH];
-    snprintf(tmppath, sizeof tmppath, "%s/%s", org, linkname);
-
     char dstpath[FILE_NPATH];
-    if (!file_solve(dstpath, sizeof dstpath, tmppath)) {
+    if (!file_solvefmt(dstpath, sizeof dstpath, "%s/%s", org, linkname)) {
         err_error("failed to solve path");
         return 1;
     }
