@@ -125,26 +125,17 @@ catcmd_new(config_t *move_config, int argc, char **move_argv) {
  * 
  * @param[in] *dst destination buffer
  * @param[in] dstsz size of destination buffer
- * @param[in] *name string of name
+ * @param[in] *cap_path string of cap_path
  * 
  * @return success to pointer to destination buffer
  * @return failed to NULL
  */
 static char *
-catcmd_makepath(catcmd_t *self, char *dst, size_t dstsz, const char *name) {
-    const char *org;
-    if (name[0] == '/') {
-        org = self->config->home_path;
-    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
-        org = self->config->cd_path;
-    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
-        org = self->config->home_path;
-    } else {
-        err_die("impossible. invalid state in make path");
-    }
+catcmd_makepath(catcmd_t *self, char *dst, size_t dstsz, const char *cap_path) {
+    const char *org = get_origin(self->config, cap_path);
 
     char drtpath[FILE_NPATH];
-    snprintf(drtpath, sizeof drtpath, "%s/%s", org, name);
+    snprintf(drtpath, sizeof drtpath, "%s/%s", org, cap_path);
 
     if (!symlink_follow_path(self->config, dst, dstsz, drtpath)) {
         return NULL;
@@ -296,6 +287,7 @@ catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
     tokenizer_t *tkr = tkr_new(tkropt_new());
     ast_t *ast = ast_new();
     context_t *ctx = ctx_new();
+    string_t *out = str_new();
 
     tkr_parse(tkr, str_getc(buf));
     if (tkr_has_error(tkr)) {
@@ -319,7 +311,6 @@ catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
     }
 
     // set indent
-    string_t *out = str_new();
     const char *p = ctx_getc_buf(ctx);
     int m = 0;
     for (; *p; ) {
