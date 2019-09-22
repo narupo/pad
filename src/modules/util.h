@@ -127,17 +127,17 @@ cstring_array_t *
 argsbyoptind(int argc, char *argv[], int optind);
 
 /**
- * pathとconfigのscopeから基点となるパスを取得する
- * 取得するパスはconfig->home_pathかconfig->cd_pathのいずれかである
- * pathの先頭がセパレータ、つまりpathが絶対パスであるとき、戻り値はconfig->home_pathである
- * このpathはCap環境上のパスである
- * つまり、pathが絶対パスの場合、path[0]は必ず'/'になる
+ * cap_pathとconfigのscopeから基点となるパスを取得する
+ * 取得するパスはconfig->home_cap_pathかconfig->cd_cap_pathのいずれかである
+ * cap_pathの先頭がセパレータ、つまりcap_pathが絶対パスであるとき、戻り値はconfig->home_cap_pathである
+ * このcap_pathはCap環境上のパスである
+ * つまり、cap_pathが絶対パスの場合、cap_path[0]は必ず'/'になる
  * scopeが不正の場合、プログラムを終了する
  *
  * @param[in] *config pointer to config_t
- * @param[in] *path pointer to path
+ * @param[in] *cap_path pointer to cap_path
  *
  * @return 
  */
 const char *
-get_origin(const config_t *config, const char *path);
+get_origin(const config_t *config, const char *cap_path);
