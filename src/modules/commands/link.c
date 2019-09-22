@@ -128,17 +128,7 @@ linkcmd_unlink(linkcmd_t *self) {
     }
 
     const char *linkname = self->argv[self->optind];
-
-    const char *org = NULL;
-    if (linkname[0] == FILE_SEP) {
-        org = self->config->home_path;
-    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
-        org = self->config->cd_path;
-    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
-        org = self->config->home_path;
-    } else {
-        err_die("impossible. invalid state in unlink");
-    }
+    const char *org = get_origin(self->config, linkname);
 
     char tmppath[FILE_NPATH];
     snprintf(tmppath, sizeof tmppath, "%s/%s", org, linkname);

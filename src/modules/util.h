@@ -21,6 +21,7 @@
 #include "lib/cstring_array.h"
 
 #include "modules/constant.h"
+#include "modules/config.h"
 
 #ifdef _CAP_WINDOWS
 # include <windows.h>
@@ -125,3 +126,16 @@ safesystem(const char *cmdline, int option);
 cstring_array_t *
 argsbyoptind(int argc, char *argv[], int optind);
 
+/**
+ * pathとconfigのscopeから基点となるパスを取得する
+ * 取得するパスはconfig->home_pathかconfig->cd_pathのいずれかである
+ * pathの先頭がセパレータ、つまりpathが絶対パスであるとき、戻り値はconfig->home_pathである
+ * scopeが不正の場合、プログラムを終了する
+ *
+ * @param[in] *config pointer to config_t
+ * @param[in] *path pointer to path
+ *
+ * @return 
+ */
+const char *
+get_origin(const config_t *config, const char *path);
