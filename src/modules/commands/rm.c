@@ -246,12 +246,14 @@ rmcmd_rm(rmcmd_t *self, const char *argpath) {
         self->errno_ = RMCMD_ERR_REMOVE_FILE;
         return 1;
     }
+
+    return 0;
 }
 
 static int
 rmcmd_rm_all(rmcmd_t *self) {
     int ret = 0;
-    
+
     for (int i = self->optind; i < self->argc; ++i) {
         const char *argpath = self->argv[i];
         ret += rmcmd_rm(self, argpath);
