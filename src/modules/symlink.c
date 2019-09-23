@@ -3,6 +3,9 @@
 static const char *
 skip_drive_letter(const char *path) {
     const char *found = strchr(path, ':');
+    if (!found) {
+        return NULL;
+    }
     return ++found;
 }
 
