@@ -12,6 +12,7 @@
 #include "modules/config.h"
 #include "modules/util.h"
 #include "modules/alias_manager.h"
+#include "modules/args.h"
 
 #include "modules/commands/home.h"
 #include "modules/commands/cd.h"
@@ -29,3 +30,4 @@
 #include "modules/commands/touch.h"
 #include "modules/commands/snippet.h"
 #include "modules/commands/link.h"
+#include "modules/commands/hub/hub.h"

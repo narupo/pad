@@ -322,3 +322,8 @@ cstr_split_ignore_empty(const char *str, char sep) {
         .ignore_empty_token=true,
     });
 }
+
+bool
+cstr_eq(const char *lhs, const char *rhs) {
+    return !strcmp(lhs, rhs);
+}

@@ -104,3 +104,14 @@ cstr_split(const char *str, char sep);
  */
 char **
 cstr_split_ignore_empty(const char *str, char sep);
+
+/**
+ * Compare strings. If equal to true else other
+ *
+ * @param[in] *lhs left hand string
+ * @param[in] *rhs right hand string
+ *
+ * @return equal to true, else false
+ */
+bool
+cstr_eq(const char *lhs, const char *rhs);

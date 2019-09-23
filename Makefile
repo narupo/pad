@@ -32,6 +32,7 @@ init:
 	$(MKDIR) build$(SEP)lib
 	$(MKDIR) build$(SEP)modules
 	$(MKDIR) build$(SEP)modules$(SEP)commands
+	$(MKDIR) build$(SEP)modules$(SEP)commands$(SEP)hub
 	$(MKDIR) build$(SEP)modules$(SEP)lang
 
 .PHONY: cc
@@ -52,6 +53,7 @@ tests: build/tests.o \
 	build/modules/util.o \
 	build/modules/alias_manager.o \
 	build/modules/symlink.o \
+	build/modules/args.o \
 	build/modules/commands/home.o \
 	build/modules/commands/cd.o \
 	build/modules/commands/pwd.o \
@@ -68,6 +70,7 @@ tests: build/tests.o \
 	build/modules/commands/touch.o \
 	build/modules/commands/snippet.o \
 	build/modules/commands/link.o \
+	build/modules/commands/hub/hub.o \
 	build/modules/lang/tokens.o \
 	build/modules/lang/tokenizer.o \
 	build/modules/lang/nodes.o \
@@ -88,6 +91,7 @@ tests: build/tests.o \
 		build/modules/util.o \
 		build/modules/alias_manager.o \
 		build/modules/symlink.o \
+		build/modules/args.o \
 		build/modules/commands/home.o \
 		build/modules/commands/cd.o \
 		build/modules/commands/pwd.o \
@@ -104,6 +108,7 @@ tests: build/tests.o \
 		build/modules/commands/touch.o \
 		build/modules/commands/snippet.o \
 		build/modules/commands/link.o \
+		build/modules/commands/hub/hub.o \
 		build/modules/lang/tokens.o \
 		build/modules/lang/tokenizer.o \
 		build/modules/lang/nodes.o \
@@ -127,6 +132,7 @@ cap: build/app.o \
 	build/modules/util.o \
 	build/modules/alias_manager.o \
 	build/modules/symlink.o \
+	build/modules/args.o \
 	build/modules/commands/home.o \
 	build/modules/commands/cd.o \
 	build/modules/commands/pwd.o \
@@ -143,6 +149,7 @@ cap: build/app.o \
 	build/modules/commands/touch.o \
 	build/modules/commands/snippet.o \
 	build/modules/commands/link.o \
+	build/modules/commands/hub/hub.o \
 	build/modules/lang/tokens.o \
 	build/modules/lang/tokenizer.o \
 	build/modules/lang/nodes.o \
@@ -163,6 +170,7 @@ cap: build/app.o \
 		build/modules/util.o \
 		build/modules/alias_manager.o \
 		build/modules/symlink.o \
+		build/modules/args.o \
 		build/modules/commands/home.o \
 		build/modules/commands/cd.o \
 		build/modules/commands/pwd.o \
@@ -179,6 +187,7 @@ cap: build/app.o \
 		build/modules/commands/touch.o \
 		build/modules/commands/snippet.o \
 		build/modules/commands/link.o \
+		build/modules/commands/hub/hub.o \
 		build/modules/lang/tokens.o \
 		build/modules/lang/tokenizer.o \
 		build/modules/lang/nodes.o \
@@ -227,6 +236,9 @@ build/modules/alias_manager.o: src/modules/alias_manager.c src/modules/alias_man
 build/modules/symlink.o: src/modules/symlink.c src/modules/symlink.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+build/modules/args.o: src/modules/args.c src/modules/args.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 build/modules/commands/home.o: src/modules/commands/home.c src/modules/commands/home.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -273,6 +285,9 @@ build/modules/commands/snippet.o: src/modules/commands/snippet.c src/modules/com
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules/commands/link.o: src/modules/commands/link.c src/modules/commands/link.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/modules/commands/hub/hub.o: src/modules/commands/hub/hub.c src/modules/commands/hub/hub.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/modules/lang/tokenizer.o: src/modules/lang/tokenizer.c src/modules/lang/tokenizer.h
