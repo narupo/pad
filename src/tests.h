@@ -32,10 +32,8 @@
 #include "lib/file.h"
 #include "lib/cl.h"
 #include "lib/error.h"
-
-#include "modules/util.h"
-
-#include "modules/lang/tokens.h"
-#include "modules/lang/tokenizer.h"
-#include "modules/lang/nodes.h"
-#include "modules/lang/ast.h"
+#include "core/util.h"
+#include "lang/tokens.h"
+#include "lang/tokenizer.h"
+#include "lang/nodes.h"
+#include "lang/ast.h"
