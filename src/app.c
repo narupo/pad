@@ -251,36 +251,15 @@ app_deploy_env(const app_t *self) {
  */
 static bool
 app_parse_args(app_t *self, int argc, char *argv[]) {
-    cstring_array_t *app_args = cstrarr_new();
-    cstring_array_t *cmd_args = cstrarr_new();
-
-    int m = 0;
-    for (int i = 0; i < argc; ++i) {
-        const char *arg = argv[i];
-        switch (m) {
-        case 0:
-            cstrarr_push(app_args, arg);
-            m = 10;
-            break;
-        case 10:
-            if (arg[0] == '-') {
-                cstrarr_push(app_args, arg);
-            } else {
-                cstrarr_push(cmd_args, arg);
-                m = 20;
-            }
-            break;
-        case 20:
-            cstrarr_push(cmd_args, arg);
-            break;
-        }
+    distribute_args_t dargs = {0};
+    if (!distribute_args(&dargs, argc, argv)) {
+        return false;
     }
 
-    self->argc = cstrarr_len(app_args);
-    self->argv = cstrarr_escdel(app_args);
-    self->cmd_argc = cstrarr_len(cmd_args);
-    self->cmd_argv = cstrarr_escdel(cmd_args);
-
+    self->argc = dargs.argc;
+    self->argv = dargs.argv;
+    self->cmd_argc = dargs.cmd_argc;
+    self->cmd_argv = dargs.cmd_argv;
     return true;
 }
 
@@ -362,6 +341,7 @@ app_usage(app_t *app) {
         "    touch      Create empty file\n"
         "    snippet    Save or show snippet codes\n"
         "    link       Create symbolic link\n"
+        "    hub        Manage hub\n"
     ;
     static const char *examples[] = {
         "    $ cap home\n"
@@ -432,6 +412,7 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
         "touch",
         "snippet",
         "link",
+        "hub",
         NULL,
     };
 
@@ -455,6 +436,14 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
  */
 static int
 app_execute_command_by_name(app_t *self, const char *name) {
+#define routine(cmd, result) { \
+        cmd##_t *cmd = cmd##_new(self->config, self->cmd_argc, self->cmd_argv); \
+        self->config = NULL; \
+        self->cmd_argv = NULL; \
+        result = cmd##_run(cmd); \
+        cmd##_del(cmd); \
+    } \
+
     if (!strcmp(name, "home")) {
         homecmd_t *homecmd = homecmd_new(self->config, self->cmd_argc, self->cmd_argv);
         self->config = NULL; // moved
@@ -570,6 +559,10 @@ app_execute_command_by_name(app_t *self, const char *name) {
         self->cmd_argv = NULL; // moved
         int result = linkcmd_run(cmd);
         linkcmd_del(cmd);
+        return result;
+    } else if (!strcmp(name, "hub")) {
+        int result;
+        routine(hubcmd, result);
         return result;
     }
 
