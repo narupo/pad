@@ -436,7 +436,7 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
  */
 static int
 app_execute_command_by_name(app_t *self, const char *name) {
-#define routine(cmd, result) { \
+#define routine(cmd) { \
         cmd##_t *cmd = cmd##_new(self->config, self->cmd_argc, self->cmd_argv); \
         self->config = NULL; \
         self->cmd_argv = NULL; \
@@ -444,77 +444,29 @@ app_execute_command_by_name(app_t *self, const char *name) {
         cmd##_del(cmd); \
     } \
 
-    if (!strcmp(name, "home")) {
-        homecmd_t *homecmd = homecmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
-        int result = homecmd_run(homecmd);
-        homecmd_del(homecmd);
-        return result;
-    } else if (!strcmp(name, "cd")) {
-        cdcmd_t *cmd = cdcmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
-        int result = cdcmd_run(cmd);
-        cdcmd_del(cmd);
-        return result;
-    } else if (!strcmp(name, "pwd")) {
-        pwdcmd_t *cmd = pwdcmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
-        int result = pwdcmd_run(cmd);
-        pwdcmd_del(cmd);
-        return result;
-    } else if (!strcmp(name, "ls")) {
-        lscmd_t *cmd = lscmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
-        int result = lscmd_run(cmd);
-        lscmd_del(cmd);
-        return result;
-    } else if (!strcmp(name, "cat")) {
-        catcmd_t *cmd = catcmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
-        int result = catcmd_run(cmd);
-        catcmd_del(cmd);
-        return result;
-    } else if (!strcmp(name, "run")) {
-        runcmd_t *cmd = runcmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
-        int result = runcmd_run(cmd);
-        runcmd_del(cmd);
-        return result;
-    } else if (!strcmp(name, "alias")) {
-        alcmd_t *cmd = alcmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
-        int result = alcmd_run(cmd);
-        alcmd_del(cmd);
-        return result;
-    } else if (!strcmp(name, "edit")) {
-        editcmd_t *cmd = editcmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
-        int result = editcmd_run(cmd);
-        editcmd_del(cmd);
-        return result;
-    } else if (!strcmp(name, "editor")) {
-        editorcmd_t *cmd = editorcmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
-        int result = editorcmd_run(cmd);
-        editorcmd_del(cmd);
-        return result;
-    } else if (!strcmp(name, "mkdir")) {
-        mkdircmd_t *cmd = mkdircmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
-        int result = mkdircmd_run(cmd);
-        mkdircmd_del(cmd);
-        return result;
-    } else if (!strcmp(name, "rm")) {
+    int result = 0;
+
+    if (cstr_eq(name, "home")) {
+        routine(homecmd);
+    } else if (cstr_eq(name, "cd")) {
+        routine(cdcmd);
+    } else if (cstr_eq(name, "pwd")) {
+        routine(pwdcmd);
+    } else if (cstr_eq(name, "ls")) {
+        routine(lscmd);
+    } else if (cstr_eq(name, "cat")) {
+        routine(catcmd);
+    } else if (cstr_eq(name, "run")) {
+        routine(runcmd);
+    } else if (cstr_eq(name, "alias")) {
+        routine(alcmd);
+    } else if (cstr_eq(name, "edit")) {
+        routine(editcmd);
+    } else if (cstr_eq(name, "editor")) {
+        routine(editorcmd);
+    } else if (cstr_eq(name, "mkdir")) {
+        routine(mkdircmd);
+    } else if (cstr_eq(name, "rm")) {
         rmcmd_t *cmd = rmcmd_new(self->config, self->cmd_argc, self->cmd_argv);
         self->config = NULL; // moved
         self->cmd_argv = NULL; // moved
@@ -525,49 +477,24 @@ app_execute_command_by_name(app_t *self, const char *name) {
         }
         rmcmd_del(cmd);
         return result;
-    } else if (!strcmp(name, "mv")) {
-        mvcmd_t *cmd = mvcmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
-        int result = mvcmd_run(cmd);
-        mvcmd_del(cmd);
-        return result;
-    } else if (!strcmp(name, "cp")) {
-        cpcmd_t *cmd = cpcmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
-        int result = cpcmd_run(cmd);
-        cpcmd_del(cmd);
-        return result;
-    } else if (!strcmp(name, "touch")) {
-        touchcmd_t *cmd = touchcmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
-        int result = touchcmd_run(cmd);
-        touchcmd_del(cmd);
-        return result;
-    } else if (!strcmp(name, "snippet")) {
-        snptcmd_t *cmd = snptcmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
-        int result = snptcmd_run(cmd);
-        snptcmd_del(cmd);
-        return result;
-    } else if (!strcmp(name, "link")) {
-        linkcmd_t *cmd = linkcmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
-        int result = linkcmd_run(cmd);
-        linkcmd_del(cmd);
-        return result;
-    } else if (!strcmp(name, "hub")) {
-        int result;
-        routine(hubcmd, result);
-        return result;
+    } else if (cstr_eq(name, "mv")) {
+        routine(mvcmd);
+    } else if (cstr_eq(name, "cp")) {
+        routine(cpcmd);
+    } else if (cstr_eq(name, "touch")) {
+        routine(touchcmd);
+    } else if (cstr_eq(name, "snippet")) {
+        routine(snptcmd);
+    } else if (cstr_eq(name, "link")) {
+        routine(linkcmd);
+    } else if (cstr_eq(name, "hub")) {
+        routine(hubcmd);
+    } else {
+        err_error("invalid command name \"%s\"", name);
+        result = 1;
     }
 
-    err_error("invalid command name \"%s\"", name);
-    return 1;
+    return result;
 }
 
 /**
