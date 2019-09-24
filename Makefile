@@ -15,6 +15,7 @@ CFLAGS := -Wall \
 	-O3 \
 	-std=c11 \
 	-Wno-unused-function \
+	-Wno-unused-result \
 	-D_DEBUG \
 	-I$(INCLUDE) \
 
