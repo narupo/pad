@@ -470,13 +470,12 @@ app_execute_command_by_name(app_t *self, const char *name) {
         rmcmd_t *cmd = rmcmd_new(self->config, self->cmd_argc, self->cmd_argv);
         self->config = NULL; // moved
         self->cmd_argv = NULL; // moved
-        int result = rmcmd_run(cmd);
+        result = rmcmd_run(cmd);
         switch (rmcmd_errno(cmd)) {
         case RMCMD_ERR_NOERR: break;
         default: err_error(rmcmd_what(cmd)); break;
         }
         rmcmd_del(cmd);
-        return result;
     } else if (cstr_eq(name, "mv")) {
         routine(mvcmd);
     } else if (cstr_eq(name, "cp")) {
