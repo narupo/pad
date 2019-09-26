@@ -7,7 +7,7 @@ else
 	RMDIR := rm -rf
 	SEP := /
 endif
-# Windows's mkdir have not -p option
+# Windows's mkdir not have -p option
 MKDIR := mkdir
 CC := gcc
 INCLUDE := src
