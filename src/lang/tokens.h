@@ -22,8 +22,10 @@ enum {
     TOKEN_TYPE_DQ_STRING = 70,
 };
 
-struct token;
-typedef struct token token_t;
+typedef struct token {
+    int type;
+    char *text;
+} token_t;
 
 /**
  * Destruct token
