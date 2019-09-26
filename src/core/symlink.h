@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "lib/file.h"
+#include "lib/cstring.h"
 #include "lib/cstring_array.h"
 #include "lib/string.h"
 #include "core/constant.h"
@@ -38,6 +39,26 @@
  */
 char *
 symlink_follow_path(config_t *config, char *dst, uint32_t dstsz, const char *drtpath);
+
+/**
+ * Normalize dirty path and save normalized path to destination
+ *
+ * Like the below
+ *
+ * dirty path: /path/to/../dir
+ *  norm path: /path/dir
+ *
+ * dirty path: /path/../to/../dir
+ *  norm path: /dir
+ *
+ * @param[in] *dst pointer to destination
+ * @param[in] dstsz number of size of destination
+ * @param[in] *drtpath string of dirty path
+ *
+ * @return success to pointer to path, failed to NULL
+ */
+char *
+symlink_norm_path(config_t *config, char *dst, uint32_t dstsz, const char *drtpath);
 
 /**
  * Check file is Cap's symbolic link

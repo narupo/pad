@@ -82,6 +82,20 @@ cstrarr_push(cstring_array_t *arr, const char *str) {
 	return arr;
 }
 
+char *
+cstrarr_pop_move(cstring_array_t *self) {
+	if (!self || !self->len) {
+		return NULL;
+	}
+
+	int32_t i = self->len-1;
+	char *el = self->arr[i];
+	self->arr[i] = NULL;
+	--self->len;
+
+	return el;
+}
+
 cstring_array_t * 
 cstrarr_move(cstring_array_t *arr, char *ptr) {
 	if (!arr) {

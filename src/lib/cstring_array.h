@@ -66,7 +66,18 @@ cstring_array_t *
 cstrarr_push(cstring_array_t *self, const char *str);
 
 /**
- * Move pointer to dynamic allocate memory to array with move semantics
+ * Pop tail element in array with move semantics
+ *
+ * @param[in] *self 
+ *
+ * @return success to pointer to dynamic allocate memory of C strings
+ * @return if array is empty to NULL
+ */
+char *
+cstrarr_pop_move(cstring_array_t *self);
+
+/**
+ * Move back pointer to dynamic allocate memory to array with move semantics
  * 
  * @param[in] *self 
  * @param[in] *ptr pointer to dynamic allocate memory of string 

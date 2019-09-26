@@ -33,6 +33,8 @@
 #include "lib/cl.h"
 #include "lib/error.h"
 #include "core/util.h"
+#include "core/symlink.h"
+#include "core/config.h"
 #include "lang/tokens.h"
 #include "lang/tokenizer.h"
 #include "lang/nodes.h"

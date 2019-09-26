@@ -2116,6 +2116,86 @@ ast_tests[] = {
 * context *
 **********/
 
+/**********
+* symlink *
+**********/
+
+static void
+test_symlink_norm_path(void) {
+    config_t * config = config_new();
+
+    char path[FILE_NPATH];
+    assert(symlink_norm_path(NULL, NULL, 0, NULL) == NULL);
+    assert(symlink_norm_path(config, NULL, 0, NULL) == NULL);
+    assert(symlink_norm_path(config, path, 0, NULL) == NULL);
+    assert(symlink_norm_path(config, path, sizeof path, NULL) == NULL);
+
+#ifdef _CAP_WINDOWS
+    assert(symlink_norm_path(config, path, sizeof path, "C:\\path\\to\\dir") == path);
+    assert(strcmp(path, "C:\\path\\to\\dir") == 0);
+
+    assert(symlink_norm_path(config, path, sizeof path, "\\path\\to\\dir") == path);
+    assert(strcmp(path, "\\path\\to\\dir") == 0);
+
+    assert(symlink_norm_path(config, path, sizeof path, "\\path\\..\\to\\dir") == path);
+    assert(strcmp(path, "\\to\\dir") == 0);
+
+    assert(symlink_norm_path(config, path, sizeof path, "\\path\\..\\to\\..\\dir") == path);
+    assert(strcmp(path, "\\dir") == 0);
+
+    assert(symlink_norm_path(config, path, sizeof path, "\\path\\to\\..\\..\\dir") == path);
+    assert(strcmp(path, "\\dir") == 0);
+
+    assert(symlink_norm_path(config, path, sizeof path, "C:\\path\\to\\dir\\") == path);
+    assert(strcmp(path, "C:\\path\\to\\dir") == 0);
+    
+    assert(symlink_norm_path(config, path, sizeof path, "C:\\path\\..\\to\\dir") == path);
+    assert(strcmp(path, "C:\\to\\dir") == 0);
+
+    assert(symlink_norm_path(config, path, sizeof path, "C:\\path\\..\\to\\..\\dir") == path);
+    assert(strcmp(path, "C:\\dir") == 0);
+
+    assert(symlink_norm_path(config, path, sizeof path, "C:\\path\\to\\..\\..\\dir") == path);
+    assert(strcmp(path, "C:\\dir") == 0);
+
+#else
+    assert(symlink_norm_path(config, path, sizeof path, "/path/to/dir") == path);
+    assert(strcmp(path, "/path/to/dir") == 0);
+
+    assert(symlink_norm_path(config, path, sizeof path, "/path/to/dir/") == path);
+    assert(strcmp(path, "/path/to/dir") == 0);
+
+    assert(symlink_norm_path(config, path, sizeof path, "path/to/dir") == path);
+    assert(strcmp(path, "path/to/dir") == 0);
+
+    assert(symlink_norm_path(config, path, sizeof path, "path/../to/dir") == path);
+    assert(strcmp(path, "to/dir") == 0);
+
+    assert(symlink_norm_path(config, path, sizeof path, "path/../to/../dir") == path);
+    assert(strcmp(path, "dir") == 0);
+
+    assert(symlink_norm_path(config, path, sizeof path, "path/to/../../dir") == path);
+    assert(strcmp(path, "dir") == 0);
+
+    assert(symlink_norm_path(config, path, sizeof path, "/path/../to/dir") == path);
+    assert(strcmp(path, "/to/dir") == 0);
+
+    assert(symlink_norm_path(config, path, sizeof path, "/path/../to/../dir") == path);
+    assert(strcmp(path, "/dir") == 0);
+
+    assert(symlink_norm_path(config, path, sizeof path, "/path/to/../../dir") == path);
+    assert(strcmp(path, "/dir") == 0);
+#endif
+
+    config_del(config);
+}
+
+static const struct testcase
+symlink_tests[] = {
+    {"symlink_norm_path", test_symlink_norm_path},
+    {0},
+};
+
 /*******
 * main *
 *******/
@@ -2124,14 +2204,15 @@ static const struct testmodule
 testmodules[] = {
     {"cstring_array", cstrarr_tests},
     {"string", string_tests},
-    {"file", file_tests},
-    {"cl", cl_tests},
-    {"error", error_tests},
-    {"util", utiltests},
+    // {"file", file_tests},
+    // {"cl", cl_tests},
+    // {"error", error_tests},
+    // {"util", utiltests},
     // {"socket", sockettests},
     // {"url", urltests},
-    {"tokenizer", tokenizer_tests},
-    {"ast", ast_tests},
+    // {"tokenizer", tokenizer_tests},
+    // {"ast", ast_tests},
+    {"symlink", symlink_tests},
     {},
 };
 

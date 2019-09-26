@@ -77,6 +77,19 @@ fix_path_seps(char *dst, uint32_t dstsz, const char *src) {
     *dp = '\0';
 }
 
+static const char *
+find_path_head(const char *path) {
+#ifdef _CAP_WINDOWS
+    const char *p = skip_drive_letter(path);
+    if (!p) {
+        return path;
+    }
+    return p;
+#else
+    return path;
+#endif
+}
+
 static char *
 __symlink_follow_path(config_t *config, char *dst, uint32_t dstsz, const char *abspath, int dep) {
     if (dep >= 8) {
@@ -86,14 +99,10 @@ __symlink_follow_path(config_t *config, char *dst, uint32_t dstsz, const char *a
     char normpath[FILE_NPATH];
     fix_path_seps(normpath, sizeof normpath, abspath);
 
-#ifdef _CAP_WINDOWS
-    const char *p = skip_drive_letter(normpath);
+    const char *p = find_path_head(normpath);
     if (!p) {
         return NULL;
     }
-#else
-    const char *p = normpath;
-#endif
 
     char **toks = cstr_split_ignore_empty(p, FILE_SEP);
     if (!toks) {
@@ -167,6 +176,84 @@ symlink_follow_path(config_t *config, char *dst, uint32_t dstsz, const char *abs
     }
     dst[0] = '\0';
     return __symlink_follow_path(config, dst, dstsz, abspath, 0);
+}
+
+static cstring_array_t *
+split_ignore_empty(const char *p, char sep) {
+    char **toks = cstr_split_ignore_empty(p, FILE_SEP);
+    if (!toks) {
+        return NULL;
+    }
+
+    cstring_array_t *arr = cstrarr_new();
+
+    for (char **toksp = toks; *toksp; ++toksp) {
+        cstrarr_move(arr, *toksp);
+    }
+
+    free(toks);
+    return arr;
+}
+
+char *
+symlink_norm_path(config_t *config, char *dst, uint32_t dstsz, const char *drtpath) {
+    if (!config || !dst || !dstsz || !drtpath) {
+        return NULL;
+    }
+
+    char cleanpath[FILE_NPATH];
+    fix_path_seps(cleanpath, sizeof cleanpath, drtpath);
+    const char *pathhead = find_path_head(cleanpath);
+    if (!pathhead) {
+        return NULL;
+    }
+
+#ifdef _CAP_WINDOWS
+    const char *hasdriveletter = strchr(drtpath, ':');
+#endif
+
+    // save tokens from srctoks to dsttoks by ".." token
+    cstring_array_t *srctoks = split_ignore_empty(pathhead, FILE_SEP);
+    cstring_array_t *dsttoks = cstrarr_new();
+
+    for (int32_t i = 0; i < cstrarr_len(srctoks); ++i) {
+        const char *tok = cstrarr_getc(srctoks, i);
+        if (cstr_eq(tok, "..")) {
+            char *el = cstrarr_pop_move(dsttoks);
+            free(el);
+        } else {
+            cstrarr_push(dsttoks, tok);
+        }
+    }
+
+    // save normalized path by tokens
+    dst[0] = '\0';
+
+#ifdef _CAP_WINDOWS
+    // append drive letter of Windows
+    if (hasdriveletter) {
+        cstr_appfmt(dst, dstsz, "%c:", drtpath[0]);
+    }
+#endif
+
+    if (pathhead[0] == FILE_SEP) {
+        cstr_appfmt(dst, dstsz, "%c", FILE_SEP);
+    }
+
+    for (int32_t i = 0; i < cstrarr_len(dsttoks)-1; ++i) {
+        const char *tok = cstrarr_getc(dsttoks, i);
+        cstr_app(dst, dstsz, tok);
+        cstr_appfmt(dst, dstsz, "%c", FILE_SEP);
+    }
+    if (cstrarr_len(dsttoks)) {
+        const char *tok = cstrarr_getc(dsttoks, cstrarr_len(dsttoks)-1);
+        cstr_app(dst, dstsz, tok);        
+    }
+
+    cstrarr_del(srctoks);
+    cstrarr_del(dsttoks);
+
+    return dst;
 }
 
 bool
