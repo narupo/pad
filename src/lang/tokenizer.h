@@ -13,8 +13,8 @@
 *******************/
 
 struct tokenizer_option {
-    const char *ldbrace_value;
-    const char *rdbrace_value;
+    const char *ldbrace_value; // left double brace value
+    const char *rdbrace_value; // right double brace value
 };
 
 typedef struct tokenizer_option tokenizer_option_t;
