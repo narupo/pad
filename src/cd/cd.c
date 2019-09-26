@@ -33,19 +33,31 @@ cdcmd_new(config_t *config, int argc, char *argv[]) {
 
 bool
 cdcmd_cd(cdcmd_t *self, const char *drtpath) {
-	char newcd[FILE_NPATH];
-	file_solve(newcd, sizeof newcd, drtpath);
-
-	if (is_out_of_home(self->config->home_path, newcd)) {
-		err_die("'%s' is out of home", newcd);
+	char normpath[FILE_NPATH];
+	if (!symlink_norm_path(self->config, normpath, sizeof normpath, drtpath)) {
+		err_error("failed to normalize path");
+		return false;
 	}
 
-	if (!file_isdir(newcd)) {
-		err_die("'%s' is not a directory", newcd);
+	char realpath[FILE_NPATH];
+	if (!symlink_follow_path(self->config, realpath, sizeof realpath, normpath)) {
+		err_error("failed to follow path");
+		return false;
 	}
 
-	if (!file_writeline(newcd, self->config->var_cd_path)) {
-		err_die("invalid var cd path");
+	if (is_out_of_home(self->config->home_path, realpath)) {
+		err_error("\"%s\" is out of home", normpath);
+		return false;
+	}
+
+	if (!file_isdir(realpath)) {
+		err_error("\"%s\" is not a directory", normpath);
+		return false;
+	}
+
+	if (!file_writeline(normpath, self->config->var_cd_path)) {
+		err_error("invalid var cd path");
+		return false;
 	}
 
 	return true;
@@ -55,14 +67,14 @@ int
 cdcmd_run(cdcmd_t *self) {
 	if (self->argc < 2) {
 		if (!cdcmd_cd(self, self->config->home_path)) {
-			err_die("failed to cd");
+			return 1;
 		}
 		return 0;
 	}
 
 	const char *argpath = self->argv[1];
 	const char *org;
-	char path[FILE_NPATH];
+	char drtpath[FILE_NPATH];
 
 	if (argpath[0] == '/' || argpath[0] == '\\') {
 		// Absolute of home
@@ -73,17 +85,13 @@ cdcmd_run(cdcmd_t *self) {
 	}
 
 	if (!strcmp(argpath, "/")) {
-		if (!file_solvefmt(path, sizeof path, "%s", org)) {
-			err_die("failed to solve path");
-		}
+		snprintf(drtpath, sizeof drtpath, "%s", org);
 	} else {
-		if (!file_solvefmt(path, sizeof path, "%s/%s", org, argpath)) {
-			err_die("failed to solve path (2)");
-		}		
+		snprintf(drtpath, sizeof drtpath, "%s/%s", org, argpath);
 	}
 
-	if (!cdcmd_cd(self, path)) {
-		err_die("failed to cd");
+	if (!cdcmd_cd(self, drtpath)) {
+		return 1;
 	}
 
 	return 0;
