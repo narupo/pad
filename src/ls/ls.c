@@ -27,7 +27,7 @@ lscmd_parse_opts(lscmd_t *self) {
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"all", no_argument, 0, 'a'},
-        {},
+        {0},
     };
     
     self->opts = (struct opts){0};
@@ -128,7 +128,7 @@ lscmd_dir2arr(const lscmd_t *self, file_dir_t *dir) {
 
 static int
 lscmd_ls(const lscmd_t *self, const char *path) {
-    if (isoutofhome(self->config->var_home_path, path)) {
+    if (is_out_of_home(self->config->home_path, path)) {
         err_error("\"%s\" is out of home", path);
         return 1;
     }
@@ -164,28 +164,32 @@ lscmd_run(lscmd_t *self) {
         return 0;
     }
 
-    if (optind - self->argc == 0) {
-        return lscmd_ls(self, self->config->cd_path);
-    } else {
-        char path[FILE_NPATH];
+    char realpath[FILE_NPATH];
 
+    if (optind - self->argc == 0) {
+        if (!symlink_follow_path(self->config, realpath, sizeof realpath, self->config->cd_path)) {
+            err_error("failed to follow path");
+            return 1;
+        }
+        return lscmd_ls(self, realpath);
+    } else {
         for (int i = optind; i < self->argc; ++i) {
             const char *arg = self->argv[i];
             const char *org = (arg[0] == '/' ? self->config->home_path : self->config->cd_path);
             if (!strcmp(arg, "/")) {
                 char tmppath[FILE_NPATH];
                 snprintf(tmppath, sizeof tmppath, "%s", org);
-                if (!symlink_follow_path(self->config, path, sizeof path, tmppath)) {
+                if (!symlink_follow_path(self->config, realpath, sizeof realpath, tmppath)) {
                     continue;
                 }
             } else {
                 char tmppath[FILE_NPATH];
                 snprintf(tmppath, sizeof tmppath, "%s/%s", org, arg);
-                if (!symlink_follow_path(self->config, path, sizeof path, tmppath)) {
+                if (!symlink_follow_path(self->config, realpath, sizeof realpath, tmppath)) {
                     continue;
                 }
             }
-            lscmd_ls(self, path);
+            lscmd_ls(self, realpath);
         }
     }
 
