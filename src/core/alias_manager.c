@@ -53,24 +53,23 @@ almgr_set_error_detail(almgr_t *self, const char *fmt, ...) {
 
 static char *
 almgr_create_resource_path(almgr_t *self, char *dst, size_t dstsz, int scope) {
-    char tmp[FILE_NPATH];
-    const char *srcpath;
+    const char *org = NULL;
 
     if (scope == CAP_SCOPE_LOCAL) {
-        srcpath = self->config->var_cd_path;
+        org = self->config->cd_path;
     } else if (scope == CAP_SCOPE_GLOBAL) {
-        srcpath = self->config->var_home_path;
+        org = self->config->home_path;
     } else {
         almgr_set_error_detail(self, "invalid scope");
         return NULL;
     }
 
-    if (!file_readline(tmp, sizeof tmp, srcpath)) {
-        almgr_set_error_detail(self, "failed to read line from %s", (scope == CAP_SCOPE_LOCAL ? "local" : "global"));
-        return NULL;
-    }
-    if (!file_solvefmt(dst, dstsz, "%s/.caprc", tmp)) {
-        almgr_set_error_detail(self, "failed to solve dst of resource file");
+    char drtpath[FILE_NPATH];
+    snprintf(drtpath, sizeof drtpath, "%s/.caprc", org);
+
+    // TODO: const cast (config_t *) is danger
+    if (!symlink_follow_path((config_t *) self->config, dst, dstsz, drtpath)) {
+        almgr_set_error_detail(self, "failed to follow path of resource file");
         return NULL;
     }
 

@@ -9,6 +9,8 @@
 
 #include "core/constant.h"
 #include "core/config.h"
+#include "core/util.h"
+#include "core/symlink.h"
 
 #include "lang/tokenizer.h"
 #include "lang/ast.h"
