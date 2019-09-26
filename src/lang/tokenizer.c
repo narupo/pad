@@ -361,7 +361,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 // pass
             } else {
                 self->has_error = true;
-                tkr_set_error_detail(self, "syntax error. unsupported character \"%c\" 1", c);
+                tkr_set_error_detail(self, "syntax error. unsupported character \"%c\"", c);
                 goto fail;
             }
         }
