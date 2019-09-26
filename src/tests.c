@@ -804,7 +804,7 @@ test_file_trunc(void) {
     char path[FILE_NPATH];
     char userhome[FILE_NPATH];
     assert(file_get_user_home(userhome, sizeof userhome) != NULL);
-    assert(file_solvefmt(path, sizeof path, "%s/cap.ftrunc") != NULL);
+    assert(file_solvefmt(path, sizeof path, "%s/cap.ftrunc", userhome) != NULL);
 
     assert(!file_exists(path));
     assert(!file_trunc(NULL));
@@ -2204,7 +2204,7 @@ static const struct testmodule
 testmodules[] = {
     {"cstring_array", cstrarr_tests},
     {"string", string_tests},
-    // {"file", file_tests},
+    {"file", file_tests},
     // {"cl", cl_tests},
     // {"error", error_tests},
     // {"util", utiltests},
