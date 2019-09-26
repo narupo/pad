@@ -1,39 +1,5 @@
 #include "lang/nodes.h"
 
-struct node {
-    node_type_t type;
-    void *real;
-};
-
-struct bin_node {
-    node_t *lhs;
-    node_t *rhs;
-};
-
-struct code_block_node {
-    node_t *formula;
-};
-
-struct text_block_node {
-    char *text;
-};
-
-struct formula_node {
-    node_t *lhs;
-    node_t *rhs;
-};
-
-struct import_node {
-    char package[1024];
-};
-
-struct caller_node {
-    int32_t il_pos;
-    int32_t args_pos;
-    char identifier_list[32][1024];
-    char args[32][1024];
-};
-
 /**************
 * caller_node *
 **************/

@@ -5,6 +5,10 @@
 
 #include "lib/memory.h"
 
+/*************
+* node types *
+*************/
+
 typedef enum {
     NODE_TYPE_INVALID = -1,
     NODE_TYPE_BIN = 1,
@@ -15,29 +19,43 @@ typedef enum {
     NODE_TYPE_CALLER = 50,
 } node_type_t;
 
-/**
- * Abstruct node
- */
-struct node;
-typedef struct node node_t;
+/******************
+* node structures *
+******************/
 
-struct bin_node;
-typedef struct bin_node bin_node_t;
+typedef struct node {
+    node_type_t type;
+    void *real;
+} node_t;
 
-struct code_block_node;
-typedef struct code_block_node code_block_node_t;
+typedef struct bin_node {
+    node_t *lhs;
+    node_t *rhs;
+} bin_node_t;
 
-struct text_block_node;
-typedef struct text_block_node text_block_node_t;
+typedef struct code_block_node {
+    node_t *formula;
+} code_block_node_t;
 
-struct formula_node;
-typedef struct formula_node formula_node_t;
+typedef struct text_block_node {
+    char *text;
+} text_block_node_t;
 
-struct import_node;
-typedef struct import_node import_node_t;
+typedef struct formula_node {
+    node_t *lhs;
+    node_t *rhs;
+} formula_node_t;
 
-struct caller_node;
-typedef struct caller_node caller_node_t;
+typedef struct import_node {
+    char package[1024];
+} import_node_t;
+
+typedef struct caller_node {
+    int32_t il_pos;
+    int32_t args_pos;
+    char identifier_list[32][1024];
+    char args[32][1024];
+} caller_node_t;
 
 /**************
 * caller_node *
