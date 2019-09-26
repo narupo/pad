@@ -1,10 +1,5 @@
 #include "lang/tokens.h"
 
-struct token {
-    int type;
-    char *text;
-};
-
 void
 token_del(token_t *self) {
     if (self != NULL) {
