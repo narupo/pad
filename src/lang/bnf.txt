@@ -1,0 +1,94 @@
+BNF of Cap's template language
+
+           program: block program 
+
+             block: ( code-block | ref-block | text-block )
+        code-block: '{@' elems '@}'
+         ref-block: '{#' formula '#}'
+        text-block: .*
+             elems: ( stmt | formula ) elems
+
+              stmt: import_stmt |
+                    if_stmt |
+                    for_stmt
+
+       import_stmt: 'import' identifier_chain
+
+           if_stmt: 'if' test ':' elems ( elif_stmt | else_stmt | 'end' ) |
+                    'if' test ':' '@}' block '{@' ( elif_stmt | else_stmt | 'end' )
+         elif_stmt: 'elif' test ':' elems ( elif_stmt | else_stmt | 'end' )
+         else_stmt: 'else' ':' elems 'end'
+
+          for_stmt: 'for' expr_list ';' test ';' expr_list ':' elems 'end' |
+                    'for' test ':' elems 'end' |
+                    'for' ':' elems 'end'
+
+           formula: test |
+                    assign_expr_list
+
+  assign_expr_list: ( expr_list | expr_list '=' ) assign_expr_list
+         expr_list: ( expr | expr ',' ) expr_list
+            
+              test: or_test
+           or_test: ( and_test | and_test 'or' ) or_test
+          and_test: ( not_test | not_test 'and' ) and_test
+          not_test: 'not' not_test | comparison
+
+        comparison: ( expr | expr comp_op ) comparison
+
+              expr: ( term | term ('+' | '-')) expr
+              term: ( asscalc | asscalc ('*' | '/')) term
+           asscalc: ( factor | factor augassign ) asscalc
+            factor: atom | '(' expr ')'
+              atom: digit | string | identifier | caller
+
+         augassign: '+=' | '-='
+           comp_op: '==' | '!='
+             digit: [0-9]+
+            caller: identifier_chain '(' expr_list ')'
+  identifier_chain: ( identifier | identifier '.' ) identifier_chain
+            string: '"' .* '"'
+        identifier: ( [a-z] | [0-9] | _ )+ 
+
+if_stmt:
+
+    if (1 == 1):
+        print('hi')
+    end
+
+    {@ if 1 == 1: @}
+        text
+    {@ end @}
+
+expr:
+    1
+    1 + 1
+    1 - 1
+    1 * 1
+    1 / 1
+    1 % 1
+    i++
+    i++ + 1
+    1 + 1 + 1
+    1 + func()
+    1 + func() + 1
+    func()
+    func() + 1
+    func(1)
+    func(1 + 1)
+    func(1, 2)
+    func(sum())
+    func(sum(get()))
+    func(1 + 1, sum(1))
+    a = func()
+    a = 1
+    a = 1 + 1
+    a = 1 + 1 + 1
+    a, b = 1, 2
+    a, b = func()
+    a, b, c = 1, 2, 3
+    a, b, c = func()
+    1, 2
+    1, 2, 3
+
+    tpl = 1, 2, 3
