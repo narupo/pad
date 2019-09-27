@@ -1675,6 +1675,55 @@ test_tkr_parse(void) {
     token = tkr_tokens_getc(tkr, 2);
     assert(token->type == TOKEN_TYPE_RBRACEAT);
 
+    /*************
+    * statements *
+    *************/
+
+    tkr_parse(tkr, "{@ end @}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_STMT_END);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RBRACEAT);
+
+    tkr_parse(tkr, "{@ if @}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_STMT_IF);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RBRACEAT);
+
+    tkr_parse(tkr, "{@ elif @}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_STMT_ELIF);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RBRACEAT);
+
+    tkr_parse(tkr, "{@ else @}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_STMT_ELSE);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RBRACEAT);
+
+    tkr_parse(tkr, "{@ for @}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_STMT_FOR);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RBRACEAT);
+
     /************
     * operators *
     ************/

@@ -232,6 +232,16 @@ tkr_parse_identifier(tokenizer_t *self) {
     if (cstr_isdigit(token->text)) {
         token->type = TOKEN_TYPE_INTEGER;
         token->lvalue = strtol(token->text, NULL, 10);
+    } else if (cstr_eq(token->text, "end")) {
+        token->type = TOKEN_TYPE_STMT_END;
+    } else if (cstr_eq(token->text, "if")) {
+        token->type = TOKEN_TYPE_STMT_IF;
+    } else if (cstr_eq(token->text, "elif")) {
+        token->type = TOKEN_TYPE_STMT_ELIF;
+    } else if (cstr_eq(token->text, "else")) {
+        token->type = TOKEN_TYPE_STMT_ELSE;
+    } else if (cstr_eq(token->text, "for")) {
+        token->type = TOKEN_TYPE_STMT_FOR;
     }
 
     tkr_move_token(self, token);
