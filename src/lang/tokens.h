@@ -20,11 +20,13 @@ enum {
     TOKEN_TYPE_LPAREN = 60,
     TOKEN_TYPE_RPAREN = 61,
     TOKEN_TYPE_DQ_STRING = 70,
+    TOKEN_TYPE_INTEGER = 80,
 };
 
 typedef struct token {
     int type;
     char *text;
+    long lvalue;
 } token_t;
 
 /**
