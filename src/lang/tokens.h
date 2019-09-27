@@ -6,7 +6,7 @@
 #include "lib/memory.h"
 #include "lib/string.h"
 
-enum {
+typedef enum {
     TOKEN_TYPE_INVALID = -1,
     TOKEN_TYPE_TEXT_BLOCK = 1,
     TOKEN_TYPE_BLOCK = 10,
@@ -21,10 +21,23 @@ enum {
     TOKEN_TYPE_RPAREN = 61,
     TOKEN_TYPE_DQ_STRING = 70,
     TOKEN_TYPE_INTEGER = 80,
-};
+
+    // operators
+    TOKEN_TYPE_OP_ADD = 500, // '+'
+    TOKEN_TYPE_OP_SUB = 501, // '-'
+
+    // assign operators
+    TOKEN_TYPE_OP_ASS = 1000, // '='
+    TOKEN_TYPE_OP_ADD_ASS = 1001, // '+='
+    TOKEN_TYPE_OP_SUB_ASS = 1001, // '-='
+
+    // comparison operators
+    TOKEN_TYPE_OP_EQ = 1500, // '=='
+    TOKEN_TYPE_OP_NOT_EQ = 1501, // '!='
+} token_type_t;
 
 typedef struct token {
-    int type;
+    token_type_t type;
     char *text;
     long lvalue;
 } token_t;

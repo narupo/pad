@@ -20,8 +20,8 @@ tkropt_del(tokenizer_option_t *self) {
 tokenizer_option_t *
 tkropt_new(void) {
     tokenizer_option_t *self = mem_ecalloc(1, sizeof(*self));    
-    self->ldbrace_value = "{#";
-    self->rdbrace_value = "#}";
+    self->ldbrace_value = "{:";
+    self->rdbrace_value = ":}";
     return self;
 }
 
@@ -49,6 +49,7 @@ struct tokenizer {
     int32_t tokens_len;
     int32_t tokens_capa;
     tokenizer_option_t *option;
+    bool debug;
 };
 
 void
@@ -76,6 +77,7 @@ tkr_new(tokenizer_option_t *option) {
 
     self->buf = str_new();
     self->option = option;
+    self->debug = false;
 
     return self;
 }
@@ -332,6 +334,31 @@ tkr_store_textblock(tokenizer_t *self) {
     return self;
 }
 
+static tokenizer_t *
+tkr_parse_op(
+    tokenizer_t *self,
+    char op,
+    token_type_t type_op,
+    token_type_t type_op_ass) {
+    if (*self->ptr != op) {
+        tkr_set_error_detail(self, "not found '%c'", op);
+        return NULL;
+    }
+
+    self->ptr++;
+
+    if (*self->ptr != '=') {
+        token_t *token = token_new(type_op);
+        tkr_move_token(self, token);
+        return self;
+    }
+
+    self->ptr++;
+    token_t *token = token_new(type_op_ass);
+    tkr_move_token(self, token);
+    return self;
+}
+
 tokenizer_t *
 tkr_parse(tokenizer_t *self, const char *src) {
     self->src = src;
@@ -349,6 +376,10 @@ tkr_parse(tokenizer_t *self, const char *src) {
 
     for (; *self->ptr ;) {
         char c = *self->ptr++;
+        if (self->debug) {
+            fprintf(stderr, "m[%d] c[%c]\n", m, c);
+        }
+
         if (m == 0) {
             if (c == '{' && *self->ptr == '@') {
                 self->ptr++;
@@ -392,6 +423,25 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 if (token->type == TOKEN_TYPE_RBRACEAT) {
                     m = 0;
                 }
+            } else if (c == '=') {
+                self->ptr--;
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_ASS, TOKEN_TYPE_OP_EQ)) {
+                    goto fail;
+                }
+            } else if (c == '!' && *self->ptr == '=') {
+                self->ptr++;
+                token_t *token = token_new(TOKEN_TYPE_OP_NOT_EQ);
+                tkr_move_token(self, token);
+            } else if (c == '+') {
+                self->ptr--;
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_ADD, TOKEN_TYPE_OP_ADD_ASS)) {
+                    goto fail;
+                }
+            } else if (c == '-') {
+                self->ptr--;
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_SUB, TOKEN_TYPE_OP_SUB_ASS)) {
+                    goto fail;
+                }
             } else if (c == '.') {
                 tkr_move_token(self, token_new(TOKEN_TYPE_DOT_OPE));
             } else if (c == ',') {
@@ -427,6 +477,25 @@ tkr_parse(tokenizer_t *self, const char *src) {
                tkr_store_textblock(self);
                tkr_move_token(self, token);
                m = 0;
+            } else if (c == '=') {
+                self->ptr--;
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_ASS, TOKEN_TYPE_OP_EQ)) {
+                    goto fail;
+                }
+            } else if (c == '!' && *self->ptr == '=') {
+                self->ptr++;
+                token_t *token = token_new(TOKEN_TYPE_OP_NOT_EQ);
+                tkr_move_token(self, token);
+            } else if (c == '+') {
+                self->ptr--;
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_ADD, TOKEN_TYPE_OP_ADD_ASS)) {
+                    goto fail;
+                }
+            } else if (c == '-') {
+                self->ptr--;
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_SUB, TOKEN_TYPE_OP_SUB_ASS)) {
+                    goto fail;
+                }
             } else if (c == '.') {
                 tkr_move_token(self, token_new(TOKEN_TYPE_DOT_OPE));
             } else if (c == ',') {
@@ -444,12 +513,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
         }
     }
 
-    if (str_len(self->buf)) {
-        token_t *token = token_new(TOKEN_TYPE_TEXT_BLOCK);
-        token_move_text(token, str_escdel(self->buf));
-        self->buf = str_new();
-        tkr_move_token(self, token);
-    }
+    tkr_store_textblock(self);
 
     if (m == 10 || m == 20) {
         // on the way of '{@' or '{{'
@@ -482,4 +546,9 @@ tkr_get_error_detail(const tokenizer_t *self) {
 token_t **
 tkr_get_tokens(tokenizer_t *self) {
     return self->tokens;
+}
+
+void
+tkr_set_debug(tokenizer_t *self, bool debug) {
+    self->debug = debug;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 
 #include "lib/error.h"
@@ -112,3 +113,12 @@ tkr_get_error_detail(const tokenizer_t *self);
  */
 token_t **
 tkr_get_tokens(tokenizer_t *self);
+
+/**
+ * Set debug mode
+ *
+ * @param[in] self pointer to dynamic allocate memory of tokenizer_t
+ * @param[in] debug switch debug mode to true, else false
+ */
+void
+tkr_set_debug(tokenizer_t *self, bool debug);
