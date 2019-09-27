@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 /**
  * Copy string at destination buffer
