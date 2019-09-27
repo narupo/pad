@@ -1,20 +1,5 @@
 #include "lang/ast.h"
 
-/*
-    BNF
-
-    program ::= ( code-block | text-block ) program 
-    code-block ::= '{@' formula '@}'
-    text-block ::= .*
-    formula ::= ( import | caller ) | formula
-    import ::= 'import' identifier
-    caller ::= identifier ( '.' identifier )+ '(' args ')'
-    args ::= string | ',' args
-    string ::= '"' .* '"'
-    identifier ::= ( [a-z] | [0-9] | _ )+ 
-
-*/
-
 enum {
     ERR_DETAIL_SIZE = 1024,
 };
