@@ -1595,6 +1595,24 @@ test_tkr_parse(void) {
     token = tkr_tokens_getc(tkr, 3);
     assert(token->type == TOKEN_TYPE_RBRACEAT);
 
+    tkr_parse(tkr, "{@:@}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_COLON);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RBRACEAT);
+
+    tkr_parse(tkr, "{@;@}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_SEMICOLON);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RBRACEAT);
+
     tkr_parse(tkr, "{@(@}");
     assert(tkr_tokens_len(tkr) == 3);
     token = tkr_tokens_getc(tkr, 0);
@@ -2095,14 +2113,14 @@ test_ast_parse(void) {
     // ast_set_debug(ast, true);
     ast_parse(ast, tkr_get_tokens(tkr));
     assert(ast_has_error(ast) == true);
-    assert(strcmp(ast_get_error_detail(ast), "syntax error. not supported token 21 in caller") == 0);
+    assert(strcmp(ast_get_error_detail(ast), "syntax error. not supported token 4 in caller") == 0);
     // ast_set_debug(ast, false);
 
     tkr_parse(tkr, "{@\nfunc(\"aaa\",\n@}");
     // ast_set_debug(ast, true);
     ast_parse(ast, tkr_get_tokens(tkr));
     assert(ast_has_error(ast) == true);
-    assert(strcmp(ast_get_error_detail(ast), "syntax error. not supported token 21 in caller") == 0);
+    assert(strcmp(ast_get_error_detail(ast), "syntax error. not supported token 4 in caller") == 0);
 
     tkr_parse(tkr, "{@\nalias.set()\n@}");
     // ast_set_debug(ast, true);

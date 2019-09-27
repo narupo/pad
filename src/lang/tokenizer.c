@@ -387,6 +387,10 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 tkr_move_token(self, token_new(TOKEN_TYPE_LPAREN));
             } else if (c == ')') {
                 tkr_move_token(self, token_new(TOKEN_TYPE_RPAREN));
+            } else if (c == ':') {
+                tkr_move_token(self, token_new(TOKEN_TYPE_COLON));
+            } else if (c == ';') {
+                tkr_move_token(self, token_new(TOKEN_TYPE_SEMICOLON));
             } else if (isspace(c)) {
                 // pass
             } else {

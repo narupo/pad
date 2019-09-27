@@ -7,42 +7,44 @@
 #include "lib/string.h"
 
 typedef enum {
-    TOKEN_TYPE_INVALID = -1,
-    TOKEN_TYPE_TEXT_BLOCK = 1,
-    TOKEN_TYPE_BLOCK = 10,
-    TOKEN_TYPE_LBRACEAT = 20,
-    TOKEN_TYPE_RBRACEAT = 21,
-    TOKEN_TYPE_LDOUBLE_BRACE = 30,
-    TOKEN_TYPE_RDOUBLE_BRACE = 30,
-    TOKEN_TYPE_DOT_OPE = 40,
-    TOKEN_TYPE_COMMA = 41,
-    TOKEN_TYPE_IDENTIFIER = 50,
-    TOKEN_TYPE_LPAREN = 60,
-    TOKEN_TYPE_RPAREN = 61,
-    TOKEN_TYPE_DQ_STRING = 70,
-    TOKEN_TYPE_INTEGER = 80,
+    TOKEN_TYPE_INVALID = 0,
+    TOKEN_TYPE_TEXT_BLOCK,
+    TOKEN_TYPE_BLOCK,
+    TOKEN_TYPE_LBRACEAT, // '{@'
+    TOKEN_TYPE_RBRACEAT, // '@}'
+    TOKEN_TYPE_LDOUBLE_BRACE, // '{#'
+    TOKEN_TYPE_RDOUBLE_BRACE, // '#}'
+    TOKEN_TYPE_DOT_OPE, // '.'
+    TOKEN_TYPE_COMMA, // ','
+    TOKEN_TYPE_COLON, // ':'
+    TOKEN_TYPE_SEMICOLON, // ';'
+    TOKEN_TYPE_IDENTIFIER,
+    TOKEN_TYPE_LPAREN, // '('
+    TOKEN_TYPE_RPAREN, // ')'
+    TOKEN_TYPE_DQ_STRING, // '"string"'
+    TOKEN_TYPE_INTEGER, // 123
 
     // operators
-    TOKEN_TYPE_OP_ADD = 500, // '+'
-    TOKEN_TYPE_OP_SUB = 501, // '-'
+    TOKEN_TYPE_OP_ADD, // '+'
+    TOKEN_TYPE_OP_SUB, // '-'
 
     // assign operators
-    TOKEN_TYPE_OP_ASS = 1000, // '='
-    TOKEN_TYPE_OP_ADD_ASS = 1001, // '+='
-    TOKEN_TYPE_OP_SUB_ASS = 1001, // '-='
+    TOKEN_TYPE_OP_ASS, // '='
+    TOKEN_TYPE_OP_ADD_ASS, // '+='
+    TOKEN_TYPE_OP_SUB_ASS, // '-='
 
     // comparison operators
-    TOKEN_TYPE_OP_EQ = 1500, // '=='
-    TOKEN_TYPE_OP_NOT_EQ = 1501, // '!='
+    TOKEN_TYPE_OP_EQ, // '=='
+    TOKEN_TYPE_OP_NOT_EQ, // '!='
 
     // statements
-    TOKEN_TYPE_STMT_END = 2000, // 'end'
+    TOKEN_TYPE_STMT_END, // 'end'
     
-    TOKEN_TYPE_STMT_IF = 2010, // 'if'
-    TOKEN_TYPE_STMT_ELIF = 2020, // 'if'
-    TOKEN_TYPE_STMT_ELSE = 2030, // 'if'
+    TOKEN_TYPE_STMT_IF, // 'if'
+    TOKEN_TYPE_STMT_ELIF, // 'if'
+    TOKEN_TYPE_STMT_ELSE, // 'if'
 
-    TOKEN_TYPE_STMT_FOR = 2100, // 'for'
+    TOKEN_TYPE_STMT_FOR, // 'for'
 } token_type_t;
 
 typedef struct token {
