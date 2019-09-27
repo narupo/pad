@@ -327,3 +327,18 @@ bool
 cstr_eq(const char *lhs, const char *rhs) {
     return !strcmp(lhs, rhs);
 }
+
+bool
+cstr_isdigit(const char *str) {
+    if (!str) {
+        return false;
+    }
+
+    for (const char *p = str; *p; ++p) {
+        if (!isdigit(*p)) {
+            return false;
+        }
+    }
+
+    return true;
+}

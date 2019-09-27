@@ -115,3 +115,15 @@ cstr_split_ignore_empty(const char *str, char sep);
  */
 bool
 cstr_eq(const char *lhs, const char *rhs);
+
+/**
+ * TODO: test
+ *
+ * If string is digit then return true else return false
+ *
+ * @param[in] *str pointer to string
+ *
+ * @return string is digit to true, else false
+ */
+bool
+cstr_isdigit(const char *str);
