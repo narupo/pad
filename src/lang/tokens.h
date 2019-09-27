@@ -34,6 +34,15 @@ typedef enum {
     // comparison operators
     TOKEN_TYPE_OP_EQ = 1500, // '=='
     TOKEN_TYPE_OP_NOT_EQ = 1501, // '!='
+
+    // statements
+    TOKEN_TYPE_STMT_END = 2000, // 'end'
+    
+    TOKEN_TYPE_STMT_IF = 2010, // 'if'
+    TOKEN_TYPE_STMT_ELIF = 2020, // 'if'
+    TOKEN_TYPE_STMT_ELSE = 2030, // 'if'
+
+    TOKEN_TYPE_STMT_FOR = 2100, // 'for'
 } token_type_t;
 
 typedef struct token {

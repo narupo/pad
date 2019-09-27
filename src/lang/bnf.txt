@@ -19,15 +19,13 @@ BNF of Cap's template language
          elif_stmt: 'elif' test ':' elems ( elif_stmt | else_stmt | 'end' )
          else_stmt: 'else' ':' elems 'end'
 
-          for_stmt: 'for' expr_list ';' test ';' expr_list ':' elems 'end' |
+          for_stmt: 'for' test_list ';' test ';' test_list ':' elems 'end' |
                     'for' test ':' elems 'end' |
                     'for' ':' elems 'end'
 
-           formula: test |
-                    assign_expr_list
-
-  assign_expr_list: ( expr_list | expr_list '=' ) assign_expr_list
-         expr_list: ( expr | expr ',' ) expr_list
+           formula: assign_list
+       assign_list: ( test_list | test_list '=' ) assign_list
+         test_list: ( test | test ',' ) test_list
             
               test: or_test
            or_test: ( and_test | and_test 'or' ) or_test
@@ -39,13 +37,13 @@ BNF of Cap's template language
               expr: ( term | term ('+' | '-')) expr
               term: ( asscalc | asscalc ('*' | '/')) term
            asscalc: ( factor | factor augassign ) asscalc
-            factor: atom | '(' expr ')'
+            factor: atom | '(' test ')'
               atom: digit | string | identifier | caller
 
-         augassign: '+=' | '-='
+         augassign: '=' | '+=' | '-='
            comp_op: '==' | '!='
              digit: [0-9]+
-            caller: identifier_chain '(' expr_list ')'
+            caller: identifier_chain '(' test_list ')'
   identifier_chain: ( identifier | identifier '.' ) identifier_chain
             string: '"' .* '"'
         identifier: ( [a-z] | [0-9] | _ )+ 
