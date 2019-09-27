@@ -1664,7 +1664,6 @@ test_tkr_parse(void) {
     token = tkr_tokens_getc(tkr, 2);
     assert(token->type == TOKEN_TYPE_RBRACEAT);
 
-    // TODO: fix to digit
     tkr_parse(tkr, "{@123@}");
     assert(tkr_tokens_len(tkr) == 3);
     token = tkr_tokens_getc(tkr, 0);
@@ -1675,6 +1674,81 @@ test_tkr_parse(void) {
     assert(strcmp(token->text, "123") == 0);
     token = tkr_tokens_getc(tkr, 2);
     assert(token->type == TOKEN_TYPE_RBRACEAT);
+
+    /************
+    * operators *
+    ************/
+
+    tkr_parse(tkr, "{@ + @}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_OP_ADD);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RBRACEAT);
+
+    tkr_parse(tkr, "{@ - @}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_OP_SUB);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RBRACEAT);
+
+    tkr_parse(tkr, "{@ = @}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_OP_ASS);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RBRACEAT);
+
+    tkr_parse(tkr, "{@ += @}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_OP_ADD_ASS);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RBRACEAT);
+
+    tkr_parse(tkr, "{@ -= @}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_OP_SUB_ASS);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RBRACEAT);
+
+    /***********************
+    * comparison operators *
+    ***********************/
+
+    tkr_parse(tkr, "{@ == @}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_OP_EQ);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RBRACEAT);
+
+    tkr_parse(tkr, "{@ != @}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LBRACEAT);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_OP_NOT_EQ);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RBRACEAT);
+
+    /*********
+    * others *
+    *********/
 
     tkr_parse(tkr, "{@\"\"@}");
     assert(tkr_tokens_len(tkr) == 3);
@@ -1743,28 +1817,32 @@ test_tkr_parse(void) {
     token = tkr_tokens_getc(tkr, 11);
     assert(token->type == TOKEN_TYPE_RBRACEAT);
 
-    tkr_parse(tkr, "{#");
+    /******************
+    * reference block *
+    ******************/
+
+    tkr_parse(tkr, "{:");
     assert(tkr_tokens_len(tkr) == 1);
     token = tkr_tokens_getc(tkr, 0);
     assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
     assert(tkr_has_error(tkr) == true);
     assert(strcmp(tkr_get_error_detail(tkr), "not closed by block") == 0);
 
-    tkr_parse(tkr, "{##}");
+    tkr_parse(tkr, "{::}");
     assert(tkr_tokens_len(tkr) == 2);
     token = tkr_tokens_getc(tkr, 0);
     assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
     token = tkr_tokens_getc(tkr, 1);
     assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
 
-    tkr_parse(tkr, "{#\n#}");
+    tkr_parse(tkr, "{:\n:}");
     assert(tkr_tokens_len(tkr) == 1);
     token = tkr_tokens_getc(tkr, 0);
     assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
     assert(tkr_has_error(tkr) == true);
     assert(strcmp(tkr_get_error_detail(tkr), "syntax error. unsupported character \"\n\"") == 0);
 
-    tkr_parse(tkr, "{#abc#}");
+    tkr_parse(tkr, "{:abc:}");
     assert(tkr_tokens_len(tkr) == 3);
     token = tkr_tokens_getc(tkr, 0);
     assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
@@ -1773,7 +1851,7 @@ test_tkr_parse(void) {
     token = tkr_tokens_getc(tkr, 2);
     assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
 
-    tkr_parse(tkr, "{#abc123#}");
+    tkr_parse(tkr, "{:abc123:}");
     assert(tkr_tokens_len(tkr) == 3);
     token = tkr_tokens_getc(tkr, 0);
     assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
@@ -1782,7 +1860,7 @@ test_tkr_parse(void) {
     token = tkr_tokens_getc(tkr, 2);
     assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
 
-    tkr_parse(tkr, "{#abc_123#}");
+    tkr_parse(tkr, "{:abc_123:}");
     assert(tkr_tokens_len(tkr) == 3);
     token = tkr_tokens_getc(tkr, 0);
     assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
@@ -1791,8 +1869,7 @@ test_tkr_parse(void) {
     token = tkr_tokens_getc(tkr, 2);
     assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
 
-    // // TODO: fix to digit
-    tkr_parse(tkr, "{# 123 #}");
+    tkr_parse(tkr, "{: 123 :}");
     assert(tkr_tokens_len(tkr) == 3);
     token = tkr_tokens_getc(tkr, 0);
     assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
@@ -1802,7 +1879,7 @@ test_tkr_parse(void) {
     token = tkr_tokens_getc(tkr, 2);
     assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
 
-    tkr_parse(tkr, "{# alias.run(\"dtl\") #}");
+    tkr_parse(tkr, "{: alias.run(\"dtl\") :}");
     assert(tkr_tokens_len(tkr) == 8);
     token = tkr_tokens_getc(tkr, 0);
     assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
@@ -1819,6 +1896,77 @@ test_tkr_parse(void) {
     token = tkr_tokens_getc(tkr, 6);
     assert(token->type == TOKEN_TYPE_RPAREN);
     token = tkr_tokens_getc(tkr, 7);
+    assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+
+    /*****************************
+    * reference block: operators *
+    *****************************/
+
+    tkr_parse(tkr, "{: + :}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_OP_ADD);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+
+    tkr_parse(tkr, "{: - :}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_OP_SUB);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+
+    tkr_parse(tkr, "{: = :}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_OP_ASS);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+
+    tkr_parse(tkr, "{: += :}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_OP_ADD_ASS);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+
+    tkr_parse(tkr, "{: -= :}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_OP_SUB_ASS);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+
+    /****************************************
+    * reference block: comparison operators *
+    ****************************************/
+
+    tkr_parse(tkr, "{: == :}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_OP_EQ);
+    token = tkr_tokens_getc(tkr, 2);
+    assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+
+    tkr_parse(tkr, "{: != :}");
+    assert(tkr_tokens_len(tkr) == 3);
+    token = tkr_tokens_getc(tkr, 0);
+    assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+    token = tkr_tokens_getc(tkr, 1);
+    assert(token->type == TOKEN_TYPE_OP_NOT_EQ);
+    token = tkr_tokens_getc(tkr, 2);
     assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
 
     tkr_del(tkr);
