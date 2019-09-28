@@ -39,6 +39,8 @@ typedef enum {
 
     // statements
     TOKEN_TYPE_STMT_END, // 'end'
+
+    TOKEN_TYPE_STMT_IMPORT, // 'import'
     
     TOKEN_TYPE_STMT_IF, // 'if'
     TOKEN_TYPE_STMT_ELIF, // 'if'
