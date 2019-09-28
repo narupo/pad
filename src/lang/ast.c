@@ -123,6 +123,13 @@ ast_identifier_chain(ast_t *self) {
     }
 
     token_t *t = *self->ptr++;
+    if (!t) {
+        ast_del_nodes(self, cur->identifier);
+        free(cur);
+        ast_set_error_detail(self, "syntax error. reached EOF in identifier chain");
+        return NULL;
+    }
+
     if (t->type != TOKEN_TYPE_DOT_OPE) {
         self->ptr--;
         return node_new(NODE_TYPE_IDENTIFIER_CHAIN, cur);
@@ -166,7 +173,7 @@ ast_import_stmt(ast_t *self) {
             free(cur);
             return NULL;
         }
-        
+
         free(cur);
         ast_set_error_detail(self, "syntax error. not found import module");
         return NULL;
@@ -279,14 +286,25 @@ ast_ref_block(ast_t *self) {
         return NULL;
     }
 
+#define cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->formula); \
+        free(cur); \
+        ast_set_error_detail(self, msg); \
+    } \
+
     t = *self->ptr++;
-    if (t->type != TOKEN_TYPE_RDOUBLE_BRACE) {
-        self->ptr = save_ptr;
-        ast_del_nodes(self, cur->formula);
-        free(cur);
+    if (!t) {
+        cleanup("syntax error. reached EOF in reference block");
         return NULL;
     }
 
+    if (t->type != TOKEN_TYPE_RDOUBLE_BRACE) {
+        cleanup("syntax error. not found \"#}\"");
+        return NULL;
+    }
+
+#undef cleanup
     return node_new(NODE_TYPE_REF_BLOCK, cur);
 }
 
@@ -309,15 +327,25 @@ ast_code_block(ast_t *self) {
         return NULL;
     }
 
+#define cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->elems); \
+        free(cur); \
+        ast_set_error_detail(self, msg); \
+    } \
+
     t = *self->ptr++;
-    if (t->type != TOKEN_TYPE_RBRACEAT) {
-        self->ptr = save_ptr;
-        ast_del_nodes(self, cur->elems);
-        free(cur);
-        ast_set_error_detail(self, "syntax error. not found \"@}\"");
+    if (!t) {
+        cleanup("syntax error. reached EOF in code block");
         return NULL;
     }
 
+    if (t->type != TOKEN_TYPE_RBRACEAT) {
+        cleanup("syntax error. not found \"@}\"");
+        return NULL;
+    }
+
+#undef cleanup
     return node_new(NODE_TYPE_CODE_BLOCK, cur);
 }
 
