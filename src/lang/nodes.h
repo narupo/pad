@@ -10,14 +10,60 @@
 *************/
 
 typedef enum {
-    NODE_TYPE_INVALID = -1,
-    NODE_TYPE_BIN = 1,
-    NODE_TYPE_CODE_BLOCK = 10,
-    NODE_TYPE_TEXT_BLOCK = 20,
-    NODE_TYPE_FORMULA = 30,
-    NODE_TYPE_IMPORT = 40,
-    NODE_TYPE_CALLER = 50,
+    NODE_TYPE_INVALID = 0,
+    NODE_TYPE_PROGRAM,
+    NODE_TYPE_BLOCK,
+    NODE_TYPE_CODE_BLOCK,
+    NODE_TYPE_REF_BLOCK,
+    NODE_TYPE_TEXT_BLOCK,
+    NODE_TYPE_ELEMS,
+
+    NODE_TYPE_STMT,
+    NODE_TYPE_IMPORT_STMT,
+
+    NODE_TYPE_IF_STMT,
+    NODE_TYPE_ELIF_STMT,
+    NODE_TYPE_ELSE_STMT,
+
+    NODE_TYPE_FOR_STMT,
+
+    NODE_TYPE_FORMULA,
+    NODE_TYPE_ASSIGN_LIST,
+    NODE_TYPE_TEST_LIST,
+
+    NODE_TYPE_TEST,
+    NODE_TYPE_OR_TEST,
+    NODE_TYPE_AND_TEST,
+    NODE_TYPE_NOT_TEST,
+
+    NODE_TYPE_COMPARISON,
+
+    NODE_TYPE_EXPR,
+    NODE_TYPE_TERM,
+    NODE_TYPE_ASSCALC,
+    NODE_TYPE_FACTOR,
+    NODE_TYPE_ATOM,
+
+    NODE_TYPE_AUGASSIGN,
+    NODE_TYPE_COMP_OP,
+    NODE_TYPE_DIGIT,
+    NODE_TYPE_CALLER,
+    NODE_TYPE_IDENTIFIER_CHAIN,
+    NODE_TYPE_STRING,
+    NODE_TYPE_IDENTIFIER,
 } node_type_t;
+
+typedef enum {
+    OP_ADD = 0, // '+'
+    OP_SUB, // '-'
+    OP_MUL, // '*'
+    OP_DIV, // '/'
+    OP_ASS, // '='
+    OP_ADD_ASS, // '+='
+    OP_SUB_ASS, // '-='
+    OP_EQ, // '=='
+    OP_NOT_EQ, // '!='
+} op_t;
 
 /******************
 * node structures *
@@ -28,198 +74,171 @@ typedef struct node {
     void *real;
 } node_t;
 
-typedef struct bin_node {
-    node_t *lhs;
-    node_t *rhs;
-} bin_node_t;
+typedef struct node_program {
+    node_t *block;
+    node_t *program;
+} node_program_t;
 
-typedef struct code_block_node {
+typedef struct node_block {
+    node_t *code_block;
+    node_t *ref_block;
+    node_t *text_block;
+} node_block_t;
+
+typedef struct node_code_block {
+    node_t *elems;
+} node_code_block_t;
+
+typedef struct node_ref_block {
     node_t *formula;
-} code_block_node_t;
+} node_ref_block_t;
 
-typedef struct text_block_node {
+typedef struct node_text_block {
     char *text;
-} text_block_node_t;
+} node_text_block_t;
 
-typedef struct formula_node {
-    node_t *lhs;
-    node_t *rhs;
-} formula_node_t;
+typedef struct node_elems {
+    node_t *stmt;
+    node_t *formula;
+    node_t *elems;
+} node_elems_t;
 
-typedef struct import_node {
-    char package[1024];
-} import_node_t;
+typedef struct node_stmt {
+    node_t *import_stmt;
+    node_t *if_stmt;
+    node_t *for_stmt;
+} node_stmt_t;
 
-typedef struct caller_node {
-    int32_t il_pos;
-    int32_t args_pos;
-    char identifier_list[32][1024];
-    char args[32][1024];
-} caller_node_t;
+typedef struct node_import_stmt {
+    node_t *identifier_chain;
+} node_import_stmt_t;
 
-/**************
-* caller_node *
-**************/
+typedef struct node_if_stmt {
+    node_t *test;
+    node_t *elems;
+    node_t *elif_stmt;
+    node_t *else_stmt;
+} node_if_stmt_t;
 
-void
-caller_node_del(caller_node_t *self);
+typedef node_if_stmt_t node_elif_stmt_t;
 
-caller_node_t *
-caller_node_new(void);
+typedef struct node_else_stmt {
+    node_t *elems;
+} node_else_stmt_t;
 
-caller_node_t *
-caller_node_pushb_identifier(caller_node_t *self, const char *identifier);
+typedef struct node_for_stmt {
+    node_t *init_test_list;
+    node_t *test;
+    node_t *update_test_list;
+    node_t *elems;
+} node_for_stmt_t;
 
-caller_node_t *
-caller_node_pushb_arg(caller_node_t *self, const char *str);
+typedef struct node_formula {
+    node_t *assign_list;
+} node_formula_t;
 
-const char *
-caller_node_identifiers_getc(const caller_node_t *self, size_t idx);
+typedef struct node_assign_list {
+    node_t *test_list;
+    node_t *assign_list;
+} node_assign_list_t;
 
-size_t 
-caller_node_identifiers_len(const caller_node_t *self);
+typedef struct node_test_list {
+    node_t *test;
+    node_t *test_list;
+} node_test_list_t;
 
-const char *
-caller_node_args_getc(const caller_node_t *self, size_t idx);
+typedef struct node_test {
+    node_t *or_test;
+} node_test_t;
 
-size_t
-caller_node_args_len(const caller_node_t *self);
+typedef struct node_or_test {
+    node_t *and_test;
+    node_t *or_test;
+} node_or_test_t;
 
-/**************
-* import_node *
-**************/
+typedef struct node_and_test {
+    node_t *not_test;
+    node_t *and_test;
+} node_and_test_t;
 
-void
-import_node_del(import_node_t *self);
+typedef struct node_not_test {
+    node_t *not_test;
+    node_t *comparison;
+} node_not_test_t;
 
-import_node_t *
-import_node_new(const char *package);
+typedef struct node_comparison {
+    node_t *expr;
+    node_t *comp_op;
+    node_t *comparison;
+} node_comparison_t;
 
-const char *
-import_node_getc_package(const import_node_t *self);
+typedef struct node_expr {
+    node_t *term;
+    node_t *ass_sub_op;
+    node_t *expr;
+} node_expr_t;
 
-/***************
-* formula_node *
-***************/
+typedef struct node_term {
+    node_t *asscalc;
+    node_t *mul_div_op;
+    node_t *term;
+} node_term_t;
 
-/**
- * Destruct formula_node
- *
- * @param[in] self pointer to dynamic allocate memory of formula_node_t
- */
-void
-formula_node_del(formula_node_t *self);
+typedef struct node_asscalc {
+    node_t *factor;
+    node_t *augassign;
+    node_t *asscalc;
+} node_asscalc_t;
 
-/**
- * Construct formula_node
- *
- * @param lhs pointer to node_t for left hand side
- * @param rhs pointer to node_t for right hand side
- *
- * @return pointer to dynamic allocate memory of formula_node_t
- */
-formula_node_t *
-formula_node_new(node_t *lhs, node_t *rhs);
+typedef struct node_factor {
+    node_t *atom;
+    node_t *test;
+} node_factor_t;
 
-node_t *
-formula_node_get_lhs(formula_node_t *self);
+typedef struct node_atom {
+    node_t *digit;
+    node_t *string;
+    node_t *identifier;
+    node_t *caller;
+} node_atom_t;
 
-node_t *
-formula_node_get_rhs(formula_node_t *self);
+typedef struct node_augassign {
+    op_t op;
+} node_augassign_t;
 
-const node_t *
-formula_node_getc_lhs(const formula_node_t *self);
+typedef struct node_comp_op {
+    op_t op;
+} node_op_t;
 
-const node_t *
-formula_node_getc_rhs(const formula_node_t *self);
+typedef struct node_ass_sub_op {
+    op_t op;
+} node_ass_sub_op_t;
 
-/******************
-* text_block_node *
-******************/
+typedef struct node_mul_div_op {
+    op_t opt;
+} node_mul_div_op_t;
 
-/**
- * Destruct text_block_node
- *
- * @param[in] self pointer to dynamic allocate memory of text_block_node_t
- */
-void
-text_block_node_del(text_block_node_t *self);
+typedef struct node_digit {
+    long lvalue;
+} node_digit_t;
 
-/**
- * Construct text_block_node
- *
- * @param text pointer to dynamic allocate memory of text
- *
- * @return pointer to dynamic allocate memory of text_block_node_t
- */
-text_block_node_t *
-text_block_node_new(char *text);
+typedef struct node_caller {
+    node_t *identifier_chain;
+    node_t *test_list;
+} node_caller_t;
 
-const char *
-text_block_node_getc_text(const text_block_node_t *self);
+typedef struct node_identifier_chain {
+    node_t *identifier;
+    node_t *identifier_chain;
+} node_identifier_chain_t;
 
-/******************
-* code_block_node *
-******************/
+typedef struct node_string {
+    char *str;
+} node_string_t;
 
-/**
- * Destruct code_block_node
- *
- * @param[in] self pointer to dynamic allocate memory of code_block_node_t
- */
-void
-code_block_node_del(code_block_node_t *self);
-
-/**
- * Construct code_block_node
- *
- * @param[in] formula pointer to node_t of formula
- *
- * @return pointer to dynamic allocate memory of code_block_node_t
- */
-code_block_node_t *
-code_block_node_new(node_t *formula);
-
-const node_t *
-code_block_node_getc_formula(const code_block_node_t *self);
-
-node_t *
-code_block_node_get_formula(code_block_node_t *self);
-
-/*****************
-* bin_block_node *
-*****************/
-
-/**
- * Destruct bin_node
- *
- * @param[in] self pointer to dynamic allocate memory of bin_node_t
- */
-void
-bin_node_del(bin_node_t *self);
-
-/**
- * Construct bin_node
- *
- * @param[in] lhs pointer to node_t of left hand
- * @param[in] rhs pointer to node_t of right hand
- *
- * @return pointer to dynamic allocate memory of bin_node_t
- */
-bin_node_t *
-bin_node_new(node_t *lhs, node_t *rhs);
-
-const node_t *
-bin_node_getc_lhs(const bin_node_t *self);
-
-const node_t *
-bin_node_getc_rhs(const bin_node_t *self);
-
-node_t *
-bin_node_get_lhs(bin_node_t *self);
-
-node_t *
-bin_node_get_rhs(bin_node_t *self);
+typedef struct node_identifier {
+    char *identifier;
+} node_identifier_t;
 
 /*******
 * node *

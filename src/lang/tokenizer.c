@@ -234,6 +234,8 @@ tkr_parse_identifier(tokenizer_t *self) {
         token->lvalue = strtol(token->text, NULL, 10);
     } else if (cstr_eq(token->text, "end")) {
         token->type = TOKEN_TYPE_STMT_END;
+    } else if (cstr_eq(token->text, "import")) {
+        token->type = TOKEN_TYPE_STMT_IMPORT;        
     } else if (cstr_eq(token->text, "if")) {
         token->type = TOKEN_TYPE_STMT_IF;
     } else if (cstr_eq(token->text, "elif")) {
