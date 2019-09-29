@@ -2111,7 +2111,7 @@ test_ast_parse(void) {
     assert(block->text_block == NULL);
     code_block = block->code_block->real;
     assert(code_block->elems == NULL);
-/*
+
     tkr_parse(tkr, "{@\n@}");
     ast_clear(ast);
     ast_parse(ast, tkr_get_tokens(tkr));
@@ -2151,13 +2151,57 @@ test_ast_parse(void) {
     assert(block->text_block == NULL);
     code_block = block->code_block->real;
     assert(code_block->elems == NULL);
-*/
 
     /*******************
     * import statement *
     *******************/
 
     tkr_parse(tkr, "{@ import module @}");
+    ast_clear(ast);
+    ast_parse(ast, tkr_get_tokens(tkr));
+    root = ast_getc_root(ast);
+    assert(root->type == NODE_TYPE_PROGRAM);
+    program = root->real;
+    assert(program->block != NULL);
+    assert(program->block->type == NODE_TYPE_BLOCK);
+    assert(program->block->real != NULL);
+    assert(program->program == NULL);
+    block = program->block->real;
+    assert(block->code_block != NULL);
+    assert(block->code_block->type == NODE_TYPE_CODE_BLOCK);
+    assert(block->code_block->real != NULL);
+    assert(block->ref_block == NULL);
+    assert(block->text_block == NULL);
+    code_block = block->code_block->real;
+    assert(code_block->elems != NULL);
+    assert(code_block->elems->type == NODE_TYPE_ELEMS);
+    assert(code_block->elems->real != NULL);
+    elems = code_block->elems->real;
+    assert(elems->stmt != NULL);
+    assert(elems->stmt->type == NODE_TYPE_STMT);
+    assert(elems->stmt->real != NULL);
+    assert(elems->formula == NULL);
+    assert(elems->elems == NULL);
+    stmt = elems->stmt->real;
+    assert(stmt->import_stmt != NULL);
+    assert(stmt->import_stmt->type == NODE_TYPE_IMPORT_STMT);
+    assert(stmt->import_stmt->real != NULL);
+    assert(stmt->if_stmt == NULL);
+    assert(stmt->for_stmt == NULL);
+    import_stmt = stmt->import_stmt->real;
+    assert(import_stmt->identifier_chain != NULL);
+    assert(import_stmt->identifier_chain->type == NODE_TYPE_IDENTIFIER_CHAIN);
+    assert(import_stmt->identifier_chain->real != NULL);
+    identifier_chain = import_stmt->identifier_chain->real;
+    assert(identifier_chain->identifier != NULL);
+    assert(identifier_chain->identifier->type == NODE_TYPE_IDENTIFIER);
+    assert(identifier_chain->identifier->real != NULL);
+    assert(identifier_chain->identifier_chain == NULL);
+    identifier = identifier_chain->identifier->real;
+    assert(identifier->identifier != NULL);
+    assert(!strcmp(identifier->identifier, "module"));
+
+    tkr_parse(tkr, "{@\n\nimport module @}");
     ast_clear(ast);
     ast_parse(ast, tkr_get_tokens(tkr));
     root = ast_getc_root(ast);

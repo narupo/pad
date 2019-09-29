@@ -29,6 +29,7 @@ struct ast {
         fprintf(stderr, "debug: %s: %d: token[%d]\n", __func__, __LINE__, (t ? t->type : -1)); \
         fflush(stderr); \
     } \
+    ast_skip_newlines(self); \
     if (!*self->ptr) { \
         return NULL; \
     } \
@@ -103,6 +104,17 @@ ast_show_debug(const ast_t *self, const char *funcname) {
     if (self->debug) {
         token_t *t = *self->ptr;
         printf("debug: %s: token type[%d]\n", funcname, (t ? t->type : -1));
+    }
+}
+
+static void
+ast_skip_newlines(ast_t *self) {
+    for (; *self->ptr; ) {
+        token_t *t = *self->ptr++;
+        if (t->type != TOKEN_TYPE_NEWLINE) {
+            self->ptr--;
+            return;
+        }
     }
 }
 
@@ -387,17 +399,6 @@ ast_identifier_chain(ast_t *self) {
     }
 
     return node_new(NODE_TYPE_IDENTIFIER_CHAIN, cur);
-}
-
-static void
-ast_skip_newlines(ast_t *self) {
-    for (; *self->ptr; ) {
-        token_t *t = *self->ptr++;
-        if (t->type != TOKEN_TYPE_NEWLINE) {
-            self->ptr--;
-            return;
-        }
-    }
 }
 
 static node_t *
