@@ -12,7 +12,7 @@
 typedef enum {
     NODE_TYPE_INVALID = 0,
     NODE_TYPE_PROGRAM,
-    NODE_TYPE_BLOCK,
+    NODE_TYPE_BLOCKS,
     NODE_TYPE_CODE_BLOCK,
     NODE_TYPE_REF_BLOCK,
     NODE_TYPE_TEXT_BLOCK,
@@ -132,6 +132,7 @@ typedef struct node_for_stmt {
     node_t *test;
     node_t *update_test_list;
     node_t *elems;
+    node_t *blocks;
 } node_for_stmt_t;
 
 typedef struct node_formula {
