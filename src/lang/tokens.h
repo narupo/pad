@@ -109,3 +109,13 @@ token_getc_text(const token_t *self);
  */
 char *
 token_copy_text(const token_t *self);
+
+/**
+ * Type value to string
+ *
+ * @param[in] self pointer to dynamic allocate memory of token_t
+ *
+ * @return pointer to string
+ */
+const char *
+token_type_to_str(const token_t *self);
