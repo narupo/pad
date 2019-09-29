@@ -116,6 +116,7 @@ typedef struct node_import_stmt {
 typedef struct node_if_stmt {
     node_t *test;
     node_t *elems;
+    node_t *block;
     node_t *elif_stmt;
     node_t *else_stmt;
 } node_if_stmt_t;

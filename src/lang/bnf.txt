@@ -6,16 +6,16 @@ BNF of Cap's template language
         code-block: '{@' elems '@}'
          ref-block: '{#' formula '#}'
         text-block: .*
-             elems: ( stmt | formula ) elems
+             elems: ( stmt | formula | newline ) elems
 
               stmt: import_stmt |
                     if_stmt |
                     for_stmt
 
-       import_stmt: 'import' identifier_chain
+       import_stmt: 'import' identifier_chain ( newline | '@}' )
 
-           if_stmt: 'if' test ':' elems ( elif_stmt | else_stmt | 'end' ) |
-                    'if' test ':' '@}' block '{@' ( elif_stmt | else_stmt | 'end' )
+           if_stmt: 'if' test ':' elems* ( elif_stmt | else_stmt | 'end' ) |
+                    'if' test ':' '@}' block* '{@' ( elif_stmt | else_stmt | 'end' )
          elif_stmt: 'elif' test ':' elems ( elif_stmt | else_stmt | 'end' )
          else_stmt: 'else' ':' elems 'end'
 
@@ -45,6 +45,7 @@ BNF of Cap's template language
         ass_sub_op: '+' | '-'
         mul_div_op: '*' | '/'
              digit: [0-9]+
+           newline: '\n'
             caller: identifier_chain '(' test_list ')'
   identifier_chain: ( identifier | identifier '.' ) identifier_chain
             string: '"' .* '"'
