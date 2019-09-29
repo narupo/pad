@@ -6,13 +6,13 @@ BNF of Cap's template language
         code-block: '{@' elems '@}'
          ref-block: '{#' formula '#}'
         text-block: .*
-             elems: ( stmt | formula | newline ) elems
+             elems: ( stmt | formula ) elems
 
               stmt: import_stmt |
                     if_stmt |
                     for_stmt
 
-       import_stmt: 'import' identifier_chain ( newline | '@}' )
+       import_stmt: 'import' identifier_chain 
 
            if_stmt: 'if' test ':' elems* ( elif_stmt | else_stmt | 'end' ) |
                     'if' test ':' '@}' block* '{@' ( elif_stmt | else_stmt | 'end' )
