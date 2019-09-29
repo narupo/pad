@@ -59,8 +59,8 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_RDOUBLE_BRACE: return "#}"; break;
     case TOKEN_TYPE_DOT_OPE: return "."; break;
     case TOKEN_TYPE_COMMA: return ","; break;
-    case TOKEN_TYPE_COLON: return ":"; break;
-    case TOKEN_TYPE_SEMICOLON: return "; break;"; break;
+    case TOKEN_TYPE_COLON: return "colon"; break;
+    case TOKEN_TYPE_SEMICOLON: return "semicolon"; break;
     case TOKEN_TYPE_IDENTIFIER: return self->text; break;
     case TOKEN_TYPE_LPAREN: return "("; break;
     case TOKEN_TYPE_RPAREN: return ")"; break;

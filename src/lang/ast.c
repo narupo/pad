@@ -137,24 +137,56 @@ ast_formula(ast_t *self, int dep) {
 
 static node_t *
 ast_test_list(ast_t *self, int dep) {
-    ast_return(NULL);
+    ready();
+    declare(node_test_list_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->test); \
+        ast_del_nodes(self, cur->test_list); \
+        free(cur); \
+    } \
+
+    cur->test = ast_test(self, dep+1);
+    if (!cur->test) {
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        return_cleanup("syntax error. not found test in test list");
+    }
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_COMMA) {
+        self->ptr--;
+        return node_new(NODE_TYPE_TEST_LIST, cur);
+    }
+
+    cur->test_list = ast_test_list(self, dep+1);
+    if (!cur->test_list) {
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        return_cleanup("syntax error. not found test list in test list");
+    }
+
+    return node_new(NODE_TYPE_TEST_LIST, cur);
 }
 
 static node_t *
 ast_for_stmt(ast_t *self, int dep) {
-    
-    ast_return(NULL); // TODO
-
     ready();
     declare(node_for_stmt_t, cur);
     token_t **save_ptr = self->ptr;
 
+#undef return_cleanup
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
         ast_del_nodes(self, cur->init_test_list); \
         ast_del_nodes(self, cur->test); \
         ast_del_nodes(self, cur->update_test_list); \
         ast_del_nodes(self, cur->elems); \
+        ast_del_nodes(self, cur->blocks); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
@@ -166,6 +198,7 @@ ast_for_stmt(ast_t *self, int dep) {
     if (t->type != TOKEN_TYPE_STMT_FOR) {
         return_cleanup("");
     }
+    check("read for");
 
     if (!*self->ptr) {
         return_cleanup("syntax error. reached EOF in for statement");
@@ -173,34 +206,89 @@ ast_for_stmt(ast_t *self, int dep) {
 
     t = *self->ptr++;
     if (t->type == TOKEN_TYPE_COLON) {
-        // for : <elems> end
-        check("call ast_elems");
-        cur->elems = ast_elems(self, dep+1);
-        if (ast_has_error(self)) {
-            return_cleanup("");
-        }
+        check("read colon");
 
         if (!*self->ptr) {
             return_cleanup("syntax error. reached EOF in for statement (2)");
         }
 
         t = *self->ptr++;
-        if (t->type != TOKEN_TYPE_STMT_END) {
-            return_cleanup("syntax error. not found end in for statement");
-        }
-    } else {
-        check("call ast_test_list");
-        cur->init_test_list = ast_test_list(self, dep+1);
-        if (!cur->init_test_list) {
+        if (t->type == TOKEN_TYPE_RBRACEAT) {
+            cur->blocks = ast_blocks(self, dep+1);
+            // allow null
             if (ast_has_error(self)) {
                 return_cleanup("");
             }
-            return_cleanup("syntax error. not found initialize test in for statement");            
+
+            if (!*self->ptr) {
+                return_cleanup("syntax error. reached EOF in for statement (2a)");
+            }
+
+            t = *self->ptr++;
+            if (t->type != TOKEN_TYPE_LBRACEAT) {
+                return_cleanup("syntax error. not found {@ in for statement");
+            }
+
+        } else {
+            self->ptr--;
+
+            // for : <elems> end
+            check("call ast_elems");
+            cur->elems = ast_elems(self, dep+1);
+            // allow null
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }            
+        }
+
+        if (!*self->ptr) {
+            return_cleanup("syntax error. reached EOF in for statement (3)");
+        }
+
+        t = *self->ptr++;
+        if (t->type != TOKEN_TYPE_STMT_END) {
+            return_cleanup("syntax error. not found end in for statement");
+        }
+        check("read end");
+    } else {
+        self->ptr--;
+        vissf("read %s", token_type_to_str(t));
+        check("call ast_test_list");
+
+        check("call ast_test");
+        cur->test = ast_test(self, dep+1);
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+
+        if (!cur->test) {
+            check("call ast_test_list");
+            cur->init_test_list = ast_test_list(self, dep+1);
+            if (!cur->init_test_list) {
+                if (ast_has_error(self)) {
+                    return_cleanup("");
+                }
+                return_cleanup("syntax error. not found initialize test in for statement");            
+            }
         }
 
         t = *self->ptr++;
         if (t->type == TOKEN_TYPE_SEMICOLON) {
+            check("read semicolon");
             // for <test_list> ; test ; test_list : elems end
+
+            if (cur->test) {
+                // test move to init_test_list
+                ast_del_nodes(self, cur->init_test_list);
+                declare(node_test_list_t, test_list);
+                test_list->test = cur->test;
+                cur->test = NULL;
+                cur->init_test_list = node_new(NODE_TYPE_TEST_LIST, test_list);
+            }
+
+            if (!cur->init_test_list) {
+                return_cleanup("syntax error. not found initialize test in for statement (2)");
+            }
 
             check("call ast_test");
             cur->test = ast_test(self, dep+1);
@@ -210,13 +298,14 @@ ast_for_stmt(ast_t *self, int dep) {
             }
 
             if (!*self->ptr) {
-                return_cleanup("syntax error. reached EOF in for statement (3)");
+                return_cleanup("syntax error. reached EOF in for statement (4)");
             }
 
             t = *self->ptr++;
             if (t->type != TOKEN_TYPE_SEMICOLON) {
                 return_cleanup("syntax error. not found semicolon (2)");
             }
+            check("read semicolon");
 
             check("call ast_test_list");
             cur->update_test_list = ast_test_list(self, dep+1);
@@ -226,23 +315,12 @@ ast_for_stmt(ast_t *self, int dep) {
             }
 
             if (!*self->ptr) {
-                return_cleanup("syntax error. reached EOF in for statement (4)");
+                return_cleanup("syntax error. reached EOF in for statement (5)");
             }
         } else if (t->type == TOKEN_TYPE_COLON) {
+            self->ptr--;
             // for <test> : elems end
-            if (cur->init_test_list->real == NULL) {
-                return_cleanup("syntax error. not found real element in for statement");
-            }
-
-            node_test_list_t *init_test_list = cur->init_test_list->real; 
-            if (init_test_list->test == NULL) {
-                return_cleanup("syntax error. not found test in for statement");
-            }
-
-            // swap test
-            cur->test = init_test_list->test;
-            init_test_list->test = NULL;
-            ast_del_nodes(self, cur->init_test_list);
+            // pass
         } else {
             return_cleanup("syntax error. unsupported character in for statement");
         }
@@ -250,6 +328,32 @@ ast_for_stmt(ast_t *self, int dep) {
         t = *self->ptr++;
         if (t->type != TOKEN_TYPE_COLON) {
             return_cleanup("syntax error. not found colon in for statement")
+        }
+        check("read colon");
+
+        if (!*self->ptr) {
+            return_cleanup("syntax error. reached EOF in for statement (6)")
+        }
+
+        t = *self->ptr++;
+        if (t->type == TOKEN_TYPE_RBRACEAT) {
+            check("read @}");
+            cur->blocks = ast_blocks(self, dep+1);
+            // allow null
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
+
+            if (!*self->ptr) {
+                return_cleanup("syntax error. reached EOF in for statement (6)");
+            }
+
+            t = *self->ptr++;
+            if (t->type != TOKEN_TYPE_LBRACEAT) {
+                return_cleanup("syntax error. not found {@ in for statement");
+            }
+        } else {
+            self->ptr--;
         }
 
         check("call ast_elems");
@@ -267,6 +371,7 @@ ast_for_stmt(ast_t *self, int dep) {
         if (t->type != TOKEN_TYPE_STMT_END) {
             return_cleanup("syntax error. not found end in for statement");
         }
+        check("read end");
     }
 
     ast_return(node_new(NODE_TYPE_FOR_STMT, cur));
@@ -845,7 +950,7 @@ ast_blocks(ast_t *self, int dep) {
         return_cleanup();
     }
 
-    ast_return(node_new(NODE_TYPE_BLOCK, cur));
+    ast_return(node_new(NODE_TYPE_BLOCKS, cur));
 }
 
 static node_t *
