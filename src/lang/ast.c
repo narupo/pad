@@ -60,7 +60,7 @@ static node_t *
 ast_elems(ast_t *self, int dep);
 
 static node_t *
-ast_block(ast_t *self, int dep);
+ast_blocks(ast_t *self, int dep);
 
 static node_t *
 ast_test(ast_t *self, int dep);
@@ -358,7 +358,7 @@ ast_if_stmt(ast_t *self, int type, int dep) {
         self->ptr = save_ptr; \
         ast_del_nodes(self, cur->test); \
         ast_del_nodes(self, cur->elems); \
-        ast_del_nodes(self, cur->block); \
+        ast_del_nodes(self, cur->blocks); \
         ast_del_nodes(self, cur->elif_stmt); \
         ast_del_nodes(self, cur->else_stmt); \
         free(cur); \
@@ -415,11 +415,12 @@ ast_if_stmt(ast_t *self, int type, int dep) {
     t = *self->ptr++;
     if (t->type == TOKEN_TYPE_RBRACEAT) {
         check("read @}");
-        check("call ast_block");
-        cur->block = ast_block(self, dep+1);
+
+        check("call ast_blocks");
+        cur->blocks = ast_blocks(self, dep+1);
+        check("ABABABA");
         // block allow null
         if (ast_has_error(self)) {
-            vissf("has error %d: %s", dep, ast_get_error_detail(self));
             return_cleanup("");
         }
 
@@ -432,7 +433,7 @@ ast_if_stmt(ast_t *self, int type, int dep) {
             return_cleanup("syntax error. not found \"{@\" in if statement");
         }
 
-        check("call ast_if_stmt");
+        check("call ast_elif_stmt");
         cur->elif_stmt = ast_if_stmt(self, 1, dep+1);
         if (!cur->elif_stmt) {
             if (ast_has_error(self)) {
@@ -486,7 +487,7 @@ ast_if_stmt(ast_t *self, int type, int dep) {
 
                 t = *self->ptr++;
                 if (t->type != TOKEN_TYPE_STMT_END) {
-                    return_cleanup("syntax error. not found end in if statement");
+                    return_cleanup("syntax error. not found end in if statement (2)");
                 }
             }
         }
@@ -709,6 +710,7 @@ ast_text_block(ast_t *self, int dep) {
         free(cur);
         ast_return(NULL);
     }
+    check("read text block");
 
     // move text
     cur->text = t->text;
@@ -798,13 +800,16 @@ ast_code_block(ast_t *self, int dep) {
     }
     check("read @}");
 
+    ast_skip_newlines(self);
+    check("skip newlines");
+
     ast_return(node_new(NODE_TYPE_CODE_BLOCK, cur));
 }
 
 static node_t *
-ast_block(ast_t *self, int dep) {
+ast_blocks(ast_t *self, int dep) {
     ready();
-    declare(node_block_t, cur);
+    declare(node_blocks_t, cur);
 
 #undef return_cleanup
 #define return_cleanup() { \
@@ -834,6 +839,12 @@ ast_block(ast_t *self, int dep) {
         }
     }
 
+    cur->blocks = ast_blocks(self, dep+1);
+    // allow null
+    if (ast_has_error(self)) {
+        return_cleanup();
+    }
+
     ast_return(node_new(NODE_TYPE_BLOCK, cur));
 }
 
@@ -848,16 +859,10 @@ ast_program(ast_t *self, int dep) {
         ast_return(NULL); \
     } \
 
-    check("call ast_block");
-    cur->block = ast_block(self, dep+1);
-    if (!cur->block) {
+    check("call ast_blocks");
+    cur->blocks = ast_blocks(self, dep+1);
+    if (!cur->blocks) {
         return_cleanup();
-    }
-
-    check("call ast_program");
-    cur->program = ast_program(self, dep+1);
-    if (!cur->program) {
-        ast_return(node_new(NODE_TYPE_PROGRAM, cur));
     }
 
     ast_return(node_new(NODE_TYPE_PROGRAM, cur));

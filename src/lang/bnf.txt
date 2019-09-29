@@ -1,8 +1,8 @@
 BNF of Cap's template language
 
-           program: block program 
+           program: blocks 
 
-             block: ( code-block | ref-block | text-block )
+            blocks: ( code-block | ref-block | text-block ) blocks
         code-block: '{@' elems '@}'
          ref-block: '{#' formula '#}'
         text-block: .*
