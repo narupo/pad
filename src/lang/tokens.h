@@ -8,6 +8,7 @@
 
 typedef enum {
     TOKEN_TYPE_INVALID = 0,
+    TOKEN_TYPE_NEWLINE,
     TOKEN_TYPE_TEXT_BLOCK,
     TOKEN_TYPE_BLOCK,
     TOKEN_TYPE_LBRACEAT, // '{@'

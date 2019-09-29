@@ -13,16 +13,49 @@ struct ast {
     bool debug; // if do debug to true
 };
 
+/*********
+* macros *
+*********/
+
 #define declare(T, var) \
     T* var = calloc(1, sizeof(T)); \
     if (!var) { \
         err_die("failed to alloc. LINE %d", __LINE__); \
     } \
 
-#define check_ptr() \
+#define ready() \
+    if (self->debug) { \
+        token_t *t = *self->ptr; \
+        fprintf(stderr, "debug: %s: %d: token[%d]\n", __func__, __LINE__, (t ? t->type : -1)); \
+        fflush(stderr); \
+    } \
     if (!*self->ptr) { \
         return NULL; \
     } \
+
+#define ast_return(ret) \
+    if (self->debug) { \
+        fprintf(stderr, "debug: return %s: %d\n", __func__, __LINE__); \
+        fflush(stderr); \
+    } \
+    return ret; \
+
+#define vissf(fmt, ...) \
+    if (self->debug) fprintf(stderr, fmt, __VA_ARGS__); \
+
+/*************
+* prototypes *
+*************/
+
+static node_t *
+ast_elems(ast_t *self);
+
+static node_t *
+ast_block(ast_t *self);
+
+/************
+* functions *
+************/
 
 void
 ast_del_nodes(const ast_t *self, node_t *node) {
@@ -68,7 +101,8 @@ ast_set_error_detail(ast_t *self, const char *fmt, ...) {
 static void
 ast_show_debug(const ast_t *self, const char *funcname) {
     if (self->debug) {
-        printf("debug: %s: current token type[%d]\n", funcname, token_get_type(*self->ptr));
+        token_t *t = *self->ptr;
+        printf("debug: %s: token type[%d]\n", funcname, (t ? t->type : -1));
     }
 }
 
@@ -85,14 +119,213 @@ ast_for_stmt(ast_t *self) {
 }
 
 static node_t *
-ast_if_stmt(ast_t *self) {
-    // TODO
-    return NULL;
+ast_test(ast_t *self) {
+    ready();
+    declare(node_test_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        ast_return(NULL); \
+    } \
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_INTEGER) {
+        return_cleanup("TODO: not integer");
+    }
+
+    return node_new(NODE_TYPE_TEST, cur);
+}
+
+static node_t *
+ast_else_stmt(ast_t *self) {
+    ready();
+    declare(node_else_stmt_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->elems); \
+        free(cur); \
+        ast_return(NULL); \
+    } \
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_STMT_ELSE) {
+        return_cleanup("");
+    }
+
+    if (!*self->ptr) {
+        return_cleanup("syntax error. reached EOF in else statement");
+    }
+
+    t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_COLON) {
+        return_cleanup("syntax error. not found colon in else statement");
+    }
+
+    cur->elems = ast_elems(self);
+    if (!cur->elems) {
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+    }
+
+    if (!*self->ptr) {
+        return_cleanup("syntax error. reached EOF in else statement (2)");
+    }
+
+    t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_STMT_END) {
+        return_cleanup("syntax error. not found end in else statement");
+    }
+
+    return node_new(NODE_TYPE_ELSE_STMT, cur);
+}
+
+static node_t *
+ast_if_stmt(ast_t *self, int type) {
+    ready();
+    declare(node_if_stmt_t, cur);
+    token_t **save_ptr = self->ptr;
+    node_type_t node_type = NODE_TYPE_IF_STMT;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->test); \
+        ast_del_nodes(self, cur->elems); \
+        ast_del_nodes(self, cur->block); \
+        ast_del_nodes(self, cur->elif_stmt); \
+        ast_del_nodes(self, cur->else_stmt); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        ast_return(NULL); \
+    } \
+
+    token_t *t = *self->ptr++;
+    if (type == 0) {
+        if (t->type != TOKEN_TYPE_STMT_IF) {
+            return_cleanup("");
+        }
+        node_type = NODE_TYPE_IF_STMT;
+    } else if (type == 1) {
+        if (t->type != TOKEN_TYPE_STMT_ELIF) {
+            return_cleanup("");
+        }
+        node_type = NODE_TYPE_ELIF_STMT;
+    } else {
+        err_die("invalid type in if stmt");
+    }
+
+    cur->test = ast_test(self);
+    if (!cur->test) {
+        self->ptr = save_ptr;
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+
+        return_cleanup("syntax error. not found test in if statement");
+    }
+
+    if (!*self->ptr) {
+        return_cleanup("syntax error. reached EOF in if statement");
+    }
+
+    t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_COLON) {
+        return_cleanup("syntax error. not found colon in if statement");
+    }
+
+    if (!*self->ptr) {
+        return_cleanup("syntax error. reached EOF in if statement (2)");
+    }
+
+    t = *self->ptr++;
+    if (t->type == TOKEN_TYPE_RBRACEAT) {
+        cur->block = ast_block(self);
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+
+        if (!*self->ptr) {
+            return_cleanup("syntax error. reached EOF in if statement (3)");
+        }
+
+        t = *self->ptr++;
+        if (t->type != TOKEN_TYPE_LBRACEAT) {
+            return_cleanup("syntax error. not found \"{@\" in if statement");
+        }
+
+        cur->elif_stmt = ast_if_stmt(self, 1);
+        if (!cur->elif_stmt) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
+
+            cur->else_stmt = ast_else_stmt(self);
+            if (!cur->else_stmt) {
+                if (ast_has_error(self)) {
+                    return_cleanup("");
+                }
+
+                if (!*self->ptr) {
+                    return_cleanup("syntax error. reached EOF in if statement (4)");
+                }
+
+                t = *self->ptr++;
+                if (t->type != TOKEN_TYPE_STMT_END) {
+                    return_cleanup("syntax error. not found end in if statement");
+                }
+            }
+        }
+    } else {
+        self->ptr--;
+
+        cur->elems = ast_elems(self);
+        if (!cur->elems) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
+
+            cur->elif_stmt = ast_if_stmt(self, 1);
+            if (!cur->elif_stmt) {
+                if (ast_has_error(self)) {
+                    return_cleanup("");
+                }
+
+                cur->else_stmt = ast_else_stmt(self);
+                if (!cur->else_stmt) {
+                    if (ast_has_error(self)) {
+                        return_cleanup("");
+                    }
+
+                    if (!*self->ptr) {
+                        return_cleanup("syntax error. reached EOF in if statement (4)");
+                    }
+
+                    t = *self->ptr++;
+                    if (t->type != TOKEN_TYPE_STMT_END) {
+                        return_cleanup("syntax error. not found end in if statement");
+                    }
+                }
+            }
+        }
+    }
+
+    return node_new(node_type, cur);
 }
 
 static node_t *
 ast_identifier(ast_t *self) {
-    check_ptr();
+    ready();
     declare(node_identifier_t, cur);
     token_t **save_ptr = self->ptr;
 
@@ -100,7 +333,7 @@ ast_identifier(ast_t *self) {
     if (t->type != TOKEN_TYPE_IDENTIFIER) {
         self->ptr = save_ptr;
         free(cur);
-        return NULL;
+        ast_return(NULL);
     }
 
     // move text
@@ -112,22 +345,30 @@ ast_identifier(ast_t *self) {
 
 static node_t *
 ast_identifier_chain(ast_t *self) {
-    check_ptr();
+    ready();
     declare(node_identifier_chain_t, cur);
     token_t **save_ptr = self->ptr;
 
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->identifier); \
+        ast_del_nodes(self, cur->identifier_chain); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        ast_return(NULL); \
+    } \
+
     cur->identifier = ast_identifier(self);
     if (!cur->identifier) {
-        free(cur);
-        return NULL;
+        return_cleanup("");
     }
 
     token_t *t = *self->ptr++;
     if (!t) {
-        ast_del_nodes(self, cur->identifier);
-        free(cur);
-        ast_set_error_detail(self, "syntax error. reached EOF in identifier chain");
-        return NULL;
+        return_cleanup("syntax error. reached EOF in identifier chain");
     }
 
     if (t->type != TOKEN_TYPE_DOT_OPE) {
@@ -139,44 +380,64 @@ ast_identifier_chain(ast_t *self) {
     if (!cur->identifier_chain) {
         self->ptr = save_ptr;
         if (ast_has_error(self)) {
-            ast_del_nodes(self, cur->identifier);
-            free(cur);
-            return NULL;
+            return_cleanup("");
         }
 
-        ast_del_nodes(self, cur->identifier);
-        free(cur);
-        ast_set_error_detail(self, "syntax error. not found identifier after \".\"");
-        return NULL;
+        return_cleanup("syntax error. not found identifier after \".\"");
     }
 
     return node_new(NODE_TYPE_IDENTIFIER_CHAIN, cur);
 }
 
+static void
+ast_skip_newlines(ast_t *self) {
+    for (; *self->ptr; ) {
+        token_t *t = *self->ptr++;
+        if (t->type != TOKEN_TYPE_NEWLINE) {
+            self->ptr--;
+            return;
+        }
+    }
+}
+
 static node_t *
 ast_import_stmt(ast_t *self) {
-    check_ptr();
+    ready();
     declare(node_import_stmt_t, cur);
     token_t **save_ptr = self->ptr;
 
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->identifier_chain); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        ast_return(NULL); \
+    } \
+
     token_t *t = *self->ptr++;
     if (t->type != TOKEN_TYPE_STMT_IMPORT) {
-        self->ptr = save_ptr;
-        free(cur);
-        return NULL;
+        return_cleanup("")
     }
 
     cur->identifier_chain = ast_identifier_chain(self);
     if (!cur->identifier_chain) {
-        self->ptr = save_ptr;
         if (ast_has_error(self)) {
-            free(cur);
-            return NULL;
+            return_cleanup("")
         }
 
-        free(cur);
-        ast_set_error_detail(self, "syntax error. not found import module");
-        return NULL;
+        return_cleanup("syntax error. not found import module");
+    }
+
+    t = *self->ptr;
+    if (!(t->type == TOKEN_TYPE_NEWLINE ||
+          t->type == TOKEN_TYPE_RBRACEAT)) {
+        return_cleanup("syntax error. invalid token at end of import statement");
+    }
+    if (t->type == TOKEN_TYPE_NEWLINE) {
+        ast_skip_newlines(self);
     }
 
     return node_new(NODE_TYPE_IMPORT_STMT, cur);
@@ -184,36 +445,42 @@ ast_import_stmt(ast_t *self) {
 
 static node_t *
 ast_stmt(ast_t *self) {
-    check_ptr();
+    ready();
     declare(node_stmt_t, cur);
     token_t **save_ptr = self->ptr;
 
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->import_stmt); \
+        ast_del_nodes(self, cur->if_stmt); \
+        ast_del_nodes(self, cur->for_stmt); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        ast_return(NULL); \
+    } \
+
     cur->import_stmt = ast_import_stmt(self);
     if (!cur->import_stmt) {
-        self->ptr = save_ptr;
         if (ast_has_error(self)) {
-            free(cur);
-            return NULL;
+            return_cleanup("");
         }
 
-        cur->if_stmt = ast_if_stmt(self);
+        cur->if_stmt = ast_if_stmt(self, 0);
         if (!cur->if_stmt) {
-            self->ptr = save_ptr;            
             if (ast_has_error(self)) {
-                free(cur);
-                return NULL;
+                return_cleanup("");
             }
 
             cur->for_stmt = ast_for_stmt(self);
             if (!cur->for_stmt) {
-                self->ptr = save_ptr;
                 if (ast_has_error(self)) {
-                    free(cur);
-                    return NULL;
+                    return_cleanup("");
                 }
 
-                free(cur);
-                return NULL;
+                return_cleanup("");
             }
         }
     }
@@ -223,24 +490,43 @@ ast_stmt(ast_t *self) {
 
 static node_t *
 ast_elems(ast_t *self) {
-    check_ptr();
+    ready();
     declare(node_elems_t, cur);
     token_t **save_ptr = self->ptr;
 
+#undef cleanup
+#define cleanup() { \
+        ast_del_nodes(self, cur->stmt); \
+        ast_del_nodes(self, cur->formula); \
+        free(cur); \
+    } \
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        cleanup(); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        ast_return(NULL); \
+    } \
+
     cur->stmt = ast_stmt(self);
     if (!cur->stmt) {
-        self->ptr = save_ptr;
         if (ast_has_error(self)) {
-            free(cur);
-            return NULL;
+            return_cleanup("");
         }
 
         cur->formula = ast_formula(self);
         if (!cur->formula) {
-            self->ptr = save_ptr;
-            free(cur);
-            return NULL;
+            // empty elems
+            return_cleanup("");
         }
+    }
+
+    cur->elems = ast_elems(self);
+    if (ast_has_error(self)) {
+        return_cleanup("");
     }
 
     return node_new(NODE_TYPE_ELEMS, cur);
@@ -248,7 +534,7 @@ ast_elems(ast_t *self) {
 
 static node_t *
 ast_text_block(ast_t *self) {
-    check_ptr();
+    ready();
     declare(node_text_block_t, cur);
     token_t **save_ptr = self->ptr;
 
@@ -256,7 +542,7 @@ ast_text_block(ast_t *self) {
     if (t->type != TOKEN_TYPE_TEXT_BLOCK) {
         self->ptr = save_ptr;
         free(cur);
-        return NULL;
+        ast_return(NULL);
     }
 
     // move text
@@ -268,110 +554,109 @@ ast_text_block(ast_t *self) {
 
 static node_t *
 ast_ref_block(ast_t *self) {
-    check_ptr();
+    ready();
     declare(node_ref_block_t, cur);
     token_t **save_ptr = self->ptr;
 
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->formula); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        ast_return(NULL); \
+    } \
+
     token_t *t = *self->ptr++;
     if (t->type != TOKEN_TYPE_LDOUBLE_BRACE) {
-        self->ptr = save_ptr;
-        free(cur);
-        return NULL;
+        return_cleanup("");
     }
 
     cur->formula = ast_formula(self);
     if (!cur->formula) {
-        self->ptr = save_ptr;
-        free(cur);
-        return NULL;
+        return_cleanup("");
     }
-
-#define cleanup(msg) { \
-        self->ptr = save_ptr; \
-        ast_del_nodes(self, cur->formula); \
-        free(cur); \
-        ast_set_error_detail(self, msg); \
-    } \
 
     t = *self->ptr++;
     if (!t) {
-        cleanup("syntax error. reached EOF in reference block");
-        return NULL;
+        return_cleanup("syntax error. reached EOF in reference block");
     }
 
     if (t->type != TOKEN_TYPE_RDOUBLE_BRACE) {
-        cleanup("syntax error. not found \"#}\"");
-        return NULL;
+        return_cleanup("syntax error. not found \"#}\"");
     }
 
-#undef cleanup
     return node_new(NODE_TYPE_REF_BLOCK, cur);
 }
 
 static node_t *
 ast_code_block(ast_t *self) {
-    check_ptr();
+    ready();
     declare(node_code_block_t, cur);
     token_t **save_ptr = self->ptr;
 
-    token_t *t = *self->ptr++;
-    if (t->type != TOKEN_TYPE_LBRACEAT) {
-        free(cur);
-        return NULL;
-    }
-
-    cur->elems = ast_elems(self);
-    if (ast_has_error(self)) {
-        self->ptr = save_ptr;
-        free(cur);
-        return NULL;
-    }
-
-#define cleanup(msg) { \
+#undef return_cleanup
+#define return_cleanup(msg) { \
         self->ptr = save_ptr; \
         ast_del_nodes(self, cur->elems); \
         free(cur); \
-        ast_set_error_detail(self, msg); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        ast_return(NULL); \
     } \
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_LBRACEAT) {
+        return_cleanup("");
+    }
+
+    cur->elems = ast_elems(self);
+    // elems allow null
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
 
     t = *self->ptr++;
     if (!t) {
-        cleanup("syntax error. reached EOF in code block");
-        return NULL;
+        return_cleanup("syntax error. reached EOF in code block");
     }
 
     if (t->type != TOKEN_TYPE_RBRACEAT) {
-        cleanup("syntax error. not found \"@}\"");
-        return NULL;
+        return_cleanup("syntax error. not found \"@}\"");
     }
 
-#undef cleanup
     return node_new(NODE_TYPE_CODE_BLOCK, cur);
 }
 
 static node_t *
 ast_block(ast_t *self) {
-    check_ptr();
+    ready();
     declare(node_block_t, cur);
+
+#undef return_cleanup
+#define return_cleanup() { \
+        free(cur); \
+        ast_return(NULL); \
+    } \
 
     cur->code_block = ast_code_block(self);
     if (!cur->code_block) {
         if (ast_has_error(self)) {
-            free(cur);
-            return NULL;
+            return_cleanup();
         }
 
         cur->ref_block = ast_ref_block(self);
         if (!cur->ref_block) {
             if (ast_has_error(self)) {
-                free(cur);
-                return NULL;
+                return_cleanup();
             }
 
             cur->text_block = ast_text_block(self);
             if (!cur->text_block) {
-                free(cur);
-                return NULL;
+                return_cleanup();
             }
         }
     }
@@ -381,13 +666,18 @@ ast_block(ast_t *self) {
 
 static node_t *
 ast_program(ast_t *self) {
-    check_ptr();
+    ready();
     declare(node_program_t, cur);
+
+#undef return_cleanup
+#define return_cleanup() { \
+        free(cur); \
+        ast_return(NULL); \
+    } \
 
     cur->block = ast_block(self);
     if (!cur->block) {
-        free(cur);
-        return NULL;
+        return_cleanup();
     }
 
     cur->program = ast_program(self);
@@ -448,4 +738,6 @@ ast_set_debug(ast_t *self, bool debug) {
     self->debug = debug;
 }
 
+#undef viss
+#undef ready
 #undef declare

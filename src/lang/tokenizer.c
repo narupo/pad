@@ -350,6 +350,8 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 if (!tkr_parse_identifier(self)) {
                     goto fail;
                 }
+            } else if (c == '\n') {
+                tkr_move_token(self, token_new(TOKEN_TYPE_NEWLINE));
             } else if (c == '@') {
                 self->ptr--;
                 token_t *token = tkr_read_atmark(self);
