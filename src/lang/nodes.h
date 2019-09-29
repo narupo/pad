@@ -75,15 +75,15 @@ typedef struct node {
 } node_t;
 
 typedef struct node_program {
-    node_t *block;
-    node_t *program;
+    node_t *blocks;
 } node_program_t;
 
-typedef struct node_block {
+typedef struct node_blocks {
     node_t *code_block;
     node_t *ref_block;
     node_t *text_block;
-} node_block_t;
+    node_t *blocks;
+} node_blocks_t;
 
 typedef struct node_code_block {
     node_t *elems;
@@ -116,7 +116,7 @@ typedef struct node_import_stmt {
 typedef struct node_if_stmt {
     node_t *test;
     node_t *elems;
-    node_t *block;
+    node_t *blocks;
     node_t *elif_stmt;
     node_t *else_stmt;
 } node_if_stmt_t;
