@@ -177,24 +177,17 @@ ast_for_stmt(ast_t *self, int dep) {
             return_cleanup("syntax error. not found end in for statement");
         }
     } else {
-        // for <test> : elems end
-        cur->test = ast_test(self, dep+1);
-        if (!cur->test) {
+        cur->init_test_list = ast_test_list(self, dep+1);
+        if (!cur->init_test_list) {
             if (ast_has_error(self)) {
                 return_cleanup("");
             }
+            return_cleanup("syntax error. not found initialize test in for statement");            
+        }
 
+        t = *self->ptr++;
+        if (t->type == TOKEN_TYPE_SEMICOLON) {
             // for <test_list> ; test ; test_list : elems end
-            cur->init_test_list = ast_test_list(self, dep+1);
-            // allow empty
-            if (ast_has_error(self)) {
-                return_cleanup("");
-            }
-
-            t = *self->ptr++;
-            if (t->type != TOKEN_TYPE_SEMICOLON) {
-                return_cleanup("syntax error. not found semicolon");
-            }
 
             cur->test = ast_test(self, dep+1);
             // allow empty
@@ -220,6 +213,23 @@ ast_for_stmt(ast_t *self, int dep) {
             if (!*self->ptr) {
                 return_cleanup("syntax error. reached EOF in for statement (4)");
             }
+        } else if (t->type == TOKEN_TYPE_COLON) {
+            // for <test> : elems end
+            if (cur->init_test_list->real == NULL) {
+                return_cleanup("syntax error. not found real element in for statement");
+            }
+
+            node_test_list_t *init_test_list = cur->init_test_list->real; 
+            if (init_test_list->test == NULL) {
+                return_cleanup("syntax error. not found test in for statement");
+            }
+
+            // swap test
+            cur->test = init_test_list->test;
+            init_test_list->test = NULL;
+            ast_del_nodes(self, cur->init_test_list);
+        } else {
+            return_cleanup("syntax error. unsupported character in for statement");
         }
 
         t = *self->ptr++;
