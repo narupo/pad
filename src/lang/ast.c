@@ -26,7 +26,7 @@ struct ast {
 #define ready() \
     if (self->debug) { \
         token_t *t = *self->ptr; \
-        fprintf(stderr, "debug: %d: %*s: %3d: token[%s]\n", __LINE__, 20, __func__, dep, token_type_to_str(t)); \
+        fprintf(stderr, "debug: %d: %*s: %3d: %s: %s\n", __LINE__, 20, __func__, dep, token_type_to_str(t), ast_get_error_detail(self)); \
         fflush(stderr); \
     } \
     ast_skip_newlines(self); \
@@ -36,13 +36,21 @@ struct ast {
 
 #define ast_return(ret) \
     if (self->debug) { \
-        fprintf(stderr, "debug: %d: %*s: %3d: return\n", __LINE__, 20, __func__, dep); \
+        fprintf(stderr, "debug: %d: %*s: %3d: return: %s\n", __LINE__, 20, __func__, dep, ast_get_error_detail(self)); \
         fflush(stderr); \
     } \
     return ret; \
 
+#define check(msg) \
+    if (self->debug) { \
+        fprintf(stderr, "debug: %d: %*s: %3d: %s: %s: %s\n", __LINE__, 20, __func__, dep, msg, token_type_to_str(*self->ptr), ast_get_error_detail(self)); \
+    } \
+
 #define vissf(fmt, ...) \
-    if (self->debug) fprintf(stderr, fmt "\n", __VA_ARGS__); \
+    if (self->debug) fprintf(stderr, "vissf: %d: " fmt "\n", __LINE__, __VA_ARGS__); \
+
+#define viss(fmt) \
+    if (self->debug) fprintf(stderr, "viss: %d: " fmt "\n", __LINE__); \
 
 /*************
 * prototypes *
@@ -129,11 +137,14 @@ ast_formula(ast_t *self, int dep) {
 
 static node_t *
 ast_test_list(ast_t *self, int dep) {
-    return NULL;
+    ast_return(NULL);
 }
 
 static node_t *
 ast_for_stmt(ast_t *self, int dep) {
+    
+    ast_return(NULL); // TODO
+
     ready();
     declare(node_for_stmt_t, cur);
     token_t **save_ptr = self->ptr;
@@ -163,6 +174,7 @@ ast_for_stmt(ast_t *self, int dep) {
     t = *self->ptr++;
     if (t->type == TOKEN_TYPE_COLON) {
         // for : <elems> end
+        check("call ast_elems");
         cur->elems = ast_elems(self, dep+1);
         if (ast_has_error(self)) {
             return_cleanup("");
@@ -177,6 +189,7 @@ ast_for_stmt(ast_t *self, int dep) {
             return_cleanup("syntax error. not found end in for statement");
         }
     } else {
+        check("call ast_test_list");
         cur->init_test_list = ast_test_list(self, dep+1);
         if (!cur->init_test_list) {
             if (ast_has_error(self)) {
@@ -189,6 +202,7 @@ ast_for_stmt(ast_t *self, int dep) {
         if (t->type == TOKEN_TYPE_SEMICOLON) {
             // for <test_list> ; test ; test_list : elems end
 
+            check("call ast_test");
             cur->test = ast_test(self, dep+1);
             // allow empty
             if (ast_has_error(self)) {
@@ -204,6 +218,7 @@ ast_for_stmt(ast_t *self, int dep) {
                 return_cleanup("syntax error. not found semicolon (2)");
             }
 
+            check("call ast_test_list");
             cur->update_test_list = ast_test_list(self, dep+1);
             // allow empty
             if (ast_has_error(self)) {
@@ -237,6 +252,7 @@ ast_for_stmt(ast_t *self, int dep) {
             return_cleanup("syntax error. not found colon in for statement")
         }
 
+        check("call ast_elems");
         cur->elems = ast_elems(self, dep+1);
         // allow empty
         if (ast_has_error(self)) {
@@ -310,6 +326,7 @@ ast_else_stmt(ast_t *self, int dep) {
 
     ast_skip_newlines(self);
 
+    check("call ast_elems");
     cur->elems = ast_elems(self, dep+1);
     if (!cur->elems) {
         if (ast_has_error(self)) {
@@ -357,15 +374,18 @@ ast_if_stmt(ast_t *self, int type, int dep) {
             return_cleanup("");
         }
         node_type = NODE_TYPE_IF_STMT;
+        check("read if");
     } else if (type == 1) {
         if (t->type != TOKEN_TYPE_STMT_ELIF) {
             return_cleanup("");
         }
         node_type = NODE_TYPE_ELIF_STMT;
+        check("read elif");
     } else {
         err_die("invalid type in if stmt");
     }
 
+    check("call ast_test");
     cur->test = ast_test(self, dep+1);
     if (!cur->test) {
         self->ptr = save_ptr;
@@ -384,6 +404,7 @@ ast_if_stmt(ast_t *self, int type, int dep) {
     if (t->type != TOKEN_TYPE_COLON) {
         return_cleanup("syntax error. not found colon in if statement");
     }
+    check("read colon");
 
     ast_skip_newlines(self);
 
@@ -393,9 +414,12 @@ ast_if_stmt(ast_t *self, int type, int dep) {
 
     t = *self->ptr++;
     if (t->type == TOKEN_TYPE_RBRACEAT) {
-        // block allow null
+        check("read @}");
+        check("call ast_block");
         cur->block = ast_block(self, dep+1);
+        // block allow null
         if (ast_has_error(self)) {
+            vissf("has error %d: %s", dep, ast_get_error_detail(self));
             return_cleanup("");
         }
 
@@ -408,12 +432,14 @@ ast_if_stmt(ast_t *self, int type, int dep) {
             return_cleanup("syntax error. not found \"{@\" in if statement");
         }
 
+        check("call ast_if_stmt");
         cur->elif_stmt = ast_if_stmt(self, 1, dep+1);
         if (!cur->elif_stmt) {
             if (ast_has_error(self)) {
                 return_cleanup("");
             }
 
+            check("call ast_else_stmt");
             cur->else_stmt = ast_else_stmt(self, dep+1);
             if (!cur->else_stmt) {
                 if (ast_has_error(self)) {
@@ -434,17 +460,20 @@ ast_if_stmt(ast_t *self, int type, int dep) {
         self->ptr--;
 
         // elems allow null
+        check("call ast_elems");
         cur->elems = ast_elems(self, dep+1);
         if (ast_has_error(self)) {
             return_cleanup("");
         }
 
+        check("call ast_if_stmt");
         cur->elif_stmt = ast_if_stmt(self, 1, dep+1);
         if (!cur->elif_stmt) {
             if (ast_has_error(self)) {
                 return_cleanup("");
             }
 
+            check("call ast_else_stmt");
             cur->else_stmt = ast_else_stmt(self, dep+1);
             if (!cur->else_stmt) {
                 if (ast_has_error(self)) {
@@ -504,6 +533,7 @@ ast_identifier_chain(ast_t *self, int dep) {
         ast_return(NULL); \
     } \
 
+    check("call ast_identifier");
     cur->identifier = ast_identifier(self, dep+1);
     if (!cur->identifier) {
         return_cleanup("");
@@ -519,6 +549,7 @@ ast_identifier_chain(ast_t *self, int dep) {
         ast_return(node_new(NODE_TYPE_IDENTIFIER_CHAIN, cur));
     }
 
+    check("call ast_identifier_chain");
     cur->identifier_chain = ast_identifier_chain(self, dep+1);
     if (!cur->identifier_chain) {
         self->ptr = save_ptr;
@@ -554,6 +585,7 @@ ast_import_stmt(ast_t *self, int dep) {
         return_cleanup("")
     }
 
+    check("call ast_identifier_chain");
     cur->identifier_chain = ast_identifier_chain(self, dep+1);
     if (!cur->identifier_chain) {
         if (ast_has_error(self)) {
@@ -594,18 +626,21 @@ ast_stmt(ast_t *self, int dep) {
         ast_return(NULL); \
     } \
 
+    check("call ast_import_stmt");
     cur->import_stmt = ast_import_stmt(self, dep+1);
     if (!cur->import_stmt) {
         if (ast_has_error(self)) {
             return_cleanup("");
         }
 
+        check("call ast_if_stmt");
         cur->if_stmt = ast_if_stmt(self, 0, dep+1);
         if (!cur->if_stmt) {
             if (ast_has_error(self)) {
                 return_cleanup("");
             }
 
+            check("call ast_for_stmt");
             cur->for_stmt = ast_for_stmt(self, dep+1);
             if (!cur->for_stmt) {
                 if (ast_has_error(self)) {
@@ -638,12 +673,14 @@ ast_elems(ast_t *self, int dep) {
         ast_return(NULL); \
     } \
 
+    check("call ast_stmt");
     cur->stmt = ast_stmt(self, dep+1);
     if (!cur->stmt) {
         if (ast_has_error(self)) {
             return_cleanup("");
         }
 
+        check("call ast_formula");
         cur->formula = ast_formula(self, dep+1);
         if (!cur->formula) {
             // empty elems
@@ -651,6 +688,7 @@ ast_elems(ast_t *self, int dep) {
         }
     }
 
+    check("call ast_elems");
     cur->elems = ast_elems(self, dep+1);
     if (ast_has_error(self)) {
         return_cleanup("");
@@ -701,6 +739,7 @@ ast_ref_block(ast_t *self, int dep) {
         return_cleanup("");
     }
 
+    check("call ast_formula");
     cur->formula = ast_formula(self, dep+1);
     if (!cur->formula) {
         return_cleanup("");
@@ -739,7 +778,9 @@ ast_code_block(ast_t *self, int dep) {
     if (t->type != TOKEN_TYPE_LBRACEAT) {
         return_cleanup("");
     }
+    check("read {@");
 
+    check("call ast_elems");
     cur->elems = ast_elems(self, dep+1);
     // elems allow null
     if (ast_has_error(self)) {
@@ -752,8 +793,10 @@ ast_code_block(ast_t *self, int dep) {
     }
 
     if (t->type != TOKEN_TYPE_RBRACEAT) {
-        return_cleanup("syntax error. not found \"@}\"");
+        return_cleanup("");
+        // return_cleanup("syntax error. not found \"@}\"");
     }
+    check("read @}");
 
     ast_return(node_new(NODE_TYPE_CODE_BLOCK, cur));
 }
@@ -769,18 +812,21 @@ ast_block(ast_t *self, int dep) {
         ast_return(NULL); \
     } \
 
+    check("call ast_code_block");
     cur->code_block = ast_code_block(self, dep+1);
     if (!cur->code_block) {
         if (ast_has_error(self)) {
             return_cleanup();
         }
 
+        check("call ast_ref_block");
         cur->ref_block = ast_ref_block(self, dep+1);
         if (!cur->ref_block) {
             if (ast_has_error(self)) {
                 return_cleanup();
             }
 
+            check("call ast_text_block");
             cur->text_block = ast_text_block(self, dep+1);
             if (!cur->text_block) {
                 return_cleanup();
@@ -802,11 +848,13 @@ ast_program(ast_t *self, int dep) {
         ast_return(NULL); \
     } \
 
+    check("call ast_block");
     cur->block = ast_block(self, dep+1);
     if (!cur->block) {
         return_cleanup();
     }
 
+    check("call ast_program");
     cur->program = ast_program(self, dep+1);
     if (!cur->program) {
         ast_return(node_new(NODE_TYPE_PROGRAM, cur));
@@ -865,6 +913,8 @@ ast_set_debug(ast_t *self, bool debug) {
     self->debug = debug;
 }
 
+#undef call
 #undef viss
+#undef vissf
 #undef ready
 #undef declare
