@@ -2430,6 +2430,49 @@ test_ast_parse(void) {
     code_block = blocks->code_block->real;
     assert(code_block->elems == NULL);
 
+    tkr_parse(tkr, "abc{@@}def");
+    ast_clear(ast);
+    ast_parse(ast, tkr_get_tokens(tkr));
+    root = ast_getc_root(ast);
+    program = root->real;
+    blocks = program->blocks->real;
+    text_block = blocks->text_block->real;
+    assert(!strcmp(text_block->text, "abc"));
+    blocks = blocks->blocks->real;
+    code_block = blocks->code_block->real;
+    assert(code_block != NULL);
+    assert(code_block->elems == NULL);
+    blocks = blocks->blocks->real;
+    text_block = blocks->text_block->real;
+    assert(!strcmp(text_block->text, "def"));
+
+    tkr_parse(tkr, "{@@}{@@}");
+    ast_clear(ast);
+    ast_parse(ast, tkr_get_tokens(tkr));
+    root = ast_getc_root(ast);
+    program = root->real;
+    blocks = program->blocks->real;
+    code_block = blocks->code_block->real;
+    blocks = blocks->blocks->real;
+    code_block = blocks->code_block->real;
+    assert(code_block != NULL);
+    assert(code_block->elems == NULL);
+
+    tkr_parse(tkr, "{@@}abc{@@}");
+    ast_clear(ast);
+    ast_parse(ast, tkr_get_tokens(tkr));
+    root = ast_getc_root(ast);
+    program = root->real;
+    blocks = program->blocks->real;
+    code_block = blocks->code_block->real;
+    blocks = blocks->blocks->real;
+    text_block = blocks->text_block->real;
+    assert(!strcmp(text_block->text, "abc"));
+    blocks = blocks->blocks->real;
+    code_block = blocks->code_block->real;
+    assert(code_block != NULL);
+    assert(code_block->elems == NULL);
+
     tkr_parse(tkr, "{@\n@}");
     ast_clear(ast);
     ast_parse(ast, tkr_get_tokens(tkr));
