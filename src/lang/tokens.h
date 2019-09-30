@@ -28,11 +28,15 @@ typedef enum {
     // operators
     TOKEN_TYPE_OP_ADD, // '+'
     TOKEN_TYPE_OP_SUB, // '-'
+    TOKEN_TYPE_OP_MUL, // '*'
+    TOKEN_TYPE_OP_DIV, // '/'
 
     // assign operators
     TOKEN_TYPE_OP_ASS, // '='
     TOKEN_TYPE_OP_ADD_ASS, // '+='
     TOKEN_TYPE_OP_SUB_ASS, // '-='
+    TOKEN_TYPE_OP_MUL_ASS, // '*='
+    TOKEN_TYPE_OP_DIV_ASS, // '/='
 
     // comparison operators
     TOKEN_TYPE_OP_EQ, // '=='
