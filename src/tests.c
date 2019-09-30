@@ -2088,12 +2088,89 @@ test_ast_parse(void) {
     node_import_stmt_t *import_stmt;
     node_identifier_chain_t *identifier_chain;
     node_identifier_t *identifier;
+    node_formula_t *formula;
+    node_assign_list_t *assign_list;
+    node_test_list_t *test_list;
+    node_test_t *test;
+    node_or_test_t *or_test;
+    node_and_test_t *and_test;
+    node_not_test_t *not_test;
+    node_comparison_t *comparison;
 
     tkr_parse(tkr, "");
     ast_clear(ast);
     ast_parse(ast, tkr_get_tokens(tkr));
     root = ast_getc_root(ast);
     assert(root == NULL);
+
+    /*******
+    * test *
+    *******/
+
+    tkr_parse(tkr, "{@ 1 @}");
+    ast_clear(ast);
+    ast_parse(ast, tkr_get_tokens(tkr));
+    root = ast_getc_root(ast);
+    assert(root != NULL);
+    assert(root->type == NODE_TYPE_PROGRAM);
+    assert(root->real != NULL);
+    program = root->real;
+    assert(program->blocks != NULL);
+    assert(program->blocks->type == NODE_TYPE_BLOCKS);
+    assert(program->blocks->real != NULL);
+    blocks = program->blocks->real;
+    assert(blocks->code_block != NULL);
+    assert(blocks->code_block->type == NODE_TYPE_CODE_BLOCK);
+    assert(blocks->code_block->real != NULL);
+    assert(blocks->ref_block == NULL);
+    assert(blocks->text_block == NULL);
+    code_block = blocks->code_block->real;
+    assert(code_block->elems != NULL);
+    assert(code_block->elems->type == NODE_TYPE_ELEMS);
+    assert(code_block->elems->real != NULL);
+    elems = code_block->elems->real;
+    assert(elems->formula != NULL);
+    assert(elems->formula->type == NODE_TYPE_FORMULA);
+    assert(elems->formula->real != NULL);
+    formula = elems->formula->real;
+    assert(formula->assign_list != NULL);
+    assert(formula->assign_list->type == NODE_TYPE_ASSIGN_LIST);
+    assert(formula->assign_list->real != NULL);
+    assign_list = formula->assign_list->real;
+    assert(assign_list->test_list != NULL);
+    assert(assign_list->test_list->type == NODE_TYPE_TEST_LIST);
+    assert(assign_list->test_list->real != NULL);
+    assert(assign_list->assign_list == NULL);
+    test_list = assign_list->test_list->real;
+    assert(test_list->test != NULL);
+    assert(test_list->test->type == NODE_TYPE_TEST);
+    assert(test_list->test->real != NULL);
+    assert(test_list->test_list == NULL);
+    test = test_list->test->real;
+    assert(test->or_test != NULL);
+    assert(test->or_test->type == NODE_TYPE_OR_TEST);
+    assert(test->or_test->real != NULL);
+    or_test = test->or_test->real;
+    assert(or_test->and_test != NULL);
+    assert(or_test->and_test->type == NODE_TYPE_AND_TEST);
+    assert(or_test->and_test->real != NULL);    
+    assert(or_test->or_test == NULL);
+    and_test = or_test->and_test->real;
+    assert(and_test->not_test != NULL);
+    assert(and_test->not_test->type == NODE_TYPE_NOT_TEST);
+    assert(and_test->not_test->real != NULL);    
+    assert(and_test->and_test == NULL);
+    not_test = and_test->not_test->real;
+    assert(not_test->not_test == NULL);
+    assert(not_test->comparison != NULL);
+    assert(not_test->comparison->type == NODE_TYPE_COMPARISON);
+    assert(not_test->comparison->real != NULL);
+    comparison = not_test->comparison->real;
+    // TODO
+
+    /*********
+    * blocks *
+    *********/
 
     tkr_parse(tkr, "{@@}");
     ast_clear(ast);

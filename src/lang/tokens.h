@@ -37,6 +37,9 @@ typedef enum {
     // comparison operators
     TOKEN_TYPE_OP_EQ, // '=='
     TOKEN_TYPE_OP_NOT_EQ, // '!='
+    TOKEN_TYPE_OP_OR, // 'or'
+    TOKEN_TYPE_OP_AND, // 'and'
+    TOKEN_TYPE_OP_NOT, // 'not'
 
     // statements
     TOKEN_TYPE_STMT_END, // 'end'
