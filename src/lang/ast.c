@@ -34,9 +34,9 @@ struct ast {
         return NULL; \
     } \
 
-#define ast_return(ret) \
+#define return_this(ret) \
     if (self->debug) { \
-        fprintf(stderr, "debug: %d: %*s: %3d: return: %s\n", __LINE__, 20, __func__, dep, ast_get_error_detail(self)); \
+        fprintf(stderr, "debug: %d: %*s: %3d: return %p: %s\n", __LINE__, 20, __func__, dep, ret, ast_get_error_detail(self)); \
         fflush(stderr); \
     } \
     return ret; \
@@ -64,6 +64,9 @@ ast_blocks(ast_t *self, int dep);
 
 static node_t *
 ast_test(ast_t *self, int dep);
+
+static node_t *
+ast_test_list(ast_t *self, int dep);
 
 /************
 * functions *
@@ -130,9 +133,79 @@ ast_skip_newlines(ast_t *self) {
 }
 
 static node_t *
+ast_assign_list(ast_t *self, int dep) {
+    ready();
+    declare(node_assign_list_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->test_list); \
+        ast_del_nodes(self, cur->assign_list); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_this(NULL); \
+    } \
+
+    check("call ast_test_list");
+    cur->test_list = ast_test_list(self, dep+1);
+    if (!cur->test_list) {
+        return_cleanup("");
+    }
+
+    if (!*self->ptr) {
+        return_this(node_new(NODE_TYPE_ASSIGN_LIST, cur));
+    }
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_OP_ASS) {
+        self->ptr--;
+        return_this(node_new(NODE_TYPE_ASSIGN_LIST, cur));
+    }
+    check("read =");
+
+    check("call ast_assign_list");
+    cur->assign_list = ast_assign_list(self, dep+1);
+    if (!cur->assign_list) {
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        return_this(node_new(NODE_TYPE_ASSIGN_LIST, cur));
+    }
+
+    return_this(node_new(NODE_TYPE_ASSIGN_LIST, cur));
+}
+
+static node_t *
 ast_formula(ast_t *self, int dep) {
-    // TODO
-    ast_return(NULL);
+    ready();
+    declare(node_formula_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->assign_list); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_this(NULL); \
+    } \
+
+    check("call ast_assign_list");
+    cur->assign_list = ast_assign_list(self, dep+1);
+    if (!cur->assign_list) {
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        return_cleanup(""); // not error
+    }
+
+    return_this(node_new(NODE_TYPE_FORMULA, cur));
 }
 
 static node_t *
@@ -141,11 +214,16 @@ ast_test_list(ast_t *self, int dep) {
     declare(node_test_list_t, cur);
     token_t **save_ptr = self->ptr;
 
+#undef return_cleanup
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
         ast_del_nodes(self, cur->test); \
         ast_del_nodes(self, cur->test_list); \
         free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_this(NULL); \
     } \
 
     cur->test = ast_test(self, dep+1);
@@ -153,7 +231,7 @@ ast_test_list(ast_t *self, int dep) {
         if (ast_has_error(self)) {
             return_cleanup("");
         }
-        return_cleanup("syntax error. not found test in test list");
+        return_cleanup(""); // not error
     }
 
     token_t *t = *self->ptr++;
@@ -191,7 +269,7 @@ ast_for_stmt(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        ast_return(NULL); \
+        return_this(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -252,7 +330,6 @@ ast_for_stmt(ast_t *self, int dep) {
         check("read end");
     } else {
         self->ptr--;
-        vissf("read %s", token_type_to_str(t));
         check("call ast_test_list");
 
         check("call ast_test");
@@ -374,7 +451,173 @@ ast_for_stmt(ast_t *self, int dep) {
         check("read end");
     }
 
-    ast_return(node_new(NODE_TYPE_FOR_STMT, cur));
+    return_this(node_new(NODE_TYPE_FOR_STMT, cur));
+}
+
+static node_t *
+ast_comparison(ast_t *self, int dep) {
+    ready();
+    declare(node_comparison_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->expr); \
+        ast_del_nodes(self, cur->comp_op); \
+        ast_del_nodes(self, cur->comparison); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_this(NULL); \
+    } \
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_INTEGER) {
+        return_cleanup("");
+    }
+    check("read integer");
+
+    return_this(node_new(NODE_TYPE_COMPARISON, cur));
+}
+
+static node_t *
+ast_not_test(ast_t *self, int dep) {
+    ready();
+    declare(node_not_test_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->not_test); \
+        ast_del_nodes(self, cur->comparison); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_this(NULL); \
+    } \
+
+    token_t *t = *self->ptr++;
+    if (t->type == TOKEN_TYPE_OP_NOT) {
+        check("call ast_not_test");
+        cur->not_test = ast_not_test(self, dep+1);
+        if (!cur->not_test) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
+            return_cleanup("syntax error. not found operand in not operator");
+        }
+    } else {
+        self->ptr--;
+
+        check("call ast_comparison");
+        cur->comparison = ast_comparison(self, dep+1);
+        if (!cur->comparison) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
+            return_cleanup(""); // not error
+        }
+    }
+
+    return_this(node_new(NODE_TYPE_NOT_TEST, cur));
+}
+
+static node_t *
+ast_and_test(ast_t *self, int dep) {
+    ready();
+    declare(node_and_test_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->not_test); \
+        ast_del_nodes(self, cur->and_test); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_this(NULL); \
+    } \
+
+    check("call ast_not_test");
+    cur->not_test = ast_not_test(self, dep+1);
+    if (!cur->not_test) {
+        return_cleanup("");
+    }
+
+    if (!*self->ptr) {
+        return_this(node_new(NODE_TYPE_AND_TEST, cur));
+    }
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_OP_AND) {
+        self->ptr--;
+        return_this(node_new(NODE_TYPE_AND_TEST, cur));
+    }
+    check("read 'and'");
+
+    check("call ast_and_test");
+    cur->and_test = ast_and_test(self, dep+1);
+    if (!cur->and_test) {
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        return_cleanup("syntax error. not found rhs operand in 'and' operator");
+    }
+
+    return_this(node_new(NODE_TYPE_AND_TEST, cur));
+}
+
+static node_t *
+ast_or_test(ast_t *self, int dep) {
+    ready();
+    declare(node_or_test_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->and_test); \
+        ast_del_nodes(self, cur->or_test); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_this(NULL); \
+    } \
+
+    check("call ast_and_test");
+    cur->and_test = ast_and_test(self, dep+1);
+    if (!cur->and_test) {
+        return_cleanup("");
+    }
+
+    if (!*self->ptr) {
+        return_this(node_new(NODE_TYPE_OR_TEST, cur));
+    }
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_OP_OR) {
+        self->ptr--;
+        return_this(node_new(NODE_TYPE_OR_TEST, cur));
+    }
+    check("read 'or'")
+
+    check("call ast_or_test");
+    cur->or_test = ast_or_test(self, dep+1);
+    if (!*self->ptr) {
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        return_cleanup("syntax error. not found rhs operand in 'or' operator");        
+    }
+
+    return_this(node_new(NODE_TYPE_OR_TEST, cur));
 }
 
 static node_t *
@@ -386,19 +629,20 @@ ast_test(ast_t *self, int dep) {
 #undef return_cleanup
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->or_test); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        ast_return(NULL); \
+        return_this(NULL); \
     } \
 
-    token_t *t = *self->ptr++;
-    if (t->type != TOKEN_TYPE_INTEGER) {
-        return_cleanup("TODO: not integer");
+    cur->or_test = ast_or_test(self, dep+1);
+    if (!cur->or_test) {
+        return_cleanup("");
     }
 
-    ast_return(node_new(NODE_TYPE_TEST, cur));
+    return_this(node_new(NODE_TYPE_TEST, cur));
 }
 
 static node_t *
@@ -412,7 +656,10 @@ ast_else_stmt(ast_t *self, int dep) {
         self->ptr = save_ptr; \
         ast_del_nodes(self, cur->elems); \
         free(cur); \
-        ast_return(NULL); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_this(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -448,7 +695,7 @@ ast_else_stmt(ast_t *self, int dep) {
         return_cleanup("syntax error. not found end in else statement");
     }
 
-    ast_return(node_new(NODE_TYPE_ELSE_STMT, cur));
+    return_this(node_new(NODE_TYPE_ELSE_STMT, cur));
 }
 
 static node_t *
@@ -470,7 +717,7 @@ ast_if_stmt(ast_t *self, int type, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        ast_return(NULL); \
+        return_this(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -598,7 +845,7 @@ ast_if_stmt(ast_t *self, int type, int dep) {
         }
     }
 
-    ast_return(node_new(node_type, cur));
+    return_this(node_new(node_type, cur));
 }
 
 static node_t *
@@ -611,14 +858,14 @@ ast_identifier(ast_t *self, int dep) {
     if (t->type != TOKEN_TYPE_IDENTIFIER) {
         self->ptr = save_ptr;
         free(cur);
-        ast_return(NULL);
+        return_this(NULL);
     }
 
     // move text
     cur->identifier = t->text;
     t->text = NULL;
 
-    ast_return(node_new(NODE_TYPE_IDENTIFIER, cur));
+    return_this(node_new(NODE_TYPE_IDENTIFIER, cur));
 }
 
 static node_t *
@@ -636,7 +883,7 @@ ast_identifier_chain(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        ast_return(NULL); \
+        return_this(NULL); \
     } \
 
     check("call ast_identifier");
@@ -652,7 +899,7 @@ ast_identifier_chain(ast_t *self, int dep) {
 
     if (t->type != TOKEN_TYPE_DOT_OPE) {
         self->ptr--;
-        ast_return(node_new(NODE_TYPE_IDENTIFIER_CHAIN, cur));
+        return_this(node_new(NODE_TYPE_IDENTIFIER_CHAIN, cur));
     }
 
     check("call ast_identifier_chain");
@@ -666,7 +913,7 @@ ast_identifier_chain(ast_t *self, int dep) {
         return_cleanup("syntax error. not found identifier after \".\"");
     }
 
-    ast_return(node_new(NODE_TYPE_IDENTIFIER_CHAIN, cur));
+    return_this(node_new(NODE_TYPE_IDENTIFIER_CHAIN, cur));
 }
 
 static node_t *
@@ -683,7 +930,7 @@ ast_import_stmt(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        ast_return(NULL); \
+        return_this(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -710,7 +957,7 @@ ast_import_stmt(ast_t *self, int dep) {
         ast_skip_newlines(self);
     }
 
-    ast_return(node_new(NODE_TYPE_IMPORT_STMT, cur));
+    return_this(node_new(NODE_TYPE_IMPORT_STMT, cur));
 }
 
 static node_t *
@@ -729,7 +976,7 @@ ast_stmt(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        ast_return(NULL); \
+        return_this(NULL); \
     } \
 
     check("call ast_import_stmt");
@@ -758,7 +1005,7 @@ ast_stmt(ast_t *self, int dep) {
         }
     }
 
-    ast_return(node_new(NODE_TYPE_STMT, cur));
+    return_this(node_new(NODE_TYPE_STMT, cur));
 }
 
 static node_t *
@@ -776,7 +1023,7 @@ ast_elems(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        ast_return(NULL); \
+        return_this(NULL); \
     } \
 
     check("call ast_stmt");
@@ -789,18 +1036,24 @@ ast_elems(ast_t *self, int dep) {
         check("call ast_formula");
         cur->formula = ast_formula(self, dep+1);
         if (!cur->formula) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
             // empty elems
-            return_cleanup("");
+            return_cleanup(""); // not error
         }
     }
 
     check("call ast_elems");
     cur->elems = ast_elems(self, dep+1);
-    if (ast_has_error(self)) {
-        return_cleanup("");
+    if (!cur->elems) {
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        return_this(node_new(NODE_TYPE_ELEMS, cur));
     }
 
-    ast_return(node_new(NODE_TYPE_ELEMS, cur));
+    return_this(node_new(NODE_TYPE_ELEMS, cur));
 }
 
 static node_t *
@@ -813,7 +1066,7 @@ ast_text_block(ast_t *self, int dep) {
     if (t->type != TOKEN_TYPE_TEXT_BLOCK) {
         self->ptr = save_ptr;
         free(cur);
-        ast_return(NULL);
+        return_this(NULL);
     }
     check("read text block");
 
@@ -821,7 +1074,7 @@ ast_text_block(ast_t *self, int dep) {
     cur->text = t->text;
     t->text = NULL;
 
-    ast_return(node_new(NODE_TYPE_TEXT_BLOCK, cur));
+    return_this(node_new(NODE_TYPE_TEXT_BLOCK, cur));
 }
 
 static node_t *
@@ -838,7 +1091,7 @@ ast_ref_block(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        ast_return(NULL); \
+        return_this(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -861,7 +1114,7 @@ ast_ref_block(ast_t *self, int dep) {
         return_cleanup("syntax error. not found \"#}\"");
     }
 
-    ast_return(node_new(NODE_TYPE_REF_BLOCK, cur));
+    return_this(node_new(NODE_TYPE_REF_BLOCK, cur));
 }
 
 static node_t *
@@ -878,7 +1131,7 @@ ast_code_block(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        ast_return(NULL); \
+        return_this(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -908,7 +1161,7 @@ ast_code_block(ast_t *self, int dep) {
     ast_skip_newlines(self);
     check("skip newlines");
 
-    ast_return(node_new(NODE_TYPE_CODE_BLOCK, cur));
+    return_this(node_new(NODE_TYPE_CODE_BLOCK, cur));
 }
 
 static node_t *
@@ -919,7 +1172,7 @@ ast_blocks(ast_t *self, int dep) {
 #undef return_cleanup
 #define return_cleanup() { \
         free(cur); \
-        ast_return(NULL); \
+        return_this(NULL); \
     } \
 
     check("call ast_code_block");
@@ -950,7 +1203,7 @@ ast_blocks(ast_t *self, int dep) {
         return_cleanup();
     }
 
-    ast_return(node_new(NODE_TYPE_BLOCKS, cur));
+    return_this(node_new(NODE_TYPE_BLOCKS, cur));
 }
 
 static node_t *
@@ -961,7 +1214,7 @@ ast_program(ast_t *self, int dep) {
 #undef return_cleanup
 #define return_cleanup() { \
         free(cur); \
-        ast_return(NULL); \
+        return_this(NULL); \
     } \
 
     check("call ast_blocks");
@@ -970,7 +1223,7 @@ ast_program(ast_t *self, int dep) {
         return_cleanup();
     }
 
-    ast_return(node_new(NODE_TYPE_PROGRAM, cur));
+    return_this(node_new(NODE_TYPE_PROGRAM, cur));
 }
 
 ast_t *

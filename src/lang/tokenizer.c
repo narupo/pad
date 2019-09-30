@@ -244,6 +244,12 @@ tkr_parse_identifier(tokenizer_t *self) {
         token->type = TOKEN_TYPE_STMT_ELSE;
     } else if (cstr_eq(token->text, "for")) {
         token->type = TOKEN_TYPE_STMT_FOR;
+    } else if (cstr_eq(token->text, "or")) {
+        token->type = TOKEN_TYPE_OP_OR;
+    } else if (cstr_eq(token->text, "and")) {
+        token->type = TOKEN_TYPE_OP_AND;
+    } else if (cstr_eq(token->text, "not")) {
+        token->type = TOKEN_TYPE_OP_NOT;
     }
 
     tkr_move_token(self, token);
