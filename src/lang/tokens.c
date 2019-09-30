@@ -43,6 +43,7 @@ token_copy_text(const token_t *self) {
 
 const char *
 token_type_to_str(const token_t *self) {
+    static char str[100] = {0};
     if (!self) {
         return "(null)";
     }
@@ -65,16 +66,23 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_LPAREN: return "("; break;
     case TOKEN_TYPE_RPAREN: return ")"; break;
     case TOKEN_TYPE_DQ_STRING: return "string"; break;
-    case TOKEN_TYPE_INTEGER: return "integer"; break;
+    case TOKEN_TYPE_INTEGER:
+        snprintf(str, sizeof str, "integer[%ld]", self->lvalue);
+        return str;
+        break;
 
     // operators
     case TOKEN_TYPE_OP_ADD: return "+"; break;
     case TOKEN_TYPE_OP_SUB: return "-"; break;
+    case TOKEN_TYPE_OP_MUL: return "*"; break;
+    case TOKEN_TYPE_OP_DIV: return "/"; break;
 
     // assign operators
     case TOKEN_TYPE_OP_ASS: return "="; break;
     case TOKEN_TYPE_OP_ADD_ASS: return "+="; break;
     case TOKEN_TYPE_OP_SUB_ASS: return "-="; break;
+    case TOKEN_TYPE_OP_MUL_ASS: return "*="; break;
+    case TOKEN_TYPE_OP_DIV_ASS: return "/="; break;
 
     // comparison operators
     case TOKEN_TYPE_OP_EQ: return "=="; break;

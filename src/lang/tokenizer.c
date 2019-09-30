@@ -389,6 +389,16 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_SUB, TOKEN_TYPE_OP_SUB_ASS)) {
                     goto fail;
                 }
+            } else if (c == '*') {
+                self->ptr--;
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_MUL, TOKEN_TYPE_OP_MUL_ASS)) {
+                    goto fail;
+                }
+            } else if (c == '/') {
+                self->ptr--;
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_DIV, TOKEN_TYPE_OP_DIV_ASS)) {
+                    goto fail;
+                }
             } else if (c == '.') {
                 tkr_move_token(self, token_new(TOKEN_TYPE_DOT_OPE));
             } else if (c == ',') {
@@ -445,6 +455,16 @@ tkr_parse(tokenizer_t *self, const char *src) {
             } else if (c == '-') {
                 self->ptr--;
                 if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_SUB, TOKEN_TYPE_OP_SUB_ASS)) {
+                    goto fail;
+                }
+            } else if (c == '*') {
+                self->ptr--;
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_MUL, TOKEN_TYPE_OP_MUL_ASS)) {
+                    goto fail;
+                }
+            } else if (c == '/') {
+                self->ptr--;
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_DIV, TOKEN_TYPE_OP_DIV_ASS)) {
                     goto fail;
                 }
             } else if (c == '.') {

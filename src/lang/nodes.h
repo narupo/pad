@@ -51,6 +51,9 @@ typedef enum {
     NODE_TYPE_IDENTIFIER_CHAIN,
     NODE_TYPE_STRING,
     NODE_TYPE_IDENTIFIER,
+
+    NODE_TYPE_ASS_SUB_OP,
+    NODE_TYPE_MUL_DIV_OP,
 } node_type_t;
 
 typedef enum {
@@ -61,6 +64,8 @@ typedef enum {
     OP_ASS, // '='
     OP_ADD_ASS, // '+='
     OP_SUB_ASS, // '-='
+    OP_MUL_ASS, // '*='
+    OP_DIV_ASS, // '/='
     OP_EQ, // '=='
     OP_NOT_EQ, // '!='
 } op_t;
@@ -176,7 +181,7 @@ typedef struct node_comparison {
 
 typedef struct node_expr {
     node_t *term;
-    node_t *ass_sub_op;
+    node_t *add_sub_op;
     node_t *expr;
 } node_expr_t;
 
@@ -210,14 +215,14 @@ typedef struct node_augassign {
 
 typedef struct node_comp_op {
     op_t op;
-} node_op_t;
+} node_comp_op_t;
 
-typedef struct node_ass_sub_op {
+typedef struct node_add_sub_op {
     op_t op;
-} node_ass_sub_op_t;
+} node_add_sub_op_t;
 
 typedef struct node_mul_div_op {
-    op_t opt;
+    op_t op;
 } node_mul_div_op_t;
 
 typedef struct node_digit {
@@ -235,7 +240,7 @@ typedef struct node_identifier_chain {
 } node_identifier_chain_t;
 
 typedef struct node_string {
-    char *str;
+    char *string;
 } node_string_t;
 
 typedef struct node_identifier {
