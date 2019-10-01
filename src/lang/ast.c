@@ -606,7 +606,7 @@ ast_string(ast_t *self, int dep) {
     }
     check("read string");
 
-    // move text
+    // copy text
     cur->string = cstr_edup(t->text);
 
     return_this(node_new(NODE_TYPE_STRING, cur));
