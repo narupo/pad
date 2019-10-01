@@ -3,12 +3,14 @@
 enum {
     ALIAS_MAP_SIZE = 256,
     CONFIG_MAP_SIZE = 256,
+    OBJDICT_SIZE = 1024,
 };
 
 struct context {
     dict_t *almap;
     dict_t *confmap;
     string_t *buf;
+    object_dict_t *varmap;
     bool imported_alias;
     bool imported_config;
 };
@@ -18,7 +20,9 @@ ctx_del(context_t *self) {
     if (self == NULL) {
         return;
     }
+
     str_del(self->buf);
+    objdict_del(self->varmap);
     free(self);
 }
 
@@ -29,6 +33,7 @@ ctx_new(void) {
     self->almap = dict_new(ALIAS_MAP_SIZE);
     self->confmap = dict_new(CONFIG_MAP_SIZE);
     self->buf = str_new();
+    self->varmap = objdict_new(OBJDICT_SIZE);
 
     return self;
 }
@@ -100,4 +105,9 @@ ctx_getc_almap(const context_t *self) {
 const dict_t *
 ctx_getc_confmap(const context_t *self) {
     return self->confmap;
+}
+
+object_dict_t *
+ctx_get_varmap(context_t *self) {
+    return self->varmap;
 }

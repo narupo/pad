@@ -6,9 +6,12 @@
 
 #include "lib/memory.h"
 #include "lib/format.h"
+#include "lib/cstring_array.h"
 #include "lang/tokens.h"
 #include "lang/nodes.h"
 #include "lang/context.h"
+#include "lang/object.h"
+#include "lang/object_array.h"
 
 struct ast;
 typedef struct ast ast_t;
