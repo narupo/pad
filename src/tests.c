@@ -1866,6 +1866,28 @@ test_tkr_parse(void) {
         assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
 
+    tkr_parse(tkr, "{@ *= @}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_MUL_ASS);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@ /= @}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_DIV_ASS);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
     /***********************
     * comparison operators *
     ***********************/
@@ -1888,6 +1910,39 @@ test_tkr_parse(void) {
         assert(token->type == TOKEN_TYPE_LBRACEAT);
         token = tkr_tokens_getc(tkr, 1);
         assert(token->type == TOKEN_TYPE_OP_NOT_EQ);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@ or @}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_OR);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@ and @}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_AND);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@ not @}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_NOT);
         token = tkr_tokens_getc(tkr, 2);
         assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
@@ -2116,6 +2171,28 @@ test_tkr_parse(void) {
         assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
     }
 
+    tkr_parse(tkr, "{: * :}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_MUL);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+    }
+
+    tkr_parse(tkr, "{: / :}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_DIV);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+    }
+
     tkr_parse(tkr, "{: = :}");
     {
         assert(tkr_tokens_len(tkr) == 3);
@@ -2145,6 +2222,28 @@ test_tkr_parse(void) {
         assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
         token = tkr_tokens_getc(tkr, 1);
         assert(token->type == TOKEN_TYPE_OP_SUB_ASS);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+    }
+
+    tkr_parse(tkr, "{: *= :}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_MUL_ASS);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+    }
+
+    tkr_parse(tkr, "{: /= :}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_DIV_ASS);
         token = tkr_tokens_getc(tkr, 2);
         assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
     }
@@ -2291,6 +2390,8 @@ test_ast_parse(void) {
         and_test = or_test->and_test->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
+        comp_op = comparison->comp_op->real;
+        assert(comp_op->op == OP_EQ);
         expr = comparison->expr->real;
         term = expr->term->real;
         asscalc = term->asscalc->real;
@@ -2372,6 +2473,8 @@ test_ast_parse(void) {
         and_test = or_test->and_test->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
+        comp_op = comparison->comp_op->real;
+        assert(comp_op->op == OP_NOT_EQ);
         expr = comparison->expr->real;
         term = expr->term->real;
         asscalc = term->asscalc->real;
@@ -2454,6 +2557,8 @@ test_ast_parse(void) {
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = comparison->expr->real;
+        add_sub_op = expr->add_sub_op->real;
+        assert(add_sub_op->op == OP_ADD);
         term = expr->term->real;
         asscalc = term->asscalc->real;
         factor = asscalc->factor->real;
@@ -2532,6 +2637,8 @@ test_ast_parse(void) {
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = comparison->expr->real;
+        add_sub_op = expr->add_sub_op->real;
+        assert(add_sub_op->op == OP_SUB);
         term = expr->term->real;
         asscalc = term->asscalc->real;
         factor = asscalc->factor->real;
@@ -2654,6 +2761,8 @@ test_ast_parse(void) {
         comparison = not_test->comparison->real;
         expr = comparison->expr->real;
         term = expr->term->real;
+        mul_div_op = term->mul_div_op->real;
+        assert(mul_div_op->op == OP_MUL);
         asscalc = term->asscalc->real;
         factor = asscalc->factor->real;
         atom = factor->atom->real;
@@ -2729,6 +2838,8 @@ test_ast_parse(void) {
         comparison = not_test->comparison->real;
         expr = comparison->expr->real;
         term = expr->term->real;
+        mul_div_op = term->mul_div_op->real;
+        assert(mul_div_op->op == OP_DIV);
         asscalc = term->asscalc->real;
         factor = asscalc->factor->real;
         atom = factor->atom->real;
@@ -2910,6 +3021,8 @@ test_ast_parse(void) {
         expr = comparison->expr->real;
         term = expr->term->real;
         asscalc = term->asscalc->real;
+        augassign = asscalc->augassign->real;
+        assert(augassign->op == OP_ADD_ASS);
         factor = asscalc->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -2943,6 +3056,8 @@ test_ast_parse(void) {
         expr = comparison->expr->real;
         term = expr->term->real;
         asscalc = term->asscalc->real;
+        augassign = asscalc->augassign->real;
+        assert(augassign->op == OP_SUB_ASS);
         factor = asscalc->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -2976,6 +3091,8 @@ test_ast_parse(void) {
         expr = comparison->expr->real;
         term = expr->term->real;
         asscalc = term->asscalc->real;
+        augassign = asscalc->augassign->real;
+        assert(augassign->op == OP_MUL_ASS);
         factor = asscalc->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -3009,6 +3126,8 @@ test_ast_parse(void) {
         expr = comparison->expr->real;
         term = expr->term->real;
         asscalc = term->asscalc->real;
+        augassign = asscalc->augassign->real;
+        assert(augassign->op == OP_DIV_ASS);
         factor = asscalc->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
