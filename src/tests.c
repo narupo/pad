@@ -5952,11 +5952,38 @@ test_ast_parse(void) {
 }
 
 static void
-test_ast_parse_context(void) {
+test_ast_traverse(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
     ast_t *ast = ast_new();
     context_t *ctx = ctx_new();
+
+    /*************
+    * text block *
+    *************/
+
+    tkr_parse(tkr, "abc");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    }
+
+    /*******************
+    * import statement *
+    *******************/
+
+    tkr_parse(tkr, "{@ import alias @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+    }
+
+    tkr_parse(tkr, "{@ import my.alias @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+    }
 
     ctx_del(ctx);
     ast_del(ast);
@@ -5966,7 +5993,7 @@ test_ast_parse_context(void) {
 static const struct testcase
 ast_tests[] = {
     {"ast_parse", test_ast_parse},
-    {"ast_parse_context", test_ast_parse_context},
+    {"ast_traverse", test_ast_traverse},
     {0},
 };
 

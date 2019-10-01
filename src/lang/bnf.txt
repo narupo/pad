@@ -34,8 +34,8 @@ BNF of Cap's template language
 
         comparison: ( expr | expr comp_op ) comparison
 
-              expr: ( term | term add_sub_op) expr
-              term: ( asscalc | asscalc mul_div_op) term
+              expr: ( term | term add_sub_op ) expr
+              term: ( asscalc | asscalc mul_div_op ) term
            asscalc: ( factor | factor augassign ) asscalc
             factor: atom | '(' test ')'
               atom: digit | string | identifier | caller

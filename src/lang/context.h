@@ -5,6 +5,7 @@
 #include "lib/memory.h"
 #include "lib/string.h"
 #include "lib/dict.h"
+#include "lang/object_dict.h"
 
 struct context;
 typedef struct context context_t;
@@ -50,3 +51,6 @@ ctx_getc_almap(const context_t *self);
 
 const dict_t *
 ctx_getc_confmap(const context_t *self);
+
+object_dict_t *
+ctx_get_varmap(context_t *self);

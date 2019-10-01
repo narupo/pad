@@ -93,7 +93,11 @@ SRCS := build/lib/error.c \
 	build/lang/tokenizer.c \
 	build/lang/nodes.c \
 	build/lang/context.c \
-	build/lang/ast.c
+	build/lang/ast.c \
+	build/lang/object.c \
+	build/lang/object_array.c \
+	build/lang/object_dict.c \
+
 OBJS := $(SRCS:.c=.o)
 
 tests: build/tests.o $(OBJS)
@@ -177,5 +181,11 @@ build/lang/nodes.o: src/lang/nodes.c src/lang/nodes.h
 build/lang/ast.o: src/lang/ast.c src/lang/ast.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/context.o: src/lang/context.c src/lang/context.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/object.o: src/lang/object.c src/lang/object.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/object_array.o: src/lang/object_array.c src/lang/object_array.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/object_dict.o: src/lang/object_dict.c src/lang/object_dict.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
