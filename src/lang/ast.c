@@ -46,6 +46,11 @@ struct ast {
         fprintf(stderr, "debug: %5d: %*s: %3d: %s: %s: %s\n", __LINE__, 20, __func__, dep, msg, token_type_to_str(*self->ptr), ast_get_error_detail(self)); \
     } \
 
+#define tcheck(msg) \
+    if (self->debug) { \
+        fprintf(stderr, "debug: %5d: %*s: %s: %s\n", __LINE__, 20, __func__, msg, ast_get_error_detail(self)); \
+    } \
+
 #define vissf(fmt, ...) \
     if (self->debug) fprintf(stderr, "vissf: %d: " fmt "\n", __LINE__, __VA_ARGS__); \
 
@@ -118,6 +123,9 @@ ast_calc_term_div(ast_t *self, object_t *lhs, object_t *rhs);
 
 static object_t *
 ast_calc_term_mul(ast_t *self, object_t *lhs, object_t *rhs);
+
+static object_t *
+get_var(ast_t *self, const char *identifier);
 
 /************
 * functions *
@@ -1934,6 +1942,7 @@ ast_traverse_text_block(ast_t *self, node_t *node) {
     node_text_block_t *text_block = node->real;
     if (text_block->text) {
         ctx_pushb_buf(self->context, text_block->text);
+        tcheck("store text block to buf");
     }
 
     return NULL;
@@ -2007,25 +2016,62 @@ ast_traverse_import_stmt(ast_t *self, node_t *node) {
     return NULL;
 }
 
+/**
+ * objectをbool値にする
+ */
+static bool
+ast_parse_bool(ast_t *self, object_t *obj) {
+    switch (obj->type) {
+    case OBJ_TYPE_INTEGER: return obj->lvalue; break;
+    case OBJ_TYPE_BOOL: return obj->boolean; break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = str_getc(obj->identifier);
+        object_t *obj = get_var(self, idn);
+        if (!obj) {
+            ast_set_error_detail(self, "\"%s\" is not defined in if statement", idn);
+            obj_del(obj);
+            return NULL;
+        }
+
+        return ast_parse_bool(self, obj);
+    } break;
+    case OBJ_TYPE_STRING: return str_len(obj->string); break;
+    case OBJ_TYPE_ARRAY: err_die("TODO: array len to bool"); break;
+    }
+
+    assert(0 && "impossible. failed to parse bool");
+    return false;
+}
+
 static object_t *
 ast_traverse_if_stmt(ast_t *self, node_t *node) {
     node_if_stmt_t *if_stmt = node->real;
 
     object_t *result = _ast_traverse(self, if_stmt->test);
+    vissf("result %p", result);
     if (ast_has_error(self)) {
         obj_del(result);
         return NULL;
     }
-    if (!result || result->type != OBJ_TYPE_BOOL) {
-        ast_set_error_detail(self, "traverse error. test return not boolean value in if statement");
-        obj_del(result);
+    if (!result) {
+        ast_set_error_detail(self, "traverse error. test return null in if statement");
         return NULL;
     }
 
-    if (result->boolean) {
-        _ast_traverse(self, if_stmt->elems);
-        if (ast_has_error(self)) {
-            return NULL;
+    bool boolean = ast_parse_bool(self, result);
+
+    vissf("result boolean %d", boolean);
+    if (boolean) {
+        if (if_stmt->elems) {
+            _ast_traverse(self, if_stmt->elems);
+            if (ast_has_error(self)) {
+                return NULL;
+            }
+        } else if (if_stmt->blocks) {
+            _ast_traverse(self, if_stmt->blocks);
+            if (ast_has_error(self)) {
+                return NULL;
+            }
         }
     } else {
         if (if_stmt->elif_stmt) {
@@ -2304,12 +2350,15 @@ ast_traverse_or_test(ast_t *self, node_t *node) {
         return NULL;
     }
     assert(lhs);
+    vissf("lhs type: %d", lhs->type);
 
     object_t *rhs = _ast_traverse(self, or_test->or_test);
     if (ast_has_error(self)) {
         return NULL;
     }
-    assert(rhs);
+    if (!rhs) {
+        return lhs;
+    }
 
     return ast_compare_or(self, lhs, rhs);
 }
@@ -2407,7 +2456,9 @@ ast_traverse_and_test(ast_t *self, node_t *node) {
     if (ast_has_error(self)) {
         return NULL;
     }
-    assert(rhs);
+    if (!rhs) {
+        return lhs;
+    }
 
     return ast_compare_and(self, lhs, rhs);
 }
@@ -3568,6 +3619,7 @@ _ast_traverse(ast_t *self, node_t *node) {
 void
 ast_traverse(ast_t *self, context_t *context) {
     self->context = context;
+    ctx_clear(self->context);
     _ast_traverse(self, self->root);
 }
 

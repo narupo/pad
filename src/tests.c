@@ -7,6 +7,13 @@
  */
 #include "tests.h"
 
+/*********
+* macros *
+*********/
+
+#define showbuf() printf("buf[%s]\n", ctx_getc_buf(ctx));
+#define showdetail() printf("detail[%s]\n", ast_get_error_detail(ast));
+
 /********
 * utils *
 ********/
@@ -4861,6 +4868,17 @@ test_ast_parse(void) {
         assert(!strcmp(text_block->text, "abc"));
     }
 
+    tkr_parse(tkr, "{@ if 1: @}{@ else: @}{@ end @}");
+    {
+        ast_clear(ast);
+        ast_set_debug(ast, true);
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_set_debug(ast, false);
+        root = ast_getc_root(ast);
+        showdetail();
+        assert(!ast_has_error(ast));
+    }
+
     tkr_parse(tkr, "{@ if 1: @}{@ if 2: end @}{@ end @}");
     {
         ast_clear(ast);
@@ -5983,6 +6001,54 @@ test_ast_traverse(void) {
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
+    }
+
+    /***************
+    * if statement *
+    ***************/
+
+    tkr_parse(tkr, "{@ if 1: @}{@ end @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_buf(ctx), ""));
+    }
+
+    tkr_parse(tkr, "{@ if 1: @}abc{@ end @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    }
+
+    tkr_parse(tkr, "abc{@ if 1: @}def{@ end @}ghi");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_buf(ctx), "abcdefghi"));
+    }
+
+    tkr_parse(tkr, "{@ if 1: @}{@ if 1: @}abc{@ end @}{@ end @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    }
+
+    tkr_parse(tkr, "{@ if 1: @}abc{@ if 1: @}def{@ end @}ghi{@ end @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_buf(ctx), "abcdefghi"));
+    }
+
+    tkr_parse(tkr, "{@ if 0: @}abc{@ else: @}def{@ end @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        showbuf();
+        showdetail();
+        assert(!strcmp(ctx_getc_buf(ctx), "def"));
     }
 
     ctx_del(ctx);

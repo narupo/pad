@@ -15,9 +15,11 @@ BNF of Cap's template language
        import_stmt: 'import' identifier_chain 
 
            if_stmt: 'if' test ':' elems* ( elif_stmt | else_stmt | 'end' ) |
-                    'if' test ':' '@}' block* '{@' ( elif_stmt | else_stmt | 'end' )
-         elif_stmt: 'elif' test ':' elems ( elif_stmt | else_stmt | 'end' )
-         else_stmt: 'else' ':' elems 'end'
+                    'if' test ':' '@}' blocks* '{@' ( elif_stmt | else_stmt | 'end' )
+         elif_stmt: 'elif' test ':' elems ( elif_stmt | else_stmt | 'end' ) |
+                    'elif' test ':' '@}' elems '{@' ( elif_stmt | else_stmt | 'end' )
+         else_stmt: 'else' ':' elems 'end' |
+                    'else' ':' '@}' elems '{@' 'end'
 
           for_stmt: 'for' test_list ';' test ';' test_list ':' elems 'end' |
                     'for' test ':' elems 'end' |
