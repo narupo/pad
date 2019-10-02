@@ -1,10 +1,12 @@
 #pragma once
 
 #include <stdbool.h>
+#include <assert.h>
 
 #include "lib/string.h"
 #include "lib/cstring.h"
 #include "lib/memory.h"
+#include "lang/types.h"
 
 typedef enum {
     OBJ_TYPE_INTEGER = 0,
@@ -14,17 +16,14 @@ typedef enum {
     OBJ_TYPE_ARRAY,
 } obj_type_t;
 
-struct object_array;
-typedef struct object_array object_array_t;
-
-typedef struct {
+struct object {
     obj_type_t type;
     string_t *identifier;
     string_t *string;
     long lvalue;
     bool boolean;
     object_array_t *objarr;
-} object_t;
+};
 
 void
 obj_del(object_t *self);

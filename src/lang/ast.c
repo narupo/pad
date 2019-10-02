@@ -80,6 +80,24 @@ ast_mul_div_op(ast_t *self, int dep);
 static object_t *
 _ast_traverse(ast_t *self, node_t *node);
 
+static bool
+ast_compare_or(ast_t *self, object_t *lhs, object_t *rhs);
+
+static bool
+ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs);
+
+static bool
+ast_compare_or_string(ast_t *self, object_t *lhs, object_t *rhs);
+
+static bool
+ast_compare_or_identifier(ast_t *self, object_t *lhs, object_t *rhs);
+
+static bool
+ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs);
+
+static bool
+ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs);
+
 /************
 * functions *
 ************/
@@ -1871,9 +1889,11 @@ ast_traverse_ref_block(ast_t *self, node_t *node) {
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         object_dict_t *varmap = ctx_get_varmap(self->context);
-        object_t *obj = objdict_getc(varmap, str_getc(result->identifier));
+        object_dict_item_t *item = objdict_get(varmap, str_getc(result->identifier));
+        object_t *obj = item->value;
         string_t *str = obj_to_str(obj);
-        TODO
+        ctx_pushb_buf(self->context, str_getc(str));
+        str_del(str);
     } break;
     case OBJ_TYPE_STRING: {
         ctx_pushb_buf(self->context, str_getc(result->string));
@@ -1886,6 +1906,7 @@ ast_traverse_ref_block(ast_t *self, node_t *node) {
 
     return NULL;
 }
+
 
 static object_t *
 ast_traverse_text_block(ast_t *self, node_t *node) {
@@ -2112,7 +2133,144 @@ ast_traverse_test(ast_t *self, node_t *node) {
 }
 
 static object_t *
+get_var(ast_t *self, const char *identifier) {
+    object_dict_t *varmap = ctx_get_varmap(self->context);
+    object_dict_item_t *item = objdict_get(varmap, identifier);
+    if (!item) {
+        return NULL;
+    }
+
+    object_t *obj = item->value;
+    assert(obj);
+    return obj;
+}
+
+static bool
+ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_INTEGER);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: return lhs->lvalue || rhs->lvalue; break;
+    case OBJ_TYPE_BOOL: return lhs->lvalue || rhs->boolean; break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *rvar = get_var(self, str_getc(rhs->identifier));
+        if (!rvar) {
+            ast_set_error_detail(self, "%s is not defined", str_getc(rhs->identifier));
+            return false;
+        }
+
+        return ast_compare_or(self, lhs, rvar);
+    } break;
+    case OBJ_TYPE_STRING: return lhs->lvalue || rhs->string; break;
+    case OBJ_TYPE_ARRAY: return lhs->lvalue || rhs->objarr; break;
+    }
+
+    assert(0 && "impossible. failed to compare or int");
+    return false;
+}
+
+static bool
+ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: return lhs->boolean || rhs->lvalue; break;
+    case OBJ_TYPE_BOOL: return lhs->boolean || rhs->boolean; break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *rvar = get_var(self, str_getc(rhs->identifier));
+        if (!rvar) {
+            ast_set_error_detail(self, "%s is not defined", str_getc(rhs->identifier));
+            return false;
+        }
+
+        return ast_compare_or(self, lhs, rvar);
+    } break;
+    case OBJ_TYPE_STRING: return lhs->boolean || rhs->string; break;
+    case OBJ_TYPE_ARRAY: return lhs->boolean || rhs->objarr; break;
+    }
+
+    assert(0 && "impossible. failed to compare or bool");
+    return false;
+}
+
+static bool
+ast_compare_or_identifier(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_IDENTIFIER);
+
+    object_t *lvar = get_var(self, str_getc(lhs->identifier));
+    if (!lvar) {
+        ast_set_error_detail(self, "\"%s\" is not defined", str_getc(lhs->identifier));
+        return false;
+    }
+
+    return ast_compare_or(self, lvar, rhs);
+}
+
+static bool
+ast_compare_or_string(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_STRING);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: result = lhs->string || rhs->lvalue; break;
+    case OBJ_TYPE_BOOL: result = lhs->string || rhs->boolean; break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *rvar = get_var(self, str_getc(rhs->identifier));
+        if (!rvar) {
+            ast_set_error_detail(self, "\"%s\" is not defined", str_getc(rhs->identifier));
+            return false;
+        }
+
+        return ast_compare_or(self, lhs, rvar);
+    } break;
+    case OBJ_TYPE_STRING: result = lhs->string || rhs->string; break;
+    case OBJ_TYPE_ARRAY: result = lhs->string || rhs->objarr; break;
+    }
+
+    assert(0 && "impossible. failed to compare or string");
+    return false;
+}
+
+static bool
+ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_ARRAY);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: result = lhs->objarr || rhs->lvalue; break;
+    case OBJ_TYPE_BOOL: result = lhs->objarr || rhs->boolean; break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *rvar = get_var(self, str_getc(rhs->identifier));
+        if (!rvar) {
+            ast_set_error_detail(self, "%s is not defined", str_getc(rhs->identifier));
+            return false;
+        }
+
+        return ast_compare_or(self, lhs, rvar);
+    } break;
+    case OBJ_TYPE_STRING: result = lhs->objarr || rhs->string; break;
+    case OBJ_TYPE_ARRAY: result = lhs->objarr || rhs->objarr; break;
+    }
+
+    assert(0 && "impossible. failed to compare or array");
+    return false;
+}
+
+static bool
+ast_compare_or(ast_t *self, object_t *lhs, object_t *rhs) {
+    switch (lhs->type) {
+    case OBJ_TYPE_INTEGER: return ast_compare_or_int(self, lhs, rhs); break;
+    case OBJ_TYPE_BOOL: return ast_compare_or_bool(self, lhs, rhs); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_compare_or_identifier(self, lhs, rhs); break;
+    case OBJ_TYPE_STRING: return ast_compare_or_string(self, lhs, rhs); break;
+    case OBJ_TYPE_ARRAY: return ast_compare_or_array(self, lhs, rhs); break;
+    }
+
+    assert(0 && "impossible. failed to compare or");
+    return false;
+}
+
+static object_t *
 ast_traverse_or_test(ast_t *self, node_t *node) {
+    assert(node->type == NODE_TYPE_OR_TEST);
     node_or_test_t *or_test = node->real;
 
     object_t *lhs = _ast_traverse(self, or_test->and_test);
@@ -2127,79 +2285,109 @@ ast_traverse_or_test(ast_t *self, node_t *node) {
     }
     assert(rhs);
 
-    bool result = false;
-    switch (lhs->type) {
-    case OBJ_TYPE_INTEGER:
-        switch (rhs->type) {
-        case OBJ_TYPE_INTEGER:
-            result = lhs->lvalue || rhs->lvalue;
-            break;
-        case OBJ_TYPE_BOOL:
-            result = lhs->lvalue || rhs->boolean;
-            break;
-        case OBJ_TYPE_STRING:
-            result = lhs->lvalue || rhs->string;
-            break;
-        case OBJ_TYPE_ARRAY:
-            result = lhs->lvalue || rhs->objarr;
-            break;
-        }
-        break;
-    case OBJ_TYPE_BOOL:
-        switch (rhs->type) {
-        case OBJ_TYPE_INTEGER:
-            result = lhs->boolean || rhs->lvalue;
-            break;
-        case OBJ_TYPE_BOOL:
-            result = lhs->boolean || rhs->boolean;
-            break;
-        case OBJ_TYPE_STRING:
-            result = lhs->boolean || rhs->string;
-            break;
-        case OBJ_TYPE_ARRAY:
-            result = lhs->boolean || rhs->objarr;
-            break;
-        }
-        break;
-    case OBJ_TYPE_STRING:
-        switch (rhs->type) {
-        case OBJ_TYPE_INTEGER:
-            result = lhs->string || rhs->lvalue;
-            break;
-        case OBJ_TYPE_BOOL:
-            result = lhs->string || rhs->boolean;
-            break;
-        case OBJ_TYPE_STRING:
-            result = lhs->string || rhs->string;
-            break;
-        case OBJ_TYPE_ARRAY:
-            result = lhs->string || rhs->objarr;
-            break;
-        }
-        break;
-    case OBJ_TYPE_ARRAY:
-        switch (rhs->type) {
-        case OBJ_TYPE_INTEGER:
-            result = lhs->objarr || rhs->lvalue;
-            break;
-        case OBJ_TYPE_BOOL:
-            result = lhs->objarr || rhs->boolean;
-            break;
-        case OBJ_TYPE_STRING:
-            result = lhs->objarr || rhs->string;
-            break;
-        case OBJ_TYPE_ARRAY:
-            result = lhs->objarr || rhs->objarr;
-            break;
-        }
-        break;
-    }
+    bool result = ast_compare_or(self, lhs, rhs);
 
     return obj_new_bool(result);
 }
 
+static bool
+ast_compare_identifier_rhs(
+    ast_t *self,
+    object_t *lhs,
+    object_t *rhs,
+    (bool *compare)(ast_t *, object_t *, object_t *)) {
+    assert(rhs->type == OBJ_TYPE_IDENTIFIER);
+
+    object_t *rvar = get_var(self, str_getc(rhs->identifier));
+    if (!rvar) {
+        ast_set_error_detail(self, "\"%s\" is not defined", str_getc(rhs->identifier));
+        return false;
+    }
+
+    return compare(self, lhs, rvar);
+}
+
+static bool
+ast_compare_and_int(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_INTEGER);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: return lhs->lvalue && rhs->lvalue; break;
+    case OBJ_TYPE_BOOL: return lhs->lvalue && rhs->boolean; break;
+    case OBJ_TYPE_IDENTIFIER: return ast_compare_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
+    case OBJ_TYPE_STRING: return lhs->lvalue && rhs->string; break;
+    case OBJ_TYPE_ARRAY: return lhs->lvalue && rhs->objarr; break;
+    }
+
+    assert(0 && "impossible. failed to compare and int");
+    return false;
+}
+
+static bool
+ast_compare_and_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: return lhs->boolean && rhs->lvalue; break;
+    case OBJ_TYPE_BOOL: return lhs->boolean && rhs->boolean; break;
+    case OBJ_TYPE_IDENTIFIER: return ast_compare_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
+    case OBJ_TYPE_STRING: return lhs->boolean && rhs->string; break;
+    case OBJ_TYPE_ARRAY: return lhs->boolean && rhs->objarr; break;
+    }
+
+    assert(0 && "impossible. failed to compare and bool");
+    return false;
+}
+
+static bool
+ast_compare_and_string(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_STRING);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: return lhs->string && rhs->lvalue; break;
+    case OBJ_TYPE_BOOL: return lhs->string && rhs->boolean; break;
+    case OBJ_TYPE_IDENTIFIER: return ast_compare_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
+    case OBJ_TYPE_STRING: return lhs->string && rhs->string; break;
+    case OBJ_TYPE_ARRAY: return lhs->string && rhs->objarr; break;
+    }
+
+    assert(0 && "impossible. failed to compare and string");
+    return false;
+}
+
+static bool
+ast_compare_and_array(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_ARRAY);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: return lhs->objarr && rhs->lvalue; break;
+    case OBJ_TYPE_BOOL: return lhs->objarr && rhs->boolean; break;
+    case OBJ_TYPE_IDENTIFIER: return ast_compare_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
+    case OBJ_TYPE_STRING: return lhs->objarr && rhs->string; break;
+    case OBJ_TYPE_ARRAY: return lhs->objarr && rhs->objarr; break;
+    }
+
+    assert(0 && "impossible. failed to compare and array");
+    return false;
+}
+
+static bool
+ast_compare_and(ast_t *self, object_t *lhs, object_t *rhs) {
+    switch (lhs->type) {
+    case OBJ_TYPE_INTEGER: return ast_compare_and_int(self, lhs, rhs); break;
+    case OBJ_TYPE_BOOL: return ast_compare_and_bool(self, lhs, rhs); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_compare_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
+    case OBJ_TYPE_STRING: return ast_compare_and_string(self, lhs, rhs); break;
+    case OBJ_TYPE_ARRAY: return ast_compare_and_array(self, lhs, rhs); break;
+    }
+
+    assert(0 && "impossible. failed to compare and");
+    return false;
+}
+
 static object_t *
 ast_traverse_and_test(ast_t *self, node_t *node) {
+    assert(node->type == NODE_TYPE_AND_TEST);
     node_and_test_t *and_test = node->real;
 
     object_t *lhs = _ast_traverse(self, and_test->not_test);
@@ -2214,75 +2402,33 @@ ast_traverse_and_test(ast_t *self, node_t *node) {
     }
     assert(rhs);
 
-    bool result = false;
-    switch (lhs->type) {
-    case OBJ_TYPE_INTEGER:
-        switch (rhs->type) {
-        case OBJ_TYPE_INTEGER:
-            result = lhs->lvalue && rhs->lvalue;
-            break;
-        case OBJ_TYPE_BOOL:
-            result = lhs->lvalue && rhs->boolean;
-            break;
-        case OBJ_TYPE_STRING:
-            result = lhs->lvalue && rhs->string;
-            break;
-        case OBJ_TYPE_ARRAY:
-            result = lhs->lvalue && rhs->objarr;
-            break;
-        }
-        break;
-    case OBJ_TYPE_BOOL:
-        switch (rhs->type) {
-        case OBJ_TYPE_INTEGER:
-            result = lhs->boolean && rhs->lvalue;
-            break;
-        case OBJ_TYPE_BOOL:
-            result = lhs->boolean && rhs->boolean;
-            break;
-        case OBJ_TYPE_STRING:
-            result = lhs->boolean && rhs->string;
-            break;
-        case OBJ_TYPE_ARRAY:
-            result = lhs->boolean && rhs->objarr;
-            break;
-        }
-        break;
-    case OBJ_TYPE_STRING:
-        switch (rhs->type) {
-        case OBJ_TYPE_INTEGER:
-            result = lhs->string && rhs->lvalue;
-            break;
-        case OBJ_TYPE_BOOL:
-            result = lhs->string && rhs->boolean;
-            break;
-        case OBJ_TYPE_STRING:
-            result = lhs->string && rhs->string;
-            break;
-        case OBJ_TYPE_ARRAY:
-            result = lhs->string && rhs->objarr;
-            break;
-        }
-        break;
-    case OBJ_TYPE_ARRAY:
-        switch (rhs->type) {
-        case OBJ_TYPE_INTEGER:
-            result = lhs->objarr && rhs->lvalue;
-            break;
-        case OBJ_TYPE_BOOL:
-            result = lhs->objarr && rhs->boolean;
-            break;
-        case OBJ_TYPE_STRING:
-            result = lhs->objarr && rhs->string;
-            break;
-        case OBJ_TYPE_ARRAY:
-            result = lhs->objarr && rhs->objarr;
-            break;
-        }
-        break;
-    }
+    bool result = ast_compare_and(self, lhs, rhs);
 
     return obj_new_bool(result);
+}
+
+static bool
+ast_compare_not(ast_t *self, object_t *operand) {
+    assert(operand);
+    
+    switch (operand->type) {
+    case OBJ_TYPE_INTEGER: return !operand->lvalue; break;
+    case OBJ_TYPE_BOOL: return !operand->boolean; break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *obj = get_var(self, str_getc(operand->identifier));
+        if (!obj) {
+            ast_set_error_detail(self, "\"%s\" is not defined", str_getc(operand->identifier));
+            return false;
+        }
+
+        return ast_compare_not(self, obj);
+    } break;
+    case OBJ_TYPE_STRING: return !operand->string; break;
+    case OBJ_TYPE_ARRAY: return !operand->objarr; break;
+    }
+
+    assert(0 && "impossible. failed to compare not");
+    return false;
 }
 
 static object_t *
@@ -2294,22 +2440,12 @@ ast_traverse_not_test(ast_t *self, node_t *node) {
         if (ast_has_error(self)) {
             return NULL;
         }
-
-        bool result = false;
-        switch (operand->type) {
-        case OBJ_TYPE_INTEGER:
-            result = !operand->lvalue;
-            break;
-        case OBJ_TYPE_BOOL:
-            result = !operand->boolean;
-            break;
-        case OBJ_TYPE_STRING:
-            result = !operand->string;
-            break;
-        case OBJ_TYPE_ARRAY:
-            result = !operand->objarr;
-            break;
+        if (!operand) {
+            ast_set_error_detail(self, "failed to not test");
+            return NULL;
         }
+
+        bool result = ast_compare_not(self, operand);
         return obj_new_bool(result);
     } else if (not_test->comparison) {
         return _ast_traverse(self, not_test->comparison);

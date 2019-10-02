@@ -92,14 +92,33 @@ string_t *
 obj_to_str(const object_t *self) {
     switch (self->type) {
     case OBJ_TYPE_INTEGER: {
+        string_t *str = str_new();
+        char buf[1024];
+        str_appfmt(str, buf, sizeof buf, "%ld", self->lvalue);
+        return str;
     } break;
     case OBJ_TYPE_BOOL: {
+        string_t *str = str_new();
+        if (self->boolean) {
+            str_set(str, "true");
+        } else {
+            str_set(str, "false");
+        }
+        return str;
     } break;
     case OBJ_TYPE_STRING: {
+        return str_newother(self->string);
     } break;
     case OBJ_TYPE_ARRAY: {
+        string_t *str = str_new();
+        str_set(str, "(array)");
+        return str;
     } break;
     case OBJ_TYPE_IDENTIFIER: {
+        return str_newother(self->identifier);
     } break;
     } // switch
+
+    assert(0 && "failed to object to string. invalid state");
+    return NULL;
 }
