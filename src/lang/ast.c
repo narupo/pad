@@ -80,23 +80,44 @@ ast_mul_div_op(ast_t *self, int dep);
 static object_t *
 _ast_traverse(ast_t *self, node_t *node);
 
-static bool
+static object_t *
 ast_compare_or(ast_t *self, object_t *lhs, object_t *rhs);
 
-static bool
+static object_t *
 ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs);
 
-static bool
+static object_t *
 ast_compare_or_string(ast_t *self, object_t *lhs, object_t *rhs);
 
-static bool
+static object_t *
 ast_compare_or_identifier(ast_t *self, object_t *lhs, object_t *rhs);
 
-static bool
+static object_t *
 ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs);
 
-static bool
+static object_t *
 ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs);
+
+static object_t *
+ast_compare_and(ast_t *self, object_t *lhs, object_t *rhs);
+
+static object_t *
+ast_compare_comparison_eq(ast_t *self, object_t *lhs, object_t *rhs);
+
+static object_t *
+ast_compare_comparison_not_eq(ast_t *self, object_t *lhs, object_t *rhs);
+
+static object_t *
+ast_calc_expr_add(ast_t *self, object_t *lhs, object_t *rhs);
+
+static object_t *
+ast_calc_expr_sub(ast_t *self, object_t *lhs, object_t *rhs);
+
+static object_t *
+ast_calc_term_div(ast_t *self, object_t *lhs, object_t *rhs);
+
+static object_t *
+ast_calc_term_mul(ast_t *self, object_t *lhs, object_t *rhs);
 
 /************
 * functions *
@@ -2145,127 +2166,132 @@ get_var(ast_t *self, const char *identifier) {
     return obj;
 }
 
-static bool
+static object_t *
+ast_roll_identifier_lhs(
+    ast_t *self,
+    object_t *lhs,
+    object_t *rhs,
+    object_t* (*func)(ast_t *, object_t *, object_t *)) {
+    assert(rhs->type == OBJ_TYPE_IDENTIFIER);
+
+    object_t *lvar = get_var(self, str_getc(lhs->identifier));
+    if (!lvar) {
+        ast_set_error_detail(self, "\"%s\" is not defined", str_getc(rhs->identifier));
+        return false;
+    }
+
+    return func(self, lvar, rhs);
+}
+
+static object_t*
+ast_roll_identifier_rhs(
+    ast_t *self,
+    object_t *lhs,
+    object_t *rhs,
+    object_t* (*func)(ast_t *, object_t *, object_t *)) {
+    assert(rhs->type == OBJ_TYPE_IDENTIFIER);
+
+    object_t *rvar = get_var(self, str_getc(rhs->identifier));
+    if (!rvar) {
+        ast_set_error_detail(self, "\"%s\" is not defined", str_getc(rhs->identifier));
+        return false;
+    }
+
+    return func(self, lhs, rvar);
+}
+
+static object_t *
 ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs) {
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
-    case OBJ_TYPE_INTEGER: return lhs->lvalue || rhs->lvalue; break;
-    case OBJ_TYPE_BOOL: return lhs->lvalue || rhs->boolean; break;
+    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->lvalue || rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->lvalue || rhs->boolean); break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *rvar = get_var(self, str_getc(rhs->identifier));
         if (!rvar) {
             ast_set_error_detail(self, "%s is not defined", str_getc(rhs->identifier));
-            return false;
+            return NULL;
         }
 
         return ast_compare_or(self, lhs, rvar);
     } break;
-    case OBJ_TYPE_STRING: return lhs->lvalue || rhs->string; break;
-    case OBJ_TYPE_ARRAY: return lhs->lvalue || rhs->objarr; break;
+    case OBJ_TYPE_STRING: return obj_new_bool(lhs->lvalue || rhs->string); break;
+    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->lvalue || rhs->objarr); break;
     }
 
     assert(0 && "impossible. failed to compare or int");
-    return false;
+    return NULL;
 }
 
-static bool
+static object_t *
 ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs) {
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_INTEGER: return lhs->boolean || rhs->lvalue; break;
-    case OBJ_TYPE_BOOL: return lhs->boolean || rhs->boolean; break;
+    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->boolean || rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->boolean || rhs->boolean); break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *rvar = get_var(self, str_getc(rhs->identifier));
         if (!rvar) {
             ast_set_error_detail(self, "%s is not defined", str_getc(rhs->identifier));
-            return false;
+            return NULL;
         }
 
         return ast_compare_or(self, lhs, rvar);
     } break;
-    case OBJ_TYPE_STRING: return lhs->boolean || rhs->string; break;
-    case OBJ_TYPE_ARRAY: return lhs->boolean || rhs->objarr; break;
+    case OBJ_TYPE_STRING: return obj_new_bool(lhs->boolean || rhs->string); break;
+    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->boolean || rhs->objarr); break;
     }
 
     assert(0 && "impossible. failed to compare or bool");
-    return false;
+    return NULL;
 }
 
-static bool
-ast_compare_or_identifier(ast_t *self, object_t *lhs, object_t *rhs) {
-    assert(lhs->type == OBJ_TYPE_IDENTIFIER);
-
-    object_t *lvar = get_var(self, str_getc(lhs->identifier));
-    if (!lvar) {
-        ast_set_error_detail(self, "\"%s\" is not defined", str_getc(lhs->identifier));
-        return false;
-    }
-
-    return ast_compare_or(self, lvar, rhs);
-}
-
-static bool
+static object_t *
 ast_compare_or_string(ast_t *self, object_t *lhs, object_t *rhs) {
     assert(lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
-    case OBJ_TYPE_INTEGER: result = lhs->string || rhs->lvalue; break;
-    case OBJ_TYPE_BOOL: result = lhs->string || rhs->boolean; break;
-    case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = get_var(self, str_getc(rhs->identifier));
-        if (!rvar) {
-            ast_set_error_detail(self, "\"%s\" is not defined", str_getc(rhs->identifier));
-            return false;
-        }
-
-        return ast_compare_or(self, lhs, rvar);
-    } break;
-    case OBJ_TYPE_STRING: result = lhs->string || rhs->string; break;
-    case OBJ_TYPE_ARRAY: result = lhs->string || rhs->objarr; break;
+    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->string || rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->string || rhs->boolean); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or); break;
+    case OBJ_TYPE_STRING: return obj_new_bool(lhs->string || rhs->string); break;
+    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->string || rhs->objarr); break;
     }
 
     assert(0 && "impossible. failed to compare or string");
-    return false;
+    return NULL;
 }
 
-static bool
+static object_t *
 ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs) {
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
-    case OBJ_TYPE_INTEGER: result = lhs->objarr || rhs->lvalue; break;
-    case OBJ_TYPE_BOOL: result = lhs->objarr || rhs->boolean; break;
-    case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = get_var(self, str_getc(rhs->identifier));
-        if (!rvar) {
-            ast_set_error_detail(self, "%s is not defined", str_getc(rhs->identifier));
-            return false;
-        }
-
-        return ast_compare_or(self, lhs, rvar);
-    } break;
-    case OBJ_TYPE_STRING: result = lhs->objarr || rhs->string; break;
-    case OBJ_TYPE_ARRAY: result = lhs->objarr || rhs->objarr; break;
+    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->objarr || rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->objarr || rhs->boolean); break;
+    case OBJ_TYPE_IDENTIFIER: ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or); break;
+    case OBJ_TYPE_STRING: return obj_new_bool(lhs->objarr || rhs->string); break;
+    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->objarr || rhs->objarr); break;
     }
 
     assert(0 && "impossible. failed to compare or array");
-    return false;
+    return NULL;
 }
 
-static bool
+static object_t *
 ast_compare_or(ast_t *self, object_t *lhs, object_t *rhs) {
     switch (lhs->type) {
     case OBJ_TYPE_INTEGER: return ast_compare_or_int(self, lhs, rhs); break;
     case OBJ_TYPE_BOOL: return ast_compare_or_bool(self, lhs, rhs); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_compare_or_identifier(self, lhs, rhs); break;
+    case OBJ_TYPE_IDENTIFIER: ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or); break;
     case OBJ_TYPE_STRING: return ast_compare_or_string(self, lhs, rhs); break;
     case OBJ_TYPE_ARRAY: return ast_compare_or_array(self, lhs, rhs); break;
     }
 
     assert(0 && "impossible. failed to compare or");
-    return false;
+    return NULL;
 }
 
 static object_t *
@@ -2285,104 +2311,85 @@ ast_traverse_or_test(ast_t *self, node_t *node) {
     }
     assert(rhs);
 
-    bool result = ast_compare_or(self, lhs, rhs);
-
-    return obj_new_bool(result);
+    return ast_compare_or(self, lhs, rhs);
 }
 
-static bool
-ast_compare_identifier_rhs(
-    ast_t *self,
-    object_t *lhs,
-    object_t *rhs,
-    (bool *compare)(ast_t *, object_t *, object_t *)) {
-    assert(rhs->type == OBJ_TYPE_IDENTIFIER);
-
-    object_t *rvar = get_var(self, str_getc(rhs->identifier));
-    if (!rvar) {
-        ast_set_error_detail(self, "\"%s\" is not defined", str_getc(rhs->identifier));
-        return false;
-    }
-
-    return compare(self, lhs, rvar);
-}
-
-static bool
+static object_t *
 ast_compare_and_int(ast_t *self, object_t *lhs, object_t *rhs) {
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
-    case OBJ_TYPE_INTEGER: return lhs->lvalue && rhs->lvalue; break;
-    case OBJ_TYPE_BOOL: return lhs->lvalue && rhs->boolean; break;
-    case OBJ_TYPE_IDENTIFIER: return ast_compare_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
-    case OBJ_TYPE_STRING: return lhs->lvalue && rhs->string; break;
-    case OBJ_TYPE_ARRAY: return lhs->lvalue && rhs->objarr; break;
+    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->lvalue && rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->lvalue && rhs->boolean); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
+    case OBJ_TYPE_STRING: return obj_new_bool(lhs->lvalue && rhs->string); break;
+    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->lvalue && rhs->objarr); break;
     }
 
     assert(0 && "impossible. failed to compare and int");
-    return false;
+    return NULL;
 }
 
-static bool
+static object_t *
 ast_compare_and_bool(ast_t *self, object_t *lhs, object_t *rhs) {
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_INTEGER: return lhs->boolean && rhs->lvalue; break;
-    case OBJ_TYPE_BOOL: return lhs->boolean && rhs->boolean; break;
-    case OBJ_TYPE_IDENTIFIER: return ast_compare_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
-    case OBJ_TYPE_STRING: return lhs->boolean && rhs->string; break;
-    case OBJ_TYPE_ARRAY: return lhs->boolean && rhs->objarr; break;
+    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->boolean && rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->boolean && rhs->boolean); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
+    case OBJ_TYPE_STRING: return obj_new_bool(lhs->boolean && rhs->string); break;
+    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->boolean && rhs->objarr); break;
     }
 
     assert(0 && "impossible. failed to compare and bool");
-    return false;
+    return NULL;
 }
 
-static bool
+static object_t *
 ast_compare_and_string(ast_t *self, object_t *lhs, object_t *rhs) {
     assert(lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
-    case OBJ_TYPE_INTEGER: return lhs->string && rhs->lvalue; break;
-    case OBJ_TYPE_BOOL: return lhs->string && rhs->boolean; break;
-    case OBJ_TYPE_IDENTIFIER: return ast_compare_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
-    case OBJ_TYPE_STRING: return lhs->string && rhs->string; break;
-    case OBJ_TYPE_ARRAY: return lhs->string && rhs->objarr; break;
+    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->string && rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->string && rhs->boolean); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
+    case OBJ_TYPE_STRING: return obj_new_bool(lhs->string && rhs->string); break;
+    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->string && rhs->objarr); break;
     }
 
     assert(0 && "impossible. failed to compare and string");
-    return false;
+    return NULL;
 }
 
-static bool
+static object_t *
 ast_compare_and_array(ast_t *self, object_t *lhs, object_t *rhs) {
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
-    case OBJ_TYPE_INTEGER: return lhs->objarr && rhs->lvalue; break;
-    case OBJ_TYPE_BOOL: return lhs->objarr && rhs->boolean; break;
-    case OBJ_TYPE_IDENTIFIER: return ast_compare_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
-    case OBJ_TYPE_STRING: return lhs->objarr && rhs->string; break;
-    case OBJ_TYPE_ARRAY: return lhs->objarr && rhs->objarr; break;
+    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->objarr && rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->objarr && rhs->boolean); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
+    case OBJ_TYPE_STRING: return obj_new_bool(lhs->objarr && rhs->string); break;
+    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->objarr && rhs->objarr); break;
     }
 
     assert(0 && "impossible. failed to compare and array");
-    return false;
+    return NULL;
 }
 
-static bool
+static object_t *
 ast_compare_and(ast_t *self, object_t *lhs, object_t *rhs) {
     switch (lhs->type) {
     case OBJ_TYPE_INTEGER: return ast_compare_and_int(self, lhs, rhs); break;
     case OBJ_TYPE_BOOL: return ast_compare_and_bool(self, lhs, rhs); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_compare_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_and); break;
     case OBJ_TYPE_STRING: return ast_compare_and_string(self, lhs, rhs); break;
     case OBJ_TYPE_ARRAY: return ast_compare_and_array(self, lhs, rhs); break;
     }
 
     assert(0 && "impossible. failed to compare and");
-    return false;
+    return NULL;
 }
 
 static object_t *
@@ -2402,33 +2409,31 @@ ast_traverse_and_test(ast_t *self, node_t *node) {
     }
     assert(rhs);
 
-    bool result = ast_compare_and(self, lhs, rhs);
-
-    return obj_new_bool(result);
+    return ast_compare_and(self, lhs, rhs);
 }
 
-static bool
+static object_t *
 ast_compare_not(ast_t *self, object_t *operand) {
     assert(operand);
-    
+
     switch (operand->type) {
-    case OBJ_TYPE_INTEGER: return !operand->lvalue; break;
-    case OBJ_TYPE_BOOL: return !operand->boolean; break;
+    case OBJ_TYPE_INTEGER: return obj_new_bool(!operand->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_bool(!operand->boolean); break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *obj = get_var(self, str_getc(operand->identifier));
         if (!obj) {
             ast_set_error_detail(self, "\"%s\" is not defined", str_getc(operand->identifier));
-            return false;
+            return NULL;
         }
 
         return ast_compare_not(self, obj);
     } break;
-    case OBJ_TYPE_STRING: return !operand->string; break;
-    case OBJ_TYPE_ARRAY: return !operand->objarr; break;
+    case OBJ_TYPE_STRING: return obj_new_bool(!operand->string); break;
+    case OBJ_TYPE_ARRAY: return obj_new_bool(!operand->objarr); break;
     }
 
     assert(0 && "impossible. failed to compare not");
-    return false;
+    return NULL;
 }
 
 static object_t *
@@ -2445,12 +2450,244 @@ ast_traverse_not_test(ast_t *self, node_t *node) {
             return NULL;
         }
 
-        bool result = ast_compare_not(self, operand);
-        return obj_new_bool(result);
+        return ast_compare_not(self, operand);
     } else if (not_test->comparison) {
         return _ast_traverse(self, not_test->comparison);
     }
 
+    return NULL;
+}
+
+static object_t *
+ast_compare_comparison_eq_int(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_INTEGER);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->lvalue == rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->lvalue == rhs->boolean); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't compare equal int and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't compare equal int and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison eq int");
+    return NULL;
+}
+
+static object_t *
+ast_compare_comparison_eq_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->boolean == rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->boolean == rhs->boolean); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't compare equal bool and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't compare equal bool and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison eq bool");
+    return NULL;
+}
+
+static object_t *
+ast_compare_comparison_eq_string(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_STRING);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        ast_set_error_detail(self, "can't compare equal string and int");
+        return NULL;
+        break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't compare equal string and bool");
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq); break;
+    case OBJ_TYPE_STRING: return obj_new_bool(cstr_eq(str_getc(lhs->string), str_getc(rhs->string))); break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't compare equal string and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison string");
+    return NULL;
+}
+
+static object_t *
+ast_compare_comparison_eq_array(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_ARRAY);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        ast_set_error_detail(self, "can't compare equal array and int");
+        return NULL;
+        break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't compare equal array and bool");
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't compare equal array and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        err_die("TODO: compare equal array and array");
+        break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison array");
+    return NULL;
+}
+
+static object_t *
+ast_compare_comparison_eq(ast_t *self, object_t *lhs, object_t *rhs) {
+    switch (lhs->type) {
+    case OBJ_TYPE_INTEGER: return ast_compare_comparison_eq_int(self, lhs, rhs); break;
+    case OBJ_TYPE_BOOL: return ast_compare_comparison_eq_bool(self, lhs, rhs); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_eq); break;
+    case OBJ_TYPE_STRING: return ast_compare_comparison_eq_string(self, lhs, rhs); break;
+    case OBJ_TYPE_ARRAY: return ast_compare_comparison_eq_array(self, lhs, rhs); break;
+    }
+    assert(0 && "impossible. failed to compare comparison todo");
+    return NULL;
+}
+
+static object_t *
+ast_compare_comparison_not_eq_int(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_INTEGER);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->lvalue != rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->lvalue != rhs->boolean); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't compare not equal int and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't compare not equal int and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison not eq int");
+    return NULL;
+}
+
+static object_t *
+ast_compare_comparison_not_eq_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->boolean != rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->boolean != rhs->boolean); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't compare not equal bool and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't compare not equal bool and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison not eq bool");
+    return NULL;
+}
+
+static object_t *
+ast_compare_comparison_not_eq_string(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_STRING);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        ast_set_error_detail(self, "can't compare not equal string and int");
+        return NULL;
+        break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't compare not equal string and bool");
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq); break;
+    case OBJ_TYPE_STRING: return obj_new_bool(!cstr_eq(str_getc(lhs->string), str_getc(rhs->string))); break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't compare not equal string and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison not eq string");
+    return NULL;
+}
+
+static object_t *
+ast_compare_comparison_not_eq_array(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_ARRAY);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        ast_set_error_detail(self, "can't compare not equal array and int");
+        return NULL;
+        break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't compare not equal array and bool");
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't compare not equal array and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        err_die("TODO: compare not equal array");
+        break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison not eq array");
+    return NULL;
+}
+
+static object_t *
+ast_compare_comparison_not_eq(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(0 && "impossible. failed to compare comparison not eq");
+
+    switch (lhs->type) {
+    case OBJ_TYPE_INTEGER: return ast_compare_comparison_not_eq_int(self, lhs, rhs); break;
+    case OBJ_TYPE_BOOL: return ast_compare_comparison_not_eq_bool(self, lhs, rhs); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_not_eq); break;
+    case OBJ_TYPE_STRING: return ast_compare_comparison_not_eq_string(self, lhs, rhs); break;
+    case OBJ_TYPE_ARRAY: return ast_compare_comparison_not_eq_array(self, lhs, rhs); break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison not eq");
+    return NULL;
+}
+
+static object_t *
+ast_compare_comparison(ast_t *self, object_t *lhs, node_comp_op_t *comp_op, object_t *rhs) {
+    switch (comp_op->op) {
+    default: break;
+    case OP_EQ: return ast_compare_comparison_eq(self, lhs, rhs); break;
+    case OP_NOT_EQ: return ast_compare_comparison_not_eq(self, lhs, rhs); break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison");
     return NULL;
 }
 
@@ -2469,172 +2706,253 @@ ast_traverse_comparison(ast_t *self, node_t *node) {
     }
 
     node_comp_op_t *comp_op = comparison->comp_op->real;
+    assert(comp_op);
+
     object_t *rhs = _ast_traverse(self, comparison->comparison);
     if (ast_has_error(self)) {
         return NULL;
     }
+    assert(rhs);
 
-    bool result = false;
-    switch (comp_op->op) {
-    case OP_EQ:
-        switch (lhs->type) {
-        case OBJ_TYPE_INTEGER:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                result = lhs->lvalue == rhs->lvalue;
-                break;
-            case OBJ_TYPE_BOOL:
-                result = lhs->lvalue == rhs->boolean;
-                break;
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't compare equal int and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't compare equal int and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_BOOL:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                result = lhs->boolean == rhs->lvalue;
-                break;
-            case OBJ_TYPE_BOOL:
-                result = lhs->boolean == rhs->boolean;
-                break;
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't compare equal bool and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't compare equal bool and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_STRING:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                ast_set_error_detail(self, "can't compare equal string and int");
-                return NULL;
-                break;
-            case OBJ_TYPE_BOOL:
-                ast_set_error_detail(self, "can't compare equal string and bool");
-                return NULL;
-                break;
-            case OBJ_TYPE_STRING:
-                result = cstr_eq(str_getc(lhs->string), str_getc(rhs->string));
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't compare equal string and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_ARRAY:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                ast_set_error_detail(self, "can't compare equal array and int");
-                return NULL;
-                break;
-            case OBJ_TYPE_BOOL:
-                ast_set_error_detail(self, "can't compare equal array and bool");
-                return NULL;
-                break;
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't compare equal array and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                err_die("TODO: compare equal array and array");
-                break;
-            }
-            break;
-        }
+    return ast_compare_comparison(self, lhs, comp_op, rhs);
+}
+
+static object_t *
+ast_calc_expr_add_int(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_INTEGER);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: return obj_new_int(lhs->lvalue + rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_int(lhs->lvalue + rhs->boolean);
+    break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add); break;
+    case OBJ_TYPE_STRING:
+        err_die("TODO: add string");
         break;
-    case OP_NOT_EQ:
-        switch (lhs->type) {
-        case OBJ_TYPE_INTEGER:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                result = lhs->lvalue != rhs->lvalue;
-                break;
-            case OBJ_TYPE_BOOL:
-                result = lhs->lvalue != rhs->boolean;
-                break;
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't compare not equal int and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't compare not equal int and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_BOOL:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                result = lhs->boolean != rhs->lvalue;
-                break;
-            case OBJ_TYPE_BOOL:
-                result = lhs->boolean != rhs->boolean;
-                break;
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't compare not equal bool and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't compare not equal bool and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_STRING:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                ast_set_error_detail(self, "can't compare not equal string and int");
-                return NULL;
-                break;
-            case OBJ_TYPE_BOOL:
-                ast_set_error_detail(self, "can't compare not equal string and bool");
-                return NULL;
-                break;
-            case OBJ_TYPE_STRING:
-                result = !cstr_eq(str_getc(lhs->string), str_getc(rhs->string));
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't compare not equal string and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_ARRAY:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                ast_set_error_detail(self, "can't compare not equal array and int");
-                return NULL;
-                break;
-            case OBJ_TYPE_BOOL:
-                ast_set_error_detail(self, "can't compare not equal array and bool");
-                return NULL;
-                break;
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't compare not equal array and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                err_die("TODO: compare not equal array");
-                break;
-            }
-            break;
-        }
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't add int and array");
+        return NULL;
         break;
     }
 
-    return obj_new_bool(result);
+    assert(0 && "impossible. failed to calc expr int");
+    return NULL;
+}
+
+static object_t *
+ast_calc_expr_add_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        return obj_new_int(lhs->boolean + rhs->lvalue);
+    case OBJ_TYPE_BOOL:
+        return obj_new_int(lhs->boolean + rhs->boolean);
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't add bool and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't add bool and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc expr bool");
+    return NULL;
+}
+
+static object_t *
+ast_calc_expr_add_string(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_STRING);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        ast_set_error_detail(self, "can't add string and int");
+        return NULL;
+        break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't add string and bool");
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add); break;
+    case OBJ_TYPE_STRING:
+        err_die("TODO: add string 2");
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't add string and array");
+        return NULL;
+        break;
+    }
+    assert(0 && "impossible. failed to calc expr string");
+    return NULL;
+}
+
+static object_t *
+ast_calc_expr_add_array(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_ARRAY);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        ast_set_error_detail(self, "can't add array and int");
+        return NULL;
+        break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't add array and bool");
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't add array and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't add array and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc expr array");
+    return NULL;
+}
+
+static object_t *
+ast_calc_expr_add(ast_t *self, object_t *lhs, object_t *rhs) {
+    switch (lhs->type) {
+    case OBJ_TYPE_INTEGER: return ast_calc_expr_add_int(self, lhs, rhs); break;
+    case OBJ_TYPE_BOOL: return ast_calc_expr_add_bool(self, lhs, rhs); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_lhs(self, lhs, rhs, ast_calc_expr_add); break;
+    case OBJ_TYPE_STRING: return ast_calc_expr_add_string(self, lhs, rhs); break;
+    case OBJ_TYPE_ARRAY: return ast_calc_expr_add_array(self, lhs, rhs); break;
+    }
+
+    assert(0 && "impossible. failed to calc expr add");
+    return NULL;
+}
+
+static object_t *
+ast_calc_expr_sub_int(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_INTEGER);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: return obj_new_int(lhs->lvalue - rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_int(lhs->lvalue - rhs->boolean); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub); break;
+    case OBJ_TYPE_STRING:
+        err_die("TODO: add string");
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't add int and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc expr sub int");
+    return NULL;
+}
+
+static object_t *
+ast_calc_expr_sub_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: return obj_new_int(lhs->boolean - rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_int(lhs->boolean - rhs->boolean); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't sub bool and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't sub bool and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc expr sub bool");
+    return NULL;
+}
+
+static object_t *
+ast_calc_expr_sub_string(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_STRING);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        ast_set_error_detail(self, "can't sub string and int");
+        return NULL;
+        break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't sub string and bool");
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub); break;
+    case OBJ_TYPE_STRING:
+        err_die("TODO: sub string 2");
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't sub string and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc expr sub string");
+    return NULL;
+}
+
+static object_t *
+ast_calc_expr_sub_array(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_ARRAY);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        ast_set_error_detail(self, "can't sub array and int");
+        return NULL;
+        break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't sub array and bool");
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't sub array and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't sub array and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc expr sub array");
+    return NULL;
+}
+
+static object_t *
+ast_calc_expr_sub(ast_t *self, object_t *lhs, object_t *rhs) {
+    switch (lhs->type) {
+    case OBJ_TYPE_INTEGER: return ast_calc_expr_sub_int(self, lhs, rhs); break;
+    case OBJ_TYPE_BOOL: return ast_calc_expr_sub_bool(self, lhs, rhs); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub); break;
+    case OBJ_TYPE_STRING: return ast_calc_expr_sub_string(self, lhs, rhs); break;
+    case OBJ_TYPE_ARRAY: return ast_calc_expr_sub_array(self, lhs, rhs); break;
+    }
+
+    assert(0 && "impossible. failed to calc expr sub");
+    return NULL;
+}
+
+static object_t *
+ast_calc_expr(ast_t *self, object_t *lhs, node_add_sub_op_t *add_sub_op, object_t *rhs) {
+    switch (add_sub_op->op) {
+    default: break;
+    case OP_ADD: return ast_calc_expr_add(self, lhs, rhs); break;
+    case OP_SUB: return ast_calc_expr_sub(self, lhs, rhs); break;
+    }
+
+    assert(0 && "impossible. failed to calc expr");
+    return false;
 }
 
 static object_t *
@@ -2660,161 +2978,267 @@ ast_traverse_expr(ast_t *self, node_t *node) {
     }
     assert(rhs);
 
-    switch (add_sub_op->op) {
-    case OP_ADD:
-        switch (lhs->type) {
-        case OBJ_TYPE_INTEGER:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                return obj_new_int(lhs->lvalue + rhs->lvalue);
-            break;
-            case OBJ_TYPE_BOOL:
-                return obj_new_int(lhs->lvalue + rhs->boolean);
-            break;
-            case OBJ_TYPE_STRING:
-                err_die("TODO: add string");
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't add int and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_BOOL:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                return obj_new_int(lhs->boolean + rhs->lvalue);
-            case OBJ_TYPE_BOOL:
-                return obj_new_int(lhs->boolean + rhs->boolean);
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't add bool and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't add bool and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_STRING:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                ast_set_error_detail(self, "can't add string and int");
-                return NULL;
-                break;
-            case OBJ_TYPE_BOOL:
-                ast_set_error_detail(self, "can't add string and bool");
-                return NULL;
-                break;
-            case OBJ_TYPE_STRING:
-                err_die("TODO: add string 2");
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't add string and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_ARRAY:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                ast_set_error_detail(self, "can't add array and int");
-                return NULL;
-                break;
-            case OBJ_TYPE_BOOL:
-                ast_set_error_detail(self, "can't add array and bool");
-                return NULL;
-                break;
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't add array and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't add array and array");
-                return NULL;
-                break;
-            }
-            break;
-        }
+    return ast_calc_expr(self, lhs, add_sub_op, rhs);
+}
+
+static object_t *
+ast_calc_term_mul_int(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_INTEGER);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: return obj_new_int(lhs->lvalue * rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_int(lhs->lvalue * rhs->boolean); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul); break;
+    case OBJ_TYPE_STRING:
+        err_die("TODO: mul string");
         break;
-    case OP_SUB:
-        switch (lhs->type) {
-        case OBJ_TYPE_INTEGER:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                return obj_new_int(lhs->lvalue - rhs->lvalue);
-            break;
-            case OBJ_TYPE_BOOL:
-                return obj_new_int(lhs->lvalue - rhs->boolean);
-            break;
-            case OBJ_TYPE_STRING:
-                err_die("TODO: add string");
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't add int and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_BOOL:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                return obj_new_int(lhs->boolean - rhs->lvalue);
-            case OBJ_TYPE_BOOL:
-                return obj_new_int(lhs->boolean - rhs->boolean);
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't add bool and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't add bool and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_STRING:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                ast_set_error_detail(self, "can't add string and int");
-                return NULL;
-                break;
-            case OBJ_TYPE_BOOL:
-                ast_set_error_detail(self, "can't add string and bool");
-                return NULL;
-                break;
-            case OBJ_TYPE_STRING:
-                err_die("TODO: add string 2");
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't add string and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_ARRAY:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                ast_set_error_detail(self, "can't add array and int");
-                return NULL;
-                break;
-            case OBJ_TYPE_BOOL:
-                ast_set_error_detail(self, "can't add array and bool");
-                return NULL;
-                break;
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't add array and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't add array and array");
-                return NULL;
-                break;
-            }
-            break;
-        }
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't mul int and array");
+        return NULL;
         break;
     }
 
+    assert(0 && "impossible. failed to calc term mul int");
+    return NULL;
+}
+
+static object_t *
+ast_calc_term_mul_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: return obj_new_int(lhs->boolean * rhs->lvalue); break;
+    case OBJ_TYPE_BOOL: return obj_new_int(lhs->boolean * rhs->boolean); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't mul bool and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't mul bool and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc term mul bool");
+    return NULL;
+}
+
+static object_t *
+ast_calc_term_mul_string(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_STRING);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        ast_set_error_detail(self, "can't mul string and int");
+        return NULL;
+        break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't mul string and bool");
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul); break;
+    case OBJ_TYPE_STRING:
+        err_die("TODO: mul string 2");
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't mul string and array");
+        return NULL;
+        break;
+    }
+ 
+    assert(0 && "impossible. failed to calc term mul string");
+    return NULL;
+}
+
+static object_t *
+ast_calc_term_mul_array(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_ARRAY);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        ast_set_error_detail(self, "can't mul array and int");
+        return NULL;
+        break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't mul array and bool");
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't mul array and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't mul array and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc term mul array");
+    return NULL;
+}
+
+static object_t *
+ast_calc_term_mul(ast_t *self, object_t *lhs, object_t *rhs) {
+    switch (lhs->type) {
+    case OBJ_TYPE_INTEGER: ast_calc_term_mul_int(self, lhs, rhs); break;
+    case OBJ_TYPE_BOOL: ast_calc_term_mul_bool(self, lhs, rhs); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_lhs(self, lhs, rhs, ast_calc_term_mul); break;
+    case OBJ_TYPE_STRING: ast_calc_term_mul_string(self, lhs, rhs); break;
+    case OBJ_TYPE_ARRAY:
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc term mul");
+    return NULL;
+}
+
+static object_t *
+ast_calc_term_div_int(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_INTEGER);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        if (!rhs->lvalue) {
+            ast_set_error_detail(self, "zero division error");
+            return NULL;
+        }
+        return obj_new_int(lhs->lvalue / rhs->lvalue);
+    break;
+    case OBJ_TYPE_BOOL:
+        if (!rhs->boolean) {
+            ast_set_error_detail(self, "zero division error (2)");
+            return NULL;
+        }
+        return obj_new_int(lhs->lvalue / rhs->boolean);
+    break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't division int and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't division int and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc term div int");
+    return NULL;
+}
+
+static object_t *
+ast_calc_term_div_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        if (!rhs->lvalue) {
+            ast_set_error_detail(self, "zero division error (3)");
+            return NULL;
+        }
+        return obj_new_int(lhs->boolean / rhs->lvalue);
+    case OBJ_TYPE_BOOL:
+        if (!rhs->boolean) {
+            ast_set_error_detail(self, "zero division error (4)");
+            return NULL;
+        }
+        return obj_new_int(lhs->boolean / rhs->boolean);
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't division bool and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't division bool and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc term div bool");
+    return NULL;
+}
+
+static object_t *
+ast_calc_term_div_string(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_STRING);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        ast_set_error_detail(self, "can't division string and int");
+        return NULL;
+        break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't division string and bool");
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't division string and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't division string and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc term div string");
+    return NULL;
+}
+
+static object_t *
+ast_calc_term_div_array(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_ARRAY);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        ast_set_error_detail(self, "can't division array and int");
+        return NULL;
+        break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't division array and bool");
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div); break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't division array and string");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't division array and array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc term div array");
+    return NULL;
+}
+
+static object_t *
+ast_calc_term_div(ast_t *self, object_t *lhs, object_t *rhs) {
+    switch (lhs->type) {
+    case OBJ_TYPE_INTEGER: return ast_calc_term_div_int(self, lhs, rhs); break;
+    case OBJ_TYPE_BOOL: return ast_calc_term_div_bool(self, lhs, rhs); break;
+    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div); break;
+    case OBJ_TYPE_STRING: return ast_calc_term_div_string(self, lhs, rhs); break;
+    case OBJ_TYPE_ARRAY: return ast_calc_term_div_array(self, lhs, rhs); break;
+    }
+
+    assert(0 && "impossible. failed to calc term div");
+    return NULL;
+}
+
+static object_t *
+ast_calc_term(ast_t *self, object_t *lhs, node_mul_div_op_t *mul_div_op, object_t *rhs) {
+    switch (mul_div_op->op) {
+    default: break;
+    case OP_MUL: return ast_calc_term_mul(self, lhs, rhs); break;
+    case OP_DIV: return ast_calc_term_div(self, lhs, rhs); break;
+    }
+
+    assert(0 && "impossible. failed to calc term");
     return NULL;
 }
 
@@ -2841,179 +3265,152 @@ ast_traverse_term(ast_t *self, node_t *node) {
     }
     assert(rhs);
 
-    switch (mul_div_op->op) {
-    case OP_MUL:
-        switch (lhs->type) {
-        case OBJ_TYPE_INTEGER:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                return obj_new_int(lhs->lvalue * rhs->lvalue);
-            break;
-            case OBJ_TYPE_BOOL:
-                return obj_new_int(lhs->lvalue * rhs->boolean);
-            break;
-            case OBJ_TYPE_STRING:
-                err_die("TODO: mul string");
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't mul int and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_BOOL:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                return obj_new_int(lhs->boolean * rhs->lvalue);
-            case OBJ_TYPE_BOOL:
-                return obj_new_int(lhs->boolean * rhs->boolean);
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't mul bool and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't mul bool and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_STRING:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                ast_set_error_detail(self, "can't mul string and int");
-                return NULL;
-                break;
-            case OBJ_TYPE_BOOL:
-                ast_set_error_detail(self, "can't mul string and bool");
-                return NULL;
-                break;
-            case OBJ_TYPE_STRING:
-                err_die("TODO: mul string 2");
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't mul string and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_ARRAY:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                ast_set_error_detail(self, "can't mul array and int");
-                return NULL;
-                break;
-            case OBJ_TYPE_BOOL:
-                ast_set_error_detail(self, "can't mul array and bool");
-                return NULL;
-                break;
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't mul array and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't mul array and array");
-                return NULL;
-                break;
-            }
-            break;
-        }
+    return ast_calc_term(self, lhs, mul_div_op, rhs);
+}
+
+static object_t *
+ast_calc_asscalc_ass(ast_t *self, object_t *lhs, object_t *rhs) {
+    switch (lhs->type) {
+    default:
+        ast_set_error_detail(self, "can't assign to %d", lhs->type);
+        return NULL;
         break;
-    case OP_DIV:
-        switch (lhs->type) {
-        case OBJ_TYPE_INTEGER:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                if (!rhs->lvalue) {
-                    ast_set_error_detail(self, "zero division error");
-                    return NULL;
-                }
-                return obj_new_int(lhs->lvalue / rhs->lvalue);
-            break;
-            case OBJ_TYPE_BOOL:
-                if (!rhs->boolean) {
-                    ast_set_error_detail(self, "zero division error (2)");
-                    return NULL;
-                }
-                return obj_new_int(lhs->lvalue / rhs->boolean);
-            break;
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't division int and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't division int and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_BOOL:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                if (!rhs->lvalue) {
-                    ast_set_error_detail(self, "zero division error (3)");
-                    return NULL;
-                }
-                return obj_new_int(lhs->boolean / rhs->lvalue);
-            case OBJ_TYPE_BOOL:
-                if (!rhs->boolean) {
-                    ast_set_error_detail(self, "zero division error (4)");
-                    return NULL;
-                }
-                return obj_new_int(lhs->boolean / rhs->boolean);
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't division bool and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't division bool and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_STRING:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                ast_set_error_detail(self, "can't division string and int");
-                return NULL;
-                break;
-            case OBJ_TYPE_BOOL:
-                ast_set_error_detail(self, "can't division string and bool");
-                return NULL;
-                break;
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't division string and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't division string and array");
-                return NULL;
-                break;
-            }
-            break;
-        case OBJ_TYPE_ARRAY:
-            switch (rhs->type) {
-            case OBJ_TYPE_INTEGER:
-                ast_set_error_detail(self, "can't division array and int");
-                return NULL;
-                break;
-            case OBJ_TYPE_BOOL:
-                ast_set_error_detail(self, "can't division array and bool");
-                return NULL;
-                break;
-            case OBJ_TYPE_STRING:
-                ast_set_error_detail(self, "can't division array and string");
-                return NULL;
-                break;
-            case OBJ_TYPE_ARRAY:
-                ast_set_error_detail(self, "can't division array and array");
-                return NULL;
-                break;
-            }
-            break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_dict_t *varmap = ctx_get_varmap(self->context);
+        objdict_move(varmap, str_getc(lhs->identifier), rhs);
+        return rhs;
+    } break;
+    }
+
+    assert(0 && "impossible. failed to calc asscalc ass");
+    return NULL;
+}
+
+static object_t *
+ast_calc_asscalc_add_ass_identifier_int(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_INTEGER);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER: lhs->lvalue += rhs->lvalue; break;
+    case OBJ_TYPE_BOOL: lhs->lvalue += rhs->boolean; break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = str_getc(rhs->identifier);
+        object_t *rvar = get_var(self, idn);
+        if (!rvar) {
+            ast_set_error_detail(self, "\"%s\" is not defined", idn);
+            return NULL;
         }
+
+        return ast_calc_asscalc_add_ass_identifier_int(self, lhs, rvar);
+    } break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't add assign string to int");
+        return NULL;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't add assign array to int");
+        return NULL;
         break;
     }
 
+    assert(0 && "impossible. failed to calc asscalc add ass identifier int");
+    return NULL;
+}
+
+static object_t *
+ast_calc_asscalc_add_ass_identifier_string(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_STRING);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_INTEGER:
+        ast_set_error_detail(self, "can't add assign int to string");
+        return NULL;
+        break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't add assign bool to string");
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER:
+        ast_set_error_detail(self, "can't add assign identifier to string");
+        return NULL;
+        break;
+    case OBJ_TYPE_STRING:
+        str_app(lhs->string, str_getc(rhs->string));
+        return lhs;
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't add assign array to string");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc asscalc add ass identifier string");
+    return NULL;
+}
+
+static object_t *
+ast_calc_asscalc_add_ass_identifier(ast_t *self, object_t *lhs, object_t *rhs) {
+    assert(lhs->type == OBJ_TYPE_IDENTIFIER);
+
+    object_t *lvar = get_var(self, str_getc(lhs->identifier));
+    if (!lvar) {
+        ast_set_error_detail(self, "\"%s\" is not defined", str_getc(lhs->identifier));
+        return NULL;
+    }
+    
+    switch (lvar->type) {
+    case OBJ_TYPE_INTEGER: return ast_calc_asscalc_add_ass_identifier_int(self, lvar, rhs); break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't add assign to bool");
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER:
+        ast_set_error_detail(self, "can't add assign to identifier");
+        return NULL;
+        break;
+    case OBJ_TYPE_STRING: return ast_calc_asscalc_add_ass_identifier_string(self, lvar, rhs); break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't add assign array");
+        return NULL;
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc asscalc add ass identifier");
+    return NULL;
+}
+
+static object_t *
+ast_calc_asscalc_add_ass(ast_t *self, object_t *lhs, object_t *rhs) {
+    switch (lhs->type) {
+    default:
+        ast_set_error_detail(self, "can't add assign to %d", lhs->type);
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: return ast_calc_asscalc_add_ass_identifier(self, lhs, rhs); break;
+    }
+
+    assert(0 && "impossible. failed to calc asscalc add ass");
+    return NULL;
+}
+
+static object_t *
+ast_calc_asscalc(ast_t *self, object_t *lhs, node_augassign_t *augassign, object_t *rhs) {
+    switch (augassign->op) {
+    default: break;
+    case OP_ASS: return ast_calc_asscalc_ass(self, lhs, rhs); break;
+    case OP_ADD_ASS: return ast_calc_asscalc_add_ass(self, lhs, rhs); break;
+    case OP_SUB_ASS:
+        err_die("TODO: sub ass");        
+        break;
+    case OP_MUL_ASS:
+        err_die("TODO: mul ass");        
+        break;
+    case OP_DIV_ASS:
+        err_die("TODO: div ass");
+        break;
+    }
+
+    assert(0 && "impossible. failed to calc asscalc");
     return NULL;
 }
 
@@ -3040,132 +3437,7 @@ ast_traverse_asscalc(ast_t *self, node_t *node) {
     }
     assert(rhs);
 
-    switch (augassign->op) {
-    case OP_ASS: {
-        switch (lhs->type) {
-        default: {
-            ast_set_error_detail(self, "can't assign to %d", lhs->type);
-        } break;
-        case OBJ_TYPE_IDENTIFIER: {
-            object_dict_t *varmap = ctx_get_varmap(self->context);
-            objdict_move(varmap, str_getc(lhs->identifier), rhs);
-        } break;
-        }
-    } break;
-    case OP_ADD_ASS: {
-        switch (lhs->type) {
-        default: {
-            ast_set_error_detail(self, "can't add assign to %d", lhs->type);
-        } break;
-        case OBJ_TYPE_IDENTIFIER: {
-            // add value to variable
-            object_dict_t *varmap = ctx_get_varmap(self->context);
-            object_dict_item_t *item = objdict_get(varmap, str_getc(lhs->identifier));
-            if (!item) {
-                ast_set_error_detail(self, "\"%s\" is not defined", str_getc(lhs->identifier));
-                return NULL;
-            }
-
-            object_t *lvar = item->value;
-            assert(lvar);
-            
-            switch (lvar->type) {
-            case OBJ_TYPE_INTEGER: {
-                switch (rhs->type) {
-                case OBJ_TYPE_INTEGER: {
-                    lvar->lvalue += rhs->lvalue;
-                } break;
-                case OBJ_TYPE_BOOL: {
-                    lvar->lvalue += rhs->boolean;
-                } break;
-                case OBJ_TYPE_IDENTIFIER: {
-                    item = objdict_get(varmap, str_getc(rhs->identifier));
-                    if (!item) {
-                        ast_set_error_detail(self, "\"%s\" is not defined", str_getc(rhs->identifier));
-                        return NULL;
-                    }
-                    object_t *rvar = item->value;
-                    assert(rvar);
-                    switch (rvar->type) {
-                    case OBJ_TYPE_INTEGER: {
-                        lvar->lvalue += rvar->lvalue;
-                    } break;
-                    case OBJ_TYPE_BOOL: {
-                        lvar->lvalue += rvar->boolean;
-                    } break;
-                    case OBJ_TYPE_IDENTIFIER: {
-                        ast_set_error_detail(self, "can't add assign identifier to int");
-                        return NULL;
-                    } break;
-                    case OBJ_TYPE_STRING: {
-                        ast_set_error_detail(self, "can't add assign string to int");
-                        return NULL;
-                    } break;
-                    case OBJ_TYPE_ARRAY: {
-                        ast_set_error_detail(self, "can't add assign array to int");
-                        return NULL;
-                    } break;
-                    } // switch
-                } break;
-                case OBJ_TYPE_STRING: {
-                    ast_set_error_detail(self, "can't add assign string to int");
-                    return NULL;
-                } break;
-                case OBJ_TYPE_ARRAY: {
-                    ast_set_error_detail(self, "can't add assign array to int");
-                    return NULL;
-                } break;
-                } // switch
-            } break;
-            case OBJ_TYPE_BOOL: {
-                ast_set_error_detail(self, "can't add assign to bool");
-            } break;
-            case OBJ_TYPE_IDENTIFIER: {
-                ast_set_error_detail(self, "can't add assign to identifier");
-            } break;
-            case OBJ_TYPE_STRING: {
-                switch (rhs->type) {
-                case OBJ_TYPE_INTEGER: {
-                    ast_set_error_detail(self, "can't add assign int to string");
-                    return NULL;
-                } break;
-                case OBJ_TYPE_BOOL: {
-                    ast_set_error_detail(self, "can't add assign bool to string");
-                    return NULL;
-                } break;
-                case OBJ_TYPE_IDENTIFIER: {
-                    ast_set_error_detail(self, "can't add assign identifier to string");
-                    return NULL;
-                } break;
-                case OBJ_TYPE_STRING: {
-                    str_app(lvar->string, str_getc(rhs->string));
-                } break;
-                case OBJ_TYPE_ARRAY: {
-                    ast_set_error_detail(self, "can't add assign array to string");
-                    return NULL;
-                } break;
-                } // switch
-            } break;
-            case OBJ_TYPE_ARRAY: {
-                ast_set_error_detail(self, "can't add assign array");
-                return NULL;
-            } break;
-            } // switch
-        } break;
-        } // switch
-    } break;
-    case OP_SUB_ASS: {
-        err_die("TODO: sub ass");        
-    } break;
-    case OP_MUL_ASS: {
-        err_die("TODO: mul ass");        
-    } break;
-    case OP_DIV_ASS: {
-        err_die("TODO: div ass");
-    } break;
-    } // switch
-
-    return NULL;
+    return ast_calc_asscalc(self, lhs, augassign, rhs);
 }
 
 static object_t *
