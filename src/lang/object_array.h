@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "lib/memory.h"
+#include "lang/types.h"
 #include "lang/object.h"
 
 struct object_array;
@@ -18,6 +19,9 @@ objarr_del(object_array_t* self);
 
 object_array_t*
 objarr_new(void);
+
+object_array_t*
+objarr_new_other(object_array_t *other);
 
 /*********
 * getter *

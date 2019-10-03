@@ -17,15 +17,17 @@ BNF of Cap's template language
            if_stmt: 'if' test ':' elems* ( elif_stmt | else_stmt | 'end' ) |
                     'if' test ':' '@}' blocks* '{@' ( elif_stmt | else_stmt | 'end' )
          elif_stmt: 'elif' test ':' elems ( elif_stmt | else_stmt | 'end' ) |
-                    'elif' test ':' '@}' elems '{@' ( elif_stmt | else_stmt | 'end' )
-         else_stmt: 'else' ':' elems 'end' |
-                    'else' ':' '@}' elems '{@' 'end'
+                    'elif' test ':' '@}' blocks* '{@' ( elif_stmt | else_stmt | 'end' )
+         else_stmt: 'else' ':' elems* 'end'* |
+                    'else' ':' '@}' blocks* '{@' 'end'*
 
           for_stmt: 'for' test_list ';' test ';' test_list ':' elems 'end' |
                     'for' test ':' elems 'end' |
                     'for' ':' elems 'end'
 
            formula: assign_list
+
+       # BUG =
        assign_list: ( test_list | test_list '=' ) assign_list
          test_list: ( test | test ',' ) test_list
             
@@ -45,7 +47,7 @@ BNF of Cap's template language
            comp_op: '==' | '!='
         add_sub_op: '+' | '-'
         mul_div_op: '*' | '/'
-         augassign: '=' | '+=' | '-=' | '*=' | '/='
+         augassign: '+=' | '-=' | '*=' | '/='
              digit: [0-9]+
            newline: '\n'
             caller: identifier_chain '(' test_list ')'

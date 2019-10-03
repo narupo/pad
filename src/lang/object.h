@@ -9,7 +9,8 @@
 #include "lang/types.h"
 
 typedef enum {
-    OBJ_TYPE_INTEGER = 0,
+    OBJ_TYPE_NULL = 0,
+    OBJ_TYPE_INTEGER,
     OBJ_TYPE_BOOL,
     OBJ_TYPE_IDENTIFIER,
     OBJ_TYPE_STRING,
@@ -30,6 +31,12 @@ obj_del(object_t *self);
 
 object_t *
 obj_new(obj_type_t type);
+
+object_t *
+obj_new_other(object_t *other);
+
+object_t *
+obj_new_null(void);
 
 object_t *
 obj_new_cidentifier(const char *identifier);

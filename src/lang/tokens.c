@@ -52,7 +52,10 @@ token_type_to_str(const token_t *self) {
     default: return "unknown"; break;
     case TOKEN_TYPE_INVALID: return "invalid"; break;
     case TOKEN_TYPE_NEWLINE: return "NEWLINE"; break;
-    case TOKEN_TYPE_TEXT_BLOCK: return "text block"; break;
+    case TOKEN_TYPE_TEXT_BLOCK:
+        snprintf(str, sizeof str, "text block[%s]", self->text);
+        return str;
+        break;
     case TOKEN_TYPE_BLOCK: return "block"; break;
     case TOKEN_TYPE_LBRACEAT: return "{@"; break;
     case TOKEN_TYPE_RBRACEAT: return "@}"; break;
@@ -94,8 +97,8 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_STMT_IMPORT: return "import"; break;
     
     case TOKEN_TYPE_STMT_IF: return "if"; break;
-    case TOKEN_TYPE_STMT_ELIF: return "if"; break;
-    case TOKEN_TYPE_STMT_ELSE: return "if"; break;
+    case TOKEN_TYPE_STMT_ELIF: return "elif"; break;
+    case TOKEN_TYPE_STMT_ELSE: return "else"; break;
 
     case TOKEN_TYPE_STMT_FOR: return "for"; break;
     }
