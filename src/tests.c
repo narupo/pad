@@ -4120,7 +4120,7 @@ test_ast_parse(void) {
         assert(if_stmt->else_stmt == NULL);
     }
 
-    /* tkr_parse(tkr, "{@ if 1 + 2: end @}");
+    tkr_parse(tkr, "{@ if 1 + 2: end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -4136,22 +4136,22 @@ test_ast_parse(void) {
         and_test = or_test->and_test->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
-        expr = comparison->lexpr->real;
-        term = expr->lterm->real;
-        asscalc = term->lasscalc->real;
-        factor = asscalc->lfactor->real;
+        expr = nodearr_get(comparison->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
+        factor = nodearr_get(asscalc->nodearr, 0)->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 1);
-        term = expr->rterm->real;
-        asscalc = term->lasscalc->real;
-        factor = asscalc->lfactor->real;
+        term = nodearr_get(expr->nodearr, 2)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
+        factor = nodearr_get(asscalc->nodearr, 0)->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 2);    
-    } */
+    }
 
     tkr_parse(tkr, "abc{@ if 1: end @}def");
     {
