@@ -814,9 +814,9 @@ ast_asscalc(ast_t *self, int dep) {
 #undef return_cleanup
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
-        ast_del_nodes(self, cur->factor); \
+        ast_del_nodes(self, cur->lfactor); \
         ast_del_nodes(self, cur->augassign); \
-        ast_del_nodes(self, cur->asscalc); \
+        ast_del_nodes(self, cur->rfactor); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
@@ -825,8 +825,8 @@ ast_asscalc(ast_t *self, int dep) {
     } \
 
     check("call ast_factor");
-    cur->factor = ast_factor(self, dep+1);
-    if (!cur->factor) {
+    cur->lfactor = ast_factor(self, dep+1);
+    if (!cur->lfactor) {
         if (ast_has_error(self)) {
             return_cleanup("");
         }
@@ -843,8 +843,8 @@ ast_asscalc(ast_t *self, int dep) {
     }
 
     check("call ast_asscalc");
-    cur->asscalc = ast_asscalc(self, dep+1);
-    if (!cur->asscalc) {
+    cur->rfactor = ast_asscalc(self, dep+1);
+    if (!cur->rfactor) {
         if (ast_has_error(self)) {
             return_cleanup("");
         }
@@ -863,9 +863,9 @@ ast_term(ast_t *self, int dep) {
 #undef return_cleanup
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
-        ast_del_nodes(self, cur->asscalc); \
+        ast_del_nodes(self, cur->lasscalc); \
         ast_del_nodes(self, cur->mul_div_op); \
-        ast_del_nodes(self, cur->term); \
+        ast_del_nodes(self, cur->rasscalc); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
@@ -873,9 +873,9 @@ ast_term(ast_t *self, int dep) {
         return_this(NULL); \
     } \
 
-    check("call ast_asscalc");
-    cur->asscalc = ast_asscalc(self, dep+1);
-    if (!cur->asscalc) {
+    check("call left ast_asscalc");
+    cur->lasscalc = ast_asscalc(self, dep+1);
+    if (!cur->lasscalc) {
         if (ast_has_error(self)) {
             return_cleanup("");
         }
@@ -891,9 +891,9 @@ ast_term(ast_t *self, int dep) {
         return_this(node_new(NODE_TYPE_TERM, cur));
     }
 
-    check("call ast_term");
-    cur->term = ast_term(self, dep+1);
-    if (!cur->term) {
+    check("call right ast_asscalc");
+    cur->rasscalc = ast_asscalc(self, dep+1);
+    if (!cur->rasscalc) {
         if (ast_has_error(self)) {
             return_cleanup("");
         }
@@ -970,9 +970,9 @@ ast_expr(ast_t *self, int dep) {
 #undef return_cleanup
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
-        ast_del_nodes(self, cur->term); \
+        ast_del_nodes(self, cur->lterm); \
         ast_del_nodes(self, cur->add_sub_op); \
-        ast_del_nodes(self, cur->expr); \
+        ast_del_nodes(self, cur->rterm); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
@@ -980,9 +980,9 @@ ast_expr(ast_t *self, int dep) {
         return_this(NULL); \
     } \
 
-    check("call ast_term");
-    cur->term = ast_term(self, dep+1);
-    if (!cur->term) {
+    check("call left ast_term");
+    cur->lterm = ast_term(self, dep+1);
+    if (!cur->lterm) {
         if (ast_has_error(self)) {
             return_cleanup("");
         }
@@ -998,9 +998,9 @@ ast_expr(ast_t *self, int dep) {
         return_this(node_new(NODE_TYPE_EXPR, cur));
     }
 
-    check("call ast_expr");
-    cur->expr = ast_expr(self, dep+1);
-    if (!cur->expr) {
+    check("call ast_term");
+    cur->rterm = ast_term(self, dep+1);
+    if (!cur->rterm) {
         if (ast_has_error(self)) {
             return_cleanup("");
         }
@@ -1032,8 +1032,14 @@ ast_comp_op(ast_t *self, int dep) {
         self->ptr--;
         return_cleanup(""); // not error
         break;
-    case TOKEN_TYPE_OP_EQ: cur->op = OP_EQ; break;
-    case TOKEN_TYPE_OP_NOT_EQ: cur->op = OP_NOT_EQ; break;
+    case TOKEN_TYPE_OP_EQ:
+        cur->op = OP_EQ;
+        check("read ==");
+        break;
+    case TOKEN_TYPE_OP_NOT_EQ:
+        cur->op = OP_NOT_EQ;
+        check("read !=");
+        break;
     }
 
     return_this(node_new(NODE_TYPE_COMP_OP, cur));
@@ -1044,13 +1050,15 @@ ast_comparison(ast_t *self, int dep) {
     ready();
     declare(node_comparison_t, cur);
     token_t **save_ptr = self->ptr;
+    cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
-        ast_del_nodes(self, cur->expr); \
-        ast_del_nodes(self, cur->comp_op); \
-        ast_del_nodes(self, cur->comparison); \
+        for (; nodearr_len(cur->nodearr); ) { \
+            node_t *node = nodearr_popb(cur->nodearr); \
+            ast_del_nodes(self, node); \
+        } \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
@@ -1058,34 +1066,43 @@ ast_comparison(ast_t *self, int dep) {
         return_this(NULL); \
     } \
 
-    check("call ast_expr");
-    cur->expr = ast_expr(self, dep+1);
-    if (!cur->expr) {
+    check("call left ast_expr");
+    node_t *lexpr = ast_expr(self, dep+1);
+    if (!lexpr) {
         if (ast_has_error(self)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
     }
 
-    check("call ast_comp_op");
-    cur->comp_op = ast_comp_op(self, dep+1);
-    if (!cur->comp_op) {
-        if (ast_has_error(self)) {
-            return_cleanup("");
+    nodearr_moveb(cur->nodearr, lexpr);
+
+    for (;;) {
+        check("call ast_comp_op");
+        node_t *comp_op = ast_comp_op(self, dep+1);
+        if (!comp_op) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
+            return_this(node_new(NODE_TYPE_COMPARISON, cur));
         }
-        return_this(node_new(NODE_TYPE_COMPARISON, cur));
+
+        check("call right ast_expr");
+        node_t *rexpr = ast_expr(self, dep+1);
+        if (!rexpr) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
+            node_del(comp_op);
+            return_cleanup("syntax error. not found rhs operand in comparison");
+        }
+
+        nodearr_moveb(cur->nodearr, comp_op);
+        nodearr_moveb(cur->nodearr, rexpr);
     }
 
-    check("call ast_comparison");
-    cur->comparison = ast_comparison(self, dep+1);
-    if (!cur->comparison) {
-        if (ast_has_error(self)) {
-            return_cleanup("");
-        }
-        return_cleanup("syntax error. not found rhs operand in comparison");
-    }
-
-    return_this(node_new(NODE_TYPE_COMPARISON, cur));
+    assert(0 && "impossible. failed to comparison");
+    return NULL;
 }
 
 static node_t *
@@ -1934,14 +1951,12 @@ ast_traverse_ref_block(ast_t *self, node_t *node) {
     node_ref_block_t *ref_block = node->real;
 
     object_t *result = _ast_traverse(self, ref_block->formula);
-    vissf("result[%p]", result);
     if (ast_has_error(self)) {
         obj_del(result);
         return NULL;
     }
     assert(result);
 
-    vissf("result type[%d]", result->type);
     switch (result->type) {
     case OBJ_TYPE_NULL:
         ctx_pushb_buf(self->context, "null");
@@ -2020,7 +2035,6 @@ ast_traverse_formula(ast_t *self, node_t *node) {
         obj_del(result);
         return NULL;
     }
-    vissf("formula result[%s]", str_getc(obj_to_str(result)));
 
     return result;
 }
@@ -2230,7 +2244,6 @@ ast_calc_assign_to_array(ast_t *self, object_t *lhs, object_t *rhs) {
 
 static object_t *
 ast_calc_assign(ast_t *self, object_t *lhs, object_t *rhs) {
-    vissf("calc assign %d", lhs->type);
     switch (lhs->type) {
     default:
         ast_set_error_detail(self, "syntax error. invalid lhs in assign list");
@@ -2239,7 +2252,6 @@ ast_calc_assign(ast_t *self, object_t *lhs, object_t *rhs) {
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER:
-        viss("IDENTIFIER");
         return ast_calc_asscalc_ass(self, lhs, rhs);
         break;
     case OBJ_TYPE_ARRAY: return ast_calc_assign_to_array(self, lhs, rhs); break;
@@ -2259,7 +2271,6 @@ ast_traverse_assign_list(ast_t *self, node_t *node) {
         return NULL;
     }
     assert(lhs);
-    vissf("assign_list lhs[%s]", str_getc(obj_to_str(lhs)))
 
     object_t *rhs = _ast_traverse(self, assign_list->assign_list);
     if (ast_has_error(self)) {
@@ -2267,11 +2278,9 @@ ast_traverse_assign_list(ast_t *self, node_t *node) {
         return NULL;
     }
 
-    vissf("assign list rhs[%p]", rhs);
     if (!rhs) {
         return lhs;
     }
-    vissf("assign list rhs[%s]", str_getc(obj_to_str(rhs)));
     
     return ast_calc_assign(self, lhs, rhs);
 }
@@ -2915,8 +2924,6 @@ ast_compare_comparison_not_eq_null(ast_t *self, object_t *lhs, object_t *rhs) {
 
 static object_t *
 ast_compare_comparison_not_eq(ast_t *self, object_t *lhs, object_t *rhs) {
-    assert(0 && "impossible. failed to compare comparison not eq");
-
     switch (lhs->type) {
     case OBJ_TYPE_NULL: return ast_compare_comparison_not_eq_null(self, lhs, rhs); break;
     case OBJ_TYPE_INTEGER: return ast_compare_comparison_not_eq_int(self, lhs, rhs); break;
@@ -2945,27 +2952,50 @@ ast_compare_comparison(ast_t *self, object_t *lhs, node_comp_op_t *comp_op, obje
 static object_t *
 ast_traverse_comparison(ast_t *self, node_t *node) {
     node_comparison_t *comparison = node->real;
+    assert(comparison);
 
-    object_t *lhs = _ast_traverse(self, comparison->expr);
-    if (ast_has_error(self)) {
-        return NULL;
-    }
-    assert(lhs);
+    if (nodearr_len(comparison->nodearr) == 1) {
+        node_t *node = nodearr_get(comparison->nodearr, 0);
+        return _ast_traverse(self, node);
+    } else if (nodearr_len(comparison->nodearr) >= 3) {
+        node_t *lnode = nodearr_get(comparison->nodearr, 0);
+        object_t *lhs = _ast_traverse(self, lnode);
+        if (ast_has_error(self)) {
+            return NULL;
+        }
+        assert(lhs);
+        
+        for (int i = 1; i < nodearr_len(comparison->nodearr); i += 2) {
+            node_t *node = nodearr_get(comparison->nodearr, i);
+            node_comp_op_t *node_comp_op = node->real;
+            assert(node_comp_op);
 
-    if (!comparison->comp_op) {
+            node_t *rnode = nodearr_get(comparison->nodearr, i+1);
+            assert(rnode);
+            object_t *rhs = _ast_traverse(self, rnode);
+            if (ast_has_error(self)) {
+                obj_del(lhs);
+                return NULL;
+            }
+            assert(rnode);
+
+            object_t *result = ast_compare_comparison(self, lhs, node_comp_op, rhs);
+            if (ast_has_error(self)) {
+                obj_del(lhs);
+                obj_del(rhs);
+                return NULL;                
+            }
+
+            obj_del(lhs);
+            obj_del(rhs);
+            lhs = result;
+        }
+
         return lhs;
     }
 
-    node_comp_op_t *comp_op = comparison->comp_op->real;
-    assert(comp_op);
-
-    object_t *rhs = _ast_traverse(self, comparison->comparison);
-    if (ast_has_error(self)) {
-        return NULL;
-    }
-    assert(rhs);
-
-    return ast_compare_comparison(self, lhs, comp_op, rhs);
+    assert(0 && "impossible. failed to traverse comparison");
+    return NULL;
 }
 
 static object_t *
@@ -3258,7 +3288,7 @@ static object_t *
 ast_traverse_expr(ast_t *self, node_t *node) {
     node_expr_t *expr = node->real;
     
-    object_t *lhs = _ast_traverse(self, expr->term);
+    object_t *lhs = _ast_traverse(self, expr->lterm);
     if (ast_has_error(self)) {
         return NULL;
     }
@@ -3271,7 +3301,7 @@ ast_traverse_expr(ast_t *self, node_t *node) {
     node_add_sub_op_t *add_sub_op = expr->add_sub_op->real;
     assert(add_sub_op);
 
-    object_t *rhs = _ast_traverse(self, expr->expr);
+    object_t *rhs = _ast_traverse(self, expr->rterm);
     if (ast_has_error(self)) {
         return NULL;
     }
@@ -3592,14 +3622,12 @@ static object_t *
 ast_traverse_term(ast_t *self, node_t *node) {
     node_term_t *term = node->real;
     assert(term);
-    viss("term");
 
-    object_t *lhs = _ast_traverse(self, term->asscalc);
+    object_t *lhs = _ast_traverse(self, term->lasscalc);
     if (ast_has_error(self)) {
         return NULL;
     }
     assert(lhs);
-    vissf("lhs[%p] %d", lhs, lhs->type);
 
     if (!term->mul_div_op) {
         return lhs;
@@ -3607,14 +3635,12 @@ ast_traverse_term(ast_t *self, node_t *node) {
 
     node_mul_div_op_t *mul_div_op = term->mul_div_op->real;
     assert(mul_div_op);
-    vissf("mul_div_op[%p] %d", mul_div_op, mul_div_op->op);
 
-    object_t *rhs = _ast_traverse(self, term->term);
+    object_t *rhs = _ast_traverse(self, term->rasscalc);
     if (ast_has_error(self)) {
         return NULL;
     }
     assert(rhs);
-    vissf("rhs[%p]", rhs);
 
     return ast_calc_term(self, lhs, mul_div_op, rhs);
 }
@@ -3791,7 +3817,7 @@ static object_t *
 ast_traverse_asscalc(ast_t *self, node_t *node) {
     node_asscalc_t *asscalc = node->real;
 
-    object_t *lhs = _ast_traverse(self, asscalc->factor);
+    object_t *lhs = _ast_traverse(self, asscalc->lfactor);
     if (ast_has_error(self)) {
         return NULL;
     }
@@ -3804,7 +3830,7 @@ ast_traverse_asscalc(ast_t *self, node_t *node) {
     node_augassign_t *augassign = asscalc->augassign->real;
     assert(augassign);
 
-    object_t *rhs = _ast_traverse(self, asscalc->asscalc);
+    object_t *rhs = _ast_traverse(self, asscalc->rfactor);
     if (ast_has_error(self)) {
         return NULL;
     }

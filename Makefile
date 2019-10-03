@@ -97,6 +97,7 @@ SRCS := build/lib/error.c \
 	build/lang/object.c \
 	build/lang/object_array.c \
 	build/lang/object_dict.c \
+	build/lang/node_array.c \
 
 OBJS := $(SRCS:.c=.o)
 
@@ -188,4 +189,5 @@ build/lang/object_array.o: src/lang/object_array.c src/lang/object_array.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/object_dict.o: src/lang/object_dict.c src/lang/object_dict.h
 	$(CC) $(CFLAGS) -c $< -o $@
-
+build/lang/node_array.o: src/lang/node_array.c src/lang/node_array.h
+	$(CC) $(CFLAGS) -c $< -o $@
