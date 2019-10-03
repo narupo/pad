@@ -184,9 +184,7 @@ typedef struct node_expr {
 } node_expr_t;
 
 typedef struct node_term {
-    node_t *lasscalc;
-    node_t *mul_div_op;
-    node_t *rasscalc;
+    node_array_t *nodearr;
 } node_term_t;
 
 typedef struct node_asscalc {
