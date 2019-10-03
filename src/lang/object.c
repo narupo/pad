@@ -14,11 +14,47 @@ obj_del(object_t *self) {
     free(self);
 }
 
+extern object_array_t*
+objarr_new_other(object_array_t *other);
+
+object_t *
+obj_new_other(object_t *other) {
+    object_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->type = other->type;
+
+    if (other->identifier) {
+        self->identifier = str_newother(other->identifier);
+    }
+
+    if (other->string) {
+        self->string = str_newother(other->identifier);
+    }
+
+    self->lvalue = other->lvalue;
+    self->boolean = other->boolean;
+
+    if (other->objarr) {
+        self->objarr = objarr_new_other(other->objarr);
+    }
+
+    return self;    
+}
+
 object_t *
 obj_new(obj_type_t type) {
     object_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->type = type;
+
+    return self;
+}
+
+object_t *
+obj_new_null(void) {
+    object_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->type = OBJ_TYPE_NULL;
 
     return self;
 }
@@ -91,6 +127,11 @@ obj_new_array(object_array_t *move_objarr) {
 string_t *
 obj_to_str(const object_t *self) {
     switch (self->type) {
+    case OBJ_TYPE_NULL: {
+        string_t *str = str_new();
+        str_set(str, "null");
+        return str;
+    } break;
     case OBJ_TYPE_INTEGER: {
         string_t *str = str_new();
         char buf[1024];

@@ -130,6 +130,7 @@ typedef node_if_stmt_t node_elif_stmt_t;
 
 typedef struct node_else_stmt {
     node_t *elems;
+    node_t *blocks;
 } node_else_stmt_t;
 
 typedef struct node_for_stmt {

@@ -39,6 +39,24 @@ objarr_new(void) {
     return self;
 }
 
+extern object_t *
+obj_new_other(object_t *other);
+
+object_array_t*
+objarr_new_other(object_array_t *other) {
+    object_array_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->array = mem_ecalloc(other->capa+1, sizeof(object_t *));
+    self->capa = other->capa;
+    self->len = other->len;
+
+    for (int i = 0; i < self->len; ++i) {
+        self->array[i] = obj_new_other(other->array[i]);
+    }
+
+    return self;
+}
+
 /*********
 * getter *
 *********/

@@ -42,6 +42,7 @@ void
 ctx_clear(context_t *self) {
     dict_clear(self->almap);
     str_clear(self->buf);
+    objdict_clear(self->varmap);
     self->imported_alias = false;
 }
 
