@@ -188,9 +188,7 @@ typedef struct node_term {
 } node_term_t;
 
 typedef struct node_asscalc {
-    node_t *lfactor;
-    node_t *augassign;
-    node_t *rfactor;
+    node_array_t *nodearr;
 } node_asscalc_t;
 
 typedef struct node_factor {
