@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "lib/memory.h"
+#include "lang/types.h"
 
 /*************
 * node types *
@@ -175,27 +176,25 @@ typedef struct node_not_test {
 } node_not_test_t;
 
 typedef struct node_comparison {
-    node_t *expr;
-    node_t *comp_op;
-    node_t *comparison;
+    node_array_t *nodearr;
 } node_comparison_t;
 
 typedef struct node_expr {
-    node_t *term;
+    node_t *lterm;
     node_t *add_sub_op;
-    node_t *expr;
+    node_t *rterm;
 } node_expr_t;
 
 typedef struct node_term {
-    node_t *asscalc;
+    node_t *lasscalc;
     node_t *mul_div_op;
-    node_t *term;
+    node_t *rasscalc;
 } node_term_t;
 
 typedef struct node_asscalc {
-    node_t *factor;
+    node_t *lfactor;
     node_t *augassign;
-    node_t *asscalc;
+    node_t *rfactor;
 } node_asscalc_t;
 
 typedef struct node_factor {

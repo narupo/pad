@@ -36,11 +36,11 @@ BNF of Cap's template language
           and_test: ( not_test | not_test 'and' ) and_test
           not_test: 'not' not_test | comparison
 
-        comparison: ( expr | expr comp_op ) comparison
+        comparison: expr ( comp_op expr )*
 
-              expr: ( term | term add_sub_op ) expr
-              term: ( asscalc | asscalc mul_div_op ) term
-           asscalc: ( factor | factor augassign ) asscalc
+              expr: term ( add_sub_op term )*
+              term: asscalc ( mul_div_op asscalc )*
+           asscalc: factor ( augassign factor )*
             factor: atom | '(' test ')'
               atom: digit | string | identifier | caller
 
