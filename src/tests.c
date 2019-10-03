@@ -6064,12 +6064,12 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
     }
 
-    /* tkr_parse(tkr, "{: 1 + 1 + 1 :}");
+    tkr_parse(tkr, "{: 1 + 1 + 1 :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "3"));
-    } */
+    } 
 
     tkr_parse(tkr, "{@ a = 1 @}{: a :}");
     {
