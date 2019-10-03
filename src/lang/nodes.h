@@ -180,9 +180,7 @@ typedef struct node_comparison {
 } node_comparison_t;
 
 typedef struct node_expr {
-    node_t *lterm;
-    node_t *add_sub_op;
-    node_t *rterm;
+    node_array_t *nodearr;
 } node_expr_t;
 
 typedef struct node_term {

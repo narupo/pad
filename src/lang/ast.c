@@ -966,13 +966,15 @@ ast_expr(ast_t *self, int dep) {
     ready();
     declare(node_expr_t, cur);
     token_t **save_ptr = self->ptr;
+    cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
-        ast_del_nodes(self, cur->lterm); \
-        ast_del_nodes(self, cur->add_sub_op); \
-        ast_del_nodes(self, cur->rterm); \
+        for (; nodearr_len(cur->nodearr); ) { \
+            node_t *node = nodearr_popb(cur->nodearr); \
+            ast_del_nodes(self, node); \
+        } \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
@@ -981,33 +983,41 @@ ast_expr(ast_t *self, int dep) {
     } \
 
     check("call left ast_term");
-    cur->lterm = ast_term(self, dep+1);
-    if (!cur->lterm) {
+    node_t *lhs = ast_term(self, dep+1);
+    if (!lhs) {
         if (ast_has_error(self)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
     }
 
-    check("call add_sub_op");
-    cur->add_sub_op = ast_add_sub_op(self, dep+1);
-    if (!cur->add_sub_op) {
-        if (ast_has_error(self)) {
-            return_cleanup("");
+    nodearr_moveb(cur->nodearr, lhs);
+
+    for (;;) {
+        check("call add_sub_op");
+        node_t *op = ast_add_sub_op(self, dep+1);
+        if (!op) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
+            return_this(node_new(NODE_TYPE_EXPR, cur));
         }
-        return_this(node_new(NODE_TYPE_EXPR, cur));
+
+        nodearr_moveb(cur->nodearr, op);
+
+        check("call ast_term");
+        node_t *rhs = ast_term(self, dep+1);
+        if (!rhs) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
+            return_cleanup("syntax error. not found rhs operand in expr");
+        }        
+
+        nodearr_moveb(cur->nodearr, rhs);
     }
 
-    check("call ast_term");
-    cur->rterm = ast_term(self, dep+1);
-    if (!cur->rterm) {
-        if (ast_has_error(self)) {
-            return_cleanup("");
-        }
-        return_cleanup("syntax error. not found rhs operand in expr");
-    }
-
-    return_this(node_new(NODE_TYPE_EXPR, cur));
+    assert(0 && "impossible. failed to ast expr");
 }
 
 static node_t *
@@ -3287,27 +3297,50 @@ ast_calc_expr(ast_t *self, object_t *lhs, node_add_sub_op_t *add_sub_op, object_
 static object_t *
 ast_traverse_expr(ast_t *self, node_t *node) {
     node_expr_t *expr = node->real;
-    
-    object_t *lhs = _ast_traverse(self, expr->lterm);
-    if (ast_has_error(self)) {
-        return NULL;
-    }
-    assert(lhs);
+    assert(expr);
 
-    if (!expr->add_sub_op) {
+    if (nodearr_len(expr->nodearr) == 1) {
+        node_t *node = nodearr_get(expr->nodearr, 0);
+        return _ast_traverse(self, node);
+    } else if (nodearr_len(expr->nodearr) >= 3) {
+        node_t *lnode = nodearr_get(expr->nodearr, 0);
+        object_t *lhs = _ast_traverse(self, lnode);
+        if (ast_has_error(self)) {
+            return NULL;
+        }
+        assert(lhs);
+        
+        for (int i = 1; i < nodearr_len(expr->nodearr); i += 2) {
+            node_t *node = nodearr_get(expr->nodearr, i);
+            node_add_sub_op_t *op = node->real;
+            assert(op);
+
+            node_t *rnode = nodearr_get(expr->nodearr, i+1);
+            assert(rnode);
+            object_t *rhs = _ast_traverse(self, rnode);
+            if (ast_has_error(self)) {
+                obj_del(lhs);
+                return NULL;
+            }
+            assert(rnode);
+
+            object_t *result = ast_calc_expr(self, lhs, op, rhs);
+            if (ast_has_error(self)) {
+                obj_del(lhs);
+                obj_del(rhs);
+                return NULL;                
+            }
+
+            obj_del(lhs);
+            obj_del(rhs);
+            lhs = result;
+        }
+
         return lhs;
     }
 
-    node_add_sub_op_t *add_sub_op = expr->add_sub_op->real;
-    assert(add_sub_op);
-
-    object_t *rhs = _ast_traverse(self, expr->rterm);
-    if (ast_has_error(self)) {
-        return NULL;
-    }
-    assert(rhs);
-
-    return ast_calc_expr(self, lhs, add_sub_op, rhs);
+    assert(0 && "impossible. failed to traverse expr");
+    return NULL;
 }
 
 static object_t *
