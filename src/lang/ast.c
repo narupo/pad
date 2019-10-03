@@ -810,13 +810,15 @@ ast_asscalc(ast_t *self, int dep) {
     ready();
     declare(node_asscalc_t, cur);
     token_t **save_ptr = self->ptr;
+    cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
-        ast_del_nodes(self, cur->lfactor); \
-        ast_del_nodes(self, cur->augassign); \
-        ast_del_nodes(self, cur->rfactor); \
+        for (; nodearr_len(cur->nodearr); ) { \
+            node_t *node = nodearr_popb(cur->nodearr); \
+            ast_del_nodes(self, node); \
+        } \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
@@ -825,33 +827,41 @@ ast_asscalc(ast_t *self, int dep) {
     } \
 
     check("call ast_factor");
-    cur->lfactor = ast_factor(self, dep+1);
-    if (!cur->lfactor) {
+    node_t *lhs = ast_factor(self, dep+1);
+    if (!lhs) {
         if (ast_has_error(self)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
     }
 
-    check("call ast_augassign");
-    cur->augassign = ast_augassign(self, dep+1);
-    if (!cur->augassign) {
-        if (ast_has_error(self)) {
-            return_cleanup("");
+    nodearr_moveb(cur->nodearr, lhs);
+
+    for (;;) {
+        check("call ast_augassign");
+        node_t *op = ast_augassign(self, dep+1);
+        if (!op) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
+            return_this(node_new(NODE_TYPE_ASSCALC, cur));
         }
-        return_this(node_new(NODE_TYPE_ASSCALC, cur));
+
+        nodearr_moveb(cur->nodearr, op);
+
+        check("call ast_factor");
+        node_t *rhs = ast_factor(self, dep+1);
+        if (!rhs) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
+            return_cleanup("syntax error. not found rhs operand in asscalc");
+        }
+
+        nodearr_moveb(cur->nodearr, rhs);
     }
 
-    check("call ast_asscalc");
-    cur->rfactor = ast_asscalc(self, dep+1);
-    if (!cur->rfactor) {
-        if (ast_has_error(self)) {
-            return_cleanup("");
-        }
-        return_cleanup("syntax error. not found rhs operand in asscalc");
-    }
-
-    return_this(node_new(NODE_TYPE_ASSCALC, cur));
+    assert(0 && "impossible. failed to ast asscalc");
 }
 
 static node_t *
@@ -3881,30 +3891,50 @@ ast_calc_asscalc(ast_t *self, object_t *lhs, node_augassign_t *augassign, object
 static object_t *
 ast_traverse_asscalc(ast_t *self, node_t *node) {
     node_asscalc_t *asscalc = node->real;
+    assert(asscalc);
 
-    object_t *lhs = _ast_traverse(self, asscalc->lfactor);
-    if (ast_has_error(self)) {
-        return NULL;
-    }
-    assert(lhs);
+    if (nodearr_len(asscalc->nodearr) == 1) {
+        node_t *node = nodearr_get(asscalc->nodearr, 0);
+        return _ast_traverse(self, node);
+    } else if (nodearr_len(asscalc->nodearr) >= 3) {
+        node_t *lnode = nodearr_get(asscalc->nodearr, 0);
+        object_t *lhs = _ast_traverse(self, lnode);
+        if (ast_has_error(self)) {
+            return NULL;
+        }
+        assert(lhs);
+        
+        for (int i = 1; i < nodearr_len(asscalc->nodearr); i += 2) {
+            node_t *node = nodearr_get(asscalc->nodearr, i);
+            node_augassign_t *op = node->real;
+            assert(op);
 
-    if (!asscalc->augassign) {
+            node_t *rnode = nodearr_get(asscalc->nodearr, i+1);
+            assert(rnode);
+            object_t *rhs = _ast_traverse(self, rnode);
+            if (ast_has_error(self)) {
+                obj_del(lhs);
+                return NULL;
+            }
+            assert(rnode);
+
+            object_t *result = ast_calc_asscalc(self, lhs, op, rhs);
+            if (ast_has_error(self)) {
+                obj_del(lhs);
+                obj_del(rhs);
+                return NULL;                
+            }
+
+            obj_del(lhs);
+            obj_del(rhs);
+            lhs = result;
+        }
+
         return lhs;
     }
 
-    node_augassign_t *augassign = asscalc->augassign->real;
-    assert(augassign);
-
-    object_t *rhs = _ast_traverse(self, asscalc->rfactor);
-    if (ast_has_error(self)) {
-        return NULL;
-    }
-    assert(rhs);
-
-    object_t *result = ast_calc_asscalc(self, lhs, augassign, rhs);
-    obj_del(lhs);
-    obj_del(rhs);
-    return result;
+    assert(0 && "impossible. failed to traverse asscalc");
+    return NULL;
 }
 
 static object_t *
