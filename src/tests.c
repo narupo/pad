@@ -2407,7 +2407,7 @@ test_ast_parse(void) {
         assert(comp_op->op == OP_EQ);
         expr = nodearr_get(comparison->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        asscalc = term->lasscalc->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -2415,7 +2415,7 @@ test_ast_parse(void) {
         assert(digit->lvalue == 1);
         expr = nodearr_get(comparison->nodearr, 2)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        asscalc = term->lasscalc->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -2426,7 +2426,7 @@ test_ast_parse(void) {
     tkr_parse(tkr, "{@ 1 == 2 == 3 @}");
     {
         ast_clear(ast);
-        ast_debug(ast_parse(ast, tkr_get_tokens(tkr)));
+        ast_parse(ast, tkr_get_tokens(tkr));
         root = ast_getc_root(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -2442,7 +2442,7 @@ test_ast_parse(void) {
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        asscalc = term->lasscalc->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -2452,7 +2452,7 @@ test_ast_parse(void) {
         assert(comp_op->op == OP_EQ);
         expr = nodearr_get(comparison->nodearr, 2)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        asscalc = term->lasscalc->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -2462,7 +2462,7 @@ test_ast_parse(void) {
         assert(comp_op->op == OP_EQ);
         expr = nodearr_get(comparison->nodearr, 4)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        asscalc = term->lasscalc->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -2489,7 +2489,7 @@ test_ast_parse(void) {
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        asscalc = term->lasscalc->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -2499,7 +2499,7 @@ test_ast_parse(void) {
         assert(comp_op->op == OP_NOT_EQ);
         expr = nodearr_get(comparison->nodearr, 2)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        asscalc = term->lasscalc->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -2526,7 +2526,7 @@ test_ast_parse(void) {
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        asscalc = term->lasscalc->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -2536,7 +2536,7 @@ test_ast_parse(void) {
         assert(comp_op->op == OP_NOT_EQ);
         expr = nodearr_get(comparison->nodearr, 2)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        asscalc = term->lasscalc->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -2546,7 +2546,7 @@ test_ast_parse(void) {
         assert(comp_op->op == OP_NOT_EQ);
         expr = nodearr_get(comparison->nodearr, 4)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        asscalc = term->lasscalc->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -2554,7 +2554,7 @@ test_ast_parse(void) {
         assert(digit->lvalue == 3);
     }
 
-    /* tkr_parse(tkr, "{@ 1 + 2 @}");
+    tkr_parse(tkr, "{@ 1 + 2 @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -2571,29 +2571,29 @@ test_ast_parse(void) {
         and_test = or_test->and_test->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
-        expr = comparison->lexpr->real;
-        add_sub_op = expr->add_sub_op->real;
+        expr = nodearr_get(comparison->nodearr, 0)->real;
+        add_sub_op = nodearr_get(expr->nodearr, 1)->real;
         assert(add_sub_op->op == OP_ADD);
-        term = expr->lterm->real;
-        asscalc = term->lasscalc->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 1);
-        term = expr->rterm->real;
-        asscalc = term->lasscalc->real;
+        term = nodearr_get(expr->nodearr, 2)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 2);    
-    } */
+    }
 
-    /* tkr_parse(tkr, "{@ 1 + 2 + 3 @}");
+    tkr_parse(tkr, "{@ 1 + 2 + 3 @}");
     {
         ast_clear(ast);
-        ast_debug(ast_parse(ast, tkr_get_tokens(tkr)));
+        ast_parse(ast, tkr_get_tokens(tkr));
         root = ast_getc_root(ast);
         printf("%p\n", root);
         program = root->real;
@@ -2608,33 +2608,31 @@ test_ast_parse(void) {
         and_test = or_test->and_test->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
-        expr = comparison->lexpr->real;
-        term = expr->lterm->real;
-        asscalc = term->lasscalc->real;
+        expr = nodearr_get(comparison->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 1);
-        expr = expr->rterm->real;
-        term = expr->lterm->real;
-        asscalc = term->lasscalc->real;
+        term = nodearr_get(expr->nodearr, 2)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 2);    
-        expr = expr->rterm->real;
-        term = expr->lterm->real;
-        asscalc = term->lasscalc->real;
+        term = nodearr_get(expr->nodearr, 4)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 3);
-    } */
+    }
 
-    /* tkr_parse(tkr, "{@ 1 - 2 @}");
+    tkr_parse(tkr, "{@ 1 - 2 @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -2651,26 +2649,26 @@ test_ast_parse(void) {
         and_test = or_test->and_test->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
-        expr = comparison->lexpr->real;
-        add_sub_op = expr->add_sub_op->real;
+        expr = nodearr_get(comparison->nodearr, 0)->real;
+        add_sub_op = nodearr_get(expr->nodearr, 1)->real;
         assert(add_sub_op->op == OP_SUB);
-        term = expr->lterm->real;
-        asscalc = term->lasscalc->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 1);
-        term = expr->rterm->real;
-        asscalc = term->lasscalc->real;
+        term = nodearr_get(expr->nodearr, 2)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 2);    
-    } */
+    }
 
-    /* tkr_parse(tkr, "{@ 1 - 2 - 3 @}");
+    tkr_parse(tkr, "{@ 1 - 2 - 3 @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -2687,74 +2685,29 @@ test_ast_parse(void) {
         and_test = or_test->and_test->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
-        expr = comparison->lexpr->real;
-        term = expr->lterm->real;
-        asscalc = term->lasscalc->real;
+        expr = nodearr_get(comparison->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 1);
-        expr = expr->rterm->real;
-        term = expr->lterm->real;
-        asscalc = term->lasscalc->real;
+        term = nodearr_get(expr->nodearr, 2)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 2);    
-        expr = expr->rterm->real;
-        term = expr->lterm->real;
-        asscalc = term->lasscalc->real;
+        term = nodearr_get(expr->nodearr, 4)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = asscalc->lfactor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 3);
-    } */
-
-    /* tkr_parse(tkr, "{@ 1 - 2 - 3 @}");
-    {
-        ast_clear(ast);
-        ast_parse(ast, tkr_get_tokens(tkr));
-        root = ast_getc_root(ast);
-        program = root->real;
-        blocks = program->blocks->real;
-        code_block = blocks->code_block->real;
-        elems = code_block->elems->real;
-        formula = elems->formula->real;
-        assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
-        test = test_list->test->real;
-        or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
-        not_test = and_test->not_test->real;
-        comparison = not_test->comparison->real;
-        expr = comparison->lexpr->real;
-        term = expr->lterm->real;
-        asscalc = term->lasscalc->real;
-        factor = asscalc->lfactor->real;
-        atom = factor->atom->real;
-        digit = atom->digit->real;
-        assert(digit != NULL);
-        assert(digit->lvalue == 1);
-        expr = expr->rterm->real;
-        term = expr->lterm->real;
-        asscalc = term->lasscalc->real;
-        factor = asscalc->lfactor->real;
-        atom = factor->atom->real;
-        digit = atom->digit->real;
-        assert(digit != NULL);
-        assert(digit->lvalue == 2);    
-        expr = expr->rterm->real;
-        term = expr->lterm->real;
-        asscalc = term->lasscalc->real;
-        factor = asscalc->lfactor->real;
-        atom = factor->atom->real;
-        digit = atom->digit->real;
-        assert(digit != NULL);
-        assert(digit->lvalue == 3);
-    } */
+    }
 
     /* tkr_parse(tkr, "{@ 1 * 2 @}");
     {
@@ -3103,7 +3056,7 @@ test_ast_parse(void) {
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        asscalc = term->lasscalc->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
         augassign = asscalc->augassign->real;
         assert(augassign->op == OP_SUB_ASS);
         factor = asscalc->lfactor->real;
@@ -6200,28 +6153,28 @@ test_ast_traverse(void) {
     tkr_parse(tkr, "{@ a = 1 + 2 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
-        ast_debug(ast_traverse(ast, ctx));
+        ast_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "3"));
     }
     
     tkr_parse(tkr, "{@ a = 1 + 2 + 3 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
-        ast_debug(ast_traverse(ast, ctx));
+        ast_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "6"));
     }
     
     tkr_parse(tkr, "{@ a = 2 - 1 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
-        ast_debug(ast_traverse(ast, ctx));
+        ast_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
     
     tkr_parse(tkr, "{@ a = 3 - 2 - 1 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
-        ast_debug(ast_traverse(ast, ctx));
+        ast_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
     }
     
@@ -6232,35 +6185,35 @@ test_ast_traverse(void) {
     tkr_parse(tkr, "{@ a = 2 * 3 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
-        ast_debug(ast_traverse(ast, ctx));
+        ast_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "6"));
     }
     
     /* tkr_parse(tkr, "{@ a = 2 * 3 * 4 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
-        ast_debug(ast_traverse(ast, ctx));
+        ast_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "24"));
     } */
     
     tkr_parse(tkr, "{@ a = 4 / 2 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
-        ast_debug(ast_traverse(ast, ctx));
+        ast_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
     }
     
     /* tkr_parse(tkr, "{@ a = 4 / 2 / 2 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
-        ast_debug(ast_traverse(ast, ctx));
+        ast_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "4"));
     } */
     
     /* tkr_parse(tkr, "{@ a = (4 / 2) / 2 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
-        ast_debug(ast_traverse(ast, ctx));
+        ast_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     } */
 
