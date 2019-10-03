@@ -2934,10 +2934,19 @@ test_ast_parse(void) {
         identifier = atom->identifier->real;
         assert(identifier != NULL);
         assert(!strcmp(identifier->identifier, "a"));
-        asscalc = asscalc->asscalc->real;
+        assign_list = assign_list->assign_list->real;
+        test_list = assign_list->test_list->real;
+        test = test_list->test->real;
+        or_test = test->or_test->real;
+        and_test = or_test->and_test->real;
+        not_test = and_test->not_test->real;
+        comparison = not_test->comparison->real;
+        expr = comparison->expr->real;
+        term = expr->term->real;
+        asscalc = term->asscalc->real;
         factor = asscalc->factor->real;
         atom = factor->atom->real;
-        digit = atom->digit->real;
+        digit = atom->digit->real;        
         assert(digit != NULL);
         assert(digit->lvalue == 1);    
     }
@@ -2967,7 +2976,16 @@ test_ast_parse(void) {
         identifier = atom->identifier->real;
         assert(identifier != NULL);
         assert(!strcmp(identifier->identifier, "a"));
-        asscalc = asscalc->asscalc->real;
+        assign_list = assign_list->assign_list->real;
+        test_list = assign_list->test_list->real;
+        test = test_list->test->real;
+        or_test = test->or_test->real;
+        and_test = or_test->and_test->real;
+        not_test = and_test->not_test->real;
+        comparison = not_test->comparison->real;
+        expr = comparison->expr->real;
+        term = expr->term->real;
+        asscalc = term->asscalc->real;
         factor = asscalc->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -3000,13 +3018,31 @@ test_ast_parse(void) {
         identifier = atom->identifier->real;
         assert(identifier != NULL);
         assert(!strcmp(identifier->identifier, "a"));
-        asscalc = asscalc->asscalc->real;
+        assign_list = assign_list->assign_list->real;
+        test_list = assign_list->test_list->real;
+        test = test_list->test->real;
+        or_test = test->or_test->real;
+        and_test = or_test->and_test->real;
+        not_test = and_test->not_test->real;
+        comparison = not_test->comparison->real;
+        expr = comparison->expr->real;
+        term = expr->term->real;
+        asscalc = term->asscalc->real;
         factor = asscalc->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
         assert(identifier != NULL);
         assert(!strcmp(identifier->identifier, "b"));
-        asscalc = asscalc->asscalc->real;
+        assign_list = assign_list->assign_list->real;
+        test_list = assign_list->test_list->real;
+        test = test_list->test->real;
+        or_test = test->or_test->real;
+        and_test = or_test->and_test->real;
+        not_test = and_test->not_test->real;
+        comparison = not_test->comparison->real;
+        expr = comparison->expr->real;
+        term = expr->term->real;
+        asscalc = term->asscalc->real;
         factor = asscalc->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -6135,6 +6171,74 @@ test_ast_traverse(void) {
         ast_debug(ast_traverse(ast, ctx));
         showbuf();
         assert(!strcmp(ctx_getc_buf(ctx), "6"));
+    }
+    
+    tkr_parse(tkr, "{@ a = 2 * 3 * 4 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_debug(ast_traverse(ast, ctx));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "24"));
+    }
+    
+    tkr_parse(tkr, "{@ a = 4 / 2 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_debug(ast_traverse(ast, ctx));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "2"));
+    }
+    
+    tkr_parse(tkr, "{@ a = 4 / 2 / 2 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_debug(ast_traverse(ast, ctx));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "4"));
+    }
+    
+    tkr_parse(tkr, "{@ a = (4 / 2) / 2 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_debug(ast_traverse(ast, ctx));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    }
+
+    /*******
+    * expr *
+    *******/
+
+    tkr_parse(tkr, "{@ a = 1 + 2 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_debug(ast_traverse(ast, ctx));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "3"));
+    }
+    
+    tkr_parse(tkr, "{@ a = 1 + 2 + 3 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_debug(ast_traverse(ast, ctx));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "6"));
+    }
+    
+    tkr_parse(tkr, "{@ a = 2 - 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_debug(ast_traverse(ast, ctx));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    }
+    
+    tkr_parse(tkr, "{@ a = 3 - 2 - 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_debug(ast_traverse(ast, ctx));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "2"));
     }
     
     /*******************

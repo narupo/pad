@@ -541,7 +541,6 @@ ast_augassign(ast_t *self, int dep) {
     default:
         return_cleanup(""); 
         break;
-    case TOKEN_TYPE_OP_ASS: cur->op = OP_ASS; break;
     case TOKEN_TYPE_OP_ADD_ASS: cur->op = OP_ADD_ASS; break;
     case TOKEN_TYPE_OP_SUB_ASS: cur->op = OP_SUB_ASS; break;
     case TOKEN_TYPE_OP_MUL_ASS: cur->op = OP_MUL_ASS; break;
@@ -3252,7 +3251,7 @@ ast_calc_expr(ast_t *self, object_t *lhs, node_add_sub_op_t *add_sub_op, object_
     }
 
     assert(0 && "impossible. failed to calc expr");
-    return false;
+    return NULL;
 }
 
 static object_t *
@@ -3772,7 +3771,6 @@ static object_t *
 ast_calc_asscalc(ast_t *self, object_t *lhs, node_augassign_t *augassign, object_t *rhs) {
     switch (augassign->op) {
     default: break;
-    case OP_ASS: return ast_calc_asscalc_ass(self, lhs, rhs); break;
     case OP_ADD_ASS: return ast_calc_asscalc_add_ass(self, lhs, rhs); break;
     case OP_SUB_ASS:
         err_die("TODO: sub ass");        
