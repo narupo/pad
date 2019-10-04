@@ -27,7 +27,6 @@ BNF of Cap's template language
 
            formula: assign_list
 
-       TODO
        assign_list: test_list ( '=' test_list )*
 
          TODO
