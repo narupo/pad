@@ -13,6 +13,7 @@
 #include "lang/context.h"
 #include "lang/object.h"
 #include "lang/object_array.h"
+#include "lang/opts.h"
 
 struct ast;
 typedef struct ast ast_t;
@@ -49,6 +50,15 @@ ast_traverse(ast_t *self, context_t *ctx);
 
 void
 ast_set_debug(ast_t *self, bool debug);
+
+/**
+ * Set options at AST
+ *
+ * @param[in] self pointer to dynamic allocate memory of ast_t
+ * @param[in] opts pointer to dynamic allocate memory of opts_t
+ */
+void
+ast_move_opts(ast_t *self, opts_t *move_opts);
 
 /**
  * Clear data in AST

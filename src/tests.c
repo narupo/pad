@@ -6678,7 +6678,7 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't invoke alias function. need two arguments"));
+        assert(!strcmp(ast_get_error_detail(ast), "can't invoke alias.set. need two arguments"));
     }
 
     /* tkr_parse(tkr, "{@ alias.set(1, 2, 3) @}");
@@ -6686,7 +6686,7 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't invoke alias function. too many arguments"));
+        assert(!strcmp(ast_get_error_detail(ast), "can't invoke alias.set. too many arguments"));
     } */
 
     /**************
@@ -6950,6 +6950,22 @@ test_ast_traverse(void) {
         assert(item);
         assert(!strcmp(item->key, "abc"));
         assert(!strcmp(item->value, "def"));
+    }
+
+    tkr_parse(tkr, "{: opts.get(\"abc\") :}");
+    {
+        opts_t *opts = opts_new();
+        char *argv[] = {
+            "--abc",
+            "def",
+            NULL,
+        };
+        opts_parse(opts, 2, argv);
+        ast_move_opts(ast, opts);
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "def"));
     }
 
     /*******************
