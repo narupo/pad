@@ -6718,7 +6718,7 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "null"));
     } 
 
-    tkr_parse(tkr, "{@ a = alias.set(\"\", \"\")\n b = alias(\"\", \"\") @}{: a :}{: b :}");
+    tkr_parse(tkr, "{@ a = alias.set(\"\", \"\")\n b = alias.set(\"\", \"\") @}{: a :}{: b :}");
     {
         (ast_parse(ast, tkr_get_tokens(tkr)));
         ast_traverse(ast, ctx);
@@ -6738,7 +6738,7 @@ test_ast_traverse(void) {
         assert(!ast_has_error(ast));
     }
 
-    tkr_parse(tkr, "{@ 1, \"abc\", var, func() @}");
+    tkr_parse(tkr, "{@ 1, \"abc\", var, alias.set(\"\", \"\") @}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
@@ -6928,13 +6928,13 @@ test_ast_traverse(void) {
     * caller *
     *********/
 
-    /* tkr_parse(tkr, "{@ alias.set() @}{: alias.set() :}");
+    tkr_parse(tkr, "{@ my.func() @}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "null"));
-    } */
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "\"my.func\" is not callable"));
+    } 
 
     /********************
     * builtin functions *

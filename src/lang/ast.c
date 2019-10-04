@@ -1961,7 +1961,7 @@ _identifier_chain_to_array(cstring_array_t *arr, node_identifier_chain_t *identi
 }
 
 static cstring_array_t *
-identifier_chain_to_array(node_identifier_chain_t *identifier_chain) {
+identifier_chain_to_cstrarr(node_identifier_chain_t *identifier_chain) {
     cstring_array_t *arr = cstrarr_new();
     _identifier_chain_to_array(arr, identifier_chain);
     return arr;
@@ -2137,7 +2137,7 @@ ast_traverse_import_stmt(ast_t *self, node_t *node) {
     node_import_stmt_t *import_stmt = node->real;
 
     if (import_stmt->identifier_chain) {
-        cstring_array_t *arr = identifier_chain_to_array(import_stmt->identifier_chain->real);
+        cstring_array_t *arr = identifier_chain_to_cstrarr(import_stmt->identifier_chain->real);
         cstrarr_del(arr);
     }
 
@@ -4125,11 +4125,22 @@ ast_invoke_alias_set_func(ast_t *self, object_t *objargs) {
 }
 
 static object_t *
+ast_invoke_opts_get_func(ast_t *self, object_t *objargs) {
+    if (!objargs) {
+        ast_set_error_detail(self, "can't invoke alias function. need two arguments");
+        return NULL;
+    }
+    assert(objargs->type == OBJ_TYPE_ARRAY);
+
+    return obj_new_null();
+}
+
+static object_t *
 ast_traverse_caller(ast_t *self, node_t *node) {
     node_caller_t *caller = node->real;
     assert(caller && node->type == NODE_TYPE_CALLER);
 
-    cstring_array_t *names = identifier_chain_to_array(caller->identifier_chain->real);
+    cstring_array_t *names = identifier_chain_to_cstrarr(caller->identifier_chain->real);
     if (!names) {
         ast_set_error_detail(self, "not found identifier in caller");
         return NULL;
@@ -4146,6 +4157,25 @@ ast_traverse_caller(ast_t *self, node_t *node) {
             obj_del(args);
             return NULL;
         }
+    } else if (cstrarr_len(names) == 2 &&
+        cstr_eq(cstrarr_getc(names, 0), "opts") &&
+        cstr_eq(cstrarr_getc(names, 1), "get")) {
+        result = ast_invoke_opts_get_func(self, args);
+        if (ast_has_error(self)) {
+            obj_del(args);
+            return NULL;
+        }
+    } else {
+        string_t *s = str_new();
+        for (int i = 0; i < cstrarr_len(names); ++i) {
+            str_app(s, cstrarr_getc(names, i));
+            str_pushb(s, '.');
+        }
+        str_popb(s);
+        ast_set_error_detail(self, "\"%s\" is not callable", str_getc(s));
+        str_del(s);
+        obj_del(args);
+        return NULL;
     }
 
     obj_del(args);
