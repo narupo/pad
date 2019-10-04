@@ -330,6 +330,7 @@ app_usage(app_t *app) {
         "    pwd        Show current directory\n"
         "    ls         Show list in current directory\n"
         "    cat        Concatenate files and show\n"
+        "    make       Compile template language\n"
         "    run        Run script\n"
         "    alias      Run alias command\n"
         "    edit       Run editor with file name\n"
