@@ -6624,6 +6624,7 @@ test_ast_traverse(void) {
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
+        showbuf();
         assert(!strcmp(ctx_getc_buf(ctx), "null"));
     } */
 
@@ -6681,13 +6682,13 @@ test_ast_traverse(void) {
         assert(!strcmp(ast_get_error_detail(ast), "can't invoke alias.set. need two arguments"));
     }
 
-    /* tkr_parse(tkr, "{@ alias.set(1, 2, 3) @}");
+    tkr_parse(tkr, "{@ alias.set(1, 2, 3) @}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't invoke alias.set. too many arguments"));
-    } */
+    } 
 
     /**************
     * assign_list *
@@ -6845,6 +6846,27 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
     }
 
+    tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    /**
+     * Pythonでは合法
+     * Rubyでは違法
+     */
+    /* tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" == \"def\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        showdetail();
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    } */
+
     /*******
     * expr *
     *******/
@@ -6923,6 +6945,13 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "4"));
     } 
 
+    tkr_parse(tkr, "{@ a = 1 + ( 2 - 3 ) * 4 / 4 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_buf(ctx), "0"));
+    }
+    
     /**********
     * asscalc *
     **********/
