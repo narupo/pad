@@ -4164,8 +4164,6 @@ ast_invoke_opts_get_func(ast_t *self, object_t *objargs) {
     } else if (objargs->type == OBJ_TYPE_STRING) {
         string_t *optname = objargs->string;
         const char *optval = opts_getc(self->opts, str_getc(optname));
-        printf("optname[%s]\n", str_getc(optname));
-        printf("optval[%s]\n", optval);
         if (!optval) {
             return obj_new_null();
         }        
