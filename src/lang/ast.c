@@ -284,12 +284,15 @@ ast_test_list(ast_t *self, int dep) {
     ready();
     declare(node_test_list_t, cur);
     token_t **save_ptr = self->ptr;
+    cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
-        ast_del_nodes(self, cur->test); \
-        ast_del_nodes(self, cur->test_list); \
+        for (; nodearr_len(cur->nodearr); ) { \
+            node_t *node = nodearr_popb(cur->nodearr); \
+            ast_del_nodes(self, node); \
+        } \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
@@ -297,30 +300,37 @@ ast_test_list(ast_t *self, int dep) {
         return_this(NULL); \
     } \
 
-    cur->test = ast_test(self, dep+1);
-    if (!cur->test) {
+    node_t *lhs = ast_test(self, dep+1);
+    if (!lhs) {
         if (ast_has_error(self)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
     }
 
-    if (!*self->ptr) {
-        return node_new(NODE_TYPE_TEST_LIST, cur);
-    }
+    nodearr_moveb(cur->nodearr, lhs);
 
-    token_t *t = *self->ptr++;
-    if (t->type != TOKEN_TYPE_COMMA) {
-        self->ptr--;
-        return node_new(NODE_TYPE_TEST_LIST, cur);
-    }
-
-    cur->test_list = ast_test_list(self, dep+1);
-    if (!cur->test_list) {
-        if (ast_has_error(self)) {
-            return_cleanup("");
+    for (;;) {
+        if (!*self->ptr) {
+            return node_new(NODE_TYPE_TEST_LIST, cur);
         }
-        return_cleanup("syntax error. not found test list in test list");
+
+        token_t *t = *self->ptr++;
+        if (t->type != TOKEN_TYPE_COMMA) {
+            self->ptr--;
+            return node_new(NODE_TYPE_TEST_LIST, cur);
+        }
+        check("read ,");
+
+        node_t *rhs = ast_test(self, dep+1);
+        if (!rhs) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
+            return_cleanup("syntax error. not found test in test list");
+        }
+
+        nodearr_moveb(cur->nodearr, rhs);
     }
 
     return node_new(NODE_TYPE_TEST_LIST, cur);
@@ -433,7 +443,8 @@ ast_for_stmt(ast_t *self, int dep) {
                 // test move to init_test_list
                 ast_del_nodes(self, cur->init_test_list);
                 declare(node_test_list_t, test_list);
-                test_list->test = cur->test;
+                test_list->nodearr = nodearr_new();
+                nodearr_moveb(test_list->nodearr, cur->test);
                 cur->test = NULL;
                 cur->init_test_list = node_new(NODE_TYPE_TEST_LIST, test_list);
             }
@@ -2372,27 +2383,25 @@ ast_traverse_test_list(ast_t *self, node_t *node) {
     node_test_list_t *test_list = node->real;
     assert(test_list);
 
-    object_t *first = _ast_traverse(self, test_list->test);
-    if (ast_has_error(self)) {
-        return NULL;
+    assert(nodearr_len(test_list->nodearr));
+    if (nodearr_len(test_list->nodearr) == 1) {
+        node_t *test = nodearr_get(test_list->nodearr, 0);
+        return _ast_traverse(self, test);
     }
 
-    object_t *second = _ast_traverse(self, test_list->test_list);
-    if (ast_has_error(self)) {
-        return NULL;
+    object_array_t *arr = objarr_new();
+
+    for (int32_t i = 0; i < nodearr_len(test_list->nodearr); ++i) {
+        node_t *test = nodearr_get(test_list->nodearr, i);
+        object_t *result = _ast_traverse(self, test);
+        if (ast_has_error(self)) {
+            return NULL;
+        }
+
+        objarr_moveb(arr, result);
     }
 
-    if (first && second) {
-        object_array_t *arr = objarr_new();
-        objarr_moveb(arr, first);
-        objarr_moveb(arr, second);
-        return obj_new_array(arr);
-    } else if (first) {
-        return first;
-    }
-
-    assert(0 && "impossible. failed to traverse test list");
-    return NULL;
+    return obj_new_array(arr);
 }
 
 static object_t *

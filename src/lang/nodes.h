@@ -151,8 +151,7 @@ typedef struct node_assign_list {
 } node_assign_list_t;
 
 typedef struct node_test_list {
-    node_t *test;
-    node_t *test_list;
+    node_array_t *nodearr;
 } node_test_list_t;
 
 typedef struct node_test {
