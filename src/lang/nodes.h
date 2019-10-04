@@ -147,8 +147,7 @@ typedef struct node_formula {
 } node_formula_t;
 
 typedef struct node_assign_list {
-    node_t *test_list;
-    node_t *assign_list;
+    node_array_t *nodearr;
 } node_assign_list_t;
 
 typedef struct node_test_list {

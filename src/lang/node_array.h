@@ -24,24 +24,24 @@ nodearr_new_other(node_array_t *other);
 * getter *
 *********/
 
-size_t
+int32_t
 nodearr_len(const node_array_t *self);
 
-size_t
+int32_t
 nodearry_capa(const node_array_t *self);
 
 node_t *
-nodearr_get(const node_array_t *self, size_t index);
+nodearr_get(const node_array_t *self, int32_t index);
 
 const node_t *
-nodearr_getc(const node_array_t *self, size_t index);
+nodearr_getc(const node_array_t *self, int32_t index);
 
 /*********
 * setter *
 *********/
 
 node_array_t *
-nodearr_resize(node_array_t *self, size_t capa);
+nodearr_resize(node_array_t *self, int32_t capa);
 
 node_array_t *
 nodearr_moveb(node_array_t *self, node_t *node);

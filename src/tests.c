@@ -2370,7 +2370,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2384,8 +2384,7 @@ test_ast_parse(void) {
         identifier = atom->identifier->real;
         assert(identifier != NULL);
         assert(!strcmp(identifier->identifier, "a"));
-        assign_list = assign_list->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 1)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2412,7 +2411,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2426,8 +2425,7 @@ test_ast_parse(void) {
         identifier = atom->identifier->real;
         assert(identifier != NULL);
         assert(!strcmp(identifier->identifier, "a"));
-        assign_list = assign_list->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 1)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2454,7 +2452,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2468,8 +2466,7 @@ test_ast_parse(void) {
         identifier = atom->identifier->real;
         assert(identifier != NULL);
         assert(!strcmp(identifier->identifier, "a"));
-        assign_list = assign_list->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 1)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2483,8 +2480,7 @@ test_ast_parse(void) {
         identifier = atom->identifier->real;
         assert(identifier != NULL);
         assert(!strcmp(identifier->identifier, "b"));
-        assign_list = assign_list->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 2)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2515,7 +2511,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2542,7 +2538,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2579,7 +2575,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2626,7 +2622,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2663,7 +2659,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2710,7 +2706,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2747,7 +2743,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2788,7 +2784,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2824,7 +2820,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2865,7 +2861,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2900,7 +2896,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2939,7 +2935,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -2974,7 +2970,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3017,7 +3013,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3051,7 +3047,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3085,7 +3081,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3119,7 +3115,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3153,7 +3149,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3181,7 +3177,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3216,7 +3212,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3247,7 +3243,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3292,7 +3288,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3375,11 +3371,11 @@ test_ast_parse(void) {
         assert(formula->assign_list->type == NODE_TYPE_ASSIGN_LIST);
         assert(formula->assign_list->real != NULL);
         assign_list = formula->assign_list->real;
-        assert(assign_list->test_list != NULL);
-        assert(assign_list->test_list->type == NODE_TYPE_TEST_LIST);
-        assert(assign_list->test_list->real != NULL);
-        assert(assign_list->assign_list == NULL);
-        test_list = assign_list->test_list->real;
+        assert(nodearr_get(assign_list->nodearr, 0) != NULL);
+        assert(nodearr_get(assign_list->nodearr, 0)->type == NODE_TYPE_TEST_LIST);
+        assert(nodearr_get(assign_list->nodearr, 0)->real != NULL);
+        assert(nodearr_len(assign_list->nodearr) == 1);
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         assert(test_list->test != NULL);
         assert(test_list->test->type == NODE_TYPE_TEST);
         assert(test_list->test->real != NULL);
@@ -3417,7 +3413,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3445,7 +3441,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3473,7 +3469,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3496,7 +3492,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3522,7 +3518,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3543,7 +3539,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3565,7 +3561,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3593,7 +3589,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3620,7 +3616,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
@@ -3645,7 +3641,7 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = assign_list->test_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
