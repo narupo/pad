@@ -2373,7 +2373,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2388,7 +2388,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2415,7 +2415,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2430,7 +2430,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2457,7 +2457,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2472,7 +2472,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2487,7 +2487,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2518,7 +2518,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2545,7 +2545,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         comp_op = nodearr_get(comparison->nodearr, 1)->real;
@@ -2582,7 +2582,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2629,7 +2629,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2666,7 +2666,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2713,7 +2713,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2750,7 +2750,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2791,7 +2791,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2827,7 +2827,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2868,7 +2868,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2903,7 +2903,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2942,7 +2942,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -2977,7 +2977,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -3020,7 +3020,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -3054,7 +3054,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -3088,7 +3088,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -3122,7 +3122,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -3156,7 +3156,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -3184,7 +3184,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -3219,7 +3219,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -3250,7 +3250,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -3268,7 +3268,7 @@ test_ast_parse(void) {
         test_list = caller->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -3295,7 +3295,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -3313,7 +3313,7 @@ test_ast_parse(void) {
         test_list = caller->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -3327,7 +3327,7 @@ test_ast_parse(void) {
         test_list = test_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -3389,11 +3389,11 @@ test_ast_parse(void) {
         assert(test->or_test->type == NODE_TYPE_OR_TEST);
         assert(test->or_test->real != NULL);
         or_test = test->or_test->real;
-        assert(or_test->and_test != NULL);
-        assert(or_test->and_test->type == NODE_TYPE_AND_TEST);
-        assert(or_test->and_test->real != NULL);    
-        assert(or_test->or_test == NULL);
-        and_test = or_test->and_test->real;
+        assert(nodearr_get(or_test->nodearr, 0) != NULL);
+        assert(nodearr_get(or_test->nodearr, 0)->type == NODE_TYPE_AND_TEST);
+        assert(nodearr_get(or_test->nodearr, 0)->real != NULL);    
+        assert(nodearr_len(or_test->nodearr) == 1);
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         assert(and_test->not_test != NULL);
         assert(and_test->not_test->type == NODE_TYPE_NOT_TEST);
         assert(and_test->not_test->real != NULL);    
@@ -3410,7 +3410,7 @@ test_ast_parse(void) {
     tkr_parse(tkr, "{@ 1 or 1 @}");
     {
         ast_clear(ast);
-        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_debug(ast_parse(ast, tkr_get_tokens(tkr)));
         root = ast_getc_root(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -3421,13 +3421,16 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         assert(comparison != NULL);
-        or_test = or_test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 1)->real;
+        assert(and_test);
+        assert(and_test->not_test);
         not_test = and_test->not_test->real;
+        assert(not_test);
+        assert(not_test->comparison);
         comparison = not_test->comparison->real;
         assert(comparison != NULL);
     }
@@ -3446,17 +3449,15 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         assert(comparison != NULL);
-        or_test = or_test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 1)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         assert(comparison != NULL);
-        or_test = or_test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 2)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         assert(comparison != NULL);
@@ -3476,7 +3477,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         assert(comparison != NULL);
@@ -3500,7 +3501,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         assert(comparison != NULL);
@@ -3528,7 +3529,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         not_test = not_test->not_test->real;
         comparison = not_test->comparison->real;
@@ -3549,7 +3550,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         not_test = not_test->not_test->real;
         not_test = not_test->not_test->real;
@@ -3571,16 +3572,16 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         assert(comparison != NULL);
-        or_test = or_test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 1)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         assert(comparison != NULL);
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 1)->real;
+        and_test = and_test->and_test->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         assert(comparison != NULL);
@@ -3600,7 +3601,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         assert(comparison != NULL);
@@ -3608,8 +3609,7 @@ test_ast_parse(void) {
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         assert(comparison != NULL);
-        or_test = or_test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 1)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         assert(comparison != NULL);
@@ -3629,13 +3629,12 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         not_test = not_test->not_test->real;
         comparison = not_test->comparison->real;
         assert(comparison != NULL);
-        or_test = or_test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 1)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         assert(comparison != NULL);    
@@ -3655,7 +3654,7 @@ test_ast_parse(void) {
         test_list = assign_list->test_list->real;
         test = test_list->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         not_test = not_test->not_test->real;
         comparison = not_test->comparison->real;
@@ -4133,7 +4132,7 @@ test_ast_parse(void) {
         if_stmt = stmt->if_stmt->real;
         test = if_stmt->test->real;
         or_test = test->or_test->real;
-        and_test = or_test->and_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = and_test->not_test->real;
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
@@ -6255,6 +6254,18 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "3"));
+    }
+
+    /*********
+    * caller *
+    *********/
+
+    tkr_parse(tkr, "{@ alias() @}{: alias() :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "null"));
     }
 
     /*******************

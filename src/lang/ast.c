@@ -1230,13 +1230,16 @@ static node_t *
 ast_or_test(ast_t *self, int dep) {
     ready();
     declare(node_or_test_t, cur);
+    cur->nodearr = nodearr_new();
     token_t **save_ptr = self->ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
-        ast_del_nodes(self, cur->and_test); \
-        ast_del_nodes(self, cur->or_test); \
+        for (; nodearr_len(cur->nodearr); ) { \
+            node_t *node = nodearr_popb(cur->nodearr); \
+            ast_del_nodes(self, node); \
+        } \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
@@ -1245,32 +1248,39 @@ ast_or_test(ast_t *self, int dep) {
     } \
 
     check("call ast_and_test");
-    cur->and_test = ast_and_test(self, dep+1);
-    if (!cur->and_test) {
+    node_t *lhs = ast_and_test(self, dep+1);
+    if (!lhs) {
         return_cleanup("");
     }
 
-    if (!*self->ptr) {
-        return_this(node_new(NODE_TYPE_OR_TEST, cur));
-    }
+    nodearr_moveb(cur->nodearr, lhs);
 
-    token_t *t = *self->ptr++;
-    if (t->type != TOKEN_TYPE_OP_OR) {
-        self->ptr--;
-        return_this(node_new(NODE_TYPE_OR_TEST, cur));
-    }
-    check("read 'or'")
-
-    check("call ast_or_test");
-    cur->or_test = ast_or_test(self, dep+1);
-    if (!*self->ptr) {
-        if (ast_has_error(self)) {
-            return_cleanup("");
+    for (;;) {
+        if (!*self->ptr) {
+            return_this(node_new(NODE_TYPE_OR_TEST, cur));
         }
-        return_cleanup("syntax error. not found rhs operand in 'or' operator");        
+
+        token_t *t = *self->ptr++;
+        if (t->type != TOKEN_TYPE_OP_OR) {
+            self->ptr--;
+            return_this(node_new(NODE_TYPE_OR_TEST, cur));
+        }
+        check("read 'or'")
+
+        check("call ast_or_test");
+        node_t *rhs = ast_and_test(self, dep+1);
+        if (!rhs) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
+            return_cleanup("syntax error. not found rhs operand in 'or' operator");        
+        }
+
+        nodearr_moveb(cur->nodearr, rhs);
     }
 
-    return_this(node_new(NODE_TYPE_OR_TEST, cur));
+    assert(0 && "impossible. failed to or test");
+    return NULL;
 }
 
 static node_t *
@@ -2517,21 +2527,37 @@ ast_traverse_or_test(ast_t *self, node_t *node) {
     assert(node->type == NODE_TYPE_OR_TEST);
     node_or_test_t *or_test = node->real;
 
-    object_t *lhs = _ast_traverse(self, or_test->and_test);
+    node_t *lnode = nodearr_get(or_test->nodearr, 0);
+    object_t *lhs = _ast_traverse(self, lnode);
     if (ast_has_error(self)) {
         return NULL;
     }
     assert(lhs);
 
-    object_t *rhs = _ast_traverse(self, or_test->or_test);
-    if (ast_has_error(self)) {
-        return NULL;
-    }
-    if (!rhs) {
-        return lhs;
+    for (int i = 1; i < nodearr_len(or_test->nodearr); ++i) {
+        node_t *rnode = nodearr_get(or_test->nodearr, i);
+        object_t *rhs = _ast_traverse(self, rnode);
+        if (ast_has_error(self)) {
+            return NULL;
+        }
+        if (!rhs) {
+            return lhs;
+        }
+
+        object_t *result = ast_compare_or(self, lhs, rhs);
+        if (ast_has_error(self)) {
+            obj_del(lhs);
+            obj_del(rhs);
+            return NULL;
+        }
+        assert(result);
+
+        obj_del(lhs);
+        obj_del(rhs);
+        lhs = result;
     }
 
-    return ast_compare_or(self, lhs, rhs);
+    return lhs;
 }
 
 static object_t *
