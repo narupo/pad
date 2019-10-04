@@ -199,12 +199,15 @@ ast_assign_list(ast_t *self, int dep) {
     ready();
     declare(node_assign_list_t, cur);
     token_t **save_ptr = self->ptr;
+    cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
-        ast_del_nodes(self, cur->test_list); \
-        ast_del_nodes(self, cur->assign_list); \
+        for (; nodearr_len(cur->nodearr); ) { \
+            node_t *node = nodearr_popb(cur->nodearr); \
+            ast_del_nodes(self, node); \
+        } \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
@@ -213,29 +216,35 @@ ast_assign_list(ast_t *self, int dep) {
     } \
 
     check("call ast_test_list");
-    cur->test_list = ast_test_list(self, dep+1);
-    if (!cur->test_list) {
+    node_t *lhs = ast_test_list(self, dep+1);
+    if (!lhs) {
         return_cleanup("");
     }
 
-    if (!*self->ptr) {
-        return_this(node_new(NODE_TYPE_ASSIGN_LIST, cur));
-    }
+    nodearr_moveb(cur->nodearr, lhs);
 
-    token_t *t = *self->ptr++;
-    if (t->type != TOKEN_TYPE_OP_ASS) {
-        self->ptr--;
-        return_this(node_new(NODE_TYPE_ASSIGN_LIST, cur));
-    }
-    check("read =");
-
-    check("call ast_assign_list");
-    cur->assign_list = ast_assign_list(self, dep+1);
-    if (!cur->assign_list) {
-        if (ast_has_error(self)) {
-            return_cleanup("");
+    for (;;) {
+        if (!*self->ptr) {
+            return_this(node_new(NODE_TYPE_ASSIGN_LIST, cur));
         }
-        return_this(node_new(NODE_TYPE_ASSIGN_LIST, cur));
+
+        token_t *t = *self->ptr++;
+        if (t->type != TOKEN_TYPE_OP_ASS) {
+            self->ptr--;
+            return_this(node_new(NODE_TYPE_ASSIGN_LIST, cur));
+        }
+        check("read =");
+
+        check("call ast_assign_list");
+        node_t *rhs = ast_test_list(self, dep+1);
+        if (!rhs) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
+            return_cleanup("syntax error. not found rhs in assign list");
+        }        
+
+        nodearr_moveb(cur->nodearr, rhs);
     }
 
     return_this(node_new(NODE_TYPE_ASSIGN_LIST, cur));
@@ -2311,28 +2320,51 @@ ast_calc_assign(ast_t *self, object_t *lhs, object_t *rhs) {
     return NULL;
 }
 
-
+/**
+ * 右結合
+ */
 static object_t *
 ast_traverse_assign_list(ast_t *self, node_t *node) {
+    assert(node->type == NODE_TYPE_ASSIGN_LIST);
     node_assign_list_t *assign_list = node->real;
 
-    object_t *lhs = _ast_traverse(self, assign_list->test_list);
+    if (!nodearr_len(assign_list->nodearr)) {
+        ast_set_error_detail(self, "failed to traverse assign list. array is empty");
+        return NULL;
+    }
+
+    int32_t arrlen = nodearr_len(assign_list->nodearr);
+    node_t *lnode = nodearr_get(assign_list->nodearr, arrlen-1);
+    object_t *rhs = _ast_traverse(self, lnode);
     if (ast_has_error(self)) {
         return NULL;
     }
-    assert(lhs);
+    assert(rhs);
 
-    object_t *rhs = _ast_traverse(self, assign_list->assign_list);
-    if (ast_has_error(self)) {
+    for (int32_t i = arrlen-2; i >= 0; --i) {
+        node_t *rnode = nodearr_get(assign_list->nodearr, i);
+        object_t *lhs = _ast_traverse(self, rnode);
+        if (ast_has_error(self)) {
+            return NULL;
+        }
+        if (!lhs) {
+            return rhs;
+        }
+
+        object_t *result = ast_calc_assign(self, lhs, rhs);
+        if (ast_has_error(self)) {
+            obj_del(lhs);
+            obj_del(rhs);
+            return NULL;
+        }
+        assert(result);
+
         obj_del(lhs);
-        return NULL;
+        obj_del(rhs);
+        rhs = result;
     }
 
-    if (!rhs) {
-        return lhs;
-    }
-    
-    return ast_calc_assign(self, lhs, rhs);
+    return rhs;
 }
 
 static object_t *

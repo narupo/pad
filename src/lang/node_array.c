@@ -5,8 +5,8 @@ enum {
 };
 
 struct node_array {
-    size_t len;
-    size_t capa;
+    int32_t len;
+    int32_t capa;
     node_t **parray;
 };
 
@@ -43,27 +43,27 @@ nodearr_new(void) {
 * getter *
 *********/
 
-size_t
+int32_t
 nodearr_len(const node_array_t *self) {
     return self->len;
 }
 
-size_t
+int32_t
 nodearry_capa(const node_array_t *self) {
     return self->capa;
 }
 
 node_t *
-nodearr_get(const node_array_t *self, size_t index) {
-    if (index >= self->capa) {
+nodearr_get(const node_array_t *self, int32_t index) {
+    if (index < 0 || index >= self->capa) {
         return NULL;
     }
     return self->parray[index];
 }
 
 const node_t *
-nodearr_getc(const node_array_t *self, size_t index) {
-    if (index >= self->capa) {
+nodearr_getc(const node_array_t *self, int32_t index) {
+    if (index < 0 || index >= self->capa) {
         return NULL;
     }
     return self->parray[index];
@@ -74,7 +74,7 @@ nodearr_getc(const node_array_t *self, size_t index) {
 *********/
 
 node_array_t *
-nodearr_resize(node_array_t* self, size_t capa) {
+nodearr_resize(node_array_t* self, int32_t capa) {
     int byte = sizeof(node_t *);
     node_t **tmparr = mem_erealloc(self->parray, capa * byte + byte);
 
