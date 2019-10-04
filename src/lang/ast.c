@@ -9,6 +9,7 @@ struct ast {
     token_t **ptr; // pointer to tokens
     node_t *root; // pointer to root
     context_t *context; // context. update when traverse tree
+    opts_t *opts; // options for builtin opts module
     char error_detail[ERR_DETAIL_SIZE]; // error detail
     bool debug; // if do debug to true
 };
@@ -160,6 +161,15 @@ ast_t *
 ast_new(void) {
     ast_t *self = mem_ecalloc(1, sizeof(*self));
     return self;
+}
+
+void
+ast_move_opts(ast_t *self, opts_t *move_opts) {
+    if (self->opts) {
+        opts_del(self->opts);
+    }
+
+    self->opts = move_opts;
 }
 
 const node_t *
@@ -4089,7 +4099,7 @@ ast_traverse_identifier(ast_t *self, node_t *node) {
 static object_t *
 ast_invoke_alias_set_func(ast_t *self, object_t *objargs) {
     if (!objargs) {
-        ast_set_error_detail(self, "can't invoke alias function. need two arguments");
+        ast_set_error_detail(self, "can't invoke alias.set. need two arguments");
         return NULL;
     }
     assert(objargs->type == OBJ_TYPE_ARRAY);
@@ -4097,22 +4107,22 @@ ast_invoke_alias_set_func(ast_t *self, object_t *objargs) {
     object_array_t *args = objargs->objarr;
 
     if (objarr_len(args) < 2) {
-        ast_set_error_detail(self, "can't invoke alias function. too few arguments");
+        ast_set_error_detail(self, "can't invoke alias.set. too few arguments");
         return NULL;
     } else if (objarr_len(args) >= 3) {
-        ast_set_error_detail(self, "can't invoke alias function. too many arguments");
+        ast_set_error_detail(self, "can't invoke alias.set. too many arguments");
         return NULL;
     }
 
     const object_t *keyobj = objarr_getc(args, 0);
     if (keyobj->type != OBJ_TYPE_STRING) {
-        ast_set_error_detail(self, "can't invoke alias function. key is not string");
+        ast_set_error_detail(self, "can't invoke alias.set. key is not string");
         return NULL;
     }
 
     const object_t *valobj = objarr_getc(args, 1);
     if (valobj->type != OBJ_TYPE_STRING) {
-        ast_set_error_detail(self, "can't invoke alias function. value is not string");
+        ast_set_error_detail(self, "can't invoke alias.set. value is not string");
         return NULL;
     }
 
@@ -4127,12 +4137,43 @@ ast_invoke_alias_set_func(ast_t *self, object_t *objargs) {
 static object_t *
 ast_invoke_opts_get_func(ast_t *self, object_t *objargs) {
     if (!objargs) {
-        ast_set_error_detail(self, "can't invoke alias function. need two arguments");
+        ast_set_error_detail(self, "can't invoke opts.get. need one argument");
         return NULL;
     }
-    assert(objargs->type == OBJ_TYPE_ARRAY);
 
-    return obj_new_null();
+    if (objargs->type == OBJ_TYPE_ARRAY) {
+        if (objarr_len(objargs->objarr) != 1) {
+            ast_set_error_detail(self, "can't invoke opts.get. need one argument");
+            return NULL;
+        }
+
+        const object_t *objname = objarr_getc(objargs->objarr, 0);
+        assert(objname);
+
+        if (objname->type != OBJ_TYPE_STRING) {
+            ast_set_error_detail(self, "can't invoke opts.get. argument is not string");
+            return NULL;
+        }
+
+        string_t *optname = objname->string;
+        const char *optval = opts_getc(self->opts, str_getc(optname));
+        if (!optval) {
+            return obj_new_null();
+        }        
+
+        return obj_new_cstr(optval);
+    } else if (objargs->type == OBJ_TYPE_STRING) {
+        string_t *optname = objargs->string;
+        const char *optval = opts_getc(self->opts, str_getc(optname));
+        if (!optval) {
+            return obj_new_null();
+        }        
+
+        return obj_new_cstr(optval);
+    } 
+
+    assert(0 && "impossible. invalid arguments");
+    return NULL;
 }
 
 static object_t *

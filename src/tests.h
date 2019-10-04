@@ -42,3 +42,4 @@
 #include "lang/object.h"
 #include "lang/object_array.h"
 #include "lang/object_dict.h"
+#include "lang/opts.h"
