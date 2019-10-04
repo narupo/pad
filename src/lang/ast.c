@@ -631,7 +631,6 @@ ast_caller(ast_t *self, int dep) {
 
     t = *self->ptr++;
     if (t->type != TOKEN_TYPE_RPAREN) {
-        vissf("t type[%d]", t->type);
         return_cleanup("syntax error. not found ')' in caller"); 
     }
     check("read )");
@@ -2356,16 +2355,16 @@ ast_traverse_assign_list(ast_t *self, node_t *node) {
     }
 
     int32_t arrlen = nodearr_len(assign_list->nodearr);
-    node_t *lnode = nodearr_get(assign_list->nodearr, arrlen-1);
-    object_t *rhs = _ast_traverse(self, lnode);
+    node_t *rnode = nodearr_get(assign_list->nodearr, arrlen-1);
+    object_t *rhs = _ast_traverse(self, rnode);
     if (ast_has_error(self)) {
         return NULL;
     }
     assert(rhs);
 
     for (int32_t i = arrlen-2; i >= 0; --i) {
-        node_t *rnode = nodearr_get(assign_list->nodearr, i);
-        object_t *lhs = _ast_traverse(self, rnode);
+        node_t *lnode = nodearr_get(assign_list->nodearr, i);
+        object_t *lhs = _ast_traverse(self, lnode);
         if (ast_has_error(self)) {
             return NULL;
         }
@@ -4165,6 +4164,8 @@ ast_invoke_opts_get_func(ast_t *self, object_t *objargs) {
     } else if (objargs->type == OBJ_TYPE_STRING) {
         string_t *optname = objargs->string;
         const char *optval = opts_getc(self->opts, str_getc(optname));
+        printf("optname[%s]\n", str_getc(optname));
+        printf("optval[%s]\n", optval);
         if (!optval) {
             return obj_new_null();
         }        

@@ -28,7 +28,7 @@ obj_new_other(object_t *other) {
     }
 
     if (other->string) {
-        self->string = str_newother(other->identifier);
+        self->string = str_newother(other->string);
     }
 
     self->lvalue = other->lvalue;

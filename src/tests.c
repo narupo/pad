@@ -6693,12 +6693,28 @@ test_ast_traverse(void) {
     * assign_list *
     **************/
 
+    tkr_parse(tkr, "{@ a = 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    }
+
     tkr_parse(tkr, "{@ a = 1, 2 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"abc\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
     }
 
     /* tkr_parse(tkr, "{@ a, b = 1, 2 @}{: a :},{: b :}");
@@ -6713,7 +6729,6 @@ test_ast_traverse(void) {
     {
         (ast_parse(ast, tkr_get_tokens(tkr)));
         ast_traverse(ast, ctx);
-        showdetail();
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "null"));
     } 
@@ -6722,9 +6737,26 @@ test_ast_traverse(void) {
     {
         (ast_parse(ast, tkr_get_tokens(tkr)));
         ast_traverse(ast, ctx);
-        showdetail();
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nullnull"));
+    } 
+
+    tkr_parse(tkr, "{@ a = opts.get(\"abc\") @}{: a :}");
+    {
+        char *argv[] = {
+            "-abc",
+            "def",
+            NULL,
+        };
+        opts_t *opts = opts_new();
+        assert(opts_parse(opts, 2, argv));
+        ast_move_opts(ast, opts);
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        ast_debug(ast_traverse(ast, ctx));
+        ast_move_opts(ast, NULL);
+        assert(!ast_has_error(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "def"));
     } 
 
     /************
