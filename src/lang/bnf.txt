@@ -27,12 +27,11 @@ BNF of Cap's template language
 
            formula: assign_list
 
-       # BUG =
        assign_list: ( test_list | test_list '=' ) assign_list
          test_list: ( test | test ',' ) test_list
             
               test: or_test
-           or_test: ( and_test | and_test 'or' ) or_test
+           or_test: and_test ( 'or' and_test )*
           and_test: ( not_test | not_test 'and' ) and_test
           not_test: 'not' not_test | comparison
 

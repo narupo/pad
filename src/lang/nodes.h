@@ -161,8 +161,7 @@ typedef struct node_test {
 } node_test_t;
 
 typedef struct node_or_test {
-    node_t *and_test;
-    node_t *or_test;
+    node_array_t *nodearr;
 } node_or_test_t;
 
 typedef struct node_and_test {
