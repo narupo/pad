@@ -98,6 +98,7 @@ home) or current directory, and write the following.
 
  This is function of alias of Cap.
 
+
 Template language
 =================
 
@@ -109,6 +110,7 @@ Template language
     My name is {: name :}. How are you?
 
  opts.get is builtin module's function.
+
 
 Cap + Plugin of editor
 ======================
