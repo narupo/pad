@@ -38,7 +38,7 @@
  * @return success to pointer to path, failed to NULL
  */
 char *
-symlink_follow_path(config_t *config, char *dst, uint32_t dstsz, const char *drtpath);
+symlink_follow_path(const config_t *config, char *dst, uint32_t dstsz, const char *drtpath);
 
 /**
  * Normalize dirty path and save normalized path to destination
@@ -58,7 +58,7 @@ symlink_follow_path(config_t *config, char *dst, uint32_t dstsz, const char *drt
  * @return success to pointer to path, failed to NULL
  */
 char *
-symlink_norm_path(config_t *config, char *dst, uint32_t dstsz, const char *drtpath);
+symlink_norm_path(const config_t *config, char *dst, uint32_t dstsz, const char *drtpath);
 
 /**
  * Check file is Cap's symbolic link

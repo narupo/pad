@@ -52,6 +52,7 @@ init:
 	build$(SEP)link \
 	build$(SEP)hub \
 	build$(SEP)hub$(SEP)commands \
+	build$(SEP)make \
 	build$(SEP)lang$(SEP) 
 
 .PHONY: cc
@@ -89,6 +90,7 @@ SRCS := build/lib/error.c \
 	build/snippet/snippet.c \
 	build/link/link.c \
 	build/hub/hub.c \
+	build/make/make.c \
 	build/lang/tokens.c \
 	build/lang/tokenizer.c \
 	build/lang/nodes.c \
@@ -173,6 +175,8 @@ build/snippet/snippet.o: src/snippet/snippet.c src/snippet/snippet.h
 build/link/link.o: src/link/link.c src/link/link.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/hub/hub.o: src/hub/hub.c src/hub/hub.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/make/make.o: src/make/make.c src/make/make.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/tokenizer.o: src/lang/tokenizer.c src/lang/tokenizer.h
 	$(CC) $(CFLAGS) -c $< -o $@

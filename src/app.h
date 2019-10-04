@@ -30,3 +30,4 @@
 #include "snippet/snippet.h"
 #include "link/link.h"
 #include "hub/hub.h"
+#include "make/make.h"

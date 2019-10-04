@@ -413,6 +413,7 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
         "snippet",
         "link",
         "hub",
+        "make",
         NULL,
     };
 
@@ -488,6 +489,8 @@ app_execute_command_by_name(app_t *self, const char *name) {
         routine(linkcmd);
     } else if (cstr_eq(name, "hub")) {
         routine(hubcmd);
+    } else if (cstr_eq(name, "make")) {
+        routine(makecmd);
     } else {
         err_error("invalid command name \"%s\"", name);
         result = 1;
