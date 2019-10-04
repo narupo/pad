@@ -621,6 +621,7 @@ ast_caller(ast_t *self, int dep) {
 
     t = *self->ptr++;
     if (t->type != TOKEN_TYPE_RPAREN) {
+        vissf("t type[%d]", t->type);
         return_cleanup("syntax error. not found ')' in caller"); 
     }
     check("read )");
@@ -4086,7 +4087,7 @@ ast_traverse_identifier(ast_t *self, node_t *node) {
 }
 
 static object_t *
-ast_invoke_alias_func(ast_t *self, object_t *objargs) {
+ast_invoke_alias_set_func(ast_t *self, object_t *objargs) {
     if (!objargs) {
         ast_set_error_detail(self, "can't invoke alias function. need two arguments");
         return NULL;
@@ -4095,20 +4096,31 @@ ast_invoke_alias_func(ast_t *self, object_t *objargs) {
 
     object_array_t *args = objargs->objarr;
 
-    printf("args len[%d]\n", objarr_len(args));
-    for (int i = 0; i < objarr_len(args); ++i) {
-        printf("%d: type[%d]\n", i, objarr_getc(args, 0)->type);
-    }
-
     if (objarr_len(args) < 2) {
         ast_set_error_detail(self, "can't invoke alias function. too few arguments");
         return NULL;
-    } else if (objarr_len(args) >= 2) {
+    } else if (objarr_len(args) >= 3) {
         ast_set_error_detail(self, "can't invoke alias function. too many arguments");
         return NULL;
     }
 
-    puts("ALIAS!!!");
+    const object_t *keyobj = objarr_getc(args, 0);
+    if (keyobj->type != OBJ_TYPE_STRING) {
+        ast_set_error_detail(self, "can't invoke alias function. key is not string");
+        return NULL;
+    }
+
+    const object_t *valobj = objarr_getc(args, 1);
+    if (valobj->type != OBJ_TYPE_STRING) {
+        ast_set_error_detail(self, "can't invoke alias function. value is not string");
+        return NULL;
+    }
+
+    string_t *key = keyobj->string;
+    string_t *val = valobj->string;
+
+    ctx_set_alias(self->context, str_getc(key), str_getc(val));
+
     return obj_new_null();
 }
 
@@ -4126,9 +4138,10 @@ ast_traverse_caller(ast_t *self, node_t *node) {
     object_t *args = _ast_traverse(self, caller->test_list);
     object_t *result = NULL;
 
-    if (cstrarr_len(names) == 1 &&
-        cstr_eq(cstrarr_getc(names, 0), "alias")) {
-        result = ast_invoke_alias_func(self, args);
+    if (cstrarr_len(names) == 2 &&
+        cstr_eq(cstrarr_getc(names, 0), "alias") &&
+        cstr_eq(cstrarr_getc(names, 1), "set")) {
+        result = ast_invoke_alias_set_func(self, args);
         if (ast_has_error(self)) {
             obj_del(args);
             return NULL;
@@ -4136,6 +4149,9 @@ ast_traverse_caller(ast_t *self, node_t *node) {
     }
 
     obj_del(args);
+    if (!result) {
+        return obj_new_null();
+    }
     return result;
 }
 
