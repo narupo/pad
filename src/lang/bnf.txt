@@ -26,19 +26,13 @@ BNF of Cap's template language
                     'for' ':' elems 'end'
 
            formula: assign_list
-
        assign_list: test_list ( '=' test_list )*
-
-         TODO
          test_list: test ( ',' test )*
-            
               test: or_test
            or_test: and_test ( 'or' and_test )*
           and_test: not_test ( 'and' not_test )*
           not_test: 'not' not_test | comparison
-
         comparison: expr ( comp_op expr )*
-
               expr: term ( add_sub_op term )*
               term: asscalc ( mul_div_op asscalc )*
            asscalc: factor ( augassign factor )*
