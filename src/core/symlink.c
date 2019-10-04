@@ -15,7 +15,7 @@ is_contain_header(char *data, uint32_t datasz) {
 }
 
 static const char *
-read_sympath(config_t *config, char *sympath, uint32_t sympathsz, const char *path) {
+read_sympath(const config_t *config, char *sympath, uint32_t sympathsz, const char *path) {
     FILE *fin = fopen(path, "r");
     if (!fin) {
         return NULL;
@@ -91,7 +91,7 @@ find_path_head(const char *path) {
 }
 
 static char *
-__symlink_follow_path(config_t *config, char *dst, uint32_t dstsz, const char *abspath, int dep) {
+__symlink_follow_path(const config_t *config, char *dst, uint32_t dstsz, const char *abspath, int dep) {
     if (dep >= 8) {
         return NULL;
     }
@@ -170,7 +170,7 @@ fail:
 }
 
 char *
-symlink_follow_path(config_t *config, char *dst, uint32_t dstsz, const char *abspath) {
+symlink_follow_path(const config_t *config, char *dst, uint32_t dstsz, const char *abspath) {
     if (!dst || !dstsz || !abspath) {
         return NULL;
     }
@@ -196,7 +196,7 @@ split_ignore_empty(const char *p, char sep) {
 }
 
 char *
-symlink_norm_path(config_t *config, char *dst, uint32_t dstsz, const char *drtpath) {
+symlink_norm_path(const config_t *config, char *dst, uint32_t dstsz, const char *drtpath) {
     if (!config || !dst || !dstsz || !drtpath) {
         return NULL;
     }

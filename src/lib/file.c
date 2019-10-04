@@ -306,22 +306,32 @@ file_readcp(FILE* fin) {
 		return NULL;
 	}
 
-	uint32_t size = file_size(fin);
+	int32_t size = 4;
+	int32_t len = 0;
 	char *dst = malloc(sizeof(char)*size+1); // +1 for final nul
 	if (!dst) {
 		return NULL;
 	}
 
-	fread(dst, sizeof(char), size, fin);
-	if (ferror(fin)) {
-		return NULL;
+	for (;;) {
+		int c = fgetc(fin);
+		if (c == EOF) {
+			break;
+		}
+		if (len >= size) {
+			size *= 2;
+			char *tmpdst = realloc(dst, sizeof(char)*size+1);
+			if (!tmpdst) {
+				free(dst);
+				return NULL;
+			}
+			dst = tmpdst;
+		}
+
+		dst[len++] = c;
 	}
 
-	if (feof(fin)) {
-		return NULL;
-	}
-
-	dst[size] = '\0';
+	dst[len] = '\0';
 
 	return dst;
 }
