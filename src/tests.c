@@ -3409,7 +3409,7 @@ test_ast_parse(void) {
     tkr_parse(tkr, "{@ 1 or 1 @}");
     {
         ast_clear(ast);
-        ast_debug(ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_parse(ast, tkr_get_tokens(tkr)));
         root = ast_getc_root(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -5974,38 +5974,6 @@ test_ast_traverse(void) {
     ast_t *ast = ast_new();
     context_t *ctx = ctx_new();
 
-    /*******
-    * atom *
-    *******/
-
-    tkr_parse(tkr, "{@ 1 @}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-    }    
-
-    tkr_parse(tkr, "{@ \"abc\" @}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-    }    
-
-    tkr_parse(tkr, "{@ var @}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-    }
-
-    tkr_parse(tkr, "{@ alias() @}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-    }
-
     /*************
     * text block *
     *************/
@@ -6042,12 +6010,12 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
     }
 
-    tkr_parse(tkr, "{: alias() :}");
+    /* tkr_parse(tkr, "{: alias(\"dtl\", \"run bin/date-line.py\") :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "null"));
-    }
+    } */
 
     tkr_parse(tkr, "{: 1 + 1 :}");
     {
@@ -6068,6 +6036,58 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    }
+
+    /*******
+    * atom *
+    *******/
+
+    tkr_parse(tkr, "{@ 1 @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+    }    
+
+    tkr_parse(tkr, "{@ \"abc\" @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+    }    
+
+    tkr_parse(tkr, "{@ var @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+    }
+
+    tkr_parse(tkr, "{@ alias() @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't invoke alias function. need two arguments"));
+    }
+
+    /* tkr_parse(tkr, "{@ alias(1, 2, 3) @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't invoke alias function. too many arguments"));
+    } */
+
+    /************
+    * test_list *
+    ************/
+
+    tkr_parse(tkr, "{@ 1, 2 @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
     }
 
     /*************
@@ -6253,13 +6273,13 @@ test_ast_traverse(void) {
     * caller *
     *********/
 
-    tkr_parse(tkr, "{@ alias() @}{: alias() :}");
+    /* tkr_parse(tkr, "{@ alias() @}{: alias() :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "null"));
-    }
+    } */
 
     /*******************
     * import statement *

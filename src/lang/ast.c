@@ -4044,9 +4044,31 @@ ast_traverse_identifier(ast_t *self, node_t *node) {
     return obj_new_cidentifier(identifier->identifier);
 }
 
-static void
-ast_invoke_alias_func(ast_t *self, object_array_t *args) {
+static object_t *
+ast_invoke_alias_func(ast_t *self, object_t *objargs) {
+    if (!objargs) {
+        ast_set_error_detail(self, "can't invoke alias function. need two arguments");
+        return NULL;
+    }
+    assert(objargs->type == OBJ_TYPE_ARRAY);
+
+    object_array_t *args = objargs->objarr;
+
+    printf("args len[%d]\n", objarr_len(args));
+    for (int i = 0; i < objarr_len(args); ++i) {
+        printf("%d: type[%d]\n", i, objarr_getc(args, 0)->type);
+    }
+
+    if (objarr_len(args) < 2) {
+        ast_set_error_detail(self, "can't invoke alias function. too few arguments");
+        return NULL;
+    } else if (objarr_len(args) >= 2) {
+        ast_set_error_detail(self, "can't invoke alias function. too many arguments");
+        return NULL;
+    }
+
     puts("ALIAS!!!");
+    return obj_new_null();
 }
 
 static object_t *
@@ -4060,21 +4082,20 @@ ast_traverse_caller(ast_t *self, node_t *node) {
         return NULL;
     }
 
-    object_t *_args = _ast_traverse(self, caller->test_list);
-    object_array_t *args = NULL;
-    if (_args) {
-        assert(_args->type == OBJ_TYPE_ARRAY);
-        args = _args->objarr;
-    } else {
-        args = objarr_new();
-    }
+    object_t *args = _ast_traverse(self, caller->test_list);
+    object_t *result = NULL;
 
     if (cstrarr_len(names) == 1 &&
         cstr_eq(cstrarr_getc(names, 0), "alias")) {
-        ast_invoke_alias_func(self, args);
+        result = ast_invoke_alias_func(self, args);
+        if (ast_has_error(self)) {
+            obj_del(args);
+            return NULL;
+        }
     }
 
-    return obj_new_null();
+    obj_del(args);
+    return result;
 }
 
 static object_t *
