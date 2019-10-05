@@ -2736,7 +2736,6 @@ test_ast_parse(void) {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
         root = ast_getc_root(ast);
-        printf("%p\n", root);
         program = root->real;
         blocks = program->blocks->real;
         code_block = blocks->code_block->real;
@@ -3034,6 +3033,40 @@ test_ast_parse(void) {
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 1);    
+    }
+
+    tkr_parse(tkr, "{@ a += \"b\" @}");
+    {
+        ast_clear(ast);
+        ast_parse(ast, tkr_get_tokens(tkr));
+        root = ast_getc_root(ast);
+        program = root->real;
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        formula = elems->formula->real;
+        assign_list = formula->assign_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        expr = nodearr_get(comparison->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
+        factor = nodearr_get(asscalc->nodearr, 0)->real;
+        atom = factor->atom->real;
+        identifier = atom->identifier->real;
+        assert(identifier != NULL);
+        assert(!strcmp(identifier->identifier, "a"));
+        augassign = nodearr_get(asscalc->nodearr, 1)->real;
+        assert(augassign->op == OP_ADD_ASS);
+        factor = nodearr_get(asscalc->nodearr, 2)->real;
+        atom = factor->atom->real;
+        string = atom->string->real;
+        assert(string != NULL);
+        assert(!strcmp(string->string, "b"));    
     }
 
     tkr_parse(tkr, "{@ a -= 1 @}");
@@ -6602,7 +6635,7 @@ test_ast_traverse(void) {
     tkr_parse(tkr, "{: 1 :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
+        (ast_traverse(ast, ctx));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
 
@@ -6624,7 +6657,6 @@ test_ast_traverse(void) {
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
-        showbuf();
         assert(!strcmp(ctx_getc_buf(ctx), "null"));
     } */
 
@@ -6753,10 +6785,9 @@ test_ast_traverse(void) {
         assert(opts_parse(opts, 2, argv));
         ast_move_opts(ast, opts);
         (ast_parse(ast, tkr_get_tokens(tkr)));
-        ast_debug(ast_traverse(ast, ctx));
+        (ast_traverse(ast, ctx));
         ast_move_opts(ast, NULL);
         assert(!ast_has_error(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_buf(ctx), "def"));
     } 
 
@@ -6956,13 +6987,6 @@ test_ast_traverse(void) {
     * asscalc *
     **********/
 
-    tkr_parse(tkr, "{@ a = 1 @}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-    }
-
     tkr_parse(tkr, "{@ a += 1 @}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -6983,6 +7007,17 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "3"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"a\"\n"
+        "a += \"b\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        showbuf();
+        showdetail();
+        assert(!strcmp(ctx_getc_buf(ctx), "ab"));
     }
 
     /*********
@@ -7104,6 +7139,29 @@ test_ast_traverse(void) {
         ast_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "ghi"));
     }
+
+    /****************
+    * for statement *
+    ****************/
+
+    /* tkr_parse(tkr, "{@ a = 0\n"
+        "for i = 0; i != 4; i += 1:\n"
+        "   a += 1\n"
+        "end @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "4"));
+    } */
+
+    /* tkr_parse(tkr, "{@ for i = 0; i != 4; i += 1: @}a{@ end @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "aaaa"));
+    } */
 
     ctx_del(ctx);
     ast_del(ast);
