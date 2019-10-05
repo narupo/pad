@@ -35,12 +35,28 @@ struct ast {
         return NULL; \
     } \
 
-#define return_this(ret) \
+#define tready() \
+    if (self->debug) { \
+        fprintf(stderr, "debug: %5d: %*s: %3d: %s\n", __LINE__, 40, __func__, dep, ast_get_error_detail(self)); \
+        fflush(stderr); \
+    } \
+
+#define return_parse(ret) \
     if (self->debug) { \
         fprintf(stderr, "debug: %5d: %*s: %3d: return %p: %s\n", __LINE__, 20, __func__, dep, ret, ast_get_error_detail(self)); \
         fflush(stderr); \
     } \
     return ret; \
+
+#define return_trav(obj) \
+    if (self->debug) { \
+        string_t *s = NULL; \
+        if (obj) s = obj_to_str(obj); \
+        fprintf(stderr, "debug: %5d: %*s: %3d: return %p (%s): %s\n", __LINE__, 40, __func__, dep, obj, (s ? str_getc(s) : "null"), ast_get_error_detail(self)); \
+        if (obj) str_del(s); \
+        fflush(stderr); \
+    } \
+    return obj; \
 
 #define check(msg) \
     if (self->debug) { \
@@ -49,7 +65,7 @@ struct ast {
 
 #define tcheck(msg) \
     if (self->debug) { \
-        fprintf(stderr, "debug: %5d: %*s: %s: %s\n", __LINE__, 20, __func__, msg, ast_get_error_detail(self)); \
+        fprintf(stderr, "debug: %5d: %*s: %3d: %s: %s\n", __LINE__, 40, __func__, dep, msg, ast_get_error_detail(self)); \
     } \
 
 #define vissf(fmt, ...) \
@@ -84,52 +100,55 @@ static node_t *
 ast_mul_div_op(ast_t *self, int dep);
 
 static object_t *
-_ast_traverse(ast_t *self, node_t *node);
+_ast_traverse(ast_t *self, node_t *node, int dep);
 
 static object_t *
-ast_compare_or(ast_t *self, object_t *lhs, object_t *rhs);
+ast_compare_or(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
-ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs);
+ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
-ast_compare_or_string(ast_t *self, object_t *lhs, object_t *rhs);
+ast_compare_or_string(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
-ast_compare_or_identifier(ast_t *self, object_t *lhs, object_t *rhs);
+ast_compare_or_identifier(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
-ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs);
+ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
-ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs);
+ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
-ast_compare_and(ast_t *self, object_t *lhs, object_t *rhs);
+ast_compare_and(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
-ast_compare_comparison_eq(ast_t *self, object_t *lhs, object_t *rhs);
+ast_compare_comparison_eq(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
-ast_compare_comparison_not_eq(ast_t *self, object_t *lhs, object_t *rhs);
+ast_compare_comparison_not_eq(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
-ast_calc_expr_add(ast_t *self, object_t *lhs, object_t *rhs);
+ast_calc_expr_add(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
-ast_calc_expr_sub(ast_t *self, object_t *lhs, object_t *rhs);
+ast_calc_expr_sub(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
-ast_calc_term_div(ast_t *self, object_t *lhs, object_t *rhs);
+ast_calc_term_div(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
-ast_calc_term_mul(ast_t *self, object_t *lhs, object_t *rhs);
+ast_calc_term_mul(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
-get_var(ast_t *self, const char *identifier);
+get_var(ast_t *self, const char *identifier, int dep);
 
 static object_t *
-ast_calc_asscalc_ass(ast_t *self, object_t *lhs, object_t *rhs);
+move_var(ast_t *self, const char *identifier, object_t *move_obj, int dep);
+
+static object_t *
+ast_calc_asscalc_ass(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 /************
 * functions *
@@ -144,6 +163,13 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     switch (node->type) {
     default: {
         // err_die("impossible. not supported node type '%d'", node->type);
+    } break;
+    case NODE_TYPE_BLOCKS: {
+        node_blocks_t *blocks = node->real;
+        ast_del_nodes(self, blocks->code_block);
+        ast_del_nodes(self, blocks->ref_block);
+        ast_del_nodes(self, blocks->text_block);
+        node_del(node);
     } break;
     }
 }
@@ -222,7 +248,7 @@ ast_assign_list(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call ast_test_list");
@@ -235,13 +261,13 @@ ast_assign_list(ast_t *self, int dep) {
 
     for (;;) {
         if (!*self->ptr) {
-            return_this(node_new(NODE_TYPE_ASSIGN_LIST, cur));
+            return_parse(node_new(NODE_TYPE_ASSIGN_LIST, cur));
         }
 
         token_t *t = *self->ptr++;
         if (t->type != TOKEN_TYPE_OP_ASS) {
             self->ptr--;
-            return_this(node_new(NODE_TYPE_ASSIGN_LIST, cur));
+            return_parse(node_new(NODE_TYPE_ASSIGN_LIST, cur));
         }
         check("read =");
 
@@ -257,7 +283,7 @@ ast_assign_list(ast_t *self, int dep) {
         nodearr_moveb(cur->nodearr, rhs);
     }
 
-    return_this(node_new(NODE_TYPE_ASSIGN_LIST, cur));
+    return_parse(node_new(NODE_TYPE_ASSIGN_LIST, cur));
 }
 
 static node_t *
@@ -274,7 +300,7 @@ ast_formula(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call ast_assign_list");
@@ -286,7 +312,7 @@ ast_formula(ast_t *self, int dep) {
         return_cleanup(""); // not error
     }
 
-    return_this(node_new(NODE_TYPE_FORMULA, cur));
+    return_parse(node_new(NODE_TYPE_FORMULA, cur));
 }
 
 static node_t *
@@ -307,7 +333,7 @@ ast_test_list(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     node_t *lhs = ast_test(self, dep+1);
@@ -364,7 +390,7 @@ ast_for_stmt(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -547,7 +573,7 @@ ast_for_stmt(ast_t *self, int dep) {
         check("read end");
     }
 
-    return_this(node_new(NODE_TYPE_FOR_STMT, cur));
+    return_parse(node_new(NODE_TYPE_FOR_STMT, cur));
 }
 
 static node_t *
@@ -563,7 +589,7 @@ ast_augassign(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -578,7 +604,7 @@ ast_augassign(ast_t *self, int dep) {
     }
     check("read op");
 
-    return_this(node_new(NODE_TYPE_AUGASSIGN, cur));
+    return_parse(node_new(NODE_TYPE_AUGASSIGN, cur));
 }
 
 static node_t *
@@ -594,7 +620,7 @@ ast_caller(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call ast_identifier_chain");
@@ -635,7 +661,7 @@ ast_caller(ast_t *self, int dep) {
     }
     check("read )");
 
-    return_this(node_new(NODE_TYPE_CALLER, cur));
+    return_parse(node_new(NODE_TYPE_CALLER, cur));
 }
 
 static node_t *
@@ -651,7 +677,7 @@ ast_identifier(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -663,7 +689,7 @@ ast_identifier(ast_t *self, int dep) {
     // copy text
     cur->identifier = cstr_edup(t->text);
 
-    return_this(node_new(NODE_TYPE_IDENTIFIER, cur));
+    return_parse(node_new(NODE_TYPE_IDENTIFIER, cur));
 }
 
 static node_t *
@@ -679,7 +705,7 @@ ast_string(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -691,7 +717,7 @@ ast_string(ast_t *self, int dep) {
     // copy text
     cur->string = cstr_edup(t->text);
 
-    return_this(node_new(NODE_TYPE_STRING, cur));
+    return_parse(node_new(NODE_TYPE_STRING, cur));
 }
 
 static node_t *
@@ -707,7 +733,7 @@ ast_digit(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -718,7 +744,7 @@ ast_digit(ast_t *self, int dep) {
 
     cur->lvalue = t->lvalue;
 
-    return_this(node_new(NODE_TYPE_DIGIT, cur));
+    return_parse(node_new(NODE_TYPE_DIGIT, cur));
 }
 
 static node_t *
@@ -738,7 +764,7 @@ ast_atom(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call ast_digit");
@@ -774,7 +800,7 @@ ast_atom(ast_t *self, int dep) {
         }
     }
 
-    return_this(node_new(NODE_TYPE_ATOM, cur));
+    return_parse(node_new(NODE_TYPE_ATOM, cur));
 }
 
 static node_t *
@@ -792,7 +818,7 @@ ast_factor(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call ast_atom");
@@ -832,7 +858,7 @@ ast_factor(ast_t *self, int dep) {
         check("read )")
     }
 
-    return_this(node_new(NODE_TYPE_FACTOR, cur));
+    return_parse(node_new(NODE_TYPE_FACTOR, cur));
 }
 
 static node_t *
@@ -853,7 +879,7 @@ ast_asscalc(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call ast_factor");
@@ -874,7 +900,7 @@ ast_asscalc(ast_t *self, int dep) {
             if (ast_has_error(self)) {
                 return_cleanup("");
             }
-            return_this(node_new(NODE_TYPE_ASSCALC, cur));
+            return_parse(node_new(NODE_TYPE_ASSCALC, cur));
         }
 
         nodearr_moveb(cur->nodearr, op);
@@ -912,7 +938,7 @@ ast_term(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call left ast_asscalc");
@@ -933,7 +959,7 @@ ast_term(ast_t *self, int dep) {
             if (ast_has_error(self)) {
                 return_cleanup("");
             }
-            return_this(node_new(NODE_TYPE_TERM, cur));
+            return_parse(node_new(NODE_TYPE_TERM, cur));
         }
 
         nodearr_moveb(cur->nodearr, op);
@@ -966,7 +992,7 @@ ast_mul_div_op(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -979,7 +1005,7 @@ ast_mul_div_op(ast_t *self, int dep) {
     }
     check("read op");
 
-    return_this(node_new(NODE_TYPE_MUL_DIV_OP, cur));
+    return_parse(node_new(NODE_TYPE_MUL_DIV_OP, cur));
 }
 
 static node_t *
@@ -995,7 +1021,7 @@ ast_add_sub_op(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -1008,7 +1034,7 @@ ast_add_sub_op(ast_t *self, int dep) {
     }
     check("read op");
 
-    return_this(node_new(NODE_TYPE_ASS_SUB_OP, cur));
+    return_parse(node_new(NODE_TYPE_ASS_SUB_OP, cur));
 }
 
 static node_t *
@@ -1029,7 +1055,7 @@ ast_expr(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call left ast_term");
@@ -1050,7 +1076,7 @@ ast_expr(ast_t *self, int dep) {
             if (ast_has_error(self)) {
                 return_cleanup("");
             }
-            return_this(node_new(NODE_TYPE_EXPR, cur));
+            return_parse(node_new(NODE_TYPE_EXPR, cur));
         }
 
         nodearr_moveb(cur->nodearr, op);
@@ -1083,7 +1109,7 @@ ast_comp_op(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -1102,7 +1128,7 @@ ast_comp_op(ast_t *self, int dep) {
         break;
     }
 
-    return_this(node_new(NODE_TYPE_COMP_OP, cur));
+    return_parse(node_new(NODE_TYPE_COMP_OP, cur));
 }
 
 static node_t *
@@ -1123,7 +1149,7 @@ ast_comparison(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call left ast_expr");
@@ -1144,7 +1170,7 @@ ast_comparison(ast_t *self, int dep) {
             if (ast_has_error(self)) {
                 return_cleanup("");
             }
-            return_this(node_new(NODE_TYPE_COMPARISON, cur));
+            return_parse(node_new(NODE_TYPE_COMPARISON, cur));
         }
 
         check("call right ast_expr");
@@ -1180,7 +1206,7 @@ ast_not_test(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -1206,7 +1232,7 @@ ast_not_test(ast_t *self, int dep) {
         }
     }
 
-    return_this(node_new(NODE_TYPE_NOT_TEST, cur));
+    return_parse(node_new(NODE_TYPE_NOT_TEST, cur));
 }
 
 static node_t *
@@ -1227,7 +1253,7 @@ ast_and_test(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call ast_not_test");
@@ -1240,13 +1266,13 @@ ast_and_test(ast_t *self, int dep) {
 
     for (;;) {
         if (!*self->ptr) {
-            return_this(node_new(NODE_TYPE_AND_TEST, cur));
+            return_parse(node_new(NODE_TYPE_AND_TEST, cur));
         }
 
         token_t *t = *self->ptr++;
         if (t->type != TOKEN_TYPE_OP_AND) {
             self->ptr--;
-            return_this(node_new(NODE_TYPE_AND_TEST, cur));
+            return_parse(node_new(NODE_TYPE_AND_TEST, cur));
         }
         check("read 'or'")
 
@@ -1284,7 +1310,7 @@ ast_or_test(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call ast_and_test");
@@ -1297,13 +1323,13 @@ ast_or_test(ast_t *self, int dep) {
 
     for (;;) {
         if (!*self->ptr) {
-            return_this(node_new(NODE_TYPE_OR_TEST, cur));
+            return_parse(node_new(NODE_TYPE_OR_TEST, cur));
         }
 
         token_t *t = *self->ptr++;
         if (t->type != TOKEN_TYPE_OP_OR) {
             self->ptr--;
-            return_this(node_new(NODE_TYPE_OR_TEST, cur));
+            return_parse(node_new(NODE_TYPE_OR_TEST, cur));
         }
         check("read 'or'")
 
@@ -1337,7 +1363,7 @@ ast_test(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     cur->or_test = ast_or_test(self, dep+1);
@@ -1345,7 +1371,7 @@ ast_test(ast_t *self, int dep) {
         return_cleanup("");
     }
 
-    return_this(node_new(NODE_TYPE_TEST, cur));
+    return_parse(node_new(NODE_TYPE_TEST, cur));
 }
 
 static node_t *
@@ -1362,7 +1388,7 @@ ast_else_stmt(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -1433,7 +1459,7 @@ ast_else_stmt(ast_t *self, int dep) {
         check("read end");
     }
 
-    return_this(node_new(NODE_TYPE_ELSE_STMT, cur));
+    return_parse(node_new(NODE_TYPE_ELSE_STMT, cur));
 }
 
 static node_t *
@@ -1455,7 +1481,7 @@ ast_if_stmt(ast_t *self, int type, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -1583,7 +1609,7 @@ ast_if_stmt(ast_t *self, int type, int dep) {
         }
     }
 
-    return_this(node_new(node_type, cur));
+    return_parse(node_new(node_type, cur));
 }
 
 static node_t *
@@ -1601,7 +1627,7 @@ ast_identifier_chain(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call ast_identifier");
@@ -1617,7 +1643,7 @@ ast_identifier_chain(ast_t *self, int dep) {
 
     if (t->type != TOKEN_TYPE_DOT_OPE) {
         self->ptr--;
-        return_this(node_new(NODE_TYPE_IDENTIFIER_CHAIN, cur));
+        return_parse(node_new(NODE_TYPE_IDENTIFIER_CHAIN, cur));
     }
 
     check("call ast_identifier_chain");
@@ -1631,7 +1657,7 @@ ast_identifier_chain(ast_t *self, int dep) {
         return_cleanup("syntax error. not found identifier after \".\"");
     }
 
-    return_this(node_new(NODE_TYPE_IDENTIFIER_CHAIN, cur));
+    return_parse(node_new(NODE_TYPE_IDENTIFIER_CHAIN, cur));
 }
 
 static node_t *
@@ -1648,7 +1674,7 @@ ast_import_stmt(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -1675,7 +1701,7 @@ ast_import_stmt(ast_t *self, int dep) {
         ast_skip_newlines(self);
     }
 
-    return_this(node_new(NODE_TYPE_IMPORT_STMT, cur));
+    return_parse(node_new(NODE_TYPE_IMPORT_STMT, cur));
 }
 
 static node_t *
@@ -1694,7 +1720,7 @@ ast_stmt(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call ast_import_stmt");
@@ -1723,7 +1749,7 @@ ast_stmt(ast_t *self, int dep) {
         }
     }
 
-    return_this(node_new(NODE_TYPE_STMT, cur));
+    return_parse(node_new(NODE_TYPE_STMT, cur));
 }
 
 static node_t *
@@ -1741,7 +1767,7 @@ ast_elems(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call ast_stmt");
@@ -1768,10 +1794,10 @@ ast_elems(ast_t *self, int dep) {
         if (ast_has_error(self)) {
             return_cleanup("");
         }
-        return_this(node_new(NODE_TYPE_ELEMS, cur));
+        return_parse(node_new(NODE_TYPE_ELEMS, cur));
     }
 
-    return_this(node_new(NODE_TYPE_ELEMS, cur));
+    return_parse(node_new(NODE_TYPE_ELEMS, cur));
 }
 
 static node_t *
@@ -1784,14 +1810,14 @@ ast_text_block(ast_t *self, int dep) {
     if (t->type != TOKEN_TYPE_TEXT_BLOCK) {
         self->ptr = save_ptr;
         free(cur);
-        return_this(NULL);
+        return_parse(NULL);
     }
     check("read text block");
 
     // copy text
     cur->text = cstr_edup(t->text);
 
-    return_this(node_new(NODE_TYPE_TEXT_BLOCK, cur));
+    return_parse(node_new(NODE_TYPE_TEXT_BLOCK, cur));
 }
 
 static node_t *
@@ -1808,7 +1834,7 @@ ast_ref_block(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -1831,7 +1857,7 @@ ast_ref_block(ast_t *self, int dep) {
         return_cleanup("syntax error. not found \"#}\"");
     }
 
-    return_this(node_new(NODE_TYPE_REF_BLOCK, cur));
+    return_parse(node_new(NODE_TYPE_REF_BLOCK, cur));
 }
 
 static node_t *
@@ -1848,7 +1874,7 @@ ast_code_block(ast_t *self, int dep) {
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
         } \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     token_t *t = *self->ptr++;
@@ -1878,7 +1904,7 @@ ast_code_block(ast_t *self, int dep) {
     ast_skip_newlines(self);
     check("skip newlines");
 
-    return_this(node_new(NODE_TYPE_CODE_BLOCK, cur));
+    return_parse(node_new(NODE_TYPE_CODE_BLOCK, cur));
 }
 
 static node_t *
@@ -1889,7 +1915,7 @@ ast_blocks(ast_t *self, int dep) {
 #undef return_cleanup
 #define return_cleanup() { \
         free(cur); \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call ast_code_block");
@@ -1920,7 +1946,7 @@ ast_blocks(ast_t *self, int dep) {
         return_cleanup();
     }
 
-    return_this(node_new(NODE_TYPE_BLOCKS, cur));
+    return_parse(node_new(NODE_TYPE_BLOCKS, cur));
 }
 
 static node_t *
@@ -1931,7 +1957,7 @@ ast_program(ast_t *self, int dep) {
 #undef return_cleanup
 #define return_cleanup() { \
         free(cur); \
-        return_this(NULL); \
+        return_parse(NULL); \
     } \
 
     check("call ast_blocks");
@@ -1940,7 +1966,7 @@ ast_program(ast_t *self, int dep) {
         return_cleanup();
     }
 
-    return_this(node_new(NODE_TYPE_PROGRAM, cur));
+    return_parse(node_new(NODE_TYPE_PROGRAM, cur));
 }
 
 ast_t *
@@ -1977,63 +2003,75 @@ identifier_chain_to_cstrarr(node_identifier_chain_t *identifier_chain) {
 }
 
 static object_t *
-ast_traverse_program(ast_t *self, node_t *node) {
+ast_traverse_program(ast_t *self, node_t *node, int dep) {
+    tready();
     node_program_t *program = node->real;
 
-    _ast_traverse(self, program->blocks);
+    tcheck("call _ast_traverse");
+    _ast_traverse(self, program->blocks, dep+1);
     if (ast_has_error(self)) {
-        return NULL;
+        return_trav(NULL);
     }
 
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_blocks(ast_t *self, node_t *node) {
+ast_traverse_blocks(ast_t *self, node_t *node, int dep) {
+    tready();
     node_blocks_t *blocks = node->real;
-    _ast_traverse(self, blocks->code_block);
+
+    tcheck("call _ast_traverse");
+    _ast_traverse(self, blocks->code_block, dep+1);
     if (ast_has_error(self)) {
-        return NULL;
+        return_trav(NULL);
     }
 
-    _ast_traverse(self, blocks->ref_block);
+    tcheck("call _ast_traverse");
+    _ast_traverse(self, blocks->ref_block, dep+1);
     if (ast_has_error(self)) {
-        return NULL;
+        return_trav(NULL);
     }
 
-    _ast_traverse(self, blocks->text_block);
+    tcheck("call _ast_traverse");
+    _ast_traverse(self, blocks->text_block, dep+1);
     if (ast_has_error(self)) {
-        return NULL;
+        return_trav(NULL);
     }
 
-    _ast_traverse(self, blocks->blocks);
+    tcheck("call _ast_traverse");
+    _ast_traverse(self, blocks->blocks, dep+1);
     if (ast_has_error(self)) {
-        return NULL;
+        return_trav(NULL);
     }
 
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_code_block(ast_t *self, node_t *node) {
+ast_traverse_code_block(ast_t *self, node_t *node, int dep) {
+    tready();
     node_code_block_t *code_block = node->real;
 
-    _ast_traverse(self, code_block->elems);
+    tcheck("call _ast_traverse");
+    _ast_traverse(self, code_block->elems, dep+1);
     if (ast_has_error(self)) {
-        return NULL;
+        return_trav(NULL);
     }
 
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_ref_block(ast_t *self, node_t *node) {
+ast_traverse_ref_block(ast_t *self, node_t *node, int dep) {
+    tready();
     node_ref_block_t *ref_block = node->real;
 
-    object_t *result = _ast_traverse(self, ref_block->formula);
+    tcheck("call _ast_traverse");
+    object_t *result = _ast_traverse(self, ref_block->formula, dep+1);
     if (ast_has_error(self)) {
         obj_del(result);
-        return NULL;
+        return_trav(NULL);
     }
     assert(result);
 
@@ -2069,80 +2107,92 @@ ast_traverse_ref_block(ast_t *self, node_t *node) {
     } break;
     } // switch
 
-    return NULL;
+    return_trav(NULL);
 }
 
 
 static object_t *
-ast_traverse_text_block(ast_t *self, node_t *node) {
+ast_traverse_text_block(ast_t *self, node_t *node, int dep) {
+    tready();
     node_text_block_t *text_block = node->real;
     if (text_block->text) {
         ctx_pushb_buf(self->context, text_block->text);
         tcheck("store text block to buf");
     }
 
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_elems(ast_t *self, node_t *node) {
+ast_traverse_elems(ast_t *self, node_t *node, int dep) {
+    tready();
     node_elems_t *elems = node->real;
 
-    _ast_traverse(self, elems->stmt);
+    tcheck("call _ast_traverse with stmt");
+    _ast_traverse(self, elems->stmt, dep+1);
     if (ast_has_error(self)) {
-        return NULL;
+        return_trav(NULL);
     }
 
-    _ast_traverse(self, elems->formula);
+    tcheck("call _ast_traverse with formula");
+    _ast_traverse(self, elems->formula, dep+1);
     if (ast_has_error(self)) {
-        return NULL;
+        return_trav(NULL);
     }
 
-    _ast_traverse(self, elems->elems);
+    tcheck("call _ast_traverse with elems");
+    _ast_traverse(self, elems->elems, dep+1);
     if (ast_has_error(self)) {
-        return NULL;
+        return_trav(NULL);
     }
 
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_formula(ast_t *self, node_t *node) {
+ast_traverse_formula(ast_t *self, node_t *node, int dep) {
+    tready();
     node_formula_t *formula = node->real;
 
-    object_t *result = _ast_traverse(self, formula->assign_list);
+    tcheck("call _ast_traverse");
+    object_t *result = _ast_traverse(self, formula->assign_list, dep+1);
     if (ast_has_error(self)) {
         obj_del(result);
-        return NULL;
+        return_trav(NULL);
     }
 
-    return result;
+    return_trav(result);
 }
 
 static object_t *
-ast_traverse_stmt(ast_t *self, node_t *node) {
+ast_traverse_stmt(ast_t *self, node_t *node, int dep) {
+    tready();
     node_stmt_t *stmt = node->real;
 
-    _ast_traverse(self, stmt->import_stmt);
+    tcheck("call _ast_traverse");
+    _ast_traverse(self, stmt->import_stmt, dep+1);
     if (ast_has_error(self)) {
-        return NULL;
+        return_trav(NULL);
     }
 
-    _ast_traverse(self, stmt->if_stmt);
+    tcheck("call _ast_traverse");
+    _ast_traverse(self, stmt->if_stmt, dep+1);
     if (ast_has_error(self)) {
-        return NULL;
+        return_trav(NULL);
     }
     
-    _ast_traverse(self, stmt->for_stmt);
+    tcheck("call _ast_traverse");
+    _ast_traverse(self, stmt->for_stmt, dep+1);
     if (ast_has_error(self)) {
-        return NULL;
+        return_trav(NULL);
     }
 
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_import_stmt(ast_t *self, node_t *node) {
+ast_traverse_import_stmt(ast_t *self, node_t *node, int dep) {
+    tready();
     node_import_stmt_t *import_stmt = node->real;
 
     if (import_stmt->identifier_chain) {
@@ -2150,7 +2200,9 @@ ast_traverse_import_stmt(ast_t *self, node_t *node) {
         cstrarr_del(arr);
     }
 
-    return NULL;
+    // TODO
+
+    return_trav(NULL);
 }
 
 /**
@@ -2164,11 +2216,11 @@ ast_parse_bool(ast_t *self, object_t *obj) {
     case OBJ_TYPE_BOOL: return obj->boolean; break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = str_getc(obj->identifier);
-        object_t *obj = get_var(self, idn);
+        object_t *obj = get_var(self, idn, 0);
         if (!obj) {
             ast_set_error_detail(self, "\"%s\" is not defined in if statement", idn);
             obj_del(obj);
-            return NULL;
+            return false;
         }
 
         return ast_parse_bool(self, obj);
@@ -2182,84 +2234,96 @@ ast_parse_bool(ast_t *self, object_t *obj) {
 }
 
 static object_t *
-ast_traverse_if_stmt(ast_t *self, node_t *node) {
+ast_traverse_if_stmt(ast_t *self, node_t *node, int dep) {
+    tready();
     node_if_stmt_t *if_stmt = node->real;
 
-    object_t *result = _ast_traverse(self, if_stmt->test);
+    tcheck("call _ast_traverse");
+    object_t *result = _ast_traverse(self, if_stmt->test, dep+1);
     if (ast_has_error(self)) {
         obj_del(result);
-        return NULL;
+        return_trav(NULL);
     }
     if (!result) {
         ast_set_error_detail(self, "traverse error. test return null in if statement");
-        return NULL;
+        return_trav(NULL);
     }
 
     bool boolean = ast_parse_bool(self, result);
 
     if (boolean) {
         if (if_stmt->elems) {
-            _ast_traverse(self, if_stmt->elems);
+            tcheck("call _ast_traverse");
+            _ast_traverse(self, if_stmt->elems, dep+1);
             if (ast_has_error(self)) {
-                return NULL;
+                return_trav(NULL);
             }
         } else if (if_stmt->blocks) {
-            _ast_traverse(self, if_stmt->blocks);
+            tcheck("call _ast_traverse");
+            _ast_traverse(self, if_stmt->blocks, dep+1);
             if (ast_has_error(self)) {
-                return NULL;
+                return_trav(NULL);
             }
         }
     } else {
         if (if_stmt->elif_stmt) {
-            _ast_traverse(self, if_stmt->elif_stmt);
+            tcheck("call _ast_traverse");
+            _ast_traverse(self, if_stmt->elif_stmt, dep+1);
             if (ast_has_error(self)) {
-                return NULL;
+                return_trav(NULL);
             }
         } else if (if_stmt->else_stmt) {
-            _ast_traverse(self, if_stmt->else_stmt);
+            tcheck("call _ast_traverse");
+            _ast_traverse(self, if_stmt->else_stmt, dep+1);
             if (ast_has_error(self)) {
-                return NULL;
+                return_trav(NULL);
             }
         } else {
             // pass
         }
     }
 
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_else_stmt(ast_t *self, node_t *node) {
+ast_traverse_else_stmt(ast_t *self, node_t *node, int dep) {
+    tready();
     node_if_stmt_t *else_stmt = node->real;
     assert(else_stmt);
 
     if (else_stmt->elems) {
-        _ast_traverse(self, else_stmt->elems);
+        tcheck("call _ast_traverse");
+        _ast_traverse(self, else_stmt->elems, dep+1);
     } else if (else_stmt->blocks) {
-        _ast_traverse(self, else_stmt->blocks);
+        tcheck("call _ast_traverse");
+        _ast_traverse(self, else_stmt->blocks, dep+1);
     }
 
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_for_stmt(ast_t *self, node_t *node) {
+ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
+    tready();
     node_for_stmt_t *for_stmt = node->real;
 
     if (for_stmt->init_test_list &&
         for_stmt->test &&
         for_stmt->update_test_list) {
         // for 1; 1; 1: end
-        _ast_traverse(self, for_stmt->init_test_list);
+        tcheck("call _ast_traverse");
+        _ast_traverse(self, for_stmt->init_test_list, dep+1);
         if (ast_has_error(self)) {
-            return NULL;
+            return_trav(NULL);
         }
 
         for (;;) {
-            object_t *result = _ast_traverse(self, for_stmt->test);
+            tcheck("call _ast_traverse");
+            object_t *result = _ast_traverse(self, for_stmt->test, dep+1);
             if (ast_has_error(self)) {
                 obj_del(result);
-                return NULL;
+                return_trav(NULL);
             }
             if (!result->boolean) {
                 obj_del(result);
@@ -2267,116 +2331,134 @@ ast_traverse_for_stmt(ast_t *self, node_t *node) {
             }
             obj_del(result);
 
-            _ast_traverse(self, for_stmt->elems);
+            tcheck("call _ast_traverse");
+            _ast_traverse(self, for_stmt->elems, dep+1);
             if (ast_has_error(self)) {
-                return NULL;
+                return_trav(NULL);
             }
 
-            _ast_traverse(self, for_stmt->update_test_list);
+            tcheck("call _ast_traverse");
+            _ast_traverse(self, for_stmt->update_test_list, dep+1);
             if (ast_has_error(self)) {
-                return NULL;
+                return_trav(NULL);
             }
         }
     } else if (for_stmt->test) {
         // for 1: end
         for (;;) {
-            object_t *result = _ast_traverse(self, for_stmt->test);
+            tcheck("call _ast_traverse");
+            object_t *result = _ast_traverse(self, for_stmt->test, dep+1);
             if (!result->boolean) {
                 obj_del(result);
                 break;
             }
 
-            _ast_traverse(self, for_stmt->elems);
+            tcheck("call _ast_traverse");
+            _ast_traverse(self, for_stmt->elems, dep+1);
 
             obj_del(result);
         }
     } else {
         // for: end
         for (;;) {
-            _ast_traverse(self, for_stmt->elems);
+            tcheck("call _ast_traverse");
+            _ast_traverse(self, for_stmt->elems, dep+1);
         }
     }
 
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_assign_to_array(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_assign_to_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
     default:
         ast_set_error_detail(self, "can't assign element to array");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY: {
         if (objarr_len(lhs->objarr) != objarr_len(rhs->objarr)) {
             ast_set_error_detail(self, "can't assign array to array. not same length");
-            return NULL;
+            return_trav(NULL);
         }
         err_die("TODO: assign to array");
     } break;
     }
 
     assert(0 && "impossible. failed to assign to array");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_assign(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_assign(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+
     switch (lhs->type) {
     default:
         ast_set_error_detail(self, "syntax error. invalid lhs in assign list");
         obj_del(lhs);
         obj_del(rhs);
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER:
-        return ast_calc_asscalc_ass(self, lhs, rhs);
-        break;
-    case OBJ_TYPE_ARRAY: return ast_calc_assign_to_array(self, lhs, rhs); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_calc_asscalc_ass");
+        object_t *obj = ast_calc_asscalc_ass(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        tcheck("call ast_calc_assign_to_array");
+        object_t *obj = ast_calc_assign_to_array(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
     }    
 
     assert(0 && "impossible. failed to calc assign");
-    return NULL;
+    return_trav(NULL);
 }
 
 /**
  * 右結合
  */
 static object_t *
-ast_traverse_assign_list(ast_t *self, node_t *node) {
+ast_traverse_assign_list(ast_t *self, node_t *node, int dep) {
+    tready();
     assert(node->type == NODE_TYPE_ASSIGN_LIST);
     node_assign_list_t *assign_list = node->real;
 
     if (!nodearr_len(assign_list->nodearr)) {
         ast_set_error_detail(self, "failed to traverse assign list. array is empty");
-        return NULL;
+        return_trav(NULL);
     }
 
     int32_t arrlen = nodearr_len(assign_list->nodearr);
     node_t *rnode = nodearr_get(assign_list->nodearr, arrlen-1);
-    object_t *rhs = _ast_traverse(self, rnode);
+    tcheck("call _ast_traverse");
+    object_t *rhs = _ast_traverse(self, rnode, dep+1);
     if (ast_has_error(self)) {
-        return NULL;
+        return_trav(NULL);
     }
     assert(rhs);
 
     for (int32_t i = arrlen-2; i >= 0; --i) {
         node_t *lnode = nodearr_get(assign_list->nodearr, i);
-        object_t *lhs = _ast_traverse(self, lnode);
+        tcheck("call _ast_traverse");
+        object_t *lhs = _ast_traverse(self, lnode, dep+1);
         if (ast_has_error(self)) {
-            return NULL;
+            return_trav(NULL);
         }
         if (!lhs) {
-            return rhs;
+            return_trav(rhs);
         }
 
-        object_t *result = ast_calc_assign(self, lhs, rhs);
+        tcheck("call ast_calc_assign");
+        object_t *result = ast_calc_assign(self, lhs, rhs, dep+1);
         if (ast_has_error(self)) {
             obj_del(lhs);
             obj_del(rhs);
-            return NULL;
+            return_trav(NULL);
         }
         assert(result);
 
@@ -2385,52 +2467,72 @@ ast_traverse_assign_list(ast_t *self, node_t *node) {
         rhs = result;
     }
 
-    return rhs;
+    return_trav(rhs);
 }
 
 static object_t *
-ast_traverse_test_list(ast_t *self, node_t *node) {
+ast_traverse_test_list(ast_t *self, node_t *node, int dep) {
+    tready();
     node_test_list_t *test_list = node->real;
     assert(test_list);
 
     assert(nodearr_len(test_list->nodearr));
     if (nodearr_len(test_list->nodearr) == 1) {
         node_t *test = nodearr_get(test_list->nodearr, 0);
-        return _ast_traverse(self, test);
+        tcheck("call _ast_traverse")
+        object_t *obj = _ast_traverse(self, test, dep+1);
+        return_trav(obj);
     }
 
     object_array_t *arr = objarr_new();
 
     for (int32_t i = 0; i < nodearr_len(test_list->nodearr); ++i) {
         node_t *test = nodearr_get(test_list->nodearr, i);
-        object_t *result = _ast_traverse(self, test);
+        tcheck("call _ast_traverse");
+        object_t *result = _ast_traverse(self, test, dep+1);
         if (ast_has_error(self)) {
-            return NULL;
+            return_trav(NULL);
         }
 
         objarr_moveb(arr, result);
     }
 
-    return obj_new_array(arr);
+    object_t *obj = obj_new_array(arr);
+    return_trav(obj);
 }
 
 static object_t *
-ast_traverse_test(ast_t *self, node_t *node) {
+ast_traverse_test(ast_t *self, node_t *node, int dep) {
+    tready();
     node_test_t *test = node->real;
-    return _ast_traverse(self, test->or_test);
+    tcheck("call _ast_traverse");
+    object_t *obj = _ast_traverse(self, test->or_test, dep+1);
+    return_trav(obj);
 }
 
 static object_t *
-get_var(ast_t *self, const char *identifier) {
+get_var(ast_t *self, const char *identifier, int dep) {
+    tready();
+
     object_dict_t *varmap = ctx_get_varmap(self->context);
     object_dict_item_t *item = objdict_get(varmap, identifier);
     if (!item) {
-        return NULL;
+        return_trav(NULL);
     }
 
     object_t *obj = item->value;
     assert(obj);
-    return obj;
+    return_trav(obj);
+}
+
+static object_t *
+move_var(ast_t *self, const char *identifier, object_t *move_obj, int dep) {
+    tready();
+
+    object_dict_t *varmap = ctx_get_varmap(self->context);
+    objdict_move(varmap, identifier, move_obj);
+
+    return_trav(NULL);
 }
 
 static object_t *
@@ -2438,16 +2540,20 @@ ast_roll_identifier_lhs(
     ast_t *self,
     object_t *lhs,
     object_t *rhs,
-    object_t* (*func)(ast_t *, object_t *, object_t *)) {
+    object_t* (*func)(ast_t *, object_t *, object_t *, int),
+    int dep) {
+    tready();
     assert(rhs->type == OBJ_TYPE_IDENTIFIER);
 
-    object_t *lvar = get_var(self, str_getc(lhs->identifier));
+    object_t *lvar = get_var(self, str_getc(lhs->identifier), dep+1);
     if (!lvar) {
         ast_set_error_detail(self, "\"%s\" is not defined", str_getc(rhs->identifier));
-        return false;
+        return_trav(NULL);
     }
 
-    return func(self, lvar, rhs);
+    tcheck("call function pointer");
+    object_t *obj = func(self, lvar, rhs, dep+1);
+    return_trav(obj);
 }
 
 static object_t*
@@ -2455,161 +2561,291 @@ ast_roll_identifier_rhs(
     ast_t *self,
     object_t *lhs,
     object_t *rhs,
-    object_t* (*func)(ast_t *, object_t *, object_t *)) {
+    object_t* (*func)(ast_t *, object_t *, object_t *, int),
+    int dep) {
+    tready();
     assert(rhs->type == OBJ_TYPE_IDENTIFIER);
 
-    object_t *rvar = get_var(self, str_getc(rhs->identifier));
+    object_t *rvar = get_var(self, str_getc(rhs->identifier), dep+1);
     if (!rvar) {
         ast_set_error_detail(self, "\"%s\" is not defined", str_getc(rhs->identifier));
-        return false;
+        return_trav(NULL);
     }
 
-    return func(self, lhs, rvar);
+    tcheck("call function pointer");
+    object_t *obj = func(self, lhs, rvar, dep+1);
+    return_trav(obj);
 }
 
 static object_t *
-ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(lhs->lvalue || NULL); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->lvalue || rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->lvalue || rhs->boolean); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(lhs->lvalue || NULL);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->lvalue || rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->lvalue || rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = obj_new_bool(lhs->lvalue || rhs->string);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = obj_new_bool(lhs->lvalue || rhs->objarr);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = get_var(self, str_getc(rhs->identifier));
+        object_t *rvar = get_var(self, str_getc(rhs->identifier), dep+1);
         if (!rvar) {
             ast_set_error_detail(self, "%s is not defined", str_getc(rhs->identifier));
-            return NULL;
+            return_trav(NULL);
         }
 
-        return ast_compare_or(self, lhs, rvar);
+        tcheck("call ast_compare_or");
+        object_t *obj = ast_compare_or(self, lhs, rvar, dep+1);
+        return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: return obj_new_bool(lhs->lvalue || rhs->string); break;
-    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->lvalue || rhs->objarr); break;
     }
 
     assert(0 && "impossible. failed to compare or int");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(lhs->boolean || NULL); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->boolean || rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->boolean || rhs->boolean); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(lhs->boolean || NULL);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->boolean || rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->boolean || rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = obj_new_bool(lhs->boolean || rhs->string);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = obj_new_bool(lhs->boolean || rhs->objarr);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = get_var(self, str_getc(rhs->identifier));
+        object_t *rvar = get_var(self, str_getc(rhs->identifier), dep+1);
         if (!rvar) {
             ast_set_error_detail(self, "%s is not defined", str_getc(rhs->identifier));
-            return NULL;
+            return_trav(NULL);
         }
 
-        return ast_compare_or(self, lhs, rvar);
+        tcheck("call ast_compare_or");
+        object_t *obj = ast_compare_or(self, lhs, rvar, dep+1);
+        return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: return obj_new_bool(lhs->boolean || rhs->string); break;
-    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->boolean || rhs->objarr); break;
     }
 
     assert(0 && "impossible. failed to compare or bool");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_or_string(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_or_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(lhs->string || NULL); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->string || rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->string || rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or); break;
-    case OBJ_TYPE_STRING: return obj_new_bool(lhs->string || rhs->string); break;
-    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->string || rhs->objarr); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(lhs->string || NULL);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->string || rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->string || rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = obj_new_bool(lhs->string || rhs->string);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = obj_new_bool(lhs->string || rhs->objarr);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare or string");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(lhs->objarr || NULL); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->objarr || rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->objarr || rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or); break;
-    case OBJ_TYPE_STRING: return obj_new_bool(lhs->objarr || rhs->string); break;
-    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->objarr || rhs->objarr); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(lhs->objarr || NULL);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->objarr || rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->objarr || rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = obj_new_bool(lhs->objarr || rhs->string);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = obj_new_bool(lhs->objarr || rhs->objarr);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare or array");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_or_null(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_or_null(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_NULL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(NULL || NULL); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(NULL || rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(NULL || rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or); break;
-    case OBJ_TYPE_STRING: return obj_new_bool(NULL || rhs->string); break;
-    case OBJ_TYPE_ARRAY: return obj_new_bool(NULL || rhs->objarr); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(NULL || NULL);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(NULL || rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(NULL || rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = obj_new_bool(NULL || rhs->string);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = obj_new_bool(NULL || rhs->objarr);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare or null");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_or(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_or(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+
     switch (lhs->type) {
-    case OBJ_TYPE_NULL: return ast_compare_or_null(self, lhs, rhs); break;
-    case OBJ_TYPE_INTEGER: return ast_compare_or_int(self, lhs, rhs); break;
-    case OBJ_TYPE_BOOL: return ast_compare_or_bool(self, lhs, rhs); break;
-    case OBJ_TYPE_IDENTIFIER: ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or); break;
-    case OBJ_TYPE_STRING: return ast_compare_or_string(self, lhs, rhs); break;
-    case OBJ_TYPE_ARRAY: return ast_compare_or_array(self, lhs, rhs); break;
+    case OBJ_TYPE_NULL: {
+        tcheck("call ast_compare_or_null");
+        object_t *obj = ast_compare_or_null(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        tcheck("call ast_compare_or_int");
+        object_t *obj = ast_compare_or_int(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        tcheck("call ast_compare_or_bool");
+        object_t *obj = ast_compare_or_bool(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        tcheck("call ast_compare_or_string");
+        object_t *obj = ast_compare_or_string(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        tcheck("call ast_compare_or_array");
+        object_t *obj = ast_compare_or_array(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare or");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_or_test(ast_t *self, node_t *node) {
+ast_traverse_or_test(ast_t *self, node_t *node, int dep) {
+    tready();
     assert(node->type == NODE_TYPE_OR_TEST);
     node_or_test_t *or_test = node->real;
 
     node_t *lnode = nodearr_get(or_test->nodearr, 0);
-    object_t *lhs = _ast_traverse(self, lnode);
+    tcheck("call _ast_traverse");
+    object_t *lhs = _ast_traverse(self, lnode, dep+1);
     if (ast_has_error(self)) {
-        return NULL;
+        return_trav(NULL);
     }
     assert(lhs);
 
     for (int i = 1; i < nodearr_len(or_test->nodearr); ++i) {
         node_t *rnode = nodearr_get(or_test->nodearr, i);
-        object_t *rhs = _ast_traverse(self, rnode);
+        tcheck("call _ast_traverse");
+        object_t *rhs = _ast_traverse(self, rnode, dep+1);
         if (ast_has_error(self)) {
-            return NULL;
+            return_trav(NULL);
         }
         if (!rhs) {
-            return lhs;
+            return_trav(lhs);
         }
 
-        object_t *result = ast_compare_or(self, lhs, rhs);
+        tcheck("call ast_compare_or");
+        object_t *result = ast_compare_or(self, lhs, rhs, dep+1);
         if (ast_has_error(self)) {
             obj_del(lhs);
             obj_del(rhs);
-            return NULL;
+            return_trav(NULL);
         }
         assert(result);
 
@@ -2618,136 +2854,266 @@ ast_traverse_or_test(ast_t *self, node_t *node) {
         lhs = result;
     }
 
-    return lhs;
+    return_trav(lhs);
 }
 
 static object_t *
-ast_compare_and_int(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_and_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(lhs->lvalue && NULL); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->lvalue && rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->lvalue && rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
-    case OBJ_TYPE_STRING: return obj_new_bool(lhs->lvalue && rhs->string); break;
-    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->lvalue && rhs->objarr); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(lhs->lvalue && NULL);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->lvalue && rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->lvalue && rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = obj_new_bool(lhs->lvalue && rhs->string);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = obj_new_bool(lhs->lvalue && rhs->objarr);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare and int");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_and_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_and_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(lhs->boolean && NULL); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->boolean && rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->boolean && rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
-    case OBJ_TYPE_STRING: return obj_new_bool(lhs->boolean && rhs->string); break;
-    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->boolean && rhs->objarr); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(lhs->boolean && NULL);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->boolean && rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->boolean && rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = obj_new_bool(lhs->boolean && rhs->string);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = obj_new_bool(lhs->boolean && rhs->objarr);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare and bool");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_and_string(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_and_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(lhs->string && NULL); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->string && rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->string && rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
-    case OBJ_TYPE_STRING: return obj_new_bool(lhs->string && rhs->string); break;
-    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->string && rhs->objarr); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(lhs->string && NULL);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->string && rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->string && rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = obj_new_bool(lhs->string && rhs->string);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = obj_new_bool(lhs->string && rhs->objarr);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare and string");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_and_array(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_and_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(lhs->objarr && NULL); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->objarr && rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->objarr && rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
-    case OBJ_TYPE_STRING: return obj_new_bool(lhs->objarr && rhs->string); break;
-    case OBJ_TYPE_ARRAY: return obj_new_bool(lhs->objarr && rhs->objarr); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(lhs->objarr && NULL);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->objarr && rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->objarr && rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = obj_new_bool(lhs->objarr && rhs->string);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = obj_new_bool(lhs->objarr && rhs->objarr);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare and array");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_and_null(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_and_null(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_NULL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(NULL && NULL); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(NULL && rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(NULL && rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and); break;
-    case OBJ_TYPE_STRING: return obj_new_bool(NULL && rhs->string); break;
-    case OBJ_TYPE_ARRAY: return obj_new_bool(NULL && rhs->objarr); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(NULL && NULL);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(NULL && rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(NULL && rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = obj_new_bool(NULL && rhs->string);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = obj_new_bool(NULL && rhs->objarr);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare and null");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_and(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_and(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+
     switch (lhs->type) {
-    case OBJ_TYPE_NULL: return ast_compare_and_null(self, lhs, rhs); break;
-    case OBJ_TYPE_INTEGER: return ast_compare_and_int(self, lhs, rhs); break;
-    case OBJ_TYPE_BOOL: return ast_compare_and_bool(self, lhs, rhs); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_and); break;
-    case OBJ_TYPE_STRING: return ast_compare_and_string(self, lhs, rhs); break;
-    case OBJ_TYPE_ARRAY: return ast_compare_and_array(self, lhs, rhs); break;
+    case OBJ_TYPE_NULL: {
+        tcheck("call ast_compare_and_null");
+        object_t *obj = ast_compare_and_null(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        tcheck("call ast_compare_and_int");
+        object_t *obj = ast_compare_and_int(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        tcheck("call ast_compare_and_bool");
+        object_t *obj = ast_compare_and_bool(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        tcheck("call ast_compare_and_string");
+        object_t *obj = ast_compare_and_string(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        tcheck("call ast_compare_and_array");
+        object_t *obj = ast_compare_and_array(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_lhs");
+        object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_and, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare and");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_and_test(ast_t *self, node_t *node) {
+ast_traverse_and_test(ast_t *self, node_t *node, int dep) {
+    tready();
     assert(node->type == NODE_TYPE_AND_TEST);
     node_and_test_t *and_test = node->real;
 
     node_t *lnode = nodearr_get(and_test->nodearr, 0);
-    object_t *lhs = _ast_traverse(self, lnode);
+    tcheck("call _ast_traverse");
+    object_t *lhs = _ast_traverse(self, lnode, dep+1);
     if (ast_has_error(self)) {
-        return NULL;
+        return_trav(NULL);
     }
     assert(lhs);
 
     for (int i = 1; i < nodearr_len(and_test->nodearr); ++i) {
         node_t *rnode = nodearr_get(and_test->nodearr, i);
-        object_t *rhs = _ast_traverse(self, rnode);
+        tcheck("call _ast_traverse");
+        object_t *rhs = _ast_traverse(self, rnode, dep+1);
         if (ast_has_error(self)) {
-            return NULL;
+            return_trav(NULL);
         }
         if (!rhs) {
-            return lhs;
+            return_trav(lhs);
         }
 
-        object_t *result = ast_compare_and(self, lhs, rhs);
+        tcheck("call ast_compare_and");
+        object_t *result = ast_compare_and(self, lhs, rhs, dep+1);
         if (ast_has_error(self)) {
             obj_del(lhs);
             obj_del(rhs);
-            return NULL;
+            return_trav(NULL);
         }
         assert(result);
 
@@ -2756,146 +3122,214 @@ ast_traverse_and_test(ast_t *self, node_t *node) {
         lhs = result;
     }
 
-    return lhs;
+    return_trav(lhs);
 }
 
 static object_t *
-ast_compare_not(ast_t *self, object_t *operand) {
+ast_compare_not(ast_t *self, object_t *operand, int dep) {
+    tready();
     assert(operand);
 
     switch (operand->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(true); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(!operand->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(!operand->boolean); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(true);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(!operand->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(!operand->boolean);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *obj = get_var(self, str_getc(operand->identifier));
-        if (!obj) {
+        object_t *var = get_var(self, str_getc(operand->identifier), dep+1);
+        if (!var) {
             ast_set_error_detail(self, "\"%s\" is not defined", str_getc(operand->identifier));
-            return NULL;
+            return_trav(NULL);
         }
 
-        return ast_compare_not(self, obj);
+        tcheck("call ast_compare_not");
+        object_t *obj = ast_compare_not(self, var, dep+1);
+        return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: return obj_new_bool(!operand->string); break;
-    case OBJ_TYPE_ARRAY: return obj_new_bool(!operand->objarr); break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = obj_new_bool(!operand->string);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = obj_new_bool(!operand->objarr);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare not");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_not_test(ast_t *self, node_t *node) {
+ast_traverse_not_test(ast_t *self, node_t *node, int dep) {
+    tready();
     node_not_test_t *not_test = node->real;
 
     if (not_test->not_test) {
-        object_t *operand = _ast_traverse(self, not_test->not_test);
+        object_t *operand = _ast_traverse(self, not_test->not_test, dep+1);
         if (ast_has_error(self)) {
-            return NULL;
+            return_trav(NULL);
         }
         if (!operand) {
             ast_set_error_detail(self, "failed to not test");
-            return NULL;
+            return_trav(NULL);
         }
 
-        return ast_compare_not(self, operand);
+        tcheck("call ast_compare_not");
+        object_t *obj = ast_compare_not(self, operand, dep+1);
+        return_trav(obj);
     } else if (not_test->comparison) {
-        return _ast_traverse(self, not_test->comparison);
+        object_t *obj = _ast_traverse(self, not_test->comparison, dep+1);
+        return_trav(obj);
     }
 
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_comparison_eq_int(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_comparison_eq_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(false); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->lvalue == rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->lvalue == rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(false);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->lvalue == rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->lvalue == rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't compare equal int and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't compare equal int and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to compare comparison eq int");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_comparison_eq_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_comparison_eq_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(false); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->boolean == rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->boolean == rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(false);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->boolean == rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->boolean == rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't compare equal bool and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't compare equal bool and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to compare comparison eq bool");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_comparison_eq_string(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_comparison_eq_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(false); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(false);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_INTEGER:
         ast_set_error_detail(self, "can't compare equal string and int");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_BOOL:
         ast_set_error_detail(self, "can't compare equal string and bool");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq); break;
-    case OBJ_TYPE_STRING: return obj_new_bool(cstr_eq(str_getc(lhs->string), str_getc(rhs->string))); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = obj_new_bool(cstr_eq(str_getc(lhs->string), str_getc(rhs->string)));
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't compare equal string and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to compare comparison string");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_comparison_eq_array(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_comparison_eq_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(false); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(false);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_INTEGER:
         ast_set_error_detail(self, "can't compare equal array and int");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_BOOL:
         ast_set_error_detail(self, "can't compare equal array and bool");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't compare equal array and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         err_die("TODO: compare equal array and array");
@@ -2903,131 +3337,222 @@ ast_compare_comparison_eq_array(ast_t *self, object_t *lhs, object_t *rhs) {
     }
 
     assert(0 && "impossible. failed to compare comparison array");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_comparison_eq_null(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_comparison_eq_null(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_NULL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(true); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(false); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(false); break;
-    case OBJ_TYPE_IDENTIFIER: return obj_new_bool(false); break;
-    case OBJ_TYPE_STRING: return obj_new_bool(false); break;
-    case OBJ_TYPE_ARRAY: return obj_new_bool(false); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(true);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(false);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(false);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *obj = obj_new_bool(false);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = obj_new_bool(false);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = obj_new_bool(false);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison eq null");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_comparison_eq(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_comparison_eq(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+
     switch (lhs->type) {
-    case OBJ_TYPE_NULL: return ast_compare_comparison_eq_null(self, lhs, rhs); break;
-    case OBJ_TYPE_INTEGER: return ast_compare_comparison_eq_int(self, lhs, rhs); break;
-    case OBJ_TYPE_BOOL: return ast_compare_comparison_eq_bool(self, lhs, rhs); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_eq); break;
-    case OBJ_TYPE_STRING: return ast_compare_comparison_eq_string(self, lhs, rhs); break;
-    case OBJ_TYPE_ARRAY: return ast_compare_comparison_eq_array(self, lhs, rhs); break;
+    case OBJ_TYPE_NULL: {
+        tcheck("call ast_compare_comparison_eq_null");
+        object_t *obj = ast_compare_comparison_eq_null(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        tcheck("call ast_compare_comparison_eq_int");
+        object_t *obj = ast_compare_comparison_eq_int(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        tcheck("call ast_compare_comparison_eq_bool");
+        object_t *obj = ast_compare_comparison_eq_bool(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        tcheck("call ast_compare_comparison_eq_string");
+        object_t *obj = ast_compare_comparison_eq_string(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        tcheck("call ast_compare_comparison_eq_array");
+        object_t *obj = ast_compare_comparison_eq_array(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_lhs");
+        object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison eq");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_comparison_not_eq_int(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_comparison_not_eq_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(true); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->lvalue != rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->lvalue != rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(true);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->lvalue != rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->lvalue != rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't compare not equal int and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't compare not equal int and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq int");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_comparison_not_eq_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_comparison_not_eq_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(true); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(lhs->boolean != rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(lhs->boolean != rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(true);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->boolean != rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->boolean != rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't compare not equal bool and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't compare not equal bool and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq bool");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_comparison_not_eq_string(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_comparison_not_eq_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(true); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(true);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_INTEGER:
         ast_set_error_detail(self, "can't compare not equal string and int");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_BOOL:
         ast_set_error_detail(self, "can't compare not equal string and bool");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq); break;
-    case OBJ_TYPE_STRING: return obj_new_bool(!cstr_eq(str_getc(lhs->string), str_getc(rhs->string))); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = obj_new_bool(!cstr_eq(str_getc(lhs->string), str_getc(rhs->string)));
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't compare not equal string and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq string");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_comparison_not_eq_array(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_comparison_not_eq_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(true); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(true);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_INTEGER:
         ast_set_error_detail(self, "can't compare not equal array and int");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_BOOL:
         ast_set_error_detail(self, "can't compare not equal array and bool");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't compare not equal array and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         err_die("TODO: compare not equal array");
@@ -3035,66 +3560,126 @@ ast_compare_comparison_not_eq_array(ast_t *self, object_t *lhs, object_t *rhs) {
     }
 
     assert(0 && "impossible. failed to compare comparison not eq array");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_comparison_not_eq_null(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_comparison_not_eq_null(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_NULL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NULL: return obj_new_bool(false); break;
-    case OBJ_TYPE_INTEGER: return obj_new_bool(true); break;
-    case OBJ_TYPE_BOOL: return obj_new_bool(true); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_not_eq); break;
-    case OBJ_TYPE_STRING: return obj_new_bool(true); break;
-    case OBJ_TYPE_ARRAY: return obj_new_bool(true); break;
+    case OBJ_TYPE_NULL: {
+        object_t *obj = obj_new_bool(false);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(true);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(true);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = obj_new_bool(true);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = obj_new_bool(true);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_lhs");
+        object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq null");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_comparison_not_eq(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_compare_comparison_not_eq(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+
     switch (lhs->type) {
-    case OBJ_TYPE_NULL: return ast_compare_comparison_not_eq_null(self, lhs, rhs); break;
-    case OBJ_TYPE_INTEGER: return ast_compare_comparison_not_eq_int(self, lhs, rhs); break;
-    case OBJ_TYPE_BOOL: return ast_compare_comparison_not_eq_bool(self, lhs, rhs); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_not_eq); break;
-    case OBJ_TYPE_STRING: return ast_compare_comparison_not_eq_string(self, lhs, rhs); break;
-    case OBJ_TYPE_ARRAY: return ast_compare_comparison_not_eq_array(self, lhs, rhs); break;
+    case OBJ_TYPE_NULL: {
+        tcheck("call ast_compare_comparison_not_eq_null");
+        object_t *obj = ast_compare_comparison_not_eq_null(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        tcheck("call ast_compare_comparison_not_eq_int");
+        object_t *obj = ast_compare_comparison_not_eq_int(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        tcheck("call ast_compare_comparison_not_eq_bool");
+        object_t *obj = ast_compare_comparison_not_eq_bool(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        tcheck("call ast_compare_comparison_not_eq_string");
+        object_t *obj = ast_compare_comparison_not_eq_string(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        tcheck("call ast_compare_comparison_not_eq_array");
+        object_t *obj = ast_compare_comparison_not_eq_array(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_lhs");
+        object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_compare_comparison(ast_t *self, object_t *lhs, node_comp_op_t *comp_op, object_t *rhs) {
+ast_compare_comparison(ast_t *self, object_t *lhs, node_comp_op_t *comp_op, object_t *rhs, int dep) {
+    tready();
+
     switch (comp_op->op) {
     default: break;
-    case OP_EQ: return ast_compare_comparison_eq(self, lhs, rhs); break;
-    case OP_NOT_EQ: return ast_compare_comparison_not_eq(self, lhs, rhs); break;
+    case OP_EQ: {
+        tcheck("call ast_compare_comparison_eq");
+        object_t *obj = ast_compare_comparison_eq(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OP_NOT_EQ: {
+        tcheck("call ast_compare_comparison_not_eq");
+        object_t *obj = ast_compare_comparison_not_eq(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_comparison(ast_t *self, node_t *node) {
+ast_traverse_comparison(ast_t *self, node_t *node, int dep) {
+    tready();
     node_comparison_t *comparison = node->real;
     assert(comparison);
 
     if (nodearr_len(comparison->nodearr) == 1) {
         node_t *node = nodearr_get(comparison->nodearr, 0);
-        return _ast_traverse(self, node);
+        tcheck("call _ast_traverse");
+        object_t *result = _ast_traverse(self, node, dep+1);
+        return_trav(result);
     } else if (nodearr_len(comparison->nodearr) >= 3) {
         node_t *lnode = nodearr_get(comparison->nodearr, 0);
-        object_t *lhs = _ast_traverse(self, lnode);
+        tcheck("call _ast_traverse");
+        object_t *lhs = _ast_traverse(self, lnode, dep+1);
         if (ast_has_error(self)) {
-            return NULL;
+            return_trav(NULL);
         }
         assert(lhs);
         
@@ -3105,18 +3690,20 @@ ast_traverse_comparison(ast_t *self, node_t *node) {
 
             node_t *rnode = nodearr_get(comparison->nodearr, i+1);
             assert(rnode);
-            object_t *rhs = _ast_traverse(self, rnode);
+            tcheck("call _ast_traverse");
+            object_t *rhs = _ast_traverse(self, rnode, dep+1);
             if (ast_has_error(self)) {
                 obj_del(lhs);
-                return NULL;
+                return_trav(NULL);
             }
             assert(rnode);
 
-            object_t *result = ast_compare_comparison(self, lhs, node_comp_op, rhs);
+            tcheck("call ast_compare_comparison");
+            object_t *result = ast_compare_comparison(self, lhs, node_comp_op, rhs, dep+1);
             if (ast_has_error(self)) {
                 obj_del(lhs);
                 obj_del(rhs);
-                return NULL;                
+                return_trav(NULL);                
             }
 
             obj_del(lhs);
@@ -3124,312 +3711,441 @@ ast_traverse_comparison(ast_t *self, node_t *node) {
             lhs = result;
         }
 
-        return lhs;
+        return_trav(lhs);
     }
 
     assert(0 && "impossible. failed to traverse comparison");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_expr_add_int(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_expr_add_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't add int and null");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: return obj_new_int(lhs->lvalue + rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_int(lhs->lvalue + rhs->boolean);
-    break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add); break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_int(lhs->lvalue + rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_int(lhs->lvalue + rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         err_die("TODO: add string");
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't add int and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc expr int");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_expr_add_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_expr_add_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't add bool and null");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER:
-        return obj_new_int(lhs->boolean + rhs->lvalue);
-    case OBJ_TYPE_BOOL:
-        return obj_new_int(lhs->boolean + rhs->boolean);
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add); break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_int(lhs->boolean + rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_int(lhs->boolean + rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't add bool and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't add bool and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc expr bool");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_expr_add_string(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_expr_add_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't add string and null");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER:
         ast_set_error_detail(self, "can't add string and int");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_BOOL:
         ast_set_error_detail(self, "can't add string and bool");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         err_die("TODO: add string 2");
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't add string and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
+
     assert(0 && "impossible. failed to calc expr string");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_expr_add_array(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_expr_add_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't add array and null");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER:
         ast_set_error_detail(self, "can't add array and int");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_BOOL:
         ast_set_error_detail(self, "can't add array and bool");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't add array and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't add array and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc expr array");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_expr_add_null(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_expr_add_null(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_NULL);
     ast_set_error_detail(self, "can't add with null");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_expr_add(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_expr_add(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+
     switch (lhs->type) {
-    case OBJ_TYPE_NULL: return ast_calc_expr_add_null(self, lhs, rhs); break;
-    case OBJ_TYPE_INTEGER: return ast_calc_expr_add_int(self, lhs, rhs); break;
-    case OBJ_TYPE_BOOL: return ast_calc_expr_add_bool(self, lhs, rhs); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_lhs(self, lhs, rhs, ast_calc_expr_add); break;
-    case OBJ_TYPE_STRING: return ast_calc_expr_add_string(self, lhs, rhs); break;
-    case OBJ_TYPE_ARRAY: return ast_calc_expr_add_array(self, lhs, rhs); break;
+    case OBJ_TYPE_NULL: {
+        tcheck("call ast_calc_expr_add_null");
+        object_t *obj = ast_calc_expr_add_null(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        tcheck("call ast_calc_expr_add_int");
+        object_t *obj = ast_calc_expr_add_int(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        tcheck("call ast_calc_expr_add_bool");
+        object_t *obj = ast_calc_expr_add_bool(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        tcheck("call ast_calc_expr_add_string");
+        object_t *obj = ast_calc_expr_add_string(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        tcheck("call ast_calc_expr_add_array");
+        object_t *obj = ast_calc_expr_add_array(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_lhs");
+        object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc expr add");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_expr_sub_int(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_expr_sub_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't sub int and null");
-        return NULL;
+        return_trav(NULL);
         break;    
-    case OBJ_TYPE_INTEGER: return obj_new_int(lhs->lvalue - rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_int(lhs->lvalue - rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub); break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_int(lhs->lvalue - rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_int(lhs->lvalue - rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         err_die("TODO: add string");
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't add int and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc expr sub int");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_expr_sub_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_expr_sub_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't sub bool and null");
-        return NULL;
+        return_trav(NULL);
         break;    
-    case OBJ_TYPE_INTEGER: return obj_new_int(lhs->boolean - rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_int(lhs->boolean - rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub); break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_int(lhs->boolean - rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_int(lhs->boolean - rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't sub bool and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't sub bool and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc expr sub bool");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_expr_sub_string(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_expr_sub_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't sub string and null");
-        return NULL;
+        return_trav(NULL);
         break;    
     case OBJ_TYPE_INTEGER:
         ast_set_error_detail(self, "can't sub string and int");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_BOOL:
         ast_set_error_detail(self, "can't sub string and bool");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         err_die("TODO: sub string 2");
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't sub string and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc expr sub string");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_expr_sub_array(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_expr_sub_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't sub array and null");
-        return NULL;
+        return_trav(NULL);
         break;    
     case OBJ_TYPE_INTEGER:
         ast_set_error_detail(self, "can't sub array and int");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_BOOL:
         ast_set_error_detail(self, "can't sub array and bool");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't sub array and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't sub array and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc expr sub array");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_expr_sub_null(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_expr_sub_null(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_NULL);
     ast_set_error_detail(self, "can't sub with null");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_expr_sub(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_expr_sub(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+
     switch (lhs->type) {
-    case OBJ_TYPE_NULL: return ast_calc_expr_sub_null(self, lhs, rhs); break;
-    case OBJ_TYPE_INTEGER: return ast_calc_expr_sub_int(self, lhs, rhs); break;
-    case OBJ_TYPE_BOOL: return ast_calc_expr_sub_bool(self, lhs, rhs); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub); break;
-    case OBJ_TYPE_STRING: return ast_calc_expr_sub_string(self, lhs, rhs); break;
-    case OBJ_TYPE_ARRAY: return ast_calc_expr_sub_array(self, lhs, rhs); break;
+    case OBJ_TYPE_NULL: {
+        tcheck("call ast_calc_expr_sub_null");
+        object_t *obj = ast_calc_expr_sub_null(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        tcheck("call ast_calc_expr_sub_int");
+        object_t *obj = ast_calc_expr_sub_int(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        tcheck("call ast_calc_expr_sub_bool");
+        object_t *obj = ast_calc_expr_sub_bool(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        tcheck("call ast_calc_expr_sub_string");
+        object_t *obj = ast_calc_expr_sub_string(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        tcheck("call ast_calc_expr_sub_array");
+        object_t *obj = ast_calc_expr_sub_array(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc expr sub");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_expr(ast_t *self, object_t *lhs, node_add_sub_op_t *add_sub_op, object_t *rhs) {
+ast_calc_expr(ast_t *self, object_t *lhs, node_add_sub_op_t *add_sub_op, object_t *rhs, int dep) {
+    tready();
+
     switch (add_sub_op->op) {
     default: break;
-    case OP_ADD: return ast_calc_expr_add(self, lhs, rhs); break;
-    case OP_SUB: return ast_calc_expr_sub(self, lhs, rhs); break;
+    case OP_ADD: {
+        tcheck("call ast_calc_expr_add");
+        object_t *obj = ast_calc_expr_add(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OP_SUB: {
+        tcheck("call ast_calc_expr_sub");
+        object_t *obj = ast_calc_expr_sub(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc expr");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_expr(ast_t *self, node_t *node) {
+ast_traverse_expr(ast_t *self, node_t *node, int dep) {
+    tready();
     node_expr_t *expr = node->real;
     assert(expr);
 
     if (nodearr_len(expr->nodearr) == 1) {
         node_t *node = nodearr_get(expr->nodearr, 0);
-        return _ast_traverse(self, node);
+        tcheck("call _ast_traverse");
+        object_t *result =  _ast_traverse(self, node, dep+1);
+        return_trav(result);
     } else if (nodearr_len(expr->nodearr) >= 3) {
         node_t *lnode = nodearr_get(expr->nodearr, 0);
-        object_t *lhs = _ast_traverse(self, lnode);
+        object_t *lhs = _ast_traverse(self, lnode, dep+1);
         if (ast_has_error(self)) {
-            return NULL;
+            return_trav(NULL);
         }
         assert(lhs);
         
@@ -3440,18 +4156,20 @@ ast_traverse_expr(ast_t *self, node_t *node) {
 
             node_t *rnode = nodearr_get(expr->nodearr, i+1);
             assert(rnode);
-            object_t *rhs = _ast_traverse(self, rnode);
+            tcheck("call _ast_traverse");
+            object_t *rhs = _ast_traverse(self, rnode, dep+1);
             if (ast_has_error(self)) {
                 obj_del(lhs);
-                return NULL;
+                return_trav(NULL);
             }
             assert(rnode);
 
-            object_t *result = ast_calc_expr(self, lhs, op, rhs);
+            tcheck("call ast_calc_expr");
+            object_t *result = ast_calc_expr(self, lhs, op, rhs, dep+1);
             if (ast_has_error(self)) {
                 obj_del(lhs);
                 obj_del(rhs);
-                return NULL;                
+                return_trav(NULL);                
             }
 
             obj_del(lhs);
@@ -3459,334 +4177,454 @@ ast_traverse_expr(ast_t *self, node_t *node) {
             lhs = result;
         }
 
-        return lhs;
+        return_trav(lhs);
     }
 
     assert(0 && "impossible. failed to traverse expr");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_term_mul_int(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_term_mul_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't mul int and null");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: return obj_new_int(lhs->lvalue * rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_int(lhs->lvalue * rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul); break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_int(lhs->lvalue * rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_int(lhs->lvalue * rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         err_die("TODO: mul string");
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't mul int and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc term mul int");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_term_mul_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_term_mul_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't mul bool and null");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: return obj_new_int(lhs->boolean * rhs->lvalue); break;
-    case OBJ_TYPE_BOOL: return obj_new_int(lhs->boolean * rhs->boolean); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul); break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_int(lhs->boolean * rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_int(lhs->boolean * rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul, dep+1); 
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't mul bool and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't mul bool and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc term mul bool");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_term_mul_string(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_term_mul_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't mul string and null");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER:
         ast_set_error_detail(self, "can't mul string and int");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_BOOL:
         ast_set_error_detail(self, "can't mul string and bool");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         err_die("TODO: mul string 2");
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't mul string and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
  
     assert(0 && "impossible. failed to calc term mul string");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_term_mul_array(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_term_mul_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't mul array and null");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER:
         ast_set_error_detail(self, "can't mul array and int");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_BOOL:
         ast_set_error_detail(self, "can't mul array and bool");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't mul array and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't mul array and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc term mul array");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_term_mul_null(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_term_mul_null(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_NULL);
     ast_set_error_detail(self, "can't mul with null");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_term_mul(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_term_mul(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+
     switch (lhs->type) {
-    case OBJ_TYPE_NULL: return ast_calc_term_mul_null(self, lhs, rhs); break;
-    case OBJ_TYPE_INTEGER: return ast_calc_term_mul_int(self, lhs, rhs); break;
-    case OBJ_TYPE_BOOL: return ast_calc_term_mul_bool(self, lhs, rhs); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_lhs(self, lhs, rhs, ast_calc_term_mul); break;
-    case OBJ_TYPE_STRING: return ast_calc_term_mul_string(self, lhs, rhs); break;
-    case OBJ_TYPE_ARRAY: return ast_calc_term_mul_array(self, lhs, rhs); break;
+    case OBJ_TYPE_NULL: {
+        tcheck("call ast_calc_term_mul_null");
+        object_t *obj = ast_calc_term_mul_null(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        tcheck("call ast_calc_term_mul_int");
+        object_t *obj = ast_calc_term_mul_int(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        tcheck("call ast_calc_term_mul_bool");
+        object_t *obj = ast_calc_term_mul_bool(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_lhs");
+        object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_calc_term_mul, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        tcheck("call ast_calc_term_mul_string");
+        object_t *obj = ast_calc_term_mul_string(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        tcheck("call ast_calc_term_mul_array");
+        object_t *obj = ast_calc_term_mul_array(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc term mul");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_term_div_int(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_term_div_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't division int and null");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER:
+    case OBJ_TYPE_INTEGER: {
         if (!rhs->lvalue) {
             ast_set_error_detail(self, "zero division error");
-            return NULL;
+            return_trav(NULL);
         }
-        return obj_new_int(lhs->lvalue / rhs->lvalue);
-    break;
-    case OBJ_TYPE_BOOL:
+        object_t *obj = obj_new_int(lhs->lvalue / rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
         if (!rhs->boolean) {
             ast_set_error_detail(self, "zero division error (2)");
-            return NULL;
+            return_trav(NULL);
         }
-        return obj_new_int(lhs->lvalue / rhs->boolean);
-    break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div); break;
+        object_t *obj = obj_new_int(lhs->lvalue / rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't division int and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't division int and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc term div int");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_term_div_bool(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_term_div_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't division bool and null");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER:
         if (!rhs->lvalue) {
             ast_set_error_detail(self, "zero division error (3)");
-            return NULL;
+            return_trav(NULL);
         }
         return obj_new_int(lhs->boolean / rhs->lvalue);
     case OBJ_TYPE_BOOL:
         if (!rhs->boolean) {
             ast_set_error_detail(self, "zero division error (4)");
-            return NULL;
+            return_trav(NULL);
         }
         return obj_new_int(lhs->boolean / rhs->boolean);
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't division bool and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't division bool and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc term div bool");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_term_div_string(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_term_div_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     assert(lhs->type == OBJ_TYPE_STRING);
+    tready();
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't division string and null");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER:
         ast_set_error_detail(self, "can't division string and int");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_BOOL:
         ast_set_error_detail(self, "can't division string and bool");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't division string and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't division string and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc term div string");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_term_div_array(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_term_div_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't division array and null");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER:
         ast_set_error_detail(self, "can't division array and int");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_BOOL:
         ast_set_error_detail(self, "can't division array and bool");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't division array and string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't division array and array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc term div array");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_term_div_null(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_term_div_null(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_NULL);
     ast_set_error_detail(self, "can't division to null");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_term_div(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_term_div(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     switch (lhs->type) {
-    case OBJ_TYPE_NULL: return ast_calc_term_div_null(self, lhs, rhs); break;
-    case OBJ_TYPE_INTEGER: return ast_calc_term_div_int(self, lhs, rhs); break;
-    case OBJ_TYPE_BOOL: return ast_calc_term_div_bool(self, lhs, rhs); break;
-    case OBJ_TYPE_IDENTIFIER: return ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div); break;
-    case OBJ_TYPE_STRING: return ast_calc_term_div_string(self, lhs, rhs); break;
-    case OBJ_TYPE_ARRAY: return ast_calc_term_div_array(self, lhs, rhs); break;
+    case OBJ_TYPE_NULL: {
+        tcheck("call ast_calc_term_div_null");
+        object_t *obj = ast_calc_term_div_null(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        tcheck("call ast_calc_term_div_int");
+        object_t *obj = ast_calc_term_div_int(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        tcheck("call ast_calc_term_div_bool");
+        object_t *obj = ast_calc_term_div_bool(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        tcheck("call ast_calc_term_div_string");
+        object_t *obj = ast_calc_term_div_string(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        tcheck("call ast_calc_term_div_array");
+        object_t *obj = ast_calc_term_div_array(self, lhs, rhs, dep+1); 
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc term div");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_term(ast_t *self, object_t *lhs, node_mul_div_op_t *mul_div_op, object_t *rhs) {
+ast_calc_term(ast_t *self, object_t *lhs, node_mul_div_op_t *mul_div_op, object_t *rhs, int dep) {
+    tready();
     switch (mul_div_op->op) {
     default: break;
-    case OP_MUL: return ast_calc_term_mul(self, lhs, rhs); break;
-    case OP_DIV: return ast_calc_term_div(self, lhs, rhs); break;
+    case OP_MUL: {
+        tcheck("call ast_calc_term_mul");
+        object_t *obj = ast_calc_term_mul(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OP_DIV: {
+        tcheck("call ast_calc_term_div");
+        object_t *obj = ast_calc_term_div(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc term");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_term(ast_t *self, node_t *node) {
+ast_traverse_term(ast_t *self, node_t *node, int dep) {
     node_term_t *term = node->real;
+    tready();
     assert(term);
 
     if (nodearr_len(term->nodearr) == 1) {
-        node_t *node = nodearr_get(term->nodearr, 0);
-        return _ast_traverse(self, node);
+        node_t *asscalc = nodearr_get(term->nodearr, 0);
+        tcheck("call _ast_traverse");
+        object_t *result = _ast_traverse(self, asscalc, dep+1);
+        return_trav(result);
     } else if (nodearr_len(term->nodearr) >= 3) {
         node_t *lnode = nodearr_get(term->nodearr, 0);
-        object_t *lhs = _ast_traverse(self, lnode);
+        tcheck("call _ast_traverse");
+        object_t *lhs = _ast_traverse(self, lnode, dep+1);
         if (ast_has_error(self)) {
-            return NULL;
+            return_trav(NULL);
         }
         assert(lhs);
         
@@ -3797,18 +4635,20 @@ ast_traverse_term(ast_t *self, node_t *node) {
 
             node_t *rnode = nodearr_get(term->nodearr, i+1);
             assert(rnode);
-            object_t *rhs = _ast_traverse(self, rnode);
+            tcheck("call _ast_traverse");
+            object_t *rhs = _ast_traverse(self, rnode, dep+1);
             if (ast_has_error(self)) {
                 obj_del(lhs);
-                return NULL;
+                return_trav(NULL);
             }
             assert(rnode);
 
-            object_t *result = ast_calc_term(self, lhs, op, rhs);
+            tcheck("ast_calc_term");
+            object_t *result = ast_calc_term(self, lhs, op, rhs, dep+1);
             if (ast_has_error(self)) {
                 obj_del(lhs);
                 obj_del(rhs);
-                return NULL;                
+                return_trav(NULL);                
             }
 
             obj_del(lhs);
@@ -3816,166 +4656,192 @@ ast_traverse_term(ast_t *self, node_t *node) {
             lhs = result;
         }
 
-        return lhs;
+        return_trav(lhs);
     }
 
     assert(0 && "impossible. failed to traverse term");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_asscalc_ass(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_asscalc_ass(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     switch (lhs->type) {
     default:
         ast_set_error_detail(self, "can't assign to %d", lhs->type);
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
         object_dict_t *varmap = ctx_get_varmap(self->context);
         objdict_move(varmap, str_getc(lhs->identifier), obj_new_other(rhs));
-        return obj_new_other(rhs);
+        object_t *obj = obj_new_other(rhs);
+        return_trav(obj);
     } break;
     }
 
     assert(0 && "impossible. failed to calc asscalc ass");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_asscalc_add_ass_identifier_int(ast_t *self, object_t *ref_var, object_t *rhs) {
+ast_calc_asscalc_add_ass_identifier_int(ast_t *self, object_t *ref_var, object_t *rhs, int dep) {
+    tready();
     assert(ref_var->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't add assign null to int");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
         ref_var->lvalue += rhs->lvalue;
-        return obj_new_other(ref_var);
+        object_t *obj = obj_new_other(ref_var);
+        return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
         ref_var->lvalue += rhs->boolean; 
-        return obj_new_other(ref_var);
+        object_t *obj = obj_new_other(ref_var);
+        return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = str_getc(rhs->identifier);
-        object_t *rvar = get_var(self, idn);
+        object_t *rvar = get_var(self, idn, dep+1);
         if (!rvar) {
             ast_set_error_detail(self, "\"%s\" is not defined", idn);
-            return NULL;
+            return_trav(NULL);
         }
 
-        return ast_calc_asscalc_add_ass_identifier_int(self, ref_var, rvar);
+        tcheck("call ast_calc_asscalc_add_ass_identifier_int");
+        object_t *obj = ast_calc_asscalc_add_ass_identifier_int(self, ref_var, rvar, dep+1);
+        return_trav(obj);
     } break;
     case OBJ_TYPE_STRING:
         ast_set_error_detail(self, "can't add assign string to int");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't add assign array to int");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc asscalc add ass identifier int");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_asscalc_add_ass_identifier_string(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_asscalc_add_ass_identifier_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't add assign null to string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER:
         ast_set_error_detail(self, "can't add assign int to string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_BOOL:
         ast_set_error_detail(self, "can't add assign bool to string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER:
         ast_set_error_detail(self, "can't add assign identifier to string");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_STRING: {
         object_t *obj = obj_new_other(lhs);
         str_app(obj->string, str_getc(rhs->string));
-        return obj;
+        return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't add assign array to string");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
     assert(0 && "impossible. failed to calc asscalc add ass identifier string");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_asscalc_add_ass_identifier(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_asscalc_add_ass_identifier(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
-    object_t *lvar = get_var(self, str_getc(lhs->identifier));
+    const char *idn = str_getc(lhs->identifier);
+    object_t *lvar = get_var(self, idn, dep+1);
     if (!lvar) {
-        ast_set_error_detail(self, "\"%s\" is not defined", str_getc(lhs->identifier));
-        return NULL;
+        ast_set_error_detail(self, "\"%s\" is not defined", idn);
+        return_trav(NULL);
     }
+
+    object_t *result = NULL;
     
     switch (lvar->type) {
     case OBJ_TYPE_NULL:
         ast_set_error_detail(self, "can't add assign to null");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: 
-        return ast_calc_asscalc_add_ass_identifier_int(self, lvar, rhs);
-        break;
+    case OBJ_TYPE_INTEGER: {
+        tcheck("call ast_calc_asscalc_add_ass_identifier_int");
+        result = ast_calc_asscalc_add_ass_identifier_int(self, lvar, rhs, dep+1);
+    } break;
     case OBJ_TYPE_BOOL:
         ast_set_error_detail(self, "can't add assign to bool");
-        return NULL;
+        return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER:
         ast_set_error_detail(self, "can't add assign to identifier");
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_STRING:
-        return ast_calc_asscalc_add_ass_identifier_string(self, lvar, rhs);
-        break;
+    case OBJ_TYPE_STRING: {
+        tcheck("call ast_calc_asscalc_add_ass_identifier_string");
+        result = ast_calc_asscalc_add_ass_identifier_string(self, lvar, rhs, dep+1);
+    } break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't add assign array");
-        return NULL;
+        return_trav(NULL);
         break;
     }
 
-    assert(0 && "impossible. failed to calc asscalc add ass identifier");
-    return NULL;
+    object_t *ret = obj_new_other(result);
+    move_var(self, idn, result, dep+1);
+
+    return_trav(ret);
 }
 
 static object_t *
-ast_calc_asscalc_add_ass(ast_t *self, object_t *lhs, object_t *rhs) {
+ast_calc_asscalc_add_ass(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
     switch (lhs->type) {
     default:
         ast_set_error_detail(self, "can't add assign to %d", lhs->type);
-        return NULL;
+        return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: return ast_calc_asscalc_add_ass_identifier(self, lhs, rhs); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_calc_asscalc_add_ass_identifier");
+        object_t *obj = ast_calc_asscalc_add_ass_identifier(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc asscalc add ass");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_calc_asscalc(ast_t *self, object_t *lhs, node_augassign_t *augassign, object_t *rhs) {
+ast_calc_asscalc(ast_t *self, object_t *lhs, node_augassign_t *augassign, object_t *rhs, int dep) {
+    tready();
     switch (augassign->op) {
     default: break;
-    case OP_ADD_ASS: return ast_calc_asscalc_add_ass(self, lhs, rhs); break;
+    case OP_ADD_ASS: {
+        tcheck("call ast_calc_asscalc_add_ass");
+        object_t *obj = ast_calc_asscalc_add_ass(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
     case OP_SUB_ASS:
         err_die("TODO: sub ass");        
         break;
@@ -3988,44 +4854,53 @@ ast_calc_asscalc(ast_t *self, object_t *lhs, node_augassign_t *augassign, object
     }
 
     assert(0 && "impossible. failed to calc asscalc");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_asscalc(ast_t *self, node_t *node) {
+ast_traverse_asscalc(ast_t *self, node_t *node, int dep) {
+    tready();
     node_asscalc_t *asscalc = node->real;
     assert(asscalc);
 
     if (nodearr_len(asscalc->nodearr) == 1) {
         node_t *node = nodearr_get(asscalc->nodearr, 0);
-        return _ast_traverse(self, node);
+        tcheck("call _ast_traverse");
+        object_t *result = _ast_traverse(self, node, dep+1);
+        return_trav(result);
     } else if (nodearr_len(asscalc->nodearr) >= 3) {
+        viss("three");
         node_t *lnode = nodearr_get(asscalc->nodearr, 0);
-        object_t *lhs = _ast_traverse(self, lnode);
+        tcheck("call _ast_traverse");
+        object_t *lhs = _ast_traverse(self, lnode, dep+1);
         if (ast_has_error(self)) {
-            return NULL;
+            return_trav(NULL);
         }
         assert(lhs);
         
         for (int i = 1; i < nodearr_len(asscalc->nodearr); i += 2) {
             node_t *node = nodearr_get(asscalc->nodearr, i);
+            assert(node->type == NODE_TYPE_AUGASSIGN);
             node_augassign_t *op = node->real;
             assert(op);
 
             node_t *rnode = nodearr_get(asscalc->nodearr, i+1);
             assert(rnode);
-            object_t *rhs = _ast_traverse(self, rnode);
+            assert(rnode->type == NODE_TYPE_FACTOR);
+            tcheck("call _ast_traverse");
+            object_t *rhs = _ast_traverse(self, rnode, dep+1);
             if (ast_has_error(self)) {
                 obj_del(lhs);
-                return NULL;
+                return_trav(NULL);
             }
             assert(rnode);
 
-            object_t *result = ast_calc_asscalc(self, lhs, op, rhs);
+            tcheck("call ast_calc_asscalc");
+            object_t *result = ast_calc_asscalc(self, lhs, op, rhs, dep+1);
             if (ast_has_error(self)) {
                 obj_del(lhs);
                 obj_del(rhs);
-                return NULL;                
+                return_trav(NULL);                
             }
 
             obj_del(lhs);
@@ -4033,66 +4908,83 @@ ast_traverse_asscalc(ast_t *self, node_t *node) {
             lhs = result;
         }
 
-        return lhs;
+        return_trav(lhs);
     }
 
     assert(0 && "impossible. failed to traverse asscalc");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_factor(ast_t *self, node_t *node) {
+ast_traverse_factor(ast_t *self, node_t *node, int dep) {
+    tready();
     node_factor_t *factor = node->real;
     assert(factor);
 
     if (factor->atom) {
-        return _ast_traverse(self, factor->atom);
+        tcheck("call _ast_traverse");
+        object_t *obj = _ast_traverse(self, factor->atom, dep+1);
+        return_trav(obj);
     } else if (factor->test) {
-        return _ast_traverse(self, factor->test);
+        tcheck("call _ast_traverse");
+        object_t *obj = _ast_traverse(self, factor->test, dep+1);
+        return_trav(obj);
     }
 
     assert(0 && "impossible. invalid status of factor");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_atom(ast_t *self, node_t *node) {
+ast_traverse_atom(ast_t *self, node_t *node, int dep) {
+    tready();
     node_atom_t *atom = node->real;
     assert(atom && node->type == NODE_TYPE_ATOM);
 
     if (atom->digit) {
-        return _ast_traverse(self, atom->digit);
+        tcheck("call _ast_traverse");
+        object_t *obj = _ast_traverse(self, atom->digit, dep+1);
+        return_trav(obj);
     } else if (atom->string) {
-        return _ast_traverse(self, atom->string);
+        tcheck("call _ast_traverse");
+        object_t *obj = _ast_traverse(self, atom->string, dep+1);
+        return_trav(obj);
     } else if (atom->identifier) {
-        return _ast_traverse(self, atom->identifier);
+        tcheck("call _ast_traverse");
+        object_t *obj = _ast_traverse(self, atom->identifier, dep+1);
+        return_trav(obj);
     } else if (atom->caller) {
-        return _ast_traverse(self, atom->caller);
+        tcheck("call _ast_traverse");
+        object_t *obj = _ast_traverse(self, atom->caller, dep+1);
+        return_trav(obj);
     }
 
     assert(0 && "impossible. invalid status of atom");
-    return NULL;
+    return_trav(NULL);
 }
 
 static object_t *
-ast_traverse_digit(ast_t *self, node_t *node) {
+ast_traverse_digit(ast_t *self, node_t *node, int dep) {
+    tready();
     node_digit_t *digit = node->real;
     assert(digit && node->type == NODE_TYPE_DIGIT);
-    return obj_new_int(digit->lvalue);
+    return_trav(obj_new_int(digit->lvalue));
 }
 
 static object_t *
-ast_traverse_string(ast_t *self, node_t *node) {
+ast_traverse_string(ast_t *self, node_t *node, int dep) {
+    tready();
     node_string_t *string = node->real;
     assert(string && node->type == NODE_TYPE_STRING);
-    return obj_new_cstr(string->string);
+    return_trav(obj_new_cstr(string->string));
 }
 
 static object_t *
-ast_traverse_identifier(ast_t *self, node_t *node) {
+ast_traverse_identifier(ast_t *self, node_t *node, int dep) {
+    tready();
     node_identifier_t *identifier = node->real;
     assert(identifier && node->type == NODE_TYPE_IDENTIFIER);
-    return obj_new_cidentifier(identifier->identifier);
+    return_trav(obj_new_cidentifier(identifier->identifier));
 }
 
 static object_t *
@@ -4176,34 +5068,38 @@ ast_invoke_opts_get_func(ast_t *self, object_t *objargs) {
 }
 
 static object_t *
-ast_traverse_caller(ast_t *self, node_t *node) {
+ast_traverse_caller(ast_t *self, node_t *node, int dep) {
+    tready();
     node_caller_t *caller = node->real;
     assert(caller && node->type == NODE_TYPE_CALLER);
 
     cstring_array_t *names = identifier_chain_to_cstrarr(caller->identifier_chain->real);
     if (!names) {
         ast_set_error_detail(self, "not found identifier in caller");
-        return NULL;
+        return_trav(NULL);
     }
 
-    object_t *args = _ast_traverse(self, caller->test_list);
+    tcheck("call _ast_traverse");
+    object_t *args = _ast_traverse(self, caller->test_list, dep+1);
     object_t *result = NULL;
 
     if (cstrarr_len(names) == 2 &&
         cstr_eq(cstrarr_getc(names, 0), "alias") &&
         cstr_eq(cstrarr_getc(names, 1), "set")) {
+        tcheck("call ast_invoke_alias_set_func");
         result = ast_invoke_alias_set_func(self, args);
         if (ast_has_error(self)) {
             obj_del(args);
-            return NULL;
+            return_trav(NULL);
         }
     } else if (cstrarr_len(names) == 2 &&
         cstr_eq(cstrarr_getc(names, 0), "opts") &&
         cstr_eq(cstrarr_getc(names, 1), "get")) {
+        tcheck("call ast_invoke_opts_get_func");
         result = ast_invoke_opts_get_func(self, args);
         if (ast_has_error(self)) {
             obj_del(args);
-            return NULL;
+            return_trav(NULL);
         }
     } else {
         string_t *s = str_new();
@@ -4215,65 +5111,183 @@ ast_traverse_caller(ast_t *self, node_t *node) {
         ast_set_error_detail(self, "\"%s\" is not callable", str_getc(s));
         str_del(s);
         obj_del(args);
-        return NULL;
+        return_trav(NULL);
     }
 
     obj_del(args);
     if (!result) {
-        return obj_new_null();
+        return_trav(obj_new_null());
     }
-    return result;
+    return_trav(result);
 }
 
 static object_t *
-_ast_traverse(ast_t *self, node_t *node) {
+_ast_traverse(ast_t *self, node_t *node, int dep) {
+    tready();
     if (!node) {
-        return NULL; 
+        return_trav(NULL); 
     }
 
     switch (node->type) {
     default: {
         err_die("impossible. unsupported node type %d in traverse", node_getc_type(node));
     } break;
-    case NODE_TYPE_PROGRAM:     return ast_traverse_program(self, node); break;
-    case NODE_TYPE_BLOCKS:      return ast_traverse_blocks(self, node); break;
-    case NODE_TYPE_CODE_BLOCK:  return ast_traverse_code_block(self, node); break;
-    case NODE_TYPE_REF_BLOCK:   return ast_traverse_ref_block(self, node); break;
-    case NODE_TYPE_TEXT_BLOCK:  return ast_traverse_text_block(self, node); break;
-    case NODE_TYPE_ELEMS:       return ast_traverse_elems(self, node); break;
-    case NODE_TYPE_FORMULA:     return ast_traverse_formula(self, node); break;
-    case NODE_TYPE_STMT:        return ast_traverse_stmt(self, node); break;
-    case NODE_TYPE_IMPORT_STMT: return ast_traverse_import_stmt(self, node); break;
-    case NODE_TYPE_IF_STMT:     return ast_traverse_if_stmt(self, node); break;
-    case NODE_TYPE_ELIF_STMT:   return ast_traverse_if_stmt(self, node); break;
-    case NODE_TYPE_ELSE_STMT:   return ast_traverse_else_stmt(self, node); break;
-    case NODE_TYPE_FOR_STMT:    return ast_traverse_for_stmt(self, node); break;
-    case NODE_TYPE_ASSIGN_LIST: return ast_traverse_assign_list(self, node); break;
-    case NODE_TYPE_TEST_LIST:   return ast_traverse_test_list(self, node); break;
-    case NODE_TYPE_TEST:        return ast_traverse_test(self, node); break;
-    case NODE_TYPE_OR_TEST:     return ast_traverse_or_test(self, node); break;
-    case NODE_TYPE_AND_TEST:    return ast_traverse_and_test(self, node); break;
-    case NODE_TYPE_NOT_TEST:    return ast_traverse_not_test(self, node); break;
-    case NODE_TYPE_COMPARISON:  return ast_traverse_comparison(self, node); break;
-    case NODE_TYPE_EXPR:        return ast_traverse_expr(self, node); break;
-    case NODE_TYPE_TERM:        return ast_traverse_term(self, node); break;
-    case NODE_TYPE_ASSCALC:     return ast_traverse_asscalc(self, node); break;
-    case NODE_TYPE_FACTOR:      return ast_traverse_factor(self, node); break;
-    case NODE_TYPE_ATOM:        return ast_traverse_atom(self, node); break;
-    case NODE_TYPE_DIGIT:       return ast_traverse_digit(self, node); break;
-    case NODE_TYPE_STRING:      return ast_traverse_string(self, node); break;
-    case NODE_TYPE_IDENTIFIER:  return ast_traverse_identifier(self, node); break;
-    case NODE_TYPE_CALLER:      return ast_traverse_caller(self, node); break;
+    case NODE_TYPE_PROGRAM: {
+        tcheck("call ast_traverse_program");
+        object_t *obj = ast_traverse_program(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_BLOCKS: {
+        tcheck("call ast_traverse_blocks");
+        object_t *obj = ast_traverse_blocks(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_CODE_BLOCK: {
+        tcheck("call ast_traverse_code_block");
+        object_t *obj = ast_traverse_code_block(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_REF_BLOCK: {
+        tcheck("call ast_traverse_ref_block");
+        object_t *obj = ast_traverse_ref_block(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_TEXT_BLOCK: {
+        tcheck("call ast_traverse_text_block");
+        object_t *obj = ast_traverse_text_block(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_ELEMS: {
+        tcheck("call ast_traverse_elems");
+        object_t *obj = ast_traverse_elems(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_FORMULA: {
+        tcheck("call ast_traverse_formula");
+        object_t *obj = ast_traverse_formula(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_STMT: {
+        tcheck("call ast_traverse_stmt");
+        object_t *obj = ast_traverse_stmt(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_IMPORT_STMT: {
+        tcheck("call ast_traverse_import_stmt");
+        object_t *obj = ast_traverse_import_stmt(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_IF_STMT: {
+        tcheck("call ast_traverse_if_stmt");
+        object_t *obj = ast_traverse_if_stmt(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_ELIF_STMT: {
+        tcheck("call ast_traverse_if_stmt");
+        object_t *obj = ast_traverse_if_stmt(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_ELSE_STMT: {
+        tcheck("call ast_traverse_else_stmt");
+        object_t *obj = ast_traverse_else_stmt(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_FOR_STMT: {
+        tcheck("call ast_traverse_for_stmt");
+        object_t *obj = ast_traverse_for_stmt(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_ASSIGN_LIST: {
+        tcheck("call ast_traverse_assign_list");
+        object_t *obj = ast_traverse_assign_list(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_TEST_LIST: {
+        tcheck("call ast_traverse_test_list");
+        object_t *obj = ast_traverse_test_list(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_TEST: {
+        tcheck("call ast_traverse_test");
+        object_t *obj = ast_traverse_test(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_OR_TEST: {
+        tcheck("call ast_traverse_or_test");
+        object_t *obj = ast_traverse_or_test(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_AND_TEST: {
+        tcheck("call ast_traverse_and_test");
+        object_t *obj = ast_traverse_and_test(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_NOT_TEST: {
+        tcheck("call ast_traverse_not_test");
+        object_t *obj = ast_traverse_not_test(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_COMPARISON: {
+        tcheck("call ast_traverse_comparison");
+        object_t *obj = ast_traverse_comparison(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_EXPR: {
+        tcheck("call ast_traverse_expr");
+        object_t *obj = ast_traverse_expr(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_TERM: {
+        tcheck("call ast_traverse_term");
+        object_t *obj = ast_traverse_term(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_ASSCALC: {
+        tcheck("call ast_traverse_asscalc");
+        object_t *obj = ast_traverse_asscalc(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_FACTOR: {
+        tcheck("call ast_traverse_factor");
+        object_t *obj = ast_traverse_factor(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_ATOM: {
+        tcheck("call ast_traverse_atom");
+        object_t *obj = ast_traverse_atom(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_DIGIT: {
+        tcheck("call ast_traverse_digit");
+        object_t *obj = ast_traverse_digit(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_STRING: {
+        tcheck("call ast_traverse_string");
+        object_t *obj = ast_traverse_string(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_IDENTIFIER: {
+        tcheck("call ast_traverse_identifier");
+        object_t *obj = ast_traverse_identifier(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_CALLER: {
+        tcheck("call ast_traverse_caller");
+        object_t *obj = ast_traverse_caller(self, node, dep+1);
+        return_trav(obj);
+    } break;
     }
 
-    return NULL;
+    assert(0 && "impossible. failed to traverse");
+    return_trav(NULL);
 }
 
 void
 ast_traverse(ast_t *self, context_t *context) {
     self->context = context;
     ctx_clear(self->context);
-    _ast_traverse(self, self->root);
+    _ast_traverse(self, self->root, 0);
 }
 
 void
