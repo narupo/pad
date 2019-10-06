@@ -51,3 +51,6 @@ objarr_moveb(object_array_t* self, object_t *obj);
 
 object_array_t *
 objarr_movef(object_array_t* self, object_t *obj);
+
+object_t *
+objarr_popb(object_array_t *self);
