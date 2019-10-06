@@ -2496,6 +2496,48 @@ test_ast_parse(void) {
         assert(digit->lvalue == 1);    
     } 
 
+    /* TODO BNF error
+    tkr_parse(tkr, "{@ a = 1, b = 1 @}");
+    {
+        ast_clear(ast);
+        ast_parse(ast, tkr_get_tokens(tkr));
+        root = ast_getc_root(ast);
+        program = root->real;
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        formula = elems->formula->real;
+        assign_list = formula->assign_list->real;
+        test_list = nodearr_get(assign_list->nodearr, 0)->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        expr = nodearr_get(comparison->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
+        factor = nodearr_get(asscalc->nodearr, 0)->real;
+        atom = factor->atom->real;
+        identifier = atom->identifier->real;
+        assert(identifier != NULL);
+        assert(!strcmp(identifier->identifier, "a"));
+        test_list = nodearr_get(assign_list->nodearr, 1)->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        expr = nodearr_get(comparison->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
+        factor = nodearr_get(asscalc->nodearr, 0)->real;
+        atom = factor->atom->real;
+        digit = atom->digit->real;        
+        assert(digit != NULL);
+        assert(digit->lvalue == 1);    
+    } */
+
     /*******
     * expr *
     *******/
@@ -5718,15 +5760,15 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list != NULL);
-        assert(for_stmt->init_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->init_test_list->real != NULL);
+        assert(for_stmt->assign_list != NULL);
+        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
+        assert(for_stmt->assign_list->real != NULL);
         assert(for_stmt->test != NULL);
         assert(for_stmt->test->type == NODE_TYPE_TEST);
         assert(for_stmt->test->real != NULL);
-        assert(for_stmt->update_test_list != NULL);
-        assert(for_stmt->update_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->update_test_list->real != NULL);
+        assert(for_stmt->test_list != NULL);
+        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
+        assert(for_stmt->test_list->real != NULL);
         assert(for_stmt->elems == NULL);
     }
 
@@ -5763,15 +5805,15 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list != NULL);
-        assert(for_stmt->init_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->init_test_list->real != NULL);
+        assert(for_stmt->assign_list != NULL);
+        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
+        assert(for_stmt->assign_list->real != NULL);
         assert(for_stmt->test != NULL);
         assert(for_stmt->test->type == NODE_TYPE_TEST);
         assert(for_stmt->test->real != NULL);
-        assert(for_stmt->update_test_list != NULL);
-        assert(for_stmt->update_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->update_test_list->real != NULL);
+        assert(for_stmt->test_list != NULL);
+        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
+        assert(for_stmt->test_list->real != NULL);
         assert(for_stmt->elems != NULL);
         assert(for_stmt->elems->type == NODE_TYPE_ELEMS);
         assert(for_stmt->elems->real != NULL);
@@ -5826,15 +5868,15 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list != NULL);
-        assert(for_stmt->init_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->init_test_list->real != NULL);
+        assert(for_stmt->assign_list != NULL);
+        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
+        assert(for_stmt->assign_list->real != NULL);
         assert(for_stmt->test != NULL);
         assert(for_stmt->test->type == NODE_TYPE_TEST);
         assert(for_stmt->test->real != NULL);
-        assert(for_stmt->update_test_list != NULL);
-        assert(for_stmt->update_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->update_test_list->real != NULL);
+        assert(for_stmt->test_list != NULL);
+        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
+        assert(for_stmt->test_list->real != NULL);
         assert(for_stmt->elems != NULL);
         assert(for_stmt->elems->type == NODE_TYPE_ELEMS);
         assert(for_stmt->elems->real != NULL);
@@ -5849,15 +5891,15 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->real != NULL);
         assert(stmt->if_stmt == NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list != NULL);
-        assert(for_stmt->init_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->init_test_list->real != NULL);
+        assert(for_stmt->assign_list != NULL);
+        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
+        assert(for_stmt->assign_list->real != NULL);
         assert(for_stmt->test != NULL);
         assert(for_stmt->test->type == NODE_TYPE_TEST);
         assert(for_stmt->test->real != NULL);
-        assert(for_stmt->update_test_list != NULL);
-        assert(for_stmt->update_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->update_test_list->real != NULL);
+        assert(for_stmt->test_list != NULL);
+        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
+        assert(for_stmt->test_list->real != NULL);
         assert(for_stmt->elems == NULL);
     }
 
@@ -5894,11 +5936,11 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list == NULL);
+        assert(for_stmt->assign_list == NULL);
         assert(for_stmt->test != NULL);
         assert(for_stmt->test->type == NODE_TYPE_TEST);
         assert(for_stmt->test->real != NULL);
-        assert(for_stmt->update_test_list == NULL);
+        assert(for_stmt->test_list == NULL);
         assert(for_stmt->elems == NULL);
     }
 
@@ -5935,11 +5977,11 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list == NULL);
+        assert(for_stmt->assign_list == NULL);
         assert(for_stmt->test != NULL);
         assert(for_stmt->test->type == NODE_TYPE_TEST);
         assert(for_stmt->test->real != NULL);
-        assert(for_stmt->update_test_list == NULL);
+        assert(for_stmt->test_list == NULL);
         assert(for_stmt->elems != NULL);
         assert(for_stmt->elems->type == NODE_TYPE_ELEMS);
         assert(for_stmt->elems->real != NULL);
@@ -5995,11 +6037,11 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list == NULL);
+        assert(for_stmt->assign_list == NULL);
         assert(for_stmt->test != NULL);
         assert(for_stmt->test->type == NODE_TYPE_TEST);
         assert(for_stmt->test->real != NULL);
-        assert(for_stmt->update_test_list == NULL);
+        assert(for_stmt->test_list == NULL);
         assert(for_stmt->elems == NULL);
         assert(for_stmt->blocks != NULL);
         assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
@@ -6065,11 +6107,11 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list == NULL);
+        assert(for_stmt->assign_list == NULL);
         assert(for_stmt->test != NULL);
         assert(for_stmt->test->type == NODE_TYPE_TEST);
         assert(for_stmt->test->real != NULL);
-        assert(for_stmt->update_test_list == NULL);
+        assert(for_stmt->test_list == NULL);
         assert(for_stmt->elems == NULL);
     }
 
@@ -6106,9 +6148,9 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list == NULL);
+        assert(for_stmt->assign_list == NULL);
         assert(for_stmt->test == NULL);
-        assert(for_stmt->update_test_list == NULL);
+        assert(for_stmt->test_list == NULL);
         assert(for_stmt->elems == NULL);
     }
 
@@ -6145,9 +6187,9 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list == NULL);
+        assert(for_stmt->assign_list == NULL);
         assert(for_stmt->test == NULL);
-        assert(for_stmt->update_test_list == NULL);
+        assert(for_stmt->test_list == NULL);
         assert(for_stmt->elems == NULL);
     }
 
@@ -6184,9 +6226,9 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list == NULL);
+        assert(for_stmt->assign_list == NULL);
         assert(for_stmt->test == NULL);
-        assert(for_stmt->update_test_list == NULL);
+        assert(for_stmt->test_list == NULL);
         assert(for_stmt->elems == NULL);
         assert(for_stmt->blocks != NULL);
         assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
@@ -6235,9 +6277,9 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list == NULL);
+        assert(for_stmt->assign_list == NULL);
         assert(for_stmt->test == NULL);
-        assert(for_stmt->update_test_list == NULL);
+        assert(for_stmt->test_list == NULL);
         assert(for_stmt->elems == NULL);
         assert(for_stmt->blocks != NULL);
         assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
@@ -6323,9 +6365,9 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list != NULL);
+        assert(for_stmt->assign_list != NULL);
         assert(for_stmt->test != NULL);
-        assert(for_stmt->update_test_list != NULL);
+        assert(for_stmt->test_list != NULL);
         assert(for_stmt->elems == NULL);
     }
 
@@ -6362,15 +6404,15 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list != NULL);
-        assert(for_stmt->init_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->init_test_list->real != NULL);
+        assert(for_stmt->assign_list != NULL);
+        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
+        assert(for_stmt->assign_list->real != NULL);
         assert(for_stmt->test != NULL);
         assert(for_stmt->test->type == NODE_TYPE_TEST);
         assert(for_stmt->test->real != NULL);
-        assert(for_stmt->update_test_list != NULL);
-        assert(for_stmt->update_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->update_test_list->real != NULL);
+        assert(for_stmt->test_list != NULL);
+        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
+        assert(for_stmt->test_list->real != NULL);
         assert(for_stmt->elems == NULL);
         assert(for_stmt->blocks == NULL);
     }
@@ -6408,15 +6450,15 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list != NULL);
-        assert(for_stmt->init_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->init_test_list->real != NULL);
+        assert(for_stmt->assign_list != NULL);
+        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
+        assert(for_stmt->assign_list->real != NULL);
         assert(for_stmt->test != NULL);
         assert(for_stmt->test->type == NODE_TYPE_TEST);
         assert(for_stmt->test->real != NULL);
-        assert(for_stmt->update_test_list != NULL);
-        assert(for_stmt->update_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->update_test_list->real != NULL);
+        assert(for_stmt->test_list != NULL);
+        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
+        assert(for_stmt->test_list->real != NULL);
         assert(for_stmt->elems == NULL);
         assert(for_stmt->blocks != NULL);
         assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
@@ -6465,15 +6507,15 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list != NULL);
-        assert(for_stmt->init_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->init_test_list->real != NULL);
+        assert(for_stmt->assign_list != NULL);
+        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
+        assert(for_stmt->assign_list->real != NULL);
         assert(for_stmt->test != NULL);
         assert(for_stmt->test->type == NODE_TYPE_TEST);
         assert(for_stmt->test->real != NULL);
-        assert(for_stmt->update_test_list != NULL);
-        assert(for_stmt->update_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->update_test_list->real != NULL);
+        assert(for_stmt->test_list != NULL);
+        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
+        assert(for_stmt->test_list->real != NULL);
         assert(for_stmt->elems == NULL);
         assert(for_stmt->blocks != NULL);
         assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
@@ -6539,15 +6581,15 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_test_list != NULL);
-        assert(for_stmt->init_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->init_test_list->real != NULL);
+        assert(for_stmt->assign_list != NULL);
+        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
+        assert(for_stmt->assign_list->real != NULL);
         assert(for_stmt->test != NULL);
         assert(for_stmt->test->type == NODE_TYPE_TEST);
         assert(for_stmt->test->real != NULL);
-        assert(for_stmt->update_test_list != NULL);
-        assert(for_stmt->update_test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->update_test_list->real != NULL);
+        assert(for_stmt->test_list != NULL);
+        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
+        assert(for_stmt->test_list->real != NULL);
         assert(for_stmt->elems == NULL);
         assert(for_stmt->blocks != NULL);
         assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
@@ -6742,6 +6784,16 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
     }
 
+    /* tkr_parse(tkr, "{@ a = 1, b = 2 @}{: a :} {: b :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        showdetail();
+        showbuf();
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1 2"));
+    } */
+
     tkr_parse(tkr, "{@ a = \"abc\" @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -6808,6 +6860,14 @@ test_ast_traverse(void) {
         ast_traverse(ast, ctx);
         assert(!ast_has_error(ast));
     } 
+
+    tkr_parse(tkr, "{@ a = 0 \n b = 0 \n a += 1, b += 2 @}{: a :} {: b :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1 2"));
+    }
 
     /*************
     * comparison *
@@ -6995,6 +7055,13 @@ test_ast_traverse(void) {
         assert(!strcmp(ast_get_error_detail(ast), "\"a\" is not defined"));
     }
 
+    tkr_parse(tkr, "{@ a = 0 \n b = 1 + (a += 1) @}{: b :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_buf(ctx), "2"));
+    }
+
     tkr_parse(tkr, "{@ a = 0 \n a += 1 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -7015,10 +7082,16 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         (ast_traverse(ast, ctx));
         assert(!ast_has_error(ast));
-        showbuf();
-        showdetail();
         assert(!strcmp(ctx_getc_buf(ctx), "ab"));
     }
+
+    /* TODO: sub ass
+    tkr_parse(tkr, "{@ a = 0 \n a -= 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_buf(ctx), "-1"));
+    }*/
 
     /*********
     * caller *
@@ -7144,15 +7217,26 @@ test_ast_traverse(void) {
     * for statement *
     ****************/
 
-    /* tkr_parse(tkr, "{@ a = 0\n"
+     tkr_parse(tkr, "{@ a = 0\n"
         "for i = 0; i != 4; i += 1:\n"
         "   a += 1\n"
         "end @}{: a :}");
     {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "4"));
+    } 
+
+    /* tkr_parse(tkr, "{@ a = 0\n"
+        "for i = 0, j = 0; i != 4; i += 1, j += 1:\n"
+        "   a += 1\n"
+        "end @}{: a :}\n{: i :}\n{: j :}");
+    {
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        ast_debug(ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "4\n4\n4"));
     } */
 
     /* tkr_parse(tkr, "{@ for i = 0; i != 4; i += 1: @}a{@ end @}");

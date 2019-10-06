@@ -21,12 +21,19 @@ BNF of Cap's template language
          else_stmt: 'else' ':' elems* 'end'* |
                     'else' ':' '@}' blocks* '{@' 'end'*
 
-          for_stmt: 'for' test_list ';' test ';' test_list ':' elems 'end' |
+          for_stmt: 'for' assign_list ';' test ';' test_list ':' elems 'end' |
                     'for' test ':' elems 'end' |
                     'for' ':' elems 'end'
 
            formula: assign_list
+
+       # FIX to
+       assign_list: assign ( ',' assign )*
+            assign: test_list ( '=' test_list )*
+
+       # FIX me
        assign_list: test_list ( '=' test_list )*
+
          test_list: test ( ',' test )*
               test: or_test
            or_test: and_test ( 'or' and_test )*

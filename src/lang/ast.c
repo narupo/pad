@@ -381,9 +381,9 @@ ast_for_stmt(ast_t *self, int dep) {
 #undef return_cleanup
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
-        ast_del_nodes(self, cur->init_test_list); \
+        ast_del_nodes(self, cur->assign_list); \
         ast_del_nodes(self, cur->test); \
-        ast_del_nodes(self, cur->update_test_list); \
+        ast_del_nodes(self, cur->test_list); \
         ast_del_nodes(self, cur->elems); \
         ast_del_nodes(self, cur->blocks); \
         free(cur); \
@@ -405,6 +405,8 @@ ast_for_stmt(ast_t *self, int dep) {
 
     t = *self->ptr++;
     if (t->type == TOKEN_TYPE_COLON) {
+        // for : elems end
+        // for : @} blocks {@ end
         check("read colon");
 
         if (!*self->ptr) {
@@ -450,42 +452,44 @@ ast_for_stmt(ast_t *self, int dep) {
         }
         check("read end");
     } else {
+        // for test : elems end
+        // for test : @} blocks {@
+        // for assign_list ; test ; test_list : elems end
+        // for assign_list ; test ; test_list : @} blocks {@ end
         self->ptr--;
-        check("call ast_test_list");
 
-        check("call ast_test");
-        cur->test = ast_test(self, dep+1);
-        if (ast_has_error(self)) {
-            return_cleanup("");
-        }
-
-        if (!cur->test) {
-            check("call ast_test_list");
-            cur->init_test_list = ast_test_list(self, dep+1);
-            if (!cur->init_test_list) {
-                if (ast_has_error(self)) {
-                    return_cleanup("");
-                }
-                return_cleanup("syntax error. not found initialize test in for statement");            
+        check("call ast_assign_list");
+        cur->assign_list = ast_assign_list(self, dep+1);
+        if (!cur->assign_list) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
             }
+            return_cleanup("syntax error. not found initialize assign list in for statement");            
         }
 
         t = *self->ptr++;
-        if (t->type == TOKEN_TYPE_SEMICOLON) {
+        if (t->type == TOKEN_TYPE_COLON) {
+            self->ptr--;
+            // for <test> : elems end
+            declare(node_test_t, test);
+
+            node_assign_list_t *assign_list = cur->assign_list->real;
+            assert(nodearr_len(assign_list->nodearr) == 1);
+            node_t *node_test_list = nodearr_get(assign_list->nodearr, 0);
+            node_test_list_t *test_list = node_test_list->real;
+            assert(nodearr_len(test_list->nodearr) == 1);
+            node_t *node_test = nodearr_popb(test_list->nodearr);
+
+            cur->test = node_test;
+
+            ast_del_nodes(self, cur->assign_list);
+            cur->assign_list = NULL;
+
+        } else if (t->type == TOKEN_TYPE_SEMICOLON) {
             check("read semicolon");
             // for <test_list> ; test ; test_list : elems end
 
-            if (cur->test) {
-                // test move to init_test_list
-                ast_del_nodes(self, cur->init_test_list);
-                declare(node_test_list_t, test_list);
-                test_list->nodearr = nodearr_new();
-                nodearr_moveb(test_list->nodearr, cur->test);
-                cur->test = NULL;
-                cur->init_test_list = node_new(NODE_TYPE_TEST_LIST, test_list);
-            }
-
-            if (!cur->init_test_list) {
+            if (!cur->assign_list) {
                 return_cleanup("syntax error. not found initialize test in for statement (2)");
             }
 
@@ -507,7 +511,7 @@ ast_for_stmt(ast_t *self, int dep) {
             check("read semicolon");
 
             check("call ast_test_list");
-            cur->update_test_list = ast_test_list(self, dep+1);
+            cur->test_list = ast_test_list(self, dep+1);
             // allow empty
             if (ast_has_error(self)) {
                 return_cleanup("");
@@ -516,10 +520,6 @@ ast_for_stmt(ast_t *self, int dep) {
             if (!*self->ptr) {
                 return_cleanup("syntax error. reached EOF in for statement (5)");
             }
-        } else if (t->type == TOKEN_TYPE_COLON) {
-            self->ptr--;
-            // for <test> : elems end
-            // pass
         } else {
             return_cleanup("syntax error. unsupported character in for statement");
         }
@@ -2308,12 +2308,12 @@ ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
     tready();
     node_for_stmt_t *for_stmt = node->real;
 
-    if (for_stmt->init_test_list &&
+    if (for_stmt->assign_list &&
         for_stmt->test &&
-        for_stmt->update_test_list) {
+        for_stmt->test_list) {
         // for 1; 1; 1: end
         tcheck("call _ast_traverse");
-        _ast_traverse(self, for_stmt->init_test_list, dep+1);
+        _ast_traverse(self, for_stmt->assign_list, dep+1);
         if (ast_has_error(self)) {
             return_trav(NULL);
         }
@@ -2338,7 +2338,7 @@ ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
             }
 
             tcheck("call _ast_traverse");
-            _ast_traverse(self, for_stmt->update_test_list, dep+1);
+            _ast_traverse(self, for_stmt->test_list, dep+1);
             if (ast_has_error(self)) {
                 return_trav(NULL);
             }
@@ -2543,7 +2543,7 @@ ast_roll_identifier_lhs(
     object_t* (*func)(ast_t *, object_t *, object_t *, int),
     int dep) {
     tready();
-    assert(rhs->type == OBJ_TYPE_IDENTIFIER);
+    assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
     object_t *lvar = get_var(self, str_getc(lhs->identifier), dep+1);
     if (!lvar) {
@@ -3073,7 +3073,7 @@ ast_compare_and(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call ast_roll_identifier_lhs");
+        tcheck("call ast_roll_identifier_lhs with ast_compare_and");
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_and, dep+1);
         return_trav(obj);
     } break;
@@ -3407,7 +3407,7 @@ ast_compare_comparison_eq(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call ast_roll_identifier_lhs");
+        tcheck("call ast_roll_identifier_lhs with ast_compare_comparison_eq");
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
         return_trav(obj);
     } break;
@@ -3436,7 +3436,7 @@ ast_compare_comparison_not_eq_int(ast_t *self, object_t *lhs, object_t *rhs, int
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call ast_roll_identifier_rhs");
+        tcheck("call ast_roll_identifier_rhs with ast_compare_comparison_not_eq");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
@@ -3590,7 +3590,7 @@ ast_compare_comparison_not_eq_null(ast_t *self, object_t *lhs, object_t *rhs, in
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call ast_roll_identifier_lhs");
+        tcheck("call ast_roll_identifier_lhs with ast_compare_comparison_not_eq");
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
@@ -3631,7 +3631,7 @@ ast_compare_comparison_not_eq(ast_t *self, object_t *lhs, object_t *rhs, int dep
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call ast_roll_identifier_lhs");
+        tcheck("call ast_roll_identifier_lhs with ast_compare_comparison_not_eq");
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
@@ -3903,7 +3903,7 @@ ast_calc_expr_add(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call ast_roll_identifier_lhs");
+        tcheck("call ast_roll_identifier_lhs with ast_calc_expr_add");
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
         return_trav(obj);
     } break;
@@ -4359,7 +4359,7 @@ ast_calc_term_mul(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call ast_roll_identifier_lhs");
+        tcheck("call ast_roll_identifier_lhs with ast_calc_term_mul");
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_calc_term_mul, dep+1);
         return_trav(obj);
     } break;
