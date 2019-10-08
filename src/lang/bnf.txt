@@ -25,15 +25,18 @@ BNF of Cap's template language
                     'for' test ':' elems 'end' |
                     'for' ':' elems 'end'
 
-           formula: assign_list
+a = 1
+a = a = 1
+a = 1, 2
+a, b = 1, 2
+a, b = c, d = 1, 2
 
-       # FIX to
+           formula: assign_list |
+                    multi_assign
+      multi_assign: test_list ( '=' test_list )*
        assign_list: assign ( ',' assign )*
-            assign: test_list ( '=' test_list )*
-
-       # FIX me
-       assign_list: test_list ( '=' test_list )*
-
+            assign: test '=' test ( '=' test )*
+            
          test_list: test ( ',' test )*
               test: or_test
            or_test: and_test ( 'or' and_test )*

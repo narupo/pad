@@ -29,7 +29,9 @@ typedef enum {
     NODE_TYPE_FOR_STMT,
 
     NODE_TYPE_FORMULA,
+    NODE_TYPE_MULTI_ASSIGN,
     NODE_TYPE_ASSIGN_LIST,
+    NODE_TYPE_ASSIGN,
     NODE_TYPE_TEST_LIST,
 
     NODE_TYPE_TEST,
@@ -144,7 +146,16 @@ typedef struct node_for_stmt {
 
 typedef struct node_formula {
     node_t *assign_list;
+    node_t *multi_assign;
 } node_formula_t;
+
+typedef struct node_multi_assign {
+    node_array_t *nodearr;
+} node_multi_assign_t;
+
+typedef struct node_assign {
+    node_array_t *nodearr;
+} node_assign_t;
 
 typedef struct node_assign_list {
     node_array_t *nodearr;
