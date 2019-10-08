@@ -12,7 +12,7 @@ BNF of Cap's template language
                     if_stmt |
                     for_stmt
 
-       import_stmt: 'import' identifier_chain 
+       import_stmt: 'import' identifier_chain ( '@} ' | NEWLINE )
 
            if_stmt: 'if' test ':' elems* ( elif_stmt | else_stmt | 'end' ) |
                     'if' test ':' '@}' blocks* '{@' ( elif_stmt | else_stmt | 'end' )

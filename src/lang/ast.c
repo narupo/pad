@@ -2451,14 +2451,14 @@ ast_traverse_if_stmt(ast_t *self, node_t *node, int dep) {
 static object_t *
 ast_traverse_else_stmt(ast_t *self, node_t *node, int dep) {
     tready();
-    node_if_stmt_t *else_stmt = node->real;
+    node_else_stmt_t *else_stmt = node->real;
     assert(else_stmt);
 
     if (else_stmt->elems) {
-        tcheck("call _ast_traverse");
+        tcheck("call _ast_traverse with elems");
         _ast_traverse(self, else_stmt->elems, dep+1);
     } else if (else_stmt->blocks) {
-        tcheck("call _ast_traverse");
+        tcheck("call _ast_traverse with blocks");
         _ast_traverse(self, else_stmt->blocks, dep+1);
     }
 
