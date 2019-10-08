@@ -5267,6 +5267,58 @@ test_ast_parse(void) {
         assert(else_stmt->elems == NULL);
     }
 
+    tkr_parse(tkr, "{@ if 0: elif 0: else: a = 1 end @}");
+    {
+        ast_clear(ast);
+        ast_parse(ast, tkr_get_tokens(tkr));
+        root = ast_getc_root(ast);
+        assert(root != NULL);
+        assert(root->type == NODE_TYPE_PROGRAM);
+        assert(root->real != NULL);
+        program = root->real;
+        assert(program->blocks != NULL);
+        assert(program->blocks->type == NODE_TYPE_BLOCKS);
+        assert(program->blocks->real != NULL);
+        blocks = program->blocks->real;
+        assert(blocks->code_block != NULL);
+        assert(blocks->code_block->type == NODE_TYPE_CODE_BLOCK);
+        assert(blocks->code_block->real != NULL);
+        assert(blocks->ref_block == NULL);
+        assert(blocks->text_block == NULL);
+        code_block = blocks->code_block->real;
+        assert(code_block->elems != NULL);
+        assert(code_block->elems->type == NODE_TYPE_ELEMS);
+        assert(code_block->elems->real != NULL);
+        elems = code_block->elems->real;
+        assert(elems->stmt != NULL);
+        assert(elems->stmt->type == NODE_TYPE_STMT);
+        assert(elems->stmt->real != NULL);
+        stmt = elems->stmt->real;
+        assert(stmt->import_stmt == NULL);
+        assert(stmt->for_stmt == NULL);
+        assert(stmt->if_stmt != NULL);
+        assert(stmt->if_stmt->type == NODE_TYPE_IF_STMT);
+        assert(stmt->if_stmt->real != NULL);
+        if_stmt = stmt->if_stmt->real;
+        assert(if_stmt->test != NULL);
+        assert(if_stmt->elems == NULL);
+        assert(if_stmt->blocks == NULL);
+        assert(if_stmt->else_stmt == NULL);
+        assert(if_stmt->elif_stmt != NULL);
+        assert(if_stmt->elif_stmt->type == NODE_TYPE_ELIF_STMT);
+        assert(if_stmt->elif_stmt->real != NULL);
+        elif_stmt = if_stmt->elif_stmt->real;
+        assert(elif_stmt->elems == NULL);
+        assert(elif_stmt->blocks == NULL);
+        assert(elif_stmt->elif_stmt == NULL);
+        assert(elif_stmt->else_stmt != NULL);
+        assert(elif_stmt->else_stmt->type == NODE_TYPE_ELSE_STMT);
+        assert(elif_stmt->else_stmt->real != NULL);
+        else_stmt = elif_stmt->else_stmt->real;
+        assert(else_stmt->elems != NULL);
+        assert(else_stmt->blocks == NULL);
+    }
+
     tkr_parse(tkr, "{@ if 1: if 2: end end @}");
     {
         ast_clear(ast);
@@ -7110,7 +7162,7 @@ test_ast_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 \n a += 1 + 1 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
-        ast_debug(ast_traverse(ast, ctx));
+        (ast_traverse(ast, ctx));
         showbuf();
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
     } */
@@ -7224,6 +7276,27 @@ test_ast_traverse(void) {
     /***************
     * if statement *
     ***************/
+
+    tkr_parse(tkr, "{@ if 1: a = 1 end @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    } 
+
+    tkr_parse(tkr, "{@ if 0: elif 1: a = 1 end @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    } 
+
+    tkr_parse(tkr, "{@ if 0: elif 0: else: a = 1 end @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    } 
 
     tkr_parse(tkr, "{@ if 1: @}{@ end @}");
     {
