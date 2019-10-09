@@ -2476,7 +2476,7 @@ ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
         for_stmt->comp_formula &&
         for_stmt->update_formula) {
         // for 1; 1; 1: end
-        tcheck("call _ast_traverse");
+        tcheck("call _ast_traverse with init_formula");
         _ast_traverse(self, for_stmt->init_formula, dep+1);
         if (ast_has_error(self)) {
             return_trav(NULL);
