@@ -165,7 +165,7 @@ ast_expr(ast_t *self, int dep);
 
 void
 ast_del_nodes(const ast_t *self, node_t *node) {
-    if (node == NULL) {
+    if (!node) {
         return;
     }
 
@@ -188,6 +188,25 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     case NODE_TYPE_REF_BLOCK: {
         node_ref_block_t *ref_block = node->real;
         ast_del_nodes(self, ref_block->formula);
+        node_del(node);
+    } break;
+    case NODE_TYPE_TEXT_BLOCK: {
+        node_text_block_t *text_block = node->real;
+        free(text_block->text);
+        node_del(node);
+    } break;
+    case NODE_TYPE_ELEMS: {
+        node_elems_t *elems = node->real;
+        ast_del_nodes(self, elems->stmt);
+        ast_del_nodes(self, elems->formula);
+        ast_del_nodes(self, elems->elems);
+        node_del(node);
+    } break;
+    case NODE_TYPE_STMT: {
+        node_stmt_t *stmt = node->real;
+        ast_del_nodes(self, stmt->import_stmt);
+        ast_del_nodes(self, stmt->if_stmt);
+        ast_del_nodes(self, stmt->for_stmt);
         node_del(node);
     } break;
     }

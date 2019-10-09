@@ -6,7 +6,7 @@
 
 void
 node_del(node_t *self) {
-    if (self == NULL) {
+    if (!self) {
         return;
     }
     free(self);
