@@ -2549,6 +2549,7 @@ ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
                 break;
             }
             obj_del(result);
+            result = NULL;
 
             tcheck("call _ast_traverse with elems");
             if (for_stmt->elems) {
@@ -2563,6 +2564,7 @@ ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
                 }                
             } // allow null elems and blocks
             obj_del(result);
+            result = NULL;
 
             tcheck("call _ast_traverse with update_formula");
             result = _ast_traverse(self, for_stmt->update_formula, dep+1);
