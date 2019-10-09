@@ -250,6 +250,8 @@ tkr_parse_identifier(tokenizer_t *self) {
         token->type = TOKEN_TYPE_OP_AND;
     } else if (cstr_eq(token->text, "not")) {
         token->type = TOKEN_TYPE_OP_NOT;
+    } else if (cstr_eq(token->text, "nil")) {
+        token->type = TOKEN_TYPE_NIL;
     }
 
     tkr_move_token(self, token);

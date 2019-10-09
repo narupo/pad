@@ -21,7 +21,6 @@ BNF of Cap's template language
          else_stmt: 'else' ':' elems* 'end'* |
                     'else' ':' '@}' blocks* '{@' 'end'*
 
-          // for_stmt: 'for' assign_list ';' test ';' test_list ':' elems 'end' |
           for_stmt: 'for' init_formula ';' test ';' update_formula ':' elems 'end' |
                     'for' comp_formula ':' elems 'end' |
                     'for' ':' elems 'end'
@@ -43,7 +42,7 @@ BNF of Cap's template language
               expr: term ( add_sub_op term )*
              term: factor ( mul_div_op factor )*
             factor: atom | '(' test ')'
-              atom: digit | string | identifier | caller
+              atom: nil | digit | string | identifier | caller
 
            comp_op: '==' | '!='
         add_sub_op: '+' | '-'
