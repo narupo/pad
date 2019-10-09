@@ -90,7 +90,6 @@ Resource file
 home) or current directory, and write the following.
 
     {@
-        import alias
         alias.set("hw", "run bin/hello_world.py")
         alias.set("banana", "cat banana.txt")
     @}
