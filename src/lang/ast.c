@@ -545,9 +545,9 @@ ast_for_stmt(ast_t *self, int dep) {
 #undef return_cleanup
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
-        ast_del_nodes(self, cur->assign_list); \
-        ast_del_nodes(self, cur->test); \
-        ast_del_nodes(self, cur->test_list); \
+        ast_del_nodes(self, cur->init_formula); \
+        ast_del_nodes(self, cur->comp_formula); \
+        ast_del_nodes(self, cur->update_formula); \
         ast_del_nodes(self, cur->elems); \
         ast_del_nodes(self, cur->blocks); \
         free(cur); \
@@ -579,11 +579,13 @@ ast_for_stmt(ast_t *self, int dep) {
 
         t = *self->ptr++;
         if (t->type == TOKEN_TYPE_RBRACEAT) {
+            // for : @} blocks {@ end
+
             cur->blocks = ast_blocks(self, dep+1);
-            // allow null
             if (ast_has_error(self)) {
                 return_cleanup("");
             }
+            // allow null
 
             if (!*self->ptr) {
                 return_cleanup("syntax error. reached EOF in for statement (2a)");
@@ -616,15 +618,15 @@ ast_for_stmt(ast_t *self, int dep) {
         }
         check("read end");
     } else {
-        // for test : elems end
-        // for test : @} blocks {@
-        // for assign_list ; test ; test_list : elems end
-        // for assign_list ; test ; test_list : @} blocks {@ end
+        // for comp_formula : elems end
+        // for comp_formula : @} blocks {@
+        // for init_formula ; comp_formula ; test_list : elems end
+        // for init_formula ; comp_formula ; test_list : @} blocks {@ end
         self->ptr--;
 
         check("call ast_assign_list");
-        cur->assign_list = ast_assign_list(self, dep+1);
-        if (!cur->assign_list) {
+        cur->init_formula = ast_formula(self, dep+1);
+        if (!cur->init_formula) {
             if (ast_has_error(self)) {
                 return_cleanup("");
             }
@@ -634,31 +636,15 @@ ast_for_stmt(ast_t *self, int dep) {
         t = *self->ptr++;
         if (t->type == TOKEN_TYPE_COLON) {
             self->ptr--;
-            // for <test> : elems end
-            declare(node_test_t, test);
-
-            node_assign_list_t *assign_list = cur->assign_list->real;
-            assert(nodearr_len(assign_list->nodearr) == 1);
-            node_t *node_test_list = nodearr_get(assign_list->nodearr, 0);
-            node_test_list_t *test_list = node_test_list->real;
-            assert(nodearr_len(test_list->nodearr) == 1);
-            node_t *node_test = nodearr_popb(test_list->nodearr);
-
-            cur->test = node_test;
-
-            ast_del_nodes(self, cur->assign_list);
-            cur->assign_list = NULL;
-
+            // for <comp_formula> : elems end
+            cur->comp_formula = cur->init_formula;
+            cur->init_formula = NULL;
         } else if (t->type == TOKEN_TYPE_SEMICOLON) {
             check("read semicolon");
-            // for <test_list> ; test ; test_list : elems end
-
-            if (!cur->assign_list) {
-                return_cleanup("syntax error. not found initialize test in for statement (2)");
-            }
+            // for <init_formula> ; comp_formula ; update_formula : elems end
 
             check("call ast_test");
-            cur->test = ast_test(self, dep+1);
+            cur->comp_formula = ast_formula(self, dep+1);
             // allow empty
             if (ast_has_error(self)) {
                 return_cleanup("");
@@ -675,7 +661,7 @@ ast_for_stmt(ast_t *self, int dep) {
             check("read semicolon");
 
             check("call ast_test_list");
-            cur->test_list = ast_test_list(self, dep+1);
+            cur->update_formula = ast_formula(self, dep+1);
             // allow empty
             if (ast_has_error(self)) {
                 return_cleanup("");
@@ -2486,47 +2472,54 @@ ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
     tready();
     node_for_stmt_t *for_stmt = node->real;
 
-    if (for_stmt->assign_list &&
-        for_stmt->test &&
-        for_stmt->test_list) {
+    if (for_stmt->init_formula &&
+        for_stmt->comp_formula &&
+        for_stmt->update_formula) {
         // for 1; 1; 1: end
         tcheck("call _ast_traverse");
-        _ast_traverse(self, for_stmt->assign_list, dep+1);
+        _ast_traverse(self, for_stmt->init_formula, dep+1);
         if (ast_has_error(self)) {
             return_trav(NULL);
         }
 
         for (;;) {
-            tcheck("call _ast_traverse");
-            object_t *result = _ast_traverse(self, for_stmt->test, dep+1);
+            tcheck("call _ast_traverse with update_formula");
+            object_t *result = _ast_traverse(self, for_stmt->comp_formula, dep+1);
             if (ast_has_error(self)) {
                 obj_del(result);
                 return_trav(NULL);
             }
-            if (!result->boolean) {
+            if (!ast_parse_bool(self, result)) {
                 obj_del(result);
                 break;
             }
             obj_del(result);
 
-            tcheck("call _ast_traverse");
-            _ast_traverse(self, for_stmt->elems, dep+1);
-            if (ast_has_error(self)) {
-                return_trav(NULL);
-            }
+            tcheck("call _ast_traverse with elems");
+            if (for_stmt->elems) {
+                _ast_traverse(self, for_stmt->elems, dep+1);
+                if (ast_has_error(self)) {
+                    return_trav(NULL);
+                }
+            } else if (for_stmt->blocks) {
+                _ast_traverse(self, for_stmt->blocks, dep+1);
+                if (ast_has_error(self)) {
+                    return_trav(NULL);
+                }                
+            } // allow null elems and blocks
 
-            tcheck("call _ast_traverse");
-            _ast_traverse(self, for_stmt->test_list, dep+1);
+            tcheck("call _ast_traverse with update_formula");
+            _ast_traverse(self, for_stmt->update_formula, dep+1);
             if (ast_has_error(self)) {
                 return_trav(NULL);
             }
         }
-    } else if (for_stmt->test) {
+    } else if (for_stmt->comp_formula) {
         // for 1: end
         for (;;) {
             tcheck("call _ast_traverse");
-            object_t *result = _ast_traverse(self, for_stmt->test, dep+1);
-            if (!result->boolean) {
+            object_t *result = _ast_traverse(self, for_stmt->comp_formula, dep+1);
+            if (!ast_parse_bool(self, result)) {
                 obj_del(result);
                 break;
             }
