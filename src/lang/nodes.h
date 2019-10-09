@@ -49,11 +49,15 @@ typedef enum {
 
     NODE_TYPE_AUGASSIGN,
     NODE_TYPE_COMP_OP,
+
+    // atoms
+    NODE_TYPE_NIL,
     NODE_TYPE_DIGIT,
     NODE_TYPE_CALLER,
-    NODE_TYPE_IDENTIFIER_CHAIN,
     NODE_TYPE_STRING,
     NODE_TYPE_IDENTIFIER,
+    
+    NODE_TYPE_IDENTIFIER_CHAIN,
 
     NODE_TYPE_ASS_SUB_OP,
     NODE_TYPE_MUL_DIV_OP,
@@ -204,6 +208,7 @@ typedef struct node_factor {
 } node_factor_t;
 
 typedef struct node_atom {
+    node_t *nil;
     node_t *digit;
     node_t *string;
     node_t *identifier;
@@ -225,6 +230,10 @@ typedef struct node_add_sub_op {
 typedef struct node_mul_div_op {
     op_t op;
 } node_mul_div_op_t;
+
+typedef struct node_nil {
+    bool exists;
+} node_nil_t;
 
 typedef struct node_digit {
     long lvalue;

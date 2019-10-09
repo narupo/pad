@@ -51,10 +51,10 @@ obj_new(obj_type_t type) {
 }
 
 object_t *
-obj_new_null(void) {
+obj_new_nil(void) {
     object_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->type = OBJ_TYPE_NULL;
+    self->type = OBJ_TYPE_NIL;
 
     return self;
 }
@@ -127,9 +127,9 @@ obj_new_array(object_array_t *move_objarr) {
 string_t *
 obj_to_str(const object_t *self) {
     switch (self->type) {
-    case OBJ_TYPE_NULL: {
+    case OBJ_TYPE_NIL: {
         string_t *str = str_new();
-        str_set(str, "null");
+        str_set(str, "nil");
         return str;
     } break;
     case OBJ_TYPE_INTEGER: {
