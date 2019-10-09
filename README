@@ -77,6 +77,10 @@ Example
 
     $ cap edit .caprc
 
+ Make content by Cap's template language.
+
+    $ cap make my/cap/code.cap
+
 
 Resource file
 =============
@@ -110,6 +114,24 @@ Template language
     My name is {: name :}. How are you?
 
  opts.get is builtin module's function.
+
+    {@
+        words = ""
+        for i = 0; i != 4; i += 1:
+            if i == 1:
+                words += "Yep! "
+            elif i == 2:
+                words += "Blah! "
+            else:
+                words += "Hi "
+            end
+        end
+    @}
+    {: words :}
+
+This result is the following.
+
+    Hi Yep! Blah! Hi
 
 
 Cap + Plugin of editor
