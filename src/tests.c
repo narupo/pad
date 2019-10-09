@@ -7276,13 +7276,12 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
 
-    /* FIX asscalc priority
     tkr_parse(tkr, "{@ a = 0 \n a += 1 + 1 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         (ast_traverse(ast, ctx));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
-    } */
+    } 
 
     tkr_parse(tkr, "{@ a = 0 \n b = 1 + 1 @}{: b :}");
     {
