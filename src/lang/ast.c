@@ -180,6 +180,16 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         ast_del_nodes(self, blocks->text_block);
         node_del(node);
     } break;
+    case NODE_TYPE_CODE_BLOCK: {
+        node_code_block_t *code_block = node->real;
+        ast_del_nodes(self, code_block->elems);
+        node_del(node);
+    } break;
+    case NODE_TYPE_REF_BLOCK: {
+        node_ref_block_t *ref_block = node->real;
+        ast_del_nodes(self, ref_block->formula);
+        node_del(node);
+    } break;
     }
 }
 
