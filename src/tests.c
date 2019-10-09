@@ -6948,6 +6948,26 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "1 2"));
     }
 
+    /*******
+    * test *
+    *******/
+
+    tkr_parse(tkr, "{@ a = 0 or 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{@ a = 0 or \"abc\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    }
+
     /*************
     * comparison *
     *************/
