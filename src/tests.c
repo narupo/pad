@@ -5780,7 +5780,7 @@ test_ast_parse(void) {
     * for statement *
     ****************/
 
-    /* tkr_parse(tkr, "{@ for 1; 1; 1: end @}");
+    tkr_parse(tkr, "{@ for 1; 1; 1: end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -5813,19 +5813,19 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list != NULL);
-        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
-        assert(for_stmt->assign_list->real != NULL);
-        assert(for_stmt->test != NULL);
-        assert(for_stmt->test->type == NODE_TYPE_TEST);
-        assert(for_stmt->test->real != NULL);
-        assert(for_stmt->test_list != NULL);
-        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->test_list->real != NULL);
+        assert(for_stmt->init_formula != NULL);
+        assert(for_stmt->init_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->init_formula->real != NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula != NULL);
+        assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->update_formula->real != NULL);
         assert(for_stmt->elems == NULL);
-    } */
+    }
 
-    /* tkr_parse(tkr, "{@ for 1; 1; 1: if 1: end end @}");
+    tkr_parse(tkr, "{@ for 1; 1; 1: if 1: end end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -5858,15 +5858,15 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list != NULL);
-        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
-        assert(for_stmt->assign_list->real != NULL);
-        assert(for_stmt->test != NULL);
-        assert(for_stmt->test->type == NODE_TYPE_TEST);
-        assert(for_stmt->test->real != NULL);
-        assert(for_stmt->test_list != NULL);
-        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->test_list->real != NULL);
+        assert(for_stmt->init_formula != NULL);
+        assert(for_stmt->init_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->init_formula->real != NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula != NULL);
+        assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->update_formula->real != NULL);
         assert(for_stmt->elems != NULL);
         assert(for_stmt->elems->type == NODE_TYPE_ELEMS);
         assert(for_stmt->elems->real != NULL);
@@ -5886,9 +5886,9 @@ test_ast_parse(void) {
         assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
-    } */
+    } 
 
-    /* tkr_parse(tkr, "{@ for 1; 1; 1: for 1; 1; 1: end end @}");
+    tkr_parse(tkr, "{@ for 1; 1; 1: for 1; 1; 1: end end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -5921,15 +5921,15 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list != NULL);
-        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
-        assert(for_stmt->assign_list->real != NULL);
-        assert(for_stmt->test != NULL);
-        assert(for_stmt->test->type == NODE_TYPE_TEST);
-        assert(for_stmt->test->real != NULL);
-        assert(for_stmt->test_list != NULL);
-        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->test_list->real != NULL);
+        assert(for_stmt->init_formula != NULL);
+        assert(for_stmt->init_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->init_formula->real != NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula != NULL);
+        assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->update_formula->real != NULL);
         assert(for_stmt->elems != NULL);
         assert(for_stmt->elems->type == NODE_TYPE_ELEMS);
         assert(for_stmt->elems->real != NULL);
@@ -5944,19 +5944,19 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->real != NULL);
         assert(stmt->if_stmt == NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list != NULL);
-        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
-        assert(for_stmt->assign_list->real != NULL);
-        assert(for_stmt->test != NULL);
-        assert(for_stmt->test->type == NODE_TYPE_TEST);
-        assert(for_stmt->test->real != NULL);
-        assert(for_stmt->test_list != NULL);
-        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->test_list->real != NULL);
+        assert(for_stmt->init_formula != NULL);
+        assert(for_stmt->init_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->init_formula->real != NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula != NULL);
+        assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->update_formula->real != NULL);
         assert(for_stmt->elems == NULL);
-    } */
+    } 
 
-    /* tkr_parse(tkr, "{@ for 1: end @}");
+    tkr_parse(tkr, "{@ for 1: end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -5989,15 +5989,15 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list == NULL);
-        assert(for_stmt->test != NULL);
-        assert(for_stmt->test->type == NODE_TYPE_TEST);
-        assert(for_stmt->test->real != NULL);
-        assert(for_stmt->test_list == NULL);
+        assert(for_stmt->init_formula == NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula == NULL);
         assert(for_stmt->elems == NULL);
-    } */
+    } 
 
-    /* tkr_parse(tkr, "{@ for 1: if 1: end end @}");
+    tkr_parse(tkr, "{@ for 1: if 1: end end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -6030,11 +6030,11 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list == NULL);
-        assert(for_stmt->test != NULL);
-        assert(for_stmt->test->type == NODE_TYPE_TEST);
-        assert(for_stmt->test->real != NULL);
-        assert(for_stmt->test_list == NULL);
+        assert(for_stmt->init_formula == NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula == NULL);
         assert(for_stmt->elems != NULL);
         assert(for_stmt->elems->type == NODE_TYPE_ELEMS);
         assert(for_stmt->elems->real != NULL);
@@ -6055,9 +6055,9 @@ test_ast_parse(void) {
         assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
-    } */
+    } 
 
-    /* tkr_parse(tkr, "{@ for 1: @}{@ if 1: end @}{@ end @}");
+    tkr_parse(tkr, "{@ for 1: @}{@ if 1: end @}{@ end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -6090,11 +6090,11 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list == NULL);
-        assert(for_stmt->test != NULL);
-        assert(for_stmt->test->type == NODE_TYPE_TEST);
-        assert(for_stmt->test->real != NULL);
-        assert(for_stmt->test_list == NULL);
+        assert(for_stmt->init_formula == NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula == NULL);
         assert(for_stmt->elems == NULL);
         assert(for_stmt->blocks != NULL);
         assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
@@ -6125,9 +6125,9 @@ test_ast_parse(void) {
         assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
-    } */
+    } 
 
-    /* tkr_parse(tkr, "{@ for 1: @}{@ end @}");
+    tkr_parse(tkr, "{@ for 1: @}{@ end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -6160,15 +6160,15 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list == NULL);
-        assert(for_stmt->test != NULL);
-        assert(for_stmt->test->type == NODE_TYPE_TEST);
-        assert(for_stmt->test->real != NULL);
-        assert(for_stmt->test_list == NULL);
+        assert(for_stmt->init_formula == NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula == NULL);
         assert(for_stmt->elems == NULL);
-    } */
+    } 
 
-    /* tkr_parse(tkr, "{@ for: end @}");
+    tkr_parse(tkr, "{@ for: end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -6201,13 +6201,13 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list == NULL);
-        assert(for_stmt->test == NULL);
-        assert(for_stmt->test_list == NULL);
+        assert(for_stmt->init_formula == NULL);
+        assert(for_stmt->comp_formula == NULL);
+        assert(for_stmt->update_formula == NULL);
         assert(for_stmt->elems == NULL);
-    } */
+    }
 
-    /* tkr_parse(tkr, "{@ for: @}{@ end @}");
+    tkr_parse(tkr, "{@ for: @}{@ end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -6240,13 +6240,13 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list == NULL);
-        assert(for_stmt->test == NULL);
-        assert(for_stmt->test_list == NULL);
+        assert(for_stmt->init_formula == NULL);
+        assert(for_stmt->comp_formula == NULL);
+        assert(for_stmt->update_formula == NULL);
         assert(for_stmt->elems == NULL);
-    } */
+    } 
 
-    /* tkr_parse(tkr, "{@ for: @}abc{@ end @}");
+    tkr_parse(tkr, "{@ for: @}abc{@ end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -6279,9 +6279,9 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list == NULL);
-        assert(for_stmt->test == NULL);
-        assert(for_stmt->test_list == NULL);
+        assert(for_stmt->init_formula == NULL);
+        assert(for_stmt->comp_formula == NULL);
+        assert(for_stmt->update_formula == NULL);
         assert(for_stmt->elems == NULL);
         assert(for_stmt->blocks != NULL);
         assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
@@ -6295,9 +6295,9 @@ test_ast_parse(void) {
         text_block = blocks->text_block->real;
         assert(text_block->text != NULL);
         assert(!strcmp(text_block->text, "abc"));
-    } */
+    } 
 
-    /* tkr_parse(tkr, "{@ for: @}{@ if 1: end @}{@ end @}");
+    tkr_parse(tkr, "{@ for: @}{@ if 1: end @}{@ end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -6330,9 +6330,9 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list == NULL);
-        assert(for_stmt->test == NULL);
-        assert(for_stmt->test_list == NULL);
+        assert(for_stmt->init_formula == NULL);
+        assert(for_stmt->comp_formula == NULL);
+        assert(for_stmt->update_formula == NULL);
         assert(for_stmt->elems == NULL);
         assert(for_stmt->blocks != NULL);
         assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
@@ -6363,9 +6363,9 @@ test_ast_parse(void) {
         assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
-    } */
+    } 
 
-    /* tkr_parse(tkr, "{@ if 1: for 1; 1; 1: end end @}");
+    tkr_parse(tkr, "{@ if 1: for 1; 1; 1: end end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -6418,13 +6418,13 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list != NULL);
-        assert(for_stmt->test != NULL);
-        assert(for_stmt->test_list != NULL);
+        assert(for_stmt->init_formula != NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->update_formula != NULL);
         assert(for_stmt->elems == NULL);
-    } */
+    } 
 
-    /* tkr_parse(tkr, "{@ for 1; 1; 1: @}{@ end @}");
+    tkr_parse(tkr, "{@ for 1; 1; 1: @}{@ end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -6457,20 +6457,20 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list != NULL);
-        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
-        assert(for_stmt->assign_list->real != NULL);
-        assert(for_stmt->test != NULL);
-        assert(for_stmt->test->type == NODE_TYPE_TEST);
-        assert(for_stmt->test->real != NULL);
-        assert(for_stmt->test_list != NULL);
-        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->test_list->real != NULL);
+        assert(for_stmt->init_formula != NULL);
+        assert(for_stmt->init_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->init_formula->real != NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula != NULL);
+        assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->update_formula->real != NULL);
         assert(for_stmt->elems == NULL);
         assert(for_stmt->blocks == NULL);
-    } */
+    } 
 
-    /* tkr_parse(tkr, "{@ for 1; 1; 1: @}abc{@ end @}");
+    tkr_parse(tkr, "{@ for 1; 1; 1: @}abc{@ end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -6503,15 +6503,15 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list != NULL);
-        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
-        assert(for_stmt->assign_list->real != NULL);
-        assert(for_stmt->test != NULL);
-        assert(for_stmt->test->type == NODE_TYPE_TEST);
-        assert(for_stmt->test->real != NULL);
-        assert(for_stmt->test_list != NULL);
-        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->test_list->real != NULL);
+        assert(for_stmt->init_formula != NULL);
+        assert(for_stmt->init_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->init_formula->real != NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula != NULL);
+        assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->update_formula->real != NULL);
         assert(for_stmt->elems == NULL);
         assert(for_stmt->blocks != NULL);
         assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
@@ -6525,9 +6525,9 @@ test_ast_parse(void) {
         text_block = blocks->text_block->real;
         assert(text_block->text != NULL);
         assert(!strcmp(text_block->text, "abc"));
-    } */
+    } 
 
-    /* tkr_parse(tkr, "{@ for 1; 1; 1: @}{@ if 1: end @}{@ end @}");
+    tkr_parse(tkr, "{@ for 1; 1; 1: @}{@ if 1: end @}{@ end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -6560,15 +6560,15 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list != NULL);
-        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
-        assert(for_stmt->assign_list->real != NULL);
-        assert(for_stmt->test != NULL);
-        assert(for_stmt->test->type == NODE_TYPE_TEST);
-        assert(for_stmt->test->real != NULL);
-        assert(for_stmt->test_list != NULL);
-        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->test_list->real != NULL);
+        assert(for_stmt->init_formula != NULL);
+        assert(for_stmt->init_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->init_formula->real != NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula != NULL);
+        assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->update_formula->real != NULL);
         assert(for_stmt->elems == NULL);
         assert(for_stmt->blocks != NULL);
         assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
@@ -6599,9 +6599,9 @@ test_ast_parse(void) {
         assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
-    } */
+    } 
 
-    /* tkr_parse(tkr, "{@ for 1; 1; 1: @}abc{@ if 1: end @}def{@ end @}");
+    tkr_parse(tkr, "{@ for 1; 1; 1: @}abc{@ if 1: end @}def{@ end @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -6634,15 +6634,15 @@ test_ast_parse(void) {
         assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
         assert(stmt->for_stmt->real != NULL);
         for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->assign_list != NULL);
-        assert(for_stmt->assign_list->type == NODE_TYPE_ASSIGN_LIST);
-        assert(for_stmt->assign_list->real != NULL);
-        assert(for_stmt->test != NULL);
-        assert(for_stmt->test->type == NODE_TYPE_TEST);
-        assert(for_stmt->test->real != NULL);
-        assert(for_stmt->test_list != NULL);
-        assert(for_stmt->test_list->type == NODE_TYPE_TEST_LIST);
-        assert(for_stmt->test_list->real != NULL);
+        assert(for_stmt->init_formula != NULL);
+        assert(for_stmt->init_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->init_formula->real != NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula != NULL);
+        assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->update_formula->real != NULL);
         assert(for_stmt->elems == NULL);
         assert(for_stmt->blocks != NULL);
         assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
@@ -6698,7 +6698,7 @@ test_ast_parse(void) {
         text_block = blocks->text_block->real;
         assert(text_block->text != NULL);
         assert(!strcmp(text_block->text, "def"));
-    } */
+    } 
 
     tkr_del(tkr);
     ast_del(ast);
@@ -7447,13 +7447,32 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "4 4 4"));
     } 
 
-    /* tkr_parse(tkr, "{@ for i = 0; i != 4; i += 1: @}a{@ end @}");
+    tkr_parse(tkr, "{@ for i = 0; i != 4; i += 1: @}a{@ end @}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!ast_has_error(ast));
+        showbuf();
         assert(!strcmp(ctx_getc_buf(ctx), "aaaa"));
-    } */
+    } 
+
+    tkr_parse(tkr, "{@ for i, j = 0, 0; i != 4; i += 1, j += 2: end @}{: i :},{: j :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "4,8"));
+    } 
+
+    tkr_parse(tkr, "{@ i, a = 0, 0 \n for i != 4: a += i \n i += 1 end @}{: i :},{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "4,6"));
+    } 
 
     ctx_del(ctx);
     ast_del(ast);

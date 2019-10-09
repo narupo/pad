@@ -137,9 +137,9 @@ typedef struct node_else_stmt {
 } node_else_stmt_t;
 
 typedef struct node_for_stmt {
-    node_t *assign_list;
-    node_t *test;
-    node_t *test_list;
+    node_t *init_formula;
+    node_t *comp_formula;
+    node_t *update_formula;
     node_t *elems;
     node_t *blocks;
 } node_for_stmt_t;
