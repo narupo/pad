@@ -2315,7 +2315,6 @@ test_ast_parse(void) {
     tokenizer_t *tkr = tkr_new(opt);
     ast_t *ast = ast_new();
     const node_t *root;
-    node_t *node;
     node_program_t *program;
     node_blocks_t *blocks;
     node_code_block_t *code_block;
@@ -6894,7 +6893,6 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!ast_has_error(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
     }
 
