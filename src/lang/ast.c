@@ -2572,6 +2572,7 @@ ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
                 return_trav(NULL);
             }
             obj_del(result);
+            result = NULL;
         }
     } else if (for_stmt->comp_formula) {
         // for 1: end
