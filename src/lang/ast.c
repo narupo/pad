@@ -2246,9 +2246,12 @@ ast_traverse_ref_block(ast_t *self, node_t *node, int dep) {
         }
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_dict_t *varmap = ctx_get_varmap(self->context);
-        object_dict_item_t *item = objdict_get(varmap, str_getc(result->identifier));
-        object_t *obj = item->value;
+        const char *idn = str_getc(result->identifier);
+        object_t *obj = get_var(self, idn, dep+1);
+        if (!obj) {
+            ast_set_error_detail(self, "\"%s\" is not defined", idn);
+            return_trav(NULL);
+        }
         string_t *str = obj_to_str(obj);
         ctx_pushb_buf(self->context, str_getc(str));
         str_del(str);
@@ -3276,23 +3279,68 @@ ast_compare_and_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL: {
-        object_t *obj = obj_new_bool(lhs->lvalue && NULL);
+        object_t *obj = NULL;
+        if (lhs->lvalue && NULL) {
+            obj = obj_new_other(rhs);
+        } else if (!NULL) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(lhs->lvalue && rhs->lvalue);
+        object_t *obj = NULL;
+        if (lhs->lvalue && rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(lhs->lvalue && rhs->boolean);
+        object_t *obj = NULL;
+        if (lhs->lvalue && rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
-        object_t *obj = obj_new_bool(lhs->lvalue && rhs->string);
+        object_t *obj = NULL;
+        if (lhs->lvalue && str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else if (!str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
-        object_t *obj = obj_new_bool(lhs->lvalue && rhs->objarr);
+        object_t *obj = NULL;
+        if (lhs->lvalue && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else if (!objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3313,23 +3361,68 @@ ast_compare_and_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL: {
-        object_t *obj = obj_new_bool(lhs->boolean && NULL);
+        object_t *obj = NULL;
+        if (lhs->boolean && NULL) {
+            obj = obj_new_other(rhs);
+        } else if (!NULL) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(lhs->boolean && rhs->lvalue);
+        object_t *obj = NULL;
+        if (lhs->boolean && rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(lhs->boolean && rhs->boolean);
+        object_t *obj = NULL;
+        if (lhs->boolean && rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
-        object_t *obj = obj_new_bool(lhs->boolean && rhs->string);
+        object_t *obj = NULL;
+        if (lhs->boolean && str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else if (!str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
-        object_t *obj = obj_new_bool(lhs->boolean && rhs->objarr);
+        object_t *obj = NULL;
+        if (lhs->boolean && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else if (!objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3348,25 +3441,72 @@ ast_compare_and_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
+    int32_t slen = str_len(lhs->string);
+
     switch (rhs->type) {
     case OBJ_TYPE_NULL: {
-        object_t *obj = obj_new_bool(lhs->string && NULL);
+        object_t *obj = NULL;
+        if (slen && NULL) {
+            obj = obj_new_other(rhs);
+        } else if (!NULL) {
+            obj = obj_new_other(rhs);
+        } else if (!slen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(lhs->string && rhs->lvalue);
+        object_t *obj = NULL;
+        if (slen && rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else if (!slen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(lhs->string && rhs->boolean);
+        object_t *obj = NULL;
+        if (slen && rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else if (!slen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
-        object_t *obj = obj_new_bool(lhs->string && rhs->string);
+        object_t *obj = NULL;
+        if (slen && str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else if (!str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else if (!slen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
-        object_t *obj = obj_new_bool(lhs->string && rhs->objarr);
+        object_t *obj = NULL;
+        if (slen && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else if (!objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else if (!slen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3385,25 +3525,63 @@ ast_compare_and_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
+    int32_t arrlen = objarr_len(lhs->objarr);
+
     switch (rhs->type) {
     case OBJ_TYPE_NULL: {
-        object_t *obj = obj_new_bool(lhs->objarr && NULL);
+        object_t *obj = obj_new_other(rhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(lhs->objarr && rhs->lvalue);
+        object_t *obj = NULL;
+        if (arrlen && rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else if (!arrlen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(lhs->objarr && rhs->boolean);
+        object_t *obj = NULL;
+        if (arrlen && rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else if (!arrlen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
-        object_t *obj = obj_new_bool(lhs->objarr && rhs->string);
+        object_t *obj = NULL;
+        if (arrlen && str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else if (!str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else if (!arrlen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
-        object_t *obj = obj_new_bool(lhs->objarr && rhs->objarr);
+        object_t *obj = NULL;
+        if (arrlen && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else if (!objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else if (!arrlen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3424,23 +3602,23 @@ ast_compare_and_null(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 
     switch (rhs->type) {
     case OBJ_TYPE_NULL: {
-        object_t *obj = obj_new_bool(NULL && NULL);
+        object_t *obj = obj_new_other(lhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(NULL && rhs->lvalue);
+        object_t *obj = obj_new_other(lhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(NULL && rhs->boolean);
+        object_t *obj = obj_new_other(lhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
-        object_t *obj = obj_new_bool(NULL && rhs->string);
+        object_t *obj = obj_new_other(lhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
-        object_t *obj = obj_new_bool(NULL && rhs->objarr);
+        object_t *obj = obj_new_other(lhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
