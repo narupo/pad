@@ -2497,8 +2497,7 @@ test_ast_parse(void) {
         assert(digit->lvalue == 1);    
     } 
 
-    /* TODO BNF error
-    tkr_parse(tkr, "{@ a = 1, b = 1 @}");
+    tkr_parse(tkr, "{@ a = 1, b = 2 @}");
     {
         ast_clear(ast);
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -2509,8 +2508,8 @@ test_ast_parse(void) {
         elems = code_block->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
-        test_list = nodearr_get(assign_list->nodearr, 0)->real;
-        test = nodearr_get(test_list->nodearr, 0)->real;
+        assign = nodearr_get(assign_list->nodearr, 0)->real;
+        test = nodearr_get(assign->nodearr, 0)->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = nodearr_get(and_test->nodearr, 0)->real;
@@ -2523,8 +2522,7 @@ test_ast_parse(void) {
         identifier = atom->identifier->real;
         assert(identifier != NULL);
         assert(!strcmp(identifier->identifier, "a"));
-        test_list = nodearr_get(assign_list->nodearr, 1)->real;
-        test = nodearr_get(test_list->nodearr, 0)->real;
+        test = nodearr_get(assign->nodearr, 1)->real;
         or_test = test->or_test->real;
         and_test = nodearr_get(or_test->nodearr, 0)->real;
         not_test = nodearr_get(and_test->nodearr, 0)->real;
@@ -2534,10 +2532,37 @@ test_ast_parse(void) {
         asscalc = nodearr_get(term->nodearr, 0)->real;
         factor = nodearr_get(asscalc->nodearr, 0)->real;
         atom = factor->atom->real;
-        digit = atom->digit->real;        
-        assert(digit != NULL);
-        assert(digit->lvalue == 1);    
-    } */
+        digit = atom->digit->real;
+        assert(digit);
+        assert(digit->lvalue == 1);
+        assign = nodearr_get(assign_list->nodearr, 1)->real;
+        test = nodearr_get(assign->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        factor = nodearr_get(term->nodearr, 0)->real;
+        atom = factor->atom->real;
+        identifier = atom->identifier->real;
+        assert(identifier);
+        assert(!strcmp(identifier->identifier, "b"));    
+        test = nodearr_get(assign->nodearr, 1)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        expr = nodearr_get(comparison->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
+        factor = nodearr_get(asscalc->nodearr, 0)->real;
+        atom = factor->atom->real;
+        digit = atom->digit->real;
+        assert(digit);
+        assert(digit->lvalue == 2);
+    }
 
     /*******
     * expr *
