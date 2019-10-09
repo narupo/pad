@@ -2552,22 +2552,24 @@ ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
 
             tcheck("call _ast_traverse with elems");
             if (for_stmt->elems) {
-                _ast_traverse(self, for_stmt->elems, dep+1);
+                result = _ast_traverse(self, for_stmt->elems, dep+1);
                 if (ast_has_error(self)) {
                     return_trav(NULL);
                 }
             } else if (for_stmt->blocks) {
-                _ast_traverse(self, for_stmt->blocks, dep+1);
+                result = _ast_traverse(self, for_stmt->blocks, dep+1);
                 if (ast_has_error(self)) {
                     return_trav(NULL);
                 }                
             } // allow null elems and blocks
+            obj_del(result);
 
             tcheck("call _ast_traverse with update_formula");
-            _ast_traverse(self, for_stmt->update_formula, dep+1);
+            result = _ast_traverse(self, for_stmt->update_formula, dep+1);
             if (ast_has_error(self)) {
                 return_trav(NULL);
             }
+            obj_del(result);
         }
     } else if (for_stmt->comp_formula) {
         // for 1: end
