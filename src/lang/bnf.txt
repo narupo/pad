@@ -12,7 +12,7 @@ BNF of Cap's template language
                     if_stmt |
                     for_stmt
 
-       import_stmt: 'import' identifier_chain ( '@} ' | NEWLINE )
+       import_stmt: 'import' identifier_chain ( '@} ' | NEWLINE )+
 
            if_stmt: 'if' test ':' elems* ( elif_stmt | else_stmt | 'end' ) |
                     'if' test ':' '@}' blocks* '{@' ( elif_stmt | else_stmt | 'end' )
@@ -25,12 +25,6 @@ BNF of Cap's template language
                     'for' test ':' elems 'end' |
                     'for' ':' elems 'end'
 
-a = 1
-a = a = 1
-a = 1, 2
-a, b = 1, 2
-a, b = c, d = 1, 2
-
            formula: assign_list |
                     multi_assign
       multi_assign: test_list ( '=' test_list )*
@@ -42,10 +36,12 @@ a, b = c, d = 1, 2
            or_test: and_test ( 'or' and_test )*
           and_test: not_test ( 'and' not_test )*
           not_test: 'not' not_test | comparison
-        comparison: expr ( comp_op expr )*
+
+        - comparison: asscalc ( comp_op asscalc )*
+           - asscalc: expr ( augassign expr )*
+
               expr: term ( add_sub_op term )*
-              term: asscalc ( mul_div_op asscalc )*
-           asscalc: factor ( augassign factor )*
+             - term: factor ( mul_div_op factor )*
             factor: atom | '(' test ')'
               atom: digit | string | identifier | caller
 
@@ -59,48 +55,3 @@ a, b = c, d = 1, 2
   identifier_chain: ( identifier | identifier '.' ) identifier_chain
             string: '"' .* '"'
         identifier: ( [a-z] | [0-9] | _ )+ 
-
--------------------------------------------------------------------------
-
-if_stmt:
-
-    if (1 == 1):
-        print('hi')
-    end
-
-    {@ if 1 == 1: @}
-        text
-    {@ end @}
-
-expr:
-    1
-    1 + 1
-    1 - 1
-    1 * 1
-    1 / 1
-    1 % 1
-    i++
-    i++ + 1
-    1 + 1 + 1
-    1 + func()
-    1 + func() + 1
-    func()
-    func() + 1
-    func(1)
-    func(1 + 1)
-    func(1, 2)
-    func(sum())
-    func(sum(get()))
-    func(1 + 1, sum(1))
-    a = func()
-    a = 1
-    a = 1 + 1
-    a = 1 + 1 + 1
-    a, b = 1, 2
-    a, b = func()
-    a, b, c = 1, 2, 3
-    a, b, c = func()
-    1, 2
-    1, 2, 3
-
-    tpl = 1, 2, 3

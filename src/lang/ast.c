@@ -156,6 +156,9 @@ ast_multi_assign(ast_t *self, int dep);
 static object_t *
 ast_calc_assign(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
+static node_t *
+ast_expr(ast_t *self, int dep);
+
 /************
 * functions *
 ************/
@@ -1033,8 +1036,8 @@ ast_asscalc(ast_t *self, int dep) {
         return_parse(NULL); \
     } \
 
-    check("call ast_factor");
-    node_t *lhs = ast_factor(self, dep+1);
+    check("call ast_expr");
+    node_t *lhs = ast_expr(self, dep+1);
     if (!lhs) {
         if (ast_has_error(self)) {
             return_cleanup("");
@@ -1056,8 +1059,8 @@ ast_asscalc(ast_t *self, int dep) {
 
         nodearr_moveb(cur->nodearr, op);
 
-        check("call ast_factor");
-        node_t *rhs = ast_factor(self, dep+1);
+        check("call ast_expr");
+        node_t *rhs = ast_expr(self, dep+1);
         if (!rhs) {
             if (ast_has_error(self)) {
                 return_cleanup("");
@@ -1092,8 +1095,8 @@ ast_term(ast_t *self, int dep) {
         return_parse(NULL); \
     } \
 
-    check("call left ast_asscalc");
-    node_t *lhs = ast_asscalc(self, dep+1);
+    check("call left ast_factor");
+    node_t *lhs = ast_factor(self, dep+1);
     if (!lhs) {
         if (ast_has_error(self)) {
             return_cleanup("");
@@ -1115,8 +1118,8 @@ ast_term(ast_t *self, int dep) {
 
         nodearr_moveb(cur->nodearr, op);
 
-        check("call right ast_asscalc");
-        node_t *rhs = ast_asscalc(self, dep+1);
+        check("call right ast_factor");
+        node_t *rhs = ast_factor(self, dep+1);
         if (!rhs) {
             if (ast_has_error(self)) {
                 return_cleanup("");
@@ -1303,8 +1306,8 @@ ast_comparison(ast_t *self, int dep) {
         return_parse(NULL); \
     } \
 
-    check("call left ast_expr");
-    node_t *lexpr = ast_expr(self, dep+1);
+    check("call left ast_asscalc");
+    node_t *lexpr = ast_asscalc(self, dep+1);
     if (!lexpr) {
         if (ast_has_error(self)) {
             return_cleanup("");
@@ -1324,8 +1327,8 @@ ast_comparison(ast_t *self, int dep) {
             return_parse(node_new(NODE_TYPE_COMPARISON, cur));
         }
 
-        check("call right ast_expr");
-        node_t *rexpr = ast_expr(self, dep+1);
+        check("call right ast_asscalc");
+        node_t *rexpr = ast_asscalc(self, dep+1);
         if (!rexpr) {
             if (ast_has_error(self)) {
                 return_cleanup("");
@@ -2388,7 +2391,7 @@ ast_parse_bool(ast_t *self, object_t *obj) {
         return ast_parse_bool(self, obj);
     } break;
     case OBJ_TYPE_STRING: return str_len(obj->string); break;
-    case OBJ_TYPE_ARRAY: err_die("TODO: array len to bool"); break;
+    case OBJ_TYPE_ARRAY: return objarr_len(obj->objarr); break;
     }
 
     assert(0 && "impossible. failed to parse bool");
@@ -3964,12 +3967,14 @@ ast_traverse_comparison(ast_t *self, node_t *node, int dep) {
 
     if (nodearr_len(comparison->nodearr) == 1) {
         node_t *node = nodearr_get(comparison->nodearr, 0);
-        tcheck("call _ast_traverse");
+        assert(node->type == NODE_TYPE_ASSCALC);
+        tcheck("call _ast_traverse with asscalc");
         object_t *result = _ast_traverse(self, node, dep+1);
         return_trav(result);
     } else if (nodearr_len(comparison->nodearr) >= 3) {
         node_t *lnode = nodearr_get(comparison->nodearr, 0);
-        tcheck("call _ast_traverse");
+        assert(lnode->type == NODE_TYPE_ASSCALC);
+        tcheck("call _ast_traverse with asscalc");
         object_t *lhs = _ast_traverse(self, lnode, dep+1);
         if (ast_has_error(self)) {
             return_trav(NULL);
@@ -3978,12 +3983,14 @@ ast_traverse_comparison(ast_t *self, node_t *node, int dep) {
         
         for (int i = 1; i < nodearr_len(comparison->nodearr); i += 2) {
             node_t *node = nodearr_get(comparison->nodearr, i);
+            assert(node->type == NODE_TYPE_COMP_OP);
             node_comp_op_t *node_comp_op = node->real;
             assert(node_comp_op);
 
             node_t *rnode = nodearr_get(comparison->nodearr, i+1);
+            assert(rnode->type == NODE_TYPE_ASSCALC);
             assert(rnode);
-            tcheck("call _ast_traverse");
+            tcheck("call _ast_traverse with asscalc");
             object_t *rhs = _ast_traverse(self, rnode, dep+1);
             if (ast_has_error(self)) {
                 obj_del(lhs);
@@ -4908,13 +4915,15 @@ ast_traverse_term(ast_t *self, node_t *node, int dep) {
     assert(term);
 
     if (nodearr_len(term->nodearr) == 1) {
-        node_t *asscalc = nodearr_get(term->nodearr, 0);
-        tcheck("call _ast_traverse");
-        object_t *result = _ast_traverse(self, asscalc, dep+1);
+        node_t *factor = nodearr_get(term->nodearr, 0);
+        assert(factor->type == NODE_TYPE_FACTOR);
+        tcheck("call _ast_traverse with factor");
+        object_t *result = _ast_traverse(self, factor, dep+1);
         return_trav(result);
     } else if (nodearr_len(term->nodearr) >= 3) {
         node_t *lnode = nodearr_get(term->nodearr, 0);
-        tcheck("call _ast_traverse");
+        assert(lnode->type == NODE_TYPE_FACTOR);
+        tcheck("call _ast_traverse factor");
         object_t *lhs = _ast_traverse(self, lnode, dep+1);
         if (ast_has_error(self)) {
             return_trav(NULL);
@@ -4923,12 +4932,13 @@ ast_traverse_term(ast_t *self, node_t *node, int dep) {
         
         for (int i = 1; i < nodearr_len(term->nodearr); i += 2) {
             node_t *node = nodearr_get(term->nodearr, i);
+            assert(node->type == NODE_TYPE_MUL_DIV_OP);
             node_mul_div_op_t *op = node->real;
             assert(op);
 
             node_t *rnode = nodearr_get(term->nodearr, i+1);
-            assert(rnode);
-            tcheck("call _ast_traverse");
+            assert(rnode->type == NODE_TYPE_FACTOR);
+            tcheck("call _ast_traverse with factor");
             object_t *rhs = _ast_traverse(self, rnode, dep+1);
             if (ast_has_error(self)) {
                 obj_del(lhs);
@@ -5158,12 +5168,13 @@ ast_traverse_asscalc(ast_t *self, node_t *node, int dep) {
 
     if (nodearr_len(asscalc->nodearr) == 1) {
         node_t *node = nodearr_get(asscalc->nodearr, 0);
+        assert(node->type == NODE_TYPE_EXPR);
         tcheck("call _ast_traverse");
         object_t *result = _ast_traverse(self, node, dep+1);
         return_trav(result);
     } else if (nodearr_len(asscalc->nodearr) >= 3) {
-        viss("three");
         node_t *lnode = nodearr_get(asscalc->nodearr, 0);
+        assert(lnode->type == NODE_TYPE_EXPR);
         tcheck("call _ast_traverse");
         object_t *lhs = _ast_traverse(self, lnode, dep+1);
         if (ast_has_error(self)) {
@@ -5179,7 +5190,7 @@ ast_traverse_asscalc(ast_t *self, node_t *node, int dep) {
 
             node_t *rnode = nodearr_get(asscalc->nodearr, i+1);
             assert(rnode);
-            assert(rnode->type == NODE_TYPE_FACTOR);
+            assert(rnode->type == NODE_TYPE_EXPR);
             tcheck("call _ast_traverse");
             object_t *rhs = _ast_traverse(self, rnode, dep+1);
             if (ast_has_error(self)) {
