@@ -54,3 +54,18 @@ ctx_getc_confmap(const context_t *self);
 
 object_dict_t *
 ctx_get_varmap(context_t *self);
+
+const bool
+ctx_get_do_break(const context_t *self);
+
+void
+ctx_set_do_break(context_t *self, bool do_break);
+
+const bool
+ctx_get_do_continue(const context_t *self);
+
+void
+ctx_set_do_continue(context_t *self, bool do_continue);
+
+void
+ctx_clear_jump_flags(context_t *self);

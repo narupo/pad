@@ -252,6 +252,10 @@ tkr_parse_identifier(tokenizer_t *self) {
         token->type = TOKEN_TYPE_OP_NOT;
     } else if (cstr_eq(token->text, "nil")) {
         token->type = TOKEN_TYPE_NIL;
+    } else if (cstr_eq(token->text, "break")) {
+        token->type = TOKEN_TYPE_STMT_BREAK;
+    } else if (cstr_eq(token->text, "continue")) {
+        token->type = TOKEN_TYPE_STMT_CONTINUE;
     }
 
     tkr_move_token(self, token);

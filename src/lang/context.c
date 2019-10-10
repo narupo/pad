@@ -13,6 +13,8 @@ struct context {
     object_dict_t *varmap;
     bool imported_alias;
     bool imported_config;
+    bool do_break;
+    bool do_continue;
 };
 
 void
@@ -111,4 +113,30 @@ ctx_getc_confmap(const context_t *self) {
 object_dict_t *
 ctx_get_varmap(context_t *self) {
     return self->varmap;
+}
+
+const bool
+ctx_get_do_break(const context_t *self) {
+    return self->do_break;
+}
+
+void
+ctx_set_do_break(context_t *self, bool do_break) {
+    self->do_break = do_break;
+}
+
+const bool
+ctx_get_do_continue(const context_t *self) {
+    return self->do_continue;
+}
+
+void
+ctx_set_do_continue(context_t *self, bool do_continue) {
+    self->do_continue = do_continue;
+}
+
+void
+ctx_clear_jump_flags(context_t *self) {
+    self->do_break = false;
+    self->do_continue = false;
 }

@@ -2351,6 +2351,8 @@ test_ast_parse(void) {
     node_caller_t *caller;
     node_string_t *string;
     node_nil_t *nil;
+    node_break_stmt_t *break_stmt;
+    node_continue_stmt_t *continue_stmt;
 
     tkr_parse(tkr, "");
     ast_clear(ast);
@@ -3292,7 +3294,6 @@ test_ast_parse(void) {
         assert(atom->nil->type == NODE_TYPE_NIL);
         nil = atom->nil->real;
         assert(nil);
-        assert(nil->exists);
     }     
 
     /*********
@@ -5840,7 +5841,7 @@ test_ast_parse(void) {
     tkr_parse(tkr, "{@ for 1; 1; 1: end @}");
     {
         ast_clear(ast);
-        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_parse(ast, tkr_get_tokens(tkr)));
         root = ast_getc_root(ast);
         assert(root != NULL);
         assert(root->type == NODE_TYPE_PROGRAM);
@@ -6757,6 +6758,112 @@ test_ast_parse(void) {
         assert(!strcmp(text_block->text, "def"));
     } 
 
+    /*******
+    * jump *
+    *******/
+
+    tkr_parse(tkr, "{@ for 1; 1; 1: break end @}");
+    {
+        ast_clear(ast);
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        assert(root != NULL);
+        assert(root->type == NODE_TYPE_PROGRAM);
+        assert(root->real != NULL);
+        program = root->real;
+        assert(program->blocks != NULL);
+        assert(program->blocks->type == NODE_TYPE_BLOCKS);
+        assert(program->blocks->real != NULL);
+        blocks = program->blocks->real;
+        assert(blocks->code_block != NULL);
+        assert(blocks->code_block->type == NODE_TYPE_CODE_BLOCK);
+        assert(blocks->code_block->real != NULL);
+        assert(blocks->ref_block == NULL);
+        assert(blocks->text_block == NULL);
+        code_block = blocks->code_block->real;
+        assert(code_block->elems != NULL);
+        assert(code_block->elems->type == NODE_TYPE_ELEMS);
+        assert(code_block->elems->real != NULL);
+        elems = code_block->elems->real;
+        assert(elems->stmt != NULL);
+        assert(elems->stmt->type == NODE_TYPE_STMT);
+        assert(elems->stmt->real != NULL);
+        stmt = elems->stmt->real;
+        assert(stmt->import_stmt == NULL);
+        assert(stmt->if_stmt == NULL);
+        assert(stmt->for_stmt != NULL);
+        assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
+        assert(stmt->for_stmt->real != NULL);
+        for_stmt = stmt->for_stmt->real;
+        assert(for_stmt->init_formula != NULL);
+        assert(for_stmt->init_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->init_formula->real != NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula != NULL);
+        assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->update_formula->real != NULL);
+        assert(for_stmt->elems != NULL);
+        assert(for_stmt->blocks == NULL);
+        elems = for_stmt->elems->real;
+        assert(elems->stmt != NULL);
+        stmt = elems->stmt->real;
+        break_stmt = stmt->break_stmt->real;
+        assert(break_stmt);
+    } 
+
+    tkr_parse(tkr, "{@ for 1; 1; 1: continue end @}");
+    {
+        ast_clear(ast);
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        assert(root != NULL);
+        assert(root->type == NODE_TYPE_PROGRAM);
+        assert(root->real != NULL);
+        program = root->real;
+        assert(program->blocks != NULL);
+        assert(program->blocks->type == NODE_TYPE_BLOCKS);
+        assert(program->blocks->real != NULL);
+        blocks = program->blocks->real;
+        assert(blocks->code_block != NULL);
+        assert(blocks->code_block->type == NODE_TYPE_CODE_BLOCK);
+        assert(blocks->code_block->real != NULL);
+        assert(blocks->ref_block == NULL);
+        assert(blocks->text_block == NULL);
+        code_block = blocks->code_block->real;
+        assert(code_block->elems != NULL);
+        assert(code_block->elems->type == NODE_TYPE_ELEMS);
+        assert(code_block->elems->real != NULL);
+        elems = code_block->elems->real;
+        assert(elems->stmt != NULL);
+        assert(elems->stmt->type == NODE_TYPE_STMT);
+        assert(elems->stmt->real != NULL);
+        stmt = elems->stmt->real;
+        assert(stmt->import_stmt == NULL);
+        assert(stmt->if_stmt == NULL);
+        assert(stmt->for_stmt != NULL);
+        assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
+        assert(stmt->for_stmt->real != NULL);
+        for_stmt = stmt->for_stmt->real;
+        assert(for_stmt->init_formula != NULL);
+        assert(for_stmt->init_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->init_formula->real != NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula != NULL);
+        assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->update_formula->real != NULL);
+        assert(for_stmt->elems != NULL);
+        assert(for_stmt->blocks == NULL);
+        elems = for_stmt->elems->real;
+        assert(elems->stmt != NULL);
+        stmt = elems->stmt->real;
+        continue_stmt = stmt->continue_stmt->real;
+        assert(continue_stmt);
+    } 
+
     tkr_del(tkr);
     ast_del(ast);
     // tail
@@ -6810,7 +6917,7 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         (ast_traverse(ast, ctx));
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "\"a\" is not defined"));
+        assert(!strcmp(ast_get_error_detail(ast), "\"a\" is not defined in ref block"));
     }
 
     /* tkr_parse(tkr, "{: alias(\"dtl\", \"run bin/date-line.py\") :}");
@@ -6840,6 +6947,19 @@ test_ast_traverse(void) {
         (ast_traverse(ast, ctx));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
+
+    tkr_parse(tkr, "{@ a = 0\n"
+        "for i=0; i!=4; i+=1:\n"
+        "   if i == 2:\n"
+        "   end\n"
+        "   a += 1\n"
+        "end @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "4"));
+    } 
 
     /*******
     * atom *
@@ -7182,7 +7302,6 @@ test_ast_traverse(void) {
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
-        showdetail();
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
     } */
@@ -7289,7 +7408,7 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "\"a\" is not defined"));
+        assert(!strcmp(ast_get_error_detail(ast), "\"a\" is not defined in add ass identifier"));
     }
 
     tkr_parse(tkr, "{@ a = 0 \n a += 1 @}{: a :}");
@@ -7540,6 +7659,91 @@ test_ast_traverse(void) {
         ast_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "4,6"));
+    } 
+
+    /*******
+    * jump *
+    *******/
+
+    tkr_parse(tkr, "{@\n"
+        "for i=0; i!=4; i+=1:\n"
+        "   break\n"
+        "end @}{: i :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "0"));
+    } 
+
+    tkr_parse(tkr, "{@\n"
+        "for i=0; i!=4; i+=1:\n"
+        "   if i == 2:\n"
+        "       break\n"
+        "   end\n"
+        "end @}{: i :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "2"));
+    } 
+
+    tkr_parse(tkr, "{@ a = 0\n"
+        "for i=0; i!=4; i+=1:\n"
+        "   continue\n"
+        "   a += 1\n"
+        "end @}{: i :},{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "4,0"));
+    } 
+
+    tkr_parse(tkr, "{@ a = 0\n"
+        "for i=0; i!=4; i+=1:\n"
+        "   if i == 2:\n"
+        "       continue\n"
+        "   end\n"
+        "   a += 1\n"
+        "end @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "3"));
+    } 
+
+    tkr_parse(tkr, "{@ a = 0\n"
+        "for i=0; i!=4; i+=1:\n"
+        "   if i == 2:\n"
+        "       continue\n"
+        "   elif i == 3:\n"
+        "       continue\n"
+        "   end\n"
+        "   a += 1\n"
+        "end @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "2"));
+    } 
+
+    tkr_parse(tkr, "{@ a = 0, b = 0\n"
+        "for i=0; i!=4; i+=1:\n"
+        "   a += 1"
+        "   if i == 2:\n"
+        "       continue\n"
+        "   end\n"
+        "   b += 1\n"
+        "end @}{: a :},{: b :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "4,3"));
     } 
 
     ctx_del(ctx);
