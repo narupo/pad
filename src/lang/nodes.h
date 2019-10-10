@@ -27,6 +27,8 @@ typedef enum {
     NODE_TYPE_ELSE_STMT,
 
     NODE_TYPE_FOR_STMT,
+    NODE_TYPE_BREAK_STMT,
+    NODE_TYPE_CONTINUE_STMT,
 
     NODE_TYPE_FORMULA,
     NODE_TYPE_MULTI_ASSIGN,
@@ -119,6 +121,8 @@ typedef struct node_stmt {
     node_t *import_stmt;
     node_t *if_stmt;
     node_t *for_stmt;
+    node_t *break_stmt;
+    node_t *continue_stmt;
 } node_stmt_t;
 
 typedef struct node_import_stmt {
@@ -147,6 +151,14 @@ typedef struct node_for_stmt {
     node_t *elems;
     node_t *blocks;
 } node_for_stmt_t;
+
+typedef struct node_break_stmt {
+    bool dummy;
+} node_break_stmt_t;
+
+typedef struct node_continue_stmt {
+    bool dummy;
+} node_continue_stmt_t;
 
 typedef struct node_formula {
     node_t *assign_list;
@@ -232,7 +244,7 @@ typedef struct node_mul_div_op {
 } node_mul_div_op_t;
 
 typedef struct node_nil {
-    bool exists;
+    bool dummy;
 } node_nil_t;
 
 typedef struct node_digit {

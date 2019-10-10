@@ -41,6 +41,9 @@ token_copy_text(const token_t *self) {
     return cstr_edup(self->text); 
 }
 
+/**
+ * not thread safe
+ */
 const char *
 token_type_to_str(const token_t *self) {
     static char str[100] = {0};
@@ -101,5 +104,6 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_STMT_ELSE: return "else"; break;
 
     case TOKEN_TYPE_STMT_FOR: return "for"; break;
+    case TOKEN_TYPE_STMT_BREAK: return "break"; break;
     }
 }

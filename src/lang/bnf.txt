@@ -8,9 +8,11 @@ BNF of Cap's template language
         text-block: .*
              elems: ( stmt | formula ) elems
 
-              stmt: import_stmt |
+              - stmt: import_stmt |
                     if_stmt |
-                    for_stmt
+                    for_stmt |
+                    break_stmt |
+                    continue_stmt 
 
        import_stmt: 'import' identifier_chain ( '@} ' | NEWLINE )+
 
@@ -24,6 +26,7 @@ BNF of Cap's template language
           for_stmt: 'for' init_formula ';' test ';' update_formula ':' elems 'end' |
                     'for' comp_formula ':' elems 'end' |
                     'for' ':' elems 'end'
+        - break_stmt: 'break'
 
            formula: assign_list |
                     multi_assign
