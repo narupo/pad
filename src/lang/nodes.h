@@ -63,6 +63,12 @@ typedef enum {
 
     NODE_TYPE_ASS_SUB_OP,
     NODE_TYPE_MUL_DIV_OP,
+
+    // def
+    NODE_TYPE_DEF,
+    NODE_TYPE_FUNC_DEF,
+    NODE_TYPE_FUNC_DEF_PARAMS,
+    NODE_TYPE_FUNC_DEF_ARGS,
 } node_type_t;
 
 typedef enum {
@@ -112,10 +118,15 @@ typedef struct node_text_block {
 } node_text_block_t;
 
 typedef struct node_elems {
+    node_t *def;
     node_t *stmt;
     node_t *formula;
     node_t *elems;
 } node_elems_t;
+
+/*******
+* stmt *
+*******/
 
 typedef struct node_stmt {
     node_t *import_stmt;
@@ -159,6 +170,33 @@ typedef struct node_break_stmt {
 typedef struct node_continue_stmt {
     bool dummy;
 } node_continue_stmt_t;
+
+/******
+* def *
+******/
+
+typedef struct node_def {
+    node_t *func_def;
+} node_def_t;
+
+typedef struct node_func_def {
+    node_t *identifier;
+    node_t *func_def_params;
+    node_t *elems;
+    node_t *blocks;
+} node_func_def_t;
+
+typedef struct node_func_def_params {
+    node_t *func_def_args;
+} node_func_def_params_t;
+
+typedef struct node_func_def_args {
+    node_array_t *identifiers;
+} node_func_def_args_t;
+
+/**********
+* formula *
+**********/
 
 typedef struct node_formula {
     node_t *assign_list;

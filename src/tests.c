@@ -2353,6 +2353,10 @@ test_ast_parse(void) {
     node_nil_t *nil;
     node_break_stmt_t *break_stmt;
     node_continue_stmt_t *continue_stmt;
+    node_def_t *def;
+    node_func_def_t *func_def;
+    node_func_def_params_t *func_def_params;
+    node_func_def_args_t *func_def_args;
 
     tkr_parse(tkr, "");
     ast_clear(ast);
@@ -3295,6 +3299,64 @@ test_ast_parse(void) {
         nil = atom->nil->real;
         assert(nil);
     }     
+
+    /***********
+    * func_def *
+    ***********/
+
+    tkr_parse(tkr, "{@ def func(a, b): end @}");
+    {
+        ast_clear(ast);
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        program = root->real;
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        assert(elems);
+        assert(elems->def);
+        def = elems->def->real;
+        assert(def);
+        assert(def->func_def);
+        func_def = def->func_def->real;
+        identifier = func_def->identifier->real;
+        assert(!strcmp(identifier->identifier, "func"));
+        func_def_params = func_def->func_def_params->real;
+        func_def_args = func_def_params->func_def_args->real;
+        assert(nodearr_len(func_def_args->identifiers) == 2);
+        identifier = nodearr_get(func_def_args->identifiers, 0)->real;
+        assert(!strcmp(identifier->identifier, "a"));
+        identifier = nodearr_get(func_def_args->identifiers, 1)->real;
+        assert(!strcmp(identifier->identifier, "b"));
+    } 
+
+    tkr_parse(tkr, "{@ def func(): end @}");
+    {
+        ast_clear(ast);
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        program = root->real;
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        assert(elems);
+        assert(elems->def);
+        assert(elems->def->type == NODE_TYPE_DEF);
+        def = elems->def->real;
+        assert(def);
+        assert(def->func_def);
+        assert(def->func_def->type == NODE_TYPE_FUNC_DEF);
+        func_def = def->func_def->real;
+        assert(func_def->identifier);
+        assert(func_def->identifier->type == NODE_TYPE_IDENTIFIER);
+        identifier = func_def->identifier->real;
+        assert(!strcmp(identifier->identifier, "func"));
+        assert(func_def->func_def_params->type == NODE_TYPE_FUNC_DEF_PARAMS);
+        func_def_params = func_def->func_def_params->real;
+        assert(func_def_params->func_def_args->type == NODE_TYPE_FUNC_DEF_ARGS);
+        func_def_args = func_def_params->func_def_args->real;
+        assert(nodearr_len(func_def_args->identifiers) == 0);
+    } 
 
     /*********
     * caller *
@@ -4707,10 +4769,10 @@ test_ast_parse(void) {
         assert(!strcmp(identifier->identifier, "module"));
     }
 
-    tkr_parse(tkr, "{@ import abc.def @}");
+    tkr_parse(tkr, "{@ import abc.ghi @}");
     {
         ast_clear(ast);
-        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_parse(ast, tkr_get_tokens(tkr)));
         root = ast_getc_root(ast);
         assert(root->type == NODE_TYPE_PROGRAM);
         program = root->real;
@@ -4760,7 +4822,7 @@ test_ast_parse(void) {
         assert(identifier_chain->identifier_chain == NULL);
         identifier = identifier_chain->identifier->real;
         assert(identifier->identifier != NULL);
-        assert(!strcmp(identifier->identifier, "def"));    
+        assert(!strcmp(identifier->identifier, "ghi"));
     }
 
     tkr_parse(tkr, "{@ import @}");
@@ -7032,7 +7094,7 @@ test_ast_traverse(void) {
     }
 
     // success
-    
+
     tkr_parse(tkr, "{@ a, b = 1, 2 @}{: a :} {: b :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -7784,6 +7846,20 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "4,3"));
     } 
 
+    /***********
+    * func_def *
+    ***********/
+
+    tkr_parse(tkr, "{@ def func(): end @}");
+    {
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        object_dict_t *varmap = ctx_get_varmap(ctx);
+        assert(objdict_get(varmap, "func"));
+    }   
+
+    // done
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);

@@ -85,6 +85,12 @@ static node_t *
 ast_blocks(ast_t *self, int dep);
 
 static node_t *
+ast_def(ast_t *self, int dep);
+
+static node_t *
+ast_func_def(ast_t *self, int dep);
+
+static node_t *
 ast_test(ast_t *self, int dep);
 
 static node_t *
@@ -1934,6 +1940,7 @@ ast_import_stmt(ast_t *self, int dep) {
     if (t->type != TOKEN_TYPE_STMT_IMPORT) {
         return_cleanup("")
     }
+    check("read 'import'");
 
     check("call ast_identifier_chain");
     cur->identifier_chain = ast_identifier_chain(self, dep+1);
@@ -2039,22 +2046,30 @@ ast_elems(ast_t *self, int dep) {
         return_parse(NULL); \
     } \
 
-    check("call ast_stmt");
-    cur->stmt = ast_stmt(self, dep+1);
-    if (!cur->stmt) {
+    check("call def");
+    cur->def = ast_def(self, dep+1);
+    if (!cur->def) {
         if (ast_has_error(self)) {
             return_cleanup("");
         }
 
-        check("call ast_formula");
-        cur->formula = ast_formula(self, dep+1);
-        if (!cur->formula) {
+        check("call ast_stmt");
+        cur->stmt = ast_stmt(self, dep+1);
+        if (!cur->stmt) {
             if (ast_has_error(self)) {
                 return_cleanup("");
             }
-            // empty elems
-            return_cleanup(""); // not error
-        }
+
+            check("call ast_formula");
+            cur->formula = ast_formula(self, dep+1);
+            if (!cur->formula) {
+                if (ast_has_error(self)) {
+                    return_cleanup("");
+                }
+                // empty elems
+                return_cleanup(""); // not error
+            }
+        }        
     }
 
     check("call ast_elems");
@@ -2247,6 +2262,243 @@ ast_parse(ast_t *self, token_t *tokens[]) {
     return self;
 }
 
+static node_t *
+ast_def(ast_t *self, int dep) {
+    ready();
+    declare(node_def_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->func_def); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    check("call ast_func_def");
+    cur->func_def = ast_func_def(self, dep+1);
+    if (!cur->func_def) {
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        return_cleanup(""); // not error
+    }
+
+    return_parse(node_new(NODE_TYPE_DEF, cur));
+}
+
+static node_t *
+ast_func_def_args(ast_t *self, int dep) {
+    ready();
+    declare(node_func_def_args_t, cur);
+    cur->identifiers = nodearr_new();
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        for (; nodearr_len(cur->identifiers); ) { \
+            node_t *node = nodearr_popb(cur->identifiers); \
+            ast_del_nodes(self, node); \
+        } \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    check("call ast_identifier");
+    node_t *identifier = ast_identifier(self, dep+1);
+    if (!identifier) {
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        return_parse(node_new(NODE_TYPE_FUNC_DEF_ARGS, cur)); // not error, empty args
+    }
+
+    nodearr_moveb(cur->identifiers, identifier);
+
+    for (;;) {
+        if (!*self->ptr) {
+            return_parse(node_new(NODE_TYPE_FUNC_DEF_ARGS, cur));
+        }
+
+        token_t *t = *self->ptr++;
+        if (t->type != TOKEN_TYPE_COMMA) {
+            self->ptr--;
+            return_parse(node_new(NODE_TYPE_FUNC_DEF_ARGS, cur));
+        }
+        check("read ,");
+
+        check("call ast_identifier");
+        identifier = ast_identifier(self, dep+1);
+        if (!identifier) {
+            if (ast_has_error(self)) {
+                return_cleanup("");
+            }
+            return_cleanup("syntax error. not found identifier in func def args");
+        }
+
+        nodearr_moveb(cur->identifiers, identifier);
+    }
+
+    return_parse(node_new(NODE_TYPE_FUNC_DEF_ARGS, cur));
+}
+
+
+static node_t *
+ast_func_def_params(ast_t *self, int dep) {
+    ready();
+    declare(node_func_def_params_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->func_def_args); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_LPAREN) {
+        return_cleanup("");        
+    }
+    check("read (");
+
+    check("call ast_func_def_args");
+    cur->func_def_args = ast_func_def_args(self, dep+1);
+    if (!cur->func_def_args) {
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        return_cleanup(""); // not error
+    }
+    node_func_def_args_t *aaa = cur->func_def_args->real;
+
+    if (!*self->ptr) {
+        return_cleanup("syntax error. reached EOF in func def params");
+    }
+
+    t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_RPAREN) {
+        return_cleanup("syntax error. not found ')' in func def params");
+    }
+    check("read )");
+
+    return_parse(node_new(NODE_TYPE_FUNC_DEF_PARAMS, cur));
+}
+
+static node_t *
+ast_func_def(ast_t *self, int dep) {
+    ready();
+    declare(node_func_def_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->identifier); \
+        ast_del_nodes(self, cur->func_def_params); \
+        ast_del_nodes(self, cur->elems); \
+        ast_del_nodes(self, cur->blocks); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_DEF) {
+        return_cleanup("");
+    }
+    check("read 'def'");
+
+    check("call ast_identifier");
+    cur->identifier = ast_identifier(self, dep+1);
+    if (!cur->identifier) {
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        return_cleanup(""); // not error
+    }
+
+    check("call ast_func_def_params");
+    cur->func_def_params = ast_func_def_params(self, dep+1);
+    if (!cur->identifier) {
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        return_cleanup(""); // not error
+    }
+
+    if (!*self->ptr) {
+        return_cleanup("syntax error. reached EOF in parse func def");
+    }
+
+    t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_COLON) {
+        return_cleanup(""); // not error
+    }
+    check("read :");
+
+    if (!*self->ptr) {
+        return_cleanup("syntax error. reached EOF in parse func def (2)");
+    }
+
+    t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_RBRACEAT) {
+        self->ptr--;
+
+        check("call ast_elems");
+        cur->elems = ast_elems(self, dep+1);
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        // allow null
+    } else {
+        check("read @}");
+
+        check("call ast_blocks");
+        cur->blocks = ast_blocks(self, dep+1);
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        // allow null
+
+        if (!*self->ptr) {
+            return_cleanup("syntax error. reached EOF in parse func def (3)");
+        }
+
+        t = *self->ptr++;
+        if (t->type != TOKEN_TYPE_LBRACEAT) {
+            return_cleanup("not found '{@' in parse func def");
+        }
+        check("read {@");
+    }
+
+    if (!*self->ptr) {
+        return_cleanup("syntax error. reached EOF in parse func def (4)");
+    }
+
+    t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_STMT_END) {
+        return_cleanup("not found 'end' in parse func def");
+    }
+    check("read end");
+
+    return_parse(node_new(NODE_TYPE_FUNC_DEF, cur));
+}
+
 void
 _identifier_chain_to_array(cstring_array_t *arr, node_identifier_chain_t *identifier_chain
     ) {
@@ -2400,6 +2652,12 @@ ast_traverse_elems(ast_t *self, node_t *node, int dep) {
     tready();
     node_elems_t *elems = node->real;
 
+    tcheck("call _ast_traverse with def");
+    _ast_traverse(self, elems->def, dep+1);
+    if (ast_has_error(self)) {
+        return_trav(NULL);
+    }
+
     tcheck("call _ast_traverse with stmt");
     _ast_traverse(self, elems->stmt, dep+1);
     if (ast_has_error(self)) {
@@ -2408,7 +2666,6 @@ ast_traverse_elems(ast_t *self, node_t *node, int dep) {
 
     if (ctx_get_do_break(self->context) ||
         ctx_get_do_continue(self->context)) {
-        vissf("continue? %d", ctx_get_do_continue(self->context));
         return_trav(NULL);
     }
 
@@ -5914,6 +6171,86 @@ ast_traverse_caller(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
+ast_traverse_def(ast_t *self, node_t *node, int dep) {
+    tready();
+    node_def_t *def = node->real;
+    assert(def && node->type == NODE_TYPE_DEF);
+
+    tcheck("call _ast_traverse with func_def")
+    object_t *result = _ast_traverse(self, def->func_def, dep+1);
+    return_trav(result);
+}
+
+static object_t *
+ast_traverse_func_def(ast_t *self, node_t *node, int dep) {
+    tready();
+    node_func_def_t *func_def = node->real;
+    assert(func_def && node->type == NODE_TYPE_FUNC_DEF);
+
+    tcheck("call _ast_traverse with identifier");
+    object_t *name = _ast_traverse(self, func_def->identifier, dep+1);
+    if (!name) {
+        if (ast_has_error(self)) {
+            return_trav(NULL);
+        }
+        ast_set_error_detail(self, "failed to traverse name in traverse func def");
+        return_trav(NULL);
+    }
+    assert(name->type == OBJ_TYPE_IDENTIFIER);
+
+    object_t *def_args = _ast_traverse(self, func_def->func_def_params, dep+1);
+    assert(def_args);
+    assert(def_args->type == OBJ_TYPE_ARRAY);
+
+    node_t *ref_suite = NULL;
+    if (func_def->elems) {
+        ref_suite = func_def->elems;
+    } else if (func_def->blocks) {
+        ref_suite = func_def->blocks;
+    }
+
+    object_t *func_obj = obj_new_func(name, def_args, ref_suite);
+    check("set func at varmap");
+    move_var(self, str_getc(name->identifier), func_obj, dep+1);
+
+    return_trav(NULL);
+}
+
+static object_t *
+ast_traverse_func_def_params(ast_t *self, node_t *node, int dep) {
+    tready();
+    node_func_def_params_t *func_def_params = node->real;
+    assert(func_def_params && node->type == NODE_TYPE_FUNC_DEF_PARAMS);
+
+    tcheck("call _ast_traverse with func_def_args");
+    return _ast_traverse(self, func_def_params->func_def_args, dep+1);
+}
+
+static object_t *
+ast_traverse_func_def_args(ast_t *self, node_t *node, int dep) {
+    tready();
+    node_func_def_args_t *func_def_args = node->real;
+    assert(func_def_args && node->type == NODE_TYPE_FUNC_DEF_ARGS);
+
+    object_array_t *args = objarr_new();
+
+    vissf("identifiers len[%d]", nodearr_len(func_def_args->identifiers));
+    vissf("0[%p]", nodearr_get(func_def_args->identifiers, 0));
+    vissf("1[%p]", nodearr_get(func_def_args->identifiers, 1));
+    for (int32_t i = 0; i < nodearr_len(func_def_args->identifiers); ++i) {
+        node_t *n = nodearr_get(func_def_args->identifiers, i);
+        assert(n);
+        assert(n->type == NODE_TYPE_IDENTIFIER);
+        node_identifier_t *nidn = n->real;
+
+        object_t *oidn = obj_new_cidentifier(nidn->identifier);
+        objarr_moveb(args, oidn);
+    }
+
+    return obj_new_array(args);
+}
+
+static object_t *
 _ast_traverse(ast_t *self, node_t *node, int dep) {
     tready();
     if (!node) {
@@ -5972,6 +6309,26 @@ _ast_traverse(ast_t *self, node_t *node, int dep) {
     case NODE_TYPE_MULTI_ASSIGN: {
         tcheck("call ast_traverse_multi_assign");
         object_t *obj = ast_traverse_multi_assign(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_DEF: {
+        tcheck("call ast_traverse_def");
+        object_t *obj = ast_traverse_def(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_FUNC_DEF: {
+        tcheck("call ast_traverse_func_def");
+        object_t *obj = ast_traverse_func_def(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_FUNC_DEF_PARAMS: {
+        tcheck("call ast_traverse_func_def_params");
+        object_t *obj = ast_traverse_func_def_params(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_FUNC_DEF_ARGS: {
+        tcheck("call ast_traverse_func_def_args");
+        object_t *obj = ast_traverse_func_def_args(self, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_STMT: {

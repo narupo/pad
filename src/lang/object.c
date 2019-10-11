@@ -124,6 +124,17 @@ obj_new_array(object_array_t *move_objarr) {
     return self;
 }
 
+object_t *
+obj_new_func(object_t *move_name, object_t *move_args, node_t *ref_suite) {
+    object_t *self = obj_new(OBJ_TYPE_FUNC);
+
+    self->func.name = move_name;
+    self->func.args = move_args;
+    self->func.ref_suite = ref_suite;
+
+    return self;
+}
+
 string_t *
 obj_to_str(const object_t *self) {
     switch (self->type) {
@@ -157,6 +168,11 @@ obj_to_str(const object_t *self) {
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         return str_newother(self->identifier);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        string_t *str = str_new();
+        str_set(str, "(function)");
+        return str;        
     } break;
     } // switch
 
