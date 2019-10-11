@@ -2360,9 +2360,9 @@ test_ast_parse(void) {
     root = ast_getc_root(ast);
     assert(root == NULL);
 
-    /**************
-    * assign_list *
-    **************/
+    /**********
+    * formula *
+    **********/
 
     tkr_parse(tkr, "{@ a = 1 @}");
     {
@@ -7029,6 +7029,14 @@ test_ast_traverse(void) {
         assert(!strcmp(ast_get_error_detail(ast), "can't assign array to array. not same length"));
     }
 
+    tkr_parse(tkr, "{@ a, b = 2 @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't assign element to array"));
+    }
+
     /**************
     * assign_list *
     **************/
@@ -7059,20 +7067,44 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
     } */
 
-    tkr_parse(tkr, "{@ a = 1, b = 2 @}{: a :} {: b :}");
+    tkr_parse(tkr, "{@ a = 1, b = 2 @}{: a :},{: b :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "1 2"));
+        assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
     }
 
-    tkr_parse(tkr, "{@ a = 1, b = 2, c = 3 @}{: a :} {: b :} {: c :}");
+    tkr_parse(tkr, "{@ a = 1 + 2, b = 3 * 4 @}{: a :},{: b :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "1 2 3"));
+        assert(!strcmp(ctx_getc_buf(ctx), "3,12"));
+    }
+
+    tkr_parse(tkr, "{@ a = 1, b = 2, c = 3 @}{: a :},{: b :},{: c :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1,2,3"));
+    }
+
+    tkr_parse(tkr, "{@ a = 0 \n b = a = 1 @}{: a :},{: b :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1,1"));
+    }
+
+    tkr_parse(tkr, "{@ a = 0 \n b = a = 1, c = b = 1 @}{: a :},{: b :},{: c :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1,1,1"));
     }
 
     tkr_parse(tkr, "{@ a = \"abc\" @}{: a :}");
