@@ -7013,13 +7013,7 @@ test_ast_traverse(void) {
     * multi_assign *
     ***************/
 
-    tkr_parse(tkr, "{@ a, b = 1, 2 @}{: a :} {: b :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "1 2"));
-    }
+    // error
 
     tkr_parse(tkr, "{@ a, b = 1, 2, 3 @}{: a :} {: b :}");
     {
@@ -7037,9 +7031,31 @@ test_ast_traverse(void) {
         assert(!strcmp(ast_get_error_detail(ast), "can't assign element to array"));
     }
 
+    // success
+    
+    tkr_parse(tkr, "{@ a, b = 1, 2 @}{: a :} {: b :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1 2"));
+    }
+
     /**************
     * assign_list *
     **************/
+
+    // error
+
+    tkr_parse(tkr, "{@ a = 1, 2 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "syntax error. not found assign in assign list"));
+    }
+
+    // success
 
     tkr_parse(tkr, "{@ a = nil @}{: a :}");
     {
@@ -7056,16 +7072,6 @@ test_ast_traverse(void) {
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
-
-    /* ill-formed statement
-
-    tkr_parse(tkr, "{@ a = 1, 2 @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
-    } */
 
     tkr_parse(tkr, "{@ a = 1, b = 2 @}{: a :},{: b :}");
     {
