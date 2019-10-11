@@ -7,6 +7,7 @@
 #include "lib/cstring.h"
 #include "lib/memory.h"
 #include "lang/types.h"
+#include "lang/nodes.h"
 
 typedef enum {
     OBJ_TYPE_NIL = 0,
@@ -15,7 +16,14 @@ typedef enum {
     OBJ_TYPE_IDENTIFIER,
     OBJ_TYPE_STRING,
     OBJ_TYPE_ARRAY,
+    OBJ_TYPE_FUNC,
 } obj_type_t;
+
+typedef struct {
+    object_t *name;
+    object_t *args;
+    node_t *ref_suite;
+} object_func_t;
 
 struct object {
     obj_type_t type;
@@ -24,6 +32,7 @@ struct object {
     long lvalue;
     bool boolean;
     object_array_t *objarr;
+    object_func_t func;
 };
 
 void
@@ -58,6 +67,9 @@ obj_new_bool(bool boolean);
 
 object_t *
 obj_new_array(object_array_t *move_objarr);
+
+object_t *
+obj_new_func(object_t *move_name, object_t *move_args, node_t *ref_suite);
 
 string_t *
 obj_to_str(const object_t *self);

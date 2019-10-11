@@ -105,5 +105,8 @@ token_type_to_str(const token_t *self) {
 
     case TOKEN_TYPE_STMT_FOR: return "for"; break;
     case TOKEN_TYPE_STMT_BREAK: return "break"; break;
+
+    // def
+    case TOKEN_TYPE_DEF: return "def"; break;
     }
 }

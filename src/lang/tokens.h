@@ -60,6 +60,9 @@ typedef enum {
     TOKEN_TYPE_STMT_FOR, // 'for'
     TOKEN_TYPE_STMT_BREAK, // 'break'
     TOKEN_TYPE_STMT_CONTINUE, // 'continue'
+
+    // def
+    TOKEN_TYPE_DEF, // 'def'
 } token_type_t;
 
 typedef struct token {
