@@ -215,6 +215,35 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         ast_del_nodes(self, stmt->for_stmt);
         node_del(node);
     } break;
+    case NODE_TYPE_IMPORT_STMT: {
+        node_import_stmt_t *import_stmt = node->real;
+        ast_del_nodes(self, import_stmt->identifier_chain);
+        node_del(node);
+    } break;
+    case NODE_TYPE_IF_STMT: {
+        node_if_stmt_t *if_stmt = node->real;
+        ast_del_nodes(self, if_stmt->test);
+        ast_del_nodes(self, if_stmt->elems);
+        ast_del_nodes(self, if_stmt->blocks);
+        ast_del_nodes(self, if_stmt->elif_stmt);
+        ast_del_nodes(self, if_stmt->else_stmt);
+        node_del(node);
+    } break;
+    case NODE_TYPE_ELIF_STMT: {
+        node_elif_stmt_t *elif_stmt = node->real;
+        ast_del_nodes(self, elif_stmt->test);
+        ast_del_nodes(self, elif_stmt->elems);
+        ast_del_nodes(self, elif_stmt->blocks);
+        ast_del_nodes(self, elif_stmt->elif_stmt);
+        ast_del_nodes(self, elif_stmt->else_stmt);
+        node_del(node);
+    } break;
+    case NODE_TYPE_ELSE_STMT: {
+        node_else_stmt_t *else_stmt = node->real;
+        ast_del_nodes(self, else_stmt->elems);
+        ast_del_nodes(self, else_stmt->blocks);
+        node_del(node);
+    } break;
     }
 }
 
@@ -5721,7 +5750,6 @@ ast_calc_asscalc_ass_idn(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *rval = pull_in_idn(self, rhs);
-        vissf("rval[%p]", rval);
         move_var(self, str_getc(lhs->identifier), obj_new_other(rval), dep+1);
         object_t *obj = obj_new_other(rval);
         return_trav(obj);
