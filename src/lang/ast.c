@@ -3269,7 +3269,7 @@ ast_traverse_test(ast_t *self, node_t *node, int dep) {
 }
 
 /**
- * return reference
+ * return *reference* (do not delete)
  */
 static object_t *
 get_var_ref(ast_t *self, const char *identifier, int dep) {
@@ -6246,6 +6246,61 @@ ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int 
     return result;
 }
 
+static string_t *
+ast_obj_to_str(ast_t *self, object_t *obj) {
+    switch (obj->type) {
+    default: return obj_to_str(obj); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *var = pull_in_idn(self, obj);
+        if (!var) {
+            return NULL;
+        }
+        return obj_to_str(var);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to ast obj to str");
+    return NULL;
+}
+
+static object_t *
+ast_invoke_puts_func(ast_t *self, object_t *drtargs) {
+    if (!drtargs) {
+        ctx_pushb_buf(self->context, "\n");
+        return obj_new_int(0);
+    }
+
+    object_t *args = obj_to_array(drtargs);
+
+    int32_t arrlen = objarr_len(args->objarr);
+
+    for (int32_t i = 0; i < arrlen-1; ++i) {
+        object_t *obj = objarr_get(args->objarr, i);
+        assert(obj);
+        string_t *s = ast_obj_to_str(self, obj);
+        if (!s) {
+            continue;
+        }
+        str_pushb(s, ' ');
+        ctx_pushb_buf(self->context, str_getc(s));
+        str_del(s);
+    }
+    if (arrlen) {
+        object_t *obj = objarr_get(args->objarr, arrlen-1);
+        assert(obj);
+        string_t *s = ast_obj_to_str(self, obj);
+        if (!s) {
+            goto done;
+        }
+        ctx_pushb_buf(self->context, str_getc(s));
+        str_del(s);
+    }
+
+done:
+    ctx_pushb_buf(self->context, "\n");
+    return obj_new_int(arrlen);
+}
+
 static object_t *
 ast_traverse_caller(ast_t *self, node_t *node, int dep) {
     tready();
@@ -6280,6 +6335,13 @@ ast_traverse_caller(ast_t *self, node_t *node, int dep) {
             obj_del(args);
             return_trav(NULL);
         }
+    } else if (cstrarr_len(names) == 1 &&
+        cstr_eq(cstrarr_getc(names, 0), "puts")) {
+        result = ast_invoke_puts_func(self, args);
+        if (ast_has_error(self)) {
+            obj_del(args);
+            return_trav(NULL);
+        }        
     } else if (cstrarr_len(names) == 1) {
         const char *name = cstrarr_getc(names, 0);
         result = ast_invoke_func_obj(self, name, args, dep+1);
