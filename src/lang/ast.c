@@ -3275,7 +3275,7 @@ static object_t *
 get_var_ref(ast_t *self, const char *identifier, int dep) {
     tready();
 
-    object_t *obj = ctx_find_var(self->context, identifier);
+    object_t *obj = ctx_find_var_ref(self->context, identifier);
     if (!obj) {
         return_trav(NULL);
     }

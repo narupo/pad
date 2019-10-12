@@ -157,6 +157,6 @@ ctx_popb_scope(context_t *self) {
 }
 
 object_t *
-ctx_find_var(context_t *self, const char *key) {
-    return scope_find_var(self->scope, key);
+ctx_find_var_ref(context_t *self, const char *key) {
+    return scope_find_var_ref(self->scope, key);
 }
