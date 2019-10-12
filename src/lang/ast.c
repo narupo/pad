@@ -3275,17 +3275,17 @@ static object_t *
 get_var_ref(ast_t *self, const char *identifier, int dep) {
     tready();
 
-    object_dict_t *varmap = ctx_get_varmap(self->context);
-    object_dict_item_t *item = objdict_get(varmap, identifier);
-    if (!item) {
+    object_t *obj = ctx_find_var(self->context, identifier);
+    if (!obj) {
         return_trav(NULL);
     }
 
-    object_t *obj = item->value;
-    assert(obj);
     return_trav(obj);
 }
 
+/**
+ * set (move) object at varmap of current scope
+ */
 static object_t *
 move_var(ast_t *self, const char *identifier, object_t *move_obj, int dep) {
     tready();

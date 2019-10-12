@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lib/memory.h"
+#include "lang/object.h"
 #include "lang/object_dict.h"
 
 void
@@ -21,5 +22,17 @@ scope_getc_last(const scope_t *self);
 scope_t *
 scope_get_last(scope_t *self);
 
+object_dict_t *
+scope_get_varmap(scope_t *self);
+
+const object_dict_t *
+scope_getc_varmap(const scope_t *self);
+
 scope_t *
 scope_clear(scope_t *self);
+
+/**
+ * find object from varmap from last scope to first scope
+ */
+object_t *
+scope_find_var(scope_t *self, const char *key);

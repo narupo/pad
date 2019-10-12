@@ -7980,7 +7980,7 @@ test_ast_traverse(void) {
         assert(!ast_has_error(ast));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
-    }   
+    }
 
     tkr_parse(tkr, "{@\n"
         "def func():\n"
@@ -8036,7 +8036,6 @@ test_ast_traverse(void) {
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
         assert(ast_has_error(ast));
-        showdetail();
         assert(!strcmp(ast_get_error_detail(ast), "\"a\" is not defined in ref block"));
     }
 
@@ -8044,16 +8043,30 @@ test_ast_traverse(void) {
         "def func(a, b):\n"
         "   c = a + b\n"
         "end\n"
-        "func(1, 2)"
+        "func(1, 2)\n"
         "@}{: c :}");
     {
         (ast_parse(ast, tkr_get_tokens(tkr)));
         (ast_traverse(ast, ctx));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
-        showdetail();
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "\"c\" is not defined in ref block"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+        "c = 1\n"
+        "def func(a, b):\n"
+        "   c = a + b\n"
+        "end\n"
+        "func(1, 2)\n"
+        "@}{: c :}");
+    {
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_traverse(ast, ctx));
+        object_dict_t *varmap = ctx_get_varmap(ctx);
+        assert(objdict_get(varmap, "func"));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
 
     // done

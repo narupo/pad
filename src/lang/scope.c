@@ -2,6 +2,7 @@
 
 struct scope {
     object_dict_t *varmap;
+    scope_t *prev;
     scope_t *next;
 };
 
@@ -43,6 +44,7 @@ scope_moveb(scope_t *self, scope_t *move_scope) {
     }
 
     tail->next = move_scope;
+    move_scope->prev = tail;
     return self;
 }
 
@@ -68,6 +70,7 @@ scope_popb(scope_t *self) {
     }
 
     prev->next = NULL;
+    tail->prev = NULL;
 
     return tail;
 }
@@ -120,4 +123,28 @@ scope_get_varmap(scope_t *self) {
 const object_dict_t *
 scope_getc_varmap(const scope_t *self) {
     return scope_get_varmap((scope_t *) self);
+}
+
+object_t *
+scope_find_var(scope_t *self, const char *key) {
+    if (!self) {
+        return NULL;
+    }
+
+    scope_t *tail = NULL;
+    for (scope_t *cur = self; cur; cur = cur->next) {
+        if (!cur->next) {
+            tail = cur;
+            break;
+        }
+    }
+
+    for (scope_t *cur = tail; cur; cur = cur->prev) {
+        object_dict_item_t *item = objdict_get(cur->varmap, key);
+        if (item) {
+            return item->value;
+        }
+    }
+
+    return NULL;
 }
