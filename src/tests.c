@@ -7260,10 +7260,8 @@ test_ast_traverse(void) {
 
     tkr_parse(tkr, "{@ a = \"abc\"\n b = a @}{: b :}");
     {
-        setenv("CAP_DEBUG", "1", 1);
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
-        setenv("CAP_DEBUG", "0", 1);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
     }
@@ -7701,6 +7699,20 @@ test_ast_traverse(void) {
         (ast_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "ab"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+        "a = \"x\"\n"
+        "def f():\n"
+        "   a += \"y\"\n"
+        "end\n"
+        "f()\n"
+        "@}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "xy"));
     }
 
     /* TODO: sub ass

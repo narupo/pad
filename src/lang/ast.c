@@ -5842,9 +5842,9 @@ ast_calc_asscalc_add_ass_identifier_int(ast_t *self, object_t *ref_var, object_t
 }
 
 static object_t *
-ast_calc_asscalc_add_ass_identifier_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_asscalc_add_ass_identifier_string(ast_t *self, object_t *ref_lhs, object_t *rhs, int dep) {
     tready();
-    assert(lhs->type == OBJ_TYPE_STRING);
+    assert(ref_lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
     case OBJ_TYPE_NIL:
@@ -5864,9 +5864,8 @@ ast_calc_asscalc_add_ass_identifier_string(ast_t *self, object_t *lhs, object_t 
         return_trav(NULL);
         break;
     case OBJ_TYPE_STRING: {
-        object_t *obj = obj_new_other(lhs);
-        str_app(obj->string, str_getc(rhs->string));
-        return_trav(obj);
+        str_app(ref_lhs->string, str_getc(rhs->string));
+        return_trav(ref_lhs);
     } break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't add assign array to string");
@@ -5924,8 +5923,6 @@ ast_calc_asscalc_add_ass_identifier(ast_t *self, object_t *lhs, object_t *rhs, i
     }
 
     object_t *ret = obj_new_other(result);
-    move_var(self, idn, result, dep+1);
-
     return_trav(ret);
 }
 
@@ -6199,7 +6196,9 @@ ast_invoke_opts_get_func(ast_t *self, object_t *objargs) {
 
 static object_t *
 ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int dep) {
+    tready();
     assert(name);
+    tcheck("invoke func obj");
     object_t *args = NULL;
     if (drtargs) {
         args = obj_to_array(drtargs);
@@ -6441,9 +6440,6 @@ ast_traverse_func_def_args(ast_t *self, node_t *node, int dep) {
 
     object_array_t *args = objarr_new();
 
-    vissf("identifiers len[%d]", nodearr_len(func_def_args->identifiers));
-    vissf("0[%p]", nodearr_get(func_def_args->identifiers, 0));
-    vissf("1[%p]", nodearr_get(func_def_args->identifiers, 1));
     for (int32_t i = 0; i < nodearr_len(func_def_args->identifiers); ++i) {
         node_t *n = nodearr_get(func_def_args->identifiers, i);
         assert(n);
