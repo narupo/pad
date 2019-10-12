@@ -6227,7 +6227,6 @@ ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int 
             return NULL;
         }
 
-        // TODO: scope
         for (int32_t i = 0; i < objarr_len(formal_args); ++i) {
             const object_t *farg = objarr_getc(formal_args, i);
             assert(farg->type == OBJ_TYPE_IDENTIFIER);
