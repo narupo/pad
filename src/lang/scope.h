@@ -35,6 +35,7 @@ scope_clear(scope_t *self);
 
 /**
  * find object from varmap from last scope to first scope
+ * return to reference of object in varmap
  */
 object_t *
-scope_find_var(scope_t *self, const char *key);
+scope_find_var_ref(scope_t *self, const char *key);

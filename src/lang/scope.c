@@ -126,7 +126,7 @@ scope_getc_varmap(const scope_t *self) {
 }
 
 object_t *
-scope_find_var(scope_t *self, const char *key) {
+scope_find_var_ref(scope_t *self, const char *key) {
     if (!self) {
         return NULL;
     }

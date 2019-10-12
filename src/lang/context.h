@@ -78,4 +78,4 @@ void
 ctx_popb_scope(context_t *self);
 
 object_t *
-ctx_find_var(context_t *self, const char *key);
+ctx_find_var_ref(context_t *self, const char *key);
