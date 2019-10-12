@@ -2796,6 +2796,7 @@ ast_traverse_import_stmt(ast_t *self, node_t *node, int dep) {
  */
 static bool
 ast_parse_bool(ast_t *self, object_t *obj) {
+    assert(obj);
     switch (obj->type) {
     case OBJ_TYPE_NIL: return false; break;
     case OBJ_TYPE_INTEGER: return obj->lvalue; break;
@@ -2952,6 +2953,9 @@ ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
         for (;;) {
             tcheck("call _ast_traverse");
             object_t *result = _ast_traverse(self, for_stmt->comp_formula, dep+1);
+            if (ast_has_error(self)) {
+                goto done;
+            }
             if (!ast_parse_bool(self, result)) {
                 obj_del(result);
                 break;
@@ -2971,7 +2975,7 @@ ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
         for (;;) {
             tcheck("call _ast_traverse");
             _ast_traverse(self, for_stmt->elems, dep+1);
-            
+
             if (ctx_get_do_break(self->context)) {
                 break;
             }
@@ -3314,9 +3318,10 @@ ast_roll_identifier_lhs(
     tready();
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
-    object_t *lvar = get_var_ref(self, str_getc(lhs->identifier), dep+1);
+    const char *idn = str_getc(lhs->identifier);
+    object_t *lvar = get_var_ref(self, idn, dep+1);
     if (!lvar) {
-        ast_set_error_detail(self, "\"%s\" is not defined in roll identifier lhs", str_getc(rhs->identifier));
+        ast_set_error_detail(self, "\"%s\" is not defined in roll identifier lhs", idn);
         return_trav(NULL);
     }
 

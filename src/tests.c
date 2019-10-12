@@ -7908,7 +7908,20 @@ test_ast_traverse(void) {
     * for statement *
     ****************/
 
-     tkr_parse(tkr, "{@ a = 0\n"
+    tkr_parse(tkr,
+        "{@\n"
+        "    for a != 0:\n"
+        "        break\n"
+        "    end\n"
+        "@}\n");
+    {
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_traverse(ast, ctx));
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "\"a\" is not defined in roll identifier lhs"));
+    } 
+
+    tkr_parse(tkr, "{@ a = 0\n"
         "for i = 0; i != 4; i += 1:\n"
         "   a += 1\n"
         "end @}{: a :}");
