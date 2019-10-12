@@ -148,7 +148,7 @@ static object_t *
 ast_calc_term_mul(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
-get_var(ast_t *self, const char *identifier, int dep);
+get_var_ref(ast_t *self, const char *identifier, int dep);
 
 static object_t *
 move_var(ast_t *self, const char *identifier, object_t *move_obj, int dep);
@@ -2642,7 +2642,7 @@ ast_traverse_ref_block(ast_t *self, node_t *node, int dep) {
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = str_getc(result->identifier);
-        object_t *obj = get_var(self, idn, dep+1);
+        object_t *obj = get_var_ref(self, idn, dep+1);
         if (!obj) {
             ast_set_error_detail(self, "\"%s\" is not defined in ref block", idn);
             return_trav(NULL);
@@ -2802,7 +2802,7 @@ ast_parse_bool(ast_t *self, object_t *obj) {
     case OBJ_TYPE_BOOL: return obj->boolean; break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = str_getc(obj->identifier);
-        object_t *obj = get_var(self, idn, 0);
+        object_t *obj = get_var_ref(self, idn, 0);
         if (!obj) {
             ast_set_error_detail(self, "\"%s\" is not defined in if statement", idn);
             obj_del(obj);
@@ -3268,8 +3268,11 @@ ast_traverse_test(ast_t *self, node_t *node, int dep) {
     return_trav(obj);
 }
 
+/**
+ * return reference
+ */
 static object_t *
-get_var(ast_t *self, const char *identifier, int dep) {
+get_var_ref(ast_t *self, const char *identifier, int dep) {
     tready();
 
     object_dict_t *varmap = ctx_get_varmap(self->context);
@@ -3303,7 +3306,7 @@ ast_roll_identifier_lhs(
     tready();
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
-    object_t *lvar = get_var(self, str_getc(lhs->identifier), dep+1);
+    object_t *lvar = get_var_ref(self, str_getc(lhs->identifier), dep+1);
     if (!lvar) {
         ast_set_error_detail(self, "\"%s\" is not defined in roll identifier lhs", str_getc(rhs->identifier));
         return_trav(NULL);
@@ -3324,7 +3327,7 @@ ast_roll_identifier_rhs(
     tready();
     assert(rhs->type == OBJ_TYPE_IDENTIFIER);
 
-    object_t *rvar = get_var(self, str_getc(rhs->identifier), dep+1);
+    object_t *rvar = get_var_ref(self, str_getc(rhs->identifier), dep+1);
     if (!rvar) {
         ast_set_error_detail(self, "\"%s\" is not defined in roll identifier rhs", str_getc(rhs->identifier));
         return_trav(NULL);
@@ -3390,7 +3393,7 @@ ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = get_var(self, str_getc(rhs->identifier), dep+1);
+        object_t *rvar = get_var_ref(self, str_getc(rhs->identifier), dep+1);
         if (!rvar) {
             ast_set_error_detail(self, "%s is not defined in compare or int", str_getc(rhs->identifier));
             return_trav(NULL);
@@ -3461,7 +3464,7 @@ ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = get_var(self, str_getc(rhs->identifier), dep+1);
+        object_t *rvar = get_var_ref(self, str_getc(rhs->identifier), dep+1);
         if (!rvar) {
             ast_set_error_detail(self, "%s is not defined compare or bool", str_getc(rhs->identifier));
             return_trav(NULL);
@@ -4193,7 +4196,7 @@ ast_compare_not(ast_t *self, object_t *operand, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *var = get_var(self, str_getc(operand->identifier), dep+1);
+        object_t *var = get_var_ref(self, str_getc(operand->identifier), dep+1);
         if (!var) {
             ast_set_error_detail(self, "\"%s\" is not defined compare not", str_getc(operand->identifier));
             return_trav(NULL);
@@ -5729,7 +5732,12 @@ pull_in_idn(ast_t *self, object_t *obj) {
     switch (obj->type) {
     default: break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *var = get_var(self, str_getc(obj->identifier), 0);
+        const char *idn = str_getc(obj->identifier);
+        object_t *var = get_var_ref(self, idn, 0);
+        if (!var) {
+            ast_set_error_detail(self, "\"%s\" is not defined", idn);
+            return NULL;
+        }
         return pull_in_idn(self, var);
     } break;
     }
@@ -5750,6 +5758,9 @@ ast_calc_asscalc_ass_idn(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *rval = pull_in_idn(self, rhs);
+        if (!rval) {
+            return_trav(NULL);
+        }
         move_var(self, str_getc(lhs->identifier), obj_new_other(rval), dep+1);
         object_t *obj = obj_new_other(rval);
         return_trav(obj);
@@ -5800,7 +5811,7 @@ ast_calc_asscalc_add_ass_identifier_int(ast_t *self, object_t *ref_var, object_t
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = str_getc(rhs->identifier);
-        object_t *rvar = get_var(self, idn, dep+1);
+        object_t *rvar = get_var_ref(self, idn, dep+1);
         if (!rvar) {
             ast_set_error_detail(self, "\"%s\" is not defined in add ass identifier int", idn);
             return_trav(NULL);
@@ -5867,7 +5878,7 @@ ast_calc_asscalc_add_ass_identifier(ast_t *self, object_t *lhs, object_t *rhs, i
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
     const char *idn = str_getc(lhs->identifier);
-    object_t *lvar = get_var(self, idn, dep+1);
+    object_t *lvar = get_var_ref(self, idn, dep+1);
     if (!lvar) {
         ast_set_error_detail(self, "\"%s\" is not defined in add ass identifier", idn);
         return_trav(NULL);
@@ -6188,7 +6199,7 @@ ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int 
         args = obj_to_array(drtargs);
     }
 
-    object_t *func_obj = get_var(self, name, 0);
+    object_t *func_obj = get_var_ref(self, name, 0);
     if (!func_obj) {
         ast_set_error_detail(self, "\"%s\" is not defined", name);
         obj_del(args);
@@ -6204,6 +6215,7 @@ ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int 
     object_func_t *func = &func_obj->func;
     assert(func->args->type == OBJ_TYPE_ARRAY);
 
+    ctx_pushb_scope(self->context);
     if (args) {
         const object_array_t *formal_args = func->args->objarr;
         const object_array_t *actual_args = args->objarr;
@@ -6211,6 +6223,7 @@ ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int 
         if (objarr_len(formal_args) != objarr_len(actual_args)) {
             ast_set_error_detail(self, "arguments not same length");
             obj_del(args);
+            ctx_popb_scope(self->context);
             return NULL;
         }
 
@@ -6229,7 +6242,9 @@ ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int 
     obj_del(args);
 
     tcheck("call _ast_traverse with ref_suite");
-    return _ast_traverse(self, func->ref_suite, dep+1);
+    object_t *result = _ast_traverse(self, func->ref_suite, dep+1);
+    ctx_popb_scope(self->context);
+    return result;
 }
 
 static object_t *

@@ -10,7 +10,7 @@ struct context {
     dict_t *almap;
     dict_t *confmap;
     string_t *buf;
-    object_dict_t *varmap;
+    scope_t *scope;
     bool imported_alias;
     bool imported_config;
     bool do_break;
@@ -23,8 +23,10 @@ ctx_del(context_t *self) {
         return;
     }
 
+    objdict_del(self->almap);
+    objdict_del(self->confmap);
     str_del(self->buf);
-    objdict_del(self->varmap);
+    scope_del(self->scope);
     free(self);
 }
 
@@ -35,7 +37,7 @@ ctx_new(void) {
     self->almap = dict_new(ALIAS_MAP_SIZE);
     self->confmap = dict_new(CONFIG_MAP_SIZE);
     self->buf = str_new();
-    self->varmap = objdict_new(OBJDICT_SIZE);
+    self->scope = scope_new();
 
     return self;
 }
@@ -44,7 +46,7 @@ void
 ctx_clear(context_t *self) {
     dict_clear(self->almap);
     str_clear(self->buf);
-    objdict_clear(self->varmap);
+    scope_clear(self->scope);
     self->imported_alias = false;
 }
 
@@ -112,7 +114,8 @@ ctx_getc_confmap(const context_t *self) {
 
 object_dict_t *
 ctx_get_varmap(context_t *self) {
-    return self->varmap;
+    scope_t *current_scope = scope_get_last(self->scope);
+    return scope_get_varmap(current_scope);
 }
 
 const bool
@@ -140,3 +143,16 @@ ctx_clear_jump_flags(context_t *self) {
     self->do_break = false;
     self->do_continue = false;
 }
+
+void
+ctx_pushb_scope(context_t *self) {
+    scope_t *scope = scope_new();
+    scope_moveb(self->scope, scope);
+}
+
+void
+ctx_popb_scope(context_t *self) {
+    scope_t *scope = scope_popb(self->scope);
+    scope_del(scope);
+}
+
