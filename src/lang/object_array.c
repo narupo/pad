@@ -40,7 +40,7 @@ objarr_new(void) {
 }
 
 extern object_t *
-obj_new_other(object_t *other);
+obj_new_other(const object_t *other);
 
 object_array_t*
 objarr_new_other(object_array_t *other) {
