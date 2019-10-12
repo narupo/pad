@@ -231,3 +231,8 @@ obj_to_array(const object_t *obj) {
     assert(0 && "impossible. not supported type in obj to array");
     return NULL;
 }
+
+int32_t
+obj_inc_ref(object_t *self) {
+    return ++self->ref_counts;
+}

@@ -31,10 +31,11 @@ struct object {
     obj_type_t type;
     string_t *identifier;
     string_t *string;
+    object_array_t *objarr;
     long lvalue;
     bool boolean;
-    object_array_t *objarr;
     object_func_t func;
+    int32_t ref_counts;
 };
 
 void
@@ -72,6 +73,9 @@ obj_new_array(object_array_t *move_objarr);
 
 object_t *
 obj_new_func(object_t *move_name, object_t *move_args, node_t *ref_suite);
+
+int32_t
+obj_inc_ref(object_t *self);
 
 string_t *
 obj_to_str(const object_t *self);
