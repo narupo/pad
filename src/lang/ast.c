@@ -5865,7 +5865,8 @@ ast_calc_asscalc_add_ass_identifier_string(ast_t *self, object_t *ref_lhs, objec
         break;
     case OBJ_TYPE_STRING: {
         str_app(ref_lhs->string, str_getc(rhs->string));
-        return_trav(ref_lhs);
+        object_t *ret = obj_new_other(ref_lhs);
+        return_trav(ret);
     } break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't add assign array to string");
@@ -5883,17 +5884,17 @@ ast_calc_asscalc_add_ass_identifier(ast_t *self, object_t *lhs, object_t *rhs, i
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
     const char *idn = str_getc(lhs->identifier);
-    object_t *lvar = get_var_ref(self, idn, dep+1);
-    if (!lvar) {
+    object_t *ref_lvar = get_var_ref(self, idn, dep+1);
+    if (!ref_lvar) {
         ast_set_error_detail(self, "\"%s\" is not defined in add ass identifier", idn);
         return_trav(NULL);
     }
 
-    object_t *result = NULL;
+    object_t *new_obj = NULL;
     
-    switch (lvar->type) {
+    switch (ref_lvar->type) {
     default:
-        ast_set_error_detail(self, "not supported add assign to object %d", lvar->type);
+        ast_set_error_detail(self, "not supported add assign to object %d", ref_lvar->type);
         return_trav(NULL);
         break;
     case OBJ_TYPE_NIL:
@@ -5902,7 +5903,7 @@ ast_calc_asscalc_add_ass_identifier(ast_t *self, object_t *lhs, object_t *rhs, i
         break;
     case OBJ_TYPE_INTEGER: {
         tcheck("call ast_calc_asscalc_add_ass_identifier_int");
-        result = ast_calc_asscalc_add_ass_identifier_int(self, lvar, rhs, dep+1);
+        new_obj = ast_calc_asscalc_add_ass_identifier_int(self, ref_lvar, rhs, dep+1);
     } break;
     case OBJ_TYPE_BOOL:
         ast_set_error_detail(self, "can't add assign to bool");
@@ -5914,7 +5915,7 @@ ast_calc_asscalc_add_ass_identifier(ast_t *self, object_t *lhs, object_t *rhs, i
         break;
     case OBJ_TYPE_STRING: {
         tcheck("call ast_calc_asscalc_add_ass_identifier_string");
-        result = ast_calc_asscalc_add_ass_identifier_string(self, lvar, rhs, dep+1);
+        new_obj = ast_calc_asscalc_add_ass_identifier_string(self, ref_lvar, rhs, dep+1);
     } break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't add assign array");
@@ -5922,8 +5923,7 @@ ast_calc_asscalc_add_ass_identifier(ast_t *self, object_t *lhs, object_t *rhs, i
         break;
     }
 
-    object_t *ret = obj_new_other(result);
-    return_trav(ret);
+    return_trav(new_obj);
 }
 
 static object_t *
