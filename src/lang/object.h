@@ -19,11 +19,11 @@ typedef enum {
     OBJ_TYPE_FUNC,
 } obj_type_t;
 
-typedef struct {
-    object_t *name;
-    object_t *args;
+struct object_func {
+    object_t *name; // type == OBJ_TYPE_IDENTIFIER
+    object_t *args; // type == OBJ_TYPE_ARRAY
     node_t *ref_suite;
-} object_func_t;
+};
 
 struct object {
     obj_type_t type;
@@ -42,7 +42,7 @@ object_t *
 obj_new(obj_type_t type);
 
 object_t *
-obj_new_other(object_t *other);
+obj_new_other(const object_t *other);
 
 object_t *
 obj_new_nil(void);
@@ -73,3 +73,9 @@ obj_new_func(object_t *move_name, object_t *move_args, node_t *ref_suite);
 
 string_t *
 obj_to_str(const object_t *self);
+
+/**
+ * various object convert to array object
+ */
+object_t *
+obj_to_array(const object_t *obj);

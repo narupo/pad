@@ -3358,6 +3358,129 @@ test_ast_parse(void) {
         assert(nodearr_len(func_def_args->identifiers) == 0);
     } 
 
+    tkr_parse(tkr, "{@ def func(): a = 1 end @}");
+    {
+        ast_clear(ast);
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        program = root->real;
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        assert(elems);
+        assert(elems->def);
+        assert(elems->def->type == NODE_TYPE_DEF);
+        def = elems->def->real;
+        assert(def);
+        assert(def->func_def);
+        assert(def->func_def->type == NODE_TYPE_FUNC_DEF);
+        func_def = def->func_def->real;
+        assert(func_def->identifier);
+        assert(func_def->identifier->type == NODE_TYPE_IDENTIFIER);
+        identifier = func_def->identifier->real;
+        assert(!strcmp(identifier->identifier, "func"));
+        assert(func_def->func_def_params->type == NODE_TYPE_FUNC_DEF_PARAMS);
+        func_def_params = func_def->func_def_params->real;
+        assert(func_def_params->func_def_args->type == NODE_TYPE_FUNC_DEF_ARGS);
+        func_def_args = func_def_params->func_def_args->real;
+        assert(nodearr_len(func_def_args->identifiers) == 0);
+
+        elems = func_def->elems->real;
+        formula = elems->formula->real;
+        assign_list = formula->assign_list->real;
+        assign = nodearr_get(assign_list->nodearr, 0)->real;
+        test = nodearr_get(assign->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        expr = nodearr_get(comparison->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
+        factor = nodearr_get(asscalc->nodearr, 0)->real;
+        atom = factor->atom->real;
+        identifier = atom->identifier->real;
+        assert(identifier != NULL);
+        assert(!strcmp(identifier->identifier, "a"));
+        test = nodearr_get(assign->nodearr, 1)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        expr = nodearr_get(comparison->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
+        factor = nodearr_get(asscalc->nodearr, 0)->real;
+        atom = factor->atom->real;
+        digit = atom->digit->real;        
+        assert(digit != NULL);
+        assert(digit->lvalue == 1);    
+    } 
+
+    tkr_parse(tkr, "{@\n"
+        "def func():\n"
+        "   a = 1\n"
+        "end\n"
+        "@}");
+    {
+        ast_clear(ast);
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        assert(!ast_has_error(ast));
+        root = ast_getc_root(ast);
+        program = root->real;
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        assert(elems);
+        assert(elems->def);
+        assert(elems->def->type == NODE_TYPE_DEF);
+        def = elems->def->real;
+        assert(def);
+        assert(def->func_def);
+        assert(def->func_def->type == NODE_TYPE_FUNC_DEF);
+        func_def = def->func_def->real;
+        assert(func_def->identifier);
+        assert(func_def->identifier->type == NODE_TYPE_IDENTIFIER);
+        identifier = func_def->identifier->real;
+        assert(!strcmp(identifier->identifier, "func"));
+        assert(func_def->func_def_params->type == NODE_TYPE_FUNC_DEF_PARAMS);
+        func_def_params = func_def->func_def_params->real;
+        assert(func_def_params->func_def_args->type == NODE_TYPE_FUNC_DEF_ARGS);
+        func_def_args = func_def_params->func_def_args->real;
+        assert(nodearr_len(func_def_args->identifiers) == 0);
+
+        elems = func_def->elems->real;
+        formula = elems->formula->real;
+        assign_list = formula->assign_list->real;
+        assign = nodearr_get(assign_list->nodearr, 0)->real;
+        test = nodearr_get(assign->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        expr = nodearr_get(comparison->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
+        factor = nodearr_get(asscalc->nodearr, 0)->real;
+        atom = factor->atom->real;
+        identifier = atom->identifier->real;
+        assert(identifier != NULL);
+        assert(!strcmp(identifier->identifier, "a"));
+        test = nodearr_get(assign->nodearr, 1)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        expr = nodearr_get(comparison->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        asscalc = nodearr_get(term->nodearr, 0)->real;
+        factor = nodearr_get(asscalc->nodearr, 0)->real;
+        atom = factor->atom->real;
+        digit = atom->digit->real;        
+        assert(digit != NULL);
+        assert(digit->lvalue == 1);    
+    } 
+
     /*********
     * caller *
     *********/
@@ -7858,6 +7981,80 @@ test_ast_traverse(void) {
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
     }   
+
+    tkr_parse(tkr, "{@\n"
+        "def func():\n"
+        "   a = 1\n"
+        "end\n"
+        "@}");
+    {
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        object_dict_t *varmap = ctx_get_varmap(ctx);
+        assert(objdict_get(varmap, "func"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+        "def func():\n"
+        "   a = 1\n"
+        "end\n"
+        "@}{: a :}");
+    {
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_traverse(ast, ctx));
+        object_dict_t *varmap = ctx_get_varmap(ctx);
+        assert(objdict_get(varmap, "func"));
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "\"a\" is not defined in ref block"));
+    }
+
+    // TODO: scope
+    tkr_parse(tkr, "{@\n"
+        "def func():\n"
+        "   a = 1\n"
+        "end\n"
+        "func()"
+        "@}{: a :}");
+    {
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_traverse(ast, ctx));
+        object_dict_t *varmap = ctx_get_varmap(ctx);
+        assert(objdict_get(varmap, "func"));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+        "def func(a):\n"
+        "   b = a\n"
+        "end\n"
+        "func(1)"
+        "@}{: a :},{: b :}");
+    {
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_traverse(ast, ctx));
+        object_dict_t *varmap = ctx_get_varmap(ctx);
+        assert(objdict_get(varmap, "func"));
+        assert(!ast_has_error(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "1,1"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+        "def func(a, b):\n"
+        "   c = a + b\n"
+        "end\n"
+        "func(1, 2)"
+        "@}{: c :}");
+    {
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_traverse(ast, ctx));
+        object_dict_t *varmap = ctx_get_varmap(ctx);
+        assert(objdict_get(varmap, "func"));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "3"));
+    }
 
     // done
     ctx_del(ctx);

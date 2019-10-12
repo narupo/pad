@@ -2382,7 +2382,6 @@ ast_func_def_params(ast_t *self, int dep) {
         }
         return_cleanup(""); // not error
     }
-    node_func_def_args_t *aaa = cur->func_def_args->real;
 
     if (!*self->ptr) {
         return_cleanup("syntax error. reached EOF in func def params");
@@ -5693,6 +5692,46 @@ ast_traverse_term(ast_t *self, node_t *node, int dep) {
     return_trav(NULL);
 }
 
+/**
+ * return reference to variable
+ */
+static object_t *
+pull_in_idn(ast_t *self, object_t *obj) {
+    switch (obj->type) {
+    default: break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *var = get_var(self, str_getc(obj->identifier), 0);
+        return pull_in_idn(self, var);
+    } break;
+    }
+
+    return obj;
+}
+
+static object_t *
+ast_calc_asscalc_ass_idn(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_IDENTIFIER);
+
+    switch (rhs->type) {
+    default: {
+        move_var(self, str_getc(lhs->identifier), obj_new_other(rhs), dep+1);
+        object_t *obj = obj_new_other(rhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *rval = pull_in_idn(self, rhs);
+        vissf("rval[%p]", rval);
+        move_var(self, str_getc(lhs->identifier), obj_new_other(rval), dep+1);
+        object_t *obj = obj_new_other(rval);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to calc asscalc ass idn");
+    return_trav(NULL);
+}
+
 static object_t *
 ast_calc_asscalc_ass(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     tready();
@@ -5702,12 +5741,9 @@ ast_calc_asscalc_ass(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         ast_set_error_detail(self, "can't assign to %d", lhs->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: {
-        object_dict_t *varmap = ctx_get_varmap(self->context);
-        objdict_move(varmap, str_getc(lhs->identifier), obj_new_other(rhs));
-        object_t *obj = obj_new_other(rhs);
-        return_trav(obj);
-    } break;
+    case OBJ_TYPE_IDENTIFIER:
+        return ast_calc_asscalc_ass_idn(self, lhs, rhs, dep+1);
+        break;
     }
 
     assert(0 && "impossible. failed to calc asscalc ass");
@@ -6117,6 +6153,58 @@ ast_invoke_opts_get_func(ast_t *self, object_t *objargs) {
 }
 
 static object_t *
+ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int dep) {
+    assert(name);
+    object_t *args = NULL;
+    if (drtargs) {
+        args = obj_to_array(drtargs);
+    }
+
+    object_t *func_obj = get_var(self, name, 0);
+    if (!func_obj) {
+        ast_set_error_detail(self, "\"%s\" is not defined", name);
+        obj_del(args);
+        return NULL;
+    }
+
+    if (func_obj->type != OBJ_TYPE_FUNC) {
+        ast_set_error_detail(self, "\"%s\" is not callable", name);
+        obj_del(args);
+        return NULL;
+    }
+
+    object_func_t *func = &func_obj->func;
+    assert(func->args->type == OBJ_TYPE_ARRAY);
+
+    if (args) {
+        const object_array_t *formal_args = func->args->objarr;
+        const object_array_t *actual_args = args->objarr;
+
+        if (objarr_len(formal_args) != objarr_len(actual_args)) {
+            ast_set_error_detail(self, "arguments not same length");
+            obj_del(args);
+            return NULL;
+        }
+
+        // TODO: scope
+        for (int32_t i = 0; i < objarr_len(formal_args); ++i) {
+            const object_t *farg = objarr_getc(formal_args, i);
+            assert(farg->type == OBJ_TYPE_IDENTIFIER);
+            const char *fargname = str_getc(farg->identifier);
+            const object_t *aarg = objarr_getc(actual_args, i);
+
+            object_t *copy_aarg = obj_new_other(aarg);
+            move_var(self, fargname, copy_aarg, dep+1);
+        }
+    }
+
+    obj_del(args);
+
+    tcheck("call _ast_traverse with ref_suite");
+    return _ast_traverse(self, func->ref_suite, dep+1);
+}
+
+static object_t *
 ast_traverse_caller(ast_t *self, node_t *node, int dep) {
     tready();
     node_caller_t *caller = node->real;
@@ -6146,6 +6234,13 @@ ast_traverse_caller(ast_t *self, node_t *node, int dep) {
         cstr_eq(cstrarr_getc(names, 1), "get")) {
         tcheck("call ast_invoke_opts_get_func");
         result = ast_invoke_opts_get_func(self, args);
+        if (ast_has_error(self)) {
+            obj_del(args);
+            return_trav(NULL);
+        }
+    } else if (cstrarr_len(names) == 1) {
+        const char *name = cstrarr_getc(names, 0);
+        result = ast_invoke_func_obj(self, name, args, dep+1);
         if (ast_has_error(self)) {
             obj_del(args);
             return_trav(NULL);
