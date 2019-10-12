@@ -178,6 +178,37 @@ tkr_read_identifier(tokenizer_t *self) {
     return token;
 }
 
+static string_t *
+tkr_read_escape(tokenizer_t *self) {
+    if (*self->ptr != '\\') {
+        tkr_set_error_detail(self, "not found \\ in read escape");
+        return NULL;
+    }
+
+    self->ptr++;
+    char c = *self->ptr++;
+    string_t *esc = str_new();
+
+    switch (c) {
+    default:
+        tkr_set_error_detail(self, "unsupported escape character '%c'", c);
+        return NULL;
+        break;
+    case '0': str_pushb(esc, '\0'); break;
+    case 'a': str_pushb(esc, '\a'); break;
+    case 'b': str_pushb(esc, '\b'); break;
+    case 'f': str_pushb(esc, '\f'); break;
+    case 'n': str_pushb(esc, '\n'); break;
+    case 'r': str_pushb(esc, '\r'); break;
+    case 't': str_pushb(esc, '\t'); break;
+    case '\\': str_pushb(esc, '\\'); break;
+    case '\'': str_pushb(esc, '\''); break;
+    case '"': str_pushb(esc, '\"'); break;
+    }
+
+    return esc;
+}
+
 static token_t *
 tkr_read_dq_string(tokenizer_t *self) {
     int m = 0;
@@ -198,8 +229,13 @@ tkr_read_dq_string(tokenizer_t *self) {
             break;
         case 10:
             if (c == '\\') {
-                c = *self->ptr++;
-                str_pushb(buf, c);
+                self->ptr--;
+                string_t *esc = tkr_read_escape(self);
+                if (!esc) {
+                    goto fail;
+                }
+                str_app(buf, str_getc(esc));
+                str_del(esc);
             } else if (c == '"') {
                 goto done;
             } else {
@@ -214,6 +250,9 @@ done: {
         token_move_text(token, str_escdel(buf));
         return token;
     }
+fail:
+    str_del(buf);
+    return NULL;
 }
 
 bool
@@ -260,17 +299,6 @@ tkr_parse_identifier(tokenizer_t *self) {
         token->type = TOKEN_TYPE_DEF;
     }
 
-    tkr_move_token(self, token);
-    return token;
-}
-
-static token_t *
-tkr_parse_dq_string(tokenizer_t *self) {
-    token_t *token = tkr_read_dq_string(self);
-    if (tkr_has_error(self)) {
-        token_del(token);
-        return NULL;
-    }
     tkr_move_token(self, token);
     return token;
 }
@@ -347,6 +375,14 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 tkr_store_textblock(self);
                 tkr_move_token(self, token);
                 m = 20;
+            } else if (c == '\\') {
+                self->ptr--;
+                string_t *esc = tkr_read_escape(self);
+                if (!esc) {
+                    goto fail;
+                }
+                str_app(self->buf, str_getc(esc));
+                str_del(esc);
             } else {
                 str_pushb(self->buf, c);
             }

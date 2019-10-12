@@ -8144,6 +8144,26 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "1\n3\n1"));
     }
 
+    /*******************
+    * escape character *
+    *******************/
+
+    tkr_parse(tkr, "{: \"abc\ndef\n\" :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc\ndef\n"));
+    } 
+
+    tkr_parse(tkr, "{: \"\tabc\tdef\" :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "\tabc\tdef"));
+    } 
+
     // done
     ctx_del(ctx);
     ast_del(ast);
