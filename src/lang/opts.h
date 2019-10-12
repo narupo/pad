@@ -1,5 +1,7 @@
 #pragma once
 
+#include <assert.h>
+
 #include "lib/memory.h"
 #include "lib/string.h"
 #include "lib/dict.h"
