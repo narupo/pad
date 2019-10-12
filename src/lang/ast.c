@@ -2576,6 +2576,11 @@ ast_traverse_blocks(ast_t *self, node_t *node, int dep) {
         return_trav(NULL);
     }
 
+    if (ctx_get_do_break(self->context) ||
+        ctx_get_do_continue(self->context)) {
+        return_trav(NULL);
+    }
+
     tcheck("call _ast_traverse");
     _ast_traverse(self, blocks->ref_block, dep+1);
     if (ast_has_error(self)) {
@@ -2962,7 +2967,17 @@ ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
             }
 
             tcheck("call _ast_traverse");
-            _ast_traverse(self, for_stmt->elems, dep+1);
+            if (for_stmt->elems) {
+                _ast_traverse(self, for_stmt->elems, dep+1);
+                if (ast_has_error(self)) {
+                    goto done;
+                }
+            } else if (for_stmt->blocks) {
+                _ast_traverse(self, for_stmt->blocks, dep+1);
+                if (ast_has_error(self)) {
+                    goto done;
+                }                
+            } // allow null elems and blocks
 
             if (ctx_get_do_break(self->context)) {
                 break;
@@ -2974,7 +2989,18 @@ ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
         // for: end
         for (;;) {
             tcheck("call _ast_traverse");
-            _ast_traverse(self, for_stmt->elems, dep+1);
+
+            if (for_stmt->elems) {
+                _ast_traverse(self, for_stmt->elems, dep+1);
+                if (ast_has_error(self)) {
+                    goto done;
+                }
+            } else if (for_stmt->blocks) {
+                _ast_traverse(self, for_stmt->blocks, dep+1);
+                if (ast_has_error(self)) {
+                    goto done;
+                }                
+            } // allow null elems and blocks
 
             if (ctx_get_do_break(self->context)) {
                 break;
@@ -4884,9 +4910,13 @@ ast_calc_expr_add_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        err_die("TODO: add string 2");
-        break;
+    case OBJ_TYPE_STRING: {
+        string_t *s = str_new();
+        str_app(s, str_getc(lhs->string));
+        str_app(s, str_getc(rhs->string));
+        object_t *obj = obj_new_str(s);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't add string and array");
         return_trav(NULL);
@@ -6255,7 +6285,7 @@ ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int 
             object_t *aarg = objarr_get(actual_args, i);
             object_t *ref_aarg = pull_in_idn(self, aarg);
             object_t *copy_aarg = obj_new_other(ref_aarg);
-            
+
             move_var(self, fargname, copy_aarg, dep+1);
         }
     }

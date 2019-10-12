@@ -7727,7 +7727,6 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         (ast_traverse(ast, ctx));
         assert(!ast_has_error(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_buf(ctx), ""));
     } 
 
@@ -7981,6 +7980,39 @@ test_ast_traverse(void) {
         ast_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "4,6"));
+    } 
+
+    tkr_parse(tkr,
+        "{@ for i = 0; i != 4; i += 1: @}"
+        "hige\n"
+        "{@ end @}");
+    {
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "hige\nhige\nhige\nhige\n"));
+    } 
+
+    tkr_parse(tkr,
+        "{@ i = 0 for i != 4: @}"
+        "hige\n{@ i += 1 @}"
+        "{@ end @}");
+    {
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "hige\nhige\nhige\nhige\n"));
+    } 
+
+    tkr_parse(tkr,
+        "{@ i = 0 for: @}"
+        "{@ if i == 4: break end @}hige\n{@ i += 1 @}"
+        "{@ end @}");
+    {
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "hige\nhige\nhige\nhige\n"));
     } 
 
     /*******
