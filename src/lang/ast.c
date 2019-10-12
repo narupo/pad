@@ -5761,6 +5761,12 @@ ast_calc_asscalc_ass_idn(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         if (!rval) {
             return_trav(NULL);
         }
+
+        // ここでmove_varにrvalの参照を渡すと、変数の変数への代入は参照になる
+        // ↓ではコピーを渡しているので変数の変数への代入は現在はコピーになっている
+        // 別名の変数に参照を渡した場合、objdict_clearでダブルフリーが起こる
+        // ガーベジコレクションの実装か、メモリ管理の設計（delなど）が必要である
+        // TODO: ここの仕様のフィックス
         move_var(self, str_getc(lhs->identifier), obj_new_other(rval), dep+1);
         object_t *obj = obj_new_other(rval);
         return_trav(obj);
@@ -6248,6 +6254,8 @@ ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int 
 
 static string_t *
 ast_obj_to_str(ast_t *self, object_t *obj) {
+    assert(obj);
+
     switch (obj->type) {
     default: return obj_to_str(obj); break;
     case OBJ_TYPE_IDENTIFIER: {
