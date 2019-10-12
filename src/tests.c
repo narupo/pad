@@ -8009,7 +8009,6 @@ test_ast_traverse(void) {
         assert(!strcmp(ast_get_error_detail(ast), "\"a\" is not defined in ref block"));
     }
 
-    // TODO: scope
     tkr_parse(tkr, "{@\n"
         "def func():\n"
         "   a = 1\n"
@@ -8021,8 +8020,8 @@ test_ast_traverse(void) {
         (ast_traverse(ast, ctx));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "\"a\" is not defined in ref block"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -8036,9 +8035,9 @@ test_ast_traverse(void) {
         (ast_traverse(ast, ctx));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
-        assert(!ast_has_error(ast));
-        showbuf();
-        assert(!strcmp(ctx_getc_buf(ctx), "1,1"));
+        assert(ast_has_error(ast));
+        showdetail();
+        assert(!strcmp(ast_get_error_detail(ast), "\"a\" is not defined in ref block"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -8052,8 +8051,9 @@ test_ast_traverse(void) {
         (ast_traverse(ast, ctx));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "3"));
+        showdetail();
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "\"c\" is not defined in ref block"));
     }
 
     // done

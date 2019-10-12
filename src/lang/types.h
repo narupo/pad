@@ -14,3 +14,9 @@ typedef struct object_func object_func_t;
 
 struct node_array;
 typedef struct node_array node_array_t;
+
+struct context;
+typedef struct context context_t;
+
+struct scope;
+typedef struct scope scope_t;

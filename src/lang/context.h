@@ -5,10 +5,9 @@
 #include "lib/memory.h"
 #include "lib/string.h"
 #include "lib/dict.h"
+#include "lang/types.h"
 #include "lang/object_dict.h"
-
-struct context;
-typedef struct context context_t;
+#include "lang/scope.h"
 
 void
 ctx_del(context_t *self);
@@ -69,3 +68,10 @@ ctx_set_do_continue(context_t *self, bool do_continue);
 
 void
 ctx_clear_jump_flags(context_t *self);
+
+void
+ctx_pushb_scope(context_t *self);
+
+void
+ctx_popb_scope(context_t *self);
+

@@ -40,6 +40,9 @@ objarr_new_other(object_array_t *other);
 
 object_t *
 obj_new_other(const object_t *other) {
+    if (!other) {
+        return NULL;
+    }
     object_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->type = other->type;

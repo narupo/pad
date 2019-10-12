@@ -101,6 +101,7 @@ SRCS := build/lib/error.c \
 	build/lang/object_dict.c \
 	build/lang/node_array.c \
 	build/lang/opts.c \
+	build/lang/scope.c \
 
 OBJS := $(SRCS:.c=.o)
 
@@ -197,4 +198,6 @@ build/lang/object_dict.o: src/lang/object_dict.c src/lang/object_dict.h
 build/lang/node_array.o: src/lang/node_array.c src/lang/node_array.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/opts.o: src/lang/opts.c src/lang/opts.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/scope.o: src/lang/scope.c src/lang/scope.h
 	$(CC) $(CFLAGS) -c $< -o $@
