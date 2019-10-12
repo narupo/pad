@@ -24,6 +24,10 @@ opts_new(void) {
 
 opts_t *
 opts_parse(opts_t *self, int argc, char *argv[]) {
+    if (!self || !argv) {
+        return NULL;
+    }
+    
     int m = 0;
     string_t *key = str_new();
 
@@ -79,6 +83,10 @@ opts_parse(opts_t *self, int argc, char *argv[]) {
 
 const char *
 opts_getc(const opts_t *self, const char *optname) {
+    if (!self || !optname) {
+        return NULL;
+    }
+
     const dict_item_t *item = dict_getc(self->opts, optname);
     if (!item) {
         return NULL;
