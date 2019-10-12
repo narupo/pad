@@ -7250,6 +7250,24 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
     }
 
+    tkr_parse(tkr, "{@ a = \"abc\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"abc\"\n b = a @}{: b :}");
+    {
+        setenv("CAP_DEBUG", "1", 1);
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        setenv("CAP_DEBUG", "0", 1);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    }
+
     tkr_parse(tkr, "{@ a = 1 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -7769,6 +7787,14 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "1 abc\n"));
     }
 
+    tkr_parse(tkr, "{@ puts(\"abc\") @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc\n"));
+    }
+
     /*******************
     * import statement *
     *******************/
@@ -8115,7 +8141,6 @@ test_ast_traverse(void) {
         (ast_traverse(ast, ctx));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
-        showbuf();
         assert(!strcmp(ctx_getc_buf(ctx), "1\n3\n1"));
     }
 

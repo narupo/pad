@@ -6,8 +6,10 @@
 #include "lib/string.h"
 #include "lib/cstring.h"
 #include "lib/memory.h"
+#include "lib/error.h"
 #include "lang/types.h"
 #include "lang/nodes.h"
+#include "lang/object_array.h"
 
 typedef enum {
     OBJ_TYPE_NIL = 0,
