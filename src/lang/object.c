@@ -9,8 +9,29 @@ obj_del(object_t *self) {
         return;
     }
 
-    free(self->string);
-    objarr_del(self->objarr);
+    switch (self->type) {
+    case OBJ_TYPE_NIL:
+        break;
+    case OBJ_TYPE_INTEGER:
+        break;
+    case OBJ_TYPE_BOOL:
+        break;
+    case OBJ_TYPE_IDENTIFIER:
+        str_del(self->identifier);
+        break;
+    case OBJ_TYPE_STRING:
+        str_del(self->string);
+        break;
+    case OBJ_TYPE_ARRAY:
+        objarr_del(self->objarr);
+        break;
+    case OBJ_TYPE_FUNC:
+        obj_del(self->func.name);
+        obj_del(self->func.args);
+        // do not delete ref_suite, this is reference
+        break;
+    }
+
     free(self);
 }
 
@@ -18,24 +39,34 @@ extern object_array_t*
 objarr_new_other(object_array_t *other);
 
 object_t *
-obj_new_other(object_t *other) {
+obj_new_other(const object_t *other) {
     object_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->type = other->type;
 
-    if (other->identifier) {
+    switch(other->type) {
+    case OBJ_TYPE_NIL:
+        break;
+    case OBJ_TYPE_INTEGER:
+        self->lvalue = other->lvalue;
+        break;
+    case OBJ_TYPE_BOOL:
+        self->boolean = other->boolean;
+        break;
+    case OBJ_TYPE_IDENTIFIER:
         self->identifier = str_newother(other->identifier);
-    }
-
-    if (other->string) {
+        break;
+    case OBJ_TYPE_STRING:
         self->string = str_newother(other->string);
-    }
-
-    self->lvalue = other->lvalue;
-    self->boolean = other->boolean;
-
-    if (other->objarr) {
+        break;
+    case OBJ_TYPE_ARRAY:
         self->objarr = objarr_new_other(other->objarr);
+        break;
+    case OBJ_TYPE_FUNC:
+        self->func.name = obj_new_other(other->func.name);
+        self->func.args = obj_new_other(other->func.args);
+        self->func.ref_suite = other->func.ref_suite; // save reference
+        break;
     }
 
     return self;    
@@ -177,5 +208,23 @@ obj_to_str(const object_t *self) {
     } // switch
 
     assert(0 && "failed to object to string. invalid state");
+    return NULL;
+}
+
+object_t *
+obj_to_array(const object_t *obj) {
+
+    switch (obj->type) {
+    default: {
+        object_array_t *objarr = objarr_new();
+        objarr_moveb(objarr, obj_new_other(obj));
+        return obj_new_array(objarr);    
+    } break;
+    case OBJ_TYPE_ARRAY:
+        return obj_new_other(obj);
+        break;
+    }
+
+    assert(0 && "impossible. not supported type in obj to array");
     return NULL;
 }
