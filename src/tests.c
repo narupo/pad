@@ -7715,6 +7715,22 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "xy"));
     }
 
+    tkr_parse(tkr, "{@\n"
+        "    def add(a):\n"
+        "        a += \"x\"\n"
+        "    end\n"
+        "\n"
+        "   a = \"\"\n"
+        "   add(a)\n"
+        "@}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), ""));
+    } 
+
     /* TODO: sub ass
     tkr_parse(tkr, "{@ a = 0 \n a -= 1 @}{: a :}");
     {
