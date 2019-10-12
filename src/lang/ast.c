@@ -2960,6 +2960,10 @@ ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
             tcheck("call _ast_traverse");
             _ast_traverse(self, for_stmt->elems, dep+1);
 
+            if (ctx_get_do_break(self->context)) {
+                break;
+            }
+
             obj_del(result);
         }
     } else {
@@ -2967,6 +2971,10 @@ ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
         for (;;) {
             tcheck("call _ast_traverse");
             _ast_traverse(self, for_stmt->elems, dep+1);
+            
+            if (ctx_get_do_break(self->context)) {
+                break;
+            }
         }
     }
 
