@@ -3301,6 +3301,7 @@ get_var_ref(ast_t *self, const char *identifier, int dep) {
 static object_t *
 move_var(ast_t *self, const char *identifier, object_t *move_obj, int dep) {
     tready();
+    assert(move_obj->type != OBJ_TYPE_IDENTIFIER);
 
     object_dict_t *varmap = ctx_get_varmap(self->context);
     objdict_move(varmap, identifier, move_obj);
@@ -5738,14 +5739,15 @@ ast_traverse_term(ast_t *self, node_t *node, int dep) {
 }
 
 /**
+ * pull-in reference of object by identifier object
  * return reference to variable
  */
 static object_t *
-pull_in_idn(ast_t *self, object_t *obj) {
-    switch (obj->type) {
+pull_in_idn(ast_t *self, object_t *idn_obj) {
+    switch (idn_obj->type) {
     default: break;
     case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = str_getc(obj->identifier);
+        const char *idn = str_getc(idn_obj->identifier);
         object_t *var = get_var_ref(self, idn, 0);
         if (!var) {
             ast_set_error_detail(self, "\"%s\" is not defined", idn);
@@ -5755,7 +5757,7 @@ pull_in_idn(ast_t *self, object_t *obj) {
     } break;
     }
 
-    return obj;
+    return idn_obj;
 }
 
 static object_t *
@@ -5896,10 +5898,9 @@ ast_calc_asscalc_add_ass_identifier(ast_t *self, object_t *lhs, object_t *rhs, i
     tready();
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
-    const char *idn = str_getc(lhs->identifier);
-    object_t *ref_lvar = get_var_ref(self, idn, dep+1);
+    object_t *ref_lvar = pull_in_idn(self, lhs);
     if (!ref_lvar) {
-        ast_set_error_detail(self, "\"%s\" is not defined in add ass identifier", idn);
+        ast_set_error_detail(self, "\"%s\" is not defined in add ass identifier", str_getc(lhs->identifier));
         return_trav(NULL);
     }
 
@@ -5923,8 +5924,9 @@ ast_calc_asscalc_add_ass_identifier(ast_t *self, object_t *lhs, object_t *rhs, i
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER:
-        ast_set_error_detail(self, "can't add assign to identifier");
-        return_trav(NULL);
+        tcheck("call ast_calc_asscalc_add_ass_identifier");
+        new_obj = ast_calc_asscalc_add_ass_identifier(self, ref_lvar, rhs, dep+1);
+        vissf("new_obj[%p]", new_obj);
         break;
     case OBJ_TYPE_STRING: {
         tcheck("call ast_calc_asscalc_add_ass_identifier_string");
@@ -6249,9 +6251,11 @@ ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int 
             const object_t *farg = objarr_getc(formal_args, i);
             assert(farg->type == OBJ_TYPE_IDENTIFIER);
             const char *fargname = str_getc(farg->identifier);
-            const object_t *aarg = objarr_getc(actual_args, i);
 
-            object_t *copy_aarg = obj_new_other(aarg);
+            object_t *aarg = objarr_get(actual_args, i);
+            object_t *ref_aarg = pull_in_idn(self, aarg);
+            object_t *copy_aarg = obj_new_other(ref_aarg);
+            
             move_var(self, fargname, copy_aarg, dep+1);
         }
     }
