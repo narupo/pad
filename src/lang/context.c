@@ -23,8 +23,8 @@ ctx_del(context_t *self) {
         return;
     }
 
-    objdict_del(self->almap);
-    objdict_del(self->confmap);
+    dict_del(self->almap);
+    dict_del(self->confmap);
     str_del(self->buf);
     scope_del(self->scope);
     free(self);
@@ -156,3 +156,7 @@ ctx_popb_scope(context_t *self) {
     scope_del(scope);
 }
 
+object_t *
+ctx_find_var(context_t *self, const char *key) {
+    return scope_find_var(self->scope, key);
+}
