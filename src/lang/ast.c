@@ -3146,6 +3146,9 @@ ast_traverse_return_stmt(ast_t *self, node_t *node, int dep) {
         //
         // そのためここで実体を取得して実体を返すようにする
         ret = pull_in_ref_by(self, result);
+        if (ret) {
+            ret = obj_new_other(ret); // return copy
+        }
         obj_del(result);
     }
 
