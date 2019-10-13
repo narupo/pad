@@ -285,6 +285,8 @@ tkr_parse_identifier(tokenizer_t *self) {
         token->type = TOKEN_TYPE_STMT_BREAK;
     } else if (cstr_eq(token->text, "continue")) {
         token->type = TOKEN_TYPE_STMT_CONTINUE;
+    } else if (cstr_eq(token->text, "return")) {
+        token->type = TOKEN_TYPE_STMT_RETURN;
     } else if (cstr_eq(token->text, "def")) {
         token->type = TOKEN_TYPE_DEF;
     }

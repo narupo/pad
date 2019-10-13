@@ -8,11 +8,12 @@ BNF of Cap's template language
         text-block: .*
              elems: ( def | stmt | formula ) elems
 
-              stmt: import_stmt |
+             - stmt: import_stmt |
                     if_stmt |
                     for_stmt |
                     break_stmt |
-                    continue_stmt 
+                    continue_stmt |
+                    return_stmt
 
                def: func_def 
           func_def: 'def' identifier func_def_params ':' elems 'end' |
@@ -34,6 +35,7 @@ BNF of Cap's template language
                     'for' ':' elems 'end'
         break_stmt: 'break'
      continue_stmt: 'continue'
+     - return_stmt: 'return' ( formula )
 
            formula: assign_list |
                     multi_assign

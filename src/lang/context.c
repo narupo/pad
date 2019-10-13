@@ -15,6 +15,7 @@ struct context {
     bool imported_config;
     bool do_break;
     bool do_continue;
+    bool do_return;
 };
 
 void
@@ -138,10 +139,21 @@ ctx_set_do_continue(context_t *self, bool do_continue) {
     self->do_continue = do_continue;
 }
 
+const bool
+ctx_get_do_return(const context_t *self) {
+    return self->do_return;
+}
+
+void
+ctx_set_do_return(context_t *self, bool do_return) {
+    self->do_return = do_return;
+}
+
 void
 ctx_clear_jump_flags(context_t *self) {
     self->do_break = false;
     self->do_continue = false;
+    self->do_return = false;
 }
 
 void

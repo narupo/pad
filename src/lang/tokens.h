@@ -60,6 +60,7 @@ typedef enum {
     TOKEN_TYPE_STMT_FOR, // 'for'
     TOKEN_TYPE_STMT_BREAK, // 'break'
     TOKEN_TYPE_STMT_CONTINUE, // 'continue'
+    TOKEN_TYPE_STMT_RETURN, // 'return'
 
     // def
     TOKEN_TYPE_DEF, // 'def'
