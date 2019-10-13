@@ -3135,6 +3135,39 @@ ast_traverse_continue_stmt(ast_t *self, node_t *node, int dep) {
     return_trav(NULL);
 }
 
+/**
+ * extract identifier objects
+ *
+ * @return new object
+ */
+static object_t *
+extract_obj(ast_t *self, object_t *srcobj) {
+    assert(srcobj);
+     
+    switch (srcobj->type) {
+    default: return obj_new_other(srcobj); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *ref = pull_in_ref_by(self, srcobj);
+        if (!ref) {
+            return NULL;
+        }
+        return obj_new_other(ref);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_array_t *objarr = objarr_new();
+        for (int32_t i = 0; i < objarr_len(srcobj->objarr); ++i) {
+            object_t *el = objarr_get(srcobj->objarr, i);
+            object_t *newel = extract_obj(self, el);
+            objarr_moveb(objarr, newel);
+        }
+        return obj_new_array(objarr);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to extract object");
+    return NULL;
+}
+
 static object_t *
 ast_traverse_return_stmt(ast_t *self, node_t *node, int dep) {
     tready();
@@ -3156,27 +3189,21 @@ ast_traverse_return_stmt(ast_t *self, node_t *node, int dep) {
         return_trav(NULL);
     }
 
-    object_t *ret = result;
-    if (result->type == OBJ_TYPE_IDENTIFIER) {
-        // return文の場合、formulaの結果がidentifierだったらidentifierが指す
-        // 実体を取得して返さなければならない
-        // 関数の戻り値に、関数内の変数を使っていた場合、ここでidentifierをそのまま返すと、
-        // 関数呼び出し時の代入で関数内の変数のidentifierが代入されてしまう
-        // 例えば以下のようなコードである
-        //
-        //     def func():
-        //         a = 1
-        //         return a
-        //     end
-        //     x = func()
-        //
-        // そのためここで実体を取得して実体を返すようにする
-        ret = pull_in_ref_by(self, result);
-        if (ret) {
-            ret = obj_new_other(ret); // return copy
-        }
-        obj_del(result);
-    }
+    // return文の場合、formulaの結果がidentifierだったらidentifierが指す
+    // 実体を取得して返さなければならない
+    // 関数の戻り値に、関数内の変数を使っていた場合、ここでidentifierをそのまま返すと、
+    // 関数呼び出し時の代入で関数内の変数のidentifierが代入されてしまう
+    // 例えば以下のようなコードである
+    //
+    //     def func():
+    //         a = 1
+    //         return a
+    //     end
+    //     x = func()
+    //
+    // そのためここで実体を取得して実体を返すようにする
+    object_t *ret = extract_obj(self, result);
+    obj_del(result);
 
     tcheck("set true at do return flag");
     ctx_set_do_return(self->context, true);
