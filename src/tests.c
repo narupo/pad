@@ -2353,6 +2353,7 @@ test_ast_parse(void) {
     node_nil_t *nil;
     node_break_stmt_t *break_stmt;
     node_continue_stmt_t *continue_stmt;
+    node_return_stmt_t *return_stmt;
     node_def_t *def;
     node_func_def_t *func_def;
     node_func_def_params_t *func_def_params;
@@ -3276,7 +3277,7 @@ test_ast_parse(void) {
     tkr_parse(tkr, "{@ nil @}");
     {
         ast_clear(ast);
-        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_parse(ast, tkr_get_tokens(tkr)));
         root = ast_getc_root(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7049,6 +7050,110 @@ test_ast_parse(void) {
         assert(continue_stmt);
     } 
 
+    tkr_parse(tkr, "{@ for 1; 1; 1: return end @}");
+    {
+        ast_clear(ast);
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        assert(root != NULL);
+        assert(root->type == NODE_TYPE_PROGRAM);
+        assert(root->real != NULL);
+        program = root->real;
+        assert(program->blocks != NULL);
+        assert(program->blocks->type == NODE_TYPE_BLOCKS);
+        assert(program->blocks->real != NULL);
+        blocks = program->blocks->real;
+        assert(blocks->code_block != NULL);
+        assert(blocks->code_block->type == NODE_TYPE_CODE_BLOCK);
+        assert(blocks->code_block->real != NULL);
+        assert(blocks->ref_block == NULL);
+        assert(blocks->text_block == NULL);
+        code_block = blocks->code_block->real;
+        assert(code_block->elems != NULL);
+        assert(code_block->elems->type == NODE_TYPE_ELEMS);
+        assert(code_block->elems->real != NULL);
+        elems = code_block->elems->real;
+        assert(elems->stmt != NULL);
+        assert(elems->stmt->type == NODE_TYPE_STMT);
+        assert(elems->stmt->real != NULL);
+        stmt = elems->stmt->real;
+        assert(stmt->import_stmt == NULL);
+        assert(stmt->if_stmt == NULL);
+        assert(stmt->for_stmt != NULL);
+        assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
+        assert(stmt->for_stmt->real != NULL);
+        for_stmt = stmt->for_stmt->real;
+        assert(for_stmt->init_formula != NULL);
+        assert(for_stmt->init_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->init_formula->real != NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula != NULL);
+        assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->update_formula->real != NULL);
+        assert(for_stmt->elems != NULL);
+        assert(for_stmt->blocks == NULL);
+        elems = for_stmt->elems->real;
+        assert(elems->stmt != NULL);
+        stmt = elems->stmt->real;
+        return_stmt = stmt->return_stmt->real;
+        assert(return_stmt);
+        assert(return_stmt->formula == NULL);
+    } 
+
+    tkr_parse(tkr, "{@ for 1; 1; 1: return 1 end @}");
+    {
+        ast_clear(ast);
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        assert(root != NULL);
+        assert(root->type == NODE_TYPE_PROGRAM);
+        assert(root->real != NULL);
+        program = root->real;
+        assert(program->blocks != NULL);
+        assert(program->blocks->type == NODE_TYPE_BLOCKS);
+        assert(program->blocks->real != NULL);
+        blocks = program->blocks->real;
+        assert(blocks->code_block != NULL);
+        assert(blocks->code_block->type == NODE_TYPE_CODE_BLOCK);
+        assert(blocks->code_block->real != NULL);
+        assert(blocks->ref_block == NULL);
+        assert(blocks->text_block == NULL);
+        code_block = blocks->code_block->real;
+        assert(code_block->elems != NULL);
+        assert(code_block->elems->type == NODE_TYPE_ELEMS);
+        assert(code_block->elems->real != NULL);
+        elems = code_block->elems->real;
+        assert(elems->stmt != NULL);
+        assert(elems->stmt->type == NODE_TYPE_STMT);
+        assert(elems->stmt->real != NULL);
+        stmt = elems->stmt->real;
+        assert(stmt->import_stmt == NULL);
+        assert(stmt->if_stmt == NULL);
+        assert(stmt->for_stmt != NULL);
+        assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
+        assert(stmt->for_stmt->real != NULL);
+        for_stmt = stmt->for_stmt->real;
+        assert(for_stmt->init_formula != NULL);
+        assert(for_stmt->init_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->init_formula->real != NULL);
+        assert(for_stmt->comp_formula != NULL);
+        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->comp_formula->real != NULL);
+        assert(for_stmt->update_formula != NULL);
+        assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
+        assert(for_stmt->update_formula->real != NULL);
+        assert(for_stmt->elems != NULL);
+        assert(for_stmt->blocks == NULL);
+        elems = for_stmt->elems->real;
+        assert(elems->stmt != NULL);
+        stmt = elems->stmt->real;
+        return_stmt = stmt->return_stmt->real;
+        assert(return_stmt);
+        assert(return_stmt->formula);
+    } 
+
     tkr_del(tkr);
     ast_del(ast);
     // tail
@@ -7829,7 +7934,7 @@ test_ast_traverse(void) {
     tkr_parse(tkr, "{@ import alias @}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
+        (ast_traverse(ast, ctx));
     }
 
     tkr_parse(tkr, "{@ import my.alias @}");
@@ -8098,6 +8203,121 @@ test_ast_traverse(void) {
         (ast_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "4,3"));
+    } 
+
+    tkr_parse(tkr, "{@\n"
+        "def func():\n"
+        "   return\n"
+        "end\n"
+        "puts(func())"
+        "@}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "nil\n"));
+    } 
+
+    tkr_parse(tkr, "{@\n"
+        "def func():\n"
+        "   return 1\n"
+        "end\n"
+        "a = func()"
+        "@}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    } 
+
+    tkr_parse(tkr, "{@\n"
+        "def func():\n"
+        "   return 1\n"
+        "end\n"
+        "puts(func())"
+        "@}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
+    } 
+
+    tkr_parse(tkr, "{@\n"
+        "def func():\n"
+        "   return 1, 2\n"
+        "end\n"
+        "puts(func())"
+        "@}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1 2\n"));
+    } 
+
+    tkr_parse(tkr, "{@\n"
+        "def func():\n"
+        "   puts(\"a\")\n"
+        "   return 1\n"
+        "   puts(\"b\")\n"
+        "end\n"
+        "puts(func())"
+        "@}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "a\n1\n"));
+    } 
+
+    tkr_parse(tkr, "{@\n"
+        "def func():\n"
+        "   a = 1\n"
+        "   return a\n"
+        "end\n"
+        "x = func()\n"
+        "@}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), ""));
+    } 
+
+    tkr_parse(tkr, "{@\n"
+        "def func():\n"
+        "   a = 1\n"
+        "   if a == 1:\n"
+        "       return a\n"
+        "   end\n"
+        "   puts(\"b\")\n"
+        "end\n"
+        "x = func()\n"
+        "@}{: x :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    } 
+
+    tkr_parse(tkr, "{@\n"
+        "def func():\n"
+        "   a = 1\n"
+        "   if a == 1:\n"
+        "       return a\n"
+        "   end\n"
+        "   puts(\"b\")\n"
+        "end\n"
+        "puts(func())\n"
+        "@}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
     } 
 
     /***********

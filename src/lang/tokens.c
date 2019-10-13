@@ -54,6 +54,7 @@ token_type_to_str(const token_t *self) {
     switch (self->type) {
     default: return "unknown"; break;
     case TOKEN_TYPE_INVALID: return "invalid"; break;
+    case TOKEN_TYPE_NIL: return "nil"; break;
     case TOKEN_TYPE_NEWLINE: return "NEWLINE"; break;
     case TOKEN_TYPE_TEXT_BLOCK:
         snprintf(str, sizeof str, "text block[%s]", self->text);

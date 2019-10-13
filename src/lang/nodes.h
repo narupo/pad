@@ -29,6 +29,7 @@ typedef enum {
     NODE_TYPE_FOR_STMT,
     NODE_TYPE_BREAK_STMT,
     NODE_TYPE_CONTINUE_STMT,
+    NODE_TYPE_RETURN_STMT,
 
     NODE_TYPE_FORMULA,
     NODE_TYPE_MULTI_ASSIGN,
@@ -89,35 +90,35 @@ typedef enum {
 * node structures *
 ******************/
 
-typedef struct node {
+typedef struct {
     node_type_t type;
     void *real;
 } node_t;
 
-typedef struct node_program {
+typedef struct {
     node_t *blocks;
 } node_program_t;
 
-typedef struct node_blocks {
+typedef struct {
     node_t *code_block;
     node_t *ref_block;
     node_t *text_block;
     node_t *blocks;
 } node_blocks_t;
 
-typedef struct node_code_block {
+typedef struct {
     node_t *elems;
 } node_code_block_t;
 
-typedef struct node_ref_block {
+typedef struct {
     node_t *formula;
 } node_ref_block_t;
 
-typedef struct node_text_block {
+typedef struct {
     char *text;
 } node_text_block_t;
 
-typedef struct node_elems {
+typedef struct {
     node_t *def;
     node_t *stmt;
     node_t *formula;
@@ -128,19 +129,20 @@ typedef struct node_elems {
 * stmt *
 *******/
 
-typedef struct node_stmt {
+typedef struct {
     node_t *import_stmt;
     node_t *if_stmt;
     node_t *for_stmt;
     node_t *break_stmt;
     node_t *continue_stmt;
+    node_t *return_stmt;
 } node_stmt_t;
 
-typedef struct node_import_stmt {
+typedef struct {
     node_t *identifier_chain;
 } node_import_stmt_t;
 
-typedef struct node_if_stmt {
+typedef struct {
     node_t *test;
     node_t *elems;
     node_t *blocks;
@@ -150,12 +152,12 @@ typedef struct node_if_stmt {
 
 typedef node_if_stmt_t node_elif_stmt_t;
 
-typedef struct node_else_stmt {
+typedef struct {
     node_t *elems;
     node_t *blocks;
 } node_else_stmt_t;
 
-typedef struct node_for_stmt {
+typedef struct {
     node_t *init_formula;
     node_t *comp_formula;
     node_t *update_formula;
@@ -163,34 +165,38 @@ typedef struct node_for_stmt {
     node_t *blocks;
 } node_for_stmt_t;
 
-typedef struct node_break_stmt {
+typedef struct {
     bool dummy;
 } node_break_stmt_t;
 
-typedef struct node_continue_stmt {
+typedef struct {
     bool dummy;
 } node_continue_stmt_t;
+
+typedef struct {
+    node_t *formula;
+} node_return_stmt_t;
 
 /******
 * def *
 ******/
 
-typedef struct node_def {
+typedef struct {
     node_t *func_def;
 } node_def_t;
 
-typedef struct node_func_def {
+typedef struct {
     node_t *identifier;
     node_t *func_def_params;
     node_t *elems;
     node_t *blocks;
 } node_func_def_t;
 
-typedef struct node_func_def_params {
+typedef struct {
     node_t *func_def_args;
 } node_func_def_params_t;
 
-typedef struct node_func_def_args {
+typedef struct {
     node_array_t *identifiers;
 } node_func_def_args_t;
 
@@ -198,66 +204,66 @@ typedef struct node_func_def_args {
 * formula *
 **********/
 
-typedef struct node_formula {
+typedef struct {
     node_t *assign_list;
     node_t *multi_assign;
 } node_formula_t;
 
-typedef struct node_multi_assign {
+typedef struct {
     node_array_t *nodearr;
 } node_multi_assign_t;
 
-typedef struct node_assign {
+typedef struct {
     node_array_t *nodearr;
 } node_assign_t;
 
-typedef struct node_assign_list {
+typedef struct {
     node_array_t *nodearr;
 } node_assign_list_t;
 
-typedef struct node_test_list {
+typedef struct {
     node_array_t *nodearr;
 } node_test_list_t;
 
-typedef struct node_test {
+typedef struct {
     node_t *or_test;
 } node_test_t;
 
-typedef struct node_or_test {
+typedef struct {
     node_array_t *nodearr;
 } node_or_test_t;
 
-typedef struct node_and_test {
+typedef struct {
     node_array_t *nodearr;
 } node_and_test_t;
 
-typedef struct node_not_test {
+typedef struct {
     node_t *not_test;
     node_t *comparison;
 } node_not_test_t;
 
-typedef struct node_comparison {
+typedef struct {
     node_array_t *nodearr;
 } node_comparison_t;
 
-typedef struct node_expr {
+typedef struct {
     node_array_t *nodearr;
 } node_expr_t;
 
-typedef struct node_term {
+typedef struct {
     node_array_t *nodearr;
 } node_term_t;
 
-typedef struct node_asscalc {
+typedef struct {
     node_array_t *nodearr;
 } node_asscalc_t;
 
-typedef struct node_factor {
+typedef struct {
     node_t *atom;
     node_t *test;
 } node_factor_t;
 
-typedef struct node_atom {
+typedef struct {
     node_t *nil;
     node_t *digit;
     node_t *string;
@@ -265,45 +271,45 @@ typedef struct node_atom {
     node_t *caller;
 } node_atom_t;
 
-typedef struct node_augassign {
+typedef struct {
     op_t op;
 } node_augassign_t;
 
-typedef struct node_comp_op {
+typedef struct {
     op_t op;
 } node_comp_op_t;
 
-typedef struct node_add_sub_op {
+typedef struct {
     op_t op;
 } node_add_sub_op_t;
 
-typedef struct node_mul_div_op {
+typedef struct {
     op_t op;
 } node_mul_div_op_t;
 
-typedef struct node_nil {
+typedef struct {
     bool dummy;
 } node_nil_t;
 
-typedef struct node_digit {
+typedef struct {
     long lvalue;
 } node_digit_t;
 
-typedef struct node_caller {
+typedef struct {
     node_t *identifier_chain;
     node_t *test_list;
 } node_caller_t;
 
-typedef struct node_identifier_chain {
+typedef struct {
     node_t *identifier;
     node_t *identifier_chain;
 } node_identifier_chain_t;
 
-typedef struct node_string {
+typedef struct {
     char *string;
 } node_string_t;
 
-typedef struct node_identifier {
+typedef struct {
     char *identifier;
 } node_identifier_t;
 

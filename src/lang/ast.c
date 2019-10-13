@@ -154,6 +154,9 @@ static object_t *
 move_var(ast_t *self, const char *identifier, object_t *move_obj, int dep);
 
 static object_t *
+pull_in_ref_by(ast_t *self, object_t *idn_obj);
+
+static object_t *
 ast_calc_asscalc_ass(ast_t *self, object_t *lhs, object_t *rhs, int dep);
 
 static node_t *
@@ -831,6 +834,38 @@ ast_continue_stmt(ast_t *self, int dep) {
     check("read 'continue'");
 
     return_parse(node_new(NODE_TYPE_CONTINUE_STMT, cur));
+}
+
+static node_t *
+ast_return_stmt(ast_t *self, int dep) {
+    ready();
+    declare(node_return_stmt_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_STMT_RETURN) {
+        // not error
+        return_cleanup("");
+    }
+    check("read 'return'");
+
+    cur->formula = ast_formula(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    // allow null
+
+    return_parse(node_new(NODE_TYPE_RETURN_STMT, cur));
 }
 
 static node_t *
@@ -2008,6 +2043,9 @@ ast_stmt(ast_t *self, int dep) {
         ast_del_nodes(self, cur->import_stmt); \
         ast_del_nodes(self, cur->if_stmt); \
         ast_del_nodes(self, cur->for_stmt); \
+        ast_del_nodes(self, cur->break_stmt); \
+        ast_del_nodes(self, cur->continue_stmt); \
+        ast_del_nodes(self, cur->return_stmt); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
@@ -2050,7 +2088,15 @@ ast_stmt(ast_t *self, int dep) {
                             return_cleanup("");
                         }
 
-                        return_cleanup("");
+                        check("call ast_return_stmt");
+                        cur->return_stmt = ast_return_stmt(self, dep+1);
+                        if (!cur->return_stmt) {
+                            if (ast_has_error(self)) {
+                                return_cleanup("");
+                            }
+
+                            return_cleanup("");
+                        }
                     }
                 }
             }
@@ -2687,37 +2733,44 @@ static object_t *
 ast_traverse_elems(ast_t *self, node_t *node, int dep) {
     tready();
     node_elems_t *elems = node->real;
+    object_t *result = NULL;
 
     tcheck("call _ast_traverse with def");
-    _ast_traverse(self, elems->def, dep+1);
-    if (ast_has_error(self)) {
-        return_trav(NULL);
-    }
+    if (elems->def) {
+        _ast_traverse(self, elems->def, dep+1);
+        if (ast_has_error(self)) {
+            return_trav(NULL);
+        }
+    } else if (elems->stmt) {
+        tcheck("call _ast_traverse with stmt");
+        result = _ast_traverse(self, elems->stmt, dep+1);
+        if (ast_has_error(self)) {
+            return_trav(NULL);
+        }
 
-    tcheck("call _ast_traverse with stmt");
-    _ast_traverse(self, elems->stmt, dep+1);
-    if (ast_has_error(self)) {
-        return_trav(NULL);
-    }
-
-    if (ctx_get_do_break(self->context) ||
-        ctx_get_do_continue(self->context)) {
-        return_trav(NULL);
-    }
-
-    tcheck("call _ast_traverse with formula");
-    _ast_traverse(self, elems->formula, dep+1);
-    if (ast_has_error(self)) {
-        return_trav(NULL);
+        if (ctx_get_do_break(self->context) ||
+            ctx_get_do_continue(self->context)) {
+            return_trav(result);
+        } else if (ctx_get_do_return(self->context)) {
+            return_trav(result);
+        }
+        obj_del(result);
+    } else if (elems->formula) {
+        tcheck("call _ast_traverse with formula");
+        _ast_traverse(self, elems->formula, dep+1);
+        if (ast_has_error(self)) {
+            return_trav(NULL);
+        }        
     }
 
     tcheck("call _ast_traverse with elems");
-    _ast_traverse(self, elems->elems, dep+1);
+    result = _ast_traverse(self, elems->elems, dep+1);
     if (ast_has_error(self)) {
+        obj_del(result);
         return_trav(NULL);
     }
 
-    return_trav(NULL);
+    return_trav(result);
 }
 
 static object_t *
@@ -2750,37 +2803,53 @@ static object_t *
 ast_traverse_stmt(ast_t *self, node_t *node, int dep) {
     tready();
     node_stmt_t *stmt = node->real;
+    object_t *result = NULL;
 
-    tcheck("call _ast_traverse with import stmt");
-    _ast_traverse(self, stmt->import_stmt, dep+1);
-    if (ast_has_error(self)) {
+    if (stmt->import_stmt) {
+        tcheck("call _ast_traverse with import stmt");
+        _ast_traverse(self, stmt->import_stmt, dep+1);
+        if (ast_has_error(self)) {
+            return_trav(NULL);
+        }
         return_trav(NULL);
+    } else if (stmt->if_stmt) {
+        tcheck("call _ast_traverse with if stmt");
+        result = _ast_traverse(self, stmt->if_stmt, dep+1);
+        if (ast_has_error(self)) {
+            return_trav(NULL);
+        }
+        return_trav(result);
+    } else if (stmt->for_stmt) {
+        tcheck("call _ast_traverse with for stmt");
+        result = _ast_traverse(self, stmt->for_stmt, dep+1);
+        if (ast_has_error(self)) {
+            return_trav(NULL);
+        }
+        return_trav(result);
+    } else if (stmt->break_stmt) {
+        tcheck("call _ast_traverse with break stmt");
+        _ast_traverse(self, stmt->break_stmt, dep+1);
+        if (ast_has_error(self)) {
+            return_trav(NULL);
+        }
+        return_trav(NULL);
+    } else if (stmt->continue_stmt) {
+        tcheck("call _ast_traverse with continue stmt");
+        _ast_traverse(self, stmt->continue_stmt, dep+1);
+        if (ast_has_error(self)) {
+            return_trav(NULL);
+        }
+        return_trav(NULL);
+    } else if (stmt->return_stmt) {
+        tcheck("call _ast_traverse with return stmt");
+        result = _ast_traverse(self, stmt->return_stmt, dep+1);
+        if (ast_has_error(self)) {
+            return_trav(NULL);
+        }
+        return_trav(result);
     }
 
-    tcheck("call _ast_traverse with if stmt");
-    _ast_traverse(self, stmt->if_stmt, dep+1);
-    if (ast_has_error(self)) {
-        return_trav(NULL);
-    }
-    
-    tcheck("call _ast_traverse with for stmt");
-    _ast_traverse(self, stmt->for_stmt, dep+1);
-    if (ast_has_error(self)) {
-        return_trav(NULL);
-    }
-
-    tcheck("call _ast_traverse with break stmt");
-    _ast_traverse(self, stmt->break_stmt, dep+1);
-    if (ast_has_error(self)) {
-        return_trav(NULL);
-    }
-
-    tcheck("call _ast_traverse with continue stmt");
-    _ast_traverse(self, stmt->continue_stmt, dep+1);
-    if (ast_has_error(self)) {
-        return_trav(NULL);
-    }
-
+    assert(0 && "impossible. invalid state in traverse stmt");
     return_trav(NULL);
 }
 
@@ -2845,17 +2914,19 @@ ast_traverse_if_stmt(ast_t *self, node_t *node, int dep) {
     }
 
     bool boolean = ast_parse_bool(self, result);
+    obj_del(result);
+    result = NULL;
 
     if (boolean) {
         if (if_stmt->elems) {
             tcheck("call _ast_traverse");
-            _ast_traverse(self, if_stmt->elems, dep+1);
+            result = _ast_traverse(self, if_stmt->elems, dep+1);
             if (ast_has_error(self)) {
                 return_trav(NULL);
             }
         } else if (if_stmt->blocks) {
             tcheck("call _ast_traverse");
-            _ast_traverse(self, if_stmt->blocks, dep+1);
+            result = _ast_traverse(self, if_stmt->blocks, dep+1);
             if (ast_has_error(self)) {
                 return_trav(NULL);
             }
@@ -2865,13 +2936,13 @@ ast_traverse_if_stmt(ast_t *self, node_t *node, int dep) {
     } else {
         if (if_stmt->elif_stmt) {
             tcheck("call _ast_traverse");
-            _ast_traverse(self, if_stmt->elif_stmt, dep+1);
+            result = _ast_traverse(self, if_stmt->elif_stmt, dep+1);
             if (ast_has_error(self)) {
                 return_trav(NULL);
             }
         } else if (if_stmt->else_stmt) {
             tcheck("call _ast_traverse");
-            _ast_traverse(self, if_stmt->else_stmt, dep+1);
+            result = _ast_traverse(self, if_stmt->else_stmt, dep+1);
             if (ast_has_error(self)) {
                 return_trav(NULL);
             }
@@ -2880,7 +2951,7 @@ ast_traverse_if_stmt(ast_t *self, node_t *node, int dep) {
         }
     }
 
-    return_trav(NULL);
+    return_trav(result);
 }
 
 static object_t *
@@ -3021,6 +3092,7 @@ ast_traverse_break_stmt(ast_t *self, node_t *node, int dep) {
     tready();
     assert(node->type == NODE_TYPE_BREAK_STMT);
 
+    tcheck("set true at do break flag");
     ctx_set_do_break(self->context, true);
 
     return_trav(NULL);
@@ -3031,10 +3103,56 @@ ast_traverse_continue_stmt(ast_t *self, node_t *node, int dep) {
     tready();
     assert(node->type == NODE_TYPE_CONTINUE_STMT);
 
-    viss("do continue to be true");
+    tcheck("set true at do continue flag");
     ctx_set_do_continue(self->context, true);
 
     return_trav(NULL);
+}
+
+static object_t *
+ast_traverse_return_stmt(ast_t *self, node_t *node, int dep) {
+    tready();
+    assert(node->type == NODE_TYPE_RETURN_STMT);
+    node_return_stmt_t *return_stmt = node->real;
+    assert(return_stmt);
+
+    if (!return_stmt->formula) {
+        return_trav(NULL);
+    }
+
+    tcheck("call _ast_traverse with formula");
+    object_t *result = _ast_traverse(self, return_stmt->formula, dep+1);
+    if (!result) {
+        if (ast_has_error(self)) {
+            return_trav(NULL);
+        }
+        ast_set_error_detail(self, "result is null from formula in return statement");
+        return_trav(NULL);
+    }
+
+    object_t *ret = result;
+    if (result->type == OBJ_TYPE_IDENTIFIER) {
+        // return文の場合、formulaの結果がidentifierだったらidentifierが指す
+        // 実体を取得して返さなければならない
+        // 関数の戻り値に、関数内の変数を使っていた場合、ここでidentifierをそのまま返すと、
+        // 関数呼び出し時の代入で関数内の変数のidentifierが代入されてしまう
+        // 例えば以下のようなコードである
+        //
+        //     def func():
+        //         a = 1
+        //         return a
+        //     end
+        //     x = func()
+        //
+        // そのためここで実体を取得して実体を返すようにする
+        ret = pull_in_ref_by(self, result);
+        obj_del(result);
+    }
+
+    tcheck("set true at do return flag");
+    ctx_set_do_return(self->context, true);
+
+    return_trav(ret);
 }
 
 static object_t *
@@ -5774,23 +5892,27 @@ ast_traverse_term(ast_t *self, node_t *node, int dep) {
 /**
  * pull-in reference of object by identifier object
  * return reference to variable
+ *
+ * @param[in] *self
+ * @param[in] *idn_obj identifier object
+ *
+ * @param return NULL|pointer to object in varmap in current scope
  */
 static object_t *
-pull_in_idn(ast_t *self, object_t *idn_obj) {
-    switch (idn_obj->type) {
-    default: break;
-    case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = str_getc(idn_obj->identifier);
-        object_t *var = get_var_ref(self, idn, 0);
-        if (!var) {
-            ast_set_error_detail(self, "\"%s\" is not defined", idn);
-            return NULL;
-        }
-        return pull_in_idn(self, var);
-    } break;
+pull_in_ref_by(ast_t *self, object_t *idn_obj) {
+    assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
+
+    const char *idn = str_getc(idn_obj->identifier);
+    object_t *ref = get_var_ref(self, idn, 0);
+    if (!ref) {
+        ast_set_error_detail(self, "\"%s\" is not defined in pull in ref by", idn);
+        return NULL;
+    }
+    if (ref->type == OBJ_TYPE_IDENTIFIER) {
+        return pull_in_ref_by(self, ref);
     }
 
-    return idn_obj;
+    return ref;
 }
 
 static object_t *
@@ -5805,7 +5927,7 @@ ast_calc_asscalc_ass_idn(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rval = pull_in_idn(self, rhs);
+        object_t *rval = pull_in_ref_by(self, rhs);
         if (!rval) {
             return_trav(NULL);
         }
@@ -5931,7 +6053,7 @@ ast_calc_asscalc_add_ass_identifier(ast_t *self, object_t *lhs, object_t *rhs, i
     tready();
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
-    object_t *ref_lvar = pull_in_idn(self, lhs);
+    object_t *ref_lvar = pull_in_ref_by(self, lhs);
     if (!ref_lvar) {
         ast_set_error_detail(self, "\"%s\" is not defined in add ass identifier", str_getc(lhs->identifier));
         return_trav(NULL);
@@ -6286,7 +6408,10 @@ ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int 
             const char *fargname = str_getc(farg->identifier);
 
             object_t *aarg = objarr_get(actual_args, i);
-            object_t *ref_aarg = pull_in_idn(self, aarg);
+            object_t *ref_aarg = aarg;
+            if (aarg->type == OBJ_TYPE_IDENTIFIER) {
+                ref_aarg = pull_in_ref_by(self, aarg);
+            }
             object_t *copy_aarg = obj_new_other(ref_aarg);
 
             move_var(self, fargname, copy_aarg, dep+1);
@@ -6297,6 +6422,7 @@ ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int 
 
     tcheck("call _ast_traverse with ref_suite");
     object_t *result = _ast_traverse(self, func->ref_suite, dep+1);
+    vissf("ast_invoke_func_obj result[%p]", result);
     ctx_popb_scope(self->context);
     return result;
 }
@@ -6308,7 +6434,7 @@ ast_obj_to_str(ast_t *self, object_t *obj) {
     switch (obj->type) {
     default: return obj_to_str(obj); break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *var = pull_in_idn(self, obj);
+        object_t *var = pull_in_ref_by(self, obj);
         if (!var) {
             return NULL;
         }
@@ -6402,6 +6528,7 @@ ast_traverse_caller(ast_t *self, node_t *node, int dep) {
     } else if (cstrarr_len(names) == 1) {
         const char *name = cstrarr_getc(names, 0);
         result = ast_invoke_func_obj(self, name, args, dep+1);
+        ctx_set_do_return(self->context, false);
         if (ast_has_error(self)) {
             obj_del(args);
             return_trav(NULL);
@@ -6419,6 +6546,7 @@ ast_traverse_caller(ast_t *self, node_t *node, int dep) {
         return_trav(NULL);
     }
 
+    vissf("result[%p]", result);
     obj_del(args);
     if (!result) {
         return_trav(obj_new_nil());
@@ -6622,6 +6750,12 @@ _ast_traverse(ast_t *self, node_t *node, int dep) {
     case NODE_TYPE_CONTINUE_STMT: {
         tcheck("call ast_traverse_continue_stmt");
         object_t *obj = ast_traverse_continue_stmt(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_RETURN_STMT: {
+        tcheck("call ast_traverse_return_stmt");
+        object_t *obj = ast_traverse_return_stmt(self, node, dep+1);
+        vissf("_ast_traverse obj[%p] from return stmt", obj);
         return_trav(obj);
     } break;
     case NODE_TYPE_TEST_LIST: {
