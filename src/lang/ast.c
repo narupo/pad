@@ -6422,7 +6422,7 @@ ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int 
 
     tcheck("call _ast_traverse with ref_suite");
     object_t *result = _ast_traverse(self, func->ref_suite, dep+1);
-    vissf("ast_invoke_func_obj result[%p]", result);
+    ctx_set_do_return(self->context, false);
     ctx_popb_scope(self->context);
     return result;
 }
@@ -6528,7 +6528,6 @@ ast_traverse_caller(ast_t *self, node_t *node, int dep) {
     } else if (cstrarr_len(names) == 1) {
         const char *name = cstrarr_getc(names, 0);
         result = ast_invoke_func_obj(self, name, args, dep+1);
-        ctx_set_do_return(self->context, false);
         if (ast_has_error(self)) {
             obj_del(args);
             return_trav(NULL);
