@@ -8320,6 +8320,33 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
     } 
 
+    tkr_parse(tkr, "{@\n"
+        "def func():\n"
+        "   return 1, 2\n"
+        "end\n"
+        "a, b = func()\n"
+        "@}{: a :},{: b :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
+    } 
+
+    tkr_parse(tkr, "{@\n"
+        "def func():\n"
+        "   return 1, 2\n"
+        "end\n"
+        "a = func()\n"
+        "@}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
+    } 
+
     /***********
     * func_def *
     ***********/
