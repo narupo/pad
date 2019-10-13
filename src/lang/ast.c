@@ -247,6 +247,32 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         ast_del_nodes(self, else_stmt->blocks);
         node_del(node);
     } break;
+    case NODE_TYPE_FOR_STMT: {
+        node_for_stmt_t *for_stmt = node->real;
+        ast_del_nodes(self, for_stmt->init_formula);
+        ast_del_nodes(self, for_stmt->comp_formula);
+        ast_del_nodes(self, for_stmt->update_formula);
+        ast_del_nodes(self, for_stmt->elems);
+        ast_del_nodes(self, for_stmt->blocks);
+        node_del(node);
+    } break;
+    case NODE_TYPE_BREAK_STMT: {
+        node_del(node);
+    } break;
+    case NODE_TYPE_CONTINUE_STMT: {
+        node_del(node);
+    } break;
+    case NODE_TYPE_RETURN_STMT: {
+        node_return_stmt_t *return_stmt = node->real;
+        ast_del_nodes(self, return_stmt->formula);
+        node_del(node);
+    } break;
+    case NODE_TYPE_FORMULA: {
+        node_formula_t *formula = node->real;
+        ast_del_nodes(self, formula->assign_list);
+        ast_del_nodes(self, formula->multi_assign);
+        node_del(node);
+    } break;
     }
 }
 
