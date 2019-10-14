@@ -187,41 +187,34 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         ast_del_nodes(self, blocks->code_block);
         ast_del_nodes(self, blocks->ref_block);
         ast_del_nodes(self, blocks->text_block);
-        node_del(node);
     } break;
     case NODE_TYPE_CODE_BLOCK: {
         node_code_block_t *code_block = node->real;
         ast_del_nodes(self, code_block->elems);
-        node_del(node);
     } break;
     case NODE_TYPE_REF_BLOCK: {
         node_ref_block_t *ref_block = node->real;
         ast_del_nodes(self, ref_block->formula);
-        node_del(node);
     } break;
     case NODE_TYPE_TEXT_BLOCK: {
         node_text_block_t *text_block = node->real;
         free(text_block->text);
-        node_del(node);
     } break;
     case NODE_TYPE_ELEMS: {
         node_elems_t *elems = node->real;
         ast_del_nodes(self, elems->stmt);
         ast_del_nodes(self, elems->formula);
         ast_del_nodes(self, elems->elems);
-        node_del(node);
     } break;
     case NODE_TYPE_STMT: {
         node_stmt_t *stmt = node->real;
         ast_del_nodes(self, stmt->import_stmt);
         ast_del_nodes(self, stmt->if_stmt);
         ast_del_nodes(self, stmt->for_stmt);
-        node_del(node);
     } break;
     case NODE_TYPE_IMPORT_STMT: {
         node_import_stmt_t *import_stmt = node->real;
         ast_del_nodes(self, import_stmt->identifier_chain);
-        node_del(node);
     } break;
     case NODE_TYPE_IF_STMT: {
         node_if_stmt_t *if_stmt = node->real;
@@ -230,7 +223,6 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         ast_del_nodes(self, if_stmt->blocks);
         ast_del_nodes(self, if_stmt->elif_stmt);
         ast_del_nodes(self, if_stmt->else_stmt);
-        node_del(node);
     } break;
     case NODE_TYPE_ELIF_STMT: {
         node_elif_stmt_t *elif_stmt = node->real;
@@ -239,13 +231,11 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         ast_del_nodes(self, elif_stmt->blocks);
         ast_del_nodes(self, elif_stmt->elif_stmt);
         ast_del_nodes(self, elif_stmt->else_stmt);
-        node_del(node);
     } break;
     case NODE_TYPE_ELSE_STMT: {
         node_else_stmt_t *else_stmt = node->real;
         ast_del_nodes(self, else_stmt->elems);
         ast_del_nodes(self, else_stmt->blocks);
-        node_del(node);
     } break;
     case NODE_TYPE_FOR_STMT: {
         node_for_stmt_t *for_stmt = node->real;
@@ -254,26 +244,68 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         ast_del_nodes(self, for_stmt->update_formula);
         ast_del_nodes(self, for_stmt->elems);
         ast_del_nodes(self, for_stmt->blocks);
-        node_del(node);
     } break;
     case NODE_TYPE_BREAK_STMT: {
-        node_del(node);
     } break;
     case NODE_TYPE_CONTINUE_STMT: {
-        node_del(node);
     } break;
     case NODE_TYPE_RETURN_STMT: {
         node_return_stmt_t *return_stmt = node->real;
         ast_del_nodes(self, return_stmt->formula);
-        node_del(node);
     } break;
     case NODE_TYPE_FORMULA: {
         node_formula_t *formula = node->real;
         ast_del_nodes(self, formula->assign_list);
         ast_del_nodes(self, formula->multi_assign);
-        node_del(node);
+    } break;
+    case NODE_TYPE_MULTI_ASSIGN: {
+        node_multi_assign_t *multi_assign = node->real;
+        for (int32_t i = 0; i < nodearr_len(multi_assign->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(multi_assign->nodearr, i));
+        }
+    } break;
+    case NODE_TYPE_ASSIGN_LIST: {
+        node_assign_list_t *assign_list = node->real;
+        for (int32_t i = 0; i < nodearr_len(assign_list->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(assign_list->nodearr, i));
+        }
+    } break;
+    case NODE_TYPE_ASSIGN: {
+        node_assign_t *assign = node->real;
+        for (int32_t i = 0; i < nodearr_len(assign->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(assign->nodearr, i));
+        }
+    } break;
+    case NODE_TYPE_TEST_LIST: {
+        node_test_list_t *test_list = node->real;
+        for (int32_t i = 0; i < nodearr_len(test_list->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(test_list->nodearr, i));
+        }
+    } break;
+    case NODE_TYPE_TEST: {
+        node_test_t *test = node->real;
+        ast_del_nodes(self, test->or_test);
+    } break;
+    case NODE_TYPE_OR_TEST: {
+        node_or_test_t *or_test = node->real;
+        for (int32_t i = 0; i < nodearr_len(or_test->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(or_test->nodearr, i));
+        }
+    } break;
+    case NODE_TYPE_AND_TEST: {
+        node_and_test_t *and_test = node->real;
+        for (int32_t i = 0; i < nodearr_len(and_test->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(and_test->nodearr, i));
+        }
+    } break;
+    case NODE_TYPE_NOT_TEST: {
+        node_not_test_t *not_test = node->real;
+        ast_del_nodes(self, not_test->not_test);
+        ast_del_nodes(self, not_test->comparison);
     } break;
     }
+
+    node_del(node);
 }
 
 void
