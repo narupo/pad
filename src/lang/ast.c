@@ -2769,6 +2769,9 @@ ast_traverse_ref_block(ast_t *self, node_t *node, int dep) {
     case OBJ_TYPE_ARRAY: {
         ast_set_error_detail(self, "can't reference array");
     } break;
+    case OBJ_TYPE_FUNC: {
+        ctx_pushb_buf(self->context, "(function)");
+    } break;
     } // switch
 
     return_trav(NULL);
@@ -2949,6 +2952,7 @@ ast_parse_bool(ast_t *self, object_t *obj) {
     } break;
     case OBJ_TYPE_STRING: return str_len(obj->string); break;
     case OBJ_TYPE_ARRAY: return objarr_len(obj->objarr); break;
+    case OBJ_TYPE_FUNC: return true; break;
     }
 
     assert(0 && "impossible. failed to parse bool");
@@ -3604,7 +3608,7 @@ ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         } else if (!lhs->lvalue && rhs->lvalue) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
@@ -3615,7 +3619,7 @@ ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         } else if (!lhs->lvalue && rhs->boolean) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
@@ -3626,7 +3630,7 @@ ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         } else if (!lhs->lvalue && str_len(rhs->string)) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
@@ -3637,19 +3641,23 @@ ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         } else if (!lhs->lvalue && objarr_len(rhs->objarr)) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = get_var_ref(self, str_getc(rhs->identifier), dep+1);
+        object_t *rvar = pull_in_ref_by(self, rhs);
         if (!rvar) {
             ast_set_error_detail(self, "%s is not defined in compare or int", str_getc(rhs->identifier));
             return_trav(NULL);
         }
 
-        tcheck("call ast_compare_or");
+        tcheck("call ast_compare_or with rvar");
         object_t *obj = ast_compare_or(self, lhs, rvar, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = obj_new_other(rhs);
         return_trav(obj);
     } break;
     }
@@ -3675,7 +3683,7 @@ ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         } else if (!lhs->boolean && rhs->lvalue) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
@@ -3686,7 +3694,7 @@ ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         } else if (!lhs->boolean && rhs->boolean) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
@@ -3697,7 +3705,7 @@ ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         } else if (!lhs->boolean && str_len(rhs->string)) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
@@ -3708,7 +3716,7 @@ ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         } else if (!lhs->boolean && objarr_len(rhs->objarr)) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
@@ -3721,6 +3729,10 @@ ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 
         tcheck("call ast_compare_or");
         object_t *obj = ast_compare_or(self, lhs, rvar, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = obj_new_other(rhs);
         return_trav(obj);
     } break;
     }
@@ -3790,6 +3802,10 @@ ast_compare_or_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = obj_new_other(rhs);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare or string");
@@ -3815,7 +3831,7 @@ ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         } else if (!arrlen && rhs->lvalue) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
@@ -3826,7 +3842,7 @@ ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         } else if (!arrlen && rhs->boolean) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
@@ -3837,7 +3853,7 @@ ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         } else if (!arrlen && str_len(rhs->string)) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
@@ -3848,13 +3864,17 @@ ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         } else if (!arrlen && objarr_len(rhs->objarr)) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = obj_new_other(rhs);
         return_trav(obj);
     } break;
     }
@@ -3894,9 +3914,82 @@ ast_compare_or_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = obj_new_other(rhs);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare or nil");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_or_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_FUNC);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_NIL: {
+        object_t *obj = obj_new_other(lhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = NULL;
+        if (lhs && !rhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs && rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = NULL;
+        if (lhs && !rhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs && rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = NULL;
+        if (lhs && !str_len(rhs->string)) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs && str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = NULL;
+        if (lhs && !objarr_len(rhs->objarr)) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = obj_new_other(rhs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare or array");
     return_trav(NULL);
 }
 
@@ -3933,6 +4026,11 @@ ast_compare_or(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        tcheck("call ast_compare_or_func");
+        object_t *obj = ast_compare_or_func(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     }
@@ -4059,6 +4157,19 @@ ast_compare_and_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = NULL;
+        if (lhs->lvalue && rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare and int");
@@ -4139,6 +4250,19 @@ ast_compare_and_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = NULL;
+        if (lhs->boolean && rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
         return_trav(obj);
     } break;
     }
@@ -4225,6 +4349,19 @@ ast_compare_and_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = NULL;
+        if (slen && rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!slen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare and string");
@@ -4300,6 +4437,19 @@ ast_compare_and_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = NULL;
+        if (arrlen && rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!arrlen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare and array");
@@ -4313,7 +4463,7 @@ ast_compare_and_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 
     switch (rhs->type) {
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_other(lhs);
+        object_t *obj = obj_new_other(rhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
@@ -4337,9 +4487,99 @@ ast_compare_and_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = obj_new_other(lhs);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare and nil");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_and_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_FUNC);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_NIL: {
+        object_t *obj = obj_new_other(rhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = NULL;
+        if (lhs && rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = NULL;
+        if (lhs && rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = NULL;
+        if (lhs && str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else if (!str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = NULL;
+        if (lhs && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else if (!objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = NULL;
+        if (lhs && rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare and array");
     return_trav(NULL);
 }
 
@@ -4376,6 +4616,11 @@ ast_compare_and(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_lhs with ast_compare_and");
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_and, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        tcheck("call ast_compare_and_func");
+        object_t *obj = ast_compare_and_func(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     }
@@ -4463,6 +4708,10 @@ ast_compare_not(ast_t *self, object_t *operand, int dep) {
         object_t *obj = obj_new_bool(!operand->objarr);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = obj_new_bool(!operand);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare not");
@@ -4526,6 +4775,10 @@ ast_compare_comparison_eq_int(ast_t *self, object_t *lhs, object_t *rhs, int dep
         ast_set_error_detail(self, "can't compare equal int and array");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't compare equal int and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to compare comparison eq int");
@@ -4560,6 +4813,10 @@ ast_compare_comparison_eq_bool(ast_t *self, object_t *lhs, object_t *rhs, int de
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't compare equal bool and array");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't compare equal bool and func");
         return_trav(NULL);
         break;
     }
@@ -4599,6 +4856,10 @@ ast_compare_comparison_eq_string(ast_t *self, object_t *lhs, object_t *rhs, int 
         ast_set_error_detail(self, "can't compare equal string and array");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't compare equal string and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to compare comparison string");
@@ -4635,6 +4896,10 @@ ast_compare_comparison_eq_array(ast_t *self, object_t *lhs, object_t *rhs, int d
     case OBJ_TYPE_ARRAY:
         err_die("TODO: compare equal array and array");
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't compare equal array and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to compare comparison array");
@@ -4647,33 +4912,58 @@ ast_compare_comparison_eq_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep
     assert(lhs->type == OBJ_TYPE_NIL);
 
     switch (rhs->type) {
+    default: {
+        object_t *obj = obj_new_bool(false);
+        return_trav(obj);        
+    } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_bool(true);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(false);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(false);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        object_t *obj = obj_new_bool(false);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_STRING: {
-        object_t *obj = obj_new_bool(false);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = obj_new_bool(false);
         return_trav(obj);
     } break;
     }
 
     assert(0 && "impossible. failed to compare comparison eq nil");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_comparison_eq_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_FUNC);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_NIL: {
+        object_t *obj = obj_new_bool(false);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER:
+        ast_set_error_detail(self, "can't compare equal func and int");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't compare equal func and bool");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't compare equal func and string");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't compare equal func and array");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = obj_new_bool(lhs == rhs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison array");
     return_trav(NULL);
 }
 
@@ -4710,6 +5000,11 @@ ast_compare_comparison_eq(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_lhs with ast_compare_comparison_eq");
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        tcheck("call ast_compare_comparison_eq_func");
+        object_t *obj = ast_compare_comparison_eq_func(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     }
