@@ -4701,11 +4701,11 @@ ast_compare_not(ast_t *self, object_t *operand, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
-        object_t *obj = obj_new_bool(!operand->string);
+        object_t *obj = obj_new_bool(!str_len(operand->string));
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
-        object_t *obj = obj_new_bool(!operand->objarr);
+        object_t *obj = obj_new_bool(!objarr_len(operand->objarr));
         return_trav(obj);
     } break;
     case OBJ_TYPE_FUNC: {
@@ -6679,7 +6679,7 @@ ast_calc_asscalc_add_ass(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 static object_t *
 ast_calc_asscalc(ast_t *self, object_t *lhs, node_augassign_t *augassign, object_t *rhs, int dep) {
     tready();
-    
+
     switch (augassign->op) {
     default: break;
     case OP_ADD_ASS: {

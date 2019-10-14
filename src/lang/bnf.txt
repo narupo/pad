@@ -8,7 +8,7 @@ BNF of Cap's template language
         text-block: .*
              elems: ( def | stmt | formula ) elems
 
-             - stmt: import_stmt |
+              stmt: import_stmt |
                     if_stmt |
                     for_stmt |
                     break_stmt |
@@ -38,7 +38,7 @@ BNF of Cap's template language
                     'for' ':' '@}' blocks '{@' 'end'
         break_stmt: 'break'
      continue_stmt: 'continue'
-     - return_stmt: 'return' ( formula )
+       return_stmt: 'return' ( formula )
 
            formula: assign_list |
                     multi_assign
