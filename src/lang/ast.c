@@ -5044,6 +5044,10 @@ ast_compare_comparison_not_eq_int(ast_t *self, object_t *lhs, object_t *rhs, int
         ast_set_error_detail(self, "can't compare not equal int and array");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't compare not equal int and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq int");
@@ -5079,6 +5083,10 @@ ast_compare_comparison_not_eq_bool(ast_t *self, object_t *lhs, object_t *rhs, in
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't compare not equal bool and array");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't compare not equal bool and func");
         return_trav(NULL);
         break;
     }
@@ -5117,6 +5125,10 @@ ast_compare_comparison_not_eq_string(ast_t *self, object_t *lhs, object_t *rhs, 
         ast_set_error_detail(self, "can't compare not equal string and array");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't compare not equal string and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq string");
@@ -5153,6 +5165,10 @@ ast_compare_comparison_not_eq_array(ast_t *self, object_t *lhs, object_t *rhs, i
     case OBJ_TYPE_ARRAY:
         err_die("TODO: compare not equal array");
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't compare not equal array and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq array");
@@ -5165,24 +5181,12 @@ ast_compare_comparison_not_eq_nil(ast_t *self, object_t *lhs, object_t *rhs, int
     assert(lhs->type == OBJ_TYPE_NIL);
 
     switch (rhs->type) {
+    default: {
+        object_t *obj = obj_new_bool(true);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_bool(false);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(true);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(true);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_STRING: {
-        object_t *obj = obj_new_bool(true);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = obj_new_bool(true);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -5193,6 +5197,47 @@ ast_compare_comparison_not_eq_nil(ast_t *self, object_t *lhs, object_t *rhs, int
     }
 
     assert(0 && "impossible. failed to compare comparison not eq nil");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_comparison_not_eq_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_FUNC);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_NIL: {
+        object_t *obj = obj_new_bool(true);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER:
+        ast_set_error_detail(self, "can't compare not equal func and int");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_BOOL:
+        ast_set_error_detail(self, "can't compare not equal func and bool");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING:
+        ast_set_error_detail(self, "can't compare not equal func and string");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_ARRAY:
+        ast_set_error_detail(self, "can't compare not equal func and array");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = obj_new_bool(lhs != rhs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison not eq array");
     return_trav(NULL);
 }
 
@@ -5229,6 +5274,11 @@ ast_compare_comparison_not_eq(ast_t *self, object_t *lhs, object_t *rhs, int dep
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_lhs with ast_compare_comparison_not_eq");
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        tcheck("call ast_compare_comparison_not_eq_func");
+        object_t *obj = ast_compare_comparison_not_eq_func(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     }
@@ -5348,6 +5398,10 @@ ast_calc_expr_add_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         ast_set_error_detail(self, "can't add int and array");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't add func into int");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to calc expr int");
@@ -5383,6 +5437,10 @@ ast_calc_expr_add_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't add bool and array");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't add bool and func");
         return_trav(NULL);
         break;
     }
@@ -5425,6 +5483,10 @@ ast_calc_expr_add_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         ast_set_error_detail(self, "can't add string and array");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't add string and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to calc expr string");
@@ -5462,6 +5524,10 @@ ast_calc_expr_add_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         ast_set_error_detail(self, "can't add array and array");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't add array and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to calc expr array");
@@ -5473,6 +5539,14 @@ ast_calc_expr_add_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_NIL);
     ast_set_error_detail(self, "can't add with nil");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_calc_expr_add_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_FUNC);
+    ast_set_error_detail(self, "can't add with func");
     return_trav(NULL);
 }
 
@@ -5511,6 +5585,11 @@ ast_calc_expr_add(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FUNC: {
+        tcheck("call ast_calc_expr_add_func");
+        object_t *obj = ast_calc_expr_add_func(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc expr add");
@@ -5544,7 +5623,11 @@ ast_calc_expr_sub_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         err_die("TODO: add string");
         break;
     case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't add int and array");
+        ast_set_error_detail(self, "can't sub int and array");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't sub int and func");
         return_trav(NULL);
         break;
     }
@@ -5584,6 +5667,10 @@ ast_calc_expr_sub_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         ast_set_error_detail(self, "can't sub bool and array");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't sub bool and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to calc expr sub bool");
@@ -5618,6 +5705,10 @@ ast_calc_expr_sub_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't sub string and array");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't sub string and func");
         return_trav(NULL);
         break;
     }
@@ -5657,6 +5748,10 @@ ast_calc_expr_sub_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         ast_set_error_detail(self, "can't sub array and array");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't sub array and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to calc expr sub array");
@@ -5668,6 +5763,14 @@ ast_calc_expr_sub_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_NIL);
     ast_set_error_detail(self, "can't sub with nil");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_calc_expr_sub_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_FUNC);
+    ast_set_error_detail(self, "can't sub with func");
     return_trav(NULL);
 }
 
@@ -5704,6 +5807,11 @@ ast_calc_expr_sub(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     case OBJ_TYPE_ARRAY: {
         tcheck("call ast_calc_expr_sub_array");
         object_t *obj = ast_calc_expr_sub_array(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        tcheck("call ast_calc_expr_sub_func");
+        object_t *obj = ast_calc_expr_sub_func(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     }
@@ -5818,6 +5926,10 @@ ast_calc_term_mul_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         ast_set_error_detail(self, "can't mul int and array");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't mul int and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to calc term mul int");
@@ -5855,6 +5967,10 @@ ast_calc_term_mul_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         ast_set_error_detail(self, "can't mul bool and array");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't mul bool and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to calc term mul bool");
@@ -5889,6 +6005,10 @@ ast_calc_term_mul_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't mul string and array");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't mul string and func");
         return_trav(NULL);
         break;
     }
@@ -5928,6 +6048,10 @@ ast_calc_term_mul_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         ast_set_error_detail(self, "can't mul array and array");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't mul array and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to calc term mul array");
@@ -5939,6 +6063,14 @@ ast_calc_term_mul_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_NIL);
     ast_set_error_detail(self, "can't mul with nil");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_calc_term_mul_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_FUNC);
+    ast_set_error_detail(self, "can't mul with func");
     return_trav(NULL);
 }
 
@@ -5975,6 +6107,11 @@ ast_calc_term_mul(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     case OBJ_TYPE_ARRAY: {
         tcheck("call ast_calc_term_mul_array");
         object_t *obj = ast_calc_term_mul_array(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        tcheck("call ast_calc_term_mul_func");
+        object_t *obj = ast_calc_term_mul_func(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     }
@@ -6022,6 +6159,10 @@ ast_calc_term_div_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         ast_set_error_detail(self, "can't division int and array");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't division int and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to calc term div int");
@@ -6063,6 +6204,10 @@ ast_calc_term_div_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         ast_set_error_detail(self, "can't division bool and array");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't division bool and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to calc term div bool");
@@ -6098,6 +6243,10 @@ ast_calc_term_div_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't division string and array");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't division string and func");
         return_trav(NULL);
         break;
     }
@@ -6137,6 +6286,10 @@ ast_calc_term_div_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         ast_set_error_detail(self, "can't division array and array");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't division array and func");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to calc term div array");
@@ -6147,7 +6300,15 @@ static object_t *
 ast_calc_term_div_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_NIL);
-    ast_set_error_detail(self, "can't division to nil");
+    ast_set_error_detail(self, "can't division with nil");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_calc_term_div_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_NIL);
+    ast_set_error_detail(self, "can't division with func");
     return_trav(NULL);
 }
 
@@ -6184,6 +6345,11 @@ ast_calc_term_div(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     case OBJ_TYPE_ARRAY: {
         tcheck("call ast_calc_term_div_array");
         object_t *obj = ast_calc_term_div_array(self, lhs, rhs, dep+1); 
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        tcheck("call ast_calc_term_div_func");
+        object_t *obj = ast_calc_term_div_func(self, lhs, rhs, dep+1); 
         return_trav(obj);
     } break;
     }
@@ -6388,6 +6554,10 @@ ast_calc_asscalc_add_ass_identifier_int(ast_t *self, object_t *ref_var, object_t
         ast_set_error_detail(self, "can't add assign array to int");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't add assign func to int");
+        return_trav(NULL);
+        break;
     }
 
     assert(0 && "impossible. failed to calc asscalc add ass identifier int");
@@ -6423,6 +6593,10 @@ ast_calc_asscalc_add_ass_identifier_string(ast_t *self, object_t *ref_lhs, objec
     } break;
     case OBJ_TYPE_ARRAY:
         ast_set_error_detail(self, "can't add assign array to string");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't add assign func to string");
         return_trav(NULL);
         break;
     }
@@ -6471,7 +6645,11 @@ ast_calc_asscalc_add_ass_identifier(ast_t *self, object_t *lhs, object_t *rhs, i
         new_obj = ast_calc_asscalc_add_ass_identifier_string(self, ref_lvar, rhs, dep+1);
     } break;
     case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't add assign array");
+        ast_set_error_detail(self, "can't add assign to array");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_FUNC:
+        ast_set_error_detail(self, "can't add assign to func");
         return_trav(NULL);
         break;
     }
@@ -6501,6 +6679,7 @@ ast_calc_asscalc_add_ass(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 static object_t *
 ast_calc_asscalc(ast_t *self, object_t *lhs, node_augassign_t *augassign, object_t *rhs, int dep) {
     tready();
+    
     switch (augassign->op) {
     default: break;
     case OP_ADD_ASS: {
