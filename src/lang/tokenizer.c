@@ -194,6 +194,16 @@ tkr_read_escape(tokenizer_t *self) {
         str_pushb(esc, '\\');
         str_pushb(esc, c);
         break;
+    case '0': str_pushb(esc, '\0'); break;
+    case 'a': str_pushb(esc, '\a'); break;
+    case 'b': str_pushb(esc, '\b'); break;
+    case 'f': str_pushb(esc, '\f'); break;
+    case 'n': str_pushb(esc, '\n'); break;
+    case 'r': str_pushb(esc, '\r'); break;
+    case 't': str_pushb(esc, '\t'); break;
+    case '\\': str_pushb(esc, '\\'); break;
+    case '\'': str_pushb(esc, '\''); break;
+    case '"': str_pushb(esc, '"'); break;
     }
 
     return esc;
