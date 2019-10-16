@@ -3674,12 +3674,23 @@ ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 
     switch (rhs->type) {
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_other(lhs);
+        object_t *obj = NULL;
+        if (lhs->lvalue && NULL) {
+            obj = obj_new_other(lhs);
+        } else if (lhs->lvalue && !NULL) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs->lvalue && NULL) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
         object_t *obj = NULL;
-        if (lhs->lvalue && !rhs->lvalue) {
+        if (lhs->lvalue && rhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else if (lhs->lvalue && !rhs->lvalue) {
             obj = obj_new_other(lhs);
         } else if (!lhs->lvalue && rhs->lvalue) {
             obj = obj_new_other(rhs);
@@ -3690,7 +3701,9 @@ ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
-        if (lhs->lvalue && !rhs->boolean) {
+        if (lhs->lvalue && rhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else if (lhs->lvalue && !rhs->boolean) {
             obj = obj_new_other(lhs);
         } else if (!lhs->lvalue && rhs->boolean) {
             obj = obj_new_other(rhs);
@@ -3701,7 +3714,9 @@ ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
-        if (lhs->lvalue && !str_len(rhs->string)) {
+        if (lhs->lvalue && str_len(rhs->string)) {
+            obj = obj_new_other(lhs);
+        } else if (lhs->lvalue && !str_len(rhs->string)) {
             obj = obj_new_other(lhs);
         } else if (!lhs->lvalue && str_len(rhs->string)) {
             obj = obj_new_other(rhs);
@@ -3712,7 +3727,9 @@ ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
-        if (lhs->lvalue && !objarr_len(rhs->objarr)) {
+        if (lhs->lvalue && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(lhs);
+        } else if (lhs->lvalue && !objarr_len(rhs->objarr)) {
             obj = obj_new_other(lhs);
         } else if (!lhs->lvalue && objarr_len(rhs->objarr)) {
             obj = obj_new_other(rhs);
@@ -3733,7 +3750,16 @@ ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_FUNC: {
-        object_t *obj = obj_new_other(rhs);
+        object_t *obj = NULL;
+        if (lhs->lvalue && rhs) {
+            obj = obj_new_other(lhs);
+        } else if (lhs->lvalue && !rhs) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs->lvalue && rhs) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
         return_trav(obj);
     } break;
     }
@@ -3749,12 +3775,23 @@ ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 
     switch (rhs->type) {
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_other(lhs);
+        object_t *obj = NULL;
+        if (lhs->boolean && NULL) {
+            obj = obj_new_other(lhs);            
+        } else if (lhs->boolean && !NULL) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs->boolean && NULL) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
         object_t *obj = NULL;
-        if (lhs->boolean && !rhs->lvalue) {
+        if (lhs->boolean && rhs->lvalue) {
+            obj = obj_new_other(lhs);            
+        } else if (lhs->boolean && !rhs->lvalue) {
             obj = obj_new_other(lhs);
         } else if (!lhs->boolean && rhs->lvalue) {
             obj = obj_new_other(rhs);
@@ -3765,7 +3802,9 @@ ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
-        if (lhs->boolean && !rhs->boolean) {
+        if (lhs->boolean && rhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else if (lhs->boolean && !rhs->boolean) {
             obj = obj_new_other(lhs);
         } else if (!lhs->boolean && rhs->boolean) {
             obj = obj_new_other(rhs);
@@ -3776,7 +3815,9 @@ ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
-        if (lhs->boolean && !str_len(rhs->string)) {
+        if (lhs->boolean && str_len(rhs->string)) {
+            obj = obj_new_other(lhs);
+        } else if (lhs->boolean && !str_len(rhs->string)) {
             obj = obj_new_other(lhs);
         } else if (!lhs->boolean && str_len(rhs->string)) {
             obj = obj_new_other(rhs);
@@ -3787,7 +3828,9 @@ ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
-        if (lhs->boolean && !objarr_len(rhs->objarr)) {
+        if (lhs->boolean && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(lhs);
+        } else if (lhs->boolean && !objarr_len(rhs->objarr)) {
             obj = obj_new_other(lhs);
         } else if (!lhs->boolean && objarr_len(rhs->objarr)) {
             obj = obj_new_other(rhs);
@@ -3808,7 +3851,16 @@ ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_FUNC: {
-        object_t *obj = obj_new_other(rhs);
+        object_t *obj = NULL;
+        if (lhs->boolean && rhs) {
+            obj = obj_new_other(lhs);
+        } else if (lhs->boolean && !rhs) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs->boolean && rhs) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
         return_trav(obj);
     } break;
     }
@@ -3826,50 +3878,67 @@ ast_compare_or_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 
     switch (rhs->type) {
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_other(lhs);
+        object_t *obj = NULL;
+        if (slen && NULL) {
+            obj = obj_new_other(lhs);
+        } else if (slen && !NULL) {
+            obj = obj_new_other(lhs);
+        } else if (!slen && NULL) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
         object_t *obj = NULL;
-        if (slen && !rhs->lvalue) {
+        if (slen && rhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else if (slen && !rhs->lvalue) {
             obj = obj_new_other(lhs);
         } else if (!slen && rhs->lvalue) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
-        if (slen && !rhs->boolean) {
+        if (slen && rhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else if (slen && !rhs->boolean) {
             obj = obj_new_other(lhs);
         } else if (!slen && rhs->boolean) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
-        if (slen && !str_len(rhs->string)) {
+        if (slen && str_len(rhs->string)) {
+            obj = obj_new_other(lhs);
+        } else if (slen && !str_len(rhs->string)) {
             obj = obj_new_other(lhs);
         } else if (!slen && str_len(rhs->string)) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
-        if (slen && !objarr_len(rhs->objarr)) {
+        if (slen && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(lhs);
+        } else if (slen && !objarr_len(rhs->objarr)) {
             obj = obj_new_other(lhs);
         } else if (!slen && objarr_len(rhs->objarr)) {
             obj = obj_new_other(rhs);
         } else {
-            obj = obj_new_other(lhs);
+            obj = obj_new_other(rhs);
         }
         return_trav(obj);
     } break;
@@ -3879,7 +3948,16 @@ ast_compare_or_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_FUNC: {
-        object_t *obj = obj_new_other(rhs);
+        object_t *obj = NULL;
+        if (slen && rhs) {
+            obj = obj_new_other(lhs);
+        } else if (slen && !rhs) {
+            obj = obj_new_other(lhs);
+        } else if (!slen && rhs) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
         return_trav(obj);
     } break;
     }
@@ -3897,12 +3975,24 @@ ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 
     switch (rhs->type) {
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_other(lhs);
+        object_t *obj = NULL;
+        if (arrlen && NULL) {
+            obj = obj_new_other(lhs);
+        } else if (arrlen && !NULL) {
+            obj = obj_new_other(lhs);
+        } else if (!arrlen && NULL) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
         object_t *obj = NULL;
-        if (arrlen && !rhs->lvalue) {
+        if (arrlen && rhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else if (arrlen && !rhs->lvalue) {
             obj = obj_new_other(lhs);
         } else if (!arrlen && rhs->lvalue) {
             obj = obj_new_other(rhs);
@@ -3913,7 +4003,9 @@ ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
-        if (arrlen && !rhs->boolean) {
+        if (arrlen && rhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else if (arrlen && !rhs->boolean) {
             obj = obj_new_other(lhs);
         } else if (!arrlen && rhs->boolean) {
             obj = obj_new_other(rhs);
@@ -3924,7 +4016,9 @@ ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
-        if (arrlen && !str_len(rhs->string)) {
+        if (arrlen && str_len(rhs->string)) {
+            obj = obj_new_other(lhs);
+        } else if (arrlen && !str_len(rhs->string)) {
             obj = obj_new_other(lhs);
         } else if (!arrlen && str_len(rhs->string)) {
             obj = obj_new_other(rhs);
@@ -3935,7 +4029,9 @@ ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
-        if (arrlen && !objarr_len(rhs->objarr)) {
+        if (arrlen && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(lhs);
+        } else if (arrlen && !objarr_len(rhs->objarr)) {
             obj = obj_new_other(lhs);
         } else if (!arrlen && objarr_len(rhs->objarr)) {
             obj = obj_new_other(rhs);
@@ -3950,7 +4046,16 @@ ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_FUNC: {
-        object_t *obj = obj_new_other(rhs);
+        object_t *obj = NULL;
+        if (arrlen && rhs) {
+            obj = obj_new_other(lhs);
+        } else if (arrlen && !rhs) {
+            obj = obj_new_other(lhs);
+        } else if (!arrlen && rhs) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
         return_trav(obj);
     } break;
     }
@@ -3966,7 +4071,7 @@ ast_compare_or_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 
     switch (rhs->type) {
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(NULL || NULL);
+        object_t *obj = obj_new_other(lhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
@@ -4007,12 +4112,22 @@ ast_compare_or_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 
     switch (rhs->type) {
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_other(lhs);
+        object_t *obj = NULL;
+        if (lhs && NULL) {
+        } else if (lhs && !NULL) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs && NULL) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
         object_t *obj = NULL;
-        if (lhs && !rhs->lvalue) {
+        if (lhs && rhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else if (lhs && !rhs->lvalue) {
             obj = obj_new_other(lhs);
         } else if (!lhs && rhs->lvalue) {
             obj = obj_new_other(rhs);
@@ -4023,7 +4138,9 @@ ast_compare_or_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
-        if (lhs && !rhs->boolean) {
+        if (lhs && rhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else if (lhs && !rhs->boolean) {
             obj = obj_new_other(lhs);
         } else if (!lhs && rhs->boolean) {
             obj = obj_new_other(rhs);
@@ -4034,7 +4151,9 @@ ast_compare_or_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
-        if (lhs && !str_len(rhs->string)) {
+        if (lhs && str_len(rhs->string)) {
+            obj = obj_new_other(lhs);
+        } else if (lhs && !str_len(rhs->string)) {
             obj = obj_new_other(lhs);
         } else if (!lhs && str_len(rhs->string)) {
             obj = obj_new_other(rhs);
@@ -4045,7 +4164,9 @@ ast_compare_or_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
-        if (lhs && !objarr_len(rhs->objarr)) {
+        if (lhs && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(lhs);
+        } else if (lhs && !objarr_len(rhs->objarr)) {
             obj = obj_new_other(lhs);
         } else if (!lhs && objarr_len(rhs->objarr)) {
             obj = obj_new_other(rhs);
@@ -4060,7 +4181,16 @@ ast_compare_or_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_FUNC: {
-        object_t *obj = obj_new_other(rhs);
+        object_t *obj = NULL;
+        if (lhs && rhs) {
+            obj = obj_new_other(lhs);
+        } else if (lhs && !rhs) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs && rhs) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
         return_trav(obj);
     } break;
     }
