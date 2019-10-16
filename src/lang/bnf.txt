@@ -57,7 +57,13 @@ BNF of Cap's template language
               expr: term ( add_sub_op term )*
              term: factor ( mul_div_op factor )*
             factor: atom | '(' test ')'
-              atom: nil | digit | string | identifier | caller
+              atom: nil |
+                    false |
+                    true |
+                    digit |
+                    string |
+                    identifier |
+                    caller
 
            comp_op: '==' | '!='
         add_sub_op: '+' | '-'

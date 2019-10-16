@@ -51,6 +51,15 @@ object_t *
 obj_new_nil(void);
 
 object_t *
+obj_new_false(void);
+
+object_t *
+obj_new_true(void);
+
+object_t *
+obj_new_bool(bool boolean);
+
+object_t *
 obj_new_cidentifier(const char *identifier);
 
 object_t *
@@ -64,9 +73,6 @@ obj_new_str(string_t *move_str);
 
 object_t *
 obj_new_int(long lvalue);
-
-object_t *
-obj_new_bool(bool boolean);
 
 object_t *
 obj_new_array(object_array_t *move_objarr);

@@ -70,6 +70,10 @@ typedef enum {
     NODE_TYPE_FUNC_DEF,
     NODE_TYPE_FUNC_DEF_PARAMS,
     NODE_TYPE_FUNC_DEF_ARGS,
+
+    // bool
+    NODE_TYPE_FALSE,
+    NODE_TYPE_TRUE,
 } node_type_t;
 
 typedef enum {
@@ -265,6 +269,8 @@ typedef struct {
 
 typedef struct {
     node_t *nil;
+    node_t *true_;
+    node_t *false_;
     node_t *digit;
     node_t *string;
     node_t *identifier;
@@ -294,6 +300,14 @@ typedef struct {
 typedef struct {
     long lvalue;
 } node_digit_t;
+
+typedef struct {
+    bool boolean;
+} node_false_t;
+
+typedef struct {
+    bool boolean;
+} node_true_t;
 
 typedef struct {
     node_t *identifier_chain;

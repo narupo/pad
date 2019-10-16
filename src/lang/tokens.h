@@ -64,6 +64,10 @@ typedef enum {
 
     // def
     TOKEN_TYPE_DEF, // 'def'
+
+    // bool
+    TOKEN_TYPE_FALSE, // 'false'
+    TOKEN_TYPE_TRUE, // 'true'
 } token_type_t;
 
 typedef struct token {
