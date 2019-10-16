@@ -7716,12 +7716,14 @@ test_ast_traverse(void) {
     * test *
     *******/
 
-    tkr_parse(tkr, "{@ a = 1 or nil @}{: a :}");
+    // digit or objects
+
+    tkr_parse(tkr, "{@ a = 0 or nil @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+        assert(!strcmp(ctx_getc_buf(ctx), "nil"));
     } 
 
     tkr_parse(tkr, "{@ a = 0 or 1 @}{: a :}");
@@ -7732,12 +7734,12 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     } 
 
-    tkr_parse(tkr, "{@ a = 1 or false @}{: a :}");
+    tkr_parse(tkr, "{@ a = 0 or false @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
     } 
 
     tkr_parse(tkr, "{@ a = 0 or true @}{: a :}");
@@ -7747,6 +7749,48 @@ test_ast_traverse(void) {
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
     } 
+
+    tkr_parse(tkr, "{@ a = 0 or \"abc\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    } 
+
+    tkr_parse(tkr, "{@ a = 0 or \"\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), ""));
+    } 
+
+    tkr_parse(tkr, "{@ b = 1 \n a = 0 or b @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    } 
+
+    tkr_parse(tkr, "{@ def f(): end \n a = 0 or f @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
+    } 
+
+    tkr_parse(tkr, "{@ def f(): return true end \n a = 0 or f() @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    } 
+
+    // bool or objects
 
     tkr_parse(tkr, "{@ a = false or false @}{: a :}");
     {
@@ -7770,6 +7814,89 @@ test_ast_traverse(void) {
         ast_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = false or 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    } 
+
+    tkr_parse(tkr, "{@ a = true or 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    } 
+
+    tkr_parse(tkr, "{@ a = true or \"abc\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    } 
+
+    tkr_parse(tkr, "{@ a = false or \"abc\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    } 
+
+    tkr_parse(tkr, "{@ a = false or \"\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), ""));
+    } 
+
+    tkr_parse(tkr, "{@ def f(): end \n a = false or f @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
+    } 
+
+    tkr_parse(tkr, "{@ def f(): end \n a = true or f @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    } 
+
+    tkr_parse(tkr, "{@ def f(): return true end \n a = false or f() @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    } 
+
+    tkr_parse(tkr, "{@ def f(): return 0 end \n a = false or f() @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "0"));
+    } 
+
+    // nil or objects 
+
+    tkr_parse(tkr, "{@ a = nil or 0 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "0"));
     } 
 
     tkr_parse(tkr, "{@ a = nil or 1 @}{: a :}");
@@ -7804,12 +7931,86 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
     } 
 
+    tkr_parse(tkr, "{@ a = nil or \"\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), ""));
+    } 
+
     tkr_parse(tkr, "{@ b = 1 \n a = nil or b @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    } 
+
+    tkr_parse(tkr, "{@ def f(): end \n a = nil or f @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
+    } 
+
+    tkr_parse(tkr, "{@ def f(): return true end \n a = nil or f() @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    } 
+
+    // string or objects
+
+    tkr_parse(tkr, "{@ a = \"abc\" or nil @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    } 
+
+    tkr_parse(tkr, "{@ a = \"\" or nil @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "nil"));
+    } 
+
+    tkr_parse(tkr, "{@ a = \"abc\" or true @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    } 
+
+    tkr_parse(tkr, "{@ a = \"abc\" or false @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    } 
+
+    tkr_parse(tkr, "{@ a = \"\" or true @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    } 
+
+    tkr_parse(tkr, "{@ a = \"\" or false @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
     } 
 
     tkr_parse(tkr, "{@ a = \"\" or 1 @}{: a :}");
@@ -7820,6 +8021,113 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     } 
 
+    tkr_parse(tkr, "{@ a = \"\" or 0 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "0"));
+    } 
+
+    tkr_parse(tkr, "{@ a = \"abc\" or 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    } 
+
+    tkr_parse(tkr, "{@ a = \"abc\" or 0 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    } 
+
+    tkr_parse(tkr, "{@ a = \"\" or \"\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), ""));
+    } 
+
+    tkr_parse(tkr, "{@ a = \"\" or \"abc\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    } 
+
+    tkr_parse(tkr, "{@ a = \"def\" or \"abc\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "def"));
+    } 
+
+    tkr_parse(tkr, "{@ b = 1 \n a = \"abc\" or b @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    } 
+
+    tkr_parse(tkr, "{@ b = 0 \n a = \"abc\" or b @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    } 
+
+    tkr_parse(tkr, "{@ def f(): end \n a = \"abc\" or f @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    } 
+
+    tkr_parse(tkr, "{@ def f(): end \n a = \"\" or f @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
+    } 
+
+    tkr_parse(tkr, "{@ def f(): return true end \n a = \"\" or f() @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    } 
+
+    tkr_parse(tkr, "{@ def f(): return nil end \n a = \"\" or f() @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "nil"));
+    } 
+
+    tkr_parse(tkr, "{@ def f(): return nil end \n a = \"abc\" or f() @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    } 
+
+    //
+
     tkr_parse(tkr, "{@ a = 0 or \"abc\" @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -7827,6 +8135,7 @@ test_ast_traverse(void) {
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
     } 
+
 
     tkr_parse(tkr, "{@ a = 1 \n b = 0 or a @}{: b :}");
     {
@@ -7850,7 +8159,7 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "2"));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
     } 
 
     tkr_parse(tkr, "{@ a = 0 or \"abc\" @}{: a :}");
