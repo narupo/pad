@@ -1123,6 +1123,58 @@ ast_digit(ast_t *self, int dep) {
 }
 
 static node_t *
+ast_false_(ast_t *self, int dep) {
+    ready();
+    declare(node_false_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_FALSE) {
+        return_cleanup("");
+    }
+
+    cur->boolean = false;
+
+    return_parse(node_new(NODE_TYPE_FALSE, cur));
+}
+
+static node_t *
+ast_true_(ast_t *self, int dep) {
+    ready();
+    declare(node_true_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_TRUE) {
+        return_cleanup("");
+    }
+
+    cur->boolean = true;
+
+    return_parse(node_new(NODE_TYPE_TRUE, cur));
+}
+
+static node_t *
 ast_atom(ast_t *self, int dep) {
     ready();
     declare(node_atom_t, cur);
@@ -1132,6 +1184,8 @@ ast_atom(ast_t *self, int dep) {
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
         ast_del_nodes(self, cur->nil); \
+        ast_del_nodes(self, cur->true_); \
+        ast_del_nodes(self, cur->false_); \
         ast_del_nodes(self, cur->digit); \
         ast_del_nodes(self, cur->string); \
         ast_del_nodes(self, cur->identifier); \
@@ -1145,46 +1199,68 @@ ast_atom(ast_t *self, int dep) {
 
     check("call ast_nil");
     cur->nil = ast_nil(self, dep+1);
-    if (!cur->nil) {
-        if (ast_has_error(self)) {
-            return_cleanup("");
-        }
-
-        check("call ast_digit");
-        cur->digit = ast_digit(self, dep+1);
-        if (!cur->digit) {
-            if (ast_has_error(self)) {
-                return_cleanup("");
-            }
-
-            check("call ast_string");
-            cur->string = ast_string(self, dep+1);
-            if (!cur->string) {
-                if (ast_has_error(self)) {
-                    return_cleanup("");
-                }
-
-                check("call ast_caller");
-                cur->caller = ast_caller(self, dep+1);
-                if (!cur->caller) {
-                    if (ast_has_error(self)) {
-                        return_cleanup("");
-                    }
-
-                    check("call ast_identifier");
-                    cur->identifier = ast_identifier(self, dep+1);
-                    if (!cur->identifier) {
-                        if (ast_has_error(self)) {
-                            return_cleanup("");
-                        }
-                        return_cleanup(""); // not error
-                    }
-                }
-            }
-        }
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (cur->nil) {
+        return_parse(node_new(NODE_TYPE_ATOM, cur));
     }
 
-    return_parse(node_new(NODE_TYPE_ATOM, cur));
+    check("call ast_false_");
+    cur->false_ = ast_false_(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (cur->false_) {
+        return_parse(node_new(NODE_TYPE_ATOM, cur));
+    }
+
+    check("call ast_true_");
+    cur->true_ = ast_true_(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (cur->true_) {
+        return_parse(node_new(NODE_TYPE_ATOM, cur));
+    }
+
+    check("call ast_digit");
+    cur->digit = ast_digit(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (cur->digit) {
+        return_parse(node_new(NODE_TYPE_ATOM, cur));
+    }
+
+    check("call ast_string");
+    cur->string = ast_string(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (cur->string) {
+        return_parse(node_new(NODE_TYPE_ATOM, cur));
+    }
+
+    check("call ast_caller");
+    cur->caller = ast_caller(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (cur->caller) {
+        return_parse(node_new(NODE_TYPE_ATOM, cur));
+    }
+
+    check("call ast_identifier");
+    cur->identifier = ast_identifier(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (cur->identifier) {
+        return_parse(node_new(NODE_TYPE_ATOM, cur));
+    }
+
+    return_cleanup("");
 }
 
 static node_t *
@@ -6791,6 +6867,14 @@ ast_traverse_atom(ast_t *self, node_t *node, int dep) {
         tcheck("call _ast_traverse with nil");
         object_t *obj = _ast_traverse(self, atom->nil, dep+1);
         return_trav(obj);
+    } else if (atom->false_) {
+        tcheck("call _ast_traverse with false_");
+        object_t *obj = _ast_traverse(self, atom->false_, dep+1);
+        return_trav(obj);
+    } else if (atom->true_) {
+        tcheck("call _ast_traverse with true_");
+        object_t *obj = _ast_traverse(self, atom->true_, dep+1);
+        return_trav(obj);
     } else if (atom->digit) {
         tcheck("call _ast_traverse with digit");
         object_t *obj = _ast_traverse(self, atom->digit, dep+1);
@@ -6820,6 +6904,24 @@ ast_traverse_nil(ast_t *self, node_t *node, int dep) {
     assert(nil && node->type == NODE_TYPE_NIL);
     // not check exists field
     return_trav(obj_new_nil());
+}
+
+static object_t *
+ast_traverse_false(ast_t *self, node_t *node, int dep) {
+    tready();
+    node_false_t *false_ = node->real;
+    assert(false_ && node->type == NODE_TYPE_FALSE);
+    assert(!false_->boolean);
+    return_trav(obj_new_false());
+}
+
+static object_t *
+ast_traverse_true(ast_t *self, node_t *node, int dep) {
+    tready();
+    node_true_t *true_ = node->real;
+    assert(true_ && node->type == NODE_TYPE_TRUE);
+    assert(true_->boolean);
+    return_trav(obj_new_true());
 }
 
 static object_t *
@@ -7377,6 +7479,16 @@ _ast_traverse(ast_t *self, node_t *node, int dep) {
     case NODE_TYPE_NIL: {
         tcheck("call ast_traverse_nil");
         object_t *obj = ast_traverse_nil(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_FALSE: {
+        tcheck("call ast_traverse_false");
+        object_t *obj = ast_traverse_false(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_TRUE: {
+        tcheck("call ast_traverse_true");
+        object_t *obj = ast_traverse_true(self, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_DIGIT: {

@@ -299,6 +299,10 @@ tkr_parse_identifier(tokenizer_t *self) {
         token->type = TOKEN_TYPE_STMT_RETURN;
     } else if (cstr_eq(token->text, "def")) {
         token->type = TOKEN_TYPE_DEF;
+    } else if (cstr_eq(token->text, "true")) {
+        token->type = TOKEN_TYPE_TRUE;
+    } else if (cstr_eq(token->text, "false")) {
+        token->type = TOKEN_TYPE_FALSE;
     }
 
     tkr_move_token(self, token);

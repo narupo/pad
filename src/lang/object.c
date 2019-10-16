@@ -94,6 +94,26 @@ obj_new_nil(void) {
 }
 
 object_t *
+obj_new_false(void) {
+    object_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->type = OBJ_TYPE_BOOL;
+    self->boolean = false;
+
+    return self;
+}
+
+object_t *
+obj_new_true(void) {
+    object_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->type = OBJ_TYPE_BOOL;
+    self->boolean = true;
+
+    return self;
+}
+
+object_t *
 obj_new_cidentifier(const char *identifier) {
     object_t *self = obj_new(OBJ_TYPE_IDENTIFIER);
 
