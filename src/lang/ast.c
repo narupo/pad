@@ -595,7 +595,7 @@ ast_assign_list(ast_t *self, int dep) {
             if (ast_has_error(self)) {
                 return_cleanup("");
             }
-            return_cleanup("syntax error. not found assign in assign list");
+            return_cleanup(""); // not error
         }        
 
         nodearr_moveb(cur->nodearr, rhs);
