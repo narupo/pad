@@ -342,7 +342,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     case NODE_TYPE_FACTOR: {
         node_factor_t *factor = node->real;
         ast_del_nodes(self, factor->atom);
-        ast_del_nodes(self, factor->test);
+        ast_del_nodes(self, factor->formula);
     } break;
     case NODE_TYPE_ATOM: {
         node_atom_t *atom = node->real;
@@ -1546,7 +1546,7 @@ ast_factor(ast_t *self, int dep) {
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
         ast_del_nodes(self, cur->atom); \
-        ast_del_nodes(self, cur->test); \
+        ast_del_nodes(self, cur->formula); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
@@ -1571,9 +1571,9 @@ ast_factor(ast_t *self, int dep) {
         }
         check("read (")
 
-        check("call ast_test");
-        cur->test = ast_test(self, dep+1);
-        if (!cur->test) {
+        check("call ast_formula");
+        cur->formula = ast_formula(self, dep+1);
+        if (!cur->formula) {
             if (ast_has_error(self)) {
                 return_cleanup("");
             }
@@ -7305,9 +7305,9 @@ ast_traverse_factor(ast_t *self, node_t *node, int dep) {
         tcheck("call _ast_traverse");
         object_t *obj = _ast_traverse(self, factor->atom, dep+1);
         return_trav(obj);
-    } else if (factor->test) {
+    } else if (factor->formula) {
         tcheck("call _ast_traverse");
-        object_t *obj = _ast_traverse(self, factor->test, dep+1);
+        object_t *obj = _ast_traverse(self, factor->formula, dep+1);
         return_trav(obj);
     }
 

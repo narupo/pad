@@ -271,7 +271,7 @@ typedef struct {
 
 typedef struct {
     node_t *atom;
-    node_t *test;
+    node_t *formula;
 } node_factor_t;
 
 typedef struct {

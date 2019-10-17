@@ -42,9 +42,9 @@ BNF of Cap's template language
 
            formula: assign_list |
                     multi_assign
-      multi_assign: test_list ( '=' test_list )*
        assign_list: assign ( ',' assign )*
             assign: test '=' test ( '=' test )*
+      multi_assign: test_list ( '=' test_list )*
      simple_assign: test ( '=' test )*
             
          test_list: test ( ',' test )*
