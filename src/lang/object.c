@@ -11,10 +11,13 @@ obj_del(object_t *self) {
 
     switch (self->type) {
     case OBJ_TYPE_NIL:
+        // nothing todo
         break;
     case OBJ_TYPE_INTEGER:
+        // nothing todo
         break;
     case OBJ_TYPE_BOOL:
+        // nothing todo
         break;
     case OBJ_TYPE_IDENTIFIER:
         str_del(self->identifier);
