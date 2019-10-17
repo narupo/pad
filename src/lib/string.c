@@ -76,6 +76,11 @@ str_new(void) {
 }
 
 string_t *
+str_new_other(const string_t *other) {
+	return str_newother(other);
+}
+
+string_t *
 str_newother(const string_t *other) {
 	if (!other) {
 		return NULL;
