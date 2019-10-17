@@ -7943,19 +7943,17 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "1 2"));
     }
 
-    /**************
-    * assign_list *
-    **************/
-
-    // error
-
     tkr_parse(tkr, "{@ a = 1, 2 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
-        assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "syntax error. not found assign in assign list"));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
     }
+
+    /**************
+    * assign_list *
+    **************/
 
     // success
 
