@@ -35,6 +35,7 @@ typedef enum {
     NODE_TYPE_MULTI_ASSIGN,
     NODE_TYPE_ASSIGN_LIST,
     NODE_TYPE_ASSIGN,
+    NODE_TYPE_SIMPLE_ASSIGN,
     NODE_TYPE_TEST_LIST,
 
     NODE_TYPE_TEST,
@@ -59,6 +60,8 @@ typedef enum {
     NODE_TYPE_CALLER,
     NODE_TYPE_STRING,
     NODE_TYPE_IDENTIFIER,
+    NODE_TYPE_ARRAY,
+    NODE_TYPE_ARRAY_ELEMS,
     
     NODE_TYPE_IDENTIFIER_CHAIN,
 
@@ -223,6 +226,10 @@ typedef struct {
 
 typedef struct {
     node_array_t *nodearr;
+} node_simple_assign_t;
+
+typedef struct {
+    node_array_t *nodearr;
 } node_assign_list_t;
 
 typedef struct {
@@ -273,9 +280,18 @@ typedef struct {
     node_t *false_;
     node_t *digit;
     node_t *string;
+    node_t *array;
     node_t *identifier;
     node_t *caller;
 } node_atom_t;
+
+typedef struct {
+    node_t *array_elems;
+} node_array_t_;
+
+typedef struct {
+    node_array_t *nodearr;
+} node_array_elems_t;
 
 typedef struct {
     op_t op;

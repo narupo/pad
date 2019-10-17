@@ -1071,6 +1071,165 @@ ast_string(ast_t *self, int dep) {
 }
 
 static node_t *
+ast_simple_assign(ast_t *self, int dep) {
+    ready();
+    declare(node_simple_assign_t, cur);
+    cur->nodearr = nodearr_new();
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        for (; nodearr_len(cur->nodearr); ) { \
+            node_t *node = nodearr_popb(cur->nodearr); \
+            ast_del_nodes(self, node); \
+        } \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    check("call ast_test");
+    node_t *lhs = ast_test(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (!lhs) {
+        return_cleanup(""); // not error
+    }
+
+    nodearr_moveb(cur->nodearr, lhs);
+
+    for (;;) {
+        if (!*self->ptr) {
+            return_parse(node_new(NODE_TYPE_SIMPLE_ASSIGN, cur));
+        }
+
+        token_t *t = *self->ptr++;
+        if (t->type != TOKEN_TYPE_OP_ASS) {
+            self->ptr--;
+            return_parse(node_new(NODE_TYPE_SIMPLE_ASSIGN, cur));
+        }
+        check("read '='")
+
+        check("call ast_test");
+        node_t *rhs = ast_test(self, dep+1);
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        if (!rhs) {
+            return_cleanup("not found rhs operand in simple assign");
+        }
+
+        nodearr_moveb(cur->nodearr, rhs);
+    }
+
+    assert(0 && "impossible. failed to simple assign");
+    return NULL;
+}
+
+static node_t *
+ast_array_elems(ast_t *self, int dep) {
+    ready();
+    declare(node_array_elems_t, cur);
+    cur->nodearr = nodearr_new();
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        for (; nodearr_len(cur->nodearr); ) { \
+            node_t *node = nodearr_popb(cur->nodearr); \
+            ast_del_nodes(self, node); \
+        } \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    check("call ast_simple_assign");
+    node_t *lhs = ast_simple_assign(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (!lhs) {
+        return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur));
+    }
+
+    nodearr_moveb(cur->nodearr, lhs);
+
+    for (;;) {
+        if (!*self->ptr) {
+            return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur));
+        }
+
+        token_t *t = *self->ptr++;
+        if (t->type != TOKEN_TYPE_COMMA) {
+            self->ptr--;
+            return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur));
+        }
+        check("read ','")
+
+        check("call ast_simple_assign");
+        node_t *rhs = ast_simple_assign(self, dep+1);
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        if (!rhs) {
+            // not error
+            return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur));
+        }
+
+        nodearr_moveb(cur->nodearr, rhs);
+    }
+
+    assert(0 && "impossible. failed to array elems");
+    return NULL;
+}
+
+static node_t *
+ast_array(ast_t *self, int dep) {
+    ready();
+    declare(node_array_t_, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->array_elems); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_LBRACKET) {
+        return_cleanup(""); // not error
+    }
+    check("read '['");
+
+    cur->array_elems = ast_array_elems(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    // allow null
+
+    t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_RBRACKET) {
+        return_cleanup("not found ']' in array");
+    }
+    check("read ']'");
+
+    return_parse(node_new(NODE_TYPE_ARRAY, cur));
+}
+
+static node_t *
 ast_nil(ast_t *self, int dep) {
     ready();
     declare(node_nil_t, cur);
@@ -1188,6 +1347,7 @@ ast_atom(ast_t *self, int dep) {
         ast_del_nodes(self, cur->false_); \
         ast_del_nodes(self, cur->digit); \
         ast_del_nodes(self, cur->string); \
+        ast_del_nodes(self, cur->array); \
         ast_del_nodes(self, cur->identifier); \
         ast_del_nodes(self, cur->caller); \
         free(cur); \
@@ -1239,6 +1399,15 @@ ast_atom(ast_t *self, int dep) {
         return_cleanup("");
     }
     if (cur->string) {
+        return_parse(node_new(NODE_TYPE_ATOM, cur));
+    }
+
+    check("call ast_array");
+    cur->array = ast_array(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (cur->array) {
         return_parse(node_new(NODE_TYPE_ATOM, cur));
     }
 
@@ -3388,6 +3557,61 @@ ast_calc_assign(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
  * 右優先結合
  */
 static object_t *
+ast_traverse_simple_assign(ast_t *self, node_t *node, int dep) {
+    tready();
+    assert(node->type == NODE_TYPE_SIMPLE_ASSIGN);
+    node_simple_assign_t *simple_assign = node->real;
+
+    if (!nodearr_len(simple_assign->nodearr)) {
+        ast_set_error_detail(self, "failed to traverse simple assign. array is empty");
+        return_trav(NULL);
+    }
+
+    int32_t arrlen = nodearr_len(simple_assign->nodearr);
+    node_t *rnode = nodearr_get(simple_assign->nodearr, arrlen-1);
+    assert(rnode->type == NODE_TYPE_TEST);
+    tcheck("call _ast_traverse with right test");
+    object_t *rhs = _ast_traverse(self, rnode, dep+1);
+    if (ast_has_error(self)) {
+        return_trav(NULL);
+    }
+    assert(rhs);
+
+    for (int32_t i = arrlen-2; i >= 0; --i) {
+        node_t *lnode = nodearr_get(simple_assign->nodearr, i);
+        assert(lnode->type == NODE_TYPE_TEST);
+        tcheck("call _ast_traverse with test left test");
+        object_t *lhs = _ast_traverse(self, lnode, dep+1);
+        if (ast_has_error(self)) {
+            obj_del(rhs);
+            obj_del(lhs);
+            return_trav(NULL);
+        }
+        if (!lhs) {
+            obj_del(rhs);
+            return_trav(NULL);
+        }
+
+        object_t *result = ast_calc_assign(self, lhs, rhs, dep+1);
+        if (ast_has_error(self)) {
+            obj_del(rhs);
+            obj_del(lhs);
+            obj_del(result);
+            return_trav(NULL);
+        }
+
+        obj_del(rhs);
+        obj_del(lhs);
+        rhs = result;
+    }
+
+    return_trav(rhs);
+}
+
+/**
+ * 右優先結合
+ */
+static object_t *
 ast_traverse_assign(ast_t *self, node_t *node, int dep) {
     tready();
     assert(node->type == NODE_TYPE_ASSIGN);
@@ -4842,7 +5066,7 @@ ast_traverse_and_test(ast_t *self, node_t *node, int dep) {
     node_and_test_t *and_test = node->real;
 
     node_t *lnode = nodearr_get(and_test->nodearr, 0);
-    tcheck("call _ast_traverse");
+    tcheck("call _ast_traverse with not_test");
     object_t *lhs = _ast_traverse(self, lnode, dep+1);
     if (ast_has_error(self)) {
         return_trav(NULL);
@@ -4851,7 +5075,7 @@ ast_traverse_and_test(ast_t *self, node_t *node, int dep) {
 
     for (int i = 1; i < nodearr_len(and_test->nodearr); ++i) {
         node_t *rnode = nodearr_get(and_test->nodearr, i);
-        tcheck("call _ast_traverse");
+        tcheck("call _ast_traverse with not_test");
         object_t *rhs = _ast_traverse(self, rnode, dep+1);
         if (ast_has_error(self)) {
             return_trav(NULL);
@@ -7013,6 +7237,10 @@ ast_traverse_atom(ast_t *self, node_t *node, int dep) {
         tcheck("call _ast_traverse with string");
         object_t *obj = _ast_traverse(self, atom->string, dep+1);
         return_trav(obj);
+    } else if (atom->array) {
+        tcheck("call _ast_traverse with array");
+        object_t *obj = _ast_traverse(self, atom->array, dep+1);
+        return_trav(obj);
     } else if (atom->identifier) {
         tcheck("call _ast_traverse with identifier");
         object_t *obj = _ast_traverse(self, atom->identifier, dep+1);
@@ -7068,6 +7296,40 @@ ast_traverse_string(ast_t *self, node_t *node, int dep) {
     node_string_t *string = node->real;
     assert(string && node->type == NODE_TYPE_STRING);
     return_trav(obj_new_cstr(string->string));
+}
+
+/**
+ * left priority
+ */
+static object_t *
+ast_traverse_array_elems(ast_t *self, node_t *node, int dep) {
+    tready();
+    node_array_elems_t *array_elems = node->real;
+    assert(array_elems && node->type == NODE_TYPE_ARRAY_ELEMS);
+
+    object_array_t *objarr = objarr_new();
+
+    for (int32_t i = 0; i < nodearr_len(array_elems->nodearr); ++i) {
+        node_t *n = nodearr_get(array_elems->nodearr, i);
+        object_t *result = _ast_traverse(self, n, dep+1);
+        assert(result);
+        objarr_moveb(objarr, result);
+    }
+
+    object_t *ret = obj_new_array(objarr);
+    return_trav(ret); 
+}
+
+static object_t *
+ast_traverse_array(ast_t *self, node_t *node, int dep) {
+    tready();
+    node_array_t_ *array = node->real;
+    assert(array && node->type == NODE_TYPE_ARRAY);
+    assert(array->array_elems);
+
+    tcheck("call _ast_traverse with array elems");
+    object_t *result = _ast_traverse(self, array->array_elems, dep+1);
+    return_trav(result);
 }
 
 static object_t *
@@ -7480,6 +7742,11 @@ _ast_traverse(ast_t *self, node_t *node, int dep) {
         object_t *obj = ast_traverse_assign(self, node, dep+1);
         return_trav(obj);
     } break;
+    case NODE_TYPE_SIMPLE_ASSIGN: {
+        tcheck("call ast_traverse_simple_assign");
+        object_t *obj = ast_traverse_simple_assign(self, node, dep+1);
+        return_trav(obj);
+    } break;
     case NODE_TYPE_MULTI_ASSIGN: {
         tcheck("call ast_traverse_multi_assign");
         object_t *obj = ast_traverse_multi_assign(self, node, dep+1);
@@ -7629,6 +7896,16 @@ _ast_traverse(ast_t *self, node_t *node, int dep) {
     case NODE_TYPE_STRING: {
         tcheck("call ast_traverse_string");
         object_t *obj = ast_traverse_string(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_ARRAY: {
+        tcheck("call ast_traverse_array");
+        object_t *obj = ast_traverse_array(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_ARRAY_ELEMS: {
+        tcheck("call ast_traverse_array_elems");
+        object_t *obj = ast_traverse_array_elems(self, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_IDENTIFIER: {

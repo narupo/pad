@@ -45,6 +45,7 @@ BNF of Cap's template language
       multi_assign: test_list ( '=' test_list )*
        assign_list: assign ( ',' assign )*
             assign: test '=' test ( '=' test )*
+     simple_assign: test ( '=' test )*
             
          test_list: test ( ',' test )*
               test: or_test
@@ -55,16 +56,18 @@ BNF of Cap's template language
         comparison: asscalc ( comp_op asscalc )*
            asscalc: expr ( augassign expr )*
               expr: term ( add_sub_op term )*
-             term: factor ( mul_div_op factor )*
+              term: factor ( mul_div_op factor )*
             factor: atom | '(' test ')'
               atom: nil |
                     false |
                     true |
                     digit |
                     string |
+                    array |
                     identifier |
                     caller
-
+             array: '[' ( array_elems ) ']'
+       array_elems: simple_assign ( ',' simple_assign )*
            comp_op: '==' | '!='
         add_sub_op: '+' | '-'
         mul_div_op: '*' | '/'
