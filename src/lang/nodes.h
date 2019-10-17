@@ -65,7 +65,7 @@ typedef enum {
     
     NODE_TYPE_IDENTIFIER_CHAIN,
 
-    NODE_TYPE_ASS_SUB_OP,
+    NODE_TYPE_ADD_SUB_OP,
     NODE_TYPE_MUL_DIV_OP,
 
     // def

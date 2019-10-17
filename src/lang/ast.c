@@ -180,7 +180,11 @@ ast_del_nodes(const ast_t *self, node_t *node) {
 
     switch (node->type) {
     default: {
-        // err_die("impossible. not supported node type '%d'", node->type);
+        err_die("impossible. not supported node type '%d'", node->type);
+    } break;
+    case NODE_TYPE_PROGRAM: {
+        node_program_t *program = node->real;
+        ast_del_nodes(self, program->blocks);
     } break;
     case NODE_TYPE_BLOCKS: {
         node_blocks_t *blocks = node->real;
@@ -246,8 +250,10 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         ast_del_nodes(self, for_stmt->blocks);
     } break;
     case NODE_TYPE_BREAK_STMT: {
+        // nothing todo
     } break;
     case NODE_TYPE_CONTINUE_STMT: {
+        // nothing todo
     } break;
     case NODE_TYPE_RETURN_STMT: {
         node_return_stmt_t *return_stmt = node->real;
@@ -276,6 +282,12 @@ ast_del_nodes(const ast_t *self, node_t *node) {
             ast_del_nodes(self, nodearr_get(assign->nodearr, i));
         }
     } break;
+    case NODE_TYPE_SIMPLE_ASSIGN: {
+        node_simple_assign_t *simple_assign = node->real;
+        for (int32_t i = 0; i < nodearr_len(simple_assign->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(simple_assign->nodearr, i));
+        }
+    } break;
     case NODE_TYPE_TEST_LIST: {
         node_test_list_t *test_list = node->real;
         for (int32_t i = 0; i < nodearr_len(test_list->nodearr); ++i) {
@@ -302,6 +314,98 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         node_not_test_t *not_test = node->real;
         ast_del_nodes(self, not_test->not_test);
         ast_del_nodes(self, not_test->comparison);
+    } break;
+    case NODE_TYPE_COMPARISON: {
+        node_comparison_t *comparison = node->real;
+        for (int32_t i = 0; i < nodearr_len(comparison->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(comparison->nodearr, i));
+        }
+    } break;
+    case NODE_TYPE_ASSCALC: {
+        node_asscalc_t *asscalc = node->real;
+        for (int32_t i = 0; i < nodearr_len(asscalc->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(asscalc->nodearr, i));
+        }
+    } break;
+    case NODE_TYPE_EXPR: {
+        node_expr_t *expr = node->real;
+        for (int32_t i = 0; i < nodearr_len(expr->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(expr->nodearr, i));
+        }
+    } break;
+    case NODE_TYPE_TERM: {
+        node_expr_t *term = node->real;
+        for (int32_t i = 0; i < nodearr_len(term->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(term->nodearr, i));
+        }
+    } break;
+    case NODE_TYPE_FACTOR: {
+        node_factor_t *factor = node->real;
+        ast_del_nodes(self, factor->atom);
+        ast_del_nodes(self, factor->test);
+    } break;
+    case NODE_TYPE_ATOM: {
+        node_atom_t *atom = node->real;
+        ast_del_nodes(self, atom->nil);
+        ast_del_nodes(self, atom->false_);
+        ast_del_nodes(self, atom->true_);
+        ast_del_nodes(self, atom->digit);
+        ast_del_nodes(self, atom->string);
+        ast_del_nodes(self, atom->array);
+        ast_del_nodes(self, atom->identifier);
+        ast_del_nodes(self, atom->caller);
+    } break;
+    case NODE_TYPE_NIL: {
+        // nothing todo
+    } break;
+    case NODE_TYPE_FALSE: {
+        // nothing todo
+    } break;
+    case NODE_TYPE_TRUE: {
+        // nothing todo
+    } break;
+    case NODE_TYPE_DIGIT: {
+        // nothing todo
+    } break;
+    case NODE_TYPE_STRING: {
+        node_string_t *string = node->real;
+        free(string->string);
+    } break;
+    case NODE_TYPE_ARRAY: {
+        node_array_t_ *array = node->real;
+        ast_del_nodes(self, array->array_elems);
+    } break;
+    case NODE_TYPE_ARRAY_ELEMS: {
+        node_array_elems_t *array_elems = node->real;
+        for (int32_t i = 0; i < nodearr_len(array_elems->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(array_elems->nodearr, i));
+        }
+    } break;
+    case NODE_TYPE_IDENTIFIER: {
+        node_identifier_t *identifier = node->real;
+        free(identifier->identifier);
+    } break;
+    case NODE_TYPE_CALLER: {
+        node_caller_t *caller = node->real;
+        ast_del_nodes(self, caller->identifier_chain);
+        ast_del_nodes(self, caller->test_list);
+    } break;
+    case NODE_TYPE_COMP_OP: {
+        // nothing todo
+    } break;
+    case NODE_TYPE_ADD_SUB_OP: {
+        // nothing todo
+    } break;
+    case NODE_TYPE_MUL_DIV_OP: {
+        // nothing todo
+    } break;
+    case NODE_TYPE_AUGASSIGN: {
+        // nothing todo
+    } break;
+    case NODE_TYPE_IDENTIFIER_CHAIN: {
+        node_identifier_chain_t *identifier_chain = node->real;
+        ast_del_nodes(self, identifier_chain->identifier);
+        ast_del_nodes(self, identifier_chain->identifier_chain);
     } break;
     }
 
@@ -1663,7 +1767,7 @@ ast_add_sub_op(ast_t *self, int dep) {
     }
     check("read op");
 
-    return_parse(node_new(NODE_TYPE_ASS_SUB_OP, cur));
+    return_parse(node_new(NODE_TYPE_ADD_SUB_OP, cur));
 }
 
 static node_t *
