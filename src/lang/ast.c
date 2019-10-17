@@ -3116,7 +3116,7 @@ ast_traverse_ref_block(ast_t *self, node_t *node, int dep) {
         ctx_pushb_buf(self->context, str_getc(result->string));
     } break;
     case OBJ_TYPE_ARRAY: {
-        ast_set_error_detail(self, "can't reference array");
+        ctx_pushb_buf(self->context, "(array)");
     } break;
     case OBJ_TYPE_FUNC: {
         ctx_pushb_buf(self->context, "(function)");
@@ -4559,7 +4559,7 @@ ast_compare_or(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
-        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or, dep+1);
+        object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_or, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_FUNC: {
