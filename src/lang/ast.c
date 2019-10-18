@@ -339,6 +339,11 @@ ast_del_nodes(const ast_t *self, node_t *node) {
             ast_del_nodes(self, nodearr_get(term->nodearr, i));
         }
     } break;
+    case NODE_TYPE_INDEX: {
+        node_index_t *index = node->real;
+        ast_del_nodes(self, index->factor);
+        ast_del_nodes(self, index->simple_assign);
+    } break;
     case NODE_TYPE_FACTOR: {
         node_factor_t *factor = node->real;
         ast_del_nodes(self, factor->atom);
@@ -1654,6 +1659,66 @@ ast_asscalc(ast_t *self, int dep) {
 }
 
 static node_t *
+ast_index(ast_t *self, int dep) {
+    ready();
+    declare(node_index_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->factor); \
+        ast_del_nodes(self, cur->simple_assign); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    check("call ast_factor");
+    cur->factor = ast_factor(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (!cur->factor) {
+        return_cleanup("");
+    }
+
+    if (!*self->ptr) {
+        return_cleanup("reached EOF in index");
+    }
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_LBRACKET) {
+        self->ptr--;
+        return_parse(node_new(NODE_TYPE_INDEX, cur));
+    }
+    check("read '['");
+
+    check("call ast_simple_assign");
+    cur->simple_assign = ast_simple_assign(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (!cur->simple_assign) {
+        return_cleanup("not found index by index access");
+    }
+
+    if (!*self->ptr) {
+        return_cleanup("reached EOF in index (2)");
+    }
+
+    t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_RBRACKET) {
+        return_cleanup("not found ']' in index");
+    }
+    check("read ']'");
+
+    return_parse(node_new(NODE_TYPE_INDEX, cur));
+}
+
+static node_t *
 ast_term(ast_t *self, int dep) {
     ready();
     declare(node_term_t, cur);
@@ -1675,11 +1740,11 @@ ast_term(ast_t *self, int dep) {
     } \
 
     check("call left ast_factor");
-    node_t *lhs = ast_factor(self, dep+1);
+    node_t *lhs = ast_index(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
     if (!lhs) {
-        if (ast_has_error(self)) {
-            return_cleanup("");
-        }
         return_cleanup(""); // not error
     }
 
@@ -1688,21 +1753,21 @@ ast_term(ast_t *self, int dep) {
     for (;;) {
         check("call mul_div_op");
         node_t *op = ast_mul_div_op(self, dep+1);
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
         if (!op) {
-            if (ast_has_error(self)) {
-                return_cleanup("");
-            }
             return_parse(node_new(NODE_TYPE_TERM, cur));
         }
 
         nodearr_moveb(cur->nodearr, op);
 
-        check("call right ast_factor");
-        node_t *rhs = ast_factor(self, dep+1);
+        check("call right ast_index");
+        node_t *rhs = ast_index(self, dep+1);
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
         if (!rhs) {
-            if (ast_has_error(self)) {
-                return_cleanup("");
-            }
             return_cleanup("syntax error. not found rhs operand in term");
         }        
 
@@ -2610,6 +2675,7 @@ ast_ref_block(ast_t *self, int dep) {
     if (t->type != TOKEN_TYPE_LDOUBLE_BRACE) {
         return_cleanup("");
     }
+    check("read '{:'")
 
     check("call ast_formula");
     cur->formula = ast_formula(self, dep+1);
@@ -2621,10 +2687,10 @@ ast_ref_block(ast_t *self, int dep) {
     if (!t) {
         return_cleanup("syntax error. reached EOF in reference block");
     }
-
     if (t->type != TOKEN_TYPE_RDOUBLE_BRACE) {
         return_cleanup("syntax error. not found \"#}\"");
     }
+    check("read ':}'")
 
     return_parse(node_new(NODE_TYPE_REF_BLOCK, cur));
 }
@@ -6928,8 +6994,8 @@ ast_traverse_term(ast_t *self, node_t *node, int dep) {
         return_trav(result);
     } else if (nodearr_len(term->nodearr) >= 3) {
         node_t *lnode = nodearr_get(term->nodearr, 0);
-        assert(lnode->type == NODE_TYPE_FACTOR);
-        tcheck("call _ast_traverse factor");
+        assert(lnode->type == NODE_TYPE_INDEX);
+        tcheck("call _ast_traverse with index");
         object_t *lhs = _ast_traverse(self, lnode, dep+1);
         if (ast_has_error(self)) {
             return_trav(NULL);
@@ -6943,8 +7009,8 @@ ast_traverse_term(ast_t *self, node_t *node, int dep) {
             assert(op);
 
             node_t *rnode = nodearr_get(term->nodearr, i+1);
-            assert(rnode->type == NODE_TYPE_FACTOR);
-            tcheck("call _ast_traverse with factor");
+            assert(rnode->type == NODE_TYPE_INDEX);
+            tcheck("call _ast_traverse with index");
             object_t *rhs = _ast_traverse(self, rnode, dep+1);
             if (ast_has_error(self)) {
                 obj_del(lhs);
@@ -6969,6 +7035,103 @@ ast_traverse_term(ast_t *self, node_t *node, int dep) {
     }
 
     assert(0 && "impossible. failed to traverse term");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_traverse_index(ast_t *self, node_t *node, int dep) {
+    node_index_t *index_node = node->real;
+    tready();
+    assert(index_node);
+    object_t *operand = NULL;
+    object_t *index = NULL;
+    object_t *ref_operand = NULL;
+    object_t *ref_index = NULL;
+
+    operand = _ast_traverse(self, index_node->factor, dep+1);
+    if (ast_has_error(self)) {
+        goto fail;
+    }
+    if (!operand) {
+        ast_set_error_detail(self, "not found operand in index access");
+        goto fail;
+    }
+
+    if (operand->type == OBJ_TYPE_IDENTIFIER) {
+        ref_operand = pull_in_ref_by(self, operand);
+        if (!ref_operand) {
+            ast_set_error_detail(self, "\"%s\" is not defined. can not index access", str_getc(operand->identifier));
+            goto fail;
+        }
+    }
+
+    index = _ast_traverse(self, index_node->simple_assign, dep+1);
+    if (ast_has_error(self)) {
+        goto fail;
+    }
+    if (!index) {
+        ast_set_error_detail(self, "not found index");
+        goto fail;
+    }
+
+    ref_index = index;
+    if (index->type == OBJ_TYPE_IDENTIFIER) {
+        ref_index = pull_in_ref_by(self, index);
+        if (!ref_index) {
+            ast_set_error_detail(self, "\"%s\" is not defined. can not index access (2)", str_getc(index->identifier));
+            goto fail;
+        }
+    }
+
+    if (ref_index->type != OBJ_TYPE_INTEGER) {
+        ast_set_error_detail(self, "can not index access. index is not integer");
+        goto fail;
+    }
+
+    const long idx = ref_index->lvalue;
+
+    switch (ref_operand->type) {
+    default:
+        ast_set_error_detail(self, "object is can not index access");
+        goto fail;
+        break;
+    case OBJ_TYPE_STRING: {
+        const string_t *tar = ref_operand->string;
+        string_t *s = str_new();
+
+        if (idx >= str_len(tar) || idx < 0) {
+            ast_set_error_detail(self, "index out of range of string");
+            goto fail;
+        }
+
+        int c = str_getc(tar)[idx];
+        str_pushb(s, c);
+        object_t *ret = obj_new_str(s);
+
+        obj_del(operand);
+        obj_del(index);
+        return_trav(ret);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        const object_array_t *tar = ref_operand->objarr;
+        const object_t *el = objarr_getc(tar, idx);
+        if (!el) {
+            ast_set_error_detail(self, "index out of range of array");
+            goto fail;
+        }
+
+        object_t *ret = obj_new_other(el);
+
+        obj_del(operand);
+        obj_del(index);
+        return_trav(ret);
+    } break;
+    }
+
+
+fail:
+    obj_del(operand);
+    obj_del(index);
     return_trav(NULL);
 }
 
@@ -7960,6 +8123,11 @@ _ast_traverse(ast_t *self, node_t *node, int dep) {
     case NODE_TYPE_TERM: {
         tcheck("call ast_traverse_term");
         object_t *obj = ast_traverse_term(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_INDEX: {
+        tcheck("call ast_traverse_index");
+        object_t *obj = ast_traverse_index(self, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_ASSCALC: {

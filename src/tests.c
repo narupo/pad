@@ -2380,6 +2380,7 @@ test_ast_parse(void) {
     node_comparison_t *comparison;
     node_expr_t *expr;
     node_term_t *term;
+    node_index_t *index;
     node_asscalc_t *asscalc;
     node_factor_t *factor;
     node_atom_t *atom;
@@ -2432,8 +2433,8 @@ test_ast_parse(void) {
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        asscalc = nodearr_get(term->nodearr, 0)->real;
-        factor = nodearr_get(asscalc->nodearr, 0)->real;
+        index = nodearr_get(term->nodearr, 0)->real;
+        factor = index->factor->real;
         atom = factor->atom->real;
         nil = atom->nil->real;
         assert(nil != NULL);
@@ -2442,7 +2443,7 @@ test_ast_parse(void) {
     tkr_parse(tkr, "{: 1 :}");
     {
         ast_clear(ast);
-        (ast_parse(ast, tkr_get_tokens(tkr)));
+        ast_debug(ast_parse(ast, tkr_get_tokens(tkr)));
         root = ast_getc_root(ast);
         assert(root != NULL);
         program = root->real;
@@ -2460,9 +2461,18 @@ test_ast_parse(void) {
         comparison = not_test->comparison->real;
         expr = nodearr_get(comparison->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        asscalc = nodearr_get(term->nodearr, 0)->real;
-        factor = nodearr_get(asscalc->nodearr, 0)->real;
+        index = nodearr_get(term->nodearr, 0)->real;
+        assert(index);
+        assert(index->factor);
+        assert(index->factor->real);
+        factor = index->factor->real;
+        assert(factor);
+        assert(factor->atom);
+        assert(factor->atom->real);
         atom = factor->atom->real;
+        assert(atom);
+        assert(atom->digit);
+        assert(atom->digit->real);
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 1);
