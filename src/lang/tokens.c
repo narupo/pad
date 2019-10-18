@@ -63,8 +63,8 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_BLOCK: return "block"; break;
     case TOKEN_TYPE_LBRACEAT: return "{@"; break;
     case TOKEN_TYPE_RBRACEAT: return "@}"; break;
-    case TOKEN_TYPE_LDOUBLE_BRACE: return "{#"; break;
-    case TOKEN_TYPE_RDOUBLE_BRACE: return "#}"; break;
+    case TOKEN_TYPE_LDOUBLE_BRACE: return "{:"; break;
+    case TOKEN_TYPE_RDOUBLE_BRACE: return ":}"; break;
     case TOKEN_TYPE_DOT_OPE: return "."; break;
     case TOKEN_TYPE_COMMA: return ","; break;
     case TOKEN_TYPE_COLON: return "colon"; break;

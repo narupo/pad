@@ -56,8 +56,9 @@ BNF of Cap's template language
         comparison: asscalc ( comp_op asscalc )*
            asscalc: expr ( augassign expr )*
               expr: term ( add_sub_op term )*
-              term: factor ( mul_div_op factor )*
-            factor: atom | '(' test ')'
+             - term: index ( mul_div_op index )*
+            - index: factor ( '[' simple_assign ']' )
+            factor: atom | '(' formula ')'
               atom: nil |
                     false |
                     true |
