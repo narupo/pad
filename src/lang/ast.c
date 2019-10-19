@@ -1739,7 +1739,7 @@ ast_term(ast_t *self, int dep) {
         return_parse(NULL); \
     } \
 
-    check("call left ast_factor");
+    check("call left ast_index");
     node_t *lhs = ast_index(self, dep+1);
     if (ast_has_error(self)) {
         return_cleanup("");
@@ -3600,6 +3600,7 @@ extract_obj(ast_t *self, object_t *srcobj) {
     case OBJ_TYPE_IDENTIFIER: {
         object_t *ref = pull_in_ref_by(self, srcobj);
         if (!ref) {
+            ast_set_error_detail(self, "\"%s\" is not defined in extract obj", str_getc(srcobj->identifier));
             return NULL;
         }
         return obj_new_other(ref);
@@ -6988,7 +6989,7 @@ ast_traverse_term(ast_t *self, node_t *node, int dep) {
 
     if (nodearr_len(term->nodearr) == 1) {
         node_t *factor = nodearr_get(term->nodearr, 0);
-        assert(factor->type == NODE_TYPE_FACTOR);
+        assert(factor->type == NODE_TYPE_INDEX);
         tcheck("call _ast_traverse with factor");
         object_t *result = _ast_traverse(self, factor, dep+1);
         return_trav(result);
@@ -7057,11 +7058,11 @@ ast_traverse_index(ast_t *self, node_t *node, int dep) {
         goto fail;
     }
 
+    ref_operand = operand;
     if (operand->type == OBJ_TYPE_IDENTIFIER) {
         ref_operand = pull_in_ref_by(self, operand);
         if (!ref_operand) {
-            ast_set_error_detail(self, "\"%s\" is not defined. can not index access", str_getc(operand->identifier));
-            goto fail;
+            return_trav(operand);
         }
     }
 
@@ -7070,8 +7071,7 @@ ast_traverse_index(ast_t *self, node_t *node, int dep) {
         goto fail;
     }
     if (!index) {
-        ast_set_error_detail(self, "not found index");
-        goto fail;
+        return_trav(operand)
     }
 
     ref_index = index;
@@ -7151,7 +7151,6 @@ pull_in_ref_by(ast_t *self, object_t *idn_obj) {
     const char *idn = str_getc(idn_obj->identifier);
     object_t *ref = get_var_ref(self, idn, 0);
     if (!ref) {
-        ast_set_error_detail(self, "\"%s\" is not defined in pull in ref by", idn);
         return NULL;
     }
     if (ref->type == OBJ_TYPE_IDENTIFIER) {
@@ -7175,6 +7174,7 @@ ast_calc_asscalc_ass_idn(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
     case OBJ_TYPE_IDENTIFIER: {
         object_t *rval = pull_in_ref_by(self, rhs);
         if (!rval) {
+            ast_set_error_detail(self, "\"%s\" is not defined in asscalc ass idn", str_getc(rhs->identifier));
             return_trav(NULL);
         }
 
@@ -7734,6 +7734,11 @@ ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int 
             object_t *ref_aarg = aarg;
             if (aarg->type == OBJ_TYPE_IDENTIFIER) {
                 ref_aarg = pull_in_ref_by(self, aarg);
+                if (!ref_aarg) {
+                    ast_set_error_detail(self, "\"%s\" is not defined in invoke function", str_getc(aarg->identifier));
+                    obj_del(args);
+                    return NULL;
+                }
             }
             object_t *copy_aarg = obj_new_other(ref_aarg);
 
@@ -7759,6 +7764,7 @@ ast_obj_to_str(ast_t *self, object_t *obj) {
     case OBJ_TYPE_IDENTIFIER: {
         object_t *var = pull_in_ref_by(self, obj);
         if (!var) {
+            ast_set_error_detail(self, "\"%s\" is not defined in object to string", str_getc(obj->identifier));
             return NULL;
         }
         return obj_to_str(var);
