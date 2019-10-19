@@ -52,7 +52,6 @@ token_type_to_str(const token_t *self) {
     }
 
     switch (self->type) {
-    default: return "unknown"; break;
     case TOKEN_TYPE_INVALID: return "invalid"; break;
     case TOKEN_TYPE_NIL: return "nil"; break;
     case TOKEN_TYPE_NEWLINE: return "NEWLINE"; break;
@@ -65,6 +64,8 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_RBRACEAT: return "@}"; break;
     case TOKEN_TYPE_LDOUBLE_BRACE: return "{:"; break;
     case TOKEN_TYPE_RDOUBLE_BRACE: return ":}"; break;
+    case TOKEN_TYPE_LBRACKET: return "["; break;
+    case TOKEN_TYPE_RBRACKET: return "]"; break;
     case TOKEN_TYPE_DOT_OPE: return "."; break;
     case TOKEN_TYPE_COMMA: return ","; break;
     case TOKEN_TYPE_COLON: return "colon"; break;
@@ -78,11 +79,17 @@ token_type_to_str(const token_t *self) {
         return str;
         break;
 
+    case TOKEN_TYPE_FALSE: return "false"; break;
+    case TOKEN_TYPE_TRUE: return "true"; break;
+
     // operators
     case TOKEN_TYPE_OP_ADD: return "+"; break;
     case TOKEN_TYPE_OP_SUB: return "-"; break;
     case TOKEN_TYPE_OP_MUL: return "*"; break;
     case TOKEN_TYPE_OP_DIV: return "/"; break;
+    case TOKEN_TYPE_OP_OR: return "or"; break;
+    case TOKEN_TYPE_OP_AND: return "and"; break;
+    case TOKEN_TYPE_OP_NOT: return "not"; break;
 
     // assign operators
     case TOKEN_TYPE_OP_ASS: return "="; break;
@@ -106,8 +113,12 @@ token_type_to_str(const token_t *self) {
 
     case TOKEN_TYPE_STMT_FOR: return "for"; break;
     case TOKEN_TYPE_STMT_BREAK: return "break"; break;
+    case TOKEN_TYPE_STMT_CONTINUE: return "continue"; break;
+    case TOKEN_TYPE_STMT_RETURN: return "return"; break;
 
     // def
     case TOKEN_TYPE_DEF: return "def"; break;
     }
+
+    return "unknown";
 }

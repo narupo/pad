@@ -8126,6 +8126,22 @@ test_ast_traverse(void) {
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
     }
+
+    tkr_parse(tkr, "{@ a = [[1, 2]] \n @}{: a[0] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
+    }
+    
+    tkr_parse(tkr, "{@ a = [[1, 2]] \n @}{: a[0][0] :}");
+    {
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    }
     
     /***************
     * string index *
@@ -8169,6 +8185,14 @@ test_ast_traverse(void) {
         (ast_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "b"));
+    } 
+
+    tkr_parse(tkr, "{@ a = \"ab\"[0][0] @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "a"));
     } 
 
     /***************
