@@ -268,7 +268,7 @@ typedef struct {
 
 typedef struct {
     node_t *factor;
-    node_t *simple_assign;
+    node_array_t *nodearr;
 } node_index_t;
 
 typedef struct {

@@ -342,7 +342,9 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     case NODE_TYPE_INDEX: {
         node_index_t *index = node->real;
         ast_del_nodes(self, index->factor);
-        ast_del_nodes(self, index->simple_assign);
+        for (int32_t i = 0; i < nodearr_len(index->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(index->nodearr, i));
+        }
     } break;
     case NODE_TYPE_FACTOR: {
         node_factor_t *factor = node->real;
@@ -1662,13 +1664,17 @@ static node_t *
 ast_index(ast_t *self, int dep) {
     ready();
     declare(node_index_t, cur);
+    cur->nodearr = nodearr_new();
     token_t **save_ptr = self->ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
         self->ptr = save_ptr; \
         ast_del_nodes(self, cur->factor); \
-        ast_del_nodes(self, cur->simple_assign); \
+        for (; nodearr_len(cur->nodearr); ) { \
+            node_t *node = nodearr_popb(cur->nodearr); \
+            ast_del_nodes(self, node); \
+        } \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(self, msg); \
@@ -1685,35 +1691,39 @@ ast_index(ast_t *self, int dep) {
         return_cleanup("");
     }
 
-    if (!*self->ptr) {
-        return_cleanup("reached EOF in index");
-    }
+    for (;;) {
+        if (!*self->ptr) {
+            return_cleanup("reached EOF in index");
+        }
 
-    token_t *t = *self->ptr++;
-    if (t->type != TOKEN_TYPE_LBRACKET) {
-        self->ptr--;
-        return_parse(node_new(NODE_TYPE_INDEX, cur));
-    }
-    check("read '['");
+        token_t *t = *self->ptr++;
+        if (t->type != TOKEN_TYPE_LBRACKET) {
+            self->ptr--;
+            return_parse(node_new(NODE_TYPE_INDEX, cur));
+        }
+        check("read '['");
 
-    check("call ast_simple_assign");
-    cur->simple_assign = ast_simple_assign(self, dep+1);
-    if (ast_has_error(self)) {
-        return_cleanup("");
-    }
-    if (!cur->simple_assign) {
-        return_cleanup("not found index by index access");
-    }
+        check("call ast_simple_assign");
+        node_t *simple_assign = ast_simple_assign(self, dep+1);
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        if (!simple_assign) {
+            return_cleanup("not found index by index access");
+        }
 
-    if (!*self->ptr) {
-        return_cleanup("reached EOF in index (2)");
-    }
+        if (!*self->ptr) {
+            return_cleanup("reached EOF in index (2)");
+        }
 
-    t = *self->ptr++;
-    if (t->type != TOKEN_TYPE_RBRACKET) {
-        return_cleanup("not found ']' in index");
+        t = *self->ptr++;
+        if (t->type != TOKEN_TYPE_RBRACKET) {
+            return_cleanup("not found ']' in index");
+        }
+        check("read ']'");
+
+        nodearr_moveb(cur->nodearr, simple_assign);
     }
-    check("read ']'");
 
     return_parse(node_new(NODE_TYPE_INDEX, cur));
 }
@@ -2688,7 +2698,7 @@ ast_ref_block(ast_t *self, int dep) {
         return_cleanup("syntax error. reached EOF in reference block");
     }
     if (t->type != TOKEN_TYPE_RDOUBLE_BRACE) {
-        return_cleanup("syntax error. not found \"#}\"");
+        return_cleanup("syntax error. not found \":}\"");
     }
     check("read ':}'")
 
@@ -7048,6 +7058,7 @@ ast_traverse_index(ast_t *self, node_t *node, int dep) {
     object_t *index = NULL;
     object_t *ref_operand = NULL;
     object_t *ref_index = NULL;
+    object_t *ret = NULL;
 
     operand = _ast_traverse(self, index_node->factor, dep+1);
     if (ast_has_error(self)) {
@@ -7057,6 +7068,7 @@ ast_traverse_index(ast_t *self, node_t *node, int dep) {
         ast_set_error_detail(self, "not found operand in index access");
         goto fail;
     }
+    ret = operand;
 
     ref_operand = operand;
     if (operand->type == OBJ_TYPE_IDENTIFIER) {
@@ -7066,69 +7078,79 @@ ast_traverse_index(ast_t *self, node_t *node, int dep) {
         }
     }
 
-    index = _ast_traverse(self, index_node->simple_assign, dep+1);
-    if (ast_has_error(self)) {
-        goto fail;
-    }
-    if (!index) {
-        return_trav(operand)
-    }
+    // left priority
+    for (int32_t i = 0; i < nodearr_len(index_node->nodearr); ++i) {
+        node_t *simple_assign = nodearr_get(index_node->nodearr, i);
+        assert(simple_assign->type == NODE_TYPE_SIMPLE_ASSIGN);
 
-    ref_index = index;
-    if (index->type == OBJ_TYPE_IDENTIFIER) {
-        ref_index = pull_in_ref_by(self, index);
-        if (!ref_index) {
-            ast_set_error_detail(self, "\"%s\" is not defined. can not index access (2)", str_getc(index->identifier));
+        index = _ast_traverse(self, simple_assign, dep+1);
+        if (ast_has_error(self)) {
             goto fail;
         }
-    }
+        if (!index) {
+            return_trav(operand)
+        }
 
-    if (ref_index->type != OBJ_TYPE_INTEGER) {
-        ast_set_error_detail(self, "can not index access. index is not integer");
-        goto fail;
-    }
+        ref_index = index;
+        if (index->type == OBJ_TYPE_IDENTIFIER) {
+            ref_index = pull_in_ref_by(self, index);
+            if (!ref_index) {
+                ast_set_error_detail(self, "\"%s\" is not defined. can not index access (2)", str_getc(index->identifier));
+                goto fail;
+            }
+        }
 
-    const long idx = ref_index->lvalue;
-
-    switch (ref_operand->type) {
-    default:
-        ast_set_error_detail(self, "object is can not index access");
-        goto fail;
-        break;
-    case OBJ_TYPE_STRING: {
-        const string_t *tar = ref_operand->string;
-        string_t *s = str_new();
-
-        if (idx >= str_len(tar) || idx < 0) {
-            ast_set_error_detail(self, "index out of range of string");
+        if (ref_index->type != OBJ_TYPE_INTEGER) {
+            ast_set_error_detail(self, "can not index access. index is not integer");
             goto fail;
         }
 
-        int c = str_getc(tar)[idx];
-        str_pushb(s, c);
-        object_t *ret = obj_new_str(s);
+        const long idx = ref_index->lvalue;
 
-        obj_del(operand);
+        switch (ref_operand->type) {
+        default:
+            ast_set_error_detail(self, "object is can not index access");
+            goto fail;
+            break;
+        case OBJ_TYPE_STRING: {
+            const string_t *tar = ref_operand->string;
+            string_t *s = str_new();
+
+            if (idx >= str_len(tar) || idx < 0) {
+                ast_set_error_detail(self, "index out of range of string");
+                goto fail;
+            }
+
+            int c = str_getc(tar)[idx];
+            str_pushb(s, c);
+
+            object_t *tmp = obj_new_str(s);
+            obj_del(operand);
+            operand = tmp;
+        } break;
+        case OBJ_TYPE_ARRAY: {
+            const object_array_t *tar = ref_operand->objarr;
+            const object_t *el = objarr_getc(tar, idx);
+            if (!el) {
+                ast_set_error_detail(self, "index out of range of array");
+                goto fail;
+            }
+
+            object_t *tmp = obj_new_other(el);
+            obj_del(operand);
+            operand = tmp;
+        } break;
+        }
+
+        ret = operand;
+        ref_operand = operand;
+
         obj_del(index);
-        return_trav(ret);
-    } break;
-    case OBJ_TYPE_ARRAY: {
-        const object_array_t *tar = ref_operand->objarr;
-        const object_t *el = objarr_getc(tar, idx);
-        if (!el) {
-            ast_set_error_detail(self, "index out of range of array");
-            goto fail;
-        }
-
-        object_t *ret = obj_new_other(el);
-
-        obj_del(operand);
-        obj_del(index);
-        return_trav(ret);
-    } break;
+        index = NULL;
+        ref_index = NULL;
     }
 
-
+    return_trav(ret);
 fail:
     obj_del(operand);
     obj_del(index);
