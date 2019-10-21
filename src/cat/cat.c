@@ -265,8 +265,12 @@ static string_t *
 catcmd_read_stream(catcmd_t *self, FILE *fin) {
     string_t *buf = str_new();
 
-    for (; !feof(fin); ) {
-        str_pushb(buf, fgetc(fin));
+    for (;;) {
+        int c = fgetc(fin);
+        if (c == EOF) {
+            break;
+        }
+        str_pushb(buf, c);
     }
 
     return buf;
