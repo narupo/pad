@@ -381,14 +381,6 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 tkr_store_textblock(self);
                 tkr_move_token(self, token);
                 m = 20;
-            } else if (c == '\\') {
-                self->ptr--;
-                string_t *esc = tkr_read_escape(self);
-                if (!esc) {
-                    goto fail;
-                }
-                str_app(self->buf, str_getc(esc));
-                str_del(esc);
             } else {
                 str_pushb(self->buf, c);
             }
