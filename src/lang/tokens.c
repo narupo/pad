@@ -66,6 +66,8 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_RDOUBLE_BRACE: return ":}"; break;
     case TOKEN_TYPE_LBRACKET: return "["; break;
     case TOKEN_TYPE_RBRACKET: return "]"; break;
+    case TOKEN_TYPE_LBRACE: return "{"; break;
+    case TOKEN_TYPE_RBRACE: return "}"; break;
     case TOKEN_TYPE_DOT_OPE: return "."; break;
     case TOKEN_TYPE_COMMA: return ","; break;
     case TOKEN_TYPE_COLON: return "colon"; break;

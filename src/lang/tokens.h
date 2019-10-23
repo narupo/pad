@@ -24,6 +24,8 @@ typedef enum {
     TOKEN_TYPE_RPAREN, // ')'
     TOKEN_TYPE_LBRACKET, // '['
     TOKEN_TYPE_RBRACKET, // ']'
+    TOKEN_TYPE_LBRACE, // '{'
+    TOKEN_TYPE_RBRACE, // '}'
 
     // atoms
     TOKEN_TYPE_NIL, // 'nil'
