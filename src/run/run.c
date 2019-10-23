@@ -137,4 +137,3 @@ runcmd_run(runcmd_t *self) {
     str_del(cmdline);
     return 0;
 }
-

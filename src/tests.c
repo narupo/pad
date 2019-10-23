@@ -1568,13 +1568,6 @@ test_tkr_parse(void) {
         assert(tkr_tokens_len(tkr) == 0);
     }
 
-    tkr_parse(tkr, "{@{");
-    {
-        assert(tkr_tokens_len(tkr) == 1);
-        assert(tkr_has_error(tkr) == true);
-        assert(strcmp(tkr_get_error_detail(tkr), "syntax error. unsupported character \"{\"") == 0);
-    }
-    
     tkr_parse(tkr, "{@");
     {
         assert(tkr_tokens_len(tkr) == 1);
@@ -1719,6 +1712,28 @@ test_tkr_parse(void) {
         assert(token->type == TOKEN_TYPE_LBRACEAT);
         token = tkr_tokens_getc(tkr, 1);
         assert(token->type == TOKEN_TYPE_RBRACKET);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@{@}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_LBRACE);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@}@}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_RBRACE);
         token = tkr_tokens_getc(tkr, 2);
         assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
