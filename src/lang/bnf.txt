@@ -56,8 +56,8 @@ BNF of Cap's template language
         comparison: asscalc ( comp_op asscalc )*
            asscalc: expr ( augassign expr )*
               expr: term ( add_sub_op term )*
-             - term: index ( mul_div_op index )*
-            - index: factor ( '[' simple_assign ']' )*
+              term: index ( mul_div_op index )*
+             index: factor ( '[' simple_assign ']' )*
             factor: atom | '(' formula ')'
               atom: nil |
                     false |
@@ -65,10 +65,15 @@ BNF of Cap's template language
                     digit |
                     string |
                     array |
+                    dict |
                     identifier |
                     caller
              array: '[' ( array_elems ) ']'
        array_elems: simple_assign ( ',' simple_assign )*
+             - dict: '{' ( dict_elems ) '}'
+       - dict_elems: dict_elem ( ',' dict_elem )*
+        - dict_elem: dict_key ':' simple_assign
+         - dict_key: identifier | string
            comp_op: '==' | '!='
         add_sub_op: '+' | '-'
         mul_div_op: '*' | '/'
