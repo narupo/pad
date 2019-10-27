@@ -2,10 +2,10 @@ BNF of Cap's template language
 
            program: blocks 
 
-            blocks: ( code-block | ref-block | text-block ) blocks
-        code-block: '{@' elems '@}'
-         ref-block: '{#' formula '#}'
-        text-block: .*
+            blocks: ( code_block | ref_block | text_block ) blocks
+        code_block: '{@' elems '@}'
+         ref_block: '{#' formula '#}'
+        text_block: .*
              elems: ( def | stmt | formula ) elems
 
               stmt: import_stmt |
