@@ -11172,6 +11172,38 @@ modtest(const char *modname) {
     return ntest;    
 }
 
+static int32_t
+methtest(const char *modname, const char *methname) {
+    const struct testmodule *fndmod = NULL;
+
+    for (const struct testmodule *m = testmodules; m->name; ++m) {
+        if (strcmp(modname, m->name) == 0) {
+            fndmod = m;
+        }
+    }
+    if (!fndmod) {
+        return 0;
+    }
+
+    printf("\n* module '%s'\n", fndmod->name);
+
+    const struct testcase *fndt = NULL;
+    for (const struct testcase *t = fndmod->tests; t->name; ++t) {
+        if (!strcmp(t->name, methname)) {
+            fndt = t;
+            break;
+        }
+    }
+    if (!fndt) {
+        return 0;
+    }
+
+    printf("* method '%s'\n", fndt->name);
+    fndt->test();
+
+    return 1;    
+}
+
 static int32_t 
 fulltests(void) {
     int32_t ntest = 0;
@@ -11194,9 +11226,13 @@ run(const struct opts *opts) {
     clock_t start;
     clock_t end;
 
-    if (opts->argc-opts->optind > 0) {
+    if (opts->argc - opts->optind == 1) {
         start = clock();
         ntest = modtest(opts->argv[opts->optind]);
+        end = clock();
+    } else if (opts->argc - opts->optind >= 2) {
+        start = clock();
+        ntest = methtest(opts->argv[opts->optind], opts->argv[opts->optind+1]);
         end = clock();
     } else {
         start = clock();
