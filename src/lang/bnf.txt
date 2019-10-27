@@ -72,8 +72,7 @@ BNF of Cap's template language
        array_elems: simple_assign ( ',' simple_assign )*
              - dict: '{' ( dict_elems ) '}'
        - dict_elems: dict_elem ( ',' dict_elem )*
-        - dict_elem: dict_key ':' simple_assign
-         - dict_key: identifier | string
+        - dict_elem: simple_assign ':' simple_assign
            comp_op: '==' | '!='
         add_sub_op: '+' | '-'
         mul_div_op: '*' | '/'
