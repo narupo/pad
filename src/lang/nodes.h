@@ -11,7 +11,7 @@
 *************/
 
 typedef enum {
-    NODE_TYPE_INVALID = 0,
+    NODE_TYPE_INVALID,
     NODE_TYPE_PROGRAM,
     NODE_TYPE_BLOCKS,
     NODE_TYPE_CODE_BLOCK,
@@ -63,6 +63,9 @@ typedef enum {
     NODE_TYPE_IDENTIFIER,
     NODE_TYPE_ARRAY,
     NODE_TYPE_ARRAY_ELEMS,
+    NODE_TYPE_DICT,
+    NODE_TYPE_DICT_ELEMS,
+    NODE_TYPE_DICT_ELEM,
     
     NODE_TYPE_IDENTIFIER_CHAIN,
 
@@ -287,6 +290,7 @@ typedef struct {
     node_t *digit;
     node_t *string;
     node_t *array;
+    node_t *dict;
     node_t *identifier;
     node_t *caller;
 } node_atom_t;
@@ -298,6 +302,19 @@ typedef struct {
 typedef struct {
     node_array_t *nodearr;
 } node_array_elems_t;
+
+typedef struct {
+    node_t *dict_elems;
+} node_dict_t;
+
+typedef struct {
+    node_array_t *nodearr;
+} node_dict_elems_t;
+
+typedef struct {
+    node_t *key_simple_assign;
+    node_t *value_simple_assign;
+} node_dict_elem_t;
 
 typedef struct {
     op_t op;

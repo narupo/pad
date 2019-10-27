@@ -1341,6 +1341,158 @@ ast_array(ast_t *self, int dep) {
 }
 
 static node_t *
+ast_dict_elem(ast_t *self, int dep) {
+    ready();
+    declare(node_dict_elem_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->key_simple_assign); \
+        ast_del_nodes(self, cur->value_simple_assign); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    cur->key_simple_assign = ast_simple_assign(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (!cur->key_simple_assign) {
+        return_cleanup(""); // not error
+    }
+
+    if (!*self->ptr) {
+        return_cleanup("reached EOF in parse dict elem");
+    }
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_COLON) {
+        return_cleanup("not found colon in parse dict elem");
+    }
+    check("read colon");
+
+    cur->value_simple_assign = ast_simple_assign(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (!cur->value_simple_assign) {
+        return_cleanup("not found value in parse dict elem");
+    }
+
+    return_parse(node_new(NODE_TYPE_DICT_ELEM, cur));
+}
+
+static node_t *
+ast_dict_elems(ast_t *self, int dep) {
+    ready();
+    declare(node_dict_elems_t, cur);
+    cur->nodearr = nodearr_new();
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        for (; nodearr_len(cur->nodearr); ) { \
+            node_t *node = nodearr_popb(cur->nodearr); \
+            ast_del_nodes(self, node); \
+        } \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    check("call ast_dict_elem");
+    node_t *lhs = ast_dict_elem(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (!lhs) {
+        return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur));
+    }
+
+    nodearr_moveb(cur->nodearr, lhs);
+
+    for (;;) {
+        if (!*self->ptr) {
+            return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur));
+        }
+
+        token_t *t = *self->ptr++;
+        if (t->type != TOKEN_TYPE_COMMA) {
+            self->ptr--;
+            return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur));
+        }
+        check("read ','")
+
+        check("call ast_dict_elem");
+        node_t *rhs = ast_dict_elem(self, dep+1);
+        if (ast_has_error(self)) {
+            return_cleanup("");
+        }
+        if (!rhs) {
+            // not error
+            return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur));
+        }
+
+        nodearr_moveb(cur->nodearr, rhs);
+    }
+
+    assert(0 && "impossible. failed to parse dict elems");
+    return NULL;
+}
+
+static node_t *
+ast_dict(ast_t *self, int dep) {
+    ready();
+    declare(node_dict_t, cur);
+    token_t **save_ptr = self->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        self->ptr = save_ptr; \
+        ast_del_nodes(self, cur->dict_elems); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(self, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    token_t *t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_LBRACE) {
+        return_cleanup("");
+    }
+    check("read '{'");
+
+    cur->dict_elems = ast_dict_elems(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (!cur->dict_elems) {
+        return_cleanup(""); // not error
+    }
+
+    if (!*self->ptr) {
+        return_cleanup("reached EOF in parse dict")
+    }
+
+    t = *self->ptr++;
+    if (t->type != TOKEN_TYPE_RBRACE) {
+        return_cleanup("not found right brace in parse dict");
+    }
+    check("read '}'");
+
+    return_parse(node_new(NODE_TYPE_DICT, cur));
+}
+
+static node_t *
 ast_nil(ast_t *self, int dep) {
     ready();
     declare(node_nil_t, cur);
@@ -1519,6 +1671,15 @@ ast_atom(ast_t *self, int dep) {
         return_cleanup("");
     }
     if (cur->array) {
+        return_parse(node_new(NODE_TYPE_ATOM, cur));
+    }
+
+    check("call ast_dict");
+    cur->dict = ast_dict(self, dep+1);
+    if (ast_has_error(self)) {
+        return_cleanup("");
+    }
+    if (cur->dict) {
         return_parse(node_new(NODE_TYPE_ATOM, cur));
     }
 

@@ -77,6 +77,7 @@ BNF of Cap's template language
         add_sub_op: '+' | '-'
         mul_div_op: '*' | '/'
          augassign: '+=' | '-=' | '*=' | '/='
+               nil: 
              digit: [0-9]+
            newline: '\n'
             caller: identifier_chain '(' test_list ')'

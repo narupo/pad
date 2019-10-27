@@ -2782,6 +2782,158 @@ test_ast_parse_formula(void) {
 }
 
 static void
+test_ast_parse_dict(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new();
+    const node_t *root;
+    node_program_t *program;
+    node_blocks_t *blocks;
+    node_code_block_t *code_block;
+    node_elems_t *elems;
+    node_formula_t *formula;
+    node_multi_assign_t *multi_assign;
+    node_test_list_t *test_list;
+    node_test_t *test;
+    node_or_test_t *or_test;
+    node_and_test_t *and_test;
+    node_not_test_t *not_test;
+    node_comparison_t *comparison;
+    node_expr_t *expr;
+    node_term_t *term;
+    node_index_t *index;
+    node_factor_t *factor;
+    node_atom_t *atom;
+    node_dict_t *dict;
+    node_dict_elems_t *dict_elems;
+    node_dict_elem_t *dict_elem;
+    node_simple_assign_t *simple_assign;
+    node_asscalc_t *asscalc;
+
+    tkr_parse(tkr, "{@ { \"key\" : \"value\" } @}");
+    {
+        ast_clear(ast);
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        assert(root != NULL);
+        program = root->real;
+        assert(program != NULL);
+        assert(program->blocks != NULL);
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        formula = elems->formula->real;
+        multi_assign = formula->multi_assign->real;
+        test_list = nodearr_get(multi_assign->nodearr, 0)->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        index = nodearr_get(term->nodearr, 0)->real;
+        factor = index->factor->real;
+        atom = factor->atom->real;
+        assert(atom);
+        assert(atom->dict);
+        assert(atom->dict->real);
+        dict = atom->dict->real;
+        dict_elems = dict->dict_elems->real;
+        assert(nodearr_len(dict_elems->nodearr) == 1);
+        dict_elem = nodearr_get(dict_elems->nodearr, 0)->real;
+        simple_assign = dict_elem->key_simple_assign->real;
+        assert(simple_assign);
+        simple_assign = dict_elem->value_simple_assign->real;
+        assert(simple_assign);
+    } 
+
+    tkr_parse(tkr, "{@ { \"key\" : \"value\", } @}");
+    {
+        ast_clear(ast);
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        assert(root != NULL);
+        program = root->real;
+        assert(program != NULL);
+        assert(program->blocks != NULL);
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        formula = elems->formula->real;
+        multi_assign = formula->multi_assign->real;
+        test_list = nodearr_get(multi_assign->nodearr, 0)->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        index = nodearr_get(term->nodearr, 0)->real;
+        factor = index->factor->real;
+        atom = factor->atom->real;
+        assert(atom);
+        assert(atom->dict);
+        assert(atom->dict->real);
+        dict = atom->dict->real;
+        dict_elems = dict->dict_elems->real;
+        assert(nodearr_len(dict_elems->nodearr) == 1);
+        dict_elem = nodearr_get(dict_elems->nodearr, 0)->real;
+        simple_assign = dict_elem->key_simple_assign->real;
+        assert(simple_assign);
+        simple_assign = dict_elem->value_simple_assign->real;
+        assert(simple_assign);
+    } 
+
+    tkr_parse(tkr, "{@ { \"key1\" : \"value1\", \"key2\" : \"value2\" } @}");
+    {
+        ast_clear(ast);
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        assert(root != NULL);
+        program = root->real;
+        assert(program != NULL);
+        assert(program->blocks != NULL);
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        formula = elems->formula->real;
+        multi_assign = formula->multi_assign->real;
+        test_list = nodearr_get(multi_assign->nodearr, 0)->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        index = nodearr_get(term->nodearr, 0)->real;
+        factor = index->factor->real;
+        atom = factor->atom->real;
+        assert(atom);
+        assert(atom->dict);
+        assert(atom->dict->real);
+        dict = atom->dict->real;
+        dict_elems = dict->dict_elems->real;
+        assert(nodearr_len(dict_elems->nodearr) == 2);
+        dict_elem = nodearr_get(dict_elems->nodearr, 0)->real;
+        simple_assign = dict_elem->key_simple_assign->real;
+        assert(simple_assign);
+        simple_assign = dict_elem->value_simple_assign->real;
+        assert(simple_assign);
+        dict_elem = nodearr_get(dict_elems->nodearr, 1)->real;
+        simple_assign = dict_elem->key_simple_assign->real;
+        assert(simple_assign);
+        simple_assign = dict_elem->value_simple_assign->real;
+        assert(simple_assign);
+    } 
+}
+
+static void
 test_ast_parse(void) {
     // head
     tokenizer_option_t *opt = tkropt_new();
@@ -10801,6 +10953,7 @@ ast_tests[] = {
     {"ast_parse_basic", test_ast_parse_basic},
     {"ast_parse_ref_block", test_ast_parse_ref_block},
     {"ast_parse_formula", test_ast_parse_formula},
+    {"ast_parse_dict", test_ast_parse_dict},
     {"ast_traverse", test_ast_traverse},
     {0},
 };
