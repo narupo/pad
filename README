@@ -1,14 +1,20 @@
-Cap
-===
+  _____            
+ / ____|           
+| |     __ _ _ __  
+| |    / _` | '_ \ 
+| |___| (_| | |_) |
+ \_____\__,_| .__/ 
+            | |    
+            |_|    
 
- Welcome to Cap's documentation.
+Welcome to Cap's documentation.
 
 
 What is Cap ?
 =============
 
- Cap is file manager for programmer's snippet codes.
- Cap is quick and clean on your file system.
+Cap is file manager for programmer's snippet codes.
+Cap is quick and clean on your file system.
 
 
 Build
@@ -29,7 +35,7 @@ UNIX
 Windows
 -------
 
- Using MinGW's make.
+Using MinGW's make.
 
     $ git clone https://github.com/narupo/cap
     $ cd cap
@@ -40,44 +46,44 @@ Windows
 Example
 =======
 
- Set your home directory. That is origin of position of environment.
+Set your home directory. That is origin of position of environment.
 
     $ cap home /my/snippet/file/directory
     $ cap home
 
- Check current environment.
+Check current environment.
 
     $ cap pwd
 
- Check current environment files.
+Check current environment files.
 
     $ cap ls
  
- Get file content.
+Get file content.
 
     $ cap cat myfile.txt
 
- Change environment.
+Change environment.
 
     $ cap cd next/env
 
- Run script.
+Run script.
 
     $ cap run bin/hello_world.py
 
- Set editor.
+Set editor.
 
     $ cap editor /usr/bin/vim
 
- Edit file by editor.
+Edit file by editor.
 
     $ cap edit /path/to/file.txt
 
- Edit resource file in current environment.
+Edit resource file in current environment.
 
     $ cap edit .caprc
 
- Make content by Cap's template language.
+Make content by Cap's template language.
 
     $ cap make my/cap/code.cap
 
@@ -85,8 +91,8 @@ Example
 Resource file
 =============
 
- Cap is supporting resource file with Cap's template language.
- You should be create '.caprc' at home directory (of course, that is Cap's
+Cap is supporting resource file with Cap's template language.
+You should be create '.caprc' at home directory (of course, that is Cap's
 home) or current directory, and write the following.
 
     {@
@@ -94,25 +100,25 @@ home) or current directory, and write the following.
         alias.set("banana", "cat banana.txt")
     @}
 
- And execute the following.
+And execute the following.
 
     $ cap hw
     $ cap banana
 
- This is function of alias of Cap.
+This is function of alias of Cap.
 
 
 Template language
 =================
 
- Cap is supporting template language like the following.
+Cap is supporting template language like the following.
 
     {@
         name = opts.get("name")
     @}
     My name is {: name :}. How are you?
 
- opts.get is builtin module's function.
+opts.get is builtin module's function.
 
     {@
         words = ""
@@ -136,7 +142,7 @@ This result is the following.
 Cap + Plugin of editor
 ======================
 
- Of course, Cap is needing plugin for the editor. And you will call Cap from
+Of course, Cap is needing plugin for the editor. And you will call Cap from
 the editor. Like a `cap-subl3` plugin (https://github.com/narupo/cap-subl3).
 
     Snippet codes --+-- Windows --+-- Cap --+-- Plugin + Editor
@@ -145,6 +151,6 @@ the editor. Like a `cap-subl3` plugin (https://github.com/narupo/cap-subl3).
                                   |         |
                                  ...       ... 
 
- Cap's resource detaching from the editor. Your snippet codes be separated from
+Cap's resource detaching from the editor. Your snippet codes be separated from
 the editor.
- So, your snippet codes become long life on the file system years and years. 
+So, your snippet codes become long life on the file system years and years. 
