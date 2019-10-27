@@ -2371,6 +2371,9 @@ test_ast_parse_basic(void) {
     ast_parse(ast, tkr_get_tokens(tkr));
     root = ast_getc_root(ast);
     assert(root == NULL);
+
+    tkr_del(tkr);
+    ast_del(ast);
 }
 
 static void
@@ -2531,6 +2534,8 @@ test_ast_parse_ref_block(void) {
         assert(nodearr_len(array_elems->nodearr) == 2);
     } 
 
+    tkr_del(tkr);
+    ast_del(ast);
 }
 
 static void
@@ -2779,6 +2784,8 @@ test_ast_parse_formula(void) {
         assert(digit->lvalue == 2);
     }
 
+    tkr_del(tkr);
+    ast_del(ast);
 }
 
 static void
@@ -2931,6 +2938,9 @@ test_ast_parse_dict(void) {
         simple_assign = dict_elem->value_simple_assign->real;
         assert(simple_assign);
     } 
+
+    tkr_del(tkr);
+    ast_del(ast);
 }
 
 static void
@@ -3471,6 +3481,8 @@ test_ast_parse_expr(void) {
         assert(digit->lvalue == 3);    
     } 
 
+    tkr_del(tkr);
+    ast_del(ast);
 }
 
 static void
