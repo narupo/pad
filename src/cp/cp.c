@@ -61,11 +61,11 @@ cpcmd_show_usage(cpcmd_t *self) {
         "\n"
         "    Copy from Cap's environment to user's environment.\n"
         "\n"
-        "        $ cap cp :path/to/src.txt /path/to/dst.txt\n"
+        "        $ cap cp path/to/src.txt :path/to/dst.txt\n"
         "\n"
         "    Copy from user's environment to Cap's environment.\n"
         "\n"
-        "        $ cap cp /path/to/src.txt :path/to/dst.txt\n"
+        "        $ cap cp :path/to/src.txt path/to/dst.txt\n"
         "\n"
     );
     fflush(stderr);
