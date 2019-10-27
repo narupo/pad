@@ -11156,7 +11156,6 @@ modtest(const char *modname) {
             fndmod = m;
         }
     }
-
     if (!fndmod) {
         return 0;
     }
