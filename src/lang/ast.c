@@ -425,6 +425,7 @@ ast_del(ast_t *self) {
         return;
     }
     ast_del_nodes(self, self->root);
+    opts_del(self->opts);
     free(self);
 }
 
