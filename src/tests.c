@@ -2360,31 +2360,30 @@ test_ast_show_error(const ast_t *ast) {
 }
 
 static void
-test_ast_parse(void) {
-    // head
+test_ast_parse_basic(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new();
+    const node_t *root;
+
+    tkr_parse(tkr, "");
+    ast_clear(ast);
+    ast_parse(ast, tkr_get_tokens(tkr));
+    root = ast_getc_root(ast);
+    assert(root == NULL);
+}
+
+static void
+test_ast_parse_ref_block(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
     ast_t *ast = ast_new();
     const node_t *root;
     node_program_t *program;
     node_blocks_t *blocks;
-    node_code_block_t *code_block;
-    node_text_block_t *text_block;
     node_ref_block_t *ref_block;
-    node_elems_t *elems;
-    node_stmt_t *stmt;
-    node_if_stmt_t *if_stmt;
-    node_for_stmt_t *for_stmt;
-    node_elif_stmt_t *elif_stmt;
-    node_else_stmt_t *else_stmt;
-    node_import_stmt_t *import_stmt;
-    node_identifier_chain_t *identifier_chain;
-    node_identifier_t *identifier;
     node_formula_t *formula;
     node_multi_assign_t *multi_assign;
-    node_assign_t *assign;
-    node_assign_list_t *assign_list;
-    node_simple_assign_t *simple_assign;
     node_array_t_ *array;
     node_array_elems_t *array_elems;
     node_test_list_t *test_list;
@@ -2399,33 +2398,9 @@ test_ast_parse(void) {
     node_asscalc_t *asscalc;
     node_factor_t *factor;
     node_atom_t *atom;
-    node_augassign_t *augassign;
-    node_comp_op_t *comp_op;
-    node_add_sub_op_t *add_sub_op;
-    node_mul_div_op_t *mul_div_op;
     node_digit_t *digit;
-    node_caller_t *caller;
-    node_string_t *string;
     node_nil_t *nil;
-    node_false_t *false_;
-    node_true_t *true_;
-    node_break_stmt_t *break_stmt;
-    node_continue_stmt_t *continue_stmt;
-    node_return_stmt_t *return_stmt;
-    node_def_t *def;
-    node_func_def_t *func_def;
-    node_func_def_params_t *func_def_params;
-    node_func_def_args_t *func_def_args;
-
-    tkr_parse(tkr, "");
-    ast_clear(ast);
-    ast_parse(ast, tkr_get_tokens(tkr));
-    root = ast_getc_root(ast);
-    assert(root == NULL);
-
-    /************
-    * ref block *
-    ************/
+    node_identifier_t *identifier;
 
     tkr_parse(tkr, "{: nil :}");
     {
@@ -2555,6 +2530,69 @@ test_ast_parse(void) {
         assert(array_elems);
         assert(nodearr_len(array_elems->nodearr) == 2);
     } 
+
+}
+
+static void
+test_ast_parse(void) {
+    // head
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new();
+    const node_t *root;
+    node_program_t *program;
+    node_blocks_t *blocks;
+    node_code_block_t *code_block;
+    node_text_block_t *text_block;
+    node_elems_t *elems;
+    node_stmt_t *stmt;
+    node_if_stmt_t *if_stmt;
+    node_for_stmt_t *for_stmt;
+    node_elif_stmt_t *elif_stmt;
+    node_else_stmt_t *else_stmt;
+    node_import_stmt_t *import_stmt;
+    node_identifier_chain_t *identifier_chain;
+    node_identifier_t *identifier;
+    node_formula_t *formula;
+    node_multi_assign_t *multi_assign;
+    node_assign_t *assign;
+    node_assign_list_t *assign_list;
+    node_simple_assign_t *simple_assign;
+    node_array_t_ *array;
+    node_array_elems_t *array_elems;
+    node_test_list_t *test_list;
+    node_test_t *test;
+    node_or_test_t *or_test;
+    node_and_test_t *and_test;
+    node_not_test_t *not_test;
+    node_comparison_t *comparison;
+    node_expr_t *expr;
+    node_term_t *term;
+    node_index_t *index;
+    node_asscalc_t *asscalc;
+    node_factor_t *factor;
+    node_atom_t *atom;
+    node_augassign_t *augassign;
+    node_comp_op_t *comp_op;
+    node_add_sub_op_t *add_sub_op;
+    node_mul_div_op_t *mul_div_op;
+    node_digit_t *digit;
+    node_caller_t *caller;
+    node_string_t *string;
+    node_nil_t *nil;
+    node_false_t *false_;
+    node_true_t *true_;
+    node_break_stmt_t *break_stmt;
+    node_continue_stmt_t *continue_stmt;
+    node_return_stmt_t *return_stmt;
+    node_def_t *def;
+    node_func_def_t *func_def;
+    node_func_def_params_t *func_def_params;
+    node_func_def_args_t *func_def_args;
+
+    /************
+    * ref block *
+    ************/
 
     /**********
     * formula *
@@ -10730,6 +10768,8 @@ test_ast_traverse(void) {
 static const struct testcase
 ast_tests[] = {
     {"ast_parse", test_ast_parse},
+    {"ast_parse_basic", test_ast_parse_basic},
+    {"ast_parse_ref_block", test_ast_parse_ref_block},
     {"ast_traverse", test_ast_traverse},
     {0},
 };
