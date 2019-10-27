@@ -2377,6 +2377,29 @@ test_ast_parse_basic(void) {
 }
 
 static void
+test_ast_parse_code_block(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new();
+    const node_t *root;
+    node_program_t *program;
+    node_blocks_t *blocks;
+    node_code_block_t *code_block;
+
+    tkr_parse(tkr, "{@@}");
+    ast_parse(ast, tkr_get_tokens(tkr));
+    root = ast_getc_root(ast);
+    assert(root);
+    program = root->real;
+    blocks = program->blocks->real;
+    code_block = blocks->code_block->real;
+    assert(code_block);
+
+    tkr_del(tkr);
+    ast_del(ast);
+}
+
+static void
 test_ast_parse_ref_block(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
@@ -10990,6 +11013,7 @@ static const struct testcase
 ast_tests[] = {
     {"ast_parse", test_ast_parse},
     {"ast_parse_basic", test_ast_parse_basic},
+    {"ast_parse_code_block", test_ast_parse_code_block},
     {"ast_parse_ref_block", test_ast_parse_ref_block},
     {"ast_parse_formula", test_ast_parse_formula},
     {"ast_parse_dict", test_ast_parse_dict},
