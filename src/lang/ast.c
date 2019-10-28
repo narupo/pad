@@ -7918,7 +7918,7 @@ ast_traverse_dict_elems(ast_t *self, const node_t *node, int dep) {
         case OBJ_TYPE_IDENTIFIER: {
             const object_t *ref = pull_in_ref_by(self, key);
             if (ref->type != OBJ_TYPE_STRING) {
-                ast_set_error_detail(self, "invalid key type in variable");
+                ast_set_error_detail(self, "invalid key type in variable of dict");
                 obj_del(arrobj);
                 objdict_del(objdict);
                 return_trav(NULL);
