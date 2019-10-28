@@ -106,46 +106,46 @@ static node_t *
 ast_mul_div_op(ast_t *self, int dep);
 
 static object_t *
-_ast_traverse(ast_t *self, node_t *node, int dep);
+_ast_traverse(ast_t *self, const node_t *node, int dep);
 
 static object_t *
-ast_compare_or(ast_t *self, object_t *lhs, object_t *rhs, int dep);
+ast_compare_or(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs, int dep);
+ast_compare_or_array(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-ast_compare_or_string(ast_t *self, object_t *lhs, object_t *rhs, int dep);
+ast_compare_or_string(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-ast_compare_or_identifier(ast_t *self, object_t *lhs, object_t *rhs, int dep);
+ast_compare_or_identifier(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep);
+ast_compare_or_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs, int dep);
+ast_compare_or_int(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-ast_compare_and(ast_t *self, object_t *lhs, object_t *rhs, int dep);
+ast_compare_and(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-ast_compare_comparison_eq(ast_t *self, object_t *lhs, object_t *rhs, int dep);
+ast_compare_comparison_eq(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-ast_compare_comparison_not_eq(ast_t *self, object_t *lhs, object_t *rhs, int dep);
+ast_compare_comparison_not_eq(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-ast_calc_expr_add(ast_t *self, object_t *lhs, object_t *rhs, int dep);
+ast_calc_expr_add(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-ast_calc_expr_sub(ast_t *self, object_t *lhs, object_t *rhs, int dep);
+ast_calc_expr_sub(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-ast_calc_term_div(ast_t *self, object_t *lhs, object_t *rhs, int dep);
+ast_calc_term_div(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-ast_calc_term_mul(ast_t *self, object_t *lhs, object_t *rhs, int dep);
+ast_calc_term_mul(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
 get_var_ref(ast_t *self, const char *identifier, int dep);
@@ -154,16 +154,16 @@ static object_t *
 move_var(ast_t *self, const char *identifier, object_t *move_obj, int dep);
 
 static object_t *
-pull_in_ref_by(ast_t *self, object_t *idn_obj);
+pull_in_ref_by(ast_t *self, const object_t *idn_obj);
 
 static object_t *
-ast_calc_asscalc_ass(ast_t *self, object_t *lhs, object_t *rhs, int dep);
+ast_calc_asscalc_ass(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static node_t *
 ast_multi_assign(ast_t *self, int dep);
 
 static object_t *
-ast_calc_assign(ast_t *self, object_t *lhs, object_t *rhs, int dep);
+ast_calc_assign(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static node_t *
 ast_expr(ast_t *self, int dep);
@@ -387,6 +387,21 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         for (int32_t i = 0; i < nodearr_len(array_elems->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(array_elems->nodearr, i));
         }
+    } break;
+    case NODE_TYPE_DICT: {
+        node_dict_t *dict = node->real;
+        ast_del_nodes(self, dict->dict_elems);
+    } break;
+    case NODE_TYPE_DICT_ELEMS: {
+        node_dict_elems_t *dict_elems = node->real;
+        for (int32_t i = 0; i < nodearr_len(dict_elems->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(dict_elems->nodearr, i));
+        }
+    } break;
+    case NODE_TYPE_DICT_ELEM: {
+        node_dict_elem_t *dict_elem = node->real;
+        ast_del_nodes(self, dict_elem->key_simple_assign);
+        ast_del_nodes(self, dict_elem->value_simple_assign);
     } break;
     case NODE_TYPE_IDENTIFIER: {
         node_identifier_t *identifier = node->real;
@@ -3246,7 +3261,7 @@ identifier_chain_to_cstrarr(node_identifier_chain_t *identifier_chain) {
 }
 
 static object_t *
-ast_traverse_program(ast_t *self, node_t *node, int dep) {
+ast_traverse_program(ast_t *self, const node_t *node, int dep) {
     tready();
     node_program_t *program = node->real;
 
@@ -3260,7 +3275,7 @@ ast_traverse_program(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_blocks(ast_t *self, node_t *node, int dep) {
+ast_traverse_blocks(ast_t *self, const node_t *node, int dep) {
     tready();
     node_blocks_t *blocks = node->real;
 
@@ -3297,7 +3312,7 @@ ast_traverse_blocks(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_code_block(ast_t *self, node_t *node, int dep) {
+ast_traverse_code_block(ast_t *self, const node_t *node, int dep) {
     tready();
     node_code_block_t *code_block = node->real;
 
@@ -3311,7 +3326,7 @@ ast_traverse_code_block(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_ref_block(ast_t *self, node_t *node, int dep) {
+ast_traverse_ref_block(ast_t *self, const node_t *node, int dep) {
     tready();
     node_ref_block_t *ref_block = node->real;
 
@@ -3366,7 +3381,7 @@ ast_traverse_ref_block(ast_t *self, node_t *node, int dep) {
 
 
 static object_t *
-ast_traverse_text_block(ast_t *self, node_t *node, int dep) {
+ast_traverse_text_block(ast_t *self, const node_t *node, int dep) {
     tready();
     node_text_block_t *text_block = node->real;
     if (text_block->text) {
@@ -3378,7 +3393,7 @@ ast_traverse_text_block(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_elems(ast_t *self, node_t *node, int dep) {
+ast_traverse_elems(ast_t *self, const node_t *node, int dep) {
     tready();
     node_elems_t *elems = node->real;
     object_t *result = NULL;
@@ -3422,7 +3437,7 @@ ast_traverse_elems(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_formula(ast_t *self, node_t *node, int dep) {
+ast_traverse_formula(ast_t *self, const node_t *node, int dep) {
     tready();
     node_formula_t *formula = node->real;
 
@@ -3448,7 +3463,7 @@ ast_traverse_formula(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_stmt(ast_t *self, node_t *node, int dep) {
+ast_traverse_stmt(ast_t *self, const node_t *node, int dep) {
     tready();
     node_stmt_t *stmt = node->real;
     object_t *result = NULL;
@@ -3502,7 +3517,7 @@ ast_traverse_stmt(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_import_stmt(ast_t *self, node_t *node, int dep) {
+ast_traverse_import_stmt(ast_t *self, const node_t *node, int dep) {
     tready();
     node_import_stmt_t *import_stmt = node->real;
 
@@ -3520,7 +3535,7 @@ ast_traverse_import_stmt(ast_t *self, node_t *node, int dep) {
  * objectをbool値にする
  */
 static bool
-ast_parse_bool(ast_t *self, object_t *obj) {
+ast_parse_bool(ast_t *self, const object_t *obj) {
     assert(obj);
     switch (obj->type) {
     case OBJ_TYPE_NIL: return false; break;
@@ -3547,7 +3562,7 @@ ast_parse_bool(ast_t *self, object_t *obj) {
 }
 
 static object_t *
-ast_traverse_if_stmt(ast_t *self, node_t *node, int dep) {
+ast_traverse_if_stmt(ast_t *self, const node_t *node, int dep) {
     tready();
     node_if_stmt_t *if_stmt = node->real;
 
@@ -3604,7 +3619,7 @@ ast_traverse_if_stmt(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_else_stmt(ast_t *self, node_t *node, int dep) {
+ast_traverse_else_stmt(ast_t *self, const node_t *node, int dep) {
     tready();
     node_else_stmt_t *else_stmt = node->real;
     assert(else_stmt);
@@ -3621,7 +3636,7 @@ ast_traverse_else_stmt(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_for_stmt(ast_t *self, node_t *node, int dep) {
+ast_traverse_for_stmt(ast_t *self, const node_t *node, int dep) {
     tready();
     node_for_stmt_t *for_stmt = node->real;
 
@@ -3737,7 +3752,7 @@ done:
 }
 
 static object_t *
-ast_traverse_break_stmt(ast_t *self, node_t *node, int dep) {
+ast_traverse_break_stmt(ast_t *self, const node_t *node, int dep) {
     tready();
     assert(node->type == NODE_TYPE_BREAK_STMT);
 
@@ -3748,7 +3763,7 @@ ast_traverse_break_stmt(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_continue_stmt(ast_t *self, node_t *node, int dep) {
+ast_traverse_continue_stmt(ast_t *self, const node_t *node, int dep) {
     tready();
     assert(node->type == NODE_TYPE_CONTINUE_STMT);
 
@@ -3764,7 +3779,7 @@ ast_traverse_continue_stmt(ast_t *self, node_t *node, int dep) {
  * @return new object
  */
 static object_t *
-extract_obj(ast_t *self, object_t *srcobj) {
+extract_obj(ast_t *self, const object_t *srcobj) {
     assert(srcobj);
      
     switch (srcobj->type) {
@@ -3793,7 +3808,7 @@ extract_obj(ast_t *self, object_t *srcobj) {
 }
 
 static object_t *
-ast_traverse_return_stmt(ast_t *self, node_t *node, int dep) {
+ast_traverse_return_stmt(ast_t *self, const node_t *node, int dep) {
     tready();
     assert(node->type == NODE_TYPE_RETURN_STMT);
     node_return_stmt_t *return_stmt = node->real;
@@ -3825,7 +3840,7 @@ ast_traverse_return_stmt(ast_t *self, node_t *node, int dep) {
     //     end
     //     x = func()
     //
-    // そのためここで実体を取得して実体を返すようにする
+    // そのためここで実体をコピーで取得して実体を返すようにする
     object_t *ret = extract_obj(self, result);
     obj_del(result);
 
@@ -3836,7 +3851,7 @@ ast_traverse_return_stmt(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_calc_assign_to_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_assign_to_array(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
@@ -3870,7 +3885,7 @@ ast_calc_assign_to_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_assign(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_assign(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
@@ -3900,7 +3915,7 @@ ast_calc_assign(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
  * 右優先結合
  */
 static object_t *
-ast_traverse_simple_assign(ast_t *self, node_t *node, int dep) {
+ast_traverse_simple_assign(ast_t *self, const node_t *node, int dep) {
     tready();
     assert(node->type == NODE_TYPE_SIMPLE_ASSIGN);
     node_simple_assign_t *simple_assign = node->real;
@@ -3955,7 +3970,7 @@ ast_traverse_simple_assign(ast_t *self, node_t *node, int dep) {
  * 右優先結合
  */
 static object_t *
-ast_traverse_assign(ast_t *self, node_t *node, int dep) {
+ast_traverse_assign(ast_t *self, const node_t *node, int dep) {
     tready();
     assert(node->type == NODE_TYPE_ASSIGN);
     node_assign_list_t *assign_list = node->real;
@@ -4007,7 +4022,7 @@ ast_traverse_assign(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_assign_list(ast_t *self, node_t *node, int dep) {
+ast_traverse_assign_list(ast_t *self, const node_t *node, int dep) {
     tready();
     assert(node->type == NODE_TYPE_ASSIGN_LIST);
     node_assign_list_t *assign_list = node->real;
@@ -4064,7 +4079,7 @@ done:
  * 右優先結合
  */
 static object_t *
-ast_traverse_multi_assign(ast_t *self, node_t *node, int dep) {
+ast_traverse_multi_assign(ast_t *self, const node_t *node, int dep) {
     tready();
     assert(node->type == NODE_TYPE_MULTI_ASSIGN);
     node_multi_assign_t *multi_assign = node->real;
@@ -4123,7 +4138,7 @@ ast_traverse_multi_assign(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_test_list(ast_t *self, node_t *node, int dep) {
+ast_traverse_test_list(ast_t *self, const node_t *node, int dep) {
     tready();
     node_test_list_t *test_list = node->real;
     assert(test_list);
@@ -4154,7 +4169,7 @@ ast_traverse_test_list(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_test(ast_t *self, node_t *node, int dep) {
+ast_traverse_test(ast_t *self, const node_t *node, int dep) {
     tready();
     node_test_t *test = node->real;
     tcheck("call _ast_traverse");
@@ -4194,9 +4209,9 @@ move_var(ast_t *self, const char *identifier, object_t *move_obj, int dep) {
 static object_t *
 ast_roll_identifier_lhs(
     ast_t *self,
-    object_t *lhs,
-    object_t *rhs,
-    object_t* (*func)(ast_t *, object_t *, object_t *, int),
+    const object_t *lhs,
+    const object_t *rhs,
+    object_t* (*func)(ast_t *, const object_t *, const object_t *, int),
     int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
@@ -4216,9 +4231,9 @@ ast_roll_identifier_lhs(
 static object_t*
 ast_roll_identifier_rhs(
     ast_t *self,
-    object_t *lhs,
-    object_t *rhs,
-    object_t* (*func)(ast_t *, object_t *, object_t *, int),
+    const object_t *lhs,
+    const object_t *rhs,
+    object_t* (*func)(ast_t *, const object_t *, const object_t *, int),
     int dep) {
     tready();
     assert(rhs->type == OBJ_TYPE_IDENTIFIER);
@@ -4235,7 +4250,7 @@ ast_roll_identifier_rhs(
 }
 
 static object_t *
-ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_or_int(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
@@ -4336,7 +4351,7 @@ ast_compare_or_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_or_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
@@ -4437,7 +4452,7 @@ ast_compare_or_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_compare_or_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_or_string(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
@@ -4534,7 +4549,7 @@ ast_compare_or_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_or_array(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
@@ -4632,7 +4647,7 @@ ast_compare_or_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_compare_or_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_or_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_NIL);
 
@@ -4673,7 +4688,7 @@ ast_compare_or_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_compare_or_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_or_func(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_FUNC);
 
@@ -4767,7 +4782,7 @@ ast_compare_or_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_compare_or(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_or(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
@@ -4813,7 +4828,7 @@ ast_compare_or(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_traverse_or_test(ast_t *self, node_t *node, int dep) {
+ast_traverse_or_test(ast_t *self, const node_t *node, int dep) {
     tready();
     assert(node->type == NODE_TYPE_OR_TEST);
     node_or_test_t *or_test = node->real;
@@ -4855,7 +4870,7 @@ ast_traverse_or_test(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_compare_and_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_and_int(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
@@ -4950,7 +4965,7 @@ ast_compare_and_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_compare_and_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_and_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
@@ -5045,7 +5060,7 @@ ast_compare_and_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_compare_and_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_and_string(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
@@ -5142,7 +5157,7 @@ ast_compare_and_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_compare_and_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_and_array(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
@@ -5230,7 +5245,7 @@ ast_compare_and_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_compare_and_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_and_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_NIL);
 
@@ -5271,7 +5286,7 @@ ast_compare_and_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_compare_and_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_and_func(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_FUNC);
 
@@ -5357,7 +5372,7 @@ ast_compare_and_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_compare_and(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_and(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
@@ -5403,7 +5418,7 @@ ast_compare_and(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_traverse_and_test(ast_t *self, node_t *node, int dep) {
+ast_traverse_and_test(ast_t *self, const node_t *node, int dep) {
     tready();
     assert(node->type == NODE_TYPE_AND_TEST);
     node_and_test_t *and_test = node->real;
@@ -5445,7 +5460,7 @@ ast_traverse_and_test(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_compare_not(ast_t *self, object_t *operand, int dep) {
+ast_compare_not(ast_t *self, const object_t *operand, int dep) {
     tready();
     assert(operand);
 
@@ -5492,7 +5507,7 @@ ast_compare_not(ast_t *self, object_t *operand, int dep) {
 }
 
 static object_t *
-ast_traverse_not_test(ast_t *self, node_t *node, int dep) {
+ast_traverse_not_test(ast_t *self, const node_t *node, int dep) {
     tready();
     node_not_test_t *not_test = node->real;
 
@@ -5518,7 +5533,7 @@ ast_traverse_not_test(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_compare_comparison_eq_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_comparison_eq_int(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
@@ -5559,7 +5574,7 @@ ast_compare_comparison_eq_int(ast_t *self, object_t *lhs, object_t *rhs, int dep
 }
 
 static object_t *
-ast_compare_comparison_eq_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_comparison_eq_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
@@ -5599,7 +5614,7 @@ ast_compare_comparison_eq_bool(ast_t *self, object_t *lhs, object_t *rhs, int de
 }
 
 static object_t *
-ast_compare_comparison_eq_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_comparison_eq_string(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
@@ -5640,7 +5655,7 @@ ast_compare_comparison_eq_string(ast_t *self, object_t *lhs, object_t *rhs, int 
 }
 
 static object_t *
-ast_compare_comparison_eq_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_comparison_eq_array(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
@@ -5680,7 +5695,7 @@ ast_compare_comparison_eq_array(ast_t *self, object_t *lhs, object_t *rhs, int d
 }
 
 static object_t *
-ast_compare_comparison_eq_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_comparison_eq_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_NIL);
 
@@ -5700,7 +5715,7 @@ ast_compare_comparison_eq_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep
 }
 
 static object_t *
-ast_compare_comparison_eq_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_comparison_eq_func(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_FUNC);
 
@@ -5741,7 +5756,7 @@ ast_compare_comparison_eq_func(ast_t *self, object_t *lhs, object_t *rhs, int de
 }
 
 static object_t *
-ast_compare_comparison_eq(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_comparison_eq(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
@@ -5787,7 +5802,7 @@ ast_compare_comparison_eq(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_compare_comparison_not_eq_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_comparison_not_eq_int(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
@@ -5828,7 +5843,7 @@ ast_compare_comparison_not_eq_int(ast_t *self, object_t *lhs, object_t *rhs, int
 }
 
 static object_t *
-ast_compare_comparison_not_eq_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_comparison_not_eq_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
@@ -5869,7 +5884,7 @@ ast_compare_comparison_not_eq_bool(ast_t *self, object_t *lhs, object_t *rhs, in
 }
 
 static object_t *
-ast_compare_comparison_not_eq_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_comparison_not_eq_string(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
@@ -5909,7 +5924,7 @@ ast_compare_comparison_not_eq_string(ast_t *self, object_t *lhs, object_t *rhs, 
 }
 
 static object_t *
-ast_compare_comparison_not_eq_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_comparison_not_eq_array(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
@@ -5949,7 +5964,7 @@ ast_compare_comparison_not_eq_array(ast_t *self, object_t *lhs, object_t *rhs, i
 }
 
 static object_t *
-ast_compare_comparison_not_eq_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_comparison_not_eq_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_NIL);
 
@@ -5974,7 +5989,7 @@ ast_compare_comparison_not_eq_nil(ast_t *self, object_t *lhs, object_t *rhs, int
 }
 
 static object_t *
-ast_compare_comparison_not_eq_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_comparison_not_eq_func(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_FUNC);
 
@@ -6015,7 +6030,7 @@ ast_compare_comparison_not_eq_func(ast_t *self, object_t *lhs, object_t *rhs, in
 }
 
 static object_t *
-ast_compare_comparison_not_eq(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_compare_comparison_not_eq(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
@@ -6061,7 +6076,7 @@ ast_compare_comparison_not_eq(ast_t *self, object_t *lhs, object_t *rhs, int dep
 }
 
 static object_t *
-ast_compare_comparison(ast_t *self, object_t *lhs, node_comp_op_t *comp_op, object_t *rhs, int dep) {
+ast_compare_comparison(ast_t *self, const object_t *lhs, const node_comp_op_t *comp_op, const object_t *rhs, int dep) {
     tready();
 
     switch (comp_op->op) {
@@ -6083,7 +6098,7 @@ ast_compare_comparison(ast_t *self, object_t *lhs, node_comp_op_t *comp_op, obje
 }
 
 static object_t *
-ast_traverse_comparison(ast_t *self, node_t *node, int dep) {
+ast_traverse_comparison(ast_t *self, const node_t *node, int dep) {
     tready();
     node_comparison_t *comparison = node->real;
     assert(comparison);
@@ -6142,7 +6157,7 @@ ast_traverse_comparison(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_calc_expr_add_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_expr_add_int(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
@@ -6182,7 +6197,7 @@ ast_calc_expr_add_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_expr_add_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_expr_add_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
@@ -6223,7 +6238,7 @@ ast_calc_expr_add_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_expr_add_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_expr_add_string(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
@@ -6267,7 +6282,7 @@ ast_calc_expr_add_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_expr_add_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_expr_add_array(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
@@ -6308,7 +6323,7 @@ ast_calc_expr_add_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_expr_add_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_expr_add_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_NIL);
     ast_set_error_detail(self, "can't add with nil");
@@ -6316,7 +6331,7 @@ ast_calc_expr_add_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_expr_add_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_expr_add_func(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_FUNC);
     ast_set_error_detail(self, "can't add with func");
@@ -6324,7 +6339,7 @@ ast_calc_expr_add_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_expr_add(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_expr_add(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
@@ -6370,7 +6385,7 @@ ast_calc_expr_add(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_expr_sub_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_expr_sub_int(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
@@ -6410,7 +6425,7 @@ ast_calc_expr_sub_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_expr_sub_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_expr_sub_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
@@ -6451,7 +6466,7 @@ ast_calc_expr_sub_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_expr_sub_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_expr_sub_string(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
@@ -6491,7 +6506,7 @@ ast_calc_expr_sub_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_expr_sub_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_expr_sub_array(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
@@ -6532,7 +6547,7 @@ ast_calc_expr_sub_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_expr_sub_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_expr_sub_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_NIL);
     ast_set_error_detail(self, "can't sub with nil");
@@ -6540,7 +6555,7 @@ ast_calc_expr_sub_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_expr_sub_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_expr_sub_func(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_FUNC);
     ast_set_error_detail(self, "can't sub with func");
@@ -6548,7 +6563,7 @@ ast_calc_expr_sub_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_expr_sub(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_expr_sub(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
@@ -6594,7 +6609,7 @@ ast_calc_expr_sub(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_expr(ast_t *self, object_t *lhs, node_add_sub_op_t *add_sub_op, object_t *rhs, int dep) {
+ast_calc_expr(ast_t *self, const object_t *lhs, const node_add_sub_op_t *add_sub_op, const object_t *rhs, int dep) {
     tready();
 
     switch (add_sub_op->op) {
@@ -6616,7 +6631,7 @@ ast_calc_expr(ast_t *self, object_t *lhs, node_add_sub_op_t *add_sub_op, object_
 }
 
 static object_t *
-ast_traverse_expr(ast_t *self, node_t *node, int dep) {
+ast_traverse_expr(ast_t *self, const node_t *node, int dep) {
     tready();
     node_expr_t *expr = node->real;
     assert(expr);
@@ -6670,7 +6685,7 @@ ast_traverse_expr(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_calc_term_mul_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_term_mul_int(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
@@ -6710,7 +6725,7 @@ ast_calc_term_mul_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_term_mul_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_term_mul_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
@@ -6751,7 +6766,7 @@ ast_calc_term_mul_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_term_mul_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_term_mul_string(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_STRING);
 
@@ -6791,7 +6806,7 @@ ast_calc_term_mul_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_term_mul_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_term_mul_array(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
@@ -6832,7 +6847,7 @@ ast_calc_term_mul_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_term_mul_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_term_mul_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_NIL);
     ast_set_error_detail(self, "can't mul with nil");
@@ -6840,7 +6855,7 @@ ast_calc_term_mul_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_term_mul_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_term_mul_func(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_FUNC);
     ast_set_error_detail(self, "can't mul with func");
@@ -6848,7 +6863,7 @@ ast_calc_term_mul_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_term_mul(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_term_mul(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
@@ -6894,7 +6909,7 @@ ast_calc_term_mul(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_term_div_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_term_div_int(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
@@ -6943,7 +6958,7 @@ ast_calc_term_div_int(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_term_div_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_term_div_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_BOOL);
 
@@ -6988,7 +7003,7 @@ ast_calc_term_div_bool(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_term_div_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_term_div_string(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     assert(lhs->type == OBJ_TYPE_STRING);
     tready();
 
@@ -7029,7 +7044,7 @@ ast_calc_term_div_string(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_term_div_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_term_div_array(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
@@ -7070,7 +7085,7 @@ ast_calc_term_div_array(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_term_div_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_term_div_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_NIL);
     ast_set_error_detail(self, "can't division with nil");
@@ -7078,7 +7093,7 @@ ast_calc_term_div_nil(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_term_div_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_term_div_func(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_NIL);
     ast_set_error_detail(self, "can't division with func");
@@ -7086,7 +7101,7 @@ ast_calc_term_div_func(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_term_div(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_term_div(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
@@ -7132,7 +7147,7 @@ ast_calc_term_div(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_term(ast_t *self, object_t *lhs, node_mul_div_op_t *mul_div_op, object_t *rhs, int dep) {
+ast_calc_term(ast_t *self, const object_t *lhs, const node_mul_div_op_t *mul_div_op, const object_t *rhs, int dep) {
     tready();
 
     switch (mul_div_op->op) {
@@ -7154,7 +7169,7 @@ ast_calc_term(ast_t *self, object_t *lhs, node_mul_div_op_t *mul_div_op, object_
 }
 
 static object_t *
-ast_traverse_term(ast_t *self, node_t *node, int dep) {
+ast_traverse_term(ast_t *self, const node_t *node, int dep) {
     node_term_t *term = node->real;
     tready();
     assert(term);
@@ -7212,7 +7227,7 @@ ast_traverse_term(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_index(ast_t *self, node_t *node, int dep) {
+ast_traverse_index(ast_t *self, const node_t *node, int dep) {
     node_index_t *index_node = node->real;
     tready();
     assert(index_node);
@@ -7354,7 +7369,7 @@ fail:
  * @param return NULL|pointer to object in varmap in current scope
  */
 static object_t *
-pull_in_ref_by(ast_t *self, object_t *idn_obj) {
+pull_in_ref_by(ast_t *self, const object_t *idn_obj) {
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
 
     const char *idn = str_getc(idn_obj->identifier);
@@ -7370,7 +7385,7 @@ pull_in_ref_by(ast_t *self, object_t *idn_obj) {
 }
 
 static object_t *
-ast_calc_asscalc_ass_idn(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_asscalc_ass_idn(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
@@ -7403,7 +7418,7 @@ ast_calc_asscalc_ass_idn(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_asscalc_ass(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_asscalc_ass(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
@@ -7421,7 +7436,7 @@ ast_calc_asscalc_ass(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_asscalc_add_ass_identifier_int(ast_t *self, object_t *ref_var, object_t *rhs, int dep) {
+ast_calc_asscalc_add_ass_identifier_int(ast_t *self, object_t *ref_var, const object_t *rhs, int dep) {
     tready();
     assert(ref_var->type == OBJ_TYPE_INTEGER);
 
@@ -7471,7 +7486,7 @@ ast_calc_asscalc_add_ass_identifier_int(ast_t *self, object_t *ref_var, object_t
 }
 
 static object_t *
-ast_calc_asscalc_add_ass_identifier_string(ast_t *self, object_t *ref_lhs, object_t *rhs, int dep) {
+ast_calc_asscalc_add_ass_identifier_string(ast_t *self, const object_t *ref_lhs, const object_t *rhs, int dep) {
     tready();
     assert(ref_lhs->type == OBJ_TYPE_STRING);
 
@@ -7512,7 +7527,7 @@ ast_calc_asscalc_add_ass_identifier_string(ast_t *self, object_t *ref_lhs, objec
 }
 
 static object_t *
-ast_calc_asscalc_add_ass_identifier(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_asscalc_add_ass_identifier(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
@@ -7564,7 +7579,7 @@ ast_calc_asscalc_add_ass_identifier(ast_t *self, object_t *lhs, object_t *rhs, i
 }
 
 static object_t *
-ast_calc_asscalc_add_ass(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
+ast_calc_asscalc_add_ass(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     switch (lhs->type) {
     default:
@@ -7583,7 +7598,7 @@ ast_calc_asscalc_add_ass(ast_t *self, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-ast_calc_asscalc(ast_t *self, object_t *lhs, node_augassign_t *augassign, object_t *rhs, int dep) {
+ast_calc_asscalc(ast_t *self, const object_t *lhs, const node_augassign_t *augassign, const object_t *rhs, int dep) {
     tready();
 
     switch (augassign->op) {
@@ -7609,7 +7624,7 @@ ast_calc_asscalc(ast_t *self, object_t *lhs, node_augassign_t *augassign, object
 }
 
 static object_t *
-ast_traverse_asscalc(ast_t *self, node_t *node, int dep) {
+ast_traverse_asscalc(ast_t *self, const node_t *node, int dep) {
     tready();
     node_asscalc_t *asscalc = node->real;
     assert(asscalc);
@@ -7668,7 +7683,7 @@ ast_traverse_asscalc(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_factor(ast_t *self, node_t *node, int dep) {
+ast_traverse_factor(ast_t *self, const node_t *node, int dep) {
     tready();
     node_factor_t *factor = node->real;
     assert(factor);
@@ -7688,7 +7703,7 @@ ast_traverse_factor(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_atom(ast_t *self, node_t *node, int dep) {
+ast_traverse_atom(ast_t *self, const node_t *node, int dep) {
     tready();
     node_atom_t *atom = node->real;
     assert(atom && node->type == NODE_TYPE_ATOM);
@@ -7736,7 +7751,7 @@ ast_traverse_atom(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_nil(ast_t *self, node_t *node, int dep) {
+ast_traverse_nil(ast_t *self, const node_t *node, int dep) {
     tready();
     node_nil_t *nil = node->real;
     assert(nil && node->type == NODE_TYPE_NIL);
@@ -7745,7 +7760,7 @@ ast_traverse_nil(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_false(ast_t *self, node_t *node, int dep) {
+ast_traverse_false(ast_t *self, const node_t *node, int dep) {
     tready();
     node_false_t *false_ = node->real;
     assert(false_ && node->type == NODE_TYPE_FALSE);
@@ -7754,7 +7769,7 @@ ast_traverse_false(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_true(ast_t *self, node_t *node, int dep) {
+ast_traverse_true(ast_t *self, const node_t *node, int dep) {
     tready();
     node_true_t *true_ = node->real;
     assert(true_ && node->type == NODE_TYPE_TRUE);
@@ -7763,7 +7778,7 @@ ast_traverse_true(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_digit(ast_t *self, node_t *node, int dep) {
+ast_traverse_digit(ast_t *self, const node_t *node, int dep) {
     tready();
     node_digit_t *digit = node->real;
     assert(digit && node->type == NODE_TYPE_DIGIT);
@@ -7771,7 +7786,7 @@ ast_traverse_digit(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_string(ast_t *self, node_t *node, int dep) {
+ast_traverse_string(ast_t *self, const node_t *node, int dep) {
     tready();
     node_string_t *string = node->real;
     assert(string && node->type == NODE_TYPE_STRING);
@@ -7782,7 +7797,7 @@ ast_traverse_string(ast_t *self, node_t *node, int dep) {
  * left priority
  */
 static object_t *
-ast_traverse_array_elems(ast_t *self, node_t *node, int dep) {
+ast_traverse_array_elems(ast_t *self, const node_t *node, int dep) {
     tready();
     node_array_elems_t *array_elems = node->real;
     assert(array_elems && node->type == NODE_TYPE_ARRAY_ELEMS);
@@ -7801,7 +7816,7 @@ ast_traverse_array_elems(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_array(ast_t *self, node_t *node, int dep) {
+ast_traverse_array(ast_t *self, const node_t *node, int dep) {
     tready();
     node_array_t_ *array = node->real;
     assert(array && node->type == NODE_TYPE_ARRAY);
@@ -7916,7 +7931,7 @@ ast_traverse_dict(ast_t *self, const node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_identifier(ast_t *self, node_t *node, int dep) {
+ast_traverse_identifier(ast_t *self, const node_t *node, int dep) {
     tready();
     node_identifier_t *identifier = node->real;
     assert(identifier && node->type == NODE_TYPE_IDENTIFIER);
@@ -7924,7 +7939,7 @@ ast_traverse_identifier(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_invoke_alias_set_func(ast_t *self, object_t *objargs) {
+ast_invoke_alias_set_func(ast_t *self, const object_t *objargs) {
     if (!objargs) {
         ast_set_error_detail(self, "can't invoke alias.set. need two arguments");
         return NULL;
@@ -7962,7 +7977,7 @@ ast_invoke_alias_set_func(ast_t *self, object_t *objargs) {
 }
 
 static object_t *
-ast_invoke_opts_get_func(ast_t *self, object_t *objargs) {
+ast_invoke_opts_get_func(ast_t *self, const object_t *objargs) {
     if (!objargs) {
         ast_set_error_detail(self, "can't invoke opts.get. need one argument");
         return NULL;
@@ -8072,7 +8087,7 @@ ast_invoke_func_obj(ast_t *self, const char *name, const object_t *drtargs, int 
 }
 
 static string_t *
-ast_obj_to_str(ast_t *self, object_t *obj) {
+ast_obj_to_str(ast_t *self, const object_t *obj) {
     assert(obj);
 
     switch (obj->type) {
@@ -8092,7 +8107,7 @@ ast_obj_to_str(ast_t *self, object_t *obj) {
 }
 
 static object_t *
-ast_invoke_puts_func(ast_t *self, object_t *drtargs) {
+ast_invoke_puts_func(ast_t *self, const object_t *drtargs) {
     if (!drtargs) {
         ctx_pushb_buf(self->context, "\n");
         return obj_new_int(0);
@@ -8130,7 +8145,7 @@ done:
 }
 
 static object_t *
-ast_traverse_caller(ast_t *self, node_t *node, int dep) {
+ast_traverse_caller(ast_t *self, const node_t *node, int dep) {
     tready();
     node_caller_t *caller = node->real;
     assert(caller && node->type == NODE_TYPE_CALLER);
@@ -8199,7 +8214,7 @@ ast_traverse_caller(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_def(ast_t *self, node_t *node, int dep) {
+ast_traverse_def(ast_t *self, const node_t *node, int dep) {
     tready();
     node_def_t *def = node->real;
     assert(def && node->type == NODE_TYPE_DEF);
@@ -8210,7 +8225,7 @@ ast_traverse_def(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_func_def(ast_t *self, node_t *node, int dep) {
+ast_traverse_func_def(ast_t *self, const node_t *node, int dep) {
     tready();
     node_func_def_t *func_def = node->real;
     assert(func_def && node->type == NODE_TYPE_FUNC_DEF);
@@ -8245,7 +8260,7 @@ ast_traverse_func_def(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_func_def_params(ast_t *self, node_t *node, int dep) {
+ast_traverse_func_def_params(ast_t *self, const node_t *node, int dep) {
     tready();
     node_func_def_params_t *func_def_params = node->real;
     assert(func_def_params && node->type == NODE_TYPE_FUNC_DEF_PARAMS);
@@ -8255,7 +8270,7 @@ ast_traverse_func_def_params(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-ast_traverse_func_def_args(ast_t *self, node_t *node, int dep) {
+ast_traverse_func_def_args(ast_t *self, const node_t *node, int dep) {
     tready();
     node_func_def_args_t *func_def_args = node->real;
     assert(func_def_args && node->type == NODE_TYPE_FUNC_DEF_ARGS);
@@ -8276,7 +8291,7 @@ ast_traverse_func_def_args(ast_t *self, node_t *node, int dep) {
 }
 
 static object_t *
-_ast_traverse(ast_t *self, node_t *node, int dep) {
+_ast_traverse(ast_t *self, const node_t *node, int dep) {
     tready();
     if (!node) {
         return_trav(NULL); 
