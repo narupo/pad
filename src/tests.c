@@ -8155,7 +8155,7 @@ test_ast_traverse_dict(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         (ast_traverse(ast, ctx));
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "invalid key type in variable"));
+        assert(!strcmp(ast_get_error_detail(ast), "invalid key type in variable of dict"));
     }
 
     // success
