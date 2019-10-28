@@ -7262,12 +7262,21 @@ ast_traverse_index(ast_t *self, node_t *node, int dep) {
             }
         }
 
-        if (ref_index->type != OBJ_TYPE_INTEGER) {
-            ast_set_error_detail(self, "can not index access. index is not integer");
-            goto fail;
-        }
+        long idx = -1;
+        const char *sidx = NULL;
 
-        const long idx = ref_index->lvalue;
+        switch (ref_index->type) {
+        default:
+            ast_set_error_detail(self, "can not index access. index is not accessable");
+            goto fail;
+            break;
+        case OBJ_TYPE_INTEGER:
+            idx = ref_index->lvalue;
+            break;
+        case OBJ_TYPE_STRING:
+            sidx = str_getc(ref_index->string);
+            break;
+        }
 
         switch (ref_operand->type) {
         default:
@@ -7299,6 +7308,22 @@ ast_traverse_index(ast_t *self, node_t *node, int dep) {
             }
 
             object_t *tmp = obj_new_other(el);
+            obj_del(operand);
+            operand = tmp;
+        } break;
+        case OBJ_TYPE_DICT: {
+            if (!sidx) {
+                ast_set_error_detail(self, "index is null");
+                goto fail;
+            }
+            const object_dict_t *tar = ref_operand->objdict;
+            const object_dict_item_t *item = objdict_getc(tar, sidx);
+            if (!item) {
+                ast_set_error_detail(self, "not found item by key");
+                goto fail;
+            }
+
+            object_t *tmp = obj_new_other(item->value);
             obj_del(operand);
             operand = tmp;
         } break;
@@ -7692,6 +7717,10 @@ ast_traverse_atom(ast_t *self, node_t *node, int dep) {
         tcheck("call _ast_traverse with array");
         object_t *obj = _ast_traverse(self, atom->array, dep+1);
         return_trav(obj);
+    } else if (atom->dict) {
+        tcheck("call _ast_traverse with dict");
+        object_t *obj = _ast_traverse(self, atom->dict, dep+1);
+        return_trav(obj);
     } else if (atom->identifier) {
         tcheck("call _ast_traverse with identifier");
         object_t *obj = _ast_traverse(self, atom->identifier, dep+1);
@@ -7780,6 +7809,109 @@ ast_traverse_array(ast_t *self, node_t *node, int dep) {
 
     tcheck("call _ast_traverse with array elems");
     object_t *result = _ast_traverse(self, array->array_elems, dep+1);
+    return_trav(result);
+}
+
+static object_t *
+ast_traverse_dict_elem(ast_t *self, const node_t *node, int dep) {
+    tready();
+    node_dict_elem_t *dict_elem = node->real;
+    assert(dict_elem && node->type == NODE_TYPE_DICT_ELEM);
+    assert(dict_elem->key_simple_assign);
+    assert(dict_elem->value_simple_assign);
+
+    tcheck("call _ast_traverse with key simple assign");
+    object_t *key = _ast_traverse(self, dict_elem->key_simple_assign, dep+1);
+    if (ast_has_error(self)) {
+        obj_del(key);
+        return_trav(NULL);
+    }
+    assert(key);
+    switch (key->type) {
+    default:
+        ast_set_error_detail(self, "key is not string in dict elem");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_STRING:
+    case OBJ_TYPE_IDENTIFIER:
+        break;
+    }
+
+    object_t *val = _ast_traverse(self, dict_elem->value_simple_assign, dep+1);
+    if (ast_has_error(self)) {
+        obj_del(val);
+        return_trav(NULL);
+    }
+    assert(val);
+    
+    object_array_t *objarr = objarr_new();
+
+    objarr_moveb(objarr, key);
+    objarr_moveb(objarr, val);
+
+    object_t *obj = obj_new_array(objarr);
+    return_trav(obj);
+}
+
+/**
+ * left priority
+ */
+static object_t *
+ast_traverse_dict_elems(ast_t *self, const node_t *node, int dep) {
+    tready();
+    node_dict_elems_t *dict_elems = node->real;
+    assert(dict_elems && node->type == NODE_TYPE_DICT_ELEMS);
+
+    object_dict_t *objdict = objdict_new();
+
+    for (int32_t i = 0; i < nodearr_len(dict_elems->nodearr); ++i) {
+        node_t *dict_elem = nodearr_get(dict_elems->nodearr, i);
+        object_t *arrobj = _ast_traverse(self, dict_elem, dep+1);
+        if (ast_has_error(self)) {
+            obj_del(arrobj);
+            objdict_del(objdict);
+            return_trav(NULL);
+        }
+        assert(arrobj);
+        assert(arrobj->type == OBJ_TYPE_ARRAY);
+        object_array_t *objarr = arrobj->objarr;
+        assert(objarr_len(objarr) == 2);
+        const object_t *key = objarr_getc(objarr, 0);
+        const object_t *val = objarr_getc(objarr, 1);
+
+        const char *skey = NULL;
+        switch (key->type) {
+        default:
+            ast_set_error_detail(self, "invalid key type");
+            obj_del(arrobj);
+            objdict_del(objdict);
+            return_trav(NULL);
+            break;
+        case OBJ_TYPE_STRING:
+            skey = str_getc(key->string);
+            break;
+        case OBJ_TYPE_IDENTIFIER:
+            skey = str_getc(key->identifier);
+            break;
+        }
+
+        objdict_move(objdict, skey, obj_new_other(val));
+        obj_del(arrobj);
+    }
+
+    object_t *ret = obj_new_dict(objdict);
+    return_trav(ret); 
+}
+
+static object_t *
+ast_traverse_dict(ast_t *self, const node_t *node, int dep) {
+    tready();
+    node_dict_t *dict = node->real;
+    assert(dict && node->type == NODE_TYPE_DICT);
+    assert(dict->dict_elems);
+
+    tcheck("call _ast_traverse with dict");
+    object_t *result = _ast_traverse(self, dict->dict_elems, dep+1);
     return_trav(result);
 }
 
@@ -8368,6 +8500,21 @@ _ast_traverse(ast_t *self, node_t *node, int dep) {
     case NODE_TYPE_ARRAY_ELEMS: {
         tcheck("call ast_traverse_array_elems");
         object_t *obj = ast_traverse_array_elems(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_DICT: {
+        tcheck("call ast_traverse_dict");
+        object_t *obj = ast_traverse_dict(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_DICT_ELEMS: {
+        tcheck("call ast_traverse_dict_elems");
+        object_t *obj = ast_traverse_dict_elems(self, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_DICT_ELEM: {
+        tcheck("call ast_traverse_dict_elem");
+        object_t *obj = ast_traverse_dict_elem(self, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_IDENTIFIER: {

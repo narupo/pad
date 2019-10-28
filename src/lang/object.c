@@ -41,6 +41,9 @@ obj_del(object_t *self) {
 extern object_array_t*
 objarr_new_other(object_array_t *other);
 
+extern object_dict_t*
+objdict_new_other(object_dict_t *other);
+
 object_t *
 obj_new_other(const object_t *other) {
     if (!other) {
@@ -67,6 +70,9 @@ obj_new_other(const object_t *other) {
         break;
     case OBJ_TYPE_ARRAY:
         self->objarr = objarr_new_other(other->objarr);
+        break;
+    case OBJ_TYPE_DICT:
+        self->objdict = objdict_new_other(other->objdict);
         break;
     case OBJ_TYPE_FUNC:
         self->func.name = obj_new_other(other->func.name);
@@ -182,6 +188,15 @@ obj_new_array(object_array_t *move_objarr) {
 }
 
 object_t *
+obj_new_dict(object_dict_t *move_objdict) {
+    object_t *self = obj_new(OBJ_TYPE_DICT);
+
+    self->objdict = move_objdict;
+
+    return self;
+}
+
+object_t *
 obj_new_func(object_t *move_name, object_t *move_args, node_t *ref_suite) {
     object_t *self = obj_new(OBJ_TYPE_FUNC);
 
@@ -221,6 +236,11 @@ obj_to_str(const object_t *self) {
     case OBJ_TYPE_ARRAY: {
         string_t *str = str_new();
         str_set(str, "(array)");
+        return str;
+    } break;
+    case OBJ_TYPE_DICT: {
+        string_t *str = str_new();
+        str_set(str, "(dict)");
         return str;
     } break;
     case OBJ_TYPE_IDENTIFIER: {

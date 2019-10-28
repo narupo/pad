@@ -1,5 +1,9 @@
 #include "lang/object_dict.h"
 
+enum {
+    OBJDICT_INIT_CAPA = 128,
+};
+
 struct object_dict {
     object_dict_item_t *map;
     size_t capa;
@@ -16,11 +20,33 @@ objdict_del(object_dict_t *self) {
 }
 
 object_dict_t *
-objdict_new(size_t capa) {
+objdict_new(void) {
     object_dict_t *self = mem_ecalloc(1, sizeof(*self));
-    self->capa = capa;
+
+    self->capa = OBJDICT_INIT_CAPA;
     self->len = 0;
     self->map = mem_ecalloc(self->capa+1, sizeof(object_dict_item_t));
+
+    return self;
+}
+
+extern object_t *
+obj_new_other(const object_t *other);
+
+extern object_dict_t*
+objdict_new_other(object_dict_t *other) {
+    object_dict_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->capa = other->capa;
+    self->len = other->len;
+    self->map = mem_ecalloc(self->capa+1, sizeof(object_dict_item_t));
+
+    for (int32_t i = 0; i < other->len; ++i) {
+        object_dict_item_t *dstitem = &self->map[i];
+        object_dict_item_t *srcitem = &other->map[i];
+        strcpy(dstitem->key, srcitem->key);
+        dstitem->value = obj_new_other(srcitem->value);
+    }
 
     return self;
 }
