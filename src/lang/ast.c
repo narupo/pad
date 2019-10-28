@@ -7334,7 +7334,7 @@ ast_traverse_index(ast_t *self, const node_t *node, int dep) {
             const object_dict_t *tar = ref_operand->objdict;
             const object_dict_item_t *item = objdict_getc(tar, sidx);
             if (!item) {
-                ast_set_error_detail(self, "not found item by key");
+                ast_set_error_detail(self, "not found item by \"%s\"", sidx);
                 goto fail;
             }
 
@@ -7881,6 +7881,7 @@ ast_traverse_dict_elems(ast_t *self, const node_t *node, int dep) {
 
     for (int32_t i = 0; i < nodearr_len(dict_elems->nodearr); ++i) {
         node_t *dict_elem = nodearr_get(dict_elems->nodearr, i);
+        tcheck("call _ast_traverse with dict_elem");
         object_t *arrobj = _ast_traverse(self, dict_elem, dep+1);
         if (ast_has_error(self)) {
             obj_del(arrobj);
@@ -7905,13 +7906,22 @@ ast_traverse_dict_elems(ast_t *self, const node_t *node, int dep) {
         case OBJ_TYPE_STRING:
             skey = str_getc(key->string);
             break;
-        case OBJ_TYPE_IDENTIFIER:
-            skey = str_getc(key->identifier);
-            break;
+        case OBJ_TYPE_IDENTIFIER: {
+            const object_t *ref = pull_in_ref_by(self, key);
+            if (ref->type != OBJ_TYPE_STRING) {
+                ast_set_error_detail(self, "invalid key type in variable");
+                obj_del(arrobj);
+                objdict_del(objdict);
+                return_trav(NULL);
+                break;   
+            }
+            skey = str_getc(ref->string);
+        } break;
         }
 
         objdict_move(objdict, skey, obj_new_other(val));
         obj_del(arrobj);
+        vissf("move to %s", skey);
     }
 
     object_t *ret = obj_new_dict(objdict);
