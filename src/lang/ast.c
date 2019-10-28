@@ -7286,9 +7286,18 @@ ast_traverse_index(ast_t *self, const node_t *node, int dep) {
             goto fail;
             break;
         case OBJ_TYPE_INTEGER:
+            if (ref_operand->type == OBJ_TYPE_DICT) {
+                ast_set_error_detail(self, "can not access by int to dict");
+                goto fail;
+            }
             idx = ref_index->lvalue;
             break;
         case OBJ_TYPE_STRING:
+            if (ref_operand->type == OBJ_TYPE_STRING ||
+                ref_operand->type == OBJ_TYPE_ARRAY) {
+                ast_set_error_detail(self, "cant not access by string to string or array");
+                goto fail;
+            }
             sidx = str_getc(ref_index->string);
             break;
         }
@@ -7921,8 +7930,7 @@ ast_traverse_dict_elems(ast_t *self, const node_t *node, int dep) {
 
         objdict_move(objdict, skey, obj_new_other(val));
         obj_del(arrobj);
-        vissf("move to %s", skey);
-    }
+}
 
     object_t *ret = obj_new_dict(objdict);
     return_trav(ret); 
@@ -8215,7 +8223,6 @@ ast_traverse_caller(ast_t *self, const node_t *node, int dep) {
         return_trav(NULL);
     }
 
-    vissf("result[%p]", result);
     obj_del(args);
     if (!result) {
         return_trav(obj_new_nil());
@@ -8429,7 +8436,6 @@ _ast_traverse(ast_t *self, const node_t *node, int dep) {
     case NODE_TYPE_RETURN_STMT: {
         tcheck("call ast_traverse_return_stmt");
         object_t *obj = ast_traverse_return_stmt(self, node, dep+1);
-        vissf("_ast_traverse obj[%p] from return stmt", obj);
         return_trav(obj);
     } break;
     case NODE_TYPE_TEST_LIST: {
