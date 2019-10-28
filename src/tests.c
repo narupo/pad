@@ -8181,6 +8181,13 @@ test_ast_traverse_dict(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
 
+    tkr_parse(tkr, "{@ k = \"key\" \n a = { k: 1 } @}{: a[k] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    }
+
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
