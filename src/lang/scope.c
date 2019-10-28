@@ -24,7 +24,7 @@ scope_t *
 scope_new(void) {
     scope_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->varmap = objdict_new(100);
+    self->varmap = objdict_new();
 
     return self;
 }

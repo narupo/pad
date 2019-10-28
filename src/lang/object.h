@@ -10,6 +10,7 @@
 #include "lang/types.h"
 #include "lang/nodes.h"
 #include "lang/object_array.h"
+#include "lang/object_dict.h"
 
 typedef enum {
     OBJ_TYPE_NIL = 0,
@@ -18,6 +19,7 @@ typedef enum {
     OBJ_TYPE_IDENTIFIER,
     OBJ_TYPE_STRING,
     OBJ_TYPE_ARRAY,
+    OBJ_TYPE_DICT,
     OBJ_TYPE_FUNC,
 } obj_type_t;
 
@@ -32,6 +34,7 @@ struct object {
     string_t *identifier;
     string_t *string;
     object_array_t *objarr;
+    object_dict_t *objdict;
     long lvalue;
     bool boolean;
     object_func_t func;
@@ -76,6 +79,9 @@ obj_new_int(long lvalue);
 
 object_t *
 obj_new_array(object_array_t *move_objarr);
+
+object_t *
+obj_new_dict(object_dict_t *move_objdict);
 
 object_t *
 obj_new_func(object_t *move_name, object_t *move_args, node_t *ref_suite);

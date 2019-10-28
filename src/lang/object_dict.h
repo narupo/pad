@@ -23,7 +23,10 @@ void
 objdict_del(object_dict_t *self);
 
 object_dict_t *
-objdict_new(size_t capa);
+objdict_new(void);
+
+extern object_dict_t*
+objdict_new_other(object_dict_t *other);
 
 object_dict_t *
 objdict_resize(object_dict_t *self, size_t newcapa);
@@ -45,4 +48,3 @@ objdict_len(const object_dict_t *self);
 
 const object_dict_item_t *
 objdict_getc_index(const object_dict_t *self, size_t index);
-
