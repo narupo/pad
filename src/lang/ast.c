@@ -3371,6 +3371,9 @@ ast_traverse_ref_block(ast_t *self, const node_t *node, int dep) {
     case OBJ_TYPE_ARRAY: {
         ctx_pushb_buf(self->context, "(array)");
     } break;
+    case OBJ_TYPE_DICT: {
+        ctx_pushb_buf(self->context, "(dict)");
+    } break;
     case OBJ_TYPE_FUNC: {
         ctx_pushb_buf(self->context, "(function)");
     } break;
@@ -3554,6 +3557,7 @@ ast_parse_bool(ast_t *self, const object_t *obj) {
     } break;
     case OBJ_TYPE_STRING: return str_len(obj->string); break;
     case OBJ_TYPE_ARRAY: return objarr_len(obj->objarr); break;
+    case OBJ_TYPE_DICT: return objdict_len(obj->objdict); break;
     case OBJ_TYPE_FUNC: return true; break;
     }
 
@@ -3891,8 +3895,6 @@ ast_calc_assign(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) 
     switch (lhs->type) {
     default:
         ast_set_error_detail(self, "syntax error. invalid lhs in assign list");
-        obj_del(lhs);
-        obj_del(rhs);
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -4320,6 +4322,19 @@ ast_compare_or_int(ast_t *self, const object_t *lhs, const object_t *rhs, int de
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_DICT: {
+        object_t *obj = NULL;
+        if (lhs->lvalue && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(lhs);
+        } else if (lhs->lvalue && !objdict_len(rhs->objdict)) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs->lvalue && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *rvar = pull_in_ref_by(self, rhs);
         if (!rvar) {
@@ -4415,6 +4430,19 @@ ast_compare_or_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int d
         } else if (lhs->boolean && !objarr_len(rhs->objarr)) {
             obj = obj_new_other(lhs);
         } else if (!lhs->boolean && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_DICT: {
+        object_t *obj = NULL;
+        if (lhs->boolean && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(lhs);
+        } else if (lhs->boolean && !objdict_len(rhs->objdict)) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs->boolean && objdict_len(rhs->objdict)) {
             obj = obj_new_other(rhs);
         } else {
             obj = obj_new_other(rhs);
@@ -4524,6 +4552,19 @@ ast_compare_or_string(ast_t *self, const object_t *lhs, const object_t *rhs, int
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_DICT: {
+        object_t *obj = NULL;
+        if (slen && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(lhs);
+        } else if (slen && !objdict_len(rhs->objdict)) {
+            obj = obj_new_other(lhs);
+        } else if (!slen && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or, dep+1);
@@ -4622,6 +4663,19 @@ ast_compare_or_array(ast_t *self, const object_t *lhs, const object_t *rhs, int 
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_DICT: {
+        object_t *obj = NULL;
+        if (arrlen && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(lhs);
+        } else if (arrlen && !objdict_len(rhs->objdict)) {
+            obj = obj_new_other(lhs);
+        } else if (!arrlen && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or, dep+1);
@@ -4643,6 +4697,117 @@ ast_compare_or_array(ast_t *self, const object_t *lhs, const object_t *rhs, int 
     }
 
     assert(0 && "impossible. failed to compare or array");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_or_dict(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_DICT);
+
+    int32_t dictlen = objdict_len(lhs->objdict);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_NIL: {
+        object_t *obj = NULL;
+        if (dictlen && NULL) {
+            obj = obj_new_other(lhs);
+        } else if (dictlen && !NULL) {
+            obj = obj_new_other(lhs);
+        } else if (!dictlen && NULL) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = NULL;
+        if (dictlen && rhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else if (dictlen && !rhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else if (!dictlen && rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = NULL;
+        if (dictlen && rhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else if (dictlen && !rhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else if (!dictlen && rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = NULL;
+        if (dictlen && str_len(rhs->string)) {
+            obj = obj_new_other(lhs);
+        } else if (dictlen && !str_len(rhs->string)) {
+            obj = obj_new_other(lhs);
+        } else if (!dictlen && str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = NULL;
+        if (dictlen && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(lhs);
+        } else if (dictlen && !objarr_len(rhs->objarr)) {
+            obj = obj_new_other(lhs);
+        } else if (!dictlen && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_DICT: {
+        object_t *obj = NULL;
+        if (dictlen && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(lhs);
+        } else if (dictlen && !objdict_len(rhs->objdict)) {
+            obj = obj_new_other(lhs);
+        } else if (!dictlen && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = NULL;
+        if (dictlen && rhs) {
+            obj = obj_new_other(lhs);
+        } else if (dictlen && !rhs) {
+            obj = obj_new_other(lhs);
+        } else if (!dictlen && rhs) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare or dict");
     return_trav(NULL);
 }
 
@@ -4669,6 +4834,10 @@ ast_compare_or_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int de
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
+        object_t *obj = obj_new_other(rhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_DICT: {
         object_t *obj = obj_new_other(rhs);
         return_trav(obj);
     } break;
@@ -4757,6 +4926,19 @@ ast_compare_or_func(ast_t *self, const object_t *lhs, const object_t *rhs, int d
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_DICT: {
+        object_t *obj = NULL;
+        if (lhs && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(lhs);
+        } else if (lhs && !objdict_len(rhs->objdict)) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_or, dep+1);
@@ -4809,6 +4991,11 @@ ast_compare_or(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     case OBJ_TYPE_ARRAY: {
         tcheck("call ast_compare_or_array");
         object_t *obj = ast_compare_or_array(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_DICT: {
+        tcheck("call ast_compare_or_dict");
+        object_t *obj = ast_compare_or_dict(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -4940,6 +5127,19 @@ ast_compare_and_int(ast_t *self, const object_t *lhs, const object_t *rhs, int d
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_DICT: {
+        object_t *obj = NULL;
+        if (lhs->lvalue && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else if (!objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
@@ -5027,6 +5227,19 @@ ast_compare_and_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int 
         if (lhs->boolean && objarr_len(rhs->objarr)) {
             obj = obj_new_other(rhs);
         } else if (!objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_DICT: {
+        object_t *obj = NULL;
+        if (lhs->boolean && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else if (!objdict_len(rhs->objdict)) {
             obj = obj_new_other(rhs);
         } else if (!lhs->boolean) {
             obj = obj_new_other(lhs);
@@ -5132,6 +5345,19 @@ ast_compare_and_string(ast_t *self, const object_t *lhs, const object_t *rhs, in
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_DICT: {
+        object_t *obj = NULL;
+        if (slen && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else if (!objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else if (!slen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
@@ -5220,6 +5446,19 @@ ast_compare_and_array(ast_t *self, const object_t *lhs, const object_t *rhs, int
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_DICT: {
+        object_t *obj = NULL;
+        if (arrlen && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else if (!objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else if (!arrlen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
@@ -5241,6 +5480,107 @@ ast_compare_and_array(ast_t *self, const object_t *lhs, const object_t *rhs, int
     }
 
     assert(0 && "impossible. failed to compare and array");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_and_dict(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_DICT);
+
+    int32_t dictlen = objdict_len(lhs->objdict);
+
+    switch (rhs->type) {
+    case OBJ_TYPE_NIL: {
+        object_t *obj = obj_new_other(rhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = NULL;
+        if (dictlen && rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else if (!dictlen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = NULL;
+        if (dictlen && rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else if (!dictlen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = NULL;
+        if (dictlen && str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else if (!str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else if (!dictlen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = NULL;
+        if (dictlen && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else if (!objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else if (!dictlen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_DICT: {
+        object_t *obj = NULL;
+        if (dictlen && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else if (!objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else if (!dictlen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = NULL;
+        if (dictlen && rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!dictlen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare and dict");
     return_trav(NULL);
 }
 
@@ -5267,6 +5607,10 @@ ast_compare_and_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int d
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
+        object_t *obj = obj_new_other(lhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_DICT: {
         object_t *obj = obj_new_other(lhs);
         return_trav(obj);
     } break;
@@ -5347,6 +5691,19 @@ ast_compare_and_func(ast_t *self, const object_t *lhs, const object_t *rhs, int 
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_DICT: {
+        object_t *obj = NULL;
+        if (lhs && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else if (!objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_and, dep+1);
@@ -5399,6 +5756,11 @@ ast_compare_and(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) 
     case OBJ_TYPE_ARRAY: {
         tcheck("call ast_compare_and_array");
         object_t *obj = ast_compare_and_array(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_DICT: {
+        tcheck("call ast_compare_and_dict");
+        object_t *obj = ast_compare_and_dict(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -5496,6 +5858,10 @@ ast_compare_not(ast_t *self, const object_t *operand, int dep) {
         object_t *obj = obj_new_bool(!objarr_len(operand->objarr));
         return_trav(obj);
     } break;
+    case OBJ_TYPE_DICT: {
+        object_t *obj = obj_new_bool(!objdict_len(operand->objdict));
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_FUNC: {
         object_t *obj = obj_new_bool(!operand);
         return_trav(obj);
@@ -5538,6 +5904,10 @@ ast_compare_comparison_eq_int(ast_t *self, const object_t *lhs, const object_t *
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare equal with int");
+        return_trav(NULL);
+        break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_bool(false);
         return_trav(obj);
@@ -5555,18 +5925,6 @@ ast_compare_comparison_eq_int(ast_t *self, const object_t *lhs, const object_t *
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't compare equal int and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't compare equal int and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't compare equal int and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to compare comparison eq int");
@@ -5579,6 +5937,10 @@ ast_compare_comparison_eq_bool(ast_t *self, const object_t *lhs, const object_t 
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare equal with bool");
+        return_trav(NULL);
+        break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_bool(false);
         return_trav(obj);
@@ -5595,18 +5957,6 @@ ast_compare_comparison_eq_bool(ast_t *self, const object_t *lhs, const object_t 
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't compare equal bool and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't compare equal bool and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't compare equal bool and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to compare comparison eq bool");
@@ -5619,18 +5969,14 @@ ast_compare_comparison_eq_string(ast_t *self, const object_t *lhs, const object_
     assert(lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare equal with string");
+        return_trav(NULL);
+        break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_bool(false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER:
-        ast_set_error_detail(self, "can't compare equal string and int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_BOOL:
-        ast_set_error_detail(self, "can't compare equal string and bool");
-        return_trav(NULL);
-        break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
@@ -5640,14 +5986,6 @@ ast_compare_comparison_eq_string(ast_t *self, const object_t *lhs, const object_
         object_t *obj = obj_new_bool(cstr_eq(str_getc(lhs->string), str_getc(rhs->string)));
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't compare equal string and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't compare equal string and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to compare comparison string");
@@ -5660,37 +5998,30 @@ ast_compare_comparison_eq_array(ast_t *self, const object_t *lhs, const object_t
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare equal with array");
+        return_trav(NULL);
+        break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_bool(false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER:
-        ast_set_error_detail(self, "can't compare equal array and int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_BOOL:
-        ast_set_error_detail(self, "can't compare equal array and bool");
-        return_trav(NULL);
-        break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't compare equal array and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        err_die("TODO: compare equal array and array");
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't compare equal array and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to compare comparison array");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_comparison_eq_dict(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_DICT);
+    ast_set_error_detail(self, "can't compare equal with dict");
     return_trav(NULL);
 }
 
@@ -5720,31 +6051,19 @@ ast_compare_comparison_eq_func(ast_t *self, const object_t *lhs, const object_t 
     assert(lhs->type == OBJ_TYPE_FUNC);
 
     switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare equal with func");
+        return_trav(NULL);
+        break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_bool(false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER:
-        ast_set_error_detail(self, "can't compare equal func and int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_BOOL:
-        ast_set_error_detail(self, "can't compare equal func and bool");
-        return_trav(NULL);
-        break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't compare equal func and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't compare equal func and array");
-        return_trav(NULL);
-        break;
     case OBJ_TYPE_FUNC: {
         object_t *obj = obj_new_bool(lhs == rhs);
         return_trav(obj);
@@ -5785,6 +6104,11 @@ ast_compare_comparison_eq(ast_t *self, const object_t *lhs, const object_t *rhs,
         object_t *obj = ast_compare_comparison_eq_array(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_DICT: {
+        tcheck("call ast_compare_comparison_eq_dict");
+        object_t *obj = ast_compare_comparison_eq_dict(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_lhs with ast_compare_comparison_eq");
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
@@ -5807,6 +6131,10 @@ ast_compare_comparison_not_eq_int(ast_t *self, const object_t *lhs, const object
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare not equal with int");
+        return_trav(NULL);
+        break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_bool(true);
         return_trav(obj);
@@ -5824,18 +6152,6 @@ ast_compare_comparison_not_eq_int(ast_t *self, const object_t *lhs, const object
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't compare not equal int and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't compare not equal int and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't compare not equal int and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq int");
@@ -5848,10 +6164,10 @@ ast_compare_comparison_not_eq_bool(ast_t *self, const object_t *lhs, const objec
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(true);
-        return_trav(obj);
-    } break;
+    default:
+        ast_set_error_detail(self, "can't compare not equal with bool");
+        return_trav(NULL);
+        break;
     case OBJ_TYPE_INTEGER: {
         object_t *obj = obj_new_bool(lhs->boolean != rhs->lvalue);
         return_trav(obj);
@@ -5865,18 +6181,6 @@ ast_compare_comparison_not_eq_bool(ast_t *self, const object_t *lhs, const objec
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't compare not equal bool and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't compare not equal bool and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't compare not equal bool and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq bool");
@@ -5889,18 +6193,14 @@ ast_compare_comparison_not_eq_string(ast_t *self, const object_t *lhs, const obj
     assert(lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare not equal with string");
+        return_trav(NULL);
+        break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_bool(true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER:
-        ast_set_error_detail(self, "can't compare not equal string and int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_BOOL:
-        ast_set_error_detail(self, "can't compare not equal string and bool");
-        return_trav(NULL);
-        break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
         return_trav(obj);
@@ -5909,14 +6209,6 @@ ast_compare_comparison_not_eq_string(ast_t *self, const object_t *lhs, const obj
         object_t *obj = obj_new_bool(!cstr_eq(str_getc(lhs->string), str_getc(rhs->string)));
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't compare not equal string and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't compare not equal string and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq string");
@@ -5929,37 +6221,30 @@ ast_compare_comparison_not_eq_array(ast_t *self, const object_t *lhs, const obje
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare not equal with array");
+        return_trav(NULL);
+        break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_bool(true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER:
-        ast_set_error_detail(self, "can't compare not equal array and int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_BOOL:
-        ast_set_error_detail(self, "can't compare not equal array and bool");
-        return_trav(NULL);
-        break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't compare not equal array and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        err_die("TODO: compare not equal array");
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't compare not equal array and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq array");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_comparison_not_eq_dict(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_DICT);
+    ast_set_error_detail(self, "can't compare not equal with dict");
     return_trav(NULL);
 }
 
@@ -5994,31 +6279,19 @@ ast_compare_comparison_not_eq_func(ast_t *self, const object_t *lhs, const objec
     assert(lhs->type == OBJ_TYPE_FUNC);
 
     switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare not equal with func");
+        return_trav(NULL);
+        break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_bool(true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER:
-        ast_set_error_detail(self, "can't compare not equal func and int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_BOOL:
-        ast_set_error_detail(self, "can't compare not equal func and bool");
-        return_trav(NULL);
-        break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't compare not equal func and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't compare not equal func and array");
-        return_trav(NULL);
-        break;
     case OBJ_TYPE_FUNC: {
         object_t *obj = obj_new_bool(lhs != rhs);
         return_trav(obj);
@@ -6057,6 +6330,11 @@ ast_compare_comparison_not_eq(ast_t *self, const object_t *lhs, const object_t *
     case OBJ_TYPE_ARRAY: {
         tcheck("call ast_compare_comparison_not_eq_array");
         object_t *obj = ast_compare_comparison_not_eq_array(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_DICT: {
+        tcheck("call ast_compare_comparison_not_eq_dict");
+        object_t *obj = ast_compare_comparison_not_eq_dict(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -6162,8 +6440,8 @@ ast_calc_expr_add_int(ast_t *self, const object_t *lhs, const object_t *rhs, int
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't add nill into int");
+    default:
+        ast_set_error_detail(self, "can't add with int");
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
@@ -6179,17 +6457,6 @@ ast_calc_expr_add_int(ast_t *self, const object_t *lhs, const object_t *rhs, int
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        err_die("TODO: add string");
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't add int and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't add func into int");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc expr int");
@@ -6202,8 +6469,8 @@ ast_calc_expr_add_bool(ast_t *self, const object_t *lhs, const object_t *rhs, in
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't add nil into bool");
+    default:
+        ast_set_error_detail(self, "can't add with bool");
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
@@ -6219,18 +6486,6 @@ ast_calc_expr_add_bool(ast_t *self, const object_t *lhs, const object_t *rhs, in
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't add bool and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't add bool and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't add bool and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc expr bool");
@@ -6243,16 +6498,8 @@ ast_calc_expr_add_string(ast_t *self, const object_t *lhs, const object_t *rhs, 
     assert(lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't add nil into string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_INTEGER:
-        ast_set_error_detail(self, "can't add string and int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_BOOL:
-        ast_set_error_detail(self, "can't add string and bool");
+    default:
+        ast_set_error_detail(self, "can't add with string");
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -6267,14 +6514,6 @@ ast_calc_expr_add_string(ast_t *self, const object_t *lhs, const object_t *rhs, 
         object_t *obj = obj_new_str(s);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't add string and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't add string and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc expr string");
@@ -6287,16 +6526,8 @@ ast_calc_expr_add_array(ast_t *self, const object_t *lhs, const object_t *rhs, i
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't add array and nil");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_INTEGER:
-        ast_set_error_detail(self, "can't add array and int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_BOOL:
-        ast_set_error_detail(self, "can't add array and bool");
+    default:
+        ast_set_error_detail(self, "can't add with array");
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -6304,21 +6535,17 @@ ast_calc_expr_add_array(ast_t *self, const object_t *lhs, const object_t *rhs, i
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't add array and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't add array and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't add array and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc expr array");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_calc_expr_add_dict(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_DICT);
+    ast_set_error_detail(self, "can't add with dict");
     return_trav(NULL);
 }
 
@@ -6368,6 +6595,11 @@ ast_calc_expr_add(ast_t *self, const object_t *lhs, const object_t *rhs, int dep
         object_t *obj = ast_calc_expr_add_array(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_DICT: {
+        tcheck("call ast_calc_expr_add_dict");
+        object_t *obj = ast_calc_expr_add_dict(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_lhs with ast_calc_expr_add");
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
@@ -6390,8 +6622,8 @@ ast_calc_expr_sub_int(ast_t *self, const object_t *lhs, const object_t *rhs, int
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't sub int and nil");
+    default:
+        ast_set_error_detail(self, "can't sub with int");
         return_trav(NULL);
         break;    
     case OBJ_TYPE_INTEGER: {
@@ -6407,17 +6639,6 @@ ast_calc_expr_sub_int(ast_t *self, const object_t *lhs, const object_t *rhs, int
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        err_die("TODO: add string");
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't sub int and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't sub int and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc expr sub int");
@@ -6430,8 +6651,8 @@ ast_calc_expr_sub_bool(ast_t *self, const object_t *lhs, const object_t *rhs, in
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't sub bool and nil");
+    default:
+        ast_set_error_detail(self, "can't sub with bool");
         return_trav(NULL);
         break;    
     case OBJ_TYPE_INTEGER: {
@@ -6447,18 +6668,6 @@ ast_calc_expr_sub_bool(ast_t *self, const object_t *lhs, const object_t *rhs, in
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't sub bool and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't sub bool and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't sub bool and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc expr sub bool");
@@ -6471,34 +6680,15 @@ ast_calc_expr_sub_string(ast_t *self, const object_t *lhs, const object_t *rhs, 
     assert(lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't sub string and nil");
+    default:
+        ast_set_error_detail(self, "can't sub with string");
         return_trav(NULL);
         break;    
-    case OBJ_TYPE_INTEGER:
-        ast_set_error_detail(self, "can't sub string and int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_BOOL:
-        ast_set_error_detail(self, "can't sub string and bool");
-        return_trav(NULL);
-        break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        err_die("TODO: sub string 2");
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't sub string and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't sub string and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc expr sub string");
@@ -6511,38 +6701,26 @@ ast_calc_expr_sub_array(ast_t *self, const object_t *lhs, const object_t *rhs, i
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't sub array and nil");
+    default:
+        ast_set_error_detail(self, "can't sub with array");
         return_trav(NULL);
         break;    
-    case OBJ_TYPE_INTEGER:
-        ast_set_error_detail(self, "can't sub array and int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_BOOL:
-        ast_set_error_detail(self, "can't sub array and bool");
-        return_trav(NULL);
-        break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't sub array and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't sub array and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't sub array and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc expr sub array");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_calc_expr_sub_dict(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_DICT);
+    ast_set_error_detail(self, "can't sub with dict");
     return_trav(NULL);
 }
 
@@ -6595,6 +6773,11 @@ ast_calc_expr_sub(ast_t *self, const object_t *lhs, const object_t *rhs, int dep
     case OBJ_TYPE_ARRAY: {
         tcheck("call ast_calc_expr_sub_array");
         object_t *obj = ast_calc_expr_sub_array(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_DICT: {
+        tcheck("call ast_calc_expr_sub_dict");
+        object_t *obj = ast_calc_expr_sub_dict(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_FUNC: {
@@ -6690,8 +6873,8 @@ ast_calc_term_mul_int(ast_t *self, const object_t *lhs, const object_t *rhs, int
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't mul int and nil");
+    default:
+        ast_set_error_detail(self, "can't mul with int");
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
@@ -6710,14 +6893,6 @@ ast_calc_term_mul_int(ast_t *self, const object_t *lhs, const object_t *rhs, int
     case OBJ_TYPE_STRING:
         err_die("TODO: mul string");
         break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't mul int and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't mul int and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc term mul int");
@@ -6730,8 +6905,8 @@ ast_calc_term_mul_bool(ast_t *self, const object_t *lhs, const object_t *rhs, in
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't mul bool and nil");
+    default:
+        ast_set_error_detail(self, "can't mul with bool");
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
@@ -6747,18 +6922,6 @@ ast_calc_term_mul_bool(ast_t *self, const object_t *lhs, const object_t *rhs, in
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul, dep+1); 
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't mul bool and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't mul bool and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't mul bool and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc term mul bool");
@@ -6771,16 +6934,8 @@ ast_calc_term_mul_string(ast_t *self, const object_t *lhs, const object_t *rhs, 
     assert(lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't mul string and nil");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_INTEGER:
-        ast_set_error_detail(self, "can't mul string and int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_BOOL:
-        ast_set_error_detail(self, "can't mul string and bool");
+    default:
+        ast_set_error_detail(self, "can't mul with string");
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -6790,14 +6945,6 @@ ast_calc_term_mul_string(ast_t *self, const object_t *lhs, const object_t *rhs, 
     } break;
     case OBJ_TYPE_STRING:
         err_die("TODO: mul string 2");
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't mul string and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't mul string and func");
-        return_trav(NULL);
         break;
     }
  
@@ -6811,16 +6958,8 @@ ast_calc_term_mul_array(ast_t *self, const object_t *lhs, const object_t *rhs, i
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't mul array and nil");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_INTEGER:
-        ast_set_error_detail(self, "can't mul array and int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_BOOL:
-        ast_set_error_detail(self, "can't mul array and bool");
+    default:
+        ast_set_error_detail(self, "can't mul with array");
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -6828,21 +6967,17 @@ ast_calc_term_mul_array(ast_t *self, const object_t *lhs, const object_t *rhs, i
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't mul array and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't mul array and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't mul array and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc term mul array");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_calc_term_mul_dict(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_DICT);
+    ast_set_error_detail(self, "can't mul with dict");
     return_trav(NULL);
 }
 
@@ -6897,6 +7032,11 @@ ast_calc_term_mul(ast_t *self, const object_t *lhs, const object_t *rhs, int dep
         object_t *obj = ast_calc_term_mul_array(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_DICT: {
+        tcheck("call ast_calc_term_mul_dict");
+        object_t *obj = ast_calc_term_mul_dict(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_FUNC: {
         tcheck("call ast_calc_term_mul_func");
         object_t *obj = ast_calc_term_mul_func(self, lhs, rhs, dep+1);
@@ -6914,8 +7054,8 @@ ast_calc_term_div_int(ast_t *self, const object_t *lhs, const object_t *rhs, int
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't division int and nil");
+    default:
+        ast_set_error_detail(self, "can't division with int");
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
@@ -6939,18 +7079,6 @@ ast_calc_term_div_int(ast_t *self, const object_t *lhs, const object_t *rhs, int
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't division int and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't division int and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't division int and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc term div int");
@@ -6963,8 +7091,8 @@ ast_calc_term_div_bool(ast_t *self, const object_t *lhs, const object_t *rhs, in
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't division bool and nil");
+    default:
+        ast_set_error_detail(self, "can't division with bool");
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER:
@@ -6984,18 +7112,6 @@ ast_calc_term_div_bool(ast_t *self, const object_t *lhs, const object_t *rhs, in
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't division bool and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't division bool and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't division bool and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc term div bool");
@@ -7008,16 +7124,8 @@ ast_calc_term_div_string(ast_t *self, const object_t *lhs, const object_t *rhs, 
     tready();
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't division string and nil");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_INTEGER:
-        ast_set_error_detail(self, "can't division string and int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_BOOL:
-        ast_set_error_detail(self, "can't division string and bool");
+    default:
+        ast_set_error_detail(self, "can't division with string");
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -7025,18 +7133,6 @@ ast_calc_term_div_string(ast_t *self, const object_t *lhs, const object_t *rhs, 
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't division string and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't division string and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't division string and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc term div string");
@@ -7049,16 +7145,8 @@ ast_calc_term_div_array(ast_t *self, const object_t *lhs, const object_t *rhs, i
     assert(lhs->type == OBJ_TYPE_ARRAY);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't division array and nil");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_INTEGER:
-        ast_set_error_detail(self, "can't division array and int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_BOOL:
-        ast_set_error_detail(self, "can't division array and bool");
+    default:
+        ast_set_error_detail(self, "can't division with array");
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -7066,21 +7154,17 @@ ast_calc_term_div_array(ast_t *self, const object_t *lhs, const object_t *rhs, i
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't division array and string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't division array and array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't division array and func");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc term div array");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_calc_term_div_dict(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_DICT);
+    ast_set_error_detail(self, "can't division with dict");
     return_trav(NULL);
 }
 
@@ -7133,6 +7217,11 @@ ast_calc_term_div(ast_t *self, const object_t *lhs, const object_t *rhs, int dep
     case OBJ_TYPE_ARRAY: {
         tcheck("call ast_calc_term_div_array");
         object_t *obj = ast_calc_term_div_array(self, lhs, rhs, dep+1); 
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_DICT: {
+        tcheck("call ast_calc_term_div_dict");
+        object_t *obj = ast_calc_term_div_dict(self, lhs, rhs, dep+1); 
         return_trav(obj);
     } break;
     case OBJ_TYPE_FUNC: {
@@ -7398,9 +7487,11 @@ ast_calc_asscalc_ass_idn(ast_t *self, const object_t *lhs, const object_t *rhs, 
     tready();
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
+    const char *idn = str_getc(lhs->identifier);
+
     switch (rhs->type) {
     default: {
-        move_var(self, str_getc(lhs->identifier), obj_new_other(rhs), dep+1);
+        move_var(self, idn, obj_new_other(rhs), dep+1);
         object_t *obj = obj_new_other(rhs);
         return_trav(obj);
     } break;
@@ -7416,7 +7507,7 @@ ast_calc_asscalc_ass_idn(ast_t *self, const object_t *lhs, const object_t *rhs, 
         // 別名の変数に参照を渡した場合、objdict_clearでダブルフリーが起こる
         // ガーベジコレクションの実装か、メモリ管理の設計（delなど）が必要である
         // TODO: ここの仕様のフィックス
-        move_var(self, str_getc(lhs->identifier), obj_new_other(rval), dep+1);
+        move_var(self, idn, obj_new_other(rval), dep+1);
         object_t *obj = obj_new_other(rval);
         return_trav(obj);
     } break;
@@ -7450,8 +7541,8 @@ ast_calc_asscalc_add_ass_identifier_int(ast_t *self, object_t *ref_var, const ob
     assert(ref_var->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't add assign nil to int");
+    default:
+        ast_set_error_detail(self, "can't add assign to int");
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
@@ -7476,18 +7567,6 @@ ast_calc_asscalc_add_ass_identifier_int(ast_t *self, object_t *ref_var, const ob
         object_t *obj = ast_calc_asscalc_add_ass_identifier_int(self, ref_var, rvar, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        ast_set_error_detail(self, "can't add assign string to int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't add assign array to int");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't add assign func to int");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc asscalc add ass identifier int");
@@ -7500,20 +7579,8 @@ ast_calc_asscalc_add_ass_identifier_string(ast_t *self, const object_t *ref_lhs,
     assert(ref_lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL:
-        ast_set_error_detail(self, "can't add assign nil to string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_INTEGER:
-        ast_set_error_detail(self, "can't add assign int to string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_BOOL:
-        ast_set_error_detail(self, "can't add assign bool to string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_IDENTIFIER:
-        ast_set_error_detail(self, "can't add assign identifier to string");
+    default:
+        ast_set_error_detail(self, "can't add assign to string");
         return_trav(NULL);
         break;
     case OBJ_TYPE_STRING: {
@@ -7521,14 +7588,6 @@ ast_calc_asscalc_add_ass_identifier_string(ast_t *self, const object_t *ref_lhs,
         object_t *ret = obj_new_other(ref_lhs);
         return_trav(ret);
     } break;
-    case OBJ_TYPE_ARRAY:
-        ast_set_error_detail(self, "can't add assign array to string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_set_error_detail(self, "can't add assign func to string");
-        return_trav(NULL);
-        break;
     }
 
     assert(0 && "impossible. failed to calc asscalc add ass identifier string");
