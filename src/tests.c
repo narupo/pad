@@ -8132,6 +8132,34 @@ test_ast_traverse_dict(void) {
     ast_t *ast = ast_new();
     context_t *ctx = ctx_new();
 
+    // fail
+
+    tkr_parse(tkr, "{@ a = { 1: 1 } @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "key is not string in dict elem"));
+    }
+
+    tkr_parse(tkr, "{@ a = { \"k\": 1 } \n a[0] @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can not access by int to dict"));
+    }
+
+    tkr_parse(tkr, "{@ k = 1 \n a = { k: 1 } @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "invalid key type in variable"));
+    }
+
+    // success
+
     tkr_parse(tkr, "{@ a = { \"key\": 1 } @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
