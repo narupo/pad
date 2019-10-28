@@ -28,6 +28,9 @@ obj_del(object_t *self) {
     case OBJ_TYPE_ARRAY:
         objarr_del(self->objarr);
         break;
+    case OBJ_TYPE_DICT:
+        objdict_del(self->objdict);
+        break;
     case OBJ_TYPE_FUNC:
         obj_del(self->func.name);
         obj_del(self->func.args);

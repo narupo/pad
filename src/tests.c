@@ -10094,7 +10094,7 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal int and string"));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with int"));
     }
 
     tkr_parse(tkr, "{@ def f(): end \n a = 1 == f @}{: a :}");
@@ -10102,7 +10102,7 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal int and func"));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with int"));
     }
 
     tkr_parse(tkr, "{@ a = \"abc\" == 1 @}{: a :}");
@@ -10110,7 +10110,7 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal string and int"));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with string"));
     }
 
     tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" @}{: a :}");
@@ -10126,7 +10126,7 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal string and func"));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with string"));
     }
 
     tkr_parse(tkr, "{@ a = 1 == 0 @}{: a :}");
@@ -10166,7 +10166,7 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal int and string"));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with int"));
     }
 
     tkr_parse(tkr, "{@ a = \"abc\" != 1 @}{: a :}");
@@ -10174,7 +10174,7 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal string and int"));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with string"));
     }
 
     tkr_parse(tkr, "{@ a = \"abc\" != \"def\" @}{: a :}");
@@ -10190,7 +10190,7 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal func and int"));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with func"));
     }
 
     tkr_parse(tkr, "{@ def f(): end \n a = 1 != f @}{: a :}");
@@ -10198,7 +10198,7 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal int and func"));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with int"));
     }
 
     tkr_parse(tkr, "{@ a = 0 != 1 @}{: a :}");
@@ -10242,7 +10242,7 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal bool and string"));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with bool"));
     } 
 
     tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" @}{: a :}");
