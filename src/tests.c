@@ -1978,6 +1978,50 @@ test_tkr_parse(void) {
         assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
 
+    tkr_parse(tkr, "{@ <= @}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_LTE);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@ >= @}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_GTE);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@ < @}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_LT);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@ > @}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_GT);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
     tkr_parse(tkr, "{@ or @}");
     {
         assert(tkr_tokens_len(tkr) == 3);
@@ -8222,6 +8266,398 @@ test_ast_traverse_dict(void) {
 }
 
 static void
+test_ast_traverse_comparison(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new();
+    context_t *ctx = ctx_new();
+
+    tkr_parse(tkr, "{@ a = 1 == 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = 1 == \"abc\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with int"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): end \n a = 1 == f @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with int"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"abc\" == 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with string"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): end \n a = \"abc\" == f @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with string"));
+    }
+
+    tkr_parse(tkr, "{@ a = 1 == 0 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    tkr_parse(tkr, "{@ a = 1 == 1 == 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = 1 == 1 == 0 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    tkr_parse(tkr, "{@ a = 1 != 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    tkr_parse(tkr, "{@ a = 1 != \"abc\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with int"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"abc\" != 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with string"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"abc\" != \"def\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): end \n a = f != 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with func"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): end \n a = 1 != f @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with int"));
+    }
+
+    tkr_parse(tkr, "{@ a = 0 != 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = 1 != 1 != 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = 1 != 1 != 0 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    /**
+     * well-formed on Python
+     * ill-formed on Ruby
+     */
+    tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" == \"def\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with bool"));
+    } 
+
+    tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    /******
+    * lte *
+    ******/
+
+    tkr_parse(tkr, "{@ a = 1 <= 2 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = 2 <= 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    tkr_parse(tkr, "{@ a = true <= 2 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = true <= 0 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    tkr_parse(tkr, "{@ a = 0 <= true @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = 2 <= true @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    /******
+    * gte *
+    ******/
+
+    tkr_parse(tkr, "{@ a = 1 >= 2 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    tkr_parse(tkr, "{@ a = 2 >= 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = true >= 2 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    tkr_parse(tkr, "{@ a = true >= 0 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = 0 >= true @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    tkr_parse(tkr, "{@ a = 2 >= true @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    /*****
+    * lt *
+    *****/
+
+    tkr_parse(tkr, "{@ a = 1 < 2 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = 2 < 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    tkr_parse(tkr, "{@ a = true < 2 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = true < 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    tkr_parse(tkr, "{@ a = 0 < true @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = 1 < true @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    /*****
+    * gt *
+    *****/
+
+    tkr_parse(tkr, "{@ a = 1 > 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    tkr_parse(tkr, "{@ a = 2 > 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = true > 1 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    tkr_parse(tkr, "{@ a = true > 0 @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = 0 > true @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
+    tkr_parse(tkr, "{@ a = 2 > true @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    ctx_del(ctx);
+    ast_del(ast);
+    tkr_del(tkr);
+}
+
+static void
 test_ast_traverse(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
@@ -10077,182 +10513,6 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
     }
 
-    /*************
-    * comparison *
-    *************/
-
-    tkr_parse(tkr, "{@ a = 1 == 1 @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "true"));
-    }
-
-    tkr_parse(tkr, "{@ a = 1 == \"abc\" @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with int"));
-    }
-
-    tkr_parse(tkr, "{@ def f(): end \n a = 1 == f @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with int"));
-    }
-
-    tkr_parse(tkr, "{@ a = \"abc\" == 1 @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with string"));
-    }
-
-    tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "true"));
-    }
-
-    tkr_parse(tkr, "{@ def f(): end \n a = \"abc\" == f @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with string"));
-    }
-
-    tkr_parse(tkr, "{@ a = 1 == 0 @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "false"));
-    }
-
-    tkr_parse(tkr, "{@ a = 1 == 1 == 1 @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "true"));
-    }
-
-    tkr_parse(tkr, "{@ a = 1 == 1 == 0 @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "false"));
-    }
-
-    tkr_parse(tkr, "{@ a = 1 != 1 @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "false"));
-    }
-
-    tkr_parse(tkr, "{@ a = 1 != \"abc\" @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with int"));
-    }
-
-    tkr_parse(tkr, "{@ a = \"abc\" != 1 @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with string"));
-    }
-
-    tkr_parse(tkr, "{@ a = \"abc\" != \"def\" @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "true"));
-    }
-
-    tkr_parse(tkr, "{@ def f(): end \n a = f != 1 @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with func"));
-    }
-
-    tkr_parse(tkr, "{@ def f(): end \n a = 1 != f @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with int"));
-    }
-
-    tkr_parse(tkr, "{@ a = 0 != 1 @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "true"));
-    }
-
-    tkr_parse(tkr, "{@ a = 1 != 1 != 1 @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "true"));
-    }
-
-    tkr_parse(tkr, "{@ a = 1 != 1 != 0 @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "false"));
-    }
-
-    tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "true"));
-    }
-
-    /**
-     * well-formed on Python
-     * ill-formed on Ruby
-     */
-    tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" == \"def\" @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with bool"));
-    } 
-
-    tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        ast_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "true"));
-    }
-
     /*******
     * expr *
     *******/
@@ -11116,6 +11376,7 @@ ast_tests[] = {
     {"ast_parse_expr", test_ast_parse_expr},
     {"ast_traverse", test_ast_traverse},
     {"ast_traverse_dict", test_ast_traverse_dict},
+    {"ast_traverse_comparison", test_ast_traverse_comparison},
     {0},
 };
 

@@ -136,6 +136,18 @@ static object_t *
 ast_compare_comparison_not_eq(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
+ast_compare_comparison_gte(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
+
+static object_t *
+ast_compare_comparison_lte(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
+
+static object_t *
+ast_compare_comparison_gt(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
+
+static object_t *
+ast_compare_comparison_lt(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
+
+static object_t *
 ast_calc_expr_add(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
@@ -2110,6 +2122,22 @@ ast_comp_op(ast_t *self, int dep) {
     case TOKEN_TYPE_OP_NOT_EQ:
         cur->op = OP_NOT_EQ;
         check("read !=");
+        break;
+    case TOKEN_TYPE_OP_LTE:
+        cur->op = OP_LTE;
+        check("read <=");
+        break;
+    case TOKEN_TYPE_OP_GTE:
+        cur->op = OP_GTE;
+        check("read >=");
+        break;
+    case TOKEN_TYPE_OP_LT:
+        cur->op = OP_LT;
+        check("read <");
+        break;
+    case TOKEN_TYPE_OP_GT:
+        cur->op = OP_GT;
+        check("read >");
         break;
     }
 
@@ -6354,6 +6382,358 @@ ast_compare_comparison_not_eq(ast_t *self, const object_t *lhs, const object_t *
 }
 
 static object_t *
+ast_compare_comparison_lte_int(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_INTEGER);
+
+    switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare lte with int");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->lvalue <= rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->lvalue <= rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs with ast_compare_comparison_lte");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_lte, dep+1);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison lte int");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_comparison_lte_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare lte with int");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->boolean <= rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->boolean <= rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs with ast_compare_comparison_lte");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_lte, dep+1);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison lte bool");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_comparison_lte(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+
+    switch (lhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare with lte");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INTEGER: {
+        tcheck("call ast_compare_comparison_lte_int");
+        object_t *obj = ast_compare_comparison_lte_int(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        tcheck("call ast_compare_comparison_lte_bool");
+        object_t *obj = ast_compare_comparison_lte_bool(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_lhs with ast_compare_comparison_lte");
+        object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_lte, dep+1);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison not eq");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_comparison_gte_int(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_INTEGER);
+
+    switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare gte with int");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->lvalue >= rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->lvalue >= rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs with ast_compare_comparison_gte");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_gte, dep+1);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison gte int");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_comparison_gte_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare gte with int");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->boolean >= rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->boolean >= rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs with ast_compare_comparison_gte");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_gte, dep+1);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison gte bool");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_comparison_gte(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+
+    switch (lhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare with gte");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INTEGER: {
+        tcheck("call ast_compare_comparison_gte_int");
+        object_t *obj = ast_compare_comparison_gte_int(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        tcheck("call ast_compare_comparison_gte_bool");
+        object_t *obj = ast_compare_comparison_gte_bool(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_lhs with ast_compare_comparison_gte");
+        object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_gte, dep+1);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison gte");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_comparison_lt_int(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_INTEGER);
+
+    switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare lt with int");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->lvalue < rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->lvalue < rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs with ast_compare_comparison_lt");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_lt, dep+1);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison lt int");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_comparison_lt_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare lt with int");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->boolean < rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->boolean < rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs with ast_compare_comparison_lt");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_lt, dep+1);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison lt bool");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_comparison_lt(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+
+    switch (lhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare with lt");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INTEGER: {
+        tcheck("call ast_compare_comparison_lt_int");
+        object_t *obj = ast_compare_comparison_lt_int(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        tcheck("call ast_compare_comparison_lt_bool");
+        object_t *obj = ast_compare_comparison_lt_bool(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_lhs with ast_compare_comparison_lt");
+        object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_lt, dep+1);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison lt");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_comparison_gt_int(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_INTEGER);
+
+    switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare gt with int");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->lvalue > rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->lvalue > rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs with ast_compare_comparison_gt");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_gt, dep+1);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison gt int");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_comparison_gt_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    switch (rhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare gt with int");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = obj_new_bool(lhs->boolean > rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(lhs->boolean > rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_rhs with ast_compare_comparison_gt");
+        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_gt, dep+1);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison gt bool");
+    return_trav(NULL);
+}
+
+static object_t *
+ast_compare_comparison_gt(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+
+    switch (lhs->type) {
+    default:
+        ast_set_error_detail(self, "can't compare with gt");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INTEGER: {
+        tcheck("call ast_compare_comparison_gt_int");
+        object_t *obj = ast_compare_comparison_gt_int(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        tcheck("call ast_compare_comparison_gt_bool");
+        object_t *obj = ast_compare_comparison_gt_bool(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call ast_roll_identifier_lhs with ast_compare_comparison_gt");
+        object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_gt, dep+1);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison gt");
+    return_trav(NULL);
+}
+
+static object_t *
 ast_compare_comparison(ast_t *self, const object_t *lhs, const node_comp_op_t *comp_op, const object_t *rhs, int dep) {
     tready();
 
@@ -6367,6 +6747,26 @@ ast_compare_comparison(ast_t *self, const object_t *lhs, const node_comp_op_t *c
     case OP_NOT_EQ: {
         tcheck("call ast_compare_comparison_not_eq");
         object_t *obj = ast_compare_comparison_not_eq(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OP_LTE: {
+        tcheck("call ast_compare_comparison_lte");
+        object_t *obj = ast_compare_comparison_lte(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OP_GTE: {
+        tcheck("call ast_compare_comparison_gte");
+        object_t *obj = ast_compare_comparison_gte(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OP_LT: {
+        tcheck("call ast_compare_comparison_lt");
+        object_t *obj = ast_compare_comparison_lt(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OP_GT: {
+        tcheck("call ast_compare_comparison_gt");
+        object_t *obj = ast_compare_comparison_gt(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     }

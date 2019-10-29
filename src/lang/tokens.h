@@ -7,8 +7,8 @@
 #include "lib/string.h"
 
 typedef enum {
-    TOKEN_TYPE_INVALID = 0,
-    TOKEN_TYPE_NEWLINE,
+    TOKEN_TYPE_INVALID,
+    TOKEN_TYPE_NEWLINE, // '\n'
     TOKEN_TYPE_TEXT_BLOCK,
     TOKEN_TYPE_BLOCK,
     TOKEN_TYPE_LBRACEAT, // '{@'
@@ -48,6 +48,10 @@ typedef enum {
     // comparison operators
     TOKEN_TYPE_OP_EQ, // '=='
     TOKEN_TYPE_OP_NOT_EQ, // '!='
+    TOKEN_TYPE_OP_LTE, // '<='
+    TOKEN_TYPE_OP_GTE, // '>='
+    TOKEN_TYPE_OP_LT, // '<'
+    TOKEN_TYPE_OP_GT, // '>'
     TOKEN_TYPE_OP_OR, // 'or'
     TOKEN_TYPE_OP_AND, // 'and'
     TOKEN_TYPE_OP_NOT, // 'not'
