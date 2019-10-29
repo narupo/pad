@@ -103,6 +103,10 @@ token_type_to_str(const token_t *self) {
     // comparison operators
     case TOKEN_TYPE_OP_EQ: return "=="; break;
     case TOKEN_TYPE_OP_NOT_EQ: return "!="; break;
+    case TOKEN_TYPE_OP_LTE: return "<="; break;
+    case TOKEN_TYPE_OP_GTE: return ">="; break;
+    case TOKEN_TYPE_OP_LT: return "<"; break;
+    case TOKEN_TYPE_OP_GT: return ">"; break;
 
     // statements
     case TOKEN_TYPE_STMT_END: return "end"; break;

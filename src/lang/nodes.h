@@ -95,6 +95,10 @@ typedef enum {
     OP_DIV_ASS, // '/='
     OP_EQ, // '=='
     OP_NOT_EQ, // '!='
+    OP_LTE, // '<='
+    OP_GTE, // '>='
+    OP_LT, // '<'
+    OP_GT, // '>'
 } op_t;
 
 /******************
