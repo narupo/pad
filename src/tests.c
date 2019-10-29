@@ -3553,6 +3553,66 @@ test_ast_parse_expr(void) {
 }
 
 static void
+test_ast_parse_index(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new();
+    const node_t *root;
+    node_program_t *program;
+    node_blocks_t *blocks;
+    node_code_block_t *code_block;
+    node_elems_t *elems;
+    node_formula_t *formula;
+    node_multi_assign_t *multi_assign;
+    node_test_list_t *test_list;
+    node_test_t *test;
+    node_or_test_t *or_test;
+    node_and_test_t *and_test;
+    node_not_test_t *not_test;
+    node_comparison_t *comparison;
+    node_expr_t *expr;
+    node_term_t *term;
+    node_index_t *index;
+    node_asscalc_t *asscalc;
+    node_factor_t *factor;
+    node_atom_t *atom;
+    node_identifier_t *identifier;
+
+    tkr_parse(tkr, "{@ a[0] @}");
+    {
+        ast_clear(ast);
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        program = root->real;
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        formula = elems->formula->real;
+        assert(formula->assign_list == NULL);
+        assert(formula->multi_assign);
+        multi_assign = formula->multi_assign->real;
+        test_list = nodearr_get(multi_assign->nodearr, 0)->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        index = nodearr_get(term->nodearr, 0)->real;
+        factor = index->factor->real;
+        atom = factor->atom->real;
+        identifier = atom->identifier->real;
+        assert(!strcmp(identifier->identifier, "a"));
+        assert(nodearr_len(index->nodearr) == 1);
+    }
+
+    tkr_del(tkr);
+    ast_del(ast);
+}
+
+static void
 test_ast_parse(void) {
     // head
     tokenizer_option_t *opt = tkropt_new();
@@ -8658,6 +8718,98 @@ test_ast_traverse_comparison(void) {
 }
 
 static void
+test_ast_traverse_array_index(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new();
+    context_t *ctx = ctx_new();
+
+    tkr_parse(tkr, "{@ a[0] @}");
+    {
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_traverse(ast, ctx));
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't index access. \"a\" is not defined"));
+    }
+
+    tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[0] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[1] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "2"));
+    }
+
+    tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[0] :},{: a[1] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
+    }    
+
+    tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[2] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "index out of range of array"));
+    }    
+
+    /* tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[-1] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "index out of range of array"));
+    } */  
+
+    tkr_parse(tkr, "{@ a = (b, c = 1, 2)[0] \n @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{@ a = (b, c = 1, 2)[1] \n @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "2"));
+    }
+
+    tkr_parse(tkr, "{@ a = [[1, 2]] \n @}{: a[0] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
+    }
+    
+    tkr_parse(tkr, "{@ a = [[1, 2]] \n @}{: a[0][0] :}");
+    {
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    }
+    
+    ctx_del(ctx);
+    ast_del(ast);
+    tkr_del(tkr);
+}
+
+static void
 test_ast_traverse(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
@@ -8765,6 +8917,7 @@ test_ast_traverse(void) {
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         (ast_traverse(ast, ctx));
+        showdetail();
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
 
@@ -8923,83 +9076,6 @@ test_ast_traverse(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
     }
 
-    /**************
-    * array index *
-    **************/
-
-    tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[0] :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        (ast_traverse(ast, ctx));
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "1"));
-    }    
-
-    tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[1] :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        (ast_traverse(ast, ctx));
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "2"));
-    }    
-
-    tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[0] :},{: a[1] :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        (ast_traverse(ast, ctx));
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
-    }    
-
-    tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[2] :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        (ast_traverse(ast, ctx));
-        assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "index out of range of array"));
-    }    
-
-    /* tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[-1] :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        (ast_traverse(ast, ctx));
-        assert(ast_has_error(ast));
-        showdetail();
-        assert(!strcmp(ast_get_error_detail(ast), "index out of range of array"));
-    } */  
-
-    tkr_parse(tkr, "{@ a = (b, c = 1, 2)[0] \n @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        (ast_traverse(ast, ctx));
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "1"));
-    }
-
-    tkr_parse(tkr, "{@ a = (b, c = 1, 2)[1] \n @}{: a :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        (ast_traverse(ast, ctx));
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "2"));
-    }
-
-    tkr_parse(tkr, "{@ a = [[1, 2]] \n @}{: a[0] :}");
-    {
-        ast_parse(ast, tkr_get_tokens(tkr));
-        (ast_traverse(ast, ctx));
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
-    }
-    
-    tkr_parse(tkr, "{@ a = [[1, 2]] \n @}{: a[0][0] :}");
-    {
-        (ast_parse(ast, tkr_get_tokens(tkr)));
-        (ast_traverse(ast, ctx));
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "1"));
-    }
-    
     /***************
     * string index *
     ***************/
@@ -11374,9 +11450,11 @@ ast_tests[] = {
     {"ast_parse_formula", test_ast_parse_formula},
     {"ast_parse_dict", test_ast_parse_dict},
     {"ast_parse_expr", test_ast_parse_expr},
+    {"ast_parse_index", test_ast_parse_index},
     {"ast_traverse", test_ast_traverse},
     {"ast_traverse_dict", test_ast_traverse_dict},
     {"ast_traverse_comparison", test_ast_traverse_comparison},
+    {"ast_traverse_array_index", test_ast_traverse_array_index},
     {0},
 };
 
