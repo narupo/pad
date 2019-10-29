@@ -7740,7 +7740,12 @@ ast_traverse_index(ast_t *self, const node_t *node, int dep) {
     if (operand->type == OBJ_TYPE_IDENTIFIER) {
         ref_operand = pull_in_ref_by(self, operand);
         if (!ref_operand) {
-            return_trav(operand);
+            if (nodearr_len(index_node->nodearr)) {
+                ast_set_error_detail(self, "can't index access. \"%s\" is not defined", str_getc(operand->identifier));
+                goto fail;
+            } else {
+                return_trav(operand);
+            }
         }
     }
 
