@@ -690,7 +690,7 @@ string_tests[] = {
     {"str_lstrip", test_str_lstrip},
     {"str_strip", test_str_strip},
     {"str_findc", test_str_findc},
-    {},
+    {0},
 };
 
 /*******
@@ -1031,7 +1031,7 @@ file_tests[] = {
     {"file_dirclose", test_file_dirclose},
     {"file_diropen", test_file_diropen},
     {"file_dirread", test_file_dirread},
-    {},
+    {0},
 };
 
 /*****
@@ -1387,7 +1387,7 @@ utiltests[] = {
     {"test_util_randrange", test_util_randrange},
     {"test_util_safesystem", test_util_safesystem},
     {"test_util_argsbyoptind", test_util_argsbyoptind},
-    {},
+    {0},
 };
 
 
