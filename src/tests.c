@@ -8829,15 +8829,11 @@ test_ast_traverse_text_block(void) {
 }
 
 static void
-test_ast_traverse(void) {
+test_ast_traverse_ref_block(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
     ast_t *ast = ast_new();
     context_t *ctx = ctx_new();
-
-    /************
-    * ref block *
-    ************/
 
     tkr_parse(tkr, "{: nil :}");
     {
@@ -8916,6 +8912,18 @@ test_ast_traverse(void) {
         (ast_traverse(ast, ctx));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
     } 
+
+    ctx_del(ctx);
+    ast_del(ast);
+    tkr_del(tkr);
+}
+
+static void
+test_ast_traverse(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new();
+    context_t *ctx = ctx_new();
 
     /*********
     * assign *
@@ -11464,6 +11472,7 @@ ast_tests[] = {
     {"ast_traverse_comparison", test_ast_traverse_comparison},
     {"ast_traverse_array_index", test_ast_traverse_array_index},
     {"ast_traverse_text_block", test_ast_traverse_text_block},
+    {"ast_traverse_ref_block", test_ast_traverse_ref_block},
     {0},
 };
 
