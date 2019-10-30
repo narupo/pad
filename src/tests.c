@@ -8952,15 +8952,11 @@ test_ast_traverse_assign(void) {
 }
 
 static void
-test_ast_traverse(void) {
+test_ast_traverse_atom(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
     ast_t *ast = ast_new();
     context_t *ctx = ctx_new();
-
-    /*******
-    * atom *
-    *******/
 
     tkr_parse(tkr, "{@ nil @}");
     {
@@ -9019,6 +9015,18 @@ test_ast_traverse(void) {
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't invoke alias.set. too many arguments"));
     } 
+
+    ctx_del(ctx);
+    ast_del(ast);
+    tkr_del(tkr);
+}
+
+static void
+test_ast_traverse(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new();
+    context_t *ctx = ctx_new();
 
     /********
     * array *
@@ -11482,6 +11490,7 @@ ast_tests[] = {
     {"ast_traverse_text_block", test_ast_traverse_text_block},
     {"ast_traverse_ref_block", test_ast_traverse_ref_block},
     {"ast_traverse_assign", test_ast_traverse_assign},
+    {"ast_traverse_atom", test_ast_traverse_atom},
     {0},
 };
 
