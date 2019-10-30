@@ -9022,15 +9022,11 @@ test_ast_traverse_atom(void) {
 }
 
 static void
-test_ast_traverse(void) {
+test_ast_traverse_array(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
     ast_t *ast = ast_new();
     context_t *ctx = ctx_new();
-
-    /********
-    * array *
-    ********/
 
     tkr_parse(tkr, "{@ a = [] @}{: a :}");
     {
@@ -9079,6 +9075,18 @@ test_ast_traverse(void) {
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
     }
+
+    ctx_del(ctx);
+    ast_del(ast);
+    tkr_del(tkr);
+}
+
+static void
+test_ast_traverse(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new();
+    context_t *ctx = ctx_new();
 
     /********
     * index *
@@ -11491,6 +11499,7 @@ ast_tests[] = {
     {"ast_traverse_ref_block", test_ast_traverse_ref_block},
     {"ast_traverse_assign", test_ast_traverse_assign},
     {"ast_traverse_atom", test_ast_traverse_atom},
+    {"ast_traverse_array", test_ast_traverse_array},
     {0},
 };
 
