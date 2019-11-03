@@ -193,8 +193,42 @@ snptcmd_show(snptcmd_t *self) {
         return 1;
     }
 
-    printf("%s", content);
+    fclose(fin);
+
+    tokenizer_t *tkr = tkr_new(tkropt_new());
+    ast_t *ast = ast_new();
+    context_t *ctx = ctx_new();
+    opts_t *opts = opts_new();
+
+    tkr_parse(tkr, content);
+    if (tkr_has_error(tkr)) {
+        err_error("failed to parse tokens. %s", tkr_get_error_detail(tkr));
+        return 1;
+    }
+
+    ast_move_opts(ast, opts);
+    opts = NULL;
+
+    ast_parse(ast, tkr_get_tokens(tkr));
+    if (ast_has_error(ast)) {
+        err_error("failed to parse AST. %s", ast_get_error_detail(ast));
+        return 1;
+    }
+
+    ast_traverse(ast, ctx);
+    if (ast_has_error(ast)) {
+        err_error("failed to traverse AST. %s", ast_get_error_detail(ast));
+        return 1;        
+    }
+
+    printf("%s", ctx_getc_buf(ctx));
+    fflush(stdout);
+
+    tkr_del(tkr);
+    ast_del(ast);
+    ctx_del(ctx);
     free(content);
+
     return 0;
 }
 

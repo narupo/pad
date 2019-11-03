@@ -7,6 +7,10 @@
 #include "core/constant.h"
 #include "core/util.h"
 #include "core/config.h"
+#include "lang/tokenizer.h"
+#include "lang/ast.h"
+#include "lang/context.h"
+#include "lang/opts.h"
 
 /**
  * Structure and type of command
