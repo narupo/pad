@@ -10434,20 +10434,11 @@ test_ast_traverse_assign_list(void) {
 }
 
 static void
-test_ast_traverse_(void) {
-
-}
-
-static void
-test_ast_traverse(void) {
+test_ast_traverse_test_list(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
     ast_t *ast = ast_new();
     context_t *ctx = ctx_new();
-
-    /************
-    * test_list *
-    ************/
 
     tkr_parse(tkr, "{@ 1, 2 @}");
     {
@@ -10470,6 +10461,18 @@ test_ast_traverse(void) {
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1 2"));
     }
+
+    ctx_del(ctx);
+    ast_del(ast);
+    tkr_del(tkr);
+}
+
+static void
+test_ast_traverse(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new();
+    context_t *ctx = ctx_new();
 
     /*******
     * test *
@@ -12231,6 +12234,7 @@ ast_tests[] = {
     {"ast_traverse_multi_assign", test_ast_traverse_multi_assign},
     {"ast_traverse_and_test", test_ast_traverse_and_test},
     {"ast_traverse_assign_list", test_ast_traverse_assign_list},
+    {"ast_traverse_test_list", test_ast_traverse_test_list},
     {0},
 };
 

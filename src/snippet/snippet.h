@@ -3,6 +3,7 @@
 
 #include "lib/memory.h"
 #include "lib/file.h"
+#include "lib/cstring.h"
 #include "lib/string.h"
 #include "core/constant.h"
 #include "core/util.h"
