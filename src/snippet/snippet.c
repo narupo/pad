@@ -23,7 +23,7 @@ snptcmd_show_usage(snptcmd_t *self) {
         "\n"
         "Usage:\n"
         "\n"
-        "    cap snippet [name] [commands] [arguments]\n"
+        "    cap snippet [commands] [arguments]\n"
         "\n"
         "The commands are:\n"
         "\n"
