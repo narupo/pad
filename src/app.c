@@ -569,6 +569,71 @@ app_execute_alias_by_name(app_t *self, const char *name) {
 }
 
 /**
+ * Show snippet code by fname
+ *
+ * @param[in] self pointer to app_t
+ * @param[in] name snippet name
+ *
+ * @return success to true
+ * @return failed to false
+ */
+static bool
+app_show_snippet(app_t *self, const char *fname) {
+    char path[FILE_NPATH];
+    if (!file_solvefmt(path, sizeof path, "%s/%s", self->config->codes_dir_path, fname)) {
+        err_error("failed to solve path for snippet file");
+        return false;
+    }
+
+    char *content = file_readcp_from_path(path);
+    if (!content) {
+        err_error("failed to read from snippet \"%s\"", fname);
+        return false;
+    }
+
+    tokenizer_t *tkr = tkr_new(tkropt_new());
+    ast_t *ast = ast_new();
+    context_t *ctx = ctx_new();
+    opts_t *opts = opts_new();
+
+    if (!opts_parse(opts, self->cmd_argc-1, self->cmd_argv+1)) {
+        err_error("failed to show snippet. failed to parse options");
+        return false;
+    }
+
+    tkr_parse(tkr, content);
+    if (tkr_has_error(tkr)) {
+        err_error("failed to parse tokens. %s", tkr_get_error_detail(tkr));
+        return false;
+    }
+
+    ast_move_opts(ast, opts);
+    opts = NULL;
+
+    ast_parse(ast, tkr_get_tokens(tkr));
+    if (ast_has_error(ast)) {
+        err_error("failed to parse AST. %s", ast_get_error_detail(ast));
+        return false;
+    }
+
+    ast_traverse(ast, ctx);
+    if (ast_has_error(ast)) {
+        err_error("failed to traverse AST. %s", ast_get_error_detail(ast));
+        return false;        
+    }
+
+    printf("%s", ctx_getc_buf(ctx));
+    fflush(stdout);
+
+    tkr_del(tkr);
+    ast_del(ast);
+    ctx_del(ctx);
+    free(content);
+
+    return true;
+}
+
+/**
  * Show snippet code by name
  *
  * @param[in] self pointer to app_t
@@ -591,26 +656,15 @@ app_execute_snippet(app_t *self, const char *name) {
             continue;
         }
         if (!strcmp(fname, name)) {
-            char path[FILE_NPATH];
-            if (!file_solvefmt(path, sizeof path, "%s/%s", self->config->codes_dir_path, fname)) {
-                err_error("failed to solve path for snippet file");
-                goto fail;
+            if (!app_show_snippet(self, fname)) {
+                file_dirclose(dir);
+                return 1;
             }
-            char *content = file_readcp_from_path(path);
-            if (!content) {
-                err_error("failed to read from snippet \"%s\"", fname);
-                goto fail;
-            }
-            printf("%s", content);
-            free(content);
-            return 0;
-
         }
     }
 
-fail:
     file_dirclose(dir);
-    return 1;
+    return 0;
 }
 
 /**
