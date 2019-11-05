@@ -706,7 +706,6 @@ app_run(app_t *self) {
     if (result == -1) {
         result = app_execute_snippet(self, cmdname);
         if (result != 0) {
-            err_error("\"%s\" is not found", cmdname);
             return result;
         }
     }
