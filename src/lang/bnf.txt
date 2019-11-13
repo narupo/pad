@@ -38,7 +38,7 @@ BNF of Cap's template language
                     'for' ':' '@}' blocks '{@' 'end'
         break_stmt: 'break'
      continue_stmt: 'continue'
-       return_stmt: 'return' ( formula )
+       return_stmt: 'return' ( formula )*
 
            formula: assign_list |
                     multi_assign
