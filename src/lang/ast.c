@@ -6205,6 +6205,22 @@ ast_compare_comparison_eq_func(ast_t *self, const object_t *lhs, const object_t 
 }
 
 static object_t *
+ast_compare_comparison_eq_index(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_INDEX);
+
+    object_t *val = ast_get_value_of_index_obj(self, lhs);
+    if (!val) {
+        ast_set_error_detail(self, "index object value is null");
+        return_trav(NULL);
+    }
+
+    object_t *ret = ast_compare_comparison_eq(self, val, rhs, dep+1);
+    obj_del(val);
+    return ret;
+}
+
+static object_t *
 ast_compare_comparison_eq(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
 
@@ -6247,6 +6263,11 @@ ast_compare_comparison_eq(ast_t *self, const object_t *lhs, const object_t *rhs,
     case OBJ_TYPE_FUNC: {
         tcheck("call ast_compare_comparison_eq_func");
         object_t *obj = ast_compare_comparison_eq_func(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        tcheck("call ast_compare_comparison_eq_index");
+        object_t *obj = ast_compare_comparison_eq_index(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     }
@@ -7936,6 +7957,12 @@ ast_calc_asscalc_ass_idn(ast_t *self, const object_t *lhs, const object_t *rhs, 
         move_var(self, idn, obj_new_other(rhs), dep+1);
         object_t *obj = obj_new_other(rhs);
         return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        move_var(self, idn, val, dep+1);
+        object_t *ret = obj_new_other(val);
+        return_trav(ret);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *rval = pull_in_ref_by(self, rhs);
