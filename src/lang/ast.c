@@ -7838,18 +7838,17 @@ ast_traverse_index(ast_t *self, const node_t *node, int dep) {
     // operand is identifier?
     ref_operand = operand;
     if (operand->type == OBJ_TYPE_IDENTIFIER) {
+        if (!nodearr_len(index_node->nodearr)) {
+            return_trav(operand);
+        }
+
         // get reference
         ref_operand = pull_in_ref_by(self, operand);
         if (!ref_operand) {
-            if (nodearr_len(index_node->nodearr)) {
-                // can't index access to null
-                ast_set_error_detail(self, "\"%s\" is not defined", str_getc(operand->identifier));
-                obj_del(operand);
-                return_trav(NULL);
-            } else {
-                // not found indices. it is single identifier object
-                return_trav(operand);
-            }
+            // can't index access to null
+            ast_set_error_detail(self, "\"%s\" is not defined", str_getc(operand->identifier));
+            obj_del(operand);
+            return_trav(NULL);
         }
     }
 
