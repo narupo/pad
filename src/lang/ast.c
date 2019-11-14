@@ -6527,6 +6527,16 @@ ast_compare_comparison_lte_int(ast_t *self, const object_t *lhs, const object_t 
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_lte, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison lte int. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_lte_int(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison lte int");
@@ -6554,6 +6564,16 @@ ast_compare_comparison_lte_bool(ast_t *self, const object_t *lhs, const object_t
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs with ast_compare_comparison_lte");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_lte, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison lte bool. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_lte_bool(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -6586,6 +6606,16 @@ ast_compare_comparison_lte(ast_t *self, const object_t *lhs, const object_t *rhs
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_lte, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, lhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison lte. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_lte(self, val, rhs, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq");
@@ -6615,6 +6645,16 @@ ast_compare_comparison_gte_int(ast_t *self, const object_t *lhs, const object_t 
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_gte, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison gte int. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_gte_int(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison gte int");
@@ -6642,6 +6682,16 @@ ast_compare_comparison_gte_bool(ast_t *self, const object_t *lhs, const object_t
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs with ast_compare_comparison_gte");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_gte, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison gte bool. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_gte_bool(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -6674,6 +6724,16 @@ ast_compare_comparison_gte(ast_t *self, const object_t *lhs, const object_t *rhs
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_gte, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, lhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison gte. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_gte(self, val, rhs, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison gte");
@@ -6703,6 +6763,16 @@ ast_compare_comparison_lt_int(ast_t *self, const object_t *lhs, const object_t *
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_lt, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison lt int. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_lt_int(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison lt int");
@@ -6730,6 +6800,16 @@ ast_compare_comparison_lt_bool(ast_t *self, const object_t *lhs, const object_t 
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs with ast_compare_comparison_lt");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_lt, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison lt bool. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_lt_bool(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -6762,6 +6842,16 @@ ast_compare_comparison_lt(ast_t *self, const object_t *lhs, const object_t *rhs,
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_lt, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, lhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison lt. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_lt(self, val, rhs, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison lt");
@@ -6789,6 +6879,16 @@ ast_compare_comparison_gt_int(ast_t *self, const object_t *lhs, const object_t *
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs with ast_compare_comparison_gt");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_gt, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison gt int. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_gt_int(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -6820,6 +6920,16 @@ ast_compare_comparison_gt_bool(ast_t *self, const object_t *lhs, const object_t 
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_gt, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison gt bool. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_gt_bool(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison gt bool");
@@ -6848,6 +6958,16 @@ ast_compare_comparison_gt(ast_t *self, const object_t *lhs, const object_t *rhs,
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_lhs with ast_compare_comparison_gt");
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_gt, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, lhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison gt. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_gt(self, val, rhs, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -6980,6 +7100,16 @@ ast_calc_expr_add_int(ast_t *self, const object_t *lhs, const object_t *rhs, int
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't add with int. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_calc_expr_add(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc expr int");
@@ -7009,6 +7139,16 @@ ast_calc_expr_add_bool(ast_t *self, const object_t *lhs, const object_t *rhs, in
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't add with bool. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_calc_expr_add(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc expr bool");
@@ -7035,6 +7175,16 @@ ast_calc_expr_add_string(ast_t *self, const object_t *lhs, const object_t *rhs, 
         str_app(s, str_getc(lhs->string));
         str_app(s, str_getc(rhs->string));
         object_t *obj = obj_new_str(s);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't add with string. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_calc_expr_add(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -7070,6 +7220,16 @@ ast_calc_expr_add(ast_t *self, const object_t *lhs, const object_t *rhs, int dep
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_lhs with ast_calc_expr_add");
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, lhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't add with string. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_calc_expr_add(self, val, rhs, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
