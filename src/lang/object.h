@@ -21,12 +21,18 @@ typedef enum {
     OBJ_TYPE_ARRAY,
     OBJ_TYPE_DICT,
     OBJ_TYPE_FUNC,
+    OBJ_TYPE_INDEX,
 } obj_type_t;
 
 struct object_func {
     object_t *name; // type == OBJ_TYPE_IDENTIFIER
     object_t *args; // type == OBJ_TYPE_ARRAY
     node_t *ref_suite;
+};
+
+struct object_index {
+    object_t *operand;
+    object_array_t *indices;
 };
 
 struct object {
@@ -38,6 +44,7 @@ struct object {
     long lvalue;
     bool boolean;
     object_func_t func;
+    object_index_t index;
     int32_t ref_counts;
 };
 
@@ -85,6 +92,9 @@ obj_new_dict(object_dict_t *move_objdict);
 
 object_t *
 obj_new_func(object_t *move_name, object_t *move_args, node_t *ref_suite);
+
+object_t *
+obj_new_index(object_t *move_operand, object_array_t *move_indices);
 
 int32_t
 obj_inc_ref(object_t *self);

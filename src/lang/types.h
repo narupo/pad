@@ -12,6 +12,9 @@ typedef struct object object_t;
 struct object_func;
 typedef struct object_func object_func_t;
 
+struct object_index;
+typedef struct object_index object_index_t;
+
 struct node_array;
 typedef struct node_array node_array_t;
 

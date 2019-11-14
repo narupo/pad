@@ -82,6 +82,17 @@ obj_new_other(const object_t *other) {
         self->func.args = obj_new_other(other->func.args);
         self->func.ref_suite = other->func.ref_suite; // save reference
         break;
+    case OBJ_TYPE_INDEX: {
+        self->index.operand = obj_new_other(other->index.operand);
+
+        object_array_t *indices = objarr_new();
+        for (int32_t i = 0; i < objarr_len(other->index.indices); ++i) {
+            const object_t *obj = objarr_getc(other->index.indices, i);
+            object_t *cpobj = obj_new_other(obj);
+            objarr_moveb(indices, cpobj);
+        }
+        self->index.indices = indices;
+    } break;
     }
 
     return self;    
@@ -210,6 +221,20 @@ obj_new_func(object_t *move_name, object_t *move_args, node_t *ref_suite) {
     return self;
 }
 
+object_t *
+obj_new_index(object_t *move_operand, object_array_t *move_indices) {
+    if (!move_operand || !move_indices) {
+        return NULL;
+    }
+
+    object_t *self = obj_new(OBJ_TYPE_INDEX);
+
+    self->index.operand = move_operand;
+    self->index.indices = move_indices;
+
+    return self;
+}
+
 string_t *
 obj_to_str(const object_t *self) {
     switch (self->type) {
@@ -254,6 +279,11 @@ obj_to_str(const object_t *self) {
         str_set(str, "(function)");
         return str;        
     } break;
+    case OBJ_TYPE_INDEX: {
+        string_t *str = str_new();
+        str_set(str, "(index)");
+        return str;
+    } break;
     } // switch
 
     assert(0 && "failed to object to string. invalid state");
@@ -262,7 +292,6 @@ obj_to_str(const object_t *self) {
 
 object_t *
 obj_to_array(const object_t *obj) {
-
     switch (obj->type) {
     default: {
         object_array_t *objarr = objarr_new();
