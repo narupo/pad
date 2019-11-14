@@ -4055,6 +4055,30 @@ ast_calc_assign_to_array(ast_t *self, const object_t *lhs, const object_t *rhs, 
 }
 
 static object_t *
+ast_assign_to_index(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_INDEX);
+
+    assert(0 && "TODO");
+
+    return_trav(NULL);
+}
+
+static object_t *
+ast_calc_assign_to_index(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_INDEX);
+
+    object_t *obj = ast_assign_to_index(self, lhs, rhs, dep+1);
+    if (ast_has_error(self)) {
+        obj_del(obj);
+        return_trav(NULL);
+    }
+
+    return_trav(obj);
+}
+
+static object_t *
 ast_calc_assign(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
 
@@ -4071,6 +4095,10 @@ ast_calc_assign(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) 
     case OBJ_TYPE_ARRAY: {
         tcheck("call ast_calc_assign_to_array");
         object_t *obj = ast_calc_assign_to_array(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *obj = ast_calc_assign_to_index(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     }    
