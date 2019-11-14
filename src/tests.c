@@ -9175,21 +9175,21 @@ test_ast_traverse_index(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
     }
 
-    // tkr_parse(tkr, "{@ a = \"abc\" \n b = a[0] == \"a\" @}{: b :}");
-    // {
-    //     ast_parse(ast, tkr_get_tokens(tkr));
-    //     (ast_traverse(ast, ctx));
-    //     assert(!ast_has_error(ast));
-    //     assert(!strcmp(ctx_getc_buf(ctx), "true"));
-    // }
+    tkr_parse(tkr, "{@ a = \"abc\" \n b = a[0] == \"a\" @}{: b :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_debug(ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
 
-    // tkr_parse(tkr, "{@ a = \"abc\" \n if a[0] == \"a\": puts(1) end @}");
-    // {
-    //     ast_parse(ast, tkr_get_tokens(tkr));
-    //     (ast_traverse(ast, ctx));
-    //     assert(!ast_has_error(ast));
-    //     assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
-    // }
+    tkr_parse(tkr, "{@ a = \"abc\" \n if a[0] == \"a\": puts(1) end @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
+    }
 
     ctx_del(ctx);
     ast_del(ast);
@@ -9227,29 +9227,29 @@ test_ast_traverse_string_index(void) {
         assert(!strcmp(ast_get_error_detail(ast), "index out of range of string"));
     }
 
-    // tkr_parse(tkr, "{@ a = (\"a\" + \"b\")[0] \n @}{: a :}");
-    // {
-    //     ast_parse(ast, tkr_get_tokens(tkr));
-    //     (ast_traverse(ast, ctx));
-    //     assert(!ast_has_error(ast));
-    //     assert(!strcmp(ctx_getc_buf(ctx), "a"));
-    // }
+    tkr_parse(tkr, "{@ a = (\"a\" + \"b\")[0] \n @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "a"));
+    }
 
-    // tkr_parse(tkr, "{@ a = (\"a\" + \"b\")[1] \n @}{: a :}");
-    // {
-    //     ast_parse(ast, tkr_get_tokens(tkr));
-    //     (ast_traverse(ast, ctx));
-    //     assert(!ast_has_error(ast));
-    //     assert(!strcmp(ctx_getc_buf(ctx), "b"));
-    // } 
+    tkr_parse(tkr, "{@ a = (\"a\" + \"b\")[1] \n @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "b"));
+    } 
 
-    // tkr_parse(tkr, "{@ a = \"ab\"[0][0] @}{: a :}");
-    // {
-    //     ast_parse(ast, tkr_get_tokens(tkr));
-    //     (ast_traverse(ast, ctx));
-    //     assert(!ast_has_error(ast));
-    //     assert(!strcmp(ctx_getc_buf(ctx), "a"));
-    // } 
+    tkr_parse(tkr, "{@ a = \"ab\"[0][0] @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "a"));
+    } 
 
     ctx_del(ctx);
     ast_del(ast);
@@ -11546,7 +11546,7 @@ test_ast_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 \n a += 1 @}{: a :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
-        ast_debug(ast_traverse(ast, ctx));
+        (ast_traverse(ast, ctx));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
 
