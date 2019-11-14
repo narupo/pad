@@ -180,6 +180,28 @@ ast_calc_assign(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
 static node_t *
 ast_expr(ast_t *self, int dep);
 
+static object_t *
+ast_compare_comparison_not_eq_array(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
+
+static object_t *
+ast_compare_comparison_not_eq_string(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
+
+static object_t *
+ast_compare_comparison_not_eq_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
+
+static object_t *
+ast_compare_comparison_not_eq_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
+
+static object_t *
+ast_compare_comparison_not_eq_int(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
+
+static object_t *
+ast_compare_comparison_not_eq_func(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
+
+static object_t *
+ast_compare_comparison_lte_int(ast_t *self, const object_t *lhs, const object_t *rhs, int dep);
+
+
 /************
 * functions *
 ************/
@@ -3388,6 +3410,10 @@ ast_get_value_of_index_obj(ast_t *self, const object_t *index_obj) {
         }
 
         switch (operand->type) {
+        default:
+            ast_set_error_detail(self, "invalid operand type in get value of index object");
+            obj_del(operand);
+            break;
         case OBJ_TYPE_ARRAY: {
             assert(idx->type == OBJ_TYPE_INTEGER);
 
@@ -3689,6 +3715,16 @@ ast_parse_bool(ast_t *self, const object_t *obj) {
     case OBJ_TYPE_ARRAY: return objarr_len(obj->objarr); break;
     case OBJ_TYPE_DICT: return objdict_len(obj->objdict); break;
     case OBJ_TYPE_FUNC: return true; break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, obj);
+        if (!val) {
+            ast_set_error_detail(self, "value is null in parse bool");
+            return false;
+        }
+        bool result = ast_parse_bool(self, val);
+        obj_del(val);
+        return result;
+    } break;
     }
 
     assert(0 && "impossible. failed to parse bool");
@@ -4489,6 +4525,16 @@ ast_compare_or_int(ast_t *self, const object_t *lhs, const object_t *rhs, int de
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare or int. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_or_int(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare or int");
@@ -4603,6 +4649,16 @@ ast_compare_or_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int d
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare or bool. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_or_bool(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare or bool");
@@ -4711,6 +4767,16 @@ ast_compare_or_string(ast_t *self, const object_t *lhs, const object_t *rhs, int
         } else {
             obj = obj_new_other(rhs);
         }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare or string. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_or_string(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -4824,6 +4890,16 @@ ast_compare_or_array(ast_t *self, const object_t *lhs, const object_t *rhs, int 
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare or array. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_or_array(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare or array");
@@ -4935,6 +5011,16 @@ ast_compare_or_dict(ast_t *self, const object_t *lhs, const object_t *rhs, int d
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare or dict. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_or_dict(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare or dict");
@@ -4978,6 +5064,16 @@ ast_compare_or_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int de
     } break;
     case OBJ_TYPE_FUNC: {
         object_t *obj = obj_new_other(rhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare or nil. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_or_nil(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -5087,6 +5183,16 @@ ast_compare_or_func(ast_t *self, const object_t *lhs, const object_t *rhs, int d
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare or func. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_or_func(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare or array");
@@ -5136,6 +5242,16 @@ ast_compare_or(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     case OBJ_TYPE_FUNC: {
         tcheck("call ast_compare_or_func");
         object_t *obj = ast_compare_or_func(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, lhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare or. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_or(self, val, rhs, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -5288,6 +5404,16 @@ ast_compare_and_int(ast_t *self, const object_t *lhs, const object_t *rhs, int d
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare and int. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_and_int(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare and int");
@@ -5394,6 +5520,16 @@ ast_compare_and_bool(ast_t *self, const object_t *lhs, const object_t *rhs, int 
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare and bool. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_and_bool(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -5506,6 +5642,16 @@ ast_compare_and_string(ast_t *self, const object_t *lhs, const object_t *rhs, in
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare and string. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_and_string(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare and string");
@@ -5605,6 +5751,16 @@ ast_compare_and_array(ast_t *self, const object_t *lhs, const object_t *rhs, int
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare and array. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_and_array(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -5708,6 +5864,16 @@ ast_compare_and_dict(ast_t *self, const object_t *lhs, const object_t *rhs, int 
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare and dict. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_and_dict(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare and dict");
@@ -5751,6 +5917,16 @@ ast_compare_and_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int d
     } break;
     case OBJ_TYPE_FUNC: {
         object_t *obj = obj_new_other(lhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare and nil. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_and_nil(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -5852,6 +6028,16 @@ ast_compare_and_func(ast_t *self, const object_t *lhs, const object_t *rhs, int 
         }
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare and func. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_and_func(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare and array");
@@ -5901,6 +6087,16 @@ ast_compare_and(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) 
     case OBJ_TYPE_FUNC: {
         tcheck("call ast_compare_and_func");
         object_t *obj = ast_compare_and_func(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, lhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare and. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_and(self, val, rhs, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -5996,6 +6192,16 @@ ast_compare_not(ast_t *self, const object_t *operand, int dep) {
         object_t *obj = obj_new_bool(!operand);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, operand);
+        if (!val) {
+            ast_set_error_detail(self, "can't compare not. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_not(self, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare not");
@@ -6055,6 +6261,16 @@ ast_compare_comparison_eq_int(ast_t *self, const object_t *lhs, const object_t *
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison eq int. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_not_eq_int(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison eq int");
@@ -6087,6 +6303,16 @@ ast_compare_comparison_eq_bool(ast_t *self, const object_t *lhs, const object_t 
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison eq bool. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_not_eq_bool(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison eq bool");
@@ -6116,6 +6342,16 @@ ast_compare_comparison_eq_string(ast_t *self, const object_t *lhs, const object_
         object_t *obj = obj_new_bool(cstr_eq(str_getc(lhs->string), str_getc(rhs->string)));
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison eq string. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_not_eq_string(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison string");
@@ -6139,6 +6375,16 @@ ast_compare_comparison_eq_array(ast_t *self, const object_t *lhs, const object_t
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_eq, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison eq array. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_not_eq_array(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -6169,6 +6415,16 @@ ast_compare_comparison_eq_nil(ast_t *self, const object_t *lhs, const object_t *
         object_t *obj = obj_new_bool(true);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison eq nil. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_not_eq_nil(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison eq nil");
@@ -6196,6 +6452,16 @@ ast_compare_comparison_eq_func(ast_t *self, const object_t *lhs, const object_t 
     } break;
     case OBJ_TYPE_FUNC: {
         object_t *obj = obj_new_bool(lhs == rhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison eq func. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_not_eq_func(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -6303,6 +6569,16 @@ ast_compare_comparison_not_eq_int(ast_t *self, const object_t *lhs, const object
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison not eq int. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_not_eq_int(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq int");
@@ -6330,6 +6606,16 @@ ast_compare_comparison_not_eq_bool(ast_t *self, const object_t *lhs, const objec
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison not eq bool. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_not_eq_bool(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -6360,6 +6646,16 @@ ast_compare_comparison_not_eq_string(ast_t *self, const object_t *lhs, const obj
         object_t *obj = obj_new_bool(!cstr_eq(str_getc(lhs->string), str_getc(rhs->string)));
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison not eq string. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_not_eq_string(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq string");
@@ -6383,6 +6679,16 @@ ast_compare_comparison_not_eq_array(ast_t *self, const object_t *lhs, const obje
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_rhs");
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison not eq array. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_not_eq_array(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -6418,6 +6724,16 @@ ast_compare_comparison_not_eq_nil(ast_t *self, const object_t *lhs, const object
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison not eq nil. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_not_eq_nil(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison not eq nil");
@@ -6445,6 +6761,16 @@ ast_compare_comparison_not_eq_func(ast_t *self, const object_t *lhs, const objec
     } break;
     case OBJ_TYPE_FUNC: {
         object_t *obj = obj_new_bool(lhs != rhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison not eq func. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_not_eq_func(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -6496,6 +6822,16 @@ ast_compare_comparison_not_eq(ast_t *self, const object_t *lhs, const object_t *
     case OBJ_TYPE_FUNC: {
         tcheck("call ast_compare_comparison_not_eq_func");
         object_t *obj = ast_compare_comparison_not_eq_func(self, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, lhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't comparison not eq. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_compare_comparison_lte_int(self, val, rhs, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
