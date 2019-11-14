@@ -3354,19 +3354,120 @@ ast_traverse_code_block(ast_t *self, const node_t *node, int dep) {
 }
 
 static object_t *
+ast_get_value_of_index_obj(ast_t *self, const object_t *index_obj) {
+    assert(index_obj && index_obj->type == OBJ_TYPE_INDEX);
+    
+    assert(index_obj->index.operand);
+    object_t *operand = obj_new_other(index_obj->index.operand);
+    object_t *tmp_operand = NULL;
+    assert(index_obj->index.indices);
+    const object_array_t *indices = index_obj->index.indices;
+    assert(operand);
+    assert(indices);
+
+    for (int32_t i = 0; i < objarr_len(indices); ++i) {
+        const object_t *el = objarr_getc(indices, i);
+        assert(el);
+
+        const object_t *idx = el;
+        if (el->type == OBJ_TYPE_IDENTIFIER) {
+            idx = pull_in_ref_by(self, el);
+            if (!idx) {
+                ast_set_error_detail(self, "\"%s\" is not defined in index object", str_getc(el->identifier));
+                obj_del(operand);
+                return NULL;
+            }
+        }
+
+        const char *skey = NULL;
+        long ikey = -1;
+        switch (idx->type) {
+        default: err_die("invalid index type in get value of index obj"); break;
+        case OBJ_TYPE_STRING: skey = str_getc(idx->string); break;
+        case OBJ_TYPE_INTEGER: ikey = idx->lvalue; break;
+        }
+
+        switch (operand->type) {
+        case OBJ_TYPE_ARRAY: {
+            assert(idx->type == OBJ_TYPE_INTEGER);
+
+            if (ikey < 0 || ikey >= objarr_len(operand->objarr)) {
+                ast_set_error_detail(self, "index out of range of array");
+                obj_del(operand);
+                return NULL;
+            }
+
+            tmp_operand = obj_new_other(objarr_getc(operand->objarr, ikey));
+            obj_del(operand);
+            operand = tmp_operand;
+            tmp_operand = NULL;
+        } break;
+        case OBJ_TYPE_STRING: {
+            assert(idx->type == OBJ_TYPE_INTEGER);
+
+            if (ikey < 0 || ikey >= str_len(operand->string)) {
+                ast_set_error_detail(self, "index out of range of string");
+                obj_del(operand);
+                return NULL;
+            }
+
+            const char ch = str_getc(operand->string)[ikey];
+            string_t *str = str_new();
+            str_pushb(str, ch);
+            
+            obj_del(operand);
+            operand = obj_new_str(str);
+        } break;
+        case OBJ_TYPE_DICT: {
+            assert(idx->type == OBJ_TYPE_STRING);
+            assert(skey);
+
+            const object_dict_item_t *item = objdict_getc(operand->objdict, skey);
+            if (!item) {
+                obj_del(operand);
+                return NULL;
+            }
+
+            tmp_operand = obj_new_other(item->value);
+            obj_del(operand);
+            operand = tmp_operand;
+            tmp_operand = NULL;
+        } break;
+        }
+    }
+
+    return operand;
+}
+
+static object_t *
 ast_traverse_ref_block(ast_t *self, const node_t *node, int dep) {
     tready();
     node_ref_block_t *ref_block = node->real;
 
     tcheck("call _ast_traverse");
-    object_t *result = _ast_traverse(self, ref_block->formula, dep+1);
+    object_t *tmp = _ast_traverse(self, ref_block->formula, dep+1);
     if (ast_has_error(self)) {
-        obj_del(result);
+        obj_del(tmp);
         return_trav(NULL);
     }
-    assert(result);
+    assert(tmp);
+
+    object_t *result = tmp;
+    if (tmp->type == OBJ_TYPE_INDEX) {
+        result = ast_get_value_of_index_obj(self, tmp);
+        if (ast_has_error(self)) {
+            obj_del(tmp);
+            return_trav(NULL);
+        }
+        if (!result) {
+            result = obj_new_nil();
+        }
+    }
 
     switch (result->type) {
+    default:
+        err_die("unsupported result type in traverse ref block");
+        break;
     case OBJ_TYPE_NIL:
         ctx_pushb_buf(self->context, "nil");
         break;
@@ -3407,6 +3508,7 @@ ast_traverse_ref_block(ast_t *self, const node_t *node, int dep) {
     } break;
     } // switch
 
+    obj_del(result);
     return_trav(NULL);
 }
 
@@ -7721,145 +7823,81 @@ ast_traverse_index(ast_t *self, const node_t *node, int dep) {
     tready();
     assert(index_node);
     object_t *operand = NULL;
-    object_t *index = NULL;
     object_t *ref_operand = NULL;
-    object_t *ref_index = NULL;
     object_t *ret = NULL;
 
     operand = _ast_traverse(self, index_node->factor, dep+1);
     if (ast_has_error(self)) {
-        goto fail;
+        return_trav(NULL);
     }
     if (!operand) {
         ast_set_error_detail(self, "not found operand in index access");
-        goto fail;
+        return_trav(NULL);
     }
-    ret = operand;
 
+    // operand is identifier?
     ref_operand = operand;
     if (operand->type == OBJ_TYPE_IDENTIFIER) {
+        // get reference
         ref_operand = pull_in_ref_by(self, operand);
         if (!ref_operand) {
             if (nodearr_len(index_node->nodearr)) {
-                ast_set_error_detail(self, "can't index access. \"%s\" is not defined", str_getc(operand->identifier));
-                goto fail;
+                // can't index access to null
+                ast_set_error_detail(self, "\"%s\" is not defined", str_getc(operand->identifier));
+                obj_del(operand);
+                return_trav(NULL);
             } else {
+                // not found indices. it is single identifier object
                 return_trav(operand);
             }
         }
     }
 
-    // left priority
-    for (int32_t i = 0; i < nodearr_len(index_node->nodearr); ++i) {
-        node_t *simple_assign = nodearr_get(index_node->nodearr, i);
-        assert(simple_assign->type == NODE_TYPE_SIMPLE_ASSIGN);
-
-        index = _ast_traverse(self, simple_assign, dep+1);
-        if (ast_has_error(self)) {
-            goto fail;
-        }
-        if (!index) {
-            return_trav(operand)
-        }
-
-        ref_index = index;
-        if (index->type == OBJ_TYPE_IDENTIFIER) {
-            ref_index = pull_in_ref_by(self, index);
-            if (!ref_index) {
-                ast_set_error_detail(self, "\"%s\" is not defined. can not index access (2)", str_getc(index->identifier));
-                goto fail;
-            }
-        }
-
-        long idx = -1;
-        const char *sidx = NULL;
-
-        switch (ref_index->type) {
-        default:
-            ast_set_error_detail(self, "can not index access. index is not accessable");
-            goto fail;
-            break;
-        case OBJ_TYPE_INTEGER:
-            if (ref_operand->type == OBJ_TYPE_DICT) {
-                ast_set_error_detail(self, "can not access by int to dict");
-                goto fail;
-            }
-            idx = ref_index->lvalue;
-            break;
-        case OBJ_TYPE_STRING:
-            if (ref_operand->type == OBJ_TYPE_STRING ||
-                ref_operand->type == OBJ_TYPE_ARRAY) {
-                ast_set_error_detail(self, "cant not access by string to string or array");
-                goto fail;
-            }
-            sidx = str_getc(ref_index->string);
-            break;
-        }
-
-        switch (ref_operand->type) {
-        default:
-            ast_set_error_detail(self, "object is can not index access");
-            goto fail;
-            break;
-        case OBJ_TYPE_STRING: {
-            const string_t *tar = ref_operand->string;
-            string_t *s = str_new();
-
-            if (idx >= str_len(tar) || idx < 0) {
-                ast_set_error_detail(self, "index out of range of string");
-                goto fail;
-            }
-
-            int c = str_getc(tar)[idx];
-            str_pushb(s, c);
-
-            object_t *tmp = obj_new_str(s);
-            obj_del(operand);
-            operand = tmp;
-        } break;
-        case OBJ_TYPE_ARRAY: {
-            const object_array_t *tar = ref_operand->objarr;
-            const object_t *el = objarr_getc(tar, idx);
-            if (!el) {
-                ast_set_error_detail(self, "index out of range of array");
-                goto fail;
-            }
-
-            object_t *tmp = obj_new_other(el);
-            obj_del(operand);
-            operand = tmp;
-        } break;
-        case OBJ_TYPE_DICT: {
-            if (!sidx) {
-                ast_set_error_detail(self, "index is null");
-                goto fail;
-            }
-            const object_dict_t *tar = ref_operand->objdict;
-            const object_dict_item_t *item = objdict_getc(tar, sidx);
-            if (!item) {
-                ast_set_error_detail(self, "not found item by \"%s\"", sidx);
-                goto fail;
-            }
-
-            object_t *tmp = obj_new_other(item->value);
-            obj_del(operand);
-            operand = tmp;
-        } break;
-        }
-
-        ret = operand;
-        ref_operand = operand;
-
-        obj_del(index);
-        index = NULL;
-        ref_index = NULL;
+    if (!nodearr_len(index_node->nodearr)) {
+        ret = obj_new_other(ref_operand);
+        obj_del(operand);
+        return_trav(ret);
     }
 
-    return_trav(ret);
-fail:
+    // operand is indexable?
+    switch (ref_operand->type) {
+    default:
+        // not indexable
+        if (nodearr_len(index_node->nodearr)) {
+            ast_set_error_detail(self, "operand (%d) is not indexable", ref_operand->type);
+            obj_del(operand);
+            return_trav(NULL);
+        }
+
+        ret = obj_new_other(ref_operand);
+        obj_del(operand);
+        return_trav(ret);
+        break;
+    case OBJ_TYPE_IDENTIFIER:
+        err_die("impossible. operand is should be not identifier");
+        break;
+    case OBJ_TYPE_ARRAY:
+    case OBJ_TYPE_STRING:
+    case OBJ_TYPE_DICT:
+        // indexable
+        break;
+    }
+
+    object_array_t *indices = objarr_new();
+
+    // left priority
+    for (int32_t i = 0; i < nodearr_len(index_node->nodearr); ++i) {
+        const node_t *node = nodearr_getc(index_node->nodearr, i);
+        assert(node);
+        object_t *obj = _ast_traverse(self, node, dep+1);
+        assert(obj);
+        objarr_moveb(indices, obj);
+    }
+
+    object_t *save_operand = obj_new_other(ref_operand);
     obj_del(operand);
-    obj_del(index);
-    return_trav(NULL);
+    ret = obj_new_index(save_operand, indices);
+    return_trav(ret);
 }
 
 /**

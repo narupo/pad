@@ -3608,6 +3608,36 @@ test_ast_parse_index(void) {
         assert(nodearr_len(index->nodearr) == 1);
     }
 
+    tkr_parse(tkr, "{@ a[0][0] @}");
+    {
+        ast_clear(ast);
+        (ast_parse(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        program = root->real;
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        formula = elems->formula->real;
+        assert(formula->assign_list == NULL);
+        assert(formula->multi_assign);
+        multi_assign = formula->multi_assign->real;
+        test_list = nodearr_get(multi_assign->nodearr, 0)->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        index = nodearr_get(term->nodearr, 0)->real;
+        factor = index->factor->real;
+        atom = factor->atom->real;
+        identifier = atom->identifier->real;
+        assert(!strcmp(identifier->identifier, "a"));
+        assert(nodearr_len(index->nodearr) == 2);
+    }
+
     tkr_del(tkr);
     ast_del(ast);
 }
@@ -9087,6 +9117,22 @@ test_ast_traverse_index(void) {
     ast_t *ast = ast_new();
     context_t *ctx = ctx_new();
 
+    tkr_parse(tkr, "{@ a = \"abc\" @}{: a :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"abc\" @}{: a[0] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "a"));
+    }
+
     tkr_parse(tkr, "{@ a = \"abc\" @}{: a[0] :},{: a[1] :},{: a[2] :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
@@ -9095,21 +9141,53 @@ test_ast_traverse_index(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "a,b,c"));
     }
 
-    tkr_parse(tkr, "{@ a = \"abc\" \n b = a[0] == \"a\" @}{: b :}");
+    tkr_parse(tkr, "{@ a = [1, 2] @}{: a[0] :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         (ast_traverse(ast, ctx));
         assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
 
-    tkr_parse(tkr, "{@ a = \"abc\" \n if a[0] == \"a\": puts(1) end @}");
+    tkr_parse(tkr, "{@ a = [1, 2] @}{: a[0] :},{: a[1] :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         (ast_traverse(ast, ctx));
         assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
+        assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
     }
+
+    tkr_parse(tkr, "{@ a = {\"a\": 1, \"b\": 2} @}{: a[\"a\"] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{@ a = {\"a\": 1, \"b\": 2} @}{: a[\"a\"] :},{: a[\"b\"] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
+    }
+
+    // tkr_parse(tkr, "{@ a = \"abc\" \n b = a[0] == \"a\" @}{: b :}");
+    // {
+    //     ast_parse(ast, tkr_get_tokens(tkr));
+    //     (ast_traverse(ast, ctx));
+    //     assert(!ast_has_error(ast));
+    //     assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    // }
+
+    // tkr_parse(tkr, "{@ a = \"abc\" \n if a[0] == \"a\": puts(1) end @}");
+    // {
+    //     ast_parse(ast, tkr_get_tokens(tkr));
+    //     (ast_traverse(ast, ctx));
+    //     assert(!ast_has_error(ast));
+    //     assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
+    // }
 
     ctx_del(ctx);
     ast_del(ast);
