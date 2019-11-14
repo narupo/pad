@@ -7044,59 +7044,13 @@ ast_calc_expr_add_string(ast_t *self, const object_t *lhs, const object_t *rhs, 
 }
 
 static object_t *
-ast_calc_expr_add_array(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_ARRAY);
-
-    switch (rhs->type) {
-    default:
-        ast_set_error_detail(self, "can't add with array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call ast_roll_identifier_rhs");
-        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
-        return_trav(obj);
-    } break;
-    }
-
-    assert(0 && "impossible. failed to calc expr array");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_expr_add_dict(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_DICT);
-    ast_set_error_detail(self, "can't add with dict");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_expr_add_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_NIL);
-    ast_set_error_detail(self, "can't add with nil");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_expr_add_func(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_FUNC);
-    ast_set_error_detail(self, "can't add with func");
-    return_trav(NULL);
-}
-
-static object_t *
 ast_calc_expr_add(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
-    case OBJ_TYPE_NIL: {
-        tcheck("call ast_calc_expr_add_nil");
-        object_t *obj = ast_calc_expr_add_nil(self, lhs, rhs, dep+1);
-        return_trav(obj);
+    default: {
+        ast_set_error_detail(self, "can't add");
+        return_trav(NULL);
     } break;
     case OBJ_TYPE_INTEGER: {
         tcheck("call ast_calc_expr_add_int");
@@ -7113,24 +7067,9 @@ ast_calc_expr_add(ast_t *self, const object_t *lhs, const object_t *rhs, int dep
         object_t *obj = ast_calc_expr_add_string(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        tcheck("call ast_calc_expr_add_array");
-        object_t *obj = ast_calc_expr_add_array(self, lhs, rhs, dep+1);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_DICT: {
-        tcheck("call ast_calc_expr_add_dict");
-        object_t *obj = ast_calc_expr_add_dict(self, lhs, rhs, dep+1);
-        return_trav(obj);
-    } break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call ast_roll_identifier_lhs with ast_calc_expr_add");
         object_t *obj = ast_roll_identifier_lhs(self, lhs, rhs, ast_calc_expr_add, dep+1);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_FUNC: {
-        tcheck("call ast_calc_expr_add_func");
-        object_t *obj = ast_calc_expr_add_func(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     }
@@ -7162,6 +7101,16 @@ ast_calc_expr_sub_int(ast_t *self, const object_t *lhs, const object_t *rhs, int
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't sub with int. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_calc_expr_sub(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc expr sub int");
@@ -7191,75 +7140,19 @@ ast_calc_expr_sub_bool(ast_t *self, const object_t *lhs, const object_t *rhs, in
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't sub with bool. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_calc_expr_sub(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc expr sub bool");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_expr_sub_string(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_STRING);
-
-    switch (rhs->type) {
-    default:
-        ast_set_error_detail(self, "can't sub with string");
-        return_trav(NULL);
-        break;    
-    case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call ast_roll_identifier_rhs");
-        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub, dep+1);
-        return_trav(obj);
-    } break;
-    }
-
-    assert(0 && "impossible. failed to calc expr sub string");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_expr_sub_array(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_ARRAY);
-
-    switch (rhs->type) {
-    default:
-        ast_set_error_detail(self, "can't sub with array");
-        return_trav(NULL);
-        break;    
-    case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call ast_roll_identifier_rhs");
-        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub, dep+1);
-        return_trav(obj);
-    } break;
-    }
-
-    assert(0 && "impossible. failed to calc expr sub array");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_expr_sub_dict(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_DICT);
-    ast_set_error_detail(self, "can't sub with dict");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_expr_sub_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_NIL);
-    ast_set_error_detail(self, "can't sub with nil");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_expr_sub_func(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_FUNC);
-    ast_set_error_detail(self, "can't sub with func");
     return_trav(NULL);
 }
 
@@ -7268,10 +7161,9 @@ ast_calc_expr_sub(ast_t *self, const object_t *lhs, const object_t *rhs, int dep
     tready();
 
     switch (lhs->type) {
-    case OBJ_TYPE_NIL: {
-        tcheck("call ast_calc_expr_sub_nil");
-        object_t *obj = ast_calc_expr_sub_nil(self, lhs, rhs, dep+1);
-        return_trav(obj);
+    default: {
+        ast_set_error_detail(self, "can't sub");
+        return_trav(NULL);
     } break;
     case OBJ_TYPE_INTEGER: {
         tcheck("call ast_calc_expr_sub_int");
@@ -7288,24 +7180,14 @@ ast_calc_expr_sub(ast_t *self, const object_t *lhs, const object_t *rhs, int dep
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_expr_sub, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
-        tcheck("call ast_calc_expr_sub_string");
-        object_t *obj = ast_calc_expr_sub_string(self, lhs, rhs, dep+1);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_ARRAY: {
-        tcheck("call ast_calc_expr_sub_array");
-        object_t *obj = ast_calc_expr_sub_array(self, lhs, rhs, dep+1);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_DICT: {
-        tcheck("call ast_calc_expr_sub_dict");
-        object_t *obj = ast_calc_expr_sub_dict(self, lhs, rhs, dep+1);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_FUNC: {
-        tcheck("call ast_calc_expr_sub_func");
-        object_t *obj = ast_calc_expr_sub_func(self, lhs, rhs, dep+1);
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, lhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't sub. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_calc_expr_sub(self, val, rhs, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -7416,6 +7298,16 @@ ast_calc_term_mul_int(ast_t *self, const object_t *lhs, const object_t *rhs, int
     case OBJ_TYPE_STRING:
         err_die("TODO: mul string");
         break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't mul with int. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_calc_term_mul(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc term mul int");
@@ -7445,6 +7337,16 @@ ast_calc_term_mul_bool(ast_t *self, const object_t *lhs, const object_t *rhs, in
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul, dep+1); 
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't mul with bool. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_calc_term_mul(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc term mul bool");
@@ -7469,54 +7371,19 @@ ast_calc_term_mul_string(ast_t *self, const object_t *lhs, const object_t *rhs, 
     case OBJ_TYPE_STRING:
         err_die("TODO: mul string 2");
         break;
-    }
- 
-    assert(0 && "impossible. failed to calc term mul string");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_term_mul_array(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_ARRAY);
-
-    switch (rhs->type) {
-    default:
-        ast_set_error_detail(self, "can't mul with array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call ast_roll_identifier_rhs");
-        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_mul, dep+1);
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't mul with string. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_calc_term_mul(self, lhs, val, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
-
-    assert(0 && "impossible. failed to calc term mul array");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_term_mul_dict(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_DICT);
-    ast_set_error_detail(self, "can't mul with dict");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_term_mul_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_NIL);
-    ast_set_error_detail(self, "can't mul with nil");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_term_mul_func(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_FUNC);
-    ast_set_error_detail(self, "can't mul with func");
+ 
+    assert(0 && "impossible. failed to calc term mul string");
     return_trav(NULL);
 }
 
@@ -7525,10 +7392,9 @@ ast_calc_term_mul(ast_t *self, const object_t *lhs, const object_t *rhs, int dep
     tready();
 
     switch (lhs->type) {
-    case OBJ_TYPE_NIL: {
-        tcheck("call ast_calc_term_mul_nil");
-        object_t *obj = ast_calc_term_mul_nil(self, lhs, rhs, dep+1);
-        return_trav(obj);
+    default: {
+        ast_set_error_detail(self, "can't mul");
+        return_trav(NULL);
     } break;
     case OBJ_TYPE_INTEGER: {
         tcheck("call ast_calc_term_mul_int");
@@ -7550,19 +7416,14 @@ ast_calc_term_mul(ast_t *self, const object_t *lhs, const object_t *rhs, int dep
         object_t *obj = ast_calc_term_mul_string(self, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        tcheck("call ast_calc_term_mul_array");
-        object_t *obj = ast_calc_term_mul_array(self, lhs, rhs, dep+1);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_DICT: {
-        tcheck("call ast_calc_term_mul_dict");
-        object_t *obj = ast_calc_term_mul_dict(self, lhs, rhs, dep+1);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_FUNC: {
-        tcheck("call ast_calc_term_mul_func");
-        object_t *obj = ast_calc_term_mul_func(self, lhs, rhs, dep+1);
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, lhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't mul. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_calc_term_mul(self, val, rhs, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -7602,6 +7463,16 @@ ast_calc_term_div_int(ast_t *self, const object_t *lhs, const object_t *rhs, int
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't division with int. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_calc_term_div(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc term div int");
@@ -7635,75 +7506,19 @@ ast_calc_term_div_bool(ast_t *self, const object_t *lhs, const object_t *rhs, in
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, rhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't division with bool. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_calc_term_div(self, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc term div bool");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_term_div_string(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    assert(lhs->type == OBJ_TYPE_STRING);
-    tready();
-
-    switch (rhs->type) {
-    default:
-        ast_set_error_detail(self, "can't division with string");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call ast_roll_identifier_rhs");
-        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div, dep+1);
-        return_trav(obj);
-    } break;
-    }
-
-    assert(0 && "impossible. failed to calc term div string");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_term_div_array(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_ARRAY);
-
-    switch (rhs->type) {
-    default:
-        ast_set_error_detail(self, "can't division with array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call ast_roll_identifier_rhs");
-        object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div, dep+1);
-        return_trav(obj);
-    } break;
-    }
-
-    assert(0 && "impossible. failed to calc term div array");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_term_div_dict(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_DICT);
-    ast_set_error_detail(self, "can't division with dict");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_term_div_nil(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_NIL);
-    ast_set_error_detail(self, "can't division with nil");
-    return_trav(NULL);
-}
-
-static object_t *
-ast_calc_term_div_func(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
-    tready();
-    assert(lhs->type == OBJ_TYPE_NIL);
-    ast_set_error_detail(self, "can't division with func");
     return_trav(NULL);
 }
 
@@ -7712,10 +7527,9 @@ ast_calc_term_div(ast_t *self, const object_t *lhs, const object_t *rhs, int dep
     tready();
 
     switch (lhs->type) {
-    case OBJ_TYPE_NIL: {
-        tcheck("call ast_calc_term_div_nil");
-        object_t *obj = ast_calc_term_div_nil(self, lhs, rhs, dep+1);
-        return_trav(obj);
+    default: {
+        ast_set_error_detail(self, "can't division");
+        return_trav(NULL);
     } break;
     case OBJ_TYPE_INTEGER: {
         tcheck("call ast_calc_term_div_int");
@@ -7732,24 +7546,14 @@ ast_calc_term_div(ast_t *self, const object_t *lhs, const object_t *rhs, int dep
         object_t *obj = ast_roll_identifier_rhs(self, lhs, rhs, ast_calc_term_div, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
-        tcheck("call ast_calc_term_div_string");
-        object_t *obj = ast_calc_term_div_string(self, lhs, rhs, dep+1);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_ARRAY: {
-        tcheck("call ast_calc_term_div_array");
-        object_t *obj = ast_calc_term_div_array(self, lhs, rhs, dep+1); 
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_DICT: {
-        tcheck("call ast_calc_term_div_dict");
-        object_t *obj = ast_calc_term_div_dict(self, lhs, rhs, dep+1); 
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_FUNC: {
-        tcheck("call ast_calc_term_div_func");
-        object_t *obj = ast_calc_term_div_func(self, lhs, rhs, dep+1); 
+    case OBJ_TYPE_INDEX: {
+        object_t *val = ast_get_value_of_index_obj(self, lhs);
+        if (!val) {
+            ast_set_error_detail(self, "can't division. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = ast_calc_term_div(self, val, rhs, dep+1);
+        obj_del(val);
         return_trav(obj);
     } break;
     }

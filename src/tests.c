@@ -8279,7 +8279,7 @@ test_ast_traverse_dict(void) {
     // tkr_parse(tkr, "{@ a = { \"k\": 1 } \n a[0] @}");
     // {
     //     ast_parse(ast, tkr_get_tokens(tkr));
-    //     ast_debug(ast_traverse(ast, ctx));
+    //     (ast_traverse(ast, ctx));
     //     assert(ast_has_error(ast));
     //     assert(!strcmp(ast_get_error_detail(ast), "can not access by int to dict"));
     // }
@@ -9178,7 +9178,7 @@ test_ast_traverse_index(void) {
     tkr_parse(tkr, "{@ a = \"abc\" \n b = a[0] == \"a\" @}{: b :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
-        ast_debug(ast_traverse(ast, ctx));
+        (ast_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
     }
