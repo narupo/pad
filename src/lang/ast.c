@@ -3415,7 +3415,11 @@ ast_get_value_of_index_obj(ast_t *self, const object_t *index_obj) {
             obj_del(operand);
             break;
         case OBJ_TYPE_ARRAY: {
-            assert(idx->type == OBJ_TYPE_INTEGER);
+            if (idx->type != OBJ_TYPE_INTEGER) {
+                ast_set_error_detail(self, "invalid array index value. value is not integer");
+                obj_del(operand);
+                return NULL;
+            }
 
             if (ikey < 0 || ikey >= objarr_len(operand->objarr)) {
                 ast_set_error_detail(self, "index out of range of array");
@@ -3429,7 +3433,11 @@ ast_get_value_of_index_obj(ast_t *self, const object_t *index_obj) {
             tmp_operand = NULL;
         } break;
         case OBJ_TYPE_STRING: {
-            assert(idx->type == OBJ_TYPE_INTEGER);
+            if (idx->type != OBJ_TYPE_INTEGER) {
+                ast_set_error_detail(self, "invalid string index value. value is not integer");
+                obj_del(operand);
+                return NULL;
+            }
 
             if (ikey < 0 || ikey >= str_len(operand->string)) {
                 ast_set_error_detail(self, "index out of range of string");
@@ -3445,7 +3453,11 @@ ast_get_value_of_index_obj(ast_t *self, const object_t *index_obj) {
             operand = obj_new_str(str);
         } break;
         case OBJ_TYPE_DICT: {
-            assert(idx->type == OBJ_TYPE_STRING);
+            if (idx->type != OBJ_TYPE_STRING) {
+                ast_set_error_detail(self, "invalid dict index value. value is not a string");
+                obj_del(operand);
+                return NULL;
+            }
             assert(skey);
 
             const object_dict_item_t *item = objdict_getc(operand->objdict, skey);
@@ -6295,7 +6307,7 @@ ast_compare_comparison_eq_int(ast_t *self, const object_t *lhs, const object_t *
             ast_set_error_detail(self, "can't comparison eq int. index object value is null");
             return_trav(NULL);
         }
-        object_t *obj = ast_compare_comparison_not_eq_int(self, lhs, val, dep+1);
+        object_t *obj = ast_compare_comparison_eq_int(self, lhs, val, dep+1);
         obj_del(val);
         return_trav(obj);
     } break;
@@ -6376,7 +6388,7 @@ ast_compare_comparison_eq_string(ast_t *self, const object_t *lhs, const object_
             ast_set_error_detail(self, "can't comparison eq string. index object value is null");
             return_trav(NULL);
         }
-        object_t *obj = ast_compare_comparison_not_eq_string(self, lhs, val, dep+1);
+        object_t *obj = ast_compare_comparison_eq_string(self, lhs, val, dep+1);
         obj_del(val);
         return_trav(obj);
     } break;
@@ -6858,7 +6870,7 @@ ast_compare_comparison_not_eq(ast_t *self, const object_t *lhs, const object_t *
             ast_set_error_detail(self, "can't comparison not eq. index object value is null");
             return_trav(NULL);
         }
-        object_t *obj = ast_compare_comparison_lte_int(self, val, rhs, dep+1);
+        object_t *obj = ast_compare_comparison_not_eq(self, val, rhs, dep+1);
         obj_del(val);
         return_trav(obj);
     } break;
