@@ -4066,14 +4066,183 @@ ast_calc_assign_to_array(ast_t *self, const object_t *lhs, const object_t *rhs, 
     return_trav(NULL);
 }
 
+typedef struct index_value {
+    char type; // 's' ... string, 'i' ... integer
+    const char *skey;
+    long ikey;
+} index_value_t;
+
+static index_value_t *
+ast_obj_to_index_value(ast_t *self, index_value_t *idxval, const object_t *obj) {
+    const object_t *src = obj;
+    object_t *delme = NULL;
+
+    switch (obj->type) {
+    default: break;
+    case OBJ_TYPE_IDENTIFIER:
+        src = pull_in_ref_by(self, obj);
+        if (ast_has_error(self)) {
+            return NULL;
+        } else if (!src) {
+            ast_set_error_detail(self, "\"%s\" is not defined in extract index value", str_getc(obj->identifier));
+            return NULL;
+        }
+        break;
+    case OBJ_TYPE_INDEX:
+        delme = ast_get_value_of_index_obj(self, obj);
+        if (ast_has_error(self)) {
+            return NULL;
+        } else if (!delme) {
+            ast_set_error_detail(self, "index value is null in object to index value");
+            return NULL;
+        }
+        src = delme;
+        break;
+    }
+
+    switch (src->type) {
+    default:
+        ast_set_error_detail(self, "invalid index object in object to index value");
+        obj_del(delme);
+        return NULL;
+        break;
+    case OBJ_TYPE_INTEGER:
+        idxval->type = 'i';
+        idxval->ikey = src->lvalue;
+        break;
+    case OBJ_TYPE_STRING:
+        idxval->type = 's';
+        idxval->skey = str_getc(src->string);
+        break;
+    }
+
+    obj_del(delme);
+    return idxval;
+}
+
+static object_t *
+ast_copy_object_value(ast_t *self, const object_t *obj) {
+    assert(obj);
+
+    switch (obj->type) {
+    default: break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const object_t *ref = pull_in_ref_by(self, obj);
+        if (!ref) {
+            return NULL;
+        }
+        return obj_new_other(ref);
+    } break;
+    case OBJ_TYPE_INDEX:
+        return ast_get_value_of_index_obj(self, obj);
+        break;
+    }
+
+    return obj_new_other(obj);
+}
+
 static object_t *
 ast_assign_to_index(ast_t *self, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_INDEX);
 
-    assert(0 && "TODO");
+    object_t *operand = lhs->index.operand;
+    const object_array_t *indices = lhs->index.indices;
+    assert(operand);
+    assert(indices);
 
-    return_trav(NULL);
+    const int32_t idxslen = objarr_len(indices);
+    object_t *ret = NULL;
+
+    for (int32_t i = 0; i < idxslen; ++i) {
+        const object_t *el = objarr_getc(indices, i);
+        assert(el);
+
+        index_value_t idx = {0};
+        ast_obj_to_index_value(self, &idx, el);
+        if (ast_has_error(self)) {
+            ast_set_error_detail(self, "invalid index in assign to index");
+            return_trav(NULL);
+        }
+
+        switch (operand->type) {
+        default:
+            ast_set_error_detail(self, "operand is not assignable");
+            return_trav(NULL);
+            break;
+        case OBJ_TYPE_ARRAY:
+            if (idx.type != 'i') {
+                ast_set_error_detail(self, "invalid index type. index is not integer");
+                return_trav(NULL);
+            }
+
+            if (i == idxslen-1) {
+                // assign to
+                object_t *copy = ast_copy_object_value(self, rhs);
+                if (ast_has_error(self)) {
+                    return_trav(NULL);
+                } else if (!copy) {
+                    ast_set_error_detail(self, "failed to copy object value");
+                    return_trav(NULL);
+                }
+
+                ret = obj_new_other(copy);
+
+                if (!objarr_move(operand->objarr, idx.ikey, copy)) {
+                    ast_set_error_detail(self, "failed to move object at array");
+                    obj_del(copy);
+                    obj_del(ret);
+                    return_trav(NULL);
+                }
+            } else {
+                // next operand
+                if (idx.ikey < 0 || idx.ikey >= objarr_len(operand->objarr)) {
+                    ast_set_error_detail(self, "array index out of range");
+                    return_trav(NULL);
+                }
+                operand = objarr_get(operand->objarr, idx.ikey);
+            }
+            break;
+        case OBJ_TYPE_DICT:
+            if (idx.type != 's') {
+                ast_set_error_detail(self, "invalid index type. index is not string");
+                return_trav(NULL);
+            }
+
+            if (i == idxslen-1) {
+                // assign to
+                object_t *copy = ast_copy_object_value(self, rhs);
+                if (ast_has_error(self)) {
+                    return_trav(NULL);
+                } else if (!copy) {
+                    ast_set_error_detail(self, "failed to copy object value");
+                    return_trav(NULL);
+                }
+
+                ret = obj_new_other(copy);
+
+                if (!objdict_move(operand->objdict, idx.skey, copy)) {
+                    ast_set_error_detail(self, "failed to move object at dict");
+                    obj_del(copy);
+                    obj_del(ret);
+                    return_trav(NULL);
+                }
+            } else {
+                // next operand
+                const object_dict_item_t *item = objdict_getc(operand->objdict, idx.skey);
+                if (!item) {
+                    ast_set_error_detail(self, "invalid index key. \"%s\" is not found", idx.skey);
+                    return_trav(NULL);
+                }
+
+                operand = item->value;
+            }
+            break;
+        }
+    }
+
+    assert(ret);
+    return_trav(ret);
 }
 
 static object_t *
