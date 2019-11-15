@@ -103,6 +103,19 @@ objarr_resize(object_array_t* self, size_t capa) {
 }
 
 object_array_t *
+objarr_move(object_array_t* self, int32_t index, object_t *move_obj) {
+    if (index < 0 || index >= self->capa) {
+        return NULL;
+    }
+
+    object_t *old = self->parray[index];
+    obj_del(old);
+    self->parray[index] = move_obj;
+
+    return self;
+}
+
+object_array_t *
 objarr_moveb(object_array_t* self, object_t *obj) {
     if (self->len >= self->capa) {
         if (!objarr_resize(self, self->capa * 2)) {

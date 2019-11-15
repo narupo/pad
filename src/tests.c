@@ -9351,6 +9351,15 @@ test_ast_traverse_index(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
     }
 
+    tkr_parse(tkr, "{@ a = [1,2] \n a[0] = 3 @}{: a[0] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "3"));
+    }
+
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
