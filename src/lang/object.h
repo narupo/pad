@@ -30,8 +30,11 @@ struct object_func {
     node_t *ref_suite;
 };
 
+/**
+ * index object have reference to operand because for assign
+ */
 struct object_index {
-    object_t *operand;
+    object_t *ref_operand;
     object_array_t *indices;
 };
 
@@ -94,7 +97,7 @@ object_t *
 obj_new_func(object_t *move_name, object_t *move_args, node_t *ref_suite);
 
 object_t *
-obj_new_index(object_t *move_operand, object_array_t *move_indices);
+obj_new_index(object_t *ref_operand, object_array_t *move_indices);
 
 int32_t
 obj_inc_ref(object_t *self);

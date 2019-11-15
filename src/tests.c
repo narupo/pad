@@ -8326,7 +8326,6 @@ test_ast_traverse_dict(void) {
     // {
     //     ast_parse(ast, tkr_get_tokens(tkr));
     //     ast_traverse(ast, ctx);
-    //     showbuf();
     //     assert(!strcmp(ctx_getc_buf(ctx), "1"));
     // }
 
@@ -8808,7 +8807,6 @@ test_ast_traverse_array_index(void) {
     //     ast_parse(ast, tkr_get_tokens(tkr));
     //     (ast_traverse(ast, ctx));
     //     assert(!ast_has_error(ast));
-    //     showbuf();
     //     assert(!strcmp(ctx_getc_buf(ctx), "1"));
     // }
 
@@ -9351,13 +9349,52 @@ test_ast_traverse_index(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
     }
 
-    tkr_parse(tkr, "{@ a = [1,2] \n a[0] = 3 @}{: a[0] :}");
+    tkr_parse(tkr, "{@ a = [1,2] \n a[0] = 3 @}{: a[0] :},{: a[1] :}");
     {
         ast_parse(ast, tkr_get_tokens(tkr));
         (ast_traverse(ast, ctx));
         assert(!ast_has_error(ast));
-        showbuf();
-        assert(!strcmp(ctx_getc_buf(ctx), "3"));
+        assert(!strcmp(ctx_getc_buf(ctx), "3,2"));
+    }
+
+    tkr_parse(tkr, "{@ a = [1,2] \n a[0] = 3 \n a[1] = 4 @}{: a[0] :},{: a[1] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "3,4"));
+    }
+
+    tkr_parse(tkr, "{@ a = [\"a\",\"b\"] \n a[0] = \"c\" @}{: a[0] :},{: a[1] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "c,b"));
+    }
+
+    tkr_parse(tkr, "{@ a = [\"a\",\"b\"] \n a[0] = \"c\" \n a[1] = \"d\" @}{: a[0] :},{: a[1] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "c,d"));
+    }
+
+    tkr_parse(tkr, "{@ a = {\"a\":1, \"b\":2 } \n a[\"a\"] = 3 @}{: a[\"a\"] :},{: a[\"b\"] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "3,2"));
+    }
+
+    tkr_parse(tkr, "{@ a = {\"a\":1, \"b\":2 } \n a[\"a\"] = 3 \n a[\"b\"] = 4 @}{: a[\"a\"] :},{: a[\"b\"] :}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        (ast_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "3,4"));
     }
 
     ctx_del(ctx);
