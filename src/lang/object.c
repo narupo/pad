@@ -36,6 +36,10 @@ obj_del(object_t *self) {
         obj_del(self->func.args);
         // do not delete ref_suite, this is reference
         break;
+    case OBJ_TYPE_INDEX:
+        self->index.ref_operand = NULL; // do not delete, it is reference
+        objarr_del(self->index.indices);
+        break;
     }
 
     free(self);
@@ -83,7 +87,7 @@ obj_new_other(const object_t *other) {
         self->func.ref_suite = other->func.ref_suite; // save reference
         break;
     case OBJ_TYPE_INDEX: {
-        self->index.operand = obj_new_other(other->index.operand);
+        self->index.ref_operand = other->index.ref_operand;
 
         object_array_t *indices = objarr_new();
         for (int32_t i = 0; i < objarr_len(other->index.indices); ++i) {
@@ -222,14 +226,14 @@ obj_new_func(object_t *move_name, object_t *move_args, node_t *ref_suite) {
 }
 
 object_t *
-obj_new_index(object_t *move_operand, object_array_t *move_indices) {
-    if (!move_operand || !move_indices) {
+obj_new_index(object_t *ref_operand, object_array_t *move_indices) {
+    if (!ref_operand || !move_indices) {
         return NULL;
     }
 
     object_t *self = obj_new(OBJ_TYPE_INDEX);
 
-    self->index.operand = move_operand;
+    self->index.ref_operand = ref_operand;
     self->index.indices = move_indices;
 
     return self;

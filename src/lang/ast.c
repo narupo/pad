@@ -3379,8 +3379,8 @@ static object_t *
 ast_get_value_of_index_obj(ast_t *self, const object_t *index_obj) {
     assert(index_obj && index_obj->type == OBJ_TYPE_INDEX);
     
-    assert(index_obj->index.operand);
-    object_t *operand = obj_new_other(index_obj->index.operand);
+    assert(index_obj->index.ref_operand);
+    object_t *operand = obj_new_other(index_obj->index.ref_operand);
     object_t *tmp_operand = NULL;
     assert(index_obj->index.indices);
     const object_array_t *indices = index_obj->index.indices;
@@ -3409,9 +3409,23 @@ ast_get_value_of_index_obj(ast_t *self, const object_t *index_obj) {
         case OBJ_TYPE_INTEGER: ikey = idx->lvalue; break;
         }
 
+        if (operand->type == OBJ_TYPE_IDENTIFIER) {
+            object_t *ref = pull_in_ref_by(self, operand);
+            if (ast_has_error(self)) {
+                obj_del(operand);
+                return NULL;
+            } else if (!ref) {
+                ast_set_error_detail(self, "\"%s\" is not defined in get value of index object", str_getc(operand->identifier));
+                obj_del(operand);
+                return NULL;
+            }
+            obj_del(operand);
+            operand = obj_new_other(ref);
+        }
+
         switch (operand->type) {
         default:
-            ast_set_error_detail(self, "invalid operand type in get value of index object");
+            ast_set_error_detail(self, "invalid operand type (%d) in get value of index object", operand->type);
             obj_del(operand);
             break;
         case OBJ_TYPE_ARRAY: {
@@ -4146,9 +4160,9 @@ ast_assign_to_index(ast_t *self, const object_t *lhs, const object_t *rhs, int d
     tready();
     assert(lhs->type == OBJ_TYPE_INDEX);
 
-    object_t *operand = lhs->index.operand;
+    object_t *ref_operand = lhs->index.ref_operand;
     const object_array_t *indices = lhs->index.indices;
-    assert(operand);
+    assert(ref_operand);
     assert(indices);
 
     const int32_t idxslen = objarr_len(indices);
@@ -4165,9 +4179,20 @@ ast_assign_to_index(ast_t *self, const object_t *lhs, const object_t *rhs, int d
             return_trav(NULL);
         }
 
-        switch (operand->type) {
+        if (ref_operand->type == OBJ_TYPE_IDENTIFIER) {
+            object_t *ref = pull_in_ref_by(self, ref_operand);
+            if (ast_has_error(self)) {
+                return_trav(NULL);
+            } else if (!ref) {
+                ast_set_error_detail(self, "\"%s\" is not defined in assign to index", str_getc(ref_operand->identifier));
+                return_trav(NULL);
+            }
+            ref_operand = ref;
+        }
+
+        switch (ref_operand->type) {
         default:
-            ast_set_error_detail(self, "operand is not assignable");
+            ast_set_error_detail(self, "operand (%d) is not assignable", ref_operand->type);
             return_trav(NULL);
             break;
         case OBJ_TYPE_ARRAY:
@@ -4188,7 +4213,7 @@ ast_assign_to_index(ast_t *self, const object_t *lhs, const object_t *rhs, int d
 
                 ret = obj_new_other(copy);
 
-                if (!objarr_move(operand->objarr, idx.ikey, copy)) {
+                if (!objarr_move(ref_operand->objarr, idx.ikey, copy)) {
                     ast_set_error_detail(self, "failed to move object at array");
                     obj_del(copy);
                     obj_del(ret);
@@ -4196,11 +4221,11 @@ ast_assign_to_index(ast_t *self, const object_t *lhs, const object_t *rhs, int d
                 }
             } else {
                 // next operand
-                if (idx.ikey < 0 || idx.ikey >= objarr_len(operand->objarr)) {
+                if (idx.ikey < 0 || idx.ikey >= objarr_len(ref_operand->objarr)) {
                     ast_set_error_detail(self, "array index out of range");
                     return_trav(NULL);
                 }
-                operand = objarr_get(operand->objarr, idx.ikey);
+                ref_operand = objarr_get(ref_operand->objarr, idx.ikey);
             }
             break;
         case OBJ_TYPE_DICT:
@@ -4221,7 +4246,7 @@ ast_assign_to_index(ast_t *self, const object_t *lhs, const object_t *rhs, int d
 
                 ret = obj_new_other(copy);
 
-                if (!objdict_move(operand->objdict, idx.skey, copy)) {
+                if (!objdict_move(ref_operand->objdict, idx.skey, copy)) {
                     ast_set_error_detail(self, "failed to move object at dict");
                     obj_del(copy);
                     obj_del(ret);
@@ -4229,13 +4254,13 @@ ast_assign_to_index(ast_t *self, const object_t *lhs, const object_t *rhs, int d
                 }
             } else {
                 // next operand
-                const object_dict_item_t *item = objdict_getc(operand->objdict, idx.skey);
+                const object_dict_item_t *item = objdict_getc(ref_operand->objdict, idx.skey);
                 if (!item) {
                     ast_set_error_detail(self, "invalid index key. \"%s\" is not found", idx.skey);
                     return_trav(NULL);
                 }
 
-                operand = item->value;
+                ref_operand = item->value;
             }
             break;
         }
@@ -8423,9 +8448,8 @@ ast_traverse_index(ast_t *self, const node_t *node, int dep) {
         objarr_moveb(indices, obj);
     }
 
-    object_t *save_operand = obj_new_other(ref_operand);
-    obj_del(operand);
-    ret = obj_new_index(save_operand, indices);
+    // set reference of operand
+    ret = obj_new_index(operand, indices);
     return_trav(ret);
 }
 
@@ -9175,7 +9199,9 @@ ast_invoke_puts_func(ast_t *self, const object_t *drtargs) {
     for (int32_t i = 0; i < arrlen-1; ++i) {
         object_t *obj = objarr_get(args->objarr, i);
         assert(obj);
-        string_t *s = ast_obj_to_str(self, obj);
+        object_t *copy = ast_copy_object_value(self, obj);
+        string_t *s = ast_obj_to_str(self, copy);
+        obj_del(copy);
         if (!s) {
             continue;
         }
@@ -9186,7 +9212,9 @@ ast_invoke_puts_func(ast_t *self, const object_t *drtargs) {
     if (arrlen) {
         object_t *obj = objarr_get(args->objarr, arrlen-1);
         assert(obj);
-        string_t *s = ast_obj_to_str(self, obj);
+        object_t *copy = ast_copy_object_value(self, obj);
+        string_t *s = ast_obj_to_str(self, copy);
+        obj_del(copy);
         if (!s) {
             goto done;
         }
