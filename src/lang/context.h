@@ -7,6 +7,7 @@
 #include "lib/memory.h"
 #include "lib/string.h"
 #include "lib/dict.h"
+#include "core/alias_info.h"
 #include "lang/types.h"
 #include "lang/object_dict.h"
 #include "lang/scope.h"
@@ -21,7 +22,7 @@ void
 ctx_clear(context_t *self);
 
 context_t *
-ctx_set_alias(context_t *self, const char *key, const char *val);
+ctx_set_alias(context_t *self, const char *key, const char *val, const char *desc);
 
 context_t *
 ctx_set_config(context_t *self, const char *key, const char *val);
@@ -47,8 +48,8 @@ ctx_get_imported_alias(const context_t *self);
 bool
 ctx_get_imported_config(const context_t *self);
 
-const dict_t *
-ctx_getc_almap(const context_t *self);
+const alinfo_t *
+ctx_getc_alinfo(const context_t *self);
 
 const dict_t *
 ctx_getc_confmap(const context_t *self);

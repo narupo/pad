@@ -7,7 +7,7 @@ enum {
 };
 
 struct context {
-    dict_t *almap;
+    alinfo_t *alinfo;
     dict_t *confmap;
     string_t *buf;
     scope_t *scope;
@@ -24,7 +24,7 @@ ctx_del(context_t *self) {
         return;
     }
 
-    dict_del(self->almap);
+    alinfo_del(self->alinfo);
     dict_del(self->confmap);
     str_del(self->buf);
     scope_del(self->scope);
@@ -35,7 +35,7 @@ context_t *
 ctx_new(void) {
     context_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->almap = dict_new(ALIAS_MAP_SIZE);
+    self->alinfo = alinfo_new();
     self->confmap = dict_new(CONFIG_MAP_SIZE);
     self->buf = str_new();
     self->scope = scope_new();
@@ -45,15 +45,24 @@ ctx_new(void) {
 
 void
 ctx_clear(context_t *self) {
-    dict_clear(self->almap);
+    alinfo_clear(self->alinfo);
     str_clear(self->buf);
     scope_clear(self->scope);
     self->imported_alias = false;
 }
 
 context_t *
-ctx_set_alias(context_t *self, const char *key, const char *value) {
-    dict_set(self->almap, key, value);
+ctx_set_alias(context_t *self, const char *key, const char *value, const char *desc) {
+    if (!key || !value) {
+        return NULL;
+    }
+
+    alinfo_set_value(self->alinfo, key, value);
+
+    if (desc) {
+        alinfo_set_desc(self->alinfo, key, desc);
+    }
+
     return self;
 }
 
@@ -65,11 +74,12 @@ ctx_set_config(context_t *self, const char *key, const char *value) {
 
 const char *
 ctx_get_alias_value(context_t *self, const char *key) {
-    const dict_item_t *item = dict_getc(self->almap, key);
-    if (item == NULL) {
-        return NULL;
-    }
-    return item->value;
+    return alinfo_getc_value(self->alinfo, key);
+}
+
+const char *
+ctx_get_alias_desc(context_t *self, const char *key) {
+    return alinfo_getc_desc(self->alinfo, key);
 }
 
 context_t *
@@ -103,9 +113,9 @@ ctx_get_imported_config(const context_t *self) {
     return self->imported_config;
 }
 
-const dict_t *
-ctx_getc_almap(const context_t *self) {
-    return self->almap;
+const alinfo_t *
+ctx_getc_alinfo(const context_t *self) {
+    return self->alinfo;
 }
 
 const dict_t *

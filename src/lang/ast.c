@@ -9030,7 +9030,7 @@ ast_invoke_alias_set_func(ast_t *self, const object_t *objargs) {
     if (objarr_len(args) < 2) {
         ast_set_error_detail(self, "can't invoke alias.set. too few arguments");
         return NULL;
-    } else if (objarr_len(args) >= 3) {
+    } else if (objarr_len(args) >= 4) {
         ast_set_error_detail(self, "can't invoke alias.set. too many arguments");
         return NULL;
     }
@@ -9047,10 +9047,20 @@ ast_invoke_alias_set_func(ast_t *self, const object_t *objargs) {
         return NULL;
     }
 
-    string_t *key = keyobj->string;
-    string_t *val = valobj->string;
+    const object_t *descobj = NULL;
+    if (objarr_len(args) == 3) {
+        descobj = objarr_getc(args, 2);
+        if (descobj->type != OBJ_TYPE_STRING) {
+            ast_set_error_detail(self, "can't invoke alias.set. description is not string");
+            return NULL;
+        }
+    }
 
-    ctx_set_alias(self->context, str_getc(key), str_getc(val));
+    const char *key = str_getc(keyobj->string);
+    const char *val = str_getc(valobj->string);
+    const char *desc = descobj ? str_getc(descobj->string) : NULL;
+
+    ctx_set_alias(self->context, key, val, desc);
 
     return obj_new_nil();
 }

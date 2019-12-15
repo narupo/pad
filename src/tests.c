@@ -11858,11 +11858,24 @@ test_ast_traverse(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(!ast_has_error(ast));
-        const dict_t *almap = ctx_getc_almap(ctx);
-        const dict_item_t *item = dict_getc(almap, "abc");
-        assert(item);
-        assert(!strcmp(item->key, "abc"));
-        assert(!strcmp(item->value, "def"));
+        const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
+        const char *value = alinfo_getc_value(alinfo, "abc");
+        assert(value);
+        assert(!strcmp(value, "def"));
+    }
+
+    tkr_parse(tkr, "{@ alias.set(\"abc\", \"def\", \"ghi\") @}");
+    {
+        ast_parse(ast, tkr_get_tokens(tkr));
+        ast_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
+        const char *value = alinfo_getc_value(alinfo, "abc");
+        assert(value);
+        assert(!strcmp(value, "def"));
+        const char *desc = alinfo_getc_desc(alinfo, "abc");
+        assert(desc);
+        assert(!strcmp(desc, "ghi"));
     }
 
     tkr_parse(tkr, "{: opts.get(\"abc\") :}");
