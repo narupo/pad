@@ -239,3 +239,28 @@ get_origin(const config_t *config, const char *cap_path) {
     err_die("impossible. invalid state in get origin");
     return NULL;
 }
+
+char * 
+trim_first_line(char *dst, int32_t dstsz, const char *text) {
+    if (!dst || !dstsz || !text) {
+        return NULL;
+    }
+
+    char *dp = dst;
+    const char *dend = dst + dstsz - 1; // -1 for final nil
+    
+    for (const char *p = text; *p && dp < dend; ++p) {
+        if (*p == '\r' && *(p+1) == '\n') {
+            break;
+        } else if (*p == '\r') {
+            break;
+        } else if (*p == '\n') {
+            break;
+        } else {
+            *dp++ = *p;
+        }
+    }
+
+    *dp = '\0';
+    return dst;
+}
