@@ -141,3 +141,17 @@ argsbyoptind(int argc, char *argv[], int optind);
  */
 const char *
 get_origin(const config_t *config, const char *cap_path);
+
+/**
+ * trim first line of text
+ *
+ * @param[in] *dst  pointer to destination buffer
+ * @param[in] dstsz number of size of destination buffer
+ * @param[in] *text pointer to strings
+ *
+ * @return success to pointer to destination buffer
+ * @return failed to pointer to NULL
+ */
+char * 
+trim_first_line(char *dst, int32_t dstsz, const char *text);
+
