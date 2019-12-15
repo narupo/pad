@@ -650,12 +650,15 @@ app_execute_snippet(app_t *self, const char *name) {
         return 1;
     }
 
+    bool found = false;
+
     for (file_dirnode_t *node; (node = file_dirread(dir)); ) {
         const char *fname = file_dirnodename(node);
-        if (!strcmp(fname, ".") || !strcmp(fname, "..")) {
+        if (cstr_eq(fname, ".") || cstr_eq(fname, "..")) {
             continue;
         }
-        if (!strcmp(fname, name)) {
+        if (cstr_eq(fname, name)) {
+            found = true;
             if (!app_show_snippet(self, fname)) {
                 file_dirclose(dir);
                 return 1;
@@ -664,7 +667,7 @@ app_execute_snippet(app_t *self, const char *name) {
     }
 
     file_dirclose(dir);
-    return 0;
+    return found ? 0 : 1;
 }
 
 /**
@@ -706,6 +709,7 @@ app_run(app_t *self) {
     if (result == -1) {
         result = app_execute_snippet(self, cmdname);
         if (result != 0) {
+            err_error("not found name \"%s\"", cmdname);
             return result;
         }
     }
