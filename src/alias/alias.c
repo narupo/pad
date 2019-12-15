@@ -3,6 +3,7 @@
 struct opts {
     bool ishelp;
     bool isglobal;
+    bool isdesc;
 };
 
 struct alcmd {
@@ -20,9 +21,10 @@ alcmd_parse_opts(alcmd_t *self) {
     static const struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"global", required_argument, 0, 'g'},
-        {},
+        {"description", no_argument, 0, 'd'},
+        {0},
     };
-    static const char *shortopts = "hg";
+    static const char *shortopts = "hgd";
 
     self->opts = (struct opts){0};
 
@@ -42,6 +44,7 @@ alcmd_parse_opts(alcmd_t *self) {
         case 0: /* long option only */ break;
         case 'h': self->opts.ishelp = true; break;
         case 'g': self->opts.isglobal = true; break;
+        case 'd': self->opts.isdesc = true; break;
         case '?':
         default: err_die("unknown option"); break;
         }
@@ -65,8 +68,9 @@ alcmd_show_usage(const alcmd_t *self) {
         "\n"
         "The options are:\n"
         "\n"
-        "    -h, --help    show usage.\n"
-        "    -g, --global  scope to global.\n"
+        "    -h, --help        show usage.\n"
+        "    -g, --global      scope to global.\n"
+        "    -d, --description show description of alias.\n"
         "\n"
     );
     fflush(stdout);
@@ -170,7 +174,8 @@ alcmd_show_list(alcmd_t *self) {
 }
 
 static int
-alcmd_show_alias_value(alcmd_t *self, const char *key) {
+alcmd_show_alias_value(alcmd_t *self) {
+    const char *key = self->argv[self->optind];
     const char *value = alcmd_getc_value(self, key);
     if (!value) {
         err_error("not found alias \"%s\"", key);
@@ -178,6 +183,20 @@ alcmd_show_alias_value(alcmd_t *self, const char *key) {
     }
     puts(value);
     fflush(stdout);
+    return 0;
+}
+
+int
+alcmd_show_desc_of_alias(alcmd_t *self) {
+    const context_t *ctx = almgr_getc_context(self->almgr);
+    const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
+    const char *key = self->argv[self->optind];
+    const char *desc = alinfo_getc_desc(alinfo, key);
+    if (!desc) {
+        return 0;
+    }
+
+    puts(desc);
     return 0;
 }
 
@@ -192,9 +211,13 @@ alcmd_run(alcmd_t *self) {
         return 1;
     }
 
-    if (self->argc - self->optind >= 1) {
-        return alcmd_show_alias_value(self, self->argv[self->optind]);
+    if (self->argc - self->optind == 0) {
+        return alcmd_show_list(self);
     }
 
-    return alcmd_show_list(self);
+    if (self->opts.isdesc) {
+        return alcmd_show_desc_of_alias(self);
+    }
+
+    return alcmd_show_alias_value(self);
 }
