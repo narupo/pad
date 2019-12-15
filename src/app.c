@@ -667,7 +667,7 @@ app_execute_snippet(app_t *self, const char *name) {
     }
 
     file_dirclose(dir);
-    return found ? 0 : 1;
+    return found ? 0 : -1;
 }
 
 /**
@@ -708,7 +708,7 @@ app_run(app_t *self) {
     int result = app_execute_alias_by_name(self, cmdname);
     if (result == -1) {
         result = app_execute_snippet(self, cmdname);
-        if (result != 0) {
+        if (result == -1) {
             err_error("not found name \"%s\"", cmdname);
             return result;
         }
