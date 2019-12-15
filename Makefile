@@ -71,6 +71,7 @@ SRCS := build/lib/error.c \
 	build/core/config.c \
 	build/core/util.c \
 	build/core/alias_manager.c \
+	build/core/alias_info.c \
 	build/core/symlink.c \
 	build/core/args.c \
 	build/home/home.c \
@@ -138,6 +139,8 @@ build/core/config.o: src/core/config.c src/core/config.h
 build/core/util.o: src/core/util.c src/core/util.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/core/alias_manager.o: src/core/alias_manager.c src/core/alias_manager.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/core/alias_info.o: src/core/alias_info.c src/core/alias_info.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/core/symlink.o: src/core/symlink.c src/core/symlink.h
 	$(CC) $(CFLAGS) -c $< -o $@

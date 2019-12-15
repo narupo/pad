@@ -123,39 +123,44 @@ alcmd_load_alias_list_by_opts(alcmd_t* self) {
 static const char *
 alcmd_getc_value(alcmd_t *self, const char *key) {
     const context_t *ctx = almgr_getc_context(self->almgr);
-    const dict_t *almap = ctx_getc_almap(ctx);
-    const dict_item_t *item = dict_getc(almap, key);
-    if (!item) {
-        return NULL;
-    }
-    return item->value;
+    const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
+    return alinfo_getc_value(alinfo, key);
 }
 
 static int
 alcmd_show_list(alcmd_t *self) {
     const context_t *ctx = almgr_getc_context(self->almgr);
-    const dict_t *almap = ctx_getc_almap(ctx);
+    const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
+    const dict_t *key_val_map = alinfo_getc_key_value_map(alinfo);
     int keymaxlen = 0;
+    int valmaxlen = 0;
 
 #undef max
 #define max(a, b) (a > b ? a : b);
 
-    for (int i = 0; i < dict_len(almap); ++i) {
-        const dict_item_t *alias = dict_getc_index(almap, i);
-        if (!alias) {
+    for (int i = 0; i < dict_len(key_val_map); ++i) {
+        const dict_item_t *item = dict_getc_index(key_val_map, i);
+        if (!item) {
             continue;
         }
-        keymaxlen = max(strlen(alias->key), keymaxlen);
+        keymaxlen = max(strlen(item->key), keymaxlen);
+        valmaxlen = max(strlen(item->value), valmaxlen);
     }
 
 #undef max
 
-    for (int i = 0; i < dict_len(almap); ++i) {
-        const dict_item_t *alias = dict_getc_index(almap, i);
-        if (!alias) {
+    for (int i = 0; i < dict_len(key_val_map); ++i) {
+        const dict_item_t *kv_item = dict_getc_index(key_val_map, i);
+        if (!kv_item) {
             continue;
         }
-        printf("%-*s %s\n", keymaxlen, alias->key, alias->value);
+
+        const char *desc = alinfo_getc_desc(alinfo, kv_item->key);
+        if (desc) {
+            printf("%-*s %-*s %s\n", keymaxlen, kv_item->key, valmaxlen, kv_item->value, desc);
+        } else {
+            printf("%-*s %s\n", keymaxlen, kv_item->key, kv_item->value);
+        }
     }
     fflush(stdout);
 

@@ -35,6 +35,7 @@
 #include "core/util.h"
 #include "core/symlink.h"
 #include "core/config.h"
+#include "core/alias_info.h"
 #include "lang/tokens.h"
 #include "lang/tokenizer.h"
 #include "lang/nodes.h"

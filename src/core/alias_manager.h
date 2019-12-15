@@ -11,6 +11,7 @@
 #include "core/config.h"
 #include "core/util.h"
 #include "core/symlink.h"
+#include "core/alias_info.h"
 
 #include "lang/tokenizer.h"
 #include "lang/ast.h"
