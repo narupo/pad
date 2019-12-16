@@ -291,7 +291,83 @@ cstrarr_tests[] = {
     {"cstrarr_getc", test_cstrarr_getc},
     {"cstrarr_len", test_cstrarr_len},
     {"cstrarr_show", test_cstrarr_show},
-    {},
+    {0},
+};
+
+/**********
+* cmdline *
+**********/
+
+void
+test_cmdline_new(void) {
+    cmdline_t *cmdline = cmdline_new();
+    assert(cmdline);
+    cmdline_del(cmdline);
+}
+
+void
+test_cmdline_del(void) {
+    cmdline_t *cmdline = cmdline_new();
+    assert(cmdline);
+    cmdline_del(cmdline);
+}
+
+void
+test_cmdline_parse(void) {
+    cmdline_t *cmdline = cmdline_new();
+    assert(cmdline);
+
+    const cmdline_object_t *obj = NULL;
+
+    assert(cmdline_parse(cmdline, "abc"));
+    assert(cmdline_len(cmdline) == 1);
+    obj = cmdline_getc(cmdline, 0);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(!strcmp(str_getc(obj->command), "abc"));
+    assert(cl_len(obj->cl) == 1);
+
+    assert(cmdline_parse(cmdline, "abc | def"));
+    assert(cmdline_len(cmdline) == 3);
+    obj = cmdline_getc(cmdline, 0);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(!strcmp(str_getc(obj->command), "abc"));
+    assert(cl_len(obj->cl) == 1);
+    obj = cmdline_getc(cmdline, 1);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_PIPE);
+    obj = cmdline_getc(cmdline, 2);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(!strcmp(str_getc(obj->command), "def"));
+    assert(cl_len(obj->cl) == 1);
+
+    assert(cmdline_parse(cmdline, "abc -d efg | hij -d \"klm\""));
+    assert(cmdline_len(cmdline) == 3);
+    obj = cmdline_getc(cmdline, 0);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(!strcmp(str_getc(obj->command), "abc -d efg"));
+    assert(cl_len(obj->cl) == 3);
+    obj = cmdline_getc(cmdline, 1);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_PIPE);
+    obj = cmdline_getc(cmdline, 2);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(!strcmp(str_getc(obj->command), "hij -d \"klm\""));
+    assert(cl_len(obj->cl) == 3);
+
+    cmdline_del(cmdline);
+}
+
+static const struct testcase
+cmdline_tests[] = {
+    {"cmdline_new", test_cmdline_new},
+    {"cmdline_del", test_cmdline_del},
+    {"cmdline_parse", test_cmdline_parse},
+    {0},
 };
 
 /*********
@@ -9042,7 +9118,7 @@ test_ast_traverse_atom(void) {
         ast_parse(ast, tkr_get_tokens(tkr));
         ast_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't invoke alias.set. too many arguments"));
+        assert(!strcmp(ast_get_error_detail(ast), "can't invoke alias.set. key is not string"));
     } 
 
     ctx_del(ctx);
@@ -12631,6 +12707,7 @@ testmodules[] = {
     {"string", string_tests},
     {"file", file_tests},
     {"cl", cl_tests},
+    {"cmdline", cmdline_tests},
     {"error", error_tests},
     {"util", utiltests},
     {"tokenizer", tokenizer_tests},

@@ -32,6 +32,7 @@
 #include "lib/file.h"
 #include "lib/cl.h"
 #include "lib/error.h"
+#include "lib/cmdline.h"
 #include "core/util.h"
 #include "core/symlink.h"
 #include "core/config.h"
