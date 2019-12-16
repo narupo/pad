@@ -40,6 +40,7 @@ init:
 	build$(SEP)ls \
 	build$(SEP)cat \
 	build$(SEP)run \
+	build$(SEP)exec \
 	build$(SEP)alias \
 	build$(SEP)edit \
 	build$(SEP)editor \
@@ -81,6 +82,7 @@ SRCS := build/lib/error.c \
 	build/ls/ls.c \
 	build/cat/cat.c \
 	build/run/run.c \
+	build/exec/exec.c \
 	build/alias/alias.c \
 	build/edit/edit.c \
 	build/editor/editor.c \
@@ -160,6 +162,8 @@ build/ls/ls.o: src/ls/ls.c src/ls/ls.h
 build/cat/cat.o: src/cat/cat.c src/cat/cat.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/run/run.o: src/run/run.c src/run/run.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/exec/exec.o: src/exec/exec.c src/exec/exec.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/alias/alias.o: src/alias/alias.c src/alias/alias.h
 	$(CC) $(CFLAGS) -c $< -o $@

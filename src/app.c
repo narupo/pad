@@ -332,6 +332,7 @@ app_usage(app_t *app) {
         "    cat        Concatenate files and show\n"
         "    make       Compile template language\n"
         "    run        Run script\n"
+        "    exec       Execute command line\n"
         "    alias      Run alias command\n"
         "    edit       Run editor with file name\n"
         "    editor     Set editor or show\n"
@@ -403,6 +404,7 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
         "ls",
         "cat",
         "run",
+        "exec",
         "alias",
         "edit",
         "editor",
@@ -460,6 +462,8 @@ app_execute_command_by_name(app_t *self, const char *name) {
         routine(catcmd);
     } else if (cstr_eq(name, "run")) {
         routine(runcmd);
+    } else if (cstr_eq(name, "exec")) {
+        routine(execcmd);
     } else if (cstr_eq(name, "alias")) {
         routine(alcmd);
     } else if (cstr_eq(name, "edit")) {

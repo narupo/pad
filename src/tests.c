@@ -359,6 +359,9 @@ test_cmdline_parse(void) {
     assert(!strcmp(str_getc(obj->command), "hij -d \"klm\""));
     assert(cl_len(obj->cl) == 3);
 
+    assert(cmdline_parse(cmdline, "a | b | c | d | e"));
+    assert(cmdline_len(cmdline) == 9);
+
     cmdline_del(cmdline);
 }
 
