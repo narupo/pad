@@ -89,7 +89,9 @@ cmdline_resize(cmdline_t *self, int32_t capa) {
         }
     }
 
-    self->objs = mem_erealloc(self->objs, capa);
+    int32_t objsize = sizeof(cmdline_object_t *);
+    int32_t size = objsize * capa + objsize;
+    self->objs = mem_erealloc(self->objs, size);
     self->capa = capa;
 
     return self;
@@ -179,7 +181,6 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 str_pushb(buf, *p);
                 m = 10;
             } else if (*p == '|') {
-                printf("1 store[%s]\n", str_getc(buf));
                 if (!str_len(buf)) {
                     snprintf(self->what, sizeof self->what, "invalid command line");
                     str_del(buf);
@@ -236,7 +237,6 @@ cmdline_parse(cmdline_t *self, const char *line) {
     }
 
     if (str_len(buf)) {
-        printf("2 store[%s]\n", str_getc(buf));
         // move back cmd object
         cmdline_object_t *obj = cmdlineobj_new(CMDLINE_OBJECT_TYPE_CMD);
         if (!cmdlineobj_parse(obj, str_getc(buf))) {

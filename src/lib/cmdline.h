@@ -10,11 +10,19 @@
 #include "lib/cl.h"
 #include "lib/string.h"
 
+/**
+ * number of type of cmdline objects
+ */
 typedef enum {
     CMDLINE_OBJECT_TYPE_CMD = 1,
     CMDLINE_OBJECT_TYPE_PIPE = 2,
 } cmdline_object_type_t;
 
+/**
+ * structure of cmdline_object
+ * this is element in array of cmdline object
+ * DO NOT DELETE command, and cl object
+ */
 struct cmdline_object {
     cmdline_object_type_t type;
     string_t *command;
@@ -32,30 +40,31 @@ typedef struct cmdline cmdline_t;
 *****************/
 
 /**
- * 
+ * destruct object
  *
- * @param[in]  *self 
+ * @param[in] *self pointer to cmdline_object_t dynamic allocate memory
  */
 void 
 cmdlineobj_del(cmdline_object_t *self);
 
 /**
- * 
+ * construct object
  *
- * @param[in]  type 
+ * @param[in] type number of type of object
  *
- * @return 
+ * @return pointer to cmdline_object_t dynamic allocate memory
  */
 cmdline_object_t * 
 cmdlineobj_new(cmdline_object_type_t type);
 
 /**
- * 
+ * parse text line
  *
- * @param[in]  *self 
- * @param[in]  *line 
+ * @param[in] *self pointer to cmdline_object_t dynamic allocate memory
+ * @param[in] *line pointer to strings
  *
- * @return 
+ * @return success to pointer to cmdline_object_t dynamic allocate memory
+ * @return failed to pointer to NULL
  */
 cmdline_object_t * 
 cmdlineobj_parse(cmdline_object_t *self, const char *line);
@@ -65,84 +74,86 @@ cmdlineobj_parse(cmdline_object_t *self, const char *line);
 **********/
 
 /**
- * 
+ * destruct object
  *
- * @param[in]  *self 
+ * @param[in] *self pointer to cmdline_t dynamic allocate memory
  */
 void 
 cmdline_del(cmdline_t *self);
 
 /**
- * 
+ * construct object
  *
- * @param[in]  void 
- *
- * @return 
+ * @return pointer to cmdline_t dynamic allocate memory
  */
 cmdline_t * 
 cmdline_new(void);
 
 /**
- * 
+ * resize objects array
  *
- * @param[in]  *self 
- * @param[in]  capa  
+ * @param[in] *self pointer to cmdline_t dynamic allocate memory
+ * @param[in] capa  number of new capacity
  *
- * @return 
+ * @return success to pointer to cmdline_t dynamic allocate memory
+ * @return failed to pointer to NULL
  */
 cmdline_t * 
 cmdline_resize(cmdline_t *self, int32_t capa);
 
 /**
- * 
+ * move back object at array
  *
- * @param[in]  *self     
- * @param[in]  *move_obj 
+ * @param[in] *self     pointer to cmdline_t dynamic allocate memory
+ * @param[in] *move_obj pointer to object with move semantics
  *
- * @return 
+ * @return success to pointer to cmdline_t dynamic allocate memory
+ * @return failed to pointer to NULL
  */
 cmdline_t * 
 cmdline_moveb(cmdline_t *self, cmdline_object_t *move_obj);
 
 /**
- * 
+ * if object has error then return true
  *
- * @param[in]  *self 
+ * @param[in] *self pointer to cmdline_t dynamic allocate memory
  *
- * @return 
+ * @return if has error then true
+ * @return if not has error then false
  */
 bool 
 cmdline_has_error(const cmdline_t *self);
 
 /**
- * 
+ * get length of objects array
  *
- * @param[in]  *self 
+ * @param[in] *self pointer to cmdline_t dynamic allocate memory
  *
- * @return 
+ * @return number of length of array
  */
 int32_t 
 cmdline_len(const cmdline_t *self);
 
 /**
- * 
+ * get read-only object from array
  *
- * @param[in]  *self 
- * @param[in]  index 
+ * @param[in] *self pointer to cmdline_t dynamic allocate memory
+ * @param[in] index number of index of array
  *
- * @return 
+ * @return success to pointer to cmdline_object_t dynamic allocate memory
+ * @return failed to pointer to NULL
  */
 const cmdline_object_t * 
 cmdline_getc(const cmdline_t *self, int32_t index);
 
 /**
- * 
+ * parse text line
  *
- * @param[in]  *self 
- * @param[in]  *line 
+ * @param[in] *self pointer to cmdline_t dynamic allocate memory
+ * @param[in] *line pointer to strings
  *
- * @return 
+ * @return success to pointer to cmdline_t dynamic allocate memory
+ * @return failed to pointer to NULL
  */
 cmdline_t * 
 cmdline_parse(cmdline_t *self, const char *line);
-
