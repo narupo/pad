@@ -345,8 +345,15 @@ execcmd_exec_all_win(execcmd_t *self) {
         const cmdline_object_t *obj = cmdline_getc(self->cmdline, i);
         const cmdline_object_t *ope = cmdline_getc(self->cmdline, i+1);
 
-        if (!execcmd_pipe(self, obj, ope)) {
-            return NULL;
+        if (ope && ope->type == CMDLINE_OBJECT_TYPE_AND) {
+            int exit_code = safesystem(str_getc(obj->command), SAFESYSTEM_DEFAULT);
+            if (exit_code != 0) {
+                break;
+            }
+        } else {
+            if (!execcmd_pipe(self, obj, ope)) {
+                return NULL;
+            }
         }
     }
 
