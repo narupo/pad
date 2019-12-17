@@ -111,11 +111,6 @@ app_init_config(app_t *self) {
     self->config->scope = CAP_SCOPE_LOCAL;
     self->config->recursion_count = 0;
 
-    if (!file_solve(self->config->app_path, sizeof self->config->app_path, self->argv[0])) {
-        err_error("failed to create app path");
-        return false;
-    }
-
     if (!file_solve(self->config->var_cd_path, sizeof self->config->var_cd_path, "~/.cap/var/cd")) {
         err_error("failed to create path of cd of variable");
         return false;
