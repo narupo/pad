@@ -22,6 +22,9 @@ struct exec {
     cmdline_t *cmdline;
     int32_t cmdline_index;
     char what[1024];
+#ifdef _CAP_WINDOWS
+    string_t *read_buffer;
+#endif
 };
 
 /**
@@ -104,6 +107,9 @@ execcmd_del(execcmd_t *self) {
     config_del(self->config);
     freeargv(self->argc, self->argv);
     cmdline_del(self->cmdline);
+#if _CAP_WINDOWS
+    str_del(self->read_buffer);
+#endif
     free(self);
 }
 
@@ -115,6 +121,9 @@ execcmd_new(config_t *move_config, int argc, char **move_argv) {
     self->argc = argc;
     self->argv = move_argv;
     self->cmdline = cmdline_new();
+#if _CAP_WINDOWS
+    self->read_buffer = str_new();
+#endif
 
     if (!execcmd_parse_opts(self)) {
         execcmd_del(self);
@@ -132,66 +141,6 @@ execcmd_set_error(execcmd_t *self, const char *fmt, ...) {
     va_end(ap);
 }
 
-/*
-cl_t *
-execcmd_solve_cl(execcmd_t *self, const cl_t *cl) {
-    cl_t *dstcl = cl_new();
-
-    if (!cl_len(cl)) {
-        return dstcl;
-    }
-
-    const char *first = cl_getc(cl, 0);
-    char path[FILE_NPATH];
-    if (!symlink_follow_path(self->config, path, sizeof path, first)) {
-        execcmd_set_error(self, "failed to follow path");
-        return NULL;
-    }
-
-    cl_push(dstcl, path);
-
-    for (int32_t i = 1; i < cl_len(cl); ++i) {
-        const char *el = cl_getc(cl, i);
-        cl_push(dstcl, el);
-    }
-
-    return dstcl;
-}
-
-execcmd_t *
-execcmd_exec_first(execcmd_t *self) {
-    if (cmdline_len(self->cmdline) != 1) {
-        return NULL;
-    }
-
-    const cmdline_object_t *obj = cmdline_getc(self->cmdline, 0);
-    if (!obj) {
-        execcmd_set_error(self, "object is null. do not execute first");
-        return NULL;
-    }
-
-    if (obj->type != CMDLINE_OBJECT_TYPE_CMD) {
-        execcmd_set_error(self, "invalid object type. do not execute first");
-        return NULL;
-    }
-
-    cl_t *cl = execcmd_solve_cl(self, obj->cl);
-    if (!cl) {
-        execcmd_set_error(self, "failed to solve command line");
-        return NULL;
-    }
-
-    char *cmdline = cl_to_string(cl);
-    cl_del(cl);
-
-    printf("app[%s] cmdline[%s]\n", self->config->app_path, cmdline);
-    // safesystem(cmdline, SAFESYSTEM_DEFAULT);
-
-    free(cmdline);
-    return self;
-}
-*/
-
 execcmd_t *
 execcmd_exec_first(execcmd_t *self) {
     const cmdline_object_t *first = cmdline_getc(self->cmdline, 0);
@@ -200,10 +149,210 @@ execcmd_exec_first(execcmd_t *self) {
     return self;
 }
 
+#ifdef _CAP_WINDOWS
 execcmd_t *
-execcmd_exec_all_win(execcmd_t *self) {
+execcmd_create_read_pipe(execcmd_t *self, HANDLE process, HANDLE *read_handle, HANDLE *write_handle) {
+    HANDLE tmp_read_handle = NULL;
+    
+    if (!CreatePipe(&tmp_read_handle, write_handle, NULL, 0)) {
+        execcmd_set_error(self, "failed to create pipe");
+        return NULL;
+    }
+
+    if (!DuplicateHandle(
+        process,
+        tmp_read_handle,
+        process,
+        read_handle,
+        0,
+        TRUE,
+        DUPLICATE_SAME_ACCESS)) {
+        execcmd_set_error(self, "failed to duplicate handle");
+        CloseHandle(tmp_read_handle);
+        CloseHandle(*write_handle);
+        return NULL;
+    }
+
+    if (!CloseHandle(tmp_read_handle)) {
+        execcmd_set_error(self, "failed to close handle");
+        CloseHandle(*read_handle);
+        CloseHandle(*write_handle);
+        return NULL;
+    }
+
     return self;
 }
+
+execcmd_t *
+execcmd_create_write_pipe(execcmd_t *self, HANDLE process, HANDLE *read_handle, HANDLE *write_handle) {
+    HANDLE tmp_write_handle = NULL;
+    
+    if (!CreatePipe(read_handle, &tmp_write_handle, NULL, 0)) {
+        execcmd_set_error(self, "failed to create pipe");
+        return NULL;
+    }
+
+    if (!DuplicateHandle(
+        process,
+        tmp_write_handle,
+        process,
+        write_handle,
+        0,
+        TRUE,
+        DUPLICATE_SAME_ACCESS)) {
+        execcmd_set_error(self, "failed to duplicate handle");
+        CloseHandle(tmp_write_handle);
+        CloseHandle(*read_handle);
+        return NULL;
+    }
+
+    if (!CloseHandle(tmp_write_handle)) {
+        execcmd_set_error(self, "failed to close handle");
+        CloseHandle(*read_handle);
+        CloseHandle(*write_handle);
+        return NULL;
+    }
+
+    return self;
+}
+
+execcmd_t *
+execcmd_pipe(execcmd_t *self, const cmdline_object_t *obj, const cmdline_object_t *ope) {
+    HANDLE hs1[2] = {0};
+    HANDLE hs2[2] = {0};
+    HANDLE process = GetCurrentProcess();
+
+#define close_hs1() { \
+        CloseHandle(hs1[0]); \
+        CloseHandle(hs1[1]); \
+    }
+#define close_hs2() { \
+        CloseHandle(hs2[0]); \
+        CloseHandle(hs2[1]); \
+    }
+#define close_hs() { \
+        close_hs1(); \
+        close_hs2(); \
+    }
+
+    if (!execcmd_create_read_pipe(self, process, &hs1[0], &hs1[1])) {
+        return NULL;
+    }
+
+    if (!execcmd_create_write_pipe(self, process, &hs2[0], &hs2[1])) {
+        close_hs1();
+        return NULL;
+    }
+
+    // create process
+    STARTUPINFO si = {0};
+    si.cb = sizeof(STARTUPINFO);
+    si.dwFlags = STARTF_USESTDHANDLES;
+    si.hStdInput = hs1[0];
+    si.hStdOutput = hs2[1];
+    si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+
+    if (si.hStdOutput == INVALID_HANDLE_VALUE) {
+        execcmd_set_error(self, "failed to get stdout handle");
+        close_hs();
+        return NULL;
+    }
+    if (si.hStdError == INVALID_HANDLE_VALUE) {
+        execcmd_set_error(self, "failed to get stdout handle");
+        close_hs();
+        return NULL;
+    }
+
+    LPTSTR cmdline = (LPTSTR) str_getc(obj->command);
+    PROCESS_INFORMATION pi = {0};
+
+    if (!CreateProcess(
+        NULL,
+        cmdline,
+        NULL,
+        NULL,
+        TRUE,
+        0,
+        NULL,
+        NULL,
+        &si,
+        &pi)) {
+        execcmd_set_error(self, "failed to create process");
+        return NULL;
+    }
+
+    HANDLE child_process = pi.hProcess;
+    if (!CloseHandle(pi.hThread)) {
+        execcmd_set_error(self, "failed to close thread handle");
+        close_hs();
+        return NULL;
+    }
+
+    CloseHandle(hs1[0]);
+    hs1[0] = NULL;
+
+    CloseHandle(hs2[1]);
+    hs2[1] = NULL;
+
+    // write to pipe (parent write to child process)
+    DWORD nwrite = 0;
+    WriteFile(hs1[1], str_getc(self->read_buffer), str_len(self->read_buffer), &nwrite, NULL);
+    CloseHandle(hs1[1]);
+
+    // read from pipe (parent read from child process)
+    char buf[512];
+    DWORD nread = 0;
+
+    str_clear(self->read_buffer);
+    for (;;) {
+        memset(buf, 0, sizeof buf);
+        ReadFile(hs2[0], buf, sizeof buf, &nread, NULL);
+
+        if (nread == 0) {
+            break;
+        }
+
+        str_app(self->read_buffer, buf);
+    }
+    CloseHandle(hs2[0]);
+
+    // wait for child process
+    DWORD result = WaitForSingleObject(child_process, INFINITE);
+    switch (result) {
+    default:
+        execcmd_set_error(self, "failed to wait");
+        close_hs();
+        CloseHandle(child_process);
+        return NULL;
+        break;
+    case WAIT_OBJECT_0: // success
+        close_hs();
+        CloseHandle(child_process);
+        if (!ope) {
+            printf("%s", str_getc(self->read_buffer));
+            fflush(stdout);
+        }
+        return self;
+        break;
+    }
+
+    return NULL; // impossible
+}
+
+execcmd_t *
+execcmd_exec_all_win(execcmd_t *self) {
+    for (int32_t i = 0; i < cmdline_len(self->cmdline); i += 2) {
+        const cmdline_object_t *obj = cmdline_getc(self->cmdline, i);
+        const cmdline_object_t *ope = cmdline_getc(self->cmdline, i+1);
+
+        if (!execcmd_pipe(self, obj, ope)) {
+            return NULL;
+        }
+    }
+
+    return self;
+}
+#else
 
 execcmd_t *
 execcmd_exec_all_unix(execcmd_t *self) {
@@ -272,6 +421,7 @@ execcmd_exec_all_unix(execcmd_t *self) {
 done:
     return self; // impossible
 }
+#endif
 
 execcmd_t *
 execcmd_exec_all(execcmd_t *self) {
@@ -289,10 +439,6 @@ execcmd_exec_all(execcmd_t *self) {
 
 execcmd_t *
 execcmd_exec(execcmd_t *self, const char *cltxt) {
-    if (!self || !cltxt) {
-        return NULL;
-    }
-
     if (!cmdline_parse(self->cmdline, cltxt)) {
         execcmd_set_error(self, "failed to parse command line");
         return NULL;
