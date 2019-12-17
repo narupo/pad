@@ -131,9 +131,14 @@ runcmd_run(runcmd_t *self) {
         option |= SAFESYSTEM_DETACH;
     }
 
-    safesystem(str_getc(cmdline), option);
+    int status = safesystem(str_getc(cmdline), option);
+#if _CAP_WINDOWS
+    int exit_code = status;
+#else
+    int exit_code = WEXITSTATUS(status);
+#endif
 
     // Done
     str_del(cmdline);
-    return 0;
+    return exit_code;
 }

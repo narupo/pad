@@ -9,47 +9,47 @@
 
 void
 freeargv(int argc, char *argv[]) {
-	if (argv) {
-		for (int i = 0; i < argc; ++i) {
-			free(argv[i]);
-		}
-		free(argv);
-	}
+    if (argv) {
+        for (int i = 0; i < argc; ++i) {
+            free(argv[i]);
+        }
+        free(argv);
+    }
 }
 
 void
 showargv(int argc, char *argv[]) {
-	for (int i = 0; i < argc; ++i) {
-		printf("%s\n", argv[i]);
-	}
+    for (int i = 0; i < argc; ++i) {
+        printf("%s\n", argv[i]);
+    }
 }
 
 bool
 isoutofhome(const char *varhome, const char *pth) {
-	char hm[FILE_NPATH];
-	if (!file_readline(hm, sizeof hm, varhome)) {
-		err_error("invalid environment variable of varhome");
-		return true;
-	}
+    char hm[FILE_NPATH];
+    if (!file_readline(hm, sizeof hm, varhome)) {
+        err_error("invalid environment variable of varhome");
+        return true;
+    }
 
-	char home[FILE_NPATH];
-	char path[FILE_NPATH];
+    char home[FILE_NPATH];
+    char path[FILE_NPATH];
 
-	if (!file_solve(home, sizeof home, hm) ||
-		!file_solve(path, sizeof path, pth)) {
-		return true;
-	}
+    if (!file_solve(home, sizeof home, hm) ||
+        !file_solve(path, sizeof path, pth)) {
+        return true;
+    }
 
-	if (!file_exists(path)) {
-		return true;
-	}
+    if (!file_exists(path)) {
+        return true;
+    }
 
-	size_t homelen = strlen(home);
-	if (strncmp(home, path, homelen)) {
-		return true;
-	}
+    size_t homelen = strlen(home);
+    if (strncmp(home, path, homelen)) {
+        return true;
+    }
 
-	return false;
+    return false;
 }
 
 bool
@@ -94,11 +94,15 @@ is_out_of_home_no_exists(const char *homepath, const char *argpath) {
 
 int
 randrange(int min, int max) {
-	return min + (int)(rand() * (max - min + 1.0) / (1.0 + RAND_MAX));
+    return min + (int)(rand() * (max - min + 1.0) / (1.0 + RAND_MAX));
 }
 
 int
 safesystem(const char *cmdline, int option) {
+    if (option & SAFESYSTEM_UNSAFE) {
+        return system(cmdline);
+    }
+
 #ifdef _CAP_WINDOWS
     int flag = 0;
     if (option & SAFESYSTEM_EDIT) {
@@ -172,59 +176,61 @@ safesystem(const char *cmdline, int option) {
     return exit_code;
 
 #else
-	cl_t *cl = cl_new();
-	if (!cl_parse_str_opts(cl, cmdline, 0)) {
-		err_error("failed to parse command line \"%s\"", cmdline);
-		cl_del(cl);
-		return -1;
-	}
+    cl_t *cl = cl_new();
+    if (!cl_parse_str_opts(cl, cmdline, 0)) {
+        err_error("failed to parse command line \"%s\"", cmdline);
+        cl_del(cl);
+        return -1;
+    }
 
-	int argc = cl_len(cl);
-	char **argv = cl_escdel(cl);
-	if (!argv) {
-		err_error("failed to escape and delete of clk");
-		return -1;
-	}
+    int argc = cl_len(cl);
+    char **argv = cl_escdel(cl);
+    if (!argv) {
+        err_error("failed to escape and delete of clk");
+        return -1;
+    }
 
-	switch (fork()) {
-	case -1:
-		err_error("failed to fork");
-		return -1;
-	break;
-	case 0:
-		if (execv(argv[0], argv) == -1) {
-			err_error("failed to safesystem");
-			freeargv(argc, argv);
-			_exit(1);
-		}
-	break;
-	default:
-		freeargv(argc, argv);
-		wait(NULL);
-	break;
-	}
+    int status = 0;
 
-    return 0;
+    switch (fork()) {
+    default: // parent
+        freeargv(argc, argv);
+        wait(&status);
+        break;
+    case 0: // child
+        if (execv(argv[0], argv) == -1) {
+            err_error("failed to safesystem");
+            freeargv(argc, argv);
+            _exit(1);
+        }
+        break;
+    case -1: // error
+        err_error("failed to fork");
+        return -1;
+        break;
+    }
+
+    return status;
 #endif
 }
 
 cstring_array_t *
 argsbyoptind(int argc, char *argv[], int optind) {
-	cstring_array_t *args = cstrarr_new();
+    cstring_array_t *args = cstrarr_new();
 
-	// DO NOT DELETE FOR DEBUG.
-	//
-	// printf("argc[%d] optind[%d]\n", argc, optind);
-	// for (int i = 0; i < argc; ++i) {
-	// 	printf("%d %s\n", i, argv[i]);
-	// }
+    // DO NOT DELETE FOR DEBUG.
+    //
+    // printf("argc[%d] optind[%d]\n", argc, optind);
+    // for (int i = 0; i < argc; ++i) {
+    // 	printf("%d %s\n", i, argv[i]);
+    // }
 
-	cstrarr_push(args, argv[0]);
-	for (int i = optind; i < argc; ++i) {
-		cstrarr_push(args, argv[i]);
-	}
+    cstrarr_push(args, argv[0]);
+    for (int i = optind; i < argc; ++i) {
+        cstrarr_push(args, argv[i]);
+    }
 
-	return args;
+    return args;
 }
 
 const char *

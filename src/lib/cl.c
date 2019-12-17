@@ -137,6 +137,18 @@ clstr_del(cl_string_t *self) {
     }
 }
 
+static char *
+clstr_escdel(cl_string_t *self) {
+    if (!self) {
+        return NULL;
+    }
+
+    char *ret = self->arr;
+    free(self);
+
+    return ret;
+}
+
 static cl_string_t *
 clstr_new(void) {
     cl_string_t *self = calloc(1, sizeof(*self));
@@ -553,4 +565,25 @@ cl_show(const cl_t *self, FILE *fout) {
     for (int32_t i = 0; i < self->len; ++i) {
         fprintf(fout, "[%d] = [%s]\n", i, self->arr[i]);
     }
+}
+
+char *
+cl_to_string(const cl_t *self) {
+    cl_string_t *line = clstr_new();
+
+    for (int32_t i = 0; i < self->len-1; ++i) {
+        const char *el = self->arr[i];
+        clstr_app(line, "\"");
+        clstr_app(line, el);
+        clstr_app(line, "\"");
+        clstr_app(line, " ");
+    }
+    if (self->len) {
+        const char *el = self->arr[self->len-1];
+        clstr_app(line, "\"");
+        clstr_app(line, el);
+        clstr_app(line, "\"");
+    }
+
+    return clstr_escdel(line);
 }

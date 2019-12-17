@@ -6,6 +6,7 @@
 struct config {
     int scope; // @see constant.h for CAP_SCOPE_*
     int recursion_count;
+    char app_path[FILE_NPATH];
     char var_cd_path[FILE_NPATH];
     char var_home_path[FILE_NPATH];
     char var_editor_path[FILE_NPATH];
