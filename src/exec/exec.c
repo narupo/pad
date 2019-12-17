@@ -307,7 +307,6 @@ execcmd_pipe(execcmd_t *self, const cmdline_object_t *obj, const cmdline_object_
     for (;;) {
         memset(buf, 0, sizeof buf);
         ReadFile(hs2[0], buf, sizeof buf, &nread, NULL);
-
         if (nread == 0) {
             break;
         }
