@@ -259,6 +259,8 @@ execcmd_exec_all_unix(execcmd_t *self) {
             } break;
             case -1: { // error
                 execcmd_set_error(self, "failed to fork");
+                close(fd[READ]);
+                close(fd[WRITE]);
                 return NULL;
             } break;
             }
