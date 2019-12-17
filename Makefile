@@ -70,6 +70,7 @@ SRCS := build/lib/error.c \
 	build/lib/format.c \
 	build/lib/dict.c \
 	build/lib/cmdline.c \
+	build/lib/pipe.c \
 	build/core/config.c \
 	build/core/util.c \
 	build/core/alias_manager.c \
@@ -138,6 +139,8 @@ build/lib/format.o: src/lib/format.c src/lib/format.h
 build/lib/dict.o: src/lib/dict.c src/lib/dict.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lib/cmdline.o: src/lib/cmdline.c src/lib/cmdline.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lib/pipe.o: src/lib/pipe.c src/lib/pipe.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/core/config.o: src/core/config.c src/core/config.h
 	$(CC) $(CFLAGS) -c $< -o $@
