@@ -214,6 +214,42 @@ cmdline_parse(cmdline_t *self, const char *line) {
                     str_del(buf);
                     return NULL;
                 }
+            } else if (*p == '&' && *(p+1) == '&') {
+                ++p;
+
+                if (!str_len(buf)) {
+                    snprintf(self->what, sizeof self->what, "invalid command line");
+                    str_del(buf);
+                    return NULL;
+                }
+
+                // move back cmd object
+                cmdline_object_t *obj = cmdlineobj_new(CMDLINE_OBJECT_TYPE_CMD);
+                if (!cmdlineobj_parse(obj, str_getc(buf))) {
+                    snprintf(self->what, sizeof self->what, "failed to parse mini command line");
+                    str_del(buf);
+                    return NULL;
+                }
+
+                str_strip(buf, " ");
+                obj->command = buf;
+                buf = str_new();
+
+                if (!cmdline_moveb(self, obj)) {
+                    snprintf(self->what, sizeof self->what, "failed to move back command object");
+                    str_del(buf);
+                    return NULL;
+                }
+                obj = NULL;
+
+                // move back and object
+                obj = cmdlineobj_new(CMDLINE_OBJECT_TYPE_AND);
+
+                if (!cmdline_moveb(self, obj)) {
+                    snprintf(self->what, sizeof self->what, "failed to move back and object");
+                    str_del(buf);
+                    return NULL;
+                }
             } else {
                 str_pushb(buf, *p);
             }

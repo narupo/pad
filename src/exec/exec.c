@@ -132,6 +132,32 @@ execcmd_set_error(execcmd_t *self, const char *fmt, ...) {
     va_end(ap);
 }
 
+/*
+cl_t *
+execcmd_solve_cl(execcmd_t *self, const cl_t *cl) {
+    cl_t *dstcl = cl_new();
+
+    if (!cl_len(cl)) {
+        return dstcl;
+    }
+
+    const char *first = cl_getc(cl, 0);
+    char path[FILE_NPATH];
+    if (!symlink_follow_path(self->config, path, sizeof path, first)) {
+        execcmd_set_error(self, "failed to follow path");
+        return NULL;
+    }
+
+    cl_push(dstcl, path);
+
+    for (int32_t i = 1; i < cl_len(cl); ++i) {
+        const char *el = cl_getc(cl, i);
+        cl_push(dstcl, el);
+    }
+
+    return dstcl;
+}
+
 execcmd_t *
 execcmd_exec_first(execcmd_t *self) {
     if (cmdline_len(self->cmdline) != 1) {
@@ -140,17 +166,37 @@ execcmd_exec_first(execcmd_t *self) {
 
     const cmdline_object_t *obj = cmdline_getc(self->cmdline, 0);
     if (!obj) {
+        execcmd_set_error(self, "object is null. do not execute first");
         return NULL;
     }
 
     if (obj->type != CMDLINE_OBJECT_TYPE_CMD) {
+        execcmd_set_error(self, "invalid object type. do not execute first");
         return NULL;
     }
 
-    const char *cmd = str_getc(obj->command);
+    cl_t *cl = execcmd_solve_cl(self, obj->cl);
+    if (!cl) {
+        execcmd_set_error(self, "failed to solve command line");
+        return NULL;
+    }
 
-    puts(cmd);
+    char *cmdline = cl_to_string(cl);
+    cl_del(cl);
 
+    printf("app[%s] cmdline[%s]\n", self->config->app_path, cmdline);
+    // safesystem(cmdline, SAFESYSTEM_DEFAULT);
+
+    free(cmdline);
+    return self;
+}
+*/
+
+execcmd_t *
+execcmd_exec_first(execcmd_t *self) {
+    const cmdline_object_t *first = cmdline_getc(self->cmdline, 0);
+    const char *cmd = str_getc(first->command);
+    safesystem(cmd, SAFESYSTEM_UNSAFE);
     return self;
 }
 
@@ -160,196 +206,69 @@ execcmd_exec_all_win(execcmd_t *self) {
 }
 
 execcmd_t *
-execcmd_exec_all_unix_pipe_advance(execcmd_t *self) {
-    if (self->cmdline_index >= cmdline_len(self->cmdline)) {
-        return self; // success
-    }
-
-    bool is_last_cmd = cmdline_getc(self->cmdline, self->cmdline_index+1) == NULL;
-    int fd[2] = {0};
-    int pid = -1;
-
-    if (pipe(fd) != 0) {
-        execcmd_set_error(self, "failed to create pipe (%d)", self->cmdline_index);
-        return NULL;
-    }
-
-    if ((pid = fork()) < 0) {
-        execcmd_set_error(self, "failed to fork (%d)", self->cmdline_index);
-        close(fd[READ]);
-        close(fd[WRITE]);
-        return NULL;
-    }
-
-    // printf("cmdline index[%d] is_last_cmd[%d]\n", self->cmdline_index, is_last_cmd);
-
-    switch (pid) {
-    default: { // parent
-        int stdoutno = dup(STDOUT_FILENO);
-
-        const cmdline_object_t *obj = cmdline_getc(self->cmdline, self->cmdline_index);
-        if (!obj) {
-            execcmd_set_error(self, "command line object is null");
-            close(fd[WRITE]);
-            dup2(stdoutno, STDOUT_FILENO);
-            return NULL;
-        }
-        // printf("parent command[%s]\n", str_getc(obj->command));
-
-        close(fd[READ]);
-        if (is_last_cmd) {
-            // this is last command. do not pipe stdout
-            close(fd[WRITE]);
-        } else {
-            dup2(fd[WRITE], STDOUT_FILENO); // connect to stdout
-        }
-
-        safesystem(str_getc(obj->command), SAFESYSTEM_DEFAULT);
-        fflush(stdout);
-
-        if (!is_last_cmd) {
-            dup2(stdoutno, STDOUT_FILENO);
-        }
-
-        fflush(stdout);
-    } break;
-    case 0: { // child
-        close(fd[WRITE]);
-        int stdinno = dup(STDIN_FILENO);
-        dup2(fd[READ], STDIN_FILENO); // connect to stdin
-
-        const cmdline_object_t *ope = cmdline_getc(self->cmdline, self->cmdline_index+1);
-        if (!ope) {
-            execcmd_set_error(self, "command line operator is null");
-            close(fd[READ]);
-            dup2(stdinno, STDIN_FILENO);
-            return self; // success
-        }
-
-        switch (ope->type) {
-        default:
-            execcmd_set_error(self, "invalid operator type");
-            close(fd[READ]);
-            dup2(stdinno, STDIN_FILENO);
-            return NULL;
-            break;
-        case CMDLINE_OBJECT_TYPE_PIPE:
-            self->cmdline_index += 2;
-            execcmd_t *result = execcmd_exec_all_unix_pipe_advance(self);
-            close(fd[READ]);
-            dup2(stdinno, STDIN_FILENO);
-            return result;
-            break;
-        }
-    } break;
-    }
-
-    return self;
-}
-
-execcmd_t *
-do_pipe(execcmd_t *self) {
+execcmd_exec_all_unix(execcmd_t *self) {
     int stdinno = dup(STDIN_FILENO);
     int stdoutno = dup(STDOUT_FILENO);
-
-    // printf("%d: do pipe\n", getpid());
+    int exit_code = 0;
 
     for (int32_t i = 0; i < cmdline_len(self->cmdline); i += 2) {
-        // printf("i[%d]\n", i);
         const cmdline_object_t *obj = cmdline_getc(self->cmdline, i);
         const cmdline_object_t *ope = cmdline_getc(self->cmdline, i+1);
 
-        int fd[2] = {0};
-        if (pipe(fd) != 0) {
-            execcmd_set_error(self, "failed to create pipe");
-            return NULL;
-        }
-
-        pid_t pid = fork();
-        // printf("%d: forked\n", pid);
-        switch (pid) {
-        default: { // parent
-            close(fd[READ]);
-            if (ope) {
-                dup2(fd[WRITE], STDOUT_FILENO);
-                close(fd[WRITE]);
-            } else {
-                close(fd[WRITE]);
+        if (ope && ope->type == CMDLINE_OBJECT_TYPE_AND) {
+            const char *cmd = str_getc(obj->command);
+            int status = safesystem(cmd, SAFESYSTEM_UNSAFE);
+            exit_code = WEXITSTATUS(status);            
+            if (exit_code != 0) {
+                break;
             }
-            safesystem(str_getc(obj->command), SAFESYSTEM_DEFAULT);
-            dup2(stdoutno, STDOUT_FILENO);
-            dup2(stdinno, STDIN_FILENO);
-            wait(NULL);
-            goto done;
-        } break;
-        case 0: { // child
-            close(fd[WRITE]);
-            dup2(fd[READ], STDIN_FILENO);
-            close(fd[READ]);
-        } break;
-        case -1: { // error
-            execcmd_set_error(self, "failed to fork");
-            return NULL;
-        } break;
+        } else {
+            int fd[2] = {0};
+            if (pipe(fd) != 0) {
+                execcmd_set_error(self, "failed to create pipe");
+                return NULL;
+            }
+
+            pid_t pid = fork();
+            switch (pid) {
+            default: { // parent
+                close(fd[READ]);
+                if (ope) {
+                    dup2(fd[WRITE], STDOUT_FILENO);
+                    close(fd[WRITE]);
+                } else {
+                    close(fd[WRITE]);
+                }
+
+                const char *cmd = str_getc(obj->command);
+                int status = safesystem(cmd, SAFESYSTEM_UNSAFE);
+                exit_code = WEXITSTATUS(status);
+                (void) &exit_code;
+
+                dup2(stdoutno, STDOUT_FILENO);
+                dup2(stdinno, STDIN_FILENO);
+
+                wait(NULL);
+
+                goto done;
+            } break;
+            case 0: { // child
+                close(fd[WRITE]);
+                dup2(fd[READ], STDIN_FILENO);
+                close(fd[READ]);
+            } break;
+            case -1: { // error
+                execcmd_set_error(self, "failed to fork");
+                return NULL;
+            } break;
+            }
         }
     }
 
     close(stdinno);
     close(stdoutno);
-    // close(STDIN_FILENO);
-    // close(STDOUT_FILENO);
 done:
     return self; // impossible
-}
-
-execcmd_t *
-execcmd_exec_all_unix_pipe(execcmd_t *self, const cmdline_object_t *lhs, const cmdline_object_t *rhs) {
-    int fd[2] = {0};
-    int pid = -1;
-
-    if (pipe(fd) != 0) {
-        execcmd_set_error(self, "failed to create pipe");
-        return NULL;
-    }
-
-    if ((pid = fork()) < 0) {
-        execcmd_set_error(self, "failed to fork");
-        close(fd[READ]);
-        close(fd[WRITE]);
-        return NULL;
-    }
-
-    switch (pid) {
-    default: { // parent
-        close(fd[READ]);
-        dup2(fd[WRITE], 1); // connect to stdout
-
-        safesystem(str_getc(lhs->command), SAFESYSTEM_DEFAULT);
-        fflush(stdout);
-
-        dup2(STDOUT_FILENO, 1);
-    } break;
-    case 0: { // child
-        close(fd[WRITE]);
-        dup2(fd[READ], 0); // connect to stdin
-
-        safesystem(str_getc(rhs->command), SAFESYSTEM_DEFAULT);
-        fflush(stdout);
-
-        self->cmdline_index = 3;
-        return execcmd_exec_all_unix_pipe_advance(self);
-    } break;
-    }
-
-    return self;
-}
-
-/**
- * a | b | c
- */
-execcmd_t *
-execcmd_exec_all_unix(execcmd_t *self) {
-    return self;
 }
 
 execcmd_t *
@@ -362,7 +281,7 @@ execcmd_exec_all(execcmd_t *self) {
 #ifdef _CAP_WINDOWS
     return execcmd_exec_all_win(self);
 #else
-    return do_pipe(self);
+    return execcmd_exec_all_unix(self);
 #endif
 }
 
@@ -386,6 +305,23 @@ execcmd_exec(execcmd_t *self, const char *cltxt) {
     return self;
 }
 
+char *
+unescape_cl(char *dst, int32_t dstsz, const char *escaped) {
+    char *dp = dst;
+    char *dend = dst + dstsz-1;
+
+    for (const char *p = escaped; *p && dp < dend; ++p) {
+        if (*p == '\\') {
+            // pass
+        } else {
+            *dp++ = *p;
+        }
+    }
+
+    *dp = '\0';
+    return dst;
+}
+
 int
 execcmd_run(execcmd_t *self) {
     if (self->argc - self->optind == 0 ||
@@ -395,7 +331,10 @@ execcmd_run(execcmd_t *self) {
     }
 
     for (int32_t i = self->optind; i < self->argc; ++i) {
-        const char *cltxt = self->argv[i];
+        const char *escaped_cltxt = self->argv[i];
+        char cltxt[1024];
+        unescape_cl(cltxt, sizeof cltxt, escaped_cltxt);
+
         if (!execcmd_exec(self, cltxt)) {
             err_error(self->what);
             return 1;

@@ -30,7 +30,8 @@
 enum {
     SAFESYSTEM_DEFAULT = 1 << 0,
     SAFESYSTEM_EDIT = 1 << 1,
-    SAFESYSTEM_DETACH = 1 << 2
+    SAFESYSTEM_DETACH = 1 << 2,
+    SAFESYSTEM_UNSAFE = 1 << 3,
 };
 
 /**

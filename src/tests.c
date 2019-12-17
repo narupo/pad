@@ -319,6 +319,40 @@ test_cmdline_parse(void) {
 
     const cmdline_object_t *obj = NULL;
 
+    assert(cmdline_parse(cmdline, "abc && def | ghi"));
+    assert(cmdline_len(cmdline) == 5);
+    obj = cmdline_getc(cmdline, 0);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(!strcmp(str_getc(obj->command), "abc"));
+    assert(cl_len(obj->cl) == 1);
+    obj = cmdline_getc(cmdline, 1);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_AND);
+    obj = cmdline_getc(cmdline, 2);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(!strcmp(str_getc(obj->command), "def"));
+    assert(cl_len(obj->cl) == 1);
+    obj = cmdline_getc(cmdline, 3);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_PIPE);
+    obj = cmdline_getc(cmdline, 4);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(!strcmp(str_getc(obj->command), "ghi"));
+    assert(cl_len(obj->cl) == 1);
+
+    cmdline_del(cmdline);
+}
+
+void
+test_cmdline_parse_pipe(void) {
+    cmdline_t *cmdline = cmdline_new();
+    assert(cmdline);
+
+    const cmdline_object_t *obj = NULL;
+
     assert(cmdline_parse(cmdline, "abc"));
     assert(cmdline_len(cmdline) == 1);
     obj = cmdline_getc(cmdline, 0);
@@ -365,11 +399,58 @@ test_cmdline_parse(void) {
     cmdline_del(cmdline);
 }
 
+void
+test_cmdline_parse_and(void) {
+    cmdline_t *cmdline = cmdline_new();
+    assert(cmdline);
+
+    const cmdline_object_t *obj = NULL;
+
+    assert(cmdline_parse(cmdline, "abc && def"));
+    assert(cmdline_len(cmdline) == 3);
+    obj = cmdline_getc(cmdline, 0);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(!strcmp(str_getc(obj->command), "abc"));
+    assert(cl_len(obj->cl) == 1);
+    obj = cmdline_getc(cmdline, 1);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_AND);
+    obj = cmdline_getc(cmdline, 2);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(!strcmp(str_getc(obj->command), "def"));
+    assert(cl_len(obj->cl) == 1);
+
+    assert(cmdline_parse(cmdline, "abc -d efg && hij -d \"klm\""));
+    assert(cmdline_len(cmdline) == 3);
+    obj = cmdline_getc(cmdline, 0);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(!strcmp(str_getc(obj->command), "abc -d efg"));
+    assert(cl_len(obj->cl) == 3);
+    obj = cmdline_getc(cmdline, 1);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_AND);
+    obj = cmdline_getc(cmdline, 2);
+    assert(obj);
+    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(!strcmp(str_getc(obj->command), "hij -d \"klm\""));
+    assert(cl_len(obj->cl) == 3);
+
+    assert(cmdline_parse(cmdline, "a && b && c && d && e"));
+    assert(cmdline_len(cmdline) == 9);
+
+    cmdline_del(cmdline);
+}
+
 static const struct testcase
 cmdline_tests[] = {
     {"cmdline_new", test_cmdline_new},
     {"cmdline_del", test_cmdline_del},
     {"cmdline_parse", test_cmdline_parse},
+    {"cmdline_parse_pipe", test_cmdline_parse_pipe},
+    {"cmdline_parse_and", test_cmdline_parse_and},
     {0},
 };
 

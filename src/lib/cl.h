@@ -60,7 +60,7 @@ cl_del(cl_t *self);
  * 
  * @param[in] *self 
  * 
- * @return pointer to pointer to dynamic allocate memory of array like a argv. User should be free(3)
+ * @return pointer to pointer to dynamic allocate memory of array like a argv. should be free(3)
  */
 char **
 cl_escdel(cl_t *self);
@@ -198,3 +198,14 @@ cl_capa(const cl_t *self);
  */
 const char *
 cl_getc(const cl_t *self, int32_t idx);
+
+/**
+ * Generate string from object
+ *
+ * @param[in] *self
+ *
+ * @return success to pointer to strings dynamic allocate memory
+ * @return failed to pointer to NULL
+ */
+char *
+cl_to_string(const cl_t *self);

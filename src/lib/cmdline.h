@@ -14,8 +14,9 @@
  * number of type of cmdline objects
  */
 typedef enum {
-    CMDLINE_OBJECT_TYPE_CMD = 1,
-    CMDLINE_OBJECT_TYPE_PIPE = 2,
+    CMDLINE_OBJECT_TYPE_CMD,
+    CMDLINE_OBJECT_TYPE_PIPE,
+    CMDLINE_OBJECT_TYPE_AND,
 } cmdline_object_type_t;
 
 /**
