@@ -656,3 +656,80 @@ file_dirread(file_dir_t *self) {
 
 	return node;
 }
+
+char *
+file_conv_line_encoding(const char *encoding, const char *text) {
+	if (!encoding || !text) {
+		return NULL;
+	}
+
+	bool to_crlf = strcmp(encoding, "crlf") == 0;
+	bool to_cr = strcmp(encoding, "cr") == 0;
+	bool to_lf = strcmp(encoding, "lf") == 0;
+
+	if (!to_crlf && !to_cr && !to_lf) {
+		return NULL;
+	}
+
+	int32_t di = 0;
+	int32_t dcapa = strlen(text);
+	int32_t elsize = sizeof(char);
+	char *dst = calloc(dcapa+1, elsize); // +1 for final nul
+	if (!dst) {
+		return NULL;
+	}
+
+#define resize() { \
+		if (di >= dcapa-1) { \
+			dcapa *= 2; \
+			int32_t size = dcapa + elsize; \
+			char *tmp = realloc(dst, size); \
+			if (!tmp) { \
+				free(dst); \
+				return NULL; \
+			} \
+			dst = tmp; \
+		} \
+	}
+
+	for (const char *p = text; *p; ++p) {
+		if (*p == '\r' && *(p+1) == '\n') {
+			resize();
+			++p;
+			if (to_crlf) {
+				dst[di++] = '\r';
+				dst[di++] = '\n';
+			} else if (to_cr) {
+				dst[di++] = '\r';
+			} else if (to_lf) {
+				dst[di++] = '\n';
+			}
+		} else if (*p == '\r') {
+			resize();
+			if (to_crlf) {
+				dst[di++] = '\r';
+				dst[di++] = '\n';
+			} else if (to_cr) {
+				dst[di++] = '\r';
+			} else if (to_lf) {
+				dst[di++] = '\n';
+			}
+		} else if (*p == '\n') {
+			resize();
+			if (to_crlf) {
+				dst[di++] = '\r';
+				dst[di++] = '\n';
+			} else if (to_cr) {
+				dst[di++] = '\r';
+			} else if (to_lf) {
+				dst[di++] = '\n';
+			}
+		} else {
+			resize();
+			dst[di++] = *p;
+		}
+	}
+
+	dst[di] = '\0';
+	return dst;
+}
