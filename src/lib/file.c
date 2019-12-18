@@ -663,9 +663,9 @@ file_conv_line_encoding(const char *encoding, const char *text) {
 		return NULL;
 	}
 
-	bool to_crlf = strcmp(encoding, "crlf") == 0;
-	bool to_cr = strcmp(encoding, "cr") == 0;
-	bool to_lf = strcmp(encoding, "lf") == 0;
+	bool to_crlf = strcasecmp(encoding, "crlf") == 0;
+	bool to_cr = strcasecmp(encoding, "cr") == 0;
+	bool to_lf = strcasecmp(encoding, "lf") == 0;
 
 	if (!to_crlf && !to_cr && !to_lf) {
 		return NULL;
@@ -692,38 +692,28 @@ file_conv_line_encoding(const char *encoding, const char *text) {
 		} \
 	}
 
+#define conv() { \
+		if (to_crlf) { \
+			dst[di++] = '\r'; \
+			dst[di++] = '\n'; \
+		} else if (to_cr) { \
+			dst[di++] = '\r'; \
+		} else if (to_lf) { \
+			dst[di++] = '\n'; \
+		} \
+	}
+
 	for (const char *p = text; *p; ++p) {
 		if (*p == '\r' && *(p+1) == '\n') {
 			resize();
 			++p;
-			if (to_crlf) {
-				dst[di++] = '\r';
-				dst[di++] = '\n';
-			} else if (to_cr) {
-				dst[di++] = '\r';
-			} else if (to_lf) {
-				dst[di++] = '\n';
-			}
+			conv();
 		} else if (*p == '\r') {
 			resize();
-			if (to_crlf) {
-				dst[di++] = '\r';
-				dst[di++] = '\n';
-			} else if (to_cr) {
-				dst[di++] = '\r';
-			} else if (to_lf) {
-				dst[di++] = '\n';
-			}
+			conv();
 		} else if (*p == '\n') {
 			resize();
-			if (to_crlf) {
-				dst[di++] = '\r';
-				dst[di++] = '\n';
-			} else if (to_cr) {
-				dst[di++] = '\r';
-			} else if (to_lf) {
-				dst[di++] = '\n';
-			}
+			conv();
 		} else {
 			resize();
 			dst[di++] = *p;
