@@ -1162,6 +1162,73 @@ test_file_dirread(void) {
     // test_file_dirclose
 }
 
+static void
+test_file_conv_line_encoding(void) {
+    char *encoded;
+    
+    encoded = file_conv_line_encoding(NULL, "abc");
+    assert(!encoded);
+
+    encoded = file_conv_line_encoding("nothing", "abc");
+    assert(!encoded);
+
+    encoded = file_conv_line_encoding("crlf", NULL);
+    assert(!encoded);
+
+    encoded = file_conv_line_encoding("crlf", "abc");
+    assert(encoded);
+    assert(!strcmp(encoded, "abc"));
+    free(encoded);
+
+    // to crlf
+    encoded = file_conv_line_encoding("crlf", "abc\r\ndef\r\n");
+    assert(encoded);
+    assert(!strcmp(encoded, "abc\r\ndef\r\n"));
+    free(encoded);
+
+    encoded = file_conv_line_encoding("crlf", "abc\rdef\r");
+    assert(encoded);
+    assert(!strcmp(encoded, "abc\r\ndef\r\n"));
+    free(encoded);
+
+    encoded = file_conv_line_encoding("crlf", "abc\ndef\n");
+    assert(encoded);
+    assert(!strcmp(encoded, "abc\r\ndef\r\n"));
+    free(encoded);
+
+    // to cr
+    encoded = file_conv_line_encoding("cr", "abc\r\ndef\r\n");
+    assert(encoded);
+    assert(!strcmp(encoded, "abc\rdef\r"));
+    free(encoded);
+
+    encoded = file_conv_line_encoding("cr", "abc\rdef\r");
+    assert(encoded);
+    assert(!strcmp(encoded, "abc\rdef\r"));
+    free(encoded);
+
+    encoded = file_conv_line_encoding("cr", "abc\ndef\n");
+    assert(encoded);
+    assert(!strcmp(encoded, "abc\rdef\r"));
+    free(encoded);
+
+    // to lf
+    encoded = file_conv_line_encoding("lf", "abc\r\ndef\r\n");
+    assert(encoded);
+    assert(!strcmp(encoded, "abc\ndef\n"));
+    free(encoded);
+
+    encoded = file_conv_line_encoding("lf", "abc\rdef\r");
+    assert(encoded);
+    assert(!strcmp(encoded, "abc\ndef\n"));
+    free(encoded);
+
+    encoded = file_conv_line_encoding("lf", "abc\ndef\n");
+    assert(encoded);
+    assert(!strcmp(encoded, "abc\ndef\n"));
+    free(encoded);
+}
+
 static const struct testcase
 file_tests[] = {
     {"file_close", test_file_close},
@@ -1191,6 +1258,7 @@ file_tests[] = {
     {"file_dirclose", test_file_dirclose},
     {"file_diropen", test_file_diropen},
     {"file_dirread", test_file_dirread},
+    {"file_conv_line_encoding", test_file_conv_line_encoding},
     {0},
 };
 
