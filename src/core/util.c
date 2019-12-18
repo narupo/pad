@@ -270,3 +270,42 @@ trim_first_line(char *dst, int32_t dstsz, const char *text) {
     *dp = '\0';
     return dst;
 }
+
+context_t *
+compile_argv(int argc, char *argv[], const char *src) {
+    tokenizer_t *tkr = tkr_new(tkropt_new());
+    ast_t *ast = ast_new();
+    context_t *ctx = ctx_new();
+    opts_t *opts = opts_new();
+
+    if (!opts_parse(opts, argc, argv)) {
+        err_error("failed to show snippet. failed to parse options");
+        return NULL;
+    }
+
+    tkr_parse(tkr, src);
+    if (tkr_has_error(tkr)) {
+        err_error("failed to parse tokens. %s", tkr_get_error_detail(tkr));
+        return NULL;
+    }
+
+    ast_move_opts(ast, opts);
+    opts = NULL;
+
+    cc_compile(ast, tkr_get_tokens(tkr));
+    if (ast_has_error(ast)) {
+        err_error("failed to parse AST. %s", ast_get_error_detail(ast));
+        return NULL;
+    }
+
+    trv_traverse(ast, ctx);
+    if (ast_has_error(ast)) {
+        err_error("failed to traverse AST. %s", ast_get_error_detail(ast));
+        return NULL;        
+    }
+
+    tkr_del(tkr);
+    ast_del(ast);
+
+    return ctx;
+}
