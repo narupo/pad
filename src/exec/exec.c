@@ -306,12 +306,21 @@ execcmd_pipe(execcmd_t *self, const cmdline_object_t *obj, const cmdline_object_
     str_clear(self->read_buffer);
     for (;;) {
         memset(buf, 0, sizeof buf);
-        ReadFile(hs2[0], buf, sizeof buf, &nread, NULL);
+        ReadFile(hs2[0], buf, sizeof(buf)-1, &nread, NULL);
         if (nread == 0) {
             break;
         }
+        buf[nread] = '\0';
 
-        str_app(self->read_buffer, buf);
+        char *text = file_conv_line_encoding(self->config->line_encoding, buf);
+        if (!text) {
+            execcmd_set_error(self, "failed to convert line encoding");
+            close_hs();
+            return NULL;
+        }
+
+        str_app(self->read_buffer, text);
+        free(text);
     }
     CloseHandle(hs2[0]);
 
