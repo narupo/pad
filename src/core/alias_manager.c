@@ -103,7 +103,7 @@ almgr_load_alias_list(almgr_t *self, int scope) {
         goto fail;
     }
 
-    ast_parse(self->ast, tkr_get_tokens(self->tkr));
+    cc_compile(self->ast, tkr_get_tokens(self->tkr));
     if (ast_has_error(self->ast)) {
         almgr_set_error_detail(self, ast_get_error_detail(self->ast));
         ret = NULL;
@@ -111,7 +111,7 @@ almgr_load_alias_list(almgr_t *self, int scope) {
     }
 
     ctx_clear(self->context);
-    ast_traverse(self->ast, self->context);
+    trv_traverse(self->ast, self->context);
     if (ast_has_error(self->ast)) {
         almgr_set_error_detail(self, ast_get_error_detail(self->ast));
         ret = NULL;

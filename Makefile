@@ -101,6 +101,8 @@ SRCS := build/lib/error.c \
 	build/lang/nodes.c \
 	build/lang/context.c \
 	build/lang/ast.c \
+	build/lang/compiler.c \
+	build/lang/traverser.c \
 	build/lang/object.c \
 	build/lang/object_array.c \
 	build/lang/object_dict.c \
@@ -199,6 +201,10 @@ build/lang/tokens.o: src/lang/tokens.c src/lang/tokens.h
 build/lang/nodes.o: src/lang/nodes.c src/lang/nodes.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/ast.o: src/lang/ast.c src/lang/ast.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/compiler.o: src/lang/compiler.c src/lang/compiler.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/traverser.o: src/lang/traverser.c src/lang/traverser.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/context.o: src/lang/context.c src/lang/context.h
 	$(CC) $(CFLAGS) -c $< -o $@

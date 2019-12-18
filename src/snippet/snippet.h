@@ -10,6 +10,8 @@
 #include "core/config.h"
 #include "lang/tokenizer.h"
 #include "lang/ast.h"
+#include "lang/compiler.h"
+#include "lang/traverser.h"
 #include "lang/context.h"
 #include "lang/opts.h"
 
