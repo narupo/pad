@@ -599,6 +599,7 @@ app_show_snippet(app_t *self, const char *fname) {
     context_t *ctx = compile_argv(self->cmd_argc-1, self->cmd_argv+1, content);
     if (!ctx) {
         err_error("failed to compile snippet");
+        free(content);
         return false;
     }
 
