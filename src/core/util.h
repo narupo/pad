@@ -19,9 +19,13 @@
 #include "lib/error.h"
 #include "lib/cl.h"
 #include "lib/cstring_array.h"
-
 #include "core/constant.h"
 #include "core/config.h"
+#include "lang/tokenizer.h"
+#include "lang/ast.h"
+#include "lang/compiler.h"
+#include "lang/traverser.h"
+#include "lang/context.h"
 
 #ifdef _CAP_WINDOWS
 # include <windows.h>
@@ -156,3 +160,16 @@ get_origin(const config_t *config, const char *cap_path);
 char * 
 trim_first_line(char *dst, int32_t dstsz, const char *text);
 
+
+/**
+ * compile source text with argv
+ *
+ * @param[in] argc 
+ * @param[in] *argv[]
+ * @param[in] *src    pointer to strings
+ *
+ * @return success to pointer to context_t
+ * @return failed to pointer to NULL
+ */
+context_t *
+compile_argv(int argc, char *argv[], const char *src);

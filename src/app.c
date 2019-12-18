@@ -596,42 +596,15 @@ app_show_snippet(app_t *self, const char *fname) {
         return false;
     }
 
-    tokenizer_t *tkr = tkr_new(tkropt_new());
-    ast_t *ast = ast_new();
-    context_t *ctx = ctx_new();
-    opts_t *opts = opts_new();
-
-    if (!opts_parse(opts, self->cmd_argc-1, self->cmd_argv+1)) {
-        err_error("failed to show snippet. failed to parse options");
+    context_t *ctx = compile_argv(self->cmd_argc-1, self->cmd_argv+1, content);
+    if (!ctx) {
+        err_error("failed to compile snippet");
         return false;
-    }
-
-    tkr_parse(tkr, content);
-    if (tkr_has_error(tkr)) {
-        err_error("failed to parse tokens. %s", tkr_get_error_detail(tkr));
-        return false;
-    }
-
-    ast_move_opts(ast, opts);
-    opts = NULL;
-
-    cc_compile(ast, tkr_get_tokens(tkr));
-    if (ast_has_error(ast)) {
-        err_error("failed to parse AST. %s", ast_get_error_detail(ast));
-        return false;
-    }
-
-    trv_traverse(ast, ctx);
-    if (ast_has_error(ast)) {
-        err_error("failed to traverse AST. %s", ast_get_error_detail(ast));
-        return false;        
     }
 
     printf("%s", ctx_getc_buf(ctx));
     fflush(stdout);
 
-    tkr_del(tkr);
-    ast_del(ast);
     ctx_del(ctx);
     free(content);
 
