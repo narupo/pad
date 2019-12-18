@@ -300,14 +300,14 @@ catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
         goto fail;
     }
 
-    ast_parse(ast, tkr_get_tokens(tkr));
+    cc_compile(ast, tkr_get_tokens(tkr));
     if (ast_has_error(ast)) {
         err_error("failed to parse AST. %s", ast_get_error_detail(ast));
         ret = false;
         goto fail;
     }
 
-    ast_traverse(ast, ctx);
+    trv_traverse(ast, ctx);
     if (ast_has_error(ast)) {
         err_error("failed to traverse AST %s", ast_get_error_detail(ast));
         ret = false;

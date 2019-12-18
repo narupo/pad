@@ -41,6 +41,8 @@
 #include "lang/tokenizer.h"
 #include "lang/nodes.h"
 #include "lang/ast.h"
+#include "lang/compiler.h"
+#include "lang/traverser.h"
 #include "lang/object.h"
 #include "lang/object_array.h"
 #include "lang/object_dict.h"

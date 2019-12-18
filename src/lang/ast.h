@@ -1,86 +1,119 @@
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-
-#include "lib/memory.h"
-#include "lib/format.h"
-#include "lib/cstring_array.h"
 #include "lang/tokens.h"
 #include "lang/nodes.h"
-#include "lang/node_array.h"
 #include "lang/context.h"
-#include "lang/object.h"
-#include "lang/object_array.h"
 #include "lang/opts.h"
+#include "lang/node_array.h"
 
-struct ast;
+enum {
+    AST_ERR_DETAIL_SIZE = 1024,
+};
+
+struct ast {
+    token_t **tokens; // token list with null at the last
+    token_t **ptr; // pointer to tokens
+    node_t *root; // pointer to root
+    context_t *context; // context. update when traverse tree
+    opts_t *opts; // options for builtin opts module
+    char error_detail[AST_ERR_DETAIL_SIZE]; // error detail
+    bool debug; // if do debug to true
+};
+
 typedef struct ast ast_t;
 
 /**
- * Destruct AST
+ * 
  *
- * @param[in] self pointer to dynamic allocate memory of ast_t
+ * @param[in] *self 
+ * @param[in] *node 
  */
-void
+void 
+ast_del_nodes(const ast_t *self, node_t *node);
+
+/**
+ * 
+ *
+ * @param[in] *self 
+ */
+void 
 ast_del(ast_t *self);
 
 /**
- * Construct AST
+ * 
  *
- * @return pointer to dynamic allocate memory of ast_t
+ * @param[in] void 
+ *
+ * @return 
  */
-ast_t *
+ast_t * 
 ast_new(void);
 
 /**
- * Parse tokens
+ * 
  *
- * @param[in] tokens pointer to array of tokens
- *
- * @return success to dynamic allocate memory of ast_t
- * @return failed to pointer to NULL
+ * @param[in] *self      
+ * @param[in] *move_opts 
  */
-ast_t *
-ast_parse(ast_t *self, token_t *tokens[]);
-
-void
-ast_traverse(ast_t *self, context_t *ctx);
-
-void
-ast_set_debug(ast_t *self, bool debug);
-
-/**
- * Set options at AST
- *
- * @param[in] self pointer to dynamic allocate memory of ast_t
- * @param[in] opts pointer to dynamic allocate memory of opts_t
- */
-void
+void 
 ast_move_opts(ast_t *self, opts_t *move_opts);
 
 /**
- * Clear data in AST
+ * 
  *
- * @param[in] self pointer to dynamic allocate memory of ast_t
+ * @param[in] *self 
  *
+ * @return 
  */
-void
+const node_t * 
+ast_getc_root(const ast_t *self);
+
+/**
+ * 
+ *
+ * @param[in] *self 
+ * @param[in] *fmt  
+ * @param[in] ...   
+ *
+ * @return 
+ */
+void 
+ast_set_error_detail(ast_t *self, const char *fmt, ...);
+
+/**
+ * 
+ *
+ * @param[in] *self 
+ */
+void 
 ast_clear(ast_t *self);
 
 /**
- * Get error detail in AST parser
+ * 
  *
- * @param[in] self pointer to dynamic allocate memory of ast_t
+ * @param[in] *self 
  *
- * @return pointer to string
+ * @return 
  */
-const char *
+const char * 
 ast_get_error_detail(const ast_t *self);
 
-const node_t *
-ast_getc_root(const ast_t *self);
-
-bool
+/**
+ * 
+ *
+ * @param[in] *self 
+ *
+ * @return 
+ */
+bool 
 ast_has_error(const ast_t *self);
+
+/**
+ * 
+ *
+ * @param[in] *self 
+ * @param[in] debug 
+ */
+void 
+ast_set_debug(ast_t *self, bool debug);
+
