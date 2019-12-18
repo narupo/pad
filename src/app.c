@@ -111,6 +111,8 @@ app_init_config(app_t *self) {
     self->config->scope = CAP_SCOPE_LOCAL;
     self->config->recursion_count = 0;
 
+    strcpy(self->config->line_encoding, "lf");
+
     if (!file_solve(self->config->var_cd_path, sizeof self->config->var_cd_path, "~/.cap/var/cd")) {
         err_error("failed to create path of cd of variable");
         return false;
