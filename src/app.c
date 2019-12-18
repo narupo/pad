@@ -345,7 +345,6 @@ app_usage(app_t *app) {
         "    touch      Create empty file\n"
         "    snippet    Save or show snippet codes\n"
         "    link       Create symbolic link\n"
-        "    hub        Manage hub\n"
     ;
     static const char *examples[] = {
         "    $ cap home\n"
