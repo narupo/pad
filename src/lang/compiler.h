@@ -11,8 +11,6 @@
 #include "lang/nodes.h"
 #include "lang/node_array.h"
 #include "lang/context.h"
-#include "lang/object.h"
-#include "lang/object_array.h"
 #include "lang/opts.h"
 #include "lang/ast.h"
 
