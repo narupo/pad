@@ -679,6 +679,7 @@ file_conv_line_encoding(const char *encoding, const char *text) {
 		return NULL;
 	}
 
+	// -1 of dcapa-1 for crlf
 #define resize() { \
 		if (di >= dcapa-1) { \
 			dcapa *= 2; \
