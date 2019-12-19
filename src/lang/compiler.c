@@ -74,6 +74,12 @@ static node_t *
 cc_mul_div_op(ast_t *ast, int dep);
 
 static node_t *
+cc_dot(ast_t *ast, int dep);
+
+static node_t *
+cc_dot_op(ast_t *ast, int dep);
+
+static node_t *
 cc_multi_assign(ast_t *ast, int dep);
 
 static node_t *
@@ -1536,7 +1542,7 @@ cc_term(ast_t *ast, int dep) {
     } \
 
     check("call left cc_index");
-    node_t *lhs = cc_index(ast, dep+1);
+    node_t *lhs = cc_dot(ast, dep+1);
     if (ast_has_error(ast)) {
         return_cleanup("");
     }
@@ -1559,7 +1565,7 @@ cc_term(ast_t *ast, int dep) {
         nodearr_moveb(cur->nodearr, op);
 
         check("call right cc_index");
-        node_t *rhs = cc_index(ast, dep+1);
+        node_t *rhs = cc_dot(ast, dep+1);
         if (ast_has_error(ast)) {
             return_cleanup("");
         }
@@ -1571,6 +1577,93 @@ cc_term(ast_t *ast, int dep) {
     }
 
     assert(0 && "impossible. failed to ast term");
+}
+
+static node_t *
+cc_dot(ast_t *ast, int dep) {
+    ready();
+    declare(node_dot_t, cur);
+    token_t **save_ptr = ast->ptr;
+    cur->nodearr = nodearr_new();
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        ast->ptr = save_ptr; \
+        for (; nodearr_len(cur->nodearr); ) { \
+            node_t *node = nodearr_popb(cur->nodearr); \
+            ast_del_nodes(ast, node); \
+        } \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(ast, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    check("call left cc_index");
+    node_t *lhs = cc_index(ast, dep+1);
+    if (ast_has_error(ast)) {
+        return_cleanup("");
+    }
+    if (!lhs) {
+        return_cleanup(""); // not error
+    }
+
+    nodearr_moveb(cur->nodearr, lhs);
+
+    for (;;) {
+        check("call cc_dot_op");
+        node_t *op = cc_dot_op(ast, dep+1);
+        if (ast_has_error(ast)) {
+            return_cleanup("");
+        }
+        if (!op) {
+            return_parse(node_new(NODE_TYPE_TERM, cur));
+        }
+
+        nodearr_moveb(cur->nodearr, op);
+
+        check("call right cc_index");
+        node_t *rhs = cc_index(ast, dep+1);
+        if (ast_has_error(ast)) {
+            return_cleanup("");
+        }
+        if (!rhs) {
+            return_cleanup("syntax error. not found rhs operand in term");
+        }        
+
+        nodearr_moveb(cur->nodearr, rhs);
+    }
+
+    assert(0 && "impossible. failed to cc dot");
+}
+
+static node_t *
+cc_dot_op(ast_t *ast, int dep) {
+    ready();
+    declare(node_dot_op_t, cur);
+    token_t **save_ptr = ast->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        ast->ptr = save_ptr; \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(ast, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    token_t *t = *ast->ptr++;
+    switch (t->type) {
+    default:
+        return_cleanup(""); // not error
+        break;
+    case TOKEN_TYPE_DOT_OPE: cur->op = OP_DOT; break;
+    }
+    check("read op");
+
+    return_parse(node_new(NODE_TYPE_DOT_OP, cur));
 }
 
 static node_t *

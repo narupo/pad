@@ -2566,6 +2566,7 @@ test_cc_ref_block(void) {
     node_comparison_t *comparison;
     node_expr_t *expr;
     node_term_t *term;
+    node_dot_t *dot;
     node_index_t *index;
     node_asscalc_t *asscalc;
     node_factor_t *factor;
@@ -2624,7 +2625,8 @@ test_cc_ref_block(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         assert(index);
         assert(index->factor);
         assert(index->factor->real);
@@ -2663,7 +2665,8 @@ test_cc_ref_block(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -2693,7 +2696,8 @@ test_cc_ref_block(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         array = atom->array->real;
@@ -2728,6 +2732,7 @@ test_cc_formula(void) {
     node_comparison_t *comparison;
     node_expr_t *expr;
     node_term_t *term;
+    node_dot_t *dot;
     node_index_t *index;
     node_asscalc_t *asscalc;
     node_factor_t *factor;
@@ -2758,7 +2763,8 @@ test_cc_formula(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -2771,7 +2777,8 @@ test_cc_formula(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;        
@@ -2799,7 +2806,8 @@ test_cc_formula(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -2813,7 +2821,8 @@ test_cc_formula(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -2842,7 +2851,8 @@ test_cc_formula(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -2860,7 +2870,8 @@ test_cc_formula(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -2874,7 +2885,8 @@ test_cc_formula(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -2902,7 +2914,8 @@ test_cc_formula(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -2916,7 +2929,8 @@ test_cc_formula(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -2931,7 +2945,8 @@ test_cc_formula(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -2945,7 +2960,8 @@ test_cc_formula(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -2977,6 +2993,7 @@ test_cc_dict(void) {
     node_comparison_t *comparison;
     node_expr_t *expr;
     node_term_t *term;
+    node_dot_t *dot;
     node_index_t *index;
     node_factor_t *factor;
     node_atom_t *atom;
@@ -3009,7 +3026,8 @@ test_cc_dict(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         assert(atom);
@@ -3048,7 +3066,8 @@ test_cc_dict(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         assert(atom);
@@ -3087,7 +3106,8 @@ test_cc_dict(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         assert(atom);
@@ -3133,6 +3153,7 @@ test_cc_expr(void) {
     node_expr_t *expr;
     node_term_t *term;
     node_index_t *index;
+    node_dot_t *dot;
     node_asscalc_t *asscalc;
     node_factor_t *factor;
     node_atom_t *atom;
@@ -3163,7 +3184,8 @@ test_cc_expr(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3193,7 +3215,8 @@ test_cc_expr(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3202,7 +3225,8 @@ test_cc_expr(void) {
         asscalc = nodearr_get(comparison->nodearr, 2)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3230,7 +3254,8 @@ test_cc_expr(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3241,7 +3266,8 @@ test_cc_expr(void) {
         asscalc = nodearr_get(comparison->nodearr, 2)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3252,7 +3278,8 @@ test_cc_expr(void) {
         asscalc = nodearr_get(comparison->nodearr, 4)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3280,7 +3307,8 @@ test_cc_expr(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3291,7 +3319,8 @@ test_cc_expr(void) {
         asscalc = nodearr_get(comparison->nodearr, 2)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3319,7 +3348,8 @@ test_cc_expr(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3330,7 +3360,8 @@ test_cc_expr(void) {
         asscalc = nodearr_get(comparison->nodearr, 2)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3341,7 +3372,8 @@ test_cc_expr(void) {
         asscalc = nodearr_get(comparison->nodearr, 4)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3371,14 +3403,16 @@ test_cc_expr(void) {
         add_sub_op = nodearr_get(expr->nodearr, 1)->real;
         assert(add_sub_op->op == OP_ADD);
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 1);
         term = nodearr_get(expr->nodearr, 2)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3406,21 +3440,24 @@ test_cc_expr(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 1);
         term = nodearr_get(expr->nodearr, 2)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 2);    
         term = nodearr_get(expr->nodearr, 4)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3450,14 +3487,16 @@ test_cc_expr(void) {
         add_sub_op = nodearr_get(expr->nodearr, 1)->real;
         assert(add_sub_op->op == OP_SUB);
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 1);
         term = nodearr_get(expr->nodearr, 2)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3485,21 +3524,24 @@ test_cc_expr(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 1);
         term = nodearr_get(expr->nodearr, 2)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 2);    
         term = nodearr_get(expr->nodearr, 4)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3529,13 +3571,15 @@ test_cc_expr(void) {
         term = nodearr_get(expr->nodearr, 0)->real;
         mul_div_op = nodearr_get(term->nodearr, 1)->real;
         assert(mul_div_op->op == OP_MUL);
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 1);
-        index = nodearr_get(term->nodearr, 2)->real;
+        dot = nodearr_get(term->nodearr, 2)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3563,19 +3607,22 @@ test_cc_expr(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 1);
-        index = nodearr_get(term->nodearr, 2)->real;
+        dot = nodearr_get(term->nodearr, 2)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 2);    
-        index = nodearr_get(term->nodearr, 4)->real;
+        dot = nodearr_get(term->nodearr, 4)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3630,19 +3677,22 @@ test_cc_expr(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 1);
-        index = nodearr_get(term->nodearr, 2)->real;
+        dot = nodearr_get(term->nodearr, 2)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 2);    
-        index = nodearr_get(term->nodearr, 4)->real;
+        dot = nodearr_get(term->nodearr, 4)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -3675,6 +3725,7 @@ test_cc_index(void) {
     node_expr_t *expr;
     node_term_t *term;
     node_index_t *index;
+    node_dot_t *dot;
     node_asscalc_t *asscalc;
     node_factor_t *factor;
     node_atom_t *atom;
@@ -3702,7 +3753,8 @@ test_cc_index(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -3732,12 +3784,144 @@ test_cc_index(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
         assert(!strcmp(identifier->identifier, "a"));
         assert(nodearr_len(index->nodearr) == 2);
+    }
+
+    tkr_del(tkr);
+    ast_del(ast);
+}
+
+static void
+test_cc_dot(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new();
+    const node_t *root;
+    node_program_t *program;
+    node_blocks_t *blocks;
+    node_code_block_t *code_block;
+    node_elems_t *elems;
+    node_formula_t *formula;
+    node_multi_assign_t *multi_assign;
+    node_test_list_t *test_list;
+    node_test_t *test;
+    node_or_test_t *or_test;
+    node_and_test_t *and_test;
+    node_not_test_t *not_test;
+    node_comparison_t *comparison;
+    node_expr_t *expr;
+    node_term_t *term;
+    node_dot_t *dot;
+    node_index_t *index;
+    node_asscalc_t *asscalc;
+    node_factor_t *factor;
+    node_atom_t *atom;
+    node_identifier_t *identifier;
+    node_caller_t *caller;
+
+    tkr_parse(tkr, "{@ a.b @}");
+    {
+        ast_clear(ast);
+        ast_debug(cc_compile(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        program = root->real;
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        formula = elems->formula->real;
+        assert(formula->assign_list == NULL);
+        assert(formula->multi_assign);
+        multi_assign = formula->multi_assign->real;
+        test_list = nodearr_get(multi_assign->nodearr, 0)->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
+        factor = index->factor->real;
+        atom = factor->atom->real;
+        identifier = atom->identifier->real;
+        assert(!strcmp(identifier->identifier, "a"));
+        assert(nodearr_len(index->nodearr) == 0);
+        index = nodearr_get(dot->nodearr, 1)->real;
+        assert(index);
+        factor = index->factor->real;
+        assert(factor);
+        atom = factor->atom->real;
+        assert(atom);
+        identifier = atom->identifier->real;
+        assert(identifier);
+        assert(!strcmp(identifier->identifier, "b"));
+        assert(nodearr_len(index->nodearr) == 0);
+    }
+
+    tkr_parse(tkr, "{@ a.b() @}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        program = root->real;
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        formula = elems->formula->real;
+        assert(formula->assign_list == NULL);
+        assert(formula->multi_assign);
+        multi_assign = formula->multi_assign->real;
+        test_list = nodearr_get(multi_assign->nodearr, 0)->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
+        factor = index->factor->real;
+        atom = factor->atom->real;
+        caller = atom->caller->real;
+        assert(caller);
+    }
+
+    tkr_parse(tkr, "{@ a.b[0] @}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        program = root->real;
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        formula = elems->formula->real;
+        assert(formula->assign_list == NULL);
+        assert(formula->multi_assign);
+        multi_assign = formula->multi_assign->real;
+        test_list = nodearr_get(multi_assign->nodearr, 0)->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
+        factor = index->factor->real;
+        assert(factor);
     }
 
     tkr_del(tkr);
@@ -3779,6 +3963,7 @@ test_cc_compile(void) {
     node_expr_t *expr;
     node_term_t *term;
     node_index_t *index;
+    node_dot_t *dot;
     node_asscalc_t *asscalc;
     node_factor_t *factor;
     node_atom_t *atom;
@@ -3834,7 +4019,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         array = atom->array->real;
@@ -3864,7 +4050,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         array = atom->array->real;
@@ -3895,7 +4082,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         array = atom->array->real;
@@ -3926,7 +4114,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         array = atom->array->real;
@@ -3958,7 +4147,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         array = atom->array->real;
@@ -3994,7 +4184,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         array = atom->array->real;
@@ -4033,7 +4224,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -4043,7 +4235,8 @@ test_cc_compile(void) {
         assert(augassign->op == OP_ADD_ASS);
         expr = nodearr_get(asscalc->nodearr, 2)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -4071,7 +4264,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -4081,7 +4275,8 @@ test_cc_compile(void) {
         assert(augassign->op == OP_ADD_ASS);
         expr = nodearr_get(asscalc->nodearr, 2)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -4109,7 +4304,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -4119,7 +4315,8 @@ test_cc_compile(void) {
         assert(augassign->op == OP_SUB_ASS);
         expr = nodearr_get(asscalc->nodearr, 2)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -4215,7 +4412,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         caller = atom->caller->real;
@@ -4248,7 +4446,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         assert(atom->nil->type == NODE_TYPE_NIL);
@@ -4276,7 +4475,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         assert(atom->false_->type == NODE_TYPE_FALSE);
@@ -4304,7 +4504,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         assert(atom->true_->type == NODE_TYPE_TRUE);
@@ -4332,7 +4533,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         assert(atom->digit->type == NODE_TYPE_DIGIT);
@@ -4390,7 +4592,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         assert(atom->string->type == NODE_TYPE_STRING);
@@ -4419,7 +4622,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         assert(atom->identifier->type == NODE_TYPE_IDENTIFIER);
@@ -4448,7 +4652,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         assert(atom->caller->type == NODE_TYPE_CALLER);
@@ -4553,7 +4758,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -4567,7 +4773,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;        
@@ -4619,7 +4826,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -4633,7 +4841,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;        
@@ -4665,7 +4874,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         caller = atom->caller->real;
@@ -4673,7 +4883,8 @@ test_cc_compile(void) {
         identifier = identifier_chain->identifier->real;
         assert(!strcmp(identifier->identifier, "func"));
         term = nodearr_get(expr->nodearr, 2)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -4701,7 +4912,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         caller = atom->caller->real;
@@ -4733,7 +4945,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         caller = atom->caller->real;
@@ -4752,7 +4965,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -4780,7 +4994,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         caller = atom->caller->real;
@@ -4799,7 +5014,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -4813,7 +5029,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -4841,7 +5058,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         caller = atom->caller->real;
@@ -4861,7 +5079,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -4888,7 +5107,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         caller = atom->caller->real;
@@ -4908,7 +5128,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -4921,7 +5142,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -4948,7 +5170,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         caller = atom->caller->real;
@@ -4968,7 +5191,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -4981,7 +5205,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -4994,7 +5219,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -5021,7 +5247,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         caller = atom->caller->real;
@@ -5041,7 +5268,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -5054,7 +5282,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -5086,7 +5315,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -5104,7 +5334,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -5131,7 +5362,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -5145,7 +5377,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -5159,7 +5392,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -5186,7 +5420,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -5200,7 +5435,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -5227,7 +5463,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -5241,7 +5478,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -5255,7 +5493,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -5282,7 +5521,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -5296,7 +5536,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -5323,7 +5564,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -5337,7 +5579,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -5364,7 +5607,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -5378,7 +5622,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -5392,7 +5637,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -5419,7 +5665,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -5433,7 +5680,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         identifier = atom->identifier->real;
@@ -5447,7 +5695,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         string = atom->string->real;
@@ -5461,7 +5710,8 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         caller = atom->caller->real;
@@ -6262,14 +6512,16 @@ test_cc_compile(void) {
         asscalc = nodearr_get(comparison->nodearr, 0)->real;
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
         assert(digit->lvalue == 1);
         term = nodearr_get(expr->nodearr, 2)->real;
-        index = nodearr_get(term->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        index = nodearr_get(dot->nodearr, 0)->real;
         factor = index->factor->real;
         atom = factor->atom->real;
         digit = atom->digit->real;
@@ -8371,6 +8623,7 @@ compiler_tests[] = {
     {"cc_dict", test_cc_dict},
     {"cc_expr", test_cc_expr},
     {"cc_index", test_cc_index},
+    {"cc_dot", test_cc_dot},
 };
 
 /************
@@ -11846,7 +12099,7 @@ test_trv(void) {
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
     }
-    
+
     /**********
     * asscalc *
     **********/

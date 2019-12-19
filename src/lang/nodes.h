@@ -47,6 +47,7 @@ typedef enum {
 
     NODE_TYPE_EXPR,
     NODE_TYPE_TERM,
+    NODE_TYPE_DOT,
     NODE_TYPE_INDEX,
     NODE_TYPE_ASSCALC,
     NODE_TYPE_FACTOR,
@@ -71,6 +72,7 @@ typedef enum {
 
     NODE_TYPE_ADD_SUB_OP,
     NODE_TYPE_MUL_DIV_OP,
+    NODE_TYPE_DOT_OP,
 
     // def
     NODE_TYPE_DEF,
@@ -84,7 +86,7 @@ typedef enum {
 } node_type_t;
 
 typedef enum {
-    OP_ADD = 0, // '+'
+    OP_ADD, // '+'
     OP_SUB, // '-'
     OP_MUL, // '*'
     OP_DIV, // '/'
@@ -99,6 +101,7 @@ typedef enum {
     OP_GTE, // '>='
     OP_LT, // '<'
     OP_GT, // '>'
+    OP_DOT, // '.'
 } op_t;
 
 /******************
@@ -274,6 +277,10 @@ typedef struct {
 } node_term_t;
 
 typedef struct {
+    node_array_t *nodearr;
+} node_dot_t;
+
+typedef struct {
     node_t *factor;
     node_array_t *nodearr;
 } node_index_t;
@@ -335,6 +342,10 @@ typedef struct {
 typedef struct {
     op_t op;
 } node_mul_div_op_t;
+
+typedef struct {
+    op_t op;
+} node_dot_op_t;
 
 typedef struct {
     bool dummy;
