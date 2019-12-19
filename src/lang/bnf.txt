@@ -73,7 +73,7 @@ BNF of Cap's template language
               dict: '{' ( dict_elems ) '}'
         dict_elems: dict_elem ( ',' dict_elem )*
          dict_elem: simple_assign ':' simple_assign
-          - comp_op: '==' | '!=' | '<=' | '>=' | '<' | '>'
+           comp_op: '==' | '!=' | '<=' | '>=' | '<' | '>'
         add_sub_op: '+' | '-'
         mul_div_op: '*' | '/'
          augassign: '+=' | '-=' | '*=' | '/='
