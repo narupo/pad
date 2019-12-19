@@ -8,7 +8,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
 
     switch (node->type) {
     default: {
-        err_die("impossible. not supported node type '%d'", node->type);
+        err_die("impossible. failed to delete nodes in ast. not supported node type '%d'", node->type);
     } break;
     case NODE_TYPE_PROGRAM: {
         node_program_t *program = node->real;
@@ -167,6 +167,12 @@ ast_del_nodes(const ast_t *self, node_t *node) {
             ast_del_nodes(self, nodearr_get(term->nodearr, i));
         }
     } break;
+    case NODE_TYPE_DOT: {
+        node_dot_t *dot = node->real;
+        for (int32_t i = 0; i < nodearr_len(dot->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(dot->nodearr, i));
+        }
+    } break;
     case NODE_TYPE_INDEX: {
         node_index_t *index = node->real;
         ast_del_nodes(self, index->factor);
@@ -247,6 +253,9 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         // nothing todo
     } break;
     case NODE_TYPE_MUL_DIV_OP: {
+        // nothing todo
+    } break;
+    case NODE_TYPE_DOT_OP: {
         // nothing todo
     } break;
     case NODE_TYPE_AUGASSIGN: {
