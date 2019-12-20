@@ -6019,9 +6019,6 @@ trv_invoke_builtin_module(ast_t *ast, object_t *mod, const char *name, const obj
     builtin_func_info_t *infos = mod->module.builtin_func_infos;
     for (builtin_func_info_t *info = infos; info->name; ++info) {
         if (cstr_eq(info->name, name)) {
-            if (ast->debug) {
-                printf("found func[%s]\n", name);
-            }
             return info->func(ast, args);
         }
     }
@@ -6041,9 +6038,6 @@ trv_invoke_builtin_modules(ast_t *ast, const char *name, const object_t *args) {
 
     for (const char **bltname = builtin_mod_names; *bltname; ++bltname) {
         object_dict_item_t *item = objdict_get(varmap, *bltname);
-        if (ast->debug) {
-            printf("bltname[%s] item[%p]\n", *bltname, item);
-        }
         if (!item) {
             continue;
         }
