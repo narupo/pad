@@ -5938,7 +5938,7 @@ trv_invoke_func_obj(ast_t *ast, const char *name, const object_t *drtargs, int d
 
     object_t *func_obj = get_var_ref(ast, name, 0);
     if (!func_obj) {
-        ast_set_error_detail(ast, "\"%s\" is not defined", name);
+        // not error
         obj_del(args);
         return NULL;
     }
@@ -6073,7 +6073,7 @@ trv_caller(ast_t *ast, const node_t *node, int dep) {
     object_t *args = _trv_traverse(ast, caller->test_list, dep+1);
     object_t *result = NULL;
 
-    result = trv_invoke_builtin_modules(ast, name, args);
+    result = trv_invoke_func_obj(ast, name, args, dep+1);
     if (ast_has_error(ast)) {
         obj_del(args);
         return_trav(NULL);
@@ -6082,7 +6082,7 @@ trv_caller(ast_t *ast, const node_t *node, int dep) {
         return_trav(result);
     }
 
-    result = trv_invoke_func_obj(ast, name, args, dep+1);
+    result = trv_invoke_builtin_modules(ast, name, args);
     if (ast_has_error(ast)) {
         obj_del(args);
         return_trav(NULL);
