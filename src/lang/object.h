@@ -11,6 +11,7 @@
 #include "lang/nodes.h"
 #include "lang/object_array.h"
 #include "lang/object_dict.h"
+#include "lang/builtin/function.h"
 
 typedef enum {
     OBJ_TYPE_NIL,
@@ -42,6 +43,7 @@ struct object_index {
 struct object_module {
     string_t *name;
     object_dict_t *objs;
+    builtin_func_info_t *builtin_func_infos;
 };
 
 struct object {

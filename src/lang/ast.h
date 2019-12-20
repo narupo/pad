@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lang/types.h"
 #include "lang/tokens.h"
 #include "lang/nodes.h"
 #include "lang/context.h"
@@ -21,8 +22,6 @@ struct ast {
     char error_detail[AST_ERR_DETAIL_SIZE]; // error detail
     bool debug; // if do debug to true
 };
-
-typedef struct ast ast_t;
 
 /**
  * 

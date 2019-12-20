@@ -6,6 +6,8 @@
 #include "lang/object_array.h"
 #include "lang/opts.h"
 #include "lang/ast.h"
+#include "lang/builtin/modules/alias.h"
+#include "lang/builtin/modules/opts.h"
 
 void
 trv_traverse(ast_t *ast, context_t *context);

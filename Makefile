@@ -54,7 +54,9 @@ init:
 	build$(SEP)hub \
 	build$(SEP)hub$(SEP)commands \
 	build$(SEP)make \
-	build$(SEP)lang$(SEP) 
+	build$(SEP)lang$(SEP) \
+	build$(SEP)lang$(SEP)builtin \
+	build$(SEP)lang$(SEP)builtin$(SEP)modules
 
 .PHONY: cc
 cc:
@@ -109,6 +111,8 @@ SRCS := build/lib/error.c \
 	build/lang/node_array.c \
 	build/lang/opts.c \
 	build/lang/scope.c \
+	build/lang/builtin/modules/opts.c \
+	build/lang/builtin/modules/alias.c \
 
 OBJS := $(SRCS:.c=.o)
 
@@ -220,3 +224,8 @@ build/lang/opts.o: src/lang/opts.c src/lang/opts.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/scope.o: src/lang/scope.c src/lang/scope.h
 	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/builtin/modules/opts.o: src/lang/builtin/modules/opts.c src/lang/builtin/modules/opts.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/builtin/modules/alias.o: src/lang/builtin/modules/alias.c src/lang/builtin/modules/alias.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
