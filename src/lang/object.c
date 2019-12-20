@@ -40,6 +40,10 @@ obj_del(object_t *self) {
         self->index.ref_operand = NULL; // do not delete, it is reference
         objarr_del(self->index.indices);
         break;
+    case OBJ_TYPE_MODULE:
+        str_del(self->module.name);
+        objdict_del(self->module.objs);
+        break;
     }
 
     free(self);
@@ -97,6 +101,10 @@ obj_new_other(const object_t *other) {
         }
         self->index.indices = indices;
     } break;
+    case OBJ_TYPE_MODULE:
+        self->module.name = str_new_other(other->module.name);
+        self->module.objs = objdict_new_other(other->module.objs); 
+        break;
     }
 
     return self;    
@@ -239,6 +247,16 @@ obj_new_index(object_t *ref_operand, object_array_t *move_indices) {
     return self;
 }
 
+object_t *
+obj_new_module(void) {
+    object_t *self = obj_new(OBJ_TYPE_MODULE);
+
+    self->module.name = str_new();
+    self->module.objs = objdict_new();
+
+    return self;
+}
+
 string_t *
 obj_to_str(const object_t *self) {
     switch (self->type) {
@@ -286,6 +304,11 @@ obj_to_str(const object_t *self) {
     case OBJ_TYPE_INDEX: {
         string_t *str = str_new();
         str_set(str, "(index)");
+        return str;
+    } break;
+    case OBJ_TYPE_MODULE: {
+        string_t *str = str_new();
+        str_set(str, "(module)");
         return str;
     } break;
     } // switch

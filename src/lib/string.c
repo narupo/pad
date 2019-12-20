@@ -469,6 +469,40 @@ str_findc(const string_t *self, const char *target) {
 	return bmfind(self->buffer, self->length, target, strlen(target));
 }
 
+string_t *
+str_lower(const string_t *other) {
+	if (!other) {
+		return NULL;
+	}
+
+	string_t *self = str_new_other(other);
+	for (int32_t i = 0; i < self->length; ++i) {
+		string_type_t ch = self->buffer[i];
+		if (isupper(ch)) {
+			self->buffer[i] = tolower(ch);
+		}
+	}
+
+	return self;
+}
+
+string_t *
+str_upper(const string_t *other) {
+	if (!other) {
+		return NULL;
+	}
+
+	string_t *self = str_new_other(other);
+	for (int32_t i = 0; i < self->length; ++i) {
+		string_type_t ch = self->buffer[i];
+		if (islower(ch)) {
+			self->buffer[i] = toupper(ch);
+		}
+	}
+
+	return self;
+}
+
 /**************
 * str cleanup *
 **************/

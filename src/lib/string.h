@@ -293,6 +293,28 @@ str_strip(string_t *self, const string_type_t *rems);
 const string_type_t *
 str_findc(const string_t *self, const string_type_t *target);
 
+/**
+ * Convert strings to lower case and get copy it
+ *
+ * @param[in] *self
+ *
+ * @return success to pointer to string_t (copy)
+ * @return failed to pointer to NULL
+ */
+string_t *
+str_lower(const string_t *self);
+
+/**
+ * Convert strings to upper case and get copy it
+ *
+ * @param[in] *self
+ *
+ * @return success to pointer to string_t (copy)
+ * @return failed to pointer to NULL
+ */
+string_t *
+str_upper(const string_t *self);
+
 /********
 * uint8 *
 ********/

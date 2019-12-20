@@ -13,7 +13,7 @@
 #include "lang/object_dict.h"
 
 typedef enum {
-    OBJ_TYPE_NIL = 0,
+    OBJ_TYPE_NIL,
     OBJ_TYPE_INTEGER,
     OBJ_TYPE_BOOL,
     OBJ_TYPE_IDENTIFIER,
@@ -22,6 +22,7 @@ typedef enum {
     OBJ_TYPE_DICT,
     OBJ_TYPE_FUNC,
     OBJ_TYPE_INDEX,
+    OBJ_TYPE_MODULE,
 } obj_type_t;
 
 struct object_func {
@@ -38,6 +39,11 @@ struct object_index {
     object_array_t *indices;
 };
 
+struct object_module {
+    string_t *name;
+    object_dict_t *objs;
+};
+
 struct object {
     obj_type_t type;
     string_t *identifier;
@@ -48,6 +54,7 @@ struct object {
     bool boolean;
     object_func_t func;
     object_index_t index;
+    object_module_t module;
     int32_t ref_counts;
 };
 
@@ -98,6 +105,9 @@ obj_new_func(object_t *move_name, object_t *move_args, node_t *ref_suite);
 
 object_t *
 obj_new_index(object_t *ref_operand, object_array_t *move_indices);
+
+object_t *
+obj_new_module(void);
 
 int32_t
 obj_inc_ref(object_t *self);
