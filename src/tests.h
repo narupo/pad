@@ -47,3 +47,6 @@
 #include "lang/object_array.h"
 #include "lang/object_dict.h"
 #include "lang/opts.h"
+#include "lang/builtin/function.h"
+#include "lang/builtin/modules/alias.h"
+#include "lang/builtin/modules/opts.h"

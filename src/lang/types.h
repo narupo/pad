@@ -26,3 +26,10 @@ typedef struct context context_t;
 
 struct scope;
 typedef struct scope scope_t;
+
+struct ast;
+typedef struct ast ast_t;
+
+typedef object_t *(*builtin_func_t)(ast_t *ast, const object_t *args);
+
+typedef struct builtin_func_info builtin_func_info_t;

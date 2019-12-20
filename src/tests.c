@@ -2246,7 +2246,7 @@ test_tkr_parse(void) {
         token = tkr_tokens_getc(tkr, 3);
         assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
-/*
+
     tkr_parse(tkr,
         "{@ import alias\n"
         "alias.set(\"dtl\", \"run bin/date-line\") @}");
@@ -2285,7 +2285,7 @@ test_tkr_parse(void) {
         token = tkr_tokens_getc(tkr, 12);
         assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
-*/
+
     /******************
     * reference block *
     ******************/
@@ -9432,7 +9432,7 @@ test_trv_atom(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
     }
-/*
+
     tkr_parse(tkr, "{@ alias.set() @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
@@ -9448,7 +9448,7 @@ test_trv_atom(void) {
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't invoke alias.set. key is not string"));
     } 
-*/
+
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
@@ -11084,7 +11084,7 @@ test_trv_assign_list(void) {
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
     } 
-/*
+
     tkr_parse(tkr, "{@ a = alias.set(\"\", \"\") @}{: a :}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
@@ -11117,7 +11117,7 @@ test_trv_assign_list(void) {
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "def"));
     } 
-*/
+
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
@@ -11136,14 +11136,14 @@ test_trv_test_list(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
     }
-/*
+
     tkr_parse(tkr, "{@ 1, \"abc\", var, alias.set(\"\", \"\") @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
     } 
-*/
+
     tkr_parse(tkr, "{@ a = 0 \n b = 0 \n a += 1, b += 2 @}{: a :} {: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
@@ -11186,6 +11186,16 @@ test_trv_dot(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "ABC"));
+    }
+
+    tkr_parse(tkr, "{: alias.set(\"a\", \"b\") :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        showdetail();
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_get_alias_value(ctx, "a"), "b"));
+        assert(!strcmp(ctx_getc_buf(ctx), "nil"));
     }
 
     ctx_del(ctx);
@@ -12292,7 +12302,7 @@ test_trv(void) {
     /********************
     * builtin functions *
     ********************/
-/*
+
     tkr_parse(tkr, "{@ alias.set(\"abc\", \"def\") @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
@@ -12333,7 +12343,7 @@ test_trv(void) {
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "def"));
     }
-*/
+
     tkr_parse(tkr, "{@ puts() @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));

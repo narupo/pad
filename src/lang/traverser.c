@@ -5927,96 +5927,6 @@ trv_identifier(ast_t *ast, const node_t *node, int dep) {
 }
 
 static object_t *
-trv_invoke_alias_set_func(ast_t *ast, const object_t *objargs) {
-    if (!objargs) {
-        ast_set_error_detail(ast, "can't invoke alias.set. need two arguments");
-        return NULL;
-    }
-    assert(objargs->type == OBJ_TYPE_ARRAY);
-
-    object_array_t *args = objargs->objarr;
-
-    if (objarr_len(args) < 2) {
-        ast_set_error_detail(ast, "can't invoke alias.set. too few arguments");
-        return NULL;
-    } else if (objarr_len(args) >= 4) {
-        ast_set_error_detail(ast, "can't invoke alias.set. too many arguments");
-        return NULL;
-    }
-
-    const object_t *keyobj = objarr_getc(args, 0);
-    if (keyobj->type != OBJ_TYPE_STRING) {
-        ast_set_error_detail(ast, "can't invoke alias.set. key is not string");
-        return NULL;
-    }
-
-    const object_t *valobj = objarr_getc(args, 1);
-    if (valobj->type != OBJ_TYPE_STRING) {
-        ast_set_error_detail(ast, "can't invoke alias.set. value is not string");
-        return NULL;
-    }
-
-    const object_t *descobj = NULL;
-    if (objarr_len(args) == 3) {
-        descobj = objarr_getc(args, 2);
-        if (descobj->type != OBJ_TYPE_STRING) {
-            ast_set_error_detail(ast, "can't invoke alias.set. description is not string");
-            return NULL;
-        }
-    }
-
-    const char *key = str_getc(keyobj->string);
-    const char *val = str_getc(valobj->string);
-    const char *desc = descobj ? str_getc(descobj->string) : NULL;
-
-    ctx_set_alias(ast->context, key, val, desc);
-
-    return obj_new_nil();
-}
-
-static object_t *
-trv_invoke_opts_get_func(ast_t *ast, const object_t *objargs) {
-    if (!objargs) {
-        ast_set_error_detail(ast, "can't invoke opts.get. need one argument");
-        return NULL;
-    }
-
-    if (objargs->type == OBJ_TYPE_ARRAY) {
-        if (objarr_len(objargs->objarr) != 1) {
-            ast_set_error_detail(ast, "can't invoke opts.get. need one argument");
-            return NULL;
-        }
-
-        const object_t *objname = objarr_getc(objargs->objarr, 0);
-        assert(objname);
-
-        if (objname->type != OBJ_TYPE_STRING) {
-            ast_set_error_detail(ast, "can't invoke opts.get. argument is not string");
-            return NULL;
-        }
-
-        string_t *optname = objname->string;
-        const char *optval = opts_getc(ast->opts, str_getc(optname));
-        if (!optval) {
-            return obj_new_nil();
-        }        
-
-        return obj_new_cstr(optval);
-    } else if (objargs->type == OBJ_TYPE_STRING) {
-        string_t *optname = objargs->string;
-        const char *optval = opts_getc(ast->opts, str_getc(optname));
-        if (!optval) {
-            return obj_new_nil();
-        }        
-
-        return obj_new_cstr(optval);
-    } 
-
-    assert(0 && "impossible. invalid arguments");
-    return NULL;
-}
-
-static object_t *
 trv_invoke_func_obj(ast_t *ast, const char *name, const object_t *drtargs, int dep) {
     tready();
     assert(name);
@@ -6191,88 +6101,109 @@ trv_invoke_upper_func(ast_t *ast, const object_t *_) {
 }
 
 static object_t *
+trv_invoke_builtin_module(ast_t *ast, object_t *mod, const char *name, const object_t *args) {
+    builtin_func_info_t *infos = mod->module.builtin_func_infos;
+    for (builtin_func_info_t *info = infos; info->name; ++info) {
+        if (cstr_eq(info->name, name)) {
+            return info->func(ast, args);
+        }
+    }
+
+    return NULL;
+}
+
+static object_t *
+trv_invoke_builtin_modules(ast_t *ast, const char *name, const object_t *args) {
+    const char *builtin_mod_names[] = {
+        "alias",
+        "opts",
+        NULL,
+    };
+    object_dict_t *varmap = ctx_get_varmap(ast->context);
+
+    for (const char **bltname = builtin_mod_names; *bltname; ++bltname) {
+        object_dict_item_t *item = objdict_get(varmap, *bltname);
+        if (!item) {
+            continue;
+        }
+
+        object_t *obj = item->value;
+        assert(obj);
+
+        switch (obj->type) {
+        default: break;
+        case OBJ_TYPE_MODULE: {
+            object_t *result = trv_invoke_builtin_module(ast, obj, name, args);
+            if (result) {
+                return result;
+            }
+        } break;
+        }
+    }
+
+    return NULL;
+}
+
+static object_t *
+trv_invoke_builtin_funcs(ast_t *ast, const char *name, const object_t *args) {
+    static builtin_func_info_t infos[] = {
+        {"puts", trv_invoke_puts_func},
+        {"upper", trv_invoke_upper_func},
+        {"lower", trv_invoke_lower_func},
+        {0},
+    };
+
+    for (builtin_func_info_t *info = infos; info->name; ++info) {
+        if (cstr_eq(info->name, name)) {
+            object_t *result = info->func(ast, args);
+            if (result) {
+                return result;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+static object_t *
 trv_caller(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_caller_t *caller = node->real;
     assert(caller && node->type == NODE_TYPE_CALLER);
 
     node_identifier_t *identifier = caller->identifier->real;
+    assert(identifier);
     const char *name = identifier->identifier;
 
     tcheck("call _trv_traverse");
     object_t *args = _trv_traverse(ast, caller->test_list, dep+1);
     object_t *result = NULL;
 
-/*
-    if (cstrarr_len(names) == 2 &&
-        cstr_eq(cstrarr_getc(names, 0), "alias") &&
-        cstr_eq(cstrarr_getc(names, 1), "set")) {
-        tcheck("call trv_invoke_alias_set_func");
-        result = trv_invoke_alias_set_func(ast, args);
-        if (ast_has_error(ast)) {
-            obj_del(args);
-            return_trav(NULL);
-        }
-    } else if (cstrarr_len(names) == 2 &&
-        cstr_eq(cstrarr_getc(names, 0), "opts") &&
-        cstr_eq(cstrarr_getc(names, 1), "get")) {
-        tcheck("call trv_invoke_opts_get_func");
-        result = trv_invoke_opts_get_func(ast, args);
-        if (ast_has_error(ast)) {
-            obj_del(args);
-            return_trav(NULL);
-        }
-    } else if (cstrarr_len(names) == 1 &&
-        cstr_eq(cstrarr_getc(names, 0), "puts")) {
-        result = trv_invoke_puts_func(ast, args);
-        if (ast_has_error(ast)) {
-            obj_del(args);
-            return_trav(NULL);
-        }        
-    } else if (cstrarr_len(names) == 1) {
-        const char *name = cstrarr_getc(names, 0);
-        result = trv_invoke_func_obj(ast, name, args, dep+1);
-        if (ast_has_error(ast)) {
-            obj_del(args);
-            return_trav(NULL);
-        }
-    } else {
-        string_t *s = str_new();
-        for (int i = 0; i < cstrarr_len(names); ++i) {
-            str_app(s, cstrarr_getc(names, i));
-            str_pushb(s, '.');
-        }
-        str_popb(s);
-        ast_set_error_detail(ast, "\"%s\" is not callable", str_getc(s));
-        str_del(s);
+    result = trv_invoke_builtin_modules(ast, name, args);
+    if (ast_has_error(ast)) {
         obj_del(args);
         return_trav(NULL);
+    } else if (result) {
+        obj_del(args);
+        return_trav(result);
     }
-*/
-    if (cstr_eq(name, "puts")) {
-        result = trv_invoke_puts_func(ast, args);
-        if (ast_has_error(ast)) {
-            obj_del(args);
-            return_trav(NULL);
-        }        
-    } else if (cstr_eq(name, "lower")) {
-        result = trv_invoke_lower_func(ast, args);
-        if (ast_has_error(ast)) {
-            obj_del(args);
-            return_trav(NULL);
-        }
-    } else if (cstr_eq(name, "upper")) {
-        result = trv_invoke_upper_func(ast, args);
-        if (ast_has_error(ast)) {
-            obj_del(args);
-            return_trav(NULL);
-        }
-    } else {
-        result = trv_invoke_func_obj(ast, name, args, dep+1);
-        if (ast_has_error(ast)) {
-            obj_del(args);
-            return_trav(NULL);
-        }
+
+    result = trv_invoke_builtin_funcs(ast, name, args);
+    if (ast_has_error(ast)) {
+        obj_del(args);
+        return_trav(NULL);
+    } else if (result) {
+        obj_del(args);
+        return_trav(result);
+    }
+
+    result = trv_invoke_func_obj(ast, name, args, dep+1);
+    if (ast_has_error(ast)) {
+        obj_del(args);
+        return_trav(NULL);
+    } else if (result) {
+        obj_del(args);
+        return_trav(result);
     }
 
     obj_del(args);
@@ -6621,10 +6552,30 @@ _trv_traverse(ast_t *ast, const node_t *node, int dep) {
     return_trav(NULL);
 }
 
+ast_t *
+trv_import_builtin_modules(ast_t *ast) {
+    object_dict_t *varmap = ctx_get_varmap(ast->context);
+    object_t *mod = NULL;
+
+    mod = builtin_alias_module_new();
+    objdict_move(varmap, str_getc(mod->module.name), mod);
+
+    mod = builtin_opts_module_new();
+    objdict_move(varmap, str_getc(mod->module.name), mod);
+
+    return ast;
+}
+
 void
 trv_traverse(ast_t *ast, context_t *context) {
     ast->context = context;
     ctx_clear(ast->context);
+
+    if (!trv_import_builtin_modules(ast)) {
+        ast_set_error_detail(ast, "failed to import builtin modules");
+        return;
+    }
+
     _trv_traverse(ast, ast->root, 0);
 }
 
