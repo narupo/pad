@@ -364,7 +364,7 @@ typedef struct {
 } node_true_t;
 
 typedef struct {
-    node_t *identifier_chain;
+    node_t *identifier;
     node_t *test_list;
 } node_caller_t;
 

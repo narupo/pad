@@ -715,9 +715,9 @@ cc_caller(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    check("call cc_identifier_chain");
-    cur->identifier_chain = cc_identifier_chain(ast, dep+1);
-    if (!cur->identifier_chain) {
+    check("call cc_identifier");
+    cur->identifier = cc_identifier(ast, dep+1);
+    if (!cur->identifier) {
         if (ast_has_error(ast)) {
             return_cleanup("");
         }
@@ -1564,7 +1564,7 @@ cc_term(ast_t *ast, int dep) {
 
         nodearr_moveb(cur->nodearr, op);
 
-        check("call right cc_index");
+        check("call right cc_dot");
         node_t *rhs = cc_dot(ast, dep+1);
         if (ast_has_error(ast)) {
             return_cleanup("");
@@ -1618,7 +1618,7 @@ cc_dot(ast_t *ast, int dep) {
             return_cleanup("");
         }
         if (!op) {
-            return_parse(node_new(NODE_TYPE_TERM, cur));
+            return_parse(node_new(NODE_TYPE_DOT, cur));
         }
 
         nodearr_moveb(cur->nodearr, op);

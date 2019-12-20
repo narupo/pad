@@ -243,7 +243,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     } break;
     case NODE_TYPE_CALLER: {
         node_caller_t *caller = node->real;
-        ast_del_nodes(self, caller->identifier_chain);
+        ast_del_nodes(self, caller->identifier);
         ast_del_nodes(self, caller->test_list);
     } break;
     case NODE_TYPE_COMP_OP: {

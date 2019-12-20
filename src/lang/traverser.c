@@ -5167,15 +5167,15 @@ trv_term(ast_t *ast, const node_t *node, int dep) {
     assert(term);
 
     if (nodearr_len(term->nodearr) == 1) {
-        node_t *factor = nodearr_get(term->nodearr, 0);
-        assert(factor->type == NODE_TYPE_INDEX);
-        tcheck("call _trv_traverse with factor");
-        object_t *result = _trv_traverse(ast, factor, dep+1);
+        node_t *node = nodearr_get(term->nodearr, 0);
+        assert(node->type == NODE_TYPE_DOT);
+        tcheck("call _trv_traverse with dot");
+        object_t *result = _trv_traverse(ast, node, dep+1);
         return_trav(result);
     } else if (nodearr_len(term->nodearr) >= 3) {
         node_t *lnode = nodearr_get(term->nodearr, 0);
-        assert(lnode->type == NODE_TYPE_INDEX);
-        tcheck("call _trv_traverse with index");
+        assert(lnode->type == NODE_TYPE_DOT);
+        tcheck("call _trv_traverse with dot");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
@@ -5189,7 +5189,7 @@ trv_term(ast_t *ast, const node_t *node, int dep) {
             assert(op);
 
             node_t *rnode = nodearr_get(term->nodearr, i+1);
-            assert(rnode->type == NODE_TYPE_INDEX);
+            assert(rnode->type == NODE_TYPE_DOT);
             tcheck("call _trv_traverse with index");
             object_t *rhs = _trv_traverse(ast, rnode, dep+1);
             if (ast_has_error(ast)) {
@@ -5215,6 +5215,59 @@ trv_term(ast_t *ast, const node_t *node, int dep) {
     }
 
     assert(0 && "impossible. failed to traverse term");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_dot(ast_t *ast, const node_t *node, int dep) {
+    node_dot_t *dot = node->real;
+    tready();
+    assert(dot);
+
+    if (nodearr_len(dot->nodearr) == 1) {
+        node_t *node = nodearr_get(dot->nodearr, 0);
+        assert(node->type == NODE_TYPE_INDEX);
+        tcheck("call _trv_traverse with dot");
+        object_t *result = _trv_traverse(ast, node, dep+1);
+        return_trav(result);
+    } else if (nodearr_len(dot->nodearr) >= 3) {
+        node_t *lnode = nodearr_get(dot->nodearr, 0);
+        assert(lnode->type == NODE_TYPE_INDEX);
+        tcheck("call _trv_traverse with dot");
+        object_t *lhs = _trv_traverse(ast, lnode, dep+1);
+        if (ast_has_error(ast)) {
+            return_trav(NULL);
+        }
+        assert(lhs);
+        
+        for (int i = 1; i < nodearr_len(dot->nodearr); i += 2) {
+            node_t *node = nodearr_get(dot->nodearr, i);
+            assert(node->type == NODE_TYPE_DOT_OP);
+            node_dot_op_t *op = node->real;
+            assert(op);
+
+            node_t *rnode = nodearr_get(dot->nodearr, i+1);
+            assert(rnode->type == NODE_TYPE_INDEX);
+            tcheck("call _trv_traverse with index");
+            object_t *rhs = _trv_traverse(ast, rnode, dep+1);
+            if (ast_has_error(ast)) {
+                obj_del(lhs);
+                return_trav(NULL);
+            }
+            assert(rnode);
+
+            printf("dot\n");
+            object_t *result = NULL;
+
+            obj_del(lhs);
+            obj_del(rhs);
+            lhs = result;
+        }
+
+        return_trav(lhs);
+    }
+
+    assert(0 && "impossible. failed to traverse dot");
     return_trav(NULL);
 }
 
@@ -6089,16 +6142,14 @@ trv_caller(ast_t *ast, const node_t *node, int dep) {
     node_caller_t *caller = node->real;
     assert(caller && node->type == NODE_TYPE_CALLER);
 
-    cstring_array_t *names = identifier_chain_to_cstrarr(caller->identifier_chain->real);
-    if (!names) {
-        ast_set_error_detail(ast, "not found identifier in caller");
-        return_trav(NULL);
-    }
+    node_identifier_t *identifier = caller->identifier->real;
+    const char *name = identifier->identifier;
 
     tcheck("call _trv_traverse");
     object_t *args = _trv_traverse(ast, caller->test_list, dep+1);
     object_t *result = NULL;
 
+/*
     if (cstrarr_len(names) == 2 &&
         cstr_eq(cstrarr_getc(names, 0), "alias") &&
         cstr_eq(cstrarr_getc(names, 1), "set")) {
@@ -6142,6 +6193,20 @@ trv_caller(ast_t *ast, const node_t *node, int dep) {
         str_del(s);
         obj_del(args);
         return_trav(NULL);
+    }
+*/
+    if (cstr_eq(name, "puts")) {
+        result = trv_invoke_puts_func(ast, args);
+        if (ast_has_error(ast)) {
+            obj_del(args);
+            return_trav(NULL);
+        }        
+    } else {
+        result = trv_invoke_func_obj(ast, name, args, dep+1);
+        if (ast_has_error(ast)) {
+            obj_del(args);
+            return_trav(NULL);
+        }
     }
 
     obj_del(args);
@@ -6397,6 +6462,11 @@ _trv_traverse(ast_t *ast, const node_t *node, int dep) {
     case NODE_TYPE_TERM: {
         tcheck("call trv_term");
         object_t *obj = trv_term(ast, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_DOT: {
+        tcheck("call trv_dot");
+        object_t *obj = trv_dot(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_INDEX: {
