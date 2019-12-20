@@ -5239,7 +5239,7 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             return_trav(NULL);
         }
         assert(lhs);
-        
+
         for (int i = 1; i < nodearr_len(dot->nodearr); i += 2) {
             node_t *node = nodearr_get(dot->nodearr, i);
             assert(node->type == NODE_TYPE_DOT_OP);
@@ -5256,8 +5256,18 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             }
             assert(rnode);
 
-            printf("dot\n");
-            object_t *result = NULL;
+            ast->dot_ref_owner = lhs;
+            object_t *result = _trv_traverse(ast, rnode, dep+1);
+            if (ast_has_error(ast)) {
+                obj_del(lhs);
+                return_trav(NULL);
+            }
+            if (!result) {
+                ast_set_error_detail(ast, "result is null");
+                obj_del(lhs);
+                return_trav(NULL);
+            }
+            ast->dot_ref_owner = NULL;
 
             obj_del(lhs);
             obj_del(rhs);
@@ -6137,6 +6147,48 @@ done:
 }
 
 static object_t *
+trv_invoke_lower_func(ast_t *ast, const object_t *_) {
+    const object_t *owner = ast->dot_ref_owner;
+    if (!owner) {
+        return obj_new_nil();
+    }
+
+    switch (owner->type) {
+    default:
+        return obj_new_nil();
+        break;
+    case OBJ_TYPE_STRING: {
+        string_t *str = str_lower(owner->string);
+        return obj_new_str(str);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to invoke lower func");
+    return obj_new_nil();
+}
+
+static object_t *
+trv_invoke_upper_func(ast_t *ast, const object_t *_) {
+    const object_t *owner = ast->dot_ref_owner;
+    if (!owner) {
+        return obj_new_nil();
+    }
+
+    switch (owner->type) {
+    default:
+        return obj_new_nil();
+        break;
+    case OBJ_TYPE_STRING: {
+        string_t *str = str_upper(owner->string);
+        return obj_new_str(str);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to invoke upper func");
+    return obj_new_nil();
+}
+
+static object_t *
 trv_caller(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_caller_t *caller = node->real;
@@ -6201,6 +6253,18 @@ trv_caller(ast_t *ast, const node_t *node, int dep) {
             obj_del(args);
             return_trav(NULL);
         }        
+    } else if (cstr_eq(name, "lower")) {
+        result = trv_invoke_lower_func(ast, args);
+        if (ast_has_error(ast)) {
+            obj_del(args);
+            return_trav(NULL);
+        }
+    } else if (cstr_eq(name, "upper")) {
+        result = trv_invoke_upper_func(ast, args);
+        if (ast_has_error(ast)) {
+            obj_del(args);
+            return_trav(NULL);
+        }
     } else {
         result = trv_invoke_func_obj(ast, name, args, dep+1);
         if (ast_has_error(ast)) {

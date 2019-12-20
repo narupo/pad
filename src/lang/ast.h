@@ -5,6 +5,7 @@
 #include "lang/context.h"
 #include "lang/opts.h"
 #include "lang/node_array.h"
+#include "lang/object.h"
 
 enum {
     AST_ERR_DETAIL_SIZE = 1024,
@@ -16,6 +17,7 @@ struct ast {
     node_t *root; // pointer to root
     context_t *context; // context. update when traverse tree
     opts_t *opts; // options for builtin opts module
+    const object_t *dot_ref_owner; // owner object for dot operator
     char error_detail[AST_ERR_DETAIL_SIZE]; // error detail
     bool debug; // if do debug to true
 };

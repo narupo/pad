@@ -820,6 +820,32 @@ test_str_findc(void) {
     str_del(s);
 }
 
+static void
+test_str_lower(void) {
+    assert(str_lower(NULL) == NULL);
+    string_t *s = str_new();
+    assert(s != NULL);
+    assert(str_set(s, "ABC") != NULL);
+    string_t *cp = str_lower(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abc"));
+    str_del(cp);
+    str_del(s);
+}
+
+static void
+test_str_upper(void) {
+    assert(str_upper(NULL) == NULL);
+    string_t *s = str_new();
+    assert(s != NULL);
+    assert(str_set(s, "abc") != NULL);
+    string_t *cp = str_upper(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "ABC"));
+    str_del(cp);
+    str_del(s);
+}
+
 static const struct testcase
 string_tests[] = {
     {"cstr_app", test_cstring_cstr_app},
@@ -850,6 +876,8 @@ string_tests[] = {
     {"str_lstrip", test_str_lstrip},
     {"str_strip", test_str_strip},
     {"str_findc", test_str_findc},
+    {"str_lower", test_str_lower},
+    {"str_upper", test_str_upper},
     {0},
 };
 
@@ -11130,6 +11158,42 @@ test_trv_test_list(void) {
 }
 
 static void
+test_trv_dot(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new();
+    context_t *ctx = ctx_new();
+
+    tkr_parse(tkr, "{: \"ABC\".lower() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    }
+
+    tkr_parse(tkr, "{: \"abc\".upper() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "ABC"));
+    }
+
+    tkr_parse(tkr, "{: \"ABC\".lower().upper() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "ABC"));
+    }
+
+    ctx_del(ctx);
+    ast_del(ast);
+    tkr_del(tkr);
+}
+
+static void
 test_trv(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
@@ -12902,6 +12966,7 @@ traverser_tests[] = {
     {"trv_and_test", test_trv_and_test},
     {"trv_assign_list", test_trv_assign_list},
     {"trv_test_list", test_trv_test_list},
+    {"trv_dot", test_trv_dot},
     {0},
 };
 
