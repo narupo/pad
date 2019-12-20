@@ -6015,96 +6015,13 @@ trv_obj_to_str(ast_t *ast, const object_t *obj) {
 }
 
 static object_t *
-trv_invoke_puts_func(ast_t *ast, const object_t *drtargs) {
-    if (!drtargs) {
-        ctx_pushb_buf(ast->context, "\n");
-        return obj_new_int(0);
-    }
-
-    object_t *args = obj_to_array(drtargs);
-
-    int32_t arrlen = objarr_len(args->objarr);
-
-    for (int32_t i = 0; i < arrlen-1; ++i) {
-        object_t *obj = objarr_get(args->objarr, i);
-        assert(obj);
-        object_t *copy = trv_copy_object_value(ast, obj);
-        string_t *s = trv_obj_to_str(ast, copy);
-        obj_del(copy);
-        if (!s) {
-            continue;
-        }
-        str_pushb(s, ' ');
-        ctx_pushb_buf(ast->context, str_getc(s));
-        str_del(s);
-    }
-    if (arrlen) {
-        object_t *obj = objarr_get(args->objarr, arrlen-1);
-        assert(obj);
-        object_t *copy = trv_copy_object_value(ast, obj);
-        string_t *s = trv_obj_to_str(ast, copy);
-        obj_del(copy);
-        if (!s) {
-            goto done;
-        }
-        ctx_pushb_buf(ast->context, str_getc(s));
-        str_del(s);
-    }
-
-done:
-    ctx_pushb_buf(ast->context, "\n");
-    return obj_new_int(arrlen);
-}
-
-static object_t *
-trv_invoke_lower_func(ast_t *ast, const object_t *_) {
-    const object_t *owner = ast->dot_ref_owner;
-    if (!owner) {
-        return obj_new_nil();
-    }
-    ast->dot_ref_owner = NULL;
-
-    switch (owner->type) {
-    default:
-        return obj_new_nil();
-        break;
-    case OBJ_TYPE_STRING: {
-        string_t *str = str_lower(owner->string);
-        return obj_new_str(str);
-    } break;
-    }
-
-    assert(0 && "impossible. failed to invoke lower func");
-    return obj_new_nil();
-}
-
-static object_t *
-trv_invoke_upper_func(ast_t *ast, const object_t *_) {
-    const object_t *owner = ast->dot_ref_owner;
-    if (!owner) {
-        return obj_new_nil();
-    }
-    ast->dot_ref_owner = NULL;
-
-    switch (owner->type) {
-    default:
-        return obj_new_nil();
-        break;
-    case OBJ_TYPE_STRING: {
-        string_t *str = str_upper(owner->string);
-        return obj_new_str(str);
-    } break;
-    }
-
-    assert(0 && "impossible. failed to invoke upper func");
-    return obj_new_nil();
-}
-
-static object_t *
 trv_invoke_builtin_module(ast_t *ast, object_t *mod, const char *name, const object_t *args) {
     builtin_func_info_t *infos = mod->module.builtin_func_infos;
     for (builtin_func_info_t *info = infos; info->name; ++info) {
         if (cstr_eq(info->name, name)) {
+            if (ast->debug) {
+                printf("found func[%s]\n", name);
+            }
             return info->func(ast, args);
         }
     }
@@ -6114,15 +6031,19 @@ trv_invoke_builtin_module(ast_t *ast, object_t *mod, const char *name, const obj
 
 static object_t *
 trv_invoke_builtin_modules(ast_t *ast, const char *name, const object_t *args) {
-    const char *builtin_mod_names[] = {
+    static const char *builtin_mod_names[] = {
+        "__builtin__",
         "alias",
         "opts",
         NULL,
     };
-    object_dict_t *varmap = ctx_get_varmap(ast->context);
+    object_dict_t *varmap = ctx_get_varmap_at_global(ast->context);
 
     for (const char **bltname = builtin_mod_names; *bltname; ++bltname) {
         object_dict_item_t *item = objdict_get(varmap, *bltname);
+        if (ast->debug) {
+            printf("bltname[%s] item[%p]\n", *bltname, item);
+        }
         if (!item) {
             continue;
         }
@@ -6145,27 +6066,6 @@ trv_invoke_builtin_modules(ast_t *ast, const char *name, const object_t *args) {
 }
 
 static object_t *
-trv_invoke_builtin_funcs(ast_t *ast, const char *name, const object_t *args) {
-    static builtin_func_info_t infos[] = {
-        {"puts", trv_invoke_puts_func},
-        {"upper", trv_invoke_upper_func},
-        {"lower", trv_invoke_lower_func},
-        {0},
-    };
-
-    for (builtin_func_info_t *info = infos; info->name; ++info) {
-        if (cstr_eq(info->name, name)) {
-            object_t *result = info->func(ast, args);
-            if (result) {
-                return result;
-            }
-        }
-    }
-
-    return NULL;
-}
-
-static object_t *
 trv_caller(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_caller_t *caller = node->real;
@@ -6180,15 +6080,6 @@ trv_caller(ast_t *ast, const node_t *node, int dep) {
     object_t *result = NULL;
 
     result = trv_invoke_builtin_modules(ast, name, args);
-    if (ast_has_error(ast)) {
-        obj_del(args);
-        return_trav(NULL);
-    } else if (result) {
-        obj_del(args);
-        return_trav(result);
-    }
-
-    result = trv_invoke_builtin_funcs(ast, name, args);
     if (ast_has_error(ast)) {
         obj_del(args);
         return_trav(NULL);
@@ -6556,6 +6447,9 @@ ast_t *
 trv_import_builtin_modules(ast_t *ast) {
     object_dict_t *varmap = ctx_get_varmap(ast->context);
     object_t *mod = NULL;
+
+    mod = builtin_module_new();
+    objdict_move(varmap, str_getc(mod->module.name), mod);
 
     mod = builtin_alias_module_new();
     objdict_move(varmap, str_getc(mod->module.name), mod);

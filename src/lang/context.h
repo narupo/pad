@@ -57,6 +57,9 @@ ctx_getc_confmap(const context_t *self);
 object_dict_t *
 ctx_get_varmap(context_t *self);
 
+object_dict_t *
+ctx_get_varmap_at_global(context_t *self);
+
 const bool
 ctx_get_do_break(const context_t *self);
 
