@@ -129,6 +129,11 @@ ctx_get_varmap(context_t *self) {
     return scope_get_varmap(current_scope);
 }
 
+object_dict_t *
+ctx_get_varmap_at_global(context_t *self) {
+    return scope_get_varmap(self->scope);
+}
+
 const bool
 ctx_get_do_break(const context_t *self) {
     return self->do_break;
