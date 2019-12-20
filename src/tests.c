@@ -12321,6 +12321,7 @@ test_trv(void) {
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         trv_traverse(ast, ctx);
+        showdetail();
         assert(!ast_has_error(ast));
         const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
         const char *value = alinfo_getc_value(alinfo, "abc");
