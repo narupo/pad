@@ -281,11 +281,34 @@ builtin_upper(ast_t *ast, const object_t *_) {
     return obj_new_nil();
 }
 
+static object_t *
+builtin_capitalize(ast_t *ast, const object_t *_) {
+    const object_t *owner = ast->dot_ref_owner;
+    if (!owner) {
+        return obj_new_nil();
+    }
+    ast->dot_ref_owner = NULL;
+
+    switch (owner->type) {
+    default:
+        return obj_new_nil();
+        break;
+    case OBJ_TYPE_STRING: {
+        string_t *str = str_capitalize(owner->string);
+        return obj_new_str(str);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to invoke upper func");
+    return obj_new_nil();
+}
+
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"puts", builtin_puts},
     {"lower", builtin_lower},
     {"upper", builtin_upper},
+    {"capitalize", builtin_capitalize},
     {0},
 };
 

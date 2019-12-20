@@ -846,6 +846,19 @@ test_str_upper(void) {
     str_del(s);
 }
 
+static void
+test_str_capitalize(void) {
+    assert(str_capitalize(NULL) == NULL);
+    string_t *s = str_new();
+    assert(s != NULL);
+    assert(str_set(s, "abc") != NULL);
+    string_t *cp = str_capitalize(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "Abc"));
+    str_del(cp);
+    str_del(s);
+}
+
 static const struct testcase
 string_tests[] = {
     {"cstr_app", test_cstring_cstr_app},
@@ -878,6 +891,7 @@ string_tests[] = {
     {"str_findc", test_str_findc},
     {"str_lower", test_str_lower},
     {"str_upper", test_str_upper},
+    {"str_capitalize", test_str_capitalize},
     {0},
 };
 

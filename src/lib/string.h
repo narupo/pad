@@ -294,7 +294,7 @@ const string_type_t *
 str_findc(const string_t *self, const string_type_t *target);
 
 /**
- * Convert strings to lower case and get copy it
+ * Convert strings to lower case and copy it
  *
  * @param[in] *self
  *
@@ -305,7 +305,7 @@ string_t *
 str_lower(const string_t *self);
 
 /**
- * Convert strings to upper case and get copy it
+ * Convert strings to upper case and copy it
  *
  * @param[in] *self
  *
@@ -314,6 +314,17 @@ str_lower(const string_t *self);
  */
 string_t *
 str_upper(const string_t *self);
+
+/**
+ * Capitalize strings and copy it
+ *
+ * @param[in] *self
+ *
+ * @return success to pointer to string_t (copy)
+ * @return failed to pointer to NULL
+ */
+string_t *
+str_capitalize(const string_t *self);
 
 /********
 * uint8 *
