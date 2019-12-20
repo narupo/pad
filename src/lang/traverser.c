@@ -6152,6 +6152,7 @@ trv_invoke_lower_func(ast_t *ast, const object_t *_) {
     if (!owner) {
         return obj_new_nil();
     }
+    ast->dot_ref_owner = NULL;
 
     switch (owner->type) {
     default:
@@ -6173,6 +6174,7 @@ trv_invoke_upper_func(ast_t *ast, const object_t *_) {
     if (!owner) {
         return obj_new_nil();
     }
+    ast->dot_ref_owner = NULL;
 
     switch (owner->type) {
     default:
