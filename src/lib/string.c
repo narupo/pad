@@ -503,6 +503,23 @@ str_upper(const string_t *other) {
 	return self;
 }
 
+string_t *
+str_capitalize(const string_t *other) {
+	if (!other) {
+		return NULL;
+	}
+
+	string_t *self = str_new_other(other);
+	if (self->length) {
+		string_type_t ch = self->buffer[0];
+		if (islower(ch)) {
+			self->buffer[0] = toupper(ch);
+		}
+	}
+
+	return self;
+}
+
 /**************
 * str cleanup *
 **************/
