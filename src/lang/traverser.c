@@ -5256,7 +5256,7 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             }
             assert(rnode);
 
-            ast->dot_ref_owner = lhs;
+            ast->ref_dot_owner = lhs;
             object_t *result = _trv_traverse(ast, rnode, dep+1);
             if (ast_has_error(ast)) {
                 obj_del(lhs);
@@ -5267,7 +5267,7 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
                 obj_del(lhs);
                 return_trav(NULL);
             }
-            ast->dot_ref_owner = NULL;
+            ast->ref_dot_owner = NULL;
 
             obj_del(lhs);
             obj_del(rhs);
