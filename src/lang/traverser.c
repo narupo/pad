@@ -569,6 +569,7 @@ static bool
 trv_parse_bool(ast_t *ast, const object_t *obj) {
     assert(obj);
     switch (obj->type) {
+    default: return true; break;
     case OBJ_TYPE_NIL: return false; break;
     case OBJ_TYPE_INTEGER: return obj->lvalue; break;
     case OBJ_TYPE_BOOL: return obj->boolean; break;
@@ -586,7 +587,6 @@ trv_parse_bool(ast_t *ast, const object_t *obj) {
     case OBJ_TYPE_STRING: return str_len(obj->string); break;
     case OBJ_TYPE_ARRAY: return objarr_len(obj->objarr); break;
     case OBJ_TYPE_DICT: return objdict_len(obj->objdict); break;
-    case OBJ_TYPE_FUNC: return true; break;
     case OBJ_TYPE_INDEX: {
         object_t *val = trv_get_value_of_index_obj(ast, obj);
         if (!val) {
@@ -1503,6 +1503,19 @@ trv_compare_or_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
+    default: {
+        object_t *obj = NULL;
+        if (lhs->lvalue && rhs) {
+            obj = obj_new_other(lhs);
+        } else if (lhs->lvalue && !rhs) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs->lvalue && rhs) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (lhs->lvalue && NULL) {
@@ -1592,19 +1605,6 @@ trv_compare_or_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep
         object_t *obj = trv_compare_or(ast, lhs, rvar, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
-        object_t *obj = NULL;
-        if (lhs->lvalue && rhs) {
-            obj = obj_new_other(lhs);
-        } else if (lhs->lvalue && !rhs) {
-            obj = obj_new_other(lhs);
-        } else if (!lhs->lvalue && rhs) {
-            obj = obj_new_other(rhs);
-        } else {
-            obj = obj_new_other(rhs);
-        }
-        return_trav(obj);
-    } break;
     case OBJ_TYPE_INDEX: {
         object_t *val = trv_get_value_of_index_obj(ast, rhs);
         if (!val) {
@@ -1627,6 +1627,19 @@ trv_compare_or_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
+    default: {
+        object_t *obj = NULL;
+        if (lhs->boolean && rhs) {
+            obj = obj_new_other(lhs);
+        } else if (lhs->boolean && !rhs) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs->boolean && rhs) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (lhs->boolean && NULL) {
@@ -1716,19 +1729,6 @@ trv_compare_or_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         object_t *obj = trv_compare_or(ast, lhs, rvar, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
-        object_t *obj = NULL;
-        if (lhs->boolean && rhs) {
-            obj = obj_new_other(lhs);
-        } else if (lhs->boolean && !rhs) {
-            obj = obj_new_other(lhs);
-        } else if (!lhs->boolean && rhs) {
-            obj = obj_new_other(rhs);
-        } else {
-            obj = obj_new_other(rhs);
-        }
-        return_trav(obj);
-    } break;
     case OBJ_TYPE_INDEX: {
         object_t *val = trv_get_value_of_index_obj(ast, rhs);
         if (!val) {
@@ -1753,6 +1753,19 @@ trv_compare_or_string(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
     int32_t slen = str_len(lhs->string);
 
     switch (rhs->type) {
+    default: {
+        object_t *obj = NULL;
+        if (slen && rhs) {
+            obj = obj_new_other(lhs);
+        } else if (slen && !rhs) {
+            obj = obj_new_other(lhs);
+        } else if (!slen && rhs) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (slen && NULL) {
@@ -1836,19 +1849,6 @@ trv_compare_or_string(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_or, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
-        object_t *obj = NULL;
-        if (slen && rhs) {
-            obj = obj_new_other(lhs);
-        } else if (slen && !rhs) {
-            obj = obj_new_other(lhs);
-        } else if (!slen && rhs) {
-            obj = obj_new_other(rhs);
-        } else {
-            obj = obj_new_other(rhs);
-        }
-        return_trav(obj);
-    } break;
     case OBJ_TYPE_INDEX: {
         object_t *val = trv_get_value_of_index_obj(ast, rhs);
         if (!val) {
@@ -1873,6 +1873,19 @@ trv_compare_or_array(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
     int32_t arrlen = objarr_len(lhs->objarr);
 
     switch (rhs->type) {
+    default: {
+        object_t *obj = NULL;
+        if (arrlen && rhs) {
+            obj = obj_new_other(lhs);
+        } else if (arrlen && !rhs) {
+            obj = obj_new_other(lhs);
+        } else if (!arrlen && rhs) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (arrlen && NULL) {
@@ -1957,19 +1970,6 @@ trv_compare_or_array(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_or, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
-        object_t *obj = NULL;
-        if (arrlen && rhs) {
-            obj = obj_new_other(lhs);
-        } else if (arrlen && !rhs) {
-            obj = obj_new_other(lhs);
-        } else if (!arrlen && rhs) {
-            obj = obj_new_other(rhs);
-        } else {
-            obj = obj_new_other(rhs);
-        }
-        return_trav(obj);
-    } break;
     case OBJ_TYPE_INDEX: {
         object_t *val = trv_get_value_of_index_obj(ast, rhs);
         if (!val) {
@@ -1994,6 +1994,19 @@ trv_compare_or_dict(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
     int32_t dictlen = objdict_len(lhs->objdict);
 
     switch (rhs->type) {
+    default: {
+        object_t *obj = NULL;
+        if (dictlen && rhs) {
+            obj = obj_new_other(lhs);
+        } else if (dictlen && !rhs) {
+            obj = obj_new_other(lhs);
+        } else if (!dictlen && rhs) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (dictlen && NULL) {
@@ -2078,19 +2091,6 @@ trv_compare_or_dict(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_or, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
-        object_t *obj = NULL;
-        if (dictlen && rhs) {
-            obj = obj_new_other(lhs);
-        } else if (dictlen && !rhs) {
-            obj = obj_new_other(lhs);
-        } else if (!dictlen && rhs) {
-            obj = obj_new_other(rhs);
-        } else {
-            obj = obj_new_other(rhs);
-        }
-        return_trav(obj);
-    } break;
     case OBJ_TYPE_INDEX: {
         object_t *val = trv_get_value_of_index_obj(ast, rhs);
         if (!val) {
@@ -2113,27 +2113,7 @@ trv_compare_or_nil(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep
     assert(lhs->type == OBJ_TYPE_NIL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_other(lhs);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_other(rhs);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_other(rhs);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_STRING: {
-        object_t *obj = obj_new_other(rhs);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = obj_new_other(rhs);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_DICT: {
+    default: {
         object_t *obj = obj_new_other(rhs);
         return_trav(obj);
     } break;
@@ -2168,6 +2148,19 @@ trv_compare_or_func(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
     assert(lhs->type == OBJ_TYPE_FUNC);
 
     switch (rhs->type) {
+    default: {
+        object_t *obj = NULL;
+        if (lhs && rhs) {
+            obj = obj_new_other(lhs);
+        } else if (lhs && !rhs) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs && rhs) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (lhs && NULL) {
@@ -2250,7 +2243,29 @@ trv_compare_or_func(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_or, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
+    case OBJ_TYPE_INDEX: {
+        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        if (!val) {
+            ast_set_error_detail(ast, "can't compare or func. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = trv_compare_or_func(ast, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare or array");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_compare_or_module(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_MODULE);
+
+    switch (rhs->type) {
+    default: {
         object_t *obj = NULL;
         if (lhs && rhs) {
             obj = obj_new_other(lhs);
@@ -2261,6 +2276,88 @@ trv_compare_or_func(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         } else {
             obj = obj_new_other(rhs);
         }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_NIL: {
+        object_t *obj = NULL;
+        if (lhs && NULL) {
+        } else if (lhs && !NULL) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs && NULL) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = NULL;
+        if (lhs && rhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else if (lhs && !rhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs && rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = NULL;
+        if (lhs && rhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else if (lhs && !rhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs && rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = NULL;
+        if (lhs && str_len(rhs->string)) {
+            obj = obj_new_other(lhs);
+        } else if (lhs && !str_len(rhs->string)) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs && str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = NULL;
+        if (lhs && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(lhs);
+        } else if (lhs && !objarr_len(rhs->objarr)) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_DICT: {
+        object_t *obj = NULL;
+        if (lhs && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(lhs);
+        } else if (lhs && !objdict_len(rhs->objdict)) {
+            obj = obj_new_other(lhs);
+        } else if (!lhs && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else {
+            obj = obj_new_other(rhs);
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call trv_roll_identifier_rhs");
+        object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_or, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -2322,6 +2419,11 @@ trv_compare_or(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     case OBJ_TYPE_FUNC: {
         tcheck("call trv_compare_or_func");
         object_t *obj = trv_compare_or_func(ast, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_MODULE: {
+        tcheck("call trv_compare_or_module");
+        object_t *obj = trv_compare_or_module(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -2388,6 +2490,19 @@ trv_compare_and_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
     assert(lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
+    default: {
+        object_t *obj = NULL;
+        if (lhs->lvalue && rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->lvalue) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (lhs->lvalue && NULL) {
@@ -2471,19 +2586,6 @@ trv_compare_and_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
-        object_t *obj = NULL;
-        if (lhs->lvalue && rhs) {
-            obj = obj_new_other(rhs);
-        } else if (!rhs) {
-            obj = obj_new_other(rhs);
-        } else if (!lhs->lvalue) {
-            obj = obj_new_other(lhs);
-        } else {
-            assert(0 && "impossible. obj is not should be null");
-        }
-        return_trav(obj);
-    } break;
     case OBJ_TYPE_INDEX: {
         object_t *val = trv_get_value_of_index_obj(ast, rhs);
         if (!val) {
@@ -2506,6 +2608,19 @@ trv_compare_and_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     switch (rhs->type) {
+    default: {
+        object_t *obj = NULL;
+        if (lhs->boolean && rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs->boolean) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (lhs->boolean && NULL) {
@@ -2589,19 +2704,6 @@ trv_compare_and_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
-        object_t *obj = NULL;
-        if (lhs->boolean && rhs) {
-            obj = obj_new_other(rhs);
-        } else if (!rhs) {
-            obj = obj_new_other(rhs);
-        } else if (!lhs->boolean) {
-            obj = obj_new_other(lhs);
-        } else {
-            assert(0 && "impossible. obj is not should be null");
-        }
-        return_trav(obj);
-    } break;
     case OBJ_TYPE_INDEX: {
         object_t *val = trv_get_value_of_index_obj(ast, rhs);
         if (!val) {
@@ -2626,6 +2728,19 @@ trv_compare_and_string(ast_t *ast, const object_t *lhs, const object_t *rhs, int
     int32_t slen = str_len(lhs->string);
 
     switch (rhs->type) {
+    default: {
+        object_t *obj = NULL;
+        if (slen && rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!slen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (slen && NULL) {
@@ -2709,19 +2824,6 @@ trv_compare_and_string(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
-        object_t *obj = NULL;
-        if (slen && rhs) {
-            obj = obj_new_other(rhs);
-        } else if (!rhs) {
-            obj = obj_new_other(rhs);
-        } else if (!slen) {
-            obj = obj_new_other(lhs);
-        } else {
-            assert(0 && "impossible. obj is not should be null");
-        }
-        return_trav(obj);
-    } break;
     case OBJ_TYPE_INDEX: {
         object_t *val = trv_get_value_of_index_obj(ast, rhs);
         if (!val) {
@@ -2746,6 +2848,19 @@ trv_compare_and_array(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
     int32_t arrlen = objarr_len(lhs->objarr);
 
     switch (rhs->type) {
+    default: {
+        object_t *obj = NULL;
+        if (arrlen && rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!arrlen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_other(rhs);
         return_trav(obj);
@@ -2820,19 +2935,6 @@ trv_compare_and_array(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
-        object_t *obj = NULL;
-        if (arrlen && rhs) {
-            obj = obj_new_other(rhs);
-        } else if (!rhs) {
-            obj = obj_new_other(rhs);
-        } else if (!arrlen) {
-            obj = obj_new_other(lhs);
-        } else {
-            assert(0 && "impossible. obj is not should be null");
-        }
-        return_trav(obj);
-    } break;
     case OBJ_TYPE_INDEX: {
         object_t *val = trv_get_value_of_index_obj(ast, rhs);
         if (!val) {
@@ -2857,6 +2959,19 @@ trv_compare_and_dict(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
     int32_t dictlen = objdict_len(lhs->objdict);
 
     switch (rhs->type) {
+    default: {
+        object_t *obj = NULL;
+        if (dictlen && rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!dictlen) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_other(rhs);
         return_trav(obj);
@@ -2931,19 +3046,6 @@ trv_compare_and_dict(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
-        object_t *obj = NULL;
-        if (dictlen && rhs) {
-            obj = obj_new_other(rhs);
-        } else if (!rhs) {
-            obj = obj_new_other(rhs);
-        } else if (!dictlen) {
-            obj = obj_new_other(lhs);
-        } else {
-            assert(0 && "impossible. obj is not should be null");
-        }
-        return_trav(obj);
-    } break;
     case OBJ_TYPE_INDEX: {
         object_t *val = trv_get_value_of_index_obj(ast, rhs);
         if (!val) {
@@ -2966,37 +3068,13 @@ trv_compare_and_nil(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
     assert(lhs->type == OBJ_TYPE_NIL);
 
     switch (rhs->type) {
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_other(rhs);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_other(lhs);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_other(lhs);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_STRING: {
-        object_t *obj = obj_new_other(lhs);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = obj_new_other(lhs);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_DICT: {
+    default: {
         object_t *obj = obj_new_other(lhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         tcheck("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_FUNC: {
-        object_t *obj = obj_new_other(lhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -3021,6 +3099,19 @@ trv_compare_and_func(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
     assert(lhs->type == OBJ_TYPE_FUNC);
 
     switch (rhs->type) {
+    default: {
+        object_t *obj = NULL;
+        if (lhs && rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_other(rhs);
         return_trav(obj);
@@ -3095,7 +3186,29 @@ trv_compare_and_func(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
+    case OBJ_TYPE_INDEX: {
+        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        if (!val) {
+            ast_set_error_detail(ast, "can't compare and func. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = trv_compare_and_func(ast, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare and array");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_compare_and_module(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_MODULE);
+
+    switch (rhs->type) {
+    default: {
         object_t *obj = NULL;
         if (lhs && rhs) {
             obj = obj_new_other(rhs);
@@ -3106,6 +3219,80 @@ trv_compare_and_func(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_NIL: {
+        object_t *obj = obj_new_other(rhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = NULL;
+        if (lhs && rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs->lvalue) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = NULL;
+        if (lhs && rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else if (!rhs->boolean) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = NULL;
+        if (lhs && str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else if (!str_len(rhs->string)) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *obj = NULL;
+        if (lhs && objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else if (!objarr_len(rhs->objarr)) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_DICT: {
+        object_t *obj = NULL;
+        if (lhs && objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else if (!objdict_len(rhs->objdict)) {
+            obj = obj_new_other(rhs);
+        } else if (!lhs) {
+            obj = obj_new_other(lhs);
+        } else {
+            assert(0 && "impossible. obj is not should be null");
+        }
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call trv_roll_identifier_rhs");
+        object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -3167,6 +3354,11 @@ trv_compare_and(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     case OBJ_TYPE_FUNC: {
         tcheck("call trv_compare_and_func");
         object_t *obj = trv_compare_and_func(ast, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_MODULE: {
+        tcheck("call trv_compare_and_module");
+        object_t *obj = trv_compare_and_module(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -3233,6 +3425,10 @@ trv_compare_not(ast_t *ast, const object_t *operand, int dep) {
     assert(operand);
 
     switch (operand->type) {
+    default: {
+        object_t *obj = obj_new_bool(!operand);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_bool(true);
         return_trav(obj);
@@ -3266,10 +3462,6 @@ trv_compare_not(ast_t *ast, const object_t *operand, int dep) {
     } break;
     case OBJ_TYPE_DICT: {
         object_t *obj = obj_new_bool(!objdict_len(operand->objdict));
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_FUNC: {
-        object_t *obj = obj_new_bool(!operand);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -3551,6 +3743,46 @@ trv_compare_comparison_eq_func(ast_t *ast, const object_t *lhs, const object_t *
 }
 
 static object_t *
+trv_compare_comparison_eq_module(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_MODULE);
+
+    switch (rhs->type) {
+    default:
+        ast_set_error_detail(ast, "can't compare equal with func");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_NIL: {
+        object_t *obj = obj_new_bool(false);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call trv_roll_identifier_rhs");
+        object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_eq, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_MODULE:
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = obj_new_bool(lhs == rhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        if (!val) {
+            ast_set_error_detail(ast, "can't comparison eq func. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = trv_compare_comparison_not_eq_func(ast, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison array");
+    return_trav(NULL);
+}
+
+static object_t *
 trv_compare_comparison_eq_index(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_INDEX);
@@ -3609,6 +3841,11 @@ trv_compare_comparison_eq(ast_t *ast, const object_t *lhs, const object_t *rhs, 
     case OBJ_TYPE_FUNC: {
         tcheck("call trv_compare_comparison_eq_func");
         object_t *obj = trv_compare_comparison_eq_func(ast, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_MODULE: {
+        tcheck("call trv_compare_comparison_eq_module");
+        object_t *obj = trv_compare_comparison_eq_module(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -3839,6 +4076,47 @@ trv_compare_comparison_not_eq_func(ast_t *ast, const object_t *lhs, const object
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_MODULE:
+    case OBJ_TYPE_FUNC: {
+        object_t *obj = obj_new_bool(lhs != rhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        if (!val) {
+            ast_set_error_detail(ast, "can't comparison not eq func. index object value is null");
+            return_trav(NULL);
+        }
+        object_t *obj = trv_compare_comparison_not_eq_func(ast, lhs, val, dep+1);
+        obj_del(val);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison not eq array");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_compare_comparison_not_eq_module(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_MODULE);
+
+    switch (rhs->type) {
+    default:
+        ast_set_error_detail(ast, "can't compare not equal with func");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_NIL: {
+        object_t *obj = obj_new_bool(true);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        tcheck("call trv_roll_identifier_rhs");
+        object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_not_eq, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_MODULE:
     case OBJ_TYPE_FUNC: {
         object_t *obj = obj_new_bool(lhs != rhs);
         return_trav(obj);
@@ -3902,6 +4180,11 @@ trv_compare_comparison_not_eq(ast_t *ast, const object_t *lhs, const object_t *r
     case OBJ_TYPE_FUNC: {
         tcheck("call trv_compare_comparison_not_eq_func");
         object_t *obj = trv_compare_comparison_not_eq_func(ast, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_MODULE: {
+        tcheck("call trv_compare_comparison_not_eq_module");
+        object_t *obj = trv_compare_comparison_not_eq_module(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {

@@ -11206,7 +11206,6 @@ test_trv_dot(void) {
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         trv_traverse(ast, ctx);
-        showdetail();
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_get_alias_value(ctx, "a"), "b"));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11232,7 +11231,6 @@ test_trv_builtin_functions(void) {
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         trv_traverse(ast, ctx);
-        showdetail();
         assert(!ast_has_error(ast));
         const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
         const char *value = alinfo_getc_value(alinfo, "abc");

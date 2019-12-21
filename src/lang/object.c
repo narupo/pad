@@ -104,6 +104,7 @@ obj_new_other(const object_t *other) {
     case OBJ_TYPE_MODULE:
         self->module.name = str_new_other(other->module.name);
         self->module.objs = objdict_new_other(other->module.objs); 
+        self->module.builtin_func_infos = other->module.builtin_func_infos;
         break;
     }
 
