@@ -2903,6 +2903,8 @@ cc_func_def(ast_t *ast, int dep) {
         return_cleanup("syntax error. reached EOF in parse func def (2)");
     }
 
+    cc_skip_newlines(ast);
+
     t = *ast->ptr++;
     if (t->type != TOKEN_TYPE_RBRACEAT) {
         ast->ptr--;
@@ -2962,7 +2964,10 @@ cc_func_def(ast_t *ast, int dep) {
         return_cleanup("syntax error. reached EOF in parse func def (5)");
     }
 
+    cc_skip_newlines(ast);
+
     t = *ast->ptr++;
+    if (ast->debug) printf("type[%d]\n", t->type);
     if (t->type != TOKEN_TYPE_STMT_END) {
         return_cleanup("not found 'end' in parse func def");
     }
