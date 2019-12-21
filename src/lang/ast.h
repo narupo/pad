@@ -18,7 +18,7 @@ struct ast {
     node_t *root; // pointer to root
     context_t *context; // context. update when traverse tree
     opts_t *opts; // options for builtin opts module
-    const object_t *dot_ref_owner; // owner object for dot operator
+    const object_t *ref_dot_owner; // owner object for dot operator
     char error_detail[AST_ERR_DETAIL_SIZE]; // error detail
     bool debug; // if do debug to true
 };

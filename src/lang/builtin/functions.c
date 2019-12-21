@@ -239,67 +239,97 @@ done:
 
 static object_t *
 builtin_lower(ast_t *ast, const object_t *_) {
-    const object_t *owner = ast->dot_ref_owner;
+    const object_t *owner = ast->ref_dot_owner;
     if (!owner) {
         return obj_new_nil();
     }
-    ast->dot_ref_owner = NULL;
+    ast->ref_dot_owner = NULL;
 
+again:
     switch (owner->type) {
     default:
-        return obj_new_nil();
+        ast_set_error_detail(ast, "can't call lower function");
+        return NULL;
         break;
     case OBJ_TYPE_STRING: {
         string_t *str = str_lower(owner->string);
         return obj_new_str(str);
     } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        owner = ctx_find_var_ref(ast->context, str_getc(owner->identifier));
+        if (!owner) {
+            ast_set_error_detail(ast, "not found \"%s\" in lower function", owner->identifier);
+            return NULL;
+        }
+        goto again;
+    } break;
     }
 
-    assert(0 && "impossible. failed to invoke lower func");
+    assert(0 && "impossible. failed to invoke lower function");
     return obj_new_nil();
 }
 
 static object_t *
 builtin_upper(ast_t *ast, const object_t *_) {
-    const object_t *owner = ast->dot_ref_owner;
+    const object_t *owner = ast->ref_dot_owner;
     if (!owner) {
         return obj_new_nil();
     }
-    ast->dot_ref_owner = NULL;
+    ast->ref_dot_owner = NULL;
 
+again:
     switch (owner->type) {
     default:
-        return obj_new_nil();
+        ast_set_error_detail(ast, "can't call upper function");
+        return NULL;
         break;
     case OBJ_TYPE_STRING: {
         string_t *str = str_upper(owner->string);
         return obj_new_str(str);
     } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        owner = ctx_find_var_ref(ast->context, str_getc(owner->identifier));
+        if (!owner) {
+            ast_set_error_detail(ast, "not found \"%s\" in upper function", owner->identifier);
+            return NULL;
+        }
+        goto again;
+    } break;
     }
 
-    assert(0 && "impossible. failed to invoke upper func");
+    assert(0 && "impossible. failed to invoke upper function");
     return obj_new_nil();
 }
 
 static object_t *
 builtin_capitalize(ast_t *ast, const object_t *_) {
-    const object_t *owner = ast->dot_ref_owner;
+    const object_t *owner = ast->ref_dot_owner;
     if (!owner) {
         return obj_new_nil();
     }
-    ast->dot_ref_owner = NULL;
+    ast->ref_dot_owner = NULL;
 
+again:
     switch (owner->type) {
     default:
-        return obj_new_nil();
+        ast_set_error_detail(ast, "can't call capitalize function");
+        return NULL;
         break;
     case OBJ_TYPE_STRING: {
         string_t *str = str_capitalize(owner->string);
         return obj_new_str(str);
     } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        owner = ctx_find_var_ref(ast->context, str_getc(owner->identifier));
+        if (!owner) {
+            ast_set_error_detail(ast, "not found \"%s\" in capitalize function", owner->identifier);
+            return NULL;
+        }
+        goto again;
+    } break;
     }
 
-    assert(0 && "impossible. failed to invoke upper func");
+    assert(0 && "impossible. failed to invoke capitalize function");
     return obj_new_nil();
 }
 

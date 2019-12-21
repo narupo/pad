@@ -11218,6 +11218,196 @@ test_trv_dot(void) {
 }
 
 static void
+test_trv_builtin_functions(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new();
+    context_t *ctx = ctx_new();
+
+    /********
+    * alias *
+    ********/
+
+    tkr_parse(tkr, "{@ alias.set(\"abc\", \"def\") @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        showdetail();
+        assert(!ast_has_error(ast));
+        const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
+        const char *value = alinfo_getc_value(alinfo, "abc");
+        assert(value);
+        assert(!strcmp(value, "def"));
+    }
+
+    tkr_parse(tkr, "{@ alias.set(\"abc\", \"def\", \"ghi\") @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
+        const char *value = alinfo_getc_value(alinfo, "abc");
+        assert(value);
+        assert(!strcmp(value, "def"));
+        const char *desc = alinfo_getc_desc(alinfo, "abc");
+        assert(desc);
+        assert(!strcmp(desc, "ghi"));
+    }
+
+    /*******
+    * opts *
+    *******/
+
+    tkr_parse(tkr, "{: opts.get(\"abc\") :}");
+    {
+        opts_t *opts = opts_new();
+        char *argv[] = {
+            "--abc",
+            "def",
+            NULL,
+        };
+        opts_parse(opts, 2, argv);
+        ast_move_opts(ast, opts);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "def"));
+    }
+
+    /*******
+    * puts *
+    *******/
+
+    tkr_parse(tkr, "{@ puts() @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "\n"));
+    }
+
+    tkr_parse(tkr, "{@ puts(1) @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
+    }
+
+    tkr_parse(tkr, "{@ puts(1, 2) @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1 2\n"));
+    }
+
+    tkr_parse(tkr, "{@ puts(1, \"abc\") @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1 abc\n"));
+    }
+
+    tkr_parse(tkr, "{@ puts(\"abc\") @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc\n"));
+    }
+
+    /********
+    * upper *
+    ********/
+
+    tkr_parse(tkr, "{: \"abc\".upper() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "ABC"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"abc\" \n @}{: a.upper() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "ABC"));
+    }
+
+    tkr_parse(tkr, "{: nil.upper() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't call upper function"));
+    }
+
+    /********
+    * lower *
+    ********/
+
+    tkr_parse(tkr, "{: \"ABC\".lower() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"ABC\" \n @}{: a.lower() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    }
+
+    tkr_parse(tkr, "{: nil.lower() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't call lower function"));
+    }
+
+    /*************
+    * capitalize *
+    *************/
+
+    tkr_parse(tkr, "{: \"abc\".capitalize() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "Abc"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"abc\" \n @}{: a.capitalize() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "Abc"));
+    }
+
+    tkr_parse(tkr, "{: nil.capitalize() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't call capitalize function"));
+    }
+
+    ctx_del(ctx);
+    ast_del(ast);
+    tkr_del(tkr);
+}
+
+static void
 test_trv(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
@@ -12313,91 +12503,6 @@ test_trv(void) {
         assert(!strcmp(ast_get_error_detail(ast), "\"my.func\" is not callable"));
     } 
 */
-    /********************
-    * builtin functions *
-    ********************/
-
-    tkr_parse(tkr, "{@ alias.set(\"abc\", \"def\") @}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        showdetail();
-        assert(!ast_has_error(ast));
-        const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
-        const char *value = alinfo_getc_value(alinfo, "abc");
-        assert(value);
-        assert(!strcmp(value, "def"));
-    }
-
-    tkr_parse(tkr, "{@ alias.set(\"abc\", \"def\", \"ghi\") @}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
-        const char *value = alinfo_getc_value(alinfo, "abc");
-        assert(value);
-        assert(!strcmp(value, "def"));
-        const char *desc = alinfo_getc_desc(alinfo, "abc");
-        assert(desc);
-        assert(!strcmp(desc, "ghi"));
-    }
-
-    tkr_parse(tkr, "{: opts.get(\"abc\") :}");
-    {
-        opts_t *opts = opts_new();
-        char *argv[] = {
-            "--abc",
-            "def",
-            NULL,
-        };
-        opts_parse(opts, 2, argv);
-        ast_move_opts(ast, opts);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "def"));
-    }
-
-    tkr_parse(tkr, "{@ puts() @}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "\n"));
-    }
-
-    tkr_parse(tkr, "{@ puts(1) @}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
-    }
-
-    tkr_parse(tkr, "{@ puts(1, 2) @}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "1 2\n"));
-    }
-
-    tkr_parse(tkr, "{@ puts(1, \"abc\") @}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "1 abc\n"));
-    }
-
-    tkr_parse(tkr, "{@ puts(\"abc\") @}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "abc\n"));
-    }
 
     /*******************
     * import statement *
@@ -12992,6 +13097,7 @@ traverser_tests[] = {
     {"trv_assign_list", test_trv_assign_list},
     {"trv_test_list", test_trv_test_list},
     {"trv_dot", test_trv_dot},
+    {"trv_builtin_functions", test_trv_builtin_functions},
     {0},
 };
 
