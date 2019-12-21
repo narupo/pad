@@ -48,3 +48,6 @@ dict_len(const dict_t *self);
 const dict_item_t *
 dict_getc_index(const dict_t *self, size_t index);
 
+bool
+dict_has_key(const dict_t *self, const char *key);
+

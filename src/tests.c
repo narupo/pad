@@ -11380,6 +11380,37 @@ test_trv_builtin_functions(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "def"));
     }
 
+    tkr_parse(tkr, "{: opts.has(\"abc\") :}");
+    {
+        opts_t *opts = opts_new();
+        char *argv[] = {
+            "--abc",
+            NULL,
+        };
+        opts_parse(opts, 2, argv);
+        ast_move_opts(ast, opts);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{: opts.has(\"def\") :}");
+    {
+        opts_t *opts = opts_new();
+        char *argv[] = {
+            "--abc",
+            NULL,
+        };
+        opts_parse(opts, 2, argv);
+        ast_move_opts(ast, opts);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "false"));
+    }
+
     /*******
     * puts *
     *******/

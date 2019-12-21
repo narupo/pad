@@ -20,3 +20,6 @@ opts_parse(opts_t *self, int argc, char *argv[]);
 
 const char *
 opts_getc(const opts_t *self, const char *optname);
+
+bool
+opts_has(const opts_t *self, const char *optname);

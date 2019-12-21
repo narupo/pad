@@ -93,3 +93,14 @@ dict_getc_index(const dict_t *self, size_t index) {
     }
     return &self->map[index];
 }
+
+bool
+dict_has_key(const dict_t *self, const char *key) {
+    for (int i = 0; i < self->len; ++i) {
+        if (!strcmp(self->map[i].key, key)) {
+            return true;
+        }
+    }
+
+    return false;
+}

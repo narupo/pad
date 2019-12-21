@@ -78,6 +78,10 @@ opts_parse(opts_t *self, int argc, char *argv[]) {
         }
     }
 
+    if (str_len(key)) {
+        dict_set(self->opts, str_getc(key), "");
+    }
+
     return self;
 }
 
@@ -92,4 +96,13 @@ opts_getc(const opts_t *self, const char *optname) {
         return NULL;
     }
     return item->value;
+}
+
+bool
+opts_has(const opts_t *self, const char *optname) {
+    if (!self || !optname) {
+        return NULL;
+    }
+
+    return dict_has_key(self->opts, optname);
 }
