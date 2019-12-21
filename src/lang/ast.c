@@ -266,6 +266,30 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         ast_del_nodes(self, identifier_chain->identifier);
         ast_del_nodes(self, identifier_chain->identifier_chain);
     } break;
+    case NODE_TYPE_DEF: {
+        node_def_t *def = node->real;
+        ast_del_nodes(self, def->func_def);
+    } break;
+    case NODE_TYPE_FUNC_DEF: {
+        node_func_def_t *func_def = node->real;
+        ast_del_nodes(self, func_def->identifier);
+        ast_del_nodes(self, func_def->func_def_params);
+        for (int32_t i = 0; i < nodearr_len(func_def->contents); ++i) {
+            node_t *content = nodearr_get(func_def->contents, i);
+            ast_del_nodes(self, content);
+        }
+    } break;
+    case NODE_TYPE_FUNC_DEF_PARAMS: {
+        node_func_def_params_t *func_def_params = node->real;
+        ast_del_nodes(self, func_def_params->func_def_args);
+    } break;
+    case NODE_TYPE_FUNC_DEF_ARGS: {
+        node_func_def_args_t *func_def_args = node->real;
+        for (int32_t i = 0; i < nodearr_len(func_def_args->identifiers); ++i) {
+            node_t *identifier = nodearr_get(func_def_args->identifiers, i);
+            ast_del_nodes(self, identifier);
+        }
+    } break;
     }
 
     node_del(node);

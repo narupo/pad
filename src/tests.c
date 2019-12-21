@@ -4802,7 +4802,9 @@ test_cc_compile(void) {
         func_def_args = func_def_params->func_def_args->real;
         assert(nodearr_len(func_def_args->identifiers) == 0);
 
-        elems = func_def->elems->real;
+        assert(func_def->contents);
+        elems = nodearr_get(func_def->contents, 0)->real;
+        assert(elems);
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
         assign = nodearr_get(assign_list->nodearr, 0)->real;
@@ -4870,7 +4872,7 @@ test_cc_compile(void) {
         func_def_args = func_def_params->func_def_args->real;
         assert(nodearr_len(func_def_args->identifiers) == 0);
 
-        elems = func_def->elems->real;
+        elems = nodearr_get(func_def->contents, 0)->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
         assign = nodearr_get(assign_list->nodearr, 0)->real;
@@ -11217,6 +11219,99 @@ test_trv_dot(void) {
 }
 
 static void
+test_trv_func_def(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new();
+    context_t *ctx = ctx_new();
+
+    tkr_parse(tkr, "{@ def f(): end @}{: f() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "nil"));
+    }
+
+    tkr_parse(tkr, "{@ def f(a): return a end @}{: f(1) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{@ def f(a, b): return a + b end @}{: f(1, 2) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "3"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): return true end @}{: f() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): return 0 end @}{: f() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "0"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): return 1 + 2 end @}{: f() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "3"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): @}abc{@ end @}{: f() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_buf(ctx), "abcnil"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): @}abc{@ a = 1 @}def{@ end @}{: f() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abcdefnil"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): @}abc{@ a = 1 @}{: a :}{@ end @}{: f() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc1nil"));
+    }
+
+    tkr_parse(tkr, "{@ def f(a): @}{: a :}{@ b = 123 @}{: b :}{@ end @}{: f(\"abc\") :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc123nil"));
+    }
+
+    ctx_del(ctx);
+    ast_del(ast);
+    tkr_del(tkr);
+}
+
+static void
 test_trv_builtin_functions(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
@@ -13095,6 +13190,7 @@ traverser_tests[] = {
     {"trv_assign_list", test_trv_assign_list},
     {"trv_test_list", test_trv_test_list},
     {"trv_dot", test_trv_dot},
+    {"trv_func_def", test_trv_func_def},
     {"trv_builtin_functions", test_trv_builtin_functions},
     {0},
 };
