@@ -11278,7 +11278,6 @@ test_trv_func_def(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_buf(ctx), "abcnil"));
     }
 
@@ -11304,6 +11303,20 @@ test_trv_func_def(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc123nil"));
+    }
+
+    tkr_parse(tkr, 
+        "{@\n"
+        "    def usage():\n"
+        "@}abc{@\n"
+        "    end\n"
+        "@}{: usage() :}"
+    );
+    {
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abcnil"));
     }
 
     ctx_del(ctx);
