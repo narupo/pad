@@ -6270,8 +6270,22 @@ trv_invoke_func_obj(ast_t *ast, const char *name, const object_t *drtargs, int d
 
     obj_del(args);
 
-    tcheck("call _trv_traverse with ref_suite");
-    object_t *result = _trv_traverse(ast, func->ref_suite, dep+1);
+    tcheck("call _trv_traverse with ref_suites");
+    object_t *result = NULL;
+    for (int32_t i = 0; ; ++i) {
+        node_t *ref_suite = nodearr_get(func->ref_suites, i);
+        result = _trv_traverse(ast, ref_suite, dep+1);
+        if (ctx_get_do_return(ast->context)) {
+            break;
+        }
+        if (i < nodearr_len(func->ref_suites)) {
+            obj_del(result);
+            result = NULL;
+        } else {
+            break;
+        }
+    }
+
     ctx_set_do_return(ast->context, false);
     ctx_popb_scope(ast->context);
     return result;
@@ -6413,14 +6427,8 @@ trv_func_def(ast_t *ast, const node_t *node, int dep) {
     assert(def_args);
     assert(def_args->type == OBJ_TYPE_ARRAY);
 
-    node_t *ref_suite = NULL;
-    if (func_def->elems) {
-        ref_suite = func_def->elems;
-    } else if (func_def->blocks) {
-        ref_suite = func_def->blocks;
-    }
-
-    object_t *func_obj = obj_new_func(name, def_args, ref_suite);
+    node_array_t *ref_suites = func_def->contents;
+    object_t *func_obj = obj_new_func(name, def_args, ref_suites);
     tcheck("set func at varmap");
     move_var(ast, str_getc(name->identifier), func_obj, dep+1);
 

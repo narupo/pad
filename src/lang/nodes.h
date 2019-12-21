@@ -206,8 +206,7 @@ typedef struct {
 typedef struct {
     node_t *identifier;
     node_t *func_def_params;
-    node_t *elems;
-    node_t *blocks;
+    node_array_t *contents;
 } node_func_def_t;
 
 typedef struct {

@@ -45,17 +45,25 @@ nodearr_new(void) {
 
 int32_t
 nodearr_len(const node_array_t *self) {
+    if (!self) {
+        return 0;
+    }
+
     return self->len;
 }
 
 int32_t
 nodearry_capa(const node_array_t *self) {
+    if (!self) {
+        return 0;
+    }
+    
     return self->capa;
 }
 
 node_t *
 nodearr_get(const node_array_t *self, int32_t index) {
-    if (index < 0 || index >= self->capa) {
+    if (!self || index < 0 || index >= self->capa) {
         return NULL;
     }
     return self->parray[index];
@@ -63,7 +71,7 @@ nodearr_get(const node_array_t *self, int32_t index) {
 
 const node_t *
 nodearr_getc(const node_array_t *self, int32_t index) {
-    if (index < 0 || index >= self->capa) {
+    if (!self || index < 0 || index >= self->capa) {
         return NULL;
     }
     return self->parray[index];
@@ -75,6 +83,10 @@ nodearr_getc(const node_array_t *self, int32_t index) {
 
 node_array_t *
 nodearr_resize(node_array_t* self, int32_t capa) {
+    if (!self) {
+        return NULL;
+    }
+
     int byte = sizeof(node_t *);
     node_t **tmparr = mem_erealloc(self->parray, capa * byte + byte);
 
@@ -86,6 +98,10 @@ nodearr_resize(node_array_t* self, int32_t capa) {
 
 node_array_t *
 nodearr_moveb(node_array_t* self, node_t *node) {
+    if (!self) {
+        return NULL;
+    }
+
     assert(self);
     if (self->len >= self->capa) {
         if (!nodearr_resize(self, self->capa * 2)) {
@@ -101,6 +117,10 @@ nodearr_moveb(node_array_t* self, node_t *node) {
 
 node_array_t *
 nodearr_movef(node_array_t* self, node_t *node) {
+    if (!self) {
+        return NULL;
+    }
+
     if (self->len >= self->capa) {
         if (!nodearr_resize(self, self->capa * 2)) {
             return NULL;
@@ -120,7 +140,7 @@ nodearr_movef(node_array_t* self, node_t *node) {
 
 node_t *
 nodearr_popb(node_array_t *self) {
-    if (self->len <= 0) {
+    if (!self || self->len <= 0) {
         return NULL;
     }
 

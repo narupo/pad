@@ -2847,6 +2847,7 @@ static node_t *
 cc_func_def(ast_t *ast, int dep) {
     ready();
     declare(node_func_def_t, cur);
+    cur->contents = nodearr_new();
     token_t **save_ptr = ast->ptr;
 
 #undef return_cleanup
@@ -2854,8 +2855,9 @@ cc_func_def(ast_t *ast, int dep) {
         ast->ptr = save_ptr; \
         ast_del_nodes(ast, cur->identifier); \
         ast_del_nodes(ast, cur->func_def_params); \
-        ast_del_nodes(ast, cur->elems); \
-        ast_del_nodes(ast, cur->blocks); \
+        for (int32_t i = 0; i < nodearr_len(cur->contents); ++i) { \
+            ast_del_nodes(ast, nodearr_get(cur->contents, i)); \
+        } \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -2906,34 +2908,58 @@ cc_func_def(ast_t *ast, int dep) {
         ast->ptr--;
 
         check("call cc_elems");
-        cur->elems = cc_elems(ast, dep+1);
+        node_t *elems = cc_elems(ast, dep+1);
         if (ast_has_error(ast)) {
             return_cleanup("");
+        } else if (elems) {
+            check("store elems to contents");
+            nodearr_moveb(cur->contents, elems);
         }
-        // allow null
+        // allow null because function allow empty contents
     } else {
-        check("read @}");
+        --ast->ptr;
 
-        check("call cc_blocks");
-        cur->blocks = cc_blocks(ast, dep+1);
-        if (ast_has_error(ast)) {
-            return_cleanup("");
-        }
-        // allow null
+        for (;;) {
+            t = *ast->ptr++;
+            if (!t || t->type != TOKEN_TYPE_RBRACEAT) {
+                --ast->ptr;
+                break;
+            }
+            check("read @}")
 
-        if (!*ast->ptr) {
-            return_cleanup("syntax error. reached EOF in parse func def (3)");
-        }
+            check("call cc_blocks")
+            node_t *blocks = cc_blocks(ast, dep+1);
+            if (ast_has_error(ast)) {
+                return_cleanup("");
+            } else if (blocks) {
+                check("store blocks to contents");
+                nodearr_moveb(cur->contents, blocks);
+            }
+            // allow null because function allow empty blocks
 
-        t = *ast->ptr++;
-        if (t->type != TOKEN_TYPE_LBRACEAT) {
-            return_cleanup("not found '{@' in parse func def");
+            if (!*ast->ptr) {
+                return_cleanup("syntax error. reached EOF in parse func def (3)");
+            }
+
+            t = *ast->ptr++;
+            if (t->type != TOKEN_TYPE_LBRACEAT) {
+                return_cleanup("syntax error. not found {@ in parse func def");
+            }
+
+            check("call cc_elems");
+            node_t *elems = cc_elems(ast, dep+1);
+            if (ast_has_error(ast)) {
+                return_cleanup("");
+            } else if (elems) {
+                check("store elems to contents");
+                nodearr_moveb(cur->contents, elems);
+            }
+            // allow null because function allow empty elems
         }
-        check("read {@");
     }
 
     if (!*ast->ptr) {
-        return_cleanup("syntax error. reached EOF in parse func def (4)");
+        return_cleanup("syntax error. reached EOF in parse func def (5)");
     }
 
     t = *ast->ptr++;

@@ -34,7 +34,7 @@ obj_del(object_t *self) {
     case OBJ_TYPE_FUNC:
         obj_del(self->func.name);
         obj_del(self->func.args);
-        // do not delete ref_suite, this is reference
+        // do not delete ref_suites, this is reference
         break;
     case OBJ_TYPE_INDEX:
         self->index.ref_operand = NULL; // do not delete, it is reference
@@ -88,7 +88,7 @@ obj_new_other(const object_t *other) {
     case OBJ_TYPE_FUNC:
         self->func.name = obj_new_other(other->func.name);
         self->func.args = obj_new_other(other->func.args);
-        self->func.ref_suite = other->func.ref_suite; // save reference
+        self->func.ref_suites = other->func.ref_suites; // save reference
         break;
     case OBJ_TYPE_INDEX: {
         self->index.ref_operand = other->index.ref_operand;
@@ -224,12 +224,12 @@ obj_new_dict(object_dict_t *move_objdict) {
 }
 
 object_t *
-obj_new_func(object_t *move_name, object_t *move_args, node_t *ref_suite) {
+obj_new_func(object_t *move_name, object_t *move_args, node_array_t *ref_suites) {
     object_t *self = obj_new(OBJ_TYPE_FUNC);
 
     self->func.name = move_name;
     self->func.args = move_args;
-    self->func.ref_suite = ref_suite;
+    self->func.ref_suites = ref_suites;
 
     return self;
 }

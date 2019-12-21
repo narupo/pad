@@ -29,7 +29,7 @@ typedef enum {
 struct object_func {
     object_t *name; // type == OBJ_TYPE_IDENTIFIER
     object_t *args; // type == OBJ_TYPE_ARRAY
-    node_t *ref_suite;
+    node_array_t *ref_suites;
 };
 
 /**
@@ -103,7 +103,7 @@ object_t *
 obj_new_dict(object_dict_t *move_objdict);
 
 object_t *
-obj_new_func(object_t *move_name, object_t *move_args, node_t *ref_suite);
+obj_new_func(object_t *move_name, object_t *move_args, node_array_t *ref_suites);
 
 object_t *
 obj_new_index(object_t *ref_operand, object_array_t *move_indices);

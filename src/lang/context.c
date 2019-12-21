@@ -134,7 +134,7 @@ ctx_get_varmap_at_global(context_t *self) {
     return scope_get_varmap(self->scope);
 }
 
-const bool
+bool
 ctx_get_do_break(const context_t *self) {
     return self->do_break;
 }
@@ -144,7 +144,7 @@ ctx_set_do_break(context_t *self, bool do_break) {
     self->do_break = do_break;
 }
 
-const bool
+bool
 ctx_get_do_continue(const context_t *self) {
     return self->do_continue;
 }
@@ -154,7 +154,7 @@ ctx_set_do_continue(context_t *self, bool do_continue) {
     self->do_continue = do_continue;
 }
 
-const bool
+bool
 ctx_get_do_return(const context_t *self) {
     return self->do_return;
 }
