@@ -247,6 +247,7 @@ trv_get_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
             }
         }
 
+        // get index key
         const char *skey = NULL;
         long ikey = -1;
         switch (idx->type) {
@@ -5685,6 +5686,7 @@ trv_calc_asscalc_ass_idn(ast_t *ast, const object_t *lhs, const object_t *rhs, i
     } break;
     case OBJ_TYPE_INDEX: {
         object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        assert(val->type != OBJ_TYPE_IDENTIFIER);
         move_var(ast, idn, val, dep+1);
         object_t *ret = obj_new_other(val);
         return_trav(ret);
@@ -6155,7 +6157,12 @@ trv_dict_elems(ast_t *ast, const node_t *node, int dep) {
         object_array_t *objarr = arrobj->objarr;
         assert(objarr_len(objarr) == 2);
         const object_t *key = objarr_getc(objarr, 0);
-        const object_t *val = objarr_getc(objarr, 1);
+        const object_t *tmp_val = objarr_getc(objarr, 1);
+        const object_t *val = tmp_val;
+
+        if (tmp_val->type == OBJ_TYPE_IDENTIFIER) {
+            val = pull_in_ref_by(ast, tmp_val);
+        }
 
         const char *skey = NULL;
         switch (key->type) {
@@ -6181,6 +6188,7 @@ trv_dict_elems(ast_t *ast, const node_t *node, int dep) {
         } break;
         }
 
+        if (ast->debug) printf("val type[%d]\n", val->type);
         objdict_move(objdict, skey, obj_new_other(val));
         obj_del(arrobj);
 }
