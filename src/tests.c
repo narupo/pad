@@ -15,10 +15,11 @@
 
 #define showdetail() printf("detail[%s]\n", ast_get_error_detail(ast));
 
-#define ast_debug(stmt) \
+#define ast_debug(stmt) { \
     ast_set_debug(ast, true); \
     stmt; \
     ast_set_debug(ast, false); \
+} \
 
 /********
 * utils *
@@ -11319,6 +11320,45 @@ test_trv_func_def(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "abcnil"));
     }
 
+    tkr_parse(tkr, 
+        "{@\n"
+        "    def func():\n"
+        "        puts(\"hi\")\n"
+        "    end\n"
+        "\n"
+        "    d = { \"f\": func }\n"
+        "    f = d[\"f\"]\n"
+        "    f()\n"
+        "@}"
+    );
+    {
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "hi\n"));
+    }
+
+    tkr_parse(tkr, 
+        "{@\n"
+        "    def func():\n"
+        "        puts(\"hi\")\n"
+        "    end\n"
+        "\n"
+        "    def func2(kwargs):\n"
+        "        f = kwargs[\"f\"]\n"
+        "        f()\n"
+        "    end\n"
+        "\n"
+        "    func2({ \"f\": func })\n"
+        "@}"
+    );
+    {
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "hi\n"));
+    }
+
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
@@ -11392,7 +11432,6 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
     }
 
