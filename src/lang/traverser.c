@@ -6162,6 +6162,10 @@ trv_dict_elems(ast_t *ast, const node_t *node, int dep) {
 
         if (tmp_val->type == OBJ_TYPE_IDENTIFIER) {
             val = pull_in_ref_by(ast, tmp_val);
+            if (!val) {
+                ast_set_error_detail(ast, "\"%s\" is not defined. can not store to dict elements", str_getc(tmp_val->identifier));
+                return_trav(NULL);
+            }
         }
 
         const char *skey = NULL;
