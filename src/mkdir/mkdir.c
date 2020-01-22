@@ -107,7 +107,7 @@ mkdircmd_mkdirp(mkdircmd_t *self) {
     } else {
         const char* org = get_origin(self->config, argpath);
         char tmppath[FILE_NPATH];
-        
+
         snprintf(tmppath, sizeof tmppath, "%s/%s", org, argpath);
 
         if (!symlink_follow_path(self->config, path, sizeof path, tmppath)) {
