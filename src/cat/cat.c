@@ -8,6 +8,7 @@ struct opts {
     int indent;
     int tabspaces;
     bool istab;
+    bool ismake;
 };
 
 /**
@@ -39,7 +40,8 @@ catcmd_parse_opts(catcmd_t *self) {
         {"indent", required_argument, 0, 'i'},
         {"tabspaces", required_argument, 0, 'T'},
         {"tab", no_argument, 0, 't'},
-        {},
+        {"make", no_argument, 0, 'm'},
+        {0},
     };
 
     self->opts = (struct opts){
@@ -53,7 +55,7 @@ catcmd_parse_opts(catcmd_t *self) {
 
     for (;;) {
         int optsindex;
-        int cur = getopt_long(self->argc, self->argv, "hi:T:t", longopts, &optsindex);
+        int cur = getopt_long(self->argc, self->argv, "hi:T:tm", longopts, &optsindex);
         if (cur == -1) {
             break;
         }
@@ -64,6 +66,7 @@ catcmd_parse_opts(catcmd_t *self) {
         case 'i': self->opts.indent = atoi(optarg); break;
         case 'T': self->opts.tabspaces = atoi(optarg); break;
         case 't': self->opts.istab = true; break;
+        case 'm': self->opts.ismake = true; break;
         case '?':
         default:
             err_die("unsupported option");
@@ -244,6 +247,7 @@ catcmd_usage(const catcmd_t *self) {
         "    -i, --indent     indent spaces.\n"
         "    -T, --tabspaces  number of tab spaces.\n"
         "    -t, --tab        tab indent mode.\n"
+        "    -m, --make       with make.\n"
         "\n"
         "Examples:\n"
         "\n"
@@ -288,34 +292,42 @@ catcmd_read_stream(catcmd_t *self, FILE *fin) {
 static bool
 catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
     bool ret = true;
-    tokenizer_t *tkr = tkr_new(tkropt_new());
-    ast_t *ast = ast_new(self->config);
-    context_t *ctx = ctx_new();
     string_t *out = str_new();
+    context_t *ctx = ctx_new();
+    const char *p = str_getc(buf);
 
-    tkr_parse(tkr, str_getc(buf));
-    if (tkr_has_error(tkr)) {
-        err_error("failed to parse tokens. %s", tkr_get_error_detail(tkr));
-        ret = false;
-        goto fail;
-    }
+    if (self->opts.ismake) {
+        tokenizer_t *tkr = tkr_new(tkropt_new());
+        ast_t *ast = ast_new(self->config);
 
-    cc_compile(ast, tkr_get_tokens(tkr));
-    if (ast_has_error(ast)) {
-        err_error("failed to parse AST. %s", ast_get_error_detail(ast));
-        ret = false;
-        goto fail;
-    }
+        tkr_parse(tkr, str_getc(buf));
+        if (tkr_has_error(tkr)) {
+            err_error("failed to parse tokens. %s", tkr_get_error_detail(tkr));
+            ret = false;
+            goto fail;
+        }
 
-    trv_traverse(ast, ctx);
-    if (ast_has_error(ast)) {
-        err_error("failed to traverse AST %s", ast_get_error_detail(ast));
-        ret = false;
-        goto fail;        
+        cc_compile(ast, tkr_get_tokens(tkr));
+        if (ast_has_error(ast)) {
+            err_error("failed to parse AST. %s", ast_get_error_detail(ast));
+            ret = false;
+            goto fail;
+        }
+
+        trv_traverse(ast, ctx);
+        if (ast_has_error(ast)) {
+            err_error("failed to traverse AST %s", ast_get_error_detail(ast));
+            ret = false;
+            goto fail;        
+        }
+
+        tkr_del(tkr);
+        ast_del(ast);
+
+        p = ctx_getc_buf(ctx);
     }
 
     // set indent
-    const char *p = ctx_getc_buf(ctx);
     int m = 0;
     for (; *p; ) {
         char c = *p++;
@@ -349,8 +361,6 @@ catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
     fflush(fout);
 
 fail:
-    tkr_del(tkr);
-    ast_del(ast);
     ctx_del(ctx);
     str_del(out);
     return ret;
