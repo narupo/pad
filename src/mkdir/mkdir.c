@@ -22,7 +22,7 @@ mkdircmd_parse_opts(mkdircmd_t *self) {
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"parents", no_argument, 0, 'p'},
-        {},
+        {0},
     };
 
     opterr = 0; // ignore error messages
@@ -97,15 +97,23 @@ mkdircmd_show_usage(mkdircmd_t *self) {
 int
 mkdircmd_mkdirp(mkdircmd_t *self) {
     const char *argpath = self->argv[self->optind];
-    const char* org = get_origin(self->config, argpath);
     char path[FILE_NPATH];
 
-    char tmppath[FILE_NPATH];
-    snprintf(tmppath, sizeof tmppath, "%s/%s", org, argpath);
+    if (argpath[0] == ':') {
+        if (!file_solve(path, sizeof path, argpath+1)) {
+            err_error("failed to solve path");
+            return 1;
+        }
+    } else {
+        const char* org = get_origin(self->config, argpath);
+        char tmppath[FILE_NPATH];
+        
+        snprintf(tmppath, sizeof tmppath, "%s/%s", org, argpath);
 
-    if (!symlink_follow_path(self->config, path, sizeof path, tmppath)) {
-        err_error("failed to follow path");
-        return 1;
+        if (!symlink_follow_path(self->config, path, sizeof path, tmppath)) {
+            err_error("failed to follow path");
+            return 1;
+        }
     }
 
     if (file_mkdirsq(path) != 0) {
@@ -119,15 +127,23 @@ mkdircmd_mkdirp(mkdircmd_t *self) {
 int
 mkdircmd_mkdir(mkdircmd_t *self) {
     const char *argpath = self->argv[self->optind];
-    const char *org = get_origin(self->config, argpath);
     char path[FILE_NPATH];
 
-    char tmppath[FILE_NPATH];
-    snprintf(tmppath, sizeof tmppath, "%s/%s", org, argpath);
+    if (argpath[0] == ':') {
+        if (!file_solve(path, sizeof path, argpath+1)) {
+            err_error("failed to solve path");
+            return 1;
+        }
+    } else {
+        const char *org = get_origin(self->config, argpath);
+        char tmppath[FILE_NPATH];
 
-    if (!symlink_follow_path(self->config, path, sizeof path, tmppath)) {
-        err_error("failed to follow path");
-        return 1;
+        snprintf(tmppath, sizeof tmppath, "%s/%s", org, argpath);
+
+        if (!symlink_follow_path(self->config, path, sizeof path, tmppath)) {
+            err_error("failed to follow path");
+            return 1;
+        }
     }
 
     if (file_exists(path)) {
