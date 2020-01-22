@@ -4862,7 +4862,7 @@ trv_calc_expr_add_string(ast_t *ast, const object_t *lhs, const object_t *rhs, i
 
     switch (rhs->type) {
     default:
-        ast_set_error_detail(ast, "can't add with string");
+        ast_set_error_detail(ast, "can't add %d with string", rhs->type);
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
