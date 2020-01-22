@@ -289,7 +289,7 @@ static bool
 catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
     bool ret = true;
     tokenizer_t *tkr = tkr_new(tkropt_new());
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(self->config);
     context_t *ctx = ctx_new();
     string_t *out = str_new();
 

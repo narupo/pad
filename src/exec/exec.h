@@ -50,7 +50,7 @@ execcmd_del(execcmd_t *self);
  * @return failed to NULL
  */
 execcmd_t *
-execcmd_new(config_t *move_config, int argc, char **move_argv);
+execcmd_new(const config_t *config, int argc, char **argv);
 
 /**
  * Run command

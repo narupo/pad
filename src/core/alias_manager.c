@@ -37,7 +37,7 @@ almgr_new(const config_t *config) {
 
     tokenizer_option_t *opt = tkropt_new();
     self->tkr = tkr_new(opt);
-    self->ast = ast_new();
+    self->ast = ast_new(config);
     self->context = ctx_new();
 
     return self;

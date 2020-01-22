@@ -449,6 +449,13 @@ app_execute_command_by_name(app_t *self, const char *name) {
         cmd##_del(cmd); \
     } \
 
+#define routine2(cmd) { \
+        cmd##_t *cmd = cmd##_new(self->config, self->cmd_argc, self->cmd_argv); \
+        result = cmd##_run(cmd); \
+        cmd##_del(cmd); \
+    } \
+
+
     int result = 0;
 
     if (cstr_eq(name, "home")) {
@@ -464,7 +471,7 @@ app_execute_command_by_name(app_t *self, const char *name) {
     } else if (cstr_eq(name, "run")) {
         routine(runcmd);
     } else if (cstr_eq(name, "exec")) {
-        routine(execcmd);
+        routine2(execcmd);
     } else if (cstr_eq(name, "alias")) {
         routine(alcmd);
     } else if (cstr_eq(name, "edit")) {
@@ -596,7 +603,7 @@ app_show_snippet(app_t *self, const char *fname) {
         return false;
     }
 
-    context_t *ctx = compile_argv(self->cmd_argc-1, self->cmd_argv+1, content);
+    context_t *ctx = compile_argv(self->config, self->cmd_argc-1, self->cmd_argv+1, content);
     if (!ctx) {
         err_error("failed to compile snippet");
         free(content);

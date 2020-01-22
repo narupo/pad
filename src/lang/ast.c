@@ -306,9 +306,10 @@ ast_del(ast_t *self) {
 }
 
 ast_t *
-ast_new(void) {
+ast_new(const config_t *config) {
     ast_t *self = mem_ecalloc(1, sizeof(*self));
 
+    self->config = config;
     self->opts = opts_new();
     
     return self;

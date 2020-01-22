@@ -272,9 +272,9 @@ trim_first_line(char *dst, int32_t dstsz, const char *text) {
 }
 
 context_t *
-compile_argv(int argc, char *argv[], const char *src) {
+compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
     tokenizer_t *tkr = tkr_new(tkropt_new());
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
     opts_t *opts = opts_new();
 

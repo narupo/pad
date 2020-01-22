@@ -136,7 +136,7 @@ snptcmd_show(snptcmd_t *self) {
 
     fclose(fin);
 
-    context_t *ctx = compile_argv(self->argc-2, self->argv+2, content);
+    context_t *ctx = compile_argv(self->config, self->argc-2, self->argv+2, content);
     if (!ctx) {
         err_error("failed to compile snippet");
         free(content);
