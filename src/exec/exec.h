@@ -1,7 +1,18 @@
+/**
+ * 2020/01/22
+ *
+ * 現在のexecのパイプや&&は、bashの仕様とは異なった実装になっている
+ * リダイレクトが見つかった時点でコマンドラインの解釈は終了するし、&&もグループ分けしていない
+ * &&でパイプを含むコマンドのグループ分けが必要かもしれない
+ * 現在の用途には足りているので是正しないが、あまり美しい仕様にはなっていないので時間がある時に是正してほしい
+ */
 #include <stdio.h>
 #include <getopt.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
 
 #include "lib/memory.h"
 #include "lib/file.h"

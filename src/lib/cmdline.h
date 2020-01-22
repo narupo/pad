@@ -1,7 +1,11 @@
 /**
- * parse command line with pipe (|) and operator (&&, &)
+ * parse command line with pipe (|) and operator (&&, &) and redirect (>)
  *
- * cmdline_parse(cmdline, "/bin/date-line.py | /bin/lstab.py");
+ * @example
+ *
+ *     cmdline_t *cmdline = cmdline_new();
+ *     cmdline_parse(cmdline, "/bin/date-line.py | /bin/lstab.py");
+ *     cmdline_del(cmdline);
  */
 #pragma once
 
@@ -12,11 +16,22 @@
 
 /**
  * number of type of cmdline objects
+ *
+ * the command line
+ *
+ *     cat text | cat text && make
+ *
+ * structure is
+ *
+ *     CMD PIPE CMD AND CMD
+ *
+ * command line objects
  */
 typedef enum {
     CMDLINE_OBJECT_TYPE_CMD,
     CMDLINE_OBJECT_TYPE_PIPE,
     CMDLINE_OBJECT_TYPE_AND,
+    CMDLINE_OBJECT_TYPE_REDIRECT,
 } cmdline_object_type_t;
 
 /**
