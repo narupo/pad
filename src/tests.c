@@ -12513,6 +12513,20 @@ test_trv(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
     }
     
+    tkr_parse(tkr, "{@ a = \"abc\" + \"def\" @}{: a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_buf(ctx), "abcdef"));
+    }
+    
+    tkr_parse(tkr, "{@ a = \"123\" \n b = \"abc\" + a + \"def\" @}{: b :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_buf(ctx), "abc123def"));
+    }
+    
     /*******
     * term *
     *******/
