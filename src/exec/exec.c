@@ -14,7 +14,7 @@ struct opts {
  * Structure of command
  */
 struct exec {
-    config_t *config;
+    const config_t *config;
     int argc;
     int optind;
     char **argv;
@@ -104,8 +104,6 @@ execcmd_del(execcmd_t *self) {
         return;
     }
 
-    config_del(self->config);
-    freeargv(self->argc, self->argv);
     cmdline_del(self->cmdline);
 #if _CAP_WINDOWS
     str_del(self->read_buffer);
@@ -114,12 +112,12 @@ execcmd_del(execcmd_t *self) {
 }
 
 execcmd_t *
-execcmd_new(config_t *move_config, int argc, char **move_argv) {
+execcmd_new(const config_t *config, int argc, char **argv) {
     execcmd_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->config = move_config;
+    self->config = config;
     self->argc = argc;
-    self->argv = move_argv;
+    self->argv = argv;
     self->cmdline = cmdline_new();
 #if _CAP_WINDOWS
     self->read_buffer = str_new();

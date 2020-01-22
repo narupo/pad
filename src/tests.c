@@ -2604,9 +2604,10 @@ test_ast_show_error(const ast_t *ast) {
 
 static void
 test_cc_basic(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     const node_t *root;
 
     tkr_parse(tkr, "");
@@ -2621,9 +2622,10 @@ test_cc_basic(void) {
 
 static void
 test_cc_code_block(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
     node_blocks_t *blocks;
@@ -2644,9 +2646,10 @@ test_cc_code_block(void) {
 
 static void
 test_cc_ref_block(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
     node_blocks_t *blocks;
@@ -2810,9 +2813,10 @@ test_cc_ref_block(void) {
 
 static void
 test_cc_formula(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
     node_blocks_t *blocks;
@@ -3072,9 +3076,10 @@ test_cc_formula(void) {
 
 static void
 test_cc_dict(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
     node_blocks_t *blocks;
@@ -3231,9 +3236,10 @@ test_cc_dict(void) {
 
 static void
 test_cc_expr(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
     node_blocks_t *blocks;
@@ -3803,9 +3809,10 @@ test_cc_expr(void) {
 
 static void
 test_cc_index(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
     node_blocks_t *blocks;
@@ -3896,9 +3903,10 @@ test_cc_index(void) {
 
 static void
 test_cc_dot(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
     node_blocks_t *blocks;
@@ -4043,9 +4051,10 @@ test_cc_dot(void) {
 static void
 test_cc_compile(void) {
     // head
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
     node_blocks_t *blocks;
@@ -8736,9 +8745,10 @@ compiler_tests[] = {
 
 static void
 test_trv_dict(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     // fail
@@ -8832,9 +8842,10 @@ test_trv_dict(void) {
 
 static void
 test_trv_comparison(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     tkr_parse(tkr, "{@ a = 1 == 1 @}{: a :}");
@@ -9224,9 +9235,10 @@ test_trv_comparison(void) {
 
 static void
 test_trv_array_index(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     // tkr_parse(tkr, "{@ a[0] @}");
@@ -9316,9 +9328,10 @@ test_trv_array_index(void) {
 
 static void
 test_trv_text_block(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     tkr_parse(tkr, "abc");
@@ -9335,9 +9348,10 @@ test_trv_text_block(void) {
 
 static void
 test_trv_ref_block(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     tkr_parse(tkr, "{: nil :}");
@@ -9425,9 +9439,10 @@ test_trv_ref_block(void) {
 
 static void
 test_trv_assign(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     tkr_parse(tkr, "{@ a = 1 @}{: a :}");
@@ -9457,9 +9472,10 @@ test_trv_assign(void) {
 
 static void
 test_trv_atom(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     tkr_parse(tkr, "{@ nil @}");
@@ -9527,9 +9543,10 @@ test_trv_atom(void) {
 
 static void
 test_trv_array(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     tkr_parse(tkr, "{@ a = [] @}{: a :}");
@@ -9587,9 +9604,10 @@ test_trv_array(void) {
 
 static void
 test_trv_index(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     tkr_parse(tkr, "{@ a = \"abc\" @}{: a :}");
@@ -9879,9 +9897,10 @@ test_trv_index(void) {
 
 static void
 test_trv_string_index(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     tkr_parse(tkr, "{@ a = \"ab\" \n @}{: a[0] :}");
@@ -9939,9 +9958,10 @@ test_trv_string_index(void) {
 
 static void
 test_trv_multi_assign(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     // error
@@ -9987,9 +10007,10 @@ test_trv_multi_assign(void) {
 
 static void
 test_trv_and_test(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     // nil and objects
@@ -11045,9 +11066,10 @@ test_trv_and_test(void) {
 
 static void
 test_trv_assign_list(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     // success
@@ -11196,9 +11218,10 @@ test_trv_assign_list(void) {
 
 static void
 test_trv_test_list(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     tkr_parse(tkr, "{@ 1, 2 @}");
@@ -11230,9 +11253,10 @@ test_trv_test_list(void) {
 
 static void
 test_trv_dot(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     tkr_parse(tkr, "{: \"ABC\".lower() :}");
@@ -11275,9 +11299,10 @@ test_trv_dot(void) {
 
 static void
 test_trv_func_def(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     tkr_parse(tkr, "{@ def f(): end @}{: f() :}");
@@ -11420,9 +11445,10 @@ test_trv_func_def(void) {
 
 static void
 test_trv_builtin_functions(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     /********
@@ -11639,9 +11665,10 @@ test_trv_builtin_functions(void) {
 
 static void
 test_trv(void) {
+    config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
-    ast_t *ast = ast_new();
+    ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
     /*******

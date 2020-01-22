@@ -282,7 +282,7 @@ obj_to_str(const object_t *self) {
         return str;
     } break;
     case OBJ_TYPE_STRING: {
-        return str_newother(self->string);
+        return str_new_other(self->string);
     } break;
     case OBJ_TYPE_ARRAY: {
         string_t *str = str_new();
@@ -295,7 +295,7 @@ obj_to_str(const object_t *self) {
         return str;
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        return str_newother(self->identifier);
+        return str_new_other(self->identifier);
     } break;
     case OBJ_TYPE_FUNC: {
         string_t *str = str_new();

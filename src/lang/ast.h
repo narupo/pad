@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/config.h"
 #include "lang/types.h"
 #include "lang/tokens.h"
 #include "lang/nodes.h"
@@ -13,6 +14,7 @@ enum {
 };
 
 struct ast {
+    const config_t *config; // read only config
     token_t **tokens; // token list with null at the last
     token_t **ptr; // pointer to tokens
     node_t *root; // pointer to root
@@ -33,7 +35,7 @@ void
 ast_del_nodes(const ast_t *self, node_t *node);
 
 /**
- * 
+ * destruct object
  *
  * @param[in] *self 
  */
@@ -41,14 +43,14 @@ void
 ast_del(ast_t *self);
 
 /**
- * 
+ * construct object
  *
  * @param[in] void 
  *
  * @return 
  */
 ast_t * 
-ast_new(void);
+ast_new(const config_t *config);
 
 /**
  * 

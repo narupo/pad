@@ -164,6 +164,7 @@ trim_first_line(char *dst, int32_t dstsz, const char *text);
 /**
  * compile source text with argv
  *
+ * @param[in] *config read only config object
  * @param[in] argc 
  * @param[in] *argv[]
  * @param[in] *src    pointer to strings
@@ -172,4 +173,4 @@ trim_first_line(char *dst, int32_t dstsz, const char *text);
  * @return failed to pointer to NULL
  */
 context_t *
-compile_argv(int argc, char *argv[], const char *src);
+compile_argv(const config_t *config, int argc, char *argv[], const char *src);
