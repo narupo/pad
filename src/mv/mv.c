@@ -127,8 +127,6 @@ mvcmd_mv_file_to_dir(mvcmd_t *self, const char *fname, const char *dirname) {
         return false;
     }
 
-    org = mvcmd_get_org_by(self, dirname);
-
     char basename[FILE_NPATH];
     if (!file_basename(basename, sizeof basename, fname)) {
         err_error("failed to get basename from file name");
@@ -142,6 +140,8 @@ mvcmd_mv_file_to_dir(mvcmd_t *self, const char *fname, const char *dirname) {
             return false;
         }
     } else {
+        org = mvcmd_get_org_by(self, dirname);
+
         snprintf(tmppath, sizeof tmppath, "%s/%s/%s", org, dirname, basename);
         if (!symlink_follow_path(self->config, dstpath, sizeof dstpath, tmppath)) {
             err_error("failed to solve path for destination file name");
