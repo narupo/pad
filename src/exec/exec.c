@@ -598,7 +598,7 @@ execcmd_exec_all_unix(execcmd_t *self) {
                 close(filefd);
                 close(fd[READ]);
 
-                // execコマンドはテンプレート言語の組み込み関数からも呼ばれる
+                // execコマンドはテンプレート言語の組み込み関数（functions.c@builtin_exec）からも呼ばれる
                 // ここでexit()しないと言語のパースを継続してしまい、プロセスが作られるごとに
                 // 言語がパースされることになる。子プロセスでは言語のパースを継続しない（親ではする）
                 // そのため、パースを継続しないようにここでexit()する
