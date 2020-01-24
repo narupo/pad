@@ -17,7 +17,7 @@ mvcmd_parse_opts(mvcmd_t *self) {
     // parse options
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
-        {},
+        {0},
     };
     
     extern int opterr;
@@ -108,13 +108,20 @@ mvcmd_mv_file_to_dir(mvcmd_t *self, const char *fname, const char *dirname) {
     char dstpath[FILE_NPATH];
     char tmppath[FILE_NPATH];
 
-    org = mvcmd_get_org_by(self, fname);
-
-    snprintf(tmppath, sizeof tmppath, "%s/%s", org, fname);
-    if (!symlink_follow_path(self->config, srcpath, sizeof srcpath, tmppath)) {
-        err_error("failed to solve path for source file name");
-        return false;
+    if (fname[0] == ':') {
+        if (!file_solve(srcpath, sizeof srcpath, fname+1)) {
+            err_error("failed to solve path for user's source file name");
+            return false;
+        }
+    } else {
+        org = mvcmd_get_org_by(self, fname);
+        snprintf(tmppath, sizeof tmppath, "%s/%s", org, fname);
+        if (!symlink_follow_path(self->config, srcpath, sizeof srcpath, tmppath)) {
+            err_error("failed to solve path for source file name");
+            return false;
+        }
     }
+
     if (!file_exists(srcpath)) {
         err_error("\"%s\" is not exists", fname);
         return false;
@@ -128,10 +135,18 @@ mvcmd_mv_file_to_dir(mvcmd_t *self, const char *fname, const char *dirname) {
         return false;
     }
 
-    snprintf(tmppath, sizeof tmppath, "%s/%s/%s", org, dirname, basename);
-    if (!symlink_follow_path(self->config, dstpath, sizeof dstpath, tmppath)) {
-        err_error("failed to solve path for dirname");
-        return false;
+    if (dirname[0] == ':') {
+        snprintf(tmppath, sizeof tmppath, "%s/%s", dirname+1, basename);
+        if (!file_solve(dstpath, sizeof dstpath, tmppath)) {
+            err_error("failed to solve path for user's destination file name");
+            return false;
+        }
+    } else {
+        snprintf(tmppath, sizeof tmppath, "%s/%s/%s", org, dirname, basename);
+        if (!symlink_follow_path(self->config, dstpath, sizeof dstpath, tmppath)) {
+            err_error("failed to solve path for destination file name");
+            return false;
+        }
     }
 
     if (file_rename(srcpath, dstpath) != 0) {
@@ -166,23 +181,38 @@ mvcmd_mv_file_to_other(mvcmd_t *self) {
     char tmppath[FILE_NPATH];
     char srcpath[FILE_NPATH];
 
-    snprintf(tmppath, sizeof tmppath, "%s/%s", org, srcfname);
-    if (!symlink_follow_path(self->config, srcpath, sizeof srcpath, tmppath)) {
-        err_error("failed to follow path for source file name");
-        return 1;
+    if (srcfname[0] == ':') {
+        if (!file_solve(srcpath, sizeof srcpath, srcfname+1)) {
+            err_error("failed to solve path for user's source file name");
+            return 1;
+        }
+    } else {
+        snprintf(tmppath, sizeof tmppath, "%s/%s", org, srcfname);
+        if (!symlink_follow_path(self->config, srcpath, sizeof srcpath, tmppath)) {
+            err_error("failed to follow path for source file name");
+            return 1;
+        }
     }
+
     if (!file_exists(srcpath)) {
         err_error("\"%s\" is not exists. can not move to other", srcfname);
         return 1;
     }
 
-    org = mvcmd_get_org_by(self, dst);
-
     char dstpath[FILE_NPATH];
-    snprintf(tmppath, sizeof tmppath, "%s/%s", org, dst);
-    if (!symlink_follow_path(self->config, dstpath, sizeof dstpath, tmppath)) {
-        err_error("failed to solve path for source file name");
-        return 1;
+
+    if (dst[0] == ':') {
+        if (!file_solve(dstpath, sizeof dstpath, dst+1)) {
+            err_error("failed to solve path for user's destination file name");
+            return 1;
+        }
+    } else {
+        org = mvcmd_get_org_by(self, dst);
+        snprintf(tmppath, sizeof tmppath, "%s/%s", org, dst);
+        if (!symlink_follow_path(self->config, dstpath, sizeof dstpath, tmppath)) {
+            err_error("failed to solve path for destination file name");
+            return 1;
+        }
     }
 
     // remove last separate for stat
