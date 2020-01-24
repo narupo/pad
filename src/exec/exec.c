@@ -467,7 +467,7 @@ execcmd_redirect(execcmd_t *self, const cmdline_object_t *obj, const cmdline_obj
         CloseHandle(child_process);
 
         const char *fname = str_getc(fileobj->command);
-        FILE *fout = file_open(fname, "w");
+        FILE *fout = file_open(fname, "wb");
         if (!fout) {
             execcmd_set_error(self, "failed to open \"%s\"", fname);
             return NULL;
