@@ -224,6 +224,10 @@ mvcmd_mv_file_to_other(mvcmd_t *self) {
     // if dst path is directory then switch to process of directory
     if (file_isdir(dstpath)) {
         char basename[FILE_NPATH];
+
+        if (srcfname[0] == ':') {
+            srcfname += 1;
+        }
         if (!file_basename(basename, sizeof basename, srcfname)) {
             err_error("failed to get basename in file to other");
             return 1;
