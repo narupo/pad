@@ -561,7 +561,6 @@ execcmd_exec_all_unix(execcmd_t *self) {
                 dup2(stdinno, STDIN_FILENO);
 
                 wait(NULL);
-
                 goto done;
             } break;
             case 0: { // child
@@ -598,7 +597,12 @@ execcmd_exec_all_unix(execcmd_t *self) {
 
                 close(filefd);
                 close(fd[READ]);
-                goto done;
+
+                // execコマンドはテンプレート言語の組み込み関数からも呼ばれる
+                // ここでexit()しないと言語のパースを継続してしまい、プロセスが作られるごとに
+                // 言語がパースされることになる。子プロセスでは言語のパースを継続しない（親ではする）
+                // そのため、パースを継続しないようにここでexit()する
+                exit(0);
             } break;
             case -1: { // error
                 execcmd_set_error(self, "failed to fork (2)");
@@ -653,9 +657,9 @@ execcmd_exec_all_unix(execcmd_t *self) {
         }
     }
 
+done:
     close(stdinno);
     close(stdoutno);
-done:
     return self;
 }
 #endif

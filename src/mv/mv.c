@@ -150,7 +150,7 @@ mvcmd_mv_file_to_dir(mvcmd_t *self, const char *fname, const char *dirname) {
     }
 
     if (file_rename(srcpath, dstpath) != 0) {
-        err_error("failed to rename \"%s\" to \"%s\"", srcpath, dstpath);
+        err_error("failed to rename file \"%s\" to \"%s\" directory", srcpath, dstpath);
         return false;
     }
 

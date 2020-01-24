@@ -22,6 +22,5 @@ main(void) {
         return 1;
     }
 
-    puts("done");
     return 0;
 }
