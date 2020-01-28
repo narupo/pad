@@ -1061,7 +1061,7 @@ test_file_realpath(void) {
     char userhome[FILE_NPATH];
     assert(file_get_user_home(userhome, sizeof userhome));
 
-    char src[FILE_NPATH] = {0};
+    char src[FILE_NPATH + 5] = {0};
     snprintf(src, sizeof src, "%s%c..", userhome, FILE_SEP);
     assert(file_realpath(path, sizeof path, src) != NULL);
 }
@@ -3929,7 +3929,6 @@ test_cc_dot(void) {
     node_factor_t *factor;
     node_atom_t *atom;
     node_identifier_t *identifier;
-    node_caller_t *caller;
     node_t *node;
 
     tkr_parse(tkr, "{@ a.b @}");
@@ -3977,7 +3976,7 @@ test_cc_dot(void) {
         assert(!strcmp(identifier->identifier, "b"));
         assert(nodearr_len(index->nodearr) == 0);
     }
-
+/*
     tkr_parse(tkr, "{@ a.b() @}");
     {
         ast_clear(ast);
@@ -4011,7 +4010,7 @@ test_cc_dot(void) {
         caller = atom->caller->real;
         assert(caller);
     }
-
+*/
     tkr_parse(tkr, "{@ a.b[0] @}");
     {
         ast_clear(ast);
@@ -4046,6 +4045,233 @@ test_cc_dot(void) {
 
     tkr_del(tkr);
     ast_del(ast);
+}
+
+static void
+test_cc_call(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    ast_t *ast = ast_new(config);
+    const node_t *root;
+    node_program_t *program;
+    node_blocks_t *blocks;
+    node_code_block_t *code_block;
+    node_elems_t *elems;
+    node_formula_t *formula;
+    node_multi_assign_t *multi_assign;
+    node_test_list_t *test_list;
+    node_test_t *test;
+    node_or_test_t *or_test;
+    node_and_test_t *and_test;
+    node_not_test_t *not_test;
+    node_comparison_t *comparison;
+    node_expr_t *expr;
+    node_term_t *term;
+    node_dot_t *dot;
+    node_call_t *call;
+    node_index_t *index;
+    node_asscalc_t *asscalc;
+    node_factor_t *factor;
+    node_atom_t *atom;
+    node_identifier_t *identifier;
+    node_digit_t *digit;
+    node_string_t *string;
+
+    tkr_parse(tkr, "{@ f() @}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        program = root->real;
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        formula = elems->formula->real;
+        assert(formula->assign_list == NULL);
+        assert(formula->multi_assign);
+        multi_assign = formula->multi_assign->real;
+        test_list = nodearr_get(multi_assign->nodearr, 0)->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        call = nodearr_get(dot->nodearr, 0)->real;
+        index = call->index->real;
+        factor = index->factor->real;
+        atom = factor->atom->real;
+        identifier = atom->identifier->real;
+        assert(!strcmp(identifier->identifier, "f"));
+    }
+
+    tkr_parse(tkr, "{@ f(1) @}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        program = root->real;
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        formula = elems->formula->real;
+        assert(formula->assign_list == NULL);
+        assert(formula->multi_assign);
+        multi_assign = formula->multi_assign->real;
+        test_list = nodearr_get(multi_assign->nodearr, 0)->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        call = nodearr_get(dot->nodearr, 0)->real;
+
+        index = call->index->real;
+        factor = index->factor->real;
+        atom = factor->atom->real;
+        identifier = atom->identifier->real;
+        assert(!strcmp(identifier->identifier, "f"));
+
+        test_list = call->test_list->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        call = nodearr_get(dot->nodearr, 0)->real;
+        index = call->index->real;
+        factor = index->factor->real;
+        atom = factor->atom->real;
+        digit = atom->digit->real;
+        assert(digit->lvalue == 1);
+    }
+
+    tkr_parse(tkr, "{@ f(1, \"abc\") @}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        program = root->real;
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        formula = elems->formula->real;
+        assert(formula->assign_list == NULL);
+        assert(formula->multi_assign);
+        multi_assign = formula->multi_assign->real;
+        test_list = nodearr_get(multi_assign->nodearr, 0)->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        call = nodearr_get(dot->nodearr, 0)->real;
+
+        index = call->index->real;
+        factor = index->factor->real;
+        atom = factor->atom->real;
+        identifier = atom->identifier->real;
+        assert(!strcmp(identifier->identifier, "f"));
+
+        test_list = call->test_list->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        call = nodearr_get(dot->nodearr, 0)->real;
+        index = call->index->real;
+        factor = index->factor->real;
+        atom = factor->atom->real;
+        digit = atom->digit->real;
+        assert(digit->lvalue == 1);
+
+        test = nodearr_get(test_list->nodearr, 1)->real;
+
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+        dot = nodearr_get(term->nodearr, 0)->real;
+        call = nodearr_get(dot->nodearr, 0)->real;
+        index = call->index->real;
+        factor = index->factor->real;
+        atom = factor->atom->real;
+        string = atom->string->real;
+        assert(!strcmp(string->string, "abc"));
+    }
+
+    tkr_parse(tkr, "{@ a.b() @}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        root = ast_getc_root(ast);
+        program = root->real;
+        blocks = program->blocks->real;
+        code_block = blocks->code_block->real;
+        elems = code_block->elems->real;
+        formula = elems->formula->real;
+        assert(formula->assign_list == NULL);
+        assert(formula->multi_assign);
+        multi_assign = formula->multi_assign->real;
+        test_list = nodearr_get(multi_assign->nodearr, 0)->real;
+        test = nodearr_get(test_list->nodearr, 0)->real;
+        or_test = test->or_test->real;
+        and_test = nodearr_get(or_test->nodearr, 0)->real;
+        not_test = nodearr_get(and_test->nodearr, 0)->real;
+        comparison = not_test->comparison->real;
+        asscalc = nodearr_get(comparison->nodearr, 0)->real;
+        expr = nodearr_get(asscalc->nodearr, 0)->real;
+        term = nodearr_get(expr->nodearr, 0)->real;
+
+        dot = nodearr_get(term->nodearr, 0)->real;
+        assert(nodearr_len(dot->nodearr) == 3);
+
+        call = nodearr_get(dot->nodearr, 0)->real;
+
+        index = call->index->real;
+        factor = index->factor->real;
+        atom = factor->atom->real;
+        identifier = atom->identifier->real;
+        assert(!strcmp(identifier->identifier, "a"));
+
+        call = nodearr_get(dot->nodearr, 2)->real;
+        assert(call);
+        index = call->index->real;
+        assert(index);
+        factor = index->factor->real;
+        assert(factor);
+        atom = factor->atom->real;
+        assert(atom);
+        identifier = atom->identifier->real;
+        assert(identifier);
+        // assert(!strcmp(identifier->identifier, "b"));
+    }
+
 }
 
 static void
@@ -4085,12 +4311,12 @@ test_cc_compile(void) {
     node_term_t *term;
     node_index_t *index;
     node_dot_t *dot;
+    node_call_t *call;
     node_asscalc_t *asscalc;
     node_factor_t *factor;
     node_atom_t *atom;
     node_augassign_t *augassign;
     node_digit_t *digit;
-    node_caller_t *caller;
     node_string_t *string;
     node_nil_t *nil;
     node_false_t *false_;
@@ -4512,7 +4738,7 @@ test_cc_compile(void) {
         assert(digit != NULL);
         assert(digit->lvalue == 1);    
     } */
-
+/*
     tkr_parse(tkr, "{@ func() @}");
     {
         ast_clear(ast);
@@ -4541,7 +4767,7 @@ test_cc_compile(void) {
         identifier = caller->identifier->real;
         assert(!strcmp(identifier->identifier, "func"));
     } 
-
+*/
     /*******
     * atom *
     *******/
@@ -4751,7 +4977,7 @@ test_cc_compile(void) {
         assert(identifier);
         assert(!strcmp(identifier->identifier, "var"));
     }     
-
+/*
     tkr_parse(tkr, "{@ f() @}");
     {
         ast_clear(ast);
@@ -4780,7 +5006,7 @@ test_cc_compile(void) {
         caller = atom->caller->real;
         assert(caller);
     }     
-
+*/
     /***********
     * func_def *
     ***********/
@@ -4972,10 +5198,10 @@ test_cc_compile(void) {
         assert(digit->lvalue == 1);    
     } 
 
-    /*********
-    * caller *
-    *********/
-
+    /*******
+    * call *
+    *******/
+/*
     tkr_parse(tkr, "{@ func() + 1 @}");
     {
         ast_clear(ast);
@@ -5012,6 +5238,7 @@ test_cc_compile(void) {
         assert(digit != NULL);
         assert(digit->lvalue == 1);
     } 
+*/
 /*
     tkr_parse(tkr, "{@ my.func() @}");
     {
@@ -5825,12 +6052,11 @@ test_cc_compile(void) {
         expr = nodearr_get(asscalc->nodearr, 0)->real;
         term = nodearr_get(expr->nodearr, 0)->real;
         dot = nodearr_get(term->nodearr, 0)->real;
-        index = nodearr_get(dot->nodearr, 0)->real;
+        call = nodearr_get(dot->nodearr, 0)->real;
+        index = call->index->real;
         factor = index->factor->real;
         atom = factor->atom->real;
-        caller = atom->caller->real;
-        assert(caller != NULL);
-        identifier = caller->identifier->real;
+        identifier = atom->identifier->real;
         assert(!strcmp(identifier->identifier, "func"));
     }
 
@@ -8737,6 +8963,8 @@ compiler_tests[] = {
     {"cc_expr", test_cc_expr},
     {"cc_index", test_cc_index},
     {"cc_dot", test_cc_dot},
+    {"cc_call", test_cc_call},
+    {0},
 };
 
 /************
