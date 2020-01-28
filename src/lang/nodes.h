@@ -48,6 +48,7 @@ typedef enum {
     NODE_TYPE_EXPR,
     NODE_TYPE_TERM,
     NODE_TYPE_DOT,
+    NODE_TYPE_CALL,
     NODE_TYPE_INDEX,
     NODE_TYPE_ASSCALC,
     NODE_TYPE_FACTOR,
@@ -280,6 +281,11 @@ typedef struct {
 } node_dot_t;
 
 typedef struct {
+    node_t *index;
+    node_t *test_list;
+} node_call_t;
+
+typedef struct {
     node_t *factor;
     node_array_t *nodearr;
 } node_index_t;
@@ -302,7 +308,6 @@ typedef struct {
     node_t *array;
     node_t *dict;
     node_t *identifier;
-    node_t *caller;
 } node_atom_t;
 
 typedef struct {
@@ -361,11 +366,6 @@ typedef struct {
 typedef struct {
     bool boolean;
 } node_true_t;
-
-typedef struct {
-    node_t *identifier;
-    node_t *test_list;
-} node_caller_t;
 
 typedef struct {
     node_t *identifier;

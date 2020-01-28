@@ -173,6 +173,11 @@ ast_del_nodes(const ast_t *self, node_t *node) {
             ast_del_nodes(self, nodearr_get(dot->nodearr, i));
         }
     } break;
+    case NODE_TYPE_CALL: {
+        node_call_t *call = node->real;
+        ast_del_nodes(self, call->index);
+        ast_del_nodes(self, call->test_list);
+    } break;
     case NODE_TYPE_INDEX: {
         node_index_t *index = node->real;
         ast_del_nodes(self, index->factor);
@@ -194,7 +199,6 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         ast_del_nodes(self, atom->string);
         ast_del_nodes(self, atom->array);
         ast_del_nodes(self, atom->identifier);
-        ast_del_nodes(self, atom->caller);
     } break;
     case NODE_TYPE_NIL: {
         // nothing todo
@@ -240,11 +244,6 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     case NODE_TYPE_IDENTIFIER: {
         node_identifier_t *identifier = node->real;
         free(identifier->identifier);
-    } break;
-    case NODE_TYPE_CALLER: {
-        node_caller_t *caller = node->real;
-        ast_del_nodes(self, caller->identifier);
-        ast_del_nodes(self, caller->test_list);
     } break;
     case NODE_TYPE_COMP_OP: {
         // nothing todo

@@ -77,6 +77,9 @@ static node_t *
 cc_dot(ast_t *ast, int dep);
 
 static node_t *
+cc_call(ast_t *ast, int dep);
+
+static node_t *
 cc_dot_op(ast_t *ast, int dep);
 
 static node_t *
@@ -700,63 +703,6 @@ cc_augassign(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_caller(ast_t *ast, int dep) {
-    ready();
-    declare(node_caller_t, cur);
-    token_t **save_ptr = ast->ptr;
-
-#undef return_cleanup
-#define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
-        free(cur); \
-        if (strlen(msg)) { \
-            ast_set_error_detail(ast, msg); \
-        } \
-        return_parse(NULL); \
-    } \
-
-    check("call cc_identifier");
-    cur->identifier = cc_identifier(ast, dep+1);
-    if (!cur->identifier) {
-        if (ast_has_error(ast)) {
-            return_cleanup("");
-        }
-        return_cleanup(""); // not error
-    }
-
-    if (!*ast->ptr) {
-        return_cleanup("syntax error. reached EOF in caller");
-    }
-
-    token_t *t = *ast->ptr++;
-    if (t->type != TOKEN_TYPE_LPAREN) {
-        return_cleanup(""); // not error
-    }
-    check("read (");
-
-    check("call cc_test_list");
-    cur->test_list = cc_test_list(ast, dep+1);
-    if (!cur->test_list) {
-        if (ast_has_error(ast)) {
-            return_cleanup("");
-        }
-        // allow null because function can calling with empty args
-    }
-
-    if (!*ast->ptr) {
-        return_cleanup("syntax error. reached EOF in caller (2)");
-    }
-
-    t = *ast->ptr++;
-    if (t->type != TOKEN_TYPE_RPAREN) {
-        return_cleanup("syntax error. not found ')' in caller"); 
-    }
-    check("read )");
-
-    return_parse(node_new(NODE_TYPE_CALLER, cur));
-}
-
-static node_t *
 cc_identifier(ast_t *ast, int dep) {
     ready();
     declare(node_identifier_t, cur);
@@ -1243,7 +1189,6 @@ cc_atom(ast_t *ast, int dep) {
         ast_del_nodes(ast, cur->string); \
         ast_del_nodes(ast, cur->array); \
         ast_del_nodes(ast, cur->identifier); \
-        ast_del_nodes(ast, cur->caller); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -1311,15 +1256,6 @@ cc_atom(ast_t *ast, int dep) {
         return_cleanup("");
     }
     if (cur->dict) {
-        return_parse(node_new(NODE_TYPE_ATOM, cur));
-    }
-
-    check("call cc_caller");
-    cur->caller = cc_caller(ast, dep+1);
-    if (ast_has_error(ast)) {
-        return_cleanup("");
-    }
-    if (cur->caller) {
         return_parse(node_new(NODE_TYPE_ATOM, cur));
     }
 
@@ -1541,7 +1477,7 @@ cc_term(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    check("call left cc_index");
+    check("call left cc_dot");
     node_t *lhs = cc_dot(ast, dep+1);
     if (ast_has_error(ast)) {
         return_cleanup("");
@@ -1600,8 +1536,8 @@ cc_dot(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    check("call left cc_index");
-    node_t *lhs = cc_index(ast, dep+1);
+    check("call left cc_call");
+    node_t *lhs = cc_call(ast, dep+1);
     if (ast_has_error(ast)) {
         return_cleanup("");
     }
@@ -1623,8 +1559,8 @@ cc_dot(ast_t *ast, int dep) {
 
         nodearr_moveb(cur->nodearr, op);
 
-        check("call right cc_index");
-        node_t *rhs = cc_index(ast, dep+1);
+        check("call right cc_call");
+        node_t *rhs = cc_call(ast, dep+1);
         if (ast_has_error(ast)) {
             return_cleanup("");
         }
@@ -1636,6 +1572,71 @@ cc_dot(ast_t *ast, int dep) {
     }
 
     assert(0 && "impossible. failed to cc dot");
+}
+
+static node_t *
+cc_call(ast_t *ast, int dep) {
+    ready();
+    declare(node_call_t, cur);
+    token_t **save_ptr = ast->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        ast->ptr = save_ptr; \
+        ast_del_nodes(ast, cur->index); \
+        ast_del_nodes(ast, cur->test_list); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(ast, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    check("call cc_index");
+    cur->index = cc_index(ast, dep+1);
+    if (ast_has_error(ast)) {
+        return_cleanup("");
+    }
+    if (!cur->index) {
+        return_cleanup(""); // not error
+    }
+
+    if (!ast->ptr) {
+        // not error. this is single index (not caller)
+        node_t *node = node_new(NODE_TYPE_CALL, cur);
+        return_parse(node);
+    }
+
+    token_t *lparen = *ast->ptr++;
+    if (lparen->type != TOKEN_TYPE_LPAREN) {
+        // not error. this is single index (not caller)
+        --ast->ptr;
+        node_t *node = node_new(NODE_TYPE_CALL, cur);
+        return_parse(node);
+    }
+    check("read lparen");
+
+    check("call cc_test_list");
+    cur->test_list = cc_test_list(ast, dep+1);
+    if (ast_has_error(ast)) {
+        return_cleanup("");
+    }
+    if (!cur->test_list) {
+        // not error. allow empty arguments
+    }
+
+    if (!ast->ptr) {
+        return_cleanup("not found right paren in call");
+    }
+
+    token_t *rparen = *ast->ptr++;
+    if (rparen->type != TOKEN_TYPE_RPAREN) {
+        return_cleanup("not found right paren in call (2)")
+    }
+    check("read rparen");
+
+    node_t *node = node_new(NODE_TYPE_CALL, cur);
+    return_parse(node);
 }
 
 static node_t *

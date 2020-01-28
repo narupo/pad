@@ -128,6 +128,12 @@ trv_compare_comparison_not_eq_func(ast_t *ast, const object_t *lhs, const object
 static object_t *
 trv_compare_comparison_lte_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep);
 
+static object_t *
+trv_invoke_func_obj(ast_t *ast, const char *name, const object_t *drtargs, int dep);
+
+static object_t *
+trv_invoke_builtin_modules(ast_t *ast, const char *name, const object_t *args);
+
 /************
 * functions *
 ************/
@@ -5510,13 +5516,13 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
 
     if (nodearr_len(dot->nodearr) == 1) {
         node_t *node = nodearr_get(dot->nodearr, 0);
-        assert(node->type == NODE_TYPE_INDEX);
+        assert(node->type == NODE_TYPE_CALL);
         tcheck("call _trv_traverse with dot");
         object_t *result = _trv_traverse(ast, node, dep+1);
         return_trav(result);
     } else if (nodearr_len(dot->nodearr) >= 3) {
         node_t *lnode = nodearr_get(dot->nodearr, 0);
-        assert(lnode->type == NODE_TYPE_INDEX);
+        assert(lnode->type == NODE_TYPE_CALL);
         tcheck("call _trv_traverse with dot");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
         if (ast_has_error(ast)) {
@@ -5531,7 +5537,7 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             assert(op);
 
             node_t *rnode = nodearr_get(dot->nodearr, i+1);
-            assert(rnode->type == NODE_TYPE_INDEX);
+            assert(rnode->type == NODE_TYPE_CALL);
             tcheck("call _trv_traverse with index");
             object_t *rhs = _trv_traverse(ast, rnode, dep+1);
             if (ast_has_error(ast)) {
@@ -5563,6 +5569,95 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
 
     assert(0 && "impossible. failed to traverse dot");
     return_trav(NULL);
+}
+
+/*
+static object_t *
+trv_caller(ast_t *ast, const node_t *node, int dep) {
+    tready();
+    node_caller_t *caller = node->real;
+    assert(caller && node->type == NODE_TYPE_CALLER);
+
+    node_identifier_t *identifier = caller->identifier->real;
+    assert(identifier);
+    const char *name = identifier->identifier;
+
+    tcheck("call _trv_traverse");
+    object_t *args = _trv_traverse(ast, caller->test_list, dep+1);
+    object_t *result = NULL;
+
+    result = trv_invoke_func_obj(ast, name, args, dep+1);
+    if (ast_has_error(ast)) {
+        obj_del(args);
+        return_trav(NULL);
+    } else if (result) {
+        obj_del(args);
+        return_trav(result);
+    }
+
+    result = trv_invoke_builtin_modules(ast, name, args);
+    if (ast_has_error(ast)) {
+        obj_del(args);
+        return_trav(NULL);
+    } else if (result) {
+        obj_del(args);
+        return_trav(result);
+    }
+
+    obj_del(args);
+    if (!result) {
+        return_trav(obj_new_nil());
+    }
+    return_trav(result);
+}
+*/
+
+static object_t *
+trv_call(ast_t *ast, const node_t *node, int dep) {
+    node_call_t *call = node->real;
+    tready();
+    assert(call);
+
+    object_t *operand = _trv_traverse(ast, call->index, dep+1);
+    if (ast_has_error(ast)) {
+        return_trav(NULL);
+    }
+    if (!operand) {
+        ast_set_error_detail(ast, "not found operand in call");
+        return_trav(NULL);
+    }
+    if (operand->type != OBJ_TYPE_IDENTIFIER ||
+        !call->test_list) {
+        return_trav(operand);
+    }
+    const char *name = str_getc(operand->identifier);
+    
+    object_t *args = _trv_traverse(ast, call->test_list, dep+1);
+    object_t *result = NULL;
+
+    result = trv_invoke_func_obj(ast, name, args, dep+1);
+    if (ast_has_error(ast)) {
+        obj_del(args);
+        return_trav(NULL);
+    } else if (result) {
+        obj_del(args);
+        return_trav(result);
+    }
+
+    result = trv_invoke_builtin_modules(ast, name, args);
+    if (ast_has_error(ast)) {
+        obj_del(args);
+        return_trav(NULL);
+    } else if (result) {
+        obj_del(args);
+        return_trav(result);
+    }
+
+    obj_del(args);
+    if (!result) {
+        return_trav(obj_new_nil());
+    }
+    return_trav(result);
 }
 
 static object_t *
@@ -6004,10 +6099,6 @@ trv_atom(ast_t *ast, const node_t *node, int dep) {
         tcheck("call _trv_traverse with identifier");
         object_t *obj = _trv_traverse(ast, atom->identifier, dep+1);
         return_trav(obj);
-    } else if (atom->caller) {
-        tcheck("call _trv_traverse with caller");
-        object_t *obj = _trv_traverse(ast, atom->caller, dep+1);
-        return_trav(obj);
     }
 
     assert(0 && "impossible. invalid status of atom");
@@ -6369,45 +6460,6 @@ trv_invoke_builtin_modules(ast_t *ast, const char *name, const object_t *args) {
 }
 
 static object_t *
-trv_caller(ast_t *ast, const node_t *node, int dep) {
-    tready();
-    node_caller_t *caller = node->real;
-    assert(caller && node->type == NODE_TYPE_CALLER);
-
-    node_identifier_t *identifier = caller->identifier->real;
-    assert(identifier);
-    const char *name = identifier->identifier;
-
-    tcheck("call _trv_traverse");
-    object_t *args = _trv_traverse(ast, caller->test_list, dep+1);
-    object_t *result = NULL;
-
-    result = trv_invoke_func_obj(ast, name, args, dep+1);
-    if (ast_has_error(ast)) {
-        obj_del(args);
-        return_trav(NULL);
-    } else if (result) {
-        obj_del(args);
-        return_trav(result);
-    }
-
-    result = trv_invoke_builtin_modules(ast, name, args);
-    if (ast_has_error(ast)) {
-        obj_del(args);
-        return_trav(NULL);
-    } else if (result) {
-        obj_del(args);
-        return_trav(result);
-    }
-
-    obj_del(args);
-    if (!result) {
-        return_trav(obj_new_nil());
-    }
-    return_trav(result);
-}
-
-static object_t *
 trv_def(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_def_t *def = node->real;
@@ -6654,6 +6706,11 @@ _trv_traverse(ast_t *ast, const node_t *node, int dep) {
         object_t *obj = trv_dot(ast, node, dep+1);
         return_trav(obj);
     } break;
+    case NODE_TYPE_CALL: {
+        tcheck("call trv_call");
+        object_t *obj = trv_call(ast, node, dep+1);
+        return_trav(obj);
+    } break;
     case NODE_TYPE_INDEX: {
         tcheck("call trv_index");
         object_t *obj = trv_index(ast, node, dep+1);
@@ -6727,11 +6784,6 @@ _trv_traverse(ast_t *ast, const node_t *node, int dep) {
     case NODE_TYPE_IDENTIFIER: {
         tcheck("call trv_identifier");
         object_t *obj = trv_identifier(ast, node, dep+1);
-        return_trav(obj);
-    } break;
-    case NODE_TYPE_CALLER: {
-        tcheck("call trv_caller");
-        object_t *obj = trv_caller(ast, node, dep+1);
         return_trav(obj);
     } break;
     }

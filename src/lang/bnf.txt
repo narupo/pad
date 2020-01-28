@@ -53,22 +53,34 @@ BNF of Cap's template language
           and_test: not_test ( 'and' not_test )*
           not_test: 'not' not_test | comparison
 
+1 + (2 + 3)
+1 + aaa(1) + 2
+1 + aaa(1)[0] + 2
+1 + aaa(1).bbb[1] + 2
+1 + aaa(1).bbb[1](2) + 2
+aaa(1)[0]
+aaa(1).bbb[0]
+aaa(1)
+aaa[0](1)
+aaa[0].bbb(1)
+aaa[0].bbb[0](1)
+
         comparison: asscalc ( comp_op asscalc )*
            asscalc: expr ( augassign expr )*
               expr: term ( add_sub_op term )*
               term: dot ( mul_div_op dot )*
-               dot: index ( dot_op index )*
+             - dot: call ( dot_op call )*
+            - call: index '(' ( test_list ) ')'
              index: factor ( '[' simple_assign ']' )*
             factor: atom | '(' formula ')'
-              atom: nil |
+            - atom: nil |
                     false |
                     true |
                     digit |
                     string |
                     array |
                     dict |
-                    identifier |
-                    caller
+                    identifier
              array: '[' ( array_elems ) ']'
        array_elems: simple_assign ( ',' simple_assign )*
               dict: '{' ( dict_elems ) '}'
@@ -82,7 +94,7 @@ BNF of Cap's template language
                nil: 
              digit: [0-9]+
            newline: '\n'
-            caller: identifier '(' test_list ')'
+          - caller: identifier '(' test_list ')'
   identifier_chain: ( identifier | identifier '.' ) identifier_chain
             string: '"' .* '"'
         identifier: ( [a-z] | [0-9] | _ )+ 
