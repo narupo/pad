@@ -58,7 +58,7 @@ BNF of Cap's template language
               expr: term ( add_sub_op term )*
               term: dot ( mul_div_op dot )*
                dot: call ( dot_op call )*
-              call: index '(' ( test_list ) ')'
+              call: index ( '(' ( test_list ) ')' )*
              index: factor ( '[' simple_assign ']' )*
             factor: atom | '(' formula ')'
               atom: nil |
