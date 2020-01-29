@@ -57,11 +57,11 @@ BNF of Cap's template language
            asscalc: expr ( augassign expr )*
               expr: term ( add_sub_op term )*
               term: dot ( mul_div_op dot )*
-             - dot: call ( dot_op call )*
-            - call: index '(' ( test_list ) ')'
+               dot: call ( dot_op call )*
+              call: index '(' ( test_list ) ')'
              index: factor ( '[' simple_assign ']' )*
             factor: atom | '(' formula ')'
-            - atom: nil |
+              atom: nil |
                     false |
                     true |
                     digit |
@@ -82,7 +82,6 @@ BNF of Cap's template language
                nil: 
              digit: [0-9]+
            newline: '\n'
-          - caller: identifier '(' test_list ')'
   identifier_chain: ( identifier | identifier '.' ) identifier_chain
             string: '"' .* '"'
         identifier: ( [a-z] | [0-9] | _ )+ 
