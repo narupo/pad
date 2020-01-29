@@ -1578,13 +1578,17 @@ static node_t *
 cc_call(ast_t *ast, int dep) {
     ready();
     declare(node_call_t, cur);
+    cur->test_lists = nodearr_new();
     token_t **save_ptr = ast->ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
         ast->ptr = save_ptr; \
         ast_del_nodes(ast, cur->index); \
-        ast_del_nodes(ast, cur->test_list); \
+        for (; nodearr_len(cur->test_lists); ) { \
+            node_t *node = nodearr_popb(cur->test_lists); \
+            ast_del_nodes(ast, node); \
+        } \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -1607,33 +1611,38 @@ cc_call(ast_t *ast, int dep) {
         return_parse(node);
     }
 
-    token_t *lparen = *ast->ptr++;
-    if (lparen->type != TOKEN_TYPE_LPAREN) {
-        // not error. this is single index (not caller)
-        --ast->ptr;
-        node_t *node = node_new(NODE_TYPE_CALL, cur);
-        return_parse(node);
-    }
-    check("read lparen");
+    for (; ast->ptr; ) {
+        token_t *lparen = *ast->ptr++;
+        if (lparen->type != TOKEN_TYPE_LPAREN) {
+            // not error. this is single index (not caller) or caller
+            --ast->ptr;
+            node_t *node = node_new(NODE_TYPE_CALL, cur);
+            return_parse(node);
+        }
+        check("read lparen");
 
-    check("call cc_test_list");
-    cur->test_list = cc_test_list(ast, dep+1);
-    if (ast_has_error(ast)) {
-        return_cleanup("");
-    }
-    if (!cur->test_list) {
-        // not error. allow empty arguments
-    }
+        check("call cc_test_list");
+        node_t *test_list = cc_test_list(ast, dep+1);
+        if (ast_has_error(ast)) {
+            return_cleanup("");
+        }
+        if (!test_list) {
+            // not error. allow empty arguments
+        }
+        check("read test_list");
 
-    if (!ast->ptr) {
-        return_cleanup("not found right paren in call");
-    }
+        if (!ast->ptr) {
+            return_cleanup("not found right paren in call");
+        }
 
-    token_t *rparen = *ast->ptr++;
-    if (rparen->type != TOKEN_TYPE_RPAREN) {
-        return_cleanup("not found right paren in call (2)")
+        token_t *rparen = *ast->ptr++;
+        if (rparen->type != TOKEN_TYPE_RPAREN) {
+            return_cleanup("not found right paren in call (2)")
+        }
+        check("read rparen");
+
+        nodearr_moveb(cur->test_lists, test_list);
     }
-    check("read rparen");
 
     node_t *node = node_new(NODE_TYPE_CALL, cur);
     return_parse(node);
@@ -2968,7 +2977,6 @@ cc_func_def(ast_t *ast, int dep) {
     cc_skip_newlines(ast);
 
     t = *ast->ptr++;
-    if (ast->debug) printf("type[%d]\n", t->type);
     if (t->type != TOKEN_TYPE_STMT_END) {
         return_cleanup("not found 'end' in parse func def");
     }

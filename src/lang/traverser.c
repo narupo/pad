@@ -20,7 +20,7 @@
     } \
     return obj; \
 
-#define tcheck(msg) \
+#define check(msg) \
     if (ast->debug) { \
         fprintf(stderr, "debug: %5d: %*s: %3d: %s: %s\n", __LINE__, 40, __func__, dep, msg, ast_get_error_detail(ast)); \
     } \
@@ -167,7 +167,7 @@ trv_program(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_program_t *program = node->real;
 
-    tcheck("call _trv_traverse");
+    check("call _trv_traverse");
     _trv_traverse(ast, program->blocks, dep+1);
     if (ast_has_error(ast)) {
         return_trav(NULL);
@@ -181,7 +181,7 @@ trv_blocks(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_blocks_t *blocks = node->real;
 
-    tcheck("call _trv_traverse");
+    check("call _trv_traverse");
     _trv_traverse(ast, blocks->code_block, dep+1);
     if (ast_has_error(ast)) {
         return_trav(NULL);
@@ -192,19 +192,19 @@ trv_blocks(ast_t *ast, const node_t *node, int dep) {
         return_trav(NULL);
     }
 
-    tcheck("call _trv_traverse");
+    check("call _trv_traverse");
     _trv_traverse(ast, blocks->ref_block, dep+1);
     if (ast_has_error(ast)) {
         return_trav(NULL);
     }
 
-    tcheck("call _trv_traverse");
+    check("call _trv_traverse");
     _trv_traverse(ast, blocks->text_block, dep+1);
     if (ast_has_error(ast)) {
         return_trav(NULL);
     }
 
-    tcheck("call _trv_traverse");
+    check("call _trv_traverse");
     _trv_traverse(ast, blocks->blocks, dep+1);
     if (ast_has_error(ast)) {
         return_trav(NULL);
@@ -218,7 +218,7 @@ trv_code_block(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_code_block_t *code_block = node->real;
 
-    tcheck("call _trv_traverse");
+    check("call _trv_traverse");
     _trv_traverse(ast, code_block->elems, dep+1);
     if (ast_has_error(ast)) {
         return_trav(NULL);
@@ -349,7 +349,7 @@ trv_ref_block(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_ref_block_t *ref_block = node->real;
 
-    tcheck("call _trv_traverse");
+    check("call _trv_traverse");
     object_t *tmp = _trv_traverse(ast, ref_block->formula, dep+1);
     if (ast_has_error(ast)) {
         obj_del(tmp);
@@ -424,7 +424,7 @@ trv_text_block(ast_t *ast, const node_t *node, int dep) {
     node_text_block_t *text_block = node->real;
     if (text_block->text) {
         ctx_pushb_buf(ast->context, text_block->text);
-        tcheck("store text block to buf");
+        check("store text block to buf");
     }
 
     return_trav(NULL);
@@ -436,14 +436,14 @@ trv_elems(ast_t *ast, const node_t *node, int dep) {
     node_elems_t *elems = node->real;
     object_t *result = NULL;
 
-    tcheck("call _trv_traverse with def");
+    check("call _trv_traverse with def");
     if (elems->def) {
         _trv_traverse(ast, elems->def, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
         }
     } else if (elems->stmt) {
-        tcheck("call _trv_traverse with stmt");
+        check("call _trv_traverse with stmt");
         result = _trv_traverse(ast, elems->stmt, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
@@ -457,14 +457,14 @@ trv_elems(ast_t *ast, const node_t *node, int dep) {
         }
         obj_del(result);
     } else if (elems->formula) {
-        tcheck("call _trv_traverse with formula");
+        check("call _trv_traverse with formula");
         _trv_traverse(ast, elems->formula, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
         }        
     }
 
-    tcheck("call _trv_traverse with elems");
+    check("call _trv_traverse with elems");
     result = _trv_traverse(ast, elems->elems, dep+1);
     if (ast_has_error(ast)) {
         obj_del(result);
@@ -479,7 +479,7 @@ trv_formula(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_formula_t *formula = node->real;
 
-    tcheck("call _trv_traverse");
+    check("call _trv_traverse");
     if (formula->assign_list) {
         object_t *result = _trv_traverse(ast, formula->assign_list, dep+1);
         if (ast_has_error(ast)) {
@@ -507,42 +507,42 @@ trv_stmt(ast_t *ast, const node_t *node, int dep) {
     object_t *result = NULL;
 
     if (stmt->import_stmt) {
-        tcheck("call _trv_traverse with import stmt");
+        check("call _trv_traverse with import stmt");
         _trv_traverse(ast, stmt->import_stmt, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
         }
         return_trav(NULL);
     } else if (stmt->if_stmt) {
-        tcheck("call _trv_traverse with if stmt");
+        check("call _trv_traverse with if stmt");
         result = _trv_traverse(ast, stmt->if_stmt, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
         }
         return_trav(result);
     } else if (stmt->for_stmt) {
-        tcheck("call _trv_traverse with for stmt");
+        check("call _trv_traverse with for stmt");
         result = _trv_traverse(ast, stmt->for_stmt, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
         }
         return_trav(result);
     } else if (stmt->break_stmt) {
-        tcheck("call _trv_traverse with break stmt");
+        check("call _trv_traverse with break stmt");
         _trv_traverse(ast, stmt->break_stmt, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
         }
         return_trav(NULL);
     } else if (stmt->continue_stmt) {
-        tcheck("call _trv_traverse with continue stmt");
+        check("call _trv_traverse with continue stmt");
         _trv_traverse(ast, stmt->continue_stmt, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
         }
         return_trav(NULL);
     } else if (stmt->return_stmt) {
-        tcheck("call _trv_traverse with return stmt");
+        check("call _trv_traverse with return stmt");
         result = _trv_traverse(ast, stmt->return_stmt, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
@@ -615,7 +615,7 @@ trv_if_stmt(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_if_stmt_t *if_stmt = node->real;
 
-    tcheck("call _trv_traverse");
+    check("call _trv_traverse");
     object_t *result = _trv_traverse(ast, if_stmt->test, dep+1);
     if (ast_has_error(ast)) {
         obj_del(result);
@@ -632,13 +632,13 @@ trv_if_stmt(ast_t *ast, const node_t *node, int dep) {
 
     if (boolean) {
         if (if_stmt->elems) {
-            tcheck("call _trv_traverse");
+            check("call _trv_traverse");
             result = _trv_traverse(ast, if_stmt->elems, dep+1);
             if (ast_has_error(ast)) {
                 return_trav(NULL);
             }
         } else if (if_stmt->blocks) {
-            tcheck("call _trv_traverse");
+            check("call _trv_traverse");
             result = _trv_traverse(ast, if_stmt->blocks, dep+1);
             if (ast_has_error(ast)) {
                 return_trav(NULL);
@@ -648,13 +648,13 @@ trv_if_stmt(ast_t *ast, const node_t *node, int dep) {
         }
     } else {
         if (if_stmt->elif_stmt) {
-            tcheck("call _trv_traverse");
+            check("call _trv_traverse");
             result = _trv_traverse(ast, if_stmt->elif_stmt, dep+1);
             if (ast_has_error(ast)) {
                 return_trav(NULL);
             }
         } else if (if_stmt->else_stmt) {
-            tcheck("call _trv_traverse");
+            check("call _trv_traverse");
             result = _trv_traverse(ast, if_stmt->else_stmt, dep+1);
             if (ast_has_error(ast)) {
                 return_trav(NULL);
@@ -674,10 +674,10 @@ trv_else_stmt(ast_t *ast, const node_t *node, int dep) {
     assert(else_stmt);
 
     if (else_stmt->elems) {
-        tcheck("call _trv_traverse with elems");
+        check("call _trv_traverse with elems");
         _trv_traverse(ast, else_stmt->elems, dep+1);
     } else if (else_stmt->blocks) {
-        tcheck("call _trv_traverse with blocks");
+        check("call _trv_traverse with blocks");
         _trv_traverse(ast, else_stmt->blocks, dep+1);
     }
 
@@ -693,14 +693,14 @@ trv_for_stmt(ast_t *ast, const node_t *node, int dep) {
         for_stmt->comp_formula &&
         for_stmt->update_formula) {
         // for 1; 1; 1: end
-        tcheck("call _trv_traverse with init_formula");
+        check("call _trv_traverse with init_formula");
         _trv_traverse(ast, for_stmt->init_formula, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
         }
 
         for (;;) {
-            tcheck("call _trv_traverse with update_formula");
+            check("call _trv_traverse with update_formula");
             object_t *result = _trv_traverse(ast, for_stmt->comp_formula, dep+1);
             if (ast_has_error(ast)) {
                 obj_del(result);
@@ -715,7 +715,7 @@ trv_for_stmt(ast_t *ast, const node_t *node, int dep) {
 
             ctx_clear_jump_flags(ast->context);
 
-            tcheck("call _trv_traverse with elems");
+            check("call _trv_traverse with elems");
             if (for_stmt->elems) {
                 _trv_traverse(ast, for_stmt->elems, dep+1);
                 if (ast_has_error(ast)) {
@@ -732,7 +732,7 @@ trv_for_stmt(ast_t *ast, const node_t *node, int dep) {
                 break;
             }
 
-            tcheck("call _trv_traverse with update_formula");
+            check("call _trv_traverse with update_formula");
             result = _trv_traverse(ast, for_stmt->update_formula, dep+1);
             if (ast_has_error(ast)) {
                 goto done;
@@ -743,7 +743,7 @@ trv_for_stmt(ast_t *ast, const node_t *node, int dep) {
     } else if (for_stmt->comp_formula) {
         // for 1: end
         for (;;) {
-            tcheck("call _trv_traverse");
+            check("call _trv_traverse");
             object_t *result = _trv_traverse(ast, for_stmt->comp_formula, dep+1);
             if (ast_has_error(ast)) {
                 goto done;
@@ -753,7 +753,7 @@ trv_for_stmt(ast_t *ast, const node_t *node, int dep) {
                 break;
             }
 
-            tcheck("call _trv_traverse");
+            check("call _trv_traverse");
             if (for_stmt->elems) {
                 _trv_traverse(ast, for_stmt->elems, dep+1);
                 if (ast_has_error(ast)) {
@@ -775,7 +775,7 @@ trv_for_stmt(ast_t *ast, const node_t *node, int dep) {
     } else {
         // for: end
         for (;;) {
-            tcheck("call _trv_traverse");
+            check("call _trv_traverse");
 
             if (for_stmt->elems) {
                 _trv_traverse(ast, for_stmt->elems, dep+1);
@@ -805,7 +805,7 @@ trv_break_stmt(ast_t *ast, const node_t *node, int dep) {
     tready();
     assert(node->type == NODE_TYPE_BREAK_STMT);
 
-    tcheck("set true at do break flag");
+    check("set true at do break flag");
     ctx_set_do_break(ast->context, true);
 
     return_trav(NULL);
@@ -816,7 +816,7 @@ trv_continue_stmt(ast_t *ast, const node_t *node, int dep) {
     tready();
     assert(node->type == NODE_TYPE_CONTINUE_STMT);
 
-    tcheck("set true at do continue flag");
+    check("set true at do continue flag");
     ctx_set_do_continue(ast->context, true);
 
     return_trav(NULL);
@@ -867,7 +867,7 @@ trv_return_stmt(ast_t *ast, const node_t *node, int dep) {
         return_trav(NULL);
     }
 
-    tcheck("call _trv_traverse with formula");
+    check("call _trv_traverse with formula");
     object_t *result = _trv_traverse(ast, return_stmt->formula, dep+1);
     if (!result) {
         if (ast_has_error(ast)) {
@@ -893,7 +893,7 @@ trv_return_stmt(ast_t *ast, const node_t *node, int dep) {
     object_t *ret = extract_obj(ast, result);
     obj_del(result);
 
-    tcheck("set true at do return flag");
+    check("set true at do return flag");
     ctx_set_do_return(ast->context, true);
 
     return_trav(ret);
@@ -920,7 +920,7 @@ trv_calc_assign_to_array(ast_t *ast, const object_t *lhs, const object_t *rhs, i
         for (int i = 0; i < objarr_len(lhs->objarr); ++i) {
             object_t *lh = objarr_get(lhs->objarr, i);
             object_t *rh = objarr_get(rhs->objarr, i);
-            tcheck("call trv_calc_assign");
+            check("call trv_calc_assign");
             object_t *result = trv_calc_assign(ast, lh, rh, dep+1);
             objarr_moveb(results, result);
         }
@@ -1147,12 +1147,12 @@ trv_calc_assign(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_calc_asscalc_ass");
+        check("call trv_calc_asscalc_ass");
         object_t *obj = trv_calc_asscalc_ass(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
-        tcheck("call trv_calc_assign_to_array");
+        check("call trv_calc_assign_to_array");
         object_t *obj = trv_calc_assign_to_array(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
@@ -1183,7 +1183,7 @@ trv_simple_assign(ast_t *ast, const node_t *node, int dep) {
     int32_t arrlen = nodearr_len(simple_assign->nodearr);
     node_t *rnode = nodearr_get(simple_assign->nodearr, arrlen-1);
     assert(rnode->type == NODE_TYPE_TEST);
-    tcheck("call _trv_traverse with right test");
+    check("call _trv_traverse with right test");
     object_t *rhs = _trv_traverse(ast, rnode, dep+1);
     if (ast_has_error(ast)) {
         return_trav(NULL);
@@ -1193,7 +1193,7 @@ trv_simple_assign(ast_t *ast, const node_t *node, int dep) {
     for (int32_t i = arrlen-2; i >= 0; --i) {
         node_t *lnode = nodearr_get(simple_assign->nodearr, i);
         assert(lnode->type == NODE_TYPE_TEST);
-        tcheck("call _trv_traverse with test left test");
+        check("call _trv_traverse with test left test");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
         if (ast_has_error(ast)) {
             obj_del(rhs);
@@ -1238,7 +1238,7 @@ trv_assign(ast_t *ast, const node_t *node, int dep) {
     int32_t arrlen = nodearr_len(assign_list->nodearr);
     node_t *rnode = nodearr_get(assign_list->nodearr, arrlen-1);
     assert(rnode->type == NODE_TYPE_TEST);
-    tcheck("call _trv_traverse with test rnode");
+    check("call _trv_traverse with test rnode");
     object_t *rhs = _trv_traverse(ast, rnode, dep+1);
     if (ast_has_error(ast)) {
         return_trav(NULL);
@@ -1248,7 +1248,7 @@ trv_assign(ast_t *ast, const node_t *node, int dep) {
     for (int32_t i = arrlen-2; i >= 0; --i) {
         node_t *lnode = nodearr_get(assign_list->nodearr, i);
         assert(lnode->type == NODE_TYPE_TEST);
-        tcheck("call _trv_traverse with test lnode");
+        check("call _trv_traverse with test lnode");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
         if (ast_has_error(ast)) {
             obj_del(rhs);
@@ -1293,7 +1293,7 @@ trv_assign_list(ast_t *ast, const node_t *node, int dep) {
     node_t *assign = nodearr_get(assign_list->nodearr, 0);
     assert(assign->type == NODE_TYPE_ASSIGN);
 
-    tcheck("call _trv_traverse with assign assign");
+    check("call _trv_traverse with assign assign");
     object_t *obj = _trv_traverse(ast, assign, dep+1);
     if (ast_has_error(ast)) {
         return_trav(NULL);
@@ -1306,7 +1306,7 @@ trv_assign_list(ast_t *ast, const node_t *node, int dep) {
         assign = nodearr_get(assign_list->nodearr, i);
         assert(assign->type == NODE_TYPE_ASSIGN);
 
-        tcheck("call _trv_traverse with assign assign");
+        check("call _trv_traverse with assign assign");
         obj = _trv_traverse(ast, assign, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
@@ -1347,7 +1347,7 @@ trv_multi_assign(ast_t *ast, const node_t *node, int dep) {
     int32_t arrlen = nodearr_len(multi_assign->nodearr);
     node_t *rnode = nodearr_get(multi_assign->nodearr, arrlen-1);
     assert(rnode->type == NODE_TYPE_TEST_LIST);
-    tcheck("call _trv_traverse with right test_list node");
+    check("call _trv_traverse with right test_list node");
     object_t *rhs = _trv_traverse(ast, rnode, dep+1);
     if (ast_has_error(ast)) {
         return_trav(NULL);
@@ -1357,7 +1357,7 @@ trv_multi_assign(ast_t *ast, const node_t *node, int dep) {
     for (int32_t i = arrlen-2; i >= 0; --i) {
         node_t *lnode = nodearr_get(multi_assign->nodearr, i);
         assert(lnode->type == NODE_TYPE_TEST_LIST);
-        tcheck("call _trv_traverse with left test_list node");
+        check("call _trv_traverse with left test_list node");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
         if (ast_has_error(ast)) {
             obj_del(rhs);
@@ -1401,7 +1401,7 @@ trv_test_list(ast_t *ast, const node_t *node, int dep) {
     assert(nodearr_len(test_list->nodearr));
     if (nodearr_len(test_list->nodearr) == 1) {
         node_t *test = nodearr_get(test_list->nodearr, 0);
-        tcheck("call _trv_traverse")
+        check("call _trv_traverse")
         object_t *obj = _trv_traverse(ast, test, dep+1);
         return_trav(obj);
     }
@@ -1410,7 +1410,7 @@ trv_test_list(ast_t *ast, const node_t *node, int dep) {
 
     for (int32_t i = 0; i < nodearr_len(test_list->nodearr); ++i) {
         node_t *test = nodearr_get(test_list->nodearr, i);
-        tcheck("call _trv_traverse");
+        check("call _trv_traverse");
         object_t *result = _trv_traverse(ast, test, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
@@ -1427,7 +1427,7 @@ static object_t *
 trv_test(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_test_t *test = node->real;
-    tcheck("call _trv_traverse");
+    check("call _trv_traverse");
     object_t *obj = _trv_traverse(ast, test->or_test, dep+1);
     return_trav(obj);
 }
@@ -1478,7 +1478,7 @@ trv_roll_identifier_lhs(
         return_trav(NULL);
     }
 
-    tcheck("call function pointer");
+    check("call function pointer");
     object_t *obj = func(ast, lvar, rhs, dep+1);
     return_trav(obj);
 }
@@ -1499,7 +1499,7 @@ trv_roll_identifier_rhs(
         return_trav(NULL);
     }
 
-    tcheck("call function pointer");
+    check("call function pointer");
     object_t *obj = func(ast, lhs, rvar, dep+1);
     return_trav(obj);
 }
@@ -1608,7 +1608,7 @@ trv_compare_or_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep
             return_trav(NULL);
         }
 
-        tcheck("call trv_compare_or with rvar");
+        check("call trv_compare_or with rvar");
         object_t *obj = trv_compare_or(ast, lhs, rvar, dep+1);
         return_trav(obj);
     } break;
@@ -1732,7 +1732,7 @@ trv_compare_or_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
             return_trav(NULL);
         }
 
-        tcheck("call trv_compare_or");
+        check("call trv_compare_or");
         object_t *obj = trv_compare_or(ast, lhs, rvar, dep+1);
         return_trav(obj);
     } break;
@@ -1852,7 +1852,7 @@ trv_compare_or_string(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_or, dep+1);
         return_trav(obj);
     } break;
@@ -1973,7 +1973,7 @@ trv_compare_or_array(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_or, dep+1);
         return_trav(obj);
     } break;
@@ -2094,7 +2094,7 @@ trv_compare_or_dict(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_or, dep+1);
         return_trav(obj);
     } break;
@@ -2125,7 +2125,7 @@ trv_compare_or_nil(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_or, dep+1);
         return_trav(obj);
     } break;
@@ -2246,7 +2246,7 @@ trv_compare_or_func(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_or, dep+1);
         return_trav(obj);
     } break;
@@ -2363,7 +2363,7 @@ trv_compare_or_module(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_or, dep+1);
         return_trav(obj);
     } break;
@@ -2389,47 +2389,47 @@ trv_compare_or(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
 
     switch (lhs->type) {
     case OBJ_TYPE_NIL: {
-        tcheck("call trv_compare_or_nil");
+        check("call trv_compare_or_nil");
         object_t *obj = trv_compare_or_nil(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
-        tcheck("call trv_compare_or_int");
+        check("call trv_compare_or_int");
         object_t *obj = trv_compare_or_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        tcheck("call trv_compare_or_bool");
+        check("call trv_compare_or_bool");
         object_t *obj = trv_compare_or_bool(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
-        tcheck("call trv_compare_or_string");
+        check("call trv_compare_or_string");
         object_t *obj = trv_compare_or_string(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
-        tcheck("call trv_compare_or_array");
+        check("call trv_compare_or_array");
         object_t *obj = trv_compare_or_array(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_DICT: {
-        tcheck("call trv_compare_or_dict");
+        check("call trv_compare_or_dict");
         object_t *obj = trv_compare_or_dict(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_lhs(ast, lhs, rhs, trv_compare_or, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_FUNC: {
-        tcheck("call trv_compare_or_func");
+        check("call trv_compare_or_func");
         object_t *obj = trv_compare_or_func(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_MODULE: {
-        tcheck("call trv_compare_or_module");
+        check("call trv_compare_or_module");
         object_t *obj = trv_compare_or_module(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
@@ -2456,7 +2456,7 @@ trv_or_test(ast_t *ast, const node_t *node, int dep) {
     node_or_test_t *or_test = node->real;
 
     node_t *lnode = nodearr_get(or_test->nodearr, 0);
-    tcheck("call _trv_traverse");
+    check("call _trv_traverse");
     object_t *lhs = _trv_traverse(ast, lnode, dep+1);
     if (ast_has_error(ast)) {
         return_trav(NULL);
@@ -2465,7 +2465,7 @@ trv_or_test(ast_t *ast, const node_t *node, int dep) {
 
     for (int i = 1; i < nodearr_len(or_test->nodearr); ++i) {
         node_t *rnode = nodearr_get(or_test->nodearr, i);
-        tcheck("call _trv_traverse");
+        check("call _trv_traverse");
         object_t *rhs = _trv_traverse(ast, rnode, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
@@ -2474,7 +2474,7 @@ trv_or_test(ast_t *ast, const node_t *node, int dep) {
             return_trav(lhs);
         }
 
-        tcheck("call trv_compare_or");
+        check("call trv_compare_or");
         object_t *result = trv_compare_or(ast, lhs, rhs, dep+1);
         if (ast_has_error(ast)) {
             obj_del(lhs);
@@ -2589,7 +2589,7 @@ trv_compare_and_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
@@ -2707,7 +2707,7 @@ trv_compare_and_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
@@ -2827,7 +2827,7 @@ trv_compare_and_string(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
@@ -2938,7 +2938,7 @@ trv_compare_and_array(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
@@ -3049,7 +3049,7 @@ trv_compare_and_dict(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
@@ -3080,7 +3080,7 @@ trv_compare_and_nil(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
@@ -3189,7 +3189,7 @@ trv_compare_and_func(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
@@ -3298,7 +3298,7 @@ trv_compare_and_module(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
@@ -3324,47 +3324,47 @@ trv_compare_and(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
 
     switch (lhs->type) {
     case OBJ_TYPE_NIL: {
-        tcheck("call trv_compare_and_nil");
+        check("call trv_compare_and_nil");
         object_t *obj = trv_compare_and_nil(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
-        tcheck("call trv_compare_and_int");
+        check("call trv_compare_and_int");
         object_t *obj = trv_compare_and_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        tcheck("call trv_compare_and_bool");
+        check("call trv_compare_and_bool");
         object_t *obj = trv_compare_and_bool(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
-        tcheck("call trv_compare_and_string");
+        check("call trv_compare_and_string");
         object_t *obj = trv_compare_and_string(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
-        tcheck("call trv_compare_and_array");
+        check("call trv_compare_and_array");
         object_t *obj = trv_compare_and_array(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_DICT: {
-        tcheck("call trv_compare_and_dict");
+        check("call trv_compare_and_dict");
         object_t *obj = trv_compare_and_dict(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_lhs with trv_compare_and");
+        check("call trv_roll_identifier_lhs with trv_compare_and");
         object_t *obj = trv_roll_identifier_lhs(ast, lhs, rhs, trv_compare_and, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_FUNC: {
-        tcheck("call trv_compare_and_func");
+        check("call trv_compare_and_func");
         object_t *obj = trv_compare_and_func(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_MODULE: {
-        tcheck("call trv_compare_and_module");
+        check("call trv_compare_and_module");
         object_t *obj = trv_compare_and_module(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
@@ -3391,7 +3391,7 @@ trv_and_test(ast_t *ast, const node_t *node, int dep) {
     node_and_test_t *and_test = node->real;
 
     node_t *lnode = nodearr_get(and_test->nodearr, 0);
-    tcheck("call _trv_traverse with not_test");
+    check("call _trv_traverse with not_test");
     object_t *lhs = _trv_traverse(ast, lnode, dep+1);
     if (ast_has_error(ast)) {
         return_trav(NULL);
@@ -3400,7 +3400,7 @@ trv_and_test(ast_t *ast, const node_t *node, int dep) {
 
     for (int i = 1; i < nodearr_len(and_test->nodearr); ++i) {
         node_t *rnode = nodearr_get(and_test->nodearr, i);
-        tcheck("call _trv_traverse with not_test");
+        check("call _trv_traverse with not_test");
         object_t *rhs = _trv_traverse(ast, rnode, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
@@ -3409,7 +3409,7 @@ trv_and_test(ast_t *ast, const node_t *node, int dep) {
             return_trav(lhs);
         }
 
-        tcheck("call trv_compare_and");
+        check("call trv_compare_and");
         object_t *result = trv_compare_and(ast, lhs, rhs, dep+1);
         if (ast_has_error(ast)) {
             obj_del(lhs);
@@ -3455,7 +3455,7 @@ trv_compare_not(ast_t *ast, const object_t *operand, int dep) {
             return_trav(NULL);
         }
 
-        tcheck("call trv_compare_not");
+        check("call trv_compare_not");
         object_t *obj = trv_compare_not(ast, var, dep+1);
         return_trav(obj);
     } break;
@@ -3502,7 +3502,7 @@ trv_not_test(ast_t *ast, const node_t *node, int dep) {
             return_trav(NULL);
         }
 
-        tcheck("call trv_compare_not");
+        check("call trv_compare_not");
         object_t *obj = trv_compare_not(ast, operand, dep+1);
         return_trav(obj);
     } else if (not_test->comparison) {
@@ -3536,7 +3536,7 @@ trv_compare_comparison_eq_int(ast_t *ast, const object_t *lhs, const object_t *r
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_eq, dep+1);
         return_trav(obj);
     } break;
@@ -3613,7 +3613,7 @@ trv_compare_comparison_eq_string(ast_t *ast, const object_t *lhs, const object_t
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_eq, dep+1);
         return_trav(obj);
     } break;
@@ -3652,7 +3652,7 @@ trv_compare_comparison_eq_array(ast_t *ast, const object_t *lhs, const object_t 
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_eq, dep+1);
         return_trav(obj);
     } break;
@@ -3725,7 +3725,7 @@ trv_compare_comparison_eq_func(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_eq, dep+1);
         return_trav(obj);
     } break;
@@ -3764,7 +3764,7 @@ trv_compare_comparison_eq_module(ast_t *ast, const object_t *lhs, const object_t
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_eq, dep+1);
         return_trav(obj);
     } break;
@@ -3811,52 +3811,52 @@ trv_compare_comparison_eq(ast_t *ast, const object_t *lhs, const object_t *rhs, 
 
     switch (lhs->type) {
     case OBJ_TYPE_NIL: {
-        tcheck("call trv_compare_comparison_eq_nil");
+        check("call trv_compare_comparison_eq_nil");
         object_t *obj = trv_compare_comparison_eq_nil(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
-        tcheck("call trv_compare_comparison_eq_int");
+        check("call trv_compare_comparison_eq_int");
         object_t *obj = trv_compare_comparison_eq_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        tcheck("call trv_compare_comparison_eq_bool");
+        check("call trv_compare_comparison_eq_bool");
         object_t *obj = trv_compare_comparison_eq_bool(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
-        tcheck("call trv_compare_comparison_eq_string");
+        check("call trv_compare_comparison_eq_string");
         object_t *obj = trv_compare_comparison_eq_string(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
-        tcheck("call trv_compare_comparison_eq_array");
+        check("call trv_compare_comparison_eq_array");
         object_t *obj = trv_compare_comparison_eq_array(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_DICT: {
-        tcheck("call trv_compare_comparison_eq_dict");
+        check("call trv_compare_comparison_eq_dict");
         object_t *obj = trv_compare_comparison_eq_dict(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_lhs with trv_compare_comparison_eq");
+        check("call trv_roll_identifier_lhs with trv_compare_comparison_eq");
         object_t *obj = trv_roll_identifier_lhs(ast, lhs, rhs, trv_compare_comparison_eq, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_FUNC: {
-        tcheck("call trv_compare_comparison_eq_func");
+        check("call trv_compare_comparison_eq_func");
         object_t *obj = trv_compare_comparison_eq_func(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_MODULE: {
-        tcheck("call trv_compare_comparison_eq_module");
+        check("call trv_compare_comparison_eq_module");
         object_t *obj = trv_compare_comparison_eq_module(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        tcheck("call trv_compare_comparison_eq_index");
+        check("call trv_compare_comparison_eq_index");
         object_t *obj = trv_compare_comparison_eq_index(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
@@ -3889,7 +3889,7 @@ trv_compare_comparison_not_eq_int(ast_t *ast, const object_t *lhs, const object_
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs with trv_compare_comparison_not_eq");
+        check("call trv_roll_identifier_rhs with trv_compare_comparison_not_eq");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
@@ -3928,7 +3928,7 @@ trv_compare_comparison_not_eq_bool(ast_t *ast, const object_t *lhs, const object
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
@@ -4001,7 +4001,7 @@ trv_compare_comparison_not_eq_array(ast_t *ast, const object_t *lhs, const objec
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
@@ -4044,7 +4044,7 @@ trv_compare_comparison_not_eq_nil(ast_t *ast, const object_t *lhs, const object_
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_lhs with trv_compare_comparison_not_eq");
+        check("call trv_roll_identifier_lhs with trv_compare_comparison_not_eq");
         object_t *obj = trv_roll_identifier_lhs(ast, lhs, rhs, trv_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
@@ -4079,7 +4079,7 @@ trv_compare_comparison_not_eq_func(ast_t *ast, const object_t *lhs, const object
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
@@ -4119,7 +4119,7 @@ trv_compare_comparison_not_eq_module(ast_t *ast, const object_t *lhs, const obje
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
@@ -4150,47 +4150,47 @@ trv_compare_comparison_not_eq(ast_t *ast, const object_t *lhs, const object_t *r
 
     switch (lhs->type) {
     case OBJ_TYPE_NIL: {
-        tcheck("call trv_compare_comparison_not_eq_nil");
+        check("call trv_compare_comparison_not_eq_nil");
         object_t *obj = trv_compare_comparison_not_eq_nil(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
-        tcheck("call trv_compare_comparison_not_eq_int");
+        check("call trv_compare_comparison_not_eq_int");
         object_t *obj = trv_compare_comparison_not_eq_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        tcheck("call trv_compare_comparison_not_eq_bool");
+        check("call trv_compare_comparison_not_eq_bool");
         object_t *obj = trv_compare_comparison_not_eq_bool(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
-        tcheck("call trv_compare_comparison_not_eq_string");
+        check("call trv_compare_comparison_not_eq_string");
         object_t *obj = trv_compare_comparison_not_eq_string(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
-        tcheck("call trv_compare_comparison_not_eq_array");
+        check("call trv_compare_comparison_not_eq_array");
         object_t *obj = trv_compare_comparison_not_eq_array(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_DICT: {
-        tcheck("call trv_compare_comparison_not_eq_dict");
+        check("call trv_compare_comparison_not_eq_dict");
         object_t *obj = trv_compare_comparison_not_eq_dict(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_lhs with trv_compare_comparison_not_eq");
+        check("call trv_roll_identifier_lhs with trv_compare_comparison_not_eq");
         object_t *obj = trv_roll_identifier_lhs(ast, lhs, rhs, trv_compare_comparison_not_eq, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_FUNC: {
-        tcheck("call trv_compare_comparison_not_eq_func");
+        check("call trv_compare_comparison_not_eq_func");
         object_t *obj = trv_compare_comparison_not_eq_func(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_MODULE: {
-        tcheck("call trv_compare_comparison_not_eq_module");
+        check("call trv_compare_comparison_not_eq_module");
         object_t *obj = trv_compare_comparison_not_eq_module(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
@@ -4229,7 +4229,7 @@ trv_compare_comparison_lte_int(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs with trv_compare_comparison_lte");
+        check("call trv_roll_identifier_rhs with trv_compare_comparison_lte");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_lte, dep+1);
         return_trav(obj);
     } break;
@@ -4268,7 +4268,7 @@ trv_compare_comparison_lte_bool(ast_t *ast, const object_t *lhs, const object_t 
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs with trv_compare_comparison_lte");
+        check("call trv_roll_identifier_rhs with trv_compare_comparison_lte");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_lte, dep+1);
         return_trav(obj);
     } break;
@@ -4298,17 +4298,17 @@ trv_compare_comparison_lte(ast_t *ast, const object_t *lhs, const object_t *rhs,
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        tcheck("call trv_compare_comparison_lte_int");
+        check("call trv_compare_comparison_lte_int");
         object_t *obj = trv_compare_comparison_lte_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        tcheck("call trv_compare_comparison_lte_bool");
+        check("call trv_compare_comparison_lte_bool");
         object_t *obj = trv_compare_comparison_lte_bool(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_lhs with trv_compare_comparison_lte");
+        check("call trv_roll_identifier_lhs with trv_compare_comparison_lte");
         object_t *obj = trv_roll_identifier_lhs(ast, lhs, rhs, trv_compare_comparison_lte, dep+1);
         return_trav(obj);
     } break;
@@ -4347,7 +4347,7 @@ trv_compare_comparison_gte_int(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs with trv_compare_comparison_gte");
+        check("call trv_roll_identifier_rhs with trv_compare_comparison_gte");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_gte, dep+1);
         return_trav(obj);
     } break;
@@ -4386,7 +4386,7 @@ trv_compare_comparison_gte_bool(ast_t *ast, const object_t *lhs, const object_t 
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs with trv_compare_comparison_gte");
+        check("call trv_roll_identifier_rhs with trv_compare_comparison_gte");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_gte, dep+1);
         return_trav(obj);
     } break;
@@ -4416,17 +4416,17 @@ trv_compare_comparison_gte(ast_t *ast, const object_t *lhs, const object_t *rhs,
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        tcheck("call trv_compare_comparison_gte_int");
+        check("call trv_compare_comparison_gte_int");
         object_t *obj = trv_compare_comparison_gte_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        tcheck("call trv_compare_comparison_gte_bool");
+        check("call trv_compare_comparison_gte_bool");
         object_t *obj = trv_compare_comparison_gte_bool(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_lhs with trv_compare_comparison_gte");
+        check("call trv_roll_identifier_lhs with trv_compare_comparison_gte");
         object_t *obj = trv_roll_identifier_lhs(ast, lhs, rhs, trv_compare_comparison_gte, dep+1);
         return_trav(obj);
     } break;
@@ -4465,7 +4465,7 @@ trv_compare_comparison_lt_int(ast_t *ast, const object_t *lhs, const object_t *r
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs with trv_compare_comparison_lt");
+        check("call trv_roll_identifier_rhs with trv_compare_comparison_lt");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_lt, dep+1);
         return_trav(obj);
     } break;
@@ -4504,7 +4504,7 @@ trv_compare_comparison_lt_bool(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs with trv_compare_comparison_lt");
+        check("call trv_roll_identifier_rhs with trv_compare_comparison_lt");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_lt, dep+1);
         return_trav(obj);
     } break;
@@ -4534,17 +4534,17 @@ trv_compare_comparison_lt(ast_t *ast, const object_t *lhs, const object_t *rhs, 
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        tcheck("call trv_compare_comparison_lt_int");
+        check("call trv_compare_comparison_lt_int");
         object_t *obj = trv_compare_comparison_lt_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        tcheck("call trv_compare_comparison_lt_bool");
+        check("call trv_compare_comparison_lt_bool");
         object_t *obj = trv_compare_comparison_lt_bool(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_lhs with trv_compare_comparison_lt");
+        check("call trv_roll_identifier_lhs with trv_compare_comparison_lt");
         object_t *obj = trv_roll_identifier_lhs(ast, lhs, rhs, trv_compare_comparison_lt, dep+1);
         return_trav(obj);
     } break;
@@ -4583,7 +4583,7 @@ trv_compare_comparison_gt_int(ast_t *ast, const object_t *lhs, const object_t *r
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs with trv_compare_comparison_gt");
+        check("call trv_roll_identifier_rhs with trv_compare_comparison_gt");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_gt, dep+1);
         return_trav(obj);
     } break;
@@ -4622,7 +4622,7 @@ trv_compare_comparison_gt_bool(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs with trv_compare_comparison_gt");
+        check("call trv_roll_identifier_rhs with trv_compare_comparison_gt");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_compare_comparison_gt, dep+1);
         return_trav(obj);
     } break;
@@ -4652,17 +4652,17 @@ trv_compare_comparison_gt(ast_t *ast, const object_t *lhs, const object_t *rhs, 
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        tcheck("call trv_compare_comparison_gt_int");
+        check("call trv_compare_comparison_gt_int");
         object_t *obj = trv_compare_comparison_gt_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        tcheck("call trv_compare_comparison_gt_bool");
+        check("call trv_compare_comparison_gt_bool");
         object_t *obj = trv_compare_comparison_gt_bool(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_lhs with trv_compare_comparison_gt");
+        check("call trv_roll_identifier_lhs with trv_compare_comparison_gt");
         object_t *obj = trv_roll_identifier_lhs(ast, lhs, rhs, trv_compare_comparison_gt, dep+1);
         return_trav(obj);
     } break;
@@ -4689,32 +4689,32 @@ trv_compare_comparison(ast_t *ast, const object_t *lhs, const node_comp_op_t *co
     switch (comp_op->op) {
     default: break;
     case OP_EQ: {
-        tcheck("call trv_compare_comparison_eq");
+        check("call trv_compare_comparison_eq");
         object_t *obj = trv_compare_comparison_eq(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OP_NOT_EQ: {
-        tcheck("call trv_compare_comparison_not_eq");
+        check("call trv_compare_comparison_not_eq");
         object_t *obj = trv_compare_comparison_not_eq(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OP_LTE: {
-        tcheck("call trv_compare_comparison_lte");
+        check("call trv_compare_comparison_lte");
         object_t *obj = trv_compare_comparison_lte(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OP_GTE: {
-        tcheck("call trv_compare_comparison_gte");
+        check("call trv_compare_comparison_gte");
         object_t *obj = trv_compare_comparison_gte(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OP_LT: {
-        tcheck("call trv_compare_comparison_lt");
+        check("call trv_compare_comparison_lt");
         object_t *obj = trv_compare_comparison_lt(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OP_GT: {
-        tcheck("call trv_compare_comparison_gt");
+        check("call trv_compare_comparison_gt");
         object_t *obj = trv_compare_comparison_gt(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
@@ -4733,13 +4733,13 @@ trv_comparison(ast_t *ast, const node_t *node, int dep) {
     if (nodearr_len(comparison->nodearr) == 1) {
         node_t *node = nodearr_get(comparison->nodearr, 0);
         assert(node->type == NODE_TYPE_ASSCALC);
-        tcheck("call _trv_traverse with asscalc");
+        check("call _trv_traverse with asscalc");
         object_t *result = _trv_traverse(ast, node, dep+1);
         return_trav(result);
     } else if (nodearr_len(comparison->nodearr) >= 3) {
         node_t *lnode = nodearr_get(comparison->nodearr, 0);
         assert(lnode->type == NODE_TYPE_ASSCALC);
-        tcheck("call _trv_traverse with asscalc");
+        check("call _trv_traverse with asscalc");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
@@ -4755,7 +4755,7 @@ trv_comparison(ast_t *ast, const node_t *node, int dep) {
             node_t *rnode = nodearr_get(comparison->nodearr, i+1);
             assert(rnode->type == NODE_TYPE_ASSCALC);
             assert(rnode);
-            tcheck("call _trv_traverse with asscalc");
+            check("call _trv_traverse with asscalc");
             object_t *rhs = _trv_traverse(ast, rnode, dep+1);
             if (ast_has_error(ast)) {
                 obj_del(lhs);
@@ -4763,7 +4763,7 @@ trv_comparison(ast_t *ast, const node_t *node, int dep) {
             }
             assert(rnode);
 
-            tcheck("call trv_compare_comparison");
+            check("call trv_compare_comparison");
             object_t *result = trv_compare_comparison(ast, lhs, node_comp_op, rhs, dep+1);
             if (ast_has_error(ast)) {
                 obj_del(lhs);
@@ -4802,7 +4802,7 @@ trv_calc_expr_add_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_expr_add, dep+1);
         return_trav(obj);
     } break;
@@ -4841,7 +4841,7 @@ trv_calc_expr_add_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_expr_add, dep+1);
         return_trav(obj);
     } break;
@@ -4872,7 +4872,7 @@ trv_calc_expr_add_string(ast_t *ast, const object_t *lhs, const object_t *rhs, i
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_expr_add, dep+1);
         return_trav(obj);
     } break;
@@ -4909,22 +4909,22 @@ trv_calc_expr_add(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep)
         return_trav(NULL);
     } break;
     case OBJ_TYPE_INTEGER: {
-        tcheck("call trv_calc_expr_add_int");
+        check("call trv_calc_expr_add_int");
         object_t *obj = trv_calc_expr_add_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        tcheck("call trv_calc_expr_add_bool");
+        check("call trv_calc_expr_add_bool");
         object_t *obj = trv_calc_expr_add_bool(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
-        tcheck("call trv_calc_expr_add_string");
+        check("call trv_calc_expr_add_string");
         object_t *obj = trv_calc_expr_add_string(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_lhs with trv_calc_expr_add");
+        check("call trv_roll_identifier_lhs with trv_calc_expr_add");
         object_t *obj = trv_roll_identifier_lhs(ast, lhs, rhs, trv_calc_expr_add, dep+1);
         return_trav(obj);
     } break;
@@ -4963,7 +4963,7 @@ trv_calc_expr_sub_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_expr_sub, dep+1);
         return_trav(obj);
     } break;
@@ -5002,7 +5002,7 @@ trv_calc_expr_sub_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("trv_roll_identifier_rhs");
+        check("trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_expr_sub, dep+1);
         return_trav(obj);
     } break;
@@ -5032,17 +5032,17 @@ trv_calc_expr_sub(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep)
         return_trav(NULL);
     } break;
     case OBJ_TYPE_INTEGER: {
-        tcheck("call trv_calc_expr_sub_int");
+        check("call trv_calc_expr_sub_int");
         object_t *obj = trv_calc_expr_sub_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        tcheck("call trv_calc_expr_sub_bool");
+        check("call trv_calc_expr_sub_bool");
         object_t *obj = trv_calc_expr_sub_bool(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_expr_sub, dep+1);
         return_trav(obj);
     } break;
@@ -5069,12 +5069,12 @@ trv_calc_expr(ast_t *ast, const object_t *lhs, const node_add_sub_op_t *add_sub_
     switch (add_sub_op->op) {
     default: break;
     case OP_ADD: {
-        tcheck("call trv_calc_expr_add");
+        check("call trv_calc_expr_add");
         object_t *obj = trv_calc_expr_add(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OP_SUB: {
-        tcheck("call trv_calc_expr_sub");
+        check("call trv_calc_expr_sub");
         object_t *obj = trv_calc_expr_sub(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
@@ -5092,7 +5092,7 @@ trv_expr(ast_t *ast, const node_t *node, int dep) {
 
     if (nodearr_len(expr->nodearr) == 1) {
         node_t *node = nodearr_get(expr->nodearr, 0);
-        tcheck("call _trv_traverse");
+        check("call _trv_traverse");
         object_t *result =  _trv_traverse(ast, node, dep+1);
         return_trav(result);
     } else if (nodearr_len(expr->nodearr) >= 3) {
@@ -5110,7 +5110,7 @@ trv_expr(ast_t *ast, const node_t *node, int dep) {
 
             node_t *rnode = nodearr_get(expr->nodearr, i+1);
             assert(rnode);
-            tcheck("call _trv_traverse");
+            check("call _trv_traverse");
             object_t *rhs = _trv_traverse(ast, rnode, dep+1);
             if (ast_has_error(ast)) {
                 obj_del(lhs);
@@ -5118,7 +5118,7 @@ trv_expr(ast_t *ast, const node_t *node, int dep) {
             }
             assert(rnode);
 
-            tcheck("call trv_calc_expr");
+            check("call trv_calc_expr");
             object_t *result = trv_calc_expr(ast, lhs, op, rhs, dep+1);
             if (ast_has_error(ast)) {
                 obj_del(lhs);
@@ -5157,7 +5157,7 @@ trv_calc_term_mul_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_term_mul, dep+1);
         return_trav(obj);
     } break;
@@ -5199,7 +5199,7 @@ trv_calc_term_mul_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_term_mul, dep+1); 
         return_trav(obj);
     } break;
@@ -5230,7 +5230,7 @@ trv_calc_term_mul_string(ast_t *ast, const object_t *lhs, const object_t *rhs, i
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_term_mul, dep+1);
         return_trav(obj);
     } break;
@@ -5263,22 +5263,22 @@ trv_calc_term_mul(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep)
         return_trav(NULL);
     } break;
     case OBJ_TYPE_INTEGER: {
-        tcheck("call trv_calc_term_mul_int");
+        check("call trv_calc_term_mul_int");
         object_t *obj = trv_calc_term_mul_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        tcheck("call trv_calc_term_mul_bool");
+        check("call trv_calc_term_mul_bool");
         object_t *obj = trv_calc_term_mul_bool(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_lhs with trv_calc_term_mul");
+        check("call trv_roll_identifier_lhs with trv_calc_term_mul");
         object_t *obj = trv_roll_identifier_lhs(ast, lhs, rhs, trv_calc_term_mul, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
-        tcheck("call trv_calc_term_mul_string");
+        check("call trv_calc_term_mul_string");
         object_t *obj = trv_calc_term_mul_string(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
@@ -5325,7 +5325,7 @@ trv_calc_term_div_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("trv_roll_identifier_rhs");
+        check("trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_term_div, dep+1);
         return_trav(obj);
     } break;
@@ -5368,7 +5368,7 @@ trv_calc_term_div_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         }
         return obj_new_int(lhs->boolean / rhs->boolean);
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_term_div, dep+1);
         return_trav(obj);
     } break;
@@ -5398,17 +5398,17 @@ trv_calc_term_div(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep)
         return_trav(NULL);
     } break;
     case OBJ_TYPE_INTEGER: {
-        tcheck("call trv_calc_term_div_int");
+        check("call trv_calc_term_div_int");
         object_t *obj = trv_calc_term_div_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        tcheck("call trv_calc_term_div_bool");
+        check("call trv_calc_term_div_bool");
         object_t *obj = trv_calc_term_div_bool(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_roll_identifier_rhs");
+        check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_term_div, dep+1);
         return_trav(obj);
     } break;
@@ -5435,12 +5435,12 @@ trv_calc_term(ast_t *ast, const object_t *lhs, const node_mul_div_op_t *mul_div_
     switch (mul_div_op->op) {
     default: break;
     case OP_MUL: {
-        tcheck("call trv_calc_term_mul");
+        check("call trv_calc_term_mul");
         object_t *obj = trv_calc_term_mul(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OP_DIV: {
-        tcheck("call trv_calc_term_div");
+        check("call trv_calc_term_div");
         object_t *obj = trv_calc_term_div(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
@@ -5459,13 +5459,13 @@ trv_term(ast_t *ast, const node_t *node, int dep) {
     if (nodearr_len(term->nodearr) == 1) {
         node_t *node = nodearr_get(term->nodearr, 0);
         assert(node->type == NODE_TYPE_DOT);
-        tcheck("call _trv_traverse with dot");
+        check("call _trv_traverse with dot");
         object_t *result = _trv_traverse(ast, node, dep+1);
         return_trav(result);
     } else if (nodearr_len(term->nodearr) >= 3) {
         node_t *lnode = nodearr_get(term->nodearr, 0);
         assert(lnode->type == NODE_TYPE_DOT);
-        tcheck("call _trv_traverse with dot");
+        check("call _trv_traverse with dot");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
@@ -5480,7 +5480,7 @@ trv_term(ast_t *ast, const node_t *node, int dep) {
 
             node_t *rnode = nodearr_get(term->nodearr, i+1);
             assert(rnode->type == NODE_TYPE_DOT);
-            tcheck("call _trv_traverse with index");
+            check("call _trv_traverse with index");
             object_t *rhs = _trv_traverse(ast, rnode, dep+1);
             if (ast_has_error(ast)) {
                 obj_del(lhs);
@@ -5488,7 +5488,7 @@ trv_term(ast_t *ast, const node_t *node, int dep) {
             }
             assert(rnode);
 
-            tcheck("trv_calc_term");
+            check("trv_calc_term");
             object_t *result = trv_calc_term(ast, lhs, op, rhs, dep+1);
             if (ast_has_error(ast)) {
                 obj_del(lhs);
@@ -5517,13 +5517,13 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
     if (nodearr_len(dot->nodearr) == 1) {
         node_t *node = nodearr_get(dot->nodearr, 0);
         assert(node->type == NODE_TYPE_CALL);
-        tcheck("call _trv_traverse with dot");
+        check("call _trv_traverse with dot");
         object_t *result = _trv_traverse(ast, node, dep+1);
         return_trav(result);
     } else if (nodearr_len(dot->nodearr) >= 3) {
         node_t *lnode = nodearr_get(dot->nodearr, 0);
         assert(lnode->type == NODE_TYPE_CALL);
-        tcheck("call _trv_traverse with dot");
+        check("call _trv_traverse with dot");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
@@ -5538,7 +5538,7 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
 
             node_t *rnode = nodearr_get(dot->nodearr, i+1);
             assert(rnode->type == NODE_TYPE_CALL);
-            tcheck("call _trv_traverse with index");
+            check("call _trv_traverse with index");
             object_t *rhs = _trv_traverse(ast, rnode, dep+1);
             if (ast_has_error(ast)) {
                 obj_del(lhs);
@@ -5582,7 +5582,7 @@ trv_caller(ast_t *ast, const node_t *node, int dep) {
     assert(identifier);
     const char *name = identifier->identifier;
 
-    tcheck("call _trv_traverse");
+    check("call _trv_traverse");
     object_t *args = _trv_traverse(ast, caller->test_list, dep+1);
     object_t *result = NULL;
 
@@ -5618,6 +5618,7 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
     tready();
     assert(call);
 
+    check("call _trv_traverser with call's index");
     object_t *operand = _trv_traverse(ast, call->index, dep+1);
     if (ast_has_error(ast)) {
         return_trav(NULL);
@@ -5626,37 +5627,84 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
         ast_set_error_detail(ast, "not found operand in call");
         return_trav(NULL);
     }
-    if (operand->type != OBJ_TYPE_IDENTIFIER ||
-        !call->test_list) {
+
+    if (operand->type == OBJ_TYPE_INDEX) {
+        object_t *tmp = trv_get_value_of_index_obj(ast, operand);
+        obj_del(operand);
+        if (tmp->type == OBJ_TYPE_FUNC) {
+            operand = obj_new_other(tmp->func.name);
+            obj_del(tmp);
+        } else {
+            operand = tmp;
+        }
+    }
+    
+    if (operand->type != OBJ_TYPE_IDENTIFIER) {
         return_trav(operand);
     }
-    const char *name = str_getc(operand->identifier);
     
-    object_t *args = _trv_traverse(ast, call->test_list, dep+1);
     object_t *result = NULL;
 
-    result = trv_invoke_func_obj(ast, name, args, dep+1);
-    if (ast_has_error(ast)) {
+    for (int32_t i = 0; i < nodearr_len(call->test_lists); ++i) {
+        const node_t *test_list = nodearr_getc(call->test_lists, i);
+        const char *funcname = NULL;
+
+        if (!operand) {
+            ast_set_error_detail(ast, "operand is not callable");
+            return_trav(NULL);
+        } else if (operand->type == OBJ_TYPE_FUNC) {
+            funcname = str_getc(operand->func.name->identifier);
+        } else if (operand->type != OBJ_TYPE_IDENTIFIER) {
+            ast_set_error_detail(ast, "operand (%d) is not callable", operand->type);
+            return_trav(NULL);
+        } else {
+            funcname = str_getc(operand->identifier);
+        }
+
+        check("call _trv_traverse with call's test_list");
+        object_t *args = _trv_traverse(ast, test_list, dep+1);
+
+        check("call trv_invoke_func_obj");
+        result = trv_invoke_func_obj(ast, funcname, args, dep+1);
+        if (ast_has_error(ast)) {
+            obj_del(args);
+            return_trav(NULL);
+        } else if (result) {
+            obj_del(args);
+            obj_del(operand);
+            operand = result;
+            result = NULL;
+            continue;
+        }
+
+        check("call trv_invoke_builtin_modules");
+        result = trv_invoke_builtin_modules(ast, funcname, args);
+        if (ast_has_error(ast)) {
+            obj_del(args);
+            return_trav(NULL);
+        } else if (result) {
+            obj_del(args);
+            obj_del(operand);
+            operand = result;
+            result = NULL;
+            continue;
+        }
+
         obj_del(args);
-        return_trav(NULL);
-    } else if (result) {
-        obj_del(args);
-        return_trav(result);
+        
+        if (!result) {
+            ast_set_error_detail(ast, "can't call \"%s\"", funcname);
+            return_trav(NULL);
+        }
+
+        obj_del(operand);
+        operand = result;
     }
 
-    result = trv_invoke_builtin_modules(ast, name, args);
-    if (ast_has_error(ast)) {
-        obj_del(args);
-        return_trav(NULL);
-    } else if (result) {
-        obj_del(args);
-        return_trav(result);
-    }
-
-    obj_del(args);
     if (!result) {
-        return_trav(obj_new_nil());
+        return_trav(operand);
     }
+
     return_trav(result);
 }
 
@@ -5854,7 +5902,7 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, object_t *ref_var, const obj
             return_trav(NULL);
         }
 
-        tcheck("call trv_calc_asscalc_add_ass_identifier_int");
+        check("call trv_calc_asscalc_add_ass_identifier_int");
         object_t *obj = trv_calc_asscalc_add_ass_identifier_int(ast, ref_var, rvar, dep+1);
         return_trav(obj);
     } break;
@@ -5908,7 +5956,7 @@ trv_calc_asscalc_add_ass_identifier(ast_t *ast, const object_t *lhs, const objec
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        tcheck("call trv_calc_asscalc_add_ass_identifier_int");
+        check("call trv_calc_asscalc_add_ass_identifier_int");
         new_obj = trv_calc_asscalc_add_ass_identifier_int(ast, ref_lvar, rhs, dep+1);
     } break;
     case OBJ_TYPE_BOOL:
@@ -5916,12 +5964,12 @@ trv_calc_asscalc_add_ass_identifier(ast_t *ast, const object_t *lhs, const objec
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER:
-        tcheck("call trv_calc_asscalc_add_ass_identifier");
+        check("call trv_calc_asscalc_add_ass_identifier");
         new_obj = trv_calc_asscalc_add_ass_identifier(ast, ref_lvar, rhs, dep+1);
         vissf("new_obj[%p]", new_obj);
         break;
     case OBJ_TYPE_STRING: {
-        tcheck("call trv_calc_asscalc_add_ass_identifier_string");
+        check("call trv_calc_asscalc_add_ass_identifier_string");
         new_obj = trv_calc_asscalc_add_ass_identifier_string(ast, ref_lvar, rhs, dep+1);
     } break;
     case OBJ_TYPE_ARRAY:
@@ -5946,7 +5994,7 @@ trv_calc_asscalc_add_ass(ast_t *ast, const object_t *lhs, const object_t *rhs, i
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        tcheck("call trv_calc_asscalc_add_ass_identifier");
+        check("call trv_calc_asscalc_add_ass_identifier");
         object_t *obj = trv_calc_asscalc_add_ass_identifier(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
@@ -5963,7 +6011,7 @@ trv_calc_asscalc(ast_t *ast, const object_t *lhs, const node_augassign_t *augass
     switch (augassign->op) {
     default: break;
     case OP_ADD_ASS: {
-        tcheck("call trv_calc_asscalc_add_ass");
+        check("call trv_calc_asscalc_add_ass");
         object_t *obj = trv_calc_asscalc_add_ass(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
@@ -5991,13 +6039,13 @@ trv_asscalc(ast_t *ast, const node_t *node, int dep) {
     if (nodearr_len(asscalc->nodearr) == 1) {
         node_t *node = nodearr_get(asscalc->nodearr, 0);
         assert(node->type == NODE_TYPE_EXPR);
-        tcheck("call _trv_traverse");
+        check("call _trv_traverse");
         object_t *result = _trv_traverse(ast, node, dep+1);
         return_trav(result);
     } else if (nodearr_len(asscalc->nodearr) >= 3) {
         node_t *lnode = nodearr_get(asscalc->nodearr, 0);
         assert(lnode->type == NODE_TYPE_EXPR);
-        tcheck("call _trv_traverse");
+        check("call _trv_traverse");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
         if (ast_has_error(ast)) {
             return_trav(NULL);
@@ -6013,7 +6061,7 @@ trv_asscalc(ast_t *ast, const node_t *node, int dep) {
             node_t *rnode = nodearr_get(asscalc->nodearr, i+1);
             assert(rnode);
             assert(rnode->type == NODE_TYPE_EXPR);
-            tcheck("call _trv_traverse");
+            check("call _trv_traverse");
             object_t *rhs = _trv_traverse(ast, rnode, dep+1);
             if (ast_has_error(ast)) {
                 obj_del(lhs);
@@ -6021,7 +6069,7 @@ trv_asscalc(ast_t *ast, const node_t *node, int dep) {
             }
             assert(rnode);
 
-            tcheck("call trv_calc_asscalc");
+            check("call trv_calc_asscalc");
             object_t *result = trv_calc_asscalc(ast, lhs, op, rhs, dep+1);
             if (ast_has_error(ast)) {
                 obj_del(lhs);
@@ -6048,11 +6096,11 @@ trv_factor(ast_t *ast, const node_t *node, int dep) {
     assert(factor);
 
     if (factor->atom) {
-        tcheck("call _trv_traverse");
+        check("call _trv_traverse");
         object_t *obj = _trv_traverse(ast, factor->atom, dep+1);
         return_trav(obj);
     } else if (factor->formula) {
-        tcheck("call _trv_traverse");
+        check("call _trv_traverse");
         object_t *obj = _trv_traverse(ast, factor->formula, dep+1);
         return_trav(obj);
     }
@@ -6068,35 +6116,35 @@ trv_atom(ast_t *ast, const node_t *node, int dep) {
     assert(atom && node->type == NODE_TYPE_ATOM);
 
     if (atom->nil) {
-        tcheck("call _trv_traverse with nil");
+        check("call _trv_traverse with nil");
         object_t *obj = _trv_traverse(ast, atom->nil, dep+1);
         return_trav(obj);
     } else if (atom->false_) {
-        tcheck("call _trv_traverse with false_");
+        check("call _trv_traverse with false_");
         object_t *obj = _trv_traverse(ast, atom->false_, dep+1);
         return_trav(obj);
     } else if (atom->true_) {
-        tcheck("call _trv_traverse with true_");
+        check("call _trv_traverse with true_");
         object_t *obj = _trv_traverse(ast, atom->true_, dep+1);
         return_trav(obj);
     } else if (atom->digit) {
-        tcheck("call _trv_traverse with digit");
+        check("call _trv_traverse with digit");
         object_t *obj = _trv_traverse(ast, atom->digit, dep+1);
         return_trav(obj);
     } else if (atom->string) {
-        tcheck("call _trv_traverse with string");
+        check("call _trv_traverse with string");
         object_t *obj = _trv_traverse(ast, atom->string, dep+1);
         return_trav(obj);
     } else if (atom->array) {
-        tcheck("call _trv_traverse with array");
+        check("call _trv_traverse with array");
         object_t *obj = _trv_traverse(ast, atom->array, dep+1);
         return_trav(obj);
     } else if (atom->dict) {
-        tcheck("call _trv_traverse with dict");
+        check("call _trv_traverse with dict");
         object_t *obj = _trv_traverse(ast, atom->dict, dep+1);
         return_trav(obj);
     } else if (atom->identifier) {
-        tcheck("call _trv_traverse with identifier");
+        check("call _trv_traverse with identifier");
         object_t *obj = _trv_traverse(ast, atom->identifier, dep+1);
         return_trav(obj);
     }
@@ -6177,7 +6225,7 @@ trv_array(ast_t *ast, const node_t *node, int dep) {
     assert(array && node->type == NODE_TYPE_ARRAY);
     assert(array->array_elems);
 
-    tcheck("call _trv_traverse with array elems");
+    check("call _trv_traverse with array elems");
     object_t *result = _trv_traverse(ast, array->array_elems, dep+1);
     return_trav(result);
 }
@@ -6190,7 +6238,7 @@ trv_dict_elem(ast_t *ast, const node_t *node, int dep) {
     assert(dict_elem->key_simple_assign);
     assert(dict_elem->value_simple_assign);
 
-    tcheck("call _trv_traverse with key simple assign");
+    check("call _trv_traverse with key simple assign");
     object_t *key = _trv_traverse(ast, dict_elem->key_simple_assign, dep+1);
     if (ast_has_error(ast)) {
         obj_del(key);
@@ -6236,7 +6284,7 @@ trv_dict_elems(ast_t *ast, const node_t *node, int dep) {
 
     for (int32_t i = 0; i < nodearr_len(dict_elems->nodearr); ++i) {
         node_t *dict_elem = nodearr_get(dict_elems->nodearr, i);
-        tcheck("call _trv_traverse with dict_elem");
+        check("call _trv_traverse with dict_elem");
         object_t *arrobj = _trv_traverse(ast, dict_elem, dep+1);
         if (ast_has_error(ast)) {
             obj_del(arrobj);
@@ -6283,7 +6331,6 @@ trv_dict_elems(ast_t *ast, const node_t *node, int dep) {
         } break;
         }
 
-        if (ast->debug) printf("val type[%d]\n", val->type);
         objdict_move(objdict, skey, obj_new_other(val));
         obj_del(arrobj);
 }
@@ -6299,7 +6346,7 @@ trv_dict(ast_t *ast, const node_t *node, int dep) {
     assert(dict && node->type == NODE_TYPE_DICT);
     assert(dict->dict_elems);
 
-    tcheck("call _trv_traverse with dict");
+    check("call _trv_traverse with dict");
     object_t *result = _trv_traverse(ast, dict->dict_elems, dep+1);
     return_trav(result);
 }
@@ -6316,7 +6363,7 @@ static object_t *
 trv_invoke_func_obj(ast_t *ast, const char *name, const object_t *drtargs, int dep) {
     tready();
     assert(name);
-    tcheck("invoke func obj");
+    check("invoke func obj");
     object_t *args = NULL;
     if (drtargs) {
         args = obj_to_array(drtargs);
@@ -6330,7 +6377,6 @@ trv_invoke_func_obj(ast_t *ast, const char *name, const object_t *drtargs, int d
     }
 
     if (func_obj->type != OBJ_TYPE_FUNC) {
-        ast_set_error_detail(ast, "\"%s\" is not callable", name);
         obj_del(args);
         return NULL;
     }
@@ -6373,7 +6419,7 @@ trv_invoke_func_obj(ast_t *ast, const char *name, const object_t *drtargs, int d
 
     obj_del(args);
 
-    tcheck("call _trv_traverse with ref_suites");
+    check("call _trv_traverse with ref_suites");
     object_t *result = NULL;
     for (int32_t i = 0; ; ++i) {
         node_t *ref_suite = nodearr_get(func->ref_suites, i);
@@ -6465,7 +6511,7 @@ trv_def(ast_t *ast, const node_t *node, int dep) {
     node_def_t *def = node->real;
     assert(def && node->type == NODE_TYPE_DEF);
 
-    tcheck("call _trv_traverse with func_def")
+    check("call _trv_traverse with func_def")
     object_t *result = _trv_traverse(ast, def->func_def, dep+1);
     return_trav(result);
 }
@@ -6476,7 +6522,7 @@ trv_func_def(ast_t *ast, const node_t *node, int dep) {
     node_func_def_t *func_def = node->real;
     assert(func_def && node->type == NODE_TYPE_FUNC_DEF);
 
-    tcheck("call _trv_traverse with identifier");
+    check("call _trv_traverse with identifier");
     object_t *name = _trv_traverse(ast, func_def->identifier, dep+1);
     if (!name) {
         if (ast_has_error(ast)) {
@@ -6493,7 +6539,7 @@ trv_func_def(ast_t *ast, const node_t *node, int dep) {
 
     node_array_t *ref_suites = func_def->contents;
     object_t *func_obj = obj_new_func(name, def_args, ref_suites);
-    tcheck("set func at varmap");
+    check("set func at varmap");
     move_var(ast, str_getc(name->identifier), func_obj, dep+1);
 
     return_trav(NULL);
@@ -6505,7 +6551,7 @@ trv_func_def_params(ast_t *ast, const node_t *node, int dep) {
     node_func_def_params_t *func_def_params = node->real;
     assert(func_def_params && node->type == NODE_TYPE_FUNC_DEF_PARAMS);
 
-    tcheck("call _trv_traverse with func_def_args");
+    check("call _trv_traverse with func_def_args");
     return _trv_traverse(ast, func_def_params->func_def_args, dep+1);
 }
 
@@ -6542,247 +6588,247 @@ _trv_traverse(ast_t *ast, const node_t *node, int dep) {
         err_die("impossible. unsupported node type %d in traverse", node_getc_type(node));
     } break;
     case NODE_TYPE_PROGRAM: {
-        tcheck("call trv_program");
+        check("call trv_program");
         object_t *obj = trv_program(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_BLOCKS: {
-        tcheck("call trv_blocks");
+        check("call trv_blocks");
         object_t *obj = trv_blocks(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_CODE_BLOCK: {
-        tcheck("call trv_code_block");
+        check("call trv_code_block");
         object_t *obj = trv_code_block(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_REF_BLOCK: {
-        tcheck("call trv_ref_block");
+        check("call trv_ref_block");
         object_t *obj = trv_ref_block(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_TEXT_BLOCK: {
-        tcheck("call trv_text_block");
+        check("call trv_text_block");
         object_t *obj = trv_text_block(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_ELEMS: {
-        tcheck("call trv_elems");
+        check("call trv_elems");
         object_t *obj = trv_elems(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_FORMULA: {
-        tcheck("call trv_formula");
+        check("call trv_formula");
         object_t *obj = trv_formula(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_ASSIGN_LIST: {
-        tcheck("call trv_assign_list");
+        check("call trv_assign_list");
         object_t *obj = trv_assign_list(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_ASSIGN: {
-        tcheck("call trv_assign");
+        check("call trv_assign");
         object_t *obj = trv_assign(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_SIMPLE_ASSIGN: {
-        tcheck("call trv_simple_assign");
+        check("call trv_simple_assign");
         object_t *obj = trv_simple_assign(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_MULTI_ASSIGN: {
-        tcheck("call trv_multi_assign");
+        check("call trv_multi_assign");
         object_t *obj = trv_multi_assign(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_DEF: {
-        tcheck("call trv_def");
+        check("call trv_def");
         object_t *obj = trv_def(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_FUNC_DEF: {
-        tcheck("call trv_func_def");
+        check("call trv_func_def");
         object_t *obj = trv_func_def(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_FUNC_DEF_PARAMS: {
-        tcheck("call trv_func_def_params");
+        check("call trv_func_def_params");
         object_t *obj = trv_func_def_params(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_FUNC_DEF_ARGS: {
-        tcheck("call trv_func_def_args");
+        check("call trv_func_def_args");
         object_t *obj = trv_func_def_args(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_STMT: {
-        tcheck("call trv_stmt");
+        check("call trv_stmt");
         object_t *obj = trv_stmt(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_IMPORT_STMT: {
-        tcheck("call trv_import_stmt");
+        check("call trv_import_stmt");
         object_t *obj = trv_import_stmt(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_IF_STMT: {
-        tcheck("call trv_if_stmt");
+        check("call trv_if_stmt");
         object_t *obj = trv_if_stmt(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_ELIF_STMT: {
-        tcheck("call trv_if_stmt");
+        check("call trv_if_stmt");
         object_t *obj = trv_if_stmt(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_ELSE_STMT: {
-        tcheck("call trv_else_stmt");
+        check("call trv_else_stmt");
         object_t *obj = trv_else_stmt(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_FOR_STMT: {
-        tcheck("call trv_for_stmt");
+        check("call trv_for_stmt");
         object_t *obj = trv_for_stmt(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_BREAK_STMT: {
-        tcheck("call trv_break_stmt");
+        check("call trv_break_stmt");
         object_t *obj = trv_break_stmt(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_CONTINUE_STMT: {
-        tcheck("call trv_continue_stmt");
+        check("call trv_continue_stmt");
         object_t *obj = trv_continue_stmt(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_RETURN_STMT: {
-        tcheck("call trv_return_stmt");
+        check("call trv_return_stmt");
         object_t *obj = trv_return_stmt(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_TEST_LIST: {
-        tcheck("call trv_test_list");
+        check("call trv_test_list");
         object_t *obj = trv_test_list(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_TEST: {
-        tcheck("call trv_test");
+        check("call trv_test");
         object_t *obj = trv_test(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_OR_TEST: {
-        tcheck("call trv_or_test");
+        check("call trv_or_test");
         object_t *obj = trv_or_test(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_AND_TEST: {
-        tcheck("call trv_and_test");
+        check("call trv_and_test");
         object_t *obj = trv_and_test(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_NOT_TEST: {
-        tcheck("call trv_not_test");
+        check("call trv_not_test");
         object_t *obj = trv_not_test(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_COMPARISON: {
-        tcheck("call trv_comparison");
+        check("call trv_comparison");
         object_t *obj = trv_comparison(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_EXPR: {
-        tcheck("call trv_expr");
+        check("call trv_expr");
         object_t *obj = trv_expr(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_TERM: {
-        tcheck("call trv_term");
+        check("call trv_term");
         object_t *obj = trv_term(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_DOT: {
-        tcheck("call trv_dot");
+        check("call trv_dot");
         object_t *obj = trv_dot(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_CALL: {
-        tcheck("call trv_call");
+        check("call trv_call");
         object_t *obj = trv_call(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_INDEX: {
-        tcheck("call trv_index");
+        check("call trv_index");
         object_t *obj = trv_index(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_ASSCALC: {
-        tcheck("call trv_asscalc");
+        check("call trv_asscalc");
         object_t *obj = trv_asscalc(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_FACTOR: {
-        tcheck("call trv_factor");
+        check("call trv_factor");
         object_t *obj = trv_factor(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_ATOM: {
-        tcheck("call trv_atom");
+        check("call trv_atom");
         object_t *obj = trv_atom(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_NIL: {
-        tcheck("call trv_nil");
+        check("call trv_nil");
         object_t *obj = trv_nil(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_FALSE: {
-        tcheck("call trv_false");
+        check("call trv_false");
         object_t *obj = trv_false(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_TRUE: {
-        tcheck("call trv_true");
+        check("call trv_true");
         object_t *obj = trv_true(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_DIGIT: {
-        tcheck("call trv_digit");
+        check("call trv_digit");
         object_t *obj = trv_digit(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_STRING: {
-        tcheck("call trv_string");
+        check("call trv_string");
         object_t *obj = trv_string(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_ARRAY: {
-        tcheck("call trv_array");
+        check("call trv_array");
         object_t *obj = trv_array(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_ARRAY_ELEMS: {
-        tcheck("call trv_array_elems");
+        check("call trv_array_elems");
         object_t *obj = trv_array_elems(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_DICT: {
-        tcheck("call trv_dict");
+        check("call trv_dict");
         object_t *obj = trv_dict(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_DICT_ELEMS: {
-        tcheck("call trv_dict_elems");
+        check("call trv_dict_elems");
         object_t *obj = trv_dict_elems(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_DICT_ELEM: {
-        tcheck("call trv_dict_elem");
+        check("call trv_dict_elem");
         object_t *obj = trv_dict_elem(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_IDENTIFIER: {
-        tcheck("call trv_identifier");
+        check("call trv_identifier");
         object_t *obj = trv_identifier(ast, node, dep+1);
         return_trav(obj);
     } break;
@@ -6824,6 +6870,6 @@ trv_traverse(ast_t *ast, context_t *context) {
 
 #undef tready
 #undef return_trav
-#undef tcheck
+#undef check
 #undef viss
 #undef vissf

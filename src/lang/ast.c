@@ -176,7 +176,9 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     case NODE_TYPE_CALL: {
         node_call_t *call = node->real;
         ast_del_nodes(self, call->index);
-        ast_del_nodes(self, call->test_list);
+        for (int32_t i = 0; i < nodearr_len(call->test_lists); ++i) {
+            ast_del_nodes(self, nodearr_get(call->test_lists, i));
+        }
     } break;
     case NODE_TYPE_INDEX: {
         node_index_t *index = node->real;
