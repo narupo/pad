@@ -11631,12 +11631,12 @@ test_trv_call(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
 
-    tkr_parse(tkr, "{@ def a(): return 1 end \n def b(): return a end @}{: b()() :}");
+    tkr_parse(tkr, "{@ def a(n): return n*2 end \n def b(): return a end @}{: b()(2) :}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+        assert(!strcmp(ctx_getc_buf(ctx), "4"));
     }
 
     ctx_del(ctx);
@@ -13082,6 +13082,7 @@ test_trv(void) {
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         (trv_traverse(ast, ctx));
+        showdetail();
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "xy"));
     }

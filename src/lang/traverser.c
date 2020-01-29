@@ -1143,6 +1143,8 @@ trv_calc_assign(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
 
     switch (lhs->type) {
     default:
+        if (ast->debug) printf("lhs->type[%d] lvalue[%ld]\n", lhs->type, lhs->lvalue);
+
         ast_set_error_detail(ast, "syntax error. invalid lhs in assign list");
         return_trav(NULL);
         break;
@@ -5571,47 +5573,6 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
     return_trav(NULL);
 }
 
-/*
-static object_t *
-trv_caller(ast_t *ast, const node_t *node, int dep) {
-    tready();
-    node_caller_t *caller = node->real;
-    assert(caller && node->type == NODE_TYPE_CALLER);
-
-    node_identifier_t *identifier = caller->identifier->real;
-    assert(identifier);
-    const char *name = identifier->identifier;
-
-    check("call _trv_traverse");
-    object_t *args = _trv_traverse(ast, caller->test_list, dep+1);
-    object_t *result = NULL;
-
-    result = trv_invoke_func_obj(ast, name, args, dep+1);
-    if (ast_has_error(ast)) {
-        obj_del(args);
-        return_trav(NULL);
-    } else if (result) {
-        obj_del(args);
-        return_trav(result);
-    }
-
-    result = trv_invoke_builtin_modules(ast, name, args);
-    if (ast_has_error(ast)) {
-        obj_del(args);
-        return_trav(NULL);
-    } else if (result) {
-        obj_del(args);
-        return_trav(result);
-    }
-
-    obj_del(args);
-    if (!result) {
-        return_trav(obj_new_nil());
-    }
-    return_trav(result);
-}
-*/
-
 static object_t *
 trv_call(ast_t *ast, const node_t *node, int dep) {
     node_call_t *call = node->real;
@@ -5630,12 +5591,18 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
 
     if (operand->type == OBJ_TYPE_INDEX) {
         object_t *tmp = trv_get_value_of_index_obj(ast, operand);
-        obj_del(operand);
+        if (ast_has_error(ast)) {
+            return_trav(NULL);
+        }
+        assert(tmp);
+
         if (tmp->type == OBJ_TYPE_FUNC) {
+            obj_del(operand);
             operand = obj_new_other(tmp->func.name);
             obj_del(tmp);
         } else {
-            operand = tmp;
+            obj_del(tmp);
+            return_trav(operand);
         }
     }
     
@@ -6437,6 +6404,11 @@ trv_invoke_func_obj(ast_t *ast, const char *name, const object_t *drtargs, int d
 
     ctx_set_do_return(ast->context, false);
     ctx_popb_scope(ast->context);
+
+    if (!result) {
+        return obj_new_nil();
+    }
+
     return result;
 }
 
