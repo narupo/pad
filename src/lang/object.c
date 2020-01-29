@@ -320,6 +320,11 @@ obj_to_str(const object_t *self) {
 
 object_t *
 obj_to_array(const object_t *obj) {
+    if (!obj) {
+        object_array_t *objarr = objarr_new();
+        return obj_new_array(objarr);
+    }
+
     switch (obj->type) {
     default: {
         object_array_t *objarr = objarr_new();

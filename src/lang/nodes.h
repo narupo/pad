@@ -282,7 +282,7 @@ typedef struct {
 
 typedef struct {
     node_t *index;
-    node_t *test_list;
+    node_array_t *test_lists;
 } node_call_t;
 
 typedef struct {
