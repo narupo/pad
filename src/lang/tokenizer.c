@@ -76,7 +76,7 @@ tkr_new(tokenizer_option_t *move_option) {
     self->tokens = mem_ecalloc(self->tokens_capa+1, sizeof(token_t *)); // +1 for final null
 
     self->buf = str_new();
-    self->option = move_option;
+    self->option = move(move_option);
     self->debug = false;
 
     return self;
