@@ -340,6 +340,18 @@ file_readline(char *dst, uint32_t dstsz, const char *path);
 const char *
 file_writeline(const char *line, const char *path);
 
+/**
+ * Convert line encoding
+ *
+ * @param[in] *encoding line encoding ("crlf" or "cr" or "lf")
+ * @param[in] *text     target strings
+ *
+ * @return success to pointer to encoded strings dynamic allocate memory
+ * @return failed to pointer to NULL
+ */
+char *
+file_conv_line_encoding(const char *encoding, const char *text);
+
 /***************
 * file_dirnode *
 ***************/
@@ -405,15 +417,3 @@ file_diropen(const char *path);
  */
 file_dirnode_t *
 file_dirread(file_dir_t *self);
-
-/**
- * Convert line encoding
- *
- * @param[in] *encoding line encoding ("crlf" or "cr" or "lf")
- * @param[in] *text     target strings
- *
- * @return success to pointer to encoded strings dynamic allocate memory
- * @return failed to pointer to NULL
- */
-char *
-file_conv_line_encoding(const char *encoding, const char *text);
