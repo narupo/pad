@@ -45,11 +45,13 @@ tkr_del(tokenizer_t *self);
 /**
  * Construct module
  *
+ * @param[in|out] move_option pointer to tokenizer_option_t with move semantics
+ *
  * @return success to pointer to dynamic allocate memory of tokenizer_t
  * @return failed to pointer to NULL
  */
 tokenizer_t *
-tkr_new(tokenizer_option_t *option);
+tkr_new(tokenizer_option_t *move_option);
 
 /**
  * Parse string and build tokens
