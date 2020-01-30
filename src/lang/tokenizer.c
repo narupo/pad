@@ -66,7 +66,7 @@ tkr_del(tokenizer_t *self) {
 }
 
 tokenizer_t *
-tkr_new(tokenizer_option_t *option) {
+tkr_new(tokenizer_option_t *move_option) {
     tokenizer_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->error_detail[0] = '\0';
@@ -76,7 +76,7 @@ tkr_new(tokenizer_option_t *option) {
     self->tokens = mem_ecalloc(self->tokens_capa+1, sizeof(token_t *)); // +1 for final null
 
     self->buf = str_new();
-    self->option = option;
+    self->option = move_option;
     self->debug = false;
 
     return self;

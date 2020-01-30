@@ -2606,7 +2606,7 @@ static void
 test_cc_basic(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     const node_t *root;
 
@@ -2618,13 +2618,14 @@ test_cc_basic(void) {
 
     tkr_del(tkr);
     ast_del(ast);
+    config_del(config);
 }
 
 static void
 test_cc_code_block(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
@@ -2642,13 +2643,14 @@ test_cc_code_block(void) {
 
     tkr_del(tkr);
     ast_del(ast);
+    config_del(config);
 }
 
 static void
 test_cc_ref_block(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
@@ -2815,13 +2817,14 @@ test_cc_ref_block(void) {
 
     tkr_del(tkr);
     ast_del(ast);
+    config_del(config);
 }
 
 static void
 test_cc_formula(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
@@ -3091,13 +3094,14 @@ test_cc_formula(void) {
 
     tkr_del(tkr);
     ast_del(ast);
+    config_del(config);
 }
 
 static void
 test_cc_dict(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
@@ -3255,13 +3259,14 @@ test_cc_dict(void) {
 
     tkr_del(tkr);
     ast_del(ast);
+    config_del(config);
 }
 
 static void
 test_cc_expr(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
@@ -3858,13 +3863,14 @@ test_cc_expr(void) {
 
     tkr_del(tkr);
     ast_del(ast);
+    config_del(config);
 }
 
 static void
 test_cc_index(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
@@ -3955,13 +3961,14 @@ test_cc_index(void) {
 
     tkr_del(tkr);
     ast_del(ast);
+    config_del(config);
 }
 
 static void
 test_cc_dot(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
@@ -4111,13 +4118,14 @@ test_cc_dot(void) {
 
     tkr_del(tkr);
     ast_del(ast);
+    config_del(config);
 }
 
 static void
 test_cc_call(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
@@ -4410,7 +4418,11 @@ test_cc_call(void) {
         assert(nodearr_len(call->test_lists) == 1);
         node_t *node = nodearr_get(call->test_lists, 0);
         assert(!node);
-   }
+    }
+
+    tkr_del(tkr);
+    ast_del(ast);
+    config_del(config);
 }
 
 static void
@@ -4418,7 +4430,7 @@ test_cc_compile(void) {
     // head
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     const node_t *root;
     node_program_t *program;
@@ -9147,6 +9159,7 @@ test_cc_compile(void) {
 
     tkr_del(tkr);
     ast_del(ast);
+    config_del(config);
     // tail
 }
 
@@ -9173,7 +9186,7 @@ static void
 test_trv_dict(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -9264,13 +9277,14 @@ test_trv_dict(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_comparison(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -9657,13 +9671,14 @@ test_trv_comparison(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_array_index(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -9750,13 +9765,14 @@ test_trv_array_index(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_text_block(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -9770,13 +9786,14 @@ test_trv_text_block(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_ref_block(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -9861,13 +9878,14 @@ test_trv_ref_block(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_assign(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -9895,13 +9913,14 @@ test_trv_assign(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_atom(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -9966,13 +9985,14 @@ test_trv_atom(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_array(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -10027,13 +10047,14 @@ test_trv_array(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_index(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -10320,13 +10341,14 @@ test_trv_index(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_string_index(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -10381,13 +10403,14 @@ test_trv_string_index(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_multi_assign(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -10430,13 +10453,14 @@ test_trv_multi_assign(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_and_test(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -11489,13 +11513,14 @@ test_trv_and_test(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_assign_list(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -11641,13 +11666,14 @@ test_trv_assign_list(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_test_list(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -11676,13 +11702,14 @@ test_trv_test_list(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_dot(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -11722,13 +11749,14 @@ test_trv_dot(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_call(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -11767,13 +11795,14 @@ test_trv_call(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_func_def(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -11913,13 +11942,14 @@ test_trv_func_def(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv_builtin_functions(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -12133,13 +12163,14 @@ test_trv_builtin_functions(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static void
 test_trv(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(opt);
+    tokenizer_t *tkr = tkr_new(move(opt));
     ast_t *ast = ast_new(config);
     context_t *ctx = ctx_new();
 
@@ -13821,6 +13852,7 @@ test_trv(void) {
     ctx_del(ctx);
     ast_del(ast);
     tkr_del(tkr);
+    config_del(config);
 }
 
 static const struct testcase

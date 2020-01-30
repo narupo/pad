@@ -5,6 +5,17 @@
 
 #include "lib/error.h"
 
+/*******
+* move *
+*******/
+
+#undef move
+#define move(val) val
+
+/*************
+* prototypes *
+*************/
+
 void *
 mem_ecalloc(size_t nelems, size_t size);
 
