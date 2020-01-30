@@ -515,7 +515,7 @@ cmdline_tests[] = {
 
 static void
 test_cstring_cstr_app(void) {
-    char dst[100] = {};
+    char dst[100] = {0};
 
     assert(cstr_app(dst, sizeof dst, NULL) == NULL);
     assert(cstr_app(NULL, sizeof dst, "source") == NULL);
@@ -535,7 +535,7 @@ test_cstring_cstr_app(void) {
 
 static void
 test_cstring_cstr_appfmt(void) {
-    char dst[100] = {};
+    char dst[100] = {0};
 
     assert(cstr_appfmt(dst, sizeof dst, NULL) == NULL);
     assert(cstr_appfmt(NULL, sizeof dst, "source") == NULL);
@@ -1570,7 +1570,7 @@ error_tests[] = {
     {"_log", test_error__log},
     {"die", test_error_die},
     {"error", test_error_error},
-    {},
+    {0},
 };
 
 /*******
@@ -1682,7 +1682,7 @@ test_util_argsbyoptind(void) {
     struct option longopts[] = {
         {"opt1", no_argument, 0, 'a'},
         {"opt2", required_argument, 0, 'b'},
-        {},
+        {0},
     };
     const char *shortopts = "ab:";
     opterr = 0;
@@ -13961,14 +13961,14 @@ struct opts {
 static int32_t
 parseopts(struct opts *opts, int argc, char *argv[]) {
     // Init opts
-    *opts = (struct opts) {};
+    *opts = (struct opts) {0};
     optind = 0;
     opterr = 0;
 
     // Parse options
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
-        {},
+        {0},
     };
 
     for (;;) {
