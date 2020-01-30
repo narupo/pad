@@ -351,8 +351,8 @@ app_usage(app_t *app) {
         "    $ cap pwd\n"
         "    $ cap ls\n"
         ,
-        "    $ cap alias dog \"cat animal/dog\"\n"
-        "    $ cap dog\n"
+        "    $ cap editor /usr/bin/vim\n"
+        "    $ cap edit my.txt\n"
         ,
         "    $ cap cat path/to/code/file.c\n"
         "    $ cap ls path/to/code\n"
