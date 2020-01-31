@@ -96,7 +96,6 @@ makecmd_run(makecmd_t *self) {
 
     context_t *ctx = compile_argv(self->config, self->argc, self->argv, src);
     if (!ctx) {
-        err_error("failed to compile source");
         free(src);
         return 1;
     }
