@@ -4426,8 +4426,7 @@ test_cc_call(void) {
 }
 
 static void
-test_cc_compile(void) {
-    // head
+test_cc_array(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(move(opt));
@@ -4436,22 +4435,9 @@ test_cc_compile(void) {
     node_program_t *program;
     node_blocks_t *blocks;
     node_code_block_t *code_block;
-    node_text_block_t *text_block;
     node_elems_t *elems;
-    node_stmt_t *stmt;
-    node_if_stmt_t *if_stmt;
-    node_for_stmt_t *for_stmt;
-    node_elif_stmt_t *elif_stmt;
-    node_else_stmt_t *else_stmt;
-    node_import_stmt_t *import_stmt;
-    node_identifier_chain_t *identifier_chain;
-    node_identifier_t *identifier;
     node_formula_t *formula;
     node_multi_assign_t *multi_assign;
-    node_assign_t *assign;
-    node_assign_list_t *assign_list;
-    node_simple_assign_t *simple_assign;
-    node_array_elems_t *array_elems;
     node_test_list_t *test_list;
     node_test_t *test;
     node_or_test_t *or_test;
@@ -4466,37 +4452,9 @@ test_cc_compile(void) {
     node_asscalc_t *asscalc;
     node_factor_t *factor;
     node_atom_t *atom;
-    node_augassign_t *augassign;
-    node_digit_t *digit;
-    node_string_t *string;
-    node_nil_t *nil;
-    node_false_t *false_;
-    node_true_t *true_;
-    node_break_stmt_t *break_stmt;
-    node_continue_stmt_t *continue_stmt;
-    node_return_stmt_t *return_stmt;
-    node_def_t *def;
-    node_func_def_t *func_def;
-    node_func_def_params_t *func_def_params;
-    node_func_def_args_t *func_def_args;
+    node_array_elems_t *array_elems;
+    node_simple_assign_t *simple_assign;
     node_array_t_ *array;
-    node_t *node;
-
-    /************
-    * ref block *
-    ************/
-
-    /**********
-    * formula *
-    **********/
-
-    /*******
-    * expr *
-    *******/
-
-    /********
-    * array *
-    ********/
 
     tkr_parse(tkr, "{@ [] @}");
     {
@@ -4705,9 +4663,44 @@ test_cc_compile(void) {
         test = nodearr_get(simple_assign->nodearr, 0)->real;
     }
 
-    /**********
-    * asscalc *
-    **********/
+
+    tkr_del(tkr);
+    ast_del(ast);
+    config_del(config);
+}
+
+static void
+test_cc_asscalc(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(move(opt));
+    ast_t *ast = ast_new(config);
+    const node_t *root;
+    node_program_t *program;
+    node_blocks_t *blocks;
+    node_code_block_t *code_block;
+    node_elems_t *elems;
+    node_identifier_t *identifier;
+    node_formula_t *formula;
+    node_multi_assign_t *multi_assign;
+    node_test_list_t *test_list;
+    node_test_t *test;
+    node_or_test_t *or_test;
+    node_and_test_t *and_test;
+    node_not_test_t *not_test;
+    node_comparison_t *comparison;
+    node_expr_t *expr;
+    node_term_t *term;
+    node_index_t *index;
+    node_dot_t *dot;
+    node_call_t *call;
+    node_asscalc_t *asscalc;
+    node_factor_t *factor;
+    node_atom_t *atom;
+    node_digit_t *digit;
+    node_string_t *string;
+    node_augassign_t *augassign;
+    node_t *node;
 
     tkr_parse(tkr, "{@ a += 1 @}");
     {
@@ -4748,7 +4741,7 @@ test_cc_compile(void) {
         atom = factor->atom->real;
         digit = atom->digit->real;
         assert(digit != NULL);
-        assert(digit->lvalue == 1);    
+        assert(digit->lvalue == 1);
     }
 
     tkr_parse(tkr, "{@ a += \"b\" @}");
@@ -4946,9 +4939,44 @@ test_cc_compile(void) {
         assert(!strcmp(identifier->identifier, "func"));
     } 
 */
-    /*******
-    * atom *
-    *******/
+    tkr_del(tkr);
+    ast_del(ast);
+    config_del(config);
+}
+
+static void
+test_cc_atom(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(move(opt));
+    ast_t *ast = ast_new(config);
+    const node_t *root;
+    node_program_t *program;
+    node_blocks_t *blocks;
+    node_code_block_t *code_block;
+    node_elems_t *elems;
+    node_identifier_t *identifier;
+    node_formula_t *formula;
+    node_multi_assign_t *multi_assign;
+    node_test_list_t *test_list;
+    node_test_t *test;
+    node_or_test_t *or_test;
+    node_and_test_t *and_test;
+    node_not_test_t *not_test;
+    node_comparison_t *comparison;
+    node_expr_t *expr;
+    node_term_t *term;
+    node_index_t *index;
+    node_dot_t *dot;
+    node_call_t *call;
+    node_asscalc_t *asscalc;
+    node_factor_t *factor;
+    node_atom_t *atom;
+    node_digit_t *digit;
+    node_string_t *string;
+    node_nil_t *nil;
+    node_false_t *false_;
+    node_true_t *true_;
 
     tkr_parse(tkr, "{@ nil @}");
     {
@@ -5191,6 +5219,61 @@ test_cc_compile(void) {
         assert(caller);
     }     
 */
+
+    tkr_del(tkr);
+    ast_del(ast);
+    config_del(config);
+}
+
+static void
+test_cc_compile(void) {
+    // head
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(move(opt));
+    ast_t *ast = ast_new(config);
+    const node_t *root;
+    node_program_t *program;
+    node_blocks_t *blocks;
+    node_code_block_t *code_block;
+    node_text_block_t *text_block;
+    node_elems_t *elems;
+    node_stmt_t *stmt;
+    node_if_stmt_t *if_stmt;
+    node_for_stmt_t *for_stmt;
+    node_elif_stmt_t *elif_stmt;
+    node_else_stmt_t *else_stmt;
+    node_import_stmt_t *import_stmt;
+    node_identifier_chain_t *identifier_chain;
+    node_identifier_t *identifier;
+    node_formula_t *formula;
+    node_multi_assign_t *multi_assign;
+    node_assign_t *assign;
+    node_assign_list_t *assign_list;
+    node_test_list_t *test_list;
+    node_test_t *test;
+    node_or_test_t *or_test;
+    node_and_test_t *and_test;
+    node_not_test_t *not_test;
+    node_comparison_t *comparison;
+    node_expr_t *expr;
+    node_term_t *term;
+    node_index_t *index;
+    node_dot_t *dot;
+    node_call_t *call;
+    node_asscalc_t *asscalc;
+    node_factor_t *factor;
+    node_atom_t *atom;
+    node_digit_t *digit;
+    node_string_t *string;
+    node_break_stmt_t *break_stmt;
+    node_continue_stmt_t *continue_stmt;
+    node_return_stmt_t *return_stmt;
+    node_def_t *def;
+    node_func_def_t *func_def;
+    node_func_def_params_t *func_def_params;
+    node_func_def_args_t *func_def_args;
+
     /***********
     * func_def *
     ***********/
@@ -9175,6 +9258,8 @@ compiler_tests[] = {
     {"cc_index", test_cc_index},
     {"cc_dot", test_cc_dot},
     {"cc_call", test_cc_call},
+    {"cc_array", test_cc_array},
+    {"cc_asscalc", test_cc_asscalc},
     {0},
 };
 
