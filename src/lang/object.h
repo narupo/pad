@@ -29,35 +29,35 @@ typedef enum {
 struct object_func {
     object_t *name; // type == OBJ_TYPE_IDENTIFIER
     object_t *args; // type == OBJ_TYPE_ARRAY
-    node_array_t *ref_suites;
+    node_array_t *ref_suites; // reference to suite (node tree) (DO NOT DELETE)
 };
 
 /**
  * index object have reference to operand because for assign
  */
 struct object_index {
-    object_t *ref_operand;
-    object_array_t *indices;
+    object_t *ref_operand; // reference to operand object (DO NOT DELETE)
+    object_array_t *indices; // indices objects
 };
 
 struct object_module {
-    string_t *name;
-    object_dict_t *objs;
-    builtin_func_info_t *builtin_func_infos;
+    string_t *name; // module name
+    object_dict_t *objs; // objects
+    builtin_func_info_t *builtin_func_infos; // builtin functions
 };
 
 struct object {
-    obj_type_t type;
-    string_t *identifier;
-    string_t *string;
-    object_array_t *objarr;
-    object_dict_t *objdict;
-    long lvalue;
-    bool boolean;
-    object_func_t func;
-    object_index_t index;
-    object_module_t module;
-    int32_t ref_counts;
+    obj_type_t type; // object type
+    string_t *identifier; // value of identifier (type == OBJ_TYPE_IDENTIFIER)
+    string_t *string; // value of string (type == OBJ_TYPE_STRING)
+    object_array_t *objarr; // value of array (type == OBJ_TYPE_ARRAY)
+    object_dict_t *objdict; // value of dict (type == OBJ_TYPE_DICT)
+    long lvalue; // value of integer (type == OBJ_TYPE_INTEGER)
+    bool boolean; // value of boolean (type == OBJ_TYPE_BOOL)
+    object_func_t func; // structure of function (type == OBJ_TYPE_FUNC)
+    object_index_t index; // structure of index (type == OBJ_TYPE_INDEX)
+    object_module_t module; // structure of module (type == OBJ_TYPE_MODULE)
+    int32_t ref_counts; // count of reference this object (for GC)
 };
 
 void
