@@ -7,12 +7,9 @@ enum {
 };
 
 struct context {
-    alinfo_t *alinfo;
-    dict_t *confmap;
-    string_t *buf;
-    scope_t *scope;
-    bool imported_alias;
-    bool imported_config;
+    alinfo_t *alinfo; // alias info for builtin alias module
+    string_t *buf; // stdout buffer in context
+    scope_t *scope; // scope in context
     bool do_break;
     bool do_continue;
     bool do_return;
@@ -25,7 +22,6 @@ ctx_del(context_t *self) {
     }
 
     alinfo_del(self->alinfo);
-    dict_del(self->confmap);
     str_del(self->buf);
     scope_del(self->scope);
     free(self);
@@ -36,7 +32,6 @@ ctx_new(void) {
     context_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->alinfo = alinfo_new();
-    self->confmap = dict_new(CONFIG_MAP_SIZE);
     self->buf = str_new();
     self->scope = scope_new();
 
@@ -48,7 +43,6 @@ ctx_clear(context_t *self) {
     alinfo_clear(self->alinfo);
     str_clear(self->buf);
     scope_clear(self->scope);
-    self->imported_alias = false;
 }
 
 context_t *
@@ -63,12 +57,6 @@ ctx_set_alias(context_t *self, const char *key, const char *value, const char *d
         alinfo_set_desc(self->alinfo, key, desc);
     }
 
-    return self;
-}
-
-context_t *
-ctx_set_config(context_t *self, const char *key, const char *value) {
-    dict_set(self->confmap, key, value);
     return self;
 }
 
@@ -93,34 +81,9 @@ ctx_getc_buf(const context_t *self) {
     return str_getc(self->buf);
 }
 
-void
-ctx_import_alias(context_t *self) {
-    self->imported_alias = true;
-}
-
-void
-ctx_import_config(context_t *self) {
-    self->imported_config = true;
-}
-
-bool
-ctx_get_imported_alias(const context_t *self) {
-    return self->imported_alias;
-}
-
-bool
-ctx_get_imported_config(const context_t *self) {
-    return self->imported_config;
-}
-
 const alinfo_t *
 ctx_getc_alinfo(const context_t *self) {
     return self->alinfo;
-}
-
-const dict_t *
-ctx_getc_confmap(const context_t *self) {
-    return self->confmap;
 }
 
 object_dict_t *
