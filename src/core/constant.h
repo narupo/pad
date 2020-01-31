@@ -3,7 +3,7 @@
 #define _CAP_VERSION "0.35.11"
 
 #if defined(_WIN32) || defined(_WIN64)
-# define _CAP_WINDOWS 1 /* cap: modules/constant.h */
+# define _CAP_WINDOWS 1 /* cap: core/constant.h */
 #else
 # undef _CAP_WINDOWS
 #endif
