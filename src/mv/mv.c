@@ -106,7 +106,7 @@ mvcmd_mv_file_to_dir(mvcmd_t *self, const char *fname, const char *dirname) {
     const char *org;
     char srcpath[FILE_NPATH];
     char dstpath[FILE_NPATH];
-    char tmppath[FILE_NPATH];
+    char tmppath[FILE_NPATH*3];
 
     if (fname[0] == ':') {
         if (!file_solve(srcpath, sizeof srcpath, fname+1)) {
@@ -178,8 +178,8 @@ mvcmd_mv_file_to_other(mvcmd_t *self) {
     const char *dst = self->argv[self->optind+1];
     const char *org = mvcmd_get_org_by(self, srcfname);
 
-    char tmppath[FILE_NPATH];
     char srcpath[FILE_NPATH];
+    char tmppath[FILE_NPATH*2];
 
     if (srcfname[0] == ':') {
         if (!file_solve(srcpath, sizeof srcpath, srcfname+1)) {
@@ -199,7 +199,7 @@ mvcmd_mv_file_to_other(mvcmd_t *self) {
         return 1;
     }
 
-    char dstpath[FILE_NPATH];
+    char dstpath[FILE_NPATH*2];
 
     if (dst[0] == ':') {
         if (!file_solve(dstpath, sizeof dstpath, dst+1)) {
@@ -234,7 +234,7 @@ mvcmd_mv_file_to_other(mvcmd_t *self) {
         }
 
         char dstpath2[FILE_NPATH];
-        snprintf(tmppath, sizeof tmppath, "%s/%s", dstpath, basename);
+         snprintf(tmppath, sizeof tmppath, "%s/%s", dstpath, basename);
         if (!symlink_follow_path(self->config, dstpath2, sizeof dstpath2, tmppath)) {
             err_error("failed to follow path for second destination path in file to other");
             return 1;

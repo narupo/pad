@@ -160,7 +160,7 @@ cpcmd_set_err(cpcmd_t *self, cpcmd_errno_t errno_, const char *fmt, ...) {
 
 static char *
 cpcmd_solve_path(cpcmd_t *self, char *dst, size_t dstsz, const char *path) {
-    char tmppath[FILE_NPATH];
+    char tmppath[FILE_NPATH*2];
 
     if (path[0] == ':') {
         // the path on the user's file system
@@ -328,7 +328,7 @@ cpcmd_cp_src2dst(cpcmd_t *self, const char *dst_path, const char *src_path) {
         }
 
         char newdstpath[FILE_NPATH];
-        char tmppath[FILE_NPATH];
+        char tmppath[FILE_NPATH*2];
 
         snprintf(tmppath, sizeof tmppath, "%s/%s", dst_path, basename);
         if (!symlink_follow_path(self->config, newdstpath, sizeof newdstpath, tmppath)) {

@@ -74,7 +74,7 @@ cdcmd_run(cdcmd_t *self) {
 
 	const char *argpath = self->argv[1];
 	const char *org;
-	char drtpath[FILE_NPATH];
+	char drtpath[FILE_NPATH*2];
 
 	if (argpath[0] == '/' || argpath[0] == '\\') {
 		// Absolute of home
