@@ -113,7 +113,7 @@ editcmd_create_open_fname(editcmd_t *self, const char *fname) {
         return NULL;
     }
 
-    char tmppath[FILE_NPATH];
+    char tmppath[FILE_NPATH*2];
     snprintf(tmppath, sizeof tmppath, "%s/%s", path, fname);
 
     if (!symlink_follow_path(self->config, self->open_fname, sizeof self->open_fname, tmppath)) {

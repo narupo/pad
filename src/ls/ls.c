@@ -183,7 +183,7 @@ lscmd_run(lscmd_t *self) {
                     continue;
                 }
             } else {
-                char tmppath[FILE_NPATH];
+                char tmppath[FILE_NPATH*2];
                 snprintf(tmppath, sizeof tmppath, "%s/%s", org, arg);
                 if (!symlink_follow_path(self->config, realpath, sizeof realpath, tmppath)) {
                     continue;

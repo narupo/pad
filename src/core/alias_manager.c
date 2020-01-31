@@ -64,7 +64,7 @@ almgr_create_resource_path(almgr_t *self, char *dst, size_t dstsz, int scope) {
         return NULL;
     }
 
-    char drtpath[FILE_NPATH];
+    char drtpath[FILE_NPATH*2];
     snprintf(drtpath, sizeof drtpath, "%s/.caprc", org);
 
     // TODO: const cast (config_t *) is danger
