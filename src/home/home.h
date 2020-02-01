@@ -12,7 +12,7 @@ void
 homecmd_del(homecmd_t *self);
 
 homecmd_t *
-homecmd_new(config_t *move_config, int argc, char **move_argv);
+homecmd_new(const config_t *config, int argc, char **argv);
 
 int
 homecmd_run(homecmd_t *self);

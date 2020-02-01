@@ -26,7 +26,7 @@ struct opts {
  * Structure of command
  */
 struct cpcmd {
-    config_t *config;
+    const config_t *config;
     int argc;
     int optind;
     cpcmd_errno_t errno_;
@@ -128,18 +128,17 @@ cpcmd_del(cpcmd_t *self) {
     if (!self) {
         return;
     }
-    config_del(self->config);
-    freeargv(self->argc, self->argv);
+
     free(self);
 }
 
 cpcmd_t *
-cpcmd_new(config_t *move_config, int argc, char **move_argv) {
+cpcmd_new(const config_t *config, int argc, char **argv) {
     cpcmd_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->config = move_config;
+    self->config = config;
     self->argc = argc;
-    self->argv = move_argv;
+    self->argv = argv;
 
     if (!cpcmd_parse_opts(self)) {
         cpcmd_del(self);

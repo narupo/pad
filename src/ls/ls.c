@@ -6,7 +6,7 @@ struct opts {
 };
 
 struct lscmd {
-    config_t *config;
+    const config_t *config;
     int argc;
     char **argv;
     struct opts opts;
@@ -15,10 +15,10 @@ struct lscmd {
 void
 lscmd_del(lscmd_t *self) {
     if (self) {
-        config_del(self->config);
-        freeargv(self->argc, self->argv);
-        free(self);
+        return;
     }
+
+    free(self);
 }
 
 static bool
@@ -74,12 +74,12 @@ lscmd_usage(const lscmd_t *self) {
 }
 
 lscmd_t *
-lscmd_new(config_t *move_config, int argc, char **move_argv) {
+lscmd_new(const config_t *config, int argc, char **argv) {
     lscmd_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->config = move_config;
+    self->config = config;
     self->argc = argc;
-    self->argv = move_argv;
+    self->argv = argv;
 
     if (!lscmd_parse_opts(self)) {
         lscmd_del(self);

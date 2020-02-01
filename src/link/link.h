@@ -18,7 +18,7 @@ void
 linkcmd_del(linkcmd_t *self);
 
 linkcmd_t *
-linkcmd_new(config_t *move_config, int argc, char **move_argv);
+linkcmd_new(const config_t *config, int argc, char **argv);
 
 int
 linkcmd_run(linkcmd_t *self);

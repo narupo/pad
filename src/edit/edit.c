@@ -5,7 +5,7 @@ struct opts {
 };
 
 struct editcmd {
-    config_t *config;
+    const config_t *config;
     struct opts opts;
     int argc;
     char **argv;
@@ -61,18 +61,17 @@ editcmd_del(editcmd_t *self) {
     if (!self) {
         return;
     }
-    config_del(self->config);
-    freeargv(self->argc, self->argv);
+
     free(self);
 }
 
 editcmd_t *
-editcmd_new(config_t *move_config, int argc, char **move_argv) {
+editcmd_new(const config_t *config, int argc, char **argv) {
     editcmd_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->config = move_config;
+    self->config = config;
     self->argc = argc;
-    self->argv = move_argv;
+    self->argv = argv;
 
     if (!editcmd_parse_opts(self)) {
         err_die("failed to parse options");

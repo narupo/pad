@@ -11,7 +11,7 @@ struct opts {
  * Structure of command
  */
 struct editorcmd {
-    config_t *config;
+    const config_t *config;
     int argc;
     int optind;
     char **argv;
@@ -95,18 +95,17 @@ editorcmd_del(editorcmd_t *self) {
     if (!self) {
         return;
     }
-    config_del(self->config);
-    freeargv(self->argc, self->argv);
+
     free(self);
 }
 
 editorcmd_t *
-editorcmd_new(config_t *move_config, int argc, char **move_argv) {
+editorcmd_new(const config_t *config, int argc, char **argv) {
     editorcmd_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->config = move_config;
+    self->config = config;
     self->argc = argc;
-    self->argv = move_argv;
+    self->argv = argv;
 
     if (!editorcmd_parse_opts(self)) {
         editorcmd_del(self);

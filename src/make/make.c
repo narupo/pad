@@ -11,7 +11,7 @@ struct opts {
  * Structure of command
  */
 struct makecmd {
-    config_t *config;
+    const config_t *config;
     int argc;
     int optind;
     char **argv;
@@ -40,18 +40,17 @@ makecmd_del(makecmd_t *self) {
     if (!self) {
         return;
     }
-    config_del(self->config);
-    freeargv(self->argc, self->argv);
+
     free(self);
 }
 
 makecmd_t *
-makecmd_new(config_t *move_config, int argc, char **move_argv) {
+makecmd_new(const config_t *config, int argc, char **argv) {
     makecmd_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->config = move_config;
+    self->config = config;
     self->argc = argc;
-    self->argv = move_argv;
+    self->argv = argv;
 
     return self;
 }

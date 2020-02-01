@@ -32,15 +32,15 @@ snptcmd_del(snptcmd_t *self);
 /**
  * Construct command
  *
- * @param[in] move_config pointer to config_t with move semantics
- * @param[in] argc        number of arguments
- * @param[in] move_argv   pointer to array of arguments with move semantics
+ * @param[in] config reference to config_t 
+ * @param[in] argc   number of arguments
+ * @param[in] argv   reference to array of arguments 
  *
  * @return success to pointer to snptcmd_t
  * @return failed to NULL
  */
 snptcmd_t *
-snptcmd_new(config_t *move_config, int argc, char **move_argv);
+snptcmd_new(const config_t *config, int argc, char **argv);
 
 /**
  * Run command

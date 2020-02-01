@@ -200,6 +200,16 @@ const char *
 cl_getc(const cl_t *self, int32_t idx);
 
 /**
+ * get argv
+ *
+ * @param[in] *self
+ *
+ * @return pointer to array
+ */
+char **
+cl_get_argv(const cl_t *self);
+
+/**
  * Generate string from object
  *
  * @param[in] *self

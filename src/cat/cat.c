@@ -15,7 +15,7 @@ struct opts {
  * Structure of command
  */
 struct catcmd {
-    config_t *config;
+    const config_t *config;
     int argc;
     char **argv;
     struct opts opts;
@@ -91,28 +91,28 @@ catcmd_parse_opts(catcmd_t *self) {
  */
 void
 catcmd_del(catcmd_t *self) {
-    if (self) {
-        config_del(self->config);
-        freeargv(self->argc, self->argv);
-        free(self);
+    if (!self) {
+        return;
     }
+
+    free(self);
 }
 
 /**
  * Construct command
  *
- * @param[in] move_config pointer to config with move semantics
- * @param[in] argc number of arguments
- * @param[in] move_argv pointer to string array with move semantics
+ * @param[in] config pointer to config with move semantics
+ * @param[in] argc   number of arguments
+ * @param[in] argv   pointer to string array with move semantics
  * @return pointer to allocate memory of command
  */
 catcmd_t *
-catcmd_new(config_t *move_config, int argc, char **move_argv) {
+catcmd_new(const config_t *config, int argc, char **argv) {
     catcmd_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->config = move_config;
+    self->config = config;
     self->argc = argc;
-    self->argv = move_argv;
+    self->argv = argv;
 
     if (!catcmd_parse_opts(self)) {
         err_error("failed to parse options");

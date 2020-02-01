@@ -17,7 +17,7 @@ void
 runcmd_del(runcmd_t *self);
 
 runcmd_t *
-runcmd_new(config_t *move_config, int argc, char **move_argv);
+runcmd_new(const config_t *config, int argc, char **argv);
 
 int
 runcmd_run(runcmd_t *self);

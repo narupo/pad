@@ -12,7 +12,7 @@ struct opts {
  * Structure of command
  */
 struct linkcmd {
-    config_t *config;
+    const config_t *config;
     int argc;
     char **argv;
     struct opts opts;
@@ -35,7 +35,7 @@ linkcmd_parse_opts(linkcmd_t *self) {
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"unlink", no_argument, 0, 'u'},
-        {},
+        {0},
     };
 
     self->opts = (struct opts){
@@ -78,18 +78,17 @@ linkcmd_del(linkcmd_t *self) {
     if (!self) {
         return;
     }
-    freeargv(self->argc, self->argv);
-    config_del(self->config);
+
     free(self);
 }
 
 linkcmd_t *
-linkcmd_new(config_t *move_config, int argc, char **move_argv) {
+linkcmd_new(const config_t *config, int argc, char **argv) {
     linkcmd_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->config = move_config;
+    self->config = config;
     self->argc = argc;
-    self->argv = move_argv;
+    self->argv = argv;
 
     if (!linkcmd_parse_opts(self)) {
         linkcmd_del(self);

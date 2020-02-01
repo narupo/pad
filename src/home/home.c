@@ -1,24 +1,24 @@
 #include "home/home.h"
 
 struct homecmd {
-    config_t *config;
+    const config_t *config;
     int argc;
     char **argv;
 };
 
 void
 homecmd_del(homecmd_t *self) {
-    if (self) {
-        config_del(self->config);
-        freeargv(self->argc, self->argv);
-        free(self);
+    if (!self) {
+        return;
     }
+
+    free(self);
 }
 
 homecmd_t *
-homecmd_new(config_t *move_config, int argc, char *argv[]) {
+homecmd_new(const config_t *config, int argc, char *argv[]) {
     homecmd_t *self = mem_ecalloc(1, sizeof(*self));
-    self->config = move_config;
+    self->config = config;
     self->argc = argc;
     self->argv = argv;
     return self;

@@ -18,7 +18,7 @@ void
 mkdircmd_del(mkdircmd_t *self);
 
 mkdircmd_t *
-mkdircmd_new(config_t *move_config, int argc, char **move_argv);
+mkdircmd_new(const config_t *config, int argc, char **argv);
 
 int
 mkdircmd_run(mkdircmd_t *self);

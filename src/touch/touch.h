@@ -26,15 +26,15 @@ touchcmd_del(touchcmd_t *self);
 /**
  * Construct command
  *
- * @param[in] move_config pointer to config_t with move semantics
- * @param[in] argc        number of arguments
- * @param[in] move_argv   pointer to array of arguments with move semantics
+ * @param[in] config reference to config_t 
+ * @param[in] argc   number of arguments
+ * @param[in] argv   reference to array of arguments 
  *
  * @return success to pointer to touchcmd_t
  * @return failed to NULL
  */
 touchcmd_t *
-touchcmd_new(config_t *move_config, int argc, char **move_argv);
+touchcmd_new(const config_t *config, int argc, char **argv);
 
 /**
  * Run command

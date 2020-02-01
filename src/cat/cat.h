@@ -22,7 +22,7 @@ void
 catcmd_del(catcmd_t *self);
 
 catcmd_t *
-catcmd_new(config_t *move_config, int argc, char **move_argv);
+catcmd_new(const config_t *config, int argc, char **argv);
 
 int
 catcmd_run(catcmd_t *self);
