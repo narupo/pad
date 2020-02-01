@@ -11,7 +11,7 @@
 
 # Libraries
 *.lib
-*.a
+#*.a
 *.la
 *.lo
 
@@ -38,6 +38,7 @@
 doc/
 doc/note.txt
 build/
+thirdparty/
 test_bak/
 
 *.pyc
