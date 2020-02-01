@@ -228,6 +228,8 @@ shcmd_exec_command(shcmd_t *self, int argc, char **argv) {
         routine(execcmd);
     } else if (cstr_eq(cmdname, "alias")) {
         routine(alcmd);
+    } else if (cstr_eq(cmdname, "edit")) {
+        routine(editcmd);
     } else if (cstr_eq(cmdname, "editor")) {
         routine(editorcmd);
     } else if (cstr_eq(cmdname, "mkdir")) {
