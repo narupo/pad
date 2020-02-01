@@ -137,9 +137,33 @@ shcmd_new(config_t *config, int argc, char **argv) {
     return self;
 }
 
+char *
+shcmd_create_prompt(shcmd_t *self, char *dst, int32_t dstsz) {
+    const char *home = self->config->home_path;
+    const char *cd = self->config->cd_path;
+    const char *b = cd;
+
+    for (const char *a = home; *a && *b; ++a, ++b) {
+    }
+
+    char *dend = dst + dstsz - 1;
+    char *dp = dst;
+
+    for (; *b && dp < dend; ++b, ++dp) {
+        *dp = *b;
+    }
+
+    *dp = '\0';
+
+    return dst;
+}
+
 int
 shcmd_input(shcmd_t *self) {
-    printf("(cap) %s$ ", self->config->cd_path);
+    char prompt[FILE_NPATH];
+    shcmd_create_prompt(self, prompt, sizeof prompt);
+
+    printf("(cap) %s$ ", prompt);
     fflush(stdout);
 
     self->line_buf[0] = '\0';
