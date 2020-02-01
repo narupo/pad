@@ -21,7 +21,7 @@ void
 editcmd_del(editcmd_t *self);
 
 editcmd_t *
-editcmd_new(config_t *move_config, int argc, char **move_argv);
+editcmd_new(const config_t *config, int argc, char **argv);
 
 int
 editcmd_run(editcmd_t *self);

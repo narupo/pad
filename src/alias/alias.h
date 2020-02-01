@@ -20,7 +20,7 @@ void
 alcmd_del(alcmd_t *self);
 
 alcmd_t *
-alcmd_new(config_t *move_config, int argc, char **move_argv);
+alcmd_new(const config_t *config, int argc, char **argv);
 
 int
 alcmd_run(alcmd_t *self);

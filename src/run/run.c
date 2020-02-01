@@ -6,27 +6,27 @@ enum {
 };
 
 struct runcmd {
-    config_t *config;
+    const config_t *config;
     int argc;
     char **argv;
 };
 
 void
 runcmd_del(runcmd_t *self) {
-    if (self) {
-        config_del(self->config);
-        freeargv(self->argc, self->argv);
-        free(self);
+    if (!self) {
+        return;
     }
+
+    free(self);
 }
 
 runcmd_t *
-runcmd_new(config_t *move_config, int argc, char **move_argv) {
+runcmd_new(const config_t *config, int argc, char **argv) {
     runcmd_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->config = move_config;
+    self->config = config;
     self->argc = argc;
-    self->argv = move_argv;
+    self->argv = argv;
 
     return self;
 }

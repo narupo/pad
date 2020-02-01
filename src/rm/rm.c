@@ -9,7 +9,7 @@ struct opts {
 };
 
 struct rmcmd {
-    config_t *config;
+    const config_t *config;
     int argc;
     int optind;
     rmcmd_errno_t errno_;
@@ -64,18 +64,17 @@ rmcmd_del(rmcmd_t *self) {
     if (!self) {
         return;
     }
-    freeargv(self->argc, self->argv);
-    config_del(self->config);
+
     free(self);
 }
 
 rmcmd_t *
-rmcmd_new(config_t *move_config, int argc, char **move_argv) {
+rmcmd_new(const config_t *config, int argc, char **argv) {
     rmcmd_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->config = move_config;
+    self->config = config;
     self->argc = argc;
-    self->argv = move_argv;
+    self->argv = argv;
 
     if (!rmcmd_parse_opts(self)) {
         return self;

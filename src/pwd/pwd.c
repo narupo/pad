@@ -13,7 +13,7 @@ struct opts {
 };
 
 struct pwdcmd {
-    config_t *config;
+    const config_t *config;
     int argc;
     char **argv;
     struct opts opts;
@@ -25,7 +25,7 @@ pwdcmd_parse_opts(pwdcmd_t *self) {
     struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"normalize", no_argument, 0, 'n'},
-        {},
+        {0},
     };
     const char *shortopts = "hn";
 
@@ -61,19 +61,19 @@ pwdcmd_parse_opts(pwdcmd_t *self) {
 
 void
 pwdcmd_del(pwdcmd_t *self) {
-	if (self) {
-		config_del(self->config);
-        freeargv(self->argc, self->argv);
-		free(self);
-	}
+	if (!self) {
+        return;
+    }
+
+    free(self);
 }
 
 pwdcmd_t *
-pwdcmd_new(config_t *config, int argc, char **move_argv) {
+pwdcmd_new(const config_t *config, int argc, char **argv) {
 	pwdcmd_t *self = mem_ecalloc(1, sizeof(*self));
 	self->config = config;
     self->argc = argc;
-    self->argv = move_argv;
+    self->argv = argv;
 	return self;
 }
 

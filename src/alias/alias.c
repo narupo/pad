@@ -7,7 +7,7 @@ struct opts {
 };
 
 struct alcmd {
-    config_t *config;
+    const config_t *config;
     int argc;
     int optind;
     char **argv;
@@ -81,19 +81,18 @@ alcmd_del(alcmd_t *self) {
     if (!self) {
         return;
     }
+
     almgr_del(self->almgr);
-    config_del(self->config);
-    freeargv(self->argc, self->argv);
     free(self);
 }
 
 alcmd_t *
-alcmd_new(config_t *move_config, int argc, char **move_argv) {
+alcmd_new(const config_t *config, int argc, char **argv) {
     alcmd_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->config = move_config;
+    self->config = config;
     self->argc = argc;
-    self->argv = move_argv;
+    self->argv = argv;
     self->almgr = almgr_new(self->config);
 
     if (!alcmd_parse_opts(self)) {

@@ -174,3 +174,23 @@ trim_first_line(char *dst, int32_t dstsz, const char *text);
  */
 context_t *
 compile_argv(const config_t *config, int argc, char *argv[], const char *src);
+
+/**
+ * clear screen
+ */
+void
+clear_screen(void);
+
+/**
+ * Show snippet code by name
+ *
+ * @param[in] *config reference to config
+ * @param[in] *name   snippet name
+ * @param[in] argc    number of arguments
+ * @param[in] **argv  arguments
+ *
+ * @return success to 0
+ * @return failed to not 0
+ */
+int
+execute_snippet(const config_t *config, const char *name, int argc, char **argv);

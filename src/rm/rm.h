@@ -31,7 +31,7 @@ void
 rmcmd_del(rmcmd_t *self);
 
 rmcmd_t *
-rmcmd_new(config_t *move_config, int argc, char **move_argv);
+rmcmd_new(const config_t *config, int argc, char **argv);
 
 int
 rmcmd_run(rmcmd_t *self);

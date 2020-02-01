@@ -309,3 +309,81 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
 
     return ctx;
 }
+
+void
+clear_screen(void) {
+#ifdef _CAP_WINDOWS
+    system("cls");
+#else
+    system("clear");
+#endif
+}
+
+/**
+ * Show snippet code by fname
+ *
+ * @param[in] *config reference to config
+ * @param[in] *fname  snippet file name
+ * @param[in] argc    number of arguments
+ * @param[in] **argv  arguments
+ *
+ * @return success to true
+ * @return failed to false
+ */
+static bool
+show_snippet(const config_t *config, const char *fname, int argc, char **argv) {
+    char path[FILE_NPATH];
+    if (!file_solvefmt(path, sizeof path, "%s/%s", config->codes_dir_path, fname)) {
+        err_error("failed to solve path for snippet file");
+        return false;
+    }
+
+    char *content = file_readcp_from_path(path);
+    if (!content) {
+        err_error("failed to read from snippet \"%s\"", fname);
+        return false;
+    }
+
+    context_t *ctx = compile_argv(config, argc, argv, content);
+    if (!ctx) {
+        err_error("failed to compile snippet");
+        free(content);
+        return false;
+    }
+
+    printf("%s", ctx_getc_buf(ctx));
+    fflush(stdout);
+
+    ctx_del(ctx);
+    free(content);
+
+    return true;
+}
+
+int
+execute_snippet(const config_t *config, const char *name, int argc, char **argv) {
+    file_dir_t *dir = file_diropen(config->codes_dir_path);
+    if (!dir) {
+        err_error("failed to open directory \"%s\"", config->codes_dir_path);
+        return 1;
+    }
+
+    bool found = false;
+
+    for (file_dirnode_t *node; (node = file_dirread(dir)); ) {
+        const char *fname = file_dirnodename(node);
+        if (cstr_eq(fname, ".") || cstr_eq(fname, "..")) {
+            continue;
+        }
+        if (cstr_eq(fname, name)) {
+            found = true;
+            if (!show_snippet(config, fname, argc, argv)) {
+                file_dirclose(dir);
+                return 1;
+            }
+        }
+    }
+
+    file_dirclose(dir);
+    return found ? 0 : -1;
+}

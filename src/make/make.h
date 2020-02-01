@@ -20,7 +20,7 @@ void
 makecmd_del(makecmd_t *self);
 
 makecmd_t *
-makecmd_new(config_t *move_config, int argc, char **move_argv);
+makecmd_new(const config_t *config, int argc, char **argv);
 
 int
 makecmd_run(makecmd_t *self);

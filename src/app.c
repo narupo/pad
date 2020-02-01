@@ -100,54 +100,6 @@ app_del(app_t *self) {
 }
 
 /**
- * Initialize config object
- *
- * @param[in] self
- * @return success to true
- * @return failed to false
- */
-static bool
-app_init_config(app_t *self) {
-    self->config->scope = CAP_SCOPE_LOCAL;
-    self->config->recursion_count = 0;
-
-    strcpy(self->config->line_encoding, "lf");
-
-    if (!file_solve(self->config->var_cd_path, sizeof self->config->var_cd_path, "~/.cap/var/cd")) {
-        err_error("failed to create path of cd of variable");
-        return false;
-    }
-    if (!file_solve(self->config->var_home_path, sizeof self->config->var_home_path, "~/.cap/var/home")) {
-        err_error("failed to create path of home of variable");
-        return false;
-    }
-    if (!file_solve(self->config->var_editor_path, sizeof self->config->var_editor_path, "~/.cap/var/editor")) {
-        err_error("failed to create path of editor of variable");
-        return false;
-    }
-
-    if (!file_readline(self->config->cd_path, sizeof self->config->cd_path, self->config->var_cd_path)) {
-        err_error("failed to read line from cd of variable");
-        return false;
-    }
-    if (!file_readline(self->config->home_path, sizeof self->config->home_path, self->config->var_home_path)) {
-        err_error("failed to read line from home of variable");
-        return false;
-    }
-    if (!file_readline(self->config->editor, sizeof self->config->editor, self->config->var_editor_path)) {
-        err_error("failed to read line from editor of variable");
-        return false;
-    }
-
-    if (!file_solve(self->config->codes_dir_path, sizeof self->config->codes_dir_path, "~/.cap/codes")) {
-        err_error("failed to solve path for snippet codes directory path");
-        return false;
-    }
-
-    return true;
-}
-
-/**
  * Deploy Cap's environment at user's file system
  *
  * @param[in] self
@@ -297,7 +249,7 @@ app_new(int argc, char *argv[]) {
     }
 
     self->config = config_new();
-    if (!app_init_config(self)) {
+    if (!config_init(self->config)) {
         err_error("failed to configuration");
         app_del(self);
         return NULL;
@@ -345,6 +297,7 @@ app_usage(app_t *app) {
         "    touch      create empty file\n"
         "    snippet    save or show snippet codes\n"
         "    link       create symbolic link\n"
+        "    sh         run shell\n"
     ;
     static const char *examples[] = {
         "    $ cap home\n"
@@ -444,18 +397,9 @@ static int
 app_execute_command_by_name(app_t *self, const char *name) {
 #define routine(cmd) { \
         cmd##_t *cmd = cmd##_new(self->config, self->cmd_argc, self->cmd_argv); \
-        self->config = NULL; \
-        self->cmd_argv = NULL; \
         result = cmd##_run(cmd); \
         cmd##_del(cmd); \
     } \
-
-#define routine2(cmd) { \
-        cmd##_t *cmd = cmd##_new(self->config, self->cmd_argc, self->cmd_argv); \
-        result = cmd##_run(cmd); \
-        cmd##_del(cmd); \
-    } \
-
 
     int result = 0;
 
@@ -472,7 +416,7 @@ app_execute_command_by_name(app_t *self, const char *name) {
     } else if (cstr_eq(name, "run")) {
         routine(runcmd);
     } else if (cstr_eq(name, "exec")) {
-        routine2(execcmd);
+        routine(execcmd);
     } else if (cstr_eq(name, "alias")) {
         routine(alcmd);
     } else if (cstr_eq(name, "edit")) {
@@ -483,8 +427,6 @@ app_execute_command_by_name(app_t *self, const char *name) {
         routine(mkdircmd);
     } else if (cstr_eq(name, "rm")) {
         rmcmd_t *cmd = rmcmd_new(self->config, self->cmd_argc, self->cmd_argv);
-        self->config = NULL; // moved
-        self->cmd_argv = NULL; // moved
         result = rmcmd_run(cmd);
         switch (rmcmd_errno(cmd)) {
         case RMCMD_ERR_NOERR: break;
@@ -501,12 +443,10 @@ app_execute_command_by_name(app_t *self, const char *name) {
         routine(snptcmd);
     } else if (cstr_eq(name, "link")) {
         routine(linkcmd);
-    } else if (cstr_eq(name, "hub")) {
-        routine(hubcmd);
     } else if (cstr_eq(name, "make")) {
         routine(makecmd);
     } else if (cstr_eq(name, "sh")) {
-        routine2(shcmd);
+        routine(shcmd);
     } else {
         err_error("invalid command name \"%s\"", name);
         result = 1;
@@ -584,82 +524,6 @@ app_execute_alias_by_name(app_t *self, const char *name) {
 }
 
 /**
- * Show snippet code by fname
- *
- * @param[in] self pointer to app_t
- * @param[in] name snippet name
- *
- * @return success to true
- * @return failed to false
- */
-static bool
-app_show_snippet(app_t *self, const char *fname) {
-    char path[FILE_NPATH];
-    if (!file_solvefmt(path, sizeof path, "%s/%s", self->config->codes_dir_path, fname)) {
-        err_error("failed to solve path for snippet file");
-        return false;
-    }
-
-    char *content = file_readcp_from_path(path);
-    if (!content) {
-        err_error("failed to read from snippet \"%s\"", fname);
-        return false;
-    }
-
-    context_t *ctx = compile_argv(self->config, self->cmd_argc-1, self->cmd_argv+1, content);
-    if (!ctx) {
-        err_error("failed to compile snippet");
-        free(content);
-        return false;
-    }
-
-    printf("%s", ctx_getc_buf(ctx));
-    fflush(stdout);
-
-    ctx_del(ctx);
-    free(content);
-
-    return true;
-}
-
-/**
- * Show snippet code by name
- *
- * @param[in] self pointer to app_t
- * @param[in] name snippet name
- *
- * @return success to 0
- * @return failed to not 0
- */
-static int
-app_execute_snippet(app_t *self, const char *name) {
-    file_dir_t *dir = file_diropen(self->config->codes_dir_path);
-    if (!dir) {
-        err_error("failed to open directory \"%s\"", self->config->codes_dir_path);
-        return 1;
-    }
-
-    bool found = false;
-
-    for (file_dirnode_t *node; (node = file_dirread(dir)); ) {
-        const char *fname = file_dirnodename(node);
-        if (cstr_eq(fname, ".") || cstr_eq(fname, "..")) {
-            continue;
-        }
-        if (cstr_eq(fname, name)) {
-            found = true;
-            if (!app_show_snippet(self, fname)) {
-                file_dirclose(dir);
-                return 1;
-            }
-        }
-    }
-
-    file_dirclose(dir);
-    return found ? 0 : -1;
-}
-
-/**
  * Run module
  *
  * @param[in] self
@@ -696,7 +560,7 @@ app_run(app_t *self) {
 
     int result = app_execute_alias_by_name(self, cmdname);
     if (result == -1) {
-        result = app_execute_snippet(self, cmdname);
+        result = execute_snippet(self->config, cmdname, self->cmd_argc-1, self->cmd_argv+1);
         if (result == -1) {
             err_error("not found name \"%s\"", cmdname);
             return result;

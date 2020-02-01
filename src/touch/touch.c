@@ -11,7 +11,7 @@ struct opts {
  * Structure of command
  */
 struct touchcmd {
-    config_t *config;
+    const config_t *config;
     int argc;
     int optind;
     char **argv;
@@ -94,18 +94,17 @@ touchcmd_del(touchcmd_t *self) {
     if (!self) {
         return;
     }
-    config_del(self->config);
-    freeargv(self->argc, self->argv);
+
     free(self);
 }
 
 touchcmd_t *
-touchcmd_new(config_t *move_config, int argc, char **move_argv) {
+touchcmd_new(const config_t *config, int argc, char **argv) {
     touchcmd_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->config = move_config;
+    self->config = config;
     self->argc = argc;
-    self->argv = move_argv;
+    self->argv = argv;
 
     if (!touchcmd_parse_opts(self)) {
         touchcmd_del(self);

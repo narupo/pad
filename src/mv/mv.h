@@ -18,7 +18,7 @@ void
 mvcmd_del(mvcmd_t *self);
 
 mvcmd_t *
-mvcmd_new(config_t *move_config, int argc, char **move_argv);
+mvcmd_new(config_t *config, int argc, char **argv);
 
 int
 mvcmd_run(mvcmd_t *self);

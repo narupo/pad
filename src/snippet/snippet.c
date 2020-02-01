@@ -4,7 +4,7 @@
  * Structure of command
  */
 struct snptcmd {
-    config_t *config;
+    const config_t *config;
     int argc;
     int optind;
     char **argv;
@@ -40,18 +40,17 @@ snptcmd_del(snptcmd_t *self) {
     if (!self) {
         return;
     }
-    config_del(self->config);
-    freeargv(self->argc, self->argv);
+
     free(self);
 }
 
 snptcmd_t *
-snptcmd_new(config_t *move_config, int argc, char **move_argv) {
+snptcmd_new(const config_t *config, int argc, char **argv) {
     snptcmd_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->config = move_config;
+    self->config = config;
     self->argc = argc;
-    self->argv = move_argv;
+    self->argv = argv;
 
     return self;
 }

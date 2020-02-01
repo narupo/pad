@@ -117,6 +117,11 @@ cl_getc(const cl_t *self, int32_t idx) {
     return self->arr[idx];
 }
 
+char **
+cl_get_argv(const cl_t *self) {
+    return self->arr;
+}
+
 /*********
 * string *
 *********/
