@@ -20,6 +20,7 @@
 #include "run/run.h"
 #include "exec/exec.h"
 #include "alias/alias.h"
+#include "edit/edit.h"
 #include "editor/editor.h"
 #include "mkdir/mkdir.h"
 #include "rm/rm.h"
