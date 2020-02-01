@@ -18,7 +18,7 @@ CFLAGS := -Wall \
 	-Wno-unused-function \
 	-Wno-unused-result \
 	-D_DEBUG \
-	-I$(INCLUDE) \
+	-I$(INCLUDE)
 
 # $(warning $(wildcard src/*.c))
 
@@ -54,6 +54,7 @@ init:
 	build$(SEP)hub \
 	build$(SEP)hub$(SEP)commands \
 	build$(SEP)make \
+	build$(SEP)sh \
 	build$(SEP)lang$(SEP) \
 	build$(SEP)lang$(SEP)builtin \
 	build$(SEP)lang$(SEP)builtin$(SEP)modules
@@ -98,6 +99,7 @@ SRCS := build/lib/error.c \
 	build/link/link.c \
 	build/hub/hub.c \
 	build/make/make.c \
+	build/sh/sh.c \
 	build/lang/tokens.c \
 	build/lang/tokenizer.c \
 	build/lang/nodes.c \
@@ -116,12 +118,13 @@ SRCS := build/lib/error.c \
 	build/lang/builtin/modules/alias.c \
 
 OBJS := $(SRCS:.c=.o)
+STATIC_LIBS := lib/pdcurses.a
 
 tests: build/tests.o $(OBJS)
 	$(CC) $(CFLAGS) -o build/tests $^
 
 cap: build/app.o $(OBJS)
-	$(CC) $(CFLAGS) -o build/cap $^
+	$(CC) $(CFLAGS) -o build/cap $^ $(STATIC_LIBS)
 
 build/app.o: src/app.c src/app.h
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -198,6 +201,8 @@ build/link/link.o: src/link/link.c src/link/link.h
 build/hub/hub.o: src/hub/hub.c src/hub/hub.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/make/make.o: src/make/make.c src/make/make.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/sh/sh.o: src/sh/sh.c src/sh/sh.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/tokenizer.o: src/lang/tokenizer.c src/lang/tokenizer.h
 	$(CC) $(CFLAGS) -c $< -o $@
