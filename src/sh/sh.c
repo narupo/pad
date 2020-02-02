@@ -230,7 +230,9 @@ shcmd_exec_command(shcmd_t *self, int argc, char **argv) {
 
     const char *cmdname = argv[0];
 
-    if (cstr_eq(cmdname, "clear")) {
+    if (cstr_eq(cmdname, "exit")) {
+        return 1;
+    } else if (cstr_eq(cmdname, "clear")) {
         clear_screen();
     } else if (argc >= 2 && cstr_eq(cmdname, "echo") && cstr_eq(argv[1], "$?")) {
         printf("%d\n", self->last_exit_code);
@@ -307,9 +309,7 @@ shcmd_update(shcmd_t *self) {
     int argc = cl_len(obj->cl);
     char **argv = cl_get_argv(obj->cl);
 
-    shcmd_exec_command(self, argc, argv);
-
-    return 0;
+    return shcmd_exec_command(self, argc, argv);
 }
 
 int
