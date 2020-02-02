@@ -46,6 +46,7 @@ lscmd_parse_opts(lscmd_t *self) {
         case 'a': self->opts.isall = true; break;
         case '?':
         default:
+            err_error("unknown option");
             return false;
             break;
         }

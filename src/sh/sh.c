@@ -224,6 +224,9 @@ shcmd_exec_command(shcmd_t *self, int argc, char **argv) {
 
 #define routine(cmd) { \
         cmd##_t *cmd = cmd##_new(self->config, argc, argv); \
+        if (!cmd) { \
+            return 0; \
+        } \
         result = cmd##_run(cmd); \
         cmd##_del(cmd); \
     } \
