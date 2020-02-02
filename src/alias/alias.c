@@ -159,7 +159,7 @@ alcmd_show_list(alcmd_t *self) {
         }
 
         const char *desc = alinfo_getc_desc(alinfo, kv_item->key);
-        if (desc) {
+        if (self->opts.isdesc && desc) {
             char disp_desc[128] = {0};
             trim_first_line(disp_desc, sizeof disp_desc, desc);
             printf("%-*s %-*s %s\n", keymaxlen, kv_item->key, valmaxlen, kv_item->value, disp_desc);
