@@ -397,6 +397,9 @@ static int
 app_execute_command_by_name(app_t *self, const char *name) {
 #define routine(cmd) { \
         cmd##_t *cmd = cmd##_new(self->config, self->cmd_argc, self->cmd_argv); \
+        if (!cmd) { \
+            return 1; \
+        } \
         result = cmd##_run(cmd); \
         cmd##_del(cmd); \
     } \
