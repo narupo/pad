@@ -163,8 +163,8 @@ shcmd_input(shcmd_t *self) {
     char prompt[FILE_NPATH];
     shcmd_create_prompt(self, prompt, sizeof prompt);
 
-    printf("(cap) %s$ ", prompt);
-    fflush(stdout);
+    fprintf(stderr, "(cap) %s$ ", prompt);
+    fflush(stderr);
 
     self->line_buf[0] = '\0';
     if (file_getline(self->line_buf, sizeof self->line_buf, stdin) == EOF) {
