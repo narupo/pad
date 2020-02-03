@@ -80,6 +80,7 @@ SRCS := build/lib/error.c \
 	build/core/alias_info.c \
 	build/core/symlink.c \
 	build/core/args.c \
+	build/core/error_stack.c \
 	build/home/home.c \
 	build/cd/cd.c \
 	build/pwd/pwd.c \
@@ -161,6 +162,8 @@ build/core/alias_manager.o: src/core/alias_manager.c src/core/alias_manager.h
 build/core/alias_info.o: src/core/alias_info.c src/core/alias_info.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/core/symlink.o: src/core/symlink.c src/core/symlink.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/core/error_stack.o: src/core/error_stack.c src/core/error_stack.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/core/args.o: src/core/args.c src/core/args.h
 	$(CC) $(CFLAGS) -c $< -o $@
