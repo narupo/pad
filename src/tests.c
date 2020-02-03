@@ -13965,10 +13965,6 @@ traverser_tests[] = {
 };
 
 /**********
-* context *
-**********/
-
-/**********
 * symlink *
 **********/
 
@@ -14048,6 +14044,97 @@ symlink_tests[] = {
     {0},
 };
 
+/**************
+* error_stack *
+**************/
+
+static void
+test_errstack_new(void) {
+    errstack_t *stack = errstack_new();
+    assert(stack);
+    errstack_del(stack);
+}
+
+static void
+test_errstack_pushb(void) {
+    errstack_t *stack = errstack_new();
+
+    assert(errstack_len(stack) == 0);
+    assert(errstack_pushb(stack, "file1", 1, "func1", "this is %s", "message1"));
+    assert(errstack_pushb(stack, "file2", 2, "func2", "this is %s", "message2"));
+    assert(errstack_len(stack) == 2);
+
+    const errelem_t *elem = errstack_getc(stack, 0);
+    assert(elem);
+    assert(!strcmp(elem->filename, "file1"));
+    assert(elem->lineno == 1);
+    assert(!strcmp(elem->funcname, "func1"));
+    assert(!strcmp(elem->message, "This is message1."));
+
+    elem = errstack_getc(stack, 1);
+    assert(elem);
+    assert(!strcmp(elem->filename, "file2"));
+    assert(elem->lineno == 2);
+    assert(!strcmp(elem->funcname, "func2"));
+    assert(!strcmp(elem->message, "This is message2."));
+
+    assert(errstack_getc(stack, 2) == NULL);
+
+    errstack_del(stack);
+}
+
+static void
+test_errstack_trace(void) {
+    errstack_t *stack = errstack_new();
+
+    assert(errstack_pushb(stack, "file1", 1, "func1", "this is %s", "message1"));
+    assert(errstack_pushb(stack, "file2", 2, "func2", "this is %s", "message2"));
+
+    char buf[BUFSIZ] = {0};
+    setbuf(stderr, buf);
+
+    errstack_trace(stack, stderr);
+    assert(strcmp(buf, "Error:\n    file1: 1: func1: This is message1.\n    file2: 2: func2: This is message2."));
+
+    fseek(stderr, 0, SEEK_SET);
+    setbuf(stderr, NULL);
+    errstack_del(stack);
+}
+
+static void
+test_errelem_show(void) {
+    errstack_t *stack = errstack_new();
+
+    assert(errstack_pushb(stack, "file1", 1, "func1", "this is %s", "message1"));
+    assert(errstack_pushb(stack, "file2", 2, "func2", "this is %s", "message2"));
+
+    char buf[BUFSIZ] = {0};
+    setbuf(stderr, buf);
+
+    const errelem_t *elem = errstack_getc(stack, 0);
+    errelem_show(elem, stderr);
+    assert(!strcmp(buf, "file1: 1: func1: This is message1.\n"));
+
+    fseek(stderr, 0, SEEK_SET);
+    buf[0] = '\0';
+
+    elem = errstack_getc(stack, 1);
+    errelem_show(elem, stderr);
+    assert(!strcmp(buf, "file2: 2: func2: This is message2.\n"));
+
+    setbuf(stderr, NULL);
+    errstack_del(stack);
+}
+
+static const struct testcase
+errstack_tests[] = {
+    {"errstack_new", test_errstack_new},
+    {"errstack_pushb", test_errstack_pushb},
+    {"errstack_trace", test_errstack_trace},
+    {"errelem_show", test_errelem_show},
+    {0},
+};
+
 /*******
 * main *
 *******/
@@ -14065,6 +14152,7 @@ testmodules[] = {
     {"compiler", compiler_tests},
     {"traverser", traverser_tests},
     {"symlink", symlink_tests},
+    {"error_stack", errstack_tests},
     {0},
 };
 
