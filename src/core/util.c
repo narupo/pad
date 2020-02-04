@@ -387,3 +387,27 @@ execute_snippet(const config_t *config, const char *name, int argc, char **argv)
     file_dirclose(dir);
     return found ? 0 : -1;
 }
+
+char *
+solve_cmdline_arg_path(const config_t *config, char *dst, int32_t dstsz, const char *caps_arg_path) {
+    if (caps_arg_path[0] == ':') {
+        if (!file_solve(dst, dstsz, caps_arg_path+1)) {
+            return NULL;
+        }
+    } else {
+        char tmp[FILE_NPATH*2];
+        const char *org = get_origin(config, caps_arg_path);
+
+        const char *path = caps_arg_path;
+        if (caps_arg_path[0] == '/') {
+            path = caps_arg_path + 1;
+        }
+
+        snprintf(tmp, sizeof tmp, "%s/%s", org, path);
+        if (!symlink_follow_path(config, dst, dstsz, tmp)) {
+            return NULL;
+        }
+    }
+
+    return dst;
+}

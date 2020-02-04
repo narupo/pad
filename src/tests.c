@@ -1704,14 +1704,44 @@ test_util_argsbyoptind(void) {
     cstrarr_del(args);
 }
 
+static void
+test_util_solve_cmdline_arg_path(void) {
+    config_t *config = config_new();
+    config->scope = CAP_SCOPE_LOCAL;
+
+    char fname[FILE_NPATH];
+
+#ifdef _CAP_WINDOWS
+    snprintf(config->home_path, sizeof config->home_path, "C:\\path\\to\\home");
+    snprintf(config->cd_path, sizeof config->cd_path, "C:\\path\\to\\cd");
+
+    assert(solve_cmdline_arg_path(config, fname, sizeof fname, "path/to/file"));
+    assert(!strcmp(fname, "C:\\path\\to\\cd\\path\\to\\file"));
+
+    assert(solve_cmdline_arg_path(config, fname, sizeof fname, "/path/to/file"));
+    assert(!strcmp(fname, "C:\\path\\to\\home\\path\\to\\file"));
+#else
+    snprintf(config->home_path, sizeof config->home_path, "/path/to/home");
+    snprintf(config->cd_path, sizeof config->cd_path, "/path/to/cd");
+
+    assert(solve_cmdline_arg_path(config, fname, sizeof fname, "path/to/file"));
+    assert(!strcmp(fname, "/path/to/cd/path/to/file"));
+
+    assert(solve_cmdline_arg_path(config, fname, sizeof fname, "/path/to/file"));
+    assert(!strcmp(fname, "/path/to/home/path/to/file"));
+#endif
+    config_del(config);
+}
+
 static const struct testcase
 utiltests[] = {
-    {"test_util_freeargv", test_util_freeargv},
-    {"test_util_showargv", test_util_showargv},
-    {"test_util_isoutofhome", test_util_isoutofhome},
-    {"test_util_randrange", test_util_randrange},
-    {"test_util_safesystem", test_util_safesystem},
-    {"test_util_argsbyoptind", test_util_argsbyoptind},
+    {"freeargv", test_util_freeargv},
+    {"showargv", test_util_showargv},
+    {"isoutofhome", test_util_isoutofhome},
+    {"randrange", test_util_randrange},
+    {"safesystem", test_util_safesystem},
+    {"argsbyoptind", test_util_argsbyoptind},
+    {"solve_cmdline_arg_path", test_util_solve_cmdline_arg_path},
     {0},
 };
 
