@@ -139,6 +139,11 @@ execcmd_set_error(execcmd_t *self, const char *fmt, ...) {
     va_end(ap);
 }
 
+static bool
+execcmd_has_error(const execcmd_t *self) {
+    return self->what[0] != '\0';
+}
+
 static execcmd_t *
 execcmd_exec_first(execcmd_t *self) {
     const cmdline_object_t *first = cmdline_getc(self->cmdline, 0);
@@ -466,7 +471,12 @@ execcmd_redirect(execcmd_t *self, const cmdline_object_t *obj, const cmdline_obj
         close_hs();
         CloseHandle(child_process);
 
-        const char *fname = str_getc(fileobj->command);
+        char fname[FILE_NPATH];
+        if (!solve_cmdline_arg_path(self->config, fname, sizeof fname, str_getc(fileobj->command))) {
+            execcmd_set_error(self, "failed to solve path of command line argument");
+            return NULL;
+        }
+
         FILE *fout = file_open(fname, "wb");
         if (!fout) {
             execcmd_set_error(self, "failed to open \"%s\"", fname);
@@ -567,9 +577,10 @@ execcmd_exec_all_unix(execcmd_t *self) {
                 // fd[READ]から入力を読み込み、fnameのファイルに出力する
                 close(fd[WRITE]);
 
-                const char *fname = str_getc(fileobj->command);
-                if (file_exists(fname)) {
-                    file_remove(fname);
+                char fname[FILE_NPATH];
+                if (!solve_cmdline_arg_path(self->config, fname, sizeof fname, str_getc(fileobj->command))) {
+                    execcmd_set_error(self, "failed to solve path of command line argument");
+                    return NULL;
                 }
 
                 int filefd = open(fname, O_CREAT | O_WRONLY | O_TRUNC);

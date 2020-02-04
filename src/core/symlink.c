@@ -174,8 +174,13 @@ symlink_follow_path(const config_t *config, char *dst, uint32_t dstsz, const cha
     if (!dst || !dstsz || !abspath) {
         return NULL;
     }
+
     dst[0] = '\0';
-    return __symlink_follow_path(config, dst, dstsz, abspath, 0);
+    if (!__symlink_follow_path(config, dst, dstsz, abspath, 0)) {
+        return NULL;
+    }
+
+    return dst;
 }
 
 static cstring_array_t *

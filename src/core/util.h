@@ -21,6 +21,7 @@
 #include "lib/cstring_array.h"
 #include "core/constant.h"
 #include "core/config.h"
+#include "core/symlink.h"
 #include "lang/tokenizer.h"
 #include "lang/ast.h"
 #include "lang/compiler.h"
@@ -133,8 +134,8 @@ argsbyoptind(int argc, char *argv[], int optind);
 
 /**
  * cap_pathとconfigのscopeから基点となるパスを取得する
- * 取得するパスはconfig->home_cap_pathかconfig->cd_cap_pathのいずれかである
- * cap_pathの先頭がセパレータ、つまりcap_pathが絶対パスであるとき、戻り値はconfig->home_cap_pathである
+ * 取得するパスはconfig->home_pathかconfig->cd_pathのいずれかである
+ * cap_pathの先頭がセパレータ、つまりcap_pathが絶対パスであるとき、戻り値はconfig->home_pathである
  * このcap_pathはCap環境上のパスである
  * つまり、cap_pathが絶対パスの場合、cap_path[0]は必ず'/'になる
  * scopeが不正の場合、プログラムを終了する
@@ -194,3 +195,23 @@ clear_screen(void);
  */
 int
 execute_snippet(const config_t *config, const char *name, int argc, char **argv);
+
+/**
+ * solve path of comannd line argument
+ *
+ * like the following
+ *
+ *     path/to/file  -> /caps/environment/path/to/file
+ *     /path/to/file -> /caps/environment/path/to/file
+ *     :path/to/file -> /users/file/system/path/to/file
+ *
+ * @param[in]  *config        pointer to config_t read-only
+ * @param[out] *dst           pointer to destination
+ * @param[in]  dstsz          number of size of destination
+ * @param[in]  *caps_arg_path path of command line argument of cap (not contain windows path. cap's path is unix like)
+ *
+ * @return success to pointer to dst
+ * @return failed to pointer to NULL
+ */
+char *
+solve_cmdline_arg_path(const config_t *config, char *dst, int32_t dstsz, const char *caps_arg_path);
