@@ -8,6 +8,7 @@
 #include "lib/cstring.h"
 #include "lib/cmdline.h"
 #include "lib/cl.h"
+#include "lib/term.h"
 #include "core/constant.h"
 #include "core/util.h"
 #include "core/config.h"
