@@ -1,0 +1,60 @@
+#include "lib/term.h"
+
+int
+term_cfprintf(FILE *fout, int fg, int bg, int opt, const char *fmt, ...) {
+#ifdef TERM_WINDOWS
+    va_list ap;
+    va_start(ap, fmt);
+    int len = vfprintf(fout, fmt, ap);
+    va_end(ap);
+    return len;
+#else
+    switch (fg) {
+    case TERM_NULL: break;
+    case TERM_BLACK:   fprintf(fout, "\x1b[30m"); break;
+    case TERM_RED:     fprintf(fout, "\x1b[31m"); break;
+    case TERM_GREEN:   fprintf(fout, "\x1b[32m"); break;
+    case TERM_YELLOW:  fprintf(fout, "\x1b[33m"); break;
+    case TERM_BLUE:    fprintf(fout, "\x1b[34m"); break;
+    case TERM_MAGENTA: fprintf(fout, "\x1b[35m"); break;
+    case TERM_CYAN:    fprintf(fout, "\x1b[36m"); break;
+    case TERM_GRAY:    fprintf(fout, "\x1b[37m"); break;
+    case TERM_WHITE:   fprintf(fout, "\x1b[37m"); break;
+    case TERM_DEFAULT: fprintf(fout, "\x1b[39m"); break;
+    }
+
+    switch (bg) {
+    case TERM_NULL: break;
+    case TERM_BLACK:   fprintf(fout, "\x1b[40m"); break;
+    case TERM_RED:     fprintf(fout, "\x1b[41m"); break;
+    case TERM_GREEN:   fprintf(fout, "\x1b[42m"); break;
+    case TERM_YELLOW:  fprintf(fout, "\x1b[43m"); break;
+    case TERM_BLUE:    fprintf(fout, "\x1b[44m"); break;
+    case TERM_MAGENTA: fprintf(fout, "\x1b[45m"); break;
+    case TERM_CYAN:    fprintf(fout, "\x1b[46m"); break;
+    case TERM_GRAY:    fprintf(fout, "\x1b[47m"); break;
+    case TERM_WHITE:   fprintf(fout, "\x1b[47m"); break;
+    case TERM_DEFAULT: fprintf(fout, "\x1b[49m"); break;
+    }
+
+    switch (opt) {
+    case TERM_NULL: break;
+    case TERM_UNDER:   fprintf(fout, "\x1b[4m"); break;
+    case TERM_BRIGHT:  fprintf(fout, "\x1b[1m"); break;
+    case TERM_REVERSE: fprintf(fout, "\x1b[7m"); break;
+    case TERM_DEFAULT: fprintf(fout, "\x1b[0m"); break;
+    }
+
+    va_list ap;
+    va_start(ap, fmt);
+    int len = vfprintf(fout, fmt, ap);
+    va_end(ap);
+    
+    // reset
+    fprintf(fout, "\x1b[39m");
+    fprintf(fout, "\x1b[49m");
+    fprintf(fout, "\x1b[0m");
+
+    return len;
+#endif
+}

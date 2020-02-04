@@ -163,7 +163,9 @@ shcmd_input(shcmd_t *self) {
     char prompt[FILE_NPATH];
     shcmd_create_prompt(self, prompt, sizeof prompt);
 
-    fprintf(stderr, "(cap) %s$ ", prompt);
+    term_cfprintf(stderr, TERM_GREEN, TERM_DEFAULT, TERM_BRIGHT, "(cap) ");
+    term_cfprintf(stderr, TERM_CYAN, TERM_DEFAULT, TERM_BRIGHT, "%s", prompt);
+    term_cfprintf(stderr, TERM_BLUE, TERM_DEFAULT, TERM_BRIGHT, "$ ");
     fflush(stderr);
 
     self->line_buf[0] = '\0';
