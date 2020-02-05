@@ -266,7 +266,7 @@ app_new(int argc, char *argv[]) {
 static void
 app_usage(app_t *app) {
     static const char usage[] =
-        "Cap is simple snippet manager.\n"
+        "Cap is shell for snippet codes.\n"
         "\n"
         "Usage:\n"
         "\n"
