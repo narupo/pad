@@ -1,6 +1,6 @@
 # Cap
 
-Cap is virtual shell for programmer's snippet codes.
+Cap is shell for programmer's snippet codes.
 
 # Build
 
