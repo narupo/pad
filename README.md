@@ -1,12 +1,3 @@
-  _____            
- / ____|           
-| |     __ _ _ __  
-| |    / _` | '_ \ 
-| |___| (_| | |_) |
- \_____\__,_| .__/ 
-            | |    
-            |_|    
-
 # Cap
 
 Cap is virtual shell for programmer's snippet codes.
