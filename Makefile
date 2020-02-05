@@ -120,13 +120,12 @@ SRCS := build/lib/error.c \
 	build/lang/builtin/modules/alias.c \
 
 OBJS := $(SRCS:.c=.o)
-STATIC_LIBS := lib/pdcurses.a
 
 tests: build/tests.o $(OBJS)
 	$(CC) $(CFLAGS) -o build/tests $^
 
 cap: build/app.o $(OBJS)
-	$(CC) $(CFLAGS) -o build/cap $^ $(STATIC_LIBS)
+	$(CC) $(CFLAGS) -o build/cap $^
 
 build/app.o: src/app.c src/app.h
 	$(CC) $(CFLAGS) -c $< -o $@
