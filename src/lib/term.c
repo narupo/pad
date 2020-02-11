@@ -1,11 +1,70 @@
 #include "lib/term.h"
 
+#ifdef TERM_WINDOWS
+static WORD
+get_attr(HANDLE handle) {
+    CONSOLE_SCREEN_BUFFER_INFO info;
+    if (!GetConsoleScreenBufferInfo(handle, &info)) {
+        return -1;
+    }
+
+    return info.wAttributes;
+}
+
+static void
+set_color(HANDLE handle, int fg, int bg, int opt) {
+    WORD attr = 0;
+
+    switch (fg) {
+    case TERM_BLACK:   break;
+    case TERM_RED:     attr |= FOREGROUND_RED; break;
+    case TERM_GREEN:   attr |= FOREGROUND_GREEN; break;
+    case TERM_BLUE:    attr |= FOREGROUND_BLUE; break;
+    case TERM_YELLOW:  attr |= FOREGROUND_RED | FOREGROUND_GREEN; break;
+    case TERM_MAGENTA: attr |= FOREGROUND_RED | FOREGROUND_BLUE; break;
+    case TERM_CYAN:    attr |= FOREGROUND_BLUE | FOREGROUND_INTENSITY; break;
+    case TERM_GRAY:    attr |= FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE; break;
+    case TERM_WHITE:   attr |= FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY; break;
+    case TERM_DEFAULT: break;
+    }
+    
+    switch (bg) {
+    case TERM_BLACK:   break;
+    case TERM_RED:     attr |= BACKGROUND_RED; break;
+    case TERM_GREEN:   attr |= BACKGROUND_GREEN; break;
+    case TERM_BLUE:    attr |= BACKGROUND_BLUE; break;
+    case TERM_YELLOW:  attr |= BACKGROUND_RED | BACKGROUND_GREEN; break;
+    case TERM_MAGENTA: attr |= BACKGROUND_RED | BACKGROUND_BLUE; break;
+    case TERM_CYAN:    attr |= BACKGROUND_BLUE | BACKGROUND_INTENSITY; break;
+    case TERM_GRAY:    attr |= BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE; break;
+    case TERM_WHITE:   attr |= BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY; break;
+    case TERM_DEFAULT: break;
+    }
+    
+    switch (opt) {
+    case TERM_BRIGHT:
+        attr |= FOREGROUND_INTENSITY;
+        break;
+    case TERM_UNDER: attr |= COMMON_LVB_UNDERSCORE; break;
+    case TERM_REVERSE: attr |= COMMON_LVB_REVERSE_VIDEO; break;
+    }
+
+    SetConsoleTextAttribute(handle, attr);
+}
+#endif
+
 int
 term_cfprintf(FILE *fout, int fg, int bg, int opt, const char *fmt, ...) {
 #ifdef TERM_WINDOWS
     va_list ap;
     va_start(ap, fmt);
+
+    HANDLE hstdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    WORD attr = get_attr(hstdout);
+    set_color(hstdout, fg, bg, opt);
     int len = vfprintf(fout, fmt, ap);
+    SetConsoleTextAttribute(hstdout, attr);
+
     va_end(ap);
     return len;
 #else

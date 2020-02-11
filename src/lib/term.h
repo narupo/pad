@@ -8,6 +8,11 @@
 # define TERM_WINDOWS
 #endif
 
+#ifdef TERM_WINDOWS
+# include <windows.h>
+# include <wincon.h>
+#endif
+
 enum {
     TERM_NULL,
     
