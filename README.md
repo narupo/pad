@@ -23,3 +23,17 @@ Using MinGW's make (recommend TDM-GCC).
     $ mingw32-make init && mingw32-make
     $ ./build/cap -h   
 
+# How to use
+
+You should be set home.
+
+    $ cap home /my/snippet/directory
+
+Show your snippet codes.
+
+    $ cap cat mysnippet.code
+
+And run shell.
+
+    $ cap sh
+
