@@ -16,15 +16,67 @@ set_color(HANDLE handle, int fg, int bg, int opt) {
     WORD attr = 0;
 
     switch (fg) {
-    case TERM_BLACK:   break;
-    case TERM_RED:     attr |= FOREGROUND_RED; break;
-    case TERM_GREEN:   attr |= FOREGROUND_GREEN; break;
-    case TERM_BLUE:    attr |= FOREGROUND_BLUE; break;
-    case TERM_YELLOW:  attr |= FOREGROUND_RED | FOREGROUND_GREEN; break;
-    case TERM_MAGENTA: attr |= FOREGROUND_RED | FOREGROUND_BLUE; break;
-    case TERM_CYAN:    attr |= FOREGROUND_BLUE | FOREGROUND_INTENSITY; break;
-    case TERM_GRAY:    attr |= FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE; break;
-    case TERM_WHITE:   attr |= FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY; break;
+    case TERM_BLACK:
+        if (opt == TERM_BRIGHT) {
+            attr |= 8;
+        }
+        break;
+    case TERM_RED:
+        if (opt == TERM_BRIGHT) {
+            attr |= 12;
+        } else {
+            attr |= 4;
+        }
+        break;
+    case TERM_GREEN:
+        if (opt == TERM_BRIGHT) {
+            attr |= 10;
+        } else {
+            attr |= 2;
+        }
+        break;
+    case TERM_BLUE:
+        if (opt == TERM_BRIGHT) {
+            attr |= 9;
+        } else {
+            attr |= 1;
+        }
+        break;
+    case TERM_YELLOW: 
+        if (opt == TERM_BRIGHT) {
+            attr |= 14;
+        } else {
+            attr |= 6;
+        }
+        break;
+    case TERM_MAGENTA:
+        if (opt == TERM_BRIGHT) {
+            attr |= 13;
+        } else {
+            attr |= 5;
+        }
+        break;
+    case TERM_CYAN:
+        if (opt == TERM_BRIGHT) {
+            attr |= 11;
+        } else {
+            attr |= 3;
+        }
+        break;
+    case TERM_GRAY:
+        if (opt == TERM_BRIGHT) {
+            attr |= 7;
+        } else {
+            attr |= 8;
+        }
+        break;
+    case TERM_WHITE:
+        if (opt == TERM_BRIGHT) {
+            attr |= 7;
+        } else {
+            attr |= 15;
+        }
+        break;
     case TERM_DEFAULT: break;
     }
     
