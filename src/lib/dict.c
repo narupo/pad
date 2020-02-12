@@ -1,4 +1,4 @@
-#include "lib/dict.h"
+#include <lib/dict.h>
 
 struct dict {
     dict_item_t *map;

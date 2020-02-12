@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "lib/error.h"
+#include <lib/error.h>
 
 /*******
 * move *

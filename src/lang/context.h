@@ -4,13 +4,13 @@
 
 #include <stdint.h>
 
-#include "lib/memory.h"
-#include "lib/string.h"
-#include "lib/dict.h"
-#include "core/alias_info.h"
-#include "lang/types.h"
-#include "lang/object_dict.h"
-#include "lang/scope.h"
+#include <lib/memory.h>
+#include <lib/string.h>
+#include <lib/dict.h>
+#include <core/alias_info.h>
+#include <lang/types.h>
+#include <lang/object_dict.h>
+#include <lang/scope.h>
 
 /**
  * destruct object

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "core/config.h"
-#include "lang/types.h"
-#include "lang/tokens.h"
-#include "lang/nodes.h"
-#include "lang/context.h"
-#include "lang/opts.h"
-#include "lang/node_array.h"
-#include "lang/object.h"
+#include <core/config.h>
+#include <lang/types.h>
+#include <lang/tokens.h>
+#include <lang/nodes.h>
+#include <lang/context.h>
+#include <lang/opts.h>
+#include <lang/node_array.h>
+#include <lang/object.h>
 
 /**
  * constant number of AST

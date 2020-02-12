@@ -1,4 +1,4 @@
-#include "lang/opts.h"
+#include <lang/opts.h>
 
 struct opts {
     dict_t *opts;    

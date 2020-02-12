@@ -1,4 +1,4 @@
-#include "lang/builtin/modules/alias.h"
+#include <lang/builtin/modules/alias.h>
 
 static object_t *
 builtin_alias_set(ast_t *ast, const object_t *objargs) {

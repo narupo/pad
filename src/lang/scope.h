@@ -2,9 +2,9 @@
 
 // TODO: test
 
-#include "lib/memory.h"
-#include "lang/object.h"
-#include "lang/object_dict.h"
+#include <lib/memory.h>
+#include <lang/object.h>
+#include <lang/object_dict.h>
 
 void
 scope_del(scope_t *self);

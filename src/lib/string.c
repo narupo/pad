@@ -5,7 +5,7 @@
  *  Author: Aizawa Yuta
  *   Since: 2016
  */
-#include "string.h"
+#include <lib/string.h>
 
 /*******************
 * string structure *

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "lib/memory.h"
-#include "lib/file.h"
-#include "core/constant.h"
+#include <lib/memory.h>
+#include <lib/file.h>
+#include <core/constant.h>
 
 struct config {
     int scope; // @see constant.h for CAP_SCOPE_*

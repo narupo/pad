@@ -1,4 +1,4 @@
-#include "sh/sh.h"
+#include <sh/sh.h>
 
 enum {
     LINE_BUFFER_SIZE = 1024 * 10,

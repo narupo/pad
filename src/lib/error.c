@@ -5,7 +5,7 @@
  *  Author: Aizawa Yuta
  *   Since: 2016
  */
-#include "error.h"
+#include <lib/error.h>
 
 void
 err_fix_text(char *dst, uint32_t dstsz, const char *src, bool debug) {

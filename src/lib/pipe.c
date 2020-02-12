@@ -1,4 +1,4 @@
-#include "lib/pipe.h"
+#include <lib/pipe.h>
 
 struct pipe {
 #ifdef PIPE_WINDOWS

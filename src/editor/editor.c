@@ -1,14 +1,14 @@
-#include "editor/editor.h"
+#include <editor/editor.h>
 
 /**
- * Structure of options
+ * structure of options
  */
 struct opts {
     bool is_help;
 };
 
 /**
- * Structure of command
+ * structure of command
  */
 struct editorcmd {
     const config_t *config;
@@ -20,7 +20,7 @@ struct editorcmd {
 };
 
 /**
- * Show usage of command
+ * show usage of command
  *
  * @param[in] self pointer to editorcmd_t
  */
@@ -41,7 +41,7 @@ editorcmd_show_usage(editorcmd_t *self) {
 }
 
 /**
- * Parse options
+ * parse options
  *
  * @param[in] self pointer to editorcmd_t 
  *

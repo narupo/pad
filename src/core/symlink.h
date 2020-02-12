@@ -19,12 +19,13 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include "lib/file.h"
-#include "lib/cstring.h"
-#include "lib/cstring_array.h"
-#include "lib/string.h"
-#include "core/constant.h"
-#include "core/config.h"
+
+#include <lib/file.h>
+#include <lib/cstring.h>
+#include <lib/cstring_array.h>
+#include <lib/string.h>
+#include <core/constant.h>
+#include <core/config.h>
 
 #define SYMLINK_HEADER "cap symlink:"
 

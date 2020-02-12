@@ -4,11 +4,11 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "lib/error.h"
-#include "lib/memory.h"
-#include "lib/string.h"
-#include "lib/cstring.h"
-#include "lang/tokens.h"
+#include <lib/error.h>
+#include <lib/memory.h>
+#include <lib/string.h>
+#include <lib/cstring.h>
+#include <lang/tokens.h>
 
 /*******************
 * tokenizer_option *

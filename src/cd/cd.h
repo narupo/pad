@@ -7,11 +7,11 @@
  */
 #pragma once
 
-#include "lib/memory.h"
-#include "lib/file.h"
-#include "core/config.h"
-#include "core/util.h"
-#include "core/symlink.h"
+#include <lib/memory.h>
+#include <lib/file.h>
+#include <core/config.h>
+#include <core/util.h>
+#include <core/symlink.h>
 
 struct cdcmd;
 typedef struct cdcmd cdcmd_t;

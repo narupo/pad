@@ -5,7 +5,7 @@
  *  Author: Aizawa Yuta
  *   Since: 2016, 2017, 2018
  */
-#include "file.h"
+#include <lib/file.h>
 
 int32_t
 file_close(FILE *fp) {

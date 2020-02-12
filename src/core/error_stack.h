@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "lib/memory.h"
-#include "lib/cstring_array.h"
-#include "lib/error.h"
+#include <lib/memory.h>
+#include <lib/cstring_array.h>
+#include <lib/error.h>
 
 /**********
 * errelem *

@@ -2,8 +2,8 @@
    alias_info module have key and value, and key and description value */
 #pragma once
 
-#include "lib/dict.h"
-#include "lib/memory.h"
+#include <lib/dict.h>
+#include <lib/memory.h>
 
 struct alias_info;
 typedef struct alias_info alinfo_t;

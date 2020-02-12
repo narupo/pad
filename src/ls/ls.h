@@ -2,12 +2,12 @@
 
 #include <getopt.h>
 
-#include "lib/memory.h"
-#include "lib/file.h"
-#include "lib/cstring_array.h"
-#include "core/util.h"
-#include "core/config.h"
-#include "core/symlink.h"
+#include <lib/memory.h>
+#include <lib/file.h>
+#include <lib/cstring_array.h>
+#include <core/util.h>
+#include <core/config.h>
+#include <core/symlink.h>
 
 struct lscmd;
 typedef struct lscmd lscmd_t;

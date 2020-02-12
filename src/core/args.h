@@ -1,7 +1,7 @@
 #pragma once
 
-#include "lib/string.h"
-#include "lib/cstring_array.h"
+#include <lib/string.h>
+#include <lib/cstring_array.h>
 
 typedef struct {
     int argc;

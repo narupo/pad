@@ -1,4 +1,4 @@
-#include "lang/node_array.h"
+#include <lang/node_array.h>
 
 enum {
     NODEARR_INIT_CAPA = 4,

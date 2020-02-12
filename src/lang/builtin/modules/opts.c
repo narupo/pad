@@ -1,4 +1,4 @@
-#include "lang/builtin/modules/opts.h"
+#include <lang/builtin/modules/opts.h>
 
 static object_t *
 builtin_opts_get(ast_t *ast, const object_t *objargs) {

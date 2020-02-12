@@ -4,20 +4,18 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "lib/error.h"
-#include "lib/memory.h"
-
-#include "core/constant.h"
-#include "core/config.h"
-#include "core/util.h"
-#include "core/symlink.h"
-#include "core/alias_info.h"
-
-#include "lang/tokenizer.h"
-#include "lang/ast.h"
-#include "lang/compiler.h"
-#include "lang/traverser.h"
-#include "lang/context.h"
+#include <lib/error.h>
+#include <lib/memory.h>
+#include <core/constant.h>
+#include <core/config.h>
+#include <core/util.h>
+#include <core/symlink.h>
+#include <core/alias_info.h>
+#include <lang/tokenizer.h>
+#include <lang/ast.h>
+#include <lang/compiler.h>
+#include <lang/traverser.h>
+#include <lang/context.h>
 
 struct alias_manager;
 typedef struct alias_manager almgr_t;

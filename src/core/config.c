@@ -1,4 +1,4 @@
-#include "core/config.h"
+#include <core/config.h>
 
 void
 config_del(config_t *self) {

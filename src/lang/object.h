@@ -3,15 +3,15 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "lib/string.h"
-#include "lib/cstring.h"
-#include "lib/memory.h"
-#include "lib/error.h"
-#include "lang/types.h"
-#include "lang/nodes.h"
-#include "lang/object_array.h"
-#include "lang/object_dict.h"
-#include "lang/builtin/function.h"
+#include <lib/string.h>
+#include <lib/cstring.h>
+#include <lib/memory.h>
+#include <lib/error.h>
+#include <lang/types.h>
+#include <lang/nodes.h>
+#include <lang/object_array.h>
+#include <lang/object_dict.h>
+#include <lang/builtin/function.h>
 
 typedef enum {
     OBJ_TYPE_NIL,

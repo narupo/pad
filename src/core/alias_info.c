@@ -1,4 +1,4 @@
-#include "core/alias_info.h"
+#include <core/alias_info.h>
 
 struct alias_info {
     dict_t *key_val_map;

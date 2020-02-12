@@ -1,21 +1,21 @@
 #include <getopt.h>
 #include <string.h>
 
-#include "lib/memory.h"
-#include "lib/file.h"
-#include "lib/string.h"
-#include "core/constant.h"
-#include "core/util.h"
-#include "core/config.h"
+#include <lib/memory.h>
+#include <lib/file.h>
+#include <lib/string.h>
+#include <core/constant.h>
+#include <core/util.h>
+#include <core/config.h>
 
 /**
- * Structure and type of command
+ * structure and type of command
  */
 struct editorcmd;
 typedef struct editorcmd editorcmd_t;
 
 /**
- * Destruct command
+ * destruct command
  *
  * @param[in] self pointer to editorcmd_t
  */
@@ -23,7 +23,7 @@ void
 editorcmd_del(editorcmd_t *self);
 
 /**
- * Construct command
+ * construct command
  *
  * @param[in] config reference to config_t 
  * @param[in] argc   number of arguments
@@ -36,7 +36,7 @@ editorcmd_t *
 editorcmd_new(const config_t *config, int argc, char **argv);
 
 /**
- * Run command
+ * run command
  *
  * @param[in] self pointer to editorcmd_t
  *

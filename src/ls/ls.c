@@ -1,4 +1,4 @@
-#include "ls/ls.h"
+#include <ls/ls.h>
 
 struct opts {
     bool ishelp;

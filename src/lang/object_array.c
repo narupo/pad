@@ -1,4 +1,4 @@
-#include "lang/object_array.h"
+#include <lang/object_array.h>
 
 enum {
     OBJARR_INIT_CAPA = 4,
