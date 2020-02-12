@@ -18,7 +18,7 @@
 #include <ctype.h>
 #include <strings.h>
 
-#include "lib/memory.h"
+#include <lib/memory.h>
 
 /**
  * Write log

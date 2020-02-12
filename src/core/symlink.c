@@ -1,4 +1,4 @@
-#include "core/symlink.h"
+#include <core/symlink.h>
 
 static const char *
 skip_drive_letter(const char *path) {

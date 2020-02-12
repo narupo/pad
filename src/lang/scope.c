@@ -1,4 +1,4 @@
-#include "lang/scope.h"
+#include <lang/scope.h>
 
 struct scope {
     object_dict_t *varmap;

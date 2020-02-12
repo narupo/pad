@@ -2,9 +2,9 @@
 
 #include <assert.h>
 
-#include "lib/memory.h"
-#include "lib/string.h"
-#include "lib/dict.h"
+#include <lib/memory.h>
+#include <lib/string.h>
+#include <lib/dict.h>
 
 struct opts;
 typedef struct opts opts_t;

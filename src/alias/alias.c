@@ -1,4 +1,4 @@
-#include "alias/alias.h"
+#include <alias/alias.h>
 
 struct opts {
     bool ishelp;

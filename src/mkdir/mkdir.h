@@ -3,13 +3,13 @@
 #include <getopt.h>
 #include <string.h>
 
-#include "lib/memory.h"
-#include "lib/file.h"
-#include "lib/string.h"
-#include "core/constant.h"
-#include "core/config.h"
-#include "core/util.h"
-#include "core/symlink.h"
+#include <lib/memory.h>
+#include <lib/file.h>
+#include <lib/string.h>
+#include <core/constant.h>
+#include <core/config.h>
+#include <core/util.h>
+#include <core/symlink.h>
 
 struct mkdircmd;
 typedef struct mkdircmd mkdircmd_t;

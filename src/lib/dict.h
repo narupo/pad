@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "lib/error.h"
-#include "lib/memory.h"
-#include "lib/cstring.h"
+#include <lib/error.h>
+#include <lib/memory.h>
+#include <lib/cstring.h>
 
 enum {
     DICT_ITEM_KEY_SIZE = 256,

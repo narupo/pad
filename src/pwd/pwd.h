@@ -13,11 +13,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "lib/memory.h"
-#include "lib/error.h"
-#include "lib/file.h"
-#include "core/util.h"
-#include "core/config.h"
+#include <lib/memory.h>
+#include <lib/error.h>
+#include <lib/file.h>
+#include <core/util.h>
+#include <core/config.h>
 
 struct pwdcmd;
 typedef struct pwdcmd pwdcmd_t;

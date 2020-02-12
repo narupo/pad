@@ -3,9 +3,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "lib/memory.h"
-#include "lang/types.h"
-#include "lang/object.h"
+#include <lib/memory.h>
+#include <lang/types.h>
+#include <lang/object.h>
 
 struct object_array;
 typedef struct object_array object_array_t;

@@ -5,7 +5,7 @@
  *  Author: Aizawa Yuta
  *   Since: 2016
  */
-#include "util.h"
+#include <core/util.h>
 
 void
 freeargv(int argc, char *argv[]) {

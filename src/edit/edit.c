@@ -1,4 +1,4 @@
-#include "edit/edit.h"
+#include <edit/edit.h>
 
 struct opts {
     bool is_global;

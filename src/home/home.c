@@ -1,4 +1,4 @@
-#include "home/home.h"
+#include <home/home.h>
 
 struct homecmd {
     const config_t *config;

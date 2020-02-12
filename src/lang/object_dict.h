@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "lib/error.h"
-#include "lib/memory.h"
-#include "lib/cstring.h"
-#include "lang/types.h"
+#include <lib/error.h>
+#include <lib/memory.h>
+#include <lib/cstring.h>
+#include <lang/types.h>
 
 // TODO: test
 

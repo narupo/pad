@@ -1,4 +1,4 @@
-#include "lang/tokens.h"
+#include <lang/tokens.h>
 
 void
 token_del(token_t *self) {

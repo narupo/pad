@@ -18,7 +18,7 @@
 #include <unistd.h>
 #include <ctype.h>
 
-#include "lib/cstring.h"
+#include <lib/cstring.h>
 
 #if defined(_WIN32) || defined(_WIN64)
 # define _CAP_WINDOWS 1

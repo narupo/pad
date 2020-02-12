@@ -1,4 +1,4 @@
-#include "lib/term.h"
+#include <lib/term.h>
 
 #ifdef TERM_WINDOWS
 static WORD

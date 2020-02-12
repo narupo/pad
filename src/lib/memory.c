@@ -1,4 +1,4 @@
-#include "lib/memory.h"
+#include <lib/memory.h>
 
 void *
 mem_ecalloc(size_t nelems, size_t size) {

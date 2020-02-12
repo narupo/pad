@@ -1,4 +1,4 @@
-#include "lang/object_dict.h"
+#include <lang/object_dict.h>
 
 enum {
     OBJDICT_INIT_CAPA = 128,

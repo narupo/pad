@@ -1,9 +1,9 @@
 #pragma once
 
-#include "lib/memory.h"
-#include "lib/file.h"
-#include "core/util.h"
-#include "core/config.h"
+#include <lib/memory.h>
+#include <lib/file.h>
+#include <core/util.h>
+#include <core/config.h>
 
 struct homecmd;
 typedef struct homecmd homecmd_t;

@@ -1,4 +1,4 @@
-#include "snippet/snippet.h"
+#include <snippet/snippet.h>
 
 /**
  * Structure of command

@@ -17,7 +17,7 @@
 #include <limits.h>
 #include <unistd.h>
 
-#include "lib/cstring.h"
+#include <lib/cstring.h>
 
 /**********
 * numbers *

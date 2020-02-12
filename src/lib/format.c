@@ -1,4 +1,4 @@
-#include "lib/format.h"
+#include <lib/format.h>
 
 char *
 fmt_capitalize_text(char *dst, size_t dstsz, const char *text) {

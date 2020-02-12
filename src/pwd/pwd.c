@@ -5,7 +5,7 @@
  *  Author: Aizawa Yuta
  *   Since: 2016
  */
-#include "pwd/pwd.h"
+#include <pwd/pwd.h>
 
 struct opts {
     bool ishelp;

@@ -7,26 +7,22 @@
  */
 #pragma once
 
-/***************************************************
-* Util module is allow dependency to other modules *
-***************************************************/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "lib/file.h"
-#include "lib/error.h"
-#include "lib/cl.h"
-#include "lib/cstring_array.h"
-#include "core/constant.h"
-#include "core/config.h"
-#include "core/symlink.h"
-#include "lang/tokenizer.h"
-#include "lang/ast.h"
-#include "lang/compiler.h"
-#include "lang/traverser.h"
-#include "lang/context.h"
+#include <lib/file.h>
+#include <lib/error.h>
+#include <lib/cl.h>
+#include <lib/cstring_array.h>
+#include <core/constant.h>
+#include <core/config.h>
+#include <core/symlink.h>
+#include <lang/tokenizer.h>
+#include <lang/ast.h>
+#include <lang/compiler.h>
+#include <lang/traverser.h>
+#include <lang/context.h>
 
 #ifdef _CAP_WINDOWS
 # include <windows.h>

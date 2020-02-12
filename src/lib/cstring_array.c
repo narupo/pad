@@ -5,7 +5,7 @@
  *  Author: Aizawa Yuta
  *   Since: 2016, 2018
  */
-#include "cstring_array.h"
+#include <lib/cstring_array.h>
 
 struct cstring_array {
 	char **arr;

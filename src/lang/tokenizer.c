@@ -1,4 +1,4 @@
-#include "tokenizer.h"
+#include <lang/tokenizer.h>
 
 enum {
     ERR_DETAIL_SIZE = 1024,

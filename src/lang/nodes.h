@@ -3,8 +3,8 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "lib/memory.h"
-#include "lang/types.h"
+#include <lib/memory.h>
+#include <lang/types.h>
 
 /*************
 * node types *

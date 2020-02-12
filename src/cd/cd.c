@@ -5,7 +5,7 @@
  *  Author: Aizawa Yuta
  *   Since: 2016, 2018
  */
-#include "cd/cd.h"
+#include <cd/cd.h>
 
 struct cdcmd {
     const config_t *config;

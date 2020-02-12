@@ -1,4 +1,4 @@
-#include "cat/cat.h"
+#include <cat/cat.h>
 
 /**
  * Structure of options

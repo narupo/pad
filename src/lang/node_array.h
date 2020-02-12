@@ -3,9 +3,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "lib/memory.h"
-#include "lang/types.h"
-#include "lang/nodes.h"
+#include <lib/memory.h>
+#include <lang/types.h>
+#include <lang/nodes.h>
 
 /*****************
 * delete and new *

@@ -10,9 +10,10 @@
 #pragma once
 
 #include <stdint.h>
-#include "lib/memory.h"
-#include "lib/cl.h"
-#include "lib/string.h"
+
+#include <lib/memory.h>
+#include <lib/cl.h>
+#include <lib/string.h>
 
 /**
  * number of type of cmdline objects

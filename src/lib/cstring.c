@@ -5,7 +5,7 @@
  *  Author: Aizawa Yuta
  *   Since: 2019
  */
-#include "cstring.h"
+#include <lib/cstring.h>
 
 enum {
     CSTR_FMT_SIZE = 2048,

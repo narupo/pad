@@ -1,4 +1,4 @@
-#include "lang/object.h"
+#include <lang/object.h>
 
 extern void
 objarr_del(object_array_t* self);

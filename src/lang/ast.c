@@ -1,4 +1,4 @@
-#include "lang/ast.h"
+#include <lang/ast.h>
 
 void
 ast_del_nodes(const ast_t *self, node_t *node) {

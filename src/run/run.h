@@ -1,14 +1,14 @@
 #pragma once
 
-#include "lib/memory.h"
-#include "lib/file.h"
-#include "lib/string.h"
-#include "lib/cstring.h"
-#include "lib/cstring_array.h"
-#include "core/constant.h"
-#include "core/util.h"
-#include "core/config.h"
-#include "core/symlink.h"
+#include <lib/memory.h>
+#include <lib/file.h>
+#include <lib/string.h>
+#include <lib/cstring.h>
+#include <lib/cstring_array.h>
+#include <core/constant.h>
+#include <core/util.h>
+#include <core/config.h>
+#include <core/symlink.h>
 
 struct runcmd;
 typedef struct runcmd runcmd_t;
