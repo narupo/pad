@@ -35,7 +35,7 @@ set_color(HANDLE handle, int fg, int bg, int opt) {
     case TERM_BLUE:    attr |= BACKGROUND_BLUE; break;
     case TERM_YELLOW:  attr |= BACKGROUND_RED | BACKGROUND_GREEN; break;
     case TERM_MAGENTA: attr |= BACKGROUND_RED | BACKGROUND_BLUE; break;
-    case TERM_CYAN:    attr |= BACKGROUND_BLUE | BACKGROUND_INTENSITY; break;
+    case TERM_CYAN:    attr |= BACKGROUND_GREEN | BACKGROUND_BLUE; break;
     case TERM_GRAY:    attr |= BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE; break;
     case TERM_WHITE:   attr |= BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY; break;
     case TERM_DEFAULT: break;
