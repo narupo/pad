@@ -150,7 +150,11 @@ shcmd_create_prompt(shcmd_t *self, char *dst, int32_t dstsz) {
     char *dp = dst;
 
     for (; *b && dp < dend; ++b, ++dp) {
+#ifdef _CAP_WINDOWS
+        *dp = *b == '\\' ? '/' : *b;
+#else
         *dp = *b;
+#endif
     }
 
     *dp = '\0';
