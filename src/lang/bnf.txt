@@ -17,18 +17,18 @@ BNF of Cap's template language
 
                def: func_def 
           func_def: 'def' identifier func_def_params ':' elems 'end' |
-                    'def' identifier func_def_params ':' ( '@}' blocks '{@' | elems )* 'end' 
+                    'def' identifier func_def_params ':' [ '@}' blocks '{@' | elems ]* 'end' 
    func_def_params: '(' func_def_args ')'
-     func_def_args: identifier ( ',' identifier )*
+     func_def_args: identifier [ ',' identifier ]*
 
        import_stmt: 'import' identifier_chain ( '@} ' | NEWLINE )+
 
-           if_stmt: 'if' test ':' elems* ( elif_stmt | else_stmt | 'end' ) |
-                    'if' test ':' '@}' blocks* '{@' ( elif_stmt | else_stmt | 'end' )
+           if_stmt: 'if' test ':' [ elems ]* ( elif_stmt | else_stmt | 'end' ) |
+                    'if' test ':' '@}' [ blocks ]* '{@' ( elif_stmt | else_stmt | 'end' )
          elif_stmt: 'elif' test ':' elems ( elif_stmt | else_stmt | 'end' ) |
-                    'elif' test ':' '@}' blocks* '{@' ( elif_stmt | else_stmt | 'end' )
-         else_stmt: 'else' ':' elems* 'end'* |
-                    'else' ':' '@}' blocks* '{@' 'end'*
+                    'elif' test ':' '@}' [ blocks ]* '{@' ( elif_stmt | else_stmt | 'end' )
+         else_stmt: 'else' ':' [ elems ]* 'end'* |
+                    'else' ':' '@}' [ blocks ]* '{@' 'end'*
 
           for_stmt: 'for' init_formula ';' comp_formula ';' update_formula ':' elems 'end' |
                     'for' init_formula ';' comp_formula ';' update_formula ':' '@}' blocks '@}' 'end' |
@@ -38,28 +38,28 @@ BNF of Cap's template language
                     'for' ':' '@}' blocks '{@' 'end'
         break_stmt: 'break'
      continue_stmt: 'continue'
-       return_stmt: 'return' ( formula )*
+       return_stmt: 'return' [ formula ]*
 
            formula: assign_list |
                     multi_assign
-       assign_list: assign ( ',' assign )*
-            assign: test '=' test ( '=' test )*
-      multi_assign: test_list ( '=' test_list )*
-     simple_assign: test ( '=' test )*
+       assign_list: assign [ ',' assign ]*
+            assign: test '=' test [ '=' test ]*
+      multi_assign: test_list [ '=' test_list ]*
+     simple_assign: test [ '=' test ]*
             
-         test_list: test ( ',' test )*
+         test_list: test [ ',' test ]*
               test: or_test
-           or_test: and_test ( 'or' and_test )*
-          and_test: not_test ( 'and' not_test )*
+           or_test: and_test [ 'or' and_test ]*
+          and_test: not_test [ 'and' not_test ]*
           not_test: 'not' not_test | comparison
 
-        comparison: asscalc ( comp_op asscalc )*
-           asscalc: expr ( augassign expr )*
-              expr: term ( add_sub_op term )*
-              term: dot ( mul_div_op dot )*
-               dot: call ( dot_op call )*
-              call: index ( '(' ( test_list ) ')' )*
-             index: factor ( '[' simple_assign ']' )*
+        comparison: asscalc [ comp_op asscalc ]*
+           asscalc: expr [ augassign expr ]*
+              expr: term [ add_sub_op term ]*
+              term: dot [ mul_div_op dot ]*
+               dot: call [ dot_op call ]*
+              call: index [ '(' ( test_list ) ')' ]*
+             index: factor [ '[' simple_assign ']' ]*
             factor: atom | '(' formula ')'
               atom: nil |
                     false |
@@ -70,9 +70,9 @@ BNF of Cap's template language
                     dict |
                     identifier
              array: '[' ( array_elems ) ']'
-       array_elems: simple_assign ( ',' simple_assign )*
+       array_elems: simple_assign [ ',' simple_assign ]*
               dict: '{' ( dict_elems ) '}'
-        dict_elems: dict_elem ( ',' dict_elem )*
+        dict_elems: dict_elem [ ',' dict_elem ]*
          dict_elem: simple_assign ':' simple_assign
            comp_op: '==' | '!=' | '<=' | '>=' | '<' | '>'
         add_sub_op: '+' | '-'
@@ -84,4 +84,4 @@ BNF of Cap's template language
            newline: '\n'
   identifier_chain: ( identifier | identifier '.' ) identifier_chain
             string: '"' .* '"'
-        identifier: ( [a-z] | [0-9] | _ )+ 
+        identifier: [ [a-z] | [0-9] | _ ]+ 
