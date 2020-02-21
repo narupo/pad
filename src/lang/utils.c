@@ -192,3 +192,27 @@ move_var(ast_t *ast, const char *identifier, object_t *move_obj) {
 
     return NULL;
 }
+
+static void
+_identifier_chain_to_array(cstring_array_t *arr, node_identifier_chain_t *identifier_chain
+    ) {
+    if (!identifier_chain) {
+        return;
+    }
+
+    if (identifier_chain->identifier) {
+        node_identifier_t *identifier = identifier_chain->identifier->real;
+        cstrarr_push(arr, identifier->identifier);
+    }
+
+    if (identifier_chain->identifier_chain) {
+        _identifier_chain_to_array(arr, identifier_chain->identifier_chain->real);
+    }
+}
+
+cstring_array_t *
+identifier_chain_to_cstrarr(node_identifier_chain_t *identifier_chain) {
+    cstring_array_t *arr = cstrarr_new();
+    _identifier_chain_to_array(arr, identifier_chain);
+    return arr;
+}

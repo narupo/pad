@@ -520,6 +520,51 @@ str_capitalize(const string_t *other) {
 	return self;
 }
 
+string_t *
+str_snake(const string_t *other) {
+	if (!other) {
+		return NULL;
+	}
+
+	int m = 0;
+	const char *p = str_getc(other);
+	string_t *self = str_new();
+
+	for (; *p; ++p) {
+		switch (m) {
+		case 0: // first
+			if (*p == '-' || *p == '_') {
+				m = 10;
+			} else {
+				str_pushb(self, tolower(*p));
+				m = 20;
+			}
+			break;
+		case 10: // found '-' or '_'
+			if (*p == '-' || *p == '_') {
+				// pass
+			} else {
+				str_pushb(self, tolower(*p));
+				m = 20;
+			}
+			break;
+		case 20: // found normal character
+			if (isupper(*p)) {
+				str_pushb(self, '_');
+				str_pushb(self, tolower(*p));
+			} else if (*p == '-' || *p == '_') {
+				str_pushb(self, '_');
+				m = 10;
+			} else {
+				str_pushb(self, *p);
+			}
+			break;
+		}
+	}
+
+	return self;
+}
+
 /**************
 * str cleanup *
 **************/

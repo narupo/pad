@@ -914,6 +914,69 @@ test_str_capitalize(void) {
     str_del(s);
 }
 
+static void
+test_str_snake(void) {
+    assert(str_snake(NULL) == NULL);
+    string_t *s = str_new();
+    assert(s != NULL);
+    
+    assert(str_set(s, "abc") != NULL);
+    string_t *cp = str_snake(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abc"));
+    str_del(cp);
+
+    assert(str_set(s, "abcDefGhi") != NULL);
+    cp = str_snake(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abc_def_ghi"));
+    str_del(cp);
+
+    assert(str_set(s, "AbcDefGhi") != NULL);
+    cp = str_snake(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abc_def_ghi"));
+    str_del(cp);
+
+    assert(str_set(s, "abc-def-ghi") != NULL);
+    cp = str_snake(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abc_def_ghi"));
+    str_del(cp);
+
+    assert(str_set(s, "_abcDefGhi") != NULL);
+    cp = str_snake(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abc_def_ghi"));
+    str_del(cp);
+
+    assert(str_set(s, "-abcDefGhi") != NULL);
+    cp = str_snake(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abc_def_ghi"));
+    str_del(cp);
+
+    assert(str_set(s, "_-abcDefGhi") != NULL);
+    cp = str_snake(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abc_def_ghi"));
+    str_del(cp);
+
+    assert(str_set(s, "abcDefGhi_abc-DefGhi") != NULL);
+    cp = str_snake(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abc_def_ghi_abc_def_ghi"));
+    str_del(cp);
+
+    assert(str_set(s, "abcDefGhi__abc--DefGhi") != NULL);
+    cp = str_snake(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abc_def_ghi_abc_def_ghi"));
+    str_del(cp);
+
+    str_del(s);
+}
+
 static const struct testcase
 string_tests[] = {
     {"cstr_app", test_cstring_cstr_app},
@@ -947,6 +1010,7 @@ string_tests[] = {
     {"str_lower", test_str_lower},
     {"str_upper", test_str_upper},
     {"str_capitalize", test_str_capitalize},
+    {"str_snake", test_str_snake},
     {0},
 };
 
