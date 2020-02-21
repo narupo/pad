@@ -76,7 +76,7 @@ tkr_new(tokenizer_option_t *move_option) {
     self->tokens = mem_ecalloc(self->tokens_capa+1, sizeof(token_t *)); // +1 for final null
 
     self->buf = str_new();
-    self->option = move(move_option);
+    self->option = mem_move(move_option);
     self->debug = false;
 
     return self;
@@ -95,7 +95,7 @@ tkr_move_token(tokenizer_t *self, token_t *move_token) {
         tkr_resize_tokens(self, self->tokens_capa*2);
     }
 
-    self->tokens[self->tokens_len++] = move_token;
+    self->tokens[self->tokens_len++] = mem_move(move_token);
     self->tokens[self->tokens_len] = NULL;
 }
 
@@ -315,8 +315,8 @@ tkr_store_textblock(tokenizer_t *self) {
         return self;
     }
     token_t *textblock = token_new(TOKEN_TYPE_TEXT_BLOCK);
-    token_move_text(textblock, str_escdel(self->buf));
-    tkr_move_token(self, textblock);
+    token_move_text(textblock, mem_move(str_escdel(self->buf)));
+    tkr_move_token(self, mem_move(textblock));
     self->buf = str_new();
     return self;
 }
@@ -336,13 +336,13 @@ tkr_parse_op(
 
     if (*self->ptr != '=') {
         token_t *token = token_new(type_op);
-        tkr_move_token(self, token);
+        tkr_move_token(self, mem_move(token));
         return self;
     }
 
     self->ptr++;
     token_t *token = token_new(type_op_ass);
-    tkr_move_token(self, token);
+    tkr_move_token(self, mem_move(token));
     return self;
 }
 
@@ -372,14 +372,14 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 self->ptr++;
                 token_t *token = token_new(TOKEN_TYPE_LBRACEAT);
                 tkr_store_textblock(self);
-                tkr_move_token(self, token);
+                tkr_move_token(self, mem_move(token));
                 m = 10;
             } else if (c == self->option->ldbrace_value[0] &&
                        *self->ptr == self->option->ldbrace_value[1]) {
                 self->ptr++;
                 token_t *token = token_new(TOKEN_TYPE_LDOUBLE_BRACE);
                 tkr_store_textblock(self);
-                tkr_move_token(self, token);
+                tkr_move_token(self, mem_move(token));
                 m = 20;
             } else {
                 str_pushb(self->buf, c);
@@ -392,14 +392,14 @@ tkr_parse(tokenizer_t *self, const char *src) {
                     token_del(token);
                     goto fail;
                 }
-                tkr_move_token(self, token);
+                tkr_move_token(self, mem_move(token));
             } else if (tkr_is_identifier_char(self, c)) {
                 self->ptr--;
                 if (!tkr_parse_identifier(self)) {
                     goto fail;
                 }
             } else if (c == '\n') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_NEWLINE));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_NEWLINE)));
             } else if (c == '@') {
                 self->ptr--;
                 token_t *token = tkr_read_atmark(self);
@@ -407,7 +407,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
                     token_del(token);
                     goto fail;
                 }
-                tkr_move_token(self, token);
+                tkr_move_token(self, mem_move(token));
 
                 if (token->type == TOKEN_TYPE_RBRACEAT) {
                     m = 0;
@@ -420,19 +420,19 @@ tkr_parse(tokenizer_t *self, const char *src) {
             } else if (c == '!' && *self->ptr == '=') {
                 self->ptr++;
                 token_t *token = token_new(TOKEN_TYPE_OP_NOT_EQ);
-                tkr_move_token(self, token);
+                tkr_move_token(self, mem_move(token));
             } else if (c == '<' && *self->ptr == '=') {
                 self->ptr++;
                 token_t *token = token_new(TOKEN_TYPE_OP_LTE);
-                tkr_move_token(self, token);
+                tkr_move_token(self, mem_move(token));
             } else if (c == '>' && *self->ptr == '=') {
                 self->ptr++;
                 token_t *token = token_new(TOKEN_TYPE_OP_GTE);
-                tkr_move_token(self, token);
+                tkr_move_token(self, mem_move(token));
             } else if (c == '<') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_OP_LT));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_OP_LT)));
             } else if (c == '>') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_OP_GT));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_OP_GT)));
             } else if (c == '+') {
                 self->ptr--;
                 if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_ADD, TOKEN_TYPE_OP_ADD_ASS)) {
@@ -454,25 +454,25 @@ tkr_parse(tokenizer_t *self, const char *src) {
                     goto fail;
                 }
             } else if (c == '.') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_DOT_OPE));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_DOT_OPE)));
             } else if (c == ',') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_COMMA));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_COMMA)));
             } else if (c == '(') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_LPAREN));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_LPAREN)));
             } else if (c == ')') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_RPAREN));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_RPAREN)));
             } else if (c == '[') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_LBRACKET));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_LBRACKET)));
             } else if (c == ']') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_RBRACKET));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_RBRACKET)));
             } else if (c == '{') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_LBRACE));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_LBRACE)));
             } else if (c == '}') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_RBRACE));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_RBRACE)));
             } else if (c == ':') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_COLON));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_COLON)));
             } else if (c == ';') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_SEMICOLON));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_SEMICOLON)));
             } else if (isspace(c)) {
                 // pass
             } else {
@@ -487,7 +487,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
                     token_del(token);
                     goto fail;
                 }
-                tkr_move_token(self, token);
+                tkr_move_token(self, mem_move(token));
             } else if (tkr_is_identifier_char(self, c)) {
                 self->ptr--;
                 if (!tkr_parse_identifier(self)) {
@@ -498,7 +498,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
                self->ptr++; 
                token_t *token = token_new(TOKEN_TYPE_RDOUBLE_BRACE);
                tkr_store_textblock(self);
-               tkr_move_token(self, token);
+               tkr_move_token(self, mem_move(token));
                m = 0;
             } else if (c == '=') {
                 self->ptr--;
@@ -508,19 +508,19 @@ tkr_parse(tokenizer_t *self, const char *src) {
             } else if (c == '!' && *self->ptr == '=') {
                 self->ptr++;
                 token_t *token = token_new(TOKEN_TYPE_OP_NOT_EQ);
-                tkr_move_token(self, token);
+                tkr_move_token(self, mem_move(token));
             } else if (c == '<' && *self->ptr == '=') {
                 self->ptr++;
                 token_t *token = token_new(TOKEN_TYPE_OP_LTE);
-                tkr_move_token(self, token);
+                tkr_move_token(self, mem_move(token));
             } else if (c == '>' && *self->ptr == '=') {
                 self->ptr++;
                 token_t *token = token_new(TOKEN_TYPE_OP_GTE);
-                tkr_move_token(self, token);
+                tkr_move_token(self, mem_move(token));
             } else if (c == '<') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_OP_LT));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_OP_LT)));
             } else if (c == '>') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_OP_GT));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_OP_GT)));
             } else if (c == '+') {
                 self->ptr--;
                 if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_ADD, TOKEN_TYPE_OP_ADD_ASS)) {
@@ -542,21 +542,21 @@ tkr_parse(tokenizer_t *self, const char *src) {
                     goto fail;
                 }
             } else if (c == '.') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_DOT_OPE));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_DOT_OPE)));
             } else if (c == ',') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_COMMA));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_COMMA)));
             } else if (c == '(') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_LPAREN));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_LPAREN)));
             } else if (c == ')') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_RPAREN));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_RPAREN)));
             } else if (c == '[') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_LBRACKET));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_LBRACKET)));
             } else if (c == ']') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_RBRACKET));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_RBRACKET)));
             } else if (c == '{') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_LBRACE));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_LBRACE)));
             } else if (c == '}') {
-                tkr_move_token(self, token_new(TOKEN_TYPE_RBRACE));
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_RBRACE)));
             } else if (c == ' ') {
                 // pass
             } else {
