@@ -1,21 +1,21 @@
 /**
  * Cap
  *
- * License: MIT
- *  Author: Aizawa Yuta
- *   Since: 2016
+ * license: MIT
+ *  author: Aizawa Yuta
+ *   since: 2016
  */
 #include <app.h>
 
 /**
- * Numbers
+ * numbers
  */
 enum {
     MAX_RECURSION_LIMIT = 8,
 };
 
 /**
- * Program option.
+ * program option
  */
 struct opts {
     bool ishelp;
@@ -23,7 +23,7 @@ struct opts {
 };
 
 /**
- * Application structure.
+ * application structure
  */
 struct app {
     int argc;
@@ -40,7 +40,7 @@ static int
 app_run(app_t *self);
 
 /**
- * Parse options
+ * parse options
  *
  * @param[in] self
  * @return success to true
@@ -85,7 +85,7 @@ app_parse_opts(app_t *self) {
 }
 
 /**
- * Destruct module
+ * destruct module
  *
  * @param[in] self
  */
@@ -100,7 +100,7 @@ app_del(app_t *self) {
 }
 
 /**
- * Deploy Cap's environment at user's file system
+ * deploy Cap's environment at user's file system
  *
  * @param[in] self
  * @return success to true
@@ -194,7 +194,7 @@ app_deploy_env(const app_t *self) {
 }
 
 /**
- * Parse arguments
+ * parse arguments
  *
  * @param[in]  self   
  * @param[in]  argc    
@@ -218,7 +218,7 @@ app_parse_args(app_t *self, int argc, char *argv[]) {
 }
 
 /**
- * Construct module
+ * construct module
  *
  * @param[in] argc
  * @param[in] argv
@@ -259,7 +259,7 @@ app_new(int argc, char *argv[]) {
 }
 
 /**
- * Show usage of module
+ * show usage of module
  *
  * @param[in] app 
  */
@@ -328,7 +328,7 @@ app_usage(app_t *app) {
 }
 
 /**
- * Show version of module
+ * show version of module
  *
  * @param[in] self
  */
@@ -341,7 +341,7 @@ app_version(app_t *self) {
 }
 
 /**
- * Check if the argument is the command name of Cap
+ * check if the argument is the command name of Cap
  *
  * @param[in] self
  * @param[in] cmdname command name
@@ -385,7 +385,7 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
 }
 
 /**
- * Execute command by command name
+ * execute command by command name
  *
  * @param[in] self
  * @param[in] name command name
@@ -459,7 +459,7 @@ app_execute_command_by_name(app_t *self, const char *name) {
 }
 
 /**
- * Execute alias by alias name
+ * execute alias by alias name
  *
  * @param[in] self
  * @param[in] name alias name
@@ -527,7 +527,7 @@ app_execute_alias_by_name(app_t *self, const char *name) {
 }
 
 /**
- * Run module
+ * run module
  *
  * @param[in] self
  *
@@ -573,7 +573,7 @@ app_run(app_t *self) {
 }
 
 /**
- * Main routine
+ * main routine
  *
  * @param[in] argc
  * @param[in] argv
