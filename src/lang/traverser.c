@@ -972,8 +972,6 @@ trv_calc_assign(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
 
     switch (lhs->type) {
     default:
-        if (ast->debug) printf("lhs->type[%d] lvalue[%ld]\n", lhs->type, lhs->lvalue);
-
         ast_set_error_detail(ast, "syntax error. invalid lhs in assign list");
         return_trav(NULL);
         break;
@@ -5339,16 +5337,11 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             assert(op);
 
             node_t *rnode = nodearr_get(dot->nodearr, i+1);
-            assert(rnode->type == NODE_TYPE_CALL);
-            check("call _trv_traverse with index");
-            object_t *rhs = _trv_traverse(ast, rnode, dep+1);
-            if (ast_has_error(ast)) {
-                obj_del(lhs);
-                return_trav(NULL);
-            }
             assert(rnode);
+            assert(rnode->type == NODE_TYPE_CALL);
 
             ast->ref_dot_owner = lhs;
+            check("call _trv_traverse with index");
             object_t *result = _trv_traverse(ast, rnode, dep+1);
             if (ast_has_error(ast)) {
                 obj_del(lhs);
@@ -5362,7 +5355,6 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             ast->ref_dot_owner = NULL;
 
             obj_del(lhs);
-            obj_del(rhs);
             lhs = result;
         }
 
@@ -6102,16 +6094,16 @@ trv_identifier(ast_t *ast, const node_t *node, int dep) {
 }
 
 static object_t *
-trv_invoke_func_obj(ast_t *ast, const char *name, const object_t *drtargs, int dep) {
+trv_invoke_func_obj(ast_t *ast, const char *funcname, const object_t *drtargs, int dep) {
     tready();
-    assert(name);
+    assert(funcname);
     check("invoke func obj");
     object_t *args = NULL;
     if (drtargs) {
         args = obj_to_array(drtargs);
     }
 
-    object_t *func_obj = get_var_ref(ast, name);
+    object_t *func_obj = get_var_ref(ast, funcname);
     if (!func_obj) {
         // not error
         obj_del(args);
@@ -6188,10 +6180,10 @@ trv_invoke_func_obj(ast_t *ast, const char *name, const object_t *drtargs, int d
 }
 
 static object_t *
-trv_invoke_builtin_module(ast_t *ast, object_t *mod, const char *name, const object_t *args) {
+trv_invoke_builtin_module_func(ast_t *ast, const object_t *mod, const char *funcname, const object_t *args) {
     builtin_func_info_t *infos = mod->module.builtin_func_infos;
     for (builtin_func_info_t *info = infos; info->name; ++info) {
-        if (cstr_eq(info->name, name)) {
+        if (cstr_eq(info->name, funcname)) {
             return info->func(ast, args);
         }
     }
@@ -6200,33 +6192,56 @@ trv_invoke_builtin_module(ast_t *ast, object_t *mod, const char *name, const obj
 }
 
 static object_t *
-trv_invoke_builtin_modules(ast_t *ast, const char *name, const object_t *args) {
-    static const char *builtin_mod_names[] = {
-        "__builtin__",
-        "alias",
-        "opts",
-        NULL,
-    };
-    object_dict_t *varmap = ctx_get_varmap_at_global(ast->context);
+trv_invoke_builtin_modules(ast_t *ast, const char *funcname, const object_t *args) {
+    const char *bltin_mod_name = NULL;
+    const object_t *module = NULL;
 
-    for (const char **bltname = builtin_mod_names; *bltname; ++bltname) {
-        object_dict_item_t *item = objdict_get(varmap, *bltname);
-        if (!item) {
-            continue;
-        }
+    if (ast->ref_dot_owner) {
+        const object_t *owner = ast->ref_dot_owner;
 
-        object_t *obj = item->value;
-        assert(obj);
-
-        switch (obj->type) {
-        default: break;
-        case OBJ_TYPE_MODULE: {
-            object_t *result = trv_invoke_builtin_module(ast, obj, name, args);
-            if (result) {
-                return result;
+    again:
+        switch (owner->type) {
+        default:
+            // not error
+            return NULL;
+            break;
+        case OBJ_TYPE_STRING: 
+            bltin_mod_name = "__string__";
+        break;
+        case OBJ_TYPE_MODULE:
+            module = owner;
+            break;
+        case OBJ_TYPE_IDENTIFIER: 
+            owner = pull_in_ref_by(ast, owner);
+            if (!owner) {
+                return NULL;
             }
-        } break;
+            goto again;
+            break;
         }
+    } else {
+        bltin_mod_name = "__builtin__";
+    }
+
+    if (!module) {
+        object_dict_t *varmap = ctx_get_varmap_at_global(ast->context);
+        object_dict_item_t *item = objdict_get(varmap, bltin_mod_name);
+        if (!item) {
+            return NULL;
+        }
+
+        module = item->value;
+        assert(module);
+    }
+
+    switch (module->type) {
+    default: /* not error */ break;
+    case OBJ_TYPE_MODULE: {
+        object_t *result = trv_invoke_builtin_module_func(ast, module, funcname, args);
+        if (result) {
+            return result;
+        }
+    } break;
     }
 
     return NULL;
@@ -6571,6 +6586,9 @@ trv_import_builtin_modules(ast_t *ast) {
     object_t *mod = NULL;
 
     mod = builtin_module_new();
+    objdict_move(varmap, str_getc(mod->module.name), mod);
+
+    mod = builtin_string_module_new();
     objdict_move(varmap, str_getc(mod->module.name), mod);
 
     mod = builtin_alias_module_new();

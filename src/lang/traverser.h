@@ -8,6 +8,7 @@
 #include <lang/ast.h>
 #include <lang/utils.h>
 #include <lang/builtin/functions.h>
+#include <lang/builtin/modules/string.h>
 #include <lang/builtin/modules/alias.h>
 #include <lang/builtin/modules/opts.h>
 

@@ -10148,8 +10148,9 @@ test_trv_atom(void) {
     tkr_parse(tkr, "{@ alias.set() @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
+        (trv_traverse(ast, ctx));
         assert(ast_has_error(ast));
+        showdetail();
         assert(!strcmp(ast_get_error_detail(ast), "can't invoke alias.set. need two arguments"));
     }
 
@@ -11896,6 +11897,7 @@ test_trv_dot(void) {
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         trv_traverse(ast, ctx);
+        showdetail();
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
     }
@@ -12280,7 +12282,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't call upper function"));
+        assert(!strcmp(ast_get_error_detail(ast), "can't call \"upper\""));
     }
 
     /********
@@ -12308,7 +12310,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't call lower function"));
+        assert(!strcmp(ast_get_error_detail(ast), "can't call \"lower\""));
     }
 
     /*************
@@ -12336,7 +12338,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't call capitalize function"));
+        assert(!strcmp(ast_get_error_detail(ast), "can't call \"capitalize\""));
     }
 
     ctx_del(ctx);

@@ -117,6 +117,7 @@ SRCS := build/lib/error.c \
 	build/lang/scope.c \
 	build/lang/utils.c \
 	build/lang/builtin/functions.c \
+	build/lang/builtin/modules/string.c \
 	build/lang/builtin/modules/opts.c \
 	build/lang/builtin/modules/alias.c \
 
@@ -239,6 +240,8 @@ build/lang/scope.o: src/lang/scope.c src/lang/scope.h
 build/lang/utils.o: src/lang/utils.c src/lang/utils.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/builtin/functions.o: src/lang/builtin/functions.c src/lang/builtin/functions.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/builtin/modules/string.o: src/lang/builtin/modules/string.c src/lang/builtin/modules/string.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/builtin/modules/opts.o: src/lang/builtin/modules/opts.c src/lang/builtin/modules/opts.h
 	$(CC) $(CFLAGS) -c $< -o $@
