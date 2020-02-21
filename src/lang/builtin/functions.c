@@ -172,6 +172,38 @@ again:
     return obj_new_nil();
 }
 
+static object_t *
+builtin_snake(ast_t *ast, const object_t *_) {
+    const object_t *owner = ast->ref_dot_owner;
+    if (!owner) {
+        return obj_new_nil();
+    }
+    ast->ref_dot_owner = NULL;
+
+again:
+    switch (owner->type) {
+    default:
+        ast_set_error_detail(ast, "can't call snake function");
+        return NULL;
+        break;
+    case OBJ_TYPE_STRING: {
+        string_t *str = str_snake(owner->string);
+        return obj_new_str(str);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        owner = ctx_find_var_ref(ast->context, str_getc(owner->identifier));
+        if (!owner) {
+            ast_set_error_detail(ast, "not found \"%s\" in snake function", owner->identifier);
+            return NULL;
+        }
+        goto again;
+    } break;
+    }
+
+    assert(0 && "impossible. failed to invoke snake function");
+    return obj_new_nil();
+}
+
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"puts", builtin_puts},
@@ -179,6 +211,7 @@ builtin_func_infos[] = {
     {"lower", builtin_lower},
     {"upper", builtin_upper},
     {"capitalize", builtin_capitalize},
+    {"snake", builtin_snake},
     {0},
 };
 
