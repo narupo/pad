@@ -9,8 +9,8 @@
 * move *
 *******/
 
-#undef move
-#define move(val) val
+#undef mem_move
+#define mem_move(val) val
 
 /*************
 * prototypes *

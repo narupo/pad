@@ -90,15 +90,6 @@ static object_t *
 trv_calc_term_mul(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-get_var_ref(ast_t *ast, const char *identifier, int dep);
-
-static object_t *
-move_var(ast_t *ast, const char *identifier, object_t *move_obj, int dep);
-
-static object_t *
-pull_in_ref_by(ast_t *ast, const object_t *idn_obj);
-
-static object_t *
 trv_calc_asscalc_ass(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
@@ -228,123 +219,6 @@ trv_code_block(ast_t *ast, const node_t *node, int dep) {
 }
 
 static object_t *
-trv_get_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
-    assert(index_obj && index_obj->type == OBJ_TYPE_INDEX);
-    
-    assert(index_obj->index.ref_operand);
-    object_t *operand = obj_new_other(index_obj->index.ref_operand);
-    object_t *tmp_operand = NULL;
-    assert(index_obj->index.indices);
-    const object_array_t *indices = index_obj->index.indices;
-    assert(operand);
-    assert(indices);
-
-    for (int32_t i = 0; i < objarr_len(indices); ++i) {
-        const object_t *el = objarr_getc(indices, i);
-        assert(el);
-
-        const object_t *idx = el;
-        if (el->type == OBJ_TYPE_IDENTIFIER) {
-            idx = pull_in_ref_by(ast, el);
-            if (!idx) {
-                ast_set_error_detail(ast, "\"%s\" is not defined in index object", str_getc(el->identifier));
-                obj_del(operand);
-                return NULL;
-            }
-        }
-
-        // get index key
-        const char *skey = NULL;
-        long ikey = -1;
-        switch (idx->type) {
-        default: err_die("invalid index type in get value of index obj"); break;
-        case OBJ_TYPE_STRING: skey = str_getc(idx->string); break;
-        case OBJ_TYPE_INTEGER: ikey = idx->lvalue; break;
-        }
-
-        if (operand->type == OBJ_TYPE_IDENTIFIER) {
-            object_t *ref = pull_in_ref_by(ast, operand);
-            if (ast_has_error(ast)) {
-                obj_del(operand);
-                return NULL;
-            } else if (!ref) {
-                ast_set_error_detail(ast, "\"%s\" is not defined in get value of index object", str_getc(operand->identifier));
-                obj_del(operand);
-                return NULL;
-            }
-            obj_del(operand);
-            operand = obj_new_other(ref);
-        }
-
-        switch (operand->type) {
-        default:
-            ast_set_error_detail(ast, "invalid operand type (%d) in get value of index object", operand->type);
-            obj_del(operand);
-            break;
-        case OBJ_TYPE_ARRAY: {
-            if (idx->type != OBJ_TYPE_INTEGER) {
-                ast_set_error_detail(ast, "invalid array index value. value is not integer");
-                obj_del(operand);
-                return NULL;
-            }
-
-            if (ikey < 0 || ikey >= objarr_len(operand->objarr)) {
-                ast_set_error_detail(ast, "index out of range of array");
-                obj_del(operand);
-                return NULL;
-            }
-
-            tmp_operand = obj_new_other(objarr_getc(operand->objarr, ikey));
-            obj_del(operand);
-            operand = tmp_operand;
-            tmp_operand = NULL;
-        } break;
-        case OBJ_TYPE_STRING: {
-            if (idx->type != OBJ_TYPE_INTEGER) {
-                ast_set_error_detail(ast, "invalid string index value. value is not integer");
-                obj_del(operand);
-                return NULL;
-            }
-
-            if (ikey < 0 || ikey >= str_len(operand->string)) {
-                ast_set_error_detail(ast, "index out of range of string");
-                obj_del(operand);
-                return NULL;
-            }
-
-            const char ch = str_getc(operand->string)[ikey];
-            string_t *str = str_new();
-            str_pushb(str, ch);
-            
-            obj_del(operand);
-            operand = obj_new_str(str);
-        } break;
-        case OBJ_TYPE_DICT: {
-            if (idx->type != OBJ_TYPE_STRING) {
-                ast_set_error_detail(ast, "invalid dict index value. value is not a string");
-                obj_del(operand);
-                return NULL;
-            }
-            assert(skey);
-
-            const object_dict_item_t *item = objdict_getc(operand->objdict, skey);
-            if (!item) {
-                obj_del(operand);
-                return NULL;
-            }
-
-            tmp_operand = obj_new_other(item->value);
-            obj_del(operand);
-            operand = tmp_operand;
-            tmp_operand = NULL;
-        } break;
-        }
-    }
-
-    return operand;
-}
-
-static object_t *
 trv_ref_block(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_ref_block_t *ref_block = node->real;
@@ -359,7 +233,7 @@ trv_ref_block(ast_t *ast, const node_t *node, int dep) {
 
     object_t *result = tmp;
     if (tmp->type == OBJ_TYPE_INDEX) {
-        result = trv_get_value_of_index_obj(ast, tmp);
+        result = copy_value_of_index_obj(ast, tmp);
         if (ast_has_error(ast)) {
             obj_del(tmp);
             return_trav(NULL);
@@ -390,7 +264,7 @@ trv_ref_block(ast_t *ast, const node_t *node, int dep) {
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = str_getc(result->identifier);
-        object_t *obj = get_var_ref(ast, idn, dep+1);
+        object_t *obj = get_var_ref(ast, idn);
         if (!obj) {
             ast_set_error_detail(ast, "\"%s\" is not defined in ref block", idn);
             return_trav(NULL);
@@ -582,7 +456,7 @@ trv_parse_bool(ast_t *ast, const object_t *obj) {
     case OBJ_TYPE_BOOL: return obj->boolean; break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = str_getc(obj->identifier);
-        object_t *obj = get_var_ref(ast, idn, 0);
+        object_t *obj = get_var_ref(ast, idn);
         if (!obj) {
             ast_set_error_detail(ast, "\"%s\" is not defined in if statement", idn);
             obj_del(obj);
@@ -595,7 +469,7 @@ trv_parse_bool(ast_t *ast, const object_t *obj) {
     case OBJ_TYPE_ARRAY: return objarr_len(obj->objarr); break;
     case OBJ_TYPE_DICT: return objdict_len(obj->objdict); break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, obj);
+        object_t *val = copy_value_of_index_obj(ast, obj);
         if (!val) {
             ast_set_error_detail(ast, "value is null in parse bool");
             return false;
@@ -956,7 +830,7 @@ trv_obj_to_index_value(ast_t *ast, index_value_t *idxval, const object_t *obj) {
         }
         break;
     case OBJ_TYPE_INDEX:
-        delme = trv_get_value_of_index_obj(ast, obj);
+        delme = copy_value_of_index_obj(ast, obj);
         if (ast_has_error(ast)) {
             return NULL;
         } else if (!delme) {
@@ -985,27 +859,6 @@ trv_obj_to_index_value(ast_t *ast, index_value_t *idxval, const object_t *obj) {
 
     obj_del(delme);
     return idxval;
-}
-
-static object_t *
-trv_copy_object_value(ast_t *ast, const object_t *obj) {
-    assert(obj);
-
-    switch (obj->type) {
-    default: break;
-    case OBJ_TYPE_IDENTIFIER: {
-        const object_t *ref = pull_in_ref_by(ast, obj);
-        if (!ref) {
-            return NULL;
-        }
-        return obj_new_other(ref);
-    } break;
-    case OBJ_TYPE_INDEX:
-        return trv_get_value_of_index_obj(ast, obj);
-        break;
-    }
-
-    return obj_new_other(obj);
 }
 
 static object_t *
@@ -1056,7 +909,7 @@ trv_assign_to_index(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
 
             if (i == idxslen-1) {
                 // assign to
-                object_t *copy = trv_copy_object_value(ast, rhs);
+                object_t *copy = copy_object_value(ast, rhs);
                 if (ast_has_error(ast)) {
                     return_trav(NULL);
                 } else if (!copy) {
@@ -1089,7 +942,7 @@ trv_assign_to_index(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
 
             if (i == idxslen-1) {
                 // assign to
-                object_t *copy = trv_copy_object_value(ast, rhs);
+                object_t *copy = copy_object_value(ast, rhs);
                 if (ast_has_error(ast)) {
                     return_trav(NULL);
                 } else if (!copy) {
@@ -1434,35 +1287,6 @@ trv_test(ast_t *ast, const node_t *node, int dep) {
     return_trav(obj);
 }
 
-/**
- * return *reference* (do not delete)
- */
-static object_t *
-get_var_ref(ast_t *ast, const char *identifier, int dep) {
-    tready();
-
-    object_t *obj = ctx_find_var_ref(ast->context, identifier);
-    if (!obj) {
-        return_trav(NULL);
-    }
-
-    return_trav(obj);
-}
-
-/**
- * set (move) object at varmap of current scope
- */
-static object_t *
-move_var(ast_t *ast, const char *identifier, object_t *move_obj, int dep) {
-    tready();
-    assert(move_obj->type != OBJ_TYPE_IDENTIFIER);
-
-    object_dict_t *varmap = ctx_get_varmap(ast->context);
-    objdict_move(varmap, identifier, move_obj);
-
-    return_trav(NULL);
-}
-
 static object_t *
 trv_roll_identifier_lhs(
     ast_t *ast,
@@ -1474,7 +1298,7 @@ trv_roll_identifier_lhs(
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
     const char *idn = str_getc(lhs->identifier);
-    object_t *lvar = get_var_ref(ast, idn, dep+1);
+    object_t *lvar = get_var_ref(ast, idn);
     if (!lvar) {
         ast_set_error_detail(ast, "\"%s\" is not defined in roll identifier lhs", idn);
         return_trav(NULL);
@@ -1495,7 +1319,7 @@ trv_roll_identifier_rhs(
     tready();
     assert(rhs->type == OBJ_TYPE_IDENTIFIER);
 
-    object_t *rvar = get_var_ref(ast, str_getc(rhs->identifier), dep+1);
+    object_t *rvar = get_var_ref(ast, str_getc(rhs->identifier));
     if (!rvar) {
         ast_set_error_detail(ast, "\"%s\" is not defined in roll identifier rhs", str_getc(rhs->identifier));
         return_trav(NULL);
@@ -1615,7 +1439,7 @@ trv_compare_or_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare or int. index object value is null");
             return_trav(NULL);
@@ -1728,7 +1552,7 @@ trv_compare_or_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = get_var_ref(ast, str_getc(rhs->identifier), dep+1);
+        object_t *rvar = get_var_ref(ast, str_getc(rhs->identifier));
         if (!rvar) {
             ast_set_error_detail(ast, "%s is not defined compare or bool", str_getc(rhs->identifier));
             return_trav(NULL);
@@ -1739,7 +1563,7 @@ trv_compare_or_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare or bool. index object value is null");
             return_trav(NULL);
@@ -1859,7 +1683,7 @@ trv_compare_or_string(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare or string. index object value is null");
             return_trav(NULL);
@@ -1980,7 +1804,7 @@ trv_compare_or_array(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare or array. index object value is null");
             return_trav(NULL);
@@ -2101,7 +1925,7 @@ trv_compare_or_dict(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare or dict. index object value is null");
             return_trav(NULL);
@@ -2136,7 +1960,7 @@ trv_compare_or_nil(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare or nil. index object value is null");
             return_trav(NULL);
@@ -2253,7 +2077,7 @@ trv_compare_or_func(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare or func. index object value is null");
             return_trav(NULL);
@@ -2370,7 +2194,7 @@ trv_compare_or_module(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare or func. index object value is null");
             return_trav(NULL);
@@ -2436,7 +2260,7 @@ trv_compare_or(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, lhs);
+        object_t *val = copy_value_of_index_obj(ast, lhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare or. index object value is null");
             return_trav(NULL);
@@ -2596,7 +2420,7 @@ trv_compare_and_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare and int. index object value is null");
             return_trav(NULL);
@@ -2714,7 +2538,7 @@ trv_compare_and_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare and bool. index object value is null");
             return_trav(NULL);
@@ -2834,7 +2658,7 @@ trv_compare_and_string(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare and string. index object value is null");
             return_trav(NULL);
@@ -2945,7 +2769,7 @@ trv_compare_and_array(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare and array. index object value is null");
             return_trav(NULL);
@@ -3056,7 +2880,7 @@ trv_compare_and_dict(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare and dict. index object value is null");
             return_trav(NULL);
@@ -3087,7 +2911,7 @@ trv_compare_and_nil(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare and nil. index object value is null");
             return_trav(NULL);
@@ -3196,7 +3020,7 @@ trv_compare_and_func(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare and func. index object value is null");
             return_trav(NULL);
@@ -3305,7 +3129,7 @@ trv_compare_and_module(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare and func. index object value is null");
             return_trav(NULL);
@@ -3371,7 +3195,7 @@ trv_compare_and(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, lhs);
+        object_t *val = copy_value_of_index_obj(ast, lhs);
         if (!val) {
             ast_set_error_detail(ast, "can't compare and. index object value is null");
             return_trav(NULL);
@@ -3451,7 +3275,7 @@ trv_compare_not(ast_t *ast, const object_t *operand, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *var = get_var_ref(ast, str_getc(operand->identifier), dep+1);
+        object_t *var = get_var_ref(ast, str_getc(operand->identifier));
         if (!var) {
             ast_set_error_detail(ast, "\"%s\" is not defined compare not", str_getc(operand->identifier));
             return_trav(NULL);
@@ -3474,7 +3298,7 @@ trv_compare_not(ast_t *ast, const object_t *operand, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, operand);
+        object_t *val = copy_value_of_index_obj(ast, operand);
         if (!val) {
             ast_set_error_detail(ast, "can't compare not. index object value is null");
             return_trav(NULL);
@@ -3543,7 +3367,7 @@ trv_compare_comparison_eq_int(ast_t *ast, const object_t *lhs, const object_t *r
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison eq int. index object value is null");
             return_trav(NULL);
@@ -3585,7 +3409,7 @@ trv_compare_comparison_eq_bool(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison eq bool. index object value is null");
             return_trav(NULL);
@@ -3624,7 +3448,7 @@ trv_compare_comparison_eq_string(ast_t *ast, const object_t *lhs, const object_t
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison eq string. index object value is null");
             return_trav(NULL);
@@ -3659,7 +3483,7 @@ trv_compare_comparison_eq_array(ast_t *ast, const object_t *lhs, const object_t 
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison eq array. index object value is null");
             return_trav(NULL);
@@ -3697,7 +3521,7 @@ trv_compare_comparison_eq_nil(ast_t *ast, const object_t *lhs, const object_t *r
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison eq nil. index object value is null");
             return_trav(NULL);
@@ -3736,7 +3560,7 @@ trv_compare_comparison_eq_func(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison eq func. index object value is null");
             return_trav(NULL);
@@ -3776,7 +3600,7 @@ trv_compare_comparison_eq_module(ast_t *ast, const object_t *lhs, const object_t
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison eq func. index object value is null");
             return_trav(NULL);
@@ -3796,7 +3620,7 @@ trv_compare_comparison_eq_index(ast_t *ast, const object_t *lhs, const object_t 
     tready();
     assert(lhs->type == OBJ_TYPE_INDEX);
 
-    object_t *val = trv_get_value_of_index_obj(ast, lhs);
+    object_t *val = copy_value_of_index_obj(ast, lhs);
     if (!val) {
         ast_set_error_detail(ast, "index object value is null");
         return_trav(NULL);
@@ -3896,7 +3720,7 @@ trv_compare_comparison_not_eq_int(ast_t *ast, const object_t *lhs, const object_
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison not eq int. index object value is null");
             return_trav(NULL);
@@ -3935,7 +3759,7 @@ trv_compare_comparison_not_eq_bool(ast_t *ast, const object_t *lhs, const object
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison not eq bool. index object value is null");
             return_trav(NULL);
@@ -3973,7 +3797,7 @@ trv_compare_comparison_not_eq_string(ast_t *ast, const object_t *lhs, const obje
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison not eq string. index object value is null");
             return_trav(NULL);
@@ -4008,7 +3832,7 @@ trv_compare_comparison_not_eq_array(ast_t *ast, const object_t *lhs, const objec
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison not eq array. index object value is null");
             return_trav(NULL);
@@ -4051,7 +3875,7 @@ trv_compare_comparison_not_eq_nil(ast_t *ast, const object_t *lhs, const object_
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison not eq nil. index object value is null");
             return_trav(NULL);
@@ -4091,7 +3915,7 @@ trv_compare_comparison_not_eq_func(ast_t *ast, const object_t *lhs, const object
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison not eq func. index object value is null");
             return_trav(NULL);
@@ -4131,7 +3955,7 @@ trv_compare_comparison_not_eq_module(ast_t *ast, const object_t *lhs, const obje
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison not eq func. index object value is null");
             return_trav(NULL);
@@ -4197,7 +4021,7 @@ trv_compare_comparison_not_eq(ast_t *ast, const object_t *lhs, const object_t *r
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, lhs);
+        object_t *val = copy_value_of_index_obj(ast, lhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison not eq. index object value is null");
             return_trav(NULL);
@@ -4236,7 +4060,7 @@ trv_compare_comparison_lte_int(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison lte int. index object value is null");
             return_trav(NULL);
@@ -4275,7 +4099,7 @@ trv_compare_comparison_lte_bool(ast_t *ast, const object_t *lhs, const object_t 
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison lte bool. index object value is null");
             return_trav(NULL);
@@ -4315,7 +4139,7 @@ trv_compare_comparison_lte(ast_t *ast, const object_t *lhs, const object_t *rhs,
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, lhs);
+        object_t *val = copy_value_of_index_obj(ast, lhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison lte. index object value is null");
             return_trav(NULL);
@@ -4354,7 +4178,7 @@ trv_compare_comparison_gte_int(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison gte int. index object value is null");
             return_trav(NULL);
@@ -4393,7 +4217,7 @@ trv_compare_comparison_gte_bool(ast_t *ast, const object_t *lhs, const object_t 
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison gte bool. index object value is null");
             return_trav(NULL);
@@ -4433,7 +4257,7 @@ trv_compare_comparison_gte(ast_t *ast, const object_t *lhs, const object_t *rhs,
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, lhs);
+        object_t *val = copy_value_of_index_obj(ast, lhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison gte. index object value is null");
             return_trav(NULL);
@@ -4472,7 +4296,7 @@ trv_compare_comparison_lt_int(ast_t *ast, const object_t *lhs, const object_t *r
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison lt int. index object value is null");
             return_trav(NULL);
@@ -4511,7 +4335,7 @@ trv_compare_comparison_lt_bool(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison lt bool. index object value is null");
             return_trav(NULL);
@@ -4551,7 +4375,7 @@ trv_compare_comparison_lt(ast_t *ast, const object_t *lhs, const object_t *rhs, 
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, lhs);
+        object_t *val = copy_value_of_index_obj(ast, lhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison lt. index object value is null");
             return_trav(NULL);
@@ -4590,7 +4414,7 @@ trv_compare_comparison_gt_int(ast_t *ast, const object_t *lhs, const object_t *r
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison gt int. index object value is null");
             return_trav(NULL);
@@ -4629,7 +4453,7 @@ trv_compare_comparison_gt_bool(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison gt bool. index object value is null");
             return_trav(NULL);
@@ -4669,7 +4493,7 @@ trv_compare_comparison_gt(ast_t *ast, const object_t *lhs, const object_t *rhs, 
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, lhs);
+        object_t *val = copy_value_of_index_obj(ast, lhs);
         if (!val) {
             ast_set_error_detail(ast, "can't comparison gt. index object value is null");
             return_trav(NULL);
@@ -4809,7 +4633,7 @@ trv_calc_expr_add_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't add with int. index object value is null");
             return_trav(NULL);
@@ -4848,7 +4672,7 @@ trv_calc_expr_add_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't add with bool. index object value is null");
             return_trav(NULL);
@@ -4886,7 +4710,7 @@ trv_calc_expr_add_string(ast_t *ast, const object_t *lhs, const object_t *rhs, i
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't add with string. index object value is null");
             return_trav(NULL);
@@ -4931,7 +4755,7 @@ trv_calc_expr_add(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep)
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, lhs);
+        object_t *val = copy_value_of_index_obj(ast, lhs);
         if (!val) {
             ast_set_error_detail(ast, "can't add with string. index object value is null");
             return_trav(NULL);
@@ -4970,7 +4794,7 @@ trv_calc_expr_sub_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't sub with int. index object value is null");
             return_trav(NULL);
@@ -5009,7 +4833,7 @@ trv_calc_expr_sub_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't sub with bool. index object value is null");
             return_trav(NULL);
@@ -5049,7 +4873,7 @@ trv_calc_expr_sub(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep)
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, lhs);
+        object_t *val = copy_value_of_index_obj(ast, lhs);
         if (!val) {
             ast_set_error_detail(ast, "can't sub. index object value is null");
             return_trav(NULL);
@@ -5167,7 +4991,7 @@ trv_calc_term_mul_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         err_die("TODO: mul string");
         break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't mul with int. index object value is null");
             return_trav(NULL);
@@ -5206,7 +5030,7 @@ trv_calc_term_mul_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't mul with bool. index object value is null");
             return_trav(NULL);
@@ -5240,7 +5064,7 @@ trv_calc_term_mul_string(ast_t *ast, const object_t *lhs, const object_t *rhs, i
         err_die("TODO: mul string 2");
         break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't mul with string. index object value is null");
             return_trav(NULL);
@@ -5285,7 +5109,7 @@ trv_calc_term_mul(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep)
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, lhs);
+        object_t *val = copy_value_of_index_obj(ast, lhs);
         if (!val) {
             ast_set_error_detail(ast, "can't mul. index object value is null");
             return_trav(NULL);
@@ -5332,7 +5156,7 @@ trv_calc_term_div_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't division with int. index object value is null");
             return_trav(NULL);
@@ -5375,7 +5199,7 @@ trv_calc_term_div_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
             ast_set_error_detail(ast, "can't division with bool. index object value is null");
             return_trav(NULL);
@@ -5415,7 +5239,7 @@ trv_calc_term_div(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep)
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, lhs);
+        object_t *val = copy_value_of_index_obj(ast, lhs);
         if (!val) {
             ast_set_error_detail(ast, "can't division. index object value is null");
             return_trav(NULL);
@@ -5590,7 +5414,7 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
     }
 
     if (operand->type == OBJ_TYPE_INDEX) {
-        object_t *tmp = trv_get_value_of_index_obj(ast, operand);
+        object_t *tmp = copy_value_of_index_obj(ast, operand);
         if (ast_has_error(ast)) {
             return_trav(NULL);
         }
@@ -5756,31 +5580,6 @@ trv_index(ast_t *ast, const node_t *node, int dep) {
     return_trav(ret);
 }
 
-/**
- * pull-in reference of object by identifier object
- * return reference to variable
- *
- * @param[in] *ast
- * @param[in] *idn_obj identifier object
- *
- * @param return NULL|pointer to object in varmap in current scope
- */
-static object_t *
-pull_in_ref_by(ast_t *ast, const object_t *idn_obj) {
-    assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
-
-    const char *idn = str_getc(idn_obj->identifier);
-    object_t *ref = get_var_ref(ast, idn, 0);
-    if (!ref) {
-        return NULL;
-    }
-    if (ref->type == OBJ_TYPE_IDENTIFIER) {
-        return pull_in_ref_by(ast, ref);
-    }
-
-    return ref;
-}
-
 static object_t *
 trv_calc_asscalc_ass_idn(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
@@ -5790,14 +5589,14 @@ trv_calc_asscalc_ass_idn(ast_t *ast, const object_t *lhs, const object_t *rhs, i
 
     switch (rhs->type) {
     default: {
-        move_var(ast, idn, obj_new_other(rhs), dep+1);
+        move_var(ast, idn, mem_move(obj_new_other(rhs)));
         object_t *obj = obj_new_other(rhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
-        object_t *val = trv_get_value_of_index_obj(ast, rhs);
+        object_t *val = copy_value_of_index_obj(ast, rhs);
         assert(val->type != OBJ_TYPE_IDENTIFIER);
-        move_var(ast, idn, val, dep+1);
+        move_var(ast, idn, mem_move(val));
         object_t *ret = obj_new_other(val);
         return_trav(ret);
     } break;
@@ -5813,7 +5612,7 @@ trv_calc_asscalc_ass_idn(ast_t *ast, const object_t *lhs, const object_t *rhs, i
         // 別名の変数に参照を渡した場合、objdict_clearでダブルフリーが起こる
         // ガーベジコレクションの実装か、メモリ管理の設計（delなど）が必要である
         // TODO: ここの仕様のフィックス
-        move_var(ast, idn, obj_new_other(rval), dep+1);
+        move_var(ast, idn, mem_move(obj_new_other(rval)));
         object_t *obj = obj_new_other(rval);
         return_trav(obj);
     } break;
@@ -5863,7 +5662,7 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, object_t *ref_var, const obj
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = str_getc(rhs->identifier);
-        object_t *rvar = get_var_ref(ast, idn, dep+1);
+        object_t *rvar = get_var_ref(ast, idn);
         if (!rvar) {
             ast_set_error_detail(ast, "\"%s\" is not defined in add ass identifier int", idn);
             return_trav(NULL);
@@ -6336,7 +6135,7 @@ trv_invoke_func_obj(ast_t *ast, const char *name, const object_t *drtargs, int d
         args = obj_to_array(drtargs);
     }
 
-    object_t *func_obj = get_var_ref(ast, name, 0);
+    object_t *func_obj = get_var_ref(ast, name);
     if (!func_obj) {
         // not error
         obj_del(args);
@@ -6380,7 +6179,7 @@ trv_invoke_func_obj(ast_t *ast, const char *name, const object_t *drtargs, int d
             }
             object_t *copy_aarg = obj_new_other(ref_aarg);
 
-            move_var(ast, fargname, copy_aarg, dep+1);
+            move_var(ast, fargname, mem_move(copy_aarg));
         }
     }
 
@@ -6410,26 +6209,6 @@ trv_invoke_func_obj(ast_t *ast, const char *name, const object_t *drtargs, int d
     }
 
     return result;
-}
-
-static string_t *
-trv_obj_to_str(ast_t *ast, const object_t *obj) {
-    assert(obj);
-
-    switch (obj->type) {
-    default: return obj_to_str(obj); break;
-    case OBJ_TYPE_IDENTIFIER: {
-        object_t *var = pull_in_ref_by(ast, obj);
-        if (!var) {
-            ast_set_error_detail(ast, "\"%s\" is not defined in object to string", str_getc(obj->identifier));
-            return NULL;
-        }
-        return obj_to_str(var);
-    } break;
-    }
-
-    assert(0 && "impossible. failed to ast obj to str");
-    return NULL;
 }
 
 static object_t *
@@ -6512,7 +6291,7 @@ trv_func_def(ast_t *ast, const node_t *node, int dep) {
     node_array_t *ref_suites = func_def->contents;
     object_t *func_obj = obj_new_func(name, def_args, ref_suites);
     check("set func at varmap");
-    move_var(ast, str_getc(name->identifier), func_obj, dep+1);
+    move_var(ast, str_getc(name->identifier), mem_move(func_obj));
 
     return_trav(NULL);
 }
