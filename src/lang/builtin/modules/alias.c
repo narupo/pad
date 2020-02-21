@@ -48,16 +48,9 @@ builtin_alias_set(ast_t *ast, const object_t *objargs) {
     return obj_new_nil();
 }
 
-static object_t *
-builtin_alias_test(ast_t *ast, const object_t *objargs) {
-    puts("alias test!");
-    return obj_new_nil();
-}
-
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"set", builtin_alias_set},
-    {"test", builtin_alias_test},
     {0},
 };
 

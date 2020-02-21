@@ -65,21 +65,26 @@ cstrarr_resize(cstring_array_t *arr, ssize_t capa) {
 }
 
 cstring_array_t *
-cstrarr_push(cstring_array_t *arr, const char *str) {
-	if (!arr || !str) {
+cstrarr_push(cstring_array_t *self, const char *str) {
+	return cstrarr_pushb(self, str);
+}
+
+cstring_array_t * 
+cstrarr_pushb(cstring_array_t *self, const char *str) {
+	if (!self || !str) {
 		return NULL;
 	}
 	
-	if (arr->len >= arr->capa) {
-		if (!cstrarr_resize(arr, arr->capa*2)) {
+	if (self->len >= self->capa) {
+		if (!cstrarr_resize(self, self->capa*2)) {
 			return NULL;
 		}
 	}
 
-	arr->arr[arr->len++] = cstr_edup(str);
-	arr->arr[arr->len] = NULL;
+	self->arr[self->len++] = cstr_edup(str);
+	self->arr[self->len] = NULL;
 
-	return arr;
+	return self;
 }
 
 char *
@@ -165,4 +170,17 @@ cstrarr_show(const cstring_array_t *arr, FILE *fout) {
 	fflush(fout);
 
 	return arr;
+}
+
+void
+cstrarr_clear(cstring_array_t *self) {
+	if (!self) {
+		return;
+	}
+
+	for (ssize_t i = 0; i < self->len; ++i) {
+		free(self->arr[i]);
+	}
+
+	self->len = 0;
 }
