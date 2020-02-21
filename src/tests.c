@@ -1810,6 +1810,60 @@ utiltests[] = {
 };
 
 /************
+* lang/opts *
+************/
+
+static void
+test_lang_opts_new(void) {
+    opts_t *opts = opts_new();
+    assert(opts);
+    opts_del(opts);
+}
+
+static void
+test_lang_opts_parse(void) {
+    opts_t *opts = opts_new();
+    assert(opts);
+
+    int argc = 7;
+    char *argv[] = {
+        "make",
+        "arg1",
+        "arg2",
+        "-a",
+        "aaa",
+        "--bbb",
+        "bbb",
+        NULL,
+    };
+    assert(opts_parse(opts, argc, argv));
+
+    assert(opts_args_len(opts) == 3);
+    assert(opts_getc_args(opts, -1) == NULL);
+    assert(opts_getc_args(opts, 0));
+    assert(opts_getc_args(opts, 1));
+    assert(opts_getc_args(opts, 2));
+    assert(opts_getc_args(opts, 3) == NULL);
+    assert(!strcmp(opts_getc_args(opts, 0), "make"));
+    assert(!strcmp(opts_getc_args(opts, 1), "arg1"));
+    assert(!strcmp(opts_getc_args(opts, 2), "arg2"));
+    assert(opts_getc(opts, "a"));
+    assert(!strcmp(opts_getc(opts, "a"), "aaa"));
+    assert(opts_getc(opts, "bbb"));
+    assert(!strcmp(opts_getc(opts, "bbb"), "bbb"));
+    assert(opts_has(opts, "a"));
+    assert(opts_has(opts, "bbb"));
+    opts_del(opts);
+}
+
+static const struct testcase
+lang_opts_tests[] = {
+    {"opts_new", test_lang_opts_new},
+    {"opts_parse", test_lang_opts_parse},
+    {0},
+};
+
+/************
 * tokenizer *
 ************/
 
@@ -11829,12 +11883,13 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a = opts.get(\"abc\") @}{: a :}");
     {
         char *argv[] = {
+            "make",
             "-abc",
             "def",
             NULL,
         };
         opts_t *opts = opts_new();
-        assert(opts_parse(opts, 2, argv));
+        assert(opts_parse(opts, 3, argv));
         ast_move_opts(ast, opts);
         (cc_compile(ast, tkr_get_tokens(tkr)));
         (trv_traverse(ast, ctx));
@@ -12297,11 +12352,12 @@ test_trv_builtin_functions(void) {
     {
         opts_t *opts = opts_new();
         char *argv[] = {
+            "make",
             "--abc",
             "def",
             NULL,
         };
-        opts_parse(opts, 2, argv);
+        opts_parse(opts, 3, argv);
         ast_move_opts(ast, opts);
         cc_compile(ast, tkr_get_tokens(tkr));
         trv_traverse(ast, ctx);
@@ -12313,6 +12369,7 @@ test_trv_builtin_functions(void) {
     {
         opts_t *opts = opts_new();
         char *argv[] = {
+            "make",
             "--abc",
             NULL,
         };
@@ -12328,6 +12385,7 @@ test_trv_builtin_functions(void) {
     {
         opts_t *opts = opts_new();
         char *argv[] = {
+            "make",
             "--abc",
             NULL,
         };
@@ -14287,6 +14345,7 @@ testmodules[] = {
     {"cmdline", cmdline_tests},
     {"error", error_tests},
     {"util", utiltests},
+    {"opts", lang_opts_tests},
     {"tokenizer", tokenizer_tests},
     {"compiler", compiler_tests},
     {"traverser", traverser_tests},

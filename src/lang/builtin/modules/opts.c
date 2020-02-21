@@ -77,16 +77,27 @@ builtin_opts_has(ast_t *ast, const object_t *objargs) {
 }
 
 static object_t *
-builtin_opts_test(ast_t *ast, const object_t *objargs) {
-    puts("opts test!");
-    return obj_new_nil();
+builtin_opts_args(ast_t *ast, const object_t *objargs) {
+    if (!objargs) {
+        ast_set_error_detail(ast, "can't invoke opts.args. need one argument");
+        return NULL;
+    }
+
+    assert(objargs->type == OBJ_TYPE_INTEGER);
+    int32_t idx = objargs->lvalue;
+    const char *value = opts_getc_args(ast->opts, idx);
+    if (!value) {
+        return obj_new_nil();
+    }
+
+    return obj_new_cstr(value);
 }
 
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"get", builtin_opts_get},
     {"has", builtin_opts_has},
-    {"test", builtin_opts_test},
+    {"args", builtin_opts_args},
     {0},
 };
 

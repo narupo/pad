@@ -1,7 +1,8 @@
 #include <lang/opts.h>
 
 struct opts {
-    dict_t *opts;    
+    dict_t *opts;
+    cstring_array_t *args;
 };
 
 void
@@ -10,6 +11,7 @@ opts_del(opts_t *self) {
         return;
     }
     dict_del(self->opts);
+    cstrarr_del(self->args);
     free(self);
 }
 
@@ -18,6 +20,7 @@ opts_new(void) {
     opts_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->opts = dict_new(100);
+    self->args = cstrarr_new();
 
     return self;
 }
@@ -31,7 +34,10 @@ opts_parse(opts_t *self, int argc, char *argv[]) {
     int m = 0;
     string_t *key = str_new();
 
-    for (int i = 0; i < argc && argv[i]; ++i) {
+    cstrarr_clear(self->args);
+    cstrarr_pushb(self->args, argv[0]);
+
+    for (int i = 1; i < argc && argv[i]; ++i) {
         const char *arg = argv[i];
         switch (m) {
         case 0:
@@ -41,7 +47,9 @@ opts_parse(opts_t *self, int argc, char *argv[]) {
             } else if (arg[0] == '-') {
                 str_set(key, arg+1);
                 m = 20;
-            }            
+            } else {
+                cstrarr_pushb(self->args, arg);
+            }
             break;
         case 10: // found long option
             if (arg[0] == '-' && arg[1] == '-') {
@@ -105,4 +113,24 @@ opts_has(const opts_t *self, const char *optname) {
     }
 
     return dict_has_key(self->opts, optname);
+}
+
+const char *
+opts_getc_args(const opts_t *self, int32_t idx) {
+    if (!self) {
+        return NULL;
+    }
+    if (idx < 0 || idx >= cstrarr_len(self->args)) {
+        return NULL;
+    }
+
+    return cstrarr_getc(self->args, idx);
+}
+
+int32_t 
+opts_args_len(const opts_t *self) {
+    if (!self) {
+        return -1;
+    }
+    return cstrarr_len(self->args);
 }

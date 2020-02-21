@@ -4,6 +4,7 @@
 
 #include <lib/memory.h>
 #include <lib/string.h>
+#include <lib/cstring_array.h>
 #include <lib/dict.h>
 
 struct opts;
@@ -23,3 +24,9 @@ opts_getc(const opts_t *self, const char *optname);
 
 bool
 opts_has(const opts_t *self, const char *optname);
+
+const char *
+opts_getc_args(const opts_t *self, int32_t idx);
+
+int32_t 
+opts_args_len(const opts_t *self);
