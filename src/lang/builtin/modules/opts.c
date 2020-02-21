@@ -76,10 +76,17 @@ builtin_opts_has(ast_t *ast, const object_t *objargs) {
     return NULL;
 }
 
+static object_t *
+builtin_opts_test(ast_t *ast, const object_t *objargs) {
+    puts("opts test!");
+    return obj_new_nil();
+}
+
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"get", builtin_opts_get},
     {"has", builtin_opts_has},
+    {"test", builtin_opts_test},
     {0},
 };
 
