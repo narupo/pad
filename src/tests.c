@@ -12127,6 +12127,132 @@ test_trv_func_def(void) {
 }
 
 static void
+test_trv_builtin_string(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    context_t *ctx = ctx_new();
+
+    /********
+    * upper *
+    ********/
+
+    tkr_parse(tkr, "{: \"abc\".upper() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "ABC"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"abc\" \n @}{: a.upper() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "ABC"));
+    }
+
+    tkr_parse(tkr, "{: nil.upper() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't call \"upper\""));
+    }
+
+    /********
+    * lower *
+    ********/
+
+    tkr_parse(tkr, "{: \"ABC\".lower() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"ABC\" \n @}{: a.lower() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
+    }
+
+    tkr_parse(tkr, "{: nil.lower() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't call \"lower\""));
+    }
+
+    /*************
+    * capitalize *
+    *************/
+
+    tkr_parse(tkr, "{: \"abc\".capitalize() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "Abc"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"abc\" \n @}{: a.capitalize() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "Abc"));
+    }
+
+    tkr_parse(tkr, "{: nil.capitalize() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't call \"capitalize\""));
+    }
+
+    /********
+    * snake *
+    ********/
+
+    tkr_parse(tkr, "{: \"abcDef\".snake() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc_def"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"abcDef\" \n @}{: a.snake() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "abc_def"));
+    }
+
+    tkr_parse(tkr, "{: nil.snake() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(ast_has_error(ast));
+        assert(!strcmp(ast_get_error_detail(ast), "can't call \"snake\""));
+    }
+
+    ctx_del(ctx);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
 test_trv_builtin_functions(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -12255,90 +12381,6 @@ test_trv_builtin_functions(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc\n"));
-    }
-
-    /********
-    * upper *
-    ********/
-
-    tkr_parse(tkr, "{: \"abc\".upper() :}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "ABC"));
-    }
-
-    tkr_parse(tkr, "{@ a = \"abc\" \n @}{: a.upper() :}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "ABC"));
-    }
-
-    tkr_parse(tkr, "{: nil.upper() :}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't call \"upper\""));
-    }
-
-    /********
-    * lower *
-    ********/
-
-    tkr_parse(tkr, "{: \"ABC\".lower() :}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
-    }
-
-    tkr_parse(tkr, "{@ a = \"ABC\" \n @}{: a.lower() :}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "abc"));
-    }
-
-    tkr_parse(tkr, "{: nil.lower() :}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't call \"lower\""));
-    }
-
-    /*************
-    * capitalize *
-    *************/
-
-    tkr_parse(tkr, "{: \"abc\".capitalize() :}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "Abc"));
-    }
-
-    tkr_parse(tkr, "{@ a = \"abc\" \n @}{: a.capitalize() :}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(!ast_has_error(ast));
-        assert(!strcmp(ctx_getc_buf(ctx), "Abc"));
-    }
-
-    tkr_parse(tkr, "{: nil.capitalize() :}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "can't call \"capitalize\""));
     }
 
     ctx_del(ctx);
@@ -14057,6 +14099,7 @@ traverser_tests[] = {
     {"trv_call", test_trv_call},
     {"trv_func_def", test_trv_func_def},
     {"trv_builtin_functions", test_trv_builtin_functions},
+    {"trv_builtin_string", test_trv_builtin_string},
     {0},
 };
 
