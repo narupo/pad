@@ -211,3 +211,17 @@ execute_snippet(const config_t *config, const char *name, int argc, char **argv)
  */
 char *
 solve_cmdline_arg_path(const config_t *config, char *dst, int32_t dstsz, const char *caps_arg_path);
+
+/**
+ * copy string of src with escape character by target 
+ *
+ * @param[in] *dst    destination buffer
+ * @param[in] dstsz   destination buffer size
+ * @param[in] *src    source string
+ * @param[in] *target target string like a ("abc")
+ *
+ * @return failed to NULL
+ * @return success to pointer to destination buffer
+ */
+char * 
+escape(char *dst, int32_t dstsz, const char *src, const char *target);

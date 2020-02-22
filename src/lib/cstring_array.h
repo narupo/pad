@@ -147,5 +147,10 @@ cstrarr_len(const cstring_array_t *self);
 const cstring_array_t *
 cstrarr_show(const cstring_array_t *self, FILE *fout);
 
+/**
+ * clear state
+ *
+ * @param[out] *self
+ */
 void
 cstrarr_clear(cstring_array_t *self);

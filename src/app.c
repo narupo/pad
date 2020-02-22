@@ -489,9 +489,12 @@ app_execute_alias_by_name(app_t *self, const char *name) {
     str_app(cmdline, "cap ");
     str_app(cmdline, val);
     str_app(cmdline, " ");
+    char escarg[1024];
     for (int i = 1; i < self->cmd_argc; ++i) {
+        const char * arg = self->cmd_argv[i];
         str_app(cmdline, "\"");
-        str_app(cmdline, self->cmd_argv[i]);
+        escape(escarg, sizeof escarg, arg, "\"");
+        str_app(cmdline, escarg);
         str_app(cmdline, "\"");
         str_app(cmdline, " ");
     }
@@ -499,7 +502,7 @@ app_execute_alias_by_name(app_t *self, const char *name) {
 
     // convert command to application's arguments
     cl_t *cl = cl_new();
-    cl_parse_str(cl, str_getc(cmdline));
+    cl_parse_str_opts(cl, str_getc(cmdline), 0);
     str_del(cmdline);
 
     int argc = cl_len(cl);

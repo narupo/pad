@@ -335,7 +335,7 @@ validatepush(cl_t *cl, cl_string_t *src, int32_t opts) {
     if (opts & CL_ESCAPE) {
         escapecpy(dst, src, opts);
     } else {
-        clstr_set(dst, clstr_getc(src));
+        clstr_app(dst, clstr_getc(src));
     }
 
     if (opts & CL_WRAP) {
@@ -345,6 +345,17 @@ validatepush(cl_t *cl, cl_string_t *src, int32_t opts) {
     cl_push(cl, clstr_getc(dst));
     clstr_del(dst);
     clstr_clear(src);
+}
+
+static int32_t
+conv_escape_char(int32_t ch) {
+    switch (ch) {
+    case 'r': return '\r'; break;
+    case 'n': return '\n'; break;
+    case 't': return '\t'; break;
+    case 'a': return '\a'; break;
+    default: return ch; break;
+    }
 }
 
 cl_t *
@@ -367,16 +378,6 @@ cl_parse_str_opts(cl_t *self, const char *drtsrc, int32_t opts) {
             printf("m[%d] c[%c]\n", m, c);
         }
 
-        if (c == '\\') {
-            if (*++p == '\0') {
-                clstr_del(tmp);
-                return NULL;
-            }
-            clstr_push(tmp, c);
-            clstr_push(tmp, *p);
-            continue;
-        }
-
         switch (m) {
         case 0: // First
             if (isspace(c)) {
@@ -384,25 +385,42 @@ cl_parse_str_opts(cl_t *self, const char *drtsrc, int32_t opts) {
             } else if (c == '-') {
                 m = 100;
                 clstr_push(tmp, c);
+            } else if (c == '\\') {
+                ++p;
+                if (*p) {
+                    clstr_push(tmp, conv_escape_char(*p));
+                }
             } else if (c == '"') {
                 m = 10;
             } else if (c == '\'') {
                 m = 20;
+            } else if (c == '=') {
+                m = 200;
             } else {
                 m = 30;
                 clstr_push(tmp, c);
             }
         break;
-        case 10: // "arg"
-            if (c == '"') {
+        case 10: // found "
+            if (c == '\\') {
+                ++p;
+                if (*p) {
+                    clstr_push(tmp, conv_escape_char(*p));
+                }
+            } else if (c == '"') {
                 m = 0;
                 validatepush(self, tmp, opts);
             } else {
                 clstr_push(tmp, c);
             }
         break;
-        case 20: // 'arg'
-            if (c == '\'') {
+        case 20: // found '
+            if (c == '\\') {
+                ++p;
+                if (*p) {
+                    clstr_push(tmp, conv_escape_char(*p));
+                }
+            } else if (c == '\'') {
                 m = 0;
                 validatepush(self, tmp, opts);
             } else {
@@ -419,7 +437,7 @@ cl_parse_str_opts(cl_t *self, const char *drtsrc, int32_t opts) {
                 clstr_push(tmp, c);
             }
         break;
-        case 100: // -
+        case 100: // - (short option?)
             if (c == '-') {
                 m = 150;
                 clstr_push(tmp, c);
@@ -431,18 +449,18 @@ cl_parse_str_opts(cl_t *self, const char *drtsrc, int32_t opts) {
                 validatepush(self, tmp, opts);
             }
         break;
-        case 110: // -?
+        case 110: // -? (short option)
             if (isnormch(c)) {
                 clstr_push(tmp, c);
             } else if (c == '=') {
                 m = 200;
-                clstr_push(tmp, c);
+                validatepush(self, tmp, opts);
             } else {
                 m = 0;
                 validatepush(self, tmp, opts);
             }
         break;
-        case 150: // --
+        case 150: // -- (long option?)
             if (isnormch(c)) {
                 m = 160;
                 clstr_push(tmp, c);
@@ -456,7 +474,7 @@ cl_parse_str_opts(cl_t *self, const char *drtsrc, int32_t opts) {
                 clstr_push(tmp, c);
             } else if (c == '=') {
                 m = 200;                
-                clstr_push(tmp, c);
+                validatepush(self, tmp, opts);
             } else {
                 m = 0;
                 validatepush(self, tmp, opts);
@@ -468,10 +486,8 @@ cl_parse_str_opts(cl_t *self, const char *drtsrc, int32_t opts) {
                 validatepush(self, tmp, opts);
             } else if (c == '"') {
                 m = 210;
-                clstr_push(tmp, c);
             } else if (c == '\'') {
                 m = 220;
-                clstr_push(tmp, c);
             } else {
                 m = 230;
                 clstr_push(tmp, c);
@@ -480,7 +496,6 @@ cl_parse_str_opts(cl_t *self, const char *drtsrc, int32_t opts) {
         case 210: // -?="arg" or --?="arg"
             if (c == '"') {
                 m = 0;
-                clstr_push(tmp, c);
                 validatepush(self, tmp, opts);
             } else {
                 clstr_push(tmp, c);
@@ -489,7 +504,6 @@ cl_parse_str_opts(cl_t *self, const char *drtsrc, int32_t opts) {
         case 220: // -?='arg' or --?='arg'
             if (c == '\'') {
                 m = 0;
-                clstr_push(tmp, c);
                 validatepush(self, tmp, opts);
             } else {
                 clstr_push(tmp, c);
