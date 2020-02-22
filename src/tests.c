@@ -1498,13 +1498,40 @@ static void
 test_cl_clparsestropts(void) {
     cl_t *cl = cl_new();
     assert(cl != NULL);
-    assert(cl_parse_str_opts(cl, "cmd -h -ab 123 --help 223", CL_WRAP | CL_ESCAPE));
+
+    assert(cl_parse_str_opts(cl, "cmd -h -ab 123 --help 223", CL_WRAP));
     assert(strcmp(cl_getc(cl, 0), "'cmd'") == 0);
     assert(strcmp(cl_getc(cl, 1), "'-h'") == 0);
     assert(strcmp(cl_getc(cl, 2), "'-ab'") == 0);
     assert(strcmp(cl_getc(cl, 3), "'123'") == 0);
     assert(strcmp(cl_getc(cl, 4), "'--help'") == 0);
     assert(strcmp(cl_getc(cl, 5), "'223'") == 0);
+
+    assert(cl_parse_str_opts(cl, "cmd -a 123", CL_WRAP));
+    assert(strcmp(cl_getc(cl, 0), "'cmd'") == 0);
+    assert(strcmp(cl_getc(cl, 1), "'-a'") == 0);
+    assert(strcmp(cl_getc(cl, 2), "'123'") == 0);
+
+    assert(cl_parse_str_opts(cl, "\"cmd\" \"-a\" \"123\"", CL_WRAP));
+    assert(strcmp(cl_getc(cl, 0), "'cmd'") == 0);
+    assert(strcmp(cl_getc(cl, 1), "'-a'") == 0);
+    assert(strcmp(cl_getc(cl, 2), "'123'") == 0);
+
+    assert(cl_parse_str_opts(cl, "\"cmd\" \"-a\" \"123\"", CL_WRAP));
+    assert(strcmp(cl_getc(cl, 0), "'cmd'") == 0);
+    assert(strcmp(cl_getc(cl, 1), "'-a'") == 0);
+    assert(strcmp(cl_getc(cl, 2), "'123'") == 0);
+
+    assert(cl_parse_str_opts(cl, "cmd -a 123", CL_ESCAPE));
+    assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
+    assert(strcmp(cl_getc(cl, 1), "-a") == 0);
+    assert(strcmp(cl_getc(cl, 2), "123") == 0);
+
+    assert(cl_parse_str_opts(cl, "cmd -a \"1'23\"", CL_ESCAPE));
+    assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
+    assert(strcmp(cl_getc(cl, 1), "-a") == 0);
+    assert(strcmp(cl_getc(cl, 2), "1\\'23") == 0);
+
     cl_del(cl);
 }
 
@@ -1512,6 +1539,7 @@ static void
 test_cl_clparsestr(void) {
     cl_t *cl = cl_new();
     assert(cl != NULL);
+
     assert(cl_parse_str(cl, "cmd -h -ab 123 --help 223"));
     assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
     assert(strcmp(cl_getc(cl, 1), "-h") == 0);
@@ -1519,6 +1547,67 @@ test_cl_clparsestr(void) {
     assert(strcmp(cl_getc(cl, 3), "123") == 0);
     assert(strcmp(cl_getc(cl, 4), "--help") == 0);
     assert(strcmp(cl_getc(cl, 5), "223") == 0);
+
+    assert(cl_parse_str(cl, "cmd -a \"abc\""));
+    assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
+    assert(strcmp(cl_getc(cl, 1), "-a") == 0);
+    assert(strcmp(cl_getc(cl, 2), "abc") == 0);
+
+    assert(cl_parse_str(cl, "cmd -a 'a\"bc'"));
+    assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
+    assert(strcmp(cl_getc(cl, 1), "-a") == 0);
+    assert(strcmp(cl_getc(cl, 2), "a\"bc") == 0);
+
+    assert(cl_parse_str(cl, "cmd -a=abc"));
+    assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
+    assert(strcmp(cl_getc(cl, 1), "-a") == 0);
+    assert(strcmp(cl_getc(cl, 2), "abc") == 0);
+
+    assert(cl_parse_str(cl, "cmd -a=\"abc\""));
+    assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
+    assert(strcmp(cl_getc(cl, 1), "-a") == 0);
+    assert(strcmp(cl_getc(cl, 2), "abc") == 0);
+
+    assert(cl_parse_str(cl, "cmd -a='abc'"));
+    assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
+    assert(strcmp(cl_getc(cl, 1), "-a") == 0);
+    assert(strcmp(cl_getc(cl, 2), "abc") == 0);
+
+    assert(cl_parse_str(cl, "cmd \"-a\"=\"abc\""));
+    assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
+    assert(strcmp(cl_getc(cl, 1), "-a") == 0);
+    assert(strcmp(cl_getc(cl, 2), "abc") == 0);
+
+    assert(cl_parse_str(cl, "cmd '-a'='abc'"));
+    assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
+    assert(strcmp(cl_getc(cl, 1), "-a") == 0);
+    assert(strcmp(cl_getc(cl, 2), "abc") == 0);
+
+    assert(cl_parse_str(cl, "cmd --abc=abc"));
+    assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
+    assert(strcmp(cl_getc(cl, 1), "--abc") == 0);
+    assert(strcmp(cl_getc(cl, 2), "abc") == 0);
+
+    assert(cl_parse_str(cl, "cmd --abc=\"abc\""));
+    assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
+    assert(strcmp(cl_getc(cl, 1), "--abc") == 0);
+    assert(strcmp(cl_getc(cl, 2), "abc") == 0);
+
+    assert(cl_parse_str(cl, "cmd --abc='abc'"));
+    assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
+    assert(strcmp(cl_getc(cl, 1), "--abc") == 0);
+    assert(strcmp(cl_getc(cl, 2), "abc") == 0);
+
+    assert(cl_parse_str(cl, "cmd \"--abc\"=\"abc\""));
+    assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
+    assert(strcmp(cl_getc(cl, 1), "--abc") == 0);
+    assert(strcmp(cl_getc(cl, 2), "abc") == 0);
+
+    assert(cl_parse_str(cl, "cmd '--abc'='abc'"));
+    assert(strcmp(cl_getc(cl, 0), "cmd") == 0);
+    assert(strcmp(cl_getc(cl, 1), "--abc") == 0);
+    assert(strcmp(cl_getc(cl, 2), "abc") == 0);
+
     cl_del(cl);
 }
 
@@ -1797,6 +1886,13 @@ test_util_solve_cmdline_arg_path(void) {
     config_del(config);
 }
 
+static void
+test_util_escape(void) {
+    char dst[1024];
+    assert(escape(dst, sizeof dst, "abca", "a"));
+    assert(!strcmp(dst, "\\abc\\a"));
+}
+
 static const struct testcase
 utiltests[] = {
     {"freeargv", test_util_freeargv},
@@ -1806,6 +1902,7 @@ utiltests[] = {
     {"safesystem", test_util_safesystem},
     {"argsbyoptind", test_util_argsbyoptind},
     {"solve_cmdline_arg_path", test_util_solve_cmdline_arg_path},
+    {"escape", test_util_escape},
     {0},
 };
 

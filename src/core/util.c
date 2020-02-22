@@ -20,7 +20,7 @@ freeargv(int argc, char *argv[]) {
 void
 showargv(int argc, char *argv[]) {
     for (int i = 0; i < argc; ++i) {
-        printf("%s\n", argv[i]);
+        printf("argv[%d] = [%s]\n", i, argv[i]);
     }
 }
 
@@ -285,7 +285,7 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
 
     tkr_parse(tkr, src);
     if (tkr_has_error(tkr)) {
-        err_error("failed to parse tokens. %s", tkr_get_error_detail(tkr));
+        err_error("%s", tkr_get_error_detail(tkr));
         return NULL;
     }
 
@@ -294,13 +294,13 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
 
     cc_compile(ast, tkr_get_tokens(tkr));
     if (ast_has_error(ast)) {
-        err_error("failed to parse AST. %s", ast_get_error_detail(ast));
+        err_error("%s", ast_get_error_detail(ast));
         return NULL;
     }
 
     trv_traverse(ast, ctx);
     if (ast_has_error(ast)) {
-        err_error("failed to traverse AST. %s", ast_get_error_detail(ast));
+        err_error("%s", ast_get_error_detail(ast));
         return NULL;        
     }
 
@@ -409,5 +409,30 @@ solve_cmdline_arg_path(const config_t *config, char *dst, int32_t dstsz, const c
         }
     }
 
+    return dst;
+}
+
+char *
+escape(char *dst, int32_t dstsz, const char *src, const char *target) {
+    if (!dst || !dstsz || !src || !target) {
+        return NULL;
+    }
+
+    char *dp = dst;
+    char *dpend = dst + dstsz - 1;
+    const char *p = src;
+
+    for (; dp < dpend && *p; ++dp, ++p) {
+        if (strchr(target, *p)) {
+            *dp++ = '\\';
+            if (dp < dpend) {
+                *dp = *p;
+            }
+        } else {
+            *dp = *p;
+        }
+    }
+
+    *dp = '\0';
     return dst;
 }
