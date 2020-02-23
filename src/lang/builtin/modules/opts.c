@@ -83,7 +83,11 @@ builtin_opts_args(ast_t *ast, const object_t *objargs) {
         return NULL;
     }
 
-    assert(objargs->type == OBJ_TYPE_INTEGER);
+    if (objargs->type != OBJ_TYPE_INTEGER) {
+        ast_set_error_detail(ast, "invalid argument type. argument is not int");
+        return NULL;
+    }
+    
     int32_t idx = objargs->lvalue;
     const char *value = opts_getc_args(ast->opts, idx);
     if (!value) {
