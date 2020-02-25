@@ -60,6 +60,7 @@ cmdline_del(cmdline_t *self) {
         cmdline_object_t *obj = self->objs[i];
         cmdlineobj_del(obj);
     }
+    
     free(self->objs);
     free(self);
 }
@@ -109,7 +110,7 @@ cmdline_moveb(cmdline_t *self, cmdline_object_t *move_obj) {
         }
     }
 
-    self->objs[self->len++] = move_obj;
+    self->objs[self->len++] = mem_move(move_obj);
 
     return self;
 }
@@ -196,7 +197,8 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 }
 
                 str_strip(buf, " ");
-                obj->command = buf;
+                str_del(obj->command);
+                obj->command = mem_move(buf);
                 buf = str_new();
 
                 if (!cmdline_moveb(self, obj)) {
@@ -232,6 +234,7 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 }
 
                 str_strip(buf, " ");
+                str_del(obj->command);
                 obj->command = buf;
                 buf = str_new();
 
@@ -266,6 +269,7 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 }
 
                 str_strip(buf, " ");
+                str_del(obj->command);
                 obj->command = buf;
                 buf = str_new();
 
@@ -311,16 +315,19 @@ cmdline_parse(cmdline_t *self, const char *line) {
         cmdline_object_t *obj = cmdlineobj_new(CMDLINE_OBJECT_TYPE_CMD);
         if (!cmdlineobj_parse(obj, str_getc(buf))) {
             snprintf(self->what, sizeof self->what, "failed to parse mini command line (2)");
+            cmdlineobj_del(obj);
             str_del(buf);
             return NULL;
         }
 
         str_strip(buf, " ");
-        obj->command = buf;
+        str_del(obj->command);
+        obj->command = mem_move(buf);
         buf = NULL;
 
         if (!cmdline_moveb(self, obj)) {
             snprintf(self->what, sizeof self->what, "failed to move back command object (2)");
+            cmdlineobj_del(obj);
             str_del(buf);
             return NULL;
         }

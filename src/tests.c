@@ -282,6 +282,10 @@ test_cstrarr_show(void) {
     cstrarr_del(arr);
 }
 
+/**
+ * 0 memory leaks
+ * 2020/02/25
+ */
 static const struct testcase
 cstrarr_tests[] = {
     {"cstrarr_new", test_cstrarr_new},
@@ -310,6 +314,46 @@ void
 test_cmdline_del(void) {
     cmdline_t *cmdline = cmdline_new();
     assert(cmdline);
+    cmdline_del(cmdline);
+}
+
+void
+test_cmdline_parse_0(void) {
+    cmdline_t *cmdline = cmdline_new();
+    assert(cmdline);
+
+    assert(cmdline_parse(cmdline, "abc"));
+
+    cmdline_del(cmdline);
+}
+
+void
+test_cmdline_parse_1(void) {
+    cmdline_t *cmdline = cmdline_new();
+    assert(cmdline);
+
+    assert(cmdline_parse(cmdline, "abc && def"));
+
+    cmdline_del(cmdline);
+}
+
+void
+test_cmdline_parse_2(void) {
+    cmdline_t *cmdline = cmdline_new();
+    assert(cmdline);
+
+    assert(cmdline_parse(cmdline, "abc | def"));
+
+    cmdline_del(cmdline);
+}
+
+void
+test_cmdline_parse_3(void) {
+    cmdline_t *cmdline = cmdline_new();
+    assert(cmdline);
+
+    assert(cmdline_parse(cmdline, "abc > def"));
+
     cmdline_del(cmdline);
 }
 
@@ -502,7 +546,11 @@ static const struct testcase
 cmdline_tests[] = {
     {"cmdline_new", test_cmdline_new},
     {"cmdline_del", test_cmdline_del},
-    {"cmdline_parse", test_cmdline_parse},
+    {"cmdline_parse", test_cmdline_parse}, // has memory leaks
+    {"cmdline_parse_0", test_cmdline_parse_0},
+    {"cmdline_parse_1", test_cmdline_parse_1},
+    {"cmdline_parse_2", test_cmdline_parse_2},
+    {"cmdline_parse_3", test_cmdline_parse_3},
     {"cmdline_parse_pipe", test_cmdline_parse_pipe},
     {"cmdline_parse_and", test_cmdline_parse_and},
     {"cmdline_parse_redirect", test_cmdline_parse_redirect},
@@ -977,6 +1025,10 @@ test_str_snake(void) {
     str_del(s);
 }
 
+/**
+ * 0 memory leaks
+ * 2020/02/25
+ */
 static const struct testcase
 string_tests[] = {
     {"cstr_app", test_cstring_cstr_app},
