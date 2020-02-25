@@ -546,7 +546,7 @@ static const struct testcase
 cmdline_tests[] = {
     {"cmdline_new", test_cmdline_new},
     {"cmdline_del", test_cmdline_del},
-    {"cmdline_parse", test_cmdline_parse}, // has memory leaks
+    {"cmdline_parse", test_cmdline_parse},
     {"cmdline_parse_0", test_cmdline_parse_0},
     {"cmdline_parse_1", test_cmdline_parse_1},
     {"cmdline_parse_2", test_cmdline_parse_2},
