@@ -1442,6 +1442,10 @@ test_file_conv_line_encoding(void) {
     free(encoded);
 }
 
+/**
+ * 0 memory leaks
+ * 2020/02/25
+ */
 static const struct testcase
 file_tests[] = {
     {"file_close", test_file_close},
@@ -1695,6 +1699,10 @@ test_cl_cllen(void) {
     cl_del(cl);
 }
 
+/**
+ * 0 memory leaks
+ * 2020/02/25
+ */
 static const struct testcase
 cl_tests[] = {
     {"cl_del", test_cl_cldel},
@@ -1769,6 +1777,10 @@ test_error_error(void) {
     setbuf(stderr, NULL);
 }
 
+/**
+ * 0 memory leaks
+ * 2020/02/25
+ */
 static const struct testcase
 error_tests[] = {
     {"fix_text", test_error_fix_text},
@@ -1781,7 +1793,6 @@ error_tests[] = {
 /*******
 * util *
 *******/
-
 
 static char **
 __create_testargv(int argc) {
@@ -1945,6 +1956,10 @@ test_util_escape(void) {
     assert(!strcmp(dst, "\\abc\\a"));
 }
 
+/**
+ * 0 memory leaks
+ * 2020/02/25
+ */
 static const struct testcase
 utiltests[] = {
     {"freeargv", test_util_freeargv},
@@ -2005,10 +2020,29 @@ test_lang_opts_parse(void) {
     opts_del(opts);
 }
 
+static void
+test_lang_opts_parse_0(void) {
+    opts_t *opts = opts_new();
+    assert(opts);
+
+    int argc = 1;
+    char *argv[] = {
+        "make",
+        NULL,
+    };
+    assert(opts_parse(opts, argc, argv));
+    opts_del(opts);
+}
+
+/**
+ * 0 memory leaks
+ * 2020/02/25
+ */
 static const struct testcase
 lang_opts_tests[] = {
     {"opts_new", test_lang_opts_new},
     {"opts_parse", test_lang_opts_parse},
+    {"opts_parse_0", test_lang_opts_parse_0},
     {0},
 };
 
@@ -2881,6 +2915,10 @@ test_tkr_parse(void) {
     tkr_del(tkr);
 }
 
+/**
+ * 0 memory leaks
+ * 2020/02/25
+ */
 static const struct testcase
 tokenizer_tests[] = {
     {"tkr_new", test_tkr_new},
@@ -2899,6 +2937,10 @@ test_ast_show_error(const ast_t *ast) {
     }
 }
 
+/**
+ * 0 memory leaks
+ * 2020/02/25
+ */
 static void
 test_cc_basic(void) {
     config_t *config = config_new();
@@ -2918,6 +2960,9 @@ test_cc_basic(void) {
     config_del(config);
 }
 
+/**
+ * 128 allocs, 79 frees
+ */
 static void
 test_cc_code_block(void) {
     config_t *config = config_new();
