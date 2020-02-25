@@ -11,6 +11,7 @@
 #include <core/util.h>
 #include <core/symlink.h>
 #include <core/alias_info.h>
+#include <lang/gc.h>
 #include <lang/tokenizer.h>
 #include <lang/ast.h>
 #include <lang/compiler.h>

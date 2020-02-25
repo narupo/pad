@@ -7,6 +7,7 @@
 #include <lib/memory.h>
 #include <lib/cstring.h>
 #include <lang/types.h>
+#include <lang/gc.h>
 
 // TODO: test
 
@@ -23,7 +24,7 @@ void
 objdict_del(object_dict_t *self);
 
 object_dict_t *
-objdict_new(void);
+objdict_new(gc_t *ref_gc);
 
 extern object_dict_t*
 objdict_new_other(object_dict_t *other);

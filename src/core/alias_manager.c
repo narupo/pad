@@ -14,6 +14,7 @@ struct alias_manager {
     const config_t *config;
     tokenizer_t *tkr;
     ast_t *ast;
+    gc_t *gc;
     context_t *context;
     char error_detail[ERR_DETAIL_SIZE];
 };
@@ -23,9 +24,11 @@ almgr_del(almgr_t *self) {
     if (!self) {
         return;
     }
+
     ast_del(self->ast);
     tkr_del(self->tkr);
     ctx_del(self->context);
+    gc_del(self->gc);
     free(self);
 }
 
@@ -38,7 +41,8 @@ almgr_new(const config_t *config) {
     tokenizer_option_t *opt = tkropt_new();
     self->tkr = tkr_new(opt);
     self->ast = ast_new(config);
-    self->context = ctx_new();
+    self->gc = gc_new();
+    self->context = ctx_new(self->gc);
 
     return self;
 }

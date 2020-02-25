@@ -275,7 +275,8 @@ context_t *
 compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
     tokenizer_t *tkr = tkr_new(tkropt_new());
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
     opts_t *opts = opts_new();
 
     if (!opts_parse(opts, argc-1, argv+1)) {
@@ -306,6 +307,7 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
 
     tkr_del(tkr);
     ast_del(ast);
+    gc_del(gc);
 
     return ctx;
 }

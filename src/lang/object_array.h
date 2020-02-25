@@ -6,6 +6,7 @@
 #include <lib/memory.h>
 #include <lang/types.h>
 #include <lang/object.h>
+#include <lang/gc.h>
 
 struct object_array;
 typedef struct object_array object_array_t;

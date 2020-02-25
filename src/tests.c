@@ -9518,7 +9518,8 @@ test_trv_dict(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     // fail
 
@@ -9605,6 +9606,7 @@ test_trv_dict(void) {
     }
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -9616,7 +9618,8 @@ test_trv_comparison(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     tkr_parse(tkr, "{@ a = 1 == 1 @}{: a :}");
     {
@@ -9999,6 +10002,7 @@ test_trv_comparison(void) {
     }
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -10010,7 +10014,8 @@ test_trv_array_index(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     // tkr_parse(tkr, "{@ a[0] @}");
     // {
@@ -10093,6 +10098,7 @@ test_trv_array_index(void) {
     }
     
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -10104,7 +10110,8 @@ test_trv_text_block(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     tkr_parse(tkr, "abc");
     {
@@ -10114,6 +10121,7 @@ test_trv_text_block(void) {
     }
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -10125,7 +10133,8 @@ test_trv_ref_block(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     tkr_parse(tkr, "{: nil :}");
     {
@@ -10206,6 +10215,7 @@ test_trv_ref_block(void) {
     } 
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -10217,7 +10227,8 @@ test_trv_assign(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     tkr_parse(tkr, "{@ a = 1 @}{: a :}");
     {
@@ -10241,6 +10252,7 @@ test_trv_assign(void) {
     } 
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -10252,7 +10264,8 @@ test_trv_atom(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     tkr_parse(tkr, "{@ nil @}");
     {
@@ -10314,6 +10327,7 @@ test_trv_atom(void) {
     } 
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -10325,7 +10339,8 @@ test_trv_array(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     tkr_parse(tkr, "{@ a = [] @}{: a :}");
     {
@@ -10376,6 +10391,7 @@ test_trv_array(void) {
     }
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -10387,7 +10403,8 @@ test_trv_index(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     tkr_parse(tkr, "{@ a = \"abc\" @}{: a :}");
     {
@@ -10670,6 +10687,7 @@ test_trv_index(void) {
     }
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -10681,7 +10699,8 @@ test_trv_string_index(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     tkr_parse(tkr, "{@ a = \"ab\" \n @}{: a[0] :}");
     {
@@ -10732,6 +10751,7 @@ test_trv_string_index(void) {
     } 
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -10743,7 +10763,8 @@ test_trv_multi_assign(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     // error
 
@@ -10782,6 +10803,7 @@ test_trv_multi_assign(void) {
     }
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -10793,7 +10815,8 @@ test_trv_and_test(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     // nil and objects
 
@@ -11842,6 +11865,7 @@ test_trv_and_test(void) {
     }
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -11853,7 +11877,8 @@ test_trv_assign_list(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     // success
 
@@ -11996,6 +12021,7 @@ test_trv_assign_list(void) {
     } 
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -12007,7 +12033,8 @@ test_trv_test_list(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     tkr_parse(tkr, "{@ 1, 2 @}");
     {
@@ -12032,6 +12059,7 @@ test_trv_test_list(void) {
     }
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -12043,7 +12071,8 @@ test_trv_dot(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     tkr_parse(tkr, "{: \"ABC\".lower() :}");
     {
@@ -12080,6 +12109,7 @@ test_trv_dot(void) {
     }
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -12091,7 +12121,8 @@ test_trv_call(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     tkr_parse(tkr, "{@ def f(): return 1 end @}{: f() :}");
     {
@@ -12126,6 +12157,7 @@ test_trv_call(void) {
     }
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -12137,7 +12169,8 @@ test_trv_func_def(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     tkr_parse(tkr, "{@ def f(): end @}{: f() :}");
     {
@@ -12273,6 +12306,7 @@ test_trv_func_def(void) {
     }
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -12284,7 +12318,8 @@ test_trv_builtin_string(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     /********
     * upper *
@@ -12399,6 +12434,7 @@ test_trv_builtin_string(void) {
     }
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -12410,7 +12446,8 @@ test_trv_builtin_functions(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     /********
     * alias *
@@ -12539,6 +12576,7 @@ test_trv_builtin_functions(void) {
     }
 
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -12550,7 +12588,8 @@ test_trv(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
 
     /*******
     * test *
@@ -14228,6 +14267,7 @@ test_trv(void) {
 
     // done
     ctx_del(ctx);
+    gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
@@ -14429,6 +14469,53 @@ errstack_tests[] = {
     {0},
 };
 
+/**********
+* lang/gc *
+**********/
+
+static void
+test_lang_gc_new(void) {
+    gc_t *gc = gc_new();
+    assert(gc);
+    gc_del(gc);
+}
+
+static void
+test_lang_gc_alloc(void) {
+    gc_t *gc = gc_new();
+    assert(gc);
+
+    gc_item_t item = {0};
+    gc_alloc(gc, &item, 100);
+
+    assert(item.ptr);
+    assert(item.ref_counts == 1);
+
+    item.ref_counts++;
+    item.ref_counts++;
+
+    gc_free(gc, &item);
+    assert(item.ptr);
+    assert(item.ref_counts == 2);
+
+    gc_free(gc, &item);
+    assert(item.ptr);
+    assert(item.ref_counts == 1);
+
+    gc_free(gc, &item);
+    assert(item.ptr == NULL);
+    assert(item.ref_counts == 0);
+
+    gc_del(gc);
+}
+
+static const struct testcase
+lang_gc_tests[] = {
+    {"gc_new", test_lang_gc_new},
+    {"gc_alloc", test_lang_gc_alloc},
+    {0},
+};
+
 /*******
 * main *
 *******/
@@ -14448,6 +14535,7 @@ testmodules[] = {
     {"traverser", traverser_tests},
     {"symlink", symlink_tests},
     {"error_stack", errstack_tests},
+    {"gc", lang_gc_tests},
     {0},
 };
 

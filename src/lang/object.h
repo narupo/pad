@@ -11,6 +11,7 @@
 #include <lang/nodes.h>
 #include <lang/object_array.h>
 #include <lang/object_dict.h>
+#include <lang/gc.h>
 #include <lang/builtin/function.h>
 
 typedef enum {
@@ -48,6 +49,8 @@ struct object_module {
 
 struct object {
     obj_type_t type; // object type
+    gc_t *ref_gc; // reference to gc (DO NOT DELETE)
+    gc_item_t gc_item; // gc item for memory management
     string_t *identifier; // value of identifier (type == OBJ_TYPE_IDENTIFIER)
     string_t *string; // value of string (type == OBJ_TYPE_STRING)
     object_array_t *objarr; // value of array (type == OBJ_TYPE_ARRAY)
@@ -57,62 +60,58 @@ struct object {
     object_func_t func; // structure of function (type == OBJ_TYPE_FUNC)
     object_index_t index; // structure of index (type == OBJ_TYPE_INDEX)
     object_module_t module; // structure of module (type == OBJ_TYPE_MODULE)
-    int32_t ref_counts; // count of reference this object (for GC)
 };
 
 void
 obj_del(object_t *self);
 
 object_t *
-obj_new(obj_type_t type);
+obj_new(gc_t *ref_gc, obj_type_t type);
 
 object_t *
 obj_new_other(const object_t *other);
 
 object_t *
-obj_new_nil(void);
+obj_new_nil(gc_t *ref_gc);
 
 object_t *
-obj_new_false(void);
+obj_new_false(gc_t *ref_gc);
 
 object_t *
-obj_new_true(void);
+obj_new_true(gc_t *ref_gc);
 
 object_t *
-obj_new_bool(bool boolean);
+obj_new_bool(gc_t *ref_gc, bool boolean);
 
 object_t *
-obj_new_cidentifier(const char *identifier);
+obj_new_cidentifier(gc_t *ref_gc, const char *identifier);
 
 object_t *
-obj_new_identifier(string_t *move_identifier);
+obj_new_identifier(gc_t *ref_gc, string_t *move_identifier);
 
 object_t *
-obj_new_cstr(const char *str);
+obj_new_cstr(gc_t *ref_gc, const char *str);
 
 object_t *
-obj_new_str(string_t *move_str);
+obj_new_str(gc_t *ref_gc, string_t *move_str);
 
 object_t *
-obj_new_int(long lvalue);
+obj_new_int(gc_t *ref_gc, long lvalue);
 
 object_t *
-obj_new_array(object_array_t *move_objarr);
+obj_new_array(gc_t *ref_gc, object_array_t *move_objarr);
 
 object_t *
-obj_new_dict(object_dict_t *move_objdict);
+obj_new_dict(gc_t *ref_gc, object_dict_t *move_objdict);
 
 object_t *
-obj_new_func(object_t *move_name, object_t *move_args, node_array_t *ref_suites);
+obj_new_func(gc_t *ref_gc, object_t *move_name, object_t *move_args, node_array_t *ref_suites);
 
 object_t *
-obj_new_index(object_t *ref_operand, object_array_t *move_indices);
+obj_new_index(gc_t *ref_gc, object_t *ref_operand, object_array_t *move_indices);
 
 object_t *
-obj_new_module(void);
-
-int32_t
-obj_inc_ref(object_t *self);
+obj_new_module(gc_t *ref_gc);
 
 string_t *
 obj_to_str(const object_t *self);

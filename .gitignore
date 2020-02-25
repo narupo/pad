@@ -1,4 +1,5 @@
 test/
+.vscode/
 
 # Object files
 *.o
