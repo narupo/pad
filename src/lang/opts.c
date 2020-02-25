@@ -27,7 +27,7 @@ opts_new(void) {
 
 opts_t *
 opts_parse(opts_t *self, int argc, char *argv[]) {
-    if (!self || !argv) {
+    if (!self || !argc || !argv) {
         return NULL;
     }
     
@@ -90,6 +90,7 @@ opts_parse(opts_t *self, int argc, char *argv[]) {
         dict_set(self->opts, str_getc(key), "");
     }
 
+    str_del(key);
     return self;
 }
 
