@@ -19,6 +19,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         ast_del_nodes(self, blocks->code_block);
         ast_del_nodes(self, blocks->ref_block);
         ast_del_nodes(self, blocks->text_block);
+        ast_del_nodes(self, blocks->blocks);
     } break;
     case NODE_TYPE_CODE_BLOCK: {
         node_code_block_t *code_block = node->real;
@@ -34,6 +35,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     } break;
     case NODE_TYPE_ELEMS: {
         node_elems_t *elems = node->real;
+        ast_del_nodes(self, elems->def);
         ast_del_nodes(self, elems->stmt);
         ast_del_nodes(self, elems->formula);
         ast_del_nodes(self, elems->elems);
@@ -97,30 +99,35 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         for (int32_t i = 0; i < nodearr_len(multi_assign->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(multi_assign->nodearr, i));
         }
+        nodearr_del_without_nodes(multi_assign->nodearr);
     } break;
     case NODE_TYPE_ASSIGN_LIST: {
         node_assign_list_t *assign_list = node->real;
         for (int32_t i = 0; i < nodearr_len(assign_list->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(assign_list->nodearr, i));
         }
+        nodearr_del_without_nodes(assign_list->nodearr);
     } break;
     case NODE_TYPE_ASSIGN: {
         node_assign_t *assign = node->real;
         for (int32_t i = 0; i < nodearr_len(assign->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(assign->nodearr, i));
         }
+        nodearr_del_without_nodes(assign->nodearr);
     } break;
     case NODE_TYPE_SIMPLE_ASSIGN: {
         node_simple_assign_t *simple_assign = node->real;
         for (int32_t i = 0; i < nodearr_len(simple_assign->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(simple_assign->nodearr, i));
         }
+        nodearr_del_without_nodes(simple_assign->nodearr);
     } break;
     case NODE_TYPE_TEST_LIST: {
         node_test_list_t *test_list = node->real;
         for (int32_t i = 0; i < nodearr_len(test_list->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(test_list->nodearr, i));
         }
+        nodearr_del_without_nodes(test_list->nodearr);
     } break;
     case NODE_TYPE_TEST: {
         node_test_t *test = node->real;
@@ -131,12 +138,14 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         for (int32_t i = 0; i < nodearr_len(or_test->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(or_test->nodearr, i));
         }
+        nodearr_del_without_nodes(or_test->nodearr);
     } break;
     case NODE_TYPE_AND_TEST: {
         node_and_test_t *and_test = node->real;
         for (int32_t i = 0; i < nodearr_len(and_test->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(and_test->nodearr, i));
         }
+        nodearr_del_without_nodes(and_test->nodearr);
     } break;
     case NODE_TYPE_NOT_TEST: {
         node_not_test_t *not_test = node->real;
@@ -148,30 +157,35 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         for (int32_t i = 0; i < nodearr_len(comparison->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(comparison->nodearr, i));
         }
+        nodearr_del_without_nodes(comparison->nodearr);
     } break;
     case NODE_TYPE_ASSCALC: {
         node_asscalc_t *asscalc = node->real;
         for (int32_t i = 0; i < nodearr_len(asscalc->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(asscalc->nodearr, i));
         }
+        nodearr_del_without_nodes(asscalc->nodearr);
     } break;
     case NODE_TYPE_EXPR: {
         node_expr_t *expr = node->real;
         for (int32_t i = 0; i < nodearr_len(expr->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(expr->nodearr, i));
         }
+        nodearr_del_without_nodes(expr->nodearr);
     } break;
     case NODE_TYPE_TERM: {
         node_expr_t *term = node->real;
         for (int32_t i = 0; i < nodearr_len(term->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(term->nodearr, i));
         }
+        nodearr_del_without_nodes(term->nodearr);
     } break;
     case NODE_TYPE_DOT: {
         node_dot_t *dot = node->real;
         for (int32_t i = 0; i < nodearr_len(dot->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(dot->nodearr, i));
         }
+        nodearr_del_without_nodes(dot->nodearr);
     } break;
     case NODE_TYPE_CALL: {
         node_call_t *call = node->real;
@@ -179,6 +193,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         for (int32_t i = 0; i < nodearr_len(call->test_lists); ++i) {
             ast_del_nodes(self, nodearr_get(call->test_lists, i));
         }
+        nodearr_del_without_nodes(call->test_lists);
     } break;
     case NODE_TYPE_INDEX: {
         node_index_t *index = node->real;
@@ -186,6 +201,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         for (int32_t i = 0; i < nodearr_len(index->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(index->nodearr, i));
         }
+        nodearr_del_without_nodes(index->nodearr);
     } break;
     case NODE_TYPE_FACTOR: {
         node_factor_t *factor = node->real;
@@ -227,6 +243,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         for (int32_t i = 0; i < nodearr_len(array_elems->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(array_elems->nodearr, i));
         }
+        nodearr_del_without_nodes(array_elems->nodearr);
     } break;
     case NODE_TYPE_DICT: {
         node_dict_t *dict = node->real;
@@ -237,6 +254,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         for (int32_t i = 0; i < nodearr_len(dict_elems->nodearr); ++i) {
             ast_del_nodes(self, nodearr_get(dict_elems->nodearr, i));
         }
+        nodearr_del_without_nodes(dict_elems->nodearr);
     } break;
     case NODE_TYPE_DICT_ELEM: {
         node_dict_elem_t *dict_elem = node->real;
@@ -279,6 +297,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
             node_t *content = nodearr_get(func_def->contents, i);
             ast_del_nodes(self, content);
         }
+        nodearr_del_without_nodes(func_def->contents);
     } break;
     case NODE_TYPE_FUNC_DEF_PARAMS: {
         node_func_def_params_t *func_def_params = node->real;
@@ -290,6 +309,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
             node_t *identifier = nodearr_get(func_def_args->identifiers, i);
             ast_del_nodes(self, identifier);
         }
+        nodearr_del_without_nodes(func_def_args->identifiers);
     } break;
     }
 
@@ -298,13 +318,12 @@ ast_del_nodes(const ast_t *self, node_t *node) {
 
 void
 ast_del(ast_t *self) {
-    if (self == NULL) {
+    if (!self) {
         return;
     }
 
     ast_del_nodes(self, self->root);
     opts_del(self->opts);
-    gc_del(self->gc);
     free(self);
 }
 
@@ -314,7 +333,6 @@ ast_new(const config_t *config) {
 
     self->config = config;
     self->opts = opts_new();
-    self->gc = gc_new();
     
     return self;
 }

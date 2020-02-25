@@ -126,6 +126,7 @@ cc_assign(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -203,6 +204,7 @@ cc_assign_list(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -298,6 +300,7 @@ cc_multi_assign(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -356,6 +359,7 @@ cc_test_list(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -772,6 +776,7 @@ cc_simple_assign(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -832,6 +837,7 @@ cc_array_elems(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -978,6 +984,7 @@ cc_dict_elems(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -1188,6 +1195,7 @@ cc_atom(ast_t *ast, int dep) {
         ast_del_nodes(ast, cur->digit); \
         ast_del_nodes(ast, cur->string); \
         ast_del_nodes(ast, cur->array); \
+        ast_del_nodes(ast, cur->dict); \
         ast_del_nodes(ast, cur->identifier); \
         free(cur); \
         if (strlen(msg)) { \
@@ -1343,6 +1351,7 @@ cc_asscalc(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -1403,6 +1412,7 @@ cc_index(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -1470,6 +1480,7 @@ cc_term(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -1529,6 +1540,7 @@ cc_dot(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -1589,6 +1601,7 @@ cc_call(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->test_lists); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->test_lists); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -1748,6 +1761,7 @@ cc_expr(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -1858,6 +1872,7 @@ cc_comparison(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -1962,6 +1977,7 @@ cc_and_test(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -2019,6 +2035,7 @@ cc_or_test(ast_t *ast, int dep) {
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
         } \
+        nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -2502,6 +2519,7 @@ cc_elems(ast_t *ast, int dep) {
 #undef return_cleanup
 #define return_cleanup(msg) { \
         ast->ptr = save_ptr; \
+        ast_del_nodes(ast, cur->def); \
         ast_del_nodes(ast, cur->stmt); \
         ast_del_nodes(ast, cur->formula); \
         free(cur); \
@@ -2517,7 +2535,7 @@ cc_elems(ast_t *ast, int dep) {
         if (ast_has_error(ast)) {
             return_cleanup("");
         }
-
+        
         check("call cc_stmt");
         cur->stmt = cc_stmt(ast, dep+1);
         if (!cur->stmt) {
@@ -2534,7 +2552,7 @@ cc_elems(ast_t *ast, int dep) {
                 // empty elems
                 return_cleanup(""); // not error
             }
-        }        
+        } 
     }
 
     check("call cc_elems");
@@ -2635,7 +2653,7 @@ cc_code_block(ast_t *ast, int dep) {
 
     check("call cc_elems");
     cur->elems = cc_elems(ast, dep+1);
-    // elems allow null
+    // cur->elems allow null
     if (ast_has_error(ast)) {
         return_cleanup("");
     }
@@ -2868,6 +2886,7 @@ cc_func_def(ast_t *ast, int dep) {
         for (int32_t i = 0; i < nodearr_len(cur->contents); ++i) { \
             ast_del_nodes(ast, nodearr_get(cur->contents, i)); \
         } \
+        nodearr_del(cur->contents); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -2892,7 +2911,7 @@ cc_func_def(ast_t *ast, int dep) {
 
     check("call cc_func_def_params");
     cur->func_def_params = cc_func_def_params(ast, dep+1);
-    if (!cur->identifier) {
+    if (!cur->func_def_params) {
         if (ast_has_error(ast)) {
             return_cleanup("");
         }

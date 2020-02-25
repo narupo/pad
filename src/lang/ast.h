@@ -24,13 +24,12 @@ enum {
  */
 struct ast {
     const config_t *config; // read only config
-    token_t **tokens; // token list with null at the last
-    token_t **ptr; // pointer to tokens for tokenizer
+    token_t **tokens; // token list with null at the last (DO NOT DELETE)
+    token_t **ptr; // pointer to tokens for tokenizer (DO NOT DELETE)
     node_t *root; // pointer to root for compiler and traverser
-    context_t *context; // context. update when traverse tree
+    context_t *context; // context. update when traverse tree (DO NOT DELETE)
     opts_t *opts; // options for builtin opts module
-    const object_t *ref_dot_owner; // owner object for dot operator (owner.right_hand["key"]) for traverser
-    gc_t *gc; // garbage collection of objects for traverser
+    const object_t *ref_dot_owner; // owner object for dot operator (owner.right_hand["key"]) for traverser (DO NOT DELETE)
     char error_detail[AST_ERR_DETAIL_SIZE]; // error detail
     bool debug; // if do debug to true
 };
