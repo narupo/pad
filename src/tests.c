@@ -2960,9 +2960,6 @@ test_cc_basic(void) {
     config_del(config);
 }
 
-/**
- * 128 allocs, 79 frees
- */
 static void
 test_cc_code_block(void) {
     config_t *config = config_new();
@@ -2982,6 +2979,21 @@ test_cc_code_block(void) {
     blocks = program->blocks->real;
     code_block = blocks->code_block->real;
     assert(code_block);
+
+    tkr_del(tkr);
+    ast_del(ast);
+    config_del(config);
+}
+
+static void
+test_cc_code_block_0(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+
+    tkr_parse(tkr, "{@@}");
+    cc_compile(ast, tkr_get_tokens(tkr));
 
     tkr_del(tkr);
     ast_del(ast);
@@ -3156,6 +3168,66 @@ test_cc_ref_block(void) {
         assert(array_elems);
         assert(nodearr_len(array_elems->nodearr) == 2);
     } 
+
+    tkr_del(tkr);
+    ast_del(ast);
+    config_del(config);
+}
+
+static void
+test_cc_ref_block_0(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+
+    tkr_parse(tkr, "{: nil :}");
+    (cc_compile(ast, tkr_get_tokens(tkr)));
+
+    tkr_del(tkr);
+    ast_del(ast);
+    config_del(config);
+}
+
+static void
+test_cc_ref_block_1(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+
+    tkr_parse(tkr, "{: 1 :}");
+    (cc_compile(ast, tkr_get_tokens(tkr)));
+
+    tkr_del(tkr);
+    ast_del(ast);
+    config_del(config);
+}
+
+static void
+test_cc_ref_block_2(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+
+    tkr_parse(tkr, "{: var :}");
+    (cc_compile(ast, tkr_get_tokens(tkr)));
+
+    tkr_del(tkr);
+    ast_del(ast);
+    config_del(config);
+}
+
+static void
+test_cc_ref_block_3(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+
+    tkr_parse(tkr, "{: [1, 2] :}");
+    (cc_compile(ast, tkr_get_tokens(tkr)));
 
     tkr_del(tkr);
     ast_del(ast);
@@ -9593,7 +9665,12 @@ compiler_tests[] = {
     {"cc_compile", test_cc_compile},
     {"cc_basic", test_cc_basic},
     {"cc_code_block", test_cc_code_block},
+    {"cc_code_block_0", test_cc_code_block_0},
     {"cc_ref_block", test_cc_ref_block},
+    {"cc_ref_block_0", test_cc_ref_block_0},
+    {"cc_ref_block_1", test_cc_ref_block_1},
+    {"cc_ref_block_2", test_cc_ref_block_2},
+    {"cc_ref_block_3", test_cc_ref_block_3},
     {"cc_formula", test_cc_formula},
     {"cc_dict", test_cc_dict},
     {"cc_expr", test_cc_expr},

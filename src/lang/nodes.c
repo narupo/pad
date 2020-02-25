@@ -9,6 +9,8 @@ node_del(node_t *self) {
     if (!self) {
         return;
     }
+
+    free(self->real);
     free(self);
 }
 

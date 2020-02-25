@@ -29,6 +29,18 @@ nodearr_del(node_array_t* self) {
     free(self);
 }
 
+void
+nodearr_del_without_nodes(node_array_t* self) {
+    if (!self) {
+        return;
+    }
+
+    // do not delete nodes of parray
+
+    free(self->parray);
+    free(self);
+}
+
 node_array_t*
 nodearr_new(void) {
     node_array_t *self = mem_ecalloc(1, sizeof(*self));

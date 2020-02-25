@@ -14,6 +14,9 @@
 void
 nodearr_del(node_array_t *self);
 
+void
+nodearr_del_without_nodes(node_array_t* self);
+
 node_array_t *
 nodearr_new(void);
 
