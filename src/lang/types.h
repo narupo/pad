@@ -33,3 +33,9 @@ typedef struct ast ast_t;
 typedef object_t *(*builtin_func_t)(ast_t *ast, const object_t *args);
 
 typedef struct builtin_func_info builtin_func_info_t;
+
+struct gc;
+typedef struct gc gc_t;
+
+struct gc_item;
+typedef struct gc_item gc_item_t;

@@ -24,18 +24,18 @@ builtin_opts_get(ast_t *ast, const object_t *objargs) {
         string_t *optname = objname->string;
         const char *optval = opts_getc(ast->opts, str_getc(optname));
         if (!optval) {
-            return obj_new_nil();
+            return obj_new_nil(ast->gc);
         }        
 
-        return obj_new_cstr(optval);
+        return obj_new_cstr(ast->gc, optval);
     } else if (objargs->type == OBJ_TYPE_STRING) {
         string_t *optname = objargs->string;
         const char *optval = opts_getc(ast->opts, str_getc(optname));
         if (!optval) {
-            return obj_new_nil();
+            return obj_new_nil(ast->gc);
         }        
 
-        return obj_new_cstr(optval);
+        return obj_new_cstr(ast->gc, optval);
     } 
 
     assert(0 && "impossible. invalid arguments");
@@ -65,11 +65,11 @@ builtin_opts_has(ast_t *ast, const object_t *objargs) {
 
         string_t *optname = objname->string;
         bool has = opts_has(ast->opts, str_getc(optname));
-        return obj_new_bool(has);
+        return obj_new_bool(ast->gc, has);
     } else if (objargs->type == OBJ_TYPE_STRING) {
         string_t *optname = objargs->string;
         bool has = opts_has(ast->opts, str_getc(optname));
-        return obj_new_bool(has);
+        return obj_new_bool(ast->gc, has);
     } 
 
     assert(0 && "impossible. invalid arguments");
@@ -91,10 +91,10 @@ builtin_opts_args(ast_t *ast, const object_t *objargs) {
     int32_t idx = objargs->lvalue;
     const char *value = opts_getc_args(ast->opts, idx);
     if (!value) {
-        return obj_new_nil();
+        return obj_new_nil(ast->gc);
     }
 
-    return obj_new_cstr(value);
+    return obj_new_cstr(ast->gc, value);
 }
 
 static builtin_func_info_t
@@ -106,8 +106,8 @@ builtin_func_infos[] = {
 };
 
 object_t *
-builtin_opts_module_new(void) {
-    object_t *mod = obj_new_module();
+builtin_opts_module_new(gc_t *gc) {
+    object_t *mod = obj_new_module(gc);
 
     str_set(mod->module.name, "opts");
     mod->module.builtin_func_infos = builtin_func_infos;

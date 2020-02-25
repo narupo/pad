@@ -5,12 +5,13 @@
 #include <lib/memory.h>
 #include <lang/object.h>
 #include <lang/object_dict.h>
+#include <lang/gc.h>
 
 void
 scope_del(scope_t *self);
 
 scope_t *
-scope_new(void);
+scope_new(gc_t *gc);
 
 scope_t *
 scope_moveb(scope_t *self, scope_t *move_scope);

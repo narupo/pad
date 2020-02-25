@@ -18,6 +18,7 @@
 #include <core/constant.h>
 #include <core/config.h>
 #include <core/symlink.h>
+#include <lang/gc.h>
 #include <lang/tokenizer.h>
 #include <lang/ast.h>
 #include <lang/compiler.h>

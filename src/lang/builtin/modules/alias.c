@@ -45,7 +45,7 @@ builtin_alias_set(ast_t *ast, const object_t *objargs) {
 
     ctx_set_alias(ast->context, key, val, desc);
 
-    return obj_new_nil();
+    return obj_new_nil(ast->gc);
 }
 
 static builtin_func_info_t
@@ -55,8 +55,8 @@ builtin_func_infos[] = {
 };
 
 object_t *
-builtin_alias_module_new(void) {
-    object_t *mod = obj_new_module();
+builtin_alias_module_new(gc_t *gc) {
+    object_t *mod = obj_new_module(gc);
 
     str_set(mod->module.name, "alias");
     mod->module.builtin_func_infos = builtin_func_infos;

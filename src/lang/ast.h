@@ -8,6 +8,7 @@
 #include <lang/opts.h>
 #include <lang/node_array.h>
 #include <lang/object.h>
+#include <lang/gc.h>
 
 /**
  * constant number of AST
@@ -19,16 +20,17 @@ enum {
 /**
  * structure of AST
  * this structure using in compiler and traverser modules
- * and this structure have error handling mechanizm by error_detail variable
+ * and this structure has error handling mechanizm by error_detail variable
  */
 struct ast {
     const config_t *config; // read only config
     token_t **tokens; // token list with null at the last
-    token_t **ptr; // pointer to tokens
-    node_t *root; // pointer to root
+    token_t **ptr; // pointer to tokens for tokenizer
+    node_t *root; // pointer to root for compiler and traverser
     context_t *context; // context. update when traverse tree
     opts_t *opts; // options for builtin opts module
-    const object_t *ref_dot_owner; // owner object for dot operator (owner.right_hand["key"])
+    const object_t *ref_dot_owner; // owner object for dot operator (owner.right_hand["key"]) for traverser
+    gc_t *gc; // garbage collection of objects for traverser
     char error_detail[AST_ERR_DETAIL_SIZE]; // error detail
     bool debug; // if do debug to true
 };

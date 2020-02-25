@@ -301,8 +301,10 @@ ast_del(ast_t *self) {
     if (self == NULL) {
         return;
     }
+
     ast_del_nodes(self, self->root);
     opts_del(self->opts);
+    gc_del(self->gc);
     free(self);
 }
 
@@ -312,6 +314,7 @@ ast_new(const config_t *config) {
 
     self->config = config;
     self->opts = opts_new();
+    self->gc = gc_new();
     
     return self;
 }
@@ -322,7 +325,7 @@ ast_move_opts(ast_t *self, opts_t *move_opts) {
         opts_del(self->opts);
     }
 
-    self->opts = move_opts;
+    self->opts = mem_move(move_opts);
 }
 
 const node_t *

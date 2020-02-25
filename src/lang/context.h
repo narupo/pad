@@ -11,6 +11,7 @@
 #include <lang/types.h>
 #include <lang/object_dict.h>
 #include <lang/scope.h>
+#include <lang/gc.h>
 
 /**
  * destruct object
@@ -25,10 +26,11 @@ ctx_del(context_t *self);
 /**
  * construct object
  *
+ * @param[in|out] *gc reference to gc_t (DO NOT DELETE)
  * @return pointer to context_t dynamic allocate memory (do ctx_del)
  */
 context_t * 
-ctx_new(void);
+ctx_new(gc_t *ref_gc);
 
 /**
  * clear state of context

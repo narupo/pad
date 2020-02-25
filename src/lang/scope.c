@@ -1,6 +1,7 @@
 #include <lang/scope.h>
 
 struct scope {
+    gc_t *ref_gc; // do not delete (this is reference)
     object_dict_t *varmap;
     scope_t *prev;
     scope_t *next;
@@ -21,10 +22,11 @@ scope_del(scope_t *self) {
 }
 
 scope_t *
-scope_new(void) {
+scope_new(gc_t *ref_gc) {
     scope_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->varmap = objdict_new();
+    self->ref_gc = ref_gc;
+    self->varmap = objdict_new(ref_gc);
 
     return self;
 }

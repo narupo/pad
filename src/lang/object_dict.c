@@ -5,24 +5,34 @@ enum {
 };
 
 struct object_dict {
+    gc_t *ref_gc; // do not delete (this is reference)
     object_dict_item_t *map;
     size_t capa;
     size_t len;
 };
 
 void
+obj_del(struct object *self);
+
+void
 objdict_del(object_dict_t *self) {
     if (self == NULL) {
         return;
     }
+
+    for (int32_t i = 0; i < self->len; ++i) {
+        obj_del(self->map[i].value);
+    }
+
     free(self->map);
     free(self);
 }
 
 object_dict_t *
-objdict_new(void) {
+objdict_new(gc_t *ref_gc) {
     object_dict_t *self = mem_ecalloc(1, sizeof(*self));
 
+    self->ref_gc = ref_gc;
     self->capa = OBJDICT_INIT_CAPA;
     self->len = 0;
     self->map = mem_ecalloc(self->capa+1, sizeof(object_dict_item_t));
@@ -60,9 +70,6 @@ objdict_resize(object_dict_t *self, size_t newcapa) {
 
     return self;
 }
-
-void
-obj_del(struct object *self);
 
 object_dict_t *
 objdict_move(object_dict_t *self, const char *key, struct object *move_value) {
@@ -102,9 +109,6 @@ objdict_getc(const object_dict_t *self, const char *key) {
     // const cast danger
     return objdict_get((object_dict_t *)self, key);
 }
-
-extern void
-obj_del(struct object *self);
 
 void
 objdict_clear(object_dict_t *self) {

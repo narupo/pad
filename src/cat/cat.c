@@ -293,7 +293,8 @@ static bool
 catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
     bool ret = true;
     string_t *out = str_new();
-    context_t *ctx = ctx_new();
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
     const char *p = str_getc(buf);
 
     if (self->opts.ismake) {
@@ -362,6 +363,7 @@ catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
 
 fail:
     ctx_del(ctx);
+    gc_del(gc);
     str_del(out);
     return ret;
 }

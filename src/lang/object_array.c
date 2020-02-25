@@ -5,6 +5,7 @@ enum {
 };
 
 struct object_array {
+    gc_t *ref_gc;
     size_t len;
     size_t capa;
     object_t **parray;

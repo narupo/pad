@@ -7,6 +7,7 @@ enum {
 };
 
 struct context {
+    gc_t *ref_gc; // reference to gc (DO NOT DELETE)
     alinfo_t *alinfo; // alias info for builtin alias module
     string_t *buf; // stdout buffer in context
     scope_t *scope; // scope in context
@@ -28,12 +29,13 @@ ctx_del(context_t *self) {
 }
 
 context_t *
-ctx_new(void) {
+ctx_new(gc_t *ref_gc) {
     context_t *self = mem_ecalloc(1, sizeof(*self));
 
+    self->ref_gc = ref_gc;
     self->alinfo = alinfo_new();
     self->buf = str_new();
-    self->scope = scope_new();
+    self->scope = scope_new(ref_gc);
 
     return self;
 }
@@ -136,7 +138,7 @@ ctx_clear_jump_flags(context_t *self) {
 
 void
 ctx_pushb_scope(context_t *self) {
-    scope_t *scope = scope_new();
+    scope_t *scope = scope_new(self->ref_gc);
     scope_moveb(self->scope, scope);
 }
 
