@@ -215,7 +215,7 @@ trv_ref_block(ast_t *ast, const node_t *node, int dep) {
             return_trav(NULL);
         }
         if (!result) {
-            result = obj_new_nil(ast->gc);
+            result = obj_new_nil(ast->ref_gc);
         }
     }
 
@@ -699,7 +699,7 @@ extract_obj(ast_t *ast, const object_t *srcobj) {
             object_t *newel = extract_obj(ast, el);
             objarr_moveb(objarr, newel);
         }
-        return obj_new_array(ast->gc, objarr);
+        return obj_new_array(ast->ref_gc, objarr);
     } break;
     }
 
@@ -776,7 +776,7 @@ trv_calc_assign_to_array(ast_t *ast, const object_t *lhs, const object_t *rhs, i
             objarr_moveb(results, result);
         }
 
-        return obj_new_array(ast->gc, results);
+        return obj_new_array(ast->ref_gc, results);
     } break;
     }
 
@@ -1156,7 +1156,7 @@ done:
         return_trav(obj);
     }
 
-    obj = obj_new_array(ast->gc, objarr);
+    obj = obj_new_array(ast->ref_gc, objarr);
     return_trav(obj);
 }
 
@@ -1249,7 +1249,7 @@ trv_test_list(ast_t *ast, const node_t *node, int dep) {
         objarr_moveb(arr, result);
     }
 
-    object_t *obj = obj_new_array(ast->gc, arr);
+    object_t *obj = obj_new_array(ast->ref_gc, arr);
     return_trav(obj);
 }
 
@@ -3234,19 +3234,19 @@ trv_compare_not(ast_t *ast, const object_t *operand, int dep) {
 
     switch (operand->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->gc, !operand);
+        object_t *obj = obj_new_bool(ast->ref_gc, !operand);
         return_trav(obj);
     } break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->gc, true);
+        object_t *obj = obj_new_bool(ast->ref_gc, true);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(ast->gc, !operand->lvalue);
+        object_t *obj = obj_new_bool(ast->ref_gc, !operand->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->gc, !operand->boolean);
+        object_t *obj = obj_new_bool(ast->ref_gc, !operand->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3261,15 +3261,15 @@ trv_compare_not(ast_t *ast, const object_t *operand, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
-        object_t *obj = obj_new_bool(ast->gc, !str_len(operand->string));
+        object_t *obj = obj_new_bool(ast->ref_gc, !str_len(operand->string));
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
-        object_t *obj = obj_new_bool(ast->gc, !objarr_len(operand->objarr));
+        object_t *obj = obj_new_bool(ast->ref_gc, !objarr_len(operand->objarr));
         return_trav(obj);
     } break;
     case OBJ_TYPE_DICT: {
-        object_t *obj = obj_new_bool(ast->gc, !objdict_len(operand->objdict));
+        object_t *obj = obj_new_bool(ast->ref_gc, !objdict_len(operand->objdict));
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -3325,15 +3325,15 @@ trv_compare_comparison_eq_int(ast_t *ast, const object_t *lhs, const object_t *r
         return_trav(NULL);
         break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->gc, false);
+        object_t *obj = obj_new_bool(ast->ref_gc, false);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->lvalue == rhs->lvalue);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue == rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->lvalue == rhs->boolean);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue == rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3368,15 +3368,15 @@ trv_compare_comparison_eq_bool(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(NULL);
         break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->gc, false);
+        object_t *obj = obj_new_bool(ast->ref_gc, false);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->boolean == rhs->lvalue);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean == rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->boolean == rhs->boolean);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean == rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3410,7 +3410,7 @@ trv_compare_comparison_eq_string(ast_t *ast, const object_t *lhs, const object_t
         return_trav(NULL);
         break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->gc, false);
+        object_t *obj = obj_new_bool(ast->ref_gc, false);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3420,7 +3420,7 @@ trv_compare_comparison_eq_string(ast_t *ast, const object_t *lhs, const object_t
     } break;
     case OBJ_TYPE_STRING: {
         bool b = cstr_eq(str_getc(lhs->string), str_getc(rhs->string));
-        object_t *obj = obj_new_bool(ast->gc, b);
+        object_t *obj = obj_new_bool(ast->ref_gc, b);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -3450,7 +3450,7 @@ trv_compare_comparison_eq_array(ast_t *ast, const object_t *lhs, const object_t 
         return_trav(NULL);
         break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->gc, false);
+        object_t *obj = obj_new_bool(ast->ref_gc, false);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3489,11 +3489,11 @@ trv_compare_comparison_eq_nil(ast_t *ast, const object_t *lhs, const object_t *r
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->gc, false);
+        object_t *obj = obj_new_bool(ast->ref_gc, false);
         return_trav(obj);        
     } break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->gc, true);
+        object_t *obj = obj_new_bool(ast->ref_gc, true);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -3523,7 +3523,7 @@ trv_compare_comparison_eq_func(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(NULL);
         break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->gc, false);
+        object_t *obj = obj_new_bool(ast->ref_gc, false);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3532,7 +3532,7 @@ trv_compare_comparison_eq_func(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(obj);
     } break;
     case OBJ_TYPE_FUNC: {
-        object_t *obj = obj_new_bool(ast->gc, lhs == rhs);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -3562,7 +3562,7 @@ trv_compare_comparison_eq_module(ast_t *ast, const object_t *lhs, const object_t
         return_trav(NULL);
         break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->gc, false);
+        object_t *obj = obj_new_bool(ast->ref_gc, false);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3572,7 +3572,7 @@ trv_compare_comparison_eq_module(ast_t *ast, const object_t *lhs, const object_t
     } break;
     case OBJ_TYPE_MODULE:
     case OBJ_TYPE_FUNC: {
-        object_t *obj = obj_new_bool(ast->gc, lhs == rhs);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -3679,15 +3679,15 @@ trv_compare_comparison_not_eq_int(ast_t *ast, const object_t *lhs, const object_
         return_trav(NULL);
         break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->gc, true);
+        object_t *obj = obj_new_bool(ast->ref_gc, true);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->lvalue != rhs->lvalue);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue != rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->lvalue != rhs->boolean);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue != rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3722,11 +3722,11 @@ trv_compare_comparison_not_eq_bool(ast_t *ast, const object_t *lhs, const object
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->boolean != rhs->lvalue);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean != rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->boolean != rhs->boolean);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean != rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3761,7 +3761,7 @@ trv_compare_comparison_not_eq_string(ast_t *ast, const object_t *lhs, const obje
         return_trav(NULL);
         break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->gc, true);
+        object_t *obj = obj_new_bool(ast->ref_gc, true);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3770,7 +3770,7 @@ trv_compare_comparison_not_eq_string(ast_t *ast, const object_t *lhs, const obje
     } break;
     case OBJ_TYPE_STRING: {
         bool b = !cstr_eq(str_getc(lhs->string), str_getc(rhs->string));
-        object_t *obj = obj_new_bool(ast->gc, b);
+        object_t *obj = obj_new_bool(ast->ref_gc, b);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -3800,7 +3800,7 @@ trv_compare_comparison_not_eq_array(ast_t *ast, const object_t *lhs, const objec
         return_trav(NULL);
         break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->gc, true);
+        object_t *obj = obj_new_bool(ast->ref_gc, true);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3839,11 +3839,11 @@ trv_compare_comparison_not_eq_nil(ast_t *ast, const object_t *lhs, const object_
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->gc, true);
+        object_t *obj = obj_new_bool(ast->ref_gc, true);
         return_trav(obj);
     } break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->gc, false);
+        object_t *obj = obj_new_bool(ast->ref_gc, false);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3878,7 +3878,7 @@ trv_compare_comparison_not_eq_func(ast_t *ast, const object_t *lhs, const object
         return_trav(NULL);
         break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->gc, true);
+        object_t *obj = obj_new_bool(ast->ref_gc, true);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3888,7 +3888,7 @@ trv_compare_comparison_not_eq_func(ast_t *ast, const object_t *lhs, const object
     } break;
     case OBJ_TYPE_MODULE:
     case OBJ_TYPE_FUNC: {
-        object_t *obj = obj_new_bool(ast->gc, lhs != rhs);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -3918,7 +3918,7 @@ trv_compare_comparison_not_eq_module(ast_t *ast, const object_t *lhs, const obje
         return_trav(NULL);
         break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->gc, true);
+        object_t *obj = obj_new_bool(ast->ref_gc, true);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3928,7 +3928,7 @@ trv_compare_comparison_not_eq_module(ast_t *ast, const object_t *lhs, const obje
     } break;
     case OBJ_TYPE_MODULE:
     case OBJ_TYPE_FUNC: {
-        object_t *obj = obj_new_bool(ast->gc, lhs != rhs);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -4024,11 +4024,11 @@ trv_compare_comparison_lte_int(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->lvalue <= rhs->lvalue);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue <= rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->lvalue <= rhs->boolean);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue <= rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -4063,11 +4063,11 @@ trv_compare_comparison_lte_bool(ast_t *ast, const object_t *lhs, const object_t 
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->boolean <= rhs->lvalue);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean <= rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->boolean <= rhs->boolean);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean <= rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -4142,11 +4142,11 @@ trv_compare_comparison_gte_int(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->lvalue >= rhs->lvalue);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue >= rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->lvalue >= rhs->boolean);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue >= rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -4181,11 +4181,11 @@ trv_compare_comparison_gte_bool(ast_t *ast, const object_t *lhs, const object_t 
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->boolean >= rhs->lvalue);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean >= rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->boolean >= rhs->boolean);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean >= rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -4260,11 +4260,11 @@ trv_compare_comparison_lt_int(ast_t *ast, const object_t *lhs, const object_t *r
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->lvalue < rhs->lvalue);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue < rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->lvalue < rhs->boolean);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue < rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -4299,11 +4299,11 @@ trv_compare_comparison_lt_bool(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->boolean < rhs->lvalue);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean < rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->boolean < rhs->boolean);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean < rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -4378,11 +4378,11 @@ trv_compare_comparison_gt_int(ast_t *ast, const object_t *lhs, const object_t *r
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->lvalue > rhs->lvalue);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue > rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->lvalue > rhs->boolean);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue > rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -4417,11 +4417,11 @@ trv_compare_comparison_gt_bool(ast_t *ast, const object_t *lhs, const object_t *
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->boolean > rhs->lvalue);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean > rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->gc, lhs->boolean > rhs->boolean);
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean > rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -4597,11 +4597,11 @@ trv_calc_expr_add_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_int(ast->gc, lhs->lvalue + rhs->lvalue);
+        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue + rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_int(ast->gc, lhs->lvalue + rhs->boolean);
+        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue + rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -4636,11 +4636,11 @@ trv_calc_expr_add_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_int(ast->gc, lhs->boolean + rhs->lvalue);
+        object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean + rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_int(ast->gc, lhs->boolean + rhs->boolean);
+        object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean + rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -4683,7 +4683,7 @@ trv_calc_expr_add_string(ast_t *ast, const object_t *lhs, const object_t *rhs, i
         string_t *s = str_new();
         str_app(s, str_getc(lhs->string));
         str_app(s, str_getc(rhs->string));
-        object_t *obj = obj_new_str(ast->gc, s);
+        object_t *obj = obj_new_str(ast->ref_gc, s);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -4758,11 +4758,11 @@ trv_calc_expr_sub_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(NULL);
         break;    
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_int(ast->gc, lhs->lvalue - rhs->lvalue);
+        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue - rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_int(ast->gc, lhs->lvalue - rhs->boolean);
+        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue - rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -4797,11 +4797,11 @@ trv_calc_expr_sub_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         return_trav(NULL);
         break;    
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_int(ast->gc, lhs->boolean - rhs->lvalue);
+        object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean - rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_int(ast->gc, lhs->boolean - rhs->boolean);
+        object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean - rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -4952,11 +4952,11 @@ trv_calc_term_mul_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_int(ast->gc, lhs->lvalue * rhs->lvalue);
+        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue * rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_int(ast->gc, lhs->lvalue * rhs->boolean);
+        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue * rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -4994,11 +4994,11 @@ trv_calc_term_mul_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        object_t *obj = obj_new_int(ast->gc, lhs->boolean * rhs->lvalue);
+        object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean * rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_int(ast->gc, lhs->boolean * rhs->boolean);
+        object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean * rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -5116,7 +5116,7 @@ trv_calc_term_div_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
             ast_set_error_detail(ast, "zero division error");
             return_trav(NULL);
         }
-        object_t *obj = obj_new_int(ast->gc, lhs->lvalue / rhs->lvalue);
+        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue / rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
@@ -5124,7 +5124,7 @@ trv_calc_term_div_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
             ast_set_error_detail(ast, "zero division error (2)");
             return_trav(NULL);
         }
-        object_t *obj = obj_new_int(ast->gc, lhs->lvalue / rhs->boolean);
+        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue / rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -5163,13 +5163,13 @@ trv_calc_term_div_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
             ast_set_error_detail(ast, "zero division error (3)");
             return_trav(NULL);
         }
-        return obj_new_int(ast->gc, lhs->boolean / rhs->lvalue);
+        return obj_new_int(ast->ref_gc, lhs->boolean / rhs->lvalue);
     case OBJ_TYPE_BOOL:
         if (!rhs->boolean) {
             ast_set_error_detail(ast, "zero division error (4)");
             return_trav(NULL);
         }
-        return obj_new_int(ast->gc, lhs->boolean / rhs->boolean);
+        return obj_new_int(ast->ref_gc, lhs->boolean / rhs->boolean);
     case OBJ_TYPE_IDENTIFIER: {
         check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_term_div, dep+1);
@@ -5547,7 +5547,7 @@ trv_index(ast_t *ast, const node_t *node, int dep) {
     }
 
     // set reference of operand
-    ret = obj_new_index(ast->gc, operand, indices);
+    ret = obj_new_index(ast->ref_gc, operand, indices);
     return_trav(ret);
 }
 
@@ -5896,7 +5896,7 @@ trv_nil(ast_t *ast, const node_t *node, int dep) {
     node_nil_t *nil = node->real;
     assert(nil && node->type == NODE_TYPE_NIL);
     // not check exists field
-    return_trav(obj_new_nil(ast->gc));
+    return_trav(obj_new_nil(ast->ref_gc));
 }
 
 static object_t *
@@ -5905,7 +5905,7 @@ trv_false(ast_t *ast, const node_t *node, int dep) {
     node_false_t *false_ = node->real;
     assert(false_ && node->type == NODE_TYPE_FALSE);
     assert(!false_->boolean);
-    return_trav(obj_new_false(ast->gc));
+    return_trav(obj_new_false(ast->ref_gc));
 }
 
 static object_t *
@@ -5914,7 +5914,7 @@ trv_true(ast_t *ast, const node_t *node, int dep) {
     node_true_t *true_ = node->real;
     assert(true_ && node->type == NODE_TYPE_TRUE);
     assert(true_->boolean);
-    return_trav(obj_new_true(ast->gc));
+    return_trav(obj_new_true(ast->ref_gc));
 }
 
 static object_t *
@@ -5922,7 +5922,7 @@ trv_digit(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_digit_t *digit = node->real;
     assert(digit && node->type == NODE_TYPE_DIGIT);
-    object_t *obj = obj_new_int(ast->gc, digit->lvalue);
+    object_t *obj = obj_new_int(ast->ref_gc, digit->lvalue);
     return_trav(obj);
 }
 
@@ -5931,7 +5931,7 @@ trv_string(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_string_t *string = node->real;
     assert(string && node->type == NODE_TYPE_STRING);
-    object_t *obj = obj_new_cstr(ast->gc, string->string);
+    object_t *obj = obj_new_cstr(ast->ref_gc, string->string);
     return_trav(obj);
 }
 
@@ -5953,7 +5953,7 @@ trv_array_elems(ast_t *ast, const node_t *node, int dep) {
         objarr_moveb(objarr, result);
     }
 
-    object_t *ret = obj_new_array(ast->gc, objarr);
+    object_t *ret = obj_new_array(ast->ref_gc, objarr);
     return_trav(ret); 
 }
 
@@ -6006,7 +6006,7 @@ trv_dict_elem(ast_t *ast, const node_t *node, int dep) {
     objarr_moveb(objarr, key);
     objarr_moveb(objarr, val);
 
-    object_t *obj = obj_new_array(ast->gc, objarr);
+    object_t *obj = obj_new_array(ast->ref_gc, objarr);
     return_trav(obj);
 }
 
@@ -6019,7 +6019,7 @@ trv_dict_elems(ast_t *ast, const node_t *node, int dep) {
     node_dict_elems_t *dict_elems = node->real;
     assert(dict_elems && node->type == NODE_TYPE_DICT_ELEMS);
 
-    object_dict_t *objdict = objdict_new(ast->gc);
+    object_dict_t *objdict = objdict_new(ast->ref_gc);
 
     for (int32_t i = 0; i < nodearr_len(dict_elems->nodearr); ++i) {
         node_t *dict_elem = nodearr_get(dict_elems->nodearr, i);
@@ -6074,7 +6074,7 @@ trv_dict_elems(ast_t *ast, const node_t *node, int dep) {
         obj_del(arrobj);
     }
 
-    object_t *ret = obj_new_dict(ast->gc, objdict);
+    object_t *ret = obj_new_dict(ast->ref_gc, objdict);
     return_trav(ret); 
 }
 
@@ -6095,7 +6095,7 @@ trv_identifier(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_identifier_t *identifier = node->real;
     assert(identifier && node->type == NODE_TYPE_IDENTIFIER);
-    object_t *obj = obj_new_cidentifier(ast->gc, identifier->identifier);
+    object_t *obj = obj_new_cidentifier(ast->ref_gc, identifier->identifier);
     return_trav(obj);
 }
 
@@ -6179,7 +6179,7 @@ trv_invoke_func_obj(ast_t *ast, const char *funcname, const object_t *drtargs, i
     ctx_popb_scope(ast->context);
 
     if (!result) {
-        return obj_new_nil(ast->gc);
+        return obj_new_nil(ast->ref_gc);
     }
 
     return result;
@@ -6286,7 +6286,7 @@ trv_func_def(ast_t *ast, const node_t *node, int dep) {
     assert(def_args->type == OBJ_TYPE_ARRAY);
 
     node_array_t *ref_suites = func_def->contents;
-    object_t *func_obj = obj_new_func(ast->gc, name, def_args, ref_suites);
+    object_t *func_obj = obj_new_func(ast->ref_gc, name, def_args, ref_suites);
     check("set func at varmap");
     move_var(ast, str_getc(name->identifier), mem_move(func_obj));
 
@@ -6317,11 +6317,11 @@ trv_func_def_args(ast_t *ast, const node_t *node, int dep) {
         assert(n->type == NODE_TYPE_IDENTIFIER);
         node_identifier_t *nidn = n->real;
 
-        object_t *oidn = obj_new_cidentifier(ast->gc, nidn->identifier);
+        object_t *oidn = obj_new_cidentifier(ast->ref_gc, nidn->identifier);
         objarr_moveb(args, oidn);
     }
 
-    return obj_new_array(ast->gc, args);
+    return obj_new_array(ast->ref_gc, args);
 }
 
 static object_t *
@@ -6591,16 +6591,16 @@ trv_import_builtin_modules(ast_t *ast) {
     object_dict_t *varmap = ctx_get_varmap(ast->context);
     object_t *mod = NULL;
 
-    mod = builtin_module_new(ast->gc);
+    mod = builtin_module_new(ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
-    mod = builtin_string_module_new(ast->gc);
+    mod = builtin_string_module_new(ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
-    mod = builtin_alias_module_new(ast->gc);
+    mod = builtin_alias_module_new(ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
-    mod = builtin_opts_module_new(ast->gc);
+    mod = builtin_opts_module_new(ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
     return ast;
@@ -6609,6 +6609,7 @@ trv_import_builtin_modules(ast_t *ast) {
 void
 trv_traverse(ast_t *ast, context_t *context) {
     ast->context = context;
+    ast->ref_gc = ctx_get_gc(context);
     ctx_clear(ast->context);
 
     if (!trv_import_builtin_modules(ast)) {

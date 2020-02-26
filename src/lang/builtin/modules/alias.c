@@ -45,7 +45,7 @@ builtin_alias_set(ast_t *ast, const object_t *objargs) {
 
     ctx_set_alias(ast->context, key, val, desc);
 
-    return obj_new_nil(ast->gc);
+    return obj_new_nil(ast->ref_gc);
 }
 
 static builtin_func_info_t

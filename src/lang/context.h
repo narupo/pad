@@ -222,3 +222,13 @@ ctx_popb_scope(context_t *self);
  */
 object_t * 
 ctx_find_var_ref(context_t *self, const char *key);
+
+/**
+ * get gc
+ * 
+ * @param[in] *self pointer to context_t
+ * 
+ * @return poitner to gc_t (DO NOT DELETE)
+ */
+gc_t *
+ctx_get_gc(context_t *self);

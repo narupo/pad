@@ -24,18 +24,18 @@ builtin_opts_get(ast_t *ast, const object_t *objargs) {
         string_t *optname = objname->string;
         const char *optval = opts_getc(ast->opts, str_getc(optname));
         if (!optval) {
-            return obj_new_nil(ast->gc);
+            return obj_new_nil(ast->ref_gc);
         }        
 
-        return obj_new_cstr(ast->gc, optval);
+        return obj_new_cstr(ast->ref_gc, optval);
     } else if (objargs->type == OBJ_TYPE_STRING) {
         string_t *optname = objargs->string;
         const char *optval = opts_getc(ast->opts, str_getc(optname));
         if (!optval) {
-            return obj_new_nil(ast->gc);
+            return obj_new_nil(ast->ref_gc);
         }        
 
-        return obj_new_cstr(ast->gc, optval);
+        return obj_new_cstr(ast->ref_gc, optval);
     } 
 
     assert(0 && "impossible. invalid arguments");
@@ -65,11 +65,11 @@ builtin_opts_has(ast_t *ast, const object_t *objargs) {
 
         string_t *optname = objname->string;
         bool has = opts_has(ast->opts, str_getc(optname));
-        return obj_new_bool(ast->gc, has);
+        return obj_new_bool(ast->ref_gc, has);
     } else if (objargs->type == OBJ_TYPE_STRING) {
         string_t *optname = objargs->string;
         bool has = opts_has(ast->opts, str_getc(optname));
-        return obj_new_bool(ast->gc, has);
+        return obj_new_bool(ast->ref_gc, has);
     } 
 
     assert(0 && "impossible. invalid arguments");
@@ -91,10 +91,10 @@ builtin_opts_args(ast_t *ast, const object_t *objargs) {
     int32_t idx = objargs->lvalue;
     const char *value = opts_getc_args(ast->opts, idx);
     if (!value) {
-        return obj_new_nil(ast->gc);
+        return obj_new_nil(ast->ref_gc);
     }
 
-    return obj_new_cstr(ast->gc, value);
+    return obj_new_cstr(ast->ref_gc, value);
 }
 
 static builtin_func_info_t

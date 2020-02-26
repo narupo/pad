@@ -3677,6 +3677,52 @@ test_cc_dict(void) {
 }
 
 static void
+test_cc_dict_0(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+
+    tkr_parse(tkr, "{@ {} @}");
+    (cc_compile(ast, tkr_get_tokens(tkr)));
+
+    tkr_del(tkr);
+    ast_del(ast);
+    config_del(config);
+}
+
+static void
+test_cc_dict_1(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+
+    tkr_parse(tkr, "{@ { \"key\" : \"value\", } @}");
+    ast_clear(ast);
+    (cc_compile(ast, tkr_get_tokens(tkr)));
+
+    tkr_del(tkr);
+    ast_del(ast);
+    config_del(config);
+}
+
+static void
+test_cc_dict_2(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+
+    tkr_parse(tkr, "{@ { \"key1\" : \"value1\", \"key2\" : \"value2\" } @}");
+    (cc_compile(ast, tkr_get_tokens(tkr)));
+
+    tkr_del(tkr);
+    ast_del(ast);
+    config_del(config);
+}
+
+static void
 test_cc_expr(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -9673,6 +9719,9 @@ compiler_tests[] = {
     {"cc_ref_block_3", test_cc_ref_block_3},
     {"cc_formula", test_cc_formula},
     {"cc_dict", test_cc_dict},
+    {"cc_dict_0", test_cc_dict_0},
+    {"cc_dict_1", test_cc_dict_1},
+    {"cc_dict_2", test_cc_dict_2},
     {"cc_expr", test_cc_expr},
     {"cc_index", test_cc_index},
     {"cc_dot", test_cc_dot},
