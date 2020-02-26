@@ -10,6 +10,9 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     default: {
         err_die("impossible. failed to delete nodes in ast. not supported node type '%d'", node->type);
     } break;
+    case NODE_TYPE_INVALID: {
+        // nothing todo
+    } break;
     case NODE_TYPE_PROGRAM: {
         node_program_t *program = node->real;
         ast_del_nodes(self, program->blocks);
@@ -45,6 +48,9 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         ast_del_nodes(self, stmt->import_stmt);
         ast_del_nodes(self, stmt->if_stmt);
         ast_del_nodes(self, stmt->for_stmt);
+        ast_del_nodes(self, stmt->break_stmt);
+        ast_del_nodes(self, stmt->continue_stmt);
+        ast_del_nodes(self, stmt->return_stmt);
     } break;
     case NODE_TYPE_IMPORT_STMT: {
         node_import_stmt_t *import_stmt = node->real;
@@ -211,11 +217,12 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     case NODE_TYPE_ATOM: {
         node_atom_t *atom = node->real;
         ast_del_nodes(self, atom->nil);
-        ast_del_nodes(self, atom->false_);
         ast_del_nodes(self, atom->true_);
+        ast_del_nodes(self, atom->false_);
         ast_del_nodes(self, atom->digit);
         ast_del_nodes(self, atom->string);
         ast_del_nodes(self, atom->array);
+        ast_del_nodes(self, atom->dict);
         ast_del_nodes(self, atom->identifier);
     } break;
     case NODE_TYPE_NIL: {

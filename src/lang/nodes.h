@@ -12,6 +12,7 @@
 
 typedef enum {
     NODE_TYPE_INVALID,
+
     NODE_TYPE_PROGRAM,
     NODE_TYPE_BLOCKS,
     NODE_TYPE_CODE_BLOCK,
@@ -60,7 +61,6 @@ typedef enum {
     // atoms
     NODE_TYPE_NIL,
     NODE_TYPE_DIGIT,
-    NODE_TYPE_CALLER,
     NODE_TYPE_STRING,
     NODE_TYPE_IDENTIFIER,
     NODE_TYPE_ARRAY,

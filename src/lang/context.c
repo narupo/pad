@@ -152,3 +152,8 @@ object_t *
 ctx_find_var_ref(context_t *self, const char *key) {
     return scope_find_var_ref(self->scope, key);
 }
+
+gc_t *
+ctx_get_gc(context_t *self) {
+    return self->ref_gc;
+}

@@ -115,7 +115,7 @@ copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
             str_pushb(str, ch);
             
             obj_del(operand);
-            operand = obj_new_str(ast->gc, str);
+            operand = obj_new_str(ast->ref_gc, str);
         } break;
         case OBJ_TYPE_DICT: {
             if (idx->type != OBJ_TYPE_STRING) {

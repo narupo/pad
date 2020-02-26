@@ -4,7 +4,7 @@ static object_t *
 builtin_puts(ast_t *ast, const object_t *drtargs) {
     if (!drtargs) {
         ctx_pushb_buf(ast->context, "\n");
-        return obj_new_int(ast->gc, 0);
+        return obj_new_int(ast->ref_gc, 0);
     }
 
     object_t *args = obj_to_array(drtargs);
@@ -39,14 +39,14 @@ builtin_puts(ast_t *ast, const object_t *drtargs) {
 
 done:
     ctx_pushb_buf(ast->context, "\n");
-    return obj_new_int(ast->gc, arrlen);
+    return obj_new_int(ast->ref_gc, arrlen);
 }
 
 static object_t *
 builtin_exec(ast_t *ast, const object_t *drtargs) {
     if (!drtargs) {
         ctx_pushb_buf(ast->context, "\n");
-        return obj_new_int(ast->gc, 0);
+        return obj_new_int(ast->ref_gc, 0);
     }
 
     object_t *args = obj_to_array(drtargs);
@@ -73,7 +73,7 @@ builtin_exec(ast_t *ast, const object_t *drtargs) {
     execcmd_del(execcmd);
 
     freeargv(argc, argv);
-    return obj_new_int(ast->gc, result);
+    return obj_new_int(ast->ref_gc, result);
 }
 
 static builtin_func_info_t

@@ -4,7 +4,7 @@ static object_t *
 call_basic_str_func(ast_t *ast, const char *method_name) {
     const object_t *owner = ast->ref_dot_owner;
     if (!owner) {
-        return obj_new_nil(ast->gc);
+        return obj_new_nil(ast->ref_gc);
     }
     ast->ref_dot_owner = NULL;
 
@@ -28,7 +28,7 @@ again:
             ast_set_error_detail(ast, "invalid method name \"%s\" for call basic string function", method_name);
             return NULL;
         }
-        return obj_new_str(ast->gc, result);
+        return obj_new_str(ast->ref_gc, result);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         owner = ctx_find_var_ref(ast->context, str_getc(owner->identifier));
@@ -41,7 +41,7 @@ again:
     }
 
     assert(0 && "impossible. failed to invoke basic string function");
-    return obj_new_nil(ast->gc);
+    return obj_new_nil(ast->ref_gc);
 }
 
 static object_t *
@@ -74,8 +74,8 @@ builtin_string_func_infos[] = {
 };
 
 object_t *
-builtin_string_module_new(gc_t *gc) {
-    object_t *mod = obj_new_module(gc);
+builtin_string_module_new(gc_t *ref_gc) {
+    object_t *mod = obj_new_module(ref_gc);
 
     str_set(mod->module.name, "__string__");
     mod->module.builtin_func_infos = builtin_string_func_infos;

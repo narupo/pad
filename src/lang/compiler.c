@@ -991,7 +991,7 @@ cc_dict_elems(ast_t *ast, int dep) {
         } \
         return_parse(NULL); \
     } \
-
+    
     check("call cc_dict_elem");
     node_t *lhs = cc_dict_elem(ast, dep+1);
     if (ast_has_error(ast)) {
@@ -1334,7 +1334,8 @@ cc_factor(ast_t *ast, int dep) {
         check("read )")
     }
 
-    return_parse(node_new(NODE_TYPE_FACTOR, cur));
+    node_t *node = node_new(NODE_TYPE_FACTOR, mem_move(cur));
+    return_parse(node);
 }
 
 static node_t *
@@ -2018,7 +2019,7 @@ cc_and_test(ast_t *ast, int dep) {
     }
 
     assert(0 && "impossible. failed to and test");
-    return NULL;
+    return_parse(NULL);
 }
 
 static node_t *
@@ -2522,6 +2523,7 @@ cc_elems(ast_t *ast, int dep) {
         ast_del_nodes(ast, cur->def); \
         ast_del_nodes(ast, cur->stmt); \
         ast_del_nodes(ast, cur->formula); \
+        ast_del_nodes(ast, cur->elems); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -2682,6 +2684,10 @@ cc_blocks(ast_t *ast, int dep) {
 
 #undef return_cleanup
 #define return_cleanup() { \
+        ast_del_nodes(ast, cur->code_block); \
+        ast_del_nodes(ast, cur->ref_block); \
+        ast_del_nodes(ast, cur->text_block); \
+        ast_del_nodes(ast, cur->blocks); \
         free(cur); \
         return_parse(NULL); \
     } \
@@ -2724,6 +2730,7 @@ cc_program(ast_t *ast, int dep) {
 
 #undef return_cleanup
 #define return_cleanup() { \
+        ast_del_nodes(ast, cur->blocks); \
         free(cur); \
         return_parse(NULL); \
     } \
@@ -2731,7 +2738,9 @@ cc_program(ast_t *ast, int dep) {
     check("call cc_blocks");
     cur->blocks = cc_blocks(ast, dep+1);
     if (!cur->blocks) {
-        return_cleanup();
+        if (ast_has_error(ast)) {
+            return_cleanup();
+        }
     }
 
     return_parse(node_new(NODE_TYPE_PROGRAM, cur));
