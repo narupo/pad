@@ -9,7 +9,8 @@ obj_del(object_t *self) {
         return;
     }
 
-    if (self->gc_item.ref_counts <= 1) {
+    if (self->gc_item.ref_counts > 1) {
+        self->gc_item.ref_counts--;
         return;
     }
 
@@ -25,28 +26,38 @@ obj_del(object_t *self) {
         break;
     case OBJ_TYPE_IDENTIFIER:
         str_del(self->identifier);
+        self->identifier = NULL;
         break;
     case OBJ_TYPE_STRING:
         str_del(self->string);
+        self->string = NULL;
         break;
     case OBJ_TYPE_ARRAY:
         objarr_del(self->objarr);
+        self->objarr = NULL;
         break;
     case OBJ_TYPE_DICT:
         objdict_del(self->objdict);
+        self->objdict = NULL;
         break;
     case OBJ_TYPE_FUNC:
         obj_del(self->func.name);
+        self->func.name = NULL;
         obj_del(self->func.args);
+        self->func.args = NULL;
         // do not delete ref_suites, this is reference
         break;
     case OBJ_TYPE_INDEX:
-        self->index.ref_operand = NULL; // do not delete, it is reference
+        obj_del(self->index.operand);
+        self->index.operand = NULL; // do not delete, it is reference
         objarr_del(self->index.indices);
+        self->index.indices = NULL;
         break;
     case OBJ_TYPE_MODULE:
         str_del(self->module.name);
+        self->module.name = NULL;
         objdict_del(self->module.objs);
+        self->module.objs = NULL;
         break;
     }
 
@@ -100,7 +111,8 @@ obj_new_other(const object_t *other) {
         self->func.ref_suites = other->func.ref_suites; // save reference
         break;
     case OBJ_TYPE_INDEX: {
-        self->index.ref_operand = other->index.ref_operand;
+        self->index.operand = other->index.operand;
+        obj_inc_ref(self->index.operand);
 
         object_array_t *indices = objarr_new();
         for (int32_t i = 0; i < objarr_len(other->index.indices); ++i) {
@@ -243,15 +255,15 @@ obj_new_func(gc_t *ref_gc, object_t *move_name, object_t *move_args, node_array_
 }
 
 object_t *
-obj_new_index(gc_t *ref_gc, object_t *ref_operand, object_array_t *move_indices) {
-    if (!ref_operand || !move_indices) {
+obj_new_index(gc_t *ref_gc, object_t *move_operand, object_array_t *move_indices) {
+    if (!move_operand || !move_indices) {
         return NULL;
     }
 
     object_t *self = obj_new(ref_gc, OBJ_TYPE_INDEX);
 
-    self->index.ref_operand = ref_operand;
-    self->index.indices = move_indices;
+    self->index.operand = mem_move(move_operand);
+    self->index.indices = mem_move(move_indices);
 
     return self;
 }
@@ -346,4 +358,14 @@ obj_to_array(const object_t *obj) {
 
     assert(0 && "impossible. not supported type in obj to array");
     return NULL;
+}
+
+void 
+obj_inc_ref(object_t *self) {
+    self->gc_item.ref_counts += 1;
+}
+
+void
+obj_dec_ref(object_t *self) {
+    self->gc_item.ref_counts -= 1;
 }

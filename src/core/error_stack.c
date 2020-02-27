@@ -34,6 +34,7 @@ errstack_del(errstack_t *self) {
         return;
     }
 
+    free(self->stack);
     free(self);
 }
 

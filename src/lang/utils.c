@@ -30,8 +30,8 @@ object_t *
 copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
     assert(index_obj && index_obj->type == OBJ_TYPE_INDEX);
     
-    assert(index_obj->index.ref_operand);
-    object_t *operand = obj_new_other(index_obj->index.ref_operand);
+    assert(index_obj->index.operand);
+    object_t *operand = obj_new_other(index_obj->index.operand);
     object_t *tmp_operand = NULL;
     assert(index_obj->index.indices);
     const object_array_t *indices = index_obj->index.indices;

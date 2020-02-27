@@ -37,7 +37,7 @@ struct object_func {
  * index object have reference to operand because for assign
  */
 struct object_index {
-    object_t *ref_operand; // reference to operand object (DO NOT DELETE)
+    object_t *operand; // reference to operand object 
     object_array_t *indices; // indices objects
 };
 
@@ -108,7 +108,7 @@ object_t *
 obj_new_func(gc_t *ref_gc, object_t *move_name, object_t *move_args, node_array_t *ref_suites);
 
 object_t *
-obj_new_index(gc_t *ref_gc, object_t *ref_operand, object_array_t *move_indices);
+obj_new_index(gc_t *ref_gc, object_t *move_operand, object_array_t *move_indices);
 
 object_t *
 obj_new_module(gc_t *ref_gc);
@@ -120,4 +120,16 @@ obj_to_str(const object_t *self);
  * various object convert to array object
  */
 object_t *
-obj_to_array(const object_t *obj);
+obj_to_array(const object_t *self);
+
+/**
+ * increment reference count of object
+ */
+void 
+obj_inc_ref(object_t *self);
+
+/**
+ * decrement reference count of object
+ */
+void
+obj_dec_ref(object_t *self);
