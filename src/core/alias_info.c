@@ -13,6 +13,7 @@ alinfo_del(alinfo_t *self) {
 
     dict_del(self->key_val_map);
     dict_del(self->key_desc_map);
+    free(self);
 }
 
 alinfo_t *

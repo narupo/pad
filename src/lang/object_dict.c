@@ -12,7 +12,7 @@ struct object_dict {
 };
 
 void
-obj_del(struct object *self);
+obj_del(object_t *self);
 
 void
 objdict_del(object_dict_t *self) {

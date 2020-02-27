@@ -18,7 +18,7 @@ struct context {
 
 void
 ctx_del(context_t *self) {
-    if (self == NULL) {
+    if (!self) {
         return;
     }
 

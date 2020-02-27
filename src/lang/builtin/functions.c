@@ -38,6 +38,7 @@ builtin_puts(ast_t *ast, const object_t *drtargs) {
     }
 
 done:
+    obj_del(args);
     ctx_pushb_buf(ast->context, "\n");
     return obj_new_int(ast->ref_gc, arrlen);
 }
