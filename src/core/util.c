@@ -271,7 +271,7 @@ trim_first_line(char *dst, int32_t dstsz, const char *text) {
     return dst;
 }
 
-context_t *
+char *
 compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
     tokenizer_t *tkr = tkr_new(tkropt_new());
     ast_t *ast = ast_new(config);
@@ -307,9 +307,12 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
 
     tkr_del(tkr);
     ast_del(ast);
+
+    char *compiled = cstr_edup(ctx_getc_buf(ctx));
+    ctx_del(ctx);
     gc_del(gc);
 
-    return ctx;
+    return compiled;
 }
 
 void
@@ -346,18 +349,18 @@ show_snippet(const config_t *config, const char *fname, int argc, char **argv) {
         return false;
     }
 
-    context_t *ctx = compile_argv(config, argc, argv, content);
-    if (!ctx) {
+    char *compiled = compile_argv(config, argc, argv, content);
+    if (!compiled) {
         err_error("failed to compile snippet");
         free(content);
         return false;
     }
 
-    printf("%s", ctx_getc_buf(ctx));
+    printf("%s", compiled);
     fflush(stdout);
 
-    ctx_del(ctx);
     free(content);
+    free(compiled);
 
     return true;
 }

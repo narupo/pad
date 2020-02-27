@@ -133,3 +133,6 @@ obj_inc_ref(object_t *self);
  */
 void
 obj_dec_ref(object_t *self);
+
+gc_item_t *
+obj_get_gc_item(object_t *self);

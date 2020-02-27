@@ -369,3 +369,8 @@ void
 obj_dec_ref(object_t *self) {
     self->gc_item.ref_counts -= 1;
 }
+
+gc_item_t *
+obj_get_gc_item(object_t *self) {
+    return &self->gc_item;
+}
