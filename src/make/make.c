@@ -93,16 +93,16 @@ makecmd_run(makecmd_t *self) {
         }        
     }
 
-    context_t *ctx = compile_argv(self->config, self->argc, self->argv, src);
-    if (!ctx) {
+    char *compiled = compile_argv(self->config, self->argc, self->argv, src);
+    if (!compiled) {
         free(src);
         return 1;
     }
 
-    printf("%s", ctx_getc_buf(ctx));
+    printf("%s", compiled);
     fflush(stdout);
 
-    ctx_del(ctx);
+    free(compiled);
     free(src);
     return 0;
 }

@@ -167,10 +167,10 @@ trim_first_line(char *dst, int32_t dstsz, const char *text);
  * @param[in] *argv[]
  * @param[in] *src    pointer to strings
  *
- * @return success to pointer to context_t
- * @return failed to pointer to NULL
+ * @return success to string allocate memory (do free)
+ * @return failed to NULL
  */
-context_t *
+char *
 compile_argv(const config_t *config, int argc, char *argv[], const char *src);
 
 /**

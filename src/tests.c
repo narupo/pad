@@ -1956,10 +1956,27 @@ test_util_escape(void) {
     assert(!strcmp(dst, "\\abc\\a"));
 }
 
-/**
- * 0 memory leaks
- * 2020/02/25
- */
+static void
+test_util_compile_argv(void) {
+    config_t *config = config_new();
+    int argc = 4;
+    char *argv[] = {
+        "make",
+        "file",
+        "-a",
+        "bbb",
+        NULL,
+    };
+    const char *src = "{: opts.get(\"a\") :}";
+
+    char *compiled = compile_argv(config, argc, argv, src);
+
+    assert(!strcmp(compiled, "bbb"));
+
+    free(compiled);
+    config_del(config);
+}
+
 static const struct testcase
 utiltests[] = {
     {"freeargv", test_util_freeargv},
@@ -1970,6 +1987,7 @@ utiltests[] = {
     {"argsbyoptind", test_util_argsbyoptind},
     {"solve_cmdline_arg_path", test_util_solve_cmdline_arg_path},
     {"escape", test_util_escape},
+    {"compile_argv", test_util_compile_argv},
     {0},
 };
 

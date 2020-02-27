@@ -298,7 +298,7 @@ catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
     const char *p = str_getc(buf);
 
     if (self->opts.ismake) {
-        tokenizer_t *tkr = tkr_new(tkropt_new());
+        tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
         ast_t *ast = ast_new(self->config);
 
         tkr_parse(tkr, str_getc(buf));
