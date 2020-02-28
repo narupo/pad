@@ -45,22 +45,22 @@ again:
 }
 
 static object_t *
-builtin_string_lower(ast_t *ast, const object_t *_) {
+builtin_string_lower(ast_t *ast, object_t *_) {
     return call_basic_str_func(ast, "lower");
 }
 
 static object_t *
-builtin_string_upper(ast_t *ast, const object_t *_) {
+builtin_string_upper(ast_t *ast, object_t *_) {
     return call_basic_str_func(ast, "upper");
 }
 
 static object_t *
-builtin_string_capitalize(ast_t *ast, const object_t *_) {
+builtin_string_capitalize(ast_t *ast, object_t *_) {
     return call_basic_str_func(ast, "capitalize");
 }
 
 static object_t *
-builtin_string_snake(ast_t *ast, const object_t *_) {
+builtin_string_snake(ast_t *ast, object_t *_) {
     return call_basic_str_func(ast, "snake");
 }
 

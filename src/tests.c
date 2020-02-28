@@ -12826,6 +12826,54 @@ test_trv_builtin_functions(void) {
 }
 
 static void
+test_trv_builtin_functions_len_0(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{: len([1, 2]) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "2"));
+    } 
+
+    tkr_parse(tkr, "{: len([]) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "0"));
+    } 
+
+    tkr_parse(tkr, "{: len(\"12\") :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "2"));
+    } 
+
+    tkr_parse(tkr, "{: len(\"\") :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "0"));
+    } 
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
 test_trv_traverse(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -15981,6 +16029,38 @@ test_trv_builtin_alias_0(void) {
     config_del(config);
 }
 
+static void
+test_trv_builtin_array_0(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@ arr = [1, 2] \n arr.push(3) @}{: len(arr) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "3"));
+    } 
+
+    tkr_parse(tkr, "{: len([1, 2].push(3)) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "3"));
+    } 
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
 static const struct testcase
 traverser_tests[] = {
     {"trv_code_block", test_trv_code_block},
@@ -16044,7 +16124,6 @@ traverser_tests[] = {
     {"trv_dict_0", test_trv_dict_0},
     {"trv_identifier", test_trv_identifier},
     {"trv_builtin_alias_0", test_trv_builtin_alias_0},
-
     {"trv_traverse", test_trv_traverse},
     {"trv_dict", test_trv_dict},
     {"trv_comparison", test_trv_comparison},
@@ -16064,8 +16143,9 @@ traverser_tests[] = {
     {"trv_call", test_trv_call},
     {"trv_func_def", test_trv_func_def},
     {"trv_builtin_functions", test_trv_builtin_functions},
-
+    {"trv_builtin_functions_len_0", test_trv_builtin_functions_len_0},
     {"trv_builtin_string", test_trv_builtin_string},
+    {"trv_builtin_array_0", test_trv_builtin_array_0},
     {0},
 };
 

@@ -119,6 +119,7 @@ SRCS := build/lib/error.c \
 	build/lang/gc.c \
 	build/lang/builtin/functions.c \
 	build/lang/builtin/modules/string.c \
+	build/lang/builtin/modules/array.c \
 	build/lang/builtin/modules/opts.c \
 	build/lang/builtin/modules/alias.c \
 
@@ -245,6 +246,8 @@ build/lang/gc.o: src/lang/gc.c src/lang/gc.h
 build/lang/builtin/functions.o: src/lang/builtin/functions.c src/lang/builtin/functions.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/builtin/modules/string.o: src/lang/builtin/modules/string.c src/lang/builtin/modules/string.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/builtin/modules/array.o: src/lang/builtin/modules/array.c src/lang/builtin/modules/array.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/builtin/modules/opts.o: src/lang/builtin/modules/opts.c src/lang/builtin/modules/opts.h
 	$(CC) $(CFLAGS) -c $< -o $@

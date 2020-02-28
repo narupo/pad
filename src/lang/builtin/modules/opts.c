@@ -1,7 +1,7 @@
 #include <lang/builtin/modules/opts.h>
 
 static object_t *
-builtin_opts_get(ast_t *ast, const object_t *objargs) {
+builtin_opts_get(ast_t *ast, object_t *objargs) {
     if (!objargs) {
         ast_set_error_detail(ast, "can't invoke opts.get. need one argument");
         return NULL;
@@ -43,7 +43,7 @@ builtin_opts_get(ast_t *ast, const object_t *objargs) {
 }
 
 static object_t *
-builtin_opts_has(ast_t *ast, const object_t *objargs) {
+builtin_opts_has(ast_t *ast, object_t *objargs) {
     if (!objargs) {
         ast_set_error_detail(ast, "can't invoke opts.get. need one argument");
         return NULL;
@@ -77,7 +77,7 @@ builtin_opts_has(ast_t *ast, const object_t *objargs) {
 }
 
 static object_t *
-builtin_opts_args(ast_t *ast, const object_t *objargs) {
+builtin_opts_args(ast_t *ast, object_t *objargs) {
     if (!objargs) {
         ast_set_error_detail(ast, "can't invoke opts.args. need one argument");
         return NULL;

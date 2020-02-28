@@ -1,7 +1,7 @@
 #include <lang/builtin/functions.h>
 
 static object_t *
-builtin_puts(ast_t *ast, const object_t *drtargs) {
+builtin_puts(ast_t *ast, object_t *drtargs) {
     if (!drtargs) {
         ctx_pushb_buf(ast->context, "\n");
         return obj_new_int(ast->ref_gc, 0);
@@ -44,7 +44,7 @@ done:
 }
 
 static object_t *
-builtin_exec(ast_t *ast, const object_t *drtargs) {
+builtin_exec(ast_t *ast, object_t *drtargs) {
     if (!drtargs) {
         ctx_pushb_buf(ast->context, "\n");
         return obj_new_int(ast->ref_gc, 0);
@@ -77,10 +77,46 @@ builtin_exec(ast_t *ast, const object_t *drtargs) {
     return obj_new_int(ast->ref_gc, result);
 }
 
+static object_t *
+builtin_len(ast_t *ast, object_t *arg) {
+    if (!arg) {
+        ast_set_error_detail(ast, "len function need one argument");
+        return NULL;
+    }
+
+    int32_t len = 0;
+
+again:
+    switch (arg->type) {
+    default:
+        ast_set_error_detail(ast, "not supported object (%d) for len", arg->type);
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *obj = pull_in_ref_by(ast, arg);
+        if (!obj) {
+            ast_set_error_detail(ast, "not found object for len");
+            return NULL;
+        }
+        arg = obj;
+        goto again;
+    } break;
+    case OBJ_TYPE_STRING:
+        len = str_len(arg->string);
+        break;
+    case OBJ_TYPE_ARRAY:
+        len = objarr_len(arg->objarr);
+        break;
+    }
+
+    return obj_new_int(ast->ref_gc, len);
+}
+
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"puts", builtin_puts},
     {"exec", builtin_exec},
+    {"len", builtin_len},
     {0},
 };
 

@@ -280,7 +280,7 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
     opts_t *opts = opts_new();
 
     if (!opts_parse(opts, argc-1, argv+1)) {
-        err_error("failed to show snippet. failed to parse options");
+        err_error("failed to compile argv. failed to parse options");
         return NULL;
     }
 
