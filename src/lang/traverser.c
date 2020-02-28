@@ -123,7 +123,7 @@ static object_t *
 trv_invoke_func_obj(ast_t *ast, const char *name, const object_t *drtargs, int dep);
 
 static object_t *
-trv_invoke_builtin_modules(ast_t *ast, const char *name, const object_t *args);
+trv_invoke_builtin_modules(ast_t *ast, const char *name, object_t *args);
 
 /************
 * functions *
@@ -6126,9 +6126,7 @@ trv_identifier(ast_t *ast, const node_t *node, int dep) {
 
 static object_t *
 trv_invoke_func_obj(ast_t *ast, const char *funcname, const object_t *drtargs, int dep) {
-    tready();
     assert(funcname);
-    check("invoke func obj");
     object_t *args = NULL;
     if (drtargs) {
         args = obj_to_array(drtargs);
@@ -6184,7 +6182,6 @@ trv_invoke_func_obj(ast_t *ast, const char *funcname, const object_t *drtargs, i
 
     obj_del(args);
 
-    check("call _trv_traverse with ref_suites");
     object_t *result = NULL;
     for (int32_t i = 0; ; ++i) {
         node_t *ref_suite = nodearr_get(func->ref_suites, i);
@@ -6211,7 +6208,7 @@ trv_invoke_func_obj(ast_t *ast, const char *funcname, const object_t *drtargs, i
 }
 
 static object_t *
-trv_invoke_builtin_module_func(ast_t *ast, const object_t *mod, const char *funcname, const object_t *args) {
+trv_invoke_builtin_module_func(ast_t *ast, const object_t *mod, const char *funcname, object_t *args) {
     builtin_func_info_t *infos = mod->module.builtin_func_infos;
     for (builtin_func_info_t *info = infos; info->name; ++info) {
         if (cstr_eq(info->name, funcname)) {
@@ -6223,7 +6220,7 @@ trv_invoke_builtin_module_func(ast_t *ast, const object_t *mod, const char *func
 }
 
 static object_t *
-trv_invoke_builtin_modules(ast_t *ast, const char *funcname, const object_t *args) {
+trv_invoke_builtin_modules(ast_t *ast, const char *funcname, object_t *args) {
     const char *bltin_mod_name = NULL;
     const object_t *module = NULL;
 
@@ -6238,7 +6235,10 @@ trv_invoke_builtin_modules(ast_t *ast, const char *funcname, const object_t *arg
             break;
         case OBJ_TYPE_STRING: 
             bltin_mod_name = "__string__";
-        break;
+            break;
+        case OBJ_TYPE_ARRAY:
+            bltin_mod_name = "__array__";
+            break;
         case OBJ_TYPE_MODULE:
             module = owner;
             break;
@@ -6620,6 +6620,9 @@ trv_import_builtin_modules(ast_t *ast) {
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
     mod = builtin_string_module_new(ast->ref_gc);
+    objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
+
+    mod = builtin_array_module_new(ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
     mod = builtin_alias_module_new(ast->ref_gc);

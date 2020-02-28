@@ -1,7 +1,7 @@
 #include <lang/builtin/modules/alias.h>
 
 static object_t *
-builtin_alias_set(ast_t *ast, const object_t *objargs) {
+builtin_alias_set(ast_t *ast, object_t *objargs) {
     if (!objargs) {
         ast_set_error_detail(ast, "can't invoke alias.set. need two arguments");
         return NULL;

@@ -27,8 +27,11 @@ opts_new(void) {
 
 opts_t *
 opts_parse(opts_t *self, int argc, char *argv[]) {
-    if (!self || !argc || !argv) {
+    if (!self || !argv) {
         return NULL;
+    }
+    if (!argc) {
+        return self;
     }
     
     int m = 0;
