@@ -2359,19 +2359,21 @@ test_tkr_parse(void) {
         token = tkr_tokens_getc(tkr, 2);
         assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
-/*
+
     tkr_parse(tkr, "{@-123@}");
     {
-        assert(tkr_tokens_len(tkr) == 3);
+        assert(tkr_tokens_len(tkr) == 4);
         token = tkr_tokens_getc(tkr, 0);
         assert(token->type == TOKEN_TYPE_LBRACEAT);
         token = tkr_tokens_getc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_INTEGER);
-        assert(token->lvalue == -123);
+        assert(token->type == TOKEN_TYPE_OP_SUB);
         token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->lvalue == 123);
+        token = tkr_tokens_getc(tkr, 3);
         assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
-*/
+
     /*************
     * statements *
     *************/
