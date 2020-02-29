@@ -14967,10 +14967,19 @@ test_trv_for_stmt_0(void) {
     gc_t *gc = gc_new();
     context_t *ctx = ctx_new(gc);
 
-    tkr_parse(tkr, "{@ for i=0; i<2; i +=1 : puts(i) end @}");
+    tkr_parse(tkr, "{@ for i=0; i<2; i +=1: puts(i) end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "0\n1\n"));
+    } 
+
+    tkr_parse(tkr, "{@ size=0 for i=size; i<2; i += 1: puts(i) end @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        showdetail();
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0\n1\n"));
     } 
