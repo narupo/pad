@@ -347,6 +347,31 @@ tkr_parse_op(
 }
 
 tokenizer_t *
+tkr_read_negative_digit(tokenizer_t *self) {
+    if (*self->ptr++ != '-') {
+        return NULL;
+    }
+
+    int32_t digit_size = 1024;
+    char digit[digit_size];
+    char *dp = digit;
+    char *dend = digit + digit_size - 1;
+
+    *dp++ = '-';
+    for (; *self->ptr && isdigit(*self->ptr) && dp < dend; ) {
+        *dp++ = *self->ptr++;
+    }
+
+    *dp = '\0';
+
+    token_t *token = token_new(TOKEN_TYPE_INTEGER);
+    token->lvalue = atoi(digit);
+    tkr_move_token(self, mem_move(token));
+
+    return self;
+}
+
+tokenizer_t *
 tkr_parse(tokenizer_t *self, const char *src) {
     self->src = src;
     self->ptr = src;
@@ -436,6 +461,11 @@ tkr_parse(tokenizer_t *self, const char *src) {
             } else if (c == '+') {
                 self->ptr--;
                 if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_ADD, TOKEN_TYPE_OP_ADD_ASS)) {
+                    goto fail;
+                }
+            } else if (c == '-' && isdigit(*self->ptr)) {
+                self->ptr--;
+                if (!tkr_read_negative_digit(self)) {
                     goto fail;
                 }
             } else if (c == '-') {
