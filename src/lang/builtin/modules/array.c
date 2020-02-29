@@ -42,9 +42,45 @@ again:
     return obj_new_other(ref_owner);
 }
 
+static object_t *
+builtin_array_pop(ast_t *ast, object_t *actual_args) {
+    assert(actual_args->type == OBJ_TYPE_ARRAY);
+
+    object_t *ref_owner = ast->ref_dot_owner;
+    if (!ref_owner) {
+        ast_set_error_detail(ast, "owner is null. can't pop");
+        return NULL;
+    }
+
+again:
+    switch (ref_owner->type) {
+    default:
+        ast_set_error_detail(ast, "unsupported object type (%d). can't pop", ref_owner->type);
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER:
+        ref_owner = pull_in_ref_by(ast, ref_owner);
+        if (!ref_owner) {
+            ast_set_error_detail(ast, "object is not found. can't pop");
+            return NULL;
+        }
+        goto again;
+        break;
+    case OBJ_TYPE_ARRAY:
+        break;
+    }
+
+    object_t *ret = objarr_popb(ref_owner->objarr);
+    if (!ret) {
+        return obj_new_nil(ast->ref_gc);
+    }
+    return ret;
+}
+
 static builtin_func_info_t
 builtin_array_func_infos[] = {
     {"push", builtin_array_push},
+    {"pop", builtin_array_pop},
     {0},
 };
 
