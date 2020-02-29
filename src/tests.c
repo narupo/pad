@@ -16065,6 +16065,30 @@ test_trv_builtin_array_0(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "3"));
     } 
 
+    tkr_parse(tkr, "{@ a = [1, 2] @}{: a.pop() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "2"));
+    } 
+
+    tkr_parse(tkr, "{@ a = [] @}{: a.pop() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "nil"));
+    } 
+
+    tkr_parse(tkr, "{: [1, 2].pop() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "2"));
+    } 
+
     ctx_del(ctx);
     gc_del(gc);
     ast_del(ast);
