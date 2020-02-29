@@ -596,7 +596,9 @@ cc_for_stmt(ast_t *ast, int dep) {
                 return_cleanup("syntax error. reached EOF in for statement (5)");
             }
         } else {
-            return_cleanup("syntax error. unsupported character in for statement");
+            char msg[1024];
+            snprintf(msg, sizeof msg, "syntax error. unsupported token type (%d) in for statement", t->type);
+            return_cleanup(msg);
         }
 
         t = *ast->ptr++;
