@@ -15671,6 +15671,14 @@ test_trv_expr_0(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
     } 
 
+    tkr_parse(tkr, "{@ a = 1 b = a @}{: b :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    } 
+
     ctx_del(ctx);
     gc_del(gc);
     ast_del(ast);
@@ -15691,6 +15699,30 @@ test_trv_expr_1(void) {
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "0"));
+    } 
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_expr_2(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@ a = 1 \n b = a - 1 @}{: b :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
     } 
@@ -16165,6 +16197,7 @@ traverser_tests[] = {
     // {"trv_asscalc_3", test_trv_asscalc_3},
     {"trv_expr_0", test_trv_expr_0},
     {"trv_expr_1", test_trv_expr_1},
+    {"trv_expr_2", test_trv_expr_2},
     {"trv_term_0", test_trv_term_0},
     {"trv_term_1", test_trv_term_1},
     // {"trv_dot_0", test_trv_dot_0},

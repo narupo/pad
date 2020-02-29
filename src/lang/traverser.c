@@ -4887,7 +4887,7 @@ trv_calc_expr_sub(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep)
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         check("call trv_roll_identifier_rhs");
-        object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_expr_sub, dep+1);
+        object_t *obj = trv_roll_identifier_lhs(ast, lhs, rhs, trv_calc_expr_sub, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
