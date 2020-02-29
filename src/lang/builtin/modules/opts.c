@@ -1,94 +1,74 @@
 #include <lang/builtin/modules/opts.h>
 
 static object_t *
-builtin_opts_get(ast_t *ast, object_t *objargs) {
-    if (!objargs) {
+builtin_opts_get(ast_t *ast, object_t *actual_args) {
+    assert(actual_args->type == OBJ_TYPE_ARRAY);
+
+    object_array_t *args = actual_args->objarr;
+
+    if (objarr_len(args) != 1) {
         ast_set_error_detail(ast, "can't invoke opts.get. need one argument");
         return NULL;
     }
 
-    if (objargs->type == OBJ_TYPE_ARRAY) {
-        if (objarr_len(objargs->objarr) != 1) {
-            ast_set_error_detail(ast, "can't invoke opts.get. need one argument");
-            return NULL;
-        }
+    const object_t *objname = objarr_getc(args, 0);
+    assert(objname);
 
-        const object_t *objname = objarr_getc(objargs->objarr, 0);
-        assert(objname);
+    if (objname->type != OBJ_TYPE_STRING) {
+        ast_set_error_detail(ast, "can't invoke opts.get. argument is not string");
+        return NULL;
+    }
 
-        if (objname->type != OBJ_TYPE_STRING) {
-            ast_set_error_detail(ast, "can't invoke opts.get. argument is not string");
-            return NULL;
-        }
+    string_t *optname = objname->string;
+    const char *optval = opts_getc(ast->opts, str_getc(optname));
+    if (!optval) {
+        return obj_new_nil(ast->ref_gc);
+    }        
 
-        string_t *optname = objname->string;
-        const char *optval = opts_getc(ast->opts, str_getc(optname));
-        if (!optval) {
-            return obj_new_nil(ast->ref_gc);
-        }        
-
-        return obj_new_cstr(ast->ref_gc, optval);
-    } else if (objargs->type == OBJ_TYPE_STRING) {
-        string_t *optname = objargs->string;
-        const char *optval = opts_getc(ast->opts, str_getc(optname));
-        if (!optval) {
-            return obj_new_nil(ast->ref_gc);
-        }        
-
-        return obj_new_cstr(ast->ref_gc, optval);
-    } 
-
-    assert(0 && "impossible. invalid arguments");
-    return NULL;
+    return obj_new_cstr(ast->ref_gc, optval);
 }
 
 static object_t *
-builtin_opts_has(ast_t *ast, object_t *objargs) {
-    if (!objargs) {
+builtin_opts_has(ast_t *ast, object_t *actual_args) {
+    assert(actual_args->type == OBJ_TYPE_ARRAY);
+
+    object_array_t *args = actual_args->objarr;
+
+    if (objarr_len(args) != 1) {
         ast_set_error_detail(ast, "can't invoke opts.get. need one argument");
         return NULL;
     }
 
-    if (objargs->type == OBJ_TYPE_ARRAY) {
-        if (objarr_len(objargs->objarr) != 1) {
-            ast_set_error_detail(ast, "can't invoke opts.get. need one argument");
-            return NULL;
-        }
+    const object_t *objname = objarr_getc(args, 0);
+    assert(objname);
 
-        const object_t *objname = objarr_getc(objargs->objarr, 0);
-        assert(objname);
+    if (objname->type != OBJ_TYPE_STRING) {
+        ast_set_error_detail(ast, "can't invoke opts.get. argument is not string");
+        return NULL;
+    }
 
-        if (objname->type != OBJ_TYPE_STRING) {
-            ast_set_error_detail(ast, "can't invoke opts.get. argument is not string");
-            return NULL;
-        }
-
-        string_t *optname = objname->string;
-        bool has = opts_has(ast->opts, str_getc(optname));
-        return obj_new_bool(ast->ref_gc, has);
-    } else if (objargs->type == OBJ_TYPE_STRING) {
-        string_t *optname = objargs->string;
-        bool has = opts_has(ast->opts, str_getc(optname));
-        return obj_new_bool(ast->ref_gc, has);
-    } 
-
-    assert(0 && "impossible. invalid arguments");
-    return NULL;
+    string_t *optname = objname->string;
+    bool has = opts_has(ast->opts, str_getc(optname));
+    return obj_new_bool(ast->ref_gc, has);
 }
 
 static object_t *
-builtin_opts_args(ast_t *ast, object_t *objargs) {
-    if (!objargs) {
+builtin_opts_args(ast_t *ast, object_t *actual_args) {
+    assert(actual_args->type == OBJ_TYPE_ARRAY);
+    object_array_t *args = actual_args->objarr;
+
+    if (objarr_len(args) != 1) {
         ast_set_error_detail(ast, "can't invoke opts.args. need one argument");
         return NULL;
     }
 
-    if (objargs->type != OBJ_TYPE_INTEGER) {
+    const object_t *arg = objarr_getc(args, 0);
+    if (arg->type != OBJ_TYPE_INTEGER) {
         ast_set_error_detail(ast, "invalid argument type. argument is not int");
         return NULL;
     }
     
-    int32_t idx = objargs->lvalue;
+    int32_t idx = arg->lvalue;
     const char *value = opts_getc_args(ast->opts, idx);
     if (!value) {
         return obj_new_nil(ast->ref_gc);
