@@ -5302,13 +5302,13 @@ trv_term(ast_t *ast, const node_t *node, int dep) {
 
     if (nodearr_len(term->nodearr) == 1) {
         node_t *node = nodearr_get(term->nodearr, 0);
-        assert(node->type == NODE_TYPE_DOT);
+        assert(node->type == NODE_TYPE_NEGATIVE);
         check("call _trv_traverse with dot");
         object_t *result = _trv_traverse(ast, node, dep+1);
         return_trav(result);
     } else if (nodearr_len(term->nodearr) >= 3) {
         node_t *lnode = nodearr_get(term->nodearr, 0);
-        assert(lnode->type == NODE_TYPE_DOT);
+        assert(lnode->type == NODE_TYPE_NEGATIVE);
         check("call _trv_traverse with dot");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
         if (ast_has_error(ast)) {
@@ -5323,7 +5323,7 @@ trv_term(ast_t *ast, const node_t *node, int dep) {
             assert(op);
 
             node_t *rnode = nodearr_get(term->nodearr, i+1);
-            assert(rnode->type == NODE_TYPE_DOT);
+            assert(rnode->type == NODE_TYPE_NEGATIVE);
             check("call _trv_traverse with index");
             object_t *rhs = _trv_traverse(ast, rnode, dep+1);
             if (ast_has_error(ast)) {
@@ -5349,6 +5349,40 @@ trv_term(ast_t *ast, const node_t *node, int dep) {
     }
 
     assert(0 && "impossible. failed to traverse term");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_negative(ast_t *ast, const node_t *node, int dep) {
+    node_negative_t *negative = node->real;
+    tready();
+    assert(negative);
+
+    check("call _trv_traverse with negative's dot")
+    object_t *operand = _trv_traverse(ast, negative->dot, dep+1);
+    if (ast_has_error(ast)) {
+        return_trav(NULL);
+    }
+    if (!operand) {
+        ast_set_error_detail(ast, "not found operand in negative");
+        return_trav(NULL);
+    }
+
+    switch (operand->type) {
+    default:
+        if (negative->is_negative) {
+            ast_set_error_detail(ast, "invalid operand type (%d) in negative", operand->type);
+            return_trav(NULL);
+        }
+        return operand;
+    break;
+    case OBJ_TYPE_INTEGER: {
+        long lvalue = negative->is_negative ? -operand->lvalue : operand->lvalue;
+        return_trav(obj_new_int(ast->ref_gc, lvalue));
+    } break;
+    }
+
+    assert(0 && "impossible. failed to traverse negative");
     return_trav(NULL);
 }
 
@@ -5415,7 +5449,7 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
     tready();
     assert(call);
 
-    check("call _trv_traverser with call's index");
+    check("call _trv_traverse with call's index");
     object_t *operand = _trv_traverse(ast, call->index, dep+1);
     if (ast_has_error(ast)) {
         obj_del(operand);
@@ -6553,6 +6587,11 @@ _trv_traverse(ast_t *ast, const node_t *node, int dep) {
     case NODE_TYPE_DOT: {
         check("call trv_dot");
         object_t *obj = trv_dot(ast, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_NEGATIVE: {
+        check("call trv_negative");
+        object_t *obj = trv_negative(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_CALL: {
