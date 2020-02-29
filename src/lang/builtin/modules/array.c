@@ -6,7 +6,7 @@ builtin_array_push(ast_t *ast, object_t *actual_args) {
 
     object_array_t *args = actual_args->objarr;
     
-    if (!objarr_len(args)) {
+    if (objarr_len(args) != 1) {
         ast_set_error_detail(ast, "can't invoke array.push. need one argument");
         return NULL;
     }
