@@ -1,8 +1,12 @@
 #include <lang/builtin/modules/array.h>
 
 static object_t *
-builtin_array_push(ast_t *ast, object_t *objarg) {
-    if (!objarg) {
+builtin_array_push(ast_t *ast, object_t *actual_args) {
+    assert(actual_args->type == OBJ_TYPE_ARRAY);
+
+    object_array_t *args = actual_args->objarr;
+    
+    if (!objarr_len(args)) {
         ast_set_error_detail(ast, "can't invoke array.push. need one argument");
         return NULL;
     }
@@ -31,8 +35,9 @@ again:
         break;
     }
 
-    obj_inc_ref(objarg);
-    objarr_moveb(ref_owner->objarr, objarg);
+    object_t *arg = objarr_get(args, 0);
+    obj_inc_ref(arg);
+    objarr_moveb(ref_owner->objarr, arg);
 
     return obj_new_other(ref_owner);
 }

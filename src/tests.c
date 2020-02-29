@@ -10932,6 +10932,14 @@ test_trv_index(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "3,4"));
     }
 
+    tkr_parse(tkr, "{@ a = [] a.push(1) @}{: a[0] :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "1"));
+    }
+
     ctx_del(ctx);
     gc_del(gc);
     ast_del(ast);
