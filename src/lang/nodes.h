@@ -50,6 +50,7 @@ typedef enum {
     NODE_TYPE_EXPR,
     NODE_TYPE_TERM,
     NODE_TYPE_DOT,
+    NODE_TYPE_NEGATIVE,
     NODE_TYPE_CALL,
     NODE_TYPE_INDEX,
     NODE_TYPE_ASSCALC,
@@ -280,6 +281,11 @@ typedef struct {
 typedef struct {
     node_array_t *nodearr;
 } node_term_t;
+
+typedef struct {
+    bool is_negative;
+    node_t *dot;
+} node_negative_t;
 
 typedef struct {
     node_array_t *nodearr;

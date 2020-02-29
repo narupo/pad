@@ -77,6 +77,9 @@ static node_t *
 cc_dot(ast_t *ast, int dep);
 
 static node_t *
+cc_negative(ast_t *ast, int dep);
+
+static node_t *
 cc_call(ast_t *ast, int dep);
 
 static node_t *
@@ -1550,7 +1553,7 @@ cc_term(ast_t *ast, int dep) {
     } \
 
     check("call left cc_dot");
-    node_t *lhs = cc_dot(ast, dep+1);
+    node_t *lhs = cc_negative(ast, dep+1);
     if (ast_has_error(ast)) {
         return_cleanup("");
     }
@@ -1573,7 +1576,7 @@ cc_term(ast_t *ast, int dep) {
         nodearr_moveb(cur->nodearr, op);
 
         check("call right cc_dot");
-        node_t *rhs = cc_dot(ast, dep+1);
+        node_t *rhs = cc_negative(ast, dep+1);
         if (ast_has_error(ast)) {
             return_cleanup("");
         }
@@ -1585,6 +1588,43 @@ cc_term(ast_t *ast, int dep) {
     }
 
     assert(0 && "impossible. failed to ast term");
+}
+
+static node_t *
+cc_negative(ast_t *ast, int dep) {
+    ready();
+    declare(node_negative_t, cur);
+    token_t **save_ptr = ast->ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        ast->ptr = save_ptr; \
+        ast_del_nodes(ast, cur->dot); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(ast, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    token_t *t = *ast->ptr++;
+    if (t->type != TOKEN_TYPE_OP_SUB) {
+        --ast->ptr;
+    } else {
+        check("read op sub in negative");
+        cur->is_negative = true;
+    }
+
+    check("call left cc_dot");
+    cur->dot = cc_dot(ast, dep+1);
+    if (ast_has_error(ast)) {
+        return_cleanup("");
+    }
+    if (!cur->dot) {
+        return_cleanup(""); // not error
+    }
+
+    return_parse(node_new(NODE_TYPE_NEGATIVE, mem_move(cur)));
 }
 
 static node_t *

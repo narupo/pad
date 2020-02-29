@@ -193,6 +193,10 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         }
         nodearr_del_without_nodes(term->nodearr);
     } break;
+    case NODE_TYPE_NEGATIVE: {
+        node_negative_t *negative = node->real;
+        ast_del_nodes(self, negative->dot);
+    } break;
     case NODE_TYPE_DOT: {
         node_dot_t *dot = node->real;
         for (int32_t i = 0; i < nodearr_len(dot->nodearr); ++i) {
