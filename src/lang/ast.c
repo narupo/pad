@@ -135,6 +135,13 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         }
         nodearr_del_without_nodes(test_list->nodearr);
     } break;
+    case NODE_TYPE_CALL_ARGS: {
+        node_test_list_t *call_args = node->real;
+        for (int32_t i = 0; i < nodearr_len(call_args->nodearr); ++i) {
+            ast_del_nodes(self, nodearr_get(call_args->nodearr, i));
+        }
+        nodearr_del_without_nodes(call_args->nodearr);
+    } break;
     case NODE_TYPE_TEST: {
         node_test_t *test = node->real;
         ast_del_nodes(self, test->or_test);
@@ -196,10 +203,10 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     case NODE_TYPE_CALL: {
         node_call_t *call = node->real;
         ast_del_nodes(self, call->index);
-        for (int32_t i = 0; i < nodearr_len(call->test_lists); ++i) {
-            ast_del_nodes(self, nodearr_get(call->test_lists, i));
+        for (int32_t i = 0; i < nodearr_len(call->call_args_list); ++i) {
+            ast_del_nodes(self, nodearr_get(call->call_args_list, i));
         }
-        nodearr_del_without_nodes(call->test_lists);
+        nodearr_del_without_nodes(call->call_args_list);
     } break;
     case NODE_TYPE_INDEX: {
         node_index_t *index = node->real;

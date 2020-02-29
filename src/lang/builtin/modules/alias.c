@@ -1,14 +1,10 @@
 #include <lang/builtin/modules/alias.h>
 
 static object_t *
-builtin_alias_set(ast_t *ast, object_t *objargs) {
-    if (!objargs) {
-        ast_set_error_detail(ast, "can't invoke alias.set. need two arguments");
-        return NULL;
-    }
-    assert(objargs->type == OBJ_TYPE_ARRAY);
+builtin_alias_set(ast_t *ast, object_t *actual_args) {
+    assert(actual_args->type == OBJ_TYPE_ARRAY);
 
-    object_array_t *args = objargs->objarr;
+    object_array_t *args = actual_args->objarr;
 
     if (objarr_len(args) < 2) {
         ast_set_error_detail(ast, "can't invoke alias.set. too few arguments");

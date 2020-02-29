@@ -1267,6 +1267,30 @@ trv_test_list(ast_t *ast, const node_t *node, int dep) {
 }
 
 static object_t *
+trv_call_args(ast_t *ast, const node_t *node, int dep) {
+    tready();
+    node_call_args_t *call_args = node->real;
+    assert(call_args);
+
+    object_array_t *arr = objarr_new();
+
+    for (int32_t i = 0; i < nodearr_len(call_args->nodearr); ++i) {
+        node_t *test = nodearr_get(call_args->nodearr, i);
+        check("call _trv_traverse");
+        object_t *result = _trv_traverse(ast, test, dep+1);
+        if (ast_has_error(ast)) {
+            return_trav(NULL);
+        }
+        assert(result);
+
+        objarr_moveb(arr, mem_move(result));
+    }
+
+    object_t *ret = obj_new_array(ast->ref_gc, mem_move(arr));
+    return_trav(ret);
+}
+
+static object_t *
 trv_test(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_test_t *test = node->real;
@@ -5426,8 +5450,8 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
     
     object_t *result = NULL;
 
-    for (int32_t i = 0; i < nodearr_len(call->test_lists); ++i) {
-        const node_t *test_list = nodearr_getc(call->test_lists, i);
+    for (int32_t i = 0; i < nodearr_len(call->call_args_list); ++i) {
+        const node_t *call_args = nodearr_getc(call->call_args_list, i);
         const char *funcname = NULL;
 
         if (!operand) {
@@ -5443,17 +5467,18 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
         }
 
         check("call _trv_traverse with call's test_list");
-        object_t *args = _trv_traverse(ast, test_list, dep+1);
+        object_t *actual_args = _trv_traverse(ast, call_args, dep+1);
+        assert(actual_args->type == OBJ_TYPE_ARRAY);
 
         check("call trv_invoke_func_obj");
-        result = trv_invoke_func_obj(ast, funcname, args, dep+1);
+        result = trv_invoke_func_obj(ast, funcname, actual_args, dep+1);
         if (ast_has_error(ast)) {
-            obj_del(args);
+            obj_del(actual_args);
             obj_del(operand);
             obj_del(result);
             return_trav(NULL);
         } else if (result) {
-            obj_del(args);
+            obj_del(actual_args);
             obj_del(operand);
             operand = result;
             result = NULL;
@@ -5461,21 +5486,21 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
         }
 
         check("call trv_invoke_builtin_modules");
-        result = trv_invoke_builtin_modules(ast, funcname, args);
+        result = trv_invoke_builtin_modules(ast, funcname, actual_args);
         if (ast_has_error(ast)) {
-            obj_del(args);
+            obj_del(actual_args);
             obj_del(operand);
             obj_del(result);
             return_trav(NULL);
         } else if (result) {
-            obj_del(args);
+            obj_del(actual_args);
             obj_del(operand);
             operand = result;
             result = NULL;
             continue;
         }
 
-        obj_del(args);
+        obj_del(actual_args);
         
         if (!result) {
             ast_set_error_detail(ast, "can't call \"%s\"", funcname);
@@ -6483,6 +6508,11 @@ _trv_traverse(ast_t *ast, const node_t *node, int dep) {
     case NODE_TYPE_TEST_LIST: {
         check("call trv_test_list");
         object_t *obj = trv_test_list(ast, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_CALL_ARGS: {
+        check("call trv_call_args");
+        object_t *obj = trv_call_args(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_TEST: {

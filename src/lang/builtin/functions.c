@@ -1,18 +1,20 @@
 #include <lang/builtin/functions.h>
 
 static object_t *
-builtin_puts(ast_t *ast, object_t *drtargs) {
-    if (!drtargs) {
+builtin_puts(ast_t *ast, object_t *actual_args) {
+    assert(actual_args->type == OBJ_TYPE_ARRAY);
+
+    object_array_t *args = actual_args->objarr;
+
+    if (!objarr_len(args)) {
         ctx_pushb_buf(ast->context, "\n");
         return obj_new_int(ast->ref_gc, 0);
     }
 
-    object_t *args = obj_to_array(drtargs);
-
-    int32_t arrlen = objarr_len(args->objarr);
+    int32_t arrlen = objarr_len(args);
 
     for (int32_t i = 0; i < arrlen-1; ++i) {
-        object_t *obj = objarr_get(args->objarr, i);
+        object_t *obj = objarr_get(args, i);
         assert(obj);
         object_t *copy = copy_object_value(ast, obj);
         string_t *s = obj_to_string(ast, copy);
@@ -25,7 +27,7 @@ builtin_puts(ast_t *ast, object_t *drtargs) {
         str_del(s);
     }
     if (arrlen) {
-        object_t *obj = objarr_get(args->objarr, arrlen-1);
+        object_t *obj = objarr_get(args, arrlen-1);
         assert(obj);
         object_t *copy = copy_object_value(ast, obj);
         string_t *s = obj_to_string(ast, copy);
@@ -38,26 +40,22 @@ builtin_puts(ast_t *ast, object_t *drtargs) {
     }
 
 done:
-    obj_del(args);
     ctx_pushb_buf(ast->context, "\n");
     return obj_new_int(ast->ref_gc, arrlen);
 }
 
 static object_t *
-builtin_exec(ast_t *ast, object_t *drtargs) {
-    if (!drtargs) {
-        ctx_pushb_buf(ast->context, "\n");
-        return obj_new_int(ast->ref_gc, 0);
-    }
+builtin_exec(ast_t *ast, object_t *actual_args) {
+    assert(actual_args->type == OBJ_TYPE_ARRAY);
 
-    object_t *args = obj_to_array(drtargs);
+    object_array_t *args = actual_args->objarr;
 
-    if (objarr_len(args->objarr) != 1) {
+    if (objarr_len(args) != 1) {
         ast_set_error_detail(ast, "invalid arguments length of builtin exec function");
         return NULL;
     }
 
-    object_t *cmdlineobj = objarr_get(args->objarr, 0);
+    object_t *cmdlineobj = objarr_get(args, 0);
     string_t *cmdline = obj_to_string(ast, cmdlineobj);
     if (!cmdline) {
         return NULL;
@@ -78,12 +76,16 @@ builtin_exec(ast_t *ast, object_t *drtargs) {
 }
 
 static object_t *
-builtin_len(ast_t *ast, object_t *arg) {
-    if (!arg) {
+builtin_len(ast_t *ast, object_t *actual_args) {
+    assert(actual_args->type == OBJ_TYPE_ARRAY);
+
+    object_array_t *args = actual_args->objarr;
+    if (objarr_len(args) != 1) {
         ast_set_error_detail(ast, "len function need one argument");
         return NULL;
     }
 
+    object_t *arg = objarr_get(args, 0);
     int32_t len = 0;
 
 again:

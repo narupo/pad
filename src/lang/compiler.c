@@ -404,6 +404,64 @@ cc_test_list(ast_t *ast, int dep) {
 }
 
 static node_t *
+cc_call_args(ast_t *ast, int dep) {
+    ready();
+    declare(node_call_args_t, cur);
+    token_t **save_ptr = ast->ptr;
+    cur->nodearr = nodearr_new();
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        ast->ptr = save_ptr; \
+        for (; nodearr_len(cur->nodearr); ) { \
+            node_t *node = nodearr_popb(cur->nodearr); \
+            ast_del_nodes(ast, node); \
+        } \
+        nodearr_del_without_nodes(cur->nodearr); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_set_error_detail(ast, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    node_t *lhs = cc_test(ast, dep+1);
+    if (!lhs) {
+        if (ast_has_error(ast)) {
+            return_cleanup("");
+        }
+        return node_new(NODE_TYPE_CALL_ARGS, cur);
+    }
+
+    nodearr_moveb(cur->nodearr, lhs);
+
+    for (;;) {
+        if (!*ast->ptr) {
+            return node_new(NODE_TYPE_CALL_ARGS, cur);
+        }
+
+        token_t *t = *ast->ptr++;
+        if (t->type != TOKEN_TYPE_COMMA) {
+            ast->ptr--;
+            return node_new(NODE_TYPE_CALL_ARGS, cur);
+        }
+        check("read ,");
+
+        node_t *rhs = cc_test(ast, dep+1);
+        if (!rhs) {
+            if (ast_has_error(ast)) {
+                return_cleanup("");
+            }
+            return_cleanup("syntax error. not found test in test list");
+        }
+
+        nodearr_moveb(cur->nodearr, rhs);
+    }
+
+    return node_new(NODE_TYPE_CALL_ARGS, cur);
+}
+
+static node_t *
 cc_for_stmt(ast_t *ast, int dep) {
     ready();
     declare(node_for_stmt_t, cur);
@@ -1591,18 +1649,18 @@ static node_t *
 cc_call(ast_t *ast, int dep) {
     ready();
     declare(node_call_t, cur);
-    cur->test_lists = nodearr_new();
+    cur->call_args_list = nodearr_new();
     token_t **save_ptr = ast->ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
         ast->ptr = save_ptr; \
         ast_del_nodes(ast, cur->index); \
-        for (; nodearr_len(cur->test_lists); ) { \
-            node_t *node = nodearr_popb(cur->test_lists); \
+        for (; nodearr_len(cur->call_args_list); ) { \
+            node_t *node = nodearr_popb(cur->call_args_list); \
             ast_del_nodes(ast, node); \
         } \
-        nodearr_del_without_nodes(cur->test_lists); \
+        nodearr_del_without_nodes(cur->call_args_list); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
@@ -1635,15 +1693,16 @@ cc_call(ast_t *ast, int dep) {
         }
         check("read lparen");
 
-        check("call cc_test_list");
-        node_t *test_list = cc_test_list(ast, dep+1);
+        check("call cc_call_args");
+        node_t *call_args = cc_call_args(ast, dep+1);
         if (ast_has_error(ast)) {
             return_cleanup("");
         }
-        if (!test_list) {
+        if (!call_args) {
             // not error. allow empty arguments
+            return_cleanup("call args is null");
         }
-        check("read test_list");
+        check("read call_args");
 
         if (!ast->ptr) {
             return_cleanup("not found right paren in call");
@@ -1655,7 +1714,7 @@ cc_call(ast_t *ast, int dep) {
         }
         check("read rparen");
 
-        nodearr_moveb(cur->test_lists, test_list);
+        nodearr_moveb(cur->call_args_list, call_args);
     }
 
     node_t *node = node_new(NODE_TYPE_CALL, cur);

@@ -38,6 +38,7 @@ typedef enum {
     NODE_TYPE_ASSIGN,
     NODE_TYPE_SIMPLE_ASSIGN,
     NODE_TYPE_TEST_LIST,
+    NODE_TYPE_CALL_ARGS,
 
     NODE_TYPE_TEST,
     NODE_TYPE_OR_TEST,
@@ -248,6 +249,10 @@ typedef struct {
 } node_test_list_t;
 
 typedef struct {
+    node_array_t *nodearr;
+} node_call_args_t;
+
+typedef struct {
     node_t *or_test;
 } node_test_t;
 
@@ -282,7 +287,7 @@ typedef struct {
 
 typedef struct {
     node_t *index;
-    node_array_t *test_lists;
+    node_array_t *call_args_list;
 } node_call_t;
 
 typedef struct {
