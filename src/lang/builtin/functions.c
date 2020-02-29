@@ -62,7 +62,7 @@ builtin_exec(ast_t *ast, object_t *actual_args) {
     }
 
     cstring_array_t *strarr = cstrarr_new();
-    cstrarr_push(strarr, "cap");
+    cstrarr_push(strarr, "exec");
     cstrarr_push(strarr, str_getc(cmdline));
     int argc = cstrarr_len(strarr);
     char **argv = cstrarr_escdel(strarr);
