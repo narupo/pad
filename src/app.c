@@ -298,6 +298,7 @@ app_usage(app_t *app) {
         "    snippet    save or show snippet codes\n"
         "    link       create symbolic link\n"
         "    sh         run shell\n"
+        "    find       find snippet\n"
     ;
     static const char *examples[] = {
         "    $ cap home\n"
@@ -372,6 +373,7 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
         "hub",
         "make",
         "sh",
+        "find",
         NULL,
     };
 
@@ -450,6 +452,8 @@ app_execute_command_by_name(app_t *self, const char *name) {
         routine(makecmd);
     } else if (cstr_eq(name, "sh")) {
         routine(shcmd);
+    } else if (cstr_eq(name, "find")) {
+        routine(findcmd);
     } else {
         err_error("invalid command name \"%s\"", name);
         result = 1;

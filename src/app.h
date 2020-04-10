@@ -32,6 +32,7 @@
 #include <link/link.h>
 #include <make/make.h>
 #include <sh/sh.h>
+#include <find/find.h>
 #include <lang/ast.h>
 #include <lang/compiler.h>
 #include <lang/traverser.h>
