@@ -17,6 +17,7 @@ struct find {
     int optind;
     char **argv;
     struct opts opts;
+    arguments_manager_t *argsmgr;
 };
 
 /**
@@ -99,6 +100,7 @@ findcmd_del(findcmd_t *self) {
         return;
     }
 
+    argsmgr_del(self->argsmgr);
     free(self);
 }
 
@@ -115,11 +117,13 @@ findcmd_new(const config_t *config, int argc, char **argv) {
         return NULL;
     }
 
+    self->argsmgr = argsmgr_new(self->argv + self->optind);
+
     return self;
 }
 
 static int
-find_file_r(const findcmd_t *self, const char *dirpath, const char *cap_dirpath, const char *target) {
+find_files_r(const findcmd_t *self, const char *dirpath, const char *cap_dirpath) {
     file_dir_t *dir = file_diropen(dirpath);
     if (!dir) {
         err_error("failed to open directory \"%s\"", dirpath);
@@ -153,7 +157,7 @@ find_file_r(const findcmd_t *self, const char *dirpath, const char *cap_dirpath,
             continue;
         }
 
-        if (cstr_eq(target, name)) {
+        if (argsmgr_contains_all(self->argsmgr, name)) {
             if (self->opts.is_normalize) {
                 puts(path);
             } else {
@@ -162,7 +166,7 @@ find_file_r(const findcmd_t *self, const char *dirpath, const char *cap_dirpath,
         }
 
         if (file_isdir(path)) {
-            ret = find_file_r(self, path, cap_path, target);
+            ret = find_files_r(self, path, cap_path);
         }
 
         file_dirnodedel(node);
@@ -174,8 +178,8 @@ find_file_r(const findcmd_t *self, const char *dirpath, const char *cap_dirpath,
 }
 
 static int
-find_file(const findcmd_t *self, const char *fname) {
-    return find_file_r(self, self->config->cd_path, ".", fname);
+find_files(const findcmd_t *self) {
+    return find_files_r(self, self->config->cd_path, ".");
 }
 
 int
@@ -187,10 +191,5 @@ findcmd_run(findcmd_t *self) {
         return 0;
     }
 
-    if (nargs == 1) {
-        const char *fname = self->argv[self->optind];
-        return find_file(self, fname);
-    }
-
-    return 0;
+    return find_files(self);
 }
