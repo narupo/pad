@@ -11,7 +11,10 @@ skip_drive_letter(const char *path) {
 
 static bool
 is_contain_header(char *data, uint32_t datasz) {
-    return memcmp(data, SYMLINK_HEADER, strlen(SYMLINK_HEADER)) == 0;
+    size_t len1 = strlen(data);
+    size_t len2 = strlen(SYMLINK_HEADER);
+    size_t size = len1 < len2 ? len1 : len2; 
+    return memcmp(data, SYMLINK_HEADER, size) == 0;
 }
 
 static const char *
