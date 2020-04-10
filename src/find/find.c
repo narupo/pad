@@ -5,6 +5,7 @@
  */
 struct opts {
     bool is_help;
+    bool is_normalize;
 };
 
 /**
@@ -33,7 +34,8 @@ findcmd_show_usage(findcmd_t *self) {
         "\n"
         "The options are:\n"
         "\n"
-        "    -h, --help    Show usage\n"
+        "    -h, --help         Show usage\n"
+        "    -n, --normalize    Normalize path\n"
         "\n"
     );
     fflush(stderr);
@@ -52,7 +54,7 @@ findcmd_parse_opts(findcmd_t *self) {
     // parse options
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
-        {"fname", required_argument, 0, 'f'},
+        {"normalize", no_argument, 0, 'n'},
         {0},
     };
 
@@ -65,7 +67,7 @@ findcmd_parse_opts(findcmd_t *self) {
 
     for (;;) {
         int optsindex;
-        int cur = getopt_long(self->argc, self->argv, "hf:", longopts, &optsindex);
+        int cur = getopt_long(self->argc, self->argv, "hn", longopts, &optsindex);
         if (cur == -1) {
             break;
         }
@@ -73,7 +75,7 @@ findcmd_parse_opts(findcmd_t *self) {
         switch (cur) {
         case 0: /* long option only */ break;
         case 'h': self->opts.is_help = true; break;
-        case 'f': printf("%s\n", optarg); break;
+        case 'n': self->opts.is_normalize = true; break;
         case '?':
         default:
             err_die("unknown option");
@@ -116,8 +118,79 @@ findcmd_new(const config_t *config, int argc, char **argv) {
     return self;
 }
 
+static int
+find_file_r(const findcmd_t *self, const char *dirpath, const char *_cap_dirpath, const char *target) {
+    file_dir_t *dir = file_diropen(dirpath);
+    if (!dir) {
+        err_error("failed to open directory \"%s\"", dirpath);
+        return 1;
+    }
+
+    int ret = 0;
+
+    for (;;) {
+        file_dirnode_t *node = file_dirread(dir);
+        if (!node) {
+            break;
+        }
+
+        const char *name = file_dirnodename(node);
+        if (cstr_eq(name, ".") || cstr_eq(name, "..")) {
+            file_dirnodedel(node);
+            continue;
+        }
+
+        char cap_path[FILE_NPATH];
+        snprintf(cap_path, sizeof cap_path, "%s/%s", _cap_dirpath, name);
+
+        char tmp_path[FILE_NPATH];
+        snprintf(tmp_path, sizeof tmp_path, "%s/%s", dirpath, name);
+
+        char path[FILE_NPATH];
+        if (!symlink_follow_path(self->config, path, sizeof path, tmp_path)) {
+            err_error("failed to follow path on find file recursive");
+            file_dirnodedel(node);
+            continue;
+        }
+
+        if (cstr_eq(target, name)) {
+            if (self->opts.is_normalize) {
+                puts(path);
+            } else {
+                puts(cap_path);
+            }
+        }
+
+        if (file_isdir(path)) {
+            ret = find_file_r(self, path, cap_path, target);
+        }
+
+        file_dirnodedel(node);
+    }
+
+    file_dirclose(dir);
+
+    return ret;
+}
+
+static int
+find_file(const findcmd_t *self, const char *fname) {
+    return find_file_r(self, self->config->cd_path, ".", fname);
+}
+
 int
 findcmd_run(findcmd_t *self) {
-    puts("find");
+    int nargs = self->argc - self->optind;
+
+    if (nargs == 0) {
+        findcmd_show_usage(self);
+        return 0;
+    }
+
+    if (nargs == 1) {
+        const char *fname = self->argv[self->optind];
+        return find_file(self, fname);
+    }
+
     return 0;
 }
