@@ -6,6 +6,7 @@
 struct opts {
     bool is_help;
     bool is_normalize;
+    char origin[FILE_NPATH];
 };
 
 /**
@@ -35,8 +36,9 @@ findcmd_show_usage(findcmd_t *self) {
         "\n"
         "The options are:\n"
         "\n"
-        "    -h, --help         Show usage\n"
-        "    -n, --normalize    Normalize path\n"
+        "    -h, --help         show usage\n"
+        "    -n, --normalize    normalize path\n"
+        "    -o, --origin       origin path\n"
         "\n"
     );
     fflush(stderr);
@@ -56,6 +58,7 @@ findcmd_parse_opts(findcmd_t *self) {
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"normalize", no_argument, 0, 'n'},
+        {"origin", required_argument, 0, 'o'},
         {0},
     };
 
@@ -68,7 +71,7 @@ findcmd_parse_opts(findcmd_t *self) {
 
     for (;;) {
         int optsindex;
-        int cur = getopt_long(self->argc, self->argv, "hn", longopts, &optsindex);
+        int cur = getopt_long(self->argc, self->argv, "hno:", longopts, &optsindex);
         if (cur == -1) {
             break;
         }
@@ -77,6 +80,7 @@ findcmd_parse_opts(findcmd_t *self) {
         case 0: /* long option only */ break;
         case 'h': self->opts.is_help = true; break;
         case 'n': self->opts.is_normalize = true; break;
+        case 'o': snprintf(self->opts.origin, sizeof self->opts.origin, "%s", optarg); break;
         case '?':
         default:
             err_die("unknown option");
@@ -111,6 +115,7 @@ findcmd_new(const config_t *config, int argc, char **argv) {
     self->config = config;
     self->argc = argc;
     self->argv = argv;
+    strcpy(self->opts.origin, ".");
 
     if (!findcmd_parse_opts(self)) {
         findcmd_del(self);
@@ -179,7 +184,17 @@ find_files_r(const findcmd_t *self, const char *dirpath, const char *cap_dirpath
 
 static int
 find_files(const findcmd_t *self) {
-    return find_files_r(self, self->config->cd_path, ".");
+    const char *origin = get_origin(self->config, self->opts.origin);
+    char tmppath[FILE_NPATH*2];
+    snprintf(tmppath, sizeof tmppath, "%s/%s", origin, self->opts.origin);
+
+    char path[FILE_NPATH];
+    if (!symlink_follow_path(self->config, path, sizeof path, tmppath)) {
+        err_error("failed to follow path in find files");
+        return 1;
+    }
+    
+    return find_files_r(self, path, self->opts.origin);
 }
 
 int
