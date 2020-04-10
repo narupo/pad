@@ -104,6 +104,7 @@ SRCS := build/lib/error.c \
 	build/make/make.c \
 	build/sh/sh.c \
 	build/find/find.c \
+	build/find/arguments_manager.c \
 	build/lang/tokens.c \
 	build/lang/tokenizer.c \
 	build/lang/nodes.c \
@@ -216,6 +217,8 @@ build/make/make.o: src/make/make.c src/make/make.h
 build/sh/sh.o: src/sh/sh.c src/sh/sh.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/find/find.o: src/find/find.c src/find/find.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/find/arguments_manager.o: src/find/arguments_manager.c src/find/arguments_manager.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/tokenizer.o: src/lang/tokenizer.c src/lang/tokenizer.h
 	$(CC) $(CFLAGS) -c $< -o $@
