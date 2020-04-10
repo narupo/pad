@@ -81,17 +81,7 @@ almgr_create_resource_path(almgr_t *self, char *dst, size_t dstsz, int scope) {
 }
 
 almgr_t *
-almgr_load_alias_list(almgr_t *self, int scope) {
-    char path[FILE_NPATH];
-    if (!almgr_create_resource_path(self, path, sizeof path, scope)) {
-        almgr_set_error_detail(self, "failed to create path by scope %d", scope);
-        return NULL;
-    }
-    if (!file_exists(path)) {
-        almgr_set_error_detail(self, "not found file \"%s\"", path);
-        return NULL;
-    }
-
+almgr_load_path(almgr_t *self, const char *path) {
     char *src = file_readcp_from_path(path);
     if (!src) {
         almgr_set_error_detail(self, "failed to read content from file \"%s\"", path);
@@ -128,6 +118,21 @@ fail:
 }
 
 almgr_t *
+almgr_load_alias_list(almgr_t *self, int scope) {
+    char path[FILE_NPATH];
+    if (!almgr_create_resource_path(self, path, sizeof path, scope)) {
+        almgr_set_error_detail(self, "failed to create path by scope %d", scope);
+        return NULL;
+    }
+    if (!file_exists(path)) {
+        almgr_set_error_detail(self, "not found file \"%s\"", path);
+        return NULL;
+    }
+
+    return almgr_load_path(self, path);
+}
+
+almgr_t *
 almgr_find_alias_value(almgr_t *self, char *dst, uint32_t dstsz, const char *key, int scope) {
     if (!almgr_load_alias_list(self, scope)) {
         return NULL;
@@ -146,6 +151,12 @@ almgr_find_alias_value(almgr_t *self, char *dst, uint32_t dstsz, const char *key
 bool
 almgr_has_error(const almgr_t *self) {
     return self->error_detail[0] != '\0';
+}
+
+void
+almgr_clear(almgr_t *self) {
+    ctx_clear(self->context);
+    almgr_clear_error(self);
 }
 
 void

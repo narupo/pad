@@ -8,6 +8,9 @@
 #include "core/util.h"
 #include "core/config.h"
 #include "core/symlink.h"
+#include "core/alias_manager.h"
+#include "core/alias_info.h"
+#include "lang/context.h"
 #include "find/arguments_manager.h"
 
 /**

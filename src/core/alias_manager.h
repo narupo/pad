@@ -68,6 +68,18 @@ almgr_t *
 almgr_load_alias_list(almgr_t *self, int scope);
 
 /**
+ * Load alias list by path
+ *
+ * @param[in] self pointer to almgr_t
+ * @param[in] path path on file system
+ *
+ * @return success to pointer to almgr_t
+ * @return failed to NULL
+ */
+almgr_t *
+almgr_load_path(almgr_t *self, const char *path);
+
+/**
  * Check if has error
  *
  * @param[in] self pointer to dynamic allocate memory of almgr_t
@@ -87,6 +99,14 @@ void
 almgr_clear_error(almgr_t *self);
 
 /**
+ * Clear status
+ *
+ * @param[in] self pointer to almgr_t
+ */
+void
+almgr_clear(almgr_t *self);
+
+/**
  * Get error detail
  *
  * @param[in] self pointer to dynamic allocate memory of almgr_t
@@ -95,16 +115,6 @@ almgr_clear_error(almgr_t *self);
  */
 const char *
 almgr_get_error_detail(const almgr_t *self);
-
-/**
- * Get alias map
- *
- * @param[in] self pointer to dynamic allocate memory of almgr_t
- *
- * @return pointer to dict_t
- */
-const dict_t *
-almgr_getc_almap(const almgr_t *self);
 
 /**
  * Get context
