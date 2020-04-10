@@ -119,7 +119,7 @@ findcmd_new(const config_t *config, int argc, char **argv) {
 }
 
 static int
-find_file_r(const findcmd_t *self, const char *dirpath, const char *_cap_dirpath, const char *target) {
+find_file_r(const findcmd_t *self, const char *dirpath, const char *cap_dirpath, const char *target) {
     file_dir_t *dir = file_diropen(dirpath);
     if (!dir) {
         err_error("failed to open directory \"%s\"", dirpath);
@@ -141,7 +141,7 @@ find_file_r(const findcmd_t *self, const char *dirpath, const char *_cap_dirpath
         }
 
         char cap_path[FILE_NPATH];
-        snprintf(cap_path, sizeof cap_path, "%s/%s", _cap_dirpath, name);
+        snprintf(cap_path, sizeof cap_path, "%s/%s", cap_dirpath, name);
 
         char tmp_path[FILE_NPATH];
         snprintf(tmp_path, sizeof tmp_path, "%s/%s", dirpath, name);
