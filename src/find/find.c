@@ -34,7 +34,7 @@ findcmd_show_usage(findcmd_t *self) {
     fflush(stderr);
     fprintf(stderr, "Usage:\n"
         "\n"
-        "    cap find [options]...\n"
+        "    cap find [options]... [arguments]...\n"
         "\n"
         "The options are:\n"
         "\n"
@@ -324,7 +324,7 @@ int
 findcmd_run(findcmd_t *self) {
     int nargs = self->argc - self->optind;
 
-    if (nargs == 0) {
+    if (nargs == 0 || self->opts.is_help) {
         findcmd_show_usage(self);
         return 0;
     }
