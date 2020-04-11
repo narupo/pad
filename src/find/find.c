@@ -137,11 +137,18 @@ findcmd_new(const config_t *config, int argc, char **argv) {
 static void
 join_cap_path(char *dst, int32_t dstsz, const char *lhs, const char *rhs) {
     for (; *rhs == '/' ; ++rhs);
-    bool sep = lhs[strlen(lhs)-1] == '/' ? false : true;
-    if (sep) {
-        snprintf(dst, dstsz, "%s/%s", lhs, rhs);
+    
+    int32_t lhslen = strlen(lhs);
+
+    if (lhslen) {
+        bool sep = lhs[lhslen-1] == '/' ? false : true;
+        if (sep) {
+            snprintf(dst, dstsz, "%s/%s", lhs, rhs);
+        } else {
+            snprintf(dst, dstsz, "%s%s", lhs, rhs);
+        }
     } else {
-        snprintf(dst, dstsz, "%s%s", lhs, rhs);
+            snprintf(dst, dstsz, "%s", rhs);
     }
 }
 
