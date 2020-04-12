@@ -597,6 +597,19 @@ execute_program(const config_t *config, bool *found, int cmd_argc, char *cmd_arg
     return 1;
 }
 
+cstring_array_t *
+pushf_argv(int argc, char *argv[], const char *front) {
+    cstring_array_t *arr = cstrarr_new();
+
+    cstrarr_pushb(arr, front);
+
+    for (int32_t i = 0; i < argc; ++i) {
+        cstrarr_pushb(arr, argv[i]);
+    }
+
+    return mem_move(arr);
+}
+
 char *
 solve_cmdline_arg_path(const config_t *config, char *dst, int32_t dstsz, const char *caps_arg_path) {
     if (caps_arg_path[0] == ':') {

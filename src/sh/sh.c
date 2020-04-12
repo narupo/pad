@@ -300,7 +300,10 @@ shcmd_exec_command(shcmd_t *self, int argc, char **argv) {
             if (!found) {
                 result = execute_program(self->config, &found, argc, argv, cmdname);
                 if (!found) {
-                    err_error("not found \"%s\"", cmdname);
+                    cstring_array_t *new_argv = pushf_argv(argc, argv, "run");
+                    int argc = cstrarr_len(new_argv);
+                    char **argv = cstrarr_escdel(new_argv);
+                    result = execute_run(self->config, argc, argv);
                 }
             }
         }
