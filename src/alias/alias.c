@@ -13,6 +13,9 @@ struct alcmd {
     char **argv;
     struct opts opts;
     almgr_t *almgr;
+    int32_t key_colors[3];
+    int32_t value_colors[3];
+    int32_t desc_colors[3];
 };
 
 static alcmd_t *
@@ -94,6 +97,15 @@ alcmd_new(const config_t *config, int argc, char **argv) {
     self->argc = argc;
     self->argv = argv;
     self->almgr = almgr_new(self->config);
+    self->key_colors[0] = TERM_GREEN;
+    self->key_colors[1] = TERM_BLACK;
+    self->key_colors[2] = TERM_BRIGHT;
+    self->value_colors[0] = TERM_CYAN;
+    self->value_colors[1] = TERM_BLACK;
+    self->value_colors[2] = TERM_BRIGHT;
+    self->desc_colors[0] = TERM_RED;
+    self->desc_colors[1] = TERM_BLACK;
+    self->desc_colors[2] = TERM_BRIGHT;
 
     if (!alcmd_parse_opts(self)) {
         err_die("failed to parse options");
@@ -138,7 +150,7 @@ padline(FILE *fout, int32_t len) {
 }
 
 static void
-print_key_val_desc(FILE *fout, bool print_color, int32_t keymaxlen, int32_t valmaxlen, const char *key, const char *val, const char *desc) {
+print_key_val_desc(const alcmd_t *self, FILE *fout, bool print_color, int32_t keymaxlen, int32_t valmaxlen, const char *key, const char *val, const char *desc) {
     if (!print_color) {
         printf("%-*s    %-*s    %s\n", keymaxlen, key, valmaxlen, val, desc);
         return;
@@ -147,15 +159,15 @@ print_key_val_desc(FILE *fout, bool print_color, int32_t keymaxlen, int32_t valm
     int32_t difkeylen = keymaxlen - strlen(key);
     int32_t difvallen = valmaxlen - strlen(val);
 
-    term_cfprintf(fout, TERM_WHITE, TERM_BLACK, TERM_NULL, "%s", key);
+    term_cfprintf(fout, self->key_colors[0], self->key_colors[1], self->key_colors[2], "%s", key);
     padline(fout, difkeylen + 4);
-    term_cfprintf(fout, TERM_GREEN, TERM_BLACK, TERM_BRIGHT, "%s", val);
+    term_cfprintf(fout, self->value_colors[0], self->value_colors[1], self->value_colors[2], "%s", val);
     padline(fout, difvallen + 4);
-    term_cfprintf(fout, TERM_RED, TERM_BLACK, TERM_NULL, "%s\n", desc);
+    term_cfprintf(fout, self->desc_colors[0], self->desc_colors[1], self->desc_colors[2], "%s\n", desc);
 }
 
 static void
-print_key_val(FILE *fout, bool print_color, int32_t keymaxlen, const char *key, const char *val) {
+print_key_val(const alcmd_t *self, FILE *fout, bool print_color, int32_t keymaxlen, const char *key, const char *val) {
     if (!print_color) {
         printf("%-*s    %s\n", keymaxlen, key, val);
         return;
@@ -163,9 +175,9 @@ print_key_val(FILE *fout, bool print_color, int32_t keymaxlen, const char *key, 
     
     int32_t difkeylen = keymaxlen - strlen(key);
 
-    term_cfprintf(fout, TERM_WHITE, TERM_BLACK, TERM_NULL, "%s", key);
+    term_cfprintf(fout, self->key_colors[0], self->key_colors[1], self->key_colors[2], "%s", key);
     padline(fout, difkeylen + 4);
-    term_cfprintf(fout, TERM_GREEN, TERM_BLACK, TERM_BRIGHT, "%s\n", val);
+    term_cfprintf(fout, self->value_colors[0], self->value_colors[1], self->value_colors[2], "%s\n", val);
 }
 
 static int
@@ -205,6 +217,7 @@ alcmd_show_list(alcmd_t *self) {
             trim_first_line(disp_desc, sizeof disp_desc, desc);
 
             print_key_val_desc(
+                self,
                 fout,
                 print_color,
                 keymaxlen,
@@ -215,6 +228,7 @@ alcmd_show_list(alcmd_t *self) {
             );
         } else {
             print_key_val(
+                self,
                 fout,
                 print_color,
                 keymaxlen,
