@@ -377,9 +377,10 @@ execute_snippet(const config_t *config, const char *name, int argc, char **argv)
 
     for (file_dirnode_t *node; (node = file_dirread(dir)); ) {
         const char *fname = file_dirnodename(node);
-        if (cstr_eq(fname, ".") || cstr_eq(fname, "..")) {
+        if (is_dot_file(fname)) {
             continue;
         }
+
         if (cstr_eq(fname, name)) {
             found = true;
             if (!show_snippet(config, fname, argc, argv)) {
@@ -440,4 +441,9 @@ escape(char *dst, int32_t dstsz, const char *src, const char *target) {
 
     *dp = '\0';
     return dst;
+}
+
+bool
+is_dot_file(const char *path) {
+    return strcmp(path, "..") == 0 || strcmp(path, ".") == 0;
 }

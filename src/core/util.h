@@ -226,3 +226,13 @@ solve_cmdline_arg_path(const config_t *config, char *dst, int32_t dstsz, const c
  */
 char * 
 escape(char *dst, int32_t dstsz, const char *src, const char *target);
+
+/**
+ * If path is ".." or "." then return true
+ *
+ * @param[in] path path of string
+ *
+ * @return true or false
+ */
+bool
+is_dot_file(const char *path);
