@@ -263,3 +263,16 @@ escape(char *dst, int32_t dstsz, const char *src, const char *target);
  */
 bool
 is_dot_file(const char *path);
+
+
+/**
+ * split string to cstring array
+ *
+ * @param[in] *str 
+ * @param[in] ch   
+ *
+ * @return success to pointer to cstring_array_t
+ * @return failed to NULL
+ */
+cstring_array_t * 
+split_to_array(const char *str, int ch);

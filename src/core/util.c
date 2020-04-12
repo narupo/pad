@@ -448,15 +448,15 @@ load_path_var_from_resource(const config_t *config, const char *rcpath) {
     return path;
 }
 
-static cstring_array_t *
-split_path_var(const char *path) {
-    cstring_array_t *dirs = cstrarr_new();
+cstring_array_t *
+split_to_array(const char *str, int ch) {
+    cstring_array_t *arr = cstrarr_new();
     string_t *s = str_new();
 
-    for (const char *p = path; *p; ++p) {
-        if (*p == ':') {
+    for (const char *p = str; *p; ++p) {
+        if (*p == ch) {
             if (str_len(s)) {
-                cstrarr_pushb(dirs, str_getc(s));
+                cstrarr_pushb(arr, str_getc(s));
                 str_clear(s);
             }
         } else {
@@ -465,11 +465,16 @@ split_path_var(const char *path) {
     }
 
     if (str_len(s)) {
-        cstrarr_pushb(dirs, str_getc(s));
+        cstrarr_pushb(arr, str_getc(s));
     }
 
     str_del(s);
-    return dirs;
+    return arr;
+}
+
+static cstring_array_t *
+split_path_var(const char *path) {
+    return split_to_array(path, ':');
 }
 
 void
