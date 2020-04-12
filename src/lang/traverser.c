@@ -6707,7 +6707,6 @@ void
 trv_traverse(ast_t *ast, context_t *context) {
     ast->context = context;
     ast->ref_gc = ctx_get_gc(context);
-    ctx_clear(ast->context);
 
     if (!trv_import_builtin_modules(ast)) {
         ast_set_error_detail(ast, "failed to import builtin modules");
