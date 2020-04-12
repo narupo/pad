@@ -221,6 +221,19 @@ int
 execute_run(const config_t *config, int argc, char *argv[]);
 
 /**
+ * push to front of argv and re-build array and return
+ *
+ * @param[in] argc    
+ * @param[in] *argv[] 
+ * @param[in] *front  
+ *
+ * @return success to pointer to cstring_array_t
+ * @return failed to NULL
+ */
+cstring_array_t * 
+pushf_argv(int argc, char *argv[], const char *front);
+
+/**
  * solve path of comannd line argument
  *
  * like the following

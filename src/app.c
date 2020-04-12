@@ -537,19 +537,6 @@ app_execute_alias_by_name(app_t *self, bool *found, const char *name) {
     return app_run(self);
 }
 
-static cstring_array_t *
-pushf_argv(int argc, char *argv[], const char *front) {
-    cstring_array_t *arr = cstrarr_new();
-
-    cstrarr_pushb(arr, front);
-
-    for (int32_t i = 0; i < argc; ++i) {
-        cstrarr_pushb(arr, argv[i]);
-    }
-
-    return mem_move(arr);
-}
-
 /**
  * run module
  *
