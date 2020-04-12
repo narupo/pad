@@ -181,7 +181,8 @@ shcmd_input(shcmd_t *self) {
 }
 
 int
-shcmd_exec_alias(shcmd_t *self, int argc, char **argv) {
+shcmd_exec_alias(shcmd_t *self, bool *found, int argc, char **argv) {
+    *found = false;
     almgr_t *almgr = almgr_new(self->config);
 
     // find alias value by name
@@ -192,10 +193,12 @@ shcmd_exec_alias(shcmd_t *self, int argc, char **argv) {
     if (almgr_find_alias_value(almgr, alias_val, sizeof alias_val, cmdname, CAP_SCOPE_LOCAL) == NULL) {
         almgr_clear_error(almgr);
         if (almgr_find_alias_value(almgr, alias_val, sizeof alias_val, cmdname, CAP_SCOPE_GLOBAL) == NULL) {
-            return -1;
+            *found = false;
+            return 1;
         }
     }
     almgr_del(almgr);
+    *found = true;
 
     // create cap's command line with alias value
     string_t *cmdline = str_new();
@@ -290,9 +293,15 @@ shcmd_exec_command(shcmd_t *self, int argc, char **argv) {
     } else if (cstr_eq(cmdname, "find")) {
         routine(findcmd);
     } else {
-        if (shcmd_exec_alias(self, argc, argv) == -1) {
-            if (execute_snippet(self->config, cmdname, argc, argv) == -1) {
-                err_error("not found \"%s\"", cmdname);
+        bool found = false;
+        result = shcmd_exec_alias(self, &found, argc, argv);
+        if (!found) {
+            result = execute_snippet(self->config, &found, argc, argv, cmdname);
+            if (!found) {
+                result = execute_program(self->config, &found, argc, argv, cmdname);
+                if (!found) {
+                    err_error("not found \"%s\"", cmdname);
+                }
             }
         }
     }

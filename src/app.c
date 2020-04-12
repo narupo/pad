@@ -551,197 +551,6 @@ pushf_argv(int argc, char *argv[], const char *front) {
 }
 
 /**
- * execute run command with command arguments
- *
- * @param[in] self
- *
- * @return success to 0 else other
- */
-static int
-execute_run(app_t *self, int argc, char *argv[]) {
-    runcmd_t *cmd = runcmd_new(self->config, argc, argv);
-    if (!cmd) {
-        return 1;
-    }
-
-    int result = runcmd_run(cmd);
-    runcmd_del(cmd);
-
-    return result;
-}
-
-static char *
-load_path_var_from_resource(app_t *self, const char *rcpath) {
-    char *src = file_readcp_from_path(rcpath);
-
-    tokenizer_t *tkr = tkr_new(tkropt_new());
-    ast_t *ast = ast_new(self->config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
-    opts_t *opts = opts_new();
-
-    tkr_parse(tkr, src);
-    free(src);
-    src = NULL;
-    if (tkr_has_error(tkr)) {
-        err_error("%s", tkr_get_error_detail(tkr));
-        return NULL;
-    }
-
-    ast_move_opts(ast, opts);
-    opts = NULL;
-
-    cc_compile(ast, tkr_get_tokens(tkr));
-    if (ast_has_error(ast)) {
-        err_error("%s", ast_get_error_detail(ast));
-        return NULL;
-    }
-
-    trv_traverse(ast, ctx);
-    if (ast_has_error(ast)) {
-        err_error("%s", ast_get_error_detail(ast));
-        return NULL;        
-    }
-
-    tkr_del(tkr);
-    ast_del(ast);
-
-    object_dict_t *varmap = ctx_get_varmap_at_global(ctx);
-    const object_dict_item_t *item = objdict_getc(varmap, "PATH");
-    if (!item) {
-        ctx_del(ctx);
-        gc_del(gc);
-        return NULL;
-    }
-
-    printf("%s", ctx_getc_buf(ctx));
-    fflush(stdout);
-
-    char *path = cstr_edup(str_getc(item->value->string));
-
-    ctx_del(ctx);
-    gc_del(gc);
-
-    return path;
-}
-
-static cstring_array_t *
-split_path_var(const char *path) {
-    cstring_array_t *dirs = cstrarr_new();
-    string_t *s = str_new();
-
-    for (const char *p = path; *p; ++p) {
-        if (*p == ':') {
-            if (str_len(s)) {
-                cstrarr_pushb(dirs, str_getc(s));
-                str_clear(s);
-            }
-        } else {
-            str_pushb(s, *p);
-        }
-    }
-
-    if (str_len(s)) {
-        cstrarr_pushb(dirs, str_getc(s));
-    }
-
-    str_del(s);
-    return dirs;
-}
-
-static int
-execute_program_by_dirname(app_t *self, bool *found, const char *cap_dirname) {
-    *found = false;
-
-    const char *cmdname = self->cmd_argv[0];
-    char cap_fpath[FILE_NPATH];
-    snprintf(cap_fpath, sizeof cap_fpath, "%s/%s", cap_dirname, cmdname);
-
-    const char *org = get_origin(self->config, cap_fpath);
-    char real_path[FILE_NPATH];
-    if (!file_solvefmt(real_path, sizeof real_path, "%s/%s", org, cap_fpath)) {
-        err_error("failed to solve in execute program in directory");
-        return 1;
-    }
-    if (!file_exists(real_path)) {
-        return 1;
-    }
-    *found = true;
-
-    cstring_array_t *args = cstrarr_new();
-    cstrarr_pushb(args, "run");
-    cstrarr_pushb(args, cap_fpath);
-    for (int32_t i = 1; i < self->cmd_argc; ++i) {
-        cstrarr_pushb(args, self->cmd_argv[i]);
-    }
-
-    int argc = cstrarr_len(args);
-    char **argv = cstrarr_escdel(args);
-    return execute_run(self, argc, argv);
-}
-
-static int
-execute_program_by_caprc(app_t *self, bool *found, const char *org) {
-    *found = false;
-    char rcpath[FILE_NPATH];
-
-    if (!file_solvefmt(rcpath, sizeof rcpath, "%s/.caprc", org)) {
-        return 1;
-    }
-
-    if (!file_exists(rcpath)) {
-        return 1;
-    }
-
-    char *path = load_path_var_from_resource(self, rcpath);
-    if (!path) {
-        return 1;
-    }
-
-    cstring_array_t *dirs = split_path_var(path);
-    free(path);
-    if (!cstrarr_len(dirs)) {
-        return 1;
-    }
-
-    for (int32_t i = 0; i < cstrarr_len(dirs); ++i) {
-        const char *cap_dirname = cstrarr_getc(dirs, i);
-
-        *found = false;
-        int result = execute_program_by_dirname(self, found, cap_dirname);
-        if (*found) {
-            return result;
-        }
-    }
-
-    return 1;
-}
-
-static int
-execute_program_by_path_in_resource(app_t *self, bool *found, const char *cmdname) {
-    if (cmdname[0] == '.') {
-        *found = false;
-        return 1;
-    }
-
-    int result;
-
-    *found = false;
-    result = execute_program_by_caprc(self, found, self->config->cd_path);
-    if (*found) {
-        return result;
-    }
-
-    *found = false;
-    result = execute_program_by_caprc(self, found, self->config->home_path);
-    if (*found) {
-        return result;
-    }
-
-    return 1;
-}
-
-/**
  * run module
  *
  * @param[in] self
@@ -783,13 +592,13 @@ app_run(app_t *self) {
     }
 
     found = false;
-    result = execute_snippet(self->config, &found, cmdname, self->cmd_argc-1, self->cmd_argv+1);
+    result = execute_snippet(self->config, &found, self->cmd_argc-1, self->cmd_argv+1, cmdname);
     if (found) {
         return result;
     }
 
     found = false;
-    result = execute_program_by_path_in_resource(self, &found, cmdname);
+    result = execute_program(self->config, &found, self->cmd_argc, self->cmd_argv, cmdname);
     if (found) {
         return result;
     }
@@ -797,7 +606,7 @@ app_run(app_t *self) {
     cstring_array_t *new_argv = pushf_argv(self->cmd_argc, self->cmd_argv, "run");
     int argc = cstrarr_len(new_argv);
     char **argv = cstrarr_escdel(new_argv);
-    return execute_run(self, argc, argv);
+    return execute_run(self->config, argc, argv);
 }
 
 /**
