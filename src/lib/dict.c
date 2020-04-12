@@ -104,3 +104,10 @@ dict_has_key(const dict_t *self, const char *key) {
 
     return false;
 }
+
+void
+dict_show(const dict_t *self, FILE *fout) {
+    for (int i = 0; i < self->len; ++i) {
+        fprintf(fout, "[%s] = [%s]\n", self->map[i].key, self->map[i].value);
+    }    
+}
