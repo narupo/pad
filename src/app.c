@@ -738,7 +738,6 @@ execute_program_by_path_in_resource(app_t *self, bool *found, const char *cmdnam
         return result;
     }
 
-    puts("not found program in caprc");
     return 1;
 }
 
