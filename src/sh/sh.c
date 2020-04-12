@@ -230,22 +230,19 @@ shcmd_exec_alias(shcmd_t *self, bool *found, int argc, char **argv) {
 static int
 execute_all(shcmd_t *self, int argc, char *argv[]) {
     const char *cmdname = argv[0];
-    bool found;
+    bool found = false;
     int result;
 
-    found = false;
     result = shcmd_exec_alias(self, &found, argc, argv);
     if (found) {
         return result;
     }
     
-    found = false;
     result = execute_snippet(self->config, &found, argc, argv, cmdname);
     if (found) {
         return result;
     }
     
-    found = false;
     result = execute_program(self->config, &found, argc, argv, cmdname);
     if (found) {
         return result;
