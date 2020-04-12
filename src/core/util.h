@@ -15,6 +15,7 @@
 #include <lib/error.h>
 #include <lib/cl.h>
 #include <lib/cstring_array.h>
+#include <core/types.h>
 #include <core/constant.h>
 #include <core/config.h>
 #include <core/symlink.h>
@@ -191,7 +192,33 @@ clear_screen(void);
  * @return failed to not 0
  */
 int
-execute_snippet(const config_t *config, bool *found, const char *name, int argc, char **argv);
+execute_snippet(const config_t *config, bool *found, int argc, char *argv[], const char *name);
+
+/**
+ * execute program in directory of token of PATH
+ * this function first find to local scope and next to find global scope and execute
+ * if program is not found to store false at *found variable
+ *
+ * @param[in] *config  
+ * @param[in] *found   
+ * @param[in] argc     
+ * @param[in] *argv[]  
+ * @param[in] *cmdname 
+ */
+int
+execute_program(const config_t *config, bool *found, int argc, char *argv[], const char *cmdname);
+
+/**
+ * execute run command with command arguments
+ *
+ * @param[in] config
+ * @param[in] argc   
+ * @param[in] argv   
+ *
+ * @return success to 0 else other
+ */
+int
+execute_run(const config_t *config, int argc, char *argv[]);
 
 /**
  * solve path of comannd line argument
