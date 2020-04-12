@@ -77,6 +77,20 @@ pwdcmd_new(const config_t *config, int argc, char **argv) {
 	return self;
 }
 
+char *
+replace_slashes(const char *s) {
+    string_t *dst = str_new();
+
+    for (const char *p = s; *p; ++p) {
+        if (*p == '\\') {
+            str_pushb(dst, '/');
+        } else {
+            str_pushb(dst, *p);
+        }
+    }
+    return str_escdel(dst);
+}
+
 int
 pwdcmd_run(pwdcmd_t *self) {
     if (!pwdcmd_parse_opts(self)) {
@@ -109,9 +123,12 @@ pwdcmd_run(pwdcmd_t *self) {
             printf("/\n");
         } else {
             const char *p = cd + homelen;
-            printf("%s\n", p);
+            char *s = replace_slashes(p);
+            printf("%s\n", s);
+            free(s);
         }
     }
 
+    fflush(stdout);
 	return 0;
 }

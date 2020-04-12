@@ -16,6 +16,7 @@
 #include <lib/memory.h>
 #include <lib/error.h>
 #include <lib/file.h>
+#include <lib/string.h>
 #include <core/util.h>
 #include <core/config.h>
 
