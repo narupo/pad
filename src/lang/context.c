@@ -40,11 +40,27 @@ ctx_new(gc_t *ref_gc) {
     return self;
 }
 
+/**
+ * set default global variables at global scope
+ *
+ * PATH, etc...
+ *
+ * @param[in] self
+ */
+static void
+set_default_global_vars(context_t *self) {
+    // set PATH string variable
+    object_dict_t *varmap = scope_get_varmap(self->scope); // get global varmap
+    object_t *path = obj_new_cstr(self->ref_gc, "");
+    objdict_move(varmap, "PATH", mem_move(path));
+}
+
 void
 ctx_clear(context_t *self) {
     alinfo_clear(self->alinfo);
     str_clear(self->buf);
     scope_clear(self->scope);
+    set_default_global_vars(self);
 }
 
 context_t *
