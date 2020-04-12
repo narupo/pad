@@ -92,20 +92,21 @@ lscmd_new(const config_t *config, int argc, char **argv) {
 
 static void
 print_fname(const lscmd_t *self, FILE *fout, bool print_color, const char *path, const char *name) {
-    if (print_color) {
-        char fpath[FILE_NPATH];
-        if (!file_solvefmt(fpath, sizeof fpath, "%s/%s", path, name)) {
-            err_error("failed to solve path by name \"%s\"", name);
-            return;
-        }
-        
-        if (file_isdir(fpath)) {
-            term_cfprintf(fout, TERM_WHITE, TERM_GREEN, TERM_BRIGHT, "%s\n", name);
-        } else {
-            term_cfprintf(fout, TERM_GREEN, TERM_BLACK, TERM_BRIGHT, "%s\n", name);
-        }
-    } else {
+    if (!print_color) {
         fprintf(fout, "%s\n", name);
+        return;
+    }
+
+    char fpath[FILE_NPATH];
+    if (!file_solvefmt(fpath, sizeof fpath, "%s/%s", path, name)) {
+        err_error("failed to solve path by name \"%s\"", name);
+        return;
+    }
+    
+    if (file_isdir(fpath)) {
+        term_cfprintf(fout, TERM_WHITE, TERM_GREEN, TERM_BRIGHT, "%s\n", name);
+    } else {
+        term_cfprintf(fout, TERM_GREEN, TERM_BLACK, TERM_BRIGHT, "%s\n", name);
     }
 }
 
