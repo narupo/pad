@@ -7,6 +7,7 @@
 #include <lib/memory.h>
 #include <lib/file.h>
 #include <lib/cstring_array.h>
+#include <lib/term.h>
 #include <core/constant.h>
 #include <core/util.h>
 #include <core/config.h>

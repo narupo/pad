@@ -130,6 +130,44 @@ alcmd_getc_value(alcmd_t *self, const char *key) {
     return alinfo_getc_value(alinfo, key);
 }
 
+static void
+padline(FILE *fout, int32_t len) {
+    for (int32_t i = 0; i < len; ++i) {
+        fputc(' ', fout);
+    }
+}
+
+static void
+print_key_val_desc(FILE *fout, bool print_color, int32_t keymaxlen, int32_t valmaxlen, const char *key, const char *val, const char *desc) {
+    if (!print_color) {
+        printf("%-*s    %-*s    %s\n", keymaxlen, key, valmaxlen, val, desc);
+        return;
+    }
+    
+    int32_t difkeylen = keymaxlen - strlen(key);
+    int32_t difvallen = valmaxlen - strlen(val);
+
+    term_cfprintf(fout, TERM_WHITE, TERM_BLACK, TERM_NULL, "%s", key);
+    padline(fout, difkeylen + 4);
+    term_cfprintf(fout, TERM_GREEN, TERM_BLACK, TERM_BRIGHT, "%s", val);
+    padline(fout, difvallen + 4);
+    term_cfprintf(fout, TERM_RED, TERM_BLACK, TERM_NULL, "%s\n", desc);
+}
+
+static void
+print_key_val(FILE *fout, bool print_color, int32_t keymaxlen, const char *key, const char *val) {
+    if (!print_color) {
+        printf("%-*s    %s\n", keymaxlen, key, val);
+        return;
+    }
+    
+    int32_t difkeylen = keymaxlen - strlen(key);
+
+    term_cfprintf(fout, TERM_WHITE, TERM_BLACK, TERM_NULL, "%s", key);
+    padline(fout, difkeylen + 4);
+    term_cfprintf(fout, TERM_GREEN, TERM_BLACK, TERM_BRIGHT, "%s\n", val);
+}
+
 static int
 alcmd_show_list(alcmd_t *self) {
     const context_t *ctx = almgr_getc_context(self->almgr);
@@ -152,6 +190,9 @@ alcmd_show_list(alcmd_t *self) {
 
 #undef max
 
+    FILE *fout = stdout;
+    bool print_color = isatty(file_get_no(fout));
+
     for (int i = 0; i < dict_len(key_val_map); ++i) {
         const dict_item_t *kv_item = dict_getc_index(key_val_map, i);
         if (!kv_item) {
@@ -162,9 +203,24 @@ alcmd_show_list(alcmd_t *self) {
         if (self->opts.isdesc && desc) {
             char disp_desc[128] = {0};
             trim_first_line(disp_desc, sizeof disp_desc, desc);
-            printf("%-*s %-*s %s\n", keymaxlen, kv_item->key, valmaxlen, kv_item->value, disp_desc);
+
+            print_key_val_desc(
+                fout,
+                print_color,
+                keymaxlen,
+                valmaxlen,
+                kv_item->key,
+                kv_item->value,
+                disp_desc
+            );
         } else {
-            printf("%-*s %s\n", keymaxlen, kv_item->key, kv_item->value);
+            print_key_val(
+                fout,
+                print_color,
+                keymaxlen,
+                kv_item->key,
+                kv_item->value
+            );
         }
     }
     fflush(stdout);
