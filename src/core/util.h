@@ -191,7 +191,7 @@ clear_screen(void);
  * @return failed to not 0
  */
 int
-execute_snippet(const config_t *config, const char *name, int argc, char **argv);
+execute_snippet(const config_t *config, bool *found, const char *name, int argc, char **argv);
 
 /**
  * solve path of comannd line argument

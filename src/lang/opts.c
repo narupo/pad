@@ -30,7 +30,7 @@ opts_parse(opts_t *self, int argc, char *argv[]) {
     if (!self || !argv) {
         return NULL;
     }
-    if (!argc) {
+    if (argc <= 0) {
         return self;
     }
     

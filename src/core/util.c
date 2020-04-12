@@ -366,15 +366,14 @@ show_snippet(const config_t *config, const char *fname, int argc, char **argv) {
 }
 
 int
-execute_snippet(const config_t *config, const char *name, int argc, char **argv) {
+execute_snippet(const config_t *config, bool *found, const char *name, int argc, char **argv) {
     file_dir_t *dir = file_diropen(config->codes_dir_path);
     if (!dir) {
         err_error("failed to open directory \"%s\"", config->codes_dir_path);
         return 1;
     }
 
-    bool found = false;
-
+    *found = false;
     for (file_dirnode_t *node; (node = file_dirread(dir)); ) {
         const char *fname = file_dirnodename(node);
         if (is_dot_file(fname)) {
@@ -382,7 +381,7 @@ execute_snippet(const config_t *config, const char *name, int argc, char **argv)
         }
 
         if (cstr_eq(fname, name)) {
-            found = true;
+            *found = true;
             if (!show_snippet(config, fname, argc, argv)) {
                 file_dirclose(dir);
                 return 1;
@@ -391,7 +390,7 @@ execute_snippet(const config_t *config, const char *name, int argc, char **argv)
     }
 
     file_dirclose(dir);
-    return found ? 0 : -1;
+    return *found ? 0 : -1;
 }
 
 char *
