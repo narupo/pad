@@ -533,8 +533,15 @@ app_execute_alias_by_name(app_t *self, const char *name) {
     return app_run(self);
 }
 
+/**
+ * execute run command with command arguments
+ *
+ * @param[in] self
+ *
+ * @return success to 0 else other
+ */
 static int
-execute_run(app_t *self, const char *cmdname) {
+execute_run(app_t *self) {
     cstring_array_t *arr = cstrarr_new();
 
     cstrarr_pushb(arr, "run");
@@ -602,7 +609,7 @@ app_run(app_t *self) {
         return result;
     }
 
-    return execute_run(self, cmdname);
+    return execute_run(self);
 }
 
 /**
