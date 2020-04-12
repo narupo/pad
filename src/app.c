@@ -533,6 +533,30 @@ app_execute_alias_by_name(app_t *self, const char *name) {
     return app_run(self);
 }
 
+static int
+execute_run(app_t *self, const char *cmdname) {
+    cstring_array_t *arr = cstrarr_new();
+
+    cstrarr_pushb(arr, "run");
+
+    for (int32_t i = 0; i < self->cmd_argc; ++i) {
+        cstrarr_pushb(arr, self->cmd_argv[i]);
+    }
+
+    int argc = cstrarr_len(arr);
+    char **argv = cstrarr_escdel(arr);
+
+    runcmd_t *cmd = runcmd_new(self->config, argc, argv);
+    if (!cmd) {
+        return 1;
+    }
+
+    int result = runcmd_run(cmd);
+    runcmd_del(cmd);
+
+    return result;
+}
+
 /**
  * run module
  *
@@ -569,14 +593,16 @@ app_run(app_t *self) {
     }
 
     int result = app_execute_alias_by_name(self, cmdname);
-    if (result == -1) {
-        result = execute_snippet(self->config, cmdname, self->cmd_argc-1, self->cmd_argv+1);
-        if (result == -1) {
-            err_error("not found name \"%s\"", cmdname);
-            return result;
-        }
+    if (result == 0) {
+        return result;
     }
-    return result;
+
+    result = execute_snippet(self->config, cmdname, self->cmd_argc-1, self->cmd_argv+1);
+    if (result == 0) {
+        return result;
+    }
+
+    return execute_run(self, cmdname);
 }
 
 /**
