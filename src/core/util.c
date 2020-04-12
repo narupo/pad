@@ -279,7 +279,7 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
     context_t *ctx = ctx_new(gc);
     opts_t *opts = opts_new();
 
-    if (!opts_parse(opts, argc-1, argv+1)) {
+    if (!opts_parse(opts, argc, argv)) {
         err_error("failed to compile argv. failed to parse options");
         return NULL;
     }

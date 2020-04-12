@@ -51,3 +51,5 @@ dict_getc_index(const dict_t *self, size_t index);
 bool
 dict_has_key(const dict_t *self, const char *key);
 
+void
+dict_show(const dict_t *self, FILE *fout);

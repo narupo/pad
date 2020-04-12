@@ -579,7 +579,7 @@ app_run(app_t *self) {
     }
 
     found = false;
-    result = execute_snippet(self->config, &found, self->cmd_argc-1, self->cmd_argv+1, cmdname);
+    result = execute_snippet(self->config, &found, self->cmd_argc, self->cmd_argv, cmdname);
     if (found) {
         return result;
     }
