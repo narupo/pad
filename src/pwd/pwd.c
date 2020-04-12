@@ -88,6 +88,7 @@ replace_slashes(const char *s) {
             str_pushb(dst, *p);
         }
     }
+
     return str_escdel(dst);
 }
 
