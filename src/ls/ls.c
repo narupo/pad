@@ -104,12 +104,13 @@ print_fname(const lscmd_t *self, FILE *fout, bool print_color, const char *path,
     }
     
     if (file_isdir(fpath)) {
-        term_cfprintf(fout, TERM_WHITE, TERM_GREEN, TERM_BRIGHT, "%s\n", name);
+        term_cfprintf(fout, TERM_WHITE, TERM_GREEN, TERM_BRIGHT, "%s", name);
     } else if (symlink_is_link_file(fpath)) {
-        term_cfprintf(fout, TERM_CYAN, TERM_BLACK, TERM_BRIGHT, "%s\n", name);
+        term_cfprintf(fout, TERM_CYAN, TERM_BLACK, TERM_BRIGHT, "%s", name);
     } else {
-        term_cfprintf(fout, TERM_GREEN, TERM_BLACK, TERM_BRIGHT, "%s\n", name);
+        term_cfprintf(fout, TERM_GREEN, TERM_BLACK, TERM_BRIGHT, "%s", name);
     }
+    fputc('\n', fout);
 }
 
 static void

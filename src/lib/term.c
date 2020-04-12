@@ -113,6 +113,7 @@ term_cfprintf(FILE *fout, int fg, int bg, int opt, const char *fmt, ...) {
     fprintf(fout, "\x1b[39m");
     fprintf(fout, "\x1b[49m");
     fprintf(fout, "\x1b[0m");
+    fflush(fout);
 
     return len;
 #endif
