@@ -227,6 +227,36 @@ shcmd_exec_alias(shcmd_t *self, bool *found, int argc, char **argv) {
     return 0;
 }
 
+static int
+execute_all(shcmd_t *self, int argc, char *argv[]) {
+    const char *cmdname = argv[0];
+    bool found;
+    int result;
+
+    found = false;
+    result = shcmd_exec_alias(self, &found, argc, argv);
+    if (found) {
+        return result;
+    }
+    
+    found = false;
+    result = execute_snippet(self->config, &found, argc, argv, cmdname);
+    if (found) {
+        return result;
+    }
+    
+    found = false;
+    result = execute_program(self->config, &found, argc, argv, cmdname);
+    if (found) {
+        return result;
+    }
+
+    cstring_array_t *args = pushf_argv(argc, argv, "run");
+    int run_argc = cstrarr_len(args);
+    char **run_argv = cstrarr_escdel(args);
+    return execute_run(self->config, run_argc, run_argv);
+}
+
 int 
 shcmd_exec_command(shcmd_t *self, int argc, char **argv) {
     int result = 0;
@@ -293,20 +323,7 @@ shcmd_exec_command(shcmd_t *self, int argc, char **argv) {
     } else if (cstr_eq(cmdname, "find")) {
         routine(findcmd);
     } else {
-        bool found = false;
-        result = shcmd_exec_alias(self, &found, argc, argv);
-        if (!found) {
-            result = execute_snippet(self->config, &found, argc, argv, cmdname);
-            if (!found) {
-                result = execute_program(self->config, &found, argc, argv, cmdname);
-                if (!found) {
-                    cstring_array_t *new_argv = pushf_argv(argc, argv, "run");
-                    int argc = cstrarr_len(new_argv);
-                    char **argv = cstrarr_escdel(new_argv);
-                    result = execute_run(self->config, argc, argv);
-                }
-            }
-        }
+        result = execute_all(self, argc, argv);
     }
 
     self->last_exit_code = result;
