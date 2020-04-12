@@ -1,8 +1,8 @@
 #include <ls/ls.h>
 
 struct opts {
-    bool ishelp;
-    bool isall;
+    bool is_help;
+    bool is_all;
 };
 
 struct lscmd {
@@ -42,8 +42,8 @@ lscmd_parse_opts(lscmd_t *self) {
         }
 
         switch (cur) {
-        case 'h': self->opts.ishelp = true; break;
-        case 'a': self->opts.isall = true; break;
+        case 'h': self->opts.is_help = true; break;
+        case 'a': self->opts.is_all = true; break;
         case '?':
         default:
             err_error("unknown option");
@@ -91,14 +91,12 @@ lscmd_new(const config_t *config, int argc, char **argv) {
 }
 
 static void
-lscmd_arrdump(const lscmd_t *_, FILE *fout, const char *path, const cstring_array_t *arr) {
-    for (int i = 0; i < cstrarr_len(arr); ++i) {
-        const char *name = cstrarr_getc(arr, i);
-
+print_fname(const lscmd_t *self, FILE *fout, bool print_color, const char *path, const char *name) {
+    if (print_color) {
         char fpath[FILE_NPATH];
         if (!file_solvefmt(fpath, sizeof fpath, "%s/%s", path, name)) {
             err_error("failed to solve path by name \"%s\"", name);
-            continue;
+            return;
         }
         
         if (file_isdir(fpath)) {
@@ -106,7 +104,20 @@ lscmd_arrdump(const lscmd_t *_, FILE *fout, const char *path, const cstring_arra
         } else {
             term_cfprintf(fout, TERM_GREEN, TERM_BLACK, TERM_BRIGHT, "%s\n", name);
         }
+    } else {
+        fprintf(fout, "%s\n", name);
     }
+}
+
+static void
+lscmd_arrdump(const lscmd_t *self, FILE *fout, const char *path, const cstring_array_t *arr) {
+    bool print_color = isatty(file_get_no(fout));
+
+    for (int i = 0; i < cstrarr_len(arr); ++i) {
+        const char *name = cstrarr_getc(arr, i);
+        print_fname(self, fout, print_color, path, name);
+    }
+
     fflush(fout);
 }
 
@@ -129,7 +140,7 @@ lscmd_dir2arr(const lscmd_t *self, file_dir_t *dir) {
 
     for (file_dirnode_t *nd; (nd = file_dirread(dir)); ) {
         const char *name = file_dirnodename(nd);
-        if (lscmd_isdotfile(self, name) && !self->opts.isall) {
+        if (lscmd_isdotfile(self, name) && !self->opts.is_all) {
             continue;            
         }
         cstrarr_push(arr, name);
@@ -172,7 +183,7 @@ lscmd_ls(const lscmd_t *self, const char *path) {
 
 int
 lscmd_run(lscmd_t *self) {
-    if (self->opts.ishelp) {
+    if (self->opts.is_help) {
         lscmd_usage(self);
         return 0;
     }

@@ -724,3 +724,8 @@ file_conv_line_encoding(const char *encoding, const char *text) {
     dst[di] = '\0';
     return dst;
 }
+
+int
+file_get_no(FILE *fp) {
+    return fileno(fp);
+}

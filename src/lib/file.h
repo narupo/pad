@@ -10,6 +10,9 @@
 #undef _GNU_SOURCE
 #define _GNU_SOURCE 1 /* cap: file.h: realpath(3) */
 
+#undef _POSIX_SOURCE
+#define _POSIX_SOURCE 1 /* cap: file.h: fileno(3) */
+
 #include <errno.h>
 #include <limits.h>
 #include <unistd.h>
@@ -417,3 +420,13 @@ file_diropen(const char *path);
  */
 file_dirnode_t *
 file_dirread(file_dir_t *self);
+
+/**
+ * Get file number from FILE object
+ *
+ * @param[in] fp file pointer of FILE
+ *
+ * @return number of fileno
+ */
+int
+file_get_no(FILE *fp);
