@@ -614,6 +614,9 @@ load_path_var_from_resource(app_t *self, const char *rcpath) {
         return NULL;
     }
 
+    printf("%s", ctx_getc_buf(ctx));
+    fflush(stdout);
+
     char *path = cstr_edup(str_getc(item->value->string));
 
     ctx_del(ctx);
