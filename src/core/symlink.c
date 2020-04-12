@@ -51,7 +51,7 @@ read_sympath(const config_t *config, char *sympath, uint32_t sympathsz, const ch
         cappath[i+1] = '\0';
     }
 
-    // origin is home path
+    // origin is home path (symlink path is always absolute path)
     const char *org = config->home_path;
     if (!file_solvefmt(sympath, sympathsz, "%s/%s", org, cappath)) {
         return NULL;
@@ -158,12 +158,13 @@ __symlink_follow_path(const config_t *config, char *dst, uint32_t dstsz, const c
     }
 
 #define cleanup() { \
-    for (char **toksp = toks; *toksp; ++toksp) { \
-        free(*toksp); \
-    } \
-    free(toks); \
-    str_del(path); \
-}
+        for (char **toksp = toks; *toksp; ++toksp) { \
+            free(*toksp); \
+        } \
+        free(toks); \
+        str_del(path); \
+    }
+
 done:
     cleanup();
     return dst;
