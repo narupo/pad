@@ -99,17 +99,8 @@ pwdcmd_run(pwdcmd_t *self) {
         return 1;
     }
 
-	char cd[FILE_NPATH];
-	if (!file_readline(cd, sizeof cd, self->config->var_cd_path)) {
-		err_error("need environment variable of cd");
-		return 2;
-	}
-
-    char home[FILE_NPATH];
-    if (!file_readline(home, sizeof home, self->config->var_home_path)) {
-        err_error("need environment variable of home");
-        return 3;
-    }
+	const char *cd = self->config->cd_path;
+    const char *home = self->config->home_path;
 
     if (self->opts.isnorm) {
     	printf("%s\n", cd);
