@@ -120,6 +120,7 @@ SRCS := build/lib/error.c \
 	build/lang/scope.c \
 	build/lang/utils.c \
 	build/lang/gc.c \
+	build/lang/kit.c \
 	build/lang/builtin/functions.c \
 	build/lang/builtin/modules/string.c \
 	build/lang/builtin/modules/array.c \
@@ -249,6 +250,8 @@ build/lang/scope.o: src/lang/scope.c src/lang/scope.h
 build/lang/utils.o: src/lang/utils.c src/lang/utils.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/gc.o: src/lang/gc.c src/lang/gc.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/kit.o: src/lang/kit.c src/lang/kit.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/builtin/functions.o: src/lang/builtin/functions.c src/lang/builtin/functions.h
 	$(CC) $(CFLAGS) -c $< -o $@

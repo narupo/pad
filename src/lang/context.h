@@ -232,3 +232,11 @@ ctx_find_var_ref(context_t *self, const char *key);
  */
 gc_t *
 ctx_get_gc(context_t *self);
+
+/**
+ * clear buffer
+ *
+ * @param[in] *self pointer to context_t
+ */
+void
+ctx_clear_buf(context_t *self);

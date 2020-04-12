@@ -28,18 +28,6 @@ ctx_del(context_t *self) {
     free(self);
 }
 
-context_t *
-ctx_new(gc_t *ref_gc) {
-    context_t *self = mem_ecalloc(1, sizeof(*self));
-
-    self->ref_gc = ref_gc;
-    self->alinfo = alinfo_new();
-    self->buf = str_new();
-    self->scope = scope_new(ref_gc);
-
-    return self;
-}
-
 /**
  * set default global variables at global scope
  *
@@ -53,6 +41,19 @@ set_default_global_vars(context_t *self) {
     object_dict_t *varmap = scope_get_varmap(self->scope); // get global varmap
     object_t *path = obj_new_cstr(self->ref_gc, "");
     objdict_move(varmap, "PATH", mem_move(path));
+}
+
+context_t *
+ctx_new(gc_t *ref_gc) {
+    context_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->ref_gc = ref_gc;
+    self->alinfo = alinfo_new();
+    self->buf = str_new();
+    self->scope = scope_new(ref_gc);
+    set_default_global_vars(self);
+
+    return self;
 }
 
 void
@@ -172,4 +173,9 @@ ctx_find_var_ref(context_t *self, const char *key) {
 gc_t *
 ctx_get_gc(context_t *self) {
     return self->ref_gc;
+}
+
+void
+ctx_clear_buf(context_t *self) {
+    str_clear(self->buf);
 }

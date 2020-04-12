@@ -21,6 +21,7 @@ struct sh {
     char **argv;
     struct opts opts;
     cmdline_t *cmdline;
+    kit_t *kit;
     int last_exit_code;
     char line_buf[LINE_BUFFER_SIZE];
 };
@@ -117,6 +118,7 @@ shcmd_del(shcmd_t *self) {
 
     // DO NOT DELETE config and argv
     cmdline_del(self->cmdline);
+    kit_del(self->kit);
     free(self);
 }
 
@@ -128,6 +130,7 @@ shcmd_new(config_t *config, int argc, char **argv) {
     self->argc = argc;
     self->argv = argv;
     self->cmdline = cmdline_new();
+    self->kit = kit_new(config);
 
     if (!shcmd_parse_opts(self)) {
         shcmd_del(self);
