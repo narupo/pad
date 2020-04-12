@@ -32,8 +32,8 @@
 /**
  * Follow path for symbolic links and save real path at destination
  *
- * @param[in] *dst pointer to destination
- * @param[in] dstsz number of size of destination
+ * @param[in] *dst     pointer to destination
+ * @param[in] dstsz    number of size of destination
  * @param[in] *drtpath string of dirty path
  *
  * @return success to pointer to path, failed to NULL
@@ -52,8 +52,8 @@ symlink_follow_path(const config_t *config, char *dst, uint32_t dstsz, const cha
  * dirty path: /path/../to/../dir
  *  norm path: /dir
  *
- * @param[in] *dst pointer to destination
- * @param[in] dstsz number of size of destination
+ * @param[in] *dst     pointer to destination
+ * @param[in] dstsz    number of size of destination
  * @param[in] *drtpath string of dirty path
  *
  * @return success to pointer to path, failed to NULL
@@ -70,4 +70,3 @@ symlink_norm_path(const config_t *config, char *dst, uint32_t dstsz, const char 
  */
 bool
 symlink_is_link_file(const char *path);
-
