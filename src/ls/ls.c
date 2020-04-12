@@ -91,9 +91,21 @@ lscmd_new(const config_t *config, int argc, char **argv) {
 }
 
 static void
-lscmd_arrdump(const lscmd_t *_, const cstring_array_t *arr, FILE *fout) {
+lscmd_arrdump(const lscmd_t *_, FILE *fout, const char *path, const cstring_array_t *arr) {
     for (int i = 0; i < cstrarr_len(arr); ++i) {
-        fprintf(fout, "%s\n", cstrarr_getc(arr, i));
+        const char *name = cstrarr_getc(arr, i);
+
+        char fpath[FILE_NPATH];
+        if (!file_solvefmt(fpath, sizeof fpath, "%s/%s", path, name)) {
+            err_error("failed to solve path by name \"%s\"", name);
+            continue;
+        }
+        
+        if (file_isdir(fpath)) {
+            term_cfprintf(fout, TERM_WHITE, TERM_GREEN, TERM_BRIGHT, "%s\n", name);
+        } else {
+            term_cfprintf(fout, TERM_GREEN, TERM_BLACK, TERM_BRIGHT, "%s\n", name);
+        }
     }
     fflush(fout);
 }
@@ -147,7 +159,7 @@ lscmd_ls(const lscmd_t *self, const char *path) {
     }
 
     cstrarr_sort(arr);
-    lscmd_arrdump(self, arr, stdout);
+    lscmd_arrdump(self, stdout, path, arr);
     cstrarr_del(arr);
 
     if (file_dirclose(dir) < 0) {

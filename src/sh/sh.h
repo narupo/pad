@@ -31,6 +31,7 @@
 #include <snippet/snippet.h>
 #include <link/link.h>
 #include <make/make.h>
+#include <find/find.h>
 
 /**
  * Structure and type of command

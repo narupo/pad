@@ -208,10 +208,10 @@ find_files_r(const findcmd_t *self, const char *dirpath, const char *cap_dirpath
 }
 
 static bool
-has_contents(const findcmd_t *self, const dict_t *kvmap, int32_t *maxkeylen, int32_t *maxvallen) {
+has_contents(const findcmd_t *self, const dict_t *alias_kvmap, int32_t *maxkeylen, int32_t *maxvallen) {
     bool has = false;
-    for (int32_t i = 0; i < dict_len(kvmap); ++i) {
-        const dict_item_t *item = dict_getc_index(kvmap, i);
+    for (int32_t i = 0; i < dict_len(alias_kvmap); ++i) {
+        const dict_item_t *item = dict_getc_index(alias_kvmap, i);
         if (argsmgr_contains_all(self->argsmgr, item->key)) {
             int32_t keylen = strlen(item->key);
             int32_t vallen = strlen(item->value);
@@ -241,21 +241,19 @@ find_aliases_r(const findcmd_t *self, const char *dirpath, const char *cap_dirpa
 
     const context_t *ctx = almgr_getc_context(self->almgr);
     const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
-    const dict_t *kvmap = alinfo_getc_key_value_map(alinfo);
+    const dict_t *alias_kvmap = alinfo_getc_key_value_map(alinfo);
     int32_t maxkeylen = 0;
     int32_t maxvallen = 0;
-    bool hascontents = has_contents(self, kvmap, &maxkeylen, &maxvallen);
+    bool hascontents = has_contents(self, alias_kvmap, &maxkeylen, &maxvallen);
     const char *disppath = self->opts.is_normalize ? dirpath : cap_dirpath;
     disppath = strlen(disppath) ? disppath : ".";
 
-    if (dict_len(kvmap)) {
-        if (hascontents) {
-            printf("%s\n\n", disppath);
-        }
+    if (dict_len(alias_kvmap) && hascontents) {
+        printf("%s\n\n", disppath);
     }
 
-    for (int32_t i = 0; i < dict_len(kvmap); ++i) {
-        const dict_item_t *item = dict_getc_index(kvmap, i);
+    for (int32_t i = 0; i < dict_len(alias_kvmap); ++i) {
+        const dict_item_t *item = dict_getc_index(alias_kvmap, i);
         if (argsmgr_contains_all(self->argsmgr, item->key)) {
             printf("    %-*s    %-*s\n", maxkeylen, item->key, maxvallen, item->value);
         }

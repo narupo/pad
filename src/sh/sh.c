@@ -287,6 +287,8 @@ shcmd_exec_command(shcmd_t *self, int argc, char **argv) {
         routine(linkcmd);
     } else if (cstr_eq(cmdname, "make")) {
         routine(makecmd);
+    } else if (cstr_eq(cmdname, "find")) {
+        routine(findcmd);
     } else {
         if (shcmd_exec_alias(self, argc, argv) == -1) {
             if (execute_snippet(self->config, cmdname, argc, argv) == -1) {
