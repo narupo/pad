@@ -5458,6 +5458,7 @@ test_cc_asscalc(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         root = ast_getc_root(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -5492,6 +5493,7 @@ test_cc_asscalc(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         root = ast_getc_root(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6067,6 +6069,7 @@ test_cc_compile(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         root = ast_getc_root(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6105,6 +6108,7 @@ test_cc_compile(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         root = ast_getc_root(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6137,6 +6141,7 @@ test_cc_compile(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         root = ast_getc_root(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6185,6 +6190,7 @@ test_cc_compile(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         root = ast_getc_root(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6248,6 +6254,7 @@ test_cc_compile(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         root = ast_getc_root(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6296,6 +6303,7 @@ test_cc_compile(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         root = ast_getc_root(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6358,6 +6366,7 @@ test_cc_compile(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         root = ast_getc_root(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6434,6 +6443,7 @@ test_cc_compile(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         root = ast_getc_root(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9906,6 +9916,7 @@ test_trv_dict(void) {
     tkr_parse(tkr, "{@ a = { 1: 1 } @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "key is not string in dict elem"));
@@ -9914,6 +9925,7 @@ test_trv_dict(void) {
     // tkr_parse(tkr, "{@ a = { \"k\": 1 } \n a[0] @}");
     // {
     //     cc_compile(ast, tkr_get_tokens(tkr));
+    //     ctx_clear(ctx);
     //     (trv_traverse(ast, ctx));
     //     assert(ast_has_error(ast));
     //     assert(!strcmp(ast_get_error_detail(ast), "can not access by int to dict"));
@@ -9922,6 +9934,7 @@ test_trv_dict(void) {
     tkr_parse(tkr, "{@ k = 1 \n a = { k: 1 } @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "invalid key type in variable of dict"));
@@ -9932,6 +9945,7 @@ test_trv_dict(void) {
     tkr_parse(tkr, "{@ a = { \"key\": 1 } @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
     }
@@ -9939,6 +9953,7 @@ test_trv_dict(void) {
     tkr_parse(tkr, "{@ a = { \"key\": 1 } @}{: a[\"key\"] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
@@ -9946,6 +9961,7 @@ test_trv_dict(void) {
     tkr_parse(tkr, "{@ a = { \"key\": \"val\" } @}{: a[\"key\"] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "val"));
     }
@@ -9953,6 +9969,7 @@ test_trv_dict(void) {
     tkr_parse(tkr, "{@ a = { \"key\": [1, 2] } @}{: a[\"key\"] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
     }
@@ -9960,6 +9977,7 @@ test_trv_dict(void) {
     // tkr_parse(tkr, "{@ a = { \"key\": 1 }[\"key\"] @}{: a :}");
     // {
     //     cc_compile(ast, tkr_get_tokens(tkr));
+    //     ctx_clear(ctx);
     //     trv_traverse(ast, ctx);
     //     assert(!strcmp(ctx_getc_buf(ctx), "1"));
     // }
@@ -9967,6 +9985,7 @@ test_trv_dict(void) {
     tkr_parse(tkr, "{@ a = { \"k1\": 1, \"k2\": 2 } @}{: a[\"k1\"] :},{: a[\"k2\"] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
     }
@@ -9974,6 +9993,7 @@ test_trv_dict(void) {
     tkr_parse(tkr, "{@ a = { \"k1\": { \"k2\": 1 } } @}{: a[\"k1\"][\"k2\"] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
@@ -9981,6 +10001,7 @@ test_trv_dict(void) {
     tkr_parse(tkr, "{@ k = \"key\" \n a = { k: 1 } @}{: a[k] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
@@ -10004,6 +10025,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 1 == 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10012,6 +10034,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 1 == \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with int"));
@@ -10020,6 +10043,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = 1 == f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with int"));
@@ -10028,6 +10052,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = \"abc\" == 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with string"));
@@ -10036,6 +10061,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10044,6 +10070,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = \"abc\" == f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with string"));
@@ -10052,6 +10079,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 1 == 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10060,6 +10088,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 1 == 1 == 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10068,6 +10097,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 1 == 1 == 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10076,6 +10106,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 1 != 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10084,6 +10115,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 1 != \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with int"));
@@ -10092,6 +10124,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = \"abc\" != 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with string"));
@@ -10100,6 +10133,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = \"abc\" != \"def\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10108,6 +10142,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = f != 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with func"));
@@ -10116,6 +10151,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = 1 != f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't compare not equal with int"));
@@ -10124,6 +10160,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 0 != 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10132,6 +10169,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 1 != 1 != 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10140,6 +10178,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 1 != 1 != 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10148,6 +10187,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10160,6 +10200,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" == \"def\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't compare equal with bool"));
@@ -10168,6 +10209,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10180,6 +10222,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 1 <= 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10188,6 +10231,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 2 <= 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10196,6 +10240,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = true <= 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10204,6 +10249,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = true <= 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10212,6 +10258,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 0 <= true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10220,6 +10267,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 2 <= true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10232,6 +10280,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 1 >= 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10240,6 +10289,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 2 >= 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10248,6 +10298,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = true >= 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10256,6 +10307,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = true >= 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10264,6 +10316,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 0 >= true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10272,6 +10325,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 2 >= true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10284,6 +10338,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 1 < 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10292,6 +10347,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 2 < 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10300,6 +10356,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = true < 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10308,6 +10365,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = true < 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10316,6 +10374,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 0 < true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10324,6 +10383,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 1 < true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10336,6 +10396,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 1 > 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10344,6 +10405,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 2 > 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10352,6 +10414,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = true > 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10360,6 +10423,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = true > 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10368,6 +10432,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 0 > true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10376,6 +10441,7 @@ test_trv_comparison(void) {
     tkr_parse(tkr, "{@ a = 2 > true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10400,6 +10466,7 @@ test_trv_array_index(void) {
     // tkr_parse(tkr, "{@ a[0] @}");
     // {
     //     (cc_compile(ast, tkr_get_tokens(tkr)));
+    //     ctx_clear(ctx);
     //     (trv_traverse(ast, ctx));
     //     assert(ast_has_error(ast));
     //     assert(!strcmp(ast_get_error_detail(ast), "can't index access. \"a\" is not defined"));
@@ -10408,6 +10475,7 @@ test_trv_array_index(void) {
     tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[0] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -10416,6 +10484,7 @@ test_trv_array_index(void) {
     tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[1] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
@@ -10424,6 +10493,7 @@ test_trv_array_index(void) {
     tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[0] :},{: a[1] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
@@ -10432,6 +10502,7 @@ test_trv_array_index(void) {
     tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[2] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "index out of range of array"));
@@ -10440,6 +10511,7 @@ test_trv_array_index(void) {
     /* tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[-1] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "index out of range of array"));
@@ -10448,6 +10520,7 @@ test_trv_array_index(void) {
     // tkr_parse(tkr, "{@ a = (b, c = 1, 2)[0] \n @}{: a :}");
     // {
     //     cc_compile(ast, tkr_get_tokens(tkr));
+    //     ctx_clear(ctx);
     //     (trv_traverse(ast, ctx));
     //     assert(!ast_has_error(ast));
     //     assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -10456,6 +10529,7 @@ test_trv_array_index(void) {
     // tkr_parse(tkr, "{@ a = (b, c = 1, 2)[1] \n @}{: a :}");
     // {
     //     cc_compile(ast, tkr_get_tokens(tkr));
+    //     ctx_clear(ctx);
     //     (trv_traverse(ast, ctx));
     //     assert(!ast_has_error(ast));
     //     assert(!strcmp(ctx_getc_buf(ctx), "2"));
@@ -10464,6 +10538,7 @@ test_trv_array_index(void) {
     tkr_parse(tkr, "{@ a = [[1, 2]] \n @}{: a[0] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -10472,6 +10547,7 @@ test_trv_array_index(void) {
     tkr_parse(tkr, "{@ a = [[1, 2]] \n @}{: a[0][0] :}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -10496,6 +10572,7 @@ test_trv_text_block_old(void) {
     tkr_parse(tkr, "abc");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
     }
@@ -10519,6 +10596,7 @@ test_trv_ref_block_old(void) {
     tkr_parse(tkr, "{: nil :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
     }
@@ -10526,6 +10604,7 @@ test_trv_ref_block_old(void) {
     tkr_parse(tkr, "{: false :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
     }
@@ -10533,6 +10612,7 @@ test_trv_ref_block_old(void) {
     tkr_parse(tkr, "{: true :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
     }
@@ -10540,6 +10620,7 @@ test_trv_ref_block_old(void) {
     tkr_parse(tkr, "{: 1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
@@ -10547,6 +10628,7 @@ test_trv_ref_block_old(void) {
     tkr_parse(tkr, "{: 123 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "123"));
     }
@@ -10554,6 +10636,7 @@ test_trv_ref_block_old(void) {
     tkr_parse(tkr, "{: \"abc\" :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
     }
@@ -10561,6 +10644,7 @@ test_trv_ref_block_old(void) {
     tkr_parse(tkr, "{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "\"a\" is not defined in ref block"));
@@ -10569,6 +10653,7 @@ test_trv_ref_block_old(void) {
     /* tkr_parse(tkr, "{: alias(\"dtl\", \"run bin/date-line.py\") :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
     } */
@@ -10576,6 +10661,7 @@ test_trv_ref_block_old(void) {
     tkr_parse(tkr, "{: 1 + 1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
     }
@@ -10583,6 +10669,7 @@ test_trv_ref_block_old(void) {
     tkr_parse(tkr, "{: 1 + 1 + 1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "3"));
     } 
@@ -10590,6 +10677,7 @@ test_trv_ref_block_old(void) {
     tkr_parse(tkr, "{: [1, 2] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
     } 
@@ -10613,6 +10701,7 @@ test_trv_assign(void) {
     tkr_parse(tkr, "{@ a = 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -10626,6 +10715,7 @@ test_trv_assign(void) {
         "end @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "4"));
@@ -10650,6 +10740,7 @@ test_trv_atom(void) {
     tkr_parse(tkr, "{@ nil @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
     }
@@ -10657,6 +10748,7 @@ test_trv_atom(void) {
     tkr_parse(tkr, "{@ false @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
     }
@@ -10664,6 +10756,7 @@ test_trv_atom(void) {
     tkr_parse(tkr, "{@ true @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
     }
@@ -10671,6 +10764,7 @@ test_trv_atom(void) {
     tkr_parse(tkr, "{@ 1 @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
     }    
@@ -10678,6 +10772,7 @@ test_trv_atom(void) {
     tkr_parse(tkr, "{@ \"abc\" @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
     }    
@@ -10685,6 +10780,7 @@ test_trv_atom(void) {
     tkr_parse(tkr, "{@ var @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
     }
@@ -10692,6 +10788,7 @@ test_trv_atom(void) {
     tkr_parse(tkr, "{@ alias.set() @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_error(ast));
         showdetail();
@@ -10701,6 +10798,7 @@ test_trv_atom(void) {
     tkr_parse(tkr, "{@ alias.set(1, 2, 3) @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't invoke alias.set. key is not string"));
@@ -10725,6 +10823,7 @@ test_trv_array(void) {
     tkr_parse(tkr, "{@ a = [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -10733,6 +10832,7 @@ test_trv_array(void) {
     tkr_parse(tkr, "{@ a = [1] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -10741,6 +10841,7 @@ test_trv_array(void) {
     tkr_parse(tkr, "{@ a = [1] \n b = a @}{: a :},{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array),(array)"));
@@ -10749,6 +10850,7 @@ test_trv_array(void) {
     tkr_parse(tkr, "{@ a = [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -10757,6 +10859,7 @@ test_trv_array(void) {
     tkr_parse(tkr, "{@ a = [b = 1, c = 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -10765,6 +10868,7 @@ test_trv_array(void) {
     tkr_parse(tkr, "{@ a = [1, b = 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -10789,6 +10893,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -10797,6 +10902,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = \"abc\" @}{: a[0] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "a"));
@@ -10805,6 +10911,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = \"abc\" @}{: a[0] :},{: a[1] :},{: a[2] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "a,b,c"));
@@ -10813,6 +10920,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = [1, 2] @}{: a[0] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -10821,6 +10929,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = [1, 2] @}{: a[0] :},{: a[1] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
@@ -10829,6 +10938,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = {\"a\": 1, \"b\": 2} @}{: a[\"a\"] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -10837,6 +10947,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = {\"a\": 1, \"b\": 2} @}{: a[\"a\"] :},{: a[\"b\"] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
@@ -10845,6 +10956,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = \"abc\" \n b = a[0] or a[1] @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "a"));
@@ -10853,6 +10965,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = \"abc\" \n b = a[0] and a[1] @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "b"));
@@ -10861,6 +10974,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = \"abc\" \n b = not a[0] @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10869,6 +10983,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = [1,2] \n b = a[0] or a[1] @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -10877,6 +10992,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = [1,2] \n b = a[0] and a[1] @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
@@ -10885,6 +11001,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = [1,2] \n b = not a[0] @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10893,6 +11010,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = {\"a\":1, \"b\":2} \n b = a[\"a\"] or a[\"b\"] @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -10901,6 +11019,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = {\"a\":1, \"b\":2} \n b = a[\"a\"] and a[\"b\"] @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
@@ -10909,6 +11028,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = {\"a\":1, \"b\":2} \n b = not a[\"a\"] @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10917,6 +11037,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = \"abc\" \n b = a[0] == \"a\" @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10925,6 +11046,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = \"abc\" \n b = \"a\" == a[0] @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10933,6 +11055,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = \"abc\" \n b = a[0] != \"a\" @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10941,6 +11064,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = \"abc\" \n b = \"a\" != a[0] @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10949,6 +11073,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = [1,2] \n b = a[0] == 1 @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10957,6 +11082,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = [1,2] \n b = 1 == a[0] @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10965,6 +11091,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = [1,2] \n b = a[0] != 1 @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10973,6 +11100,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = [1,2] \n b = 1 != a[0] @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -10981,6 +11109,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = {\"a\":1, \"b\":2} \n b = a[\"a\"] == 1 @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10989,6 +11118,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = {\"a\":1, \"b\":2} \n b = 1 == a[\"a\"] @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -10997,6 +11127,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = {\"a\":1, \"b\":2} \n b = a[\"a\"] != 1 @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -11005,6 +11136,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = {\"a\":1, \"b\":2} \n b = 1 != a[\"a\"] @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -11013,6 +11145,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = \"abc\" \n if a[0] == \"a\": puts(1) end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
@@ -11021,6 +11154,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = [1,2] \n a[0] = 3 @}{: a[0] :},{: a[1] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "3,2"));
@@ -11029,6 +11163,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = [1,2] \n a[0] = 3 \n a[1] = 4 @}{: a[0] :},{: a[1] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "3,4"));
@@ -11037,6 +11172,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = [\"a\",\"b\"] \n a[0] = \"c\" @}{: a[0] :},{: a[1] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "c,b"));
@@ -11045,6 +11181,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = [\"a\",\"b\"] \n a[0] = \"c\" \n a[1] = \"d\" @}{: a[0] :},{: a[1] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "c,d"));
@@ -11053,6 +11190,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = {\"a\":1, \"b\":2 } \n a[\"a\"] = 3 @}{: a[\"a\"] :},{: a[\"b\"] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "3,2"));
@@ -11061,6 +11199,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = {\"a\":1, \"b\":2 } \n a[\"a\"] = 3 \n a[\"b\"] = 4 @}{: a[\"a\"] :},{: a[\"b\"] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "3,4"));
@@ -11069,6 +11208,7 @@ test_trv_index(void) {
     tkr_parse(tkr, "{@ a = [] a.push(1) @}{: a[0] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -11093,6 +11233,7 @@ test_trv_string_index(void) {
     tkr_parse(tkr, "{@ a = \"ab\" \n @}{: a[0] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "a"));
@@ -11101,6 +11242,7 @@ test_trv_string_index(void) {
     tkr_parse(tkr, "{@ a = \"ab\" \n @}{: a[1] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "b"));
@@ -11109,6 +11251,7 @@ test_trv_string_index(void) {
     tkr_parse(tkr, "{@ a = \"ab\" \n @}{: a[2] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "index out of range of string"));
@@ -11117,6 +11260,7 @@ test_trv_string_index(void) {
     tkr_parse(tkr, "{@ a = (\"a\" + \"b\")[0] \n @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "a"));
@@ -11125,6 +11269,7 @@ test_trv_string_index(void) {
     tkr_parse(tkr, "{@ a = (\"a\" + \"b\")[1] \n @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "b"));
@@ -11133,6 +11278,7 @@ test_trv_string_index(void) {
     tkr_parse(tkr, "{@ a = \"ab\"[0][0] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "a"));
@@ -11159,6 +11305,7 @@ test_trv_multi_assign(void) {
     tkr_parse(tkr, "{@ a, b = 1, 2, 3 @}{: a :} {: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't assign array to array. not same length"));
@@ -11167,6 +11314,7 @@ test_trv_multi_assign(void) {
     tkr_parse(tkr, "{@ a, b = 2 @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't assign element to array"));
@@ -11177,6 +11325,7 @@ test_trv_multi_assign(void) {
     tkr_parse(tkr, "{@ a, b = 1, 2 @}{: a :} {: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1 2"));
@@ -11185,6 +11334,7 @@ test_trv_multi_assign(void) {
     tkr_parse(tkr, "{@ a = 1, 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11211,6 +11361,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = nil and nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11219,6 +11370,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = nil and 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11227,6 +11379,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = nil and 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11235,6 +11388,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = nil and true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11243,6 +11397,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = nil and false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11251,6 +11406,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = nil and \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11259,6 +11415,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = nil and \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11267,6 +11424,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = nil and f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11275,6 +11433,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = nil and [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11283,6 +11442,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = nil and [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11293,6 +11453,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 1 and 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -11301,6 +11462,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 1 and 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
@@ -11309,6 +11471,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 1 and 2 and 3 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "3"));
@@ -11317,6 +11480,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 1 and nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11325,6 +11489,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 0 and nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11333,6 +11498,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 0 and true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -11341,6 +11507,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 1 and true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -11349,6 +11516,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 0 and false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -11357,6 +11525,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 1 and false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -11365,6 +11534,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 1 and \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -11373,6 +11543,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 0 and \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -11381,6 +11552,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 0 and \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -11389,6 +11561,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 1 and \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -11397,6 +11570,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 1 and [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11405,6 +11579,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 0 and [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11413,6 +11588,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 0 and [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -11421,6 +11597,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 1 and [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11429,6 +11606,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = 1 and f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -11437,6 +11615,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = 0 and f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -11447,6 +11626,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = true and nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11455,6 +11635,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = false and nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11463,6 +11644,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = true and 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -11471,6 +11653,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = true and 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -11479,6 +11662,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = false and 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -11487,6 +11671,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = false and \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -11495,6 +11680,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = false and \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -11503,6 +11689,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = true and \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -11511,6 +11698,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = true and [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11519,6 +11707,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = false and [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11527,6 +11716,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = false and [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -11535,6 +11725,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = true and [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11543,6 +11734,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = true and [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11553,6 +11745,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"abc\" and nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11561,6 +11754,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"abc\" and false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -11569,6 +11763,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"abc\" and true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -11577,6 +11772,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"abc\" and 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -11585,6 +11781,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"abc\" and 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -11593,6 +11790,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"abc\" and \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -11601,6 +11799,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"abc\" and \"def\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "def"));
@@ -11609,6 +11808,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"abc\" and [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11617,6 +11817,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"abc\" and [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11625,6 +11826,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"abc\" and {} @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -11633,6 +11835,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"abc\" and {\"k\":1} @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -11641,6 +11844,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = \"abc\" and f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -11649,6 +11853,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ b = 1 \n a = \"abc\" and b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -11657,6 +11862,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ b = 0 \n a = \"abc\" and b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -11665,6 +11871,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"\" and nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11673,6 +11880,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"\" and false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -11681,6 +11889,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"\" and true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -11689,6 +11898,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"\" and 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -11697,6 +11907,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"\" and 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -11705,6 +11916,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"\" and \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -11713,6 +11925,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"\" and \"def\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -11721,6 +11934,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"\" and [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11729,6 +11943,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"\" and [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -11737,6 +11952,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"\" and {} @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -11745,6 +11961,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"\" and {\"k\":1} @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -11753,6 +11970,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = \"\" and f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -11761,6 +11979,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ b = 1 \n a = \"\" and b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -11769,6 +11988,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ b = 0 \n a = \"\" and b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -11779,6 +11999,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [1, 2] and nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11787,6 +12008,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [1, 2] and false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -11795,6 +12017,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [1, 2] and true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -11803,6 +12026,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [1, 2] and 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -11811,6 +12035,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [1, 2] and 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -11819,6 +12044,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [1, 2] and \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -11827,6 +12053,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [1, 2] and \"def\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "def"));
@@ -11835,6 +12062,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [1, 2] and [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11843,6 +12071,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [1, 2] and [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11851,6 +12080,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [1, 2] and {} @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -11859,6 +12089,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [1, 2] and {\"k\":1} @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -11867,6 +12098,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = [1, 2] and f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -11875,6 +12107,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ b = 1 \n a = [1, 2] and b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -11883,6 +12116,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ b = 0 \n a = [1, 2] and b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -11891,6 +12125,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [] and nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -11899,6 +12134,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [] and false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -11907,6 +12143,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [] and true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11915,6 +12152,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [] and 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -11923,6 +12161,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [] and 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11931,6 +12170,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [] and [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11939,6 +12179,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [] and \"def\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11947,6 +12188,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [] and [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11955,6 +12197,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [] and [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11963,6 +12206,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [] and {} @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -11971,6 +12215,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = [] and {\"k\":1} @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11979,6 +12224,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = [] and f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11987,6 +12233,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ b = 1 \n a = [] and b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -11995,6 +12242,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ b = 0 \n a = [] and b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -12005,6 +12253,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {\"k\": 1} and nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -12013,6 +12262,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {\"k\": 1} and false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -12021,6 +12271,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {\"k\": 1} and true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -12029,6 +12280,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {\"k\": 1} and 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -12037,6 +12289,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {\"k\": 1} and 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -12045,6 +12298,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {\"k\": 1} and \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -12053,6 +12307,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {\"k\": 1} and \"def\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "def"));
@@ -12061,6 +12316,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {\"k\": 1} and [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -12069,6 +12325,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {\"k\": 1} and [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -12077,6 +12334,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {\"k\": 1} and {} @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -12085,6 +12343,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {\"k\": 1} and {\"k\":1} @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -12093,6 +12352,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = {\"k\": 1} and f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -12101,6 +12361,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ b = 1 \n a = {\"k\": 1} and b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -12109,6 +12370,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ b = 0 \n a = {\"k\": 1} and b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -12117,6 +12379,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {} and nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -12125,6 +12388,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {} and false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -12133,6 +12397,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {} and true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -12141,6 +12406,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {} and 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -12149,6 +12415,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {} and 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -12157,6 +12424,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {} and [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -12165,6 +12433,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {} and \"def\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -12173,6 +12442,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {} and [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -12181,6 +12451,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {} and [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -12189,6 +12460,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {} and {} @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -12197,6 +12469,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = {} and {\"k\":1} @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -12205,6 +12478,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = {} and f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -12213,6 +12487,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ b = 1 \n a = {} and b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(dict)"));
@@ -12221,6 +12496,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ b = 0 \n a = {} and b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -12231,6 +12507,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = \"abc\" and 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -12239,6 +12516,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ a = 1 and \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -12247,6 +12525,7 @@ test_trv_and_test(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = 1 and f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -12273,6 +12552,7 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a = nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -12281,6 +12561,7 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a = false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -12289,6 +12570,7 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a = true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -12297,6 +12579,7 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a = \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -12305,6 +12588,7 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a = \"abc\"\n b = a @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -12313,6 +12597,7 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a = 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -12321,6 +12606,7 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a = 1, b = 2 @}{: a :},{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
@@ -12329,6 +12615,7 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a = 1 + 2, b = 3 * 4 @}{: a :},{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "3,12"));
@@ -12337,6 +12624,7 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a = 1, b = 2, c = 3 @}{: a :},{: b :},{: c :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1,2,3"));
@@ -12345,6 +12633,7 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a = 0 \n b = a = 1 @}{: a :},{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1,1"));
@@ -12353,6 +12642,7 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a = 0 \n b = a = 1, c = b = 1 @}{: a :},{: b :},{: c :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1,1,1"));
@@ -12361,6 +12651,7 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a = \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -12369,6 +12660,7 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a, b = 1, 2 @}{: a :},{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
@@ -12377,6 +12669,7 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a = alias.set(\"\", \"\") @}{: a :}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -12385,6 +12678,7 @@ test_trv_assign_list(void) {
     tkr_parse(tkr, "{@ a = alias.set(\"\", \"\")\n b = alias.set(\"\", \"\") @}{: a :},{: b :}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil,nil"));
@@ -12402,6 +12696,7 @@ test_trv_assign_list(void) {
         assert(opts_parse(opts, 3, argv));
         ast_move_opts(ast, opts);
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         ast_move_opts(ast, NULL);
         assert(!ast_has_error(ast));
@@ -12427,6 +12722,7 @@ test_trv_test_list(void) {
     tkr_parse(tkr, "{@ 1, 2 @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
     }
@@ -12434,6 +12730,7 @@ test_trv_test_list(void) {
     tkr_parse(tkr, "{@ 1, \"abc\", var, alias.set(\"\", \"\") @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
     } 
@@ -12441,6 +12738,7 @@ test_trv_test_list(void) {
     tkr_parse(tkr, "{@ a = 0 \n b = 0 \n a += 1, b += 2 @}{: a :} {: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1 2"));
@@ -12465,6 +12763,7 @@ test_trv_negative_0(void) {
     tkr_parse(tkr, "{: 1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -12473,6 +12772,7 @@ test_trv_negative_0(void) {
     tkr_parse(tkr, "{: -1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "-1"));
@@ -12481,6 +12781,7 @@ test_trv_negative_0(void) {
     tkr_parse(tkr, "{: 1 + -1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -12489,6 +12790,7 @@ test_trv_negative_0(void) {
     tkr_parse(tkr, "{: -1 + -1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "-2"));
@@ -12497,6 +12799,7 @@ test_trv_negative_0(void) {
     tkr_parse(tkr, "{: 1 - -1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
@@ -12505,6 +12808,7 @@ test_trv_negative_0(void) {
     tkr_parse(tkr, "{: -1 - -1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -12513,6 +12817,7 @@ test_trv_negative_0(void) {
     tkr_parse(tkr, "{: 1-1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -12537,6 +12842,7 @@ test_trv_dot(void) {
     tkr_parse(tkr, "{: \"ABC\".lower() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -12545,6 +12851,7 @@ test_trv_dot(void) {
     tkr_parse(tkr, "{: \"abc\".upper() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "ABC"));
@@ -12553,6 +12860,7 @@ test_trv_dot(void) {
     tkr_parse(tkr, "{: \"ABC\".lower().upper() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "ABC"));
@@ -12561,6 +12869,7 @@ test_trv_dot(void) {
     tkr_parse(tkr, "{: alias.set(\"a\", \"b\") :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_get_alias_value(ctx, "a"), "b"));
@@ -12586,6 +12895,7 @@ test_trv_call(void) {
     tkr_parse(tkr, "{@ def f(): return 1 end @}{: f() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -12594,6 +12904,7 @@ test_trv_call(void) {
     tkr_parse(tkr, "{@ puts(1) @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
@@ -12602,6 +12913,7 @@ test_trv_call(void) {
     tkr_parse(tkr, "{@ def f(): return 1 end \n funcs = { \"a\": f } @}{: funcs[\"a\"]() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -12610,6 +12922,7 @@ test_trv_call(void) {
     tkr_parse(tkr, "{@ def a(n): return n*2 end \n def b(): return a end @}{: b()(2) :}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "4"));
@@ -12634,6 +12947,7 @@ test_trv_func_def(void) {
     tkr_parse(tkr, "{@ def f(): end @}{: f() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -12642,6 +12956,7 @@ test_trv_func_def(void) {
     tkr_parse(tkr, "{@ def f(a): return a end @}{: f(1) :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -12650,6 +12965,7 @@ test_trv_func_def(void) {
     tkr_parse(tkr, "{@ def f(a, b): return a + b end @}{: f(1, 2) :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "3"));
@@ -12658,6 +12974,7 @@ test_trv_func_def(void) {
     tkr_parse(tkr, "{@ def f(): return true end @}{: f() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -12666,6 +12983,7 @@ test_trv_func_def(void) {
     tkr_parse(tkr, "{@ def f(): return 0 end @}{: f() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -12674,6 +12992,7 @@ test_trv_func_def(void) {
     tkr_parse(tkr, "{@ def f(): return 1 + 2 end @}{: f() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "3"));
@@ -12682,6 +13001,7 @@ test_trv_func_def(void) {
     tkr_parse(tkr, "{@ def f(): @}abc{@ end @}{: f() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abcnil"));
@@ -12690,6 +13010,7 @@ test_trv_func_def(void) {
     tkr_parse(tkr, "{@ def f(): @}abc{@ a = 1 @}def{@ end @}{: f() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abcdefnil"));
@@ -12698,6 +13019,7 @@ test_trv_func_def(void) {
     tkr_parse(tkr, "{@ def f(): @}abc{@ a = 1 @}{: a :}{@ end @}{: f() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc1nil"));
@@ -12706,6 +13028,7 @@ test_trv_func_def(void) {
     tkr_parse(tkr, "{@ def f(a): @}{: a :}{@ b = 123 @}{: b :}{@ end @}{: f(\"abc\") :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc123nil"));
@@ -12720,6 +13043,7 @@ test_trv_func_def(void) {
     );
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abcnil"));
@@ -12738,6 +13062,7 @@ test_trv_func_def(void) {
     );
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "hi\n"));
@@ -12759,6 +13084,7 @@ test_trv_func_def(void) {
     );
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "hi\n"));
@@ -12787,6 +13113,7 @@ test_trv_builtin_string(void) {
     tkr_parse(tkr, "{: \"abc\".upper() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "ABC"));
@@ -12795,6 +13122,7 @@ test_trv_builtin_string(void) {
     tkr_parse(tkr, "{@ a = \"abc\" \n @}{: a.upper() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "ABC"));
@@ -12803,6 +13131,7 @@ test_trv_builtin_string(void) {
     tkr_parse(tkr, "{: nil.upper() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't call \"upper\""));
@@ -12815,6 +13144,7 @@ test_trv_builtin_string(void) {
     tkr_parse(tkr, "{: \"ABC\".lower() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -12823,6 +13153,7 @@ test_trv_builtin_string(void) {
     tkr_parse(tkr, "{@ a = \"ABC\" \n @}{: a.lower() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -12831,6 +13162,7 @@ test_trv_builtin_string(void) {
     tkr_parse(tkr, "{: nil.lower() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't call \"lower\""));
@@ -12843,6 +13175,7 @@ test_trv_builtin_string(void) {
     tkr_parse(tkr, "{: \"abc\".capitalize() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "Abc"));
@@ -12851,6 +13184,7 @@ test_trv_builtin_string(void) {
     tkr_parse(tkr, "{@ a = \"abc\" \n @}{: a.capitalize() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "Abc"));
@@ -12859,6 +13193,7 @@ test_trv_builtin_string(void) {
     tkr_parse(tkr, "{: nil.capitalize() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't call \"capitalize\""));
@@ -12871,6 +13206,7 @@ test_trv_builtin_string(void) {
     tkr_parse(tkr, "{: \"abcDef\".snake() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc_def"));
@@ -12879,6 +13215,7 @@ test_trv_builtin_string(void) {
     tkr_parse(tkr, "{@ a = \"abcDef\" \n @}{: a.snake() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc_def"));
@@ -12887,6 +13224,7 @@ test_trv_builtin_string(void) {
     tkr_parse(tkr, "{: nil.snake() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "can't call \"snake\""));
@@ -12915,6 +13253,7 @@ test_trv_builtin_functions(void) {
     tkr_parse(tkr, "{@ alias.set(\"abc\", \"def\") @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
@@ -12926,6 +13265,7 @@ test_trv_builtin_functions(void) {
     tkr_parse(tkr, "{@ alias.set(\"abc\", \"def\", \"ghi\") @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
@@ -12953,6 +13293,7 @@ test_trv_builtin_functions(void) {
         opts_parse(opts, 3, argv);
         ast_move_opts(ast, opts);
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "def"));
@@ -12969,6 +13310,7 @@ test_trv_builtin_functions(void) {
         opts_parse(opts, 2, argv);
         ast_move_opts(ast, opts);
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -12985,6 +13327,7 @@ test_trv_builtin_functions(void) {
         opts_parse(opts, 2, argv);
         ast_move_opts(ast, opts);
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -12997,6 +13340,7 @@ test_trv_builtin_functions(void) {
     tkr_parse(tkr, "{@ puts() @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "\n"));
@@ -13005,6 +13349,7 @@ test_trv_builtin_functions(void) {
     tkr_parse(tkr, "{@ puts(1) @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
@@ -13013,6 +13358,7 @@ test_trv_builtin_functions(void) {
     tkr_parse(tkr, "{@ puts(1, 2) @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1 2\n"));
@@ -13021,6 +13367,7 @@ test_trv_builtin_functions(void) {
     tkr_parse(tkr, "{@ puts(1, \"abc\") @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1 abc\n"));
@@ -13029,6 +13376,7 @@ test_trv_builtin_functions(void) {
     tkr_parse(tkr, "{@ puts(\"abc\") @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc\n"));
@@ -13053,6 +13401,7 @@ test_trv_builtin_functions_len_0(void) {
     tkr_parse(tkr, "{: len([1, 2]) :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
@@ -13061,6 +13410,7 @@ test_trv_builtin_functions_len_0(void) {
     tkr_parse(tkr, "{: len([]) :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -13069,6 +13419,7 @@ test_trv_builtin_functions_len_0(void) {
     tkr_parse(tkr, "{: len(\"12\") :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
@@ -13077,6 +13428,7 @@ test_trv_builtin_functions_len_0(void) {
     tkr_parse(tkr, "{: len(\"\") :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -13107,6 +13459,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 or nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -13115,6 +13468,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 or 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -13123,6 +13477,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 or false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -13131,6 +13486,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 or true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13139,6 +13495,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 or \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13147,6 +13504,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 or \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -13155,6 +13513,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ b = 1 \n a = 0 or b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -13163,6 +13522,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = 0 or f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13171,6 +13531,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): return true end \n a = 0 or f() @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13179,6 +13540,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 or [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13187,6 +13549,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 or [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13195,6 +13558,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 1 or [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -13203,6 +13567,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 1 or [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -13213,6 +13578,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = false or false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -13221,6 +13587,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = true or false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13229,6 +13596,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = false or true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13237,6 +13605,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = false or 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -13245,6 +13614,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = true or 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13253,6 +13623,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = true or \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13261,6 +13632,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = false or \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13269,6 +13641,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = false or \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -13277,6 +13650,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = false or f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13285,6 +13659,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = true or f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13293,6 +13668,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): return true end \n a = false or f() @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13301,6 +13677,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): return 0 end \n a = false or f() @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -13309,6 +13686,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = false or [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13317,6 +13695,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = false or [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13325,6 +13704,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = true or [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13333,6 +13713,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = true or [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13343,6 +13724,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = nil or 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -13351,6 +13733,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = nil or 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -13359,6 +13742,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = nil or false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -13367,6 +13751,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = nil or true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13375,6 +13760,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = nil or \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13383,6 +13769,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = nil or \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -13391,6 +13778,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ b = 1 \n a = nil or b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -13399,6 +13787,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = nil or f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13407,6 +13796,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): return true end \n a = nil or f() @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13415,6 +13805,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = nil or [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13423,6 +13814,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = nil or [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13433,6 +13825,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"abc\" or nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13441,6 +13834,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"\" or nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -13449,6 +13843,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"abc\" or true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13457,6 +13852,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"abc\" or false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13465,6 +13861,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"\" or true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13473,6 +13870,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"\" or false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -13481,6 +13879,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"\" or 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -13489,6 +13888,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"\" or 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -13497,6 +13897,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"abc\" or 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13505,6 +13906,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"abc\" or 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13513,6 +13915,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"\" or \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -13521,6 +13924,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"\" or \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13529,6 +13933,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"def\" or \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "def"));
@@ -13537,6 +13942,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ b = 1 \n a = \"abc\" or b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13545,6 +13951,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ b = 0 \n a = \"abc\" or b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13553,6 +13960,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = \"abc\" or f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13561,6 +13969,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = \"\" or f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13569,6 +13978,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): return true end \n a = \"\" or f() @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13577,6 +13987,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): return nil end \n a = \"\" or f() @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -13585,6 +13996,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): return nil end \n a = \"abc\" or f() @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13593,6 +14005,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"abc\" or [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13601,6 +14014,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"abc\" or [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13609,6 +14023,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"\" or [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13617,6 +14032,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"\" or [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13627,6 +14043,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [1, 2] or nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13635,6 +14052,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [] or nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -13643,6 +14061,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [1, 2] or 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13651,6 +14070,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [] or 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -13659,6 +14079,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [1, 2] or 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13667,6 +14088,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [] or 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -13675,6 +14097,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [1, 2] or true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13683,6 +14106,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [] or true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13691,6 +14115,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [1, 2] or false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13699,6 +14124,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [] or false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -13707,6 +14133,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [1, 2] or \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13715,6 +14142,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [] or \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -13723,6 +14151,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [1, 2] or \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13731,6 +14160,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [] or \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13739,6 +14169,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [1, 2] or [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13747,6 +14178,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = [] or [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13755,6 +14187,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ b = 1 \n a = [] or b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -13763,6 +14196,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ b = 0 \n a = [] or b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -13771,6 +14205,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ b = 1 \n a = [1, 2] or b @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13779,6 +14214,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = [] or f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13787,6 +14223,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = [1, 2] or f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -13795,6 +14232,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): return 1 end \n a = [] or f() @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -13803,6 +14241,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): return 0 end \n a = [] or f() @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -13813,6 +14252,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = f or nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13821,6 +14261,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = f or 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13829,6 +14270,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = f or 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13837,6 +14279,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = f or true @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13845,6 +14288,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = f or false @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13853,6 +14297,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = f or \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13861,6 +14306,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = f or \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13869,6 +14315,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = f or f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13877,6 +14324,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = f or [] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13885,6 +14333,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = f or [1, 2] @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13895,6 +14344,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 or \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13904,6 +14354,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 1 \n b = 0 or a @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -13913,6 +14364,7 @@ test_trv_traverse(void) {
         "a = 0 or f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(function)"));
@@ -13921,6 +14373,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 1 or 0 or 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -13929,6 +14382,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 or \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -13937,6 +14391,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = not nil @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13945,6 +14400,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = not 0 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13953,6 +14409,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = not 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -13961,6 +14418,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = not \"\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -13969,6 +14427,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = not \"abc\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -13977,6 +14436,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = not f @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -13989,6 +14449,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 1 + 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "3"));
     }
@@ -13996,6 +14457,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 1 + 2 + 3 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "6"));
     }
@@ -14003,6 +14465,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 2 - 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
@@ -14010,6 +14473,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 3 - 2 - 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
     }
@@ -14017,6 +14481,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 1 + 2 - 3 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
     }
@@ -14024,6 +14489,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"abc\" + \"def\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "abcdef"));
     }
@@ -14031,6 +14497,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = \"123\" \n b = \"abc\" + a + \"def\" @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "abc123def"));
     }
@@ -14042,6 +14509,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 2 * 3 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "6"));
     }
@@ -14049,6 +14517,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 2 * 3 * 4 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "24"));
     } 
@@ -14056,6 +14525,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 4 / 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
     }
@@ -14063,6 +14533,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 4 / 2 / 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     } 
@@ -14070,6 +14541,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 4 / (2 / 2) @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "4"));
     } 
@@ -14077,6 +14549,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 1 + ( 2 - 3 ) * 4 / 4 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
     }
@@ -14089,6 +14562,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     } */
@@ -14096,6 +14570,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a += 1 @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "\"a\" is not defined in add ass identifier"));
@@ -14104,6 +14579,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 \n a += 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
@@ -14111,6 +14587,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 \n a += 1 + 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
     } 
@@ -14118,6 +14595,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 \n b = 1 + 1 @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
     }
@@ -14125,6 +14603,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 \n b = 1 + (a += 1) @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
     }
@@ -14132,6 +14611,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 \n a += 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
@@ -14139,6 +14619,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 \n a += 1 \n a += 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "3"));
     }
@@ -14147,6 +14628,7 @@ test_trv_traverse(void) {
         "a += \"b\" @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "ab"));
@@ -14161,6 +14643,7 @@ test_trv_traverse(void) {
         "@}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "xy"));
@@ -14176,6 +14659,7 @@ test_trv_traverse(void) {
         "@}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -14185,6 +14669,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ a = 0 \n a -= 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "-1"));
     }*/
@@ -14196,6 +14681,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ my.func() @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "\"my.func\" is not callable"));
@@ -14209,12 +14695,14 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ import alias @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
     }
 
     tkr_parse(tkr, "{@ import my.alias @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
     }
 
@@ -14225,6 +14713,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ if 1: a = 1 end @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     } 
@@ -14232,6 +14721,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ if 0: elif 1: a = 1 end @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     } 
@@ -14239,6 +14729,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ if 0: elif 0: else: a = 1 end @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     } 
@@ -14246,6 +14737,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ if 1: @}{@ end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), ""));
     }
@@ -14253,6 +14745,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ if 1: @}abc{@ end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
     }
@@ -14260,6 +14753,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "abc{@ if 1: @}def{@ end @}ghi");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "abcdefghi"));
     }
@@ -14267,6 +14761,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ if 1: @}{@ if 1: @}abc{@ end @}{@ end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
     }
@@ -14274,6 +14769,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ if 1: @}abc{@ if 1: @}def{@ end @}ghi{@ end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "abcdefghi"));
     }
@@ -14281,6 +14777,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ if 0: @}abc{@ else: @}def{@ end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "def"));
     }
@@ -14288,6 +14785,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ if 0: @}abc{@ elif 1: @}def{@ end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "def"));
     }
@@ -14295,6 +14793,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ if 0: @}abc{@ elif 0: @}def{@ else: @}ghi{@ end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!strcmp(ctx_getc_buf(ctx), "ghi"));
     }
@@ -14311,6 +14810,7 @@ test_trv_traverse(void) {
         "@}\n");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_error(ast));
         assert(!strcmp(ast_get_error_detail(ast), "\"a\" is not defined in roll identifier lhs"));
@@ -14322,6 +14822,7 @@ test_trv_traverse(void) {
         "end @}{: a :}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "4"));
@@ -14333,6 +14834,7 @@ test_trv_traverse(void) {
         "end @}{: a :} {: i :} {: j :}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "4 4 4"));
@@ -14341,6 +14843,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ for i = 0; i != 4; i += 1: @}a{@ end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "aaaa"));
@@ -14349,6 +14852,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ for i, j = 0, 0; i != 4; i += 1, j += 2: end @}{: i :},{: j :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "4,8"));
@@ -14357,6 +14861,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ i, a = 0, 0 \n for i != 4: a += i \n i += 1 end @}{: i :},{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "4,6"));
@@ -14368,6 +14873,7 @@ test_trv_traverse(void) {
         "{@ end @}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "hige\nhige\nhige\nhige\n"));
@@ -14379,6 +14885,7 @@ test_trv_traverse(void) {
         "{@ end @}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "hige\nhige\nhige\nhige\n"));
@@ -14390,6 +14897,7 @@ test_trv_traverse(void) {
         "{@ end @}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "hige\nhige\nhige\nhige\n"));
@@ -14405,6 +14913,7 @@ test_trv_traverse(void) {
         "end @}{: i :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -14418,6 +14927,7 @@ test_trv_traverse(void) {
         "end @}{: i :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
@@ -14430,6 +14940,7 @@ test_trv_traverse(void) {
         "end @}{: i :},{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "4,0"));
@@ -14444,6 +14955,7 @@ test_trv_traverse(void) {
         "end @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "3"));
@@ -14460,6 +14972,7 @@ test_trv_traverse(void) {
         "end @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
@@ -14475,6 +14988,7 @@ test_trv_traverse(void) {
         "end @}{: a :},{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "4,3"));
@@ -14488,6 +15002,7 @@ test_trv_traverse(void) {
         "@}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil\n"));
@@ -14501,6 +15016,7 @@ test_trv_traverse(void) {
         "@}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -14514,6 +15030,7 @@ test_trv_traverse(void) {
         "@}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
@@ -14527,6 +15044,7 @@ test_trv_traverse(void) {
         "@}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         showbuf();
@@ -14543,6 +15061,7 @@ test_trv_traverse(void) {
         "@}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "a\n1\n"));
@@ -14557,6 +15076,7 @@ test_trv_traverse(void) {
         "@}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -14574,6 +15094,7 @@ test_trv_traverse(void) {
         "@}{: x :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -14591,6 +15112,7 @@ test_trv_traverse(void) {
         "@}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
@@ -14604,6 +15126,7 @@ test_trv_traverse(void) {
         "@}{: a :},{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
@@ -14617,6 +15140,7 @@ test_trv_traverse(void) {
         "@}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "(array)"));
@@ -14630,6 +15154,7 @@ test_trv_traverse(void) {
         "@}{: a :},{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1,1"));
@@ -14642,6 +15167,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{@ def func(): end @}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         object_dict_t *varmap = ctx_get_varmap(ctx);
@@ -14655,6 +15181,7 @@ test_trv_traverse(void) {
         "@}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         object_dict_t *varmap = ctx_get_varmap(ctx);
@@ -14668,6 +15195,7 @@ test_trv_traverse(void) {
         "@}{: a :}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
@@ -14683,6 +15211,7 @@ test_trv_traverse(void) {
         "@}{: a :}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
@@ -14698,6 +15227,7 @@ test_trv_traverse(void) {
         "@}{: a :},{: b :}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
@@ -14713,6 +15243,7 @@ test_trv_traverse(void) {
         "@}{: c :}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
@@ -14729,6 +15260,7 @@ test_trv_traverse(void) {
         "@}{: c :}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
@@ -14746,6 +15278,7 @@ test_trv_traverse(void) {
         "@}{: c :}");
     {
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
@@ -14759,6 +15292,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{: \"abc\ndef\n\" :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc\ndef\n"));
@@ -14767,6 +15301,7 @@ test_trv_traverse(void) {
     tkr_parse(tkr, "{: \"\tabc\tdef\" :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "\tabc\tdef"));
@@ -14792,6 +15327,7 @@ test_trv_code_block(void) {
     tkr_parse(tkr, "{@@}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -14816,6 +15352,7 @@ test_trv_ref_block(void) {
     tkr_parse(tkr, "{: 1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -14840,6 +15377,7 @@ test_trv_text_block(void) {
     tkr_parse(tkr, "1");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -14864,6 +15402,7 @@ test_trv_import_stmt(void) {
     tkr_parse(tkr, "{@ import alias @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -14888,6 +15427,7 @@ test_trv_if_stmt_0(void) {
     tkr_parse(tkr, "{@ if 1: puts(1) end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         // assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
@@ -14912,6 +15452,7 @@ test_trv_if_stmt_1(void) {
     tkr_parse(tkr, "{@ if 1: @}1{@ end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -14936,6 +15477,7 @@ test_trv_if_stmt_2(void) {
     tkr_parse(tkr, "{@ if 1: if 1: puts(1) end end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
@@ -14960,6 +15502,7 @@ test_trv_if_stmt_3(void) {
     tkr_parse(tkr, "{@ if 1: @}{@ if 1: @}1{@ end @}{@ end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -14984,6 +15527,7 @@ test_trv_elif_stmt_0(void) {
     tkr_parse(tkr, "{@ if 0: elif 1: puts(1) end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
@@ -15008,6 +15552,7 @@ test_trv_elif_stmt_1(void) {
     tkr_parse(tkr, "{@ if 0: @}{@ elif 1: @}1{@ end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -15032,6 +15577,7 @@ test_trv_elif_stmt_2(void) {
     tkr_parse(tkr, "{@ if 0: elif 1: if 1: puts(1) end end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
@@ -15056,6 +15602,7 @@ test_trv_elif_stmt_3(void) {
     tkr_parse(tkr, "{@ if 0: @}{@ elif 1: @}{@ if 1: @}1{@ end @}{@ end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -15080,6 +15627,7 @@ test_trv_else_stmt_0(void) {
     tkr_parse(tkr, "{@ if 0: else: puts(1) end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
@@ -15104,6 +15652,7 @@ test_trv_else_stmt_1(void) {
     tkr_parse(tkr, "{@ if 0: @}{@ else: @}1{@ end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -15128,6 +15677,7 @@ test_trv_else_stmt_2(void) {
     tkr_parse(tkr, "{@ if 0: else: if 1: puts(1) end end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1\n"));
@@ -15152,6 +15702,7 @@ test_trv_else_stmt_3(void) {
     tkr_parse(tkr, "{@ if 0: @}{@ else: @}{@ if 1: @}1{@ end @}{@ end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -15176,8 +15727,8 @@ test_trv_for_stmt_0(void) {
     tkr_parse(tkr, "{@ for i=0; i<2; i +=1: puts(i) end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        showdetail();
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0\n1\n"));
     } 
@@ -15185,8 +15736,8 @@ test_trv_for_stmt_0(void) {
     tkr_parse(tkr, "{@ size=0 for i=size; i<2; i += 1: puts(i) end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        showdetail();
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0\n1\n"));
     } 
@@ -15210,6 +15761,7 @@ test_trv_for_stmt_1(void) {
     tkr_parse(tkr, "{@ i=0 for i<2: puts(i)\ni+=1 end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0\n1\n"));
@@ -15234,6 +15786,7 @@ test_trv_for_stmt_2(void) {
     tkr_parse(tkr, "{@ for i, j = 0, 0; i != 4; i += 1, j += 2: end @}{: i :},{: j :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "4,8"));
@@ -15258,6 +15811,7 @@ test_trv_break_stmt(void) {
     tkr_parse(tkr, "{@ for: break end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -15282,6 +15836,7 @@ test_trv_continue_stmt(void) {
     tkr_parse(tkr, "{@ j=0 for i=0; i<2; i+=1: continue\n j=i end @}{: j :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -15306,6 +15861,7 @@ test_trv_return_stmt(void) {
     tkr_parse(tkr, "{@ def f(): return 1 end @}{: f() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -15330,6 +15886,7 @@ test_trv_func_def_0(void) {
     tkr_parse(tkr, "{@ def f(): end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -15354,6 +15911,7 @@ test_trv_func_def_1(void) {
     tkr_parse(tkr, "{@ def f(a, b): puts(a, b) end f(1, 2) @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1 2\n"));
@@ -15406,6 +15964,7 @@ test_trv_func_def_3(void) {
     tkr_parse(tkr, "{@ def f(): end \n a = not f @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
     }
@@ -15429,6 +15988,7 @@ test_trv_assign_list_0(void) {
     tkr_parse(tkr, "{@ a = 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -15453,6 +16013,7 @@ test_trv_assign_list_1(void) {
     tkr_parse(tkr, "{@ a = 1, b = 2 @}{: a :},{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
@@ -15477,6 +16038,7 @@ test_trv_assign_list_2(void) {
     tkr_parse(tkr, "{@ a = b = 1 @}{: a :},{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1,1"));
@@ -15501,6 +16063,7 @@ test_trv_assign_list_3(void) {
     tkr_parse(tkr, "{@ a = b = 1, c = 2 @}{: a :},{: b :},{: c :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1,1,2"));
@@ -15525,6 +16088,7 @@ test_trv_multi_assign_0(void) {
     tkr_parse(tkr, "{@ a, b = 1, 2 @}{: a :},{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1,2"));
@@ -15549,6 +16113,7 @@ test_trv_or_test_0(void) {
     tkr_parse(tkr, "{: 1 or 0 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -15573,6 +16138,7 @@ test_trv_and_test_0(void) {
     tkr_parse(tkr, "{: 1 and 1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -15597,6 +16163,7 @@ test_trv_not_test_0(void) {
     tkr_parse(tkr, "{: not 0 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -15621,6 +16188,7 @@ test_trv_comparison_0(void) {
     tkr_parse(tkr, "{: 1 == 1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -15645,6 +16213,7 @@ test_trv_comparison_1(void) {
     tkr_parse(tkr, "{: 1 != 1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -15669,6 +16238,7 @@ test_trv_comparison_2(void) {
     tkr_parse(tkr, "{: 1 < 2 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -15693,6 +16263,7 @@ test_trv_comparison_3(void) {
     tkr_parse(tkr, "{: 2 > 1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -15717,6 +16288,7 @@ test_trv_comparison_4(void) {
     tkr_parse(tkr, "{: 1 <= 2 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -15741,6 +16313,7 @@ test_trv_comparison_5(void) {
     tkr_parse(tkr, "{: 2 >= 1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -15765,6 +16338,7 @@ test_trv_asscalc_0(void) {
     tkr_parse(tkr, "{@ a = 0 \n a += 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -15789,6 +16363,7 @@ test_trv_asscalc_1(void) {
     tkr_parse(tkr, "{@ a = 0 \n a -= 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "-1"));
@@ -15813,6 +16388,7 @@ test_trv_asscalc_2(void) {
     tkr_parse(tkr, "{@ a = 2 \n a *= 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "4"));
@@ -15837,6 +16413,7 @@ test_trv_asscalc_3(void) {
     tkr_parse(tkr, "{@ a = 4 \n a /= 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
@@ -15861,6 +16438,7 @@ test_trv_expr_0(void) {
     tkr_parse(tkr, "{: 1 + 1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
@@ -15869,6 +16447,7 @@ test_trv_expr_0(void) {
     tkr_parse(tkr, "{@ a = 1 b = a @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -15893,6 +16472,7 @@ test_trv_expr_1(void) {
     tkr_parse(tkr, "{: 1 - 1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -15917,6 +16497,7 @@ test_trv_expr_2(void) {
     tkr_parse(tkr, "{@ a = 1 \n b = a - 1 @}{: b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -15941,6 +16522,7 @@ test_trv_term_0(void) {
     tkr_parse(tkr, "{: 2 * 2 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "4"));
@@ -15965,6 +16547,7 @@ test_trv_term_1(void) {
     tkr_parse(tkr, "{: 4 / 2 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
@@ -15990,6 +16573,7 @@ test_trv_dot_0(void) {
     tkr_parse(tkr, "{: a.b :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
@@ -16014,6 +16598,7 @@ test_trv_call_0(void) {
     tkr_parse(tkr, "{@ def f(): end f() @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -16038,6 +16623,7 @@ test_trv_index_0(void) {
     tkr_parse(tkr, "{@ a = [0, 1] @}{: a[0] :},{: a[1] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0,1"));
@@ -16062,6 +16648,7 @@ test_trv_index_1(void) {
     tkr_parse(tkr, "{@ a = [0, 1] @}{: a[0] :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "0"));
@@ -16086,6 +16673,7 @@ test_trv_array_0(void) {
     tkr_parse(tkr, "{@ a = [0, 1] @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -16110,6 +16698,7 @@ test_trv_nil(void) {
     tkr_parse(tkr, "{: nil :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -16134,6 +16723,7 @@ test_trv_false(void) {
     tkr_parse(tkr, "{: false :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "false"));
@@ -16158,6 +16748,7 @@ test_trv_true(void) {
     tkr_parse(tkr, "{: true :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "true"));
@@ -16182,6 +16773,7 @@ test_trv_digit(void) {
     tkr_parse(tkr, "{: 1 :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -16206,6 +16798,7 @@ test_trv_string(void) {
     tkr_parse(tkr, "{: \"abc\" :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
@@ -16230,6 +16823,7 @@ test_trv_dict_0(void) {
     tkr_parse(tkr, "{@ d = {\"a\":1, \"b\":2} @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), ""));
@@ -16254,6 +16848,7 @@ test_trv_identifier(void) {
     tkr_parse(tkr, "{@ i = 1 @}{: i :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -16278,6 +16873,7 @@ test_trv_builtin_alias_0(void) {
     tkr_parse(tkr, "{@ alias.set() @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
     } 
 
@@ -16300,6 +16896,7 @@ test_trv_builtin_array_0(void) {
     tkr_parse(tkr, "{@ arr = [1, 2] \n arr.push(3) @}{: len(arr) :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "3"));
@@ -16308,6 +16905,7 @@ test_trv_builtin_array_0(void) {
     tkr_parse(tkr, "{: len([1, 2].push(3)) :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "3"));
@@ -16316,6 +16914,7 @@ test_trv_builtin_array_0(void) {
     tkr_parse(tkr, "{@ a = [1, 2] @}{: a.pop() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
@@ -16324,6 +16923,7 @@ test_trv_builtin_array_0(void) {
     tkr_parse(tkr, "{@ a = [] @}{: a.pop() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "nil"));
@@ -16332,6 +16932,7 @@ test_trv_builtin_array_0(void) {
     tkr_parse(tkr, "{: [1, 2].pop() :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "2"));
