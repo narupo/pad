@@ -52,6 +52,11 @@ kit_has_error(const kit_t *self) {
     return self->error[0] != '\0';
 }
 
+const char *
+kit_getc_error(const kit_t *self) {
+    return self->error;
+}
+
 bool
 kit_compile_from_string(kit_t *self, const char *str) {
     self->error[0] = '\0';

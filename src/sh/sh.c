@@ -332,6 +332,18 @@ shcmd_exec_command(shcmd_t *self, int argc, char **argv) {
 
 int
 shcmd_update(shcmd_t *self) {
+    if (strstr(self->line_buf, "{@")) {
+        kit_clear_context_buffer(self->kit);
+        if (!kit_compile_from_string(self->kit, self->line_buf)) {
+            err_error(kit_getc_error(self->kit));
+            return 1;
+        }
+        const char *result = kit_getc_compiled(self->kit);
+        printf("%s", result);
+        fflush(stdout);
+        return 0;
+    }
+
     if (!cmdline_parse(self->cmdline, self->line_buf)) {
         err_error("failed to parse command line");
         return 1;
