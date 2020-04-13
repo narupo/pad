@@ -8323,7 +8323,7 @@ test_cc_compile(void) {
     tkr_parse(tkr, "{@ if 1:\n\nif 2:\n\nend\n\nend @}");
     {
         ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
+        (cc_compile(ast, tkr_get_tokens(tkr)));
         root = ast_getc_root(ast);
         assert(root != NULL);
         assert(root->type == NODE_TYPE_PROGRAM);
@@ -15760,7 +15760,7 @@ test_trv_for_stmt_1(void) {
 
     tkr_parse(tkr, "{@ i=0 for i<2: puts(i)\ni+=1 end @}");
     {
-        cc_compile(ast, tkr_get_tokens(tkr));
+        (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error(ast));
