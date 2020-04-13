@@ -2396,6 +2396,9 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
             return_cleanup("syntax error. not found \"{@\" in if statement");
         }
 
+        check("skip newlines");
+        cc_skip_newlines(ast);
+
         check("call cc_elif_stmt");
         cur->elif_stmt = cc_if_stmt(ast, 1, dep+1);
         if (!cur->elif_stmt) {
@@ -2410,12 +2413,16 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
                     return_cleanup("");
                 }
 
+                check("skip newlines");
+                cc_skip_newlines(ast);
+
                 if (!*ast->ptr) {
                     return_cleanup("syntax error. reached EOF in if statement (4)");
                 }
 
                 t = *ast->ptr++;
                 if (t->type != TOKEN_TYPE_STMT_END) {
+                    printf("type[%d]\n", t->type);
                     return_cleanup("syntax error. not found end in if statement");
                 }
             }
@@ -2449,6 +2456,9 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
                 if (ast_has_error(ast)) {
                     return_cleanup("");
                 }
+
+                check("skip newlines");
+                cc_skip_newlines(ast);
 
                 if (!*ast->ptr) {
                     return_cleanup("syntax error. reached EOF in if statement (4)");

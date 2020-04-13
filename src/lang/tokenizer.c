@@ -367,7 +367,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
             fprintf(stderr, "m[%d] c[%c]\n", m, c);
         }
 
-        if (m == 0) {
+        if (m == 0) { // first
             if (c == '{' && *self->ptr == '@') {
                 self->ptr++;
                 token_t *token = token_new(TOKEN_TYPE_LBRACEAT);
@@ -479,7 +479,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 tkr_set_error_detail(self, "syntax error. unsupported character \"%c\"", c);
                 goto fail;
             }
-        } else if (m == 20) { // found '{#'
+        } else if (m == 20) { // found '{:'
             if (c == '"') {
                 self->ptr--;
                 token_t *token = tkr_read_dq_string(self);
