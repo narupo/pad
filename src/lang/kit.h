@@ -34,5 +34,8 @@ kit_clear_context(kit_t *self);
 bool
 kit_has_error(const kit_t *self);
 
+const char *
+kit_getc_error(const kit_t *self);
+
 void
 kit_clear_context_buffer(kit_t *self);
