@@ -16,14 +16,14 @@
         fprintf(stderr, "debug: %5d: %*s: %3d: %s: %s\n", __LINE__, 20, __func__, dep, token_type_to_str(t), ast_get_error_detail(ast)); \
         fflush(stderr); \
     } \
-    cc_skip_newlines(ast); \
     if (!*ast->ptr) { \
         return NULL; \
     } \
 
 #define return_parse(ret) \
     if (ast->debug) { \
-        fprintf(stderr, "debug: %5d: %*s: %3d: return %p: %s\n", __LINE__, 20, __func__, dep, ret, ast_get_error_detail(ast)); \
+        token_t *t = *ast->ptr; \
+        fprintf(stderr, "debug: %5d: %*s: %3d: return %p: %s: %s\n", __LINE__, 20, __func__, dep, ret, token_type_to_str(t), ast_get_error_detail(ast)); \
         fflush(stderr); \
     } \
     return ret; \
@@ -501,6 +501,9 @@ cc_for_stmt(ast_t *ast, int dep) {
         // for : @} blocks {@ end
         check("read colon");
 
+        check("skip newlines");
+        cc_skip_newlines(ast);
+
         if (!*ast->ptr) {
             return_cleanup("syntax error. reached EOF in for statement (2)");
         }
@@ -514,6 +517,9 @@ cc_for_stmt(ast_t *ast, int dep) {
                 return_cleanup("");
             }
             // allow null
+
+            check("skip newlines");
+            cc_skip_newlines(ast);
 
             if (!*ast->ptr) {
                 return_cleanup("syntax error. reached EOF in for statement (2a)");
@@ -534,6 +540,9 @@ cc_for_stmt(ast_t *ast, int dep) {
             if (ast_has_error(ast)) {
                 return_cleanup("");
             }            
+
+            check("skip newlines");
+            cc_skip_newlines(ast);
         }
 
         if (!*ast->ptr) {
@@ -569,7 +578,7 @@ cc_for_stmt(ast_t *ast, int dep) {
             cur->init_formula = NULL;
         } else if (t->type == TOKEN_TYPE_SEMICOLON) {
             check("read semicolon");
-            // for <init_formula> ; comp_formula ; update_formula : elems end
+            // for init_formula ; comp_formula ; update_formula : elems end
 
             check("call cc_test");
             cur->comp_formula = cc_formula(ast, dep+1);
@@ -633,13 +642,19 @@ cc_for_stmt(ast_t *ast, int dep) {
             }
         } else {
             ast->ptr--;
-        }
 
-        check("call cc_elems");
-        cur->elems = cc_elems(ast, dep+1);
-        // allow empty
-        if (ast_has_error(ast)) {
-            return_cleanup("");
+            check("skip newlines");
+            cc_skip_newlines(ast);
+
+            check("call cc_elems");
+            cur->elems = cc_elems(ast, dep+1);
+            // allow empty
+            if (ast_has_error(ast)) {
+                return_cleanup("");
+            }
+
+            check("skip newlines");
+            cc_skip_newlines(ast);
         }
 
         if (!*ast->ptr) {
@@ -2354,6 +2369,7 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
     }
     check("read colon");
 
+    check("skip newlines");
     cc_skip_newlines(ast);
 
     if (!*ast->ptr) {
@@ -2365,8 +2381,7 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
         check("read @}");
 
         check("call cc_blocks");
-        cur->blocks = cc_blocks(ast, dep+1);
-        check("ABABABA");
+        cur->blocks = cc_blocks(ast, dep+1); 
         // block allow null
         if (ast_has_error(ast)) {
             return_cleanup("");
@@ -2408,6 +2423,9 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
     } else {
         ast->ptr--;
 
+        check("skip newlines");
+        cc_skip_newlines(ast);
+
         // elems allow null
         check("call cc_elems");
         cur->elems = cc_elems(ast, dep+1);
@@ -2415,7 +2433,10 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
             return_cleanup("");
         }
 
-        check("call cc_if_stmt");
+        check("skip newlines");
+        cc_skip_newlines(ast);
+
+        check("call cc_if_stmt (elif)");
         cur->elif_stmt = cc_if_stmt(ast, 1, dep+1);
         if (!cur->elif_stmt) {
             if (ast_has_error(ast)) {
@@ -2658,6 +2679,9 @@ cc_elems(ast_t *ast, int dep) {
         } 
     }
 
+    check("skip newlines");
+    cc_skip_newlines(ast);
+
     check("call cc_elems");
     cur->elems = cc_elems(ast, dep+1);
     if (!cur->elems) {
@@ -2754,12 +2778,18 @@ cc_code_block(ast_t *ast, int dep) {
     }
     check("read {@");
 
+    check("skip newlines");
+    cc_skip_newlines(ast);
+
     check("call cc_elems");
     cur->elems = cc_elems(ast, dep+1);
     // cur->elems allow null
     if (ast_has_error(ast)) {
         return_cleanup("");
     }
+
+    check("skip newlines");
+    cc_skip_newlines(ast);
 
     t = *ast->ptr++;
     if (!t) {
@@ -3042,6 +3072,7 @@ cc_func_def(ast_t *ast, int dep) {
         return_cleanup("syntax error. reached EOF in parse func def (2)");
     }
 
+    check("skip newlines");
     cc_skip_newlines(ast);
 
     t = *ast->ptr++;
@@ -3099,11 +3130,12 @@ cc_func_def(ast_t *ast, int dep) {
         }
     }
 
+    check("skip newlines");
+    cc_skip_newlines(ast);
+
     if (!*ast->ptr) {
         return_cleanup("syntax error. reached EOF in parse func def (5)");
     }
-
-    cc_skip_newlines(ast);
 
     t = *ast->ptr++;
     if (t->type != TOKEN_TYPE_STMT_END) {
