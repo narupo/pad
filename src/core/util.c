@@ -66,6 +66,9 @@ is_out_of_home(const char *homepath, const char *argpath) {
         return true;
     }
 
+    path_pop_tail_slash(home);
+    path_pop_tail_slash(path);
+
     size_t homelen = strlen(home);
     if (strncmp(home, path, homelen)) {
         return true;
@@ -662,4 +665,22 @@ escape(char *dst, int32_t dstsz, const char *src, const char *target) {
 bool
 is_dot_file(const char *path) {
     return strcmp(path, "..") == 0 || strcmp(path, ".") == 0;
+}
+
+char *
+pop_tail_slash(char *path) {
+    int32_t pathlen = strlen(path);
+#ifdef _CAP_WINDOWS
+    if (pathlen == 3 && path[2] == '\\') {
+        return path;
+    } else {
+        return path_pop_tail_slash(path);
+    }
+#else
+    if (pathlen == 1 && path[0] == '/') {
+        return path;
+    } else {
+        return path_pop_tail_slash(path);
+    }
+#endif
 }

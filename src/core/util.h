@@ -15,6 +15,7 @@
 #include <lib/error.h>
 #include <lib/cl.h>
 #include <lib/cstring_array.h>
+#include <lib/path.h>
 #include <core/types.h>
 #include <core/constant.h>
 #include <core/config.h>
@@ -289,3 +290,15 @@ is_dot_file(const char *path);
  */
 cstring_array_t * 
 split_to_array(const char *str, int ch);
+
+/**
+ * pop tail slash (/ or \\) from path
+ * if path is root (/ or C:\\) then don't pop tail slash
+ * 
+ * @param[in] *path 
+ * 
+ * @return success to pointer to path
+ * @return failed to NULL
+ */
+char *
+pop_tail_slash(char *path);

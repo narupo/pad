@@ -1977,6 +1977,36 @@ test_util_compile_argv(void) {
     config_del(config);
 }
 
+static void
+test_util_pop_tail_slash(void) {
+    char s[100];
+#ifdef _TESTS_WINDOWS
+    strcpy(s, "C:\\path\\to\\dir\\");
+    assert(pop_tail_slash(s));
+    assert(!strcmp(s, "C:\\path\\to\\dir"));
+
+    strcpy(s, "C:\\path\\to\\dir");
+    assert(pop_tail_slash(s));
+    assert(!strcmp(s, "C:\\path\\to\\dir"));
+
+    strcpy(s, "C:\\");
+    assert(pop_tail_slash(s));
+    assert(!strcmp(s, "C:\\"));
+#else
+    strcpy(s, "/path/to/dir/");
+    assert(pop_tail_slash(s));
+    assert(!strcmp(s, "/path/to/dir"));
+
+    strcpy(s, "/path/to/dir");
+    assert(pop_tail_slash(s));
+    assert(!strcmp(s, "/path/to/dir"));
+
+    strcpy(s, "/");
+    assert(pop_tail_slash(s));
+    assert(!strcmp(s, "/"));
+#endif
+}
+
 static const struct testcase
 utiltests[] = {
     {"freeargv", test_util_freeargv},
@@ -1988,6 +2018,57 @@ utiltests[] = {
     {"solve_cmdline_arg_path", test_util_solve_cmdline_arg_path},
     {"escape", test_util_escape},
     {"compile_argv", test_util_compile_argv},
+    {"pop_tail_slash", test_util_pop_tail_slash},
+    {0},
+};
+
+/*******
+* path *
+*******/
+
+static void
+test_path_pop_back_of(void) {
+    char s[100];
+
+    assert(path_pop_back_of(NULL, '?') == NULL);
+
+    strcpy(s, "abc");
+    assert(path_pop_back_of(s, 'c'));
+    assert(!strcmp(s, "ab"));
+
+    assert(path_pop_back_of(s, '?'));
+    assert(!strcmp(s, "ab"));
+}
+
+void
+test_path_pop_tail_slash(void) {
+    char s[100];
+
+    assert(path_pop_tail_slash(NULL) == NULL);
+
+#ifdef _TESTS_WINDOWS
+    strcpy(s, "C:\\path\\to\\dir\\");
+    assert(path_pop_tail_slash(s));
+    assert(!strcmp(s, "C:\\path\\to\\dir"));
+
+    strcpy(s, "C:\\path\\to\\dir");
+    assert(path_pop_tail_slash(s));
+    assert(!strcmp(s, "C:\\path\\to\\dir"));
+#else
+    strcpy(s, "/path/to/dir/");
+    assert(path_pop_tail_slash(s));
+    assert(!strcmp(s, "/path/to/dir"));
+
+    strcpy(s, "/path/to/dir");
+    assert(path_pop_tail_slash(s));
+    assert(!strcmp(s, "/path/to/dir"));
+#endif
+}
+
+static const struct testcase
+pathtests[] = {
+    {"path_pop_back_of", test_path_pop_back_of},
+    {"path_pop_tail_slash", test_path_pop_tail_slash},
     {0},
 };
 
@@ -18125,6 +18206,7 @@ testmodules[] = {
     {"cmdline", cmdline_tests},
     {"error", error_tests},
     {"util", utiltests},
+    {"path", pathtests},
     {"opts", lang_opts_tests},
     {"tokenizer", tokenizer_tests},
     {"compiler", compiler_tests},

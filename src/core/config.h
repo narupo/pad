@@ -2,6 +2,7 @@
 
 #include <lib/memory.h>
 #include <lib/file.h>
+#include <lib/path.h>
 #include <core/constant.h>
 
 struct config {

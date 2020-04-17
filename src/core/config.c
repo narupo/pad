@@ -13,6 +13,9 @@ config_new(void) {
     return self;
 }
 
+char *
+pop_tail_slash(char *path);
+
 config_t *
 config_init(config_t *self) {
     self->scope = CAP_SCOPE_LOCAL;
@@ -37,10 +40,14 @@ config_init(config_t *self) {
         err_error("failed to read line from cd of variable");
         return false;
     }
+    pop_tail_slash(self->cd_path);
+
     if (!file_readline(self->home_path, sizeof self->home_path, self->var_home_path)) {
         err_error("failed to read line from home of variable");
         return false;
     }
+    pop_tail_slash(self->home_path);
+
     if (!file_readline(self->editor, sizeof self->editor, self->var_editor_path)) {
         err_error("failed to read line from editor of variable");
         return false;
