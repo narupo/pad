@@ -2133,6 +2133,51 @@ test_lang_opts_parse_0(void) {
     opts_del(opts);
 }
 
+static void
+test_lang_opts_getc_args_0(void) {
+    opts_t *opts = opts_new();
+    assert(opts);
+
+    int argc = 3;
+    char *argv[] = {
+        "cmd",
+        "arg1",
+        "arg2",
+        NULL,
+    };
+
+    assert(opts_parse(opts, argc, argv));
+    assert(!strcmp(opts_getc_args(opts, 0), "cmd"));
+    assert(!strcmp(opts_getc_args(opts, 1), "arg1"));
+    assert(!strcmp(opts_getc_args(opts, 2), "arg2"));
+    opts_del(opts);
+}
+
+static void
+test_lang_opts_getc_args_1(void) {
+    opts_t *opts = opts_new();
+    assert(opts);
+
+    int argc = 6;
+    char *argv[] = {
+        "cmd",
+        "-a",
+        "optarg1",
+        "-b",
+        "optarg2",
+        "arg1",
+        NULL,
+    };
+
+    assert(opts_parse(opts, argc, argv));
+    assert(!strcmp(opts_getc(opts, "a"), "optarg1"));
+    assert(!strcmp(opts_getc(opts, "b"), "optarg2"));
+    assert(!strcmp(opts_getc_args(opts, 0), "cmd"));
+    assert(!strcmp(opts_getc_args(opts, 1), "arg1"));
+    assert(!strcmp(opts_getc_args(opts, 2), "arg2"));
+    opts_del(opts);
+}
+
 /**
  * 0 memory leaks
  * 2020/02/25
@@ -2142,6 +2187,8 @@ lang_opts_tests[] = {
     {"opts_new", test_lang_opts_new},
     {"opts_parse", test_lang_opts_parse},
     {"opts_parse_0", test_lang_opts_parse_0},
+    {"opts_getc_args_0", test_lang_opts_getc_args_0},
+    {"opts_getc_args_1", test_lang_opts_getc_args_1},
     {0},
 };
 
