@@ -21,6 +21,9 @@ typedef struct object_module object_module_t;
 struct node_array;
 typedef struct node_array node_array_t;
 
+struct tokenizer;
+typedef struct tokenizer tokenizer_t;
+
 struct context;
 typedef struct context context_t;
 

@@ -8,7 +8,10 @@ ast_del_nodes(const ast_t *self, node_t *node) {
 
     switch (node->type) {
     default: {
-        err_die("impossible. failed to delete nodes in ast. not supported node type '%d'", node->type);
+        err_die(
+            "impossible. failed to delete nodes in ast. "
+            "not supported node type '%d'", node->type
+        );
     } break;
     case NODE_TYPE_INVALID: {
         // nothing todo
@@ -60,7 +63,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     case NODE_TYPE_IMPORT_AS_STMT: {
         node_import_as_stmt_t *import_as_stmt = node->real;
         ast_del_nodes(self, import_as_stmt->path);
-        ast_del_nodes(self, import_as_stmt->identifier);
+        ast_del_nodes(self, import_as_stmt->alias);
     } break;
     case NODE_TYPE_FROM_IMPORT_STMT: {
         node_from_import_stmt_t *from_import_stmt = node->real;
@@ -77,7 +80,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     case NODE_TYPE_IMPORT_VAR: {
         node_import_var_t *import_var = node->real;
         ast_del_nodes(self, import_var->identifier);
-        ast_del_nodes(self, import_var->as_identifier);
+        ast_del_nodes(self, import_var->alias);
     } break;
     case NODE_TYPE_IF_STMT: {
         node_if_stmt_t *if_stmt = node->real;

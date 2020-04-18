@@ -21,6 +21,19 @@ scope_del(scope_t *self) {
     }
 }
 
+object_dict_t *
+scope_escdel_head_varmap(scope_t *self) {
+    if (!self) {
+        return NULL;
+    }
+
+    object_dict_t *varmap = mem_move(self->varmap);
+    self->varmap = NULL;
+    scope_del(self);
+
+    return varmap;
+}
+
 scope_t *
 scope_new(gc_t *ref_gc) {
     scope_t *self = mem_ecalloc(1, sizeof(*self));

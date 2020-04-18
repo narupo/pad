@@ -9804,16 +9804,16 @@ test_cc_import_stmt(void) {
         assert(import_as_stmt->path);
         assert(import_as_stmt->path->type == NODE_TYPE_STRING);
         assert(import_as_stmt->path->real);
-        assert(import_as_stmt->identifier);
-        assert(import_as_stmt->identifier->type == NODE_TYPE_IDENTIFIER);
-        assert(import_as_stmt->identifier->real);
+        assert(import_as_stmt->alias);
+        assert(import_as_stmt->alias->type == NODE_TYPE_IDENTIFIER);
+        assert(import_as_stmt->alias->real);
 
         path = import_as_stmt->path->real;
         assert(path);
         assert(path->string);
         assert(!strcmp(path->string, "path/to/module"));
 
-        identifier = import_as_stmt->identifier->real;
+        identifier = import_as_stmt->alias->real;
         assert(identifier);
         assert(!strcmp(identifier->identifier, "mod"));
     }
@@ -9846,7 +9846,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "not found identifier in compile import as statement"));
+        assert(!strcmp(ast_get_error_detail(ast), "not found alias in compile import as statement"));
     }
 
     tkr_parse(tkr, "{@ import \n\"path/to/module\" as mod @}");
@@ -9870,7 +9870,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
         assert(ast_has_error(ast));
-        assert(!strcmp(ast_get_error_detail(ast), "not found identifier in compile import as statement"));
+        assert(!strcmp(ast_get_error_detail(ast), "not found alias in compile import as statement"));
     }
 
     /************************
@@ -9944,7 +9944,7 @@ test_cc_import_stmt(void) {
         assert(import_var->identifier);
         assert(import_var->identifier->type == NODE_TYPE_IDENTIFIER);
         assert(import_var->identifier->real);
-        assert(import_var->as_identifier == NULL);
+        assert(import_var->alias == NULL);
 
         identifier = import_var->identifier->real;
         assert(identifier);
@@ -10019,16 +10019,16 @@ test_cc_import_stmt(void) {
         assert(import_var->identifier);
         assert(import_var->identifier->type == NODE_TYPE_IDENTIFIER);
         assert(import_var->identifier->real);
-        assert(import_var->as_identifier);
-        assert(import_var->as_identifier->type == NODE_TYPE_IDENTIFIER);
-        assert(import_var->as_identifier->real);
+        assert(import_var->alias);
+        assert(import_var->alias->type == NODE_TYPE_IDENTIFIER);
+        assert(import_var->alias->real);
 
         identifier = import_var->identifier->real;
         assert(identifier);
         assert(identifier->identifier);
         assert(!strcmp(identifier->identifier, "func"));
 
-        identifier = import_var->as_identifier->real;
+        identifier = import_var->alias->real;
         assert(identifier);
         assert(identifier->identifier);
         assert(!strcmp(identifier->identifier, "f"));
@@ -10101,7 +10101,7 @@ test_cc_import_stmt(void) {
         assert(import_var->identifier);
         assert(import_var->identifier->type == NODE_TYPE_IDENTIFIER);
         assert(import_var->identifier->real);
-        assert(import_var->as_identifier == NULL);
+        assert(import_var->alias == NULL);
 
         identifier = import_var->identifier->real;
         assert(identifier);
@@ -10175,7 +10175,7 @@ test_cc_import_stmt(void) {
         assert(import_var->identifier);
         assert(import_var->identifier->type == NODE_TYPE_IDENTIFIER);
         assert(import_var->identifier->real);
-        assert(import_var->as_identifier == NULL);
+        assert(import_var->alias == NULL);
         identifier = import_var->identifier->real;
         assert(identifier);
         assert(identifier->identifier);
@@ -10190,7 +10190,7 @@ test_cc_import_stmt(void) {
         assert(import_var->identifier);
         assert(import_var->identifier->type == NODE_TYPE_IDENTIFIER);
         assert(import_var->identifier->real);
-        assert(import_var->as_identifier == NULL);
+        assert(import_var->alias == NULL);
         identifier = import_var->identifier->real;
         assert(identifier);
         assert(identifier->identifier);
@@ -10263,14 +10263,14 @@ test_cc_import_stmt(void) {
         assert(import_var->identifier);
         assert(import_var->identifier->type == NODE_TYPE_IDENTIFIER);
         assert(import_var->identifier->real);
-        assert(import_var->as_identifier);
-        assert(import_var->as_identifier->type == NODE_TYPE_IDENTIFIER);
-        assert(import_var->as_identifier->real);
+        assert(import_var->alias);
+        assert(import_var->alias->type == NODE_TYPE_IDENTIFIER);
+        assert(import_var->alias->real);
         identifier = import_var->identifier->real;
         assert(identifier);
         assert(identifier->identifier);
         assert(!strcmp(identifier->identifier, "aaa"));
-        identifier = import_var->as_identifier->real;
+        identifier = import_var->alias->real;
         assert(identifier);
         assert(identifier->identifier);
         assert(!strcmp(identifier->identifier, "a"));
@@ -10284,7 +10284,7 @@ test_cc_import_stmt(void) {
         assert(import_var->identifier);
         assert(import_var->identifier->type == NODE_TYPE_IDENTIFIER);
         assert(import_var->identifier->real);
-        assert(import_var->as_identifier == NULL);
+        assert(import_var->alias == NULL);
         identifier = import_var->identifier->real;
         assert(identifier);
         assert(identifier->identifier);
@@ -15583,7 +15583,6 @@ test_trv_traverse(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_buf(ctx), "(array)\n"));
     } 
 
@@ -15992,7 +15991,24 @@ test_trv_import_stmt(void) {
     gc_t *gc = gc_new();
     context_t *ctx = ctx_new(gc);
 
-    // TODO
+    tkr_parse(tkr, "{@ import \"tests/lang/modules/hello.cap\" as hello @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "imported\n"));
+    }
+
+    tkr_parse(tkr, "{@ import \"tests/lang/modules/hello.cap\" as hello \n hello.world() @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "imported\nhello, world\n"));
+    }
 
     ctx_del(ctx);
     gc_del(gc);

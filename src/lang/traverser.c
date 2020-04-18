@@ -26,7 +26,7 @@
     } \
 
 #define vissf(fmt, ...) \
-    if (ast->debug) fprintf(stderr, "vissf: %d: " fmt "\n", __LINE__, __VA_ARGS__); \
+    if (ast->debug) fprintf(stderr, "vissf: %d: " fmt "\n", __LINE__, ##__VA_ARGS__); \
 
 #define viss(fmt) \
     if (ast->debug) fprintf(stderr, "viss: %d: " fmt "\n", __LINE__); \
@@ -121,6 +121,9 @@ trv_compare_comparison_lte_int(ast_t *ast, const object_t *lhs, const object_t *
 
 static object_t *
 trv_invoke_func_obj(ast_t *ast, const char *name, const object_t *drtargs, int dep);
+
+static object_t *
+trv_invoke_owner_func_obj(ast_t *ast, const char *funcname, const object_t *drtargs, int dep);
 
 static object_t *
 trv_invoke_builtin_modules(ast_t *ast, const char *name, object_t *args);
@@ -410,11 +413,189 @@ trv_stmt(ast_t *ast, const node_t *node, int dep) {
 static object_t *
 trv_import_stmt(ast_t *ast, const node_t *node, int dep) {
     tready();
-    // node_import_stmt_t *import_stmt = node->real;
+    assert(node->type == NODE_TYPE_IMPORT_STMT);
+    node_import_stmt_t *import_stmt = node->real;
 
-    // TODO
+    if (import_stmt->import_as_stmt) {
+        check("call _trv_traverse with import as statement");
+        _trv_traverse(ast, import_stmt->import_as_stmt, dep+1);
+        if (ast_has_error(ast)) {
+            return_trav(NULL);
+        }
+    } else if (import_stmt->from_import_stmt) {
+        check("call _trv_traverse with from import statement");
+        _trv_traverse(ast, import_stmt->from_import_stmt, dep+1);
+        if (ast_has_error(ast)) {
+            return_trav(NULL);
+        }
+    } else {
+        assert(0 && "impossible. invalid import statement state in traverse");
+    }
 
     return_trav(NULL);
+}
+
+static object_t *
+trv_import_as_stmt(ast_t *ast, const node_t *node, int dep) {
+    tready();
+    assert(node->type == NODE_TYPE_IMPORT_AS_STMT);
+    node_import_as_stmt_t *import_as_stmt = node->real;
+
+    // get path and alias value
+    check("call _trv_traverse with path of import as statement");
+    object_t *pathobj = _trv_traverse(ast, import_as_stmt->path, dep+1);
+    if (ast_has_error(ast)) {
+        return_trav(NULL);
+    }
+    if (!pathobj || pathobj->type != OBJ_TYPE_STRING) {
+        ast_set_error_detail(ast, "invalid path object in import as statement");
+        return_trav(NULL);
+    }
+
+    check("call _trv_traverse with identifier of import as statement");
+    object_t *aliasobj = _trv_traverse(ast, import_as_stmt->alias, dep+1);
+    if (ast_has_error(ast)) {
+        obj_del(pathobj);
+        return_trav(NULL);
+    }
+    if (!aliasobj || aliasobj->type != OBJ_TYPE_IDENTIFIER) {
+        ast_set_error_detail(ast, "invalid identifier object in import as statement");
+        obj_del(pathobj);
+        obj_del(aliasobj);
+        return_trav(NULL);
+    }
+
+    // import start
+    const char *path = str_getc(pathobj->string);
+    const char *alias = str_getc(aliasobj->identifier);
+
+    importer_t *importer = importer_new(ast->config);
+
+    if (!importer_import_as(
+        importer,
+        ast->ref_gc,
+        ast,
+        ast->context,
+        path,
+        alias
+    )) {
+        ast_set_error_detail(ast, importer_getc_error(importer));
+        obj_del(pathobj);
+        obj_del(aliasobj);
+        return_trav(NULL);
+    }
+
+    // done
+    importer_del(importer);
+    return_trav(NULL);
+}
+
+static object_t *
+trv_from_import_stmt(ast_t *ast, const node_t *node, int dep) {
+    tready();
+    assert(node->type == NODE_TYPE_FROM_IMPORT_STMT);
+    node_from_import_stmt_t *from_import_stmt = node->real;
+
+    check("call _trv_traverse with path of from import statement");
+    object_t *pathobj = _trv_traverse(ast, from_import_stmt->path, dep+1);
+    if (ast_has_error(ast)) {
+        return_trav(NULL);
+    }
+    if (!pathobj || pathobj->type != OBJ_TYPE_STRING) {
+        ast_set_error_detail(ast, "invalid path object in from import statement");
+        obj_del(pathobj);
+        return_trav(NULL);
+    }
+
+    check("call _trv_traverse with import variables of from import statement");
+    object_t *varsobj = _trv_traverse(ast, from_import_stmt->import_vars, dep+1);
+    if (ast_has_error(ast)) {
+        obj_del(pathobj);
+        return_trav(NULL);
+    }
+    if (!varsobj || varsobj->type != OBJ_TYPE_ARRAY) {
+        ast_set_error_detail(ast, "invalid variables object in from import statement");
+        obj_del(pathobj);
+        obj_del(varsobj);
+        return_trav(NULL);
+    }
+
+    // TODO
+    printf("path[%s] vars[%ld]\n", str_getc(pathobj->string), objarr_len(varsobj->objarr));
+
+    return_trav(NULL);
+}
+
+static object_t *
+trv_import_vars(ast_t *ast, const node_t *node, int dep) {
+    tready();
+    assert(node->type == NODE_TYPE_IMPORT_VARS);
+    node_import_vars_t *import_vars = node->real;
+
+    node_array_t *nodearr = import_vars->nodearr;
+    assert(nodearr_len(nodearr));
+
+    object_array_t *objarr = objarr_new();
+
+    for (int32_t i = 0; i < nodearr_len(nodearr); ++i) {
+        node_t *node = nodearr_get(nodearr, i);
+
+        check("call _trv_traverse with variable node of import variables");
+        object_t *varobj = _trv_traverse(ast, node, dep+1);
+        if (ast_has_error(ast)) {
+            objarr_del(objarr);
+            return_trav(NULL);
+        }
+        if (!varobj || varobj->type != OBJ_TYPE_ARRAY) {
+            ast_set_error_detail(ast, "invalid variable object in import variables");
+            objarr_del(objarr);
+            return_trav(NULL);
+        }
+
+        objarr_moveb(objarr, varobj);
+    }
+
+    assert(objarr_len(objarr));
+    object_t *arrobj = obj_new_array(ast->ref_gc, mem_move(objarr));
+    return_trav(arrobj);
+}
+
+static object_t *
+trv_import_var(ast_t *ast, const node_t *node, int dep) {
+    tready();
+    assert(node->type == NODE_TYPE_IMPORT_VAR);
+    node_import_var_t *import_var = node->real;
+
+    check("call _trv_traverse with identifier of import variable");
+    object_t *idnobj = _trv_traverse(ast, import_var->identifier, dep+1);
+    if (ast_has_error(ast)) {
+        return_trav(NULL);
+    }
+    if (!idnobj || idnobj->type != OBJ_TYPE_IDENTIFIER) {
+        ast_set_error_detail(ast, "invalid identifier object in import variable");
+        obj_del(idnobj);
+        return_trav(NULL);
+    }
+
+    check("call _trv_traverse with alias of import variable");
+    object_t *aliasobj = _trv_traverse(ast, import_var->alias, dep+1);
+    if (ast_has_error(ast)) {
+        obj_del(idnobj);        
+        return_trav(NULL);
+    }
+    if (!aliasobj || aliasobj->type != OBJ_TYPE_IDENTIFIER) {
+        ast_set_error_detail(ast, "invalid alias object in import variable");
+        obj_del(idnobj);
+        obj_del(aliasobj);
+        return_trav(NULL);
+    }
+    
+    object_array_t *objarr = objarr_new();
+    objarr_moveb(objarr, idnobj);
+    objarr_moveb(objarr, aliasobj);
+
+    object_t *arrobj = obj_new_array(ast->ref_gc, mem_move(objarr));
+    return_trav(arrobj);
 }
 
 /**
@@ -5499,35 +5680,31 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
         object_t *actual_args = _trv_traverse(ast, call_args, dep+1);
         assert(actual_args->type == OBJ_TYPE_ARRAY);
 
+#define check_result \
+        if (ast_has_error(ast)) { \
+            obj_del(actual_args); \
+            obj_del(operand); \
+            obj_del(result); \
+            return_trav(NULL); \
+        } else if (result) { \
+            obj_del(actual_args); \
+            obj_del(operand); \
+            operand = result; \
+            result = NULL; \
+            continue; \
+        } \
+
         check("call trv_invoke_func_obj");
         result = trv_invoke_func_obj(ast, funcname, actual_args, dep+1);
-        if (ast_has_error(ast)) {
-            obj_del(actual_args);
-            obj_del(operand);
-            obj_del(result);
-            return_trav(NULL);
-        } else if (result) {
-            obj_del(actual_args);
-            obj_del(operand);
-            operand = result;
-            result = NULL;
-            continue;
-        }
+        check_result;
 
         check("call trv_invoke_builtin_modules");
         result = trv_invoke_builtin_modules(ast, funcname, actual_args);
-        if (ast_has_error(ast)) {
-            obj_del(actual_args);
-            obj_del(operand);
-            obj_del(result);
-            return_trav(NULL);
-        } else if (result) {
-            obj_del(actual_args);
-            obj_del(operand);
-            operand = result;
-            result = NULL;
-            continue;
-        }
+        check_result;
+
+        check("call trv_invoke_owner_func_obj");
+        result = trv_invoke_owner_func_obj(ast, funcname, actual_args, dep+1);
+        check_result;
 
         obj_del(actual_args);
         
@@ -6179,26 +6356,20 @@ trv_identifier(ast_t *ast, const node_t *node, int dep) {
 }
 
 static object_t *
-trv_invoke_func_obj(ast_t *ast, const char *funcname, const object_t *drtargs, int dep) {
-    assert(funcname);
+invoke_func_obj(ast_t *ast, object_t *funcobj, const object_t *drtargs, int dep) {
+    if (!funcobj) {
+        return NULL;
+    }
+    if (funcobj->type != OBJ_TYPE_FUNC) {
+        return NULL;
+    }
+
     object_t *args = NULL;
     if (drtargs) {
         args = obj_to_array(drtargs);
     }
 
-    object_t *func_obj = get_var_ref(ast, funcname);
-    if (!func_obj) {
-        // not error
-        obj_del(args);
-        return NULL;
-    }
-
-    if (func_obj->type != OBJ_TYPE_FUNC) {
-        obj_del(args);
-        return NULL;
-    }
-
-    object_func_t *func = &func_obj->func;
+    object_func_t *func = &funcobj->func;
     assert(func->args->type == OBJ_TYPE_ARRAY);
 
     ctx_pushb_scope(ast->context);
@@ -6262,8 +6433,58 @@ trv_invoke_func_obj(ast_t *ast, const char *funcname, const object_t *drtargs, i
 }
 
 static object_t *
+trv_invoke_func_obj(ast_t *ast, const char *funcname, const object_t *drtargs, int dep) {
+    assert(funcname);
+    object_t *funcobj = get_var_ref(ast, funcname);
+    if (!funcobj) {
+        // not error
+        return NULL;
+    }
+
+    return invoke_func_obj(ast, funcobj, drtargs, dep+1);
+}
+
+static object_t *
+trv_invoke_owner_func_obj(ast_t *ast, const char *funcname, const object_t *drtargs, int dep) {
+    assert(funcname);
+
+    object_t *ref_owner = ast->ref_dot_owner;
+    if (!ref_owner) {
+        return NULL;
+    }
+    if (ref_owner->type != OBJ_TYPE_IDENTIFIER) {
+        return NULL; // not supported owner type
+    }
+
+    object_t *modobj = pull_in_ref_by(ast, ref_owner);
+    if (!modobj || modobj->type != OBJ_TYPE_MODULE) {
+        return NULL;
+    }
+
+    object_module_t *mod = &modobj->module;
+
+    object_dict_t *varmap = ctx_get_varmap_at_global(mod->context);
+    assert(varmap);
+
+    object_dict_item_t *item = objdict_get(varmap, funcname);
+    if (!item) {
+        return NULL; // not found function in module
+    }
+    object_t *funcobj = item->value;
+    assert(funcobj);
+
+    object_t *result = invoke_func_obj(mod->ast, funcobj, drtargs, dep+1);
+    ctx_pushb_buf(ast->context, ctx_getc_buf(mod->context));
+    return result;
+}
+
+static object_t *
 trv_invoke_builtin_module_func(ast_t *ast, const object_t *mod, const char *funcname, object_t *args) {
     builtin_func_info_t *infos = mod->module.builtin_func_infos;
+    if (!infos) {
+        return NULL;
+    }
+
     for (builtin_func_info_t *info = infos; info->name; ++info) {
         if (cstr_eq(info->name, funcname)) {
             return info->func(ast, args);
@@ -6495,8 +6716,28 @@ _trv_traverse(ast_t *ast, const node_t *node, int dep) {
         return_trav(obj);
     } break;
     case NODE_TYPE_IMPORT_STMT: {
-        check("call trv_import_stmt");
+        check("call trv_import_stmt with import statement");
         object_t *obj = trv_import_stmt(ast, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_IMPORT_AS_STMT: {
+        check("call trv_import_stmt with import as statement");
+        object_t *obj = trv_import_as_stmt(ast, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_FROM_IMPORT_STMT: {
+        check("call trv_import_stmt with from import statement");
+        object_t *obj = trv_from_import_stmt(ast, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_IMPORT_VARS: {
+        check("call trv_import_stmt with import vars");
+        object_t *obj = trv_import_vars(ast, node, dep+1);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_IMPORT_VAR: {
+        check("call trv_import_stmt with import var");
+        object_t *obj = trv_import_var(ast, node, dep+1);
         return_trav(obj);
     } break;
     case NODE_TYPE_IF_STMT: {

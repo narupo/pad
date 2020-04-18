@@ -31,6 +31,7 @@ struct ast {
     opts_t *opts; // options for builtin opts module
     gc_t *ref_gc; // reference to gc (DO NOT DELETE)
     object_t *ref_dot_owner; // owner object for dot operator (owner.right_hand["key"]) for traverser (DO NOT DELETE)
+    int32_t import_level; // number of import level
     char error_detail[AST_ERR_DETAIL_SIZE]; // error detail
     bool debug; // if do debug to true
 };

@@ -10,6 +10,9 @@
 void
 scope_del(scope_t *self);
 
+object_dict_t *
+scope_escdel_head_varmap(scope_t *self);
+
 scope_t *
 scope_new(gc_t *gc);
 

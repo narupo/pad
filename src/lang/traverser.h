@@ -7,6 +7,7 @@
 #include <lang/opts.h>
 #include <lang/ast.h>
 #include <lang/utils.h>
+#include <lang/importer.h>
 #include <lang/builtin/functions.h>
 #include <lang/builtin/modules/string.h>
 #include <lang/builtin/modules/array.h>

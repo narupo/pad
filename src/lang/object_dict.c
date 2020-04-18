@@ -16,7 +16,7 @@ obj_del(object_t *self);
 
 void
 objdict_del(object_dict_t *self) {
-    if (self == NULL) {
+    if (!self) {
         return;
     }
 
@@ -27,6 +27,19 @@ objdict_del(object_dict_t *self) {
 
     free(self->map);
     free(self);
+}
+
+object_dict_item_t *
+objdict_escdel(object_dict_t *self) {
+    if (!self) {
+        return NULL;
+    }
+
+    object_dict_item_t *map = mem_move(self->map);
+    self->map = NULL;
+    free(self);
+
+    return map;
 }
 
 object_dict_t *
@@ -63,8 +76,12 @@ objdict_new_other(object_dict_t *other) {
 }
 
 object_dict_t *
-objdict_resize(object_dict_t *self, size_t newcapa) {
-    size_t byte = sizeof(object_dict_item_t);
+objdict_resize(object_dict_t *self, int32_t newcapa) {
+    if (!self || newcapa < 0) {
+        return NULL;
+    }
+
+    int32_t byte = sizeof(object_dict_item_t);
     object_dict_item_t *tmpmap = mem_erealloc(self->map, newcapa*byte + byte);
     self->map = tmpmap;
     self->capa = newcapa;
@@ -121,14 +138,14 @@ objdict_clear(object_dict_t *self) {
     self->len = 0;
 }
 
-size_t
+int32_t
 objdict_len(const object_dict_t *self) {
     return self->len;
 }
 
 const object_dict_item_t *
-objdict_getc_index(const object_dict_t *self, size_t index) {
-    if (index >= self->len) {
+objdict_getc_index(const object_dict_t *self, int32_t index) {
+    if (index < 0 || index >= self->len) {
         return NULL;
     }
 

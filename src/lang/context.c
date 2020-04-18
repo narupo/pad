@@ -22,10 +22,25 @@ ctx_del(context_t *self) {
         return;
     }
 
+    // do not delete ref_gc (this is reference)
     alinfo_del(self->alinfo);
     str_del(self->buf);
     scope_del(self->scope);
     free(self);
+}
+
+object_dict_t *
+ctx_escdel_global_varmap(context_t *self) {
+    if (!self) {
+        return NULL;
+    }
+
+    alinfo_del(self->alinfo);
+    str_del(self->buf);
+    object_dict_t *varmap = scope_escdel_head_varmap(self->scope);
+    free(self);
+
+    return varmap;
 }
 
 /**
