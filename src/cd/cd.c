@@ -3,7 +3,7 @@
  *
  * License: MIT
  *  Author: Aizawa Yuta
- *   Since: 2016, 2018
+ *   Since: 2016
  */
 #include <cd/cd.h>
 
