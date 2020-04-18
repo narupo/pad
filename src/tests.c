@@ -2455,6 +2455,32 @@ test_tkr_parse(void) {
         assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
 
+    /**********
+    * as from *
+    **********/
+
+    tkr_parse(tkr, "{@as@}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_AS);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@from@}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_FROM);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
     /*************
     * statements *
     *************/
@@ -5952,9 +5978,13 @@ test_cc_compile(void) {
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
         root = ast_getc_root(ast);
+        assert(root);
         program = root->real;
+        assert(program);
         blocks = program->blocks->real;
+        assert(blocks);
         code_block = blocks->code_block->real;
+        assert(code_block);
         elems = code_block->elems->real;
         assert(elems);
         assert(elems->def);
