@@ -93,7 +93,7 @@ makecmd_run(makecmd_t *self) {
         }        
     }
 
-    char *compiled = compile_argv(self->config, self->argc, self->argv, src);
+    char *compiled = compile_argv(self->config, self->argc-1, self->argv+1, src);
     if (!compiled) {
         free(src);
         return 1;
