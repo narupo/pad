@@ -172,22 +172,21 @@ typedef struct {
 typedef struct {
     node_t *path; // node_string_t
     node_t *identifier;
-} node_import_as_stmt;
+} node_import_as_stmt_t;
 
 typedef struct {
     node_t *path; // node_string_t
     node_t *import_vars;
-} node_from_import_stmt;
+} node_from_import_stmt_t;
 
 typedef struct {
-    node_t *import_var;
-    node_array_t *import_vars;
-} node_import_vars;
+    node_array_t *nodearr;
+} node_import_vars_t;
 
 typedef struct {
     node_t *identifier;
     node_t *as_identifier;
-} import_var;
+} node_import_var_t;
 
 typedef struct {
     node_t *test;
@@ -403,11 +402,6 @@ typedef struct {
 typedef struct {
     bool boolean;
 } node_true_t;
-
-typedef struct {
-    node_t *identifier;
-    node_t *identifier_chain;
-} node_identifier_chain_t;
 
 typedef struct {
     char *string;

@@ -410,12 +410,7 @@ trv_stmt(ast_t *ast, const node_t *node, int dep) {
 static object_t *
 trv_import_stmt(ast_t *ast, const node_t *node, int dep) {
     tready();
-    node_import_stmt_t *import_stmt = node->real;
-
-    if (import_stmt->identifier_chain) {
-        cstring_array_t *arr = identifier_chain_to_cstrarr(import_stmt->identifier_chain->real);
-        cstrarr_del(arr);
-    }
+    // node_import_stmt_t *import_stmt = node->real;
 
     // TODO
 

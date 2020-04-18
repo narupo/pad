@@ -78,13 +78,3 @@ copy_object_value(ast_t *ast, const object_t *obj);
  */
 object_t *
 move_var(ast_t *ast, const char *identifier, object_t *move_obj);
-
-/**
- * identifier chain node to cstring_array_t
- *
- * @param[in] *identifier_chain
- *
- * @return pointer to cstring_array_t (can delete)
- */
-cstring_array_t *
-identifier_chain_to_cstrarr(node_identifier_chain_t *identifier_chain);

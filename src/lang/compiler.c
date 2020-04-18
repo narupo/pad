@@ -65,9 +65,6 @@ static node_t *
 cc_test_list(ast_t *ast, int dep);
 
 static node_t *
-cc_identifier_chain(ast_t *ast, int dep);
-
-static node_t *
 cc_identifier(ast_t *ast, int dep);
 
 static node_t *
@@ -2476,51 +2473,253 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
 }
 
 static node_t *
-cc_identifier_chain(ast_t *ast, int dep) {
+cc_import_as_stmt(ast_t *ast, int dep) {
     ready();
-    declare(node_identifier_chain_t, cur);
+    declare(node_import_as_stmt_t, cur);
     token_t **save_ptr = ast->ptr;
 
 #undef return_cleanup
-#define return_cleanup(msg) { \
+#define return_cleanup(fmt, ...) { \
         ast->ptr = save_ptr; \
+        ast_del_nodes(ast, cur->path); \
         ast_del_nodes(ast, cur->identifier); \
-        ast_del_nodes(ast, cur->identifier_chain); \
         free(cur); \
-        if (strlen(msg)) { \
-            ast_set_error_detail(ast, msg); \
+        if (strlen(fmt)) { \
+            ast_set_error_detail(ast, fmt, ##__VA_ARGS__); \
         } \
         return_parse(NULL); \
     } \
 
-    check("call cc_identifier");
+#undef return_ok
+#define return_ok return_parse(node_new(NODE_TYPE_IMPORT_AS_STMT, cur))
+
+    const token_t *tok = *ast->ptr++;
+    if (tok->type != TOKEN_TYPE_STMT_IMPORT) {
+        return_cleanup(""); // not error
+    }
+
+    cur->path = cc_string(ast, dep+1);
+    if (ast_has_error(ast)) {
+        return_cleanup("");
+    } else if (!cur->path) {
+        return_cleanup("not found path in compile import as statement");
+    }
+
+    if (!*ast->ptr) {
+        return_cleanup("reached EOF in compile import as statement");
+    }
+
+    tok = *ast->ptr++;
+    if (tok->type != TOKEN_TYPE_AS) {
+        return_cleanup("not found keyword 'as' in compile import as statement");
+    }
+
     cur->identifier = cc_identifier(ast, dep+1);
-    if (!cur->identifier) {
+    if (ast_has_error(ast)) {
+        return_cleanup("");
+    } else if (!cur->identifier) {
+        return_cleanup("not found identifier in compile import as statement");
+    }
+
+    return_ok;
+}
+
+static node_t *
+cc_import_var(ast_t *ast, int dep) {
+    ready();
+    declare(node_import_var_t, cur);
+    token_t **save_ptr = ast->ptr;
+
+#undef return_cleanup
+#define return_cleanup(fmt, ...) { \
+        ast->ptr = save_ptr; \
+        ast_del_nodes(ast, cur->identifier); \
+        ast_del_nodes(ast, cur->as_identifier); \
+        free(cur); \
+        if (strlen(fmt)) { \
+            ast_set_error_detail(ast, fmt, ##__VA_ARGS__); \
+        } \
+        return_parse(NULL); \
+    } \
+
+#undef return_ok
+#define return_ok return_parse(node_new(NODE_TYPE_IMPORT_VAR, cur))
+
+    cur->identifier = cc_identifier(ast, dep+1);
+    if (ast_has_error(ast)) {
         return_cleanup("");
     }
+    if (!cur->identifier) {
+        return_cleanup(""); // not error
+    }
+    check("readed first identifier");
 
-    token_t *t = *ast->ptr++;
-    if (!t) {
-        return_cleanup("syntax error. reached EOF in identifier chain");
+    if (!*ast->ptr) {
+        return_cleanup("reached EOF in compile import variable");
     }
 
-    if (t->type != TOKEN_TYPE_DOT_OPE) {
-        ast->ptr--;
-        return_parse(node_new(NODE_TYPE_IDENTIFIER_CHAIN, cur));
+    const token_t *tok = *ast->ptr++;
+    if (tok->type != TOKEN_TYPE_AS) {
+        --ast->ptr;
+        return_ok;
     }
+    check("readed 'as'");
 
-    check("call cc_identifier_chain");
-    cur->identifier_chain = cc_identifier_chain(ast, dep+1);
-    if (!cur->identifier_chain) {
-        ast->ptr = save_ptr;
+    cur->as_identifier = cc_identifier(ast, dep+1);
+    if (ast_has_error(ast)) {
+        return_cleanup("");
+    }
+    if (!cur->as_identifier) {
+        return_cleanup("not found second identifier in compile import variable");
+    }
+    check("readed second identifier");
+
+    return_ok;
+}
+
+static node_t *
+cc_import_vars(ast_t *ast, int dep) {
+    ready();
+    declare(node_import_vars_t, cur);
+    cur->nodearr = nodearr_new();
+    token_t **save_ptr = ast->ptr;
+
+#undef return_cleanup
+#define return_cleanup(fmt, ...) { \
+        ast->ptr = save_ptr; \
+        for (int32_t i = 0; i < nodearr_len(cur->nodearr); ++i) { \
+            node_t *node = nodearr_get(cur->nodearr, i); \
+            ast_del_nodes(ast, node); \
+        } \
+        nodearr_del_without_nodes(cur->nodearr); \
+        free(cur); \
+        if (strlen(fmt)) { \
+            ast_set_error_detail(ast, fmt, ##__VA_ARGS__); \
+        } \
+        return_parse(NULL); \
+    } \
+
+#undef return_ok
+#define return_ok return_parse(node_new(NODE_TYPE_IMPORT_VARS, cur))
+
+#undef push
+#define push(node) nodearr_moveb(cur->nodearr, node)
+
+    // read '(' or single import variable
+    const token_t *tok = *ast->ptr++;
+    if (tok->type != TOKEN_TYPE_LPAREN) {
+        // read single import variable
+        --ast->ptr;
+        node_t *import_var = cc_import_var(ast, dep+1);
         if (ast_has_error(ast)) {
             return_cleanup("");
         }
+        if (!import_var) {
+            return_cleanup(""); // not error
+        }
+        check("readed single import variable");
 
-        return_cleanup("syntax error. not found identifier after \".\"");
+        push(import_var);
+        return_ok;
+    }
+    check("readed '('");
+
+    // read ... ')'
+    for (;;) {
+        if (!*ast->ptr) {
+            return_cleanup("reached EOF in compile import variables");
+        }
+
+        check("skip newlines");
+        cc_skip_newlines(ast);
+
+        node_t *import_var = cc_import_var(ast, dep+1);
+        if (ast_has_error(ast)) {
+            return_cleanup("");
+        }
+        if (!import_var) {
+            return_cleanup("not found import variable in compile import variables");
+        }
+        check("readed import variable");
+        push(import_var);
+
+        check("skip newlines");
+        cc_skip_newlines(ast);
+
+        if (!*ast->ptr) {
+            return_cleanup("reached EOF in compile import variables (2)");
+        }
+
+        check("skip newlines");
+        cc_skip_newlines(ast);
+
+        tok = *ast->ptr++;
+        if (tok->type == TOKEN_TYPE_COMMA) {
+            // pass
+            check("readed comma");
+        } else if (tok->type == TOKEN_TYPE_RPAREN) {
+            check("readed ')'");
+            break; // end parse
+        } else {
+            return_cleanup("invalid token %d in compile import variables", tok->type);
+        }
     }
 
-    return_parse(node_new(NODE_TYPE_IDENTIFIER_CHAIN, cur));
+    return_ok;
+}
+
+static node_t *
+cc_from_import_stmt(ast_t *ast, int dep) {
+    ready();
+    declare(node_from_import_stmt_t, cur);
+    token_t **save_ptr = ast->ptr;
+
+#undef return_cleanup
+#define return_cleanup(fmt, ...) { \
+        ast->ptr = save_ptr; \
+        ast_del_nodes(ast, cur->path); \
+        ast_del_nodes(ast, cur->import_vars); \
+        free(cur); \
+        if (strlen(fmt)) { \
+            ast_set_error_detail(ast, fmt, ##__VA_ARGS__); \
+        } \
+        return_parse(NULL); \
+    } \
+
+#undef return_ok
+#define return_ok return_parse(node_new(NODE_TYPE_FROM_IMPORT_STMT, cur))
+
+    const token_t *tok = *ast->ptr++;
+    if (tok->type != TOKEN_TYPE_FROM) {
+        return_cleanup("");
+    }
+    check("readed 'from'");
+
+    cur->path = cc_string(ast, dep+1);
+    if (ast_has_error(ast)) {
+        return_cleanup("");
+    }
+    if (!cur->path) {
+        return_cleanup("not found path in compile from import statement");
+    }
+    check("readed path");
+
+    tok = *ast->ptr++;
+    if (tok->type != TOKEN_TYPE_STMT_IMPORT) {
+        return_cleanup("not found import in compile from import statement");
+    }
+    check("readed 'import'");
+
+    cur->import_vars = cc_import_vars(ast, dep+1);
+    if (ast_has_error(ast)) {
+        return_cleanup("");
+    }
+    if (!cur->import_vars) {
+        return_cleanup("not found import variables in compile from import statement");
+    }
+    check("readed import variables");
+
+    return_ok;
 }
 
 static node_t *
@@ -2530,42 +2729,54 @@ cc_import_stmt(ast_t *ast, int dep) {
     token_t **save_ptr = ast->ptr;
 
 #undef return_cleanup
-#define return_cleanup(msg) { \
+#define return_cleanup(fmt, ...) { \
         ast->ptr = save_ptr; \
-        ast_del_nodes(ast, cur->identifier_chain); \
+        ast_del_nodes(ast, cur->import_as_stmt); \
+        ast_del_nodes(ast, cur->from_import_stmt); \
         free(cur); \
-        if (strlen(msg)) { \
-            ast_set_error_detail(ast, msg); \
+        if (strlen(fmt)) { \
+            ast_set_error_detail(ast, fmt, ##__VA_ARGS__); \
         } \
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
-    if (t->type != TOKEN_TYPE_STMT_IMPORT) {
-        return_cleanup("")
-    }
-    check("read 'import'");
+#undef return_ok
+#define return_ok return_parse(node_new(NODE_TYPE_IMPORT_STMT, cur))
 
-    check("call cc_identifier_chain");
-    cur->identifier_chain = cc_identifier_chain(ast, dep+1);
-    if (!cur->identifier_chain) {
+    // get import_as_stmt or from_import_stmt
+    cur->import_as_stmt = cc_import_as_stmt(ast, dep+1);
+    if (ast_has_error(ast)) {
+        return_cleanup("");
+    }
+    if (!cur->import_as_stmt) {
+        cur->from_import_stmt = cc_from_import_stmt(ast, dep+1);
         if (ast_has_error(ast)) {
-            return_cleanup("")
+            return_cleanup("");
         }
-
-        return_cleanup("syntax error. not found import module");
+        if (!cur->from_import_stmt) {
+            return_cleanup(""); // not error
+        }
+        check("readed from import statement");
+    } else {
+        check("readed import as statement");
     }
 
-    t = *ast->ptr;
-    if (!(t->type == TOKEN_TYPE_NEWLINE ||
-          t->type == TOKEN_TYPE_RBRACEAT)) {
-        return_cleanup("syntax error. invalid token at end of import statement");
-    }
-    if (t->type == TOKEN_TYPE_NEWLINE) {
-        cc_skip_newlines(ast);
+    if (!*ast->ptr) {
+        return_cleanup("reached EOF in compile import statement");
     }
 
-    return_parse(node_new(NODE_TYPE_IMPORT_STMT, cur));
+    const token_t *tok = *ast->ptr++;
+    if (!(tok->type == TOKEN_TYPE_NEWLINE ||
+          tok->type == TOKEN_TYPE_RBRACEAT)) {
+        return_cleanup(
+            "syntax error. invalid token %d in compile import statement",
+            tok->type
+        );
+    }
+    check("found NEWLINE or '@}'");
+    --ast->ptr;
+
+    return_ok;
 }
 
 static node_t *
@@ -3036,7 +3247,7 @@ cc_func_def(ast_t *ast, int dep) {
         for (int32_t i = 0; i < nodearr_len(cur->contents); ++i) { \
             ast_del_nodes(ast, nodearr_get(cur->contents, i)); \
         } \
-        nodearr_del(cur->contents); \
+        nodearr_del_without_nodes(cur->contents); \
         free(cur); \
         if (strlen(msg)) { \
             ast_set_error_detail(ast, msg); \
