@@ -17,6 +17,17 @@ token_new(int type) {
     return self;
 }
 
+token_t *
+token_new_other(const token_t *other) {
+    token_t *self = mem_ecalloc(1, sizeof(*self));
+    
+    self->type = other->type;
+    self->text = cstr_edup(other->text);
+    self->lvalue = other->lvalue;
+
+    return self;
+}
+
 void
 token_move_text(token_t *self, char *move_text) {
     free(self->text);

@@ -3,6 +3,15 @@
 extern void
 objarr_del(object_array_t* self);
 
+extern void
+tkr_del(tokenizer_t *self);
+
+extern void
+ast_del(ast_t *self);
+
+extern void
+ctx_del(context_t *self);
+
 void
 obj_del(object_t *self) {
     if (!self) {
@@ -56,8 +65,12 @@ obj_del(object_t *self) {
     case OBJ_TYPE_MODULE:
         str_del(self->module.name);
         self->module.name = NULL;
-        objdict_del(self->module.objs);
-        self->module.objs = NULL;
+        tkr_del(self->module.tokenizer);
+        self->module.tokenizer = NULL;
+        ast_del(self->module.ast);
+        self->module.ast = NULL;
+        ctx_del(self->module.context);
+        self->module.context = NULL;
         break;
     }
 
@@ -123,8 +136,11 @@ obj_new_other(const object_t *other) {
         self->index.indices = indices;
     } break;
     case OBJ_TYPE_MODULE:
+        err_die("TODO");
         self->module.name = str_new_other(other->module.name);
-        self->module.objs = objdict_new_other(other->module.objs); 
+        // self->module.tokenizer = tkr_new_other(other->module.tokenizer); 
+        // self->module.ast = ast_new_other(other->module.ast); 
+        // self->module.context = ctx_new_other(other->module.context); 
         self->module.builtin_func_infos = other->module.builtin_func_infos;
         break;
     }
@@ -273,7 +289,26 @@ obj_new_module(gc_t *ref_gc) {
     object_t *self = obj_new(ref_gc, OBJ_TYPE_MODULE);
 
     self->module.name = str_new();
-    self->module.objs = objdict_new(ref_gc);
+
+    return self;
+}
+
+object_t *
+obj_new_module_by(
+    gc_t *ref_gc,
+    const char *name,
+    tokenizer_t *move_tkr,
+    ast_t *move_ast,
+    context_t *move_ctx
+) {
+    object_t *self = obj_new(ref_gc, OBJ_TYPE_MODULE);
+
+    self->module.name = str_new();
+    str_set(self->module.name, name);
+
+    self->module.tokenizer = mem_move(move_tkr);
+    self->module.ast = mem_move(move_ast);
+    self->module.context = mem_move(move_ctx);
 
     return self;
 }

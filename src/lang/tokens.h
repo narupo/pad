@@ -5,6 +5,7 @@
 
 #include <lib/memory.h>
 #include <lib/string.h>
+#include <lib/cstring.h>
 
 typedef enum {
     TOKEN_TYPE_INVALID,
@@ -88,6 +89,16 @@ token_del(token_t *self);
  */
 token_t *
 token_new(int type);
+
+/**
+ * copy constructor
+ * 
+ * @param[in] *other 
+ * 
+ * @return 
+ */
+token_t *
+token_new_other(const token_t *other);
 
 /**
  * Move text pointer to token

@@ -39,10 +39,10 @@ kit_new(const config_t *config) {
     return self;
 }
 
-bool
+kit_t *
 kit_compile_from_path(kit_t *self, const char *path) {
     char *src = file_readcp_from_path(path);
-    bool result = kit_compile_from_string(self, src);
+    kit_t *result = kit_compile_from_string(self, src);
     free(src);
     return result;
 }
@@ -57,7 +57,7 @@ kit_getc_error(const kit_t *self) {
     return self->error;
 }
 
-bool
+kit_t *
 kit_compile_from_string(kit_t *self, const char *str) {
     self->error[0] = '\0';
     opts_t *opts = opts_new();
@@ -65,7 +65,7 @@ kit_compile_from_string(kit_t *self, const char *str) {
     tkr_parse(self->tkr, str);
     if (tkr_has_error(self->tkr)) {
         snprintf(self->error, sizeof self->error, "%s", tkr_get_error_detail(self->tkr));
-        return false;
+        return NULL;
     }
 
     ast_move_opts(self->ast, opts);
@@ -74,16 +74,16 @@ kit_compile_from_string(kit_t *self, const char *str) {
     cc_compile(self->ast, tkr_get_tokens(self->tkr));
     if (ast_has_error(self->ast)) {
         snprintf(self->error, sizeof self->error, "%s", ast_get_error_detail(self->ast));
-        return false;
+        return NULL;
     }
 
     trv_traverse(self->ast, self->ctx);
     if (ast_has_error(self->ast)) {
         snprintf(self->error, sizeof self->error, "%s", ast_get_error_detail(self->ast));
-        return false;
+        return NULL;
     }
 
-    return true;   
+    return self;
 }
 
 void

@@ -24,6 +24,16 @@ void
 ctx_del(context_t *self);
 
 /**
+ * destruct object and escape global variable map from context
+ *
+ * @param[in] *self 
+ *
+ * @return pointer to object_dict_t 
+ */
+object_dict_t * 
+ctx_escdel_global_varmap(context_t *self);
+
+/**
  * construct object
  *
  * @param[in|out] *gc reference to gc_t (DO NOT DELETE)

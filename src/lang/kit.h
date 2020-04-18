@@ -19,10 +19,10 @@ kit_del(kit_t *self);
 kit_t *
 kit_new(const config_t *config);
 
-bool
+kit_t *
 kit_compile_from_path(kit_t *self, const char *path);
 
-bool
+kit_t *
 kit_compile_from_string(kit_t *self, const char *str);
 
 const char *

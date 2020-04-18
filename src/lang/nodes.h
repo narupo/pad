@@ -171,7 +171,7 @@ typedef struct {
 
 typedef struct {
     node_t *path; // node_string_t
-    node_t *identifier;
+    node_t *alias; // node_identifier_t
 } node_import_as_stmt_t;
 
 typedef struct {
@@ -185,7 +185,7 @@ typedef struct {
 
 typedef struct {
     node_t *identifier;
-    node_t *as_identifier;
+    node_t *alias; // node_identifier_t
 } node_import_var_t;
 
 typedef struct {

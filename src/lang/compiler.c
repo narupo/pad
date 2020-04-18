@@ -2482,7 +2482,7 @@ cc_import_as_stmt(ast_t *ast, int dep) {
 #define return_cleanup(fmt, ...) { \
         ast->ptr = save_ptr; \
         ast_del_nodes(ast, cur->path); \
-        ast_del_nodes(ast, cur->identifier); \
+        ast_del_nodes(ast, cur->alias); \
         free(cur); \
         if (strlen(fmt)) { \
             ast_set_error_detail(ast, fmt, ##__VA_ARGS__); \
@@ -2514,11 +2514,11 @@ cc_import_as_stmt(ast_t *ast, int dep) {
         return_cleanup("not found keyword 'as' in compile import as statement");
     }
 
-    cur->identifier = cc_identifier(ast, dep+1);
+    cur->alias = cc_identifier(ast, dep+1);
     if (ast_has_error(ast)) {
         return_cleanup("");
-    } else if (!cur->identifier) {
-        return_cleanup("not found identifier in compile import as statement");
+    } else if (!cur->alias) {
+        return_cleanup("not found alias in compile import as statement");
     }
 
     return_ok;
@@ -2534,7 +2534,7 @@ cc_import_var(ast_t *ast, int dep) {
 #define return_cleanup(fmt, ...) { \
         ast->ptr = save_ptr; \
         ast_del_nodes(ast, cur->identifier); \
-        ast_del_nodes(ast, cur->as_identifier); \
+        ast_del_nodes(ast, cur->alias); \
         free(cur); \
         if (strlen(fmt)) { \
             ast_set_error_detail(ast, fmt, ##__VA_ARGS__); \
@@ -2565,11 +2565,11 @@ cc_import_var(ast_t *ast, int dep) {
     }
     check("readed 'as'");
 
-    cur->as_identifier = cc_identifier(ast, dep+1);
+    cur->alias = cc_identifier(ast, dep+1);
     if (ast_has_error(ast)) {
         return_cleanup("");
     }
-    if (!cur->as_identifier) {
+    if (!cur->alias) {
         return_cleanup("not found second identifier in compile import variable");
     }
     check("readed second identifier");

@@ -43,7 +43,9 @@ struct object_index {
 
 struct object_module {
     string_t *name; // module name
-    object_dict_t *objs; // objects
+    tokenizer_t *tokenizer;
+    ast_t *ast;
+    context_t *context;
     builtin_func_info_t *builtin_func_infos; // builtin functions
 };
 
@@ -112,6 +114,15 @@ obj_new_index(gc_t *ref_gc, object_t *move_operand, object_array_t *move_indices
 
 object_t *
 obj_new_module(gc_t *ref_gc);
+
+object_t *
+obj_new_module_by(
+    gc_t *ref_gc,
+    const char *name,
+    tokenizer_t *move_tkr,
+    ast_t *move_ast,
+    context_t *move_ctx
+);
 
 string_t *
 obj_to_str(const object_t *self);

@@ -27,6 +27,16 @@ tkropt_del(tokenizer_option_t *self);
 tokenizer_option_t *
 tkropt_new(void);
 
+/**
+ * copy constructor
+ * 
+ * @param[in] *other 
+ * 
+ * @return 
+ */
+tokenizer_option_t *
+tkropt_new_other(const tokenizer_option_t *other);
+
 /************
 * tokenizer *
 ************/
@@ -52,6 +62,16 @@ tkr_del(tokenizer_t *self);
  */
 tokenizer_t *
 tkr_new(tokenizer_option_t *move_option);
+
+/**
+ * copy constructor
+ * 
+ * @param[in] *other 
+ * 
+ * @return 
+ */
+tokenizer_t *
+tkr_new_other(const tokenizer_t *other);
 
 /**
  * Parse string and build tokens
