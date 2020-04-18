@@ -75,8 +75,9 @@ cdcmd_run(cdcmd_t *self) {
 	const char *argpath = self->argv[1];
 	const char *org;
 	char drtpath[FILE_NPATH*2];
+	bool has_head_slash = argpath[0] == '/' || argpath[0] == '\\';
 
-	if (argpath[0] == '/' || argpath[0] == '\\') {
+	if (has_head_slash) {
 		// Absolute of home
 		org = self->config->home_path;
 	} else {
