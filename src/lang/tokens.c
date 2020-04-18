@@ -77,7 +77,7 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_RPAREN: return ")"; break;
     case TOKEN_TYPE_DQ_STRING: return "string"; break;
     case TOKEN_TYPE_INTEGER:
-        snprintf(str, sizeof str, "integer[%ld]", self->lvalue);
+        snprintf(str, sizeof str, "int[%ld]", self->lvalue);
         return str;
         break;
 
@@ -112,6 +112,8 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_STMT_END: return "end"; break;
 
     case TOKEN_TYPE_STMT_IMPORT: return "import"; break;
+    case TOKEN_TYPE_AS: return "as"; break;
+    case TOKEN_TYPE_FROM: return "from"; break;
     
     case TOKEN_TYPE_STMT_IF: return "if"; break;
     case TOKEN_TYPE_STMT_ELIF: return "elif"; break;

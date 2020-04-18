@@ -274,7 +274,11 @@ tkr_parse_identifier(tokenizer_t *self) {
     } else if (cstr_eq(token->text, "end")) {
         token->type = TOKEN_TYPE_STMT_END;
     } else if (cstr_eq(token->text, "import")) {
-        token->type = TOKEN_TYPE_STMT_IMPORT;        
+        token->type = TOKEN_TYPE_STMT_IMPORT;
+    } else if (cstr_eq(token->text, "as")) {
+        token->type = TOKEN_TYPE_AS;
+    } else if (cstr_eq(token->text, "from")) {
+        token->type = TOKEN_TYPE_FROM;
     } else if (cstr_eq(token->text, "if")) {
         token->type = TOKEN_TYPE_STMT_IF;
     } else if (cstr_eq(token->text, "elif")) {

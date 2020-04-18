@@ -21,7 +21,12 @@ typedef enum {
     NODE_TYPE_ELEMS,
 
     NODE_TYPE_STMT,
+
     NODE_TYPE_IMPORT_STMT,
+    NODE_TYPE_IMPORT_AS_STMT,
+    NODE_TYPE_FROM_IMPORT_STMT,
+    NODE_TYPE_IMPORT_VARS,
+    NODE_TYPE_IMPORT_VAR,
 
     NODE_TYPE_IF_STMT,
     NODE_TYPE_ELIF_STMT,
@@ -160,8 +165,29 @@ typedef struct {
 } node_stmt_t;
 
 typedef struct {
-    node_t *identifier_chain;
+    node_t *import_as_stmt;
+    node_t *from_import_stmt;
 } node_import_stmt_t;
+
+typedef struct {
+    node_t *path; // node_string_t
+    node_t *identifier;
+} node_import_as_stmt;
+
+typedef struct {
+    node_t *path; // node_string_t
+    node_t *import_vars;
+} node_from_import_stmt;
+
+typedef struct {
+    node_t *import_var;
+    node_array_t *import_vars;
+} node_import_vars;
+
+typedef struct {
+    node_t *identifier;
+    node_t *as_identifier;
+} import_var;
 
 typedef struct {
     node_t *test;
