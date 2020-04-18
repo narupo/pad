@@ -21,10 +21,10 @@ BNF of Cap's template language
    func_def_params: '(' func_def_args ')'
      func_def_args: identifier [ ',' identifier ]*
 
-     - import_stmt: ( import_as_stmt | from_import_stmt ) ( NEWLINE | '@}' )?
+     - import_stmt: import_as_stmt | from_import_stmt
   - import_as_stmt: 'import' string 'as' identifier
 - from_import_stmt: 'from' string 'import' import_vars
-     - import_vars: import_var | '(' import_var [ , import_var ]* ')'
+     - import_vars: import_var | '(' import_var [ ',' import_var ]* ')'
       - import_var: identifier ( 'as' identifier )
 
      x import_stmt: 'import' identifier_chain ( '@} ' | NEWLINE )?

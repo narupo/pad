@@ -54,7 +54,30 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     } break;
     case NODE_TYPE_IMPORT_STMT: {
         node_import_stmt_t *import_stmt = node->real;
-        ast_del_nodes(self, import_stmt->identifier_chain);
+        ast_del_nodes(self, import_stmt->import_as_stmt);
+        ast_del_nodes(self, import_stmt->from_import_stmt);
+    } break;
+    case NODE_TYPE_IMPORT_AS_STMT: {
+        node_import_as_stmt_t *import_as_stmt = node->real;
+        ast_del_nodes(self, import_as_stmt->path);
+        ast_del_nodes(self, import_as_stmt->identifier);
+    } break;
+    case NODE_TYPE_FROM_IMPORT_STMT: {
+        node_from_import_stmt_t *from_import_stmt = node->real;
+        ast_del_nodes(self, from_import_stmt->path);
+        ast_del_nodes(self, from_import_stmt->import_vars);
+    } break;
+    case NODE_TYPE_IMPORT_VARS: {
+        node_import_vars_t *import_vars = node->real;
+        for (int32_t i = 0; i < nodearr_len(import_vars->nodearr); ++i) {
+            node_t *node = nodearr_get(import_vars->nodearr, i);
+            ast_del_nodes(self, node);
+        }
+    } break;
+    case NODE_TYPE_IMPORT_VAR: {
+        node_import_var_t *import_var = node->real;
+        ast_del_nodes(self, import_var->identifier);
+        ast_del_nodes(self, import_var->as_identifier);
     } break;
     case NODE_TYPE_IF_STMT: {
         node_if_stmt_t *if_stmt = node->real;
@@ -297,11 +320,6 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     } break;
     case NODE_TYPE_AUGASSIGN: {
         // nothing todo
-    } break;
-    case NODE_TYPE_IDENTIFIER_CHAIN: {
-        node_identifier_chain_t *identifier_chain = node->real;
-        ast_del_nodes(self, identifier_chain->identifier);
-        ast_del_nodes(self, identifier_chain->identifier_chain);
     } break;
     case NODE_TYPE_DEF: {
         node_def_t *def = node->real;
