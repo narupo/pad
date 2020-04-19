@@ -10419,6 +10419,75 @@ test_cc_import_stmt(void) {
     config_del(config);
 }
 
+static void
+test_cc_func_def(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+
+    tkr_parse(tkr, "{@ def func():\n"
+    "end @}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        assert(!ast_has_error(ast));
+    }
+
+    tkr_parse(tkr, "{@ def func():\n"
+    "   i = 0\n"
+    "end @}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        assert(!ast_has_error(ast));
+    }
+
+    tkr_parse(tkr, "{@ def func():\n"
+    "@}123{@\n"
+    "end @}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        assert(!ast_has_error(ast));
+    }
+
+    tkr_parse(tkr, "{@ def func():\n"
+    "@}123{@\n"
+    "@}223{@\n"
+    "end @}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        assert(!ast_has_error(ast));
+    }
+
+    tkr_parse(tkr, "{@ def func():\n"
+    "   i = 0\n"
+    "@}123{@\n"
+    "end @}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        assert(!ast_has_error(ast));
+    }
+
+    tkr_parse(tkr, "{@ def func():\n"
+    "   i = 0\n"
+    "@}123{@\n"
+    "   j = 1\n"
+    "end @}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        assert(!ast_has_error(ast));
+    }
+
+    tkr_del(tkr);
+    ast_del(ast);
+    config_del(config);
+}
+
 /**
  * 0 memory leaks
  * 2020/02/27
@@ -10446,6 +10515,7 @@ compiler_tests[] = {
     {"cc_array", test_cc_array},
     {"cc_asscalc", test_cc_asscalc},
     {"cc_import_stmt", test_cc_import_stmt},
+    {"cc_func_def", test_cc_func_def},
     {0},
 };
 
@@ -13639,6 +13709,26 @@ test_trv_func_def(void) {
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "hi\n"));
+    }
+
+    tkr_parse(tkr, 
+        "{@\n"
+        "    def func():\n"
+        "       i = 0\n"
+        "@}{: i :},{@\n"
+        "       j = 1\n"
+        "@}{: j :}{@"
+        "    end\n"
+        "\n"
+        "    func()\n"
+        "@}"
+    );
+    {
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "0,1"));
     }
 
     ctx_del(ctx);
