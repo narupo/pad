@@ -2655,8 +2655,20 @@ cc_import_vars(ast_t *ast, int dep) {
 
         tok = *ast->ptr++;
         if (tok->type == TOKEN_TYPE_COMMA) {
-            // pass
             check("readed comma");
+
+            check("skip newlines");
+            cc_skip_newlines(ast);
+            
+            if (!*ast->ptr) {
+                return_cleanup("reached EOF in compile import variables (3)");
+            }
+            tok = *ast->ptr++;
+            if (tok->type == TOKEN_TYPE_RPAREN) {
+                check("readed ')'");
+                break; // end parse
+            }
+            --ast->ptr;
         } else if (tok->type == TOKEN_TYPE_RPAREN) {
             check("readed ')'");
             break; // end parse
