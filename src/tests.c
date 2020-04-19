@@ -10197,6 +10197,20 @@ test_cc_import_stmt(void) {
         assert(!strcmp(identifier->identifier, "bbb"));
     }
 
+    tkr_parse(tkr, "{@ from \"path/to/module\" import ( aaa, bbb, ) @}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error(ast));
+    }
+
+    tkr_parse(tkr, "{@ from \"path/to/module\" import (\naaa,\nbbb,\n) @}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error(ast));
+    }
+
     tkr_parse(tkr, "{@ from \"path/to/module\" import ( aaa as a, bbb ) @}");
     {
         ast_clear(ast);
@@ -16068,6 +16082,28 @@ test_trv_import_stmt(void) {
     }
 
     tkr_parse(tkr,
+        "{@ from \":tests/lang/modules/funcs.cap\" import ( f1, f2, ) @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "imported\n"));
+    }
+
+    tkr_parse(tkr,
+        "{@ from \":tests/lang/modules/funcs.cap\" import (\nf1,\nf2,\n) @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "imported\n"));
+    }
+
+    tkr_parse(tkr,
         "{@ from \":tests/lang/modules/funcs.cap\" import ( f1, f2 ) \n "
         "   f1() \n f2() @}");
     {
@@ -17241,6 +17277,46 @@ test_trv_for_stmt_2(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "4,8"));
     } 
 
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_for_stmt_3(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@ for i = 0; i < 2; i += 1: @}{: i :},{@ end @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "0,1,"));
+    } 
+
+    tkr_parse(tkr, "{@\n"
+    "def func():\n"
+    "   for i = 0; i < 2; i += 1: @}"
+    "{: i :}\n"
+    "{@ end \n"
+    "end \n"
+    "\n"
+    " func() @}");
+    {
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "0\n1\n"));
+    } 
     ctx_del(ctx);
     gc_del(gc);
     ast_del(ast);
@@ -18440,6 +18516,7 @@ traverser_tests[] = {
     {"trv_for_stmt_0", test_trv_for_stmt_0},
     {"trv_for_stmt_1", test_trv_for_stmt_1},
     {"trv_for_stmt_2", test_trv_for_stmt_2},
+    {"trv_for_stmt_3", test_trv_for_stmt_3},
     {"trv_break_stmt", test_trv_break_stmt},
     {"trv_continue_stmt", test_trv_continue_stmt},
     {"trv_return_stmt", test_trv_return_stmt},
