@@ -1,6 +1,7 @@
 #pragma once
 
 #include <core/config.h>
+#include <core/util.h>
 #include <lang/context.h>
 #include <lang/ast.h>
 #include <lang/compiler.h>
@@ -9,6 +10,7 @@
 #include <lang/gc.h>
 #include <lang/opts.h>
 #include <lang/object_dict.h>
+#include <lang/object_array.h>
 
 struct importer;
 typedef struct importer importer_t;
@@ -31,6 +33,8 @@ importer_new(const config_t *ref_config);
 
 /**
  * import module from path as alias
+ *
+ *      import "path" as mod
  * 
  * @param[in] *self      
  * @param[in] *ref_gc    
@@ -48,6 +52,30 @@ importer_import_as(
     context_t *dstctx,
     const char *path,
     const char *alias
+);
+
+/**
+ * import objects from path 
+ *
+ *      from "path" import ( f1, f2 )
+ * 
+ * @param[in] *self    
+ * @param[in] *ref_gc  
+ * @param[in] *ref_ast 
+ * @param[in] *dstctx  
+ * @param[in] *path    
+ * @param[in] *vars    
+ * 
+ * @return 
+ */
+importer_t * 
+importer_from_import(
+    importer_t *self,
+    gc_t *ref_gc,
+    const ast_t *ref_ast,
+    context_t *dstctx,
+    const char *path,
+    object_array_t *vars
 );
 
 /**

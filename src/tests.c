@@ -11745,7 +11745,7 @@ test_trv_index(void) {
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
-        ast_debug(trv_traverse(ast, ctx));
+        (trv_traverse(ast, ctx));
         showdetail();
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
@@ -13380,7 +13380,7 @@ test_trv_dot(void) {
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
-        ast_debug(trv_traverse(ast, ctx));
+        (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
     }
@@ -15992,7 +15992,11 @@ test_trv_import_stmt(void) {
     gc_t *gc = gc_new();
     context_t *ctx = ctx_new(gc);
 
-    tkr_parse(tkr, "{@ import \"tests/lang/modules/hello.cap\" as hello @}");
+    /**********************
+    * import as statement *
+    **********************/
+
+    tkr_parse(tkr, "{@ import \":tests/lang/modules/hello.cap\" as hello @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
@@ -16002,7 +16006,7 @@ test_trv_import_stmt(void) {
     }
 
     tkr_parse(tkr,
-        "{@ import \"tests/lang/modules/hello.cap\" as hello \n"
+        "{@ import \":tests/lang/modules/hello.cap\" as hello \n"
         "hello.world() @}"
     );
     {
@@ -16015,7 +16019,7 @@ test_trv_import_stmt(void) {
     }
 
     tkr_parse(tkr,
-        "{@ import \"tests/lang/modules/count.cap\" as count \n"
+        "{@ import \":tests/lang/modules/count.cap\" as count \n"
         "@}{: count.n :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
@@ -16024,6 +16028,55 @@ test_trv_import_stmt(void) {
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "45"));
+    }
+
+    /************************
+    * from import statement *
+    ************************/
+
+    tkr_parse(tkr,
+        "{@ from \":tests/lang/modules/funcs.cap\" import f1 @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "imported\n"));
+    }
+
+    tkr_parse(tkr,
+        "{@ from \":tests/lang/modules/funcs.cap\" import f1 \n f1() @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "imported\nf1\n"));
+    }
+
+    tkr_parse(tkr,
+        "{@ from \":tests/lang/modules/funcs.cap\" import ( f1, f2 ) @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "imported\n"));
+    }
+
+    tkr_parse(tkr,
+        "{@ from \":tests/lang/modules/funcs.cap\" import ( f1, f2 ) \n "
+        "   f1() \n f2() @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "imported\nf1\nf2\n"));
     }
 
     ctx_del(ctx);

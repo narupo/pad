@@ -1,0 +1,11 @@
+{@
+    def f1():
+        puts("f1")
+    end
+
+    def f2():
+        puts("f2")
+    end
+
+    puts("imported")
+@}

@@ -35,16 +35,18 @@ importer_getc_error(const importer_t *self) {
     return self->error;
 }
 
-importer_t *
-importer_import_as(
+static object_t *
+create_modobj(
     importer_t *self,
     gc_t *ref_gc,
     const ast_t *ref_ast,
-    context_t *dstctx,
-    const char *path,
-    const char *alias
+    const char *cap_path
 ) {
-    self->error[0] = '\0';
+    char path[FILE_NPATH];
+    if (!solve_cmdline_arg_path(self->ref_config, path, sizeof path, cap_path)) {
+        importer_set_error(self, "failed to solve cap path of \"%s\"", cap_path);
+        return NULL;
+    }
 
     // read source
     char *src = file_readcp_from_path(path);
@@ -54,7 +56,7 @@ importer_import_as(
     }
 
     // compile source
-    tokenizer_t *tkr = tkr_new(tkropt_new());
+    tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = ast_new(self->ref_config);
     context_t *ctx = ctx_new(ref_gc); // LOOK ME! gc is *REFERENCE* from arguments!
 
@@ -64,6 +66,7 @@ importer_import_as(
     tkr_parse(tkr, src);
     if (tkr_has_error(tkr)) {
         importer_set_error(self, tkr_get_error_detail(tkr));
+        free(src);
         return NULL;
     }
 
@@ -74,17 +77,16 @@ importer_import_as(
     cc_compile(ast, tkr_get_tokens(tkr));
     if (ast_has_error(ast)) {
         importer_set_error(self, ast_get_error_detail(ast));
+        free(src);
         return NULL;
     }
 
     trv_traverse(ast, ctx);
     if (ast_has_error(ast)) {
         importer_set_error(self, ast_get_error_detail(ast));
+        free(src);
         return NULL;
     }
-
-    ctx_pushb_buf(dstctx, ctx_getc_buf(ctx));
-    ctx_clear_buf(ctx);
 
     object_t *modobj = obj_new_module_by(
         ref_gc,
@@ -95,9 +97,116 @@ importer_import_as(
         NULL
     );
 
+    free(src);
+    return modobj;
+}
+
+importer_t *
+importer_import_as(
+    importer_t *self,
+    gc_t *ref_gc,
+    const ast_t *ref_ast,
+    context_t *dstctx,
+    const char *cap_path,
+    const char *alias
+) {
+    self->error[0] = '\0';
+
+    object_t *modobj = create_modobj(
+        self,
+        ref_gc,
+        ref_ast,
+        cap_path
+    );
+    if (!modobj) {
+        return NULL;
+    }
+
+    ctx_pushb_buf(dstctx, ctx_getc_buf(modobj->module.context));
+    ctx_clear_buf(modobj->module.context);
+
     object_dict_t *dst_global_varmap = ctx_get_varmap_at_global(dstctx);
     objdict_move(dst_global_varmap, alias, mem_move(modobj));
 
-    free(src);
+    return self;
+}
+
+importer_t *
+importer_from_import(
+    importer_t *self,
+    gc_t *ref_gc,
+    const ast_t *ref_ast,
+    context_t *dstctx,
+    const char *cap_path,
+    object_array_t *vars
+) {
+    self->error[0] = '\0';
+
+    object_t *modobj = create_modobj(
+        self,
+        ref_gc,
+        ref_ast,
+        cap_path
+    );
+    if (!modobj) {
+        return NULL;
+    }
+
+    ctx_pushb_buf(dstctx, ctx_getc_buf(modobj->module.context));
+    ctx_clear_buf(modobj->module.context);
+
+/**
+ * extract import-var from import-vars
+ */
+#define extract_var(vs, v) \
+    object_t *varobj = objarr_get(vs, i); \
+    assert(varobj); \
+    assert(varobj->type == OBJ_TYPE_ARRAY); \
+    object_array_t *v = varobj->objarr; \
+    assert(objarr_len(v) == 1 || objarr_len(v) == 2); \
+
+    object_dict_t *dst_global_varmap = ctx_get_varmap_at_global(dstctx);
+
+    // assign objects at global varmap of current context from module context
+    // increment a reference count of objects
+    // objects look at memory of imported module 
+    for (int32_t i = 0; i < objarr_len(vars); ++i) {
+        extract_var(vars, var);
+
+        // get name
+        object_t *objnameobj = objarr_get(var, 0);
+        assert(objnameobj->type == OBJ_TYPE_IDENTIFIER);
+        const char *objname = str_getc(objnameobj->identifier);
+
+        // get alias if exists
+        const char *alias = NULL;
+        if (objarr_len(var) == 2) {
+            object_t *aliasobj = objarr_get(var, 1);
+            assert(aliasobj->type == OBJ_TYPE_IDENTIFIER);
+            alias = str_getc(aliasobj->identifier);
+        }
+
+        object_t *obj = ctx_find_var_ref(modobj->module.context, objname);
+        if (!obj) {
+            importer_set_error(self,
+                "\"%s\" is can't import from module \"%s\"",
+                objname, cap_path
+            );
+            obj_del(modobj);
+            return NULL;
+        }
+
+        obj_inc_ref(obj); // increment reference-count!
+
+        if (alias) {
+            objdict_set(dst_global_varmap, alias, obj);
+        } else {
+            objdict_set(dst_global_varmap, objname, obj);
+        }
+    }
+
+    // assign imported module at global varmap of current context 
+    objdict_move(dst_global_varmap, str_getc(modobj->module.name), mem_move(modobj));
+
     return self;
 }
