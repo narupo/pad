@@ -39,6 +39,9 @@ objdict_resize(object_dict_t *self, int32_t newcapa);
 object_dict_t *
 objdict_move(object_dict_t *self, const char *key, object_t *move_value);
 
+object_dict_t *
+objdict_set(object_dict_t *self, const char *key, object_t *ref_value);
+
 object_dict_item_t *
 objdict_get(object_dict_t *self, const char *key);
 

@@ -530,9 +530,26 @@ trv_from_import_stmt(ast_t *ast, const node_t *node, int dep) {
         return_trav(NULL);
     }
 
-    // TODO
-    printf("path[%s] vars[%ld]\n", str_getc(pathobj->string), objarr_len(varsobj->objarr));
+    // import start
+    const char *path = str_getc(pathobj->string);
+    importer_t *importer = importer_new(ast->ref_config);
 
+    if (!importer_from_import(
+        importer,
+        ast->ref_gc,
+        ast,
+        ast->context,
+        path,
+        varsobj->objarr
+    )) {
+        ast_set_error_detail(ast, importer_getc_error(importer));
+        obj_del(pathobj);
+        obj_del(varsobj);
+        return_trav(NULL);
+    }
+
+    // done
+    importer_del(importer);
     return_trav(NULL);
 }
 
@@ -576,6 +593,8 @@ trv_import_var(ast_t *ast, const node_t *node, int dep) {
     assert(node->type == NODE_TYPE_IMPORT_VAR);
     node_import_var_t *import_var = node->real;
 
+    object_array_t *objarr = objarr_new();
+
     check("call _trv_traverse with identifier of import variable");
     object_t *idnobj = _trv_traverse(ast, import_var->identifier, dep+1);
     if (ast_has_error(ast)) {
@@ -586,23 +605,25 @@ trv_import_var(ast_t *ast, const node_t *node, int dep) {
         obj_del(idnobj);
         return_trav(NULL);
     }
+    objarr_moveb(objarr, idnobj); // store
 
     check("call _trv_traverse with alias of import variable");
     object_t *aliasobj = _trv_traverse(ast, import_var->alias, dep+1);
     if (ast_has_error(ast)) {
-        obj_del(idnobj);        
-        return_trav(NULL);
-    }
-    if (!aliasobj || aliasobj->type != OBJ_TYPE_IDENTIFIER) {
-        ast_set_error_detail(ast, "invalid alias object in import variable");
         obj_del(idnobj);
-        obj_del(aliasobj);
         return_trav(NULL);
     }
-    
-    object_array_t *objarr = objarr_new();
-    objarr_moveb(objarr, idnobj);
-    objarr_moveb(objarr, aliasobj);
+    // allow null of aliasobj
+
+    if (aliasobj) {
+        if (aliasobj->type != OBJ_TYPE_IDENTIFIER) {
+            ast_set_error_detail(ast, "invalid alias object in import variable");
+            obj_del(idnobj);
+            obj_del(aliasobj);
+            return_trav(NULL);
+        }
+        objarr_moveb(objarr, aliasobj); // store
+    }
 
     object_t *arrobj = obj_new_array(ast->ref_gc, mem_move(objarr));
     return_trav(arrobj);

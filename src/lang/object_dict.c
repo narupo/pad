@@ -95,7 +95,7 @@ objdict_move(object_dict_t *self, const char *key, struct object *move_value) {
         if (cstr_eq(self->map[i].key, key)) {
             // over write
             obj_del(self->map[i].value);
-            self->map[i].value = move_value;
+            self->map[i].value = mem_move(move_value);
             return self;
         }
     }
@@ -109,6 +109,11 @@ objdict_move(object_dict_t *self, const char *key, struct object *move_value) {
     el->value = move_value;
 
     return self;
+}
+
+object_dict_t *
+objdict_set(object_dict_t *self, const char *key, object_t *ref_value) {
+    return objdict_move(self, key, ref_value);
 }
 
 object_dict_item_t *
