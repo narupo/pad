@@ -65,7 +65,7 @@ builtin_string_snake(ast_t *ast, object_t *_) {
 }
 
 static builtin_func_info_t
-builtin_string_func_infos[] = {
+builtin_func_infos[] = {
     {"lower", builtin_string_lower},
     {"upper", builtin_string_upper},
     {"capitalize", builtin_string_capitalize},
@@ -74,11 +74,18 @@ builtin_string_func_infos[] = {
 };
 
 object_t *
-builtin_string_module_new(gc_t *ref_gc) {
-    object_t *mod = obj_new_module(ref_gc);
+builtin_string_module_new(const config_t *ref_config, gc_t *ref_gc) {
+    tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
+    ast_t *ast = ast_new(ref_config);
+    context_t *ctx = ctx_new(ref_gc);
+    ast->context = ctx;
 
-    str_set(mod->module.name, "__string__");
-    mod->module.builtin_func_infos = builtin_string_func_infos;
-
-    return mod;
+    return obj_new_module_by(
+        ref_gc,
+        "__str__",
+        mem_move(tkr),
+        mem_move(ast),
+        mem_move(ctx),
+        builtin_func_infos
+    );
 }

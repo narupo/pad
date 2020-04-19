@@ -11,6 +11,52 @@ get_var_ref(ast_t *ast, const char *identifier) {
 }
 
 object_t *
+pull_in_ref_by_owner(ast_t *ast, const object_t *idn_obj) {
+    assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
+
+    object_t *owner = ast->ref_dot_owner;
+    if (!owner) {
+        const char *idn = str_getc(idn_obj->identifier);
+        object_t *ref = get_var_ref(ast, idn);
+        if (!ref) {
+            return NULL;
+        }
+        if (ref->type == OBJ_TYPE_IDENTIFIER) {
+            return pull_in_ref_by(ast, ref);
+        }
+
+        return ref;
+    }
+
+again:
+    switch (owner->type) {
+    default: break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = str_getc(owner->identifier);
+        owner = get_var_ref(ast, idn);
+        if (!owner) {
+            return NULL;
+        }
+        if (owner->type == OBJ_TYPE_IDENTIFIER) {
+            goto again;
+        }
+    } break;
+    }
+
+    switch (owner->type) {
+    default:
+        return NULL;
+        break;
+    case OBJ_TYPE_MODULE: {
+        object_module_t *mod = &owner->module;
+        ast_t *ref_ast = mod->ast;
+        assert(ref_ast);
+        return pull_in_ref_by(ref_ast, idn_obj);
+    } break;
+    }
+}
+
+object_t *
 pull_in_ref_by(ast_t *ast, const object_t *idn_obj) {
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
 

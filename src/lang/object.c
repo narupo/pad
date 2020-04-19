@@ -299,7 +299,8 @@ obj_new_module_by(
     const char *name,
     tokenizer_t *move_tkr,
     ast_t *move_ast,
-    context_t *move_ctx
+    context_t *move_ctx,
+    builtin_func_info_t *infos
 ) {
     object_t *self = obj_new(ref_gc, OBJ_TYPE_MODULE);
 
@@ -309,6 +310,7 @@ obj_new_module_by(
     self->module.tokenizer = mem_move(move_tkr);
     self->module.ast = mem_move(move_ast);
     self->module.context = mem_move(move_ctx);
+    self->module.builtin_func_infos = infos;
 
     return self;
 }

@@ -11745,7 +11745,8 @@ test_trv_index(void) {
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
+        ast_debug(trv_traverse(ast, ctx));
+        showdetail();
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "1"));
     }
@@ -13379,7 +13380,7 @@ test_trv_dot(void) {
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
-        trv_traverse(ast, ctx);
+        ast_debug(trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "abc"));
     }
@@ -16000,7 +16001,10 @@ test_trv_import_stmt(void) {
         assert(!strcmp(ctx_getc_buf(ctx), "imported\n"));
     }
 
-    tkr_parse(tkr, "{@ import \"tests/lang/modules/hello.cap\" as hello \n hello.world() @}");
+    tkr_parse(tkr,
+        "{@ import \"tests/lang/modules/hello.cap\" as hello \n"
+        "hello.world() @}"
+    );
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         assert(!ast_has_error(ast));
@@ -16008,6 +16012,18 @@ test_trv_import_stmt(void) {
         (trv_traverse(ast, ctx));
         assert(!ast_has_error(ast));
         assert(!strcmp(ctx_getc_buf(ctx), "imported\nhello, world\n"));
+    }
+
+    tkr_parse(tkr,
+        "{@ import \"tests/lang/modules/count.cap\" as count \n"
+        "@}{: count.n :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error(ast));
+        assert(!strcmp(ctx_getc_buf(ctx), "45"));
     }
 
     ctx_del(ctx);
