@@ -24,7 +24,7 @@ BNF of Cap's template language
        import_stmt: import_as_stmt | from_import_stmt
     import_as_stmt: 'import' string 'as' identifier
   from_import_stmt: 'from' string 'import' import_vars
-       import_vars: import_var | '(' import_var [ ',' import_var ]* ')'
+       import_vars: import_var | '(' import_var [ ',' import_var ]* (',')? ')'
         import_var: identifier ( 'as' identifier )
 
            if_stmt: 'if' test ':' [ elems ]* ( elif_stmt | else_stmt | 'end' ) |
