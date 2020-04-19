@@ -23,7 +23,7 @@ enum {
  * and this structure has error handling mechanizm by error_detail variable
  */
 struct ast {
-    const config_t *config; // read only config
+    const config_t *ref_config; // read only config
     token_t **tokens; // token list with null at the last (DO NOT DELETE)
     token_t **ptr; // pointer to tokens for tokenizer (DO NOT DELETE)
     node_t *root; // pointer to root for compiler and traverser
@@ -56,12 +56,12 @@ ast_del(ast_t *self);
 /**
  * construct object
  *
- * @param[in] *config pointer to read-only config_t
+ * @param[in] *ref_config pointer to read-only config_t
  *
  * @return pointer to ast_t dynamic allocate memory (do ast_del)
  */
 ast_t * 
-ast_new(const config_t *config);
+ast_new(const config_t *ref_config);
 
 /**
  * move opts at ast

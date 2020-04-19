@@ -14,15 +14,22 @@
     if (ast->debug) { \
         string_t *s = NULL; \
         if (obj) s = obj_to_str(obj); \
-        fprintf(stderr, "debug: %5d: %*s: %3d: return %p (%s): %s\n", __LINE__, 40, __func__, dep, obj, (s ? str_getc(s) : "null"), ast_get_error_detail(ast)); \
+        fprintf(stderr, \
+            "debug: %5d: %*s: %3d: return %p (%s): %s\n", \
+            __LINE__, 40, __func__, dep, obj, (s ? str_getc(s) : "null"), ast_get_error_detail(ast)); \
         if (obj) str_del(s); \
         fflush(stderr); \
     } \
     return obj; \
 
-#define check(msg) \
+#define check(fmt, ...) \
     if (ast->debug) { \
-        fprintf(stderr, "debug: %5d: %*s: %3d: %s: %s\n", __LINE__, 40, __func__, dep, msg, ast_get_error_detail(ast)); \
+        fprintf(stderr, \
+            "debug: %5d: %*s: %3d: ", \
+            __LINE__, 40, __func__, dep \
+        ); \
+        fprintf(stderr, fmt, ##__VA_ARGS__); \
+        fprintf(stderr, ": %s\n", ast_get_error_detail(ast)); \
     } \
 
 #define vissf(fmt, ...) \
@@ -243,10 +250,13 @@ trv_ref_block(ast_t *ast, const node_t *node, int dep) {
         }
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = str_getc(result->identifier);
-        object_t *obj = get_var_ref(ast, idn);
+        object_t *obj = pull_in_ref_by(ast, result);
         if (!obj) {
-            ast_set_error_detail(ast, "\"%s\" is not defined in ref block", idn);
+            ast_set_error_detail(
+                ast,
+                "\"%s\" is not defined in ref block",
+                str_getc(result->identifier)
+            );
             obj_del(result);
             return_trav(NULL);
         }
@@ -469,7 +479,7 @@ trv_import_as_stmt(ast_t *ast, const node_t *node, int dep) {
     const char *path = str_getc(pathobj->string);
     const char *alias = str_getc(aliasobj->identifier);
 
-    importer_t *importer = importer_new(ast->config);
+    importer_t *importer = importer_new(ast->ref_config);
 
     if (!importer_import_as(
         importer,
@@ -5594,6 +5604,10 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             assert(rnode);
             assert(rnode->type == NODE_TYPE_CALL);
 
+            string_t *s = obj_to_str(lhs);
+            check("set ref_dot_owner of object (%d) %s", lhs->type, str_getc(s));
+            str_del(s);
+
             ast->ref_dot_owner = lhs;
             check("call _trv_traverse with index");
             object_t *result = _trv_traverse(ast, rnode, dep+1);
@@ -5602,10 +5616,24 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
                 return_trav(NULL);
             }
             if (!result) {
-                ast_set_error_detail(ast, "result is null");
+                ast_set_error_detail(ast, "result is null in dot");
                 obj_del(lhs);
                 return_trav(NULL);
             }
+
+            if (result->type == OBJ_TYPE_IDENTIFIER) {
+                object_t *obj = pull_in_ref_by_owner(ast, result);
+                if (!obj) {
+                    ast_set_error_detail(ast, "obj is null in dot");
+                    obj_del(lhs);
+                    obj_del(result);
+                    return_trav(NULL);                
+                }
+                obj_del(result);
+                result = obj;
+            }
+
+            check("unset ref_dot_owner");
             ast->ref_dot_owner = NULL;
 
             obj_del(lhs);
@@ -6452,17 +6480,36 @@ trv_invoke_owner_func_obj(ast_t *ast, const char *funcname, const object_t *drta
     if (!ref_owner) {
         return NULL;
     }
-    if (ref_owner->type != OBJ_TYPE_IDENTIFIER) {
-        return NULL; // not supported owner type
+
+again:
+    switch (ref_owner->type) {
+    default: break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *save_owner = ast->ref_dot_owner;
+        ast->ref_dot_owner = NULL;
+        ref_owner = pull_in_ref_by_owner(ast, ref_owner);
+        ast->ref_dot_owner = save_owner;
+        if (!ref_owner) {
+            return NULL;
+        }
+        if (ref_owner->type == OBJ_TYPE_IDENTIFIER) {
+            goto again;
+        }
+    } break;
     }
 
-    object_t *modobj = pull_in_ref_by(ast, ref_owner);
-    if (!modobj || modobj->type != OBJ_TYPE_MODULE) {
+    object_t *modobj = NULL;
+
+    switch (ref_owner->type) {
+    default:
         return NULL;
+        break;
+    case OBJ_TYPE_MODULE: {
+        modobj = ref_owner;
+    } break;
     }
 
     object_module_t *mod = &modobj->module;
-
     object_dict_t *varmap = ctx_get_varmap_at_global(mod->context);
     assert(varmap);
 
@@ -6509,7 +6556,7 @@ trv_invoke_builtin_modules(ast_t *ast, const char *funcname, object_t *args) {
             return NULL;
             break;
         case OBJ_TYPE_STRING: 
-            bltin_mod_name = "__string__";
+            bltin_mod_name = "__str__";
             break;
         case OBJ_TYPE_ARRAY:
             bltin_mod_name = "__array__";
@@ -6517,13 +6564,16 @@ trv_invoke_builtin_modules(ast_t *ast, const char *funcname, object_t *args) {
         case OBJ_TYPE_MODULE:
             module = owner;
             break;
-        case OBJ_TYPE_IDENTIFIER: 
-            owner = pull_in_ref_by(ast, owner);
+        case OBJ_TYPE_IDENTIFIER: {
+            object_t *save_owner = ast->ref_dot_owner;
+            ast->ref_dot_owner = NULL;
+            owner = pull_in_ref_by_owner(ast, owner);
+            ast->ref_dot_owner = save_owner;
             if (!owner) {
                 return NULL;
             }
             goto again;
-            break;
+        } break;
         }
     } else {
         bltin_mod_name = "__builtin__";
@@ -6921,19 +6971,19 @@ trv_import_builtin_modules(ast_t *ast) {
     object_dict_t *varmap = ctx_get_varmap(ast->context);
     object_t *mod = NULL;
 
-    mod = builtin_module_new(ast->ref_gc);
+    mod = builtin_module_new(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
-    mod = builtin_string_module_new(ast->ref_gc);
+    mod = builtin_string_module_new(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
-    mod = builtin_array_module_new(ast->ref_gc);
+    mod = builtin_array_module_new(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
-    mod = builtin_alias_module_new(ast->ref_gc);
+    mod = builtin_alias_module_new(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
-    mod = builtin_opts_module_new(ast->ref_gc);
+    mod = builtin_opts_module_new(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
     return ast;

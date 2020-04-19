@@ -67,7 +67,7 @@ builtin_exec(ast_t *ast, object_t *actual_args) {
     int argc = cstrarr_len(strarr);
     char **argv = cstrarr_escdel(strarr);
 
-    execcmd_t *execcmd = execcmd_new(ast->config, argc, argv);
+    execcmd_t *execcmd = execcmd_new(ast->ref_config, argc, argv);
     int result = execcmd_run(execcmd);
     execcmd_del(execcmd);
 
@@ -123,11 +123,18 @@ builtin_func_infos[] = {
 };
 
 object_t *
-builtin_module_new(gc_t *gc) {
-    object_t *mod = obj_new_module(gc);
+builtin_module_new(const config_t *ref_config, gc_t *ref_gc) {
+    tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
+    ast_t *ast = ast_new(ref_config);
+    context_t *ctx = ctx_new(ref_gc);
+    ast->context = ctx;
 
-    str_set(mod->module.name, "__builtin__");
-    mod->module.builtin_func_infos = builtin_func_infos;
-
-    return mod;
+    return obj_new_module_by(
+        ref_gc,
+        "__builtin__",
+        mem_move(tkr),
+        mem_move(ast),
+        mem_move(ctx),
+        builtin_func_infos
+    );
 }

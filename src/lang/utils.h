@@ -31,6 +31,18 @@ object_t *
 pull_in_ref_by(ast_t *ast, const object_t *idn_obj);
 
 /**
+ * see at ast->ref_dot_owner
+ * if ast has ref_dot_owner this function see it
+ * 
+ * @param[in] *ast     
+ * @param[in] *idn_obj 
+ * 
+ * @return 
+ */
+object_t *
+pull_in_ref_by_owner(ast_t *ast, const object_t *idn_obj);
+
+/**
  * copy value of index object
  *
  * @param[in] *ast       pointer to ast_t

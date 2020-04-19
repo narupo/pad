@@ -91,7 +91,8 @@ importer_import_as(
         path,
         mem_move(tkr),
         mem_move(ast),
-        mem_move(ctx)
+        mem_move(ctx),
+        NULL
     );
 
     object_dict_t *dst_global_varmap = ctx_get_varmap_at_global(dstctx);
