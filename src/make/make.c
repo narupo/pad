@@ -75,14 +75,11 @@ makecmd_run(makecmd_t *self) {
             return 1;
         }
     } else {
-        const char *cap_path = self->argv[1];
-        const char *org = get_origin(self->config, cap_path);
-        char drtpath[FILE_NPATH];
-        snprintf(drtpath, sizeof drtpath, "%s/%s", org, cap_path);
-
         char path[FILE_NPATH];
-        if (!symlink_follow_path(self->config, path, sizeof path, drtpath)) {
-            err_error("failed to follow path \"%s\"", cap_path);
+        const char *cap_path = self->argv[1];
+
+        if (!solve_cmdline_arg_path(self->config, path, sizeof path, cap_path)) {
+            err_error("failed to solve cap path");
             return 1;
         }
 
@@ -95,6 +92,7 @@ makecmd_run(makecmd_t *self) {
 
     char *compiled = compile_argv(self->config, self->argc-1, self->argv+1, src);
     if (!compiled) {
+        err_error("failed to compile \"%s\"", self->argv[1]);
         free(src);
         return 1;
     }
