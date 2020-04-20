@@ -114,11 +114,25 @@ again:
     return obj_new_int(ast->ref_gc, len);
 }
 
+static object_t *
+builtin_die(ast_t *ast, object_t *actual_args) {
+    object_t *result = builtin_puts(ast, actual_args);
+    obj_del(result);
+
+    fflush(stdout);
+    fprintf(stderr, "%s", ctx_getc_buf(ast->context));
+    fflush(stderr);
+
+    exit(1);
+    return NULL;
+}
+
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"puts", builtin_puts},
     {"exec", builtin_exec},
     {"len", builtin_len},
+    {"die", builtin_die},
     {0},
 };
 
