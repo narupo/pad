@@ -127,12 +127,35 @@ builtin_die(ast_t *ast, object_t *actual_args) {
     return NULL;
 }
 
+static object_t *
+builtin_exit(ast_t *ast, object_t *actual_args) {
+    assert(actual_args->type == OBJ_TYPE_ARRAY);
+    object_array_t *args = actual_args->objarr;
+
+    if (objarr_len(args) != 1) {
+        ast_set_error_detail(ast, "invalid arguments length for exit");
+        return NULL;
+    }
+
+    const object_t *codeobj = objarr_getc(args, 0);
+    if (codeobj->type != OBJ_TYPE_INTEGER) {
+        ast_set_error_detail(ast, "invalid exit code type for exit");
+        return NULL;
+    }
+
+    long exit_code = codeobj->lvalue;
+    exit(exit_code);
+
+    return NULL;
+}
+
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"puts", builtin_puts},
     {"exec", builtin_exec},
     {"len", builtin_len},
     {"die", builtin_die},
+    {"exit", builtin_exit},
     {0},
 };
 
