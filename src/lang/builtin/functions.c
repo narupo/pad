@@ -120,7 +120,11 @@ builtin_die(ast_t *ast, object_t *actual_args) {
     obj_del(result);
 
     fflush(stdout);
+
+    // FIX ME!
+    // ctx_getc_buf return stdout buffer. that is not stderr buffer
     fprintf(stderr, "%s", ctx_getc_buf(ast->context));
+
     fflush(stderr);
 
     exit(1);
