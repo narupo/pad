@@ -143,6 +143,9 @@ builtin_exit(ast_t *ast, object_t *actual_args) {
         return NULL;
     }
 
+    printf("%s", ctx_getc_buf(ast->context));
+    fflush(stdout);
+
     long exit_code = codeobj->lvalue;
     exit(exit_code);
 
