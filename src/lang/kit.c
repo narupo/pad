@@ -98,5 +98,5 @@ kit_clear_context_buffer(kit_t *self) {
 
 const char *
 kit_getc_compiled(const kit_t *self) {
-    return ctx_getc_buf(self->ctx);
+    return ctx_getc_stdout_buf(self->ctx);
 }

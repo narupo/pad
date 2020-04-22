@@ -311,7 +311,7 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
     tkr_del(tkr);
     ast_del(ast);
 
-    char *compiled = cstr_edup(ctx_getc_buf(ctx));
+    char *compiled = cstr_edup(ctx_getc_stdout_buf(ctx));
     ctx_del(ctx);
     gc_del(gc);
 
@@ -440,7 +440,7 @@ load_path_var_from_resource(const config_t *config, const char *rcpath) {
         return NULL;
     }
 
-    printf("%s", ctx_getc_buf(ctx));
+    printf("%s", ctx_getc_stdout_buf(ctx));
     fflush(stdout);
 
     char *path = cstr_edup(str_getc(item->value->string));

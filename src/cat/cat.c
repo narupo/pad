@@ -325,7 +325,7 @@ catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
         tkr_del(tkr);
         ast_del(ast);
 
-        p = ctx_getc_buf(ctx);
+        p = ctx_getc_stdout_buf(ctx);
     }
 
     // set indent

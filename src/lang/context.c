@@ -9,7 +9,8 @@ enum {
 struct context {
     gc_t *ref_gc; // reference to gc (DO NOT DELETE)
     alinfo_t *alinfo; // alias info for builtin alias module
-    string_t *buf; // stdout buffer in context
+    string_t *stdout_buf; // stdout buffer in context
+    string_t *stderr_buf; // stderr buffer in context
     scope_t *scope; // scope in context
     bool do_break;
     bool do_continue;
@@ -24,7 +25,8 @@ ctx_del(context_t *self) {
 
     // do not delete ref_gc (this is reference)
     alinfo_del(self->alinfo);
-    str_del(self->buf);
+    str_del(self->stdout_buf);
+    str_del(self->stderr_buf);
     scope_del(self->scope);
     free(self);
 }
@@ -36,7 +38,8 @@ ctx_escdel_global_varmap(context_t *self) {
     }
 
     alinfo_del(self->alinfo);
-    str_del(self->buf);
+    str_del(self->stdout_buf);
+    str_del(self->stderr_buf);
     object_dict_t *varmap = scope_escdel_head_varmap(self->scope);
     free(self);
 
@@ -64,7 +67,8 @@ ctx_new(gc_t *ref_gc) {
 
     self->ref_gc = ref_gc;
     self->alinfo = alinfo_new();
-    self->buf = str_new();
+    self->stdout_buf = str_new();
+    self->stderr_buf = str_new();
     self->scope = scope_new(ref_gc);
     set_default_global_vars(self);
 
@@ -74,7 +78,7 @@ ctx_new(gc_t *ref_gc) {
 void
 ctx_clear(context_t *self) {
     alinfo_clear(self->alinfo);
-    str_clear(self->buf);
+    str_clear(self->stdout_buf);
     scope_clear(self->scope);
     set_default_global_vars(self);
 }
@@ -106,13 +110,18 @@ ctx_get_alias_desc(context_t *self, const char *key) {
 
 context_t *
 ctx_pushb_buf(context_t *self, const char *str) {
-    str_app(self->buf, str);
+    str_app(self->stdout_buf, str);
     return self;
 }
 
 const char *
-ctx_getc_buf(const context_t *self) {
-    return str_getc(self->buf);
+ctx_getc_stdout_buf(const context_t *self) {
+    return str_getc(self->stdout_buf);
+}
+
+const char *
+ctx_getc_stderr_buf(const context_t *self) {
+    return str_getc(self->stderr_buf);
 }
 
 const alinfo_t *
@@ -192,5 +201,5 @@ ctx_get_gc(context_t *self) {
 
 void
 ctx_clear_buf(context_t *self) {
-    str_clear(self->buf);
+    str_clear(self->stdout_buf);
 }
