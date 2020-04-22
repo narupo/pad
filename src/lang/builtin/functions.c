@@ -1,13 +1,13 @@
 #include <lang/builtin/functions.h>
 
 static object_t *
-builtin_puts(ast_t *ast, object_t *actual_args) {
+builtin_eputs(ast_t *ast, object_t *actual_args) {
     assert(actual_args->type == OBJ_TYPE_ARRAY);
 
     object_array_t *args = actual_args->objarr;
 
     if (!objarr_len(args)) {
-        ctx_pushb_buf(ast->context, "\n");
+        ctx_pushb_stderr_buf(ast->context, "\n");
         return obj_new_int(ast->ref_gc, 0);
     }
 
@@ -23,7 +23,7 @@ builtin_puts(ast_t *ast, object_t *actual_args) {
             continue;
         }
         str_pushb(s, ' ');
-        ctx_pushb_buf(ast->context, str_getc(s));
+        ctx_pushb_stderr_buf(ast->context, str_getc(s));
         str_del(s);
     }
     if (arrlen) {
@@ -35,12 +35,56 @@ builtin_puts(ast_t *ast, object_t *actual_args) {
         if (!s) {
             goto done;
         }
-        ctx_pushb_buf(ast->context, str_getc(s));
+        ctx_pushb_stderr_buf(ast->context, str_getc(s));
         str_del(s);
     }
 
 done:
-    ctx_pushb_buf(ast->context, "\n");
+    ctx_pushb_stderr_buf(ast->context, "\n");
+    return obj_new_int(ast->ref_gc, arrlen);
+}
+
+static object_t *
+builtin_puts(ast_t *ast, object_t *actual_args) {
+    assert(actual_args->type == OBJ_TYPE_ARRAY);
+
+    object_array_t *args = actual_args->objarr;
+
+    if (!objarr_len(args)) {
+        ctx_pushb_stdout_buf(ast->context, "\n");
+        return obj_new_int(ast->ref_gc, 0);
+    }
+
+    int32_t arrlen = objarr_len(args);
+
+    for (int32_t i = 0; i < arrlen-1; ++i) {
+        object_t *obj = objarr_get(args, i);
+        assert(obj);
+        object_t *copy = copy_object_value(ast, obj);
+        string_t *s = obj_to_string(ast, copy);
+        obj_del(copy);
+        if (!s) {
+            continue;
+        }
+        str_pushb(s, ' ');
+        ctx_pushb_stdout_buf(ast->context, str_getc(s));
+        str_del(s);
+    }
+    if (arrlen) {
+        object_t *obj = objarr_get(args, arrlen-1);
+        assert(obj);
+        object_t *copy = copy_object_value(ast, obj);
+        string_t *s = obj_to_string(ast, copy);
+        obj_del(copy);
+        if (!s) {
+            goto done;
+        }
+        ctx_pushb_stdout_buf(ast->context, str_getc(s));
+        str_del(s);
+    }
+
+done:
+    ctx_pushb_stdout_buf(ast->context, "\n");
     return obj_new_int(ast->ref_gc, arrlen);
 }
 
@@ -116,7 +160,7 @@ again:
 
 static object_t *
 builtin_die(ast_t *ast, object_t *actual_args) {
-    object_t *result = builtin_puts(ast, actual_args);
+    object_t *result = builtin_eputs(ast, actual_args);
     obj_del(result);
 
     fflush(stdout);
@@ -158,6 +202,7 @@ builtin_exit(ast_t *ast, object_t *actual_args) {
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"puts", builtin_puts},
+    {"eputs", builtin_eputs},
     {"exec", builtin_exec},
     {"len", builtin_len},
     {"die", builtin_die},
