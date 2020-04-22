@@ -43,10 +43,11 @@ findcmd_show_usage(findcmd_t *self) {
         "\n"
         "The options are:\n"
         "\n"
-        "    -h, --help         show usage\n"
-        "    -n, --normalize    normalize path\n"
-        "    -o, --origin       origin path\n"
-        "    -a, --alias        find aliases\n"
+        "    -h, --help             show usage\n"
+        "    -n, --normalize        normalize path\n"
+        "    -o, --origin           origin path\n"
+        "    -a, --alias            find aliases\n"
+        "    -m, --max-recursion    max recursion depth (default to 8)\n"
         "\n"
     );
     fflush(stderr);
