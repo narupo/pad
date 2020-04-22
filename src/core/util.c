@@ -311,11 +311,14 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
     tkr_del(tkr);
     ast_del(ast);
 
-    char *compiled = cstr_edup(ctx_getc_stdout_buf(ctx));
+    string_t *buf = str_new();
+    str_app(buf, ctx_getc_stdout_buf(ctx));
+    str_app(buf, ctx_getc_stderr_buf(ctx));
+
     ctx_del(ctx);
     gc_del(gc);
 
-    return compiled;
+    return str_escdel(buf);
 }
 
 void
