@@ -400,7 +400,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
     for (; *self->ptr ;) {
         char c = *self->ptr++;
         if (self->debug) {
-            fprintf(stderr, "m[%d] c[%c]\n", m, c);
+            fprintf(stderr, "m[%d] c[%c] buf[%s]\n", m, c, str_getc(self->buf));
         }
 
         if (m == 0) { // first
@@ -600,6 +600,10 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 goto fail;
             }
         }
+    }
+
+    if (self->debug) {
+        fprintf(stderr, "end m[%d] buf[%s]\n", m, str_getc(self->buf));
     }
 
     tkr_store_textblock(self);
