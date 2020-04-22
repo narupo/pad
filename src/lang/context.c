@@ -109,8 +109,14 @@ ctx_get_alias_desc(context_t *self, const char *key) {
 }
 
 context_t *
-ctx_pushb_buf(context_t *self, const char *str) {
+ctx_pushb_stdout_buf(context_t *self, const char *str) {
     str_app(self->stdout_buf, str);
+    return self;
+}
+
+context_t *
+ctx_pushb_stderr_buf(context_t *self, const char *str) {
+    str_app(self->stderr_buf, str);
     return self;
 }
 

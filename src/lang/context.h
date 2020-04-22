@@ -89,7 +89,7 @@ const char *
 ctx_get_alias_desc(context_t *self, const char *key);
 
 /**
- * push back strings at buffer in context
+ * push back strings at stdout buffer in context
  *
  * @param[in] *self pointer to context_t
  * @param[in] *str  pointer to strings
@@ -98,7 +98,19 @@ ctx_get_alias_desc(context_t *self, const char *key);
  * @return failed to pointer to NULL
  */
 context_t * 
-ctx_pushb_buf(context_t *self, const char *str);
+ctx_pushb_stdout_buf(context_t *self, const char *str);
+
+/**
+ * push back strings at stdout buffer in context
+ *
+ * @param[in] *self pointer to context_t
+ * @param[in] *str  pointer to strings
+ *
+ * @return success to pointer to context_t
+ * @return failed to pointer to NULL
+ */
+context_t * 
+ctx_pushb_stderr_buf(context_t *self, const char *str);
 
 /**
  * get stdout buffer read-only

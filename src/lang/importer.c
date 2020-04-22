@@ -122,7 +122,7 @@ importer_import_as(
         return NULL;
     }
 
-    ctx_pushb_buf(dstctx, ctx_getc_stdout_buf(modobj->module.context));
+    ctx_pushb_stdout_buf(dstctx, ctx_getc_stdout_buf(modobj->module.context));
     ctx_clear_buf(modobj->module.context);
 
     object_dict_t *dst_global_varmap = ctx_get_varmap_at_global(dstctx);
@@ -152,7 +152,7 @@ importer_from_import(
         return NULL;
     }
 
-    ctx_pushb_buf(dstctx, ctx_getc_stdout_buf(modobj->module.context));
+    ctx_pushb_stdout_buf(dstctx, ctx_getc_stdout_buf(modobj->module.context));
     ctx_clear_buf(modobj->module.context);
 
 /**

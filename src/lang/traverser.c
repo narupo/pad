@@ -235,18 +235,18 @@ trv_ref_block(ast_t *ast, const node_t *node, int dep) {
         err_die("unsupported result type in traverse ref block");
         break;
     case OBJ_TYPE_NIL:
-        ctx_pushb_buf(ast->context, "nil");
+        ctx_pushb_stdout_buf(ast->context, "nil");
         break;
     case OBJ_TYPE_INTEGER: {
         char n[1024]; // very large
         snprintf(n, sizeof n, "%ld", result->lvalue);
-        ctx_pushb_buf(ast->context, n);
+        ctx_pushb_stdout_buf(ast->context, n);
     } break;
     case OBJ_TYPE_BOOL: {
         if (result->boolean) {
-            ctx_pushb_buf(ast->context, "true");
+            ctx_pushb_stdout_buf(ast->context, "true");
         } else {
-            ctx_pushb_buf(ast->context, "false");
+            ctx_pushb_stdout_buf(ast->context, "false");
         }
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -261,20 +261,20 @@ trv_ref_block(ast_t *ast, const node_t *node, int dep) {
             return_trav(NULL);
         }
         string_t *str = obj_to_str(obj);
-        ctx_pushb_buf(ast->context, str_getc(str));
+        ctx_pushb_stdout_buf(ast->context, str_getc(str));
         str_del(str);
     } break;
     case OBJ_TYPE_STRING: {
-        ctx_pushb_buf(ast->context, str_getc(result->string));
+        ctx_pushb_stdout_buf(ast->context, str_getc(result->string));
     } break;
     case OBJ_TYPE_ARRAY: {
-        ctx_pushb_buf(ast->context, "(array)");
+        ctx_pushb_stdout_buf(ast->context, "(array)");
     } break;
     case OBJ_TYPE_DICT: {
-        ctx_pushb_buf(ast->context, "(dict)");
+        ctx_pushb_stdout_buf(ast->context, "(dict)");
     } break;
     case OBJ_TYPE_FUNC: {
-        ctx_pushb_buf(ast->context, "(function)");
+        ctx_pushb_stdout_buf(ast->context, "(function)");
     } break;
     } // switch
 
@@ -288,7 +288,7 @@ trv_text_block(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_text_block_t *text_block = node->real;
     if (text_block->text) {
-        ctx_pushb_buf(ast->context, text_block->text);
+        ctx_pushb_stdout_buf(ast->context, text_block->text);
         check("store text block to buf");
     }
 
@@ -6542,7 +6542,7 @@ again:
     assert(funcobj);
 
     object_t *result = invoke_func_obj(mod->ast, funcobj, drtargs, dep+1);
-    ctx_pushb_buf(ast->context, ctx_getc_stdout_buf(mod->context));
+    ctx_pushb_stdout_buf(ast->context, ctx_getc_stdout_buf(mod->context));
     return result;
 }
 
