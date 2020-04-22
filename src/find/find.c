@@ -1,5 +1,9 @@
 #include "find/find.h"
 
+enum {
+    FINDCMD_DEF_MAX_RECURSION = 8,
+};
+
 /**
  * Structure of options
  */
@@ -7,6 +11,7 @@ struct opts {
     bool is_help;
     bool is_normalize;
     bool is_alias;
+    int max_recursion;
     char origin[FILE_NPATH];
 };
 
@@ -63,10 +68,12 @@ findcmd_parse_opts(findcmd_t *self) {
         {"normalize", no_argument, 0, 'n'},
         {"alias", no_argument, 0, 'a'},
         {"origin", required_argument, 0, 'o'},
+        {"max-recursion", required_argument, 0, 'm'},
         {0},
     };
 
     self->opts = (struct opts){0};
+    self->opts.max_recursion = FINDCMD_DEF_MAX_RECURSION;
 
     extern int opterr;
     extern int optind;
@@ -75,7 +82,7 @@ findcmd_parse_opts(findcmd_t *self) {
 
     for (;;) {
         int optsindex;
-        int cur = getopt_long(self->argc, self->argv, "hnao:", longopts, &optsindex);
+        int cur = getopt_long(self->argc, self->argv, "hnao:m:", longopts, &optsindex);
         if (cur == -1) {
             break;
         }
@@ -86,6 +93,7 @@ findcmd_parse_opts(findcmd_t *self) {
         case 'n': self->opts.is_normalize = true; break;
         case 'a': self->opts.is_alias = true; break;
         case 'o': snprintf(self->opts.origin, sizeof self->opts.origin, "%s", optarg); break;
+        case 'm': self->opts.max_recursion = atoi(optarg); break;
         case '?':
         default:
             err_die("unknown option");
@@ -153,7 +161,11 @@ join_cap_path(char *dst, int32_t dstsz, const char *lhs, const char *rhs) {
 }
 
 static int
-find_files_r(const findcmd_t *self, const char *dirpath, const char *cap_dirpath) {
+find_files_r(const findcmd_t *self, const char *dirpath, const char *cap_dirpath, int dep) {
+    if (dep >= self->opts.max_recursion) {
+        return 1;
+    }
+
     file_dir_t *dir = file_diropen(dirpath);
     if (!dir) {
         err_error("failed to open directory \"%s\"", dirpath);
@@ -195,8 +207,10 @@ find_files_r(const findcmd_t *self, const char *dirpath, const char *cap_dirpath
             }
         }
 
-        if (file_isdir(path)) {
-            ret = find_files_r(self, path, cap_path);
+        if (symlink_is_link_file(path)) {
+            // pass
+        } else if (file_isdir(path)) {
+            ret = find_files_r(self, path, cap_path, dep+1);
         }
 
         file_dirnodedel(node);
@@ -225,8 +239,12 @@ has_contents(const findcmd_t *self, const dict_t *alias_kvmap, int32_t *maxkeyle
 }
 
 static int
-find_aliases_r(const findcmd_t *self, const char *dirpath, const char *cap_dirpath) {
+find_aliases_r(const findcmd_t *self, const char *dirpath, const char *cap_dirpath, int dep) {
     char alpath[FILE_NPATH];
+    if (dep >= self->opts.max_recursion) {
+        return 1;
+    }
+
     if (!file_solvefmt(alpath, sizeof alpath, "%s/.caprc", dirpath)) {
         // not error
     }
@@ -297,7 +315,7 @@ find_aliases_r(const findcmd_t *self, const char *dirpath, const char *cap_dirpa
         }
 
         if (file_isdir(path)) {
-            ret = find_aliases_r(self, path, cap_path);
+            ret = find_aliases_r(self, path, cap_path, dep+1);
         }
 
         file_dirnodedel(node);
@@ -319,10 +337,10 @@ find_start(const findcmd_t *self) {
     }
     
     if (self->opts.is_alias) {
-        return find_aliases_r(self, path, self->opts.origin);
+        return find_aliases_r(self, path, self->opts.origin, 0);
     }
 
-    return find_files_r(self, path, self->opts.origin);
+    return find_files_r(self, path, self->opts.origin, 0);
 }
 
 int
