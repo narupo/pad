@@ -147,6 +147,8 @@ builtin_exit(ast_t *ast, object_t *actual_args) {
         return NULL;
     }
 
+    // TODO: fflush stderr buffer
+
     printf("%s", ctx_getc_buf(ast->context));
     fflush(stdout);
 
