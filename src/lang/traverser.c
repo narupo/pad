@@ -6542,7 +6542,7 @@ again:
     assert(funcobj);
 
     object_t *result = invoke_func_obj(mod->ast, funcobj, drtargs, dep+1);
-    ctx_pushb_buf(ast->context, ctx_getc_buf(mod->context));
+    ctx_pushb_buf(ast->context, ctx_getc_stdout_buf(mod->context));
     return result;
 }
 

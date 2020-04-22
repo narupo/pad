@@ -101,14 +101,24 @@ context_t *
 ctx_pushb_buf(context_t *self, const char *str);
 
 /**
- * get buffer read-only
+ * get stdout buffer read-only
  *
  * @param[in] *self pointer to context_t
  *
  * @return pointer to buffer
  */
 const char * 
-ctx_getc_buf(const context_t *self);
+ctx_getc_stdout_buf(const context_t *self);
+
+/**
+ * get stderr buffer read-only
+ *
+ * @param[in] *self pointer to context_t
+ *
+ * @return pointer to buffer
+ */
+const char * 
+ctx_getc_stderr_buf(const context_t *self);
 
 /**
  * get alinfo read-only
