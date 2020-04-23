@@ -158,3 +158,12 @@ tkr_get_tokens(tokenizer_t *self);
  */
 void
 tkr_set_debug(tokenizer_t *self, bool debug);
+
+/**
+ * trace error stack at stream
+ *
+ * @param[in] *self
+ * @param[in] *fout
+ */
+void
+tkr_trace_error_stack(const tokenizer_t *self, FILE *fout);

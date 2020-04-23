@@ -87,7 +87,7 @@ makecmd_run(makecmd_t *self) {
         if (!src) {
             err_error("failed to read from \"%s\"", path);
             return 1;
-        }        
+        }
     }
 
     char *compiled = compile_argv(self->config, self->argc-1, self->argv+1, src);
