@@ -75,7 +75,7 @@ pull_in_ref_by(ast_t *ast, const object_t *idn_obj) {
 object_t *
 copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
     assert(index_obj && index_obj->type == OBJ_TYPE_INDEX);
-    
+
     assert(index_obj->index.operand);
     object_t *operand = obj_new_other(index_obj->index.operand);
     object_t *tmp_operand = NULL;
@@ -92,7 +92,7 @@ copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
         if (el->type == OBJ_TYPE_IDENTIFIER) {
             idx = pull_in_ref_by(ast, el);
             if (!idx) {
-                ast_set_error_detail(ast, "\"%s\" is not defined in index object", str_getc(el->identifier));
+                ast_pushb_error(ast, "\"%s\" is not defined in index object", str_getc(el->identifier));
                 obj_del(operand);
                 return NULL;
             }
@@ -108,11 +108,11 @@ copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
 
         if (operand->type == OBJ_TYPE_IDENTIFIER) {
             object_t *ref = pull_in_ref_by(ast, operand);
-            if (ast_has_error(ast)) {
+            if (ast_has_error_stack(ast)) {
                 obj_del(operand);
                 return NULL;
             } else if (!ref) {
-                ast_set_error_detail(ast, "\"%s\" is not defined in get value of index object", str_getc(operand->identifier));
+                ast_pushb_error(ast, "\"%s\" is not defined in get value of index object", str_getc(operand->identifier));
                 obj_del(operand);
                 return NULL;
             }
@@ -122,18 +122,18 @@ copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
 
         switch (operand->type) {
         default:
-            ast_set_error_detail(ast, "invalid operand type (%d) in get value of index object", operand->type);
+            ast_pushb_error(ast, "invalid operand type (%d) in get value of index object", operand->type);
             obj_del(operand);
             break;
         case OBJ_TYPE_ARRAY: {
             if (idx->type != OBJ_TYPE_INTEGER) {
-                ast_set_error_detail(ast, "invalid array index value. value is not integer");
+                ast_pushb_error(ast, "invalid array index value. value is not integer");
                 obj_del(operand);
                 return NULL;
             }
 
             if (ikey < 0 || ikey >= objarr_len(operand->objarr)) {
-                ast_set_error_detail(ast, "index out of range of array");
+                ast_pushb_error(ast, "index out of range of array");
                 obj_del(operand);
                 return NULL;
             }
@@ -145,13 +145,13 @@ copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
         } break;
         case OBJ_TYPE_STRING: {
             if (idx->type != OBJ_TYPE_INTEGER) {
-                ast_set_error_detail(ast, "invalid string index value. value is not integer");
+                ast_pushb_error(ast, "invalid string index value. value is not integer");
                 obj_del(operand);
                 return NULL;
             }
 
             if (ikey < 0 || ikey >= str_len(operand->string)) {
-                ast_set_error_detail(ast, "index out of range of string");
+                ast_pushb_error(ast, "index out of range of string");
                 obj_del(operand);
                 return NULL;
             }
@@ -159,13 +159,13 @@ copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
             const char ch = str_getc(operand->string)[ikey];
             string_t *str = str_new();
             str_pushb(str, ch);
-            
+
             obj_del(operand);
             operand = obj_new_str(ast->ref_gc, str);
         } break;
         case OBJ_TYPE_DICT: {
             if (idx->type != OBJ_TYPE_STRING) {
-                ast_set_error_detail(ast, "invalid dict index value. value is not a string");
+                ast_pushb_error(ast, "invalid dict index value. value is not a string");
                 obj_del(operand);
                 return NULL;
             }
@@ -197,7 +197,7 @@ obj_to_string(ast_t *ast, const object_t *obj) {
     case OBJ_TYPE_IDENTIFIER: {
         object_t *var = pull_in_ref_by(ast, obj);
         if (!var) {
-            ast_set_error_detail(ast, "\"%s\" is not defined in object to string", str_getc(obj->identifier));
+            ast_pushb_error(ast, "\"%s\" is not defined in object to string", str_getc(obj->identifier));
             return NULL;
         }
         return obj_to_str(var);

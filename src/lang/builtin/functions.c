@@ -95,7 +95,7 @@ builtin_exec(ast_t *ast, object_t *actual_args) {
     object_array_t *args = actual_args->objarr;
 
     if (objarr_len(args) != 1) {
-        ast_set_error_detail(ast, "invalid arguments length of builtin exec function");
+        ast_pushb_error(ast, "invalid arguments length of builtin exec function");
         return NULL;
     }
 
@@ -125,7 +125,7 @@ builtin_len(ast_t *ast, object_t *actual_args) {
 
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_set_error_detail(ast, "len function need one argument");
+        ast_pushb_error(ast, "len function need one argument");
         return NULL;
     }
 
@@ -135,13 +135,13 @@ builtin_len(ast_t *ast, object_t *actual_args) {
 again:
     switch (arg->type) {
     default:
-        ast_set_error_detail(ast, "not supported object (%d) for len", arg->type);
+        ast_pushb_error(ast, "not supported object (%d) for len", arg->type);
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *obj = pull_in_ref_by(ast, arg);
         if (!obj) {
-            ast_set_error_detail(ast, "not found object for len");
+            ast_pushb_error(ast, "not found object for len");
             return NULL;
         }
         arg = obj;
@@ -177,13 +177,13 @@ builtin_exit(ast_t *ast, object_t *actual_args) {
     object_array_t *args = actual_args->objarr;
 
     if (objarr_len(args) != 1) {
-        ast_set_error_detail(ast, "invalid arguments length for exit");
+        ast_pushb_error(ast, "invalid arguments length for exit");
         return NULL;
     }
 
     const object_t *codeobj = objarr_getc(args, 0);
     if (codeobj->type != OBJ_TYPE_INTEGER) {
-        ast_set_error_detail(ast, "invalid exit code type for exit");
+        ast_pushb_error(ast, "invalid exit code type for exit");
         return NULL;
     }
 

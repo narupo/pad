@@ -24,11 +24,11 @@ struct catcmd {
 
 /**
  * Parse options
- * 
- * @param[in] *self   
- * @param[in] argc    
- * @param[in] *argv[] 
- * 
+ *
+ * @param[in] *self
+ * @param[in] argc
+ * @param[in] *argv[]
+ *
  * @return success to pointer to self
  * @return failed to NULL
  */
@@ -125,11 +125,11 @@ catcmd_new(const config_t *config, int argc, char **argv) {
 
 /**
  * Make file path for concatenate
- * 
+ *
  * @param[in] *dst destination buffer
  * @param[in] dstsz size of destination buffer
  * @param[in] *cap_path string of cap_path
- * 
+ *
  * @return success to pointer to destination buffer
  * @return failed to NULL
  */
@@ -184,10 +184,10 @@ catcmd_setindent(catcmd_t *self, char *buf, size_t bufsize) {
 
 /**
  * Concatenate fin to fout
- * 
+ *
  * @param[in] *fout destination stream
  * @param[in] *fin source stream
- * 
+ *
  * @return success to number of zero
  * @return failed to not a number of zero
  */
@@ -302,24 +302,24 @@ catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
         ast_t *ast = ast_new(self->config);
 
         tkr_parse(tkr, str_getc(buf));
-        if (tkr_has_error(tkr)) {
-            err_error("%s", tkr_get_error_detail(tkr));
+        if (tkr_has_error_stack(tkr)) {
+            err_error("%s", tkr_getc_first_error_message(tkr));
             ret = false;
             goto fail;
         }
 
         cc_compile(ast, tkr_get_tokens(tkr));
-        if (ast_has_error(ast)) {
-            err_error("%s", ast_get_error_detail(ast));
+        if (ast_has_error_stack(ast)) {
+            err_error("%s", ast_getc_first_error_message(ast));
             ret = false;
             goto fail;
         }
 
         trv_traverse(ast, ctx);
-        if (ast_has_error(ast)) {
-            err_error("%s", ast_get_error_detail(ast));
+        if (ast_has_error_stack(ast)) {
+            err_error("%s", ast_getc_first_error_message(ast));
             ret = false;
-            goto fail;        
+            goto fail;
         }
 
         tkr_del(tkr);
@@ -383,7 +383,7 @@ catcmd_read_file(catcmd_t *self, const char *path) {
         return NULL;
     }
 
-    string_t *buf = catcmd_read_stream(self, fin);    
+    string_t *buf = catcmd_read_stream(self, fin);
 
     if (fclose(fin) < 0) {
         str_del(buf);
@@ -424,7 +424,7 @@ catcmd_run(catcmd_t *self) {
             str_del(stdinbuf);
             continue;
         }
-        
+
         char path[FILE_NPATH];
         if (!catcmd_makepath(self, path, sizeof path, name)) {
             ++ret;

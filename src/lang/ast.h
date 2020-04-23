@@ -33,7 +33,6 @@ struct ast {
     gc_t *ref_gc; // reference to gc (DO NOT DELETE)
     object_t *ref_dot_owner; // owner object for dot operator (owner.right_hand["key"]) for traverser (DO NOT DELETE)
     int32_t import_level; // number of import level
-    char error_detail[AST_ERR_DETAIL_SIZE]; // error detail
     errstack_t *error_stack; // error stack for errors
     bool debug; // if do debug to true
 };
@@ -85,18 +84,6 @@ const node_t *
 ast_getc_root(const ast_t *self);
 
 /**
- * @deprecated use ast_pushb_error
- *
- * set error message at ast
- *
- * @param[in] *self pointer to ast_t
- * @param[in] *fmt  format strings
- * @param[in] ...   arguments
- */
-void
-ast_set_error_detail(ast_t *self, const char *fmt, ...);
-
-/**
  * push back error at ast error stack
  *
  * @param[in] ast pointer to ast_t
@@ -104,7 +91,7 @@ ast_set_error_detail(ast_t *self, const char *fmt, ...);
  * @param[in] ... arguments of format
  */
 #define ast_pushb_error(ast, fmt, ...) \
-    errstack_pushb(ast->error_stack, __FILE__, __LINE__, __func__, fmt, __VA_ARGS__) \
+    errstack_pushb(ast->error_stack, __FILE__, __LINE__, __func__, fmt, ##__VA_ARGS__)
 
 /**
  * clear ast state (will call ast_del_nodes)
@@ -113,29 +100,6 @@ ast_set_error_detail(ast_t *self, const char *fmt, ...);
  */
 void
 ast_clear(ast_t *self);
-
-/**
- * @deprecated
- *
- * get error message from ast read-only
- *
- * @param[in] *self pointer to ast_t
- *
- * @return pointer to error message
- */
-const char *
-ast_get_error_detail(const ast_t *self);
-
-/**
- * get last error message from error stack
- *
- * @param[in] *self
- *
- * @return if has error stack then return pointer to message of last error
- * @return if not has error stack then return NULL
- */
-const char *
-ast_getc_last_error_message(const ast_t *self);
 
 /**
  * get first error message from error stack
@@ -149,16 +113,15 @@ const char *
 ast_getc_first_error_message(const ast_t *self);
 
 /**
- * @deprecated use ast_has_error_stack
+ * get last error message from error stack
  *
- * if ast has error state then return true else return false
+ * @param[in] *self
  *
- * @param[in] *self pointer to ast_t
- *
- * @return if has error then true else false
+ * @return if has error stack then return pointer to message of last error
+ * @return if not has error stack then return NULL
  */
-bool
-ast_has_error(const ast_t *self);
+const char *
+ast_getc_last_error_message(const ast_t *self);
 
 /**
  * if ast has error stack then return true else return false

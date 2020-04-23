@@ -63,8 +63,8 @@ kit_compile_from_string(kit_t *self, const char *str) {
     opts_t *opts = opts_new();
 
     tkr_parse(self->tkr, str);
-    if (tkr_has_error(self->tkr)) {
-        snprintf(self->error, sizeof self->error, "%s", tkr_get_error_detail(self->tkr));
+    if (tkr_has_error_stack(self->tkr)) {
+        snprintf(self->error, sizeof self->error, "%s", tkr_getc_first_error_message(self->tkr));
         return NULL;
     }
 
@@ -72,14 +72,14 @@ kit_compile_from_string(kit_t *self, const char *str) {
     opts = NULL;
 
     cc_compile(self->ast, tkr_get_tokens(self->tkr));
-    if (ast_has_error(self->ast)) {
-        snprintf(self->error, sizeof self->error, "%s", ast_get_error_detail(self->ast));
+    if (ast_has_error_stack(self->ast)) {
+        snprintf(self->error, sizeof self->error, "%s", ast_getc_first_error_message(self->ast));
         return NULL;
     }
 
     trv_traverse(self->ast, self->ctx);
-    if (ast_has_error(self->ast)) {
-        snprintf(self->error, sizeof self->error, "%s", ast_get_error_detail(self->ast));
+    if (ast_has_error_stack(self->ast)) {
+        snprintf(self->error, sizeof self->error, "%s", ast_getc_first_error_message(self->ast));
         return NULL;
     }
 

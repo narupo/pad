@@ -11,7 +11,7 @@ call_basic_str_func(ast_t *ast, const char *method_name) {
 again:
     switch (owner->type) {
     default:
-        ast_set_error_detail(ast, "can't call %s function", method_name);
+        ast_pushb_error(ast, "can't call %s function", method_name);
         return NULL;
         break;
     case OBJ_TYPE_STRING: {
@@ -25,7 +25,7 @@ again:
         } else if (cstr_eq(method_name, "snake")) {
             result = str_snake(owner->string);
         } else {
-            ast_set_error_detail(ast, "invalid method name \"%s\" for call basic string function", method_name);
+            ast_pushb_error(ast, "invalid method name \"%s\" for call basic string function", method_name);
             return NULL;
         }
         return obj_new_str(ast->ref_gc, result);
@@ -33,7 +33,7 @@ again:
     case OBJ_TYPE_IDENTIFIER: {
         owner = ctx_find_var_ref(ast->context, str_getc(owner->identifier));
         if (!owner) {
-            ast_set_error_detail(ast, "not found \"%s\" in %s function", owner->identifier, method_name);
+            ast_pushb_error(ast, "not found \"%s\" in %s function", owner->identifier, method_name);
             return NULL;
         }
         goto again;

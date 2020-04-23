@@ -10,11 +10,15 @@ enum {
 
 void
 errelem_show(const errelem_t *self, FILE *fout) {
+    char msg[ERRELEM_MESSAGE_SIZE] = {0};
+
+    err_fix_text(msg, sizeof msg, self->message, false);
+
     fprintf(fout, "%s: %d: %s: %s\n",
         self->filename,
         self->lineno,
         self->funcname,
-        self->message
+        msg
     );
 }
 
@@ -44,7 +48,7 @@ errstack_new(void) {
 
     self->stack = mem_ecalloc(ERRSTACK_INIT_CAPA, sizeof(errelem_t));
     self->capa = ERRSTACK_INIT_CAPA;
-    
+
     return self;
 }
 
@@ -72,14 +76,11 @@ errstack_pushb(errstack_t *self, const char *filename, int32_t lineno, const cha
     elem->lineno = lineno;
     snprintf(elem->funcname, sizeof elem->funcname, "%s", funcname);
 
-    char tmp[1024];
     va_list ap;
 
     va_start(ap, fmt);
-    vsnprintf(tmp, sizeof tmp, fmt, ap);
+    vsnprintf(elem->message, sizeof elem->message, fmt, ap);
     va_end(ap);
-
-    err_fix_text(elem->message, sizeof elem->message, tmp, false);
 
     self->len += 1;
     return self;
@@ -104,7 +105,12 @@ errstack_trace(const errstack_t *self, FILE *fout) {
     }
 }
 
-int32_t 
+int32_t
 errstack_len(const errstack_t *self) {
     return self->len;
+}
+
+void
+errstack_clear(errstack_t *self) {
+    self->len = 0;
 }
