@@ -644,3 +644,8 @@ void
 tkr_set_debug(tokenizer_t *self, bool debug) {
     self->debug = debug;
 }
+
+void
+tkr_trace_error_stack(const tokenizer_t *self, FILE *fout) {
+    errstack_trace(self->error_stack, fout);
+}

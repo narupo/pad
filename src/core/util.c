@@ -289,7 +289,8 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
 
     tkr_parse(tkr, src);
     if (tkr_has_error_stack(tkr)) {
-        err_error("%s", tkr_getc_first_error_message(tkr));
+        tkr_trace_error_stack(tkr, stderr);
+        fflush(stderr);
         return NULL;
     }
 
@@ -298,13 +299,15 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
 
     cc_compile(ast, tkr_get_tokens(tkr));
     if (ast_has_error_stack(ast)) {
-        err_error("%s", ast_getc_first_error_message(ast));
+        ast_trace_error_stack(ast, stderr);
+        fflush(stderr);
         return NULL;
     }
 
     trv_traverse(ast, ctx);
     if (ast_has_error_stack(ast)) {
-        err_error("%s", ast_getc_first_error_message(ast));
+        ast_trace_error_stack(ast, stderr);
+        fflush(stderr);
         return NULL;
     }
 
