@@ -430,6 +430,16 @@ ast_getc_last_error_message(const ast_t *self) {
     return elem->message;
 }
 
+const char *
+ast_getc_first_error_message(const ast_t *self) {
+    if (!errstack_len(self->error_stack)) {
+        return NULL;
+    }
+
+    errelem_t *elem = errstack_getc(self->error_stack, 0);
+    return elem->message;
+}
+
 bool
 ast_has_error(const ast_t *self) {
     return self->error_detail[0] != '\0';

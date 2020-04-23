@@ -138,6 +138,17 @@ const char *
 ast_getc_last_error_message(const ast_t *self);
 
 /**
+ * get first error message from error stack
+ *
+ * @param[in] *self
+ *
+ * @return if has error stack then return pointer to message of last error
+ * @return if not has error stack then return NULL
+ */
+const char *
+ast_getc_first_error_message(const ast_t *self);
+
+/**
  * @deprecated use ast_has_error_stack
  *
  * if ast has error state then return true else return false
