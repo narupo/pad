@@ -5,28 +5,28 @@ builtin_array_push(ast_t *ast, object_t *actual_args) {
     assert(actual_args->type == OBJ_TYPE_ARRAY);
 
     object_array_t *args = actual_args->objarr;
-    
+
     if (objarr_len(args) != 1) {
-        ast_set_error_detail(ast, "can't invoke array.push. need one argument");
+        ast_pushb_error(ast, "can't invoke array.push. need one argument");
         return NULL;
     }
 
     object_t *ref_owner = ast->ref_dot_owner;
     if (!ref_owner) {
-        ast_set_error_detail(ast, "owner is null. can't push");
+        ast_pushb_error(ast, "owner is null. can't push");
         return NULL;
     }
 
 again:
     switch (ref_owner->type) {
     default:
-        ast_set_error_detail(ast, "unsupported object type (%d). can't push", ref_owner->type);
+        ast_pushb_error(ast, "unsupported object type (%d). can't push", ref_owner->type);
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER:
         ref_owner = pull_in_ref_by(ast, ref_owner);
         if (!ref_owner) {
-            ast_set_error_detail(ast, "object is not found. can't push");
+            ast_pushb_error(ast, "object is not found. can't push");
             return NULL;
         }
         goto again;
@@ -48,20 +48,20 @@ builtin_array_pop(ast_t *ast, object_t *actual_args) {
 
     object_t *ref_owner = ast->ref_dot_owner;
     if (!ref_owner) {
-        ast_set_error_detail(ast, "owner is null. can't pop");
+        ast_pushb_error(ast, "owner is null. can't pop");
         return NULL;
     }
 
 again:
     switch (ref_owner->type) {
     default:
-        ast_set_error_detail(ast, "unsupported object type (%d). can't pop", ref_owner->type);
+        ast_pushb_error(ast, "unsupported object type (%d). can't pop", ref_owner->type);
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER:
         ref_owner = pull_in_ref_by(ast, ref_owner);
         if (!ref_owner) {
-            ast_set_error_detail(ast, "object is not found. can't pop");
+            ast_pushb_error(ast, "object is not found. can't pop");
             return NULL;
         }
         goto again;

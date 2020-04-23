@@ -392,14 +392,6 @@ ast_getc_root(const ast_t *self) {
     return self->root;
 }
 
-void
-ast_set_error_detail(ast_t *self, const char *fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    vsnprintf(self->error_detail, sizeof self->error_detail, fmt, ap);
-    va_end(ap);
-}
-
 static void
 ast_show_debug(const ast_t *self, const char *funcname) {
     if (self->debug) {
@@ -410,14 +402,9 @@ ast_show_debug(const ast_t *self, const char *funcname) {
 
 void
 ast_clear(ast_t *self) {
-    self->error_detail[0] = '\0';
     ast_del_nodes(self, self->root);
+    errstack_clear(self->error_stack);
     self->root = NULL;
-}
-
-const char *
-ast_get_error_detail(const ast_t *self) {
-    return self->error_detail;
 }
 
 const char *
@@ -426,7 +413,7 @@ ast_getc_last_error_message(const ast_t *self) {
         return NULL;
     }
 
-    errelem_t *elem = errstack_getc(self->error_stack, errstack_len(self->error_stack)-1);
+    const errelem_t *elem = errstack_getc(self->error_stack, errstack_len(self->error_stack)-1);
     return elem->message;
 }
 
@@ -436,13 +423,8 @@ ast_getc_first_error_message(const ast_t *self) {
         return NULL;
     }
 
-    errelem_t *elem = errstack_getc(self->error_stack, 0);
+    const errelem_t *elem = errstack_getc(self->error_stack, 0);
     return elem->message;
-}
-
-bool
-ast_has_error(const ast_t *self) {
-    return self->error_detail[0] != '\0';
 }
 
 bool

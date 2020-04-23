@@ -19,7 +19,7 @@ tkropt_del(tokenizer_option_t *self) {
 
 tokenizer_option_t *
 tkropt_new(void) {
-    tokenizer_option_t *self = mem_ecalloc(1, sizeof(*self));    
+    tokenizer_option_t *self = mem_ecalloc(1, sizeof(*self));
     self->ldbrace_value = "{:";
     self->rdbrace_value = ":}";
     return self;
@@ -27,7 +27,7 @@ tkropt_new(void) {
 
 tokenizer_option_t *
 tkropt_new_other(const tokenizer_option_t *other) {
-    tokenizer_option_t *self = mem_ecalloc(1, sizeof(*self));    
+    tokenizer_option_t *self = mem_ecalloc(1, sizeof(*self));
     self->ldbrace_value = other->ldbrace_value;
     self->rdbrace_value = other->rdbrace_value;
     return self;
@@ -49,7 +49,7 @@ tkropt_validate(tokenizer_option_t *self) {
 ************/
 
 struct tokenizer {
-    char error_detail[ERR_DETAIL_SIZE];
+    errstack_t *error_stack;
     const char *src;
     const char *ptr;
     token_t **tokens;
@@ -67,6 +67,7 @@ tkr_del(tokenizer_t *self) {
             token_del(self->tokens[i]);
         }
         free(self->tokens);
+        errstack_del(self->error_stack);
         str_del(self->buf);
         tkropt_del(self->option);
         free(self);
@@ -77,7 +78,7 @@ tokenizer_t *
 tkr_new(tokenizer_option_t *move_option) {
     tokenizer_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->error_detail[0] = '\0';
+    self->error_stack = errstack_new();
 
     self->tokens_capa = INIT_TOKENS_CAPA;
     self->tokens_len = 0;
@@ -94,7 +95,8 @@ tokenizer_t *
 tkr_new_other(const tokenizer_t *other) {
     tokenizer_t *self = mem_ecalloc(1, sizeof(*self));
 
-    strcpy(self->error_detail, other->error_detail);
+    // TODO: copy error_stack
+
     self->src = other->src;
     self->ptr = other->ptr;
     self->buf = str_new_other(other->buf);
@@ -131,14 +133,6 @@ tkr_move_token(tokenizer_t *self, token_t *move_token) {
     self->tokens[self->tokens_len] = NULL;
 }
 
-static void
-tkr_set_error_detail(tokenizer_t *self, const char *fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    vsnprintf(self->error_detail, sizeof self->error_detail, fmt, ap);
-    va_end(ap);
-}
-
 static token_t *
 tkr_read_atmark(tokenizer_t *self) {
     int m = 0;
@@ -166,7 +160,7 @@ done:
     if (m == 0) {
         err_die("impossible. mode is first");
     } else if (m == 10) {
-        tkr_set_error_detail(self, "invalid syntax. single '@' is not supported");
+        tkr_pushb_error(self, "invalid syntax. single '@' is not supported");
     } else if (m == 20) {
         return token_new(TOKEN_TYPE_RBRACEAT);
     }
@@ -213,7 +207,7 @@ tkr_read_identifier(tokenizer_t *self) {
 static string_t *
 tkr_read_escape(tokenizer_t *self) {
     if (*self->ptr != '\\') {
-        tkr_set_error_detail(self, "not found \\ in read escape");
+        tkr_pushb_error(self, "not found \\ in read escape");
         return NULL;
     }
 
@@ -288,14 +282,14 @@ fail:
 }
 
 bool
-tkr_has_error(const tokenizer_t *self) {
-    return self->error_detail[0] != '\0';
+tkr_has_error_stack(const tokenizer_t *self) {
+    return errstack_len(self->error_stack);
 }
 
 static token_t *
 tkr_parse_identifier(tokenizer_t *self) {
     token_t *token = tkr_read_identifier(self);
-    if (tkr_has_error(self)) {
+    if (tkr_has_error_stack(self)) {
         token_del(token);
         return NULL;
     }
@@ -364,7 +358,7 @@ tkr_parse_op(
     token_type_t type_op,
     token_type_t type_op_ass) {
     if (*self->ptr != op) {
-        tkr_set_error_detail(self, "not found '%c'", op);
+        tkr_pushb_error(self, "not found '%c'", op);
         return NULL;
     }
 
@@ -386,12 +380,12 @@ tokenizer_t *
 tkr_parse(tokenizer_t *self, const char *src) {
     self->src = src;
     self->ptr = src;
-    self->error_detail[0] = '\0';
+    errstack_clear(self->error_stack);
     str_clear(self->buf);
     tkr_clear_tokens(self);
 
     if (!tkropt_validate(self->option)) {
-        tkr_set_error_detail(self, "validate error of tokenizer");
+        tkr_pushb_error(self, "validate error of tokenizer");
         return self;
     }
 
@@ -424,7 +418,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
             if (c == '"') {
                 self->ptr--;
                 token_t *token = tkr_read_dq_string(self);
-                if (tkr_has_error(self)) {
+                if (tkr_has_error_stack(self)) {
                     token_del(token);
                     goto fail;
                 }
@@ -439,7 +433,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
             } else if (c == '@') {
                 self->ptr--;
                 token_t *token = tkr_read_atmark(self);
-                if (tkr_has_error(self)) {
+                if (tkr_has_error_stack(self)) {
                     token_del(token);
                     goto fail;
                 }
@@ -512,14 +506,14 @@ tkr_parse(tokenizer_t *self, const char *src) {
             } else if (isspace(c)) {
                 // pass
             } else {
-                tkr_set_error_detail(self, "syntax error. unsupported character \"%c\"", c);
+                tkr_pushb_error(self, "syntax error. unsupported character \"%c\"", c);
                 goto fail;
             }
         } else if (m == 20) { // found '{:'
             if (c == '"') {
                 self->ptr--;
                 token_t *token = tkr_read_dq_string(self);
-                if (tkr_has_error(self)) {
+                if (tkr_has_error_stack(self)) {
                     token_del(token);
                     goto fail;
                 }
@@ -531,7 +525,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 }
             } else if (c == self->option->rdbrace_value[0] &&
                        *self->ptr == self->option->rdbrace_value[1]) {
-               self->ptr++; 
+               self->ptr++;
                token_t *token = token_new(TOKEN_TYPE_RDOUBLE_BRACE);
                tkr_store_textblock(self);
                tkr_move_token(self, mem_move(token));
@@ -596,7 +590,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
             } else if (c == ' ') {
                 // pass
             } else {
-                tkr_set_error_detail(self, "syntax error. unsupported character \"%c\"", c);
+                tkr_pushb_error(self, "syntax error. unsupported character \"%c\"", c);
                 goto fail;
             }
         }
@@ -610,7 +604,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
 
     if (m == 10 || m == 20) {
         // on the way of '{@' or '{{'
-        tkr_set_error_detail(self, "not closed by block");
+        tkr_pushb_error(self, "not closed by block");
         goto fail;
     }
 
@@ -632,8 +626,13 @@ tkr_tokens_getc(tokenizer_t *self, int32_t index) {
 }
 
 const char *
-tkr_get_error_detail(const tokenizer_t *self) {
-    return self->error_detail;
+tkr_getc_first_error_message(const tokenizer_t *self) {
+    if (!errstack_len(self->error_stack)) {
+        return NULL;
+    }
+
+    const errelem_t *elem = errstack_getc(self->error_stack, 0);
+    return elem->message;
 }
 
 token_t **

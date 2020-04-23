@@ -91,23 +91,23 @@ almgr_load_path(almgr_t *self, const char *path) {
     almgr_t *ret = self;
 
     tkr_parse(self->tkr, src);
-    if (tkr_has_error(self->tkr)) {
-        almgr_set_error_detail(self, tkr_get_error_detail(self->tkr));
+    if (tkr_has_error_stack(self->tkr)) {
+        almgr_set_error_detail(self, tkr_getc_first_error_message(self->tkr));
         ret = NULL;
         goto fail;
     }
 
     cc_compile(self->ast, tkr_get_tokens(self->tkr));
-    if (ast_has_error(self->ast)) {
-        almgr_set_error_detail(self, ast_get_error_detail(self->ast));
+    if (ast_has_error_stack(self->ast)) {
+        almgr_set_error_detail(self, ast_getc_first_error_message(self->ast));
         ret = NULL;
         goto fail;
     }
 
     ctx_clear(self->context);
     trv_traverse(self->ast, self->context);
-    if (ast_has_error(self->ast)) {
-        almgr_set_error_detail(self, ast_get_error_detail(self->ast));
+    if (ast_has_error_stack(self->ast)) {
+        almgr_set_error_detail(self, ast_getc_first_error_message(self->ast));
         ret = NULL;
         goto fail;
     }

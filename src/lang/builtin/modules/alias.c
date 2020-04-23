@@ -7,22 +7,22 @@ builtin_alias_set(ast_t *ast, object_t *actual_args) {
     object_array_t *args = actual_args->objarr;
 
     if (objarr_len(args) < 2) {
-        ast_set_error_detail(ast, "can't invoke alias.set. too few arguments");
+        ast_pushb_error(ast, "can't invoke alias.set. too few arguments");
         return NULL;
     } else if (objarr_len(args) >= 4) {
-        ast_set_error_detail(ast, "can't invoke alias.set. too many arguments");
+        ast_pushb_error(ast, "can't invoke alias.set. too many arguments");
         return NULL;
     }
 
     const object_t *keyobj = objarr_getc(args, 0);
     if (keyobj->type != OBJ_TYPE_STRING) {
-        ast_set_error_detail(ast, "can't invoke alias.set. key is not string");
+        ast_pushb_error(ast, "can't invoke alias.set. key is not string");
         return NULL;
     }
 
     const object_t *valobj = objarr_getc(args, 1);
     if (valobj->type != OBJ_TYPE_STRING) {
-        ast_set_error_detail(ast, "can't invoke alias.set. value is not string");
+        ast_pushb_error(ast, "can't invoke alias.set. value is not string");
         return NULL;
     }
 
@@ -30,7 +30,7 @@ builtin_alias_set(ast_t *ast, object_t *actual_args) {
     if (objarr_len(args) == 3) {
         descobj = objarr_getc(args, 2);
         if (descobj->type != OBJ_TYPE_STRING) {
-            ast_set_error_detail(ast, "can't invoke alias.set. description is not string");
+            ast_pushb_error(ast, "can't invoke alias.set. description is not string");
             return NULL;
         }
     }

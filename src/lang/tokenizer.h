@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include <core/error_stack.h>
 #include <lib/error.h>
 #include <lib/memory.h>
 #include <lib/string.h>
@@ -117,7 +118,17 @@ tkr_tokens_getc(tokenizer_t *self, int32_t index);
  * @return value of boolean
  */
 bool
-tkr_has_error(const tokenizer_t *self);
+tkr_has_error_stack(const tokenizer_t *self);
+
+/**
+ * push back error at tokenizer error stack
+ *
+ * @param[in] tkr pointer to tokenizer_t
+ * @param[in] fmt format string (const char *)
+ * @param[in] ... arguments of format
+ */
+#define tkr_pushb_error(tkr, fmt, ...) \
+    errstack_pushb(tkr->error_stack, __FILE__, __LINE__, __func__, fmt, ##__VA_ARGS__)
 
 /**
  * Get error detail
@@ -127,7 +138,7 @@ tkr_has_error(const tokenizer_t *self);
  * @return string
  */
 const char *
-tkr_get_error_detail(const tokenizer_t *self);
+tkr_getc_first_error_message(const tokenizer_t *self);
 
 /**
  * Get tokens from tokenizer

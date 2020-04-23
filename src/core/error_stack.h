@@ -12,11 +12,17 @@
 * errelem *
 **********/
 
+enum {
+    ERRELEM_FILENAME_SIZE = 1024,
+    ERRELEM_FUNCNAME_SIZE = 1024,
+    ERRELEM_MESSAGE_SIZE = 1024,
+};
+
 typedef struct {
     int32_t lineno;
-    char filename[1024];
-    char funcname[1024];
-    char message[1024];
+    char filename[ERRELEM_FILENAME_SIZE];
+    char funcname[ERRELEM_FUNCNAME_SIZE];
+    char message[ERRELEM_MESSAGE_SIZE];
 } errelem_t;
 
 /**
@@ -97,3 +103,11 @@ errstack_trace(const errstack_t *self, FILE *fout);
  */
 int32_t
 errstack_len(const errstack_t *self);
+
+/**
+ * clear state
+ *
+ * @param[in] *self pointer to errstack_t
+ */
+void
+errstack_clear(errstack_t *self);

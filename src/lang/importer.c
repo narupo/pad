@@ -64,8 +64,8 @@ create_modobj(
     ast->debug = ref_ast->debug;
 
     tkr_parse(tkr, src);
-    if (tkr_has_error(tkr)) {
-        importer_set_error(self, tkr_get_error_detail(tkr));
+    if (tkr_has_error_stack(tkr)) {
+        importer_set_error(self, tkr_getc_first_error_message(tkr));
         free(src);
         return NULL;
     }
@@ -75,15 +75,15 @@ create_modobj(
     opts = NULL;
 
     cc_compile(ast, tkr_get_tokens(tkr));
-    if (ast_has_error(ast)) {
-        importer_set_error(self, ast_get_error_detail(ast));
+    if (ast_has_error_stack(ast)) {
+        importer_set_error(self, ast_getc_first_error_message(ast));
         free(src);
         return NULL;
     }
 
     trv_traverse(ast, ctx);
-    if (ast_has_error(ast)) {
-        importer_set_error(self, ast_get_error_detail(ast));
+    if (ast_has_error_stack(ast)) {
+        importer_set_error(self, ast_getc_first_error_message(ast));
         free(src);
         return NULL;
     }
@@ -169,7 +169,7 @@ importer_from_import(
 
     // assign objects at global varmap of current context from module context
     // increment a reference count of objects
-    // objects look at memory of imported module 
+    // objects look at memory of imported module
     for (int32_t i = 0; i < objarr_len(vars); ++i) {
         extract_var(vars, var);
 
@@ -205,7 +205,7 @@ importer_from_import(
         }
     }
 
-    // assign imported module at global varmap of current context 
+    // assign imported module at global varmap of current context
     objdict_move(dst_global_varmap, str_getc(modobj->module.name), mem_move(modobj));
 
     return self;
