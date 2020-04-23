@@ -1,6 +1,7 @@
 #pragma once
 
 #include <core/config.h>
+#include <core/error_stack.h>
 #include <lang/types.h>
 #include <lang/tokens.h>
 #include <lang/nodes.h>
@@ -33,6 +34,7 @@ struct ast {
     object_t *ref_dot_owner; // owner object for dot operator (owner.right_hand["key"]) for traverser (DO NOT DELETE)
     int32_t import_level; // number of import level
     char error_detail[AST_ERR_DETAIL_SIZE]; // error detail
+    errstack_t *error_stack; // error stack for errors
     bool debug; // if do debug to true
 };
 
@@ -40,9 +42,9 @@ struct ast {
  * delete node tree
  *
  * @param[in] *self pointer to ast_t
- * @param[in] *node start node 
+ * @param[in] *node start node
  */
-void 
+void
 ast_del_nodes(const ast_t *self, node_t *node);
 
 /**
@@ -50,7 +52,7 @@ ast_del_nodes(const ast_t *self, node_t *node);
  *
  * @param[in] *self pointer to ast_t
  */
-void 
+void
 ast_del(ast_t *self);
 
 /**
@@ -60,16 +62,16 @@ ast_del(ast_t *self);
  *
  * @return pointer to ast_t dynamic allocate memory (do ast_del)
  */
-ast_t * 
+ast_t *
 ast_new(const config_t *ref_config);
 
 /**
  * move opts at ast
  *
- * @param[in] *self      pointer to ast_t      
+ * @param[in] *self      pointer to ast_t
  * @param[in] *move_opts pointer to opts_t with move semantics
  */
-void 
+void
 ast_move_opts(ast_t *self, opts_t *move_opts);
 
 /**
@@ -79,53 +81,90 @@ ast_move_opts(ast_t *self, opts_t *move_opts);
  *
  * @return pointer to node_t root
  */
-const node_t * 
+const node_t *
 ast_getc_root(const ast_t *self);
 
 /**
+ * @deprecated use ast_pushb_error
+ *
  * set error message at ast
  *
  * @param[in] *self pointer to ast_t
  * @param[in] *fmt  format strings
  * @param[in] ...   arguments
  */
-void 
+void
 ast_set_error_detail(ast_t *self, const char *fmt, ...);
+
+/**
+ * push back error at ast error stack
+ *
+ * @param[in] ast pointer to ast_t
+ * @param[in] fmt format string (const char *)
+ * @param[in] ... arguments of format
+ */
+#define ast_pushb_error(ast, fmt, ...) \
+    errstack_pushb(ast->error_stack, __FILE__, __LINE__, __func__, fmt, __VA_ARGS__) \
 
 /**
  * clear ast state (will call ast_del_nodes)
  *
  * @param[in] *self pointer to ast_t
  */
-void 
+void
 ast_clear(ast_t *self);
 
 /**
+ * @deprecated
+ *
  * get error message from ast read-only
  *
  * @param[in] *self pointer to ast_t
  *
  * @return pointer to error message
  */
-const char * 
+const char *
 ast_get_error_detail(const ast_t *self);
 
 /**
+ * get last error message from error stack
+ *
+ * @param[in] *self
+ *
+ * @return if has error stack then return pointer to message of last error
+ * @return if not has error stack then return NULL
+ */
+const char *
+ast_getc_last_error_message(const ast_t *self);
+
+/**
+ * @deprecated use ast_has_error_stack
+ *
  * if ast has error state then return true else return false
  *
  * @param[in] *self pointer to ast_t
  *
  * @return if has error then true else false
  */
-bool 
+bool
 ast_has_error(const ast_t *self);
 
 /**
+ * if ast has error stack then return true else return false
+ *
+ * @param[in] *self
+ *
+ * @return if has error then true else false
+ */
+bool
+ast_has_error_stack(const ast_t *self);
+
+/**
  * set debug mode
- * debug of argument is true to debug mode false to non debug mode 
+ * debug of argument is true to debug mode false to non debug mode
  *
  * @param[in] *self pointer to ast_t
  * @param[in] debug debug mode
  */
-void 
+void
 ast_set_debug(ast_t *self, bool debug);
