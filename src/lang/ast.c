@@ -363,6 +363,7 @@ ast_del(ast_t *self) {
 
     ast_del_nodes(self, self->root);
     opts_del(self->opts);
+    errstack_del(self->error_stack);
     free(self);
 }
 
@@ -372,7 +373,8 @@ ast_new(const config_t *ref_config) {
 
     self->ref_config = ref_config;
     self->opts = opts_new();
-    
+    self->error_stack = errstack_new();
+
     return self;
 }
 
@@ -418,9 +420,24 @@ ast_get_error_detail(const ast_t *self) {
     return self->error_detail;
 }
 
+const char *
+ast_getc_last_error_message(const ast_t *self) {
+    if (!errstack_len(self->error_stack)) {
+        return NULL;
+    }
+
+    errelem_t *elem = errstack_getc(self->error_stack, errstack_len(self->error_stack)-1);
+    return elem->message;
+}
+
 bool
 ast_has_error(const ast_t *self) {
     return self->error_detail[0] != '\0';
+}
+
+bool
+ast_has_error_stack(const ast_t *self) {
+    return errstack_len(self->error_stack);
 }
 
 void

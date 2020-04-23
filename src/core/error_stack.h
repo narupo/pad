@@ -64,7 +64,7 @@ errstack_new(void);
  * @return success to pointer to self
  * @return failed to pointer to NULL
  */
-errstack_t * 
+errstack_t *
 errstack_pushb(errstack_t *self, const char *filename, int32_t lineno, const char *funcname, const char *fmt, ...);
 
 /**
@@ -76,14 +76,14 @@ errstack_pushb(errstack_t *self, const char *filename, int32_t lineno, const cha
  * @return success to pointer to errelem_t
  * @return failed to pointer to NULL
  */
-const errelem_t * 
+const errelem_t *
 errstack_getc(const errstack_t *self, int32_t idx);
 
 /**
  * show stack trace
  *
  * @param[in]  *self pointer to errstack_t
- * @param[out] *fout destination stream 
+ * @param[out] *fout destination stream
  */
 void
 errstack_trace(const errstack_t *self, FILE *fout);
@@ -95,5 +95,5 @@ errstack_trace(const errstack_t *self, FILE *fout);
  *
  * @return number of length
  */
-int32_t 
+int32_t
 errstack_len(const errstack_t *self);

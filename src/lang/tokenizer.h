@@ -1,3 +1,6 @@
+/* This module is parser for tokens a.k.a Lexer
+ * This using in compile of Cap's template language
+ */
 #pragma once
 
 #include <stdio.h>
@@ -29,10 +32,10 @@ tkropt_new(void);
 
 /**
  * copy constructor
- * 
- * @param[in] *other 
- * 
- * @return 
+ *
+ * @param[in] *other
+ *
+ * @return
  */
 tokenizer_option_t *
 tkropt_new_other(const tokenizer_option_t *other);
@@ -65,10 +68,10 @@ tkr_new(tokenizer_option_t *move_option);
 
 /**
  * copy constructor
- * 
- * @param[in] *other 
- * 
- * @return 
+ *
+ * @param[in] *other
+ *
+ * @return
  */
 tokenizer_t *
 tkr_new_other(const tokenizer_t *other);
@@ -78,7 +81,7 @@ tkr_new_other(const tokenizer_t *other);
  *
  * @param[in] self pointer to dynamic allocate memory of tokenizer_t
  * @param[in] src string of source
- * 
+ *
  * @return success to pointer to dynamic allocate memory of tokenizer_t
  * @return failed to pointer to NULL
  */
@@ -99,7 +102,7 @@ tkr_tokens_len(const tokenizer_t *self);
  * Get token from tokens list of tokenizer
  *
  * @param[in] self pointer to dynamic allocate memory of tokenizer_t
- * 
+ *
  * @return found to pointer to token_t
  * @return not found to pointer to NULL
  */
@@ -130,7 +133,7 @@ tkr_get_error_detail(const tokenizer_t *self);
  * Get tokens from tokenizer
  *
  * @param[in] self pointer to dynamic allocate memory of tokenizer_t
- * 
+ *
  * @return pointer to array of pointer to token
  */
 token_t **
