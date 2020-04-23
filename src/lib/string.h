@@ -337,6 +337,17 @@ str_capitalize(const string_t *self);
 string_t *
 str_snake(const string_t *self);
 
+/**
+ * mul string
+ *
+ * @param[in] *self pointer to string_t
+ *
+ * @return sucess to pointer to new string_t
+ * @return failed to poitner to NULL
+ */
+string_t *
+str_mul(const string_t *self, int32_t n);
+
 /********
 * uint8 *
 ********/
@@ -354,5 +365,5 @@ uint8toint32(const uint8_t *str) {
     if (!str) {
         return 0;
     }
-    return atoi((const char *)str);    
+    return atoi((const char *)str);
 }

@@ -49,7 +49,7 @@ str_escdel(string_t *self) {
 	if (!self) {
 		return NULL;
 	}
-	
+
 	char *buf = self->buffer;
 	free(self);
 	return buf;
@@ -304,7 +304,7 @@ str_appstream(string_t *self, FILE *fin) {
 	if (!self || !fin) {
 		return NULL;
 	}
-	
+
 	for (int32_t ch; (ch = fgetc(fin)) != EOF; ) {
 		if (!str_pushb(self, ch)) {
 			return NULL;
@@ -565,6 +565,17 @@ str_snake(const string_t *other) {
 	return self;
 }
 
+string_t *
+str_mul(const string_t *self, int32_t n) {
+	string_t *buf = str_new();
+
+	for (uint32_t i = 0; i < n; ++i) {
+		str_app(buf, self->buffer);
+	}
+
+	return buf;
+}
+
 /**************
 * str cleanup *
 **************/
@@ -679,7 +690,7 @@ argsclear(struct args *self) {
 	for (int i = 0; i < self->len; ++i) {
 		free(self->args[i]);
 		self->args[i] = NULL;
-	}	
+	}
 
 	self->len = 0;
 }
@@ -692,7 +703,7 @@ argsgetc(const struct args *self, int idx) {
 	return self->args[idx];
 }
 
-static int 
+static int
 argslen(const struct args *self) {
 	return self->len;
 }
@@ -882,7 +893,7 @@ test_resize(int argc, char *argv[]) {
 	if (argc < 2) {
 		return 0;
 	}
-	
+
 	int n = atoi(argv[1]);
 	if (n <= 0) {
 		return 1;
@@ -972,28 +983,28 @@ main(int argc, char *argv[]) {
 		const char *name;
 		int (*run)(int, char**);
 	} cmds[] = {
-		{"del", test_del}, 
-		{"escdel", test_escdel}, 
-		{"new", test_new}, 
-		{"newother", test_newother}, 
-		{"len", test_len}, 
-		{"capa", test_capa}, 
-		{"getc", test_getc}, 
-		{"empty", test_empty}, 
-		{"clear", test_clear}, 
-		{"set", test_set}, 
-		{"resize", test_resize}, 
-		{"pushb", test_pushb}, 
-		{"popb", test_popb}, 
-		{"pushf", test_pushf}, 
-		{"popf", test_popf}, 
-		{"app", test_app}, 
-		{"appstream", test_appstream}, 
-		{"appother", test_appother}, 
-		{"appfmt", test_appfmt}, 
-		{"rstrip", test_rstrip}, 
-		{"lstrip", test_lstrip}, 
-		{"strip", test_strip}, 
+		{"del", test_del},
+		{"escdel", test_escdel},
+		{"new", test_new},
+		{"newother", test_newother},
+		{"len", test_len},
+		{"capa", test_capa},
+		{"getc", test_getc},
+		{"empty", test_empty},
+		{"clear", test_clear},
+		{"set", test_set},
+		{"resize", test_resize},
+		{"pushb", test_pushb},
+		{"popb", test_popb},
+		{"pushf", test_pushf},
+		{"popf", test_popf},
+		{"app", test_app},
+		{"appstream", test_appstream},
+		{"appother", test_appother},
+		{"appfmt", test_appfmt},
+		{"rstrip", test_rstrip},
+		{"lstrip", test_lstrip},
+		{"strip", test_strip},
 		{"findc", test_findc},
 		{},
 	};
