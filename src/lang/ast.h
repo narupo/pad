@@ -142,7 +142,7 @@ ast_getc_last_error_message(const ast_t *self);
  *
  * @param[in] *self
  *
- * @return if has error stack then return pointer to message of last error
+ * @return if has error stack then return pointer to message of first error
  * @return if not has error stack then return NULL
  */
 const char *
