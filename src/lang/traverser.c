@@ -788,7 +788,7 @@ trv_for_stmt(ast_t *ast, const node_t *node, int dep) {
                 _trv_traverse(ast, for_stmt->blocks, dep+1);
                 if (ast_has_error(ast)) {
                     goto done;
-                }                
+                }
             } // allow null elems and blocks
 
             if (ctx_get_do_break(ast->context)) {
@@ -826,7 +826,7 @@ trv_for_stmt(ast_t *ast, const node_t *node, int dep) {
                 _trv_traverse(ast, for_stmt->blocks, dep+1);
                 if (ast_has_error(ast)) {
                     goto done;
-                }                
+                }
             } // allow null elems and blocks
 
             if (ctx_get_do_break(ast->context)) {
@@ -849,7 +849,7 @@ trv_for_stmt(ast_t *ast, const node_t *node, int dep) {
                 _trv_traverse(ast, for_stmt->blocks, dep+1);
                 if (ast_has_error(ast)) {
                     goto done;
-                }                
+                }
             } // allow null elems and blocks
 
             if (ctx_get_do_break(ast->context)) {
@@ -893,7 +893,7 @@ trv_continue_stmt(ast_t *ast, const node_t *node, int dep) {
 static object_t *
 extract_obj(ast_t *ast, const object_t *srcobj) {
     assert(srcobj);
-     
+
     switch (srcobj->type) {
     default: return obj_new_other(srcobj); break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -1207,7 +1207,7 @@ trv_calc_assign(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
         object_t *obj = trv_calc_assign_to_index(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
-    }    
+    }
 
     assert(0 && "impossible. failed to calc assign");
     return_trav(NULL);
@@ -1416,7 +1416,7 @@ trv_multi_assign(ast_t *ast, const node_t *node, int dep) {
         }
         if (!lhs) {
             ast_set_error_detail(ast, "failed to traverse left test_list in multi assign");
-            obj_del(rhs);            
+            obj_del(rhs);
             return_trav(NULL);
         }
 
@@ -1431,7 +1431,7 @@ trv_multi_assign(ast_t *ast, const node_t *node, int dep) {
             ast_set_error_detail(ast, "failed to assign in multi assign");
             obj_del(rhs);
             obj_del(lhs);
-            return_trav(NULL);            
+            return_trav(NULL);
         }
 
         obj_del(rhs);
@@ -1695,7 +1695,7 @@ trv_compare_or_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (lhs->boolean && NULL) {
-            obj = obj_new_other(lhs);            
+            obj = obj_new_other(lhs);
         } else if (lhs->boolean && !NULL) {
             obj = obj_new_other(lhs);
         } else if (!lhs->boolean && NULL) {
@@ -1708,7 +1708,7 @@ trv_compare_or_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
     case OBJ_TYPE_INTEGER: {
         object_t *obj = NULL;
         if (lhs->boolean && rhs->lvalue) {
-            obj = obj_new_other(lhs);            
+            obj = obj_new_other(lhs);
         } else if (lhs->boolean && !rhs->lvalue) {
             obj = obj_new_other(lhs);
         } else if (!lhs->boolean && rhs->lvalue) {
@@ -3738,7 +3738,7 @@ trv_compare_comparison_eq_nil(ast_t *ast, const object_t *lhs, const object_t *r
     switch (rhs->type) {
     default: {
         object_t *obj = obj_new_bool(ast->ref_gc, false);
-        return_trav(obj);        
+        return_trav(obj);
     } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = obj_new_bool(ast->ref_gc, true);
@@ -4796,7 +4796,7 @@ trv_comparison(ast_t *ast, const node_t *node, int dep) {
             return_trav(NULL);
         }
         assert(lhs);
-        
+
         for (int i = 1; i < nodearr_len(comparison->nodearr); i += 2) {
             node_t *node = nodearr_get(comparison->nodearr, i);
             assert(node->type == NODE_TYPE_COMP_OP);
@@ -4819,7 +4819,7 @@ trv_comparison(ast_t *ast, const node_t *node, int dep) {
             if (ast_has_error(ast)) {
                 obj_del(lhs);
                 obj_del(rhs);
-                return_trav(NULL);                
+                return_trav(NULL);
             }
 
             obj_del(lhs);
@@ -5004,7 +5004,7 @@ trv_calc_expr_sub_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
     default:
         ast_set_error_detail(ast, "can't sub with int");
         return_trav(NULL);
-        break;    
+        break;
     case OBJ_TYPE_INTEGER: {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue - rhs->lvalue);
         return_trav(obj);
@@ -5043,7 +5043,7 @@ trv_calc_expr_sub_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
     default:
         ast_set_error_detail(ast, "can't sub with bool");
         return_trav(NULL);
-        break;    
+        break;
     case OBJ_TYPE_INTEGER: {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean - rhs->lvalue);
         return_trav(obj);
@@ -5153,7 +5153,7 @@ trv_expr(ast_t *ast, const node_t *node, int dep) {
             return_trav(NULL);
         }
         assert(lhs);
-        
+
         for (int i = 1; i < nodearr_len(expr->nodearr); i += 2) {
             node_t *node = nodearr_get(expr->nodearr, i);
             node_add_sub_op_t *op = node->real;
@@ -5174,7 +5174,7 @@ trv_expr(ast_t *ast, const node_t *node, int dep) {
             if (ast_has_error(ast)) {
                 obj_del(lhs);
                 obj_del(rhs);
-                return_trav(NULL);                
+                return_trav(NULL);
             }
 
             obj_del(lhs);
@@ -5187,6 +5187,18 @@ trv_expr(ast_t *ast, const node_t *node, int dep) {
 
     assert(0 && "impossible. failed to traverse expr");
     return_trav(NULL);
+}
+
+static object_t *
+mul_string_object(ast_t *ast, const string_t *s, int32_t n) {
+    if (n < 0) {
+        ast_set_error_detail(ast, "can't mul string by negative value");
+        return NULL;
+    }
+
+    string_t *str = str_mul(s, n);
+    object_t *obj = obj_new_str(ast->ref_gc, mem_move(str));
+    return obj;
 }
 
 static object_t *
@@ -5212,9 +5224,10 @@ trv_calc_term_mul_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_term_mul, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
-        err_die("TODO: mul string");
-        break;
+    case OBJ_TYPE_STRING: {
+        object_t *obj = mul_string_object(ast, rhs->string, lhs->lvalue);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_INDEX: {
         object_t *val = copy_value_of_index_obj(ast, rhs);
         if (!val) {
@@ -5251,7 +5264,7 @@ trv_calc_term_mul_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         check("call trv_roll_identifier_rhs");
-        object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_term_mul, dep+1); 
+        object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_term_mul, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -5280,6 +5293,10 @@ trv_calc_term_mul_string(ast_t *ast, const object_t *lhs, const object_t *rhs, i
         ast_set_error_detail(ast, "can't mul with string");
         return_trav(NULL);
         break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *obj = mul_string_object(ast, lhs->string, rhs->lvalue);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
         check("call trv_roll_identifier_rhs");
         object_t *obj = trv_roll_identifier_rhs(ast, lhs, rhs, trv_calc_term_mul, dep+1);
@@ -5299,7 +5316,7 @@ trv_calc_term_mul_string(ast_t *ast, const object_t *lhs, const object_t *rhs, i
         return_trav(obj);
     } break;
     }
- 
+
     assert(0 && "impossible. failed to calc term mul string");
     return_trav(NULL);
 }
@@ -5522,7 +5539,7 @@ trv_term(ast_t *ast, const node_t *node, int dep) {
             return_trav(NULL);
         }
         assert(lhs);
-        
+
         for (int i = 1; i < nodearr_len(term->nodearr); i += 2) {
             node_t *node = nodearr_get(term->nodearr, i);
             assert(node->type == NODE_TYPE_MUL_DIV_OP);
@@ -5544,7 +5561,7 @@ trv_term(ast_t *ast, const node_t *node, int dep) {
             if (ast_has_error(ast)) {
                 obj_del(lhs);
                 obj_del(rhs);
-                return_trav(NULL);                
+                return_trav(NULL);
             }
 
             obj_del(lhs);
@@ -5648,7 +5665,7 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
                     ast_set_error_detail(ast, "obj is null in dot");
                     obj_del(lhs);
                     obj_del(result);
-                    return_trav(NULL);                
+                    return_trav(NULL);
                 }
                 obj_del(result);
                 result = obj;
@@ -5702,11 +5719,11 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
             return_trav(operand);
         }
     }
-    
+
     if (operand->type != OBJ_TYPE_IDENTIFIER) {
         return_trav(operand);
     }
-    
+
     object_t *result = NULL;
 
     for (int32_t i = 0; i < nodearr_len(call->call_args_list); ++i) {
@@ -5756,7 +5773,7 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
         check_result;
 
         obj_del(actual_args);
-        
+
         if (!result) {
             ast_set_error_detail(ast, "can't call \"%s\"", funcname);
             obj_del(operand);
@@ -5932,7 +5949,7 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, object_t *ref_var, const obj
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
-        ref_var->lvalue += rhs->boolean; 
+        ref_var->lvalue += rhs->boolean;
         object_t *obj = obj_new_other(ref_var);
         return_trav(obj);
     } break;
@@ -5987,7 +6004,7 @@ trv_calc_asscalc_add_ass_identifier(ast_t *ast, const object_t *lhs, const objec
     }
 
     object_t *new_obj = NULL;
-    
+
     switch (ref_lvar->type) {
     default:
         ast_set_error_detail(ast, "not supported add assign to object %d", ref_lvar->type);
@@ -6058,10 +6075,10 @@ trv_calc_asscalc(ast_t *ast, const object_t *lhs, const node_augassign_t *augass
         return_trav(obj);
     } break;
     case OP_SUB_ASS:
-        err_die("TODO: sub ass");        
+        err_die("TODO: sub ass");
         break;
     case OP_MUL_ASS:
-        err_die("TODO: mul ass");        
+        err_die("TODO: mul ass");
         break;
     case OP_DIV_ASS:
         err_die("TODO: div ass");
@@ -6093,7 +6110,7 @@ trv_asscalc(ast_t *ast, const node_t *node, int dep) {
             return_trav(NULL);
         }
         assert(lhs);
-        
+
         for (int i = 1; i < nodearr_len(asscalc->nodearr); i += 2) {
             node_t *node = nodearr_get(asscalc->nodearr, i);
             assert(node->type == NODE_TYPE_AUGASSIGN);
@@ -6116,7 +6133,7 @@ trv_asscalc(ast_t *ast, const node_t *node, int dep) {
             if (ast_has_error(ast)) {
                 obj_del(lhs);
                 obj_del(rhs);
-                return_trav(NULL);                
+                return_trav(NULL);
             }
 
             obj_del(lhs);
@@ -6259,7 +6276,7 @@ trv_array_elems(ast_t *ast, const node_t *node, int dep) {
     }
 
     object_t *ret = obj_new_array(ast->ref_gc, objarr);
-    return_trav(ret); 
+    return_trav(ret);
 }
 
 static object_t *
@@ -6305,7 +6322,7 @@ trv_dict_elem(ast_t *ast, const node_t *node, int dep) {
         return_trav(NULL);
     }
     assert(val);
-    
+
     object_array_t *objarr = objarr_new();
 
     objarr_moveb(objarr, key);
@@ -6369,7 +6386,7 @@ trv_dict_elems(ast_t *ast, const node_t *node, int dep) {
                 obj_del(arrobj);
                 objdict_del(objdict);
                 return_trav(NULL);
-                break;   
+                break;
             }
             skey = str_getc(ref->string);
         } break;
@@ -6380,7 +6397,7 @@ trv_dict_elems(ast_t *ast, const node_t *node, int dep) {
     }
 
     object_t *ret = obj_new_dict(ast->ref_gc, objdict);
-    return_trav(ret); 
+    return_trav(ret);
 }
 
 static object_t *
@@ -6576,7 +6593,7 @@ trv_invoke_builtin_modules(ast_t *ast, const char *funcname, object_t *args) {
             // not error
             return NULL;
             break;
-        case OBJ_TYPE_STRING: 
+        case OBJ_TYPE_STRING:
             bltin_mod_name = "__str__";
             break;
         case OBJ_TYPE_ARRAY:
@@ -6699,7 +6716,7 @@ static object_t *
 _trv_traverse(ast_t *ast, const node_t *node, int dep) {
     tready();
     if (!node) {
-        return_trav(NULL); 
+        return_trav(NULL);
     }
 
     switch (node->type) {
