@@ -46,7 +46,7 @@ gc_resize(gc_t *self, int32_t newcapa) {
     self->pool = mem_erealloc(self->pool, byte * newcapa + byte);
     self->pool[newcapa] = NULL;
     self->capa = newcapa;
-    
+
     return self;
 }
 
@@ -61,7 +61,7 @@ gc_alloc(gc_t *self, gc_item_t *item, int32_t size) {
             return NULL;
         }
     }
-    
+
     void *p = mem_ecalloc(1, size);
     item->ptr = p;
     item->ref_counts = 1;

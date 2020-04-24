@@ -79,6 +79,7 @@ void
 ctx_clear(context_t *self) {
     alinfo_clear(self->alinfo);
     str_clear(self->stdout_buf);
+    str_clear(self->stderr_buf);
     scope_clear(self->scope);
     set_default_global_vars(self);
 }

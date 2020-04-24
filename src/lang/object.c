@@ -138,14 +138,14 @@ obj_new_other(const object_t *other) {
     case OBJ_TYPE_MODULE:
         err_die("TODO");
         self->module.name = str_new_other(other->module.name);
-        // self->module.tokenizer = tkr_new_other(other->module.tokenizer); 
-        // self->module.ast = ast_new_other(other->module.ast); 
-        // self->module.context = ctx_new_other(other->module.context); 
+        // self->module.tokenizer = tkr_new_other(other->module.tokenizer);
+        // self->module.ast = ast_new_other(other->module.ast);
+        // self->module.context = ctx_new_other(other->module.context);
         self->module.builtin_func_infos = other->module.builtin_func_infos;
         break;
     }
 
-    return self;    
+    return self;
 }
 
 object_t *
@@ -357,7 +357,7 @@ obj_to_str(const object_t *self) {
     case OBJ_TYPE_FUNC: {
         string_t *str = str_new();
         str_set(str, "(function)");
-        return str;        
+        return str;
     } break;
     case OBJ_TYPE_INDEX: {
         string_t *str = str_new();
@@ -371,6 +371,7 @@ obj_to_str(const object_t *self) {
     } break;
     } // switch
 
+    fprintf(stderr, "object is %d\n", self->type);
     assert(0 && "failed to object to string. invalid state");
     return NULL;
 }
@@ -386,7 +387,7 @@ obj_to_array(const object_t *obj) {
     default: {
         object_array_t *objarr = objarr_new();
         objarr_moveb(objarr, obj_new_other(obj));
-        return obj_new_array(obj->ref_gc, mem_move(objarr));    
+        return obj_new_array(obj->ref_gc, mem_move(objarr));
     } break;
     case OBJ_TYPE_ARRAY:
         return obj_new_other(obj);
@@ -397,7 +398,7 @@ obj_to_array(const object_t *obj) {
     return NULL;
 }
 
-void 
+void
 obj_inc_ref(object_t *self) {
     self->gc_item.ref_counts += 1;
 }

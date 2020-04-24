@@ -37,7 +37,7 @@ struct object_func {
  * index object have reference to operand because for assign
  */
 struct object_index {
-    object_t *operand; // reference to operand object 
+    object_t *operand; // reference to operand object
     object_array_t *indices; // indices objects
 };
 
@@ -137,7 +137,7 @@ obj_to_array(const object_t *self);
 /**
  * increment reference count of object
  */
-void 
+void
 obj_inc_ref(object_t *self);
 
 /**

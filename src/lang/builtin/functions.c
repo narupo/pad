@@ -1,6 +1,21 @@
 #include <lang/builtin/functions.h>
 
 static object_t *
+builtin_id(ast_t *ast, object_t *actual_args) {
+    assert(actual_args->type == OBJ_TYPE_ARRAY);
+    object_array_t *args = actual_args->objarr;
+    if (objarr_len(args) != 1) {
+        ast_pushb_error(ast, "invalid arguments length");
+        return NULL;
+    }
+
+    const object_t *obj = objarr_getc(args, 0);
+    assert(obj);
+
+    return obj_new_int(ast->ref_gc, (long) obj->gc_item.ptr);
+}
+
+static object_t *
 builtin_eputs(ast_t *ast, object_t *actual_args) {
     assert(actual_args->type == OBJ_TYPE_ARRAY);
 
@@ -201,6 +216,7 @@ builtin_exit(ast_t *ast, object_t *actual_args) {
 
 static builtin_func_info_t
 builtin_func_infos[] = {
+    {"id", builtin_id},
     {"puts", builtin_puts},
     {"eputs", builtin_eputs},
     {"exec", builtin_exec},

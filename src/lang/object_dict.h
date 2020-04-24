@@ -56,3 +56,15 @@ objdict_len(const object_dict_t *self);
 
 const object_dict_item_t *
 objdict_getc_index(const object_dict_t *self, int32_t index);
+
+/**
+ * pop object from object dict
+ *
+ * @param[in] *self
+ * @param[in] *key
+ *
+ * @return found to return pointer to object_t
+ * @return not found to return NULL
+ */
+object_t *
+objdict_pop(object_dict_t *self, const char *key);
