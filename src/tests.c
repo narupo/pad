@@ -19041,6 +19041,52 @@ lang_gc_tests[] = {
 *******************/
 
 static void
+test_lang_objdict_move(void) {
+    gc_t *gc = gc_new();
+    object_dict_t *d = objdict_new(gc);
+
+    object_t *obj1 = obj_new_int(gc, 1);
+    objdict_move(d, "abc", obj1);
+    assert(objdict_len(d) == 1);
+
+    object_t *obj2 = obj_new_int(gc, 1);
+    objdict_move(d, "def", obj2);
+    assert(objdict_len(d) == 2);
+
+    object_dict_item_t *item1 = objdict_get(d, "abc");
+    assert(obj1 == item1->value);
+
+    object_dict_item_t *item2 = objdict_get(d, "def");
+    assert(obj2 == item2->value);
+
+    objdict_del(d);
+    gc_del(gc);
+}
+
+static void
+test_lang_objdict_set(void) {
+    gc_t *gc = gc_new();
+    object_dict_t *d = objdict_new(gc);
+
+    object_t *obj1 = obj_new_int(gc, 1);
+    objdict_move(d, "abc", obj1);
+    assert(objdict_len(d) == 1);
+
+    object_t *obj2 = obj_new_int(gc, 1);
+    objdict_move(d, "def", obj2);
+    assert(objdict_len(d) == 2);
+
+    object_dict_item_t *item1 = objdict_get(d, "abc");
+    assert(obj1 == item1->value);
+
+    object_dict_item_t *item2 = objdict_get(d, "def");
+    assert(obj2 == item2->value);
+
+    objdict_del(d);
+    gc_del(gc);
+}
+
+static void
 test_lang_objdict_pop(void) {
     /**********
     * pop one *
@@ -19089,6 +19135,8 @@ test_lang_objdict_pop(void) {
 
 static const struct testcase
 lang_object_dict_tests[] = {
+    {"move", test_lang_objdict_move},
+    {"set", test_lang_objdict_set},
     {"pop", test_lang_objdict_pop},
     {0},
 };
