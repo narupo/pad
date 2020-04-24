@@ -104,13 +104,13 @@ static object_t *
 trv_calc_term_mul(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-trv_calc_asscalc_ass(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep);
+trv_calc_asscalc_ass(ast_t *ast, const object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
 trv_multi_assign(ast_t *ast, const node_t *node, int dep);
 
 static object_t *
-trv_calc_assign(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep);
+trv_calc_assign(ast_t *ast, const object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
 trv_compare_comparison_not_eq_array(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep);
@@ -257,7 +257,10 @@ trv_ref_block(ast_t *ast, const node_t *node, int dep) {
         }
     } break;
     case OBJ_TYPE_IDENTIFIER: {
+        // ATODO
+        // printf("result[%d] [%s]\n", result->type, str_getc(obj_to_str(result)));
         object_t *obj = pull_in_ref_by(ast, result);
+        // if (obj) printf("obj[%p] type[%d] [%s]\n", obj, obj->type, str_getc(obj_to_str(obj)));
         if (!obj) {
             ast_pushb_error(
                 ast,
@@ -1065,7 +1068,7 @@ trv_assign_to_index(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
 
     object_t *ref_operand = lhs->index.operand;
     assert(ref_operand);
-    obj_inc_ref(ref_operand);
+    obj_inc_ref(ref_operand);  // this is needed?
 
     const object_array_t *indices = lhs->index.indices;
     assert(indices);
@@ -1192,7 +1195,7 @@ trv_calc_assign_to_index(ast_t *ast, const object_t *lhs, const object_t *rhs, i
 }
 
 static object_t *
-trv_calc_assign(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
+trv_calc_assign(ast_t *ast, const object_t *lhs, object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
@@ -5881,7 +5884,7 @@ trv_index(ast_t *ast, const node_t *node, int dep) {
 }
 
 static object_t *
-trv_calc_asscalc_ass_idn(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
+trv_calc_asscalc_ass_idn(ast_t *ast, const object_t *lhs, object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
@@ -5889,14 +5892,17 @@ trv_calc_asscalc_ass_idn(ast_t *ast, const object_t *lhs, const object_t *rhs, i
 
     switch (rhs->type) {
     default: {
-        move_var(ast, idn, mem_move(obj_new_other(rhs)));
+        move_obj_at_cur_varmap(ast, idn, mem_move(obj_new_other(rhs)));
         object_t *obj = obj_new_other(rhs);
         return_trav(obj);
+        // ATODO
+        // set_ref_at_cur_varmap(ast, idn, rhs);
+        // return_trav(rhs);
     } break;
     case OBJ_TYPE_INDEX: {
         object_t *val = copy_value_of_index_obj(ast, rhs);
         assert(val->type != OBJ_TYPE_IDENTIFIER);
-        move_var(ast, idn, mem_move(val));
+        move_obj_at_cur_varmap(ast, idn, mem_move(val));
         object_t *ret = obj_new_other(val);
         return_trav(ret);
     } break;
@@ -5907,14 +5913,17 @@ trv_calc_asscalc_ass_idn(ast_t *ast, const object_t *lhs, const object_t *rhs, i
             return_trav(NULL);
         }
 
-        // ここでmove_varにrvalの参照を渡すと、変数の変数への代入は参照になる
+        // ここでmove_obj_at_cur_varmapにrvalの参照を渡すと、変数の変数への代入は参照になる
         // ↓ではコピーを渡しているので変数の変数への代入は現在はコピーになっている
         // 別名の変数に参照を渡した場合、objdict_clearでダブルフリーが起こる
         // ガーベジコレクションの実装か、メモリ管理の設計（delなど）が必要である
         // TODO: ここの仕様のフィックス
-        move_var(ast, idn, mem_move(obj_new_other(rval)));
+        move_obj_at_cur_varmap(ast, idn, mem_move(obj_new_other(rval)));
         object_t *obj = obj_new_other(rval);
         return_trav(obj);
+        // ATODO
+        // set_ref_at_cur_varmap(ast, idn, rval);
+        // return_trav(rval);
     } break;
     }
 
@@ -5923,7 +5932,7 @@ trv_calc_asscalc_ass_idn(ast_t *ast, const object_t *lhs, const object_t *rhs, i
 }
 
 static object_t *
-trv_calc_asscalc_ass(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
+trv_calc_asscalc_ass(ast_t *ast, const object_t *lhs, object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
@@ -6474,7 +6483,7 @@ invoke_func_obj(ast_t *ast, object_t *funcobj, const object_t *drtargs, int dep)
             }
             object_t *copy_aarg = obj_new_other(ref_aarg);
 
-            move_var(ast, fargname, mem_move(copy_aarg));
+            move_obj_at_cur_varmap(ast, fargname, mem_move(copy_aarg));
         }
     }
 
@@ -6683,7 +6692,7 @@ trv_func_def(ast_t *ast, const node_t *node, int dep) {
     node_array_t *ref_suites = func_def->contents;
     object_t *func_obj = obj_new_func(ast->ref_gc, name, def_args, ref_suites);
     check("set func at varmap");
-    move_var(ast, str_getc(name->identifier), mem_move(func_obj));
+    move_obj_at_cur_varmap(ast, str_getc(name->identifier), mem_move(func_obj));
 
     return_trav(NULL);
 }

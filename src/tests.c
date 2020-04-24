@@ -11,7 +11,8 @@
 * macros *
 *********/
 
-#define showbuf() printf("buf[%s]\n", ctx_getc_stdout_buf(ctx));
+#define showbuf() printf("stdout[%s]\n", ctx_getc_stdout_buf(ctx))
+#define showerr() printf("stderr[%s]\n", ctx_getc_stderr_buf(ctx))
 
 #define showdetail() printf("detail[%s]\n", ast_getc_first_error_message(ast));
 
@@ -2182,10 +2183,6 @@ test_lang_opts_getc_args_1(void) {
     opts_del(opts);
 }
 
-/**
- * 0 memory leaks
- * 2020/02/25
- */
 static const struct testcase
 lang_opts_tests[] = {
     {"opts_new", test_lang_opts_new},
@@ -14024,6 +14021,68 @@ test_trv_builtin_functions(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc\n"));
     }
 
+    /********
+    * eputs *
+    ********/
+
+    tkr_parse(tkr, "{@ eputs() @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stderr_buf(ctx), "\n"));
+    }
+
+    tkr_parse(tkr, "{@ eputs(1) @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        showerr();
+        assert(!strcmp(ctx_getc_stderr_buf(ctx), "1\n"));
+    }
+
+    tkr_parse(tkr, "{@ eputs(1, 2) @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stderr_buf(ctx), "1 2\n"));
+    }
+
+    tkr_parse(tkr, "{@ eputs(1, \"abc\") @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stderr_buf(ctx), "1 abc\n"));
+    }
+
+    tkr_parse(tkr, "{@ eputs(\"abc\") @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stderr_buf(ctx), "abc\n"));
+    }
+
+    /*****
+    * id *
+    *****/
+
+    tkr_parse(tkr, "{: id(1) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+    }
+
     ctx_del(ctx);
     gc_del(gc);
     ast_del(ast);
@@ -15956,6 +16015,50 @@ test_trv_traverse(void) {
     config_del(config);
 }
 
+/**
+ * A test of assign to variable and refer variable
+ * object is copy? or refer?
+ */
+static void
+test_trv_assign_and_reference(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 0\n"
+    "@}{: i :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+/*
+    tkr_parse(tkr, "{@\n"
+    "   i = j = 0\n"
+    "@}{: i :},{: j :}\n"
+    "{: id(i) == id(j) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,0\ntrue"));
+    }
+*/
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
 static void
 test_trv_code_block(void) {
     config_t *config = config_new();
@@ -17203,6 +17306,7 @@ test_trv_for_stmt_0(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error_stack(ast));
+        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
@@ -18624,6 +18728,7 @@ test_trv_builtin_array_0(void) {
 
 static const struct testcase
 traverser_tests[] = {
+    {"trv_assign_and_reference", test_trv_assign_and_reference},
     {"trv_code_block", test_trv_code_block},
     {"trv_ref_block", test_trv_ref_block},
     {"trv_text_block", test_trv_text_block},
@@ -18931,6 +19036,63 @@ lang_gc_tests[] = {
     {0},
 };
 
+/*******************
+* lang/object_dict *
+*******************/
+
+static void
+test_lang_objdict_pop(void) {
+    /**********
+    * pop one *
+    **********/
+
+    gc_t *gc = gc_new();
+    object_dict_t *d = objdict_new(gc);
+    object_t *obj = obj_new_int(gc, 0);
+
+    objdict_move(d, "abc", obj);
+    assert(objdict_len(d) == 1);
+    object_t *popped = objdict_pop(d, "abc");
+    assert(popped);
+    assert(objdict_len(d) == 0);
+    assert(obj == popped);
+
+    objdict_del(d);
+    gc_del(gc);
+
+    /***********
+    * pop many *
+    ***********/
+
+    gc = gc_new();
+    d = objdict_new(gc);
+
+    for (int32_t i = 0; i < 10; ++i) {
+        object_t *obj = obj_new_int(gc, i);
+        char key[10];
+        snprintf(key, sizeof key, "obj%d", i);
+        objdict_move(d, key, obj);
+    }
+    assert(objdict_len(d) == 10);
+
+    for (int32_t i = 0; i < 10; ++i) {
+        char key[10];
+        snprintf(key, sizeof key, "obj%d", i);
+        object_t *popped = objdict_pop(d, key);
+        assert(popped);
+    }
+    assert(objdict_len(d) == 0);
+
+    objdict_del(d);
+    gc_del(gc);
+}
+
+static const struct testcase
+lang_object_dict_tests[] = {
+    {"pop", test_lang_objdict_pop},
+    {0},
+};
+
 /*******
 * main *
 *******/
@@ -18952,6 +19114,7 @@ testmodules[] = {
     {"symlink", symlink_tests},
     {"error_stack", errstack_tests},
     {"gc", lang_gc_tests},
+    {"objdict", lang_object_dict_tests},
     {0},
 };
 

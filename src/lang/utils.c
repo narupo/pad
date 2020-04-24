@@ -58,8 +58,10 @@ again:
 
 object_t *
 pull_in_ref_by(ast_t *ast, const object_t *idn_obj) {
+    // printf("idn_obj[%p] type[%d] [%s]\n", idn_obj, idn_obj->type, str_getc(obj_to_str(idn_obj)));
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
 
+    // printf("idn[%s]\n", str_getc(idn_obj->identifier));
     const char *idn = str_getc(idn_obj->identifier);
     object_t *ref = get_var_ref(ast, idn);
     if (!ref) {
@@ -229,12 +231,26 @@ copy_object_value(ast_t *ast, const object_t *obj) {
     return obj_new_other(obj);
 }
 
-object_t *
-move_var(ast_t *ast, const char *identifier, object_t *move_obj) {
+void
+move_obj_at_cur_varmap(ast_t *ast, const char *identifier, object_t *move_obj) {
     assert(move_obj->type != OBJ_TYPE_IDENTIFIER);
 
     object_dict_t *varmap = ctx_get_varmap(ast->context);
+    // printf("move obj[%p] type[%d] [%s]\n", move_obj, move_obj->type, str_getc(obj_to_str(move_obj)));
     objdict_move(varmap, identifier, mem_move(move_obj));
+}
 
-    return NULL;
+void
+set_ref_at_cur_varmap(ast_t *ast, const char *identifier, object_t *ref) {
+    assert(ref->type != OBJ_TYPE_IDENTIFIER);
+
+    // printf("set ref obj[%p] type[%d] [%s]\n", ref, ref->type, str_getc(obj_to_str(ref)));
+    object_dict_t *varmap = ctx_get_varmap(ast->context);
+    object_t *popped = objdict_pop(varmap, identifier);
+    if (popped != ref) {
+        obj_inc_ref(ref);
+    }
+
+    obj_del(popped);
+    objdict_set(varmap, identifier, ref);
 }
