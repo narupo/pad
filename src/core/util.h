@@ -142,7 +142,7 @@ argsbyoptind(int argc, char *argv[], int optind);
  * @param[in] *config pointer to config_t
  * @param[in] *cap_path pointer to cap_path
  *
- * @return 
+ * @return
  */
 const char *
 get_origin(const config_t *config, const char *cap_path);
@@ -157,7 +157,7 @@ get_origin(const config_t *config, const char *cap_path);
  * @return success to pointer to destination buffer
  * @return failed to pointer to NULL
  */
-char * 
+char *
 trim_first_line(char *dst, int32_t dstsz, const char *text);
 
 
@@ -165,7 +165,7 @@ trim_first_line(char *dst, int32_t dstsz, const char *text);
  * compile source text with argv
  *
  * @param[in] *config read only config object
- * @param[in] argc 
+ * @param[in] argc
  * @param[in] *argv[]
  * @param[in] *src    pointer to strings
  *
@@ -200,11 +200,11 @@ execute_snippet(const config_t *config, bool *found, int argc, char *argv[], con
  * this function first find to local scope and next to find global scope and execute
  * if program is not found to store false at *found variable
  *
- * @param[in] *config  
- * @param[in] *found   
- * @param[in] argc     
- * @param[in] *argv[]  
- * @param[in] *cmdname 
+ * @param[in] *config
+ * @param[in] *found
+ * @param[in] argc
+ * @param[in] *argv[]
+ * @param[in] *cmdname
  */
 int
 execute_program(const config_t *config, bool *found, int argc, char *argv[], const char *cmdname);
@@ -213,8 +213,8 @@ execute_program(const config_t *config, bool *found, int argc, char *argv[], con
  * execute run command with command arguments
  *
  * @param[in] config
- * @param[in] argc   
- * @param[in] argv   
+ * @param[in] argc
+ * @param[in] argv
  *
  * @return success to 0 else other
  */
@@ -224,14 +224,14 @@ execute_run(const config_t *config, int argc, char *argv[]);
 /**
  * push to front of argv and re-build array and return
  *
- * @param[in] argc    
- * @param[in] *argv[] 
- * @param[in] *front  
+ * @param[in] argc
+ * @param[in] *argv[]
+ * @param[in] *front
  *
  * @return success to pointer to cstring_array_t
  * @return failed to NULL
  */
-cstring_array_t * 
+cstring_array_t *
 pushf_argv(int argc, char *argv[], const char *front);
 
 /**
@@ -255,7 +255,7 @@ char *
 solve_cmdline_arg_path(const config_t *config, char *dst, int32_t dstsz, const char *caps_arg_path);
 
 /**
- * copy string of src with escape character by target 
+ * copy string of src with escape character by target
  *
  * @param[in] *dst    destination buffer
  * @param[in] dstsz   destination buffer size
@@ -265,7 +265,7 @@ solve_cmdline_arg_path(const config_t *config, char *dst, int32_t dstsz, const c
  * @return failed to NULL
  * @return success to pointer to destination buffer
  */
-char * 
+char *
 escape(char *dst, int32_t dstsz, const char *src, const char *target);
 
 /**
@@ -282,21 +282,21 @@ is_dot_file(const char *path);
 /**
  * split string to cstring array
  *
- * @param[in] *str 
- * @param[in] ch   
+ * @param[in] *str
+ * @param[in] ch
  *
  * @return success to pointer to cstring_array_t
  * @return failed to NULL
  */
-cstring_array_t * 
+cstring_array_t *
 split_to_array(const char *str, int ch);
 
 /**
  * pop tail slash (/ or \\) from path
  * if path is root (/ or C:\\) then don't pop tail slash
- * 
- * @param[in] *path 
- * 
+ *
+ * @param[in] *path
+ *
  * @return success to pointer to path
  * @return failed to NULL
  */

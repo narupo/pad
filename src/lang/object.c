@@ -22,6 +22,8 @@ obj_del(object_t *self) {
         self->gc_item.ref_counts--;
         return;
     }
+    self->gc_item.ref_counts--;
+    assert(self->gc_item.ref_counts >= 0);
 
     switch (self->type) {
     case OBJ_TYPE_NIL:

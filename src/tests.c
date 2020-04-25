@@ -16020,7 +16020,7 @@ test_trv_traverse(void) {
  * object is copy? or refer?
  */
 static void
-test_trv_assign_and_reference(void) {
+test_trv_assign_and_reference_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
@@ -16038,25 +16038,201 @@ test_trv_assign_and_reference(void) {
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
-/*
+
     tkr_parse(tkr, "{@\n"
     "   i = j = 0\n"
-    "@}{: i :},{: j :}\n"
-    "{: id(i) == id(j) :}");
+    "@}{: i :},{: j :},{: id(i) == id(j) :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
-        trv_traverse(ast, ctx);
+        (trv_traverse(ast, ctx));
         assert(!ast_has_error_stack(ast));
-        showbuf();
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,0\ntrue"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,0,true"));
     }
-*/
+
     ctx_del(ctx);
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
+}
+
+static void
+test_trv_assign_and_reference_1(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   i = j = 0\n"
+    "@}{: i :},{: j :},{: id(i) == id(j) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,0,true"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_assign_and_reference_2(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 1\n"
+    "   j = i\n"
+    "@}{: i :},{: j :},{: id(i) == id(j) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1,true"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_assign_and_reference_3(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   i, j = 1, 1\n"
+    "@}{: i :},{: j :},{: id(i) != id(j) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1,true"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_assign_and_reference_4(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 1\n"
+    "   j, k = i, i\n"
+    "@}{: i :},{: j :},{: id(i) == id(j) :},{: id(i) == id(k) :},{: id(j) == id(k) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1,true,true,true"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_assign_and_reference_5(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 1, 2\n"
+    "   j = i\n"
+    "@}{: i :},{: j :},{: id(i) == id(j) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array),(array),true"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_assign_and_reference_6(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   i = [1, 2]\n"
+    "   j = 3\n"
+    "   i[0] = j\n"
+    "@}{: i[0] :},{: i[1] :},{: j :},{: id(i[0]) == id(j) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "3,2,3,true"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_assign_and_reference_all(void) {
+    test_trv_assign_and_reference_0();
+    test_trv_assign_and_reference_1();
+    test_trv_assign_and_reference_2();
+    test_trv_assign_and_reference_3();
+    test_trv_assign_and_reference_4();
+    test_trv_assign_and_reference_5();
+    test_trv_assign_and_reference_6();
 }
 
 static void
@@ -17306,7 +17482,6 @@ test_trv_for_stmt_0(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error_stack(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
@@ -18728,7 +18903,14 @@ test_trv_builtin_array_0(void) {
 
 static const struct testcase
 traverser_tests[] = {
-    {"trv_assign_and_reference", test_trv_assign_and_reference},
+    {"trv_assign_and_reference_0", test_trv_assign_and_reference_0},
+    {"trv_assign_and_reference_1", test_trv_assign_and_reference_1},
+    {"trv_assign_and_reference_2", test_trv_assign_and_reference_2},
+    {"trv_assign_and_reference_3", test_trv_assign_and_reference_3},
+    {"trv_assign_and_reference_4", test_trv_assign_and_reference_4},
+    {"trv_assign_and_reference_5", test_trv_assign_and_reference_5},
+    {"trv_assign_and_reference_6", test_trv_assign_and_reference_6},
+    {"trv_assign_and_reference_all", test_trv_assign_and_reference_all},
     {"trv_code_block", test_trv_code_block},
     {"trv_ref_block", test_trv_ref_block},
     {"trv_text_block", test_trv_text_block},

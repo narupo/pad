@@ -80,7 +80,8 @@ gc_free(gc_t *self, gc_item_t *item) {
     item->ref_counts--;
 
     if (item->ref_counts <= 0) {
-        item->ptr = NULL; // do not delete (duplicated address). deleted by obj_del
+        // printf("free obj[%p]\n", item->ptr);
+        item->ptr = NULL; // do not delete (duplicated address to pool[id]). deleted by obj_del
         int32_t id = item->id;
         free(self->pool[id]); // after can not access to item
         self->pool[id] = NULL;

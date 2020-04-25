@@ -14,6 +14,9 @@ struct object_dict {
 void
 obj_del(object_t *self);
 
+typedef struct string string_t;
+string_t * obj_to_str(const object_t *self);
+
 void
 objdict_del(object_dict_t *self) {
     if (!self) {
