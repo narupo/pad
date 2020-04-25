@@ -14040,7 +14040,6 @@ test_trv_builtin_functions(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error_stack(ast));
-        showerr();
         assert(!strcmp(ctx_getc_stderr_buf(ctx), "1\n"));
     }
 
@@ -15856,6 +15855,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
+        showdetail();
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1"));
     }
@@ -16225,6 +16225,179 @@ test_trv_assign_and_reference_6(void) {
 }
 
 static void
+test_trv_assign_and_reference_7(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   i, j = [1, 2]\n"
+    "@}{: i :},{: j :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_assign_and_reference_8(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   i, j = k, l = 1, 2\n"
+    "@}{: i :},{: j :},{: k :},{: l :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2,1,2"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_assign_and_reference_9(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   i = { \"a\": 1 }\n"
+    "   j = i\n"
+    "@}{: i :},{: j :},{: id(i) == id(j) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict),(dict),true"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_assign_and_reference_10(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(a):\n"
+    "       return a\n"
+    "   end\n"
+    "   i = f(1)"
+    "@}{: i :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_assign_and_reference_11(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   def f():\n"
+    "       return 1, 2\n"
+    "   end\n"
+    "   i, j = f()\n"
+    "@}{: i :},{: j :},{: id(i) != id(j) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2,true"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_assign_and_reference_12(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(a):\n"
+    "       return a, a\n"
+    "   end\n"
+    "   k = 1\n"
+    "   i, j = f(k)\n"
+    "@}{: i :},{: j :},{: id(i) != id(j) :},{: id(k) != id(i) :},{: id(k) != id(j) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1,true,true,true"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
 test_trv_assign_and_reference_all(void) {
     test_trv_assign_and_reference_0();
     test_trv_assign_and_reference_1();
@@ -16233,6 +16406,12 @@ test_trv_assign_and_reference_all(void) {
     test_trv_assign_and_reference_4();
     test_trv_assign_and_reference_5();
     test_trv_assign_and_reference_6();
+    test_trv_assign_and_reference_7();
+    test_trv_assign_and_reference_8();
+    test_trv_assign_and_reference_9();
+    test_trv_assign_and_reference_10();
+    test_trv_assign_and_reference_11();
+    test_trv_assign_and_reference_12();
 }
 
 static void
@@ -18910,6 +19089,12 @@ traverser_tests[] = {
     {"trv_assign_and_reference_4", test_trv_assign_and_reference_4},
     {"trv_assign_and_reference_5", test_trv_assign_and_reference_5},
     {"trv_assign_and_reference_6", test_trv_assign_and_reference_6},
+    {"trv_assign_and_reference_7", test_trv_assign_and_reference_7},
+    {"trv_assign_and_reference_8", test_trv_assign_and_reference_8},
+    {"trv_assign_and_reference_9", test_trv_assign_and_reference_9},
+    {"trv_assign_and_reference_10", test_trv_assign_and_reference_10},
+    {"trv_assign_and_reference_11", test_trv_assign_and_reference_11},
+    {"trv_assign_and_reference_12", test_trv_assign_and_reference_12},
     {"trv_assign_and_reference_all", test_trv_assign_and_reference_all},
     {"trv_code_block", test_trv_code_block},
     {"trv_ref_block", test_trv_ref_block},

@@ -111,3 +111,32 @@ set_ref_at_cur_varmap(ast_t *ast, const char *identifier, object_t *ref);
  */
 object_t *
 extract_ref_of_obj(ast_t *ast, object_t *obj);
+
+/**
+ * extract identifier objects
+ * return copied object
+ *
+ * @return new object
+ */
+object_t *
+extract_copy_of_obj(ast_t *ast, const object_t *obj);
+
+/**
+ * refer index object on context and return reference of refer value
+ *
+ * @param[in] *ast
+ * @param[in] *index_obj
+ *
+ * @return success to reference to object of index
+ * @return failed to NULL
+ */
+object_t *
+refer_index_obj_with_ref(ast_t *ast, object_t *index_obj);
+
+/**
+ * dump array object's elements at stdout
+ *
+ * @param[in] *arrobj
+ */
+void
+dump_array_obj(const object_t *arrobj);

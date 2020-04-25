@@ -869,41 +869,6 @@ trv_continue_stmt(ast_t *ast, const node_t *node, int dep) {
     return_trav(NULL);
 }
 
-/**
- * extract identifier objects
- * return copied object
- *
- * @return new object
- */
-static object_t *
-extract_obj(ast_t *ast, const object_t *srcobj) {
-    assert(srcobj);
-
-    switch (srcobj->type) {
-    default: return obj_new_other(srcobj); break;
-    case OBJ_TYPE_IDENTIFIER: {
-        object_t *ref = pull_in_ref_by(ast, srcobj);
-        if (!ref) {
-            ast_pushb_error(ast, "\"%s\" is not defined in extract obj", str_getc(srcobj->identifier));
-            return NULL;
-        }
-        return obj_new_other(ref);
-    } break;
-    case OBJ_TYPE_ARRAY: {
-        object_array_t *objarr = objarr_new();
-        for (int32_t i = 0; i < objarr_len(srcobj->objarr); ++i) {
-            object_t *el = objarr_get(srcobj->objarr, i);
-            object_t *newel = extract_obj(ast, el);
-            objarr_moveb(objarr, newel);
-        }
-        return obj_new_array(ast->ref_gc, objarr);
-    } break;
-    }
-
-    assert(0 && "impossible. failed to extract object");
-    return NULL;
-}
-
 static object_t *
 trv_return_stmt(ast_t *ast, const node_t *node, int dep) {
     tready();
@@ -938,7 +903,13 @@ trv_return_stmt(ast_t *ast, const node_t *node, int dep) {
     //     x = func()
     //
     // そのためここで実体をコピーで取得して実体を返すようにする
-    object_t *ret = extract_obj(ast, result);
+    object_t *ref = extract_copy_of_obj(ast, result);
+    if (!ref) {
+        ast_pushb_error(ast, "failed to extract reference in return statement");
+        return_trav(NULL);
+    }
+
+    object_t *ret = obj_new_other(ref);
 
     check("set true at do return flag");
     ctx_set_do_return(ast->context, true);

@@ -138,7 +138,7 @@ obj_new_other(const object_t *other) {
         self->index.indices = indices;
     } break;
     case OBJ_TYPE_MODULE:
-        err_die("TODO");
+        err_die("TODO: copy module! in object.c");
         self->module.name = str_new_other(other->module.name);
         // self->module.tokenizer = tkr_new_other(other->module.tokenizer);
         // self->module.ast = ast_new_other(other->module.ast);
