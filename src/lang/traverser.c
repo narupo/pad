@@ -903,6 +903,11 @@ trv_return_stmt(ast_t *ast, const node_t *node, int dep) {
     //     x = func()
     //
     // そのためここで実体をコピーで取得して返すようにする
+    //
+    // TODO:
+    // returnで返す値が、現在のスコープには無いオブジェクトの場合、
+    // つまりグローバル変数などの場合はコピーではなく参照を返す必要がある
+    // ↓の実装では全てコピーになっている
     object_t *ref = extract_copy_of_obj(ast, result);
     if (!ref) {
         ast_pushb_error(ast, "failed to extract reference in return statement");
