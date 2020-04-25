@@ -902,7 +902,7 @@ trv_return_stmt(ast_t *ast, const node_t *node, int dep) {
     //     end
     //     x = func()
     //
-    // そのためここで実体をコピーで取得して実体を返すようにする
+    // そのためここで実体をコピーで取得して返すようにする
     object_t *ref = extract_copy_of_obj(ast, result);
     if (!ref) {
         ast_pushb_error(ast, "failed to extract reference in return statement");
