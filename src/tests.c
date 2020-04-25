@@ -11409,7 +11409,6 @@ test_trv_atom(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_error_stack(ast));
-        showdetail();
         assert(!strcmp(ast_getc_first_error_message(ast), "can't invoke alias.set. too few arguments"));
     }
 
@@ -11828,7 +11827,6 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        showdetail();
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
@@ -14090,6 +14088,151 @@ test_trv_builtin_functions(void) {
 }
 
 static void
+test_trv_builtin_functions_type_dict(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@ d = {\"a\": 1} @}");
+    {
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+    }
+
+    tkr_parse(tkr, "{@ def f(d): end \n f({\"a\": 1}) @}");
+    {
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+    }
+
+    tkr_parse(tkr, "{@ def f(d): end @}{: f(1) :}");
+    {
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+    }
+
+    tkr_parse(tkr, "{@ def f(d): end @}{: f({\"a\": 1}) :}");
+    {
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+    }
+
+    tkr_parse(tkr, "{: type({ \"a\": 1 }) :}");
+    {
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<dict>"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_builtin_functions_type(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{: type(nil) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<nil>"));
+    }
+
+    tkr_parse(tkr, "{: type(1) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<int>"));
+    }
+
+    tkr_parse(tkr, "{: type(true) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<bool>"));
+    }
+
+    tkr_parse(tkr, "{: type(\"string\") :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<str>"));
+    }
+
+    tkr_parse(tkr, "{: type([1, 2]) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<array>"));
+    }
+
+    tkr_parse(tkr, "{: type({ \"a\": 1 }) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<dict>"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): end @}{: type(f) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<func>"));
+    }
+
+    tkr_parse(tkr, "{@ import \":tests/lang/modules/hello.cap\" as mod @}{: type(mod) :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\n<module>"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
 test_trv_builtin_functions_len_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -15855,7 +15998,6 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        showdetail();
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1"));
     }
@@ -19180,6 +19322,8 @@ traverser_tests[] = {
     {"trv_func_def", test_trv_func_def},
     {"trv_builtin_functions", test_trv_builtin_functions},
     {"trv_builtin_functions_len_0", test_trv_builtin_functions_len_0},
+    {"trv_builtin_functions_type", test_trv_builtin_functions_type},
+    {"trv_builtin_functions_type_dict", test_trv_builtin_functions_type_dict},
     {"trv_builtin_string", test_trv_builtin_string},
     {"trv_builtin_array_0", test_trv_builtin_array_0},
     {0},

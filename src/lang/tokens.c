@@ -11,7 +11,7 @@ token_del(token_t *self) {
 token_t *
 token_new(int type) {
     token_t *self = mem_ecalloc(1, sizeof(*self));
-    
+
     self->type = type;
 
     return self;
@@ -20,7 +20,7 @@ token_new(int type) {
 token_t *
 token_new_other(const token_t *other) {
     token_t *self = mem_ecalloc(1, sizeof(*self));
-    
+
     self->type = other->type;
     self->text = cstr_edup(other->text);
     self->lvalue = other->lvalue;
@@ -49,7 +49,7 @@ token_getc_text(const token_t *self) {
 
 char *
 token_copy_text(const token_t *self) {
-    return cstr_edup(self->text); 
+    return cstr_edup(self->text);
 }
 
 /**
@@ -86,7 +86,10 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_IDENTIFIER: return self->text; break;
     case TOKEN_TYPE_LPAREN: return "("; break;
     case TOKEN_TYPE_RPAREN: return ")"; break;
-    case TOKEN_TYPE_DQ_STRING: return "string"; break;
+    case TOKEN_TYPE_DQ_STRING:
+        snprintf(str, sizeof str, "str[%s]", self->text);
+        return str;
+        break;
     case TOKEN_TYPE_INTEGER:
         snprintf(str, sizeof str, "int[%ld]", self->lvalue);
         return str;
@@ -125,7 +128,7 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_STMT_IMPORT: return "import"; break;
     case TOKEN_TYPE_AS: return "as"; break;
     case TOKEN_TYPE_FROM: return "from"; break;
-    
+
     case TOKEN_TYPE_STMT_IF: return "if"; break;
     case TOKEN_TYPE_STMT_ELIF: return "elif"; break;
     case TOKEN_TYPE_STMT_ELSE: return "else"; break;

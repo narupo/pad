@@ -1096,26 +1096,28 @@ cc_dict_elems(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+#define return_ok return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur))
+
     check("call cc_dict_elem");
     node_t *lhs = cc_dict_elem(ast, dep+1);
     if (ast_has_error_stack(ast)) {
         return_cleanup("");
     }
     if (!lhs) {
-        return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur));
+        return_ok;
     }
 
     nodearr_moveb(cur->nodearr, lhs);
 
     for (;;) {
         if (!*ast->ptr) {
-            return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur));
+            return_ok;
         }
 
         token_t *t = *ast->ptr++;
         if (t->type != TOKEN_TYPE_COMMA) {
             ast->ptr--;
-            return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur));
+            return_ok;
         }
         check("read ','")
 
@@ -1126,7 +1128,7 @@ cc_dict_elems(ast_t *ast, int dep) {
         }
         if (!rhs) {
             // not error
-            return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur));
+            return_ok;
         }
 
         nodearr_moveb(cur->nodearr, rhs);

@@ -21,12 +21,9 @@ builtin_id(ast_t *ast, object_t *actual_args) {
         return NULL;
     }
 
-    return obj_new_int(ast->ref_gc, (long) obj->gc_item.ptr);
+    return obj_new_int(ast->ref_gc, (intptr_t) obj->gc_item.ptr);
 }
 
-/**
- * TODO: test
- */
 static object_t *
 builtin_type(ast_t *ast, object_t *actual_args) {
     assert(actual_args->type == OBJ_TYPE_ARRAY);
