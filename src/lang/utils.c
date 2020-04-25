@@ -236,7 +236,6 @@ move_obj_at_cur_varmap(ast_t *ast, const char *identifier, object_t *move_obj) {
     assert(move_obj->type != OBJ_TYPE_IDENTIFIER);
 
     object_dict_t *varmap = ctx_get_varmap(ast->context);
-    // printf("move obj[%p] type[%d] [%s]\n", move_obj, move_obj->type, str_getc(obj_to_str(move_obj)));
     objdict_move(varmap, identifier, mem_move(move_obj));
 }
 
@@ -244,7 +243,6 @@ void
 set_ref_at_cur_varmap(ast_t *ast, const char *identifier, object_t *ref) {
     assert(ref->type != OBJ_TYPE_IDENTIFIER);
 
-    // printf("set ref obj[%p] type[%d] [%s]\n", ref, ref->type, str_getc(obj_to_str(ref)));
     object_dict_t *varmap = ctx_get_varmap(ast->context);
     object_t *popped = objdict_pop(varmap, identifier);
     if (popped != ref) {
@@ -255,9 +253,6 @@ set_ref_at_cur_varmap(ast_t *ast, const char *identifier, object_t *ref) {
     objdict_set(varmap, identifier, ref);
 }
 
-/**
- * refer index object on context and return reference of refer value
- */
 object_t *
 refer_index_obj_with_ref(ast_t *ast, object_t *index_obj) {
     assert(index_obj && index_obj->type == OBJ_TYPE_INDEX);
@@ -356,6 +351,36 @@ refer_index_obj_with_ref(ast_t *ast, object_t *index_obj) {
 }
 
 object_t *
+extract_copy_of_obj(ast_t *ast, const object_t *srcobj) {
+    assert(srcobj);
+
+    switch (srcobj->type) {
+    default: return obj_new_other(srcobj); break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *ref = pull_in_ref_by_owner(ast, srcobj);
+        if (!ref) {
+            ast_pushb_error(ast, "\"%s\" is not defined in extract obj", str_getc(srcobj->identifier));
+            return NULL;
+        }
+        return obj_new_other(ref);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        // copy array elements recursive
+        object_array_t *objarr = objarr_new();
+        for (int32_t i = 0; i < objarr_len(srcobj->objarr); ++i) {
+            object_t *el = objarr_get(srcobj->objarr, i);
+            object_t *newel = extract_copy_of_obj(ast, el);
+            objarr_moveb(objarr, newel);
+        }
+        return obj_new_array(ast->ref_gc, objarr);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to extract object");
+    return NULL;
+}
+
+object_t *
 extract_ref_of_obj(ast_t *ast, object_t *obj) {
     assert(obj);
 
@@ -383,4 +408,18 @@ extract_ref_of_obj(ast_t *ast, object_t *obj) {
 
     assert(0 && "impossible. failed to extract reference");
     return NULL;
+}
+
+void
+dump_array_obj(const object_t *arrobj) {
+    assert(arrobj->type == OBJ_TYPE_ARRAY);
+
+    object_array_t *objarr = arrobj->objarr;
+
+    for (int32_t i = 0; i < objarr_len(objarr); ++i) {
+        const object_t *obj = objarr_getc(objarr, i);
+        string_t *s = obj_to_str(obj);
+        printf("arr[%d] = [%s]\n", i, str_getc(s));
+        str_del(s);
+    }
 }
