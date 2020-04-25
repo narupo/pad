@@ -9,10 +9,79 @@ builtin_id(ast_t *ast, object_t *actual_args) {
         return NULL;
     }
 
+    object_t *obj = objarr_get(args, 0);
+    assert(obj);
+
+    obj = extract_ref_of_obj(ast, obj);
+    if (ast_has_error_stack(ast)) {
+        return NULL;
+    }
+    if (!obj) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return NULL;
+    }
+
+    return obj_new_int(ast->ref_gc, (long) obj->gc_item.ptr);
+}
+
+/**
+ * TODO: test
+ */
+static object_t *
+builtin_type(ast_t *ast, object_t *actual_args) {
+    assert(actual_args->type == OBJ_TYPE_ARRAY);
+    object_array_t *args = actual_args->objarr;
+    if (objarr_len(args) != 1) {
+        ast_pushb_error(ast, "invalid arguments length");
+        return NULL;
+    }
+
     const object_t *obj = objarr_getc(args, 0);
     assert(obj);
 
-    return obj_new_int(ast->ref_gc, (long) obj->gc_item.ptr);
+again:
+    switch (obj->type) {
+    case OBJ_TYPE_NIL: {
+        return obj_new_cstr(ast->ref_gc, "<nil>");
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        return obj_new_cstr(ast->ref_gc, "<int>");
+    } break;
+    case OBJ_TYPE_BOOL: {
+        return obj_new_cstr(ast->ref_gc, "<bool>");
+    } break;
+    case OBJ_TYPE_STRING: {
+        return obj_new_cstr(ast->ref_gc, "<str>");
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        return obj_new_cstr(ast->ref_gc, "<array>");
+    } break;
+    case OBJ_TYPE_DICT: {
+        return obj_new_cstr(ast->ref_gc, "<dict>");
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = str_getc(obj->identifier);
+        obj = pull_in_ref_by(ast, obj);
+        if (!obj) {
+            ast_pushb_error(ast, "not defined \"%s\" in type()", idn);
+            return NULL;
+        }
+        goto again;
+    } break;
+    case OBJ_TYPE_FUNC: {
+        return obj_new_cstr(ast->ref_gc, "<func>");
+    } break;
+    case OBJ_TYPE_INDEX: {
+        obj = obj->index.operand;
+        goto again;
+    } break;
+    case OBJ_TYPE_MODULE: {
+        return obj_new_cstr(ast->ref_gc, "<module>");
+    } break;
+    } // switch
+
+    ast_pushb_error(ast, "not supported type \"%d\"", obj->type);
+    return NULL;
 }
 
 static object_t *
@@ -217,6 +286,7 @@ builtin_exit(ast_t *ast, object_t *actual_args) {
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"id", builtin_id},
+    {"type", builtin_type},
     {"puts", builtin_puts},
     {"eputs", builtin_eputs},
     {"exec", builtin_exec},

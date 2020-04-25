@@ -100,3 +100,14 @@ move_obj_at_cur_varmap(ast_t *ast, const char *identifier, object_t *move_obj);
  */
 void
 set_ref_at_cur_varmap(ast_t *ast, const char *identifier, object_t *ref);
+
+/**
+ * extract identifier object and index object and etc to reference
+ *
+ * @param[in] *ast
+ * @param[in] *obj
+ *
+ * @return reference to object
+ */
+object_t *
+extract_ref_of_obj(ast_t *ast, object_t *obj);

@@ -254,3 +254,133 @@ set_ref_at_cur_varmap(ast_t *ast, const char *identifier, object_t *ref) {
     obj_del(popped);
     objdict_set(varmap, identifier, ref);
 }
+
+/**
+ * refer index object on context and return reference of refer value
+ */
+object_t *
+refer_index_obj_with_ref(ast_t *ast, object_t *index_obj) {
+    assert(index_obj && index_obj->type == OBJ_TYPE_INDEX);
+
+    assert(index_obj->index.operand);
+    object_t *operand = index_obj->index.operand;
+    assert(index_obj->index.indices);
+    const object_array_t *indices = index_obj->index.indices;
+    assert(operand);
+    assert(indices);
+
+    for (int32_t i = 0; i < objarr_len(indices); ++i) {
+        const object_t *el = objarr_getc(indices, i);
+        assert(el);
+
+        const object_t *idx = el;
+        if (el->type == OBJ_TYPE_IDENTIFIER) {
+            idx = pull_in_ref_by(ast, el);
+            if (!idx) {
+                ast_pushb_error(ast, "\"%s\" is not defined in index object", str_getc(el->identifier));
+                return NULL;
+            }
+        }
+
+        const char *skey = NULL;
+        long ikey = -1;
+        switch (idx->type) {
+        default: err_die("invalid index type in get value of index obj"); break;
+        case OBJ_TYPE_STRING: skey = str_getc(idx->string); break;
+        case OBJ_TYPE_INTEGER: ikey = idx->lvalue; break;
+        }
+
+        if (operand->type == OBJ_TYPE_IDENTIFIER) {
+            object_t *ref = pull_in_ref_by(ast, operand);
+            if (ast_has_error_stack(ast)) {
+                return NULL;
+            } else if (!ref) {
+                ast_pushb_error(ast, "\"%s\" is not defined in get value of index object", str_getc(operand->identifier));
+                return NULL;
+            }
+            operand = ref;
+        }
+
+        switch (operand->type) {
+        default:
+            ast_pushb_error(ast, "invalid operand type (%d) in get value of index object", operand->type);
+            break;
+        case OBJ_TYPE_ARRAY: {
+            if (idx->type != OBJ_TYPE_INTEGER) {
+                ast_pushb_error(ast, "invalid array index value. value is not integer");
+                return NULL;
+            }
+
+            if (ikey < 0 || ikey >= objarr_len(operand->objarr)) {
+                ast_pushb_error(ast, "index out of range of array");
+                return NULL;
+            }
+
+            operand = objarr_get(operand->objarr, ikey);
+        } break;
+        case OBJ_TYPE_STRING: {
+            if (idx->type != OBJ_TYPE_INTEGER) {
+                ast_pushb_error(ast, "invalid string index value. value is not integer");
+                return NULL;
+            }
+
+            if (ikey < 0 || ikey >= str_len(operand->string)) {
+                ast_pushb_error(ast, "index out of range of string");
+                return NULL;
+            }
+
+            const char ch = str_getc(operand->string)[ikey];
+            string_t *str = str_new();
+            str_pushb(str, ch);
+
+            operand = obj_new_str(ast->ref_gc, str);
+        } break;
+        case OBJ_TYPE_DICT: {
+            if (idx->type != OBJ_TYPE_STRING) {
+                ast_pushb_error(ast, "invalid dict index value. value is not a string");
+                return NULL;
+            }
+            assert(skey);
+
+            const object_dict_item_t *item = objdict_getc(operand->objdict, skey);
+            if (!item) {
+                return NULL;
+            }
+
+            operand = item->value;
+        } break;
+        }
+    }
+
+    return operand;
+}
+
+object_t *
+extract_ref_of_obj(ast_t *ast, object_t *obj) {
+    assert(obj);
+
+    switch (obj->type) {
+    default:
+        return obj;
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *ref = pull_in_ref_by(ast, obj);
+        if (!ref) {
+            ast_pushb_error(ast, "\"%s\" is not defined", str_getc(obj->identifier));
+            return NULL;
+        }
+        return ref;
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *ref = refer_index_obj_with_ref(ast, obj);
+        if (!ref) {
+            ast_pushb_error(ast, "failed to refer index");
+            return NULL;
+        }
+        return ref;
+    } break;
+    }
+
+    assert(0 && "impossible. failed to extract reference");
+    return NULL;
+}
