@@ -55,7 +55,7 @@ typedef enum {
     TOKEN_TYPE_STMT_IMPORT, // 'import'
     TOKEN_TYPE_AS, // 'as'
     TOKEN_TYPE_FROM, // 'from'
-    
+
     TOKEN_TYPE_STMT_IF, // 'if'
     TOKEN_TYPE_STMT_ELIF, // 'if'
     TOKEN_TYPE_STMT_ELSE, // 'if'
@@ -92,10 +92,10 @@ token_new(int type);
 
 /**
  * copy constructor
- * 
- * @param[in] *other 
- * 
- * @return 
+ *
+ * @param[in] *other
+ *
+ * @return
  */
 token_t *
 token_new_other(const token_t *other);
