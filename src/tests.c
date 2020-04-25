@@ -19652,12 +19652,207 @@ lang_object_dict_tests[] = {
     {0},
 };
 
+/**************
+* cat command *
+**************/
+
+static void
+test_catcmd_default(void) {
+    config_t *config = config_new();
+    int argc = 2;
+    char *argv[] = {
+        "cat",
+        "/tests/resources/hello.txt",
+        NULL,
+    };
+
+    file_solve(config->home_path, sizeof config->home_path, ".");
+
+    char stdout_buf[1024] = {0};
+    catcmd_t *catcmd = catcmd_new(config, argc, argv);
+
+    setbuf(stdout, stdout_buf);
+    catcmd_run(catcmd);
+    assert(!strcmp(stdout_buf, "hello\n"));
+    setbuf(stdout, NULL);
+
+    catcmd_del(catcmd);
+    config_del(config);
+}
+
+static void
+test_catcmd_indent_opt(void) {
+    config_t *config = config_new();
+    int argc = 4;
+    char *argv[] = {
+        "cat",
+        "/tests/resources/hello.txt",
+        "-i",
+        "2",
+        NULL,
+    };
+
+    file_solve(config->home_path, sizeof config->home_path, ".");
+
+    char stdout_buf[1024] = {0};
+    catcmd_t *catcmd = catcmd_new(config, argc, argv);
+
+    setbuf(stdout, stdout_buf);
+    catcmd_run(catcmd);
+    assert(!strcmp(stdout_buf, "        hello\n"));
+    setbuf(stdout, NULL);
+
+    catcmd_del(catcmd);
+    config_del(config);
+}
+
+static void
+test_catcmd_tab_opt(void) {
+    config_t *config = config_new();
+    int argc = 5;
+    char *argv[] = {
+        "cat",
+        "/tests/resources/hello.txt",
+        "-i",
+        "2",
+        "-t",
+        NULL,
+    };
+
+    file_solve(config->home_path, sizeof config->home_path, ".");
+
+    char stdout_buf[1024] = {0};
+    catcmd_t *catcmd = catcmd_new(config, argc, argv);
+
+    setbuf(stdout, stdout_buf);
+    catcmd_run(catcmd);
+    assert(!strcmp(stdout_buf, "\t\thello\n"));
+    setbuf(stdout, NULL);
+
+    catcmd_del(catcmd);
+    config_del(config);
+}
+
+static void
+test_catcmd_tabspaces_opt(void) {
+    config_t *config = config_new();
+    int argc = 6;
+    char *argv[] = {
+        "cat",
+        "/tests/resources/hello.txt",
+        "-i",
+        "2",
+        "-T",
+        "2",
+        NULL,
+    };
+
+    file_solve(config->home_path, sizeof config->home_path, ".");
+
+    char stdout_buf[1024] = {0};
+    catcmd_t *catcmd = catcmd_new(config, argc, argv);
+
+    setbuf(stdout, stdout_buf);
+    catcmd_run(catcmd);
+    assert(!strcmp(stdout_buf, "    hello\n"));
+    setbuf(stdout, NULL);
+
+    catcmd_del(catcmd);
+    config_del(config);
+}
+
+static void
+test_catcmd_make_opt(void) {
+    config_t *config = config_new();
+    int argc = 3;
+    char *argv[] = {
+        "cat",
+        "-m",
+        "/tests/resources/hello.cap",
+        NULL,
+    };
+
+    file_solve(config->home_path, sizeof config->home_path, ".");
+
+    char stdout_buf[1024] = {0};
+    catcmd_t *catcmd = catcmd_new(config, argc, argv);
+
+    setbuf(stdout, stdout_buf);
+    catcmd_run(catcmd);
+    assert(!strcmp(stdout_buf, "hello"));
+    setbuf(stdout, NULL);
+
+    catcmd_del(catcmd);
+    config_del(config);
+}
+
+static void
+test_catcmd_make_opt_1(void) {
+    config_t *config = config_new();
+    int argc = 4;
+    char *argv[] = {
+        "cat",
+        "-m",
+        "/tests/resources/hello.cap",
+        "/tests/resources/hello.cap",
+        NULL,
+    };
+
+    file_solve(config->home_path, sizeof config->home_path, ".");
+
+    char buf[1024] = {0};
+    catcmd_t *catcmd = catcmd_new(config, argc, argv);
+
+    // _IOFBF is full buffering mode
+    // stdout use line buffer mode default
+    setvbuf(stdout, buf, _IOFBF, sizeof buf);
+    // catcmd_run(catcmd);
+    // assert(!strcmp(buf, "hellohello"));
+    // setvbuf(stdout, NULL, _IOLBF, 0);
+    puts("ababa"); // <- missing
+    puts("higege");
+    fflush(stdout);
+    setbuf(stdout, NULL);
+
+    // why not write "ababa" at buffer?
+    fprintf(stderr, "stdout[%s]\n", buf);
+
+    catcmd_del(catcmd);
+    config_del(config);
+}
+
+static void
+test_catcmd_all(void) {
+    test_catcmd_default();
+    test_catcmd_indent_opt();
+    test_catcmd_tab_opt();
+    test_catcmd_tabspaces_opt();
+    test_catcmd_make_opt();
+    // test_catcmd_make_opt_1();
+}
+
+static const struct testcase
+catcmd_tests[] = {
+    {"default", test_catcmd_default},
+    {"indent", test_catcmd_indent_opt},
+    {"tab", test_catcmd_tab_opt},
+    {"tabspaces", test_catcmd_tabspaces_opt},
+    {"make", test_catcmd_make_opt},
+    {"make_1", test_catcmd_make_opt_1},
+    {"all", test_catcmd_all},
+    {0},
+};
+
 /*******
 * main *
 *******/
 
 static const struct testmodule
 testmodules[] = {
+    // commands
+    {"cat", catcmd_tests},
+
+    // lib
     {"cstring_array", cstrarr_tests},
     {"string", string_tests},
     {"file", file_tests},

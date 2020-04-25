@@ -4,11 +4,11 @@
  * Structure of options
  */
 struct opts {
-    bool ishelp;
+    bool is_help;
     int indent;
     int tabspaces;
-    bool istab;
-    bool ismake;
+    bool is_tab;
+    bool is_make;
 };
 
 /**
@@ -20,6 +20,7 @@ struct catcmd {
     char **argv;
     struct opts opts;
     int optind;
+    bool is_debug;
 };
 
 /**
@@ -45,10 +46,10 @@ catcmd_parse_opts(catcmd_t *self) {
     };
 
     self->opts = (struct opts){
-        .ishelp = false,
+        .is_help = false,
         .indent = 0,
         .tabspaces = 4,
-        .istab = false,
+        .is_tab = false,
     };
     opterr = 0;
     optind = 0;
@@ -62,11 +63,11 @@ catcmd_parse_opts(catcmd_t *self) {
 
         switch (cur) {
         case 0: /* Long option only */ break;
-        case 'h': self->opts.ishelp = true; break;
+        case 'h': self->opts.is_help = true; break;
         case 'i': self->opts.indent = atoi(optarg); break;
         case 'T': self->opts.tabspaces = atoi(optarg); break;
-        case 't': self->opts.istab = true; break;
-        case 'm': self->opts.ismake = true; break;
+        case 't': self->opts.is_tab = true; break;
+        case 'm': self->opts.is_make = true; break;
         case '?':
         default:
             err_die("unsupported option");
@@ -135,16 +136,7 @@ catcmd_new(const config_t *config, int argc, char **argv) {
  */
 static char *
 catcmd_makepath(catcmd_t *self, char *dst, size_t dstsz, const char *cap_path) {
-    const char *org = get_origin(self->config, cap_path);
-
-    char drtpath[FILE_NPATH];
-    snprintf(drtpath, sizeof drtpath, "%s/%s", org, cap_path);
-
-    if (!symlink_follow_path(self->config, dst, dstsz, drtpath)) {
-        return NULL;
-    }
-
-    if (isoutofhome(self->config->var_home_path, dst)) {
+    if (!solve_cmdline_arg_path(self->config, dst, dstsz, cap_path)) {
         return NULL;
     }
 
@@ -167,7 +159,7 @@ catcmd_makepath(catcmd_t *self, char *dst, size_t dstsz, const char *cap_path) {
  */
 static bool
 catcmd_setindent(catcmd_t *self, char *buf, size_t bufsize) {
-    if (self->opts.istab) {
+    if (self->opts.is_tab) {
         buf[0] = '\t';
         buf[1] = '\0';
     } else {
@@ -180,53 +172,6 @@ catcmd_setindent(catcmd_t *self, char *buf, size_t bufsize) {
     }
 
     return true;
-}
-
-/**
- * Concatenate fin to fout
- *
- * @param[in] *fout destination stream
- * @param[in] *fin source stream
- *
- * @return success to number of zero
- * @return failed to not a number of zero
- */
-static int
-catcmd_catstream(catcmd_t *self, FILE *fout, FILE *fin) {
-    int m = 0;
-
-    for (;;) {
-        int c = fgetc(fin);
-        if (c == EOF) {
-            break;
-        }
-
-        switch (m) {
-        case 0: { // Indent mode
-            char str[100] = {0};
-            if (!catcmd_setindent(self, str, sizeof str)) {
-                return 1;
-            }
-
-            for (int i = 0; i < self->opts.indent; ++i) {
-                fprintf(fout, "%s", str);
-            }
-
-            fputc(c, fout);
-            if (c != '\n') {
-                m = 1;
-            }
-        } break;
-        case 1: { // Stream mode
-            fputc(c, fout);
-            if (c == '\n') {
-                m = 0;
-            }
-        } break;
-        }
-    }
-
-    return 0;
 }
 
 /**
@@ -297,7 +242,7 @@ catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
     context_t *ctx = ctx_new(gc);
     const char *p = str_getc(buf);
 
-    if (self->opts.ismake) {
+    if (self->opts.is_make) {
         tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
         ast_t *ast = ast_new(self->config);
 
@@ -393,6 +338,11 @@ catcmd_read_file(catcmd_t *self, const char *path) {
     return buf;
 }
 
+void
+catcmd_set_debug(catcmd_t *self, bool debug) {
+    self->is_debug = debug;
+}
+
 /**
  * Execute command
  *
@@ -402,7 +352,7 @@ catcmd_read_file(catcmd_t *self, const char *path) {
  */
 int
 catcmd_run(catcmd_t *self) {
-    if (self->opts.ishelp) {
+    if (self->opts.is_help) {
         catcmd_usage(self);
         return 0;
     }
@@ -438,9 +388,11 @@ catcmd_run(catcmd_t *self) {
             err_error("failed to read file from \"%s\"", path);
             continue;
         }
+
         catcmd_write_stream(self, stdout, filebuf);
         str_del(filebuf);
     }
 
+    fflush(stdout);
     return ret;
 }
