@@ -6332,23 +6332,32 @@ invoke_func_obj(ast_t *ast, object_t *funcobj, const object_t *drtargs, int dep)
 
     obj_del(args);
 
+    // swap current context stdout and stderr buffer to function's context buffer
+    string_t *cur_stdout_buf = ctx_swap_stdout_buf(ast->context, NULL);
+    string_t *save_stdout_buf = ctx_swap_stdout_buf(func->ref_ast->context, cur_stdout_buf);
+    string_t *cur_stderr_buf = ctx_swap_stderr_buf(ast->context, NULL);
+    string_t *save_stderr_buf = ctx_swap_stderr_buf(func->ref_ast->context, cur_stderr_buf);
+
+    // execute function suites
     object_t *result = NULL;
-    for (int32_t i = 0; ; ++i) {
+    for (int32_t i = 0; i < nodearr_len(func->ref_suites); ++i) {
         node_t *ref_suite = nodearr_get(func->ref_suites, i);
-        result = _trv_traverse(ast, ref_suite, dep+1);
-        if (ctx_get_do_return(ast->context)) {
-            break;
-        }
-        if (i < nodearr_len(func->ref_suites)) {
-            result = NULL;
-        } else {
+        result = _trv_traverse(func->ref_ast, ref_suite, dep+1);
+        if (ctx_get_do_return(func->ref_ast->context)) {
             break;
         }
     }
 
+    // reset status
+    cur_stdout_buf = ctx_swap_stdout_buf(func->ref_ast->context, save_stdout_buf);
+    ctx_swap_stdout_buf(ast->context, cur_stdout_buf);
+    cur_stderr_buf = ctx_swap_stderr_buf(func->ref_ast->context, save_stderr_buf);
+    ctx_swap_stderr_buf(ast->context, cur_stderr_buf);
+
     ctx_set_do_return(ast->context, false);
     ctx_popb_scope(ast->context);
 
+    // done
     if (!result) {
         return obj_new_nil(ast->ref_gc);
     }
@@ -6416,8 +6425,7 @@ again:
     object_t *funcobj = item->value;
     assert(funcobj);
 
-    object_t *result = invoke_func_obj(mod->ast, funcobj, drtargs, dep+1);
-    ctx_pushb_stdout_buf(ast->context, ctx_getc_stdout_buf(mod->context));
+    object_t *result = invoke_func_obj(ast, funcobj, drtargs, dep+1);
     return result;
 }
 
@@ -6540,7 +6548,7 @@ trv_func_def(ast_t *ast, const node_t *node, int dep) {
     assert(def_args->type == OBJ_TYPE_ARRAY);
 
     node_array_t *ref_suites = func_def->contents;
-    object_t *func_obj = obj_new_func(ast->ref_gc, name, def_args, ref_suites);
+    object_t *func_obj = obj_new_func(ast->ref_gc, ast, name, def_args, ref_suites);
     check("set func at varmap");
     move_obj_at_cur_varmap(ast, str_getc(name->identifier), mem_move(func_obj));
 

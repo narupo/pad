@@ -138,7 +138,7 @@ importer_from_import(
     const ast_t *ref_ast,
     context_t *dstctx,
     const char *cap_path,
-    object_array_t *vars
+    object_array_t *vars   // import_vars
 ) {
     self->error[0] = '\0';
 
@@ -186,8 +186,9 @@ importer_from_import(
             alias = str_getc(aliasobj->identifier);
         }
 
-        object_t *obj = ctx_find_var_ref(modobj->module.context, objname);
-        if (!obj) {
+        // get object from imported module
+        object_t *objinmod = ctx_find_var_ref(modobj->module.context, objname);
+        if (!objinmod) {
             importer_set_error(self,
                 "\"%s\" is can't import from module \"%s\"",
                 objname, cap_path
@@ -196,12 +197,12 @@ importer_from_import(
             return NULL;
         }
 
-        obj_inc_ref(obj); // increment reference-count!
+        obj_inc_ref(objinmod); // increment reference-count!
 
         if (alias) {
-            objdict_set(dst_global_varmap, alias, obj);
+            objdict_set(dst_global_varmap, alias, objinmod);
         } else {
-            objdict_set(dst_global_varmap, objname, obj);
+            objdict_set(dst_global_varmap, objname, objinmod);
         }
     }
 

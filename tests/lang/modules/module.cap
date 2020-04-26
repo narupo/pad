@@ -1,0 +1,4 @@
+{@
+    import "/tests/lang/modules/hello.cap" as hello
+    puts("imported module.cap")
+@}

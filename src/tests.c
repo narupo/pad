@@ -107,6 +107,24 @@ warn(const char *fmt, ...) {
     fflush(stderr);
 }
 
+/**
+ * solve path
+ * fix for valgrind issue
+ *
+ * @param[in] *dst
+ * @param[in] dstsz
+ * @param[in] *path
+ *
+ * @return
+ */
+static char *
+solve_path(char *dst, int32_t dstsz, const char *path) {
+    char tmp[FILE_NPATH] = {0};
+    assert(file_solve(tmp, sizeof tmp, path));
+    snprintf(dst, dstsz, "%s", tmp);
+    return dst;
+}
+
 /********
 * tests *
 ********/
@@ -16927,6 +16945,92 @@ test_trv_import_stmt(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error_stack(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nf1\nf2\n"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_from_import_stmt_1(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr,
+        "{@ from \":tests/lang/modules/funcs.cap\" import f1 \n f1() @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error_stack(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nf1\n"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_from_import_stmt_2(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr,
+        "{@ import \":tests/lang/modules/hello.cap\" as hello \n"
+        "hello.world() @}"
+    );
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error_stack(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nhello, world\n"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_from_import_stmt_3(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr,
+        "{@ from \":tests/lang/modules/funcs.cap\" import ( f1, f2 ) \n "
+        "   f1() \n f2() @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error_stack(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nf1\nf2\n"));
     }
 
@@ -18342,6 +18446,31 @@ test_trv_func_def_3(void) {
 }
 
 static void
+test_trv_func_def_4(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@ i = 1 \n def f(): puts(i) end \n f() @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ast->context), "1\n"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
 test_trv_assign_list_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -19346,6 +19475,38 @@ test_trv_builtin_array_0(void) {
     config_del(config);
 }
 
+static void
+test_trv_module_0(void) {
+    config_t *config = config_new();
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "."));
+
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/module.cap\" as mod\n"
+    "   puts(\"done\")\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nimported module.cap\ndone\n"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
 static const struct testcase
 traverser_tests[] = {
     {"trv_assign_and_reference_0", test_trv_assign_and_reference_0},
@@ -19366,6 +19527,9 @@ traverser_tests[] = {
     {"trv_ref_block", test_trv_ref_block},
     {"trv_text_block", test_trv_text_block},
     {"trv_import_stmt", test_trv_import_stmt},
+    {"trv_from_import_stmt_1", test_trv_from_import_stmt_1},
+    {"trv_from_import_stmt_2", test_trv_from_import_stmt_2},
+    {"trv_from_import_stmt_3", test_trv_from_import_stmt_3},
     {"trv_if_stmt_0", test_trv_if_stmt_0},
     {"trv_if_stmt_1", test_trv_if_stmt_1},
     {"trv_if_stmt_2", test_trv_if_stmt_2},
@@ -19389,6 +19553,7 @@ traverser_tests[] = {
     {"trv_func_def_1", test_trv_func_def_1},
     {"trv_func_def_2", test_trv_func_def_2},
     {"trv_func_def_3", test_trv_func_def_3},
+    {"trv_func_def_4", test_trv_func_def_4},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},
@@ -19450,6 +19615,7 @@ traverser_tests[] = {
     {"trv_builtin_functions_type_dict", test_trv_builtin_functions_type_dict},
     {"trv_builtin_string", test_trv_builtin_string},
     {"trv_builtin_array_0", test_trv_builtin_array_0},
+    {"trv_module_0", test_trv_module_0},
     {0},
 };
 
