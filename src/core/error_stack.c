@@ -114,3 +114,70 @@ void
 errstack_clear(errstack_t *self) {
     self->len = 0;
 }
+
+errstack_t *
+errstack_extendf_other(errstack_t *self, const errstack_t *other) {
+    if (!self || !other) {
+        return NULL;
+    }
+
+#define copy(dst, src) \
+    dst->lineno = src->lineno; \
+    snprintf(dst->filename, sizeof dst->filename, "%s", src->filename); \
+    snprintf(dst->funcname, sizeof dst->funcname, "%s", src->filename); \
+    snprintf(dst->message, sizeof dst->message, "%s", src->message); \
+
+    // copy stack
+    int32_t save_len = self->len;
+    int32_t save_capa = self->capa;
+    errelem_t *save_stack = mem_ecalloc(save_capa+1, sizeof(errelem_t));
+
+    for (int32_t i = 0; i < self->len; ++i) {
+        errelem_t *dst = &save_stack[i];
+        const errelem_t *src = &self->stack[i];
+        copy(dst, src);
+    }
+
+    // resize
+    int32_t need_capa = self->len + other->len + 1;
+    if (self->capa < need_capa) {
+        if (!errstack_resize(self, need_capa)) {
+            return NULL;
+        }
+    }
+
+    // clear
+    errstack_clear(self);
+
+    // append other at front of self
+    for (int32_t i = 0; i < other->len; ++i) {
+        const errelem_t *src = &other->stack[i];
+        errstack_pushb(self, src->filename, src->lineno, src->funcname, "%s", src->message);
+    }
+
+    // append save stack at self stack
+    for (int32_t i = 0; i < save_len; ++i) {
+        const errelem_t *src = &save_stack[i];
+        errstack_pushb(self, src->filename, src->lineno, src->funcname, "%s", src->message);
+    }
+
+    // free copy stack
+    free(save_stack);
+
+    return self;
+}
+
+errstack_t *
+errstack_extendb_other(errstack_t *self, const errstack_t *other) {
+    if (!self || !other) {
+        return NULL;
+    }
+
+    // append other at front of self
+    for (int32_t i = 0; i < other->len; ++i) {
+        const errelem_t *src = &other->stack[i];
+        errstack_pushb(self, src->filename, src->lineno, src->funcname, "%s", src->message);
+    }
+
+    return self;
+}

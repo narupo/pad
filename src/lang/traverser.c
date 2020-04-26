@@ -6297,7 +6297,8 @@ invoke_func_obj(ast_t *ast, object_t *funcobj, const object_t *drtargs, int dep)
     object_func_t *func = &funcobj->func;
     assert(func->args->type == OBJ_TYPE_ARRAY);
 
-    ctx_pushb_scope(ast->context);
+    // extract function arguments
+    ctx_pushb_scope(func->ref_ast->context);
     if (args) {
         const object_array_t *formal_args = func->args->objarr;
         const object_array_t *actual_args = args->objarr;
@@ -6305,7 +6306,7 @@ invoke_func_obj(ast_t *ast, object_t *funcobj, const object_t *drtargs, int dep)
         if (objarr_len(formal_args) != objarr_len(actual_args)) {
             ast_pushb_error(ast, "arguments not same length");
             obj_del(args);
-            ctx_popb_scope(ast->context);
+            ctx_popb_scope(func->ref_ast->context);
             return NULL;
         }
 
@@ -6317,7 +6318,7 @@ invoke_func_obj(ast_t *ast, object_t *funcobj, const object_t *drtargs, int dep)
             object_t *aarg = objarr_get(actual_args, i);
             object_t *ref_aarg = aarg;
             if (aarg->type == OBJ_TYPE_IDENTIFIER) {
-                ref_aarg = pull_in_ref_by(ast, aarg);
+                ref_aarg = pull_in_ref_by(func->ref_ast, aarg);
                 if (!ref_aarg) {
                     ast_pushb_error(ast, "\"%s\" is not defined in invoke function", str_getc(aarg->identifier));
                     obj_del(args);
@@ -6326,7 +6327,7 @@ invoke_func_obj(ast_t *ast, object_t *funcobj, const object_t *drtargs, int dep)
             }
             object_t *copy_aarg = obj_new_other(ref_aarg);
 
-            move_obj_at_cur_varmap(ast, fargname, mem_move(copy_aarg));
+            move_obj_at_cur_varmap(func->ref_ast, fargname, mem_move(copy_aarg));
         }
     }
 
@@ -6343,6 +6344,10 @@ invoke_func_obj(ast_t *ast, object_t *funcobj, const object_t *drtargs, int dep)
     for (int32_t i = 0; i < nodearr_len(func->ref_suites); ++i) {
         node_t *ref_suite = nodearr_get(func->ref_suites, i);
         result = _trv_traverse(func->ref_ast, ref_suite, dep+1);
+        if (ast_has_error_stack(func->ref_ast)) {
+            errstack_extendb_other(ast->error_stack, func->ref_ast->error_stack);
+            return NULL;
+        }
         if (ctx_get_do_return(func->ref_ast->context)) {
             break;
         }
@@ -6354,8 +6359,8 @@ invoke_func_obj(ast_t *ast, object_t *funcobj, const object_t *drtargs, int dep)
     cur_stderr_buf = ctx_swap_stderr_buf(func->ref_ast->context, save_stderr_buf);
     ctx_swap_stderr_buf(ast->context, cur_stderr_buf);
 
-    ctx_set_do_return(ast->context, false);
-    ctx_popb_scope(ast->context);
+    ctx_set_do_return(func->ref_ast->context, false);
+    ctx_popb_scope(func->ref_ast->context);
 
     // done
     if (!result) {

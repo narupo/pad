@@ -111,3 +111,25 @@ errstack_len(const errstack_t *self);
  */
 void
 errstack_clear(errstack_t *self);
+
+/**
+ * extend front other error stack at error stack
+ *
+ * @param[in] *self pointer to errstack_t
+ *
+ * @return success to pointer to self
+ * @return failed to NULL
+ */
+errstack_t *
+errstack_extendf_other(errstack_t *self, const errstack_t *other);
+
+/**
+ * extend back other error stack at error stack
+ *
+ * @param[in] *self pointer to errstack_t
+ *
+ * @return success to pointer to self
+ * @return failed to NULL
+ */
+errstack_t *
+errstack_extendb_other(errstack_t *self, const errstack_t *other);
