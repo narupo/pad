@@ -335,7 +335,18 @@ str_capitalize(const string_t *self);
  * @return failed to pointer to NULL
  */
 string_t *
-str_snake(const string_t *self);
+str_snake(const string_t *other);
+
+/**
+ * convert to camel case and copy it
+ *
+ * @param[in] *self
+ *
+ * @return success to pointer to string_t (copied)
+ * @return failed to pointer to NULL
+ */
+string_t *
+str_camel(const string_t *other);
 
 /**
  * mul string

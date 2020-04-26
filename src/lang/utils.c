@@ -254,7 +254,7 @@ set_ref_at_cur_varmap(ast_t *ast, const char *identifier, object_t *ref) {
 }
 
 object_t *
-refer_index_obj_with_ref(ast_t *ast, object_t *index_obj) {
+refer_index_obj_with_ref(ast_t *ast, const object_t *index_obj) {
     assert(index_obj && index_obj->type == OBJ_TYPE_INDEX);
 
     assert(index_obj->index.operand);

@@ -1026,6 +1026,90 @@ test_str_snake(void) {
     str_del(s);
 }
 
+static void
+test_str_camel(void) {
+#undef showcp
+#define showcp() printf("cp[%s]\n", str_getc(cp))
+
+    assert(str_camel(NULL) == NULL);
+    string_t *s = str_new();
+    assert(s != NULL);
+
+    assert(str_set(s, "abc") != NULL);
+    string_t *cp = str_camel(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abc"));
+    str_del(cp);
+
+    assert(str_set(s, "ABC") != NULL);
+    cp = str_camel(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "aBC"));
+    str_del(cp);
+
+    assert(str_set(s, "AFormatB") != NULL);
+    cp = str_camel(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "aFormatB"));
+    str_del(cp);
+
+    assert(str_set(s, "ABFormat") != NULL);
+    cp = str_camel(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "aBFormat"));
+    str_del(cp);
+
+    assert(str_set(s, "abcDefGhi") != NULL);
+    cp = str_camel(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcDefGhi"));
+    str_del(cp);
+
+    assert(str_set(s, "AbcDefGhi") != NULL);
+    cp = str_camel(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcDefGhi"));
+    str_del(cp);
+
+    assert(str_set(s, "abc-def-ghi") != NULL);
+    cp = str_camel(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcDefGhi"));
+    str_del(cp);
+
+    assert(str_set(s, "_abcDefGhi") != NULL);
+    cp = str_camel(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcDefGhi"));
+    str_del(cp);
+
+    assert(str_set(s, "-abcDefGhi") != NULL);
+    cp = str_camel(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcDefGhi"));
+    str_del(cp);
+
+    assert(str_set(s, "_-abcDefGhi") != NULL);
+    cp = str_camel(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcDefGhi"));
+    str_del(cp);
+
+    assert(str_set(s, "abcDefGhi_abc-DefGhi") != NULL);
+    cp = str_camel(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcDefGhiAbcDefGhi"));
+    str_del(cp);
+
+    assert(str_set(s, "abcDefGhi__abc--DefGhi") != NULL);
+    cp = str_camel(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcDefGhiAbcDefGhi"));
+    str_del(cp);
+
+    str_del(s);
+}
+
 /**
  * 0 memory leaks
  * 2020/02/25
@@ -1064,6 +1148,7 @@ string_tests[] = {
     {"str_upper", test_str_upper},
     {"str_capitalize", test_str_capitalize},
     {"str_snake", test_str_snake},
+    {"str_camel", test_str_camel},
     {0},
 };
 
@@ -11831,6 +11916,15 @@ test_trv_index(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
+    tkr_parse(tkr, "{@ a = [\"abc_def\"] @}{: a[0].camel() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcDef"));
+    }
+
     ctx_del(ctx);
     gc_del(gc);
     ast_del(ast);
@@ -19786,6 +19880,9 @@ test_catcmd_make_opt(void) {
     config_del(config);
 }
 
+/**
+ * TODO
+ */
 static void
 test_catcmd_make_opt_1(void) {
     config_t *config = config_new();
