@@ -13961,6 +13961,36 @@ test_trv_builtin_string(void) {
         assert(!strcmp(ast_getc_first_error_message(ast), "can't call \"snake\""));
     }
 
+    /********
+    * camel *
+    ********/
+
+    tkr_parse(tkr, "{: \"camel_case\".camel() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "camelCase"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"camel_case\" \n @}{: a.camel() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "camelCase"));
+    }
+
+    tkr_parse(tkr, "{: nil.camel() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "can't call \"camel\""));
+    }
     ctx_del(ctx);
     gc_del(gc);
     ast_del(ast);
