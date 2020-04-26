@@ -18,19 +18,19 @@
  *
  * @param[in] *self pointer to context_t
  *
- * @return 
+ * @return
  */
-void 
+void
 ctx_del(context_t *self);
 
 /**
  * destruct object and escape global variable map from context
  *
- * @param[in] *self 
+ * @param[in] *self
  *
- * @return pointer to object_dict_t 
+ * @return pointer to object_dict_t
  */
-object_dict_t * 
+object_dict_t *
 ctx_escdel_global_varmap(context_t *self);
 
 /**
@@ -39,7 +39,7 @@ ctx_escdel_global_varmap(context_t *self);
  * @param[in|out] *gc reference to gc_t (DO NOT DELETE)
  * @return pointer to context_t dynamic allocate memory (do ctx_del)
  */
-context_t * 
+context_t *
 ctx_new(gc_t *ref_gc);
 
 /**
@@ -47,7 +47,7 @@ ctx_new(gc_t *ref_gc);
  *
  * @param[in] *self pointer to context_t
  */
-void 
+void
 ctx_clear(context_t *self);
 
 /**
@@ -61,19 +61,19 @@ ctx_clear(context_t *self);
  * @return success to pointer to self
  * @return failed to pointer to NULL
  */
-context_t * 
+context_t *
 ctx_set_alias(context_t *self, const char *key, const char *value, const char *desc);
 
 /**
  * get alias value of key
  *
- * @param[in] *self pointer to context_t 
+ * @param[in] *self pointer to context_t
  * @param[in] *key  key of alias
  *
  * @return found to pointer to value strings
  * @return not found to pointer to NULL
  */
-const char * 
+const char *
 ctx_get_alias_value(context_t *self, const char *key);
 
 /**
@@ -85,7 +85,7 @@ ctx_get_alias_value(context_t *self, const char *key);
  * @return found to pointer to description strings
  * @return not found to pointer to NULL
  */
-const char * 
+const char *
 ctx_get_alias_desc(context_t *self, const char *key);
 
 /**
@@ -97,7 +97,7 @@ ctx_get_alias_desc(context_t *self, const char *key);
  * @return success to pointer to context_t
  * @return failed to pointer to NULL
  */
-context_t * 
+context_t *
 ctx_pushb_stdout_buf(context_t *self, const char *str);
 
 /**
@@ -109,7 +109,7 @@ ctx_pushb_stdout_buf(context_t *self, const char *str);
  * @return success to pointer to context_t
  * @return failed to pointer to NULL
  */
-context_t * 
+context_t *
 ctx_pushb_stderr_buf(context_t *self, const char *str);
 
 /**
@@ -119,7 +119,7 @@ ctx_pushb_stderr_buf(context_t *self, const char *str);
  *
  * @return pointer to buffer
  */
-const char * 
+const char *
 ctx_getc_stdout_buf(const context_t *self);
 
 /**
@@ -129,7 +129,7 @@ ctx_getc_stdout_buf(const context_t *self);
  *
  * @return pointer to buffer
  */
-const char * 
+const char *
 ctx_getc_stderr_buf(const context_t *self);
 
 /**
@@ -139,7 +139,7 @@ ctx_getc_stderr_buf(const context_t *self);
  *
  * @return pointer to alinfo_t read-only
  */
-const alinfo_t * 
+const alinfo_t *
 ctx_getc_alinfo(const context_t *self);
 
 /**
@@ -149,7 +149,7 @@ ctx_getc_alinfo(const context_t *self);
  *
  * @return pointer to object_dict_t
  */
-object_dict_t * 
+object_dict_t *
 ctx_get_varmap(context_t *self);
 
 /**
@@ -159,7 +159,7 @@ ctx_get_varmap(context_t *self);
  *
  * @return pointer to object_dict_t
  */
-object_dict_t * 
+object_dict_t *
 ctx_get_varmap_at_global(context_t *self);
 
 /**
@@ -169,7 +169,7 @@ ctx_get_varmap_at_global(context_t *self);
  *
  * @return true or false
  */
-bool 
+bool
 ctx_get_do_break(const context_t *self);
 
 /**
@@ -178,7 +178,7 @@ ctx_get_do_break(const context_t *self);
  * @param[in] *self    pointer to context_t
  * @param[in] do_break value of flag
  */
-void 
+void
 ctx_set_do_break(context_t *self, bool do_break);
 
 /**
@@ -188,7 +188,7 @@ ctx_set_do_break(context_t *self, bool do_break);
  *
  * @return true or false
  */
-bool 
+bool
 ctx_get_do_continue(const context_t *self);
 
 /**
@@ -197,7 +197,7 @@ ctx_get_do_continue(const context_t *self);
  * @param[in] *self       pointer to context_t
  * @param[in] do_continue value of flag
  */
-void 
+void
 ctx_set_do_continue(context_t *self, bool do_continue);
 
 /**
@@ -207,7 +207,7 @@ ctx_set_do_continue(context_t *self, bool do_continue);
  *
  * @return true or false
  */
-bool 
+bool
 ctx_get_do_return(const context_t *self);
 
 /**
@@ -216,7 +216,7 @@ ctx_get_do_return(const context_t *self);
  * @param[in] *self     pointer to context_t
  * @param[in] do_return value of flag
  */
-void 
+void
 ctx_set_do_return(context_t *self, bool do_return);
 
 /**
@@ -224,7 +224,7 @@ ctx_set_do_return(context_t *self, bool do_return);
  *
  * @param[in] *self pointer to context_t
  */
-void 
+void
 ctx_clear_jump_flags(context_t *self);
 
 /**
@@ -232,7 +232,7 @@ ctx_clear_jump_flags(context_t *self);
  *
  * @param[in] *self pointer to context_t
  */
-void 
+void
 ctx_pushb_scope(context_t *self);
 
 /**
@@ -240,7 +240,7 @@ ctx_pushb_scope(context_t *self);
  *
  * @param[in] *self pointer to context_t
  */
-void 
+void
 ctx_popb_scope(context_t *self);
 
 /**
@@ -252,14 +252,14 @@ ctx_popb_scope(context_t *self);
  * @return found to poitner to object_t
  * @return not found to pointer to NULL
  */
-object_t * 
+object_t *
 ctx_find_var_ref(context_t *self, const char *key);
 
 /**
  * get gc
- * 
+ *
  * @param[in] *self pointer to context_t
- * 
+ *
  * @return poitner to gc_t (DO NOT DELETE)
  */
 gc_t *
@@ -272,3 +272,25 @@ ctx_get_gc(context_t *self);
  */
 void
 ctx_clear_buf(context_t *self);
+
+/**
+ * swap stdout buffer
+ *
+ * @param[in] *self
+ * @param[in] *stdout_buf pointer to set stdout buffer
+ *
+ * @return pointer to stdout buffer of swapped
+ */
+string_t *
+ctx_swap_stdout_buf(context_t *self, string_t *stdout_buf);
+
+/**
+ * swap stderr buffer
+ *
+ * @param[in] *self
+ * @param[in] *stderr_buf pointer to set stdout buffer
+ *
+ * @return pointer to stderr buffer of swapped
+ */
+string_t *
+ctx_swap_stderr_buf(context_t *self, string_t *stderr_buf);

@@ -121,6 +121,7 @@ obj_new_other(const object_t *other) {
         self->objdict = objdict_new_other(other->objdict);
         break;
     case OBJ_TYPE_FUNC:
+        // self->func.ref_ast is do not delete. this is reference
         self->func.name = obj_new_other(other->func.name);
         self->func.args = obj_new_other(other->func.args);
         self->func.ref_suites = other->func.ref_suites; // save reference
@@ -262,9 +263,10 @@ obj_new_dict(gc_t *ref_gc, object_dict_t *move_objdict) {
 }
 
 object_t *
-obj_new_func(gc_t *ref_gc, object_t *move_name, object_t *move_args, node_array_t *ref_suites) {
+obj_new_func(gc_t *ref_gc, ast_t *ref_ast, object_t *move_name, object_t *move_args, node_array_t *ref_suites) {
     object_t *self = obj_new(ref_gc, OBJ_TYPE_FUNC);
 
+    self->func.ref_ast = ref_ast;  // do not delete
     self->func.name = mem_move(move_name);
     self->func.args = mem_move(move_args);
     self->func.ref_suites = ref_suites;
@@ -311,7 +313,7 @@ obj_new_module_by(
 
     self->module.tokenizer = mem_move(move_tkr);
     self->module.ast = mem_move(move_ast);
-    self->module.context = mem_move(move_ctx);
+    self->module.context = mem_move(move_ctx);  // needed?
     self->module.builtin_func_infos = infos;
 
     return self;

@@ -27,49 +27,75 @@ typedef enum {
     OBJ_TYPE_MODULE,
 } obj_type_t;
 
+/**
+ * function object
+ */
 struct object_func {
-    object_t *name; // type == OBJ_TYPE_IDENTIFIER
-    object_t *args; // type == OBJ_TYPE_ARRAY
-    node_array_t *ref_suites; // reference to suite (node tree) (DO NOT DELETE)
+    ast_t *ref_ast;  // function object refer this reference of ast on execute
+    object_t *name;  // type == OBJ_TYPE_IDENTIFIER
+    object_t *args;  // type == OBJ_TYPE_ARRAY
+    node_array_t *ref_suites;  // reference to suite (node tree) (DO NOT DELETE)
 };
 
 /**
  * index object have reference to operand because for assign
  */
 struct object_index {
-    object_t *operand; // reference to operand object
-    object_array_t *indices; // indices objects
+    object_t *operand;  // reference to operand object
+    object_array_t *indices;  // indices objects
 };
 
 struct object_module {
-    string_t *name; // module name
+    string_t *name;  // module name
     tokenizer_t *tokenizer;
     ast_t *ast;
     context_t *context;
-    builtin_func_info_t *builtin_func_infos; // builtin functions
+    builtin_func_info_t *builtin_func_infos;  // builtin functions
 };
 
 struct object {
-    obj_type_t type; // object type
-    gc_t *ref_gc; // reference to gc (DO NOT DELETE)
-    gc_item_t gc_item; // gc item for memory management
-    string_t *identifier; // value of identifier (type == OBJ_TYPE_IDENTIFIER)
-    string_t *string; // value of string (type == OBJ_TYPE_STRING)
-    object_array_t *objarr; // value of array (type == OBJ_TYPE_ARRAY)
-    object_dict_t *objdict; // value of dict (type == OBJ_TYPE_DICT)
-    long lvalue; // value of integer (type == OBJ_TYPE_INTEGER)
-    bool boolean; // value of boolean (type == OBJ_TYPE_BOOL)
-    object_func_t func; // structure of function (type == OBJ_TYPE_FUNC)
-    object_index_t index; // structure of index (type == OBJ_TYPE_INDEX)
-    object_module_t module; // structure of module (type == OBJ_TYPE_MODULE)
+    obj_type_t type;  // object type
+    gc_t *ref_gc;  // reference to gc (DO NOT DELETE)
+    gc_item_t gc_item;  // gc item for memory management
+    string_t *identifier;  // value of identifier (type == OBJ_TYPE_IDENTIFIER)
+    string_t *string;  // value of string (type == OBJ_TYPE_STRING)
+    object_array_t *objarr;  // value of array (type == OBJ_TYPE_ARRAY)
+    object_dict_t *objdict;  // value of dict (type == OBJ_TYPE_DICT)
+    long lvalue;  // value of integer (type == OBJ_TYPE_INTEGER)
+    bool boolean;  // value of boolean (type == OBJ_TYPE_BOOL)
+    object_func_t func;  // structure of function (type == OBJ_TYPE_FUNC)
+    object_index_t index;  // structure of index (type == OBJ_TYPE_INDEX)
+    object_module_t module;  // structure of module (type == OBJ_TYPE_MODULE)
 };
 
+/**
+ * destruct object
+ *
+ * @param[in] *self pointer to object_t
+ */
 void
 obj_del(object_t *self);
 
+/**
+ * construct object
+ *
+ * @param[in] *ref_gc reference to gc_t (DO NOT DELETE)
+ * @param[in] type number of object type
+ *
+ * @return success to pointer to object_t (dynamic allocate memory)
+ * @return failed to NULL
+ */
 object_t *
 obj_new(gc_t *ref_gc, obj_type_t type);
 
+/**
+ * copy construct
+ *
+ * @param[in] *other pointer to other object
+ *
+ * @return success to pointer to object_t (copied object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_other(const object_t *other);
 
@@ -107,7 +133,7 @@ object_t *
 obj_new_dict(gc_t *ref_gc, object_dict_t *move_objdict);
 
 object_t *
-obj_new_func(gc_t *ref_gc, object_t *move_name, object_t *move_args, node_array_t *ref_suites);
+obj_new_func(gc_t *ref_gc, ast_t *ref_ast, object_t *move_name, object_t *move_args, node_array_t *ref_suites);
 
 object_t *
 obj_new_index(gc_t *ref_gc, object_t *move_operand, object_array_t *move_indices);
