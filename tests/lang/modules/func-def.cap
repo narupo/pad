@@ -1,0 +1,10 @@
+{@
+    def draw(nindent, desc):
+        c = true
+        indent = nindent * "    "
+@}{: indent :}program
+
+{@ if c: @}{: indent :}comment
+{@ end @}{@
+    end
+@}

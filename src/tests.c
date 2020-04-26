@@ -18674,6 +18674,69 @@ test_trv_func_def_5(void) {
 }
 
 static void
+test_trv_func_def_6(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(n, desc):\n"
+    "       c = true\n"
+    "       indent = n * \"    \""
+    "@}{: indent :}abc{@"
+    "   end\n"
+    "   f(1, \"desc\")\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "    abc"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_func_def_7(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "."));
+
+    tkr_parse(tkr, "{@\n"
+    "from \"/tests/lang/modules/func-def.cap\" import draw\n"
+    "draw(1, \"desc\")\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "    program\n\n    comment\n"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
 test_trv_assign_list_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -19763,6 +19826,8 @@ traverser_tests[] = {
     {"trv_func_def_3", test_trv_func_def_3},
     {"trv_func_def_4", test_trv_func_def_4},
     {"trv_func_def_5", test_trv_func_def_5},
+    {"trv_func_def_6", test_trv_func_def_6},
+    {"trv_func_def_7", test_trv_func_def_7},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},
@@ -19990,11 +20055,57 @@ test_errelem_show(void) {
     errstack_del(stack);
 }
 
+static void
+test_errstack_extendf_other(void) {
+    errstack_t *stack = errstack_new();
+    errstack_t *other = errstack_new();
+
+    assert(errstack_pushb(stack, "file3", 3, "func3", "this is %s", "message3"));
+    assert(errstack_pushb(stack, "file4", 4, "func4", "this is %s", "message4"));
+
+    assert(errstack_pushb(other, "file1", 1, "func1", "this is %s", "message1"));
+    assert(errstack_pushb(other, "file2", 2, "func2", "this is %s", "message2"));
+
+    assert(errstack_len(stack) == 2);
+    assert(errstack_len(other) == 2);
+
+    assert(errstack_extendf_other(stack, other));
+    assert(errstack_len(stack) == 4);
+    assert(errstack_len(other) == 2);
+
+    errstack_del(stack);
+    errstack_del(other);
+}
+
+static void
+test_errstack_extendb_other(void) {
+    errstack_t *stack = errstack_new();
+    errstack_t *other = errstack_new();
+
+    assert(errstack_pushb(stack, "file3", 3, "func3", "this is %s", "message3"));
+    assert(errstack_pushb(stack, "file4", 4, "func4", "this is %s", "message4"));
+
+    assert(errstack_pushb(other, "file1", 1, "func1", "this is %s", "message1"));
+    assert(errstack_pushb(other, "file2", 2, "func2", "this is %s", "message2"));
+
+    assert(errstack_len(stack) == 2);
+    assert(errstack_len(other) == 2);
+
+    assert(errstack_extendb_other(stack, other));
+    assert(errstack_len(stack) == 4);
+    assert(errstack_len(other) == 2);
+
+    errstack_del(stack);
+    errstack_del(other);
+}
+
 static const struct testcase
 errstack_tests[] = {
     {"errstack_new", test_errstack_new},
     {"errstack_pushb", test_errstack_pushb},
     {"errstack_trace", test_errstack_trace},
+    {"errstack_extendf_other", test_errstack_extendf_other},
+    {"errstack_extendb_other", test_errstack_extendb_other},
     {"errelem_show", test_errelem_show},
     {0},
 };
