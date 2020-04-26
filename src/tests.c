@@ -125,6 +125,21 @@ solve_path(char *dst, int32_t dstsz, const char *path) {
     return dst;
 }
 
+#define trv_ready \
+    config_t *config = config_new(); \
+    tokenizer_option_t *opt = tkropt_new(); \
+    tokenizer_t *tkr = tkr_new(mem_move(opt)); \
+    ast_t *ast = ast_new(config); \
+    gc_t *gc = gc_new(); \
+    context_t *ctx = ctx_new(gc); \
+
+#define trv_cleanup \
+    ctx_del(ctx); \
+    gc_del(gc); \
+    ast_del(ast); \
+    tkr_del(tkr); \
+    config_del(config); \
+
 /********
 * tests *
 ********/
@@ -17326,6 +17341,169 @@ test_trv_if_stmt_3(void) {
 }
 
 static void
+test_trv_if_stmt_4(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@ i = 1 \n if i: puts(1) end @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    tkr_parse(tkr, "{@ i = 1 @}{@ if i: puts(1) end @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   def f():\n"
+    "       i = 1\n"
+    "       if i:\n"
+    "           puts(1)\n"
+    "       end\n"
+    "   end\n"
+    "   f()\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 1\n"
+    "   def f():\n"
+    "       if i:\n"
+    "           puts(1)\n"
+    "       end\n"
+    "   end\n"
+    "   f()\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_if_stmt_5(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "."));
+
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/if.cap\" as mod \n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_if_stmt_6(void) {
+    trv_ready;
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "."));
+
+    tkr_parse(tkr, "{@\n"
+    "   from \"/tests/lang/modules/if-2.cap\" import f1 \n"
+    "   f1()\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_if_stmt_7(void) {
+    trv_ready;
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "."));
+
+    tkr_parse(tkr, "{@\n"
+    "   from \"/tests/lang/modules/if-2.cap\" import f2\n"
+    "   f2()\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_if_stmt_8(void) {
+    trv_ready;
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "."));
+
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/if-3.cap\" as if3\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_elif_stmt_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -18471,6 +18649,31 @@ test_trv_func_def_4(void) {
 }
 
 static void
+test_trv_func_def_5(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@ def f(arg): end \n f() @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "arguments not same length"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
 test_trv_assign_list_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -19534,6 +19737,11 @@ traverser_tests[] = {
     {"trv_if_stmt_1", test_trv_if_stmt_1},
     {"trv_if_stmt_2", test_trv_if_stmt_2},
     {"trv_if_stmt_3", test_trv_if_stmt_3},
+    {"trv_if_stmt_4", test_trv_if_stmt_4},
+    {"trv_if_stmt_5", test_trv_if_stmt_5},
+    {"trv_if_stmt_6", test_trv_if_stmt_6},
+    {"trv_if_stmt_7", test_trv_if_stmt_7},
+    {"trv_if_stmt_8", test_trv_if_stmt_8},
     {"trv_elif_stmt_0", test_trv_elif_stmt_0},
     {"trv_elif_stmt_1", test_trv_elif_stmt_1},
     {"trv_elif_stmt_2", test_trv_elif_stmt_2},
@@ -19554,6 +19762,7 @@ traverser_tests[] = {
     {"trv_func_def_2", test_trv_func_def_2},
     {"trv_func_def_3", test_trv_func_def_3},
     {"trv_func_def_4", test_trv_func_def_4},
+    {"trv_func_def_5", test_trv_func_def_5},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},
@@ -19956,7 +20165,7 @@ test_catcmd_default(void) {
         NULL,
     };
 
-    file_solve(config->home_path, sizeof config->home_path, ".");
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
 
     char stdout_buf[1024] = {0};
     catcmd_t *catcmd = catcmd_new(config, argc, argv);
@@ -19982,7 +20191,7 @@ test_catcmd_indent_opt(void) {
         NULL,
     };
 
-    file_solve(config->home_path, sizeof config->home_path, ".");
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
 
     char stdout_buf[1024] = {0};
     catcmd_t *catcmd = catcmd_new(config, argc, argv);
@@ -20009,7 +20218,7 @@ test_catcmd_tab_opt(void) {
         NULL,
     };
 
-    file_solve(config->home_path, sizeof config->home_path, ".");
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
 
     char stdout_buf[1024] = {0};
     catcmd_t *catcmd = catcmd_new(config, argc, argv);
@@ -20037,7 +20246,7 @@ test_catcmd_tabspaces_opt(void) {
         NULL,
     };
 
-    file_solve(config->home_path, sizeof config->home_path, ".");
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
 
     char stdout_buf[1024] = {0};
     catcmd_t *catcmd = catcmd_new(config, argc, argv);
@@ -20062,7 +20271,7 @@ test_catcmd_make_opt(void) {
         NULL,
     };
 
-    file_solve(config->home_path, sizeof config->home_path, ".");
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
 
     char stdout_buf[1024] = {0};
     catcmd_t *catcmd = catcmd_new(config, argc, argv);
@@ -20091,7 +20300,7 @@ test_catcmd_make_opt_1(void) {
         NULL,
     };
 
-    file_solve(config->home_path, sizeof config->home_path, ".");
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
 
     char buf[1024] = {0};
     catcmd_t *catcmd = catcmd_new(config, argc, argv);

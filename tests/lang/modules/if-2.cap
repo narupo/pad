@@ -1,0 +1,16 @@
+{@
+    def f1():
+        i = 1
+        if i:
+            puts(1)
+        end
+    end
+
+    i = 1
+
+    def f2():
+        if i:
+            puts(1)
+        end
+    end
+@}
