@@ -131,7 +131,7 @@ extract_copy_of_obj(ast_t *ast, const object_t *obj);
  * @return failed to NULL
  */
 object_t *
-refer_index_obj_with_ref(ast_t *ast, object_t *index_obj);
+refer_index_obj_with_ref(ast_t *ast, const object_t *index_obj);
 
 /**
  * dump array object's elements at stdout

@@ -6470,6 +6470,14 @@ trv_invoke_builtin_modules(ast_t *ast, const char *funcname, object_t *args) {
             }
             goto again;
         } break;
+        case OBJ_TYPE_INDEX: {
+            owner = refer_index_obj_with_ref(ast, owner);
+            if (!owner) {
+                ast_pushb_error(ast, "failed to refer index");
+                return NULL;
+            }
+            goto again;
+        } break;
         }
     } else {
         bltin_mod_name = "__builtin__";
