@@ -17104,8 +17104,38 @@ test_trv_import_stmt(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_error_stack(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nf1\nf2\n"));
+    }
+
+    tkr_parse(tkr,
+        "{@ from \n \":tests/lang/modules/funcs.cap\" import ( f1, f2 ) \n "
+        "   f1() \n f2() @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "not found path in compile from import statement"));
+    }
+
+    tkr_parse(tkr,
+        "{@ from \":tests/lang/modules/funcs.cap\" \n import ( f1, f2 ) \n "
+        "   f1() \n f2() @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "not found import in compile from import statement"));
+    }
+
+    tkr_parse(tkr,
+        "{@ from \":tests/lang/modules/funcs.cap\" import \n ( f1, f2 ) \n "
+        "   f1() \n f2() @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        showdetail();
+        ctx_clear(ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "not found import variables in compile from import statement"));
     }
 
     ctx_del(ctx);
