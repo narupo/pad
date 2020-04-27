@@ -214,23 +214,13 @@ object_t *
 copy_object_value(ast_t *ast, const object_t *obj) {
     assert(obj);
 
-    switch (obj->type) {
-    default: break;
-    case OBJ_TYPE_IDENTIFIER: {
-        const object_t *ref = pull_in_ref_by(ast, obj);
-        if (!ref) {
-            const char *idn = str_getc(obj->identifier);
-            ast_pushb_error(ast, "\"%s\" is not defined", idn);
-            return NULL;
-        }
-        return obj_new_other(ref);
-    } break;
-    case OBJ_TYPE_INDEX:
-        return copy_value_of_index_obj(ast, obj);
-        break;
+    object_t *copied = extract_copy_of_obj(ast, obj);
+    if (ast_has_error_stack(ast)) {
+        ast_pushb_error(ast, "failed to extract object with copy");
+        return NULL;
     }
 
-    return obj_new_other(obj);
+    return copied;
 }
 
 void
@@ -353,15 +343,15 @@ refer_index_obj_with_ref(ast_t *ast, const object_t *index_obj) {
 }
 
 object_t *
-extract_copy_of_obj(ast_t *ast, const object_t *srcobj) {
-    assert(srcobj);
+extract_copy_of_obj(ast_t *ast, const object_t *obj) {
+    assert(obj);
 
-    switch (srcobj->type) {
-    default: return obj_new_other(srcobj); break;
+    switch (obj->type) {
+    default: return obj_new_other(obj); break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *ref = pull_in_ref_by_owner(ast, srcobj);
+        object_t *ref = pull_in_ref_by_owner(ast, obj);
         if (!ref) {
-            ast_pushb_error(ast, "\"%s\" is not defined in extract obj", str_getc(srcobj->identifier));
+            ast_pushb_error(ast, "\"%s\" is not defined in extract obj", str_getc(obj->identifier));
             return NULL;
         }
         return obj_new_other(ref);
@@ -369,12 +359,20 @@ extract_copy_of_obj(ast_t *ast, const object_t *srcobj) {
     case OBJ_TYPE_ARRAY: {
         // copy array elements recursive
         object_array_t *objarr = objarr_new();
-        for (int32_t i = 0; i < objarr_len(srcobj->objarr); ++i) {
-            object_t *el = objarr_get(srcobj->objarr, i);
+        for (int32_t i = 0; i < objarr_len(obj->objarr); ++i) {
+            object_t *el = objarr_get(obj->objarr, i);
             object_t *newel = extract_copy_of_obj(ast, el);
             objarr_moveb(objarr, newel);
         }
         return obj_new_array(ast->ref_gc, objarr);
+    } break;
+    case OBJ_TYPE_INDEX: {
+        object_t *ref = refer_index_obj_with_ref(ast, obj);
+        if (!ref) {
+            ast_pushb_error(ast, "failed to refer index");
+            return NULL;
+        }
+        return obj_new_other(ref);
     } break;
     }
 

@@ -18254,7 +18254,7 @@ test_trv_elif_stmt_4(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error_stack(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"i\" is not defined"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"i\" is not defined in extract obj"));
     }
 
     tkr_parse(tkr, "{@\n"
