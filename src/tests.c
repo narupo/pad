@@ -17900,12 +17900,7 @@ test_trv_if_stmt_9(void) {
 
 static void
 test_trv_elif_stmt_0(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{@ if 0: elif 1: puts(1) end @}");
     {
@@ -17966,23 +17961,32 @@ test_trv_elif_stmt_0(void) {
         assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found colon in if statement"));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
 }
 
 static void
 test_trv_elif_stmt_1(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{@ if 0: @}{@ elif 1: @}1{@ end @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{@ \nif 0: @}{@ elif 1: @}1{@ end @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{@ if 0:\n @}{@ elif 1: @}1{@ end @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
@@ -18027,11 +18031,16 @@ test_trv_elif_stmt_1(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    tkr_parse(tkr, "{@ \nif 0: @}{@ elif 1: @}1{@ end \n@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
 }
 
 static void
@@ -18199,6 +18208,184 @@ test_trv_elif_stmt_3(void) {
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
+}
+
+static void
+test_trv_elif_stmt_4(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   if 0:\n"
+    "       i = 2 * 3\n"
+    "       if 1:\n"
+    "           puts(1)\n"
+    "       end\n"
+    "   elif 0:\n"
+    "       puts(2)\n"
+    "       j = 3 * 3\n"
+    "   elif 1:\n"
+    "       puts(3)\n"
+    "   end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "3\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   if 0:\n"
+    "       i = 2 * 3\n"
+    "       if 1:\n"
+    "           puts(1)\n"
+    "       end\n"
+    "       j = 3 * 3\n"
+    "   elif 0:\n"
+    "       puts(2)\n"
+    "       j = 3 * 3\n"
+    "   elif 1:\n"
+    "       puts(i)\n"
+    "   end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"i\" is not defined"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   if 0:\n"
+    "       i = 2 * 3\n"
+    "       if 1:\n"
+    "           puts(1)\n"
+    "       end\n"
+    "       j = 3 * 3\n"
+    "   elif 0:\n"
+    "       puts(2)\n"
+    "       j = 3 * 3\n"
+    "   elif 9 * 9 - 1:\n"
+    "       puts(3)\n"
+    "   end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "3\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 3\n"
+    "   j = 2\n"
+    "   if 0:\n"
+    "       i = 2 * 3\n"
+    "       if 1:\n"
+    "           puts(1)\n"
+    "       end\n"
+    "       j = 3 * 3\n"
+    "   elif i * j:\n"
+    "       puts(i * j)\n"
+    "       j = 3 * 3\n"
+    "   elif 9 * 9 - 1:\n"
+    "       puts(3)\n"
+    "   end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "6\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 3\n"
+    "   j = 2\n"
+    "   if 0:\n"
+    "       i = 2 * 3\n"
+    "       if 1:\n"
+    "           puts(1)\n"
+    "       end\n"
+    "       j = 3 * 3\n"
+    "   elif i * j:\n"
+    "   elif 9 * 9 - 1:\n"
+    "       puts(3)\n"
+    "   end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 3\n"
+    "   j = 2\n"
+    "   if 0:\n"
+    "       i = 2 * 3\n"
+    "       if 1:\n"
+    "           puts(1)\n"
+    "       end\n"
+    "       j = 3 * 3\n"
+    "   elif i * j:\n"
+    "       if 0:\n"
+    "           puts(i * j)\n"
+    "       elif 1:\n"
+    "           puts(i * j)"
+    "       end\n"
+    "   elif 9 * 9 - 1:\n"
+    "       puts(3)\n"
+    "   end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "6\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 0\n"
+    "   j = 0\n"
+    "   if 0:\n"
+    "       i = 2 * 3\n"
+    "       if 1:\n"
+    "           puts(1)\n"
+    "       end\n"
+    "       j = 3 * 3\n"
+    "   elif i * j:\n"
+    "       if 0:\n"
+    "           puts(i * j)\n"
+    "       elif 1:\n"
+    "           puts(i * j)"
+    "       end\n"
+    "   elif j * i:\n"
+    "       puts(3)\n"
+    "   else:\n"
+    "       if 0:\n"
+    "           puts(123)\n"
+    "       elif 2 * 3:\n"
+    "           puts(10 * 123)\n"
+    "       end\n"
+    "   end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1230\n"));
+    }
+
+    trv_cleanup;
 }
 
 static void
@@ -20205,6 +20392,7 @@ traverser_tests[] = {
     {"trv_elif_stmt_1", test_trv_elif_stmt_1},
     {"trv_elif_stmt_2", test_trv_elif_stmt_2},
     {"trv_elif_stmt_3", test_trv_elif_stmt_3},
+    {"trv_elif_stmt_4", test_trv_elif_stmt_4},
     {"trv_else_stmt_0", test_trv_elif_stmt_0},
     {"trv_else_stmt_1", test_trv_elif_stmt_1},
     {"trv_else_stmt_2", test_trv_elif_stmt_2},

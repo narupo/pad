@@ -219,6 +219,8 @@ copy_object_value(ast_t *ast, const object_t *obj) {
     case OBJ_TYPE_IDENTIFIER: {
         const object_t *ref = pull_in_ref_by(ast, obj);
         if (!ref) {
+            const char *idn = str_getc(obj->identifier);
+            ast_pushb_error(ast, "\"%s\" is not defined", idn);
             return NULL;
         }
         return obj_new_other(ref);
