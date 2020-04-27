@@ -17289,6 +17289,20 @@ test_trv_if_stmt_0(void) {
         assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found colon in if statement"));
     }
 
+    tkr_parse(tkr, "{@ \n if 1: puts(1) end @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    tkr_parse(tkr, "{@ if 1: puts(1) end \n @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
     ctx_del(ctx);
     gc_del(gc);
     ast_del(ast);
@@ -17672,6 +17686,213 @@ test_trv_if_stmt_8(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_if_stmt_9(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(n):\n"
+    "       puts(n)\n"
+    "       return n\n"
+    "   end\n"
+    "   if f(1):\n"
+    "       puts(2)\n"
+    "   end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n2\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   if 2 * 3 + 1:\n"
+    "       puts(1)\n"
+    "   end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 2\n"
+    "   if i:\n"
+    "       j = 3\n"
+    "       if j:\n"
+    "           puts(i * j)\n"
+    "       end\n"
+    "   end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "6\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 2\n"
+    "   if i:\n"
+    "       j = 3\n"
+    "       if j:\n"
+    "           k = 4\n"
+    "           if k:\n"
+    "               puts(i * j * k)\n"
+    "           end\n"
+    "           k = 2\n"
+    "       end\n"
+    "       j = 10\n"
+    "   end\n"
+    "   i = 100\n"
+    "   puts(i * j * k)\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "24\n2000\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 2\n"
+    "   if i:\n"
+    "       j = 3\n"
+    "       if j:\n"
+    "           k = 4\n"
+    "           if k:\n"
+    "               def f(n):\n"
+    "                   if n:\n"
+    "                       puts(n)\n"
+    "                   end\n"
+    "               end\n"
+    "           end\n"
+    "           k = 2\n"
+    "       end\n"
+    "       j = 10\n"
+    "   end\n"
+    "   i = 100\n"
+    "   f(i * j * k)\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2000\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 2\n"
+    "   if i:\n"
+    "       j = 3"
+    "       if j:\n"
+    "           k = 4\n"
+    "           if k:\n"
+    "               def f(n):\n"
+    "                   if n:\n"
+    "                       puts(n)\n"
+    "                   end\n"
+    "               end\n"
+    "           end\n"
+    "           k = 2\n"
+    "       end\n"
+    "       j = 10\n"
+    "   end\n"
+    "   i = 100\n"
+    "   f(i * j * k)\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2000\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 2\n"
+    "   if i:\n"
+    "       j = 3"
+    "       if j:\n"
+    "           k = 4\n"
+    "           if k:\n"
+    "               def f(n):\n"
+    "                   if n:\n"
+    "                       puts(n)\n"
+    "                   end\n"
+    "               end\n"
+    "           end\n"
+    "           k = 2\n"
+    "       end\n"
+    "       j = 10\n"
+    "       if j:\n"
+    "           if k:\n"
+    "               puts(j * k)\n"
+    "           end\n"
+    "       end\n"
+    "   end\n"
+    "   i = 100\n"
+    "   f(i * j * k)\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "20\n2000\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   if 1:\n"
+    "       i = 10\n"
+    "       j = i * 20\n"
+    "       if j:\n"
+    "           puts(j)\n"
+    "       end\n"
+    "   end\n"
+    "   i = 2\n"
+    "   if i:\n"
+    "       j = 3"
+    "       if j:\n"
+    "           k = 4\n"
+    "           if k:\n"
+    "               def f(n):\n"
+    "                   if n:\n"
+    "                       puts(n)\n"
+    "                   end\n"
+    "               end\n"
+    "           end\n"
+    "           k = 2\n"
+    "       end\n"
+    "       j = 10\n"
+    "       if j:\n"
+    "           if k:\n"
+    "               puts(j * k)\n"
+    "           end\n"
+    "       end\n"
+    "   end\n"
+    "   i = 100\n"
+    "   f(i * j * k)\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "200\n20\n2000\n"));
     }
 
     trv_cleanup;
@@ -19979,6 +20200,7 @@ traverser_tests[] = {
     {"trv_if_stmt_6", test_trv_if_stmt_6},
     {"trv_if_stmt_7", test_trv_if_stmt_7},
     {"trv_if_stmt_8", test_trv_if_stmt_8},
+    {"trv_if_stmt_9", test_trv_if_stmt_9},
     {"trv_elif_stmt_0", test_trv_elif_stmt_0},
     {"trv_elif_stmt_1", test_trv_elif_stmt_1},
     {"trv_elif_stmt_2", test_trv_elif_stmt_2},
