@@ -142,6 +142,10 @@ builtin_puts(ast_t *ast, object_t *actual_args) {
         object_t *obj = objarr_get(args, i);
         assert(obj);
         object_t *copy = copy_object_value(ast, obj);
+        if (ast_has_error_stack(ast)) {
+            ast_pushb_error(ast, "failed to get argument");
+            return NULL;
+        }
         string_t *s = obj_to_string(ast, copy);
         obj_del(copy);
         if (!s) {
@@ -155,6 +159,10 @@ builtin_puts(ast_t *ast, object_t *actual_args) {
         object_t *obj = objarr_get(args, arrlen-1);
         assert(obj);
         object_t *copy = copy_object_value(ast, obj);
+        if (ast_has_error_stack(ast)) {
+            ast_pushb_error(ast, "failed to get argument");
+            return NULL;
+        }
         string_t *s = obj_to_string(ast, copy);
         obj_del(copy);
         if (!s) {
