@@ -4,7 +4,7 @@ BNF of Cap's template language
 
             blocks: ( code_block | ref_block | text_block ) blocks
         code_block: '{@' elems '@}'
-         ref_block: '{#' formula '#}'
+         ref_block: '{:' formula ':}'
         text_block: .*
              elems: ( def | stmt | formula ) elems
 

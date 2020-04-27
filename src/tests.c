@@ -16776,6 +16776,42 @@ test_trv_code_block(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
+    tkr_parse(tkr, "{@@}{@@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
+    }
+
+    tkr_parse(tkr, "{@@}{@@}{@@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
+    }
+
+    tkr_parse(tkr, "\n{@\n@}\n{@\n@}\n");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "\n\n\n"));
+    }
+
+    tkr_parse(tkr, "\n{@\n\n\n@}\n{@\n\n\n@}\n");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "\n\n\n"));
+    }
+
     ctx_del(ctx);
     gc_del(gc);
     ast_del(ast);
@@ -16813,6 +16849,51 @@ test_trv_ref_block(void) {
         assert(!strcmp(tkr_getc_first_error_message(tkr), "syntax error. unsupported character \"\n\""));
     }
 
+    tkr_parse(tkr, "\n{: 1 :}\n");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "\n1\n"));
+    }
+
+    tkr_parse(tkr, "{@@}{: 1 :}{@@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{: 1 :}{@@}{: 2 :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "12"));
+    }
+
+    tkr_parse(tkr, "{: 2 * 3 + 1 :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "7"));
+    }
+
+    tkr_parse(tkr, "{: \"ab\" * 4 :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abababab"));
+    }
+
     ctx_del(ctx);
     gc_del(gc);
     ast_del(ast);
@@ -16836,6 +16917,42 @@ test_trv_text_block(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "1{@@}2");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "12"));
+    }
+
+    tkr_parse(tkr, "1{@@}2{@@}3");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "123"));
+    }
+
+    tkr_parse(tkr, "1{: 2 :}3{: 4 :}5");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "12345"));
+    }
+
+    tkr_parse(tkr, "1{@@}{: 2 :}{@@}3");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "123"));
     }
 
     ctx_del(ctx);
@@ -16865,6 +16982,33 @@ test_trv_import_stmt(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\n"));
+    }
+
+    tkr_parse(tkr, "{@ import \n \":tests/lang/modules/hello.cap\" as hello @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "not found path in compile import as statement"));
+    }
+
+    tkr_parse(tkr, "{@ import \":tests/lang/modules/hello.cap\" \n as hello @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "not found keyword 'as' in compile import as statement"));
+    }
+
+    tkr_parse(tkr, "{@ import \":tests/lang/modules/hello.cap\" as \n hello @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "not found alias in compile import as statement"));
     }
 
     tkr_parse(tkr,
