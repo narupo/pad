@@ -10,11 +10,11 @@
 
 /**
  * construct module
- * 
- * @param[in] *ref_config 
- * @param[in] *ref_gc     
- * 
- * @return 
+ *
+ * @param[in] *ref_config
+ * @param[in] *ref_gc
+ *
+ * @return
  */
 object_t *
 builtin_module_new(const config_t *ref_config, gc_t *ref_gc);

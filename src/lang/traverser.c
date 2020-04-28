@@ -5950,7 +5950,7 @@ trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, object_t *lhs, object_t *rhs, int d
         return_trav(lhs);
     } break;
     case OBJ_TYPE_BOOL: {
-        lhs->lvalue -= (long) rhsref->boolean;
+        lhs->lvalue -= (objint_t) rhsref->boolean;
         return_trav(lhs);
     } break;
     }

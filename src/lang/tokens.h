@@ -6,6 +6,7 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/cstring.h>
+#include <lang/types.h>
 
 typedef enum {
     TOKEN_TYPE_INVALID,
@@ -71,7 +72,7 @@ typedef enum {
 typedef struct token {
     token_type_t type;
     char *text;
-    long lvalue;
+    objint_t lvalue;
 } token_t;
 
 /**

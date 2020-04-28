@@ -75,7 +75,7 @@ typedef enum {
     NODE_TYPE_DICT,
     NODE_TYPE_DICT_ELEMS,
     NODE_TYPE_DICT_ELEM,
-    
+
     NODE_TYPE_IDENTIFIER_CHAIN,
 
     NODE_TYPE_ADD_SUB_OP,
@@ -392,7 +392,7 @@ typedef struct {
 } node_nil_t;
 
 typedef struct {
-    long lvalue;
+    objint_t lvalue;
 } node_digit_t;
 
 typedef struct {

@@ -42,3 +42,5 @@ typedef struct gc gc_t;
 
 struct gc_item;
 typedef struct gc_item gc_item_t;
+
+typedef long objint_t;

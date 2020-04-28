@@ -61,7 +61,7 @@ struct object {
     string_t *string;  // value of string (type == OBJ_TYPE_STRING)
     object_array_t *objarr;  // value of array (type == OBJ_TYPE_ARRAY)
     object_dict_t *objdict;  // value of dict (type == OBJ_TYPE_DICT)
-    long lvalue;  // value of integer (type == OBJ_TYPE_INTEGER)
+    objint_t lvalue;  // value of integer (type == OBJ_TYPE_INTEGER)
     bool boolean;  // value of boolean (type == OBJ_TYPE_BOOL)
     object_func_t func;  // structure of function (type == OBJ_TYPE_FUNC)
     object_index_t index;  // structure of index (type == OBJ_TYPE_INDEX)
@@ -124,7 +124,7 @@ object_t *
 obj_new_str(gc_t *ref_gc, string_t *move_str);
 
 object_t *
-obj_new_int(gc_t *ref_gc, long lvalue);
+obj_new_int(gc_t *ref_gc, objint_t lvalue);
 
 object_t *
 obj_new_array(gc_t *ref_gc, object_array_t *move_objarr);
