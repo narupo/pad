@@ -5940,11 +5940,11 @@ trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, object_t *lhs, object_t *rhs, int d
 }
 
 static object_t *
-trv_calc_asscalc_sub_ass_idn(ast_t *ast, const object_t *lhs, object_t *rhs, int dep) {
+trv_calc_asscalc_sub_ass_idn(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
-    object_t *lhsref = pull_in_ref_by_owner(ast, lhs);
+    object_t *lhsref = extract_ref_of_obj(ast, lhs);
     if (ast_has_error_stack(ast)) {
         ast_pushb_error(ast, "failed to pull reference");
         return_trav(NULL);
@@ -5966,7 +5966,7 @@ trv_calc_asscalc_sub_ass_idn(ast_t *ast, const object_t *lhs, object_t *rhs, int
 }
 
 static object_t *
-trv_calc_asscalc_sub_ass(ast_t *ast, const object_t *lhs, object_t *rhs, int dep) {
+trv_calc_asscalc_sub_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
