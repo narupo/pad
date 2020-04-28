@@ -18254,7 +18254,7 @@ test_trv_elif_stmt_4(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error_stack(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"i\" is not defined in extract obj"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"i\" is not defined"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -19004,6 +19004,64 @@ test_trv_for_stmt_3(void) {
 }
 
 static void
+test_trv_for_stmt_4(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def hiphop(rap, n):\n"
+    "       puts(rap * n)\n"
+    "   end\n"
+    "\n"
+    "   for i = 0; i < 3; i += 1:\n"
+    "       hiphop(\"yo\", i)\n"
+    "   end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "\nyo\nyoyo\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 3; i += 1:\n"
+    "       def hiphop(rap, n):\n"
+    "           puts(rap * n)\n"
+    "       end\n"
+    "\n"
+    "       hiphop(\"yo\", i)\n"
+    "   end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "\nyo\nyoyo\n"));
+    }
+/*
+    tkr_parse(tkr, "{@\n"
+    "   def hiphop(rap, n):\n"
+    "       for i = n-1; i >= 0; i -= 1:\n"
+    "           puts(rap * i)\n"
+    "       end\n"
+    "   end\n"
+    "\n"
+    "   hiphop(\"yo\", 3)"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "yoyo\nyo\n\n"));
+    }
+*/
+    trv_cleanup;
+}
+
+static void
 test_trv_break_stmt(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -19686,6 +19744,8 @@ test_trv_asscalc_0(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
+    // TODO: more test
+
     ctx_del(ctx);
     gc_del(gc);
     ast_del(ast);
@@ -19702,6 +19762,10 @@ test_trv_asscalc_1(void) {
     gc_t *gc = gc_new();
     context_t *ctx = ctx_new(gc);
 
+    /*****
+    * ok *
+    *****/
+
     tkr_parse(tkr, "{@ a = 0 \n a -= 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
@@ -19709,6 +19773,64 @@ test_trv_asscalc_1(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "-1"));
+    }
+
+    tkr_parse(tkr, "{@ a = 0 \n b = 1 \n a -= b @}{: a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "-1"));
+    }
+
+    tkr_parse(tkr, "{@ a = 0 \n a -= true @}{: a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "-1"));
+    }
+
+    tkr_parse(tkr, "{@ a = 0 \n a -= false @}{: a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    /*******
+    * fail *
+    *******/
+
+    tkr_parse(tkr, "{@ 1 -= 1 @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand type (1)"));
+    }
+
+    tkr_parse(tkr, "{@ true -= 1 @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand type (2)"));
+    }
+
+    tkr_parse(tkr, "{@ a = 0 \n a -= \"c\" @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand type (4)"));
     }
 
     ctx_del(ctx);
@@ -20401,6 +20523,7 @@ traverser_tests[] = {
     {"trv_for_stmt_1", test_trv_for_stmt_1},
     {"trv_for_stmt_2", test_trv_for_stmt_2},
     {"trv_for_stmt_3", test_trv_for_stmt_3},
+    {"trv_for_stmt_4", test_trv_for_stmt_4},
     {"trv_break_stmt", test_trv_break_stmt},
     {"trv_continue_stmt", test_trv_continue_stmt},
     {"trv_return_stmt", test_trv_return_stmt},
@@ -20427,7 +20550,7 @@ traverser_tests[] = {
     {"trv_comparison_4", test_trv_comparison_4},
     {"trv_comparison_5", test_trv_comparison_5},
     {"trv_asscalc_0", test_trv_asscalc_0},
-    // {"trv_asscalc_1", test_trv_asscalc_1},
+    {"trv_asscalc_1", test_trv_asscalc_1},
     // {"trv_asscalc_2", test_trv_asscalc_2},
     // {"trv_asscalc_3", test_trv_asscalc_3},
     {"trv_expr_0", test_trv_expr_0},

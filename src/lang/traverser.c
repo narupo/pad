@@ -104,13 +104,13 @@ static object_t *
 trv_calc_term_mul(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-trv_calc_asscalc_ass(ast_t *ast, const object_t *lhs, object_t *rhs, int dep);
+trv_calc_asscalc_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
 trv_multi_assign(ast_t *ast, const node_t *node, int dep);
 
 static object_t *
-trv_calc_assign(ast_t *ast, const object_t *lhs, object_t *rhs, int dep);
+trv_calc_assign(ast_t *ast, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
 trv_compare_comparison_not_eq_array(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep);
@@ -1133,7 +1133,7 @@ trv_calc_assign_to_index(ast_t *ast, const object_t *lhs, object_t *rhs, int dep
 }
 
 static object_t *
-trv_calc_assign(ast_t *ast, const object_t *lhs, object_t *rhs, int dep) {
+trv_calc_assign(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
@@ -5782,7 +5782,7 @@ trv_calc_asscalc_ass_idn(ast_t *ast, const object_t *lhs, object_t *rhs, int dep
 }
 
 static object_t *
-trv_calc_asscalc_ass(ast_t *ast, const object_t *lhs, object_t *rhs, int dep) {
+trv_calc_asscalc_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
@@ -5930,7 +5930,83 @@ trv_calc_asscalc_add_ass(ast_t *ast, const object_t *lhs, const object_t *rhs, i
 }
 
 static object_t *
-trv_calc_asscalc(ast_t *ast, const object_t *lhs, const node_augassign_t *augassign, const object_t *rhs, int dep) {
+trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_INTEGER);
+
+    object_t *rhsref = extract_ref_of_obj(ast, rhs);
+    if (ast_has_error_stack(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (rhsref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid right hand operand type (%d)", rhsref->type);
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        lhs->lvalue -= rhsref->lvalue;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        lhs->lvalue -= (long) rhsref->boolean;
+        return_trav(lhs);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_sub_ass_idn(ast_t *ast, const object_t *lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_IDENTIFIER);
+
+    object_t *lhsref = pull_in_ref_by_owner(ast, lhs);
+    if (ast_has_error_stack(ast)) {
+        ast_pushb_error(ast, "failed to pull reference");
+        return_trav(NULL);
+    }
+
+    switch (lhsref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid left hand operand type (%d)", lhs->type);
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        object_t *result = trv_calc_asscalc_sub_ass_idn_int(ast, lhsref, rhs, dep+1);
+        return_trav(result);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_sub_ass(ast_t *ast, const object_t *lhs, object_t *rhs, int dep) {
+    tready();
+
+    switch (lhs->type) {
+    default: {
+        ast_pushb_error(ast, "invalid left hand operand type (%d)", lhs->type);
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        check("call trv_asscalc_sub_ass_idn");
+        object_t *obj = trv_calc_asscalc_sub_ass_idn(ast, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc(ast_t *ast, object_t *lhs, const node_augassign_t *augassign, object_t *rhs, int dep) {
     tready();
 
     switch (augassign->op) {
@@ -5940,9 +6016,11 @@ trv_calc_asscalc(ast_t *ast, const object_t *lhs, const node_augassign_t *augass
         object_t *obj = trv_calc_asscalc_add_ass(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
-    case OP_SUB_ASS:
-        err_die("TODO: sub ass");
-        break;
+    case OP_SUB_ASS: {
+        check("call trv_calc_asscalc_sub_ass");
+        object_t *obj = trv_calc_asscalc_sub_ass(ast, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
     case OP_MUL_ASS:
         err_die("TODO: mul ass");
         break;
