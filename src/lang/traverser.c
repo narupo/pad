@@ -5800,35 +5800,32 @@ trv_calc_asscalc_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
-trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, object_t *ref_var, const object_t *rhs, int dep) {
+trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, object_t *ref_lhs, object_t *rhs, int dep) {
     tready();
-    assert(ref_var->type == OBJ_TYPE_INTEGER);
+    assert(ref_lhs->type == OBJ_TYPE_INTEGER);
 
     switch (rhs->type) {
     default:
-        ast_pushb_error(ast, "can't add assign to int");
+        ast_pushb_error(ast, "invalid right hand operand (%d)", rhs->type);
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
-        ref_var->lvalue += rhs->lvalue;
-        object_t *obj = obj_new_other(ref_var);
-        return_trav(obj);
+        ref_lhs->lvalue += rhs->lvalue;
+        return_trav(ref_lhs);
     } break;
     case OBJ_TYPE_BOOL: {
-        ref_var->lvalue += rhs->boolean;
-        object_t *obj = obj_new_other(ref_var);
-        return_trav(obj);
+        ref_lhs->lvalue += (objint_t) rhs->boolean;
+        return_trav(ref_lhs);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = str_getc(rhs->identifier);
-        object_t *rvar = get_var_ref(ast, idn);
-        if (!rvar) {
-            ast_pushb_error(ast, "\"%s\" is not defined in add ass identifier int", idn);
+        object_t *rvar = extract_ref_of_obj(ast, rhs);
+        if (ast_has_error_stack(ast)) {
+            ast_pushb_error(ast, "failed to extract object");
             return_trav(NULL);
         }
 
         check("call trv_calc_asscalc_add_ass_identifier_int");
-        object_t *obj = trv_calc_asscalc_add_ass_identifier_int(ast, ref_var, rvar, dep+1);
+        object_t *obj = trv_calc_asscalc_add_ass_identifier_int(ast, ref_lhs, rvar, dep+1);
         return_trav(obj);
     } break;
     }
@@ -5838,19 +5835,18 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, object_t *ref_var, const obj
 }
 
 static object_t *
-trv_calc_asscalc_add_ass_identifier_string(ast_t *ast, const object_t *ref_lhs, const object_t *rhs, int dep) {
+trv_calc_asscalc_add_ass_identifier_string(ast_t *ast, object_t *ref_lhs, const object_t *rhs, int dep) {
     tready();
     assert(ref_lhs->type == OBJ_TYPE_STRING);
 
     switch (rhs->type) {
     default:
-        ast_pushb_error(ast, "can't add assign to string");
+        ast_pushb_error(ast, "invalid right hand operand (%d)", rhs->type);
         return_trav(NULL);
         break;
     case OBJ_TYPE_STRING: {
         str_app(ref_lhs->string, str_getc(rhs->string));
-        object_t *ret = obj_new_other(ref_lhs);
-        return_trav(ret);
+        return_trav(ref_lhs);
     } break;
     }
 
@@ -5859,63 +5855,47 @@ trv_calc_asscalc_add_ass_identifier_string(ast_t *ast, const object_t *ref_lhs, 
 }
 
 static object_t *
-trv_calc_asscalc_add_ass_identifier(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
+trv_calc_asscalc_add_ass_identifier(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
-    object_t *ref_lvar = pull_in_ref_by(ast, lhs);
-    if (!ref_lvar) {
-        ast_pushb_error(ast, "\"%s\" is not defined in add ass identifier", str_getc(lhs->identifier));
+    object_t *lhsref = extract_ref_of_obj(ast, lhs);
+    if (!lhsref) {
+        ast_pushb_error(ast, "failed to extract object");
         return_trav(NULL);
     }
 
-    object_t *new_obj = NULL;
+    object_t *result = NULL;
 
-    switch (ref_lvar->type) {
+    switch (lhsref->type) {
     default:
-        ast_pushb_error(ast, "not supported add assign to object %d", ref_lvar->type);
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_NIL:
-        ast_pushb_error(ast, "can't add assign to nil");
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lhsref->type);
         return_trav(NULL);
         break;
     case OBJ_TYPE_INTEGER: {
         check("call trv_calc_asscalc_add_ass_identifier_int");
-        new_obj = trv_calc_asscalc_add_ass_identifier_int(ast, ref_lvar, rhs, dep+1);
+        result = trv_calc_asscalc_add_ass_identifier_int(ast, lhsref, rhs, dep+1);
     } break;
-    case OBJ_TYPE_BOOL:
-        ast_pushb_error(ast, "can't add assign to bool");
-        return_trav(NULL);
-        break;
     case OBJ_TYPE_IDENTIFIER:
         check("call trv_calc_asscalc_add_ass_identifier");
-        new_obj = trv_calc_asscalc_add_ass_identifier(ast, ref_lvar, rhs, dep+1);
-        vissf("new_obj[%p]", new_obj);
+        result = trv_calc_asscalc_add_ass_identifier(ast, lhsref, rhs, dep+1);
         break;
     case OBJ_TYPE_STRING: {
         check("call trv_calc_asscalc_add_ass_identifier_string");
-        new_obj = trv_calc_asscalc_add_ass_identifier_string(ast, ref_lvar, rhs, dep+1);
+        result = trv_calc_asscalc_add_ass_identifier_string(ast, lhsref, rhs, dep+1);
     } break;
-    case OBJ_TYPE_ARRAY:
-        ast_pushb_error(ast, "can't add assign to array");
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_FUNC:
-        ast_pushb_error(ast, "can't add assign to func");
-        return_trav(NULL);
-        break;
     }
 
-    return_trav(new_obj);
+    return_trav(result);
 }
 
 static object_t *
-trv_calc_asscalc_add_ass(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
+trv_calc_asscalc_add_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     tready();
+
     switch (lhs->type) {
     default:
-        ast_pushb_error(ast, "can't add assign to %d", lhs->type);
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
