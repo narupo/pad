@@ -19,6 +19,7 @@ pull_in_ref_by_owner(ast_t *ast, const object_t *idn_obj) {
         const char *idn = str_getc(idn_obj->identifier);
         object_t *ref = get_var_ref(ast, idn);
         if (!ref) {
+            ast_pushb_error(ast, "\"%s\" is not defined", idn);
             return NULL;
         }
         if (ref->type == OBJ_TYPE_IDENTIFIER) {
@@ -35,6 +36,7 @@ again:
         const char *idn = str_getc(owner->identifier);
         owner = get_var_ref(ast, idn);
         if (!owner) {
+            ast_pushb_error(ast, "\"%s\" is not defined", idn);
             return NULL;
         }
         if (owner->type == OBJ_TYPE_IDENTIFIER) {
@@ -45,6 +47,7 @@ again:
 
     switch (owner->type) {
     default:
+        ast_pushb_error(ast, "invalid owner type (%d)", owner->type);
         return NULL;
         break;
     case OBJ_TYPE_MODULE: {
@@ -389,7 +392,7 @@ extract_ref_of_obj(ast_t *ast, object_t *obj) {
         return obj;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *ref = pull_in_ref_by(ast, obj);
+        object_t *ref = pull_in_ref_by_owner(ast, obj);
         if (!ref) {
             ast_pushb_error(ast, "\"%s\" is not defined", str_getc(obj->identifier));
             return NULL;
