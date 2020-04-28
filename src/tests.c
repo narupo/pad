@@ -14,7 +14,8 @@
 #define showbuf() printf("stdout[%s]\n", ctx_getc_stdout_buf(ctx))
 #define showerr() printf("stderr[%s]\n", ctx_getc_stderr_buf(ctx))
 
-#define showdetail() printf("detail[%s]\n", ast_getc_first_error_message(ast));
+#define showdetail() printf("detail[%s]\n", ast_getc_first_error_message(ast))
+#define trace() errstack_trace(ast->error_stack, stderr)
 
 #define ast_debug(stmt) { \
     ast_set_debug(ast, true); \
@@ -11426,7 +11427,7 @@ test_trv_ref_block_old(void) {
 }
 
 static void
-test_trv_assign(void) {
+test_trv_assign_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
@@ -11462,6 +11463,32 @@ test_trv_assign(void) {
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
+}
+
+static void
+test_trv_assign_1(void) {
+
+    return; // TODO
+
+    trv_ready;
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/string.cap\" as string\n"
+    "   string.a = 1\n"
+    "@}{: string.a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        ast_debug(trv_traverse(ast, ctx));
+        trace();
+        assert(!ast_has_error_stack(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
 }
 
 static void
@@ -13643,13 +13670,6 @@ test_trv_dot_1(void) {
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "STRING"));
     }
-
-    trv_cleanup;
-}
-
-static void
-test_trv_dot_2(void) {
-    trv_ready;
 
     trv_cleanup;
 }
@@ -16981,7 +17001,7 @@ test_trv_text_block(void) {
 }
 
 static void
-test_trv_import_stmt(void) {
+test_trv_import_stmt_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
@@ -17050,6 +17070,7 @@ test_trv_import_stmt(void) {
         assert(!ast_has_error_stack(ast));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
+        trace();
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "45"));
     }
@@ -17150,7 +17171,6 @@ test_trv_import_stmt(void) {
         "   f1() \n f2() @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
-        showdetail();
         ctx_clear(ctx);
         assert(ast_has_error_stack(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found import variables in compile from import statement"));
@@ -17161,6 +17181,25 @@ test_trv_import_stmt(void) {
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
+}
+
+static void
+test_trv_import_stmt_1(void) {
+    trv_ready;
+
+    tkr_parse(tkr,
+        "{@ import \":tests/lang/modules/count.cap\" as count \n"
+        "@}{: count.n :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_error_stack(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "45"));
+    }
+
+    trv_cleanup;
 }
 
 static void
@@ -20637,7 +20676,8 @@ traverser_tests[] = {
     {"trv_code_block", test_trv_code_block},
     {"trv_ref_block", test_trv_ref_block},
     {"trv_text_block", test_trv_text_block},
-    {"trv_import_stmt", test_trv_import_stmt},
+    {"trv_import_stmt_0", test_trv_import_stmt_0},
+    {"trv_import_stmt_1", test_trv_import_stmt_1},
     {"trv_from_import_stmt_1", test_trv_from_import_stmt_1},
     {"trv_from_import_stmt_2", test_trv_from_import_stmt_2},
     {"trv_from_import_stmt_3", test_trv_from_import_stmt_3},
@@ -20718,7 +20758,8 @@ traverser_tests[] = {
     {"trv_array_index", test_trv_array_index},
     {"trv_text_block_old", test_trv_text_block_old},
     {"trv_ref_block_old", test_trv_ref_block_old},
-    {"trv_assign", test_trv_assign},
+    {"trv_assign_0", test_trv_assign_0},
+    {"trv_assign_1", test_trv_assign_1},
     {"trv_atom", test_trv_atom},
     {"trv_array", test_trv_array},
     {"trv_index", test_trv_index},
@@ -20729,7 +20770,6 @@ traverser_tests[] = {
     {"trv_test_list", test_trv_test_list},
     {"trv_dot_0", test_trv_dot_0},
     {"trv_dot_1", test_trv_dot_1},
-    {"trv_dot_2", test_trv_dot_2},
     {"trv_negative_0", test_trv_negative_0},
     {"trv_call", test_trv_call},
     {"trv_func_def", test_trv_func_def},
