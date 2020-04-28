@@ -227,7 +227,7 @@ obj_new_str(gc_t *ref_gc, string_t *move_str) {
 }
 
 object_t *
-obj_new_int(gc_t *ref_gc, long lvalue) {
+obj_new_int(gc_t *ref_gc, objint_t lvalue) {
     object_t *self = obj_new(ref_gc, OBJ_TYPE_INTEGER);
 
     self->lvalue = lvalue;
