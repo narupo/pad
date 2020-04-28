@@ -49,7 +49,6 @@ struct object_module {
     string_t *name;  // module name
     tokenizer_t *tokenizer;
     ast_t *ast;
-    context_t *context;
     builtin_func_info_t *builtin_func_infos;  // builtin functions
 };
 
@@ -147,7 +146,6 @@ obj_new_module_by(
     const char *name,
     tokenizer_t *move_tkr,
     ast_t *move_ast,
-    context_t *move_ctx,
     builtin_func_info_t *func_infos
 );
 

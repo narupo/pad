@@ -71,8 +71,6 @@ obj_del(object_t *self) {
         self->module.tokenizer = NULL;
         ast_del(self->module.ast);
         self->module.ast = NULL;
-        ctx_del(self->module.context);
-        self->module.context = NULL;
         break;
     }
 
@@ -303,7 +301,6 @@ obj_new_module_by(
     const char *name,
     tokenizer_t *move_tkr,
     ast_t *move_ast,
-    context_t *move_ctx,
     builtin_func_info_t *infos
 ) {
     object_t *self = obj_new(ref_gc, OBJ_TYPE_MODULE);
@@ -313,7 +310,6 @@ obj_new_module_by(
 
     self->module.tokenizer = mem_move(move_tkr);
     self->module.ast = mem_move(move_ast);
-    self->module.context = mem_move(move_ctx);  // needed?
     self->module.builtin_func_infos = infos;
 
     return self;

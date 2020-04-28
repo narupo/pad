@@ -7,7 +7,7 @@
 #define tready() \
     if (ast->debug) { \
         fprintf(stderr, \
-            "debug: %5d: %*s: %3d: %s\n", \
+            "debug: line[%5d]: %*s: %3d: msg[%s]\n", \
             __LINE__, \
             40, \
             __func__, \
@@ -22,8 +22,14 @@
         string_t *s = NULL; \
         if (obj) s = obj_to_str(obj); \
         fprintf(stderr, \
-            "debug: %5d: %*s: %3d: return %p (%s): %s\n", \
-            __LINE__, 40, __func__, dep, obj, (s ? str_getc(s) : "null"), ast_getc_last_error_message(ast)); \
+            "debug: line[%5d]: %*s: %3d: return %p (%s): msg[%s]\n", \
+            __LINE__, \
+            40, \
+            __func__, \
+            dep, \
+            obj, \
+            (s ? str_getc(s) : "null"), \
+            ast_getc_last_error_message(ast)); \
         if (obj) str_del(s); \
         fflush(stderr); \
     } \
@@ -32,8 +38,11 @@
 #define check(fmt, ...) \
     if (ast->debug) { \
         fprintf(stderr, \
-            "debug: %5d: %*s: %3d: ", \
-            __LINE__, 40, __func__, dep \
+            "debug: line[%5d]: %*s: %3d: ", \
+            __LINE__, \
+            40, \
+            __func__, \
+            dep \
         ); \
         fprintf(stderr, fmt, ##__VA_ARGS__); \
         fprintf(stderr, ": %s\n", ast_getc_last_error_message(ast)); \
@@ -639,7 +648,7 @@ trv_parse_bool(ast_t *ast, const object_t *obj) {
     case OBJ_TYPE_BOOL: return obj->boolean; break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = str_getc(obj->identifier);
-        object_t *obj = get_var_ref(ast, idn);
+        object_t *obj = ctx_find_var_ref(ast->context, idn);
         if (!obj) {
             ast_pushb_error(ast, "\"%s\" is not defined in if statement", idn);
             return false;
@@ -1245,7 +1254,16 @@ trv_assign(ast_t *ast, const node_t *node, int dep) {
         }
         // why lhs in null?
         if (!lhs) {
+            ast_pushb_error(ast, "left hand side object is null");
             return_trav(NULL);
+        }
+
+        if (ast->debug) {
+            string_t *a = obj_to_str(lhs);
+            string_t *b = obj_to_str(rhs);
+            check("call trv_calc_assign lhs[%s] rhs[%s]", str_getc(a), str_getc(b));
+            str_del(a);
+            str_del(b);
         }
 
         object_t *result = trv_calc_assign(ast, lhs, rhs, dep+1);
@@ -1442,7 +1460,7 @@ trv_roll_identifier_lhs(
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
     const char *idn = str_getc(lhs->identifier);
-    object_t *lvar = get_var_ref(ast, idn);
+    object_t *lvar = ctx_find_var_ref(ast->context, idn);
     if (!lvar) {
         ast_pushb_error(ast, "\"%s\" is not defined in roll identifier lhs", idn);
         return_trav(NULL);
@@ -1463,7 +1481,7 @@ trv_roll_identifier_rhs(
     tready();
     assert(rhs->type == OBJ_TYPE_IDENTIFIER);
 
-    object_t *rvar = get_var_ref(ast, str_getc(rhs->identifier));
+    object_t *rvar = ctx_find_var_ref(ast->context, str_getc(rhs->identifier));
     if (!rvar) {
         ast_pushb_error(ast, "\"%s\" is not defined in roll identifier rhs", str_getc(rhs->identifier));
         return_trav(NULL);
@@ -1696,7 +1714,7 @@ trv_compare_or_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = get_var_ref(ast, str_getc(rhs->identifier));
+        object_t *rvar = ctx_find_var_ref(ast->context, str_getc(rhs->identifier));
         if (!rvar) {
             ast_pushb_error(ast, "%s is not defined compare or bool", str_getc(rhs->identifier));
             return_trav(NULL);
@@ -3411,7 +3429,7 @@ trv_compare_not(ast_t *ast, const object_t *operand, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *var = get_var_ref(ast, str_getc(operand->identifier));
+        object_t *var = ctx_find_var_ref(ast->context, str_getc(operand->identifier));
         if (!var) {
             ast_pushb_error(ast, "\"%s\" is not defined compare not", str_getc(operand->identifier));
             return_trav(NULL);
@@ -5543,27 +5561,45 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             assert(rnode);
             assert(rnode->type == NODE_TYPE_CALL);
 
+            // swap owner object (start context of dot operation)
             object_t *save_owner = ast->ref_dot_owner;
             ast->ref_dot_owner = lhs;
+
             check("call _trv_traverse with index");
             object_t *result = _trv_traverse(ast, rnode, dep+1);
             if (ast_has_error_stack(ast)) {
                 return_trav(NULL);
             }
             if (!result) {
-                ast_pushb_error(ast, "result is null in dot");
+                ast_pushb_error(ast, "can't chain dot operation");
                 return_trav(NULL);
             }
 
+            // dot演算子の文脈で（つまりref_dot_ownerが有効の間）識別子の実体を取得し、lhsとする
+            //
+            // TODO:
+            // たとえば module.a = 1 のような文脈では、先に module.a が解決される
+            // このとき、module.a の変数 a は定義されていないので、↓で NULL が返ってくる
+            // そのため、エラーになり、結果として module.a = 1 の代入を実行できない
+            // （dot の解決は、assign より優先度が高いため）
+            //
+            // 対応としては、たとえば「一時オブジェクト」のようなオブジェクトを定義して、
+            // こういった文脈に対応するなどが考えられる
+            // 要は↓で NULL が返ってこないでかつ、代入文の文脈で一時オブジェクトを参照できればいいわけだ
+            //
+            // この一時オブジェクトは「型は決定していないが、定義される予定がある」という特殊なオブジェクトになるだろう
             if (result->type == OBJ_TYPE_IDENTIFIER) {
                 object_t *obj = pull_in_ref_by_owner(ast, result);
                 if (!obj) {
-                    ast_pushb_error(ast, "obj is null in dot");
+                    const char *idn = str_getc(result->identifier);
+                    ast_pushb_error(ast, "\"%s\" is null in dot operation", idn);
                     return_trav(NULL);
+                } else {
+                    result = obj;
                 }
-                result = obj;
             }
 
+            // reset owner object
             check("unset ref_dot_owner");
             ast->ref_dot_owner = save_owner;
 
@@ -5753,12 +5789,15 @@ trv_calc_asscalc_ass_idn(ast_t *ast, const object_t *lhs, object_t *rhs, int dep
 
     switch (rhs->type) {
     default: {
+        check("set reference of (%d) at (%s) of current varmap", rhs->type, idn);
         set_ref_at_cur_varmap(ast, idn, rhs);
         return_trav(rhs);
     } break;
     case OBJ_TYPE_INDEX: {
+        // TODO: fix me!
         object_t *val = copy_value_of_index_obj(ast, rhs);
         assert(val->type != OBJ_TYPE_IDENTIFIER);
+        check("move object of (%d) at (%s) of current varmap", val->type, idn);
         move_obj_at_cur_varmap(ast, idn, mem_move(val));
         object_t *ret = obj_new_other(val);
         return_trav(ret);
@@ -5773,6 +5812,7 @@ trv_calc_asscalc_ass_idn(ast_t *ast, const object_t *lhs, object_t *rhs, int dep
             return_trav(NULL);
         }
 
+        check("set reference of (%d) at (%s) of current varmap", rval->type, idn);
         set_ref_at_cur_varmap(ast, idn, rval);
         return_trav(rval);
     } break;
@@ -5788,7 +5828,7 @@ trv_calc_asscalc_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
 
     switch (lhs->type) {
     default:
-        ast_pushb_error(ast, "can't assign to %d", lhs->type);
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER:
@@ -6533,7 +6573,7 @@ invoke_func_obj(ast_t *ast, object_t *funcobj, const object_t *drtargs, int dep)
 static object_t *
 trv_invoke_func_obj(ast_t *ast, const char *funcname, const object_t *drtargs, int dep) {
     assert(funcname);
-    object_t *funcobj = get_var_ref(ast, funcname);
+    object_t *funcobj = ctx_find_var_ref(ast->context, funcname);
     if (!funcobj) {
         // not error
         return NULL;
@@ -6580,7 +6620,7 @@ again:
     }
 
     object_module_t *mod = &modobj->module;
-    object_dict_t *varmap = ctx_get_varmap_at_global(mod->context);
+    object_dict_t *varmap = ctx_get_varmap_at_global(mod->ast->context);
     assert(varmap);
 
     object_dict_item_t *item = objdict_get(varmap, funcname);

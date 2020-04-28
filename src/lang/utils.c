@@ -1,13 +1,38 @@
 #include <lang/utils.h>
 
-object_t *
-get_var_ref(ast_t *ast, const char *identifier) {
-    object_t *obj = ctx_find_var_ref(ast->context, identifier);
-    if (!obj) {
-        return NULL;
+/**
+ * get reference of ast by owner object
+ *
+ * @param[in] *default_ast default ast
+ *
+ * @return default ast or owner's ast
+ */
+static ast_t *
+get_ast_by_owner(ast_t *default_ast) {
+    object_t *owner = default_ast->ref_dot_owner;
+    if (!owner) {
+        return default_ast;
     }
 
-    return obj;
+again:
+    switch (owner->type) {
+    default:
+        return default_ast;
+        break;
+    case OBJ_TYPE_MODULE:
+        return owner->module.ast;
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        owner = pull_in_ref_by_owner(default_ast, owner);
+        if (!owner) {
+            return default_ast;
+        }
+        goto again;
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return NULL;
 }
 
 object_t *
@@ -18,7 +43,7 @@ pull_in_ref_by_owner(ast_t *ast, const object_t *idn_obj) {
     object_t *owner = ast->ref_dot_owner;
     if (!owner) {
         const char *idn = str_getc(idn_obj->identifier);
-        object_t *ref = get_var_ref(ast, idn);
+        object_t *ref = ctx_find_var_ref(ast->context, idn);
         if (!ref) {
             ast_pushb_error(ast, "\"%s\" is not defined", idn);
             return NULL;
@@ -36,7 +61,7 @@ again:
     default: break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = str_getc(owner->identifier);
-        owner = get_var_ref(ast, idn);
+        owner = ctx_find_var_ref(ast->context, idn);
         if (!owner) {
             ast_pushb_error(ast, "\"%s\" is not defined", idn);
             return NULL;
@@ -66,12 +91,10 @@ again:
 
 object_t *
 pull_in_ref_by(ast_t *ast, const object_t *idn_obj) {
-    // printf("idn_obj[%p] type[%d] [%s]\n", idn_obj, idn_obj->type, str_getc(obj_to_str(idn_obj)));
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
 
-    // printf("idn[%s]\n", str_getc(idn_obj->identifier));
     const char *idn = str_getc(idn_obj->identifier);
-    object_t *ref = get_var_ref(ast, idn);
+    object_t *ref = ctx_find_var_ref(ast->context, idn);
     if (!ref) {
         return NULL;
     }
@@ -235,6 +258,8 @@ void
 move_obj_at_cur_varmap(ast_t *ast, const char *identifier, object_t *move_obj) {
     assert(move_obj->type != OBJ_TYPE_IDENTIFIER);
 
+    ast = get_ast_by_owner(ast);
+
     object_dict_t *varmap = ctx_get_varmap(ast->context);
     objdict_move(varmap, identifier, mem_move(move_obj));
 }
@@ -242,6 +267,8 @@ move_obj_at_cur_varmap(ast_t *ast, const char *identifier, object_t *move_obj) {
 void
 set_ref_at_cur_varmap(ast_t *ast, const char *identifier, object_t *ref) {
     assert(ref->type != OBJ_TYPE_IDENTIFIER);
+
+    ast = get_ast_by_owner(ast);
 
     object_dict_t *varmap = ctx_get_varmap(ast->context);
     object_t *popped = objdict_pop(varmap, identifier);
