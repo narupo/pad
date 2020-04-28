@@ -6595,10 +6595,7 @@ again:
     switch (ref_owner->type) {
     default: break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *save_owner = ast->ref_dot_owner;
-        ast->ref_dot_owner = NULL;
-        ref_owner = pull_in_ref_by_owner(ast, ref_owner);
-        ast->ref_dot_owner = save_owner;
+        ref_owner = pull_in_ref_by(ast, ref_owner);
         if (!ref_owner) {
             return NULL;
         }
@@ -6674,10 +6671,7 @@ trv_invoke_builtin_modules(ast_t *ast, const char *funcname, object_t *args) {
             module = owner;
             break;
         case OBJ_TYPE_IDENTIFIER: {
-            object_t *save_owner = ast->ref_dot_owner;
-            ast->ref_dot_owner = NULL;
-            owner = pull_in_ref_by_owner(ast, owner);
-            ast->ref_dot_owner = save_owner;
+            owner = pull_in_ref_by(ast, owner);
             if (!owner) {
                 return NULL;
             }
