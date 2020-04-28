@@ -19900,6 +19900,10 @@ test_trv_asscalc_2(void) {
     gc_t *gc = gc_new();
     context_t *ctx = ctx_new(gc);
 
+    /*****
+    * ok *
+    *****/
+
     tkr_parse(tkr, "{@ a = 2 \n a *= 2 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
@@ -19907,6 +19911,91 @@ test_trv_asscalc_2(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4"));
+    }
+
+    tkr_parse(tkr, "{@ a = 2 \n a *= true @}{: a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
+    }
+
+    tkr_parse(tkr, "{@ a = 2 \n a *= false @}{: a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"ab\" \n a *= 2 @}{: a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abab"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"ab\" \n a *= 0 @}{: a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
+    }
+
+    tkr_parse(tkr, "{@ a = \"ab\" \n a *= true @}{: a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "ab"));
+    }
+
+    tkr_parse(tkr, "{@ a = \"ab\" \n a *= false @}{: a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
+    }
+
+    /*******
+    * fail *
+    *******/
+
+    tkr_parse(tkr, "{@ 1 *= 2 @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (1)"));
+    }
+
+    tkr_parse(tkr, "{@ true *= 2 @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (2)"));
+    }
+
+    tkr_parse(tkr, "{@ a = 2 \n a *= \"b\" @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand (4)"));
     }
 
     ctx_del(ctx);

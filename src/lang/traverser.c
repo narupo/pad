@@ -5986,6 +5986,105 @@ trv_calc_asscalc_sub_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
 }
 
 static object_t *
+trv_calc_asscalc_mul_ass_int(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_INTEGER);
+
+    object_t *rhsref = extract_ref_of_obj(ast, rhs);
+    if (ast_has_error_stack(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (rhsref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid right hand operand (%d)", rhsref->type);
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        lhs->lvalue *= rhsref->lvalue;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        lhs->lvalue *= (objint_t) rhsref->lvalue;
+        return_trav(lhs);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_mul_ass_string(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_STRING);
+
+    object_t *rhsref = extract_ref_of_obj(ast, rhs);
+    if (ast_has_error_stack(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (rhsref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid right hand operand (%d)", rhsref->type);
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        if (rhsref->lvalue <= 0) {
+            str_clear(lhs->string);
+        } else {
+            for (objint_t i = 0; i < rhsref->lvalue; ++i) {
+                str_app(lhs->string, str_getc(lhs->string));
+            }
+        }
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        if (!rhsref->boolean) {
+            str_clear(lhs->string);
+        }
+        return_trav(lhs);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_mul_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+
+    object_t *lhsref = extract_ref_of_obj(ast, lhs);
+    if (ast_has_error_stack(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (lhsref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lhsref->type);
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_INTEGER: {
+        check("call trv_calc_asscalc_mul_ass_int");
+        object_t *result = trv_calc_asscalc_mul_ass_int(ast, lhsref, rhs, dep+1);
+        return_trav(result);
+    } break;
+    case OBJ_TYPE_STRING: {
+        check("call trv_calc_asscalc_mul_ass_string");
+        object_t *result = trv_calc_asscalc_mul_ass_string(ast, lhsref, rhs, dep+1);
+        return_trav(result);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
 trv_calc_asscalc(ast_t *ast, object_t *lhs, const node_augassign_t *augassign, object_t *rhs, int dep) {
     tready();
 
@@ -6002,7 +6101,9 @@ trv_calc_asscalc(ast_t *ast, object_t *lhs, const node_augassign_t *augassign, o
         return_trav(obj);
     } break;
     case OP_MUL_ASS:
-        err_die("TODO: mul ass");
+        check("call trv_calc_asscalc_mul_ass");
+        object_t *obj = trv_calc_asscalc_mul_ass(ast, lhs, rhs, dep+1);
+        return_trav(obj);
         break;
     case OP_DIV_ASS:
         err_die("TODO: div ass");
