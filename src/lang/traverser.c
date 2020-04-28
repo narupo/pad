@@ -5543,6 +5543,7 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             assert(rnode);
             assert(rnode->type == NODE_TYPE_CALL);
 
+            object_t *save_owner = ast->ref_dot_owner;
             ast->ref_dot_owner = lhs;
             check("call _trv_traverse with index");
             object_t *result = _trv_traverse(ast, rnode, dep+1);
@@ -5564,7 +5565,7 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             }
 
             check("unset ref_dot_owner");
-            ast->ref_dot_owner = NULL;
+            ast->ref_dot_owner = save_owner;
 
             lhs = result;
         }
