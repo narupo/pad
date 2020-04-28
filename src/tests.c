@@ -15558,22 +15558,13 @@ test_trv_traverse(void) {
     * asscalc *
     **********/
 
-    /* FAILED
-    tkr_parse(tkr, "{: b :}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    } */
-
     tkr_parse(tkr, "{@ a += 1 @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error_stack(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in add ass identifier"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
     }
 
     tkr_parse(tkr, "{@ a = 0 \n a += 1 @}{: a :}");
@@ -19735,6 +19726,10 @@ test_trv_asscalc_0(void) {
     gc_t *gc = gc_new();
     context_t *ctx = ctx_new(gc);
 
+    /*****
+    * ok *
+    *****/
+
     tkr_parse(tkr, "{@ a = 0 \n a += 1 @}{: a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
@@ -19744,7 +19739,63 @@ test_trv_asscalc_0(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
-    // TODO: more test
+    tkr_parse(tkr, "{@ a = 0 \n b = 1 \n a += b @}{: a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{@ a = 0 \n a += true @}{: a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{@ a = 0 \n a += false @}{: a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    /*******
+    * fail *
+    *******/
+
+    tkr_parse(tkr, "{@ 0 += 1 @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (1)"));
+    }
+
+    tkr_parse(tkr, "{@ true += 1 @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (2)"));
+    }
+
+    tkr_parse(tkr, "{@ a = 0 \n a += \"b\" @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand (4)"));
+    }
 
     ctx_del(ctx);
     gc_del(gc);
