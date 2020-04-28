@@ -14,6 +14,7 @@ object_t *
 pull_in_ref_by_owner(ast_t *ast, const object_t *idn_obj) {
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
 
+    // if owner is null then refer identifier object
     object_t *owner = ast->ref_dot_owner;
     if (!owner) {
         const char *idn = str_getc(idn_obj->identifier);
@@ -29,6 +30,7 @@ pull_in_ref_by_owner(ast_t *ast, const object_t *idn_obj) {
         return ref;
     }
 
+    // extract owner object
 again:
     switch (owner->type) {
     default: break;
@@ -45,11 +47,14 @@ again:
     } break;
     }
 
+    // owner is can refer type ?
     switch (owner->type) {
     default:
+        // can't refer to owner
         ast_pushb_error(ast, "invalid owner type (%d)", owner->type);
         return NULL;
         break;
+    // can refer to owner
     case OBJ_TYPE_MODULE: {
         object_module_t *mod = &owner->module;
         ast_t *ref_ast = mod->ast;

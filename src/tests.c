@@ -13575,7 +13575,7 @@ test_trv_negative_0(void) {
 }
 
 static void
-test_trv_dot(void) {
+test_trv_dot_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
@@ -13625,6 +13625,33 @@ test_trv_dot(void) {
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
+}
+
+static void
+test_trv_dot_1(void) {
+    trv_ready;
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/string.cap\" as string\n"
+    "@}{: string.variable.upper() :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "STRING"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_dot_2(void) {
+    trv_ready;
+
+    trv_cleanup;
 }
 
 static void
@@ -20201,32 +20228,6 @@ test_trv_term_1(void) {
 }
 
 static void
-test_trv_dot_0(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
-
-    // how to do it?
-    tkr_parse(tkr, "{: a.b :}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
-    }
-
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
-}
-
-static void
 test_trv_call_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -20726,7 +20727,9 @@ traverser_tests[] = {
     {"trv_and_test", test_trv_and_test},
     {"trv_assign_list", test_trv_assign_list},
     {"trv_test_list", test_trv_test_list},
-    {"trv_dot", test_trv_dot},
+    {"trv_dot_0", test_trv_dot_0},
+    {"trv_dot_1", test_trv_dot_1},
+    {"trv_dot_2", test_trv_dot_2},
     {"trv_negative_0", test_trv_negative_0},
     {"trv_call", test_trv_call},
     {"trv_func_def", test_trv_func_def},
