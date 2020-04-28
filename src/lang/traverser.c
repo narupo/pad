@@ -254,7 +254,7 @@ trv_ref_block(ast_t *ast, const node_t *node, int dep) {
         }
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *obj = pull_in_ref_by(ast, result);
+        object_t *obj = pull_in_ref_by_owner(ast, result);
         if (!obj) {
             ast_pushb_error(ast,
                 "\"%s\" is not defined in ref block",
@@ -971,7 +971,7 @@ trv_obj_to_index_value(ast_t *ast, index_value_t *idxval, const object_t *obj) {
     switch (obj->type) {
     default: break;
     case OBJ_TYPE_IDENTIFIER:
-        src = pull_in_ref_by(ast, obj);
+        src = pull_in_ref_by_owner(ast, obj);
         if (ast_has_error_stack(ast)) {
             return NULL;
         } else if (!src) {
@@ -1038,7 +1038,7 @@ trv_assign_to_index(ast_t *ast, const object_t *lhs, object_t *rhs, int dep) {
         }
 
         if (ref_operand->type == OBJ_TYPE_IDENTIFIER) {
-            object_t *ref = pull_in_ref_by(ast, ref_operand);
+            object_t *ref = pull_in_ref_by_owner(ast, ref_operand);
             if (ast_has_error_stack(ast)) {
                 return_trav(NULL);
             } else if (!ref) {
@@ -1572,7 +1572,7 @@ trv_compare_or_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = pull_in_ref_by(ast, rhs);
+        object_t *rvar = pull_in_ref_by_owner(ast, rhs);
         if (!rvar) {
             ast_pushb_error(ast, "%s is not defined in compare or int", str_getc(rhs->identifier));
             return_trav(NULL);
@@ -5694,7 +5694,7 @@ trv_index(ast_t *ast, const node_t *node, int dep) {
         }
 
         // get reference
-        ref_operand = pull_in_ref_by(ast, operand);
+        ref_operand = pull_in_ref_by_owner(ast, operand);
         if (!ref_operand) {
             // can't index access to null
             ast_pushb_error(ast, "\"%s\" is not defined", str_getc(operand->identifier));
@@ -5763,7 +5763,7 @@ trv_calc_asscalc_ass_idn(ast_t *ast, const object_t *lhs, object_t *rhs, int dep
         return_trav(ret);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rval = pull_in_ref_by(ast, rhs);
+        object_t *rval = pull_in_ref_by_owner(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast,
                 "\"%s\" is not defined in asscalc ass idn",
@@ -6379,7 +6379,7 @@ trv_dict_elems(ast_t *ast, const node_t *node, int dep) {
         const object_t *val = tmp_val;
 
         if (tmp_val->type == OBJ_TYPE_IDENTIFIER) {
-            val = pull_in_ref_by(ast, tmp_val);
+            val = pull_in_ref_by_owner(ast, tmp_val);
             if (!val) {
                 ast_pushb_error(ast, "\"%s\" is not defined. can not store to dict elements", str_getc(tmp_val->identifier));
                 return_trav(NULL);
@@ -6398,7 +6398,7 @@ trv_dict_elems(ast_t *ast, const node_t *node, int dep) {
             skey = str_getc(key->string);
             break;
         case OBJ_TYPE_IDENTIFIER: {
-            const object_t *ref = pull_in_ref_by(ast, key);
+            const object_t *ref = pull_in_ref_by_owner(ast, key);
             if (ref->type != OBJ_TYPE_STRING) {
                 ast_pushb_error(ast, "invalid key type in variable of dict");
                 obj_del(arrobj);
@@ -6477,7 +6477,7 @@ invoke_func_obj(ast_t *ast, object_t *funcobj, const object_t *drtargs, int dep)
             object_t *aarg = objarr_get(actual_args, i);
             object_t *ref_aarg = aarg;
             if (aarg->type == OBJ_TYPE_IDENTIFIER) {
-                ref_aarg = pull_in_ref_by(func->ref_ast, aarg);
+                ref_aarg = pull_in_ref_by_owner(func->ref_ast, aarg);
                 if (!ref_aarg) {
                     ast_pushb_error(ast, "\"%s\" is not defined in invoke function", str_getc(aarg->identifier));
                     obj_del(args);

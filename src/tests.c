@@ -11383,7 +11383,7 @@ test_trv_ref_block_old(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_error_stack(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in ref block"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
     }
 
     /* tkr_parse(tkr, "{: alias(\"dtl\", \"run bin/date-line.py\") :}");
@@ -16190,7 +16190,7 @@ test_trv_traverse(void) {
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
         assert(ast_has_error_stack(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in ref block"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -16206,7 +16206,7 @@ test_trv_traverse(void) {
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
         assert(ast_has_error_stack(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in ref block"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -16222,7 +16222,7 @@ test_trv_traverse(void) {
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
         assert(ast_has_error_stack(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in ref block"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -16238,7 +16238,7 @@ test_trv_traverse(void) {
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
         assert(ast_has_error_stack(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"c\" is not defined in ref block"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"c\" is not defined"));
     }
 
     tkr_parse(tkr, "{@\n"
