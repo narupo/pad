@@ -5,9 +5,9 @@ enum {
 };
 
 struct gc {
-    void **pool;
-    int32_t len;
-    int32_t capa;
+    void **pool;  // memory pool (pointer array)
+    int32_t len;  // length of pool
+    int32_t capa;  // capacity of pool
 };
 
 void
@@ -36,6 +36,15 @@ gc_new(void) {
     return self;
 }
 
+/**
+ * resize pool by new capacity value
+ *
+ * @param[in] *self   pointer to gc_t
+ * @param[in] newcapa number of resize capacity
+ *
+ * @return success to pointer to self
+ * @return failed to NULL
+ */
 static gc_t *
 gc_resize(gc_t *self, int32_t newcapa) {
     if (!self || newcapa <= 0) {
@@ -80,10 +89,9 @@ gc_free(gc_t *self, gc_item_t *item) {
     item->ref_counts--;
 
     if (item->ref_counts <= 0) {
-        // printf("free obj[%p]\n", item->ptr);
-        item->ptr = NULL; // do not delete (duplicated address to pool[id]). deleted by obj_del
+        item->ptr = NULL;  // do not delete (duplicated address to pool[id]). deleted by obj_del
         int32_t id = item->id;
-        free(self->pool[id]); // after can not access to item
+        free(self->pool[id]);  // after can not access to item
         self->pool[id] = NULL;
     }
 }
