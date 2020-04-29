@@ -15,13 +15,40 @@
 #include <lang/builtin/function.h>
 
 typedef enum {
+    // A nil object
     OBJ_TYPE_NIL,
+
+    // A integer object
+    // 整数オブジェクト
+    // 整数の範囲は lang/types.h@objint_t を参照
     OBJ_TYPE_INT,
+
+    // A boolean object
+    // A boolean object has true or false
+    // 真偽値オブジェクトは計算式の文脈では整数として扱われる
+    // つまり true + true の結果は 2 になる
     OBJ_TYPE_BOOL,
+
+    // A identifier object
+    // 識別子オブジェクト
+    // 変数などの識別子の名前を持つオブジェクト
+    // このオブジェクトがスコープの変数マップに格納されることはない
+    // この変数は、この変数の名前をキーに変数マップからオブジェクトを取得したり、
+    // 格納したりするのに使われる
     OBJ_TYPE_IDENTIFIER,
+
+    // A string object
     OBJ_TYPE_STRING,
+
+    // A array object
     OBJ_TYPE_ARRAY,
+
+    // A dictionary object
     OBJ_TYPE_DICT,
+
+    // A function object
+    // That has ref_suites of context of nodes in ast_t
+    // Time to execute to execute this context
     OBJ_TYPE_FUNC,
 
     // A index object
@@ -79,6 +106,9 @@ struct object_reserv {
     string_t *name;  // variable name for define
 };
 
+/**
+ * A abstract object
+ */
 struct object {
     obj_type_t type;  // object type
     gc_t *ref_gc;  // reference to gc (DO NOT DELETE)
@@ -126,51 +156,215 @@ obj_new(gc_t *ref_gc, obj_type_t type);
 object_t *
 obj_new_other(const object_t *other);
 
+/**
+ * construct nil object
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc reference to gc_t (do not delete)
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_nil(gc_t *ref_gc);
 
+/**
+ * construct false of boolean object
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc reference to gc_t (do not delete)
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_false(gc_t *ref_gc);
 
+/**
+ * construct true of boolean object
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc reference to gc_t (do not delete)
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_true(gc_t *ref_gc);
 
+/**
+ * construct boolean object by value
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc reference to gc_t (do not delete)
+ * @param[in] boolean value of boolean
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_bool(gc_t *ref_gc, bool boolean);
 
+/**
+ * construct identifier object by C string
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc     reference to gc_t (do not delete)
+ * @param[in] *identifier C strings of identifier
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_cidentifier(gc_t *ref_gc, const char *identifier);
 
+/**
+ * construct identifier object by string_t
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc          reference to gc_t (do not delete)
+ * @param[in] *move_identifier pointer to string_t (with move semantics)
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_identifier(gc_t *ref_gc, string_t *move_identifier);
 
+/**
+ * construct string object by C strings
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc reference to gc_t (do not delete)
+ * @param[in] *str    pointer to C strings
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_cstr(gc_t *ref_gc, const char *str);
 
+/**
+ * construct string object by string_t
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc   reference to gc_t (do not delete)
+ * @param[in] *move_str pointer to string_t (with move semantics)
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_str(gc_t *ref_gc, string_t *move_str);
 
+/**
+ * construct integer object by value
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc reference to gc_t (do not delete)
+ * @param[in] lvalue  value of integer
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_int(gc_t *ref_gc, objint_t lvalue);
 
+/**
+ * construct array object by object_array_t
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc      reference to gc_t (do not delete)
+ * @param[in] *move_objarr pointer to object_array_t (with move semantics)
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_array(gc_t *ref_gc, object_array_t *move_objarr);
 
+/**
+ * construct dictionary object by object_dict_t
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc       reference to gc_t (do not delete)
+ * @param[in] *move_objdict pointer to object_dict_t (with move semantics)
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_dict(gc_t *ref_gc, object_dict_t *move_objdict);
 
+/**
+ * construct function object by parameters
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc     reference to gc_t (do not delete)
+ * @param[in] *ref_ast    reference to ast_t (do not delete). The function object refer this context
+ * @param[in] *move_name  pointer to identifier object for function name (with move semantics)
+ * @param[in] *move_args  pointer to array object for function arguments (with move semantics)
+ * @param[in] *ref_suites reference to nodes of function content (do not delete)
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_func(gc_t *ref_gc, ast_t *ref_ast, object_t *move_name, object_t *move_args, node_array_t *ref_suites);
 
+/**
+ * construct function object by parameters
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc       reference to gc_t (do not delete)
+ * @param[in] *move_operand pointer to object of index operand (with move semantics)
+ * @param[in] *move_indices pointer to index objects (with move semantics)
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_index(gc_t *ref_gc, object_t *move_operand, object_array_t *move_indices);
 
-object_t *
-obj_new_module(gc_t *ref_gc);
-
+/**
+ * construct reservation object
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc  reference to gc_t (do not delete)
+ * @param[in] *ref_ast reference to ast_t (do not delete)
+ * @param[in] *name    pointer to C strings for identifier of variable
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_reserv(gc_t *ref_gc, ast_t *ref_ast, const char *name);
 
+/**
+ * construct module object (default constructor)
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc reference to gc_t (do not delete)
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
+object_t *
+obj_new_module(gc_t *ref_gc);
+
+/**
+ * construct module object by parameters
+ * if failed to allocate memory then exit from process
+ *
+ *
+ * @param[in] *ref_gc     reference to gc_t (do not delete)
+ * @param[in] *name       pointer to C strings for module name
+ * @param[in] *move_tkr   pointer to tokenizer_t (with move semantics)
+ * @param[in] *move_ast   pointer to ast_t (with move semantics)
+ * @param[in] *func_infos array of functions
+ *
+ * @return
+ */
 object_t *
 obj_new_module_by(
     gc_t *ref_gc,
@@ -180,27 +374,52 @@ obj_new_module_by(
     builtin_func_info_t *func_infos
 );
 
+/**
+ * object to string_t
+ *
+ * @param[in] *self
+ *
+ * @return pointer to string_t (new string_t)
+ * @return failed to NULL
+ */
 string_t *
 obj_to_str(const object_t *self);
 
 /**
  * various object convert to array object
+ *
+ * @param[in] *self
+ *
+ * @return success to pointer to array object (OBJ_TYPE_ARRAY)
+ * @return failed to NULL
  */
 object_t *
 obj_to_array(const object_t *self);
 
 /**
  * increment reference count of object
+ *
+ * @param[in] *self
  */
 void
 obj_inc_ref(object_t *self);
 
 /**
  * decrement reference count of object
+ *
+ * @param[in] *self
  */
 void
 obj_dec_ref(object_t *self);
 
+/**
+ * get reference of gc_item_t in object
+ *
+ * @param[in] *self
+ *
+ * @return reference to gc_item_t (do not delete)
+ * @return failed to NULL
+ */
 gc_item_t *
 obj_get_gc_item(object_t *self);
 
