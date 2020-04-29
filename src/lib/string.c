@@ -81,6 +81,13 @@ str_new_other(const string_t *other) {
 }
 
 string_t *
+str_new_cstr(const char *str) {
+    string_t *self = str_new();
+    str_set(self, str);
+    return self;
+}
+
+string_t *
 str_newother(const string_t *other) {
     if (!other) {
         return NULL;

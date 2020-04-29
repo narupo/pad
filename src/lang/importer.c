@@ -95,6 +95,7 @@ create_modobj(
         mem_move(ast),
         NULL
     );
+    printf("created modobj path[%s] ast[%p]\n", path, ast); // REMOVE
 
     free(src);
     return modobj;
@@ -122,6 +123,7 @@ importer_import_as(
     }
 
     ctx_pushb_stdout_buf(dstctx, ctx_getc_stdout_buf(modobj->module.ast->context));
+    ctx_pushb_stderr_buf(dstctx, ctx_getc_stderr_buf(modobj->module.ast->context));
     ctx_clear_buf(modobj->module.ast->context);
 
     object_dict_t *dst_global_varmap = ctx_get_varmap_at_global(dstctx);

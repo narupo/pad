@@ -8,19 +8,19 @@
 #include <lang/nodes.h>
 
 /**
- * get variable reference from varmap of current scope of context
+ * get reference of ast by owner object
  *
- * @param[in] *ast        pointer to ast_t
- * @param[in] *identifier strings
+ * @param[in] *default_ast default ast
  *
- * @return NULL | reference to object_t (DO NOT DELETE)
+ * @return default ast or owner's ast
  */
-object_t *
-get_var_ref(ast_t *ast, const char *identifier);
+ast_t *
+get_ast_by_owner(ast_t *default_ast);
 
 /**
  * pull-in reference of object by identifier object from varmap of current scope of context
  * return reference to variable
+ * if not found object then not push error stack and return NULL
  *
  * @param[in] *ast     pointer to ast_t
  * @param[in] *idn_obj identifier object
@@ -33,6 +33,7 @@ pull_in_ref_by(ast_t *ast, const object_t *idn_obj);
 /**
  * see at ast->ref_dot_owner
  * if ast has ref_dot_owner this function see it
+ * if not found object then not push error stack and return NULL
  *
  * @param[in] *ast
  * @param[in] *idn_obj

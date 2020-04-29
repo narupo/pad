@@ -71,6 +71,16 @@ string_t *
 str_new_other(const string_t *other);
 
 /**
+ * construct from C strings
+ *
+ * @param[in] *str pointer to C strings
+ *
+ * @return pointer to dynamic allocate memory of string
+ */
+string_t *
+str_new_cstr(const string_type_t *str);
+
+/**
  * @deprecated
  *
  * constring from other string

@@ -11384,7 +11384,7 @@ test_trv_ref_block_old(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_error_stack(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in ref block"));
     }
 
     /* tkr_parse(tkr, "{: alias(\"dtl\", \"run bin/date-line.py\") :}");
@@ -11468,11 +11468,53 @@ test_trv_assign_0(void) {
 static void
 test_trv_assign_1(void) {
 
-    return; // TODO
+    return;
 
     trv_ready;
 
     assert(solve_path(config->home_path, sizeof config->home_path, "."));
+/*
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/string.cap\" as string\n"
+    "@}{: string :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(module)"));
+    }
+*/
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/string.cap\" as string\n"
+    "   string.a = 1\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        trace();
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
+    }
+
+    trv_cleanup;
+    return;
+
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/string.cap\" as string\n"
+    "   string.a = 1\n"
+    "@}{: string :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        trace();
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(module)"));
+    }
+
+    return;
 
     tkr_parse(tkr, "{@\n"
     "   import \"/tests/lang/modules/string.cap\" as string\n"
@@ -11481,10 +11523,10 @@ test_trv_assign_1(void) {
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
-        ast_debug(trv_traverse(ast, ctx));
+        (trv_traverse(ast, ctx));
         trace();
-        assert(!ast_has_error_stack(ast));
         showbuf();
+        assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -16237,7 +16279,7 @@ test_trv_traverse(void) {
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
         assert(ast_has_error_stack(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in ref block"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -16253,7 +16295,8 @@ test_trv_traverse(void) {
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
         assert(ast_has_error_stack(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
+        trace();
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in ref block"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -16269,7 +16312,7 @@ test_trv_traverse(void) {
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
         assert(ast_has_error_stack(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in ref block"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -16285,7 +16328,7 @@ test_trv_traverse(void) {
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
         assert(ast_has_error_stack(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"c\" is not defined"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"c\" is not defined in ref block"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -18311,7 +18354,8 @@ test_trv_elif_stmt_4(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error_stack(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"i\" is not defined"));
+        trace();
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"i\" is not defined in extract obj"));
     }
 
     tkr_parse(tkr, "{@\n"

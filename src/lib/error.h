@@ -7,13 +7,13 @@
  */
 #pragma once
 
-#include <stdio.h> 
-#include <stdlib.h> 
-#include <stdarg.h> 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h> 
-#include <errno.h> 
+#include <string.h>
+#include <errno.h>
 #include <time.h>
 #include <ctype.h>
 #include <strings.h>
@@ -22,13 +22,13 @@
 
 /**
  * Write log
- * 
+ *
  * @param[in] *file string of file name
  * @param[in] line  number of line in file
  * @param[in] *func string of function name
  * @param[in] *type string of log tyoe
  * @param[in] *msg  string of log message
- * 
+ *
  * @return success to true
  * @return failed to false
  */
@@ -37,7 +37,7 @@ _log_unsafe(const char *file, long line, const char *func, const char *type, con
 
 /**
  * Write log
- * 
+ *
  * @param[in] type string of log type (examples 'error', 'debug', etc...)
  */
 #define err_log(type, ...) { \
@@ -48,7 +48,7 @@ _log_unsafe(const char *file, long line, const char *func, const char *type, con
 
 /**
  * Show error message and die (exit from proccess)
- * 
+ *
  * @param[in] *fmt string of format
  * @param[in] ... arguments of format
  */
@@ -57,7 +57,7 @@ err_die(const char *fmt, ...);
 
 /**
  * Show error message
- * 
+ *
  * @param[in] *fmt string of format
  * @param[in] ... arguments of format
  */
@@ -66,7 +66,7 @@ err_error(const char *fmt, ...);
 
 /**
  * Show warning message
- * 
+ *
  * @param[in] *fmt string of format
  * @param[in] ... arguments of format
  */
@@ -75,7 +75,7 @@ err_warn(const char *fmt, ...);
 
 /**
  * Show debug message
- * 
+ *
  * @param[in] *fmt string of format
  * @param[in] ... arguments of format
  */

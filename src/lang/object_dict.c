@@ -102,6 +102,7 @@ objdict_resize(object_dict_t *self, int32_t newcapa) {
 
 object_dict_t *
 objdict_move(object_dict_t *self, const char *key, struct object *move_value) {
+    // printf("objdict_move (%p) key (%s) val (%p)\n", self, key, move_value);
     if (!self || !key || !move_value) {
         return NULL;
     }
@@ -141,10 +142,12 @@ objdict_get(object_dict_t *self, const char *key) {
 
     for (int i = 0; i < self->len; ++i) {
         if (cstr_eq(self->map[i].key, key)) {
+            // printf("objdict_get (%p) key (%s) val (%p)\n", self, key, self->map[i].value);
             return &self->map[i];
         }
     }
 
+    // printf("objdict_get (%p) not found by (%s)\n", self, key);
     return NULL;
 }
 
