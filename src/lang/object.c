@@ -29,7 +29,7 @@ obj_del(object_t *self) {
     case OBJ_TYPE_NIL:
         // nothing todo
         break;
-    case OBJ_TYPE_INTEGER:
+    case OBJ_TYPE_INT:
         // nothing todo
         break;
     case OBJ_TYPE_BOOL:
@@ -104,7 +104,7 @@ obj_new_other(const object_t *other) {
     switch(other->type) {
     case OBJ_TYPE_NIL:
         break;
-    case OBJ_TYPE_INTEGER:
+    case OBJ_TYPE_INT:
         self->lvalue = other->lvalue;
         break;
     case OBJ_TYPE_BOOL:
@@ -234,7 +234,7 @@ obj_new_str(gc_t *ref_gc, string_t *move_str) {
 
 object_t *
 obj_new_int(gc_t *ref_gc, objint_t lvalue) {
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_INTEGER);
+    object_t *self = obj_new(ref_gc, OBJ_TYPE_INT);
 
     self->lvalue = lvalue;
 
@@ -341,7 +341,7 @@ obj_to_str(const object_t *self) {
         str_set(str, "nil");
         return str;
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         string_t *str = str_new();
         char buf[1024];
         str_appfmt(str, buf, sizeof buf, "%ld", self->lvalue);
@@ -461,6 +461,9 @@ obj_dump(const object_t *self, FILE *fout) {
 
     switch (self->type) {
     default: break;
+    case OBJ_TYPE_INT:
+        fprintf(fout, "object.lvalue[%ld]\n", self->lvalue);
+        break;
     case OBJ_TYPE_MODULE:
         fprintf(fout, "object.module.name[%s]\n", str_getc(self->module.name));
         break;
@@ -476,7 +479,7 @@ obj_type_to_str(const object_t *self) {
     case OBJ_TYPE_NIL:
         str_appfmt(s, tmp, sizeof tmp, "<%d: nil>", self->type);
         break;
-    case OBJ_TYPE_INTEGER:
+    case OBJ_TYPE_INT:
         str_appfmt(s, tmp, sizeof tmp, "<%d: int>", self->type);
         break;
     case OBJ_TYPE_BOOL:

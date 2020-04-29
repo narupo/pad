@@ -134,7 +134,7 @@ copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
         switch (idx->type) {
         default: err_die("invalid index type in get value of index obj"); break;
         case OBJ_TYPE_STRING: skey = str_getc(idx->string); break;
-        case OBJ_TYPE_INTEGER: ikey = idx->lvalue; break;
+        case OBJ_TYPE_INT: ikey = idx->lvalue; break;
         }
 
         if (operand->type == OBJ_TYPE_IDENTIFIER) {
@@ -157,7 +157,7 @@ copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
             obj_del(operand);
             break;
         case OBJ_TYPE_ARRAY: {
-            if (idx->type != OBJ_TYPE_INTEGER) {
+            if (idx->type != OBJ_TYPE_INT) {
                 ast_pushb_error(ast, "invalid array index value. value is not integer");
                 obj_del(operand);
                 return NULL;
@@ -175,7 +175,7 @@ copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
             tmp_operand = NULL;
         } break;
         case OBJ_TYPE_STRING: {
-            if (idx->type != OBJ_TYPE_INTEGER) {
+            if (idx->type != OBJ_TYPE_INT) {
                 ast_pushb_error(ast, "invalid string index value. value is not integer");
                 obj_del(operand);
                 return NULL;
@@ -307,7 +307,7 @@ refer_index_obj_with_ref(ast_t *ast, const object_t *index_obj) {
         switch (idx->type) {
         default: err_die("invalid index type in get value of index obj"); break;
         case OBJ_TYPE_STRING: skey = str_getc(idx->string); break;
-        case OBJ_TYPE_INTEGER: ikey = idx->lvalue; break;
+        case OBJ_TYPE_INT: ikey = idx->lvalue; break;
         }
 
         if (operand->type == OBJ_TYPE_IDENTIFIER) {
@@ -326,7 +326,7 @@ refer_index_obj_with_ref(ast_t *ast, const object_t *index_obj) {
             ast_pushb_error(ast, "invalid operand type (%d) in get value of index object", operand->type);
             break;
         case OBJ_TYPE_ARRAY: {
-            if (idx->type != OBJ_TYPE_INTEGER) {
+            if (idx->type != OBJ_TYPE_INT) {
                 ast_pushb_error(ast, "invalid array index value. value is not integer");
                 return NULL;
             }
@@ -339,7 +339,7 @@ refer_index_obj_with_ref(ast_t *ast, const object_t *index_obj) {
             operand = objarr_get(operand->objarr, ikey);
         } break;
         case OBJ_TYPE_STRING: {
-            if (idx->type != OBJ_TYPE_INTEGER) {
+            if (idx->type != OBJ_TYPE_INT) {
                 ast_pushb_error(ast, "invalid string index value. value is not integer");
                 return NULL;
             }

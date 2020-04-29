@@ -250,7 +250,7 @@ trv_ref_block(ast_t *ast, const node_t *node, int dep) {
     case OBJ_TYPE_NIL:
         ctx_pushb_stdout_buf(ast->context, "nil");
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         char n[1024]; // very large
         snprintf(n, sizeof n, "%ld", result->lvalue);
         ctx_pushb_stdout_buf(ast->context, n);
@@ -644,7 +644,7 @@ trv_parse_bool(ast_t *ast, const object_t *obj) {
     switch (obj->type) {
     default: return true; break;
     case OBJ_TYPE_NIL: return false; break;
-    case OBJ_TYPE_INTEGER: return obj->lvalue; break;
+    case OBJ_TYPE_INT: return obj->lvalue; break;
     case OBJ_TYPE_BOOL: return obj->boolean; break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = str_getc(obj->identifier);
@@ -1006,7 +1006,7 @@ trv_obj_to_index_value(ast_t *ast, index_value_t *idxval, const object_t *obj) {
         obj_del(delme);
         return NULL;
         break;
-    case OBJ_TYPE_INTEGER:
+    case OBJ_TYPE_INT:
         idxval->type = 'i';
         idxval->ikey = src->lvalue;
         break;
@@ -1519,7 +1519,7 @@ trv_roll_identifier_rhs(
 static object_t *
 trv_compare_or_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
-    assert(lhs->type == OBJ_TYPE_INTEGER);
+    assert(lhs->type == OBJ_TYPE_INT);
 
     switch (rhs->type) {
     default: {
@@ -1548,7 +1548,7 @@ trv_compare_or_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs->lvalue && rhs->lvalue) {
             obj = obj_new_other(lhs);
@@ -1672,7 +1672,7 @@ trv_compare_or_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs->boolean && rhs->lvalue) {
             obj = obj_new_other(lhs);
@@ -1798,7 +1798,7 @@ trv_compare_or_string(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (slen && rhs->lvalue) {
             obj = obj_new_other(lhs);
@@ -1919,7 +1919,7 @@ trv_compare_or_array(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         return_trav(obj);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (arrlen && rhs->lvalue) {
             obj = obj_new_other(lhs);
@@ -2040,7 +2040,7 @@ trv_compare_or_dict(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         return_trav(obj);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (dictlen && rhs->lvalue) {
             obj = obj_new_other(lhs);
@@ -2192,7 +2192,7 @@ trv_compare_or_func(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs && rhs->lvalue) {
             obj = obj_new_other(lhs);
@@ -2309,7 +2309,7 @@ trv_compare_or_module(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs && rhs->lvalue) {
             obj = obj_new_other(lhs);
@@ -2405,7 +2405,7 @@ trv_compare_or(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
         object_t *obj = trv_compare_or_nil(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         check("call trv_compare_or_int");
         object_t *obj = trv_compare_or_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
@@ -2506,7 +2506,7 @@ trv_or_test(ast_t *ast, const node_t *node, int dep) {
 static object_t *
 trv_compare_and_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
-    assert(lhs->type == OBJ_TYPE_INTEGER);
+    assert(lhs->type == OBJ_TYPE_INT);
 
     switch (rhs->type) {
     default: {
@@ -2535,7 +2535,7 @@ trv_compare_and_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs->lvalue && rhs->lvalue) {
             obj = obj_new_other(rhs);
@@ -2653,7 +2653,7 @@ trv_compare_and_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs->boolean && rhs->lvalue) {
             obj = obj_new_other(rhs);
@@ -2773,7 +2773,7 @@ trv_compare_and_string(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (slen && rhs->lvalue) {
             obj = obj_new_other(rhs);
@@ -2884,7 +2884,7 @@ trv_compare_and_array(ast_t *ast, const object_t *lhs, const object_t *rhs, int 
         object_t *obj = obj_new_other(rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (arrlen && rhs->lvalue) {
             obj = obj_new_other(rhs);
@@ -2995,7 +2995,7 @@ trv_compare_and_dict(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         object_t *obj = obj_new_other(rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (dictlen && rhs->lvalue) {
             obj = obj_new_other(rhs);
@@ -3135,7 +3135,7 @@ trv_compare_and_func(ast_t *ast, const object_t *lhs, const object_t *rhs, int d
         object_t *obj = obj_new_other(rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs && rhs->lvalue) {
             obj = obj_new_other(rhs);
@@ -3244,7 +3244,7 @@ trv_compare_and_module(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         object_t *obj = obj_new_other(rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs && rhs->lvalue) {
             obj = obj_new_other(rhs);
@@ -3340,7 +3340,7 @@ trv_compare_and(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
         object_t *obj = trv_compare_and_nil(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         check("call trv_compare_and_int");
         object_t *obj = trv_compare_and_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
@@ -3452,7 +3452,7 @@ trv_compare_not(ast_t *ast, const object_t *operand, int dep) {
         object_t *obj = obj_new_bool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, !operand->lvalue);
         return_trav(obj);
     } break;
@@ -3528,7 +3528,7 @@ trv_not_test(ast_t *ast, const node_t *node, int dep) {
 static object_t *
 trv_compare_comparison_eq_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
-    assert(lhs->type == OBJ_TYPE_INTEGER);
+    assert(lhs->type == OBJ_TYPE_INT);
 
     switch (rhs->type) {
     default:
@@ -3539,7 +3539,7 @@ trv_compare_comparison_eq_int(ast_t *ast, const object_t *lhs, const object_t *r
         object_t *obj = obj_new_bool(ast->ref_gc, false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue == rhs->lvalue);
         return_trav(obj);
     } break;
@@ -3582,7 +3582,7 @@ trv_compare_comparison_eq_bool(ast_t *ast, const object_t *lhs, const object_t *
         object_t *obj = obj_new_bool(ast->ref_gc, false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean == rhs->lvalue);
         return_trav(obj);
     } break;
@@ -3828,7 +3828,7 @@ trv_compare_comparison_eq(ast_t *ast, const object_t *lhs, const object_t *rhs, 
         object_t *obj = trv_compare_comparison_eq_nil(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         check("call trv_compare_comparison_eq_int");
         object_t *obj = trv_compare_comparison_eq_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
@@ -3886,7 +3886,7 @@ trv_compare_comparison_eq(ast_t *ast, const object_t *lhs, const object_t *rhs, 
 static object_t *
 trv_compare_comparison_not_eq_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
-    assert(lhs->type == OBJ_TYPE_INTEGER);
+    assert(lhs->type == OBJ_TYPE_INT);
 
     switch (rhs->type) {
     default:
@@ -3897,7 +3897,7 @@ trv_compare_comparison_not_eq_int(ast_t *ast, const object_t *lhs, const object_
         object_t *obj = obj_new_bool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue != rhs->lvalue);
         return_trav(obj);
     } break;
@@ -3936,7 +3936,7 @@ trv_compare_comparison_not_eq_bool(ast_t *ast, const object_t *lhs, const object
         ast_pushb_error(ast, "can't compare not equal with bool");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean != rhs->lvalue);
         return_trav(obj);
     } break;
@@ -4172,7 +4172,7 @@ trv_compare_comparison_not_eq(ast_t *ast, const object_t *lhs, const object_t *r
         object_t *obj = trv_compare_comparison_not_eq_nil(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         check("call trv_compare_comparison_not_eq_int");
         object_t *obj = trv_compare_comparison_not_eq_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
@@ -4235,14 +4235,14 @@ trv_compare_comparison_not_eq(ast_t *ast, const object_t *lhs, const object_t *r
 static object_t *
 trv_compare_comparison_lte_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
-    assert(lhs->type == OBJ_TYPE_INTEGER);
+    assert(lhs->type == OBJ_TYPE_INT);
 
     switch (rhs->type) {
     default:
         ast_pushb_error(ast, "can't compare lte with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue <= rhs->lvalue);
         return_trav(obj);
     } break;
@@ -4281,7 +4281,7 @@ trv_compare_comparison_lte_bool(ast_t *ast, const object_t *lhs, const object_t 
         ast_pushb_error(ast, "can't compare lte with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean <= rhs->lvalue);
         return_trav(obj);
     } break;
@@ -4319,7 +4319,7 @@ trv_compare_comparison_lte(ast_t *ast, const object_t *lhs, const object_t *rhs,
         ast_pushb_error(ast, "can't compare with lte");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         check("call trv_compare_comparison_lte_int");
         object_t *obj = trv_compare_comparison_lte_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
@@ -4353,14 +4353,14 @@ trv_compare_comparison_lte(ast_t *ast, const object_t *lhs, const object_t *rhs,
 static object_t *
 trv_compare_comparison_gte_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
-    assert(lhs->type == OBJ_TYPE_INTEGER);
+    assert(lhs->type == OBJ_TYPE_INT);
 
     switch (rhs->type) {
     default:
         ast_pushb_error(ast, "can't compare gte with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue >= rhs->lvalue);
         return_trav(obj);
     } break;
@@ -4399,7 +4399,7 @@ trv_compare_comparison_gte_bool(ast_t *ast, const object_t *lhs, const object_t 
         ast_pushb_error(ast, "can't compare gte with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean >= rhs->lvalue);
         return_trav(obj);
     } break;
@@ -4437,7 +4437,7 @@ trv_compare_comparison_gte(ast_t *ast, const object_t *lhs, const object_t *rhs,
         ast_pushb_error(ast, "can't compare with gte");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         check("call trv_compare_comparison_gte_int");
         object_t *obj = trv_compare_comparison_gte_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
@@ -4471,14 +4471,14 @@ trv_compare_comparison_gte(ast_t *ast, const object_t *lhs, const object_t *rhs,
 static object_t *
 trv_compare_comparison_lt_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
-    assert(lhs->type == OBJ_TYPE_INTEGER);
+    assert(lhs->type == OBJ_TYPE_INT);
 
     switch (rhs->type) {
     default:
         ast_pushb_error(ast, "can't compare lt with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue < rhs->lvalue);
         return_trav(obj);
     } break;
@@ -4517,7 +4517,7 @@ trv_compare_comparison_lt_bool(ast_t *ast, const object_t *lhs, const object_t *
         ast_pushb_error(ast, "can't compare lt with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean < rhs->lvalue);
         return_trav(obj);
     } break;
@@ -4555,7 +4555,7 @@ trv_compare_comparison_lt(ast_t *ast, const object_t *lhs, const object_t *rhs, 
         ast_pushb_error(ast, "can't compare with lt");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         check("call trv_compare_comparison_lt_int");
         object_t *obj = trv_compare_comparison_lt_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
@@ -4589,14 +4589,14 @@ trv_compare_comparison_lt(ast_t *ast, const object_t *lhs, const object_t *rhs, 
 static object_t *
 trv_compare_comparison_gt_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
-    assert(lhs->type == OBJ_TYPE_INTEGER);
+    assert(lhs->type == OBJ_TYPE_INT);
 
     switch (rhs->type) {
     default:
         ast_pushb_error(ast, "can't compare gt with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue > rhs->lvalue);
         return_trav(obj);
     } break;
@@ -4635,7 +4635,7 @@ trv_compare_comparison_gt_bool(ast_t *ast, const object_t *lhs, const object_t *
         ast_pushb_error(ast, "can't compare gt with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean > rhs->lvalue);
         return_trav(obj);
     } break;
@@ -4673,7 +4673,7 @@ trv_compare_comparison_gt(ast_t *ast, const object_t *lhs, const object_t *rhs, 
         ast_pushb_error(ast, "can't compare with gt");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         check("call trv_compare_comparison_gt_int");
         object_t *obj = trv_compare_comparison_gt_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
@@ -4803,14 +4803,14 @@ trv_comparison(ast_t *ast, const node_t *node, int dep) {
 static object_t *
 trv_calc_expr_add_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
-    assert(lhs->type == OBJ_TYPE_INTEGER);
+    assert(lhs->type == OBJ_TYPE_INT);
 
     switch (rhs->type) {
     default:
         ast_pushb_error(ast, "can't add with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue + rhs->lvalue);
         return_trav(obj);
     } break;
@@ -4849,7 +4849,7 @@ trv_calc_expr_add_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         ast_pushb_error(ast, "can't add with bool");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean + rhs->lvalue);
         return_trav(obj);
     } break;
@@ -4925,7 +4925,7 @@ trv_calc_expr_add(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep)
         ast_pushb_error(ast, "can't add");
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         check("call trv_calc_expr_add_int");
         object_t *obj = trv_calc_expr_add_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
@@ -4964,14 +4964,14 @@ trv_calc_expr_add(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep)
 static object_t *
 trv_calc_expr_sub_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
-    assert(lhs->type == OBJ_TYPE_INTEGER);
+    assert(lhs->type == OBJ_TYPE_INT);
 
     switch (rhs->type) {
     default:
         ast_pushb_error(ast, "can't sub with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue - rhs->lvalue);
         return_trav(obj);
     } break;
@@ -5010,7 +5010,7 @@ trv_calc_expr_sub_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         ast_pushb_error(ast, "can't sub with bool");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean - rhs->lvalue);
         return_trav(obj);
     } break;
@@ -5048,7 +5048,7 @@ trv_calc_expr_sub(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep)
         ast_pushb_error(ast, "can't sub");
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         check("call trv_calc_expr_sub_int");
         object_t *obj = trv_calc_expr_sub_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
@@ -5165,14 +5165,14 @@ mul_string_object(ast_t *ast, const string_t *s, int32_t n) {
 static object_t *
 trv_calc_term_mul_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
-    assert(lhs->type == OBJ_TYPE_INTEGER);
+    assert(lhs->type == OBJ_TYPE_INT);
 
     switch (rhs->type) {
     default:
         ast_pushb_error(ast, "can't mul with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue * rhs->lvalue);
         return_trav(obj);
     } break;
@@ -5215,7 +5215,7 @@ trv_calc_term_mul_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         ast_pushb_error(ast, "can't mul with bool");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean * rhs->lvalue);
         return_trav(obj);
     } break;
@@ -5254,7 +5254,7 @@ trv_calc_term_mul_string(ast_t *ast, const object_t *lhs, const object_t *rhs, i
         ast_pushb_error(ast, "can't mul with string");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *obj = mul_string_object(ast, lhs->string, rhs->lvalue);
         return_trav(obj);
     } break;
@@ -5291,7 +5291,7 @@ trv_calc_term_mul(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep)
         ast_pushb_error(ast, "can't mul");
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         check("call trv_calc_term_mul_int");
         object_t *obj = trv_calc_term_mul_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
@@ -5330,14 +5330,14 @@ trv_calc_term_mul(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep)
 static object_t *
 trv_calc_term_div_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
     tready();
-    assert(lhs->type == OBJ_TYPE_INTEGER);
+    assert(lhs->type == OBJ_TYPE_INT);
 
     switch (rhs->type) {
     default:
         ast_pushb_error(ast, "can't division with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         if (!rhs->lvalue) {
             ast_pushb_error(ast, "zero division error");
             return_trav(NULL);
@@ -5384,7 +5384,7 @@ trv_calc_term_div_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int
         ast_pushb_error(ast, "can't division with bool");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER:
+    case OBJ_TYPE_INT:
         if (!rhs->lvalue) {
             ast_pushb_error(ast, "zero division error (3)");
             return_trav(NULL);
@@ -5426,7 +5426,7 @@ trv_calc_term_div(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep)
         ast_pushb_error(ast, "can't division");
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         check("call trv_calc_term_div_int");
         object_t *obj = trv_calc_term_div_int(ast, lhs, rhs, dep+1);
         return_trav(obj);
@@ -5556,7 +5556,7 @@ trv_negative(ast_t *ast, const node_t *node, int dep) {
         }
         return operand;
     break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         if (negative->is_negative) {
             object_t *obj = obj_new_int(ast->ref_gc, -operand->lvalue);
             return_trav(obj);
@@ -5886,14 +5886,14 @@ trv_calc_asscalc_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
 static object_t *
 trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, object_t *ref_lhs, object_t *rhs, int dep) {
     tready();
-    assert(ref_lhs->type == OBJ_TYPE_INTEGER);
+    assert(ref_lhs->type == OBJ_TYPE_INT);
 
     switch (rhs->type) {
     default:
         ast_pushb_error(ast, "invalid right hand operand (%d)", rhs->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         ref_lhs->lvalue += rhs->lvalue;
         return_trav(ref_lhs);
     } break;
@@ -5956,7 +5956,7 @@ trv_calc_asscalc_add_ass_identifier(ast_t *ast, object_t *lhs, object_t *rhs, in
         ast_pushb_error(ast, "invalid left hand operand (%d)", lhsref->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         check("call trv_calc_asscalc_add_ass_identifier_int");
         result = trv_calc_asscalc_add_ass_identifier_int(ast, lhsref, rhs, dep+1);
     } break;
@@ -5996,7 +5996,7 @@ trv_calc_asscalc_add_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
 static object_t *
 trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     tready();
-    assert(lhs->type == OBJ_TYPE_INTEGER);
+    assert(lhs->type == OBJ_TYPE_INT);
 
     object_t *rhsref = extract_ref_of_obj(ast, rhs);
     if (ast_has_error_stack(ast)) {
@@ -6009,7 +6009,7 @@ trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, object_t *lhs, object_t *rhs, int d
         ast_pushb_error(ast, "invalid right hand operand type (%d)", rhsref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         lhs->lvalue -= rhsref->lvalue;
         return_trav(lhs);
     } break;
@@ -6039,7 +6039,7 @@ trv_calc_asscalc_sub_ass_idn(ast_t *ast, object_t *lhs, object_t *rhs, int dep) 
         ast_pushb_error(ast, "invalid left hand operand type (%d)", lhs->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         object_t *result = trv_calc_asscalc_sub_ass_idn_int(ast, lhsref, rhs, dep+1);
         return_trav(result);
     } break;
@@ -6072,7 +6072,7 @@ trv_calc_asscalc_sub_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
 static object_t *
 trv_calc_asscalc_mul_ass_int(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     tready();
-    assert(lhs->type == OBJ_TYPE_INTEGER);
+    assert(lhs->type == OBJ_TYPE_INT);
 
     object_t *rhsref = extract_ref_of_obj(ast, rhs);
     if (ast_has_error_stack(ast)) {
@@ -6085,12 +6085,12 @@ trv_calc_asscalc_mul_ass_int(ast_t *ast, object_t *lhs, object_t *rhs, int dep) 
         ast_pushb_error(ast, "invalid right hand operand (%d)", rhsref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         lhs->lvalue *= rhsref->lvalue;
         return_trav(lhs);
     } break;
     case OBJ_TYPE_BOOL: {
-        lhs->lvalue *= (objint_t) rhsref->lvalue;
+        lhs->lvalue *= (objint_t) rhsref->boolean;
         return_trav(lhs);
     } break;
     }
@@ -6115,13 +6115,15 @@ trv_calc_asscalc_mul_ass_string(ast_t *ast, object_t *lhs, object_t *rhs, int de
         ast_pushb_error(ast, "invalid right hand operand (%d)", rhsref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         if (rhsref->lvalue <= 0) {
             str_clear(lhs->string);
         } else {
-            for (objint_t i = 0; i < rhsref->lvalue; ++i) {
-                str_app(lhs->string, str_getc(lhs->string));
+            string_t *other = str_new_other(lhs->string);
+            for (objint_t i = 0; i < rhsref->lvalue-1; ++i) {
+                str_appother(lhs->string, other);
             }
+            str_del(other);
         }
         return_trav(lhs);
     } break;
@@ -6141,6 +6143,11 @@ static object_t *
 trv_calc_asscalc_mul_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     tready();
 
+    if (lhs->type != OBJ_TYPE_IDENTIFIER) {
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
+        return_trav(NULL);
+    }
+
     object_t *lhsref = extract_ref_of_obj(ast, lhs);
     if (ast_has_error_stack(ast)) {
         ast_pushb_error(ast, "failed to extract reference");
@@ -6152,7 +6159,7 @@ trv_calc_asscalc_mul_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
         ast_pushb_error(ast, "invalid left hand operand (%d)", lhsref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         check("call trv_calc_asscalc_mul_ass_int");
         object_t *result = trv_calc_asscalc_mul_ass_int(ast, lhsref, rhs, dep+1);
         return_trav(result);
@@ -6160,6 +6167,124 @@ trv_calc_asscalc_mul_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     case OBJ_TYPE_STRING: {
         check("call trv_calc_asscalc_mul_ass_string");
         object_t *result = trv_calc_asscalc_mul_ass_string(ast, lhsref, rhs, dep+1);
+        return_trav(result);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_div_ass_int(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_INT);
+
+    object_t *rhsref = extract_ref_of_obj(ast, rhs);
+    if (ast_has_error_stack(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (rhsref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid right hand operand (%d)", rhsref->type);
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_INT: {
+        if (rhsref->lvalue == 0) {
+            ast_pushb_error(ast, "zero division error");
+            return_trav(NULL);
+        }
+
+        lhs->lvalue /= rhsref->lvalue;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        if (!rhsref->boolean) {
+            ast_pushb_error(ast, "zero division error");
+            return_trav(NULL);
+        }
+
+        lhs->lvalue /= (objint_t) rhsref->boolean;
+        return_trav(lhs);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_div_ass_bool(ast_t *ast, object_t* lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    object_t *rhsref = extract_ref_of_obj(ast, rhs);
+    if (ast_has_error_stack(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (rhsref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid right hand operand");
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_INT: {
+        if (rhsref->lvalue == 0) {
+            ast_pushb_error(ast, "zero division error");
+            return_trav(NULL);
+        }
+
+        objint_t result = ((objint_t)lhs->boolean) / rhsref->lvalue;
+        lhs->type = OBJ_TYPE_INT;
+        lhs->lvalue = result;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        if (!rhsref->boolean) {
+            ast_pushb_error(ast, "zero division error");
+            return_trav(NULL);
+        }
+
+        objint_t result = ((objint_t)lhs->boolean) / ((objint_t)rhsref->boolean);
+        lhs->type = OBJ_TYPE_INT;
+        lhs->lvalue = result;
+        return_trav(lhs);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_div_ass(ast_t *ast, object_t* lhs, object_t *rhs, int dep) {
+    tready();
+
+    if (lhs->type != OBJ_TYPE_IDENTIFIER) {
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
+        return_trav(NULL);
+    }
+
+    object_t *lhsref = extract_ref_of_obj(ast, lhs);
+    if (ast_has_error_stack(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (lhsref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid left hand operand");
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *result = trv_calc_asscalc_div_ass_bool(ast, lhsref, rhs, dep+1);
+        return_trav(result);
+    } break;
+    case OBJ_TYPE_INT: {
+        object_t *result = trv_calc_asscalc_div_ass_int(ast, lhsref, rhs, dep+1);
         return_trav(result);
     } break;
     }
@@ -6184,14 +6309,16 @@ trv_calc_asscalc(ast_t *ast, object_t *lhs, const node_augassign_t *augassign, o
         object_t *obj = trv_calc_asscalc_sub_ass(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
-    case OP_MUL_ASS:
+    case OP_MUL_ASS: {
         check("call trv_calc_asscalc_mul_ass");
         object_t *obj = trv_calc_asscalc_mul_ass(ast, lhs, rhs, dep+1);
         return_trav(obj);
-        break;
-    case OP_DIV_ASS:
-        err_die("TODO: div ass");
-        break;
+    } break;
+    case OP_DIV_ASS: {
+        check("call trv_calc_asscalc_div_ass");
+        object_t *obj = trv_calc_asscalc_div_ass(ast, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
     }
 
     assert(0 && "impossible. failed to calc asscalc");

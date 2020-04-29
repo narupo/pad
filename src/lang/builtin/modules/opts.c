@@ -63,7 +63,7 @@ builtin_opts_args(ast_t *ast, object_t *actual_args) {
     }
 
     const object_t *arg = objarr_getc(args, 0);
-    if (arg->type != OBJ_TYPE_INTEGER) {
+    if (arg->type != OBJ_TYPE_INT) {
         ast_pushb_error(ast, "invalid argument type. argument is not int");
         return NULL;
     }
