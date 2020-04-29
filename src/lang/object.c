@@ -437,3 +437,76 @@ gc_item_t *
 obj_get_gc_item(object_t *self) {
     return &self->gc_item;
 }
+
+void
+obj_dump(const object_t *self, FILE *fout) {
+    if (!fout) {
+        return;
+    }
+
+    if (!self) {
+        fprintf(fout, "object[null]\n");
+        return;
+    }
+
+    string_t *s = obj_to_str(self);
+    string_t *typ = obj_type_to_str(self);
+
+    fprintf(fout, "object[%p]\n", self);
+    fprintf(fout, "object.type[%s]\n", str_getc(typ));
+    fprintf(fout, "object.to_str[%s]\n", str_getc(s));
+
+    str_del(s);
+    str_del(typ);
+
+    switch (self->type) {
+    default: break;
+    case OBJ_TYPE_MODULE:
+        fprintf(fout, "object.module.name[%s]\n", str_getc(self->module.name));
+        break;
+    }
+}
+
+string_t *
+obj_type_to_str(const object_t *self) {
+    string_t *s = str_new();
+    char tmp[256];
+
+    switch (self->type) {
+    case OBJ_TYPE_NIL:
+        str_appfmt(s, tmp, sizeof tmp, "<%d: nil>", self->type);
+        break;
+    case OBJ_TYPE_INTEGER:
+        str_appfmt(s, tmp, sizeof tmp, "<%d: int>", self->type);
+        break;
+    case OBJ_TYPE_BOOL:
+        str_appfmt(s, tmp, sizeof tmp, "<%d: bool>", self->type);
+        break;
+    case OBJ_TYPE_IDENTIFIER:
+        str_appfmt(s, tmp, sizeof tmp, "<%d: identifier>", self->type);
+        break;
+    case OBJ_TYPE_STRING:
+        str_appfmt(s, tmp, sizeof tmp, "<%d: string>", self->type);
+        break;
+    case OBJ_TYPE_ARRAY:
+        str_appfmt(s, tmp, sizeof tmp, "<%d: array>", self->type);
+        break;
+    case OBJ_TYPE_DICT:
+        str_appfmt(s, tmp, sizeof tmp, "<%d: dict>", self->type);
+        break;
+    case OBJ_TYPE_FUNC:
+        str_appfmt(s, tmp, sizeof tmp, "<%d: func>", self->type);
+        break;
+    case OBJ_TYPE_INDEX:
+        str_appfmt(s, tmp, sizeof tmp, "<%d: index>", self->type);
+        break;
+    case OBJ_TYPE_MODULE:
+        str_appfmt(s, tmp, sizeof tmp, "<%d: module>", self->type);
+        break;
+    case OBJ_TYPE_RESERV:
+        str_appfmt(s, tmp, sizeof tmp, "<%d: reservation>", self->type);
+        break;
+    }
+
+    return s;
+}

@@ -147,7 +147,16 @@ ast_set_debug(ast_t *self, bool debug);
  * trace error stack at stream
  *
  * @param[in] *self
- * @param[in] *fout
+ * @param[in] *fout stream
  */
 void
 ast_trace_error_stack(const ast_t *self, FILE *fout);
+
+/**
+ * dump ast_t at stream
+ *
+ * @param[in] *self
+ * @param[in] *fout stream
+ */
+void
+ast_dump(const ast_t *self, FILE *fout);

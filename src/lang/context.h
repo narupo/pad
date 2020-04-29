@@ -294,3 +294,12 @@ ctx_swap_stdout_buf(context_t *self, string_t *stdout_buf);
  */
 string_t *
 ctx_swap_stderr_buf(context_t *self, string_t *stderr_buf);
+
+/**
+ * dump context_t at stream
+ *
+ * @param[in] *self
+ * @param[in] *fout stream
+ */
+void
+ctx_dump(const context_t *self, FILE *fout);

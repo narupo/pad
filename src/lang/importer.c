@@ -95,7 +95,6 @@ create_modobj(
         mem_move(ast),
         NULL
     );
-    printf("created modobj path[%s] ast[%p]\n", path, ast); // REMOVE
 
     free(src);
     return modobj;

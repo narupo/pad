@@ -203,3 +203,22 @@ obj_dec_ref(object_t *self);
 
 gc_item_t *
 obj_get_gc_item(object_t *self);
+
+/**
+ * dump object_t at stream
+ *
+ * @param[in] *self
+ * @param[in] *fout stream
+ */
+void
+obj_dump(const object_t *self, FILE *fout);
+
+/**
+ * object type to string
+ *
+ * @param[in] *self
+ *
+ * @return pointer to new string_t
+ */
+string_t *
+obj_type_to_str(const object_t *self);

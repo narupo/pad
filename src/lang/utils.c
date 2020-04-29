@@ -16,7 +16,9 @@ again:
         return owner->module.ast;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        owner = pull_in_ref_by_owner(default_ast, owner);
+        // do not use pull_in_ref_by_owner
+        // find owner object from current scope of ast
+        owner = pull_in_ref_by(default_ast, owner);
         if (!owner) {
             return default_ast;
         }
@@ -53,8 +55,7 @@ again:
     switch (owner->type) {
     default: break;
     case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = str_getc(owner->identifier);
-        owner = ctx_find_var_ref(ast->context, idn);
+        owner = pull_in_ref_by(ast, owner);
         if (!owner) {
             // do not push error stack
             return NULL;

@@ -61,10 +61,19 @@ objdict_getc_index(const object_dict_t *self, int32_t index);
  * pop object from object dict
  *
  * @param[in] *self
- * @param[in] *key
+ * @param[in] *key  key of strings
  *
  * @return found to return pointer to object_t
  * @return not found to return NULL
  */
 object_t *
 objdict_pop(object_dict_t *self, const char *key);
+
+/**
+ * dump object_dict_t at stream
+ *
+ * @param[in] *self
+ * @param[in] *fout stream
+ */
+void
+objdict_dump(const object_dict_t *self, FILE *fout);
