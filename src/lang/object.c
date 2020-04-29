@@ -159,6 +159,10 @@ obj_new_other(const object_t *other) {
 
 object_t *
 obj_new(gc_t *ref_gc, obj_type_t type) {
+    if (!ref_gc) {
+        return NULL;
+    }
+
     gc_item_t gc_item = {0};
     gc_alloc(ref_gc, &gc_item, sizeof(object_t));
 
@@ -172,13 +176,28 @@ obj_new(gc_t *ref_gc, obj_type_t type) {
 
 object_t *
 obj_new_nil(gc_t *ref_gc) {
+    if (!ref_gc) {
+        return NULL;
+    }
+
     object_t *self = obj_new(ref_gc, OBJ_TYPE_NIL);
+    if (!self) {
+        return NULL;
+    }
+
     return self;
 }
 
 object_t *
 obj_new_false(gc_t *ref_gc) {
+    if (!ref_gc) {
+        return NULL;
+    }
+
     object_t *self = obj_new(ref_gc, OBJ_TYPE_BOOL);
+    if (!self) {
+        return NULL;
+    }
 
     self->boolean = false;
 
@@ -187,7 +206,14 @@ obj_new_false(gc_t *ref_gc) {
 
 object_t *
 obj_new_true(gc_t *ref_gc) {
+    if (!ref_gc) {
+        return NULL;
+    }
+
     object_t *self = obj_new(ref_gc, OBJ_TYPE_BOOL);
+    if (!self) {
+        return NULL;
+    }
 
     self->boolean = true;
 
@@ -196,7 +222,14 @@ obj_new_true(gc_t *ref_gc) {
 
 object_t *
 obj_new_cidentifier(gc_t *ref_gc, const char *identifier) {
+    if (!ref_gc || !identifier) {
+        return NULL;
+    }
+
     object_t *self = obj_new(ref_gc, OBJ_TYPE_IDENTIFIER);
+    if (!self) {
+        return NULL;
+    }
 
     self->identifier = str_new();
     str_set(self->identifier, identifier);
@@ -206,7 +239,14 @@ obj_new_cidentifier(gc_t *ref_gc, const char *identifier) {
 
 object_t *
 obj_new_identifier(gc_t *ref_gc, string_t *move_identifier) {
+    if (!ref_gc || !move_identifier) {
+        return NULL;
+    }
+
     object_t *self = obj_new(ref_gc, OBJ_TYPE_STRING);
+    if (!self) {
+        return NULL;
+    }
 
     self->identifier = move_identifier;
 
@@ -215,7 +255,14 @@ obj_new_identifier(gc_t *ref_gc, string_t *move_identifier) {
 
 object_t *
 obj_new_cstr(gc_t *ref_gc, const char *str) {
+    if (!ref_gc || !str) {
+        return NULL;
+    }
+
     object_t *self = obj_new(ref_gc, OBJ_TYPE_STRING);
+    if (!self) {
+        return NULL;
+    }
 
     self->string = str_new();
     str_set(self->string, str);
@@ -225,7 +272,14 @@ obj_new_cstr(gc_t *ref_gc, const char *str) {
 
 object_t *
 obj_new_str(gc_t *ref_gc, string_t *move_str) {
+    if (!ref_gc || !move_str) {
+        return NULL;
+    }
+
     object_t *self = obj_new(ref_gc, OBJ_TYPE_STRING);
+    if (!self) {
+        return NULL;
+    }
 
     self->string = move_str;
 
@@ -234,7 +288,14 @@ obj_new_str(gc_t *ref_gc, string_t *move_str) {
 
 object_t *
 obj_new_int(gc_t *ref_gc, objint_t lvalue) {
+    if (!ref_gc) {
+        return NULL;
+    }
+
     object_t *self = obj_new(ref_gc, OBJ_TYPE_INT);
+    if (!self) {
+        return NULL;
+    }
 
     self->lvalue = lvalue;
 
@@ -243,7 +304,14 @@ obj_new_int(gc_t *ref_gc, objint_t lvalue) {
 
 object_t *
 obj_new_bool(gc_t *ref_gc, bool boolean) {
+    if (!ref_gc) {
+        return NULL;
+    }
+
     object_t *self = obj_new(ref_gc, OBJ_TYPE_BOOL);
+    if (!self) {
+        return NULL;
+    }
 
     self->boolean = boolean;
 
@@ -252,7 +320,14 @@ obj_new_bool(gc_t *ref_gc, bool boolean) {
 
 object_t *
 obj_new_array(gc_t *ref_gc, object_array_t *move_objarr) {
+    if (!ref_gc || !move_objarr) {
+        return NULL;
+    }
+
     object_t *self = obj_new(ref_gc, OBJ_TYPE_ARRAY);
+    if (!self) {
+        return NULL;
+    }
 
     self->objarr = mem_move(move_objarr);
 
@@ -261,7 +336,14 @@ obj_new_array(gc_t *ref_gc, object_array_t *move_objarr) {
 
 object_t *
 obj_new_dict(gc_t *ref_gc, object_dict_t *move_objdict) {
+    if (!ref_gc || !move_objdict) {
+        return NULL;
+    }
+
     object_t *self = obj_new(ref_gc, OBJ_TYPE_DICT);
+    if (!self) {
+        return NULL;
+    }
 
     self->objdict = mem_move(move_objdict);
 
@@ -270,7 +352,14 @@ obj_new_dict(gc_t *ref_gc, object_dict_t *move_objdict) {
 
 object_t *
 obj_new_func(gc_t *ref_gc, ast_t *ref_ast, object_t *move_name, object_t *move_args, node_array_t *ref_suites) {
+    if (!ref_gc || !ref_ast || !move_name || !move_args || !ref_suites) {
+        return NULL;
+    }
+
     object_t *self = obj_new(ref_gc, OBJ_TYPE_FUNC);
+    if (!self) {
+        return NULL;
+    }
 
     self->func.ref_ast = ref_ast;  // do not delete
     self->func.name = mem_move(move_name);
@@ -282,11 +371,14 @@ obj_new_func(gc_t *ref_gc, ast_t *ref_ast, object_t *move_name, object_t *move_a
 
 object_t *
 obj_new_index(gc_t *ref_gc, object_t *move_operand, object_array_t *move_indices) {
-    if (!move_operand || !move_indices) {
+    if (!ref_gc || !move_operand || !move_indices) {
         return NULL;
     }
 
     object_t *self = obj_new(ref_gc, OBJ_TYPE_INDEX);
+    if (!self) {
+        return NULL;
+    }
 
     self->index.operand = mem_move(move_operand);
     self->index.indices = mem_move(move_indices);
@@ -296,7 +388,14 @@ obj_new_index(gc_t *ref_gc, object_t *move_operand, object_array_t *move_indices
 
 object_t *
 obj_new_module(gc_t *ref_gc) {
+    if (!ref_gc) {
+        return NULL;
+    }
+
     object_t *self = obj_new(ref_gc, OBJ_TYPE_MODULE);
+    if (!self) {
+        return NULL;
+    }
 
     self->module.name = str_new();
 
@@ -305,7 +404,14 @@ obj_new_module(gc_t *ref_gc) {
 
 object_t *
 obj_new_reserv(gc_t *ref_gc, ast_t *ref_ast, const char *name) {
+    if (!ref_gc || !ref_ast || !name) {
+        return NULL;
+    }
+
     object_t *self = obj_new(ref_gc, OBJ_TYPE_RESERV);
+    if (!self) {
+        return NULL;
+    }
 
     self->reserv.ref_ast = ref_ast;
     self->reserv.name = str_new_cstr(name);
@@ -319,9 +425,16 @@ obj_new_module_by(
     const char *name,
     tokenizer_t *move_tkr,
     ast_t *move_ast,
-    builtin_func_info_t *infos
+    builtin_func_info_t *infos  // allow null
 ) {
+    if (!ref_gc || !name || !move_tkr || !move_ast) {
+        return NULL;
+    }
+
     object_t *self = obj_new(ref_gc, OBJ_TYPE_MODULE);
+    if (!self) {
+        return NULL;
+    }
 
     self->module.name = str_new();
     str_set(self->module.name, name);
@@ -335,6 +448,11 @@ obj_new_module_by(
 
 string_t *
 obj_to_str(const object_t *self) {
+    if (!self) {
+        string_t *str = str_new_cstr("null");
+        return str;
+    }
+
     switch (self->type) {
     case OBJ_TYPE_NIL: {
         string_t *str = str_new();
@@ -425,16 +543,28 @@ obj_to_array(const object_t *obj) {
 
 void
 obj_inc_ref(object_t *self) {
+    if (!self) {
+        return;
+    }
+
     self->gc_item.ref_counts += 1;
 }
 
 void
 obj_dec_ref(object_t *self) {
+    if (!self) {
+        return;
+    }
+
     self->gc_item.ref_counts -= 1;
 }
 
 gc_item_t *
 obj_get_gc_item(object_t *self) {
+    if (!self) {
+        return NULL;
+    }
+
     return &self->gc_item;
 }
 
@@ -473,6 +603,12 @@ obj_dump(const object_t *self, FILE *fout) {
 string_t *
 obj_type_to_str(const object_t *self) {
     string_t *s = str_new();
+
+    if (!self) {
+        str_app(s, "<?: null>");
+        return s;
+    }
+
     char tmp[256];
 
     switch (self->type) {
