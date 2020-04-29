@@ -256,22 +256,30 @@ object_t *
 ctx_find_var_ref(context_t *self, const char *key);
 
 /**
- * get gc
+ * get reference of gc_t in context
  *
  * @param[in] *self pointer to context_t
  *
- * @return poitner to gc_t (DO NOT DELETE)
+ * @return reference to gc_t (this is reference, DO NOT DELETE)
  */
 gc_t *
 ctx_get_gc(context_t *self);
 
 /**
- * clear buffer
+ * clear stdout buffer
  *
  * @param[in] *self pointer to context_t
  */
 void
-ctx_clear_buf(context_t *self);
+ctx_clear_stdout_buf(context_t *self);
+
+/**
+ * clear stderr buffer
+ *
+ * @param[in] *self pointer to context_t
+ */
+void
+ctx_clear_stderr_buf(context_t *self);
 
 /**
  * swap stdout buffer

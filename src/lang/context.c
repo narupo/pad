@@ -207,8 +207,13 @@ ctx_get_gc(context_t *self) {
 }
 
 void
-ctx_clear_buf(context_t *self) {
+ctx_clear_stdout_buf(context_t *self) {
     str_clear(self->stdout_buf);
+}
+
+void
+ctx_clear_stderr_buf(context_t *self) {
+    str_clear(self->stderr_buf);
 }
 
 string_t *

@@ -93,10 +93,16 @@ obj_new_other(const object_t *other) {
         return NULL;
     }
 
+    // allocate memory by gc
     gc_item_t gc_item = {0};
-    gc_alloc(other->ref_gc, &gc_item, sizeof(object_t));
+    if (!gc_alloc(other->ref_gc, &gc_item, sizeof(object_t))) {
+        return NULL;
+    }
 
+    // get pointer of allocated memory
     object_t *self = gc_item.ptr;
+
+    // copy parameters
     self->ref_gc = other->ref_gc;
     self->gc_item = gc_item;
     self->type = other->type;

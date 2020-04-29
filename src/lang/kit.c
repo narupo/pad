@@ -93,7 +93,7 @@ kit_clear_context(kit_t *self) {
 
 void
 kit_clear_context_buffer(kit_t *self) {
-    ctx_clear_buf(self->ctx);
+    ctx_clear_stdout_buf(self->ctx);
 }
 
 const char *

@@ -6795,7 +6795,7 @@ again:
 
     object_dict_item_t *item = objdict_get(varmap, funcname);
     if (!item) {
-        return NULL; // not found function in module
+        return NULL;  // not found function in module
     }
     object_t *funcobj = item->value;
     assert(funcobj);
@@ -6808,6 +6808,7 @@ static object_t *
 trv_invoke_builtin_module_func(ast_t *ast, const object_t *mod, const char *funcname, object_t *args) {
     builtin_func_info_t *infos = mod->module.builtin_func_infos;
     if (!infos) {
+        // allow null of bultin_func_infos
         return NULL;
     }
 
