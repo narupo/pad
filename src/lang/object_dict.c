@@ -238,3 +238,25 @@ objdict_pop(object_dict_t *self, const char *key) {
     // done
     return found;
 }
+
+struct string;
+
+const char *
+str_getc(struct string *s);
+
+void
+str_del(struct string *s);
+
+void
+objdict_dump(const object_dict_t *self, FILE *fout) {
+    if (!self || !fout) {
+        return;
+    }
+
+    for (int32_t i = 0; i < self->len; ++i) {
+        const object_dict_item_t *item = &self->map[i];
+        string_t *s = obj_to_str(item->value);
+        fprintf(fout, "[%s] = [%s]\n", item->key, str_getc(s));
+        str_del(s);
+    }
+}

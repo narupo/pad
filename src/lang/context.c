@@ -224,3 +224,13 @@ ctx_swap_stderr_buf(context_t *self, string_t *stderr_buf) {
     self->stderr_buf = stderr_buf;
     return escape;
 }
+
+void
+ctx_dump(const context_t *self, FILE *fout) {
+    if (!self || !fout) {
+        return;
+    }
+
+    fprintf(fout, "context[%p]\n", self);
+    scope_dump(self->scope, fout);
+}

@@ -1156,7 +1156,6 @@ trv_calc_assign_with_reserv(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     ast_t *ref_ast = lhs->reserv.ref_ast;
 
     check("set reference of (%d) at (%s) of current varmap", rhsref->type, idnname);
-    printf("assign reserv idn[%s] rhs[%p] ref_ast[%p]\n", idnname, rhsref, ref_ast);
     set_ref_at_cur_varmap(ref_ast, idnname, rhsref);
 
     return_trav(rhsref);
@@ -5614,21 +5613,17 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             //
             // この一時オブジェクトは「型は決定していないが、定義される予定がある」という特殊なオブジェクトになるだろう
             if (result->type == OBJ_TYPE_IDENTIFIER) {
-                printf("====> result type is identifier\n");
                 const char *idn = str_getc(result->identifier);
                 ast_t *ctx_ast = get_ast_by_owner(ast);
                 object_t *obj = pull_in_ref_by_owner(ast, result);
                 if (!obj) {
                     // create reservation object for assign statement
                     check("create reservation object by \"%s\"", idn);
-                    printf("create reservation object by \"%s\"\n", idn);
-                    printf("ctx_ast[%p] ast[%p]\n", ctx_ast, ast);
                     object_t *reserv = obj_new_reserv(ast->ref_gc, ctx_ast, idn);
                     result = reserv;
                 } else {
                     result = obj;
                 }
-                printf("<==== result type is identifier\n");
             }
 
             // reset owner object

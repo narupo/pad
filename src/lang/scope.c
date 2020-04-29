@@ -163,3 +163,15 @@ scope_find_var_ref(scope_t *self, const char *key) {
 
     return NULL;
 }
+
+void
+scope_dump(const scope_t *self, FILE *fout) {
+    if (!self || !fout) {
+        return;
+    }
+
+    for (scope_t *cur = self; cur; cur = cur->next) {
+        fprintf(fout, "scope[%p]\n", cur);
+        objdict_dump(cur->varmap, fout);
+    }
+}

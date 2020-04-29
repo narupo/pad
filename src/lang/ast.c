@@ -441,3 +441,15 @@ void
 ast_trace_error_stack(const ast_t *self, FILE *fout) {
     errstack_trace(self->error_stack, fout);
 }
+
+void
+ast_dump(const ast_t *self, FILE *fout) {
+    if (!self || !fout) {
+        return;
+    }
+
+    fprintf(fout, "ast[%p]\n", self);
+    fprintf(fout, "ref_dot_owner\n");
+    obj_dump(self->ref_dot_owner, fout);
+    ctx_dump(self->context, fout);
+}
