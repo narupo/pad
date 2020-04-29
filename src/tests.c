@@ -20091,6 +20091,15 @@ test_trv_asscalc_2(void) {
     * fail *
     *******/
 
+    tkr_parse(tkr, "{@ a = \"ab\" \n a *= -1 @}{: a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "can't mul by negative value"));
+    }
+
     tkr_parse(tkr, "{@ 1 *= 2 @}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
