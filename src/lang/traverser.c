@@ -1155,7 +1155,7 @@ trv_calc_assign_with_reserv(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     const char *idnname = str_getc(lhs->reserv.name);
     ast_t *ref_ast = lhs->reserv.ref_ast;
 
-    check("set reference of (%d) at (%s) of current varmap", rhsref->type, idnname);
+    check("set reference of (%d) at (%s) of current context varmap", rhsref->type, idnname);
     set_ref_at_cur_varmap(ref_ast, idnname, rhsref);
 
     return_trav(rhsref);
@@ -2455,6 +2455,10 @@ trv_compare_or(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
         obj_del(val);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_RESERV: {
+        ast_pushb_error(ast, "can't compare reservation object");
+        return_trav(NULL);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare or");
@@ -3386,6 +3390,10 @@ trv_compare_and(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep) {
         obj_del(val);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_RESERV: {
+        ast_pushb_error(ast, "can't compare reservation object");
+        return_trav(NULL);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare and");
@@ -3865,6 +3873,10 @@ trv_compare_comparison_eq(ast_t *ast, const object_t *lhs, const object_t *rhs, 
         object_t *obj = trv_compare_comparison_eq_index(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_RESERV: {
+        ast_pushb_error(ast, "can't compare reservation object");
+        return_trav(NULL);
+    } break;
     }
 
     assert(0 && "impossible. failed to compare comparison eq");
@@ -4209,6 +4221,10 @@ trv_compare_comparison_not_eq(ast_t *ast, const object_t *lhs, const object_t *r
         object_t *obj = trv_compare_comparison_not_eq(ast, val, rhs, dep+1);
         obj_del(val);
         return_trav(obj);
+    } break;
+    case OBJ_TYPE_RESERV: {
+        ast_pushb_error(ast, "can't compare reservation object");
+        return_trav(NULL);
     } break;
     }
 
