@@ -16,17 +16,41 @@ enum {
     OBJ_DICT_ITEM_KEY_SIZE = 256,
 };
 
+/**
+ * item of array of object_dict_t
+ */
 typedef struct object_dict_item {
-    char key[OBJ_DICT_ITEM_KEY_SIZE];
-    object_t *value;
+    char key[OBJ_DICT_ITEM_KEY_SIZE];  // key of item
+    object_t *value;  // value of item
 } object_dict_item_t;
 
+/**
+ * destruct object_dict_t
+ *
+ * @param[in] *self pointer to object_dict_t
+ */
 void
 objdict_del(object_dict_t *self);
 
+/**
+ * destruct object_dict_t with escape array of object_dict_item_t dynamic allocated
+ *
+ * @param[in] *self pointer to object_dict_t
+ *
+ * @return success to pointer to array of object_dict_item_t
+ * @return failed to NULL
+ */
 object_dict_item_t *
 objdict_escdel(object_dict_t *self);
 
+/**
+ * construct object_dict_t
+ *
+ * @param[in] *ref_gc reference to gc_t (do not delete)
+ *
+ * @return success to pointer to object_dict_t (dynamic allocate memory)
+ * @return failed to NULL
+ */
 object_dict_t *
 objdict_new(gc_t *ref_gc);
 
