@@ -245,7 +245,7 @@ trv_ref_block(ast_t *ast, const node_t *node, int dep) {
 
     switch (result->type) {
     default:
-        err_die("unsupported result type in traverse ref block");
+        ast_pushb_error(ast, "can't refer object (%d)", result->type);
         break;
     case OBJ_TYPE_NIL:
         ctx_pushb_stdout_buf(ast->context, "nil");
@@ -1142,12 +1142,33 @@ trv_calc_assign_to_index(ast_t *ast, const object_t *lhs, object_t *rhs, int dep
 }
 
 static object_t *
+trv_calc_assign_with_reserv(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
+    tready();
+    assert(lhs->type == OBJ_TYPE_RESERV);
+
+    object_t *rhsref = extract_ref_of_obj(ast, rhs);
+    if (ast_has_error_stack(ast)) {
+        ast_pushb_error(ast, "failed to extract object");
+        return_trav(NULL);
+    }
+
+    const char *idnname = str_getc(lhs->reserv.name);
+    ast_t *ref_ast = lhs->reserv.ref_ast;
+
+    check("set reference of (%d) at (%s) of current varmap", rhsref->type, idnname);
+    printf("assign reserv idn[%s] rhs[%p] ref_ast[%p]\n", idnname, rhsref, ref_ast);
+    set_ref_at_cur_varmap(ref_ast, idnname, rhsref);
+
+    return_trav(rhsref);
+}
+
+static object_t *
 trv_calc_assign(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     tready();
 
     switch (lhs->type) {
     default:
-        ast_pushb_error(ast, "syntax error. invalid lhs in assign list");
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -1162,6 +1183,10 @@ trv_calc_assign(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     } break;
     case OBJ_TYPE_INDEX: {
         object_t *obj = trv_calc_assign_to_index(ast, lhs, rhs, dep+1);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_RESERV: {
+        object_t *obj = trv_calc_assign_with_reserv(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     }
@@ -5589,14 +5614,21 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             //
             // この一時オブジェクトは「型は決定していないが、定義される予定がある」という特殊なオブジェクトになるだろう
             if (result->type == OBJ_TYPE_IDENTIFIER) {
+                printf("====> result type is identifier\n");
+                const char *idn = str_getc(result->identifier);
+                ast_t *ctx_ast = get_ast_by_owner(ast);
                 object_t *obj = pull_in_ref_by_owner(ast, result);
                 if (!obj) {
-                    const char *idn = str_getc(result->identifier);
-                    ast_pushb_error(ast, "\"%s\" is null in dot operation", idn);
-                    return_trav(NULL);
+                    // create reservation object for assign statement
+                    check("create reservation object by \"%s\"", idn);
+                    printf("create reservation object by \"%s\"\n", idn);
+                    printf("ctx_ast[%p] ast[%p]\n", ctx_ast, ast);
+                    object_t *reserv = obj_new_reserv(ast->ref_gc, ctx_ast, idn);
+                    result = reserv;
                 } else {
                     result = obj;
                 }
+                printf("<==== result type is identifier\n");
             }
 
             // reset owner object

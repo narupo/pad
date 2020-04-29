@@ -1,13 +1,6 @@
 #include <lang/utils.h>
 
-/**
- * get reference of ast by owner object
- *
- * @param[in] *default_ast default ast
- *
- * @return default ast or owner's ast
- */
-static ast_t *
+ast_t *
 get_ast_by_owner(ast_t *default_ast) {
     object_t *owner = default_ast->ref_dot_owner;
     if (!owner) {
@@ -45,7 +38,7 @@ pull_in_ref_by_owner(ast_t *ast, const object_t *idn_obj) {
         const char *idn = str_getc(idn_obj->identifier);
         object_t *ref = ctx_find_var_ref(ast->context, idn);
         if (!ref) {
-            ast_pushb_error(ast, "\"%s\" is not defined", idn);
+            // do not push error stack
             return NULL;
         }
         if (ref->type == OBJ_TYPE_IDENTIFIER) {
@@ -63,7 +56,7 @@ again:
         const char *idn = str_getc(owner->identifier);
         owner = ctx_find_var_ref(ast->context, idn);
         if (!owner) {
-            ast_pushb_error(ast, "\"%s\" is not defined", idn);
+            // do not push error stack
             return NULL;
         }
         if (owner->type == OBJ_TYPE_IDENTIFIER) {
@@ -76,7 +69,7 @@ again:
     switch (owner->type) {
     default:
         // can't refer to owner
-        ast_pushb_error(ast, "invalid owner type (%d)", owner->type);
+        // do not push error stack
         return NULL;
         break;
     // can refer to owner
@@ -87,6 +80,9 @@ again:
         return pull_in_ref_by(ref_ast, idn_obj);
     } break;
     }
+
+    assert(0 && "impossible");
+    return NULL;
 }
 
 object_t *
@@ -96,6 +92,7 @@ pull_in_ref_by(ast_t *ast, const object_t *idn_obj) {
     const char *idn = str_getc(idn_obj->identifier);
     object_t *ref = ctx_find_var_ref(ast->context, idn);
     if (!ref) {
+        // do not push error stack
         return NULL;
     }
     if (ref->type == OBJ_TYPE_IDENTIFIER) {

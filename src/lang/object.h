@@ -23,8 +23,24 @@ typedef enum {
     OBJ_TYPE_ARRAY,
     OBJ_TYPE_DICT,
     OBJ_TYPE_FUNC,
+
+    // A index object
+    // 添字オブジェクト
+    // 添字でアクセス可能なオブジェクト
+    // 添字は配列で持っていて、参照時にこの添字を順に適用して実体を求める
     OBJ_TYPE_INDEX,
+
+    // A module object
+    // モジュールオブジェクト
+    // このオブジェクトは内部にast_tへの参照を持つ
+    // このast_tへの参照はモジュール内の参照である
     OBJ_TYPE_MODULE,
+
+    // A reservation object
+    // 予約オブジェクト
+    // 定義されていないが、これから定義される予定のあるオブジェクト
+    // 内部にast_tへの参照を持つ。これはこのオブジェクトが作成されたときの文脈のast_tへの参照である
+    OBJ_TYPE_RESERV,
 } obj_type_t;
 
 /**
@@ -38,18 +54,29 @@ struct object_func {
 };
 
 /**
- * index object have reference to operand because for assign
+ * A index object have reference to operand because for assign
  */
 struct object_index {
     object_t *operand;  // reference to operand object
     object_array_t *indices;  // indices objects
 };
 
+/**
+ * A module object
+ */
 struct object_module {
     string_t *name;  // module name
     tokenizer_t *tokenizer;
     ast_t *ast;
     builtin_func_info_t *builtin_func_infos;  // builtin functions
+};
+
+/**
+ * A reservation object
+ */
+struct object_reserv {
+    ast_t *ref_ast;  // reference to ast_t of context on this object created (do not delete)
+    string_t *name;  // variable name for define
 };
 
 struct object {
@@ -65,6 +92,7 @@ struct object {
     object_func_t func;  // structure of function (type == OBJ_TYPE_FUNC)
     object_index_t index;  // structure of index (type == OBJ_TYPE_INDEX)
     object_module_t module;  // structure of module (type == OBJ_TYPE_MODULE)
+    object_reserv_t reserv;  // strcuture of reservation (type == OBJ_TYPE_RESERV)
 };
 
 /**
@@ -139,6 +167,9 @@ obj_new_index(gc_t *ref_gc, object_t *move_operand, object_array_t *move_indices
 
 object_t *
 obj_new_module(gc_t *ref_gc);
+
+object_t *
+obj_new_reserv(gc_t *ref_gc, ast_t *ref_ast, const char *name);
 
 object_t *
 obj_new_module_by(
