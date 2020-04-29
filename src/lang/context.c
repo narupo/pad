@@ -7,13 +7,13 @@ enum {
 };
 
 struct context {
-    gc_t *ref_gc; // reference to gc (DO NOT DELETE)
-    alinfo_t *alinfo; // alias info for builtin alias module
-    string_t *stdout_buf; // stdout buffer in context
-    string_t *stderr_buf; // stderr buffer in context
-    scope_t *scope; // scope in context
-    bool do_break;
-    bool do_continue;
+    gc_t *ref_gc;  // reference to gc (DO NOT DELETE)
+    alinfo_t *alinfo;  // alias info for builtin alias module
+    string_t *stdout_buf;  // stdout buffer in context
+    string_t *stderr_buf;  // stderr buffer in context
+    scope_t *scope;  // scope in context
+    bool do_break;  // if do break from current context then store true
+    bool do_continue;  // if do continue on current context then store
     bool do_return;
 };
 
