@@ -6116,7 +6116,10 @@ trv_calc_asscalc_mul_ass_string(ast_t *ast, object_t *lhs, object_t *rhs, int de
         return_trav(NULL);
     } break;
     case OBJ_TYPE_INT: {
-        if (rhsref->lvalue <= 0) {
+        if (rhsref->lvalue < 0) {
+            ast_pushb_error(ast, "can't mul by negative value");
+            return_trav(NULL);
+        } else if (rhsref->lvalue == 0) {
             str_clear(lhs->string);
         } else {
             string_t *other = str_new_other(lhs->string);
