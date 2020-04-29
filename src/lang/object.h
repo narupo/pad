@@ -16,7 +16,7 @@
 
 typedef enum {
     OBJ_TYPE_NIL,
-    OBJ_TYPE_INTEGER,
+    OBJ_TYPE_INT,
     OBJ_TYPE_BOOL,
     OBJ_TYPE_IDENTIFIER,
     OBJ_TYPE_STRING,
@@ -87,7 +87,7 @@ struct object {
     string_t *string;  // value of string (type == OBJ_TYPE_STRING)
     object_array_t *objarr;  // value of array (type == OBJ_TYPE_ARRAY)
     object_dict_t *objdict;  // value of dict (type == OBJ_TYPE_DICT)
-    objint_t lvalue;  // value of integer (type == OBJ_TYPE_INTEGER)
+    objint_t lvalue;  // value of integer (type == OBJ_TYPE_INT)
     bool boolean;  // value of boolean (type == OBJ_TYPE_BOOL)
     object_func_t func;  // structure of function (type == OBJ_TYPE_FUNC)
     object_index_t index;  // structure of index (type == OBJ_TYPE_INDEX)

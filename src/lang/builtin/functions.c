@@ -41,7 +41,7 @@ again:
     case OBJ_TYPE_NIL: {
         return obj_new_cstr(ast->ref_gc, "<nil>");
     } break;
-    case OBJ_TYPE_INTEGER: {
+    case OBJ_TYPE_INT: {
         return obj_new_cstr(ast->ref_gc, "<int>");
     } break;
     case OBJ_TYPE_BOOL: {
@@ -74,6 +74,9 @@ again:
     } break;
     case OBJ_TYPE_MODULE: {
         return obj_new_cstr(ast->ref_gc, "<module>");
+    } break;
+    case OBJ_TYPE_RESERV: {
+        return obj_new_cstr(ast->ref_gc, "<reserv>");
     } break;
     } // switch
 
@@ -271,7 +274,7 @@ builtin_exit(ast_t *ast, object_t *actual_args) {
     }
 
     const object_t *codeobj = objarr_getc(args, 0);
-    if (codeobj->type != OBJ_TYPE_INTEGER) {
+    if (codeobj->type != OBJ_TYPE_INT) {
         ast_pushb_error(ast, "invalid exit code type for exit");
         return NULL;
     }
