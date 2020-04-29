@@ -15,7 +15,7 @@
 #define showerr() printf("stderr[%s]\n", ctx_getc_stderr_buf(ctx))
 
 #define showdetail() printf("detail[%s]\n", ast_getc_first_error_message(ast))
-#define trace() errstack_trace(ast->error_stack, stderr)
+#define traceerr() errstack_trace(ast->error_stack, stderr)
 
 #define ast_debug(stmt) { \
     ast_set_debug(ast, true); \
@@ -16296,7 +16296,6 @@ test_trv_traverse(void) {
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
         assert(ast_has_error_stack(ast));
-        trace();
         assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in ref block"));
     }
 
@@ -17114,7 +17113,6 @@ test_trv_import_stmt_0(void) {
         assert(!ast_has_error_stack(ast));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        trace();
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "45"));
     }
@@ -18355,7 +18353,6 @@ test_trv_elif_stmt_4(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_error_stack(ast));
-        trace();
         assert(!strcmp(ast_getc_first_error_message(ast), "\"i\" is not defined in extract obj"));
     }
 

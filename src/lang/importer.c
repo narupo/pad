@@ -123,7 +123,7 @@ importer_import_as(
 
     ctx_pushb_stdout_buf(dstctx, ctx_getc_stdout_buf(modobj->module.ast->context));
     ctx_pushb_stderr_buf(dstctx, ctx_getc_stderr_buf(modobj->module.ast->context));
-    ctx_clear_buf(modobj->module.ast->context);
+    ctx_clear_stdout_buf(modobj->module.ast->context);
 
     object_dict_t *dst_global_varmap = ctx_get_varmap_at_global(dstctx);
     objdict_move(dst_global_varmap, alias, mem_move(modobj));
@@ -153,7 +153,7 @@ importer_from_import(
     }
 
     ctx_pushb_stdout_buf(dstctx, ctx_getc_stdout_buf(modobj->module.ast->context));
-    ctx_clear_buf(modobj->module.ast->context);
+    ctx_clear_stdout_buf(modobj->module.ast->context);
 
 /**
  * extract import-var from import-vars
