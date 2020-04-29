@@ -1,6 +1,6 @@
 #pragma once
 
-#define _CAP_VERSION "0.35.32"
+#define _CAP_VERSION "0.35.34"
 
 #if defined(_WIN32) || defined(_WIN64)
 # define _CAP_WINDOWS 1 /* cap: core/constant.h */
