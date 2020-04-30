@@ -497,7 +497,7 @@ cc_for_stmt(ast_t *ast, int dep) {
     token_t **save_ptr = ast->ptr;
 
 #undef return_cleanup
-#define return_cleanup(msg) { \
+#define return_cleanup(fmt, ...) { \
         ast->ptr = save_ptr; \
         ast_del_nodes(ast, cur->init_formula); \
         ast_del_nodes(ast, cur->comp_formula); \
@@ -505,8 +505,8 @@ cc_for_stmt(ast_t *ast, int dep) {
         ast_del_nodes(ast, cur->elems); \
         ast_del_nodes(ast, cur->blocks); \
         free(cur); \
-        if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+        if (strlen(fmt)) { \
+            ast_pushb_error(ast, fmt, ##__VA_ARGS__); \
         } \
         return_parse(NULL); \
     } \
@@ -645,6 +645,9 @@ cc_for_stmt(ast_t *ast, int dep) {
         }
         check("read colon");
 
+        check("skip newlines");
+        cc_skip_newlines(ast);
+
         if (!*ast->ptr) {
             return_cleanup("syntax error. reached EOF in for statement (6)")
         }
@@ -678,10 +681,10 @@ cc_for_stmt(ast_t *ast, int dep) {
             if (ast_has_error_stack(ast)) {
                 return_cleanup("");
             }
-
-            check("skip newlines");
-            cc_skip_newlines(ast);
         }
+
+        check("skip newlines");
+        cc_skip_newlines(ast);
 
         if (!*ast->ptr) {
             return_cleanup("syntax error. reached EOF in for statement (5)");
@@ -689,7 +692,7 @@ cc_for_stmt(ast_t *ast, int dep) {
 
         t = *ast->ptr++;
         if (t->type != TOKEN_TYPE_STMT_END) {
-            return_cleanup("syntax error. not found end in for statement (2)");
+            return_cleanup("syntax error. not found end in for statement (2). found token is (%d)", t->type);
         }
         check("read end");
     }
