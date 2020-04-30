@@ -19270,6 +19270,28 @@ test_trv_for_stmt_4(void) {
 }
 
 static void
+test_trv_for_stmt_5(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 3; i += 1:\n"
+    "@}{: i :}{@\n"
+    "   end\n"
+    "\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        traceerr();
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "012"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_break_stmt(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -21053,6 +21075,7 @@ traverser_tests[] = {
     {"trv_for_stmt_2", test_trv_for_stmt_2},
     {"trv_for_stmt_3", test_trv_for_stmt_3},
     {"trv_for_stmt_4", test_trv_for_stmt_4},
+    {"trv_for_stmt_5", test_trv_for_stmt_5},
     {"trv_break_stmt", test_trv_break_stmt},
     {"trv_continue_stmt", test_trv_continue_stmt},
     {"trv_return_stmt", test_trv_return_stmt},

@@ -5630,7 +5630,9 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             // 上記の仕様で OBJ_TYPE_RESERV を実装した
             if (result->type == OBJ_TYPE_IDENTIFIER) {
                 object_t *obj = pull_in_ref_by_owner(ast, result);
-                if (!obj) {
+                if (obj) {
+                    result = obj;
+                } else {
                     // create reservation object for assign statement
                     ast_t *ctx_ast = get_ast_by_owner(ast);
                     if (ast_has_error_stack(ast)) {
@@ -5642,8 +5644,6 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
                     check("create reservation object by \"%s\"", idn);
                     object_t *reserv = obj_new_reserv(ast->ref_gc, ctx_ast, idn);
                     result = reserv;
-                } else {
-                    result = obj;
                 }
             }
 
