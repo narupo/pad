@@ -5618,7 +5618,7 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             // dot演算子の文脈で（つまりref_dot_ownerが有効の間）識別子の実体を取得し、lhsとする
             //
             // たとえば module.a = 1 のような文脈では、先に module.a が解決される
-            // このとき、module.a の変数 a は定義されていないので、↓で NULL が返ってくる
+            // このとき、module.a の変数 a は定義されていないので、↓のpull_in_ref_by_ownerで NULL が返ってくる
             // そのため、エラーになり、結果として module.a = 1 の代入を実行できない
             // （dot の解決は、assign より優先度が高いため）
             //
@@ -5629,11 +5629,16 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             // この一時オブジェクトは「型は決定していないが、定義される予定がある」という特殊なオブジェクトになるだろう
             // 上記の仕様で OBJ_TYPE_RESERV を実装した
             if (result->type == OBJ_TYPE_IDENTIFIER) {
-                const char *idn = str_getc(result->identifier);
-                ast_t *ctx_ast = get_ast_by_owner(ast);
                 object_t *obj = pull_in_ref_by_owner(ast, result);
                 if (!obj) {
                     // create reservation object for assign statement
+                    ast_t *ctx_ast = get_ast_by_owner(ast);
+                    if (ast_has_error_stack(ast)) {
+                        ast_pushb_error(ast, "failed to get ast");
+                        return_trav(NULL);
+                    }
+
+                    const char *idn = str_getc(result->identifier);
                     check("create reservation object by \"%s\"", idn);
                     object_t *reserv = obj_new_reserv(ast->ref_gc, ctx_ast, idn);
                     result = reserv;

@@ -10,13 +10,18 @@ get_ast_by_owner(ast_t *default_ast) {
 again:
     switch (owner->type) {
     default:
+        // owner is has not ast so return default ast
         return default_ast;
         break;
     case OBJ_TYPE_RESERV:
+        // reservation object can't become to owner
+        // this object temporary on context
+        // so, this refer on this to invalid context
         ast_pushb_error(default_ast, "owner is invalid object (%d)", owner->type);
         return NULL;
         break;
     case OBJ_TYPE_MODULE:
+        // module object has ast
         return owner->module.ast;
         break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -261,6 +266,10 @@ move_obj_at_cur_varmap(ast_t *ast, const char *identifier, object_t *move_obj) {
     assert(move_obj->type != OBJ_TYPE_IDENTIFIER);
 
     ast = get_ast_by_owner(ast);
+    if (ast_has_error_stack(ast)) {
+        ast_pushb_error(ast, "can't move object");
+        return;
+    }
 
     object_dict_t *varmap = ctx_get_varmap(ast->context);
     objdict_move(varmap, identifier, mem_move(move_obj));
@@ -271,6 +280,10 @@ set_ref_at_cur_varmap(ast_t *ast, const char *identifier, object_t *ref) {
     assert(ref->type != OBJ_TYPE_IDENTIFIER);
 
     ast = get_ast_by_owner(ast);
+    if (ast_has_error_stack(ast)) {
+        ast_pushb_error(ast, "can't set reference");
+        return;
+    }
 
     object_dict_t *varmap = ctx_get_varmap(ast->context);
     object_t *popped = objdict_pop(varmap, identifier);
