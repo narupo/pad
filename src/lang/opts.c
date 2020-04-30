@@ -33,7 +33,7 @@ opts_parse(opts_t *self, int argc, char *argv[]) {
     if (argc <= 0) {
         return self;
     }
-    
+
     int m = 0;
     string_t *key = str_new();
 
@@ -131,7 +131,7 @@ opts_getc_args(const opts_t *self, int32_t idx) {
     return cstrarr_getc(self->args, idx);
 }
 
-int32_t 
+int32_t
 opts_args_len(const opts_t *self) {
     if (!self) {
         return -1;
