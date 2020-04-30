@@ -20912,6 +20912,10 @@ test_trv_reservation_object(void) {
     assert(solve_path(config->home_path, sizeof config->home_path, "."));
     assert(solve_path(config->cd_path, sizeof config->cd_path, "."));
 
+    /*****
+    * ok *
+    *****/
+
     tkr_parse(tkr, "{@\n"
     "   import \"/tests/lang/modules/string.cap\" as string\n"
     "   string.a\n"
@@ -20926,6 +20930,22 @@ test_trv_reservation_object(void) {
 
     tkr_parse(tkr, "{@\n"
     "   import \"/tests/lang/modules/string.cap\" as string\n"
+    "   string.a = 1\n"
+    "@}{: string.a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    /*******
+    * fail *
+    *******/
+
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/string.cap\" as string\n"
     "@}{: string.a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
@@ -20937,14 +20957,49 @@ test_trv_reservation_object(void) {
 
     tkr_parse(tkr, "{@\n"
     "   import \"/tests/lang/modules/string.cap\" as string\n"
-    "   string.a = 1\n"
+    "   string.a.b = 1\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "owner is invalid object (10)"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/string.cap\" as string\n"
+    "   string.a.b = 1\n"
     "@}{: string.a :}");
     {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "owner is invalid object (10)"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/string.cap\" as string\n"
+    "   string.a.b = 1\n"
+    "@}{: string.a.b :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "owner is invalid object (10)"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/string.cap\" as string\n"
+    "@}{: string.a.b :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "owner is invalid object (10)"));
     }
 
     trv_cleanup;

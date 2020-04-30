@@ -12,6 +12,10 @@ again:
     default:
         return default_ast;
         break;
+    case OBJ_TYPE_RESERV:
+        ast_pushb_error(default_ast, "owner is invalid object (%d)", owner->type);
+        return NULL;
+        break;
     case OBJ_TYPE_MODULE:
         return owner->module.ast;
         break;

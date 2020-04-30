@@ -5617,7 +5617,6 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
 
             // dot演算子の文脈で（つまりref_dot_ownerが有効の間）識別子の実体を取得し、lhsとする
             //
-            // TODO:
             // たとえば module.a = 1 のような文脈では、先に module.a が解決される
             // このとき、module.a の変数 a は定義されていないので、↓で NULL が返ってくる
             // そのため、エラーになり、結果として module.a = 1 の代入を実行できない
@@ -5628,6 +5627,7 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
             // 要は↓で NULL が返ってこないでかつ、代入文の文脈で一時オブジェクトを参照できればいいわけだ
             //
             // この一時オブジェクトは「型は決定していないが、定義される予定がある」という特殊なオブジェクトになるだろう
+            // 上記の仕様で OBJ_TYPE_RESERV を実装した
             if (result->type == OBJ_TYPE_IDENTIFIER) {
                 const char *idn = str_getc(result->identifier);
                 ast_t *ctx_ast = get_ast_by_owner(ast);
