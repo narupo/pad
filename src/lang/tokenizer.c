@@ -430,7 +430,11 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 }
             } else if (c == '#') {
                 m = 100;
-            } else if (c == '\n') {
+            } else if (c == '\r' && *self->ptr == '\n') {
+                ++self->ptr;
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_NEWLINE)));
+            } else if ((c == '\r' && *self->ptr != '\n') ||
+                       (c == '\n')) {
                 tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_NEWLINE)));
             } else if (c == '@') {
                 self->ptr--;
@@ -598,7 +602,11 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 goto fail;
             }
         } else if (m == 100) {  // found '#' in {@ @}
-            if (c == '\n') {
+            if (c == '\r' && *self->ptr == '\n') {
+                ++self->ptr;
+                m = 10;
+            } else if ((c == '\r' && *self->ptr != '\n') ||
+                       (c == '\n')) {
                 m = 10;
             }
         }

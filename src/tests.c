@@ -2387,17 +2387,6 @@ test_tkr_parse(void) {
         assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
 
-    tkr_parse(tkr, "{@\n@}");
-    {
-        assert(tkr_tokens_len(tkr) == 3);
-        token = tkr_tokens_getc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
-        token = tkr_tokens_getc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
-        token = tkr_tokens_getc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
-    }
-
     tkr_parse(tkr, "{@.@}");
     {
         assert(tkr_tokens_len(tkr) == 3);
@@ -3260,6 +3249,82 @@ test_tkr_parse(void) {
     {
         assert(tkr_has_error_stack(tkr));
         assert(!strcmp(tkr_getc_first_error_message(tkr), "not closed by block"));
+    }
+
+    /***********
+    * newlines *
+    ***********/
+
+    tkr_parse(tkr, "{@\n@}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_NEWLINE);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@\n\n@}");
+    {
+        assert(tkr_tokens_len(tkr) == 4);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_NEWLINE);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_NEWLINE);
+        token = tkr_tokens_getc(tkr, 3);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@\r@}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_NEWLINE);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@\r\r@}");
+    {
+        assert(tkr_tokens_len(tkr) == 4);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_NEWLINE);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_NEWLINE);
+        token = tkr_tokens_getc(tkr, 3);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@\r\n@}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_NEWLINE);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@\r\n\r\n@}");
+    {
+        assert(tkr_tokens_len(tkr) == 4);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_NEWLINE);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_NEWLINE);
+        token = tkr_tokens_getc(tkr, 3);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
 
     tkr_del(tkr);
