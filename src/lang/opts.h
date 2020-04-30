@@ -28,5 +28,5 @@ opts_has(const opts_t *self, const char *optname);
 const char *
 opts_getc_args(const opts_t *self, int32_t idx);
 
-int32_t 
+int32_t
 opts_args_len(const opts_t *self);
