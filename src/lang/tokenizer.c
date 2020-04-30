@@ -428,6 +428,8 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 if (!tkr_parse_identifier(self)) {
                     goto fail;
                 }
+            } else if (c == '#') {
+                m = 100;
             } else if (c == '\n') {
                 tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_NEWLINE)));
             } else if (c == '@') {
@@ -509,7 +511,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 tkr_pushb_error(self, "syntax error. unsupported character \"%c\"", c);
                 goto fail;
             }
-        } else if (m == 20) { // found '{:'
+        } else if (m == 20) {  // found '{:'
             if (c == '"') {
                 self->ptr--;
                 token_t *token = tkr_read_dq_string(self);
@@ -595,6 +597,10 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 tkr_pushb_error(self, "syntax error. unsupported character \"%c\"", c);
                 goto fail;
             }
+        } else if (m == 100) {  // found '#' in {@ @}
+            if (c == '\n') {
+                m = 10;
+            }
         }
     }
 
@@ -604,7 +610,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
 
     tkr_store_textblock(self);
 
-    if (m == 10 || m == 20) {
+    if (m == 10 || m == 20 || m == 100) {
         // on the way of '{@' or '{{'
         tkr_pushb_error(self, "not closed by block");
         goto fail;

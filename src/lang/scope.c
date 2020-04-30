@@ -170,7 +170,7 @@ scope_dump(const scope_t *self, FILE *fout) {
         return;
     }
 
-    for (scope_t *cur = self; cur; cur = cur->next) {
+    for (const scope_t *cur = self; cur; cur = cur->next) {
         fprintf(fout, "scope[%p]\n", cur);
         objdict_dump(cur->varmap, fout);
     }
