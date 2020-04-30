@@ -386,7 +386,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
 
     if (!tkropt_validate(self->option)) {
         tkr_pushb_error(self, "validate error of tokenizer");
-        return self;
+        return NULL;
     }
 
     int m = 0;
@@ -624,8 +624,10 @@ tkr_parse(tokenizer_t *self, const char *src) {
         goto fail;
     }
 
-fail:
     return self;
+
+fail:
+    return NULL;
 }
 
 int32_t
