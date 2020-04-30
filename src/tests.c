@@ -20885,16 +20885,10 @@ test_trv_builtin_array_0(void) {
 
 static void
 test_trv_module_0(void) {
-    config_t *config = config_new();
+    trv_ready;
 
     assert(solve_path(config->home_path, sizeof config->home_path, "."));
     assert(solve_path(config->cd_path, sizeof config->cd_path, "."));
-
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
 
     tkr_parse(tkr, "{@\n"
     "   import \"/tests/lang/modules/module.cap\" as mod\n"
@@ -20908,11 +20902,52 @@ test_trv_module_0(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nimported module.cap\ndone\n"));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
+}
+
+static void
+test_trv_reservation_object(void) {
+    trv_ready;
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "."));
+
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/string.cap\" as string\n"
+    "   string.a\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/string.cap\" as string\n"
+    "@}{: string.a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "can't refer object (10)"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/string.cap\" as string\n"
+    "   string.a = 1\n"
+    "@}{: string.a :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
 }
 
 static const struct testcase
@@ -21038,6 +21073,7 @@ traverser_tests[] = {
     {"trv_builtin_string", test_trv_builtin_string},
     {"trv_builtin_array_0", test_trv_builtin_array_0},
     {"trv_module_0", test_trv_module_0},
+    {"trv_reservation_object", test_trv_reservation_object},
     {0},
 };
 
