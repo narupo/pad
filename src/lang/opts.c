@@ -25,6 +25,16 @@ opts_new(void) {
     return self;
 }
 
+void
+opts_clear(opts_t *self) {
+    if (!self) {
+        return;
+    }
+
+    dict_clear(self->opts);
+    cstrarr_clear(self->args);
+}
+
 opts_t *
 opts_parse(opts_t *self, int argc, char *argv[]) {
     if (!self || !argv) {

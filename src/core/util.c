@@ -294,15 +294,15 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
         return NULL;
     }
 
-    ast_move_opts(ast, opts);
-    opts = NULL;
-
     cc_compile(ast, tkr_get_tokens(tkr));
     if (ast_has_error_stack(ast)) {
         ast_trace_error_stack(ast, stderr);
         fflush(stderr);
         return NULL;
     }
+
+    ast_move_opts(ast, opts);
+    opts = NULL;
 
     trv_traverse(ast, ctx);
     if (ast_has_error_stack(ast)) {
