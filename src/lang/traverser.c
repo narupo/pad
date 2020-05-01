@@ -6494,6 +6494,17 @@ trv_array_elems(ast_t *ast, const node_t *node, int dep) {
         node_t *n = nodearr_get(array_elems->nodearr, i);
         object_t *result = _trv_traverse(ast, n, dep+1);
         assert(result);
+
+        switch (result->type) {
+        default:
+            break;
+        case OBJ_TYPE_RESERV:
+            ast_pushb_error(ast, "can't store reservation object at array");
+            return_trav(NULL);
+            break;
+        }
+
+        // allow identifier object
         objarr_moveb(objarr, result);
     }
 
