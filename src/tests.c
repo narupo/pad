@@ -19283,9 +19283,70 @@ test_trv_for_stmt_5(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        traceerr();
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "012"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_for_stmt_6(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "    i = 0\n"
+    "    j = i\n"
+    "    a = [j, j+1, j+2]\n"
+    "@}{: a[0] :},{: a[1] :},{: a[2] :}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,1,2"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_for_stmt_7(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "for i = 0; i < 4; i += 1:\n"
+    "   j = i\n"
+    "end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_for_stmt_8(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "for i = 0; i < 2; i += 1:\n"
+    "   j = i\n"
+    "   k = i\n"
+    "   puts(j, k)\n"
+    "end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 0\n1 1\n"));
     }
 
     trv_cleanup;
@@ -19604,6 +19665,72 @@ test_trv_func_def_7(void) {
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
+}
+
+static void
+test_trv_func_def_8(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(arr):\n"
+    "       puts(arr[0], arr[1], arr[2])\n"
+    "   end\n"
+    "   f([1, 2, 3])\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1 2 3\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_def_9(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(arr):\n"
+    "       puts(arr[0], arr[1], arr[2])\n"
+    "   end\n"
+    "   i = 0\n"
+    "   f([i, i+1, i+2])\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 1 2\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_def_10(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(arr):\n"
+    "       puts(arr[0], arr[1], arr[2])\n"
+    "   end\n"
+    "   for i = 0; i < 3; i += 1:\n"
+    "       f([i, i+1, i+2])\n"
+    "   end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 1 2\n1 2 3\n2 3 4\n"));
+    }
+
+    trv_cleanup;
 }
 
 static void
@@ -21076,6 +21203,9 @@ traverser_tests[] = {
     {"trv_for_stmt_3", test_trv_for_stmt_3},
     {"trv_for_stmt_4", test_trv_for_stmt_4},
     {"trv_for_stmt_5", test_trv_for_stmt_5},
+    {"trv_for_stmt_6", test_trv_for_stmt_6},
+    {"trv_for_stmt_7", test_trv_for_stmt_7},
+    {"trv_for_stmt_8", test_trv_for_stmt_8},
     {"trv_break_stmt", test_trv_break_stmt},
     {"trv_continue_stmt", test_trv_continue_stmt},
     {"trv_return_stmt", test_trv_return_stmt},
@@ -21087,6 +21217,9 @@ traverser_tests[] = {
     {"trv_func_def_5", test_trv_func_def_5},
     {"trv_func_def_6", test_trv_func_def_6},
     {"trv_func_def_7", test_trv_func_def_7},
+    {"trv_func_def_8", test_trv_func_def_8},
+    {"trv_func_def_9", test_trv_func_def_9},
+    {"trv_func_def_10", test_trv_func_def_10},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},
