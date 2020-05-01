@@ -172,3 +172,12 @@ objarr_popb(object_array_t *self) {
 
     return obj;
 }
+
+void
+objarr_dump(const object_array_t *self, FILE *fout) {
+    for (int32_t i = 0; i < self->len; ++i) {
+        const object_t *obj = self->parray[i];
+        fprintf(fout, "array[%d]\n", i);
+        obj_dump(obj, fout);
+    }
+}

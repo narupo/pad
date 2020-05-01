@@ -64,3 +64,12 @@ objarr_pushf(object_array_t* self, object_t *reference);
 
 object_t *
 objarr_popb(object_array_t *self);
+
+/**
+ * dump object array at stream
+ *
+ * @param[in] *self
+ * @param[in] *fout stream
+ */
+void
+objarr_dump(const object_array_t *self, FILE *fout);
