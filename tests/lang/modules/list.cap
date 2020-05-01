@@ -1,0 +1,10 @@
+{@
+    def arrayToUl(arr):
+@}<ul>
+{@
+        for i = 0; i < len(arr); i += 1: @}    <li>{: arr[i] :}</li>
+{@ end
+@}</ul>
+{@
+    end
+@}

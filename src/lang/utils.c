@@ -438,6 +438,10 @@ extract_ref_of_obj(ast_t *ast, object_t *obj) {
     default:
         return obj;
         break;
+    case OBJ_TYPE_RESERV: {
+        ast_pushb_error(ast, "can't extract from reservation object");
+        return NULL;
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *ref = pull_in_ref_by_owner(ast, obj);
         if (!ref) {
