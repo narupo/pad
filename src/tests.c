@@ -20803,9 +20803,29 @@ test_trv_call_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        traceerr();
         assert(!ast_has_error_stack(ast));
-        // assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 1 2\n1 2 3\n"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx),
+            "<ul>\n"
+            "    <li>0</li>\n"
+            "    <li>1</li>\n"
+            "    <li>2</li>\n"
+            "</ul>\n"
+            "<ul>\n"
+            "    <li>1</li>\n"
+            "    <li>2</li>\n"
+            "    <li>3</li>\n"
+            "</ul>\n"
+            "<ul>\n"
+            "    <li>2</li>\n"
+            "    <li>3</li>\n"
+            "    <li>4</li>\n"
+            "</ul>\n"
+            "<ul>\n"
+            "    <li>3</li>\n"
+            "    <li>4</li>\n"
+            "    <li>5</li>\n"
+            "</ul>\n"
+        ));
     }
 
     trv_cleanup;

@@ -267,7 +267,7 @@ trv_ref_block(ast_t *ast, const node_t *node, int dep) {
         if (!obj) {
             ast_pushb_error(ast,
                 "\"%s\" is not defined in ref block",
-                str_getc(result->identifier)
+                obj_getc_idn_name(result)
             );
             return_trav(NULL);
         }
@@ -482,7 +482,7 @@ trv_import_as_stmt(ast_t *ast, const node_t *node, int dep) {
 
     // import start
     const char *path = str_getc(pathobj->string);
-    const char *alias = str_getc(aliasobj->identifier);
+    const char *alias = obj_getc_idn_name(aliasobj);
 
     importer_t *importer = importer_new(ast->ref_config);
 
@@ -647,7 +647,7 @@ trv_parse_bool(ast_t *ast, const object_t *obj) {
     case OBJ_TYPE_INT: return obj->lvalue; break;
     case OBJ_TYPE_BOOL: return obj->boolean; break;
     case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = str_getc(obj->identifier);
+        const char *idn = obj_getc_idn_name(obj);
         object_t *obj = ctx_find_var_ref(ast->context, idn);
         if (!obj) {
             ast_pushb_error(ast, "\"%s\" is not defined in if statement", idn);
@@ -984,7 +984,11 @@ trv_obj_to_index_value(ast_t *ast, index_value_t *idxval, const object_t *obj) {
         if (ast_has_error_stack(ast)) {
             return NULL;
         } else if (!src) {
-            ast_pushb_error(ast, "\"%s\" is not defined in extract index value", str_getc(obj->identifier));
+            ast_pushb_error(
+                ast,
+                "\"%s\" is not defined in extract index value",
+                obj_getc_idn_name(obj)
+            );
             return NULL;
         }
         break;
@@ -1051,7 +1055,11 @@ trv_assign_to_index(ast_t *ast, const object_t *lhs, object_t *rhs, int dep) {
             if (ast_has_error_stack(ast)) {
                 return_trav(NULL);
             } else if (!ref) {
-                ast_pushb_error(ast, "\"%s\" is not defined in assign to index", str_getc(ref_operand->identifier));
+                ast_pushb_error(
+                    ast,
+                    "\"%s\" is not defined in assign to index",
+                    obj_getc_idn_name(ref_operand)
+                );
                 return_trav(NULL);
             }
             ref_operand = ref;
@@ -1483,7 +1491,7 @@ trv_roll_identifier_lhs(
     tready();
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
-    const char *idn = str_getc(lhs->identifier);
+    const char *idn = obj_getc_idn_name(lhs);
     object_t *lvar = ctx_find_var_ref(ast->context, idn);
     if (!lvar) {
         ast_pushb_error(ast, "\"%s\" is not defined in roll identifier lhs", idn);
@@ -1505,9 +1513,13 @@ trv_roll_identifier_rhs(
     tready();
     assert(rhs->type == OBJ_TYPE_IDENTIFIER);
 
-    object_t *rvar = ctx_find_var_ref(ast->context, str_getc(rhs->identifier));
+    object_t *rvar = ctx_find_var_ref(ast->context, obj_getc_idn_name(rhs));
     if (!rvar) {
-        ast_pushb_error(ast, "\"%s\" is not defined in roll identifier rhs", str_getc(rhs->identifier));
+        ast_pushb_error(
+            ast,
+            "\"%s\" is not defined in roll identifier rhs",
+            obj_getc_idn_name(rhs)
+        );
         return_trav(NULL);
     }
 
@@ -1616,7 +1628,11 @@ trv_compare_or_int(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep
     case OBJ_TYPE_IDENTIFIER: {
         object_t *rvar = pull_in_ref_by_owner(ast, rhs);
         if (!rvar) {
-            ast_pushb_error(ast, "%s is not defined in compare or int", str_getc(rhs->identifier));
+            ast_pushb_error(
+                ast,
+                "%s is not defined in compare or int",
+                obj_getc_idn_name(rhs)
+            );
             return_trav(NULL);
         }
 
@@ -1738,9 +1754,13 @@ trv_compare_or_bool(ast_t *ast, const object_t *lhs, const object_t *rhs, int de
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = ctx_find_var_ref(ast->context, str_getc(rhs->identifier));
+        object_t *rvar = ctx_find_var_ref(ast->context, obj_getc_idn_name(rhs));
         if (!rvar) {
-            ast_pushb_error(ast, "%s is not defined compare or bool", str_getc(rhs->identifier));
+            ast_pushb_error(
+                ast,
+                "%s is not defined compare or bool",
+                str_getc(rhs->identifier.name)
+            );
             return_trav(NULL);
         }
 
@@ -3461,9 +3481,13 @@ trv_compare_not(ast_t *ast, const object_t *operand, int dep) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *var = ctx_find_var_ref(ast->context, str_getc(operand->identifier));
+        object_t *var = ctx_find_var_ref(ast->context, str_getc(operand->identifier.name));
         if (!var) {
-            ast_pushb_error(ast, "\"%s\" is not defined compare not", str_getc(operand->identifier));
+            ast_pushb_error(
+                ast,
+                "\"%s\" is not defined compare not",
+                str_getc(operand->identifier.name)
+            );
             return_trav(NULL);
         }
 
@@ -5640,7 +5664,7 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
                         return_trav(NULL);
                     }
 
-                    const char *idn = str_getc(result->identifier);
+                    const char *idn = str_getc(result->identifier.name);
                     check("create reservation object by \"%s\"", idn);
                     object_t *reserv = obj_new_reserv(ast->ref_gc, ctx_ast, idn);
                     result = reserv;
@@ -5705,12 +5729,12 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
             ast_pushb_error(ast, "operand is not callable");
             return_trav(NULL);
         } else if (operand->type == OBJ_TYPE_FUNC) {
-            funcname = str_getc(operand->func.name->identifier);
+            funcname = str_getc(operand->func.name->identifier.name);
         } else if (operand->type != OBJ_TYPE_IDENTIFIER) {
             ast_pushb_error(ast, "operand (%d) is not callable", operand->type);
             return_trav(NULL);
         } else {
-            funcname = str_getc(operand->identifier);
+            funcname = str_getc(operand->identifier.name);
         }
 
         check("call _trv_traverse with call's test_list");
@@ -5782,7 +5806,11 @@ trv_index(ast_t *ast, const node_t *node, int dep) {
         ref_operand = pull_in_ref_by_owner(ast, operand);
         if (!ref_operand) {
             // can't index access to null
-            ast_pushb_error(ast, "\"%s\" is not defined", str_getc(operand->identifier));
+            ast_pushb_error(
+                ast,
+                "\"%s\" is not defined",
+                str_getc(operand->identifier.name)
+            );
             return_trav(NULL);
         }
     }
@@ -5833,7 +5861,7 @@ trv_calc_assign_to_idn(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
-    const char *idn = str_getc(lhs->identifier);
+    const char *idn = str_getc(lhs->identifier.name);
 
     switch (rhs->type) {
     default: {
@@ -5855,7 +5883,7 @@ trv_calc_assign_to_idn(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
         if (!rval) {
             ast_pushb_error(ast,
                 "\"%s\" is not defined in asscalc ass idn",
-                str_getc(rhs->identifier)
+                str_getc(rhs->identifier.name)
             );
             return_trav(NULL);
         }
@@ -6594,7 +6622,11 @@ trv_dict_elems(ast_t *ast, const node_t *node, int dep) {
         if (tmp_val->type == OBJ_TYPE_IDENTIFIER) {
             val = pull_in_ref_by_owner(ast, tmp_val);
             if (!val) {
-                ast_pushb_error(ast, "\"%s\" is not defined. can not store to dict elements", str_getc(tmp_val->identifier));
+                ast_pushb_error(
+                    ast,
+                    "\"%s\" is not defined. can not store to dict elements",
+                    str_getc(tmp_val->identifier.name)
+                );
                 return_trav(NULL);
             }
         }
@@ -6648,7 +6680,18 @@ trv_identifier(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_identifier_t *identifier = node->real;
     assert(identifier && node->type == NODE_TYPE_IDENTIFIER);
-    object_t *obj = obj_new_cidentifier(ast->ref_gc, identifier->identifier);
+
+    ast_t *ref_ast = get_ast_by_owner(ast);
+    if (ast_has_error_stack(ast)) {
+        ast_pushb_error(ast, "failed to get ast by owner");
+        return_trav(NULL);
+    }
+
+    object_t *obj = obj_new_cidentifier(
+        ast->ref_gc,
+        ref_ast,
+        identifier->identifier
+    );
     return_trav(obj);
 }
 
@@ -6685,14 +6728,18 @@ invoke_func_obj(ast_t *ast, object_t *funcobj, const object_t *drtargs, int dep)
         for (int32_t i = 0; i < objarr_len(formal_args); ++i) {
             const object_t *farg = objarr_getc(formal_args, i);
             assert(farg->type == OBJ_TYPE_IDENTIFIER);
-            const char *fargname = str_getc(farg->identifier);
+            const char *fargname = str_getc(farg->identifier.name);
 
             object_t *aarg = objarr_get(actual_args, i);
             object_t *ref_aarg = aarg;
             if (aarg->type == OBJ_TYPE_IDENTIFIER) {
                 ref_aarg = pull_in_ref_by_owner(ast, aarg);  // pull from current context's ast
                 if (!ref_aarg) {
-                    ast_pushb_error(ast, "\"%s\" is not defined in invoke function", str_getc(aarg->identifier));
+                    ast_pushb_error(
+                        ast,
+                        "\"%s\" is not defined in invoke function",
+                        str_getc(aarg->identifier.name)
+                    );
                     obj_del(args);
                     return NULL;
                 }
@@ -6929,7 +6976,7 @@ trv_func_def(ast_t *ast, const node_t *node, int dep) {
     node_array_t *ref_suites = func_def->contents;
     object_t *func_obj = obj_new_func(ast->ref_gc, ast, name, def_args, ref_suites);
     check("set func at varmap");
-    move_obj_at_cur_varmap(ast, str_getc(name->identifier), mem_move(func_obj));
+    move_obj_at_cur_varmap(ast, str_getc(name->identifier.name), mem_move(func_obj));
 
     return_trav(NULL);
 }
@@ -6950,6 +6997,12 @@ trv_func_def_args(ast_t *ast, const node_t *node, int dep) {
     node_func_def_args_t *func_def_args = node->real;
     assert(func_def_args && node->type == NODE_TYPE_FUNC_DEF_ARGS);
 
+    ast_t *ref_ast = get_ast_by_owner(ast);
+    if (ast_has_error_stack(ast)) {
+        ast_pushb_error(ast, "failed to get ast by owner");
+        return_trav(NULL);
+    }
+
     object_array_t *args = objarr_new();
 
     for (int32_t i = 0; i < nodearr_len(func_def_args->identifiers); ++i) {
@@ -6958,7 +7011,7 @@ trv_func_def_args(ast_t *ast, const node_t *node, int dep) {
         assert(n->type == NODE_TYPE_IDENTIFIER);
         node_identifier_t *nidn = n->real;
 
-        object_t *oidn = obj_new_cidentifier(ast->ref_gc, nidn->identifier);
+        object_t *oidn = obj_new_cidentifier(ast->ref_gc, ref_ast, nidn->identifier);
         objarr_moveb(args, oidn);
     }
 

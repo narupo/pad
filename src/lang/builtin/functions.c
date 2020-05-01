@@ -57,7 +57,7 @@ again:
         return obj_new_cstr(ast->ref_gc, "<dict>");
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = str_getc(obj->identifier);
+        const char *idn = obj_getc_idn_name(obj);
         obj = pull_in_ref_by(ast, obj);
         if (!obj) {
             ast_pushb_error(ast, "not defined \"%s\" in type()", idn);

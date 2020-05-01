@@ -39,6 +39,9 @@ again:
     return NULL;
 }
 
+/**
+ * this function do not push error at ast's error stack
+ */
 object_t *
 pull_in_ref_by_owner(ast_t *ast, const object_t *idn_obj) {
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
@@ -46,14 +49,15 @@ pull_in_ref_by_owner(ast_t *ast, const object_t *idn_obj) {
     // if owner is null then refer identifier object
     object_t *owner = ast->ref_dot_owner;
     if (!owner) {
-        const char *idn = str_getc(idn_obj->identifier);
-        object_t *ref = ctx_find_var_ref(ast->context, idn);
+        ast_t *ref_ast = obj_get_idn_ref_ast(idn_obj);
+        const char *idn = obj_getc_idn_name(idn_obj);
+        object_t *ref = ctx_find_var_ref(ref_ast->context, idn);
         if (!ref) {
             // do not push error stack
             return NULL;
         }
         if (ref->type == OBJ_TYPE_IDENTIFIER) {
-            return pull_in_ref_by(ast, ref);
+            return pull_in_ref_by(ref_ast, ref);
         }
 
         return ref;
@@ -95,18 +99,22 @@ again:
     return NULL;
 }
 
+/**
+ * this function do not push error at ast's error stack
+ */
 object_t *
 pull_in_ref_by(ast_t *ast, const object_t *idn_obj) {
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
 
-    const char *idn = str_getc(idn_obj->identifier);
-    object_t *ref = ctx_find_var_ref(ast->context, idn);
+    ast_t *ref_ast = obj_get_idn_ref_ast(idn_obj);
+    const char *idn = obj_getc_idn_name(idn_obj);
+    object_t *ref = ctx_find_var_ref(ref_ast->context, idn);
     if (!ref) {
         // do not push error stack
         return NULL;
     }
     if (ref->type == OBJ_TYPE_IDENTIFIER) {
-        return pull_in_ref_by(ast, ref);
+        return pull_in_ref_by(ref_ast, ref);
     }
 
     return ref;
@@ -132,7 +140,11 @@ copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
         if (el->type == OBJ_TYPE_IDENTIFIER) {
             idx = pull_in_ref_by(ast, el);
             if (!idx) {
-                ast_pushb_error(ast, "\"%s\" is not defined in index object", str_getc(el->identifier));
+                ast_pushb_error(
+                    ast,
+                    "\"%s\" is not defined in index object",
+                    obj_getc_idn_name(el)
+                );
                 obj_del(operand);
                 return NULL;
             }
@@ -152,7 +164,11 @@ copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
                 obj_del(operand);
                 return NULL;
             } else if (!ref) {
-                ast_pushb_error(ast, "\"%s\" is not defined in get value of index object", str_getc(operand->identifier));
+                ast_pushb_error(
+                    ast,
+                    "\"%s\" is not defined in get value of index object",
+                    obj_getc_idn_name(operand)
+                );
                 obj_del(operand);
                 return NULL;
             }
@@ -237,7 +253,11 @@ obj_to_string(ast_t *ast, const object_t *obj) {
     case OBJ_TYPE_IDENTIFIER: {
         object_t *var = pull_in_ref_by(ast, obj);
         if (!var) {
-            ast_pushb_error(ast, "\"%s\" is not defined in object to string", str_getc(obj->identifier));
+            ast_pushb_error(
+                ast,
+                "\"%s\" is not defined in object to string",
+                obj_getc_idn_name(obj)
+            );
             return NULL;
         }
         return obj_to_str(var);
@@ -314,7 +334,11 @@ refer_index_obj_with_ref(ast_t *ast, const object_t *index_obj) {
         if (el->type == OBJ_TYPE_IDENTIFIER) {
             idx = pull_in_ref_by(ast, el);
             if (!idx) {
-                ast_pushb_error(ast, "\"%s\" is not defined in index object", str_getc(el->identifier));
+                ast_pushb_error(
+                    ast,
+                    "\"%s\" is not defined in index object",
+                    obj_getc_idn_name(el)
+                );
                 return NULL;
             }
         }
@@ -332,7 +356,11 @@ refer_index_obj_with_ref(ast_t *ast, const object_t *index_obj) {
             if (ast_has_error_stack(ast)) {
                 return NULL;
             } else if (!ref) {
-                ast_pushb_error(ast, "\"%s\" is not defined in get value of index object", str_getc(operand->identifier));
+                ast_pushb_error(
+                    ast,
+                    "\"%s\" is not defined in get value of index object",
+                    obj_getc_idn_name(operand)
+                );
                 return NULL;
             }
             operand = ref;
@@ -401,7 +429,11 @@ extract_copy_of_obj(ast_t *ast, const object_t *obj) {
     case OBJ_TYPE_IDENTIFIER: {
         object_t *ref = pull_in_ref_by_owner(ast, obj);
         if (!ref) {
-            ast_pushb_error(ast, "\"%s\" is not defined in extract obj", str_getc(obj->identifier));
+            ast_pushb_error(
+                ast,
+                "\"%s\" is not defined in extract obj",
+                obj_getc_idn_name(obj)
+            );
             return NULL;
         }
         return obj_new_other(ref);
@@ -445,7 +477,7 @@ extract_ref_of_obj(ast_t *ast, object_t *obj) {
     case OBJ_TYPE_IDENTIFIER: {
         object_t *ref = pull_in_ref_by_owner(ast, obj);
         if (!ref) {
-            ast_pushb_error(ast, "\"%s\" is not defined", str_getc(obj->identifier));
+            ast_pushb_error(ast, "\"%s\" is not defined", obj_getc_idn_name(obj));
             return NULL;
         }
         return ref;

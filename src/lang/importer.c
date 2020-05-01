@@ -176,14 +176,14 @@ importer_from_import(
         // get name
         object_t *objnameobj = objarr_get(var, 0);
         assert(objnameobj->type == OBJ_TYPE_IDENTIFIER);
-        const char *objname = str_getc(objnameobj->identifier);
+        const char *objname = obj_getc_idn_name(objnameobj);
 
         // get alias if exists
         const char *alias = NULL;
         if (objarr_len(var) == 2) {
             object_t *aliasobj = objarr_get(var, 1);
             assert(aliasobj->type == OBJ_TYPE_IDENTIFIER);
-            alias = str_getc(aliasobj->identifier);
+            alias = obj_getc_idn_name(aliasobj);
         }
 
         // get object from imported module

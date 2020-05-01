@@ -36,8 +36,9 @@ obj_del(object_t *self) {
         // nothing todo
         break;
     case OBJ_TYPE_IDENTIFIER:
-        str_del(self->identifier);
-        self->identifier = NULL;
+        self->identifier.ref_ast = NULL;  // do not delete
+        str_del(self->identifier.name);
+        self->identifier.name = NULL;
         break;
     case OBJ_TYPE_STRING:
         str_del(self->string);
@@ -117,7 +118,8 @@ obj_new_other(const object_t *other) {
         self->boolean = other->boolean;
         break;
     case OBJ_TYPE_IDENTIFIER:
-        self->identifier = str_new_other(other->identifier);
+        self->identifier.ref_ast = other->identifier.ref_ast;
+        self->identifier.name = str_new_other(other->identifier.name);
         break;
     case OBJ_TYPE_STRING:
         self->string = str_new_other(other->string);
@@ -227,8 +229,8 @@ obj_new_true(gc_t *ref_gc) {
 }
 
 object_t *
-obj_new_cidentifier(gc_t *ref_gc, const char *identifier) {
-    if (!ref_gc || !identifier) {
+obj_new_cidentifier(gc_t *ref_gc, ast_t *ref_ast, const char *identifier) {
+    if (!ref_gc || !ref_ast || !identifier) {
         return NULL;
     }
 
@@ -237,15 +239,16 @@ obj_new_cidentifier(gc_t *ref_gc, const char *identifier) {
         return NULL;
     }
 
-    self->identifier = str_new();
-    str_set(self->identifier, identifier);
+    self->identifier.ref_ast = ref_ast;
+    self->identifier.name = str_new();
+    str_set(self->identifier.name, identifier);
 
     return self;
 }
 
 object_t *
-obj_new_identifier(gc_t *ref_gc, string_t *move_identifier) {
-    if (!ref_gc || !move_identifier) {
+obj_new_identifier(gc_t *ref_gc, ast_t *ref_ast, string_t *move_identifier) {
+    if (!ref_gc || !ref_ast || !move_identifier) {
         return NULL;
     }
 
@@ -254,7 +257,8 @@ obj_new_identifier(gc_t *ref_gc, string_t *move_identifier) {
         return NULL;
     }
 
-    self->identifier = move_identifier;
+    self->identifier.ref_ast = ref_ast;
+    self->identifier.name = move_identifier;
 
     return self;
 }
@@ -494,7 +498,7 @@ obj_to_str(const object_t *self) {
         return str;
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        return str_new_other(self->identifier);
+        return str_new_cstr(obj_getc_idn_name(self));
     } break;
     case OBJ_TYPE_FUNC: {
         string_t *str = str_new();
@@ -654,4 +658,14 @@ obj_type_to_str(const object_t *self) {
     }
 
     return s;
+}
+
+const char *
+obj_getc_idn_name(const object_t *self) {
+    return str_getc(self->identifier.name);
+}
+
+ast_t *
+obj_get_idn_ref_ast(const object_t *self) {
+    return self->identifier.ref_ast;
 }
