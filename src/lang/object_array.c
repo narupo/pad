@@ -149,6 +149,17 @@ objarr_movef(object_array_t* self, object_t *obj) {
     return self;
 }
 
+
+object_array_t *
+objarr_pushb(object_array_t* self, object_t *reference) {
+    return objarr_moveb(self, reference);
+}
+
+object_array_t *
+objarr_pushf(object_array_t* self, object_t *reference) {
+    return objarr_movef(self, reference);
+}
+
 object_t *
 objarr_popb(object_array_t *self) {
     if (self->len <= 0) {

@@ -5998,6 +5998,9 @@ trv_calc_asscalc_add_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
         ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
         break;
+    case OBJ_TYPE_INDEX: {
+        err_die("TODO: add ass to index object");
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
         check("call trv_calc_asscalc_add_ass_identifier");
         object_t *obj = trv_calc_asscalc_add_ass_identifier(ast, lhs, rhs, dep+1);
@@ -6523,17 +6526,24 @@ trv_array_elems(ast_t *ast, const node_t *node, int dep) {
         object_t *result = _trv_traverse(ast, n, dep+1);
         assert(result);
 
-        switch (result->type) {
-        default:
-            break;
-        case OBJ_TYPE_RESERV:
-            ast_pushb_error(ast, "can't store reservation object at array");
+        object_t *ref = extract_ref_of_obj(ast, result);
+        if (ast_has_error_stack(ast)) {
+            ast_pushb_error(ast, "failed to extract reference");
             return_trav(NULL);
+        }
+        assert(ref);
+
+        switch (ref->type) {
+        default: {
+            object_t *copy = obj_new_other(ref);
+            objarr_moveb(objarr, mem_move(copy));
+        } break;
+        case OBJ_TYPE_ARRAY:
+            // if object is array then store reference
+            obj_inc_ref(ref);
+            objarr_pushb(objarr, ref);
             break;
         }
-
-        // allow identifier object
-        objarr_moveb(objarr, result);
     }
 
     object_t *ret = obj_new_array(ast->ref_gc, objarr);
