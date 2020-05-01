@@ -11695,29 +11695,6 @@ test_trv_atom_0(void) {
         assert(!ast_has_error_stack(ast));
     }
 
-    tkr_parse(tkr, "{@ alias.set() @}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "can't invoke alias.set. too few arguments"));
-    }
-
-/* This test failed
-   But trv_builtin_modules_alias_0 is success
-   Why this test only failed ?
-
-    tkr_parse(tkr, "{@ alias.set(1, 2, 3) @}");
-    {
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
-        traceerr();
-        assert(!strcmp(ast_getc_first_error_message(ast), "can't invoke alias.set. key is not string"));
-    }
-*/
     trv_cleanup;
 }
 
@@ -14442,6 +14419,31 @@ test_trv_builtin_functions(void) {
 static void
 test_trv_builtin_modules_alias_0(void) {
     trv_ready;
+
+    tkr_parse(tkr, "{@ alias.set(1, 2, 3) @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "can't invoke alias.set. key is not string"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_builtin_modules_alias_1(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@ alias.set() @}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(ast_has_error_stack(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "can't invoke alias.set. too few arguments"));
+    }
 
     tkr_parse(tkr, "{@ alias.set(1, 2, 3) @}");
     {
@@ -21476,6 +21478,7 @@ traverser_tests[] = {
     {"trv_identifier", test_trv_identifier},
     {"trv_builtin_alias_0", test_trv_builtin_alias_0},
     {"trv_builtin_modules_alias_0", test_trv_builtin_modules_alias_0},
+    {"trv_builtin_modules_alias_1", test_trv_builtin_modules_alias_1},
     {"trv_traverse", test_trv_traverse},
     {"trv_dict", test_trv_dict},
     {"trv_comparison", test_trv_comparison},

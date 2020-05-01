@@ -405,6 +405,7 @@ ast_clear(ast_t *self) {
     ast_del_nodes(self, self->root);
     errstack_clear(self->error_stack);
     self->root = NULL;
+    self->ref_dot_owner = NULL;
 }
 
 const char *

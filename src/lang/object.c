@@ -607,6 +607,9 @@ obj_dump(const object_t *self, FILE *fout) {
     case OBJ_TYPE_MODULE:
         fprintf(fout, "object.module.name[%s]\n", str_getc(self->module.name));
         break;
+    case OBJ_TYPE_ARRAY:
+        objarr_dump(self->objarr, fout);
+        break;
     }
 }
 
