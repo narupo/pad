@@ -20699,6 +20699,122 @@ test_trv_call_0(void) {
 }
 
 static void
+test_trv_call_1(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(a):\n"
+    "       puts(a[0], a[1])\n"
+    "   end\n"
+    "   a = [1, 2]\n"
+    "   f(a)\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1 2\n"));
+    }
+
+    trv_cleanup;
+}
+
+/*
+{@
+    import "utils.cap" as utils
+    from "/html/list.cap" import arrayToUl
+
+    for i = 0; i < 4; i += 1:
+        j = i
+        a = [j, j+1, j+2]
+        arrayToUl(a)
+    end
+@}
+*/
+
+static void
+test_trv_call_2(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(a):\n"
+    "       puts(a[0], a[1])\n"
+    "   end\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       a = [i, i+1]\n"
+    "       f(a)\n"
+    "   end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 1\n1 2\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_call_3(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(a):\n"
+    "       puts(a[0], a[1], a[2])\n"
+    "   end\n"
+    "\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       j = i\n"
+    "       a = [j, j+1, j+2]\n"
+    "       f(a)\n"
+    "   end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 1 2\n1 2 3\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_call_4(void) {
+
+    return;  // TODO
+
+    trv_ready;
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "."));
+
+    tkr_parse(tkr, "{@\n"
+    "    from \"/tests/lang/modules/list.cap\" import arrayToUl\n"
+    "\n"
+    "    for i = 0; i < 4; i += 1:\n"
+    "       j = i\n"
+    "       a = [j, j+1, j+2]\n"
+    "       arrayToUl(a)\n"
+    "    end\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        traceerr();
+        assert(!ast_has_error_stack(ast));
+        // assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 1 2\n1 2 3\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_index_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -21244,7 +21360,11 @@ traverser_tests[] = {
     {"trv_term_0", test_trv_term_0},
     {"trv_term_1", test_trv_term_1},
     // {"trv_dot_0", test_trv_dot_0},
-    // {"trv_call_0", test_trv_call_0},
+    {"trv_call_0", test_trv_call_0},
+    {"trv_call_1", test_trv_call_1},
+    {"trv_call_2", test_trv_call_2},
+    {"trv_call_3", test_trv_call_3},
+    {"trv_call_4", test_trv_call_4},
     {"trv_index_0", test_trv_index_0},
     {"trv_index_1", test_trv_index_1},
     {"trv_array_0", test_trv_array_0},

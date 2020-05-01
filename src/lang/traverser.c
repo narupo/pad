@@ -6679,14 +6679,21 @@ invoke_func_obj(ast_t *ast, object_t *funcobj, const object_t *drtargs, int dep)
             object_t *aarg = objarr_get(actual_args, i);
             object_t *ref_aarg = aarg;
             if (aarg->type == OBJ_TYPE_IDENTIFIER) {
-                ref_aarg = pull_in_ref_by_owner(func->ref_ast, aarg);
+                ref_aarg = pull_in_ref_by_owner(ast, aarg);  // pull from current context's ast
                 if (!ref_aarg) {
                     ast_pushb_error(ast, "\"%s\" is not defined in invoke function", str_getc(aarg->identifier));
                     obj_del(args);
                     return NULL;
                 }
             }
-            object_t *copy_aarg = obj_new_other(ref_aarg);
+
+            object_t *extref = extract_ref_of_obj(ast, ref_aarg);
+            if (ast_has_error_stack(ast)) {
+                ast_pushb_error(ast, "failed to extract reference");
+                return NULL;
+            }
+
+            object_t *copy_aarg = obj_new_other(extref);
 
             move_obj_at_cur_varmap(func->ref_ast, fargname, mem_move(copy_aarg));
         }
