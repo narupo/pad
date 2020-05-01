@@ -20785,9 +20785,6 @@ test_trv_call_3(void) {
 
 static void
 test_trv_call_4(void) {
-
-    return;  // TODO
-
     trv_ready;
 
     assert(solve_path(config->home_path, sizeof config->home_path, "."));
