@@ -51,10 +51,16 @@ object_array_t *
 objarr_move(object_array_t* self, int32_t index, object_t *move_obj);
 
 object_array_t *
-objarr_moveb(object_array_t* self, object_t *obj);
+objarr_moveb(object_array_t* self, object_t *move_obj);
 
 object_array_t *
-objarr_movef(object_array_t* self, object_t *obj);
+objarr_movef(object_array_t* self, object_t *move_obj);
+
+object_array_t *
+objarr_pushb(object_array_t* self, object_t *reference);
+
+object_array_t *
+objarr_pushf(object_array_t* self, object_t *reference);
 
 object_t *
 objarr_popb(object_array_t *self);

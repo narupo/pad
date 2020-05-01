@@ -20883,12 +20883,7 @@ test_trv_index_1(void) {
 
 static void
 test_trv_array_0(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{@ a = [0, 1] @}");
     {
@@ -20899,11 +20894,83 @@ test_trv_array_0(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
+}
+
+static void
+test_trv_array_1(void) {
+
+    return;  // TODO
+
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 0\n"
+    "   a = [i, 1]\n"
+    "   a[0] += 1\n"
+    "   puts(i)\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        traceerr();
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_array_2(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 0\n"
+    "   a = [i, 1]\n"
+    "   puts(i)\n"
+    "   puts(a[0])\n"
+    "   puts(id(i) != id(a[0]))"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n0\ntrue\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_array_3(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   i = 0\n"
+    "   s = \"abc\"\n"
+    "   n = nil\n"
+    "   l = [0, 1, 2]\n"
+    "   a = [i, s, n, l]\n"
+    "   puts(a[0], a[1], a[2], a[3][0])\n"
+    "   puts(id(i) != id(a[0]))\n"
+    "   puts(id(s) != id(a[1]))\n"
+    "   puts(id(n) != id(a[2]))\n"
+    "   puts(id(l) == id(a[3]))\n"
+    "   l[0] = 3\n"
+    "   puts(l[0] == a[3][0])\n"
+    "@}");
+    {
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 abc nil 0\ntrue\ntrue\ntrue\ntrue\ntrue\n"));
+    }
+
+    trv_cleanup;
 }
 
 static void
@@ -21385,6 +21452,9 @@ traverser_tests[] = {
     {"trv_index_0", test_trv_index_0},
     {"trv_index_1", test_trv_index_1},
     {"trv_array_0", test_trv_array_0},
+    {"trv_array_1", test_trv_array_1},
+    {"trv_array_2", test_trv_array_2},
+    {"trv_array_3", test_trv_array_3},
     {"trv_nil", test_trv_nil},
     {"trv_false", test_trv_false},
     {"trv_true", test_trv_true},
