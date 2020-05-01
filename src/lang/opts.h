@@ -88,3 +88,11 @@ opts_getc_args(const opts_t *self, int32_t idx);
  */
 int32_t
 opts_args_len(const opts_t *self);
+
+/**
+ * clear status
+ *
+ * @param[in] *self
+ */
+void
+opts_clear(opts_t *self);

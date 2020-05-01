@@ -402,10 +402,28 @@ ast_show_debug(const ast_t *self, const char *funcname) {
 
 void
 ast_clear(ast_t *self) {
+    // self->ref_config
+    // do not null clear
+
+    self->tokens = NULL;  // do not delete
+    self->ptr = NULL;  // do not delete
+
     ast_del_nodes(self, self->root);
+    self->root = NULL;  // deleted
+
+    self->context = NULL; // do not delete
+
+    opts_clear(self->opts);
+    // do not null clear
+
+    self->ref_gc = NULL;  // do not delete
+    self->ref_dot_owner = NULL;  // do not delete
+    self->import_level = 0;
+
     errstack_clear(self->error_stack);
-    self->root = NULL;
-    self->ref_dot_owner = NULL;
+    // do not null clear
+
+    self->debug = false;  // reset
 }
 
 const char *

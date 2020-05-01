@@ -2091,6 +2091,7 @@ test_util_compile_argv(void) {
 
     char *compiled = compile_argv(config, argc-1, argv+1, src);
 
+    printf("compiled[%s]\n", compiled);
     assert(!strcmp(compiled, "bbb"));
 
     free(compiled);
@@ -13590,9 +13591,9 @@ test_trv_assign_list(void) {
         };
         opts_t *opts = opts_new();
         assert(opts_parse(opts, 3, argv));
-        ast_move_opts(ast, opts);
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
+        ast_move_opts(ast, opts);
         (trv_traverse(ast, ctx));
         ast_move_opts(ast, NULL);
         assert(!ast_has_error_stack(ast));
@@ -14257,9 +14258,9 @@ test_trv_builtin_functions(void) {
             NULL,
         };
         opts_parse(opts, 3, argv);
-        ast_move_opts(ast, opts);
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
+        ast_move_opts(ast, opts);
         trv_traverse(ast, ctx);
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "def"));
@@ -14274,9 +14275,9 @@ test_trv_builtin_functions(void) {
             NULL,
         };
         opts_parse(opts, 2, argv);
-        ast_move_opts(ast, opts);
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
+        ast_move_opts(ast, opts);
         trv_traverse(ast, ctx);
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
@@ -14291,9 +14292,9 @@ test_trv_builtin_functions(void) {
             NULL,
         };
         opts_parse(opts, 2, argv);
-        ast_move_opts(ast, opts);
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
+        ast_move_opts(ast, opts);
         trv_traverse(ast, ctx);
         assert(!ast_has_error_stack(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
