@@ -21984,14 +21984,18 @@ test_trv_array_3(void) {
     "   s = \"abc\"\n"
     "   n = nil\n"
     "   l = [0, 1, 2]\n"
-    "   a = [i, s, n, l]\n"
-    "   puts(a[0], a[1], a[2], a[3][0])\n"
+    "   d = {\"a\": 1, \"b\": 2}\n"
+    "   a = [i, s, n, l, d]\n"
+    "   puts(a[0], a[1], a[2], a[3][0], a[4][\"a\"])\n"
     "   puts(id(i) != id(a[0]))\n"
     "   puts(id(s) != id(a[1]))\n"
     "   puts(id(n) != id(a[2]))\n"
     "   puts(id(l) == id(a[3]))\n"
+    "   puts(id(d) == id(a[4]))\n"
     "   l[0] = 3\n"
     "   puts(l[0] == a[3][0])\n"
+    "   d[\"a\"] = 3\n"
+    "   puts(d[\"a\"] == a[4][\"a\"])\n"
     "@}");
     {
         ast_clear(ast);
@@ -21999,7 +22003,7 @@ test_trv_array_3(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_error_stack(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 abc nil 0\ntrue\ntrue\ntrue\ntrue\ntrue\n"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 abc nil 0 1\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\n"));
     }
 
     trv_cleanup;
