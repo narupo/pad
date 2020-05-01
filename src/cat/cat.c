@@ -253,6 +253,7 @@ catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
             goto fail;
         }
 
+        ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
         if (ast_has_error_stack(ast)) {
             err_error("%s", ast_getc_first_error_message(ast));

@@ -97,6 +97,7 @@ almgr_load_path(almgr_t *self, const char *path) {
         goto fail;
     }
 
+    ast_clear(self->ast);
     cc_compile(self->ast, tkr_get_tokens(self->tkr));
     if (ast_has_error_stack(self->ast)) {
         almgr_set_error_detail(self, ast_getc_first_error_message(self->ast));

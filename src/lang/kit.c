@@ -60,17 +60,13 @@ kit_getc_error(const kit_t *self) {
 kit_t *
 kit_compile_from_string(kit_t *self, const char *str) {
     self->error[0] = '\0';
-    opts_t *opts = opts_new();
-
     tkr_parse(self->tkr, str);
     if (tkr_has_error_stack(self->tkr)) {
         snprintf(self->error, sizeof self->error, "%s", tkr_getc_first_error_message(self->tkr));
         return NULL;
     }
 
-    ast_move_opts(self->ast, opts);
-    opts = NULL;
-
+    ast_clear(self->ast);
     cc_compile(self->ast, tkr_get_tokens(self->tkr));
     if (ast_has_error_stack(self->ast)) {
         snprintf(self->error, sizeof self->error, "%s", ast_getc_first_error_message(self->ast));
