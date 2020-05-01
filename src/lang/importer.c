@@ -70,10 +70,7 @@ create_modobj(
         return NULL;
     }
 
-    opts_t *opts = opts_new();
-    ast_move_opts(ast, mem_move(opts));
-    opts = NULL;
-
+    ast_clear(ast);
     cc_compile(ast, tkr_get_tokens(tkr));
     if (ast_has_error_stack(ast)) {
         importer_set_error(self, ast_getc_first_error_message(ast));

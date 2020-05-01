@@ -123,7 +123,6 @@ cc_expr(ast_t *ast, int dep);
 
 ast_t *
 cc_compile(ast_t *ast, token_t *tokens[]) {
-    ast_clear(ast);
     ast->tokens = tokens;
     ast->ptr = tokens;
     ast->root = cc_program(ast, 0);
