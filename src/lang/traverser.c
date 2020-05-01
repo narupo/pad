@@ -113,7 +113,7 @@ static object_t *
 trv_calc_term_mul(ast_t *ast, const object_t *lhs, const object_t *rhs, int dep);
 
 static object_t *
-trv_calc_asscalc_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep);
+trv_calc_assign_to_idn(ast_t *ast, object_t *lhs, object_t *rhs, int dep);
 
 static object_t *
 trv_multi_assign(ast_t *ast, const node_t *node, int dep);
@@ -1171,8 +1171,8 @@ trv_calc_assign(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
         return_trav(NULL);
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        check("call trv_calc_asscalc_ass");
-        object_t *obj = trv_calc_asscalc_ass(ast, lhs, rhs, dep+1);
+        check("call trv_calc_assign_to_idn");
+        object_t *obj = trv_calc_assign_to_idn(ast, lhs, rhs, dep+1);
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
@@ -5829,7 +5829,7 @@ trv_index(ast_t *ast, const node_t *node, int dep) {
 }
 
 static object_t *
-trv_calc_asscalc_ass_idn(ast_t *ast, const object_t *lhs, object_t *rhs, int dep) {
+trv_calc_assign_to_idn(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     tready();
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
@@ -5861,30 +5861,13 @@ trv_calc_asscalc_ass_idn(ast_t *ast, const object_t *lhs, object_t *rhs, int dep
         }
 
         check("set reference of (%d) at (%s) of current varmap", rval->type, idn);
+        obj_inc_ref(rval);
         set_ref_at_cur_varmap(ast, idn, rval);
         return_trav(rval);
     } break;
     }
 
     assert(0 && "impossible. failed to calc asscalc ass idn");
-    return_trav(NULL);
-}
-
-static object_t *
-trv_calc_asscalc_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
-    tready();
-
-    switch (lhs->type) {
-    default:
-        ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
-        return_trav(NULL);
-        break;
-    case OBJ_TYPE_IDENTIFIER:
-        return trv_calc_asscalc_ass_idn(ast, lhs, rhs, dep+1);
-        break;
-    }
-
-    assert(0 && "impossible. failed to calc asscalc ass");
     return_trav(NULL);
 }
 
