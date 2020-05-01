@@ -6524,7 +6524,10 @@ trv_array_elems(ast_t *ast, const node_t *node, int dep) {
     for (int32_t i = 0; i < nodearr_len(array_elems->nodearr); ++i) {
         node_t *n = nodearr_get(array_elems->nodearr, i);
         object_t *result = _trv_traverse(ast, n, dep+1);
-        assert(result);
+        if (ast_has_error_stack(ast)) {
+            ast_pushb_error(ast, "result is null");
+            return_trav(NULL);
+        }
 
         object_t *ref = extract_ref_of_obj(ast, result);
         if (ast_has_error_stack(ast)) {
