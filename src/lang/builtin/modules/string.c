@@ -33,7 +33,7 @@ again:
         return obj_new_str(ast->ref_gc, result);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        owner = ctx_find_var_ref(ast->context, str_getc(owner->identifier));
+        owner = ctx_find_var_ref(ast->context, obj_getc_idn_name(owner));
         if (!owner) {
             ast_pushb_error(ast, "not found \"%s\" in %s function", owner->identifier, method_name);
             return NULL;

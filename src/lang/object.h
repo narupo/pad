@@ -107,13 +107,21 @@ struct object_reserv {
 };
 
 /**
+ * A identifier object
+ */
+struct object_identifier {
+    ast_t *ref_ast;
+    string_t *name;
+};
+
+/**
  * A abstract object
  */
 struct object {
     obj_type_t type;  // object type
     gc_t *ref_gc;  // reference to gc (DO NOT DELETE)
     gc_item_t gc_item;  // gc item for memory management
-    string_t *identifier;  // value of identifier (type == OBJ_TYPE_IDENTIFIER)
+    object_identifier_t identifier;  // value of identifier (type == OBJ_TYPE_IDENTIFIER)
     string_t *string;  // value of string (type == OBJ_TYPE_STRING)
     object_array_t *objarr;  // value of array (type == OBJ_TYPE_ARRAY)
     object_dict_t *objdict;  // value of dict (type == OBJ_TYPE_DICT)
@@ -209,27 +217,29 @@ obj_new_bool(gc_t *ref_gc, bool boolean);
  * construct identifier object by C string
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc     reference to gc_t (do not delete)
- * @param[in] *identifier C strings of identifier
+ * @param[in]     *ref_gc     reference to gc_t (do not delete)
+ * @param[in|out] *ref_ast    reference to ast_t current context (do not delete)
+ * @param[in]     *identifier C strings of identifier
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_cidentifier(gc_t *ref_gc, const char *identifier);
+obj_new_cidentifier(gc_t *ref_gc, ast_t *ref_ast, const char *identifier);
 
 /**
  * construct identifier object by string_t
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc          reference to gc_t (do not delete)
- * @param[in] *move_identifier pointer to string_t (with move semantics)
+ * @param[in]     *ref_gc          reference to gc_t (do not delete)
+ * @param[in|out] *ref_ast         reference to ast_t current context (do not delete)
+ * @param[in]     *move_identifier pointer to string_t (with move semantics)
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_identifier(gc_t *ref_gc, string_t *move_identifier);
+obj_new_identifier(gc_t *ref_gc, ast_t *ref_ast, string_t *move_identifier);
 
 /**
  * construct string object by C strings
@@ -441,3 +451,23 @@ obj_dump(const object_t *self, FILE *fout);
  */
 string_t *
 obj_type_to_str(const object_t *self);
+
+/**
+ * get identifier name
+ *
+ * @param[in] *self
+ *
+ * @return pointer to strings in identifier
+ */
+const char *
+obj_getc_idn_name(const object_t *self);
+
+/**
+ * get reference of ast in identifier object
+ *
+ * @param[in] *self
+ *
+ * @return reference to ast_t (do not delete)
+ */
+ast_t *
+obj_get_idn_ref_ast(const object_t *self);
