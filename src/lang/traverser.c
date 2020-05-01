@@ -6542,7 +6542,8 @@ trv_array_elems(ast_t *ast, const node_t *node, int dep) {
             objarr_moveb(objarr, mem_move(copy));
         } break;
         case OBJ_TYPE_ARRAY:
-            // if object is array then store reference
+        case OBJ_TYPE_DICT:
+            // if object is array or dict then store reference at array
             obj_inc_ref(ref);
             objarr_pushb(objarr, ref);
             break;
