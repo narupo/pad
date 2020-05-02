@@ -131,7 +131,7 @@ ast_getc_last_error_message(const ast_t *self);
  * @return if has error then true else false
  */
 bool
-ast_has_error_stack(const ast_t *self);
+ast_has_errors(const ast_t *self);
 
 /**
  * set debug mode

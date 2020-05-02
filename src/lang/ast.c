@@ -108,8 +108,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         ast_del_nodes(self, for_stmt->init_formula);
         ast_del_nodes(self, for_stmt->comp_formula);
         ast_del_nodes(self, for_stmt->update_formula);
-        ast_del_nodes(self, for_stmt->elems);
-        ast_del_nodes(self, for_stmt->blocks);
+        nodearr_del(for_stmt->contents);
     } break;
     case NODE_TYPE_BREAK_STMT: {
         // nothing todo
@@ -447,7 +446,7 @@ ast_getc_first_error_message(const ast_t *self) {
 }
 
 bool
-ast_has_error_stack(const ast_t *self) {
+ast_has_errors(const ast_t *self) {
     return errstack_len(self->error_stack);
 }
 

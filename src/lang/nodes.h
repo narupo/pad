@@ -207,8 +207,7 @@ typedef struct {
     node_t *init_formula;
     node_t *comp_formula;
     node_t *update_formula;
-    node_t *elems;
-    node_t *blocks;
+    node_array_t *contents;
 } node_for_stmt_t;
 
 typedef struct {

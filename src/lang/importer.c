@@ -72,14 +72,14 @@ create_modobj(
 
     ast_clear(ast);
     cc_compile(ast, tkr_get_tokens(tkr));
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         importer_set_error(self, ast_getc_first_error_message(ast));
         free(src);
         return NULL;
     }
 
     trv_traverse(ast, ctx);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         importer_set_error(self, ast_getc_first_error_message(ast));
         free(src);
         return NULL;

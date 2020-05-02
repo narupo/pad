@@ -68,13 +68,13 @@ kit_compile_from_string(kit_t *self, const char *str) {
 
     ast_clear(self->ast);
     cc_compile(self->ast, tkr_get_tokens(self->tkr));
-    if (ast_has_error_stack(self->ast)) {
+    if (ast_has_errors(self->ast)) {
         snprintf(self->error, sizeof self->error, "%s", ast_getc_first_error_message(self->ast));
         return NULL;
     }
 
     trv_traverse(self->ast, self->ctx);
-    if (ast_has_error_stack(self->ast)) {
+    if (ast_has_errors(self->ast)) {
         snprintf(self->error, sizeof self->error, "%s", ast_getc_first_error_message(self->ast));
         return NULL;
     }

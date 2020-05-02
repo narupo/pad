@@ -160,7 +160,7 @@ copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
 
         if (operand->type == OBJ_TYPE_IDENTIFIER) {
             object_t *ref = pull_in_ref_by(ast, operand);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 obj_del(operand);
                 return NULL;
             } else if (!ref) {
@@ -273,7 +273,7 @@ copy_object_value(ast_t *ast, const object_t *obj) {
     assert(obj);
 
     object_t *copied = extract_copy_of_obj(ast, obj);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to extract object with copy");
         return NULL;
     }
@@ -286,7 +286,7 @@ move_obj_at_cur_varmap(ast_t *ast, const char *identifier, object_t *move_obj) {
     assert(move_obj->type != OBJ_TYPE_IDENTIFIER);
 
     ast = get_ast_by_owner(ast);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "can't move object");
         return;
     }
@@ -300,7 +300,7 @@ set_ref_at_cur_varmap(ast_t *ast, const char *identifier, object_t *ref) {
     assert(ref->type != OBJ_TYPE_IDENTIFIER);
 
     ast = get_ast_by_owner(ast);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "can't set reference");
         return;
     }
@@ -353,7 +353,7 @@ refer_index_obj_with_ref(ast_t *ast, const object_t *index_obj) {
 
         if (operand->type == OBJ_TYPE_IDENTIFIER) {
             object_t *ref = pull_in_ref_by(ast, operand);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return NULL;
             } else if (!ref) {
                 ast_pushb_error(

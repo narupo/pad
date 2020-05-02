@@ -183,7 +183,7 @@ cc_assign(ast_t *ast, int dep) {
     check("call rhs cc_test");
     node_t *rhs = cc_test(ast, dep+1);
     if (!rhs) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         return_cleanup("syntax error. not found rhs test in assign list");
@@ -206,7 +206,7 @@ cc_assign(ast_t *ast, int dep) {
         check("call rhs cc_test");
         rhs = cc_test(ast, dep+1);
         if (!rhs) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found rhs test in assign list (2)");
@@ -263,7 +263,7 @@ cc_assign_list(ast_t *ast, int dep) {
         check("call cc_assign");
         node_t *rhs = cc_assign(ast, dep+1);
         if (!rhs) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_cleanup(""); // not error
@@ -295,7 +295,7 @@ cc_formula(ast_t *ast, int dep) {
 
     check("call cc_assign_list");
     cur->assign_list = cc_assign_list(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->assign_list) {
@@ -305,7 +305,7 @@ cc_formula(ast_t *ast, int dep) {
     check("call cc_multi_assign");
     cur->multi_assign = cc_multi_assign(ast, dep+1);
     if (!cur->multi_assign) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -339,7 +339,7 @@ cc_multi_assign(ast_t *ast, int dep) {
     check("call first cc_test_list");
     node_t *node = cc_test_list(ast, dep+1);
     if (!node) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -361,7 +361,7 @@ cc_multi_assign(ast_t *ast, int dep) {
         check("call rhs cc_test_list");
         node = cc_test_list(ast, dep+1);
         if (!node) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found rhs in multi assign");
@@ -397,7 +397,7 @@ cc_test_list(ast_t *ast, int dep) {
 
     node_t *lhs = cc_test(ast, dep+1);
     if (!lhs) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -419,7 +419,7 @@ cc_test_list(ast_t *ast, int dep) {
 
         node_t *rhs = cc_test(ast, dep+1);
         if (!rhs) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found test in test list");
@@ -455,7 +455,7 @@ cc_call_args(ast_t *ast, int dep) {
 
     node_t *lhs = cc_test(ast, dep+1);
     if (!lhs) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         return node_new(NODE_TYPE_CALL_ARGS, cur);
@@ -477,7 +477,7 @@ cc_call_args(ast_t *ast, int dep) {
 
         node_t *rhs = cc_test(ast, dep+1);
         if (!rhs) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found test in test list");
@@ -493,6 +493,7 @@ static node_t *
 cc_for_stmt(ast_t *ast, int dep) {
     ready();
     declare(node_for_stmt_t, cur);
+    cur->contents = nodearr_new();
     token_t **save_ptr = ast->ptr;
 
 #undef return_cleanup
@@ -501,8 +502,7 @@ cc_for_stmt(ast_t *ast, int dep) {
         ast_del_nodes(ast, cur->init_formula); \
         ast_del_nodes(ast, cur->comp_formula); \
         ast_del_nodes(ast, cur->update_formula); \
-        ast_del_nodes(ast, cur->elems); \
-        ast_del_nodes(ast, cur->blocks); \
+        nodearr_del(cur->contents); \
         free(cur); \
         if (strlen(fmt)) { \
             ast_pushb_error(ast, fmt, ##__VA_ARGS__); \
@@ -522,8 +522,8 @@ cc_for_stmt(ast_t *ast, int dep) {
 
     t = *ast->ptr++;
     if (t->type == TOKEN_TYPE_COLON) {
-        // for : elems end
-        // for : @} blocks {@ end
+        // for : contents end
+        // for : @} contents {@ end
         check("read colon");
 
         check("skip newlines");
@@ -535,11 +535,14 @@ cc_for_stmt(ast_t *ast, int dep) {
 
         t = *ast->ptr++;
         if (t->type == TOKEN_TYPE_RBRACEAT) {
-            // for : @} blocks {@ end
+            // for : @} contents {@ end
 
-            cur->blocks = cc_blocks(ast, dep+1);
-            if (ast_has_error_stack(ast)) {
+            node_t *node = cc_blocks(ast, dep+1);
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
+            }
+            if (node) {
+                nodearr_moveb(cur->contents, node);
             }
             // allow null
 
@@ -558,13 +561,16 @@ cc_for_stmt(ast_t *ast, int dep) {
         } else {
             ast->ptr--;
 
-            // for : <elems> end
+            // for : contents end
             check("call cc_elems");
-            cur->elems = cc_elems(ast, dep+1);
-            // allow null
-            if (ast_has_error_stack(ast)) {
+            node_t *node = cc_elems(ast, dep+1);
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
+            if (node) {
+                nodearr_moveb(cur->contents, node);
+            }
+            // allow null
 
             check("skip newlines");
             cc_skip_newlines(ast);
@@ -589,7 +595,7 @@ cc_for_stmt(ast_t *ast, int dep) {
         check("call cc_assign_list");
         cur->init_formula = cc_formula(ast, dep+1);
         if (!cur->init_formula) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found initialize assign list in for statement");
@@ -608,7 +614,7 @@ cc_for_stmt(ast_t *ast, int dep) {
             check("call cc_test");
             cur->comp_formula = cc_formula(ast, dep+1);
             // allow empty
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
 
@@ -625,7 +631,7 @@ cc_for_stmt(ast_t *ast, int dep) {
             check("call cc_test_list");
             cur->update_formula = cc_formula(ast, dep+1);
             // allow empty
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
 
@@ -654,11 +660,14 @@ cc_for_stmt(ast_t *ast, int dep) {
         t = *ast->ptr++;
         if (t->type == TOKEN_TYPE_RBRACEAT) {
             check("read @}");
-            cur->blocks = cc_blocks(ast, dep+1);
-            // allow null
-            if (ast_has_error_stack(ast)) {
+            node_t *node = cc_blocks(ast, dep+1);
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
+            if (node) {
+                nodearr_moveb(cur->contents, node);
+            }
+            // allow null
 
             if (!*ast->ptr) {
                 return_cleanup("syntax error. reached EOF in for statement (6)");
@@ -675,11 +684,14 @@ cc_for_stmt(ast_t *ast, int dep) {
             cc_skip_newlines(ast);
 
             check("call cc_elems");
-            cur->elems = cc_elems(ast, dep+1);
-            // allow empty
-            if (ast_has_error_stack(ast)) {
+            node_t *node = cc_elems(ast, dep+1);
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
+            if (node) {
+                nodearr_moveb(cur->contents, node);
+            }
+            // allow null
         }
 
         check("skip newlines");
@@ -773,7 +785,7 @@ cc_return_stmt(ast_t *ast, int dep) {
     check("read 'return'");
 
     cur->formula = cc_formula(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     // allow null
@@ -892,7 +904,7 @@ cc_simple_assign(ast_t *ast, int dep) {
 
     check("call cc_test");
     node_t *lhs = cc_test(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!lhs) {
@@ -915,7 +927,7 @@ cc_simple_assign(ast_t *ast, int dep) {
 
         check("call cc_test");
         node_t *rhs = cc_test(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         if (!rhs) {
@@ -956,7 +968,7 @@ cc_array_elems(ast_t *ast, int dep) {
 
     check("call cc_simple_assign");
     node_t *lhs = cc_simple_assign(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!lhs) {
@@ -992,7 +1004,7 @@ cc_array_elems(ast_t *ast, int dep) {
 
         check("call cc_simple_assign");
         node_t *rhs = cc_simple_assign(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         if (!rhs) {
@@ -1038,7 +1050,7 @@ cc_array(ast_t *ast, int dep) {
     }
 
     cur->array_elems = cc_array_elems(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     // allow null
@@ -1078,7 +1090,7 @@ cc_dict_elem(ast_t *ast, int dep) {
     } \
 
     cur->key_simple_assign = cc_simple_assign(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!cur->key_simple_assign) {
@@ -1104,7 +1116,7 @@ cc_dict_elem(ast_t *ast, int dep) {
     }
 
     cur->value_simple_assign = cc_simple_assign(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!cur->value_simple_assign) {
@@ -1141,7 +1153,7 @@ cc_dict_elems(ast_t *ast, int dep) {
 
     check("call cc_dict_elem");
     node_t *lhs = cc_dict_elem(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!lhs) {
@@ -1176,7 +1188,7 @@ cc_dict_elems(ast_t *ast, int dep) {
 
         check("call cc_dict_elem");
         node_t *rhs = cc_dict_elem(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         if (!rhs) {
@@ -1221,7 +1233,7 @@ cc_dict(ast_t *ast, int dep) {
     }
 
     cur->dict_elems = cc_dict_elems(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!cur->dict_elems) {
@@ -1377,7 +1389,7 @@ cc_atom(ast_t *ast, int dep) {
 
     check("call cc_nil");
     cur->nil = cc_nil(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->nil) {
@@ -1386,7 +1398,7 @@ cc_atom(ast_t *ast, int dep) {
 
     check("call cc_false_");
     cur->false_ = cc_false_(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->false_) {
@@ -1395,7 +1407,7 @@ cc_atom(ast_t *ast, int dep) {
 
     check("call cc_true_");
     cur->true_ = cc_true_(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->true_) {
@@ -1404,7 +1416,7 @@ cc_atom(ast_t *ast, int dep) {
 
     check("call cc_digit");
     cur->digit = cc_digit(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->digit) {
@@ -1413,7 +1425,7 @@ cc_atom(ast_t *ast, int dep) {
 
     check("call cc_string");
     cur->string = cc_string(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->string) {
@@ -1422,7 +1434,7 @@ cc_atom(ast_t *ast, int dep) {
 
     check("call cc_array");
     cur->array = cc_array(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->array) {
@@ -1431,7 +1443,7 @@ cc_atom(ast_t *ast, int dep) {
 
     check("call cc_dict");
     cur->dict = cc_dict(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->dict) {
@@ -1440,7 +1452,7 @@ cc_atom(ast_t *ast, int dep) {
 
     check("call cc_identifier");
     cur->identifier = cc_identifier(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->identifier) {
@@ -1471,7 +1483,7 @@ cc_factor(ast_t *ast, int dep) {
     check("call cc_atom");
     cur->atom = cc_atom(ast, dep+1);
     if (!cur->atom) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
 
@@ -1488,7 +1500,7 @@ cc_factor(ast_t *ast, int dep) {
         check("call cc_formula");
         cur->formula = cc_formula(ast, dep+1);
         if (!cur->formula) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found content of ( )");
@@ -1534,7 +1546,7 @@ cc_asscalc(ast_t *ast, int dep) {
     check("call cc_expr");
     node_t *lhs = cc_expr(ast, dep+1);
     if (!lhs) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -1546,7 +1558,7 @@ cc_asscalc(ast_t *ast, int dep) {
         check("call cc_augassign");
         node_t *op = cc_augassign(ast, dep+1);
         if (!op) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_parse(node_new(NODE_TYPE_ASSCALC, cur));
@@ -1557,7 +1569,7 @@ cc_asscalc(ast_t *ast, int dep) {
         check("call cc_expr");
         node_t *rhs = cc_expr(ast, dep+1);
         if (!rhs) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found rhs operand in asscalc");
@@ -1594,7 +1606,7 @@ cc_index(ast_t *ast, int dep) {
 
     check("call cc_factor");
     cur->factor = cc_factor(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!cur->factor) {
@@ -1615,7 +1627,7 @@ cc_index(ast_t *ast, int dep) {
 
         check("call cc_simple_assign");
         node_t *simple_assign = cc_simple_assign(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         if (!simple_assign) {
@@ -1662,7 +1674,7 @@ cc_term(ast_t *ast, int dep) {
 
     check("call left cc_dot");
     node_t *lhs = cc_negative(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!lhs) {
@@ -1674,7 +1686,7 @@ cc_term(ast_t *ast, int dep) {
     for (;;) {
         check("call mul_div_op");
         node_t *op = cc_mul_div_op(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         if (!op) {
@@ -1685,7 +1697,7 @@ cc_term(ast_t *ast, int dep) {
 
         check("call right cc_dot");
         node_t *rhs = cc_negative(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         if (!rhs) {
@@ -1725,7 +1737,7 @@ cc_negative(ast_t *ast, int dep) {
 
     check("call left cc_dot");
     cur->dot = cc_dot(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!cur->dot) {
@@ -1759,7 +1771,7 @@ cc_dot(ast_t *ast, int dep) {
 
     check("call left cc_call");
     node_t *lhs = cc_call(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!lhs) {
@@ -1771,7 +1783,7 @@ cc_dot(ast_t *ast, int dep) {
     for (;;) {
         check("call cc_dot_op");
         node_t *op = cc_dot_op(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         if (!op) {
@@ -1782,7 +1794,7 @@ cc_dot(ast_t *ast, int dep) {
 
         check("call right cc_call");
         node_t *rhs = cc_call(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         if (!rhs) {
@@ -1820,7 +1832,7 @@ cc_call(ast_t *ast, int dep) {
 
     check("call cc_index");
     cur->index = cc_index(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!cur->index) {
@@ -1845,7 +1857,7 @@ cc_call(ast_t *ast, int dep) {
 
         check("call cc_call_args");
         node_t *call_args = cc_call_args(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         if (!call_args) {
@@ -1982,7 +1994,7 @@ cc_expr(ast_t *ast, int dep) {
     check("call left cc_term");
     node_t *lhs = cc_term(ast, dep+1);
     if (!lhs) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -1994,7 +2006,7 @@ cc_expr(ast_t *ast, int dep) {
         check("call add_sub_op");
         node_t *op = cc_add_sub_op(ast, dep+1);
         if (!op) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_parse(node_new(NODE_TYPE_EXPR, cur));
@@ -2005,7 +2017,7 @@ cc_expr(ast_t *ast, int dep) {
         check("call cc_term");
         node_t *rhs = cc_term(ast, dep+1);
         if (!rhs) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found rhs operand in expr");
@@ -2093,7 +2105,7 @@ cc_comparison(ast_t *ast, int dep) {
     check("call left cc_asscalc");
     node_t *lexpr = cc_asscalc(ast, dep+1);
     if (!lexpr) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -2105,7 +2117,7 @@ cc_comparison(ast_t *ast, int dep) {
         check("call cc_comp_op");
         node_t *comp_op = cc_comp_op(ast, dep+1);
         if (!comp_op) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_parse(node_new(NODE_TYPE_COMPARISON, cur));
@@ -2114,7 +2126,7 @@ cc_comparison(ast_t *ast, int dep) {
         check("call right cc_asscalc");
         node_t *rexpr = cc_asscalc(ast, dep+1);
         if (!rexpr) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             node_del(comp_op);
@@ -2152,7 +2164,7 @@ cc_not_test(ast_t *ast, int dep) {
         check("call cc_not_test");
         cur->not_test = cc_not_test(ast, dep+1);
         if (!cur->not_test) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found operand in not operator");
@@ -2163,7 +2175,7 @@ cc_not_test(ast_t *ast, int dep) {
         check("call cc_comparison");
         cur->comparison = cc_comparison(ast, dep+1);
         if (!cur->comparison) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_cleanup(""); // not error
@@ -2218,7 +2230,7 @@ cc_and_test(ast_t *ast, int dep) {
         check("call cc_not_test");
         node_t *rhs = cc_not_test(ast, dep+1);
         if (!rhs) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found rhs operand in 'and' operator");
@@ -2276,7 +2288,7 @@ cc_or_test(ast_t *ast, int dep) {
         check("call cc_or_test");
         node_t *rhs = cc_and_test(ast, dep+1);
         if (!rhs) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found rhs operand in 'or' operator");
@@ -2359,7 +2371,7 @@ cc_else_stmt(ast_t *ast, int dep) {
         check("call cc_elems");
         cur->elems = cc_elems(ast, dep+1);
         if (!cur->elems) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
         }
@@ -2369,7 +2381,7 @@ cc_else_stmt(ast_t *ast, int dep) {
         check("call cc_blocks");
         cur->blocks = cc_blocks(ast, dep+1);
         if (!cur->blocks) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
         }
@@ -2445,7 +2457,7 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
     cur->test = cc_test(ast, dep+1);
     if (!cur->test) {
         ast->ptr = save_ptr;
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
 
@@ -2476,7 +2488,7 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
         check("call cc_blocks");
         cur->blocks = cc_blocks(ast, dep+1);
         // block allow null
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
 
@@ -2495,14 +2507,14 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
         check("call cc_elif_stmt");
         cur->elif_stmt = cc_if_stmt(ast, 1, dep+1);
         if (!cur->elif_stmt) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
 
             check("call cc_else_stmt");
             cur->else_stmt = cc_else_stmt(ast, dep+1);
             if (!cur->else_stmt) {
-                if (ast_has_error_stack(ast)) {
+                if (ast_has_errors(ast)) {
                     return_cleanup("");
                 }
 
@@ -2529,7 +2541,7 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
         // elems allow null
         check("call cc_elems");
         cur->elems = cc_elems(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
 
@@ -2539,14 +2551,14 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
         check("call cc_if_stmt (elif)");
         cur->elif_stmt = cc_if_stmt(ast, 1, dep+1);
         if (!cur->elif_stmt) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
 
             check("call cc_else_stmt");
             cur->else_stmt = cc_else_stmt(ast, dep+1);
             if (!cur->else_stmt) {
-                if (ast_has_error_stack(ast)) {
+                if (ast_has_errors(ast)) {
                     return_cleanup("");
                 }
 
@@ -2595,7 +2607,7 @@ cc_import_as_stmt(ast_t *ast, int dep) {
     }
 
     cur->path = cc_string(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     } else if (!cur->path) {
         return_cleanup("not found path in compile import as statement");
@@ -2611,7 +2623,7 @@ cc_import_as_stmt(ast_t *ast, int dep) {
     }
 
     cur->alias = cc_identifier(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     } else if (!cur->alias) {
         return_cleanup("not found alias in compile import as statement");
@@ -2642,7 +2654,7 @@ cc_import_var(ast_t *ast, int dep) {
 #define return_ok return_parse(node_new(NODE_TYPE_IMPORT_VAR, cur))
 
     cur->identifier = cc_identifier(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!cur->identifier) {
@@ -2662,7 +2674,7 @@ cc_import_var(ast_t *ast, int dep) {
     check("readed 'as'");
 
     cur->alias = cc_identifier(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!cur->alias) {
@@ -2707,7 +2719,7 @@ cc_import_vars(ast_t *ast, int dep) {
         // read single import variable
         --ast->ptr;
         node_t *import_var = cc_import_var(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         if (!import_var) {
@@ -2730,7 +2742,7 @@ cc_import_vars(ast_t *ast, int dep) {
         cc_skip_newlines(ast);
 
         node_t *import_var = cc_import_var(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         if (!import_var) {
@@ -2804,7 +2816,7 @@ cc_from_import_stmt(ast_t *ast, int dep) {
     check("readed 'from'");
 
     cur->path = cc_string(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!cur->path) {
@@ -2819,7 +2831,7 @@ cc_from_import_stmt(ast_t *ast, int dep) {
     check("readed 'import'");
 
     cur->import_vars = cc_import_vars(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!cur->import_vars) {
@@ -2853,12 +2865,12 @@ cc_import_stmt(ast_t *ast, int dep) {
 
     // get import_as_stmt or from_import_stmt
     cur->import_as_stmt = cc_import_as_stmt(ast, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!cur->import_as_stmt) {
         cur->from_import_stmt = cc_from_import_stmt(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         if (!cur->from_import_stmt) {
@@ -2912,42 +2924,42 @@ cc_stmt(ast_t *ast, int dep) {
     check("call cc_import_stmt");
     cur->import_stmt = cc_import_stmt(ast, dep+1);
     if (!cur->import_stmt) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
 
         check("call cc_if_stmt");
         cur->if_stmt = cc_if_stmt(ast, 0, dep+1);
         if (!cur->if_stmt) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
 
             check("call cc_for_stmt");
             cur->for_stmt = cc_for_stmt(ast, dep+1);
             if (!cur->for_stmt) {
-                if (ast_has_error_stack(ast)) {
+                if (ast_has_errors(ast)) {
                     return_cleanup("");
                 }
 
                 check("call cc_break_stmt");
                 cur->break_stmt = cc_break_stmt(ast, dep+1);
                 if (!cur->break_stmt) {
-                    if (ast_has_error_stack(ast)) {
+                    if (ast_has_errors(ast)) {
                         return_cleanup("");
                     }
 
                     check("call cc_continue_stmt");
                     cur->continue_stmt = cc_continue_stmt(ast, dep+1);
                     if (!cur->continue_stmt) {
-                        if (ast_has_error_stack(ast)) {
+                        if (ast_has_errors(ast)) {
                             return_cleanup("");
                         }
 
                         check("call cc_return_stmt");
                         cur->return_stmt = cc_return_stmt(ast, dep+1);
                         if (!cur->return_stmt) {
-                            if (ast_has_error_stack(ast)) {
+                            if (ast_has_errors(ast)) {
                                 return_cleanup("");
                             }
 
@@ -2985,21 +2997,21 @@ cc_elems(ast_t *ast, int dep) {
     check("call def");
     cur->def = cc_def(ast, dep+1);
     if (!cur->def) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
 
         check("call cc_stmt");
         cur->stmt = cc_stmt(ast, dep+1);
         if (!cur->stmt) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
 
             check("call cc_formula");
             cur->formula = cc_formula(ast, dep+1);
             if (!cur->formula) {
-                if (ast_has_error_stack(ast)) {
+                if (ast_has_errors(ast)) {
                     return_cleanup("");
                 }
                 // empty elems
@@ -3014,7 +3026,7 @@ cc_elems(ast_t *ast, int dep) {
     check("call cc_elems");
     cur->elems = cc_elems(ast, dep+1);
     if (!cur->elems) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         return_parse(node_new(NODE_TYPE_ELEMS, cur));
@@ -3113,7 +3125,7 @@ cc_code_block(ast_t *ast, int dep) {
     check("call cc_elems");
     cur->elems = cc_elems(ast, dep+1);
     // cur->elems allow null
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup("");
     }
 
@@ -3155,14 +3167,14 @@ cc_blocks(ast_t *ast, int dep) {
     check("call cc_code_block");
     cur->code_block = cc_code_block(ast, dep+1);
     if (!cur->code_block) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup();
         }
 
         check("call cc_ref_block");
         cur->ref_block = cc_ref_block(ast, dep+1);
         if (!cur->ref_block) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup();
             }
 
@@ -3176,7 +3188,7 @@ cc_blocks(ast_t *ast, int dep) {
 
     cur->blocks = cc_blocks(ast, dep+1);
     // allow null
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_cleanup();
     }
 
@@ -3198,7 +3210,7 @@ cc_program(ast_t *ast, int dep) {
     check("call cc_blocks");
     cur->blocks = cc_blocks(ast, dep+1);
     if (!cur->blocks) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup();
         }
     }
@@ -3226,7 +3238,7 @@ cc_def(ast_t *ast, int dep) {
     check("call cc_func_def");
     cur->func_def = cc_func_def(ast, dep+1);
     if (!cur->func_def) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -3259,7 +3271,7 @@ cc_func_def_args(ast_t *ast, int dep) {
     check("call cc_identifier");
     node_t *identifier = cc_identifier(ast, dep+1);
     if (!identifier) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         return_parse(node_new(NODE_TYPE_FUNC_DEF_ARGS, cur)); // not error, empty args
@@ -3282,7 +3294,7 @@ cc_func_def_args(ast_t *ast, int dep) {
         check("call cc_identifier");
         identifier = cc_identifier(ast, dep+1);
         if (!identifier) {
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found identifier in func def args");
@@ -3321,7 +3333,7 @@ cc_func_def_params(ast_t *ast, int dep) {
     check("call cc_func_def_args");
     cur->func_def_args = cc_func_def_args(ast, dep+1);
     if (!cur->func_def_args) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -3372,7 +3384,7 @@ cc_func_def(ast_t *ast, int dep) {
     check("call cc_identifier");
     cur->identifier = cc_identifier(ast, dep+1);
     if (!cur->identifier) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -3381,7 +3393,7 @@ cc_func_def(ast_t *ast, int dep) {
     check("call cc_func_def_params");
     cur->func_def_params = cc_func_def_params(ast, dep+1);
     if (!cur->func_def_params) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -3410,7 +3422,7 @@ cc_func_def(ast_t *ast, int dep) {
 
         check("call cc_elems");
         node_t *elems = cc_elems(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         } else if (elems) {
             check("store elems to contents");
@@ -3432,7 +3444,7 @@ cc_func_def(ast_t *ast, int dep) {
 
         check("call cc_blocks")
         node_t *blocks = cc_blocks(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         } else if (blocks) {
             check("store blocks to contents");
@@ -3451,7 +3463,7 @@ cc_func_def(ast_t *ast, int dep) {
 
         check("call cc_elems");
         node_t *elems = cc_elems(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         } else if (elems) {
             check("store elems to contents");
@@ -3473,7 +3485,7 @@ cc_func_def(ast_t *ast, int dep) {
 
         check("call cc_elems (2)");
         node_t *elems = cc_elems(ast, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
         } else if (elems) {
             check("store elems to contents (2)");

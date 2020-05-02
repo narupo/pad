@@ -299,14 +299,14 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
     opts = NULL;
 
     cc_compile(ast, tkr_get_tokens(tkr));
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_trace_error_stack(ast, stderr);
         fflush(stderr);
         return NULL;
     }
 
     trv_traverse(ast, ctx);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_trace_error_stack(ast, stderr);
         fflush(stderr);
         return NULL;
@@ -426,13 +426,13 @@ load_path_var_from_resource(const config_t *config, const char *rcpath) {
     opts = NULL;
 
     cc_compile(ast, tkr_get_tokens(tkr));
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         err_error("%s", ast_getc_first_error_message(ast));
         return NULL;
     }
 
     trv_traverse(ast, ctx);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         err_error("%s", ast_getc_first_error_message(ast));
         return NULL;
     }
