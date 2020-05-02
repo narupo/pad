@@ -20268,9 +20268,6 @@ test_trv_for_stmt_8(void) {
 
 static void
 test_trv_for_stmt_9(void) {
-
-    return;  // TODO
-
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -20287,9 +20284,27 @@ test_trv_for_stmt_9(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        traceerr();
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "01"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "for i = 0; i < 2; i += 1:\n"
+    "   j = i\n"
+    "@}{: j :}{@\n"
+    "   k = i\n"
+    "@}{: k :}{@\n"
+    "   l = i\n"
+    "@}{: l :}{@\n"
+    "end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "000111"));
     }
 
     trv_cleanup;
