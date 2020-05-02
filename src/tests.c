@@ -19937,48 +19937,58 @@ test_trv_for_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found initialize assign list in for statement"));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
     tkr_parse(tkr, "{@ for i=0\n; i<2; i +=1: puts(i) end @}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. unsupported token type (1) in for statement"));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
     tkr_parse(tkr, "{@ for i=0; \ni<2; i +=1: puts(i) end @}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found semicolon (2)"));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
     tkr_parse(tkr, "{@ for i=0; i<2\n; i +=1: puts(i) end @}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found semicolon (2)"));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
     tkr_parse(tkr, "{@ for i=0; i<2; \ni +=1: puts(i) end @}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found colon in for statement"));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
     tkr_parse(tkr, "{@ for i=0; i<2; i +=1\n: puts(i) end @}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found colon in for statement"));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
     ctx_del(ctx);
@@ -20031,16 +20041,20 @@ test_trv_for_stmt_1(void) {
     {
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found initialize assign list in for statement"));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
     tkr_parse(tkr, "{@ i=0 for i<2\n: puts(i)\ni+=1 end @}");
     {
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. unsupported token type (1) in for statement"));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
     ctx_del(ctx);
@@ -20363,14 +20377,6 @@ test_trv_break_stmt(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
-    }
-
-    tkr_parse(tkr, "{@ for\n: break end @}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found initialize assign list in for statement"));
     }
 
     tkr_parse(tkr, "{@ for:\n break end @}");
@@ -22252,6 +22258,29 @@ test_trv_dict_1(void) {
 }
 
 static void
+test_trv_dict_2(void) {
+    trv_ready;
+
+    /*******
+    * fail *
+    *******/
+
+    tkr_parse(tkr, "{@\n"
+    "   d = {\"a\": 1}\n"
+    "@}{: d[\"b\"] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "failed to refer index"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_identifier(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -22608,6 +22637,7 @@ traverser_tests[] = {
     {"trv_string", test_trv_string},
     {"trv_dict_0", test_trv_dict_0},
     {"trv_dict_1", test_trv_dict_1},
+    {"trv_dict_2", test_trv_dict_2},
     {"trv_identifier", test_trv_identifier},
     {"trv_builtin_alias_0", test_trv_builtin_alias_0},
     {"trv_builtin_modules_alias_0", test_trv_builtin_modules_alias_0},

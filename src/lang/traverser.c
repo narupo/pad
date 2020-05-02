@@ -5694,14 +5694,14 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
     }
 
     if (operand->type == OBJ_TYPE_INDEX) {
-        object_t *tmp = copy_value_of_index_obj(ast, operand);
+        object_t *ref = extract_ref_of_obj(ast, operand);
         if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
-        assert(tmp);
+        assert(ref);
 
-        if (tmp->type == OBJ_TYPE_FUNC) {
-            operand = obj_new_other(tmp->func.name);
+        if (ref->type == OBJ_TYPE_FUNC) {
+            operand = obj_new_other(ref->func.name);
         } else {
             return_trav(operand);
         }
