@@ -951,28 +951,44 @@ cc_array_elems(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+#undef return_ok
+#define return_ok return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur))
+
     check("call cc_simple_assign");
     node_t *lhs = cc_simple_assign(ast, dep+1);
     if (ast_has_error_stack(ast)) {
         return_cleanup("");
     }
     if (!lhs) {
-        return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur));
+        return_ok;
     }
 
     nodearr_moveb(cur->nodearr, lhs);
 
+    check("skip newlines");
+    cc_skip_newlines(ast);
+    if (!*ast->ptr) {
+        return_cleanup("reached EOF in array elems");
+    }
+
     for (;;) {
         if (!*ast->ptr) {
-            return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur));
+            return_ok;
         }
 
         token_t *t = *ast->ptr++;
         if (t->type != TOKEN_TYPE_COMMA) {
             ast->ptr--;
-            return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur));
+            return_ok;
         }
         check("read ','")
+
+        check("skip newlines");
+        cc_skip_newlines(ast);
+
+        if (!*ast->ptr) {
+            return_cleanup("reached EOF in array elems");
+        }
 
         check("call cc_simple_assign");
         node_t *rhs = cc_simple_assign(ast, dep+1);
@@ -981,7 +997,7 @@ cc_array_elems(ast_t *ast, int dep) {
         }
         if (!rhs) {
             // not error
-            return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur));
+            return_ok;
         }
 
         nodearr_moveb(cur->nodearr, rhs);
@@ -1014,11 +1030,25 @@ cc_array(ast_t *ast, int dep) {
     }
     check("read '['");
 
+    check("skip newlines");
+    cc_skip_newlines(ast);
+
+    if (!*ast->ptr) {
+        return_cleanup("reached EOF in compile array");
+    }
+
     cur->array_elems = cc_array_elems(ast, dep+1);
     if (ast_has_error_stack(ast)) {
         return_cleanup("");
     }
     // allow null
+
+    check("skip newlines");
+    cc_skip_newlines(ast);
+
+    if (!*ast->ptr) {
+        return_cleanup("reached EOF in compile array");
+    }
 
     t = *ast->ptr++;
     if (t->type != TOKEN_TYPE_RBRACKET) {
@@ -1055,8 +1085,10 @@ cc_dict_elem(ast_t *ast, int dep) {
         return_cleanup(""); // not error
     }
 
+    check("skip newlines");
+    cc_skip_newlines(ast);
     if (!*ast->ptr) {
-        return_cleanup("reached EOF in parse dict elem");
+        return_cleanup("reached EOF in dict elem");
     }
 
     token_t *t = *ast->ptr++;
@@ -1064,6 +1096,12 @@ cc_dict_elem(ast_t *ast, int dep) {
         return_cleanup("not found colon in parse dict elem");
     }
     check("read colon");
+
+    check("skip newlines");
+    cc_skip_newlines(ast);
+    if (!*ast->ptr) {
+        return_cleanup("reached EOF in dict elem");
+    }
 
     cur->value_simple_assign = cc_simple_assign(ast, dep+1);
     if (ast_has_error_stack(ast)) {
@@ -1098,6 +1136,7 @@ cc_dict_elems(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+#undef return_ok
 #define return_ok return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur))
 
     check("call cc_dict_elem");
@@ -1116,12 +1155,24 @@ cc_dict_elems(ast_t *ast, int dep) {
             return_ok;
         }
 
+        check("skip newlines");
+        cc_skip_newlines(ast);
+        if (!*ast->ptr) {
+            return_cleanup("reached EOF in dict elems");
+        }
+
         token_t *t = *ast->ptr++;
         if (t->type != TOKEN_TYPE_COMMA) {
             ast->ptr--;
             return_ok;
         }
         check("read ','")
+
+        check("skip newlines");
+        cc_skip_newlines(ast);
+        if (!*ast->ptr) {
+            return_cleanup("reached EOF in dict elems");
+        }
 
         check("call cc_dict_elem");
         node_t *rhs = cc_dict_elem(ast, dep+1);
@@ -1163,12 +1214,24 @@ cc_dict(ast_t *ast, int dep) {
     }
     check("read '{'");
 
+    check("skip newlines");
+    cc_skip_newlines(ast);
+    if (!*ast->ptr) {
+        return_cleanup("reached EOF in dict");
+    }
+
     cur->dict_elems = cc_dict_elems(ast, dep+1);
     if (ast_has_error_stack(ast)) {
         return_cleanup("");
     }
     if (!cur->dict_elems) {
         return_cleanup(""); // not error
+    }
+
+    check("skip newlines");
+    cc_skip_newlines(ast);
+    if (!*ast->ptr) {
+        return_cleanup("reached EOF in dict");
     }
 
     if (!*ast->ptr) {

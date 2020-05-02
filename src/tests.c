@@ -22010,6 +22010,29 @@ test_trv_array_3(void) {
 }
 
 static void
+test_trv_array_4(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [\n"
+    "       1,\n"
+    "       2, 3,\n"
+    "       4,\n"
+    "   ]\n"
+    "@}{: a[0] :}{: a[1] :}{: a[2] :}{: a[3] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1234"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_nil(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -22141,12 +22164,7 @@ test_trv_string(void) {
 
 static void
 test_trv_dict_0(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{@ d = {\"a\":1, \"b\":2} @}");
     {
@@ -22158,11 +22176,29 @@ test_trv_dict_0(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
+}
+
+static void
+test_trv_dict_1(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   d = {\n"
+    "       \"a\" \n : \n 1 \n, \n"
+    "       \"b\" \n : \n 2 \n, \n"
+    "   }\n"
+    "@}{: d[\"a\"] :}{: d[\"b\"] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_error_stack(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "12"));
+    }
+
+    trv_cleanup;
 }
 
 static void
@@ -22512,12 +22548,14 @@ traverser_tests[] = {
     {"trv_array_1", test_trv_array_1},
     {"trv_array_2", test_trv_array_2},
     {"trv_array_3", test_trv_array_3},
+    {"trv_array_4", test_trv_array_4},
     {"trv_nil", test_trv_nil},
     {"trv_false", test_trv_false},
     {"trv_true", test_trv_true},
     {"trv_digit", test_trv_digit},
     {"trv_string", test_trv_string},
     {"trv_dict_0", test_trv_dict_0},
+    {"trv_dict_1", test_trv_dict_1},
     {"trv_identifier", test_trv_identifier},
     {"trv_builtin_alias_0", test_trv_builtin_alias_0},
     {"trv_builtin_modules_alias_0", test_trv_builtin_modules_alias_0},
