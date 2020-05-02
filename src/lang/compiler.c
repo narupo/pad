@@ -516,14 +516,15 @@ cc_for_stmt(ast_t *ast, int dep) {
     }
     check("read for");
 
+    check("skip newlines");
+    cc_skip_newlines(ast);
     if (!*ast->ptr) {
-        return_cleanup("syntax error. reached EOF in for statement");
+        return_cleanup("reached EOF in for statement");
     }
 
     t = *ast->ptr++;
     if (t->type == TOKEN_TYPE_COLON) {
-        // for : contents end
-        // for : @} contents {@ end
+        // for : [ (( '@}' blocks '{@' ) | elems) ]* end
         check("read colon");
 
         // read contents start
@@ -600,6 +601,12 @@ cc_for_stmt(ast_t *ast, int dep) {
         // for init_formula ; comp_formula ; test_list : @} blocks {@ end
         ast->ptr--;
 
+        check("skip newlines");
+        cc_skip_newlines(ast);
+        if (!*ast->ptr) {
+            return_cleanup("reached EOF in for statement");
+        }
+
         check("call cc_assign_list");
         cur->init_formula = cc_formula(ast, dep+1);
         if (!cur->init_formula) {
@@ -607,6 +614,12 @@ cc_for_stmt(ast_t *ast, int dep) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found initialize assign list in for statement");
+        }
+
+        check("skip newlines");
+        cc_skip_newlines(ast);
+        if (!*ast->ptr) {
+            return_cleanup("reached EOF in for statement");
         }
 
         t = *ast->ptr++;
@@ -619,6 +632,12 @@ cc_for_stmt(ast_t *ast, int dep) {
             check("read semicolon");
             // for init_formula ; comp_formula ; update_formula : elems end
 
+            check("skip newlines");
+            cc_skip_newlines(ast);
+            if (!*ast->ptr) {
+                return_cleanup("reached EOF in for statement");
+            }
+
             check("call cc_test");
             cur->comp_formula = cc_formula(ast, dep+1);
             // allow empty
@@ -626,8 +645,10 @@ cc_for_stmt(ast_t *ast, int dep) {
                 return_cleanup("");
             }
 
+            check("skip newlines");
+            cc_skip_newlines(ast);
             if (!*ast->ptr) {
-                return_cleanup("syntax error. reached EOF in for statement (4)");
+                return_cleanup("reached EOF in for statement");
             }
 
             t = *ast->ptr++;
@@ -636,20 +657,28 @@ cc_for_stmt(ast_t *ast, int dep) {
             }
             check("read semicolon");
 
+            check("skip newlines");
+            cc_skip_newlines(ast);
+            if (!*ast->ptr) {
+                return_cleanup("reached EOF in for statement");
+            }
+
             check("call cc_test_list");
             cur->update_formula = cc_formula(ast, dep+1);
             // allow empty
             if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
-
-            if (!*ast->ptr) {
-                return_cleanup("syntax error. reached EOF in for statement (5)");
-            }
         } else {
             char msg[1024];
             snprintf(msg, sizeof msg, "syntax error. unsupported token type (%d) in for statement", t->type);
             return_cleanup(msg);
+        }
+
+        check("skip newlines");
+        cc_skip_newlines(ast);
+        if (!*ast->ptr) {
+            return_cleanup("reached EOF in for statement");
         }
 
         t = *ast->ptr++;
