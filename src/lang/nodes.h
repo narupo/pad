@@ -190,8 +190,7 @@ typedef struct {
 
 typedef struct {
     node_t *test;
-    node_t *elems;
-    node_t *blocks;
+    node_array_t *contents;
     node_t *elif_stmt;
     node_t *else_stmt;
 } node_if_stmt_t;
@@ -199,8 +198,7 @@ typedef struct {
 typedef node_if_stmt_t node_elif_stmt_t;
 
 typedef struct {
-    node_t *elems;
-    node_t *blocks;
+    node_array_t *contents;
 } node_else_stmt_t;
 
 typedef struct {

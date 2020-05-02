@@ -694,20 +694,13 @@ trv_if_stmt(ast_t *ast, const node_t *node, int dep) {
     result = NULL;
 
     if (boolean) {
-        if (if_stmt->elems) {
-            check("call _trv_traverse");
-            result = _trv_traverse(ast, if_stmt->elems, dep+1);
+        for (int32_t i = 0; i < nodearr_len(if_stmt->contents); ++i) {
+            node_t *node = nodearr_get(if_stmt->contents, i);
+            result = _trv_traverse(ast, node, dep+1);
             if (ast_has_errors(ast)) {
+                ast_pushb_error(ast, "failed to execute contents in if-statement");
                 return_trav(NULL);
             }
-        } else if (if_stmt->blocks) {
-            check("call _trv_traverse");
-            result = _trv_traverse(ast, if_stmt->blocks, dep+1);
-            if (ast_has_errors(ast)) {
-                return_trav(NULL);
-            }
-        } else {
-            // pass
         }
     } else {
         if (if_stmt->elif_stmt) {
@@ -735,16 +728,18 @@ trv_else_stmt(ast_t *ast, const node_t *node, int dep) {
     tready();
     node_else_stmt_t *else_stmt = node->real;
     assert(else_stmt);
+    object_t *result = NULL;
 
-    if (else_stmt->elems) {
-        check("call _trv_traverse with elems");
-        _trv_traverse(ast, else_stmt->elems, dep+1);
-    } else if (else_stmt->blocks) {
-        check("call _trv_traverse with blocks");
-        _trv_traverse(ast, else_stmt->blocks, dep+1);
+    for (int32_t i = 0; i < nodearr_len(else_stmt->contents); ++i) {
+        node_t *node = nodearr_get(else_stmt->contents, i);
+        result = _trv_traverse(ast, node, dep+1);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to execute contents in else-statement");
+            return_trav(NULL);
+        }
     }
 
-    return_trav(NULL);
+    return_trav(result);
 }
 
 static object_t *

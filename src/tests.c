@@ -7933,8 +7933,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
     }
@@ -8030,8 +8028,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
         blocks = blocks->blocks->real;
@@ -8080,8 +8076,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
     }
@@ -8121,8 +8115,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
     }
@@ -8162,14 +8154,12 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt != NULL);
         assert(if_stmt->else_stmt->type == NODE_TYPE_ELSE_STMT);
         assert(if_stmt->else_stmt->real != NULL);
         else_stmt = if_stmt->else_stmt->real;
-        assert(else_stmt->elems == NULL);
+        assert(else_stmt);
     }
 
     tkr_parse(tkr, "{@ if 1:\n\nelse:\n\nend @}");
@@ -8207,21 +8197,18 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt != NULL);
         assert(if_stmt->else_stmt->type == NODE_TYPE_ELSE_STMT);
         assert(if_stmt->else_stmt->real != NULL);
         else_stmt = if_stmt->else_stmt->real;
-        assert(else_stmt->elems == NULL);
     }
 
     tkr_parse(tkr, "{@ if 1: elif 2: end @}");
     {
         ast_clear(ast);
         ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
+        (cc_compile(ast, tkr_get_tokens(tkr)));
         root = ast_getc_root(ast);
         assert(root != NULL);
         assert(root->type == NODE_TYPE_PROGRAM);
@@ -8252,15 +8239,11 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->else_stmt == NULL);
         assert(if_stmt->elif_stmt != NULL);
         assert(if_stmt->elif_stmt->type == NODE_TYPE_ELIF_STMT);
         assert(if_stmt->elif_stmt->real != NULL);
         elif_stmt = if_stmt->elif_stmt->real;
-        assert(elif_stmt->elems == NULL);
-        assert(elif_stmt->blocks == NULL);
         assert(elif_stmt->elif_stmt == NULL);
         assert(elif_stmt->else_stmt == NULL);
     }
@@ -8300,15 +8283,11 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->else_stmt == NULL);
         assert(if_stmt->elif_stmt != NULL);
         assert(if_stmt->elif_stmt->type == NODE_TYPE_ELIF_STMT);
         assert(if_stmt->elif_stmt->real != NULL);
         elif_stmt = if_stmt->elif_stmt->real;
-        assert(elif_stmt->elems == NULL);
-        assert(elif_stmt->blocks == NULL);
         assert(elif_stmt->elif_stmt == NULL);
         assert(elif_stmt->else_stmt == NULL);
     }
@@ -8348,21 +8327,16 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->else_stmt == NULL);
         assert(if_stmt->elif_stmt != NULL);
         assert(if_stmt->elif_stmt->type == NODE_TYPE_ELIF_STMT);
         assert(if_stmt->elif_stmt->real != NULL);
         elif_stmt = if_stmt->elif_stmt->real;
-        assert(elif_stmt->elems == NULL);
-        assert(elif_stmt->blocks == NULL);
         assert(elif_stmt->elif_stmt == NULL);
         assert(elif_stmt->else_stmt != NULL);
         assert(elif_stmt->else_stmt->type == NODE_TYPE_ELSE_STMT);
         assert(elif_stmt->else_stmt->real != NULL);
         else_stmt = elif_stmt->else_stmt->real;
-        assert(else_stmt->elems == NULL);
     }
 
     tkr_parse(tkr, "{@ if 1:\n\nelif 2:\n\nelse:\n\nend @}");
@@ -8400,21 +8374,16 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->else_stmt == NULL);
         assert(if_stmt->elif_stmt != NULL);
         assert(if_stmt->elif_stmt->type == NODE_TYPE_ELIF_STMT);
         assert(if_stmt->elif_stmt->real != NULL);
         elif_stmt = if_stmt->elif_stmt->real;
-        assert(elif_stmt->elems == NULL);
-        assert(elif_stmt->blocks == NULL);
         assert(elif_stmt->elif_stmt == NULL);
         assert(elif_stmt->else_stmt != NULL);
         assert(elif_stmt->else_stmt->type == NODE_TYPE_ELSE_STMT);
         assert(elif_stmt->else_stmt->real != NULL);
         else_stmt = elif_stmt->else_stmt->real;
-        assert(else_stmt->elems == NULL);
     }
 
     tkr_parse(tkr, "{@ if 0: elif 0: else: a = 1 end @}");
@@ -8452,22 +8421,16 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->else_stmt == NULL);
         assert(if_stmt->elif_stmt != NULL);
         assert(if_stmt->elif_stmt->type == NODE_TYPE_ELIF_STMT);
         assert(if_stmt->elif_stmt->real != NULL);
         elif_stmt = if_stmt->elif_stmt->real;
-        assert(elif_stmt->elems == NULL);
-        assert(elif_stmt->blocks == NULL);
         assert(elif_stmt->elif_stmt == NULL);
         assert(elif_stmt->else_stmt != NULL);
         assert(elif_stmt->else_stmt->type == NODE_TYPE_ELSE_STMT);
         assert(elif_stmt->else_stmt->real != NULL);
         else_stmt = elif_stmt->else_stmt->real;
-        assert(else_stmt->elems != NULL);
-        assert(else_stmt->blocks == NULL);
     }
 
     tkr_parse(tkr, "{@ if 1: if 2: end end @}");
@@ -8505,13 +8468,9 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems != NULL);
-        assert(if_stmt->elems->type == NODE_TYPE_ELEMS);
-        assert(if_stmt->elems->real != NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
-        elems = if_stmt->elems->real;
+        elems = nodearr_get(if_stmt->contents, 0)->real;
         assert(elems->stmt != NULL);
         assert(elems->stmt->type == NODE_TYPE_STMT);
         assert(elems->stmt->real != NULL);
@@ -8524,7 +8483,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
     }
 
     tkr_parse(tkr, "{@ if 1:\n\nif 2:\n\nend\n\nend @}");
@@ -8562,13 +8520,9 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems != NULL);
-        assert(if_stmt->elems->type == NODE_TYPE_ELEMS);
-        assert(if_stmt->elems->real != NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
-        elems = if_stmt->elems->real;
+        elems = nodearr_get(if_stmt->contents, 0)->real;
         assert(elems->stmt != NULL);
         assert(elems->stmt->type == NODE_TYPE_STMT);
         assert(elems->stmt->real != NULL);
@@ -8581,7 +8535,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
     }
 
     tkr_parse(tkr, "{@ if 1: if 2: end if 3: end end @}");
@@ -8619,13 +8572,9 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems != NULL);
-        assert(if_stmt->elems->type == NODE_TYPE_ELEMS);
-        assert(if_stmt->elems->real != NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
-        elems = if_stmt->elems->real;
+        elems = nodearr_get(if_stmt->contents, 0)->real;
         assert(elems->stmt != NULL);
         assert(elems->stmt->type == NODE_TYPE_STMT);
         assert(elems->stmt->real != NULL);
@@ -8642,7 +8591,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
         assert(elems->stmt != NULL);
         assert(elems->stmt->type == NODE_TYPE_STMT);
         assert(elems->stmt->real != NULL);
@@ -8656,7 +8604,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
     }
@@ -8696,8 +8643,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
     }
@@ -8737,13 +8682,9 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks != NULL);
-        assert(if_stmt->blocks->type == NODE_TYPE_BLOCKS);
-        assert(if_stmt->blocks->real != NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
-        blocks = if_stmt->blocks->real;
+        blocks = nodearr_get(if_stmt->contents, 0)->real;
         assert(blocks->code_block == NULL);
         assert(blocks->ref_block == NULL);
         assert(blocks->text_block != NULL);
@@ -8775,7 +8716,7 @@ test_cc_compile(void) {
         elems = code_block->elems->real;
         stmt = elems->stmt->real;
         if_stmt = stmt->if_stmt->real;
-        blocks = if_stmt->blocks->real;
+        blocks = nodearr_get(if_stmt->contents, 0)->real;
         text_block = blocks->text_block->real;
         assert(text_block->text != NULL);
         assert(!strcmp(text_block->text, "abc"));
@@ -8816,13 +8757,9 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks != NULL);
-        assert(if_stmt->blocks->type == NODE_TYPE_BLOCKS);
-        assert(if_stmt->blocks->real != NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
-        blocks = if_stmt->blocks->real;
+        blocks = nodearr_get(if_stmt->contents, 0)->real;
         assert(blocks->code_block != NULL);
         assert(blocks->code_block->type == NODE_TYPE_CODE_BLOCK);
         assert(blocks->code_block->real != NULL);
@@ -8844,8 +8781,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
     }
@@ -8885,13 +8820,9 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks != NULL);
-        assert(if_stmt->blocks->type == NODE_TYPE_BLOCKS);
-        assert(if_stmt->blocks->real != NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
-        blocks = if_stmt->blocks->real;
+        blocks = nodearr_get(if_stmt->contents, 0)->real;
         assert(blocks->code_block == NULL);
         assert(blocks->ref_block == NULL);
         assert(blocks->text_block != NULL);
@@ -8928,8 +8859,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
         blocks = blocks->blocks->real;
@@ -9050,8 +8979,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
     }
@@ -9217,8 +9144,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
     }
@@ -9285,8 +9210,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
     }
@@ -9522,8 +9445,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
     }
@@ -9563,13 +9484,10 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems != NULL);
-        assert(if_stmt->elems->type == NODE_TYPE_ELEMS);
-        assert(if_stmt->elems->real != NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
-        elems = if_stmt->elems->real;
+        assert(nodearr_len(if_stmt->contents) == 1);
+        elems = nodearr_get(if_stmt->contents, 0)->real;
         assert(elems->stmt != NULL);
         assert(elems->stmt->type == NODE_TYPE_STMT);
         assert(elems->stmt->real != NULL);
@@ -9755,8 +9673,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
     }
@@ -9842,8 +9758,6 @@ test_cc_compile(void) {
         assert(stmt->if_stmt->real != NULL);
         if_stmt = stmt->if_stmt->real;
         assert(if_stmt->test != NULL);
-        assert(if_stmt->elems == NULL);
-        assert(if_stmt->blocks == NULL);
         assert(if_stmt->elif_stmt == NULL);
         assert(if_stmt->else_stmt == NULL);
         blocks = blocks->blocks->real;
@@ -18263,22 +18177,28 @@ test_trv_if_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found test in if statement"));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
     tkr_parse(tkr, "{@ if 1\n: puts(1) end @}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found colon in if statement"));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
     tkr_parse(tkr, "{@ \n if 1: puts(1) end @}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
@@ -18287,6 +18207,8 @@ test_trv_if_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
@@ -18939,6 +18861,32 @@ test_trv_if_stmt_10(void) {
 }
 
 static void
+test_trv_if_stmt_11(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   if 1:\n"
+    "       i = 0\n"
+    "@}{: i :}{@"
+    "       j = 1\n"
+    "@}{: j :}{@\n"
+    "       k = 2\n"
+    "@}{: k :}{@\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "012"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_elif_stmt_0(void) {
     trv_ready;
 
@@ -18996,16 +18944,20 @@ test_trv_elif_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found test in if statement"));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
     tkr_parse(tkr, "{@ if 0: elif 1\n: puts(1) end @}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found colon in if statement"));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
     trv_cleanup;
@@ -22578,6 +22530,7 @@ traverser_tests[] = {
     {"trv_if_stmt_8", test_trv_if_stmt_8},
     {"trv_if_stmt_9", test_trv_if_stmt_9},
     {"trv_if_stmt_10", test_trv_if_stmt_10},
+    {"trv_if_stmt_11", test_trv_if_stmt_11},
     {"trv_elif_stmt_0", test_trv_elif_stmt_0},
     {"trv_elif_stmt_1", test_trv_elif_stmt_1},
     {"trv_elif_stmt_2", test_trv_elif_stmt_2},

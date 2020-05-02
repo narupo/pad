@@ -2378,12 +2378,13 @@ static node_t *
 cc_else_stmt(ast_t *ast, int dep) {
     ready();
     declare(node_else_stmt_t, cur);
+    cur->contents = nodearr_new();
     token_t **save_ptr = ast->ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
         ast->ptr = save_ptr; \
-        ast_del_nodes(ast, cur->elems); \
+        nodearr_del(cur->contents); \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -2393,70 +2394,78 @@ cc_else_stmt(ast_t *ast, int dep) {
 
     token_t *t = *ast->ptr++;
     if (t->type != TOKEN_TYPE_STMT_ELSE) {
-        return_cleanup("");
+        return_cleanup("invalid token type in else statement");
     }
     check("read else");
 
+    check("skip newlines");
+    cc_skip_newlines(ast);
     if (!*ast->ptr) {
-        return_cleanup("syntax error. reached EOF in else statement");
+        return_cleanup("reached EOF in if statement");
     }
 
     t = *ast->ptr++;
     if (t->type != TOKEN_TYPE_COLON) {
-        return_cleanup("syntax error. not found colon in else statement");
+        return_cleanup("not found colon in else statement");
     }
     check("read colon");
 
-    if (!*ast->ptr) {
-        return_cleanup("syntax error. reached EOF in else statement (2)");
-    }
-
-    t = *ast->ptr++;
-    if (t->type != TOKEN_TYPE_RBRACEAT) {
-        ast->ptr--;
+    // read blocks or elems
+    for (;;) {
+        check("skip newlines");
         cc_skip_newlines(ast);
-
-        check("call cc_elems");
-        cur->elems = cc_elems(ast, dep+1);
-        if (!cur->elems) {
-            if (ast_has_errors(ast)) {
-                return_cleanup("");
-            }
+        if (!*ast->ptr) {
+            return_cleanup("reached EOF in if statement");
         }
-    } else {
-        check("read @}");
 
-        check("call cc_blocks");
-        cur->blocks = cc_blocks(ast, dep+1);
-        if (!cur->blocks) {
-            if (ast_has_errors(ast)) {
-                return_cleanup("");
-            }
+        t = *ast->ptr++;
+        if (t->type == TOKEN_TYPE_STMT_END) {
+            --ast->ptr;  // don't read 'end' token. this token will be read in if-statement
+            check("found 'end'");
+            break;
+        } else {
+            --ast->ptr;
         }
-    }
 
-    cc_skip_newlines(ast);
+        // blocks or elems?
+        t = *ast->ptr++;
+        if (t->type == TOKEN_TYPE_RBRACEAT) {
+            // read blocks
+            check("read '@}'");
 
-    if (!*ast->ptr) {
-        return_cleanup("syntax error. reached EOF in else statement (3)");
-    }
+            check("call cc_blocks");
+            node_t *blocks = cc_blocks(ast, dep+1);
+            if (ast_has_errors(ast)) {
+                return_cleanup("failed to compile blocks");
+            }
+            if (blocks) {
+                nodearr_moveb(cur->contents, blocks);
+            }
+            // allow null
 
-    t = *ast->ptr++;
-    if (t->type != TOKEN_TYPE_LBRACEAT) {
-        ast->ptr--;
-    } else {
-        check("read {@");
-    }
+            if (!*ast->ptr) {
+                return_cleanup("reached EOF in else statement");
+            }
 
-    if (!*ast->ptr) {
-        return_cleanup("syntax error. reached EOF in else statement (4)");
-    }
+            t = *ast->ptr++;
+            if (t->type != TOKEN_TYPE_LBRACEAT) {
+                return_cleanup("not found '{@'");
+            }
+            check("read '{@'");
+        } else {
+            // read elems
+            --ast->ptr;
 
-    t = *ast->ptr++;
-    if (t->type != TOKEN_TYPE_STMT_END) {
-        ast->ptr--;
-    } else {
-        check("read end");
+            check("call cc_elems");
+            node_t *elems = cc_elems(ast, dep+1);
+            if (ast_has_errors(ast)) {
+                return_cleanup("failed to compile elems");
+            }
+            if (elems) {
+                nodearr_moveb(cur->contents, elems);
+            }
+            // allow null
+        }
     }
 
     return_parse(node_new(NODE_TYPE_ELSE_STMT, cur));
@@ -2466,6 +2475,7 @@ static node_t *
 cc_if_stmt(ast_t *ast, int type, int dep) {
     ready();
     declare(node_if_stmt_t, cur);
+    cur->contents = nodearr_new();
     token_t **save_ptr = ast->ptr;
     node_type_t node_type = NODE_TYPE_IF_STMT;
 
@@ -2473,8 +2483,7 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
 #define return_cleanup(msg) { \
         ast->ptr = save_ptr; \
         ast_del_nodes(ast, cur->test); \
-        ast_del_nodes(ast, cur->elems); \
-        ast_del_nodes(ast, cur->blocks); \
+        nodearr_del(cur->contents); \
         ast_del_nodes(ast, cur->elif_stmt); \
         ast_del_nodes(ast, cur->else_stmt); \
         free(cur); \
@@ -2487,13 +2496,13 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
     token_t *t = *ast->ptr++;
     if (type == 0) {
         if (t->type != TOKEN_TYPE_STMT_IF) {
-            return_cleanup("");
+            return_cleanup("");  // not error
         }
         node_type = NODE_TYPE_IF_STMT;
         check("read if");
     } else if (type == 1) {
         if (t->type != TOKEN_TYPE_STMT_ELIF) {
-            return_cleanup("");
+            return_cleanup("");  // not error
         }
         node_type = NODE_TYPE_ELIF_STMT;
         check("read elif");
@@ -2530,120 +2539,90 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
     }
     check("read colon");
 
-    check("skip newlines");
-    cc_skip_newlines(ast);
-    if (!*ast->ptr) {
-        return_cleanup("reached EOF in if statement");
-    }
-
-    t = *ast->ptr++;
-    if (t->type == TOKEN_TYPE_RBRACEAT) {
-        check("read @}");
-
-        check("call cc_blocks");
-        cur->blocks = cc_blocks(ast, dep+1);
-        // block allow null
-        if (ast_has_errors(ast)) {
-            return_cleanup("");
-        }
-
+    // read blocks or elems start
+    for (;;) {
+        check("skip newlines");
+        cc_skip_newlines(ast);
         if (!*ast->ptr) {
-            return_cleanup("syntax error. reached EOF in if statement (3)");
+            return_cleanup("reached EOF in if statement");
         }
 
         t = *ast->ptr++;
-        if (t->type != TOKEN_TYPE_LBRACEAT) {
-            return_cleanup("syntax error. not found \"{@\" in if statement");
+        if (t->type == TOKEN_TYPE_STMT_END) {
+            if (node_type == NODE_TYPE_ELIF_STMT) {
+                // do not read 'end' token because this token will read in if statement
+                --ast->ptr;
+                check("found 'end'")
+            } else {
+                check("read 'end'");
+            }
+            break;
+        } else if (t->type == TOKEN_TYPE_STMT_ELIF) {
+            --ast->ptr;
+            node_t *elif = cc_if_stmt(ast, 1, dep+1);
+            if (!elif || ast_has_errors(ast)) {
+                return_cleanup("failed to compile elif statement");
+            }
+            cur->elif_stmt = elif;
+            check("read elif");
+            continue;
+        } else if (t->type == TOKEN_TYPE_STMT_ELSE) {
+            --ast->ptr;
+            node_t *else_ = cc_else_stmt(ast, dep+1);
+            if (!else_ || ast_has_errors(ast)) {
+                return_cleanup("failed to compile else statement");
+            }
+            cur->else_stmt = else_;
+            check("read else");
+            continue;
+        } else {
+            --ast->ptr;
         }
 
-        check("skip newlines");
-        cc_skip_newlines(ast);
-        if (!*ast->ptr) {
-            return_cleanup("reached EOF in if statement");
-        }
+        // read blocks or elems
+        t = *ast->ptr++;
+        if (t->type == TOKEN_TYPE_RBRACEAT) {
+            check("read '@}'");
 
-        check("call cc_elif_stmt");
-        cur->elif_stmt = cc_if_stmt(ast, 1, dep+1);
-        if (!cur->elif_stmt) {
+            check("skip newlines");
+            cc_skip_newlines(ast);
+            if (!*ast->ptr) {
+                return_cleanup("reached EOF in if statement");
+            }
+
+            check("call cc_blocks");
+            node_t *blocks = cc_blocks(ast, dep+1);
             if (ast_has_errors(ast)) {
-                return_cleanup("");
+                return_cleanup("failed to compile blocks");
+            }
+            if (blocks) {
+                nodearr_moveb(cur->contents, blocks);
+            }
+            // allow null
+
+            check("skip newlines");
+            cc_skip_newlines(ast);
+            if (!*ast->ptr) {
+                return_cleanup("reached EOF in if statement");
             }
 
-            check("call cc_else_stmt");
-            cur->else_stmt = cc_else_stmt(ast, dep+1);
-            if (!cur->else_stmt) {
-                if (ast_has_errors(ast)) {
-                    return_cleanup("");
-                }
-
-                check("skip newlines");
-                cc_skip_newlines(ast);
-                if (!*ast->ptr) {
-                    return_cleanup("reached EOF in if statement");
-                }
-
-                if (!*ast->ptr) {
-                    return_cleanup("syntax error. reached EOF in if statement (4)");
-                }
-
-                t = *ast->ptr++;
-                if (t->type != TOKEN_TYPE_STMT_END) {
-                    printf("type[%d]\n", t->type);
-                    return_cleanup("syntax error. not found end in if statement");
-                }
+            t = *ast->ptr++;
+            if (t->type != TOKEN_TYPE_LBRACEAT) {
+                return_cleanup("not found '{@' in if statement");
             }
-        }
-    } else {
-        ast->ptr--;
+            check("read '{@'");
+        } else {
+            --ast->ptr;
 
-        check("skip newlines");
-        cc_skip_newlines(ast);
-        if (!*ast->ptr) {
-            return_cleanup("reached EOF in if statement");
-        }
-
-        // elems allow null
-        check("call cc_elems");
-        cur->elems = cc_elems(ast, dep+1);
-        if (ast_has_errors(ast)) {
-            return_cleanup("");
-        }
-
-        check("skip newlines");
-        cc_skip_newlines(ast);
-        if (!*ast->ptr) {
-            return_cleanup("reached EOF in if statement");
-        }
-
-        check("call cc_if_stmt (elif)");
-        cur->elif_stmt = cc_if_stmt(ast, 1, dep+1);
-        if (!cur->elif_stmt) {
+            check("call cc_elems");
+            node_t *elems = cc_elems(ast, dep+1);
             if (ast_has_errors(ast)) {
-                return_cleanup("");
+                return_cleanup("failed to compile elems");
             }
-
-            check("call cc_else_stmt");
-            cur->else_stmt = cc_else_stmt(ast, dep+1);
-            if (!cur->else_stmt) {
-                if (ast_has_errors(ast)) {
-                    return_cleanup("");
-                }
-
-                check("skip newlines");
-                cc_skip_newlines(ast);
-                if (!*ast->ptr) {
-                    return_cleanup("reached EOF in if statement");
-                }
-
-                if (!*ast->ptr) {
-                    return_cleanup("syntax error. reached EOF in if statement (4)");
-                }
-
-                t = *ast->ptr++;
-                if (t->type != TOKEN_TYPE_STMT_END) {
-                    return_cleanup("syntax error. not found end in if statement (2)");
-                }
+            if (elems) {
+                nodearr_moveb(cur->contents, elems);
             }
+            // allow null
         }
     }
 

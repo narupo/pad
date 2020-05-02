@@ -85,23 +85,20 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     case NODE_TYPE_IF_STMT: {
         node_if_stmt_t *if_stmt = node->real;
         ast_del_nodes(self, if_stmt->test);
-        ast_del_nodes(self, if_stmt->elems);
-        ast_del_nodes(self, if_stmt->blocks);
         ast_del_nodes(self, if_stmt->elif_stmt);
         ast_del_nodes(self, if_stmt->else_stmt);
+        nodearr_del(if_stmt->contents);
     } break;
     case NODE_TYPE_ELIF_STMT: {
         node_elif_stmt_t *elif_stmt = node->real;
         ast_del_nodes(self, elif_stmt->test);
-        ast_del_nodes(self, elif_stmt->elems);
-        ast_del_nodes(self, elif_stmt->blocks);
         ast_del_nodes(self, elif_stmt->elif_stmt);
         ast_del_nodes(self, elif_stmt->else_stmt);
+        nodearr_del(elif_stmt->contents);
     } break;
     case NODE_TYPE_ELSE_STMT: {
         node_else_stmt_t *else_stmt = node->real;
-        ast_del_nodes(self, else_stmt->elems);
-        ast_del_nodes(self, else_stmt->blocks);
+        nodearr_del(else_stmt->contents);
     } break;
     case NODE_TYPE_FOR_STMT: {
         node_for_stmt_t *for_stmt = node->real;
