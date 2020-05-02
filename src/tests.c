@@ -14167,6 +14167,28 @@ test_trv_dot_1(void) {
 }
 
 static void
+test_trv_dot_2(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "    arr = [1, 2]"
+    "    dst = []\n"
+    "    dst.push(arr[1])\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        traceerr();
+        assert(!ast_has_errors(ast));
+        // assert(!strcmp(ctx_getc_stdout_buf(ctx), "true,true,ture\n12,34"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_call(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -17170,6 +17192,7 @@ test_trv_assign_and_reference_0(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
+        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,0,true"));
     }
 
@@ -20329,6 +20352,49 @@ test_trv_for_stmt_10(void) {
     trv_cleanup;
 }
 
+/*
+    "    def slice(arr, ncols):\n"
+    "        dst = []\n"
+    "\n"
+    "        for i = 0; i < len(arr); i += ncols:\n"
+    "            row = []\n"
+    "            for j = 0; j < ncols and i+j < len(arr); j += 1:\n"
+    "                row.push(arr[i+j])\n"
+    "            end\n"
+    "            dst.push(row)\n"
+    "        end\n"
+    "\n"
+    "        return dst\n"
+    "    end\n"
+    "\n"
+    "    a = slice([1, 2, 3, 4], 2)\n"
+*/
+
+static void
+test_trv_for_stmt_11(void) {
+
+    return;  // TODO
+
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "    arr = [1, 2]"
+    "    dst = []\n"
+    "    dst.push(arr[1])\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        traceerr();
+        assert(!ast_has_errors(ast));
+        // assert(!strcmp(ctx_getc_stdout_buf(ctx), "true,true,ture\n12,34"));
+    }
+
+    trv_cleanup;
+}
+
 static void
 test_trv_break_stmt(void) {
     config_t *config = config_new();
@@ -22551,6 +22617,7 @@ traverser_tests[] = {
     {"trv_for_stmt_8", test_trv_for_stmt_8},
     {"trv_for_stmt_9", test_trv_for_stmt_9},
     {"trv_for_stmt_10", test_trv_for_stmt_10},
+    {"trv_for_stmt_11", test_trv_for_stmt_11},
     {"trv_break_stmt", test_trv_break_stmt},
     {"trv_continue_stmt", test_trv_continue_stmt},
     {"trv_return_stmt", test_trv_return_stmt},
@@ -22588,7 +22655,6 @@ traverser_tests[] = {
     {"trv_expr_2", test_trv_expr_2},
     {"trv_term_0", test_trv_term_0},
     {"trv_term_1", test_trv_term_1},
-    // {"trv_dot_0", test_trv_dot_0},
     {"trv_call_0", test_trv_call_0},
     {"trv_call_1", test_trv_call_1},
     {"trv_call_2", test_trv_call_2},
@@ -22631,6 +22697,7 @@ traverser_tests[] = {
     {"trv_test_list", test_trv_test_list},
     {"trv_dot_0", test_trv_dot_0},
     {"trv_dot_1", test_trv_dot_1},
+    {"trv_dot_2", test_trv_dot_2},
     {"trv_negative_0", test_trv_negative_0},
     {"trv_call", test_trv_call},
     {"trv_func_def", test_trv_func_def},
@@ -22765,6 +22832,56 @@ test_errstack_pushb(void) {
 }
 
 static void
+test_errstack_resize(void) {
+    errstack_t *stack = errstack_new();
+
+    assert(errstack_len(stack) == 0);
+    assert(errstack_pushb(stack, "file1", 1, "func1", "this is %s", "message1"));
+    assert(errstack_pushb(stack, "file2", 2, "func2", "this is %s", "message2"));
+    assert(errstack_pushb(stack, "file3", 3, "func3", "this is %s", "message3"));
+    assert(errstack_pushb(stack, "file4", 4, "func4", "this is %s", "message4"));
+    assert(errstack_pushb(stack, "file5", 5, "func5", "this is %s", "message5"));
+    assert(errstack_len(stack) == 5);
+
+    const errelem_t *elem = errstack_getc(stack, 0);
+    assert(elem);
+    assert(!strcmp(elem->filename, "file1"));
+    assert(elem->lineno == 1);
+    assert(!strcmp(elem->funcname, "func1"));
+    assert(!strcmp(elem->message, "this is message1"));
+
+    elem = errstack_getc(stack, 1);
+    assert(elem);
+    assert(!strcmp(elem->filename, "file2"));
+    assert(elem->lineno == 2);
+    assert(!strcmp(elem->funcname, "func2"));
+    assert(!strcmp(elem->message, "this is message2"));
+
+    elem = errstack_getc(stack, 2);
+    assert(elem);
+    assert(!strcmp(elem->filename, "file3"));
+    assert(elem->lineno == 3);
+    assert(!strcmp(elem->funcname, "func3"));
+    assert(!strcmp(elem->message, "this is message3"));
+
+    elem = errstack_getc(stack, 3);
+    assert(elem);
+    assert(!strcmp(elem->filename, "file4"));
+    assert(elem->lineno == 4);
+    assert(!strcmp(elem->funcname, "func4"));
+    assert(!strcmp(elem->message, "this is message4"));
+
+    elem = errstack_getc(stack, 4);
+    assert(elem);
+    assert(!strcmp(elem->filename, "file5"));
+    assert(elem->lineno == 5);
+    assert(!strcmp(elem->funcname, "func5"));
+    assert(!strcmp(elem->message, "this is message5"));
+
+    errstack_del(stack);
+}
+
+static void
 test_errstack_trace(void) {
     errstack_t *stack = errstack_new();
 
@@ -22808,7 +22925,7 @@ test_errelem_show(void) {
 }
 
 static void
-test_errstack_extendf_other(void) {
+test_errstack_extendf_other_0(void) {
     errstack_t *stack = errstack_new();
     errstack_t *other = errstack_new();
 
@@ -22830,7 +22947,48 @@ test_errstack_extendf_other(void) {
 }
 
 static void
-test_errstack_extendb_other(void) {
+test_errstack_extendf_other_1(void) {
+    errstack_t *stack = errstack_new();
+    errstack_t *other = errstack_new();
+
+    assert(errstack_pushb(stack, "file5", 5, "func5", "this is %s", "message5"));
+    assert(errstack_pushb(stack, "file6", 6, "func6", "this is %s", "message6"));
+
+    assert(errstack_pushb(other, "file1", 1, "func1", "this is %s", "message1"));
+    assert(errstack_pushb(other, "file2", 2, "func2", "this is %s", "message2"));
+    assert(errstack_pushb(other, "file3", 3, "func3", "this is %s", "message3"));
+    assert(errstack_pushb(other, "file4", 4, "func4", "this is %s", "message4"));
+
+    assert(errstack_len(stack) == 2);
+    assert(errstack_len(other) == 4);
+
+    assert(errstack_extendf_other(stack, other));
+    assert(errstack_len(stack) == 6);
+    assert(errstack_len(other) == 4);
+
+    errstack_del(stack);
+    errstack_del(other);
+}
+
+static void
+test_errstack_extendf_other_2(void) {
+    errstack_t *stack = errstack_new();
+
+    assert(errstack_pushb(stack, "file1", 1, "func1", "this is %s", "message1"));
+    assert(errstack_pushb(stack, "file2", 2, "func2", "this is %s", "message2"));
+    assert(errstack_pushb(stack, "file3", 3, "func3", "this is %s", "message3"));
+    assert(errstack_pushb(stack, "file4", 4, "func4", "this is %s", "message4"));
+
+    assert(errstack_len(stack) == 4);
+
+    assert(errstack_extendf_other(stack, stack));
+    assert(errstack_len(stack) == 8);
+
+    errstack_del(stack);
+}
+
+static void
+test_errstack_extendb_other_0(void) {
     errstack_t *stack = errstack_new();
     errstack_t *other = errstack_new();
 
@@ -22851,13 +23009,59 @@ test_errstack_extendb_other(void) {
     errstack_del(other);
 }
 
+static void
+test_errstack_extendb_other_1(void) {
+    errstack_t *stack = errstack_new();
+    errstack_t *other = errstack_new();
+
+    assert(errstack_pushb(stack, "file5", 5, "func5", "this is %s", "message5"));
+    assert(errstack_pushb(stack, "file6", 4, "func6", "this is %s", "message6"));
+
+    assert(errstack_pushb(other, "file1", 1, "func1", "this is %s", "message1"));
+    assert(errstack_pushb(other, "file2", 2, "func2", "this is %s", "message2"));
+    assert(errstack_pushb(other, "file3", 3, "func3", "this is %s", "message3"));
+    assert(errstack_pushb(other, "file4", 4, "func4", "this is %s", "message4"));
+
+    assert(errstack_len(stack) == 2);
+    assert(errstack_len(other) == 4);
+
+    assert(errstack_extendb_other(stack, other));
+    assert(errstack_len(stack) == 6);
+    assert(errstack_len(other) == 4);
+
+    errstack_del(stack);
+    errstack_del(other);
+}
+
+static void
+test_errstack_extendb_other_2(void) {
+    errstack_t *stack = errstack_new();
+
+    assert(errstack_pushb(stack, "file1", 1, "func1", "this is %s", "message1"));
+    assert(errstack_pushb(stack, "file2", 2, "func2", "this is %s", "message2"));
+    assert(errstack_pushb(stack, "file3", 3, "func3", "this is %s", "message3"));
+    assert(errstack_pushb(stack, "file4", 4, "func4", "this is %s", "message4"));
+
+    assert(errstack_len(stack) == 4);
+
+    assert(errstack_extendb_other(stack, stack));
+    assert(errstack_len(stack) == 8);
+
+    errstack_del(stack);
+}
+
 static const struct testcase
 errstack_tests[] = {
     {"errstack_new", test_errstack_new},
     {"errstack_pushb", test_errstack_pushb},
+    {"errstack_resize", test_errstack_resize},
     {"errstack_trace", test_errstack_trace},
-    {"errstack_extendf_other", test_errstack_extendf_other},
-    {"errstack_extendb_other", test_errstack_extendb_other},
+    {"errstack_extendf_other_0", test_errstack_extendf_other_0},
+    {"errstack_extendf_other_1", test_errstack_extendf_other_1},
+    {"errstack_extendf_other_2", test_errstack_extendf_other_2},
+    {"errstack_extendb_other_0", test_errstack_extendb_other_0},
+    {"errstack_extendb_other_1", test_errstack_extendb_other_1},
+    {"errstack_extendb_other_2", test_errstack_extendb_other_2},
     {"errelem_show", test_errelem_show},
     {0},
 };

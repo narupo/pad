@@ -1448,11 +1448,28 @@ trv_call_args(ast_t *ast, const node_t *node, int dep) {
         check("call _trv_traverse");
         object_t *result = _trv_traverse(ast, test, dep+1);
         if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to traverse call argument");
             return_trav(NULL);
         }
         assert(result);
 
-        objarr_moveb(arr, mem_move(result));
+        object_t *ref = extract_ref_of_obj(ast, result);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to extract reference");
+            return_trav(NULL);
+        }
+
+        switch (ref->type) {
+        default: {
+            object_t *copy = obj_new_other(ref);
+            objarr_moveb(arr, mem_move(copy));
+        } break;
+        case OBJ_TYPE_INDEX:
+        case OBJ_TYPE_DICT:
+            // set reference at array
+            objarr_pushb(arr, ref);
+            break;
+        }
     }
 
     object_t *ret = obj_new_array(ast->ref_gc, mem_move(arr));
@@ -5726,6 +5743,11 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
 
         check("call _trv_traverse with call's test_list");
         object_t *actual_args = _trv_traverse(ast, call_args, dep+1);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to traverse arguments");
+            return_trav(NULL);
+        }
+        assert(actual_args);
         assert(actual_args->type == OBJ_TYPE_ARRAY);
 
 #define check_result \
@@ -5790,6 +5812,8 @@ trv_index(ast_t *ast, const node_t *node, int dep) {
         }
 
         // get reference
+        obj_dump(operand, stdout);
+        ast_dump(ast, stdout);
         ref_operand = pull_in_ref_by_owner(ast, operand);
         if (!ref_operand) {
             // can't index access to null
