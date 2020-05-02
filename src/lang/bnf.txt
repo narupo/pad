@@ -33,12 +33,12 @@ BNF of Cap's template language
          else_stmt: 'else' ':' [ elems ]* 'end'* |
                     'else' ':' '@}' [ blocks ]* '{@' 'end'*
 
-          for_stmt: 'for' init_formula ';' comp_formula ';' update_formula ':' elems 'end' |
-                    'for' init_formula ';' comp_formula ';' update_formula ':' '@}' blocks '@}' 'end' |
-                    'for' comp_formula ':' elems 'end' |
-                    'for' comp_formula ':' '@}' blocks '{@' 'end' |
-                    'for' ':' elems 'end' |
-                    'for' ':' '@}' blocks '{@' 'end'
+          for_stmt: 'for' init_formula ';' comp_formula ';' update_formula ':' contents 'end' |
+                    'for' init_formula ';' comp_formula ';' update_formula ':' '@}' contents '@}' 'end' |
+                    'for' comp_formula ':' contents 'end' |
+                    'for' comp_formula ':' '@}' contents '{@' 'end' |
+                    'for' ':' contents 'end' |
+                    'for' ':' '@}' contents '{@' 'end'
         break_stmt: 'break'
      continue_stmt: 'continue'
        return_stmt: 'return' [ formula ]*

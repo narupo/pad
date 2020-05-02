@@ -162,7 +162,7 @@ trv_program(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse");
     _trv_traverse(ast, program->blocks, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
 
@@ -176,7 +176,7 @@ trv_blocks(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse");
     _trv_traverse(ast, blocks->code_block, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
 
@@ -187,19 +187,19 @@ trv_blocks(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse");
     _trv_traverse(ast, blocks->ref_block, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
 
     check("call _trv_traverse");
     _trv_traverse(ast, blocks->text_block, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
 
     check("call _trv_traverse");
     _trv_traverse(ast, blocks->blocks, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
 
@@ -213,7 +213,7 @@ trv_code_block(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse");
     _trv_traverse(ast, code_block->elems, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
 
@@ -227,7 +227,7 @@ trv_ref_block(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse");
     object_t *tmp = _trv_traverse(ast, ref_block->formula, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
     assert(tmp);
@@ -235,7 +235,7 @@ trv_ref_block(ast_t *ast, const node_t *node, int dep) {
     object_t *result = tmp;
     if (tmp->type == OBJ_TYPE_INDEX) {
         result = copy_value_of_index_obj(ast, tmp);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         if (!result) {
@@ -314,13 +314,13 @@ trv_elems(ast_t *ast, const node_t *node, int dep) {
     check("call _trv_traverse with def");
     if (elems->def) {
         _trv_traverse(ast, elems->def, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
     } else if (elems->stmt) {
         check("call _trv_traverse with stmt");
         result = _trv_traverse(ast, elems->stmt, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
 
@@ -333,14 +333,14 @@ trv_elems(ast_t *ast, const node_t *node, int dep) {
     } else if (elems->formula) {
         check("call _trv_traverse with formula");
         _trv_traverse(ast, elems->formula, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
     }
 
     check("call _trv_traverse with elems");
     result = _trv_traverse(ast, elems->elems, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
 
@@ -355,13 +355,13 @@ trv_formula(ast_t *ast, const node_t *node, int dep) {
     check("call _trv_traverse");
     if (formula->assign_list) {
         object_t *result = _trv_traverse(ast, formula->assign_list, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         return_trav(result);
     } else if (formula->multi_assign) {
         object_t *result = _trv_traverse(ast, formula->multi_assign, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         return_trav(result);
@@ -380,42 +380,42 @@ trv_stmt(ast_t *ast, const node_t *node, int dep) {
     if (stmt->import_stmt) {
         check("call _trv_traverse with import stmt");
         _trv_traverse(ast, stmt->import_stmt, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         return_trav(NULL);
     } else if (stmt->if_stmt) {
         check("call _trv_traverse with if stmt");
         result = _trv_traverse(ast, stmt->if_stmt, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         return_trav(result);
     } else if (stmt->for_stmt) {
         check("call _trv_traverse with for stmt");
         result = _trv_traverse(ast, stmt->for_stmt, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         return_trav(result);
     } else if (stmt->break_stmt) {
         check("call _trv_traverse with break stmt");
         _trv_traverse(ast, stmt->break_stmt, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         return_trav(NULL);
     } else if (stmt->continue_stmt) {
         check("call _trv_traverse with continue stmt");
         _trv_traverse(ast, stmt->continue_stmt, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         return_trav(NULL);
     } else if (stmt->return_stmt) {
         check("call _trv_traverse with return stmt");
         result = _trv_traverse(ast, stmt->return_stmt, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         return_trav(result);
@@ -434,13 +434,13 @@ trv_import_stmt(ast_t *ast, const node_t *node, int dep) {
     if (import_stmt->import_as_stmt) {
         check("call _trv_traverse with import as statement");
         _trv_traverse(ast, import_stmt->import_as_stmt, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
     } else if (import_stmt->from_import_stmt) {
         check("call _trv_traverse with from import statement");
         _trv_traverse(ast, import_stmt->from_import_stmt, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
     } else {
@@ -459,7 +459,7 @@ trv_import_as_stmt(ast_t *ast, const node_t *node, int dep) {
     // get path and alias value
     check("call _trv_traverse with path of import as statement");
     object_t *pathobj = _trv_traverse(ast, import_as_stmt->path, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
     if (!pathobj || pathobj->type != OBJ_TYPE_STRING) {
@@ -469,7 +469,7 @@ trv_import_as_stmt(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse with identifier of import as statement");
     object_t *aliasobj = _trv_traverse(ast, import_as_stmt->alias, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         obj_del(pathobj);
         return_trav(NULL);
     }
@@ -513,7 +513,7 @@ trv_from_import_stmt(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse with path of from import statement");
     object_t *pathobj = _trv_traverse(ast, from_import_stmt->path, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
     if (!pathobj || pathobj->type != OBJ_TYPE_STRING) {
@@ -524,7 +524,7 @@ trv_from_import_stmt(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse with import variables of from import statement");
     object_t *varsobj = _trv_traverse(ast, from_import_stmt->import_vars, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         obj_del(pathobj);
         return_trav(NULL);
     }
@@ -574,7 +574,7 @@ trv_import_vars(ast_t *ast, const node_t *node, int dep) {
 
         check("call _trv_traverse with variable node of import variables");
         object_t *varobj = _trv_traverse(ast, node, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             objarr_del(objarr);
             return_trav(NULL);
         }
@@ -602,7 +602,7 @@ trv_import_var(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse with identifier of import variable");
     object_t *idnobj = _trv_traverse(ast, import_var->identifier, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
     if (!idnobj || idnobj->type != OBJ_TYPE_IDENTIFIER) {
@@ -614,7 +614,7 @@ trv_import_var(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse with alias of import variable");
     object_t *aliasobj = _trv_traverse(ast, import_var->alias, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         obj_del(idnobj);
         return_trav(NULL);
     }
@@ -682,7 +682,7 @@ trv_if_stmt(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse");
     object_t *result = _trv_traverse(ast, if_stmt->test, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
     if (!result) {
@@ -697,13 +697,13 @@ trv_if_stmt(ast_t *ast, const node_t *node, int dep) {
         if (if_stmt->elems) {
             check("call _trv_traverse");
             result = _trv_traverse(ast, if_stmt->elems, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_trav(NULL);
             }
         } else if (if_stmt->blocks) {
             check("call _trv_traverse");
             result = _trv_traverse(ast, if_stmt->blocks, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_trav(NULL);
             }
         } else {
@@ -713,13 +713,13 @@ trv_if_stmt(ast_t *ast, const node_t *node, int dep) {
         if (if_stmt->elif_stmt) {
             check("call _trv_traverse");
             result = _trv_traverse(ast, if_stmt->elif_stmt, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_trav(NULL);
             }
         } else if (if_stmt->else_stmt) {
             check("call _trv_traverse");
             result = _trv_traverse(ast, if_stmt->else_stmt, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_trav(NULL);
             }
         } else {
@@ -758,14 +758,14 @@ trv_for_stmt(ast_t *ast, const node_t *node, int dep) {
         // for 1; 1; 1: end
         check("call _trv_traverse with init_formula");
         object_t *result = _trv_traverse(ast, for_stmt->init_formula, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
 
         for (;;) {
             check("call _trv_traverse with update_formula");
             result = _trv_traverse(ast, for_stmt->comp_formula, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 goto done;
             }
             if (!trv_parse_bool(ast, result)) {
@@ -775,18 +775,15 @@ trv_for_stmt(ast_t *ast, const node_t *node, int dep) {
 
             ctx_clear_jump_flags(ast->context);
 
-            check("call _trv_traverse with elems");
-            if (for_stmt->elems) {
-                _trv_traverse(ast, for_stmt->elems, dep+1);
-                if (ast_has_error_stack(ast)) {
+            check("call _trv_traverse with contents");
+            for (int32_t i = 0; i < nodearr_len(for_stmt->contents); ++i) {
+                node_t *node = nodearr_get(for_stmt->contents, i);
+                object_t *result = _trv_traverse(ast, node, dep+1);
+                obj_del(result);
+                if (ast_has_errors(ast)) {
                     goto done;
                 }
-            } else if (for_stmt->blocks) {
-                _trv_traverse(ast, for_stmt->blocks, dep+1);
-                if (ast_has_error_stack(ast)) {
-                    goto done;
-                }
-            } // allow null elems and blocks
+            } // allow null contents
 
             if (ctx_get_do_break(ast->context)) {
                 break;
@@ -794,7 +791,7 @@ trv_for_stmt(ast_t *ast, const node_t *node, int dep) {
 
             check("call _trv_traverse with update_formula");
             result = _trv_traverse(ast, for_stmt->update_formula, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 goto done;
             }
             result = NULL;
@@ -804,25 +801,22 @@ trv_for_stmt(ast_t *ast, const node_t *node, int dep) {
         for (;;) {
             check("call _trv_traverse");
             object_t *result = _trv_traverse(ast, for_stmt->comp_formula, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 goto done;
             }
             if (!trv_parse_bool(ast, result)) {
                 break;
             }
 
-            check("call _trv_traverse");
-            if (for_stmt->elems) {
-                _trv_traverse(ast, for_stmt->elems, dep+1);
-                if (ast_has_error_stack(ast)) {
+            check("call _trv_traverse with contents");
+            for (int32_t i = 0; i < nodearr_len(for_stmt->contents); ++i) {
+                node_t *node = nodearr_get(for_stmt->contents, i);
+                object_t *result = _trv_traverse(ast, node, dep+1);
+                obj_del(result);
+                if (ast_has_errors(ast)) {
                     goto done;
                 }
-            } else if (for_stmt->blocks) {
-                _trv_traverse(ast, for_stmt->blocks, dep+1);
-                if (ast_has_error_stack(ast)) {
-                    goto done;
-                }
-            } // allow null elems and blocks
+            } // allow null contents
 
             if (ctx_get_do_break(ast->context)) {
                 break;
@@ -833,17 +827,15 @@ trv_for_stmt(ast_t *ast, const node_t *node, int dep) {
         for (;;) {
             check("call _trv_traverse");
 
-            if (for_stmt->elems) {
-                _trv_traverse(ast, for_stmt->elems, dep+1);
-                if (ast_has_error_stack(ast)) {
+            check("call _trv_traverse with contents");
+            for (int32_t i = 0; i < nodearr_len(for_stmt->contents); ++i) {
+                node_t *node = nodearr_get(for_stmt->contents, i);
+                object_t *result = _trv_traverse(ast, node, dep+1);
+                obj_del(result);
+                if (ast_has_errors(ast)) {
                     goto done;
                 }
-            } else if (for_stmt->blocks) {
-                _trv_traverse(ast, for_stmt->blocks, dep+1);
-                if (ast_has_error_stack(ast)) {
-                    goto done;
-                }
-            } // allow null elems and blocks
+            } // allow null contents
 
             if (ctx_get_do_break(ast->context)) {
                 break;
@@ -892,7 +884,7 @@ trv_return_stmt(ast_t *ast, const node_t *node, int dep) {
     check("call _trv_traverse with formula");
     object_t *result = _trv_traverse(ast, return_stmt->formula, dep+1);
     if (!result) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         ast_pushb_error(ast, "result is null from formula in return statement");
@@ -981,7 +973,7 @@ trv_obj_to_index_value(ast_t *ast, index_value_t *idxval, const object_t *obj) {
     default: break;
     case OBJ_TYPE_IDENTIFIER:
         src = pull_in_ref_by_owner(ast, obj);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return NULL;
         } else if (!src) {
             ast_pushb_error(
@@ -994,7 +986,7 @@ trv_obj_to_index_value(ast_t *ast, index_value_t *idxval, const object_t *obj) {
         break;
     case OBJ_TYPE_INDEX:
         delme = copy_value_of_index_obj(ast, obj);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return NULL;
         } else if (!delme) {
             ast_pushb_error(ast, "index value is null in object to index value");
@@ -1045,14 +1037,14 @@ trv_assign_to_index(ast_t *ast, const object_t *lhs, object_t *rhs, int dep) {
 
         index_value_t idx = {0};
         trv_obj_to_index_value(ast, &idx, el);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             ast_pushb_error(ast, "invalid index in assign to index");
             return_trav(NULL);
         }
 
         if (ref_operand->type == OBJ_TYPE_IDENTIFIER) {
             object_t *ref = pull_in_ref_by_owner(ast, ref_operand);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_trav(NULL);
             } else if (!ref) {
                 ast_pushb_error(
@@ -1104,7 +1096,7 @@ trv_assign_to_index(ast_t *ast, const object_t *lhs, object_t *rhs, int dep) {
             if (i == idxslen-1) {
                 // assign to
                 object_t *copy = copy_object_value(ast, rhs);
-                if (ast_has_error_stack(ast)) {
+                if (ast_has_errors(ast)) {
                     return_trav(NULL);
                 } else if (!copy) {
                     ast_pushb_error(ast, "failed to copy object value");
@@ -1142,7 +1134,7 @@ trv_calc_assign_to_index(ast_t *ast, const object_t *lhs, object_t *rhs, int dep
     assert(lhs->type == OBJ_TYPE_INDEX);
 
     object_t *obj = trv_assign_to_index(ast, lhs, rhs, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
 
@@ -1155,7 +1147,7 @@ trv_calc_assign_with_reserv(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     assert(lhs->type == OBJ_TYPE_RESERV);
 
     object_t *rhsref = extract_ref_of_obj(ast, rhs);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to extract object");
         return_trav(NULL);
     }
@@ -1221,7 +1213,7 @@ trv_simple_assign(ast_t *ast, const node_t *node, int dep) {
     assert(rnode->type == NODE_TYPE_TEST);
     check("call _trv_traverse with right test");
     object_t *rhs = _trv_traverse(ast, rnode, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
     assert(rhs);
@@ -1231,7 +1223,7 @@ trv_simple_assign(ast_t *ast, const node_t *node, int dep) {
         assert(lnode->type == NODE_TYPE_TEST);
         check("call _trv_traverse with test left test");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         if (!lhs) {
@@ -1239,7 +1231,7 @@ trv_simple_assign(ast_t *ast, const node_t *node, int dep) {
         }
 
         object_t *result = trv_calc_assign(ast, lhs, rhs, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
 
@@ -1269,7 +1261,7 @@ trv_assign(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse with test rnode");
     object_t *rhs = _trv_traverse(ast, rnode, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
     assert(rhs);
@@ -1281,7 +1273,7 @@ trv_assign(ast_t *ast, const node_t *node, int dep) {
 
         check("call _trv_traverse with test lnode");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         // why lhs in null?
@@ -1299,7 +1291,7 @@ trv_assign(ast_t *ast, const node_t *node, int dep) {
         }
 
         object_t *result = trv_calc_assign(ast, lhs, rhs, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
 
@@ -1328,7 +1320,7 @@ trv_assign_list(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse with assign assign");
     object_t *obj = _trv_traverse(ast, assign, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         objarr_del(objarr);
         return_trav(NULL);
     }
@@ -1342,7 +1334,7 @@ trv_assign_list(ast_t *ast, const node_t *node, int dep) {
 
         check("call _trv_traverse with assign assign");
         obj = _trv_traverse(ast, assign, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             objarr_del(objarr);
             return_trav(NULL);
         }
@@ -1384,7 +1376,7 @@ trv_multi_assign(ast_t *ast, const node_t *node, int dep) {
     assert(rnode->type == NODE_TYPE_TEST_LIST);
     check("call _trv_traverse with right test_list node");
     object_t *rhs = _trv_traverse(ast, rnode, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
     assert(rhs);
@@ -1394,7 +1386,7 @@ trv_multi_assign(ast_t *ast, const node_t *node, int dep) {
         assert(lnode->type == NODE_TYPE_TEST_LIST);
         check("call _trv_traverse with left test_list node");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         if (!lhs) {
@@ -1403,7 +1395,7 @@ trv_multi_assign(ast_t *ast, const node_t *node, int dep) {
         }
 
         object_t *result = trv_calc_assign(ast, lhs, rhs, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         if (!result) {
@@ -1437,7 +1429,7 @@ trv_test_list(ast_t *ast, const node_t *node, int dep) {
         node_t *test = nodearr_get(test_list->nodearr, i);
         check("call _trv_traverse");
         object_t *result = _trv_traverse(ast, test, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
 
@@ -1460,7 +1452,7 @@ trv_call_args(ast_t *ast, const node_t *node, int dep) {
         node_t *test = nodearr_get(call_args->nodearr, i);
         check("call _trv_traverse");
         object_t *result = _trv_traverse(ast, test, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         assert(result);
@@ -2494,7 +2486,7 @@ trv_or_test(ast_t *ast, const node_t *node, int dep) {
     node_t *lnode = nodearr_get(or_test->nodearr, 0);
     check("call _trv_traverse");
     object_t *lhs = _trv_traverse(ast, lnode, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
     assert(lhs);
@@ -2503,7 +2495,7 @@ trv_or_test(ast_t *ast, const node_t *node, int dep) {
         node_t *rnode = nodearr_get(or_test->nodearr, i);
         check("call _trv_traverse");
         object_t *rhs = _trv_traverse(ast, rnode, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         if (!rhs) {
@@ -2512,7 +2504,7 @@ trv_or_test(ast_t *ast, const node_t *node, int dep) {
 
         check("call trv_compare_or");
         object_t *result = trv_compare_or(ast, lhs, rhs, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         assert(result);
@@ -3429,7 +3421,7 @@ trv_and_test(ast_t *ast, const node_t *node, int dep) {
     node_t *lnode = nodearr_get(and_test->nodearr, 0);
     check("call _trv_traverse with not_test");
     object_t *lhs = _trv_traverse(ast, lnode, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
     assert(lhs);
@@ -3438,7 +3430,7 @@ trv_and_test(ast_t *ast, const node_t *node, int dep) {
         node_t *rnode = nodearr_get(and_test->nodearr, i);
         check("call _trv_traverse with not_test");
         object_t *rhs = _trv_traverse(ast, rnode, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         if (!rhs) {
@@ -3447,7 +3439,7 @@ trv_and_test(ast_t *ast, const node_t *node, int dep) {
 
         check("call trv_compare_and");
         object_t *result = trv_compare_and(ast, lhs, rhs, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         assert(result);
@@ -3530,7 +3522,7 @@ trv_not_test(ast_t *ast, const node_t *node, int dep) {
 
     if (not_test->not_test) {
         object_t *operand = _trv_traverse(ast, not_test->not_test, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         if (!operand) {
@@ -4787,7 +4779,7 @@ trv_comparison(ast_t *ast, const node_t *node, int dep) {
         assert(lnode->type == NODE_TYPE_ASSCALC);
         check("call _trv_traverse with asscalc");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         assert(lhs);
@@ -4803,14 +4795,14 @@ trv_comparison(ast_t *ast, const node_t *node, int dep) {
             assert(rnode);
             check("call _trv_traverse with asscalc");
             object_t *rhs = _trv_traverse(ast, rnode, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_trav(NULL);
             }
             assert(rnode);
 
             check("call trv_compare_comparison");
             object_t *result = trv_compare_comparison(ast, lhs, node_comp_op, rhs, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_trav(NULL);
             }
 
@@ -5139,7 +5131,7 @@ trv_expr(ast_t *ast, const node_t *node, int dep) {
     } else if (nodearr_len(expr->nodearr) >= 3) {
         node_t *lnode = nodearr_get(expr->nodearr, 0);
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         assert(lhs);
@@ -5153,14 +5145,14 @@ trv_expr(ast_t *ast, const node_t *node, int dep) {
             assert(rnode);
             check("call _trv_traverse");
             object_t *rhs = _trv_traverse(ast, rnode, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_trav(NULL);
             }
             assert(rnode);
 
             check("call trv_calc_expr");
             object_t *result = trv_calc_expr(ast, lhs, op, rhs, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_trav(NULL);
             }
 
@@ -5520,7 +5512,7 @@ trv_term(ast_t *ast, const node_t *node, int dep) {
         assert(lnode->type == NODE_TYPE_NEGATIVE);
         check("call _trv_traverse with dot");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         assert(lhs);
@@ -5535,14 +5527,14 @@ trv_term(ast_t *ast, const node_t *node, int dep) {
             assert(rnode->type == NODE_TYPE_NEGATIVE);
             check("call _trv_traverse with index");
             object_t *rhs = _trv_traverse(ast, rnode, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_trav(NULL);
             }
             assert(rnode);
 
             check("trv_calc_term");
             object_t *result = trv_calc_term(ast, lhs, op, rhs, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_trav(NULL);
             }
 
@@ -5564,7 +5556,7 @@ trv_negative(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse with negative's dot")
     object_t *operand = _trv_traverse(ast, negative->dot, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
     if (!operand) {
@@ -5610,7 +5602,7 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
         assert(lnode->type == NODE_TYPE_CALL);
         check("call _trv_traverse with dot");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         assert(lhs);
@@ -5631,7 +5623,7 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
 
             check("call _trv_traverse with index");
             object_t *result = _trv_traverse(ast, rnode, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_trav(NULL);
             }
             if (!result) {
@@ -5659,7 +5651,7 @@ trv_dot(ast_t *ast, const node_t *node, int dep) {
                 } else {
                     // create reservation object for assign statement
                     ast_t *ctx_ast = get_ast_by_owner(ast);
-                    if (ast_has_error_stack(ast)) {
+                    if (ast_has_errors(ast)) {
                         ast_pushb_error(ast, "failed to get ast");
                         return_trav(NULL);
                     }
@@ -5693,7 +5685,7 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse with call's index");
     object_t *operand = _trv_traverse(ast, call->index, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
     if (!operand) {
@@ -5703,7 +5695,7 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
 
     if (operand->type == OBJ_TYPE_INDEX) {
         object_t *tmp = copy_value_of_index_obj(ast, operand);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         assert(tmp);
@@ -5742,7 +5734,7 @@ trv_call(ast_t *ast, const node_t *node, int dep) {
         assert(actual_args->type == OBJ_TYPE_ARRAY);
 
 #define check_result \
-        if (ast_has_error_stack(ast)) { \
+        if (ast_has_errors(ast)) { \
             return_trav(NULL); \
         } else if (result) { \
             operand = result; \
@@ -5787,7 +5779,7 @@ trv_index(ast_t *ast, const node_t *node, int dep) {
     object_t *ret = NULL;
 
     operand = _trv_traverse(ast, index_node->factor, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
     if (!operand) {
@@ -5919,7 +5911,7 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, object_t *ref_lhs, object_t 
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *rvar = extract_ref_of_obj(ast, rhs);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             ast_pushb_error(ast, "failed to extract object");
             return_trav(NULL);
         }
@@ -6018,7 +6010,7 @@ trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, object_t *lhs, object_t *rhs, int d
     assert(lhs->type == OBJ_TYPE_INT);
 
     object_t *rhsref = extract_ref_of_obj(ast, rhs);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to extract reference");
         return_trav(NULL);
     }
@@ -6048,7 +6040,7 @@ trv_calc_asscalc_sub_ass_idn(ast_t *ast, object_t *lhs, object_t *rhs, int dep) 
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
     object_t *lhsref = extract_ref_of_obj(ast, lhs);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to pull reference");
         return_trav(NULL);
     }
@@ -6094,7 +6086,7 @@ trv_calc_asscalc_mul_ass_int(ast_t *ast, object_t *lhs, object_t *rhs, int dep) 
     assert(lhs->type == OBJ_TYPE_INT);
 
     object_t *rhsref = extract_ref_of_obj(ast, rhs);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to extract reference");
         return_trav(NULL);
     }
@@ -6124,7 +6116,7 @@ trv_calc_asscalc_mul_ass_string(ast_t *ast, object_t *lhs, object_t *rhs, int de
     assert(lhs->type == OBJ_TYPE_STRING);
 
     object_t *rhsref = extract_ref_of_obj(ast, rhs);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to extract reference");
         return_trav(NULL);
     }
@@ -6171,7 +6163,7 @@ trv_calc_asscalc_mul_ass(ast_t *ast, object_t *lhs, object_t *rhs, int dep) {
     }
 
     object_t *lhsref = extract_ref_of_obj(ast, lhs);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to extract reference");
         return_trav(NULL);
     }
@@ -6203,7 +6195,7 @@ trv_calc_asscalc_div_ass_int(ast_t *ast, object_t *lhs, object_t *rhs, int dep) 
     assert(lhs->type == OBJ_TYPE_INT);
 
     object_t *rhsref = extract_ref_of_obj(ast, rhs);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to extract reference");
         return_trav(NULL);
     }
@@ -6243,7 +6235,7 @@ trv_calc_asscalc_div_ass_bool(ast_t *ast, object_t* lhs, object_t *rhs, int dep)
     assert(lhs->type == OBJ_TYPE_BOOL);
 
     object_t *rhsref = extract_ref_of_obj(ast, rhs);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to extract reference");
         return_trav(NULL);
     }
@@ -6291,7 +6283,7 @@ trv_calc_asscalc_div_ass(ast_t *ast, object_t* lhs, object_t *rhs, int dep) {
     }
 
     object_t *lhsref = extract_ref_of_obj(ast, lhs);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to extract reference");
         return_trav(NULL);
     }
@@ -6364,7 +6356,7 @@ trv_asscalc(ast_t *ast, const node_t *node, int dep) {
         assert(lnode->type == NODE_TYPE_EXPR);
         check("call _trv_traverse");
         object_t *lhs = _trv_traverse(ast, lnode, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         assert(lhs);
@@ -6380,14 +6372,14 @@ trv_asscalc(ast_t *ast, const node_t *node, int dep) {
             assert(rnode->type == NODE_TYPE_EXPR);
             check("call _trv_traverse");
             object_t *rhs = _trv_traverse(ast, rnode, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_trav(NULL);
             }
             assert(rnode);
 
             check("call trv_calc_asscalc");
             object_t *result = trv_calc_asscalc(ast, lhs, op, rhs, dep+1);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 return_trav(NULL);
             }
 
@@ -6524,13 +6516,13 @@ trv_array_elems(ast_t *ast, const node_t *node, int dep) {
     for (int32_t i = 0; i < nodearr_len(array_elems->nodearr); ++i) {
         node_t *n = nodearr_get(array_elems->nodearr, i);
         object_t *result = _trv_traverse(ast, n, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             ast_pushb_error(ast, "result is null");
             return_trav(NULL);
         }
 
         object_t *ref = extract_ref_of_obj(ast, result);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             ast_pushb_error(ast, "failed to extract reference");
             return_trav(NULL);
         }
@@ -6576,7 +6568,7 @@ trv_dict_elem(ast_t *ast, const node_t *node, int dep) {
 
     check("call _trv_traverse with key simple assign");
     object_t *key = _trv_traverse(ast, dict_elem->key_simple_assign, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
     assert(key);
@@ -6591,7 +6583,7 @@ trv_dict_elem(ast_t *ast, const node_t *node, int dep) {
     }
 
     object_t *val = _trv_traverse(ast, dict_elem->value_simple_assign, dep+1);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
     assert(val);
@@ -6620,7 +6612,7 @@ trv_dict_elems(ast_t *ast, const node_t *node, int dep) {
         node_t *dict_elem = nodearr_get(dict_elems->nodearr, i);
         check("call _trv_traverse with dict_elem");
         object_t *arrobj = _trv_traverse(ast, dict_elem, dep+1);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             obj_del(arrobj);
             objdict_del(objdict);
             return_trav(NULL);
@@ -6696,7 +6688,7 @@ trv_identifier(ast_t *ast, const node_t *node, int dep) {
     assert(identifier && node->type == NODE_TYPE_IDENTIFIER);
 
     ast_t *ref_ast = get_ast_by_owner(ast);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to get ast by owner");
         return_trav(NULL);
     }
@@ -6760,7 +6752,7 @@ invoke_func_obj(ast_t *ast, object_t *funcobj, const object_t *drtargs, int dep)
             }
 
             object_t *extref = extract_ref_of_obj(ast, ref_aarg);
-            if (ast_has_error_stack(ast)) {
+            if (ast_has_errors(ast)) {
                 ast_pushb_error(ast, "failed to extract reference");
                 return NULL;
             }
@@ -6784,7 +6776,7 @@ invoke_func_obj(ast_t *ast, object_t *funcobj, const object_t *drtargs, int dep)
     for (int32_t i = 0; i < nodearr_len(func->ref_suites); ++i) {
         node_t *ref_suite = nodearr_get(func->ref_suites, i);
         result = _trv_traverse(func->ref_ast, ref_suite, dep+1);
-        if (ast_has_error_stack(func->ref_ast)) {
+        if (ast_has_errors(func->ref_ast)) {
             errstack_extendb_other(ast->error_stack, func->ref_ast->error_stack);
             return NULL;
         }
@@ -6975,7 +6967,7 @@ trv_func_def(ast_t *ast, const node_t *node, int dep) {
     check("call _trv_traverse with identifier");
     object_t *name = _trv_traverse(ast, func_def->identifier, dep+1);
     if (!name) {
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
         ast_pushb_error(ast, "failed to traverse name in traverse func def");
@@ -7012,7 +7004,7 @@ trv_func_def_args(ast_t *ast, const node_t *node, int dep) {
     assert(func_def_args && node->type == NODE_TYPE_FUNC_DEF_ARGS);
 
     ast_t *ref_ast = get_ast_by_owner(ast);
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to get ast by owner");
         return_trav(NULL);
     }

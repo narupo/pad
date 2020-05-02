@@ -255,14 +255,14 @@ catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
 
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             err_error("%s", ast_getc_first_error_message(ast));
             ret = false;
             goto fail;
         }
 
         trv_traverse(ast, ctx);
-        if (ast_has_error_stack(ast)) {
+        if (ast_has_errors(ast)) {
             err_error("%s", ast_getc_first_error_message(ast));
             ret = false;
             goto fail;

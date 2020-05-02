@@ -3348,7 +3348,7 @@ tokenizer_tests[] = {
 
 static void
 test_ast_show_error(const ast_t *ast) {
-    if (ast_has_error_stack(ast)) {
+    if (ast_has_errors(ast)) {
         printf("error detail[%s]\n", ast_getc_first_error_message(ast));
     }
 }
@@ -6452,7 +6452,7 @@ test_cc_compile(void) {
         ast_clear(ast);
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         root = ast_getc_root(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -8760,7 +8760,7 @@ test_cc_compile(void) {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
         root = ast_getc_root(ast);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ if 0: @}abc{@ else: @}def{@ end @}");
@@ -8991,7 +8991,7 @@ test_cc_compile(void) {
         assert(for_stmt->update_formula != NULL);
         assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->update_formula->real != NULL);
-        assert(for_stmt->elems == NULL);
+        assert(nodearr_len(for_stmt->contents) == 0);
     }
 
     tkr_parse(tkr, "{@ for 1; 1; 1: if 1: end end @}");
@@ -9037,10 +9037,8 @@ test_cc_compile(void) {
         assert(for_stmt->update_formula != NULL);
         assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->update_formula->real != NULL);
-        assert(for_stmt->elems != NULL);
-        assert(for_stmt->elems->type == NODE_TYPE_ELEMS);
-        assert(for_stmt->elems->real != NULL);
-        elems = for_stmt->elems->real;
+        assert(nodearr_len(for_stmt->contents) == 1);
+        elems = nodearr_get(for_stmt->contents, 0)->real;
         assert(elems->stmt != NULL);
         assert(elems->stmt->type == NODE_TYPE_STMT);
         assert(elems->stmt->real != NULL);
@@ -9101,10 +9099,8 @@ test_cc_compile(void) {
         assert(for_stmt->update_formula != NULL);
         assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->update_formula->real != NULL);
-        assert(for_stmt->elems != NULL);
-        assert(for_stmt->elems->type == NODE_TYPE_ELEMS);
-        assert(for_stmt->elems->real != NULL);
-        elems = for_stmt->elems->real;
+        assert(nodearr_len(for_stmt->contents) == 1);
+        elems = nodearr_get(for_stmt->contents, 0)->real;
         assert(elems->stmt != NULL);
         assert(elems->stmt->type == NODE_TYPE_STMT);
         assert(elems->stmt->real != NULL);
@@ -9124,7 +9120,7 @@ test_cc_compile(void) {
         assert(for_stmt->update_formula != NULL);
         assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->update_formula->real != NULL);
-        assert(for_stmt->elems == NULL);
+        assert(nodearr_len(for_stmt->contents) == 0);
     }
 
     tkr_parse(tkr, "{@ for 1: end @}");
@@ -9166,7 +9162,7 @@ test_cc_compile(void) {
         assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->comp_formula->real != NULL);
         assert(for_stmt->update_formula == NULL);
-        assert(for_stmt->elems == NULL);
+        assert(nodearr_len(for_stmt->contents) == 0);
     }
 
     tkr_parse(tkr, "{@ for 1: if 1: end end @}");
@@ -9208,11 +9204,8 @@ test_cc_compile(void) {
         assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->comp_formula->real != NULL);
         assert(for_stmt->update_formula == NULL);
-        assert(for_stmt->elems != NULL);
-        assert(for_stmt->elems->type == NODE_TYPE_ELEMS);
-        assert(for_stmt->elems->real != NULL);
-        assert(for_stmt->blocks == NULL);
-        elems = for_stmt->elems->real;
+        assert(nodearr_len(for_stmt->contents) == 1);
+        elems = nodearr_get(for_stmt->contents, 0)->real;
         assert(elems->stmt != NULL);
         assert(elems->stmt->type == NODE_TYPE_STMT);
         assert(elems->stmt->real != NULL);
@@ -9269,11 +9262,8 @@ test_cc_compile(void) {
         assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->comp_formula->real != NULL);
         assert(for_stmt->update_formula == NULL);
-        assert(for_stmt->elems == NULL);
-        assert(for_stmt->blocks != NULL);
-        assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
-        assert(for_stmt->blocks->real != NULL);
-        blocks = for_stmt->blocks->real;
+        assert(nodearr_len(for_stmt->contents) == 1);
+        blocks = nodearr_get(for_stmt->contents, 0)->real;
         assert(blocks->code_block != NULL);
         assert(blocks->code_block->type == NODE_TYPE_CODE_BLOCK);
         assert(blocks->code_block->real != NULL);
@@ -9340,7 +9330,7 @@ test_cc_compile(void) {
         assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->comp_formula->real != NULL);
         assert(for_stmt->update_formula == NULL);
-        assert(for_stmt->elems == NULL);
+        assert(nodearr_len(for_stmt->contents) == 0);
     }
 
     tkr_parse(tkr, "{@ for: end @}");
@@ -9380,7 +9370,7 @@ test_cc_compile(void) {
         assert(for_stmt->init_formula == NULL);
         assert(for_stmt->comp_formula == NULL);
         assert(for_stmt->update_formula == NULL);
-        assert(for_stmt->elems == NULL);
+        assert(nodearr_len(for_stmt->contents) == 0);
     }
 
     tkr_parse(tkr, "{@ for: @}{@ end @}");
@@ -9420,7 +9410,7 @@ test_cc_compile(void) {
         assert(for_stmt->init_formula == NULL);
         assert(for_stmt->comp_formula == NULL);
         assert(for_stmt->update_formula == NULL);
-        assert(for_stmt->elems == NULL);
+        assert(nodearr_len(for_stmt->contents) == 0);
     }
 
     tkr_parse(tkr, "{@ for: @}abc{@ end @}");
@@ -9460,11 +9450,8 @@ test_cc_compile(void) {
         assert(for_stmt->init_formula == NULL);
         assert(for_stmt->comp_formula == NULL);
         assert(for_stmt->update_formula == NULL);
-        assert(for_stmt->elems == NULL);
-        assert(for_stmt->blocks != NULL);
-        assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
-        assert(for_stmt->blocks->real != NULL);
-        blocks = for_stmt->blocks->real;
+        assert(nodearr_len(for_stmt->contents) == 1);
+        blocks = nodearr_get(for_stmt->contents, 0)->real;
         assert(blocks->code_block == NULL);
         assert(blocks->ref_block == NULL);
         assert(blocks->text_block != NULL);
@@ -9512,11 +9499,8 @@ test_cc_compile(void) {
         assert(for_stmt->init_formula == NULL);
         assert(for_stmt->comp_formula == NULL);
         assert(for_stmt->update_formula == NULL);
-        assert(for_stmt->elems == NULL);
-        assert(for_stmt->blocks != NULL);
-        assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
-        assert(for_stmt->blocks->real != NULL);
-        blocks = for_stmt->blocks->real;
+        assert(nodearr_len(for_stmt->contents) == 1);
+        blocks = nodearr_get(for_stmt->contents, 0)->real;
         assert(blocks->code_block != NULL);
         assert(blocks->code_block->type == NODE_TYPE_CODE_BLOCK);
         assert(blocks->code_block->real != NULL);
@@ -9601,7 +9585,7 @@ test_cc_compile(void) {
         assert(for_stmt->init_formula != NULL);
         assert(for_stmt->comp_formula != NULL);
         assert(for_stmt->update_formula != NULL);
-        assert(for_stmt->elems == NULL);
+        assert(nodearr_len(for_stmt->contents) == 0);
     }
 
     tkr_parse(tkr, "{@ for 1; 1; 1: @}{@ end @}");
@@ -9647,8 +9631,7 @@ test_cc_compile(void) {
         assert(for_stmt->update_formula != NULL);
         assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->update_formula->real != NULL);
-        assert(for_stmt->elems == NULL);
-        assert(for_stmt->blocks == NULL);
+        assert(nodearr_len(for_stmt->contents) == 0);
     }
 
     tkr_parse(tkr, "{@ for 1; 1; 1: @}abc{@ end @}");
@@ -9694,11 +9677,8 @@ test_cc_compile(void) {
         assert(for_stmt->update_formula != NULL);
         assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->update_formula->real != NULL);
-        assert(for_stmt->elems == NULL);
-        assert(for_stmt->blocks != NULL);
-        assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
-        assert(for_stmt->blocks->real != NULL);
-        blocks = for_stmt->blocks->real;
+        assert(nodearr_len(for_stmt->contents) == 1);
+        blocks = nodearr_get(for_stmt->contents, 0)->real;
         assert(blocks->code_block == NULL);
         assert(blocks->ref_block == NULL);
         assert(blocks->text_block != NULL);
@@ -9752,11 +9732,8 @@ test_cc_compile(void) {
         assert(for_stmt->update_formula != NULL);
         assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->update_formula->real != NULL);
-        assert(for_stmt->elems == NULL);
-        assert(for_stmt->blocks != NULL);
-        assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
-        assert(for_stmt->blocks->real != NULL);
-        blocks = for_stmt->blocks->real;
+        assert(nodearr_len(for_stmt->contents) == 1);
+        blocks = nodearr_get(for_stmt->contents, 0)->real;
         assert(blocks->code_block != NULL);
         assert(blocks->code_block->type == NODE_TYPE_CODE_BLOCK);
         assert(blocks->code_block->real != NULL);
@@ -9827,11 +9804,8 @@ test_cc_compile(void) {
         assert(for_stmt->update_formula != NULL);
         assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->update_formula->real != NULL);
-        assert(for_stmt->elems == NULL);
-        assert(for_stmt->blocks != NULL);
-        assert(for_stmt->blocks->type == NODE_TYPE_BLOCKS);
-        assert(for_stmt->blocks->real != NULL);
-        blocks = for_stmt->blocks->real;
+        assert(nodearr_len(for_stmt->contents) == 1);
+        blocks = nodearr_get(for_stmt->contents, 0)->real;
         assert(blocks->code_block == NULL);
         assert(blocks->ref_block == NULL);
         assert(blocks->text_block != NULL);
@@ -9931,9 +9905,8 @@ test_cc_compile(void) {
         assert(for_stmt->update_formula != NULL);
         assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->update_formula->real != NULL);
-        assert(for_stmt->elems != NULL);
-        assert(for_stmt->blocks == NULL);
-        elems = for_stmt->elems->real;
+        assert(nodearr_len(for_stmt->contents) == 1);
+        elems = nodearr_get(for_stmt->contents, 0)->real;
         assert(elems->stmt != NULL);
         stmt = elems->stmt->real;
         break_stmt = stmt->break_stmt->real;
@@ -9983,9 +9956,8 @@ test_cc_compile(void) {
         assert(for_stmt->update_formula != NULL);
         assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->update_formula->real != NULL);
-        assert(for_stmt->elems != NULL);
-        assert(for_stmt->blocks == NULL);
-        elems = for_stmt->elems->real;
+        assert(nodearr_len(for_stmt->contents) == 1);
+        elems = nodearr_get(for_stmt->contents, 0)->real;
         assert(elems->stmt != NULL);
         stmt = elems->stmt->real;
         continue_stmt = stmt->continue_stmt->real;
@@ -10035,9 +10007,8 @@ test_cc_compile(void) {
         assert(for_stmt->update_formula != NULL);
         assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->update_formula->real != NULL);
-        assert(for_stmt->elems != NULL);
-        assert(for_stmt->blocks == NULL);
-        elems = for_stmt->elems->real;
+        assert(nodearr_len(for_stmt->contents) == 1);
+        elems = nodearr_get(for_stmt->contents, 0)->real;
         assert(elems->stmt != NULL);
         stmt = elems->stmt->real;
         return_stmt = stmt->return_stmt->real;
@@ -10088,9 +10059,8 @@ test_cc_compile(void) {
         assert(for_stmt->update_formula != NULL);
         assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
         assert(for_stmt->update_formula->real != NULL);
-        assert(for_stmt->elems != NULL);
-        assert(for_stmt->blocks == NULL);
-        elems = for_stmt->elems->real;
+        assert(nodearr_len(for_stmt->contents) == 1);
+        elems = nodearr_get(for_stmt->contents, 0)->real;
         assert(elems->stmt != NULL);
         stmt = elems->stmt->real;
         return_stmt = stmt->return_stmt->real;
@@ -10135,7 +10105,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         root = ast_getc_root(ast);
         assert(root->type == NODE_TYPE_PROGRAM);
         program = root->real;
@@ -10193,7 +10163,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ import @}");
@@ -10201,7 +10171,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found path in compile import as statement"));
     }
 
@@ -10210,7 +10180,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found keyword 'as' in compile import as statement"));
     }
 
@@ -10219,7 +10189,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found alias in compile import as statement"));
     }
 
@@ -10228,7 +10198,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found path in compile import as statement"));
     }
 
@@ -10237,7 +10207,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found keyword 'as' in compile import as statement"));
     }
 
@@ -10246,7 +10216,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found alias in compile import as statement"));
     }
 
@@ -10259,7 +10229,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         root = ast_getc_root(ast);
         assert(root->type == NODE_TYPE_PROGRAM);
         program = root->real;
@@ -10335,7 +10305,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         root = ast_getc_root(ast);
         assert(root->type == NODE_TYPE_PROGRAM);
         program = root->real;
@@ -10418,7 +10388,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         root = ast_getc_root(ast);
         assert(root->type == NODE_TYPE_PROGRAM);
         program = root->real;
@@ -10494,7 +10464,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         root = ast_getc_root(ast);
         assert(root->type == NODE_TYPE_PROGRAM);
         program = root->real;
@@ -10583,7 +10553,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ from \"path/to/module\" import (\naaa,\nbbb,\n) @}");
@@ -10591,7 +10561,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ from \"path/to/module\" import ( aaa as a, bbb ) @}");
@@ -10599,7 +10569,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         root = ast_getc_root(ast);
         assert(root->type == NODE_TYPE_PROGRAM);
         program = root->real;
@@ -10694,7 +10664,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ from \"path/to/module\" import (\n aaa as a, \nbbb ) @}");
@@ -10702,7 +10672,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ from \"path/to/module\" import (\n aaa as a,\n bbb \n) @}");
@@ -10710,7 +10680,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ from @}");
@@ -10718,7 +10688,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found path in compile from import statement"));
     }
 
@@ -10727,7 +10697,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found import in compile from import statement"));
     }
 
@@ -10736,7 +10706,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found import variables in compile from import statement"));
     }
 
@@ -10745,7 +10715,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found import variables in compile from import statement"));
     }
 
@@ -10754,7 +10724,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found second identifier in compile import variable"));
     }
 
@@ -10763,7 +10733,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid token 5 in compile import variables"));
     }
 
@@ -10772,7 +10742,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid token 5 in compile import variables"));
     }
 
@@ -10781,7 +10751,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found import variable in compile import variables"));
     }
 
@@ -10790,7 +10760,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid token 5 in compile import variables"));
     }
 
@@ -10799,7 +10769,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid token 42 in compile import variables"));
     }
 
@@ -10808,7 +10778,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found second identifier in compile import variable"));
     }
 
@@ -10830,7 +10800,7 @@ test_cc_func_def(void) {
         ast_clear(ast);
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ def func():\n"
@@ -10840,7 +10810,7 @@ test_cc_func_def(void) {
         ast_clear(ast);
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ def func():\n"
@@ -10850,7 +10820,7 @@ test_cc_func_def(void) {
         ast_clear(ast);
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ def func():\n"
@@ -10861,7 +10831,7 @@ test_cc_func_def(void) {
         ast_clear(ast);
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ def func():\n"
@@ -10872,7 +10842,7 @@ test_cc_func_def(void) {
         ast_clear(ast);
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ def func():\n"
@@ -10884,7 +10854,7 @@ test_cc_func_def(void) {
         ast_clear(ast);
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_del(tkr);
@@ -10944,7 +10914,7 @@ test_trv_dict(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "key is not string in dict elem"));
     }
 
@@ -10954,7 +10924,7 @@ test_trv_dict(void) {
     //     cc_compile(ast, tkr_get_tokens(tkr));
     //     ctx_clear(ctx);
     //     (trv_traverse(ast, ctx));
-    //     assert(ast_has_error_stack(ast));
+    //     assert(ast_has_errors(ast));
     //     assert(!strcmp(ast_getc_first_error_message(ast), "can not access by int to dict"));
     // }
 
@@ -10964,7 +10934,7 @@ test_trv_dict(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid key type in variable of dict"));
     }
 
@@ -11064,7 +11034,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11074,7 +11044,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't compare equal with int"));
     }
 
@@ -11084,7 +11054,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't compare equal with int"));
     }
 
@@ -11094,7 +11064,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't compare equal with string"));
     }
 
@@ -11104,7 +11074,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11114,7 +11084,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't compare equal with string"));
     }
 
@@ -11124,7 +11094,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11134,7 +11104,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11144,7 +11114,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11154,7 +11124,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11164,7 +11134,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't compare not equal with int"));
     }
 
@@ -11174,7 +11144,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't compare not equal with string"));
     }
 
@@ -11184,7 +11154,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11194,7 +11164,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't compare not equal with func"));
     }
 
@@ -11204,7 +11174,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't compare not equal with int"));
     }
 
@@ -11214,7 +11184,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11224,7 +11194,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11234,7 +11204,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11244,7 +11214,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11258,7 +11228,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't compare equal with bool"));
     }
 
@@ -11268,7 +11238,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11282,7 +11252,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11292,7 +11262,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11302,7 +11272,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11312,7 +11282,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11322,7 +11292,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11332,7 +11302,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11346,7 +11316,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11356,7 +11326,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11366,7 +11336,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11376,7 +11346,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11386,7 +11356,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11396,7 +11366,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11410,7 +11380,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11420,7 +11390,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11430,7 +11400,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11440,7 +11410,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11450,7 +11420,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11460,7 +11430,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11474,7 +11444,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11484,7 +11454,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11494,7 +11464,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11504,7 +11474,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11514,7 +11484,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -11524,7 +11494,7 @@ test_trv_comparison(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -11550,7 +11520,7 @@ test_trv_array_index(void) {
     //     (cc_compile(ast, tkr_get_tokens(tkr)));
     //     ctx_clear(ctx);
     //     (trv_traverse(ast, ctx));
-    //     assert(ast_has_error_stack(ast));
+    //     assert(ast_has_errors(ast));
     //     assert(!strcmp(ast_getc_first_error_message(ast), "can't index access. \"a\" is not defined"));
     // }
 
@@ -11560,7 +11530,7 @@ test_trv_array_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -11570,7 +11540,7 @@ test_trv_array_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -11580,7 +11550,7 @@ test_trv_array_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2"));
     }
 
@@ -11590,7 +11560,7 @@ test_trv_array_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "index out of range of array"));
     }
 
@@ -11600,7 +11570,7 @@ test_trv_array_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "index out of range of array"));
     } */
 
@@ -11610,7 +11580,7 @@ test_trv_array_index(void) {
     //     cc_compile(ast, tkr_get_tokens(tkr));
     //     ctx_clear(ctx);
     //     (trv_traverse(ast, ctx));
-    //     assert(!ast_has_error_stack(ast));
+    //     assert(!ast_has_errors(ast));
     //     assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     // }
 
@@ -11620,7 +11590,7 @@ test_trv_array_index(void) {
     //     cc_compile(ast, tkr_get_tokens(tkr));
     //     ctx_clear(ctx);
     //     (trv_traverse(ast, ctx));
-    //     assert(!ast_has_error_stack(ast));
+    //     assert(!ast_has_errors(ast));
     //     assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     // }
 
@@ -11630,7 +11600,7 @@ test_trv_array_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -11640,7 +11610,7 @@ test_trv_array_index(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -11745,7 +11715,7 @@ test_trv_ref_block_old(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in ref block"));
     }
 
@@ -11807,7 +11777,7 @@ test_trv_assign_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -11822,7 +11792,7 @@ test_trv_assign_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4"));
     }
 
@@ -11847,7 +11817,7 @@ test_trv_assign_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(module)"));
     }
 
@@ -11860,7 +11830,7 @@ test_trv_assign_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -11873,7 +11843,7 @@ test_trv_assign_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(module)"));
     }
 
@@ -11886,7 +11856,7 @@ test_trv_assign_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -11900,7 +11870,7 @@ test_trv_assign_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -11917,7 +11887,7 @@ test_trv_atom_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ false @}");
@@ -11926,7 +11896,7 @@ test_trv_atom_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ true @}");
@@ -11935,7 +11905,7 @@ test_trv_atom_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ 1 @}");
@@ -11944,7 +11914,7 @@ test_trv_atom_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ \"abc\" @}");
@@ -11953,7 +11923,7 @@ test_trv_atom_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ var @}");
@@ -11962,7 +11932,7 @@ test_trv_atom_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     trv_cleanup;
@@ -11983,7 +11953,7 @@ test_trv_array(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -11993,7 +11963,7 @@ test_trv_array(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -12003,7 +11973,7 @@ test_trv_array(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array),(array)"));
     }
 
@@ -12013,7 +11983,7 @@ test_trv_array(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -12023,7 +11993,7 @@ test_trv_array(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -12033,7 +12003,7 @@ test_trv_array(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -12059,7 +12029,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -12069,7 +12039,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "a"));
     }
 
@@ -12079,7 +12049,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "a,b,c"));
     }
 
@@ -12089,7 +12059,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -12099,7 +12069,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2"));
     }
 
@@ -12109,7 +12079,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -12119,7 +12089,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2"));
     }
 
@@ -12129,7 +12099,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "a"));
     }
 
@@ -12139,7 +12109,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "b"));
     }
 
@@ -12149,7 +12119,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -12159,7 +12129,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -12169,7 +12139,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -12179,7 +12149,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -12189,7 +12159,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -12199,7 +12169,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -12209,7 +12179,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -12219,7 +12189,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -12229,7 +12199,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -12239,7 +12209,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -12249,7 +12219,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -12259,7 +12229,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -12269,7 +12239,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -12279,7 +12249,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -12289,7 +12259,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -12299,7 +12269,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -12309,7 +12279,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -12319,7 +12289,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -12329,7 +12299,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -12339,7 +12309,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -12349,7 +12319,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "3,2"));
     }
 
@@ -12359,7 +12329,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "3,4"));
     }
 
@@ -12369,7 +12339,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "c,b"));
     }
 
@@ -12379,7 +12349,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "c,d"));
     }
 
@@ -12389,7 +12359,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "3,2"));
     }
 
@@ -12399,7 +12369,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "3,4"));
     }
 
@@ -12409,7 +12379,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -12419,7 +12389,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcDef"));
     }
 
@@ -12445,7 +12415,7 @@ test_trv_string_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "a"));
     }
 
@@ -12455,7 +12425,7 @@ test_trv_string_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "b"));
     }
 
@@ -12465,7 +12435,7 @@ test_trv_string_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "index out of range of string"));
     }
 
@@ -12475,7 +12445,7 @@ test_trv_string_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "a"));
     }
 
@@ -12485,7 +12455,7 @@ test_trv_string_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "b"));
     }
 
@@ -12495,7 +12465,7 @@ test_trv_string_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "a"));
     }
 
@@ -12523,7 +12493,7 @@ test_trv_multi_assign(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't assign array to array. not same length"));
     }
 
@@ -12533,7 +12503,7 @@ test_trv_multi_assign(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't assign element to array"));
     }
 
@@ -12545,7 +12515,7 @@ test_trv_multi_assign(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1 2"));
     }
 
@@ -12555,7 +12525,7 @@ test_trv_multi_assign(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -12583,7 +12553,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -12593,7 +12563,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -12603,7 +12573,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -12613,7 +12583,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -12623,7 +12593,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -12633,7 +12603,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -12643,7 +12613,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -12653,7 +12623,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -12663,7 +12633,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -12673,7 +12643,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -12685,7 +12655,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -12695,7 +12665,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -12705,7 +12675,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
     }
 
@@ -12715,7 +12685,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -12725,7 +12695,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -12735,7 +12705,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -12745,7 +12715,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -12755,7 +12725,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -12765,7 +12735,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -12775,7 +12745,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -12785,7 +12755,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -12795,7 +12765,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -12805,7 +12775,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -12815,7 +12785,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -12825,7 +12795,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -12835,7 +12805,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -12845,7 +12815,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -12855,7 +12825,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -12865,7 +12835,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -12877,7 +12847,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -12887,7 +12857,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -12897,7 +12867,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -12907,7 +12877,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -12917,7 +12887,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -12927,7 +12897,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -12937,7 +12907,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -12947,7 +12917,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -12957,7 +12927,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -12967,7 +12937,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -12977,7 +12947,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -12987,7 +12957,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -12997,7 +12967,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13009,7 +12979,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -13019,7 +12989,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -13029,7 +12999,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -13039,7 +13009,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -13049,7 +13019,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -13059,7 +13029,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -13069,7 +13039,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "def"));
     }
 
@@ -13079,7 +13049,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13089,7 +13059,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13099,7 +13069,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13109,7 +13079,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13119,7 +13089,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -13129,7 +13099,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -13139,7 +13109,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -13149,7 +13119,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -13159,7 +13129,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -13169,7 +13139,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -13179,7 +13149,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -13189,7 +13159,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -13199,7 +13169,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -13209,7 +13179,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -13219,7 +13189,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13229,7 +13199,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -13239,7 +13209,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13249,7 +13219,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -13259,7 +13229,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -13269,7 +13239,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -13279,7 +13249,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -13291,7 +13261,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -13301,7 +13271,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -13311,7 +13281,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -13321,7 +13291,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -13331,7 +13301,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -13341,7 +13311,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -13351,7 +13321,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "def"));
     }
 
@@ -13361,7 +13331,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13371,7 +13341,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13381,7 +13351,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13391,7 +13361,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13401,7 +13371,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -13411,7 +13381,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -13421,7 +13391,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -13431,7 +13401,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -13441,7 +13411,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -13451,7 +13421,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13461,7 +13431,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -13471,7 +13441,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13481,7 +13451,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13491,7 +13461,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13501,7 +13471,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13511,7 +13481,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13521,7 +13491,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13531,7 +13501,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13541,7 +13511,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13551,7 +13521,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13561,7 +13531,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -13573,7 +13543,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -13583,7 +13553,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -13593,7 +13563,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -13603,7 +13573,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -13613,7 +13583,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -13623,7 +13593,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -13633,7 +13603,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "def"));
     }
 
@@ -13643,7 +13613,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13653,7 +13623,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13663,7 +13633,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13673,7 +13643,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13683,7 +13653,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -13693,7 +13663,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -13703,7 +13673,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -13713,7 +13683,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -13723,7 +13693,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -13733,7 +13703,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13743,7 +13713,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -13753,7 +13723,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13763,7 +13733,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13773,7 +13743,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13783,7 +13753,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -13793,7 +13763,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13803,7 +13773,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13813,7 +13783,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13823,7 +13793,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13833,7 +13803,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
     }
 
@@ -13843,7 +13813,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -13855,7 +13825,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -13865,7 +13835,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -13875,7 +13845,7 @@ test_trv_and_test(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -13903,7 +13873,7 @@ test_trv_assign_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -13913,7 +13883,7 @@ test_trv_assign_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -13923,7 +13893,7 @@ test_trv_assign_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -13933,7 +13903,7 @@ test_trv_assign_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -13943,7 +13913,7 @@ test_trv_assign_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -13953,7 +13923,7 @@ test_trv_assign_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -13963,7 +13933,7 @@ test_trv_assign_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2"));
     }
 
@@ -13973,7 +13943,7 @@ test_trv_assign_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "3,12"));
     }
 
@@ -13983,7 +13953,7 @@ test_trv_assign_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2,3"));
     }
 
@@ -13993,7 +13963,7 @@ test_trv_assign_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1"));
     }
 
@@ -14003,7 +13973,7 @@ test_trv_assign_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1,1"));
     }
 
@@ -14013,7 +13983,7 @@ test_trv_assign_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -14023,7 +13993,7 @@ test_trv_assign_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2"));
     }
 
@@ -14033,7 +14003,7 @@ test_trv_assign_list(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -14043,7 +14013,7 @@ test_trv_assign_list(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil,nil"));
     }
 
@@ -14063,7 +14033,7 @@ test_trv_assign_list(void) {
         ast_move_opts(ast, opts);
         (trv_traverse(ast, ctx));
         ast_move_opts(ast, NULL);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "def"));
     }
 
@@ -14089,7 +14059,7 @@ test_trv_test_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ 1, \"abc\", var, alias.set(\"\", \"\") @}");
@@ -14098,7 +14068,7 @@ test_trv_test_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ a = 0 \n b = 0 \n a += 1, b += 2 @}{: a :} {: b :}");
@@ -14107,7 +14077,7 @@ test_trv_test_list(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1 2"));
     }
 
@@ -14133,7 +14103,7 @@ test_trv_negative_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -14143,7 +14113,7 @@ test_trv_negative_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "-1"));
     }
 
@@ -14153,7 +14123,7 @@ test_trv_negative_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -14163,7 +14133,7 @@ test_trv_negative_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "-2"));
     }
 
@@ -14173,7 +14143,7 @@ test_trv_negative_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -14183,7 +14153,7 @@ test_trv_negative_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -14193,7 +14163,7 @@ test_trv_negative_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -14219,7 +14189,7 @@ test_trv_dot_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -14229,7 +14199,7 @@ test_trv_dot_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "ABC"));
     }
 
@@ -14239,7 +14209,7 @@ test_trv_dot_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "ABC"));
     }
 
@@ -14249,7 +14219,7 @@ test_trv_dot_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_get_alias_value(ctx, "a"), "b"));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
@@ -14275,7 +14245,7 @@ test_trv_dot_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "STRING"));
     }
 
@@ -14297,7 +14267,7 @@ test_trv_call(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -14307,7 +14277,7 @@ test_trv_call(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -14317,7 +14287,7 @@ test_trv_call(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -14327,7 +14297,7 @@ test_trv_call(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4"));
     }
 
@@ -14353,7 +14323,7 @@ test_trv_func_def(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -14363,7 +14333,7 @@ test_trv_func_def(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -14373,7 +14343,7 @@ test_trv_func_def(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
     }
 
@@ -14383,7 +14353,7 @@ test_trv_func_def(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -14393,7 +14363,7 @@ test_trv_func_def(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -14403,7 +14373,7 @@ test_trv_func_def(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
     }
 
@@ -14413,7 +14383,7 @@ test_trv_func_def(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcnil"));
     }
 
@@ -14423,7 +14393,7 @@ test_trv_func_def(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcdefnil"));
     }
 
@@ -14433,7 +14403,7 @@ test_trv_func_def(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc1nil"));
     }
 
@@ -14443,7 +14413,7 @@ test_trv_func_def(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc123nil"));
     }
 
@@ -14459,7 +14429,7 @@ test_trv_func_def(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcnil"));
     }
 
@@ -14479,7 +14449,7 @@ test_trv_func_def(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "hi\n"));
     }
 
@@ -14502,7 +14472,7 @@ test_trv_func_def(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "hi\n"));
     }
 
@@ -14523,7 +14493,7 @@ test_trv_func_def(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,1"));
     }
 
@@ -14553,7 +14523,7 @@ test_trv_builtin_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "ABC"));
     }
 
@@ -14563,7 +14533,7 @@ test_trv_builtin_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "ABC"));
     }
 
@@ -14573,7 +14543,7 @@ test_trv_builtin_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't call \"upper\""));
     }
 
@@ -14587,7 +14557,7 @@ test_trv_builtin_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -14597,7 +14567,7 @@ test_trv_builtin_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -14607,7 +14577,7 @@ test_trv_builtin_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't call \"lower\""));
     }
 
@@ -14621,7 +14591,7 @@ test_trv_builtin_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "Abc"));
     }
 
@@ -14631,7 +14601,7 @@ test_trv_builtin_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "Abc"));
     }
 
@@ -14641,7 +14611,7 @@ test_trv_builtin_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't call \"capitalize\""));
     }
 
@@ -14655,7 +14625,7 @@ test_trv_builtin_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc_def"));
     }
 
@@ -14665,7 +14635,7 @@ test_trv_builtin_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc_def"));
     }
 
@@ -14675,7 +14645,7 @@ test_trv_builtin_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't call \"snake\""));
     }
 
@@ -14689,7 +14659,7 @@ test_trv_builtin_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "camelCase"));
     }
 
@@ -14699,7 +14669,7 @@ test_trv_builtin_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "camelCase"));
     }
 
@@ -14709,7 +14679,7 @@ test_trv_builtin_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't call \"camel\""));
     }
     ctx_del(ctx);
@@ -14738,7 +14708,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
         const char *value = alinfo_getc_value(alinfo, "abc");
         assert(value);
@@ -14751,7 +14721,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
         const char *value = alinfo_getc_value(alinfo, "abc");
         assert(value);
@@ -14780,7 +14750,7 @@ test_trv_builtin_functions(void) {
         ctx_clear(ctx);
         ast_move_opts(ast, opts);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "def"));
     }
 
@@ -14798,7 +14768,7 @@ test_trv_builtin_functions(void) {
         ctx_clear(ctx);
         ast_move_opts(ast, opts);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -14816,7 +14786,7 @@ test_trv_builtin_functions(void) {
         ctx_clear(ctx);
         ast_move_opts(ast, opts);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -14830,7 +14800,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "\n"));
     }
 
@@ -14840,7 +14810,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -14850,7 +14820,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1 2\n"));
     }
 
@@ -14860,7 +14830,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1 abc\n"));
     }
 
@@ -14870,7 +14840,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc\n"));
     }
 
@@ -14884,7 +14854,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stderr_buf(ctx), "\n"));
     }
 
@@ -14894,7 +14864,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stderr_buf(ctx), "1\n"));
     }
 
@@ -14904,7 +14874,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stderr_buf(ctx), "1 2\n"));
     }
 
@@ -14914,7 +14884,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stderr_buf(ctx), "1 abc\n"));
     }
 
@@ -14924,7 +14894,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stderr_buf(ctx), "abc\n"));
     }
 
@@ -14938,7 +14908,7 @@ test_trv_builtin_functions(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     ctx_del(ctx);
@@ -14958,7 +14928,7 @@ test_trv_builtin_modules_alias_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't invoke alias.set. key is not string"));
     }
 
@@ -14975,7 +14945,7 @@ test_trv_builtin_modules_alias_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't invoke alias.set. too few arguments"));
     }
 
@@ -14985,7 +14955,7 @@ test_trv_builtin_modules_alias_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't invoke alias.set. key is not string"));
     }
 
@@ -15007,7 +14977,7 @@ test_trv_builtin_functions_type_dict(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ def f(d): end \n f({\"a\": 1}) @}");
@@ -15016,7 +14986,7 @@ test_trv_builtin_functions_type_dict(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ def f(d): end @}{: f(1) :}");
@@ -15025,7 +14995,7 @@ test_trv_builtin_functions_type_dict(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{@ def f(d): end @}{: f({\"a\": 1}) :}");
@@ -15034,7 +15004,7 @@ test_trv_builtin_functions_type_dict(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     tkr_parse(tkr, "{: type({ \"a\": 1 }) :}");
@@ -15043,7 +15013,7 @@ test_trv_builtin_functions_type_dict(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "<dict>"));
     }
 
@@ -15069,7 +15039,7 @@ test_trv_builtin_functions_type(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "<nil>"));
     }
 
@@ -15079,7 +15049,7 @@ test_trv_builtin_functions_type(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "<int>"));
     }
 
@@ -15089,7 +15059,7 @@ test_trv_builtin_functions_type(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "<bool>"));
     }
 
@@ -15099,7 +15069,7 @@ test_trv_builtin_functions_type(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "<str>"));
     }
 
@@ -15109,7 +15079,7 @@ test_trv_builtin_functions_type(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "<array>"));
     }
 
@@ -15119,7 +15089,7 @@ test_trv_builtin_functions_type(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "<dict>"));
     }
 
@@ -15129,7 +15099,7 @@ test_trv_builtin_functions_type(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "<func>"));
     }
 
@@ -15139,7 +15109,7 @@ test_trv_builtin_functions_type(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\n<module>"));
     }
 
@@ -15165,7 +15135,7 @@ test_trv_builtin_functions_len_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -15175,7 +15145,7 @@ test_trv_builtin_functions_len_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -15185,7 +15155,7 @@ test_trv_builtin_functions_len_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -15195,7 +15165,7 @@ test_trv_builtin_functions_len_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -15227,7 +15197,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -15237,7 +15207,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -15247,7 +15217,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -15257,7 +15227,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -15267,7 +15237,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -15277,7 +15247,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -15287,7 +15257,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -15297,7 +15267,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -15307,7 +15277,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -15317,7 +15287,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -15327,7 +15297,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -15337,7 +15307,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -15347,7 +15317,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -15359,7 +15329,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -15369,7 +15339,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -15379,7 +15349,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -15389,7 +15359,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -15399,7 +15369,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -15409,7 +15379,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -15419,7 +15389,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -15429,7 +15399,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -15439,7 +15409,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -15449,7 +15419,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -15459,7 +15429,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -15469,7 +15439,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -15479,7 +15449,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -15489,7 +15459,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -15499,7 +15469,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -15509,7 +15479,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -15521,7 +15491,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -15531,7 +15501,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -15541,7 +15511,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -15551,7 +15521,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -15561,7 +15531,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -15571,7 +15541,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -15581,7 +15551,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -15591,7 +15561,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -15601,7 +15571,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -15611,7 +15581,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -15621,7 +15591,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -15633,7 +15603,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -15643,7 +15613,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -15653,7 +15623,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -15663,7 +15633,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -15673,7 +15643,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -15683,7 +15653,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -15693,7 +15663,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -15703,7 +15673,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -15713,7 +15683,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -15723,7 +15693,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -15733,7 +15703,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -15743,7 +15713,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -15753,7 +15723,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "def"));
     }
 
@@ -15763,7 +15733,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -15773,7 +15743,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -15783,7 +15753,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -15793,7 +15763,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -15803,7 +15773,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -15813,7 +15783,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -15823,7 +15793,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -15833,7 +15803,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -15843,7 +15813,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -15853,7 +15823,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -15863,7 +15833,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -15875,7 +15845,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -15885,7 +15855,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -15895,7 +15865,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -15905,7 +15875,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -15915,7 +15885,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -15925,7 +15895,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -15935,7 +15905,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -15945,7 +15915,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -15955,7 +15925,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -15965,7 +15935,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -15975,7 +15945,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -15985,7 +15955,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -15995,7 +15965,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -16005,7 +15975,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -16015,7 +15985,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -16025,7 +15995,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -16035,7 +16005,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -16045,7 +16015,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -16055,7 +16025,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -16065,7 +16035,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -16075,7 +16045,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -16085,7 +16055,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -16095,7 +16065,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -16107,7 +16077,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -16117,7 +16087,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -16127,7 +16097,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -16137,7 +16107,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -16147,7 +16117,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -16157,7 +16127,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -16167,7 +16137,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -16177,7 +16147,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -16187,7 +16157,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -16197,7 +16167,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -16209,7 +16179,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -16220,7 +16190,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -16231,7 +16201,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function)"));
     }
 
@@ -16241,7 +16211,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -16251,7 +16221,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -16261,7 +16231,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -16271,7 +16241,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -16281,7 +16251,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -16291,7 +16261,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -16301,7 +16271,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -16311,7 +16281,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -16450,7 +16420,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
     }
 
@@ -16515,7 +16485,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "ab"));
     }
 
@@ -16531,7 +16501,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "xy"));
     }
 
@@ -16548,7 +16518,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -16572,7 +16542,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "\"my.func\" is not callable"));
     }
 */
@@ -16715,7 +16685,7 @@ test_trv_traverse(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in roll identifier lhs"));
     }
 
@@ -16728,7 +16698,7 @@ test_trv_traverse(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4"));
     }
 
@@ -16741,7 +16711,7 @@ test_trv_traverse(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4 4 4"));
     }
 
@@ -16751,7 +16721,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "aaaa"));
     }
 
@@ -16761,7 +16731,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4,8"));
     }
 
@@ -16771,7 +16741,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4,6"));
     }
 
@@ -16784,7 +16754,7 @@ test_trv_traverse(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "hige\nhige\nhige\nhige\n"));
     }
 
@@ -16797,7 +16767,7 @@ test_trv_traverse(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "hige\nhige\nhige\nhige\n"));
     }
 
@@ -16810,7 +16780,7 @@ test_trv_traverse(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "hige\nhige\nhige\nhige\n"));
     }
 
@@ -16827,7 +16797,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -16842,7 +16812,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -16856,7 +16826,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4,0"));
     }
 
@@ -16872,7 +16842,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
     }
 
@@ -16890,7 +16860,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -16907,7 +16877,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4,3"));
     }
 
@@ -16922,7 +16892,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil\n"));
     }
 
@@ -16937,7 +16907,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -16952,7 +16922,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -16967,7 +16937,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)\n"));
     }
 
@@ -16984,7 +16954,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "a\n1\n"));
     }
 
@@ -17000,7 +16970,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -17019,7 +16989,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -17038,7 +17008,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -17053,7 +17023,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2"));
     }
 
@@ -17068,7 +17038,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
     }
 
@@ -17083,7 +17053,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1"));
     }
 
@@ -17097,7 +17067,7 @@ test_trv_traverse(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
     }
@@ -17112,7 +17082,7 @@ test_trv_traverse(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
     }
@@ -17129,7 +17099,7 @@ test_trv_traverse(void) {
         (trv_traverse(ast, ctx));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in ref block"));
     }
 
@@ -17146,7 +17116,7 @@ test_trv_traverse(void) {
         (trv_traverse(ast, ctx));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in ref block"));
     }
 
@@ -17163,7 +17133,7 @@ test_trv_traverse(void) {
         (trv_traverse(ast, ctx));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in ref block"));
     }
 
@@ -17180,7 +17150,7 @@ test_trv_traverse(void) {
         (trv_traverse(ast, ctx));
         object_dict_t *varmap = ctx_get_varmap(ctx);
         assert(objdict_get(varmap, "func"));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "\"c\" is not defined in ref block"));
     }
 
@@ -17230,7 +17200,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc\ndef\n"));
     }
 
@@ -17240,7 +17210,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "\tabc\tdef"));
     }
 
@@ -17273,7 +17243,7 @@ test_trv_assign_and_reference_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -17285,7 +17255,7 @@ test_trv_assign_and_reference_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,0,true"));
     }
 
@@ -17313,7 +17283,7 @@ test_trv_assign_and_reference_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,0,true"));
     }
 
@@ -17342,7 +17312,7 @@ test_trv_assign_and_reference_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1,true"));
     }
 
@@ -17370,7 +17340,7 @@ test_trv_assign_and_reference_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1,true"));
     }
 
@@ -17399,7 +17369,7 @@ test_trv_assign_and_reference_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1,true,true,true"));
     }
 
@@ -17428,7 +17398,7 @@ test_trv_assign_and_reference_5(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array),(array),true"));
     }
 
@@ -17458,7 +17428,7 @@ test_trv_assign_and_reference_6(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "3,2,3,true"));
     }
 
@@ -17486,7 +17456,7 @@ test_trv_assign_and_reference_7(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2"));
     }
 
@@ -17514,7 +17484,7 @@ test_trv_assign_and_reference_8(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2,1,2"));
     }
 
@@ -17543,7 +17513,7 @@ test_trv_assign_and_reference_9(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict),(dict),true"));
     }
 
@@ -17574,7 +17544,7 @@ test_trv_assign_and_reference_10(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -17605,7 +17575,7 @@ test_trv_assign_and_reference_11(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2,true"));
     }
 
@@ -17637,7 +17607,7 @@ test_trv_assign_and_reference_12(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1,true,true,true"));
     }
 
@@ -17680,7 +17650,7 @@ test_trv_code_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -17690,7 +17660,7 @@ test_trv_code_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -17700,7 +17670,7 @@ test_trv_code_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -17710,7 +17680,7 @@ test_trv_code_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -17720,7 +17690,7 @@ test_trv_code_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -17730,7 +17700,7 @@ test_trv_code_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -17740,7 +17710,7 @@ test_trv_code_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -17750,7 +17720,7 @@ test_trv_code_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -17760,7 +17730,7 @@ test_trv_code_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "\n\n\n"));
     }
 
@@ -17770,7 +17740,7 @@ test_trv_code_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "\n\n\n"));
     }
 
@@ -17796,7 +17766,7 @@ test_trv_ref_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -17818,7 +17788,7 @@ test_trv_ref_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "\n1\n"));
     }
 
@@ -17828,7 +17798,7 @@ test_trv_ref_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -17838,7 +17808,7 @@ test_trv_ref_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "12"));
     }
 
@@ -17848,7 +17818,7 @@ test_trv_ref_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "7"));
     }
 
@@ -17858,7 +17828,7 @@ test_trv_ref_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abababab"));
     }
 
@@ -17884,7 +17854,7 @@ test_trv_text_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -17894,7 +17864,7 @@ test_trv_text_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "12"));
     }
 
@@ -17904,7 +17874,7 @@ test_trv_text_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "123"));
     }
 
@@ -17914,7 +17884,7 @@ test_trv_text_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "12345"));
     }
 
@@ -17924,7 +17894,7 @@ test_trv_text_block(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "123"));
     }
 
@@ -17954,7 +17924,7 @@ test_trv_import_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\n"));
     }
 
@@ -17964,7 +17934,7 @@ test_trv_import_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found path in compile import as statement"));
     }
 
@@ -17974,7 +17944,7 @@ test_trv_import_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found keyword 'as' in compile import as statement"));
     }
 
@@ -17984,7 +17954,7 @@ test_trv_import_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found alias in compile import as statement"));
     }
 
@@ -17995,10 +17965,10 @@ test_trv_import_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nhello, world\n"));
     }
 
@@ -18008,10 +17978,10 @@ test_trv_import_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "45"));
     }
 
@@ -18024,10 +17994,10 @@ test_trv_import_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\n"));
     }
 
@@ -18036,10 +18006,10 @@ test_trv_import_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nf1\n"));
     }
 
@@ -18048,10 +18018,10 @@ test_trv_import_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\n"));
     }
 
@@ -18060,10 +18030,10 @@ test_trv_import_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\n"));
     }
 
@@ -18072,10 +18042,10 @@ test_trv_import_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\n"));
     }
 
@@ -18085,10 +18055,10 @@ test_trv_import_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nf1\nf2\n"));
     }
 
@@ -18099,7 +18069,7 @@ test_trv_import_stmt_0(void) {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found path in compile from import statement"));
     }
 
@@ -18110,7 +18080,7 @@ test_trv_import_stmt_0(void) {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found import in compile from import statement"));
     }
 
@@ -18121,7 +18091,7 @@ test_trv_import_stmt_0(void) {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "not found import variables in compile from import statement"));
     }
 
@@ -18142,10 +18112,10 @@ test_trv_import_stmt_1(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "45"));
     }
 
@@ -18166,10 +18136,10 @@ test_trv_from_import_stmt_1(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nf1\n"));
     }
 
@@ -18196,10 +18166,10 @@ test_trv_from_import_stmt_2(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nhello, world\n"));
     }
 
@@ -18225,10 +18195,10 @@ test_trv_from_import_stmt_3(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nf1\nf2\n"));
     }
@@ -18255,7 +18225,7 @@ test_trv_if_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18265,7 +18235,7 @@ test_trv_if_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18275,7 +18245,7 @@ test_trv_if_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18285,7 +18255,7 @@ test_trv_if_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18293,7 +18263,7 @@ test_trv_if_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found test in if statement"));
     }
 
@@ -18301,7 +18271,7 @@ test_trv_if_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found colon in if statement"));
     }
 
@@ -18309,7 +18279,7 @@ test_trv_if_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18317,7 +18287,7 @@ test_trv_if_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18343,7 +18313,7 @@ test_trv_if_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -18353,7 +18323,7 @@ test_trv_if_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -18363,7 +18333,7 @@ test_trv_if_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -18373,7 +18343,7 @@ test_trv_if_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -18383,7 +18353,7 @@ test_trv_if_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -18409,7 +18379,7 @@ test_trv_if_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18419,7 +18389,7 @@ test_trv_if_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18429,7 +18399,7 @@ test_trv_if_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18439,7 +18409,7 @@ test_trv_if_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18449,7 +18419,7 @@ test_trv_if_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
     ctx_del(ctx);
@@ -18474,7 +18444,7 @@ test_trv_if_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -18484,7 +18454,7 @@ test_trv_if_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -18494,7 +18464,7 @@ test_trv_if_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -18504,7 +18474,7 @@ test_trv_if_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -18514,7 +18484,7 @@ test_trv_if_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -18524,7 +18494,7 @@ test_trv_if_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -18534,7 +18504,7 @@ test_trv_if_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -18544,7 +18514,7 @@ test_trv_if_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -18554,7 +18524,7 @@ test_trv_if_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -18580,7 +18550,7 @@ test_trv_if_stmt_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18590,7 +18560,7 @@ test_trv_if_stmt_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18608,7 +18578,7 @@ test_trv_if_stmt_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18626,7 +18596,7 @@ test_trv_if_stmt_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18657,7 +18627,7 @@ test_trv_if_stmt_5(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18684,7 +18654,7 @@ test_trv_if_stmt_6(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18707,7 +18677,7 @@ test_trv_if_stmt_7(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18729,7 +18699,7 @@ test_trv_if_stmt_8(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18754,7 +18724,7 @@ test_trv_if_stmt_9(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n2\n"));
     }
 
@@ -18768,7 +18738,7 @@ test_trv_if_stmt_9(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18786,7 +18756,7 @@ test_trv_if_stmt_9(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "6\n"));
     }
 
@@ -18811,7 +18781,7 @@ test_trv_if_stmt_9(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "24\n2000\n"));
     }
 
@@ -18840,7 +18810,7 @@ test_trv_if_stmt_9(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2000\n"));
     }
 
@@ -18869,7 +18839,7 @@ test_trv_if_stmt_9(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2000\n"));
     }
 
@@ -18903,7 +18873,7 @@ test_trv_if_stmt_9(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "20\n2000\n"));
     }
 
@@ -18944,7 +18914,7 @@ test_trv_if_stmt_9(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "200\n20\n2000\n"));
     }
 
@@ -18961,7 +18931,7 @@ test_trv_elif_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18971,7 +18941,7 @@ test_trv_elif_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18981,7 +18951,7 @@ test_trv_elif_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -18991,7 +18961,7 @@ test_trv_elif_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19001,7 +18971,7 @@ test_trv_elif_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19009,7 +18979,7 @@ test_trv_elif_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found test in if statement"));
     }
 
@@ -19017,7 +18987,7 @@ test_trv_elif_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found colon in if statement"));
     }
 
@@ -19034,7 +19004,7 @@ test_trv_elif_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19044,7 +19014,7 @@ test_trv_elif_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19054,7 +19024,7 @@ test_trv_elif_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19064,7 +19034,7 @@ test_trv_elif_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19074,7 +19044,7 @@ test_trv_elif_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19084,7 +19054,7 @@ test_trv_elif_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19094,7 +19064,7 @@ test_trv_elif_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19104,7 +19074,7 @@ test_trv_elif_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19126,7 +19096,7 @@ test_trv_elif_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19136,7 +19106,7 @@ test_trv_elif_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19146,7 +19116,7 @@ test_trv_elif_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19156,7 +19126,7 @@ test_trv_elif_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19166,7 +19136,7 @@ test_trv_elif_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19176,7 +19146,7 @@ test_trv_elif_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19186,7 +19156,7 @@ test_trv_elif_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19196,7 +19166,7 @@ test_trv_elif_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19222,7 +19192,7 @@ test_trv_elif_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19232,7 +19202,7 @@ test_trv_elif_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19242,7 +19212,7 @@ test_trv_elif_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19252,7 +19222,7 @@ test_trv_elif_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19262,7 +19232,7 @@ test_trv_elif_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19272,7 +19242,7 @@ test_trv_elif_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19282,7 +19252,7 @@ test_trv_elif_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19315,7 +19285,7 @@ test_trv_elif_stmt_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "3\n"));
     }
 
@@ -19338,7 +19308,7 @@ test_trv_elif_stmt_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "\"i\" is not defined in extract obj"));
     }
 
@@ -19361,7 +19331,7 @@ test_trv_elif_stmt_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "3\n"));
     }
 
@@ -19386,7 +19356,7 @@ test_trv_elif_stmt_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "6\n"));
     }
 
@@ -19409,7 +19379,7 @@ test_trv_elif_stmt_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -19437,7 +19407,7 @@ test_trv_elif_stmt_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "6\n"));
     }
 
@@ -19471,7 +19441,7 @@ test_trv_elif_stmt_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1230\n"));
     }
 
@@ -19493,7 +19463,7 @@ test_trv_else_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19503,7 +19473,7 @@ test_trv_else_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19513,7 +19483,7 @@ test_trv_else_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19523,7 +19493,7 @@ test_trv_else_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19533,7 +19503,7 @@ test_trv_else_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19543,7 +19513,7 @@ test_trv_else_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19553,7 +19523,7 @@ test_trv_else_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19579,7 +19549,7 @@ test_trv_else_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19589,7 +19559,7 @@ test_trv_else_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19599,7 +19569,7 @@ test_trv_else_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19609,7 +19579,7 @@ test_trv_else_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19619,7 +19589,7 @@ test_trv_else_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19629,7 +19599,7 @@ test_trv_else_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19639,7 +19609,7 @@ test_trv_else_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19649,7 +19619,7 @@ test_trv_else_stmt_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19675,7 +19645,7 @@ test_trv_else_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19685,7 +19655,7 @@ test_trv_else_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19695,7 +19665,7 @@ test_trv_else_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19705,7 +19675,7 @@ test_trv_else_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19715,7 +19685,7 @@ test_trv_else_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19725,7 +19695,7 @@ test_trv_else_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19735,7 +19705,7 @@ test_trv_else_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19745,7 +19715,7 @@ test_trv_else_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19755,7 +19725,7 @@ test_trv_else_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -19781,7 +19751,7 @@ test_trv_else_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19791,7 +19761,7 @@ test_trv_else_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19801,7 +19771,7 @@ test_trv_else_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19811,7 +19781,7 @@ test_trv_else_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19821,7 +19791,7 @@ test_trv_else_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19831,7 +19801,7 @@ test_trv_else_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19841,7 +19811,7 @@ test_trv_else_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19851,7 +19821,7 @@ test_trv_else_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19861,7 +19831,7 @@ test_trv_else_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19871,7 +19841,7 @@ test_trv_else_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19881,7 +19851,7 @@ test_trv_else_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -19907,7 +19877,7 @@ test_trv_for_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
@@ -19917,7 +19887,7 @@ test_trv_for_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
@@ -19927,7 +19897,7 @@ test_trv_for_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
@@ -19937,7 +19907,7 @@ test_trv_for_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
@@ -19947,7 +19917,7 @@ test_trv_for_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
@@ -19957,7 +19927,7 @@ test_trv_for_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
@@ -19967,7 +19937,7 @@ test_trv_for_stmt_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found initialize assign list in for statement"));
     }
 
@@ -19975,7 +19945,7 @@ test_trv_for_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. unsupported token type (1) in for statement"));
     }
 
@@ -19983,7 +19953,7 @@ test_trv_for_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found semicolon (2)"));
     }
 
@@ -19991,7 +19961,7 @@ test_trv_for_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found semicolon (2)"));
     }
 
@@ -19999,7 +19969,7 @@ test_trv_for_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found colon in for statement"));
     }
 
@@ -20007,7 +19977,7 @@ test_trv_for_stmt_0(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found colon in for statement"));
     }
 
@@ -20033,7 +20003,7 @@ test_trv_for_stmt_1(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
@@ -20043,7 +20013,7 @@ test_trv_for_stmt_1(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
@@ -20053,7 +20023,7 @@ test_trv_for_stmt_1(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
 
@@ -20061,7 +20031,7 @@ test_trv_for_stmt_1(void) {
     {
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found initialize assign list in for statement"));
     }
 
@@ -20069,7 +20039,7 @@ test_trv_for_stmt_1(void) {
     {
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. unsupported token type (1) in for statement"));
     }
 
@@ -20095,7 +20065,7 @@ test_trv_for_stmt_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4,8"));
     }
 
@@ -20121,7 +20091,7 @@ test_trv_for_stmt_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,1,"));
     }
 
@@ -20138,7 +20108,7 @@ test_trv_for_stmt_3(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
     }
     ctx_del(ctx);
@@ -20166,7 +20136,7 @@ test_trv_for_stmt_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "\nyo\nyoyo\n"));
     }
 
@@ -20184,7 +20154,7 @@ test_trv_for_stmt_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "\nyo\nyoyo\n"));
     }
 /*
@@ -20202,7 +20172,7 @@ test_trv_for_stmt_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "yoyo\nyo\n\n"));
     }
 */
@@ -20224,7 +20194,7 @@ test_trv_for_stmt_5(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "012"));
     }
 
@@ -20245,7 +20215,7 @@ test_trv_for_stmt_6(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,1,2"));
     }
 
@@ -20266,7 +20236,7 @@ test_trv_for_stmt_7(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -20289,8 +20259,37 @@ test_trv_for_stmt_8(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 0\n1 1\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_for_stmt_9(void) {
+
+    return;  // TODO
+
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "for i = 0; i < 2; i += 1:\n"
+    "   j = i\n"
+    "   k = i\n"
+    "@}{: i :}{@"
+    "   l = i\n"
+    "   m = i\n"
+    "end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        traceerr();
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "01"));
     }
 
     trv_cleanup;
@@ -20311,7 +20310,7 @@ test_trv_break_stmt(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -20319,7 +20318,7 @@ test_trv_break_stmt(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "syntax error. not found initialize assign list in for statement"));
     }
 
@@ -20329,7 +20328,7 @@ test_trv_break_stmt(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -20339,7 +20338,7 @@ test_trv_break_stmt(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -20365,7 +20364,7 @@ test_trv_continue_stmt(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -20391,7 +20390,7 @@ test_trv_return_stmt(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -20417,7 +20416,7 @@ test_trv_func_def_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -20443,7 +20442,7 @@ test_trv_func_def_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1 2\n"));
     }
 
@@ -20498,7 +20497,7 @@ test_trv_func_def_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
     }
 
     ctx_del(ctx);
@@ -20523,7 +20522,7 @@ test_trv_func_def_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ast->context), "1\n"));
     }
 
@@ -20549,7 +20548,7 @@ test_trv_func_def_5(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "arguments not same length"));
     }
 
@@ -20582,7 +20581,7 @@ test_trv_func_def_6(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "    abc"));
     }
 
@@ -20614,7 +20613,7 @@ test_trv_func_def_7(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "    program\n\n    comment\n"));
     }
 
@@ -20640,7 +20639,7 @@ test_trv_func_def_8(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1 2 3\n"));
     }
 
@@ -20663,7 +20662,7 @@ test_trv_func_def_9(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 1 2\n"));
     }
 
@@ -20687,7 +20686,7 @@ test_trv_func_def_10(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 1 2\n1 2 3\n2 3 4\n"));
     }
 
@@ -20709,7 +20708,7 @@ test_trv_assign_list_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -20735,7 +20734,7 @@ test_trv_assign_list_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2"));
     }
 
@@ -20761,7 +20760,7 @@ test_trv_assign_list_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1"));
     }
 
@@ -20787,7 +20786,7 @@ test_trv_assign_list_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1,2"));
     }
 
@@ -20813,7 +20812,7 @@ test_trv_multi_assign_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2"));
     }
 
@@ -20839,7 +20838,7 @@ test_trv_or_test_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -20865,7 +20864,7 @@ test_trv_and_test_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -20891,7 +20890,7 @@ test_trv_not_test_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -20917,7 +20916,7 @@ test_trv_comparison_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -20943,7 +20942,7 @@ test_trv_comparison_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -20969,7 +20968,7 @@ test_trv_comparison_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -20995,7 +20994,7 @@ test_trv_comparison_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -21021,7 +21020,7 @@ test_trv_comparison_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -21047,7 +21046,7 @@ test_trv_comparison_5(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -21077,7 +21076,7 @@ test_trv_asscalc_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -21087,7 +21086,7 @@ test_trv_asscalc_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -21097,7 +21096,7 @@ test_trv_asscalc_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -21107,7 +21106,7 @@ test_trv_asscalc_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -21121,7 +21120,7 @@ test_trv_asscalc_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (1)"));
     }
 
@@ -21131,7 +21130,7 @@ test_trv_asscalc_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (2)"));
     }
 
@@ -21141,7 +21140,7 @@ test_trv_asscalc_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand (4)"));
     }
 
@@ -21171,7 +21170,7 @@ test_trv_asscalc_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "-1"));
     }
 
@@ -21181,7 +21180,7 @@ test_trv_asscalc_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "-1"));
     }
 
@@ -21191,7 +21190,7 @@ test_trv_asscalc_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "-1"));
     }
 
@@ -21201,7 +21200,7 @@ test_trv_asscalc_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -21215,7 +21214,7 @@ test_trv_asscalc_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand type (1)"));
     }
 
@@ -21225,7 +21224,7 @@ test_trv_asscalc_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand type (2)"));
     }
 
@@ -21235,7 +21234,7 @@ test_trv_asscalc_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand type (4)"));
     }
 
@@ -21265,7 +21264,7 @@ test_trv_asscalc_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4"));
     }
 
@@ -21275,7 +21274,7 @@ test_trv_asscalc_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4"));
     }
 
@@ -21285,7 +21284,7 @@ test_trv_asscalc_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -21295,7 +21294,7 @@ test_trv_asscalc_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -21305,7 +21304,7 @@ test_trv_asscalc_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abab"));
     }
 
@@ -21315,7 +21314,7 @@ test_trv_asscalc_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -21325,7 +21324,7 @@ test_trv_asscalc_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "ab"));
     }
 
@@ -21335,7 +21334,7 @@ test_trv_asscalc_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -21349,7 +21348,7 @@ test_trv_asscalc_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't mul by negative value"));
     }
 
@@ -21359,7 +21358,7 @@ test_trv_asscalc_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (1)"));
     }
 
@@ -21369,7 +21368,7 @@ test_trv_asscalc_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (2)"));
     }
 
@@ -21379,7 +21378,7 @@ test_trv_asscalc_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand (4)"));
     }
 
@@ -21409,7 +21408,7 @@ test_trv_asscalc_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -21419,7 +21418,7 @@ test_trv_asscalc_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -21429,7 +21428,7 @@ test_trv_asscalc_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4"));
     }
 
@@ -21439,7 +21438,7 @@ test_trv_asscalc_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -21449,7 +21448,7 @@ test_trv_asscalc_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -21463,7 +21462,7 @@ test_trv_asscalc_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (1)"));
     }
 
@@ -21473,7 +21472,7 @@ test_trv_asscalc_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (2)"));
     }
 
@@ -21483,7 +21482,7 @@ test_trv_asscalc_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "zero division error"));
     }
 
@@ -21493,7 +21492,7 @@ test_trv_asscalc_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "zero division error"));
     }
 
@@ -21503,7 +21502,7 @@ test_trv_asscalc_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand (4)"));
     }
 
@@ -21529,7 +21528,7 @@ test_trv_expr_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -21539,7 +21538,7 @@ test_trv_expr_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -21565,7 +21564,7 @@ test_trv_expr_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -21591,7 +21590,7 @@ test_trv_expr_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -21617,7 +21616,7 @@ test_trv_term_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4"));
     }
 
@@ -21627,7 +21626,7 @@ test_trv_term_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcabc"));
     }
 
@@ -21637,7 +21636,7 @@ test_trv_term_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcabc"));
     }
 
@@ -21647,7 +21646,7 @@ test_trv_term_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -21657,7 +21656,7 @@ test_trv_term_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't mul string by negative value"));
     }
 
@@ -21683,7 +21682,7 @@ test_trv_term_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -21709,7 +21708,7 @@ test_trv_call_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -21736,7 +21735,7 @@ test_trv_call_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1 2\n"));
     }
 
@@ -21774,7 +21773,7 @@ test_trv_call_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 1\n1 2\n"));
     }
 
@@ -21801,7 +21800,7 @@ test_trv_call_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 1 2\n1 2 3\n"));
     }
 
@@ -21829,7 +21828,7 @@ test_trv_call_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx),
             "<ul>\n"
             "    <li>0</li>\n"
@@ -21872,7 +21871,7 @@ test_trv_index_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,1"));
     }
 
@@ -21898,7 +21897,7 @@ test_trv_index_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -21919,7 +21918,7 @@ test_trv_array_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -21945,7 +21944,7 @@ test_trv_array_1(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         traceerr();
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -21968,7 +21967,7 @@ test_trv_array_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n0\ntrue\n"));
     }
 
@@ -22002,7 +22001,7 @@ test_trv_array_3(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0 abc nil 0 1\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\n"));
     }
 
@@ -22025,7 +22024,7 @@ test_trv_array_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1234"));
     }
 
@@ -22047,7 +22046,7 @@ test_trv_nil(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -22073,7 +22072,7 @@ test_trv_false(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
     }
 
@@ -22099,7 +22098,7 @@ test_trv_true(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
@@ -22125,7 +22124,7 @@ test_trv_digit(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -22151,7 +22150,7 @@ test_trv_string(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
@@ -22172,7 +22171,7 @@ test_trv_dict_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -22194,7 +22193,7 @@ test_trv_dict_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "12"));
     }
 
@@ -22216,7 +22215,7 @@ test_trv_identifier(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -22266,7 +22265,7 @@ test_trv_builtin_array_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
     }
 
@@ -22276,7 +22275,7 @@ test_trv_builtin_array_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
     }
 
@@ -22286,7 +22285,7 @@ test_trv_builtin_array_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -22296,7 +22295,7 @@ test_trv_builtin_array_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -22306,7 +22305,7 @@ test_trv_builtin_array_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
@@ -22333,7 +22332,7 @@ test_trv_module_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nimported module.cap\ndone\n"));
     }
 
@@ -22360,7 +22359,7 @@ test_trv_reservation_object(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -22373,7 +22372,7 @@ test_trv_reservation_object(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_error_stack(ast));
+        assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -22389,7 +22388,7 @@ test_trv_reservation_object(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't refer object (10)"));
     }
 
@@ -22402,7 +22401,7 @@ test_trv_reservation_object(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "owner is invalid object (10)"));
     }
 
@@ -22415,7 +22414,7 @@ test_trv_reservation_object(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "owner is invalid object (10)"));
     }
 
@@ -22428,7 +22427,7 @@ test_trv_reservation_object(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "owner is invalid object (10)"));
     }
 
@@ -22440,7 +22439,7 @@ test_trv_reservation_object(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(ast_has_error_stack(ast));
+        assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "owner is invalid object (10)"));
     }
 
@@ -22499,6 +22498,7 @@ traverser_tests[] = {
     {"trv_for_stmt_6", test_trv_for_stmt_6},
     {"trv_for_stmt_7", test_trv_for_stmt_7},
     {"trv_for_stmt_8", test_trv_for_stmt_8},
+    {"trv_for_stmt_9", test_trv_for_stmt_9},
     {"trv_break_stmt", test_trv_break_stmt},
     {"trv_continue_stmt", test_trv_continue_stmt},
     {"trv_return_stmt", test_trv_return_stmt},

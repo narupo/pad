@@ -99,7 +99,7 @@ almgr_load_path(almgr_t *self, const char *path) {
 
     ast_clear(self->ast);
     cc_compile(self->ast, tkr_get_tokens(self->tkr));
-    if (ast_has_error_stack(self->ast)) {
+    if (ast_has_errors(self->ast)) {
         almgr_set_error_detail(self, ast_getc_first_error_message(self->ast));
         ret = NULL;
         goto fail;
@@ -107,7 +107,7 @@ almgr_load_path(almgr_t *self, const char *path) {
 
     ctx_clear(self->context);
     trv_traverse(self->ast, self->context);
-    if (ast_has_error_stack(self->ast)) {
+    if (ast_has_errors(self->ast)) {
         almgr_set_error_detail(self, ast_getc_first_error_message(self->ast));
         ret = NULL;
         goto fail;
