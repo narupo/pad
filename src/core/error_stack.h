@@ -58,6 +58,16 @@ errstack_t *
 errstack_new(void);
 
 /**
+ * copy constructor
+ *
+ * @param[in] *other
+ *
+ * @return pointer to errstack_t dynamic allocate memory (do errstack_del)
+ */
+errstack_t *
+errstack_new_other(const errstack_t *other);
+
+/**
  * push back error stack info
  *
  * @param[in] *self     pointer to errstack_t
