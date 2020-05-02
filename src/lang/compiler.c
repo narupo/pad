@@ -2501,6 +2501,12 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
         err_die("invalid type in if stmt");
     }
 
+    check("skip newlines");
+    cc_skip_newlines(ast);
+    if (!*ast->ptr) {
+        return_cleanup("reached EOF in if statement");
+    }
+
     check("call cc_test");
     cur->test = cc_test(ast, dep+1);
     if (!cur->test) {
@@ -2512,8 +2518,10 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
         return_cleanup("syntax error. not found test in if statement");
     }
 
+    check("skip newlines");
+    cc_skip_newlines(ast);
     if (!*ast->ptr) {
-        return_cleanup("syntax error. reached EOF in if statement");
+        return_cleanup("reached EOF in if statement");
     }
 
     t = *ast->ptr++;
@@ -2524,9 +2532,8 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-
     if (!*ast->ptr) {
-        return_cleanup("syntax error. reached EOF in if statement (2)");
+        return_cleanup("reached EOF in if statement");
     }
 
     t = *ast->ptr++;
@@ -2551,6 +2558,9 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
 
         check("skip newlines");
         cc_skip_newlines(ast);
+        if (!*ast->ptr) {
+            return_cleanup("reached EOF in if statement");
+        }
 
         check("call cc_elif_stmt");
         cur->elif_stmt = cc_if_stmt(ast, 1, dep+1);
@@ -2568,6 +2578,9 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
 
                 check("skip newlines");
                 cc_skip_newlines(ast);
+                if (!*ast->ptr) {
+                    return_cleanup("reached EOF in if statement");
+                }
 
                 if (!*ast->ptr) {
                     return_cleanup("syntax error. reached EOF in if statement (4)");
@@ -2585,6 +2598,9 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
 
         check("skip newlines");
         cc_skip_newlines(ast);
+        if (!*ast->ptr) {
+            return_cleanup("reached EOF in if statement");
+        }
 
         // elems allow null
         check("call cc_elems");
@@ -2595,6 +2611,9 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
 
         check("skip newlines");
         cc_skip_newlines(ast);
+        if (!*ast->ptr) {
+            return_cleanup("reached EOF in if statement");
+        }
 
         check("call cc_if_stmt (elif)");
         cur->elif_stmt = cc_if_stmt(ast, 1, dep+1);
@@ -2612,6 +2631,9 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
 
                 check("skip newlines");
                 cc_skip_newlines(ast);
+                if (!*ast->ptr) {
+                    return_cleanup("reached EOF in if statement");
+                }
 
                 if (!*ast->ptr) {
                     return_cleanup("syntax error. reached EOF in if statement (4)");

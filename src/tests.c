@@ -18922,6 +18922,23 @@ test_trv_if_stmt_9(void) {
 }
 
 static void
+test_trv_if_stmt_10(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@ \nif\n0\n:\nend\n @}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_elif_stmt_0(void) {
     trv_ready;
 
@@ -22560,6 +22577,7 @@ traverser_tests[] = {
     {"trv_if_stmt_7", test_trv_if_stmt_7},
     {"trv_if_stmt_8", test_trv_if_stmt_8},
     {"trv_if_stmt_9", test_trv_if_stmt_9},
+    {"trv_if_stmt_10", test_trv_if_stmt_10},
     {"trv_elif_stmt_0", test_trv_elif_stmt_0},
     {"trv_elif_stmt_1", test_trv_elif_stmt_1},
     {"trv_elif_stmt_2", test_trv_elif_stmt_2},
