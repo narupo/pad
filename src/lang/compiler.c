@@ -526,65 +526,73 @@ cc_for_stmt(ast_t *ast, int dep) {
         // for : @} contents {@ end
         check("read colon");
 
-        check("skip newlines");
-        cc_skip_newlines(ast);
-
-        if (!*ast->ptr) {
-            return_cleanup("syntax error. reached EOF in for statement (2)");
-        }
-
-        t = *ast->ptr++;
-        if (t->type == TOKEN_TYPE_RBRACEAT) {
-            // for : @} contents {@ end
-
-            node_t *node = cc_blocks(ast, dep+1);
-            if (ast_has_errors(ast)) {
-                return_cleanup("");
-            }
-            if (node) {
-                nodearr_moveb(cur->contents, node);
-            }
-            // allow null
-
-            check("skip newlines");
-            cc_skip_newlines(ast);
-
+        // read contents start
+        for (;;) {
             if (!*ast->ptr) {
-                return_cleanup("syntax error. reached EOF in for statement (2a)");
+                return_cleanup("reached EOF in for statement");
             }
-
-            t = *ast->ptr++;
-            if (t->type != TOKEN_TYPE_LBRACEAT) {
-                return_cleanup("syntax error. not found {@ in for statement");
-            }
-
-        } else {
-            ast->ptr--;
-
-            // for : contents end
-            check("call cc_elems");
-            node_t *node = cc_elems(ast, dep+1);
-            if (ast_has_errors(ast)) {
-                return_cleanup("");
-            }
-            if (node) {
-                nodearr_moveb(cur->contents, node);
-            }
-            // allow null
 
             check("skip newlines");
             cc_skip_newlines(ast);
-        }
+            if (!*ast->ptr) {
+                return_cleanup("reached EOF in for statement");
+            }
 
-        if (!*ast->ptr) {
-            return_cleanup("syntax error. reached EOF in for statement (3)");
-        }
+            // end?
+            t = *ast->ptr++;
+            if (t->type == TOKEN_TYPE_STMT_END) {
+                check("read 'end'");
+                break;
+            } else {
+                --ast->ptr;
+            }
 
-        t = *ast->ptr++;
-        if (t->type != TOKEN_TYPE_STMT_END) {
-            return_cleanup("syntax error. not found end in for statement");
+            // read blocks or elems
+            t = *ast->ptr++;
+            if (t->type == TOKEN_TYPE_RBRACEAT) {
+                // read blocks
+                check("read '@}'");
+
+                check("skip newlines");
+                cc_skip_newlines(ast);
+                if (!*ast->ptr) {
+                    return_cleanup("reached EOF in for statement");
+                }
+
+                node_t *blocks = cc_blocks(ast, dep+1);
+                if (ast_has_errors(ast)) {
+                    return_cleanup("");
+                }
+                if (blocks) {
+                    nodearr_moveb(cur->contents, blocks);
+                }
+                // allow null
+
+                check("skip newlines");
+                cc_skip_newlines(ast);
+                if (!*ast->ptr) {
+                    return_cleanup("reached EOF in for statement");
+                }
+
+                t = *ast->ptr++;
+                if (t->type == TOKEN_TYPE_LBRACEAT) {
+                    check("read '{@'");
+                } else {
+                    return_cleanup("not found '@}' in for statement");
+                }
+            } else {
+                // read elems
+                --ast->ptr;
+                node_t *elems = cc_elems(ast, dep+1);
+                if (ast_has_errors(ast)) {
+                    return_cleanup("");
+                }
+                if (elems) {
+                    nodearr_moveb(cur->contents, elems);
+                }
+                // allow null
+            }
         }
-        check("read end");
     } else {
         // for comp_formula : elems end
         // for comp_formula : @} blocks {@
@@ -650,62 +658,73 @@ cc_for_stmt(ast_t *ast, int dep) {
         }
         check("read colon");
 
-        check("skip newlines");
-        cc_skip_newlines(ast);
-
-        if (!*ast->ptr) {
-            return_cleanup("syntax error. reached EOF in for statement (6)")
-        }
-
-        t = *ast->ptr++;
-        if (t->type == TOKEN_TYPE_RBRACEAT) {
-            check("read @}");
-            node_t *node = cc_blocks(ast, dep+1);
-            if (ast_has_errors(ast)) {
-                return_cleanup("");
-            }
-            if (node) {
-                nodearr_moveb(cur->contents, node);
-            }
-            // allow null
-
+        // read contents start
+        for (;;) {
             if (!*ast->ptr) {
-                return_cleanup("syntax error. reached EOF in for statement (6)");
+                return_cleanup("reached EOF in for statement");
             }
-
-            t = *ast->ptr++;
-            if (t->type != TOKEN_TYPE_LBRACEAT) {
-                return_cleanup("syntax error. not found {@ in for statement");
-            }
-        } else {
-            ast->ptr--;
 
             check("skip newlines");
             cc_skip_newlines(ast);
-
-            check("call cc_elems");
-            node_t *node = cc_elems(ast, dep+1);
-            if (ast_has_errors(ast)) {
-                return_cleanup("");
+            if (!*ast->ptr) {
+                return_cleanup("reached EOF in for statement");
             }
-            if (node) {
-                nodearr_moveb(cur->contents, node);
+
+            // end?
+            t = *ast->ptr++;
+            if (t->type == TOKEN_TYPE_STMT_END) {
+                check("read 'end'");
+                break;
+            } else {
+                --ast->ptr;
             }
-            // allow null
-        }
 
-        check("skip newlines");
-        cc_skip_newlines(ast);
+            // read blocks or elems
+            t = *ast->ptr++;
+            if (t->type == TOKEN_TYPE_RBRACEAT) {
+                // read blocks
+                check("read '@}'");
 
-        if (!*ast->ptr) {
-            return_cleanup("syntax error. reached EOF in for statement (5)");
-        }
+                check("skip newlines");
+                cc_skip_newlines(ast);
+                if (!*ast->ptr) {
+                    return_cleanup("reached EOF in for statement");
+                }
 
-        t = *ast->ptr++;
-        if (t->type != TOKEN_TYPE_STMT_END) {
-            return_cleanup("syntax error. not found end in for statement (2). found token is (%d)", t->type);
-        }
-        check("read end");
+                node_t *blocks = cc_blocks(ast, dep+1);
+                if (ast_has_errors(ast)) {
+                    return_cleanup("");
+                }
+                if (blocks) {
+                    nodearr_moveb(cur->contents, blocks);
+                }
+                // allow null
+
+                check("skip newlines");
+                cc_skip_newlines(ast);
+                if (!*ast->ptr) {
+                    return_cleanup("reached EOF in for statement");
+                }
+
+                t = *ast->ptr++;
+                if (t->type == TOKEN_TYPE_LBRACEAT) {
+                    check("read '{@'");
+                } else {
+                    return_cleanup("not found '@}' in for statement");
+                }
+            } else {
+                // read elems
+                --ast->ptr;
+                node_t *elems = cc_elems(ast, dep+1);
+                if (ast_has_errors(ast)) {
+                    return_cleanup("");
+                }
+                if (elems) {
+                    nodearr_moveb(cur->contents, elems);
+                }
+                // allow null
+            }  // if
+        }  // for
     }
 
     return_parse(node_new(NODE_TYPE_FOR_STMT, cur));
