@@ -52,6 +52,29 @@ errstack_new(void) {
     return self;
 }
 
+errstack_t *
+errstack_new_other(const errstack_t *other) {
+    if (!other) {
+        return NULL;
+    }
+
+    errstack_t *self = errstack_new();
+
+    for (int32_t i = 0; i < other->len; ++i) {
+        const errelem_t *elem = &other->stack[i];
+        errstack_pushb(
+            self,
+            elem->filename,
+            elem->lineno,
+            elem->funcname,
+            "%s",
+            elem->message
+        );
+    }
+
+    return self;
+}
+
 static errstack_t *
 errstack_resize(errstack_t *self, int32_t newcapa) {
     int32_t byte = sizeof(errelem_t);
@@ -116,10 +139,13 @@ errstack_clear(errstack_t *self) {
 }
 
 errstack_t *
-errstack_extendf_other(errstack_t *self, const errstack_t *other) {
-    if (!self || !other) {
+errstack_extendf_other(errstack_t *self, const errstack_t *_other) {
+    if (!self || !_other) {
         return NULL;
     }
+
+    // self == _other? need copy for safety
+    errstack_t *other = errstack_new_other(_other);
 
 #define copy(dst, src) \
     dst->lineno = src->lineno; \
@@ -163,21 +189,27 @@ errstack_extendf_other(errstack_t *self, const errstack_t *other) {
 
     // free copy stack
     free(save_stack);
+    errstack_del(other);
 
     return self;
 }
 
 errstack_t *
-errstack_extendb_other(errstack_t *self, const errstack_t *other) {
-    if (!self || !other) {
+errstack_extendb_other(errstack_t *self, const errstack_t *_other) {
+    if (!self || !_other) {
         return NULL;
     }
+
+    // self == _other? need copy for safety
+    errstack_t *other = errstack_new_other(_other);
 
     // append other at front of self
     for (int32_t i = 0; i < other->len; ++i) {
         const errelem_t *src = &other->stack[i];
         errstack_pushb(self, src->filename, src->lineno, src->funcname, "%s", src->message);
     }
+
+    errstack_del(other);
 
     return self;
 }
