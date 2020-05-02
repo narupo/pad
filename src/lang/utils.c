@@ -84,6 +84,7 @@ again:
     default:
         // can't refer to owner
         // do not push error stack
+        puts("here");
         return NULL;
         break;
     // can refer to owner
