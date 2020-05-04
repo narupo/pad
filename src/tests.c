@@ -14171,18 +14171,59 @@ test_trv_dot_2(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
-    "    arr = [1, 2]"
+    "    arr = [1, 2]\n"
     "    dst = []\n"
     "    dst.push(arr[1])\n"
-    "@}");
+    "@}{: dst[0] :}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        traceerr();
         assert(!ast_has_errors(ast));
-        // assert(!strcmp(ctx_getc_stdout_buf(ctx), "true,true,ture\n12,34"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_dot_3(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "    arr = [1, 2]\n"
+    "    dst = []\n"
+    "    dst.push(arr.pop())\n"
+    "@}{: dst[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_dot_4(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "    arr = [[1, 2], [3, 4]]\n"
+    "    dst = []\n"
+    "    dst.push(arr.pop().pop())\n"
+    "@}{: dst[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "4"));
     }
 
     trv_cleanup;
@@ -18176,7 +18217,6 @@ test_trv_from_import_stmt_3(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nf1\nf2\n"));
     }
 
@@ -20422,29 +20462,8 @@ test_trv_for_stmt_10(void) {
     trv_cleanup;
 }
 
-/*
-    "    def slice(arr, ncols):\n"
-    "        dst = []\n"
-    "\n"
-    "        for i = 0; i < len(arr); i += ncols:\n"
-    "            row = []\n"
-    "            for j = 0; j < ncols and i+j < len(arr); j += 1:\n"
-    "                row.push(arr[i+j])\n"
-    "            end\n"
-    "            dst.push(row)\n"
-    "        end\n"
-    "\n"
-    "        return dst\n"
-    "    end\n"
-    "\n"
-    "    a = slice([1, 2, 3, 4], 2)\n"
-*/
-
 static void
 test_trv_for_stmt_11(void) {
-
-    return;  // TODO
-
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -20457,9 +20476,8 @@ test_trv_for_stmt_11(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        traceerr();
         assert(!ast_has_errors(ast));
-        // assert(!strcmp(ctx_getc_stdout_buf(ctx), "true,true,ture\n12,34"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
     trv_cleanup;
@@ -20483,7 +20501,6 @@ test_trv_for_stmt_12(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        traceerr();
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "\nyo\nyoyo\n"));
     }
@@ -22131,7 +22148,6 @@ test_trv_array_1(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        traceerr();
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
@@ -22771,6 +22787,7 @@ traverser_tests[] = {
     {"trv_true", test_trv_true},
     {"trv_digit", test_trv_digit},
     {"trv_string", test_trv_string},
+    {"trv_dict", test_trv_dict},
     {"trv_dict_0", test_trv_dict_0},
     {"trv_dict_1", test_trv_dict_1},
     {"trv_dict_2", test_trv_dict_2},
@@ -22779,7 +22796,6 @@ traverser_tests[] = {
     {"trv_builtin_modules_alias_0", test_trv_builtin_modules_alias_0},
     {"trv_builtin_modules_alias_1", test_trv_builtin_modules_alias_1},
     {"trv_traverse", test_trv_traverse},
-    {"trv_dict", test_trv_dict},
     {"trv_comparison", test_trv_comparison},
     {"trv_array_index", test_trv_array_index},
     {"trv_text_block_old", test_trv_text_block_old},
@@ -22797,6 +22813,8 @@ traverser_tests[] = {
     {"trv_dot_0", test_trv_dot_0},
     {"trv_dot_1", test_trv_dot_1},
     {"trv_dot_2", test_trv_dot_2},
+    {"trv_dot_3", test_trv_dot_3},
+    {"trv_dot_4", test_trv_dot_4},
     {"trv_negative_0", test_trv_negative_0},
     {"trv_call", test_trv_call},
     {"trv_func_def", test_trv_func_def},
