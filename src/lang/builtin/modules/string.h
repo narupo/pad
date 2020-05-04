@@ -9,6 +9,7 @@
 #include <lang/tokenizer.h>
 #include <lang/context.h>
 #include <lang/utils.h>
+#include <lang/arguments.h>
 
 /**
  * construct string module

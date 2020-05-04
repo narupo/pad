@@ -9,6 +9,7 @@
 #include <lib/cstring.h>
 #include <lang/types.h>
 #include <lang/gc.h>
+#include <lang/object.h>
 
 // TODO: test
 

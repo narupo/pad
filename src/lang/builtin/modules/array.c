@@ -1,32 +1,42 @@
 #include <lang/builtin/modules/array.h>
 
 static object_t *
-builtin_array_push(ast_t *ast, object_t *actual_args) {
+builtin_array_push(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
+    object_array_t *ref_dot_owners = fargs->ref_dot_owners;
 
     object_array_t *args = actual_args->objarr;
-
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ast, "can't invoke array.push. need one argument");
+        ast_pushb_error(ref_ast, "can't invoke array.push. need one argument");
         return NULL;
     }
 
-    object_t *ref_owner = ast->ref_dot_owner;
+    if (!ref_dot_owners) {
+        ast_pushb_error(ref_ast, "owners is null. can't push");
+        return NULL;
+    }
+
+    int32_t nowns = objarr_len(ref_dot_owners);
+    object_t *ref_owner = objarr_get(ref_dot_owners, nowns-1);
     if (!ref_owner) {
-        ast_pushb_error(ast, "owner is null. can't push");
+        ast_pushb_error(ref_ast, "owner is null. can't push");
         return NULL;
     }
 
 again:
     switch (ref_owner->type) {
     default:
-        ast_pushb_error(ast, "unsupported object type (%d). can't push", ref_owner->type);
+        ast_pushb_error(ref_ast, "unsupported object type (%d). can't push", ref_owner->type);
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER:
-        ref_owner = pull_in_ref_by(ast, ref_owner);
+        ref_owner = pull_in_ref_by(ref_owner);
         if (!ref_owner) {
-            ast_pushb_error(ast, "object is not found. can't push");
+            ast_pushb_error(ref_ast, "object is not found. can't push");
             return NULL;
         }
         goto again;
@@ -43,25 +53,36 @@ again:
 }
 
 static object_t *
-builtin_array_pop(ast_t *ast, object_t *actual_args) {
+builtin_array_pop(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
+    object_array_t *ref_dot_owners = fargs->ref_dot_owners;
 
-    object_t *ref_owner = ast->ref_dot_owner;
+    if (!ref_dot_owners) {
+        ast_pushb_error(ref_ast, "owners inull. can't pop");
+        return NULL;
+    }
+
+    int32_t nowns = objarr_len(ref_dot_owners);
+    object_t *ref_owner = objarr_get(ref_dot_owners, nowns-1);
     if (!ref_owner) {
-        ast_pushb_error(ast, "owner is null. can't pop");
+        ast_pushb_error(ref_ast, "owner is null. can't pop");
         return NULL;
     }
 
 again:
     switch (ref_owner->type) {
     default:
-        ast_pushb_error(ast, "unsupported object type (%d). can't pop", ref_owner->type);
+        ast_pushb_error(ref_ast, "unsupported object type (%d). can't pop", ref_owner->type);
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER:
-        ref_owner = pull_in_ref_by(ast, ref_owner);
+        ref_owner = pull_in_ref_by(ref_owner);
         if (!ref_owner) {
-            ast_pushb_error(ast, "object is not found. can't pop");
+            ast_pushb_error(ref_ast, "object is not found. can't pop");
             return NULL;
         }
         goto again;
@@ -72,7 +93,7 @@ again:
 
     object_t *ret = objarr_popb(ref_owner->objarr);
     if (!ret) {
-        return obj_new_nil(ast->ref_gc);
+        return obj_new_nil(ref_ast->ref_gc);
     }
     return ret;
 }
@@ -89,7 +110,7 @@ builtin_array_module_new(const config_t *ref_config, gc_t *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = ast_new(ref_config);
     context_t *ctx = ctx_new(ref_gc);
-    ast->context = ctx;
+    ast->context = ctx;  // set reference
 
     return obj_new_module_by(
         ref_gc,

@@ -10,38 +10,25 @@
 /**
  * get reference of ast by owner object
  *
- * @param[in] *default_ast default ast
+ * @param[in] *default_ast    default ast
+ * @param[in] *ref_dot_owners reference to owners in array
  *
  * @return default ast or owner's ast
  */
 ast_t *
-get_ast_by_owner(ast_t *default_ast);
+get_ast_by_owners(ast_t *default_ast, object_array_t *ref_dot_owners);
 
 /**
  * pull-in reference of object by identifier object from varmap of current scope of context
  * return reference to variable
  * if not found object then not push error stack and return NULL
  *
- * @param[in] *ast     pointer to ast_t
  * @param[in] *idn_obj identifier object
  *
  * @param return NULL or reference to object in varmap in current scope (DO NOT DELETE)
  */
 object_t *
-pull_in_ref_by(ast_t *ast, const object_t *idn_obj);
-
-/**
- * see at ast->ref_dot_owner
- * if ast has ref_dot_owner this function see it
- * if not found object then not push error stack and return NULL
- *
- * @param[in] *ast
- * @param[in] *idn_obj
- *
- * @return
- */
-object_t *
-pull_in_ref_by_owner(ast_t *ast, const object_t *idn_obj);
+pull_in_ref_by(const object_t *idn_obj);
 
 /**
  * copy value of index object
@@ -84,23 +71,35 @@ copy_object_value(ast_t *ast, const object_t *obj);
  * set move object at varmap of current scope of context by identifier
  * this function do not increment reference count of object
  *
- * @param[in] *ast        pointer to ast_t
- * @param[in] *identifier identifier string
- * @param[in] *move_obj   object with move semantics
+ * @param[in] *ast            pointer to ast_t
+ * @param[in] *ref_dot_owners reference to owners in array
+ * @param[in] *identifier     identifier string
+ * @param[in] *move_obj       object with move semantics
  */
 void
-move_obj_at_cur_varmap(ast_t *ast, const char *identifier, object_t *move_obj);
+move_obj_at_cur_varmap(
+    ast_t *ast,
+    object_array_t *ref_dot_owners,
+    const char *identifier,
+    object_t *move_obj
+);
 
 /**
  * set reference of object at varmap of current scope by key
  * this function auto increment reference count of object
  *
  * @param[in] *ast        pointer to ast_t
+ * @param[in] *ref_dot_owners reference to owners in array
  * @param[in] *identifier key of dict item
  * @param[in] *ref        reference to object
  */
 void
-set_ref_at_cur_varmap(ast_t *ast, const char *identifier, object_t *ref);
+set_ref_at_cur_varmap(
+    ast_t *ast,
+    object_array_t *ref_dot_owners,
+    const char *identifier,
+    object_t *ref
+);
 
 /**
  * extract identifier object and index object and etc to reference
@@ -141,3 +140,14 @@ refer_index_obj_with_ref(ast_t *ast, const object_t *index_obj);
  */
 void
 dump_array_obj(const object_t *arrobj);
+
+/**
+ * objectをbool値にする
+ *
+ * @param[in] *ast
+ * @param[in] *obj
+ *
+ * @return true or false
+ */
+bool
+parse_bool(ast_t *ast, const object_t *obj);

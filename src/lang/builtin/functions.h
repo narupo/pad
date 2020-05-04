@@ -7,6 +7,7 @@
 #include <lang/ast.h>
 #include <lang/utils.h>
 #include <lang/gc.h>
+#include <lang/arguments.h>
 
 /**
  * construct module

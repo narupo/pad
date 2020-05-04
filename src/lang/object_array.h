@@ -18,6 +18,9 @@ typedef struct object_array object_array_t;
 void
 objarr_del(object_array_t* self);
 
+void
+objarr_del_without_objs(object_array_t* self);
+
 object_array_t*
 objarr_new(void);
 
@@ -28,24 +31,24 @@ objarr_new_other(object_array_t *other);
 * getter *
 *********/
 
-size_t
+int32_t
 objarr_len(const object_array_t *self);
 
-size_t
+int32_t
 objarry_capa(const object_array_t *self);
 
 object_t *
-objarr_get(const object_array_t *self, size_t index);
+objarr_get(const object_array_t *self, int32_t index);
 
 const object_t *
-objarr_getc(const object_array_t *self, size_t index);
+objarr_getc(const object_array_t *self, int32_t index);
 
 /*********
 * setter *
 *********/
 
 object_array_t *
-objarr_resize(object_array_t* self, size_t capa);
+objarr_resize(object_array_t* self, int32_t capa);
 
 object_array_t *
 objarr_move(object_array_t* self, int32_t index, object_t *move_obj);

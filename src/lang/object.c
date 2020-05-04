@@ -595,6 +595,7 @@ obj_dump(const object_t *self, FILE *fout) {
     fprintf(fout, "object[%p]\n", self);
     fprintf(fout, "object.type[%s]\n", str_getc(typ));
     fprintf(fout, "object.to_str[%s]\n", str_getc(s));
+    gc_item_dump(&self->gc_item, fout);
 
     str_del(s);
     str_del(typ);

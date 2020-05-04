@@ -239,14 +239,6 @@ objdict_pop(object_dict_t *self, const char *key) {
     return found;
 }
 
-struct string;
-
-const char *
-str_getc(struct string *s);
-
-void
-str_del(struct string *s);
-
 void
 objdict_dump(const object_dict_t *self, FILE *fout) {
     if (!self || !fout) {
@@ -258,5 +250,6 @@ objdict_dump(const object_dict_t *self, FILE *fout) {
         string_t *s = obj_to_str(item->value);
         fprintf(fout, "[%s] = [%s]\n", item->key, str_getc(s));
         str_del(s);
+        obj_dump(item->value, fout);
     }
 }
