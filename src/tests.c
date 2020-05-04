@@ -14215,8 +14215,8 @@ test_trv_dot_4(void) {
     tkr_parse(tkr, "{@\n"
     "    arr = [[1, 2], [3, 4]]\n"
     "    dst = []\n"
-    "    dst.push(arr.pop().pop())\n"
-    "@}{: dst[0] :}");
+    "    n = dst.push(arr.pop().pop()).pop()\n"
+    "@}{: n :}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
@@ -14224,6 +14224,27 @@ test_trv_dot_4(void) {
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_dot_5(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "    arr = [[[[[[[[1, 2]]]]]]]]\n"
+    "    dst = []\n"
+    "    n = dst.push(arr.pop().pop().pop().pop().pop().pop().pop().pop()).pop()\n"
+    "@}{: n :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
     trv_cleanup;
@@ -22815,6 +22836,7 @@ traverser_tests[] = {
     {"trv_dot_2", test_trv_dot_2},
     {"trv_dot_3", test_trv_dot_3},
     {"trv_dot_4", test_trv_dot_4},
+    {"trv_dot_5", test_trv_dot_5},
     {"trv_negative_0", test_trv_negative_0},
     {"trv_call", test_trv_call},
     {"trv_func_def", test_trv_func_def},

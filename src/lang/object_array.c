@@ -163,7 +163,6 @@ objarr_movef(object_array_t* self, object_t *obj) {
     return self;
 }
 
-
 object_array_t *
 objarr_pushb(object_array_t* self, object_t *reference) {
     return objarr_moveb(self, reference);
