@@ -14,7 +14,7 @@ INCLUDE := src
 CFLAGS := -Wall \
 	-g \
 	-O3 \
-	-std=c11 \
+	-std=c17 \
 	-Wno-unused-function \
 	-Wno-unused-result \
 	-D_DEBUG \
