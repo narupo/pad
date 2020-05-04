@@ -21968,19 +21968,6 @@ test_trv_call_1(void) {
     trv_cleanup;
 }
 
-/*
-{@
-    import "utils.cap" as utils
-    from "/html/list.cap" import arrayToUl
-
-    for i = 0; i < 4; i += 1:
-        j = i
-        a = [j, j+1, j+2]
-        arrayToUl(a)
-    end
-@}
-*/
-
 static void
 test_trv_call_2(void) {
     trv_ready;
@@ -22077,6 +22064,37 @@ test_trv_call_4(void) {
             "    <li>5</li>\n"
             "</ul>\n"
         ));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_call_5(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f1(a):\n"
+    "       puts(a)\n"
+    "       return a * 2\n"
+    "   end\n"
+    "   def f2(a):\n"
+    "       return f1(a)\n"
+    "   end\n"
+    "   def f3(a):\n"
+    "       return f2(a)\n"
+    "   end\n"
+    "   def f4(a):\n"
+    "       return f3(a)\n"
+    "   end\n"
+    "@}{: f4(2) :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2\n4"));
     }
 
     trv_cleanup;
@@ -22796,6 +22814,7 @@ traverser_tests[] = {
     {"trv_call_2", test_trv_call_2},
     {"trv_call_3", test_trv_call_3},
     {"trv_call_4", test_trv_call_4},
+    {"trv_call_5", test_trv_call_5},
     {"trv_index_0", test_trv_index_0},
     {"trv_index_1", test_trv_index_1},
     {"trv_array_0", test_trv_array_0},
