@@ -25,6 +25,14 @@ struct gc_item {
 };
 
 /**
+ * dump gc_item_t at stream
+ *
+ * @param[in] *self
+ */
+void
+gc_item_dump(const gc_item_t *self, FILE *fout);
+
+/**
  * destruct gc
  *
  * @param[in] *self pointer to gc_t

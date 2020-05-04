@@ -39,7 +39,16 @@ typedef struct scope scope_t;
 struct ast;
 typedef struct ast ast_t;
 
-typedef object_t *(*builtin_func_t)(ast_t *ast, object_t *args);
+struct trv_args;
+typedef struct trv_args trv_args_t;
+
+struct  builtin_func_args;
+typedef struct  builtin_func_args builtin_func_args_t;
+
+struct builtin_func_args;
+typedef struct builtin_func_args builtin_func_args_t;
+
+typedef object_t *(*builtin_func_t)(builtin_func_args_t *args);
 
 typedef struct builtin_func_info builtin_func_info_t;
 
@@ -50,3 +59,6 @@ struct gc_item;
 typedef struct gc_item gc_item_t;
 
 typedef long objint_t;
+
+// number of depth type for function recursion
+typedef int32_t depth_t;

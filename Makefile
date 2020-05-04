@@ -123,6 +123,7 @@ SRCS := build/lib/error.c \
 	build/lang/gc.c \
 	build/lang/kit.c \
 	build/lang/importer.c \
+	build/lang/arguments.c \
 	build/lang/builtin/functions.c \
 	build/lang/builtin/modules/string.c \
 	build/lang/builtin/modules/array.c \
@@ -258,6 +259,8 @@ build/lang/gc.o: src/lang/gc.c src/lang/gc.h
 build/lang/kit.o: src/lang/kit.c src/lang/kit.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/importer.o: src/lang/importer.c src/lang/importer.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/arguments.o: src/lang/arguments.c src/lang/arguments.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/builtin/functions.o: src/lang/builtin/functions.c src/lang/builtin/functions.h
 	$(CC) $(CFLAGS) -c $< -o $@

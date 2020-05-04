@@ -16622,7 +16622,7 @@ test_trv_traverse(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined in roll identifier lhs"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
     }
 
     tkr_parse(tkr, "{@ a = 0\n"
@@ -17185,15 +17185,26 @@ test_trv_assign_and_reference_0(void) {
 
     tkr_parse(tkr, "{@\n"
     "   i = j = 0\n"
-    "@}{: i :},{: j :},{: id(i) == id(j) :}");
+    "@}{: i :},{: j :}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        showbuf();
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,0,true"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,0"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   i = j = 0\n"
+    "@}{: id(i) == id(j) :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
 
     ctx_del(ctx);
@@ -17556,6 +17567,34 @@ test_trv_assign_and_reference_12(void) {
 }
 
 static void
+test_trv_assign_and_reference_13(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   i = j = 0\n"
+    "@}{: id(i) == id(j) :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
 test_trv_assign_and_reference_all(void) {
     test_trv_assign_and_reference_0();
     test_trv_assign_and_reference_1();
@@ -17570,6 +17609,7 @@ test_trv_assign_and_reference_all(void) {
     test_trv_assign_and_reference_10();
     test_trv_assign_and_reference_11();
     test_trv_assign_and_reference_12();
+    test_trv_assign_and_reference_13();
 }
 
 static void
@@ -19301,7 +19341,7 @@ test_trv_elif_stmt_4(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"i\" is not defined in extract obj"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"i\" is not defined"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -19435,6 +19475,36 @@ test_trv_elif_stmt_4(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1230\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_elif_stmt_5(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   if 0:\n"
+    "       i = 2 * 3\n"
+    "       if 1:\n"
+    "           puts(1)\n"
+    "       end\n"
+    "       j = 3 * 3\n"
+    "   elif 0:\n"
+    "       puts(2)\n"
+    "       j = 3 * 3\n"
+    "   elif 1:\n"
+    "       puts(i)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"i\" is not defined"));
     }
 
     trv_cleanup;
@@ -20390,6 +20460,32 @@ test_trv_for_stmt_11(void) {
         traceerr();
         assert(!ast_has_errors(ast));
         // assert(!strcmp(ctx_getc_stdout_buf(ctx), "true,true,ture\n12,34"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_for_stmt_12(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def hiphop(rap, n):\n"
+    "       puts(rap * n)\n"
+    "   end\n"
+    "\n"
+    "   for i = 0; i < 3; i += 1:\n"
+    "       hiphop(\"yo\", i)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        traceerr();
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "\nyo\nyoyo\n"));
     }
 
     trv_cleanup;
@@ -22576,6 +22672,7 @@ traverser_tests[] = {
     {"trv_assign_and_reference_10", test_trv_assign_and_reference_10},
     {"trv_assign_and_reference_11", test_trv_assign_and_reference_11},
     {"trv_assign_and_reference_12", test_trv_assign_and_reference_12},
+    {"trv_assign_and_reference_13", test_trv_assign_and_reference_13},
     {"trv_assign_and_reference_all", test_trv_assign_and_reference_all},
     {"trv_code_block", test_trv_code_block},
     {"trv_ref_block", test_trv_ref_block},
@@ -22602,6 +22699,7 @@ traverser_tests[] = {
     {"trv_elif_stmt_2", test_trv_elif_stmt_2},
     {"trv_elif_stmt_3", test_trv_elif_stmt_3},
     {"trv_elif_stmt_4", test_trv_elif_stmt_4},
+    {"trv_elif_stmt_5", test_trv_elif_stmt_5},
     {"trv_else_stmt_0", test_trv_elif_stmt_0},
     {"trv_else_stmt_1", test_trv_elif_stmt_1},
     {"trv_else_stmt_2", test_trv_elif_stmt_2},
@@ -22618,6 +22716,7 @@ traverser_tests[] = {
     {"trv_for_stmt_9", test_trv_for_stmt_9},
     {"trv_for_stmt_10", test_trv_for_stmt_10},
     {"trv_for_stmt_11", test_trv_for_stmt_11},
+    {"trv_for_stmt_12", test_trv_for_stmt_12},
     {"trv_break_stmt", test_trv_break_stmt},
     {"trv_continue_stmt", test_trv_continue_stmt},
     {"trv_return_stmt", test_trv_return_stmt},

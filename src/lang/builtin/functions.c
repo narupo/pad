@@ -1,35 +1,43 @@
 #include <lang/builtin/functions.h>
 
 static object_t *
-builtin_id(ast_t *ast, object_t *actual_args) {
+builtin_id(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ast, "invalid arguments length");
+        ast_pushb_error(ref_ast, "invalid arguments length");
         return NULL;
     }
 
     object_t *obj = objarr_get(args, 0);
     assert(obj);
 
-    obj = extract_ref_of_obj(ast, obj);
-    if (ast_has_errors(ast)) {
+    obj = extract_ref_of_obj(ref_ast, obj);
+    if (ast_has_errors(ref_ast)) {
         return NULL;
     }
     if (!obj) {
-        ast_pushb_error(ast, "failed to extract reference");
+        ast_pushb_error(ref_ast, "failed to extract reference");
         return NULL;
     }
 
-    return obj_new_int(ast->ref_gc, (intptr_t) obj->gc_item.ptr);
+    return obj_new_int(ref_ast->ref_gc, (intptr_t) obj->gc_item.ptr);
 }
 
 static object_t *
-builtin_type(ast_t *ast, object_t *actual_args) {
+builtin_type(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ast, "invalid arguments length");
+        ast_pushb_error(ref_ast, "invalid arguments length");
         return NULL;
     }
 
@@ -39,60 +47,64 @@ builtin_type(ast_t *ast, object_t *actual_args) {
 again:
     switch (obj->type) {
     case OBJ_TYPE_NIL: {
-        return obj_new_cstr(ast->ref_gc, "<nil>");
+        return obj_new_cstr(ref_ast->ref_gc, "<nil>");
     } break;
     case OBJ_TYPE_INT: {
-        return obj_new_cstr(ast->ref_gc, "<int>");
+        return obj_new_cstr(ref_ast->ref_gc, "<int>");
     } break;
     case OBJ_TYPE_BOOL: {
-        return obj_new_cstr(ast->ref_gc, "<bool>");
+        return obj_new_cstr(ref_ast->ref_gc, "<bool>");
     } break;
     case OBJ_TYPE_STRING: {
-        return obj_new_cstr(ast->ref_gc, "<str>");
+        return obj_new_cstr(ref_ast->ref_gc, "<str>");
     } break;
     case OBJ_TYPE_ARRAY: {
-        return obj_new_cstr(ast->ref_gc, "<array>");
+        return obj_new_cstr(ref_ast->ref_gc, "<array>");
     } break;
     case OBJ_TYPE_DICT: {
-        return obj_new_cstr(ast->ref_gc, "<dict>");
+        return obj_new_cstr(ref_ast->ref_gc, "<dict>");
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(obj);
-        obj = pull_in_ref_by(ast, obj);
+        obj = pull_in_ref_by(obj);
         if (!obj) {
-            ast_pushb_error(ast, "not defined \"%s\" in type()", idn);
+            ast_pushb_error(ref_ast, "not defined \"%s\" in type()", idn);
             return NULL;
         }
         goto again;
     } break;
     case OBJ_TYPE_FUNC: {
-        return obj_new_cstr(ast->ref_gc, "<func>");
+        return obj_new_cstr(ref_ast->ref_gc, "<func>");
     } break;
     case OBJ_TYPE_INDEX: {
         obj = obj->index.operand;
         goto again;
     } break;
     case OBJ_TYPE_MODULE: {
-        return obj_new_cstr(ast->ref_gc, "<module>");
+        return obj_new_cstr(ref_ast->ref_gc, "<module>");
     } break;
     case OBJ_TYPE_RESERV: {
-        return obj_new_cstr(ast->ref_gc, "<reserv>");
+        return obj_new_cstr(ref_ast->ref_gc, "<reserv>");
     } break;
     } // switch
 
-    ast_pushb_error(ast, "not supported type \"%d\"", obj->type);
+    ast_pushb_error(ref_ast, "not supported type \"%d\"", obj->type);
     return NULL;
 }
 
 static object_t *
-builtin_eputs(ast_t *ast, object_t *actual_args) {
+builtin_eputs(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
 
     object_array_t *args = actual_args->objarr;
 
     if (!objarr_len(args)) {
-        ctx_pushb_stderr_buf(ast->context, "\n");
-        return obj_new_int(ast->ref_gc, 0);
+        ctx_pushb_stderr_buf(ref_ast->context, "\n");
+        return obj_new_int(ref_ast->ref_gc, 0);
     }
 
     int32_t arrlen = objarr_len(args);
@@ -100,43 +112,47 @@ builtin_eputs(ast_t *ast, object_t *actual_args) {
     for (int32_t i = 0; i < arrlen-1; ++i) {
         object_t *obj = objarr_get(args, i);
         assert(obj);
-        object_t *copy = copy_object_value(ast, obj);
-        string_t *s = obj_to_string(ast, copy);
+        object_t *copy = copy_object_value(ref_ast, obj);
+        string_t *s = obj_to_string(ref_ast, copy);
         obj_del(copy);
         if (!s) {
             continue;
         }
         str_pushb(s, ' ');
-        ctx_pushb_stderr_buf(ast->context, str_getc(s));
+        ctx_pushb_stderr_buf(ref_ast->context, str_getc(s));
         str_del(s);
     }
     if (arrlen) {
         object_t *obj = objarr_get(args, arrlen-1);
         assert(obj);
-        object_t *copy = copy_object_value(ast, obj);
-        string_t *s = obj_to_string(ast, copy);
+        object_t *copy = copy_object_value(ref_ast, obj);
+        string_t *s = obj_to_string(ref_ast, copy);
         obj_del(copy);
         if (!s) {
             goto done;
         }
-        ctx_pushb_stderr_buf(ast->context, str_getc(s));
+        ctx_pushb_stderr_buf(ref_ast->context, str_getc(s));
         str_del(s);
     }
 
 done:
-    ctx_pushb_stderr_buf(ast->context, "\n");
-    return obj_new_int(ast->ref_gc, arrlen);
+    ctx_pushb_stderr_buf(ref_ast->context, "\n");
+    return obj_new_int(ref_ast->ref_gc, arrlen);
 }
 
 static object_t *
-builtin_puts(ast_t *ast, object_t *actual_args) {
+builtin_puts(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
 
     object_array_t *args = actual_args->objarr;
 
     if (!objarr_len(args)) {
-        ctx_pushb_stdout_buf(ast->context, "\n");
-        return obj_new_int(ast->ref_gc, 0);
+        ctx_pushb_stdout_buf(ref_ast->context, "\n");
+        return obj_new_int(ref_ast->ref_gc, 0);
     }
 
     int32_t arrlen = objarr_len(args);
@@ -144,55 +160,59 @@ builtin_puts(ast_t *ast, object_t *actual_args) {
     for (int32_t i = 0; i < arrlen-1; ++i) {
         object_t *obj = objarr_get(args, i);
         assert(obj);
-        object_t *copy = copy_object_value(ast, obj);
-        if (ast_has_errors(ast)) {
-            ast_pushb_error(ast, "failed to get argument");
+        object_t *copy = copy_object_value(ref_ast, obj);
+        if (ast_has_errors(ref_ast)) {
+            ast_pushb_error(ref_ast, "failed to get argument");
             return NULL;
         }
-        string_t *s = obj_to_string(ast, copy);
+        string_t *s = obj_to_string(ref_ast, copy);
         obj_del(copy);
         if (!s) {
             continue;
         }
         str_pushb(s, ' ');
-        ctx_pushb_stdout_buf(ast->context, str_getc(s));
+        ctx_pushb_stdout_buf(ref_ast->context, str_getc(s));
         str_del(s);
     }
     if (arrlen) {
         object_t *obj = objarr_get(args, arrlen-1);
         assert(obj);
-        object_t *copy = copy_object_value(ast, obj);
-        if (ast_has_errors(ast)) {
-            ast_pushb_error(ast, "failed to get argument");
+        object_t *copy = copy_object_value(ref_ast, obj);
+        if (ast_has_errors(ref_ast)) {
+            ast_pushb_error(ref_ast, "failed to get argument");
             return NULL;
         }
-        string_t *s = obj_to_string(ast, copy);
+        string_t *s = obj_to_string(ref_ast, copy);
         obj_del(copy);
         if (!s) {
             goto done;
         }
-        ctx_pushb_stdout_buf(ast->context, str_getc(s));
+        ctx_pushb_stdout_buf(ref_ast->context, str_getc(s));
         str_del(s);
     }
 
 done:
-    ctx_pushb_stdout_buf(ast->context, "\n");
-    return obj_new_int(ast->ref_gc, arrlen);
+    ctx_pushb_stdout_buf(ref_ast->context, "\n");
+    return obj_new_int(ref_ast->ref_gc, arrlen);
 }
 
 static object_t *
-builtin_exec(ast_t *ast, object_t *actual_args) {
+builtin_exec(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
 
     object_array_t *args = actual_args->objarr;
 
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ast, "invalid arguments length of builtin exec function");
+        ast_pushb_error(ref_ast, "invalid arguments length of builtin exec function");
         return NULL;
     }
 
     object_t *cmdlineobj = objarr_get(args, 0);
-    string_t *cmdline = obj_to_string(ast, cmdlineobj);
+    string_t *cmdline = obj_to_string(ref_ast, cmdlineobj);
     if (!cmdline) {
         return NULL;
     }
@@ -203,21 +223,25 @@ builtin_exec(ast_t *ast, object_t *actual_args) {
     int argc = cstrarr_len(strarr);
     char **argv = cstrarr_escdel(strarr);
 
-    execcmd_t *execcmd = execcmd_new(ast->ref_config, argc, argv);
+    execcmd_t *execcmd = execcmd_new(ref_ast->ref_config, argc, argv);
     int result = execcmd_run(execcmd);
     execcmd_del(execcmd);
 
     freeargv(argc, argv);
-    return obj_new_int(ast->ref_gc, result);
+    return obj_new_int(ref_ast->ref_gc, result);
 }
 
 static object_t *
-builtin_len(ast_t *ast, object_t *actual_args) {
+builtin_len(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
 
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ast, "len function need one argument");
+        ast_pushb_error(ref_ast, "len function need one argument");
         return NULL;
     }
 
@@ -227,13 +251,13 @@ builtin_len(ast_t *ast, object_t *actual_args) {
 again:
     switch (arg->type) {
     default:
-        ast_pushb_error(ast, "not supported object (%d) for len", arg->type);
+        ast_pushb_error(ref_ast, "not supported object (%d) for len", arg->type);
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *obj = pull_in_ref_by(ast, arg);
+        object_t *obj = pull_in_ref_by(arg);
         if (!obj) {
-            ast_pushb_error(ast, "not found object for len");
+            ast_pushb_error(ref_ast, "not found object for len");
             return NULL;
         }
         arg = obj;
@@ -247,16 +271,19 @@ again:
         break;
     }
 
-    return obj_new_int(ast->ref_gc, len);
+    return obj_new_int(ref_ast->ref_gc, len);
 }
 
 static object_t *
-builtin_die(ast_t *ast, object_t *actual_args) {
-    object_t *result = builtin_eputs(ast, actual_args);
+builtin_die(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    assert(ref_ast);
+
+    object_t *result = builtin_eputs(fargs);
     obj_del(result);
 
     fflush(stdout);
-    fprintf(stderr, "%s", ctx_getc_stderr_buf(ast->context));
+    fprintf(stderr, "%s", ctx_getc_stderr_buf(ref_ast->context));
     fflush(stderr);
 
     exit(1);
@@ -264,25 +291,29 @@ builtin_die(ast_t *ast, object_t *actual_args) {
 }
 
 static object_t *
-builtin_exit(ast_t *ast, object_t *actual_args) {
+builtin_exit(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
     object_array_t *args = actual_args->objarr;
 
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ast, "invalid arguments length for exit");
+        ast_pushb_error(ref_ast, "invalid arguments length for exit");
         return NULL;
     }
 
     const object_t *codeobj = objarr_getc(args, 0);
     if (codeobj->type != OBJ_TYPE_INT) {
-        ast_pushb_error(ast, "invalid exit code type for exit");
+        ast_pushb_error(ref_ast, "invalid exit code type for exit");
         return NULL;
     }
 
-    printf("%s", ctx_getc_stderr_buf(ast->context));
+    printf("%s", ctx_getc_stderr_buf(ref_ast->context));
     fflush(stderr);
 
-    printf("%s", ctx_getc_stdout_buf(ast->context));
+    printf("%s", ctx_getc_stdout_buf(ref_ast->context));
     fflush(stdout);
 
     objint_t exit_code = codeobj->lvalue;

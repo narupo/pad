@@ -1,8 +1,16 @@
 #include <lang/utils.h>
 
 ast_t *
-get_ast_by_owner(ast_t *default_ast) {
-    object_t *owner = default_ast->ref_dot_owner;
+get_ast_by_owners(ast_t *default_ast, object_array_t *ref_dot_owners) {
+    if (!default_ast) {
+        return NULL;
+    }
+    if (!ref_dot_owners || !objarr_len(ref_dot_owners)) {
+        return default_ast;
+    }
+
+    int32_t ownslen = objarr_len(ref_dot_owners);
+    object_t *owner = objarr_get(ref_dot_owners, ownslen-1);
     if (!owner) {
         return default_ast;
     }
@@ -27,7 +35,7 @@ again:
     case OBJ_TYPE_IDENTIFIER: {
         // do not use pull_in_ref_by_owner
         // find owner object from current scope of ast
-        owner = pull_in_ref_by(default_ast, owner);
+        owner = pull_in_ref_by(owner);
         if (!owner) {
             return default_ast;
         }
@@ -43,68 +51,7 @@ again:
  * this function do not push error at ast's error stack
  */
 object_t *
-pull_in_ref_by_owner(ast_t *ast, const object_t *idn_obj) {
-    assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
-
-    // if owner is null then refer identifier object
-    object_t *owner = ast->ref_dot_owner;
-    if (!owner) {
-        ast_t *ref_ast = obj_get_idn_ref_ast(idn_obj);
-        const char *idn = obj_getc_idn_name(idn_obj);
-        object_t *ref = ctx_find_var_ref(ref_ast->context, idn);
-        if (!ref) {
-            // do not push error stack
-            return NULL;
-        }
-        if (ref->type == OBJ_TYPE_IDENTIFIER) {
-            return pull_in_ref_by(ref_ast, ref);
-        }
-
-        return ref;
-    }
-
-    // extract owner object
-again:
-    switch (owner->type) {
-    default: break;
-    case OBJ_TYPE_IDENTIFIER: {
-        owner = pull_in_ref_by(ast, owner);
-        if (!owner) {
-            // do not push error stack
-            return NULL;
-        }
-        if (owner->type == OBJ_TYPE_IDENTIFIER) {
-            goto again;
-        }
-    } break;
-    }
-
-    // owner is can refer type ?
-    switch (owner->type) {
-    default:
-        // can't refer to owner
-        // do not push error stack
-        puts("here");
-        return NULL;
-        break;
-    // can refer to owner
-    case OBJ_TYPE_MODULE: {
-        object_module_t *mod = &owner->module;
-        ast_t *ref_ast = mod->ast;
-        assert(ref_ast);
-        return pull_in_ref_by(ref_ast, idn_obj);
-    } break;
-    }
-
-    assert(0 && "impossible");
-    return NULL;
-}
-
-/**
- * this function do not push error at ast's error stack
- */
-object_t *
-pull_in_ref_by(ast_t *ast, const object_t *idn_obj) {
+pull_in_ref_by(const object_t *idn_obj) {
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
 
     ast_t *ref_ast = obj_get_idn_ref_ast(idn_obj);
@@ -115,14 +62,17 @@ pull_in_ref_by(ast_t *ast, const object_t *idn_obj) {
         return NULL;
     }
     if (ref->type == OBJ_TYPE_IDENTIFIER) {
-        return pull_in_ref_by(ref_ast, ref);
+        return pull_in_ref_by(ref);
     }
 
     return ref;
 }
 
 object_t *
-copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
+copy_value_of_index_obj(
+    ast_t *ast,
+    const object_t *index_obj
+) {
     assert(index_obj && index_obj->type == OBJ_TYPE_INDEX);
 
     assert(index_obj->index.operand);
@@ -139,7 +89,7 @@ copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
 
         const object_t *idx = el;
         if (el->type == OBJ_TYPE_IDENTIFIER) {
-            idx = pull_in_ref_by(ast, el);
+            idx = pull_in_ref_by(el);
             if (!idx) {
                 ast_pushb_error(
                     ast,
@@ -160,7 +110,7 @@ copy_value_of_index_obj(ast_t *ast, const object_t *index_obj) {
         }
 
         if (operand->type == OBJ_TYPE_IDENTIFIER) {
-            object_t *ref = pull_in_ref_by(ast, operand);
+            object_t *ref = pull_in_ref_by(operand);
             if (ast_has_errors(ast)) {
                 obj_del(operand);
                 return NULL;
@@ -252,7 +202,7 @@ obj_to_string(ast_t *ast, const object_t *obj) {
     switch (obj->type) {
     default: return obj_to_str(obj); break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *var = pull_in_ref_by(ast, obj);
+        object_t *var = pull_in_ref_by(obj);
         if (!var) {
             ast_pushb_error(
                 ast,
@@ -283,10 +233,15 @@ copy_object_value(ast_t *ast, const object_t *obj) {
 }
 
 void
-move_obj_at_cur_varmap(ast_t *ast, const char *identifier, object_t *move_obj) {
+move_obj_at_cur_varmap(
+    ast_t *ast,
+    object_array_t *ref_dot_owners,
+    const char *identifier,
+    object_t *move_obj
+) {
     assert(move_obj->type != OBJ_TYPE_IDENTIFIER);
 
-    ast = get_ast_by_owner(ast);
+    ast = get_ast_by_owners(ast, ref_dot_owners);
     if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "can't move object");
         return;
@@ -297,10 +252,15 @@ move_obj_at_cur_varmap(ast_t *ast, const char *identifier, object_t *move_obj) {
 }
 
 void
-set_ref_at_cur_varmap(ast_t *ast, const char *identifier, object_t *ref) {
+set_ref_at_cur_varmap(
+    ast_t *ast,
+    object_array_t *ref_dot_owners,
+    const char *identifier,
+    object_t *ref
+) {
     assert(ref->type != OBJ_TYPE_IDENTIFIER);
 
-    ast = get_ast_by_owner(ast);
+    ast = get_ast_by_owners(ast, ref_dot_owners);
     if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "can't set reference");
         return;
@@ -333,7 +293,7 @@ refer_index_obj_with_ref(ast_t *ast, const object_t *index_obj) {
 
         const object_t *idx = el;
         if (el->type == OBJ_TYPE_IDENTIFIER) {
-            idx = pull_in_ref_by(ast, el);
+            idx = pull_in_ref_by(el);
             if (!idx) {
                 ast_pushb_error(
                     ast,
@@ -353,7 +313,7 @@ refer_index_obj_with_ref(ast_t *ast, const object_t *index_obj) {
         }
 
         if (operand->type == OBJ_TYPE_IDENTIFIER) {
-            object_t *ref = pull_in_ref_by(ast, operand);
+            object_t *ref = pull_in_ref_by(operand);
             if (ast_has_errors(ast)) {
                 return NULL;
             } else if (!ref) {
@@ -423,12 +383,18 @@ refer_index_obj_with_ref(ast_t *ast, const object_t *index_obj) {
 
 object_t *
 extract_copy_of_obj(ast_t *ast, const object_t *obj) {
+    assert(ast);
     assert(obj);
 
     switch (obj->type) {
-    default: return obj_new_other(obj); break;
+    default:
+        return obj_new_other(obj);
+        break;
+    case OBJ_TYPE_RESERV:
+        ast_pushb_error(ast, "can't copy from reservation object");
+        return NULL;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *ref = pull_in_ref_by_owner(ast, obj);
+        object_t *ref = pull_in_ref_by(obj);
         if (!ref) {
             ast_pushb_error(
                 ast,
@@ -439,14 +405,30 @@ extract_copy_of_obj(ast_t *ast, const object_t *obj) {
         }
         return obj_new_other(ref);
     } break;
+    case OBJ_TYPE_DICT: {
+        // copy dict elements recursive
+        object_dict_t *objdict = objdict_new(ast->ref_gc);
+
+        for (int32_t i = 0; i < objdict_len(obj->objdict); ++i) {
+            const object_dict_item_t *item = objdict_getc_index(obj->objdict, i);
+            assert(item);
+            object_t *el = item->value;
+            object_t *newel = extract_copy_of_obj(ast, el);
+            objdict_move(objdict, item->key, mem_move(newel));
+        }
+
+        return obj_new_dict(ast->ref_gc, objdict);
+    } break;
     case OBJ_TYPE_ARRAY: {
         // copy array elements recursive
         object_array_t *objarr = objarr_new();
+
         for (int32_t i = 0; i < objarr_len(obj->objarr); ++i) {
             object_t *el = objarr_get(obj->objarr, i);
             object_t *newel = extract_copy_of_obj(ast, el);
-            objarr_moveb(objarr, newel);
+            objarr_moveb(objarr, mem_move(newel));
         }
+
         return obj_new_array(ast->ref_gc, objarr);
     } break;
     case OBJ_TYPE_INDEX: {
@@ -465,6 +447,7 @@ extract_copy_of_obj(ast_t *ast, const object_t *obj) {
 
 object_t *
 extract_ref_of_obj(ast_t *ast, object_t *obj) {
+    assert(ast);
     assert(obj);
 
     switch (obj->type) {
@@ -476,7 +459,7 @@ extract_ref_of_obj(ast_t *ast, object_t *obj) {
         return NULL;
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *ref = pull_in_ref_by_owner(ast, obj);
+        object_t *ref = pull_in_ref_by(obj);
         if (!ref) {
             ast_pushb_error(ast, "\"%s\" is not defined", obj_getc_idn_name(obj));
             return NULL;
@@ -509,4 +492,54 @@ dump_array_obj(const object_t *arrobj) {
         printf("arr[%d] = [%s]\n", i, str_getc(s));
         str_del(s);
     }
+}
+
+bool
+parse_bool(ast_t *ast, const object_t *obj) {
+    if (!ast) {
+        return false;
+    }
+    if (!obj) {
+        ast_pushb_error(ast, "object is null");
+        return false;
+    }
+
+    switch (obj->type) {
+    default:
+        return true;
+        break;
+    case OBJ_TYPE_RESERV:
+        ast_pushb_error(ast, "can't conver to bool of reservation object");
+        return false;
+        break;
+    case OBJ_TYPE_NIL: return false; break;
+    case OBJ_TYPE_INT: return obj->lvalue; break;
+    case OBJ_TYPE_BOOL: return obj->boolean; break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(obj);
+        object_t *obj = ctx_find_var_ref(ast->context, idn);
+        if (!obj) {
+            ast_pushb_error(ast, "\"%s\" is not defined in if statement", idn);
+            return false;
+        }
+
+        return parse_bool(ast, obj);
+    } break;
+    case OBJ_TYPE_STRING: return str_len(obj->string); break;
+    case OBJ_TYPE_ARRAY: return objarr_len(obj->objarr); break;
+    case OBJ_TYPE_DICT: return objdict_len(obj->objdict); break;
+    case OBJ_TYPE_INDEX: {
+        object_t *val = copy_value_of_index_obj(ast, obj);
+        if (!val) {
+            ast_pushb_error(ast, "value is null in parse bool");
+            return false;
+        }
+        bool result = parse_bool(ast, val);
+        obj_del(val);
+        return result;
+    } break;
+    }
+
+    assert(0 && "impossible. failed to parse bool");
+    return false;
 }

@@ -31,7 +31,6 @@ struct ast {
     context_t *context; // context. update when traverse tree (DO NOT DELETE)
     opts_t *opts; // options for builtin opts module
     gc_t *ref_gc; // reference to gc (DO NOT DELETE)
-    object_t *ref_dot_owner; // owner object for dot operator (owner.right_hand["key"]) for traverser (DO NOT DELETE)
     int32_t import_level; // number of import level
     errstack_t *error_stack; // error stack for errors
     bool debug; // if do debug to true

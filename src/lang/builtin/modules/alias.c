@@ -1,7 +1,11 @@
 #include <lang/builtin/modules/alias.h>
 
 static object_t *
-builtin_alias_set(ast_t *ast, object_t *actual_args) {
+builtin_alias_set(builtin_func_args_t *fargs) {
+    ast_t *ast = fargs->ref_ast;
+    assert(ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
 
     object_array_t *args = actual_args->objarr;

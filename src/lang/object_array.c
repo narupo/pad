@@ -6,8 +6,8 @@ enum {
 
 struct object_array {
     gc_t *ref_gc;
-    size_t len;
-    size_t capa;
+    int32_t len;
+    int32_t capa;
     object_t **parray;
 };
 
@@ -24,6 +24,16 @@ objarr_del(object_array_t* self) {
     for (int i = 0; i < self->len; ++i) {
         object_t *obj = self->parray[i];
         obj_del(obj);
+    }
+
+    free(self->parray);
+    free(self);
+}
+
+void
+objarr_del_without_objs(object_array_t* self) {
+    if (!self) {
+        return;
     }
 
     free(self->parray);
@@ -62,27 +72,27 @@ objarr_new_other(object_array_t *other) {
 * getter *
 *********/
 
-size_t
+int32_t
 objarr_len(const object_array_t *self) {
     return self->len;
 }
 
-size_t
+int32_t
 objarry_capa(const object_array_t *self) {
     return self->capa;
 }
 
 object_t *
-objarr_get(const object_array_t *self, size_t index) {
-    if (index >= self->capa) {
+objarr_get(const object_array_t *self, int32_t index) {
+    if (index < 0 || index >= self->capa) {
         return NULL;
     }
     return self->parray[index];
 }
 
 const object_t *
-objarr_getc(const object_array_t *self, size_t index) {
-    if (index >= self->capa) {
+objarr_getc(const object_array_t *self, int32_t index) {
+    if (index < 0 || index >= self->capa) {
         return NULL;
     }
     return self->parray[index];
@@ -93,7 +103,11 @@ objarr_getc(const object_array_t *self, size_t index) {
 *********/
 
 object_array_t *
-objarr_resize(object_array_t* self, size_t capa) {
+objarr_resize(object_array_t* self, int32_t capa) {
+    if (!self || capa < 0) {
+        return NULL;
+    }
+
     int byte = sizeof(object_t *);
     object_t **tmparr = mem_erealloc(self->parray, capa * byte + byte);
 
@@ -175,9 +189,15 @@ objarr_popb(object_array_t *self) {
 
 void
 objarr_dump(const object_array_t *self, FILE *fout) {
+    fprintf(fout, "array[%p]\n", self);
+    fprintf(fout, "array.ref_gc[%p]\n", self->ref_gc);
+    fprintf(fout, "array.len[%d]\n", self->len);
+    fprintf(fout, "array.capa[%d]\n", self->capa);
+    fprintf(fout, "array.parray[%p]\n", self->parray);
+
     for (int32_t i = 0; i < self->len; ++i) {
         const object_t *obj = self->parray[i];
-        fprintf(fout, "array[%d]\n", i);
+        fprintf(fout, "parray[%d] = obj[%p]\n", i, obj);
         obj_dump(obj, fout);
     }
 }

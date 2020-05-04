@@ -1,5 +1,26 @@
 #include <lang/gc.h>
 
+/**********
+* gc_item *
+**********/
+
+void
+gc_item_dump(const gc_item_t *self, FILE *fout) {
+    if (!self) {
+        fprintf(fout, "gc_item[null]\n");
+        return;
+    }
+
+    fprintf(fout, "gc_item[%p]\n", self);
+    fprintf(fout, "gc_item.id[%d]\n", self->id);
+    fprintf(fout, "gc_item.ptr[%p]\n", self->ptr);
+    fprintf(fout, "gc_item.ref_counts[%d]\n", self->ref_counts);
+}
+
+/*****
+* gc *
+*****/
+
 enum {
     INIT_CAPA_SIZE = 4,
 };

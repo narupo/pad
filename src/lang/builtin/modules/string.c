@@ -1,17 +1,22 @@
 #include <lang/builtin/modules/string.h>
 
 static object_t *
-call_basic_str_func(ast_t *ast, const char *method_name) {
-    const object_t *owner = ast->ref_dot_owner;
+call_basic_str_func(const char *method_name, builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    assert(ref_ast);
+    object_array_t *ref_dot_owners = fargs->ref_dot_owners;
+    assert(ref_dot_owners);
+
+    int32_t nowns = objarr_len(ref_dot_owners);
+    const object_t *owner = objarr_get(ref_dot_owners, nowns-1);
     if (!owner) {
-        return obj_new_nil(ast->ref_gc);
+        return obj_new_nil(ref_ast->ref_gc);
     }
-    ast->ref_dot_owner = NULL;
 
 again:
     switch (owner->type) {
     default:
-        ast_pushb_error(ast, "can't call %s function", method_name);
+        ast_pushb_error(ref_ast, "can't call %s function", method_name);
         return NULL;
         break;
     case OBJ_TYPE_STRING: {
@@ -27,23 +32,23 @@ again:
         } else if (cstr_eq(method_name, "camel")) {
             result = str_camel(owner->string);
         } else {
-            ast_pushb_error(ast, "invalid method name \"%s\" for call basic string function", method_name);
+            ast_pushb_error(ref_ast, "invalid method name \"%s\" for call basic string function", method_name);
             return NULL;
         }
-        return obj_new_str(ast->ref_gc, result);
+        return obj_new_str(ref_ast->ref_gc, result);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        owner = ctx_find_var_ref(ast->context, obj_getc_idn_name(owner));
+        owner = ctx_find_var_ref(ref_ast->context, obj_getc_idn_name(owner));
         if (!owner) {
-            ast_pushb_error(ast, "not found \"%s\" in %s function", owner->identifier, method_name);
+            ast_pushb_error(ref_ast, "not found \"%s\" in %s function", owner->identifier, method_name);
             return NULL;
         }
         goto again;
     } break;
     case OBJ_TYPE_INDEX: {
-        owner = refer_index_obj_with_ref(ast, owner);
+        owner = refer_index_obj_with_ref(ref_ast, owner);
         if (!owner) {
-            ast_pushb_error(ast, "failed to refer index");
+            ast_pushb_error(ref_ast, "failed to refer index");
             return NULL;
         }
         goto again;
@@ -51,32 +56,32 @@ again:
     }
 
     assert(0 && "impossible. failed to invoke basic string function");
-    return obj_new_nil(ast->ref_gc);
+    return obj_new_nil(ref_ast->ref_gc);
 }
 
 static object_t *
-builtin_string_lower(ast_t *ast, object_t *_) {
-    return call_basic_str_func(ast, "lower");
+builtin_string_lower(builtin_func_args_t *args) {
+    return call_basic_str_func("lower", args);
 }
 
 static object_t *
-builtin_string_upper(ast_t *ast, object_t *_) {
-    return call_basic_str_func(ast, "upper");
+builtin_string_upper(builtin_func_args_t *args) {
+    return call_basic_str_func("upper", args);
 }
 
 static object_t *
-builtin_string_capitalize(ast_t *ast, object_t *_) {
-    return call_basic_str_func(ast, "capitalize");
+builtin_string_capitalize(builtin_func_args_t *args) {
+    return call_basic_str_func("capitalize", args);
 }
 
 static object_t *
-builtin_string_snake(ast_t *ast, object_t *_) {
-    return call_basic_str_func(ast, "snake");
+builtin_string_snake(builtin_func_args_t *args) {
+    return call_basic_str_func("snake", args);
 }
 
 static object_t *
-builtin_string_camel(ast_t *ast, object_t *_) {
-    return call_basic_str_func(ast, "camel");
+builtin_string_camel(builtin_func_args_t *args) {
+    return call_basic_str_func("camel", args);
 }
 
 static builtin_func_info_t

@@ -413,7 +413,6 @@ ast_clear(ast_t *self) {
     // do not null clear
 
     self->ref_gc = NULL;  // do not delete
-    self->ref_dot_owner = NULL;  // do not delete
     self->import_level = 0;
 
     errstack_clear(self->error_stack);
@@ -464,8 +463,6 @@ ast_dump(const ast_t *self, FILE *fout) {
     }
 
     fprintf(fout, "ast[%p]\n", self);
-    fprintf(fout, "ref_dot_owner[%p]\n", self->ref_dot_owner);
-    obj_dump(self->ref_dot_owner, fout);
     fprintf(fout, "context[%p]\n", self->context);
     ctx_dump(self->context, fout);
 }
