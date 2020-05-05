@@ -23409,6 +23409,63 @@ cdcmd_tests[] = {
 };
 
 /**************
+* pwd command *
+**************/
+
+static void
+test_pwdcmd_default(void) {
+    config_t *config = config_new();
+    int argc = 1;
+    char *argv[] = {
+        "pwd",
+        NULL,
+    };
+
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/path/to/dir"));
+
+    char stdout_buf[1024];
+    setbuf(stdout, stdout_buf);
+
+    pwdcmd_t *pwdcmd = pwdcmd_new(config, argc, argv);
+    pwdcmd_run(pwdcmd);
+    pwdcmd_del(pwdcmd);
+
+    setbuf(stdout, NULL);
+
+    assert(strstr(stdout_buf, "/tests/path/to/dir"));
+}
+
+static void
+test_pwdcmd_nomalize_opt(void) {
+    config_t *config = config_new();
+    int argc = 2;
+    char *argv[] = {
+        "pwd",
+        "-n",
+        NULL,
+    };
+
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/path/to/dir"));
+
+    char stdout_buf[1024];
+    setbuf(stdout, stdout_buf);
+
+    pwdcmd_t *pwdcmd = pwdcmd_new(config, argc, argv);
+    pwdcmd_run(pwdcmd);
+    pwdcmd_del(pwdcmd);
+
+    setbuf(stdout, NULL);
+
+    assert(strstr(stdout_buf, "/tests/path/to/dir"));
+}
+
+static const struct testcase
+pwdcmd_tests[] = {
+    {"default", test_pwdcmd_default},
+    {"normalize", test_pwdcmd_nomalize_opt},
+};
+
+/**************
 * cat command *
 **************/
 
@@ -23611,6 +23668,7 @@ testmodules[] = {
     // commands
     {"cd", cdcmd_tests},
     {"cat", catcmd_tests},
+    {"pwd", pwdcmd_tests},
 
     // lib
     {"cstring_array", cstrarr_tests},
