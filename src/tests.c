@@ -23406,6 +23406,7 @@ test_cdcmd_default(void) {
 static const struct testcase
 cdcmd_tests[] = {
     {"default", test_cdcmd_default},
+    {0},
 };
 
 /**************
@@ -23456,13 +23457,18 @@ test_pwdcmd_nomalize_opt(void) {
 
     setbuf(stdout, NULL);
 
+#ifdef _TESTS_WINDOWS
+    assert(strstr(stdout_buf, "\\tests\\path\\to\\dir"));
+#else
     assert(strstr(stdout_buf, "/tests/path/to/dir"));
+#endif
 }
 
 static const struct testcase
 pwdcmd_tests[] = {
     {"default", test_pwdcmd_default},
     {"normalize", test_pwdcmd_nomalize_opt},
+    {0},
 };
 
 /**************
