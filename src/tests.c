@@ -19648,6 +19648,76 @@ test_trv_elif_stmt_6(void) {
 }
 
 static void
+test_trv_elif_stmt_7(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   if 0:\n"
+    "       puts(1)\n"
+    "   elif 1:\n"
+    "@}1{@\n"
+    "@}2{@\n"
+    "@}3{@\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "123"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   if 0:\n"
+    "       puts(1)\n"
+    "   elif 1:\n"
+    "@}1{@\n"
+    "       if 0:\n"
+    "       elif 1:\n"
+    "@}2{@"
+    "       end\n"
+    "@}3{@\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "123"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   if 0:\n"
+    "       puts(1)\n"
+    "   elif 1:\n"
+    "@}1{@\n"
+    "@}2{@\n"
+    "       if 0:\n"
+    "       elif 1:\n"
+    "@}3{@\n"
+    "@}4{@\n"
+    "       end\n"
+    "@}5{@\n"
+    "@}6{@\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "123456"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_else_stmt_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -22832,10 +22902,13 @@ traverser_tests[] = {
     {"trv_elif_stmt_4", test_trv_elif_stmt_4},
     {"trv_elif_stmt_5", test_trv_elif_stmt_5},
     {"trv_elif_stmt_6", test_trv_elif_stmt_6},
-    {"trv_else_stmt_0", test_trv_elif_stmt_0},
+    {"trv_elif_stmt_7", test_trv_elif_stmt_7},
+
+    {"trv_else_stmt_0", test_trv_elif_stmt_0},  // what happen?
     {"trv_else_stmt_1", test_trv_elif_stmt_1},
     {"trv_else_stmt_2", test_trv_elif_stmt_2},
     {"trv_else_stmt_3", test_trv_elif_stmt_3},
+
     {"trv_for_stmt_0", test_trv_for_stmt_0},
     {"trv_for_stmt_1", test_trv_for_stmt_1},
     {"trv_for_stmt_2", test_trv_for_stmt_2},
