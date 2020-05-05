@@ -118,9 +118,9 @@ importer_import_as(
         return NULL;
     }
 
-    ctx_pushb_stdout_buf(dstctx, ctx_getc_stdout_buf(modobj->module.ast->context));
-    ctx_pushb_stderr_buf(dstctx, ctx_getc_stderr_buf(modobj->module.ast->context));
-    ctx_clear_stdout_buf(modobj->module.ast->context);
+    ctx_pushb_stdout_buf(dstctx, ctx_getc_stdout_buf(modobj->module.ast->ref_context));
+    ctx_pushb_stderr_buf(dstctx, ctx_getc_stderr_buf(modobj->module.ast->ref_context));
+    ctx_clear_stdout_buf(modobj->module.ast->ref_context);
 
     object_dict_t *dst_global_varmap = ctx_get_varmap_at_global(dstctx);
     objdict_move(dst_global_varmap, alias, mem_move(modobj));
@@ -149,8 +149,8 @@ importer_from_import(
         return NULL;
     }
 
-    ctx_pushb_stdout_buf(dstctx, ctx_getc_stdout_buf(modobj->module.ast->context));
-    ctx_clear_stdout_buf(modobj->module.ast->context);
+    ctx_pushb_stdout_buf(dstctx, ctx_getc_stdout_buf(modobj->module.ast->ref_context));
+    ctx_clear_stdout_buf(modobj->module.ast->ref_context);
 
 /**
  * extract import-var from import-vars
@@ -184,7 +184,7 @@ importer_from_import(
         }
 
         // get object from imported module
-        object_t *objinmod = ctx_find_var_ref(modobj->module.ast->context, objname);
+        object_t *objinmod = ctx_find_var_ref(modobj->module.ast->ref_context, objname);
         if (!objinmod) {
             importer_set_error(self,
                 "\"%s\" is can't import from module \"%s\"",

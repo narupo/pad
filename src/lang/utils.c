@@ -56,7 +56,7 @@ pull_in_ref_by(const object_t *idn_obj) {
 
     ast_t *ref_ast = obj_get_idn_ref_ast(idn_obj);
     const char *idn = obj_getc_idn_name(idn_obj);
-    object_t *ref = ctx_find_var_ref(ref_ast->context, idn);
+    object_t *ref = ctx_find_var_ref(ref_ast->ref_context, idn);
     if (!ref) {
         // do not push error stack
         return NULL;
@@ -247,7 +247,7 @@ move_obj_at_cur_varmap(
         return;
     }
 
-    object_dict_t *varmap = ctx_get_varmap(ast->context);
+    object_dict_t *varmap = ctx_get_varmap(ast->ref_context);
     objdict_move(varmap, identifier, mem_move(move_obj));
 }
 
@@ -266,7 +266,7 @@ set_ref_at_cur_varmap(
         return;
     }
 
-    object_dict_t *varmap = ctx_get_varmap(ast->context);
+    object_dict_t *varmap = ctx_get_varmap(ast->ref_context);
     object_t *popped = objdict_pop(varmap, identifier);
     if (popped != ref) {
         obj_inc_ref(ref);
@@ -517,7 +517,7 @@ parse_bool(ast_t *ast, const object_t *obj) {
     case OBJ_TYPE_BOOL: return obj->boolean; break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(obj);
-        object_t *obj = ctx_find_var_ref(ast->context, idn);
+        object_t *obj = ctx_find_var_ref(ast->ref_context, idn);
         if (!obj) {
             ast_pushb_error(ast, "\"%s\" is not defined in if statement", idn);
             return false;

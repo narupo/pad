@@ -103,7 +103,7 @@ builtin_eputs(builtin_func_args_t *fargs) {
     object_array_t *args = actual_args->objarr;
 
     if (!objarr_len(args)) {
-        ctx_pushb_stderr_buf(ref_ast->context, "\n");
+        ctx_pushb_stderr_buf(ref_ast->ref_context, "\n");
         return obj_new_int(ref_ast->ref_gc, 0);
     }
 
@@ -119,7 +119,7 @@ builtin_eputs(builtin_func_args_t *fargs) {
             continue;
         }
         str_pushb(s, ' ');
-        ctx_pushb_stderr_buf(ref_ast->context, str_getc(s));
+        ctx_pushb_stderr_buf(ref_ast->ref_context, str_getc(s));
         str_del(s);
     }
     if (arrlen) {
@@ -131,12 +131,12 @@ builtin_eputs(builtin_func_args_t *fargs) {
         if (!s) {
             goto done;
         }
-        ctx_pushb_stderr_buf(ref_ast->context, str_getc(s));
+        ctx_pushb_stderr_buf(ref_ast->ref_context, str_getc(s));
         str_del(s);
     }
 
 done:
-    ctx_pushb_stderr_buf(ref_ast->context, "\n");
+    ctx_pushb_stderr_buf(ref_ast->ref_context, "\n");
     return obj_new_int(ref_ast->ref_gc, arrlen);
 }
 
@@ -151,7 +151,7 @@ builtin_puts(builtin_func_args_t *fargs) {
     object_array_t *args = actual_args->objarr;
 
     if (!objarr_len(args)) {
-        ctx_pushb_stdout_buf(ref_ast->context, "\n");
+        ctx_pushb_stdout_buf(ref_ast->ref_context, "\n");
         return obj_new_int(ref_ast->ref_gc, 0);
     }
 
@@ -171,7 +171,7 @@ builtin_puts(builtin_func_args_t *fargs) {
             continue;
         }
         str_pushb(s, ' ');
-        ctx_pushb_stdout_buf(ref_ast->context, str_getc(s));
+        ctx_pushb_stdout_buf(ref_ast->ref_context, str_getc(s));
         str_del(s);
     }
     if (arrlen) {
@@ -187,12 +187,12 @@ builtin_puts(builtin_func_args_t *fargs) {
         if (!s) {
             goto done;
         }
-        ctx_pushb_stdout_buf(ref_ast->context, str_getc(s));
+        ctx_pushb_stdout_buf(ref_ast->ref_context, str_getc(s));
         str_del(s);
     }
 
 done:
-    ctx_pushb_stdout_buf(ref_ast->context, "\n");
+    ctx_pushb_stdout_buf(ref_ast->ref_context, "\n");
     return obj_new_int(ref_ast->ref_gc, arrlen);
 }
 
@@ -283,7 +283,7 @@ builtin_die(builtin_func_args_t *fargs) {
     obj_del(result);
 
     fflush(stdout);
-    fprintf(stderr, "%s", ctx_getc_stderr_buf(ref_ast->context));
+    fprintf(stderr, "%s", ctx_getc_stderr_buf(ref_ast->ref_context));
     fflush(stderr);
 
     exit(1);
@@ -310,10 +310,10 @@ builtin_exit(builtin_func_args_t *fargs) {
         return NULL;
     }
 
-    printf("%s", ctx_getc_stderr_buf(ref_ast->context));
+    printf("%s", ctx_getc_stderr_buf(ref_ast->ref_context));
     fflush(stderr);
 
-    printf("%s", ctx_getc_stdout_buf(ref_ast->context));
+    printf("%s", ctx_getc_stdout_buf(ref_ast->ref_context));
     fflush(stdout);
 
     objint_t exit_code = codeobj->lvalue;
@@ -340,7 +340,7 @@ builtin_module_new(const config_t *ref_config, gc_t *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = ast_new(ref_config);
     context_t *ctx = ctx_new(ref_gc);
-    ast->context = ctx;
+    ast->ref_context = ctx;
 
     return obj_new_module_by(
         ref_gc,

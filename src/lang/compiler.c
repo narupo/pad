@@ -12,7 +12,7 @@
 
 #define ready() \
     if (ast->debug) { \
-        token_t *t = *ast->ptr; \
+        token_t *t = *ast->ref_ptr; \
         fprintf( \
             stderr, \
             "debug: %5d: %*s: %3d: %s: %s\n", \
@@ -25,13 +25,13 @@
         ); \
         fflush(stderr); \
     } \
-    if (!*ast->ptr) { \
+    if (!*ast->ref_ptr) { \
         return NULL; \
     } \
 
 #define return_parse(ret) \
     if (ast->debug) { \
-        token_t *t = *ast->ptr; \
+        token_t *t = *ast->ref_ptr; \
         fprintf( \
             stderr, \
             "debug: %5d: %*s: %3d: return %p: %s: %s\n", \
@@ -57,7 +57,7 @@
             __func__, \
             dep, \
             msg, \
-            token_type_to_str(*ast->ptr), \
+            token_type_to_str(*ast->ref_ptr), \
             ast_getc_last_error_message(ast) \
         ); \
     } \
@@ -124,17 +124,17 @@ cc_expr(ast_t *ast, int dep);
 ast_t *
 cc_compile(ast_t *ast, token_t *ref_tokens[]) {
     ast->ref_tokens = ref_tokens;
-    ast->ptr = ref_tokens;
+    ast->ref_ptr = ref_tokens;
     ast->root = cc_program(ast, 0);
     return ast;
 }
 
 static void
 cc_skip_newlines(ast_t *ast) {
-    for (; *ast->ptr; ) {
-        token_t *t = *ast->ptr++;
+    for (; *ast->ref_ptr; ) {
+        token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_NEWLINE) {
-            ast->ptr--;
+            ast->ref_ptr--;
             return;
         }
     }
@@ -144,12 +144,12 @@ static node_t *
 cc_assign(ast_t *ast, int dep) {
     ready();
     declare(node_assign_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -170,11 +170,11 @@ cc_assign(ast_t *ast, int dep) {
 
     nodearr_moveb(cur->nodearr, lhs);
 
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("");
     }
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_OP_ASS) {
         return_cleanup("");
     }
@@ -192,13 +192,13 @@ cc_assign(ast_t *ast, int dep) {
     nodearr_moveb(cur->nodearr, rhs);
 
     for (;;) {
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_parse(node_new(NODE_TYPE_ASSIGN, cur));
         }
 
-        token_t *t = *ast->ptr++;
+        token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_OP_ASS) {
-            ast->ptr--;
+            ast->ref_ptr--;
             return_parse(node_new(NODE_TYPE_ASSIGN, cur));
         }
         check("read =");
@@ -222,12 +222,12 @@ static node_t *
 cc_assign_list(ast_t *ast, int dep) {
     ready();
     declare(node_assign_list_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -249,13 +249,13 @@ cc_assign_list(ast_t *ast, int dep) {
     nodearr_moveb(cur->nodearr, first);
 
     for (;;) {
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_parse(node_new(NODE_TYPE_ASSIGN_LIST, cur));
         }
 
-        token_t *t = *ast->ptr++;
+        token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_COMMA) {
-            ast->ptr--;
+            ast->ref_ptr--;
             return_parse(node_new(NODE_TYPE_ASSIGN_LIST, cur));
         }
         check("read ,");
@@ -279,11 +279,11 @@ static node_t *
 cc_formula(ast_t *ast, int dep) {
     ready();
     declare(node_formula_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->assign_list); \
         ast_del_nodes(ast, cur->multi_assign); \
         free(cur); \
@@ -318,12 +318,12 @@ static node_t *
 cc_multi_assign(ast_t *ast, int dep) {
     ready();
     declare(node_multi_assign_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -348,13 +348,13 @@ cc_multi_assign(ast_t *ast, int dep) {
     nodearr_moveb(cur->nodearr, node);
 
     for (;;) {
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_parse(node_new(NODE_TYPE_MULTI_ASSIGN, cur));
         }
 
-        token_t *t = *ast->ptr++;
+        token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_OP_ASS) {
-            ast->ptr--;
+            ast->ref_ptr--;
             return_parse(node_new(NODE_TYPE_MULTI_ASSIGN, cur));
         }
 
@@ -377,12 +377,12 @@ static node_t *
 cc_test_list(ast_t *ast, int dep) {
     ready();
     declare(node_test_list_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -406,13 +406,13 @@ cc_test_list(ast_t *ast, int dep) {
     nodearr_moveb(cur->nodearr, lhs);
 
     for (;;) {
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return node_new(NODE_TYPE_TEST_LIST, cur);
         }
 
-        token_t *t = *ast->ptr++;
+        token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_COMMA) {
-            ast->ptr--;
+            ast->ref_ptr--;
             return node_new(NODE_TYPE_TEST_LIST, cur);
         }
         check("read ,");
@@ -435,12 +435,12 @@ static node_t *
 cc_call_args(ast_t *ast, int dep) {
     ready();
     declare(node_call_args_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -464,13 +464,13 @@ cc_call_args(ast_t *ast, int dep) {
     nodearr_moveb(cur->nodearr, lhs);
 
     for (;;) {
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return node_new(NODE_TYPE_CALL_ARGS, cur);
         }
 
-        token_t *t = *ast->ptr++;
+        token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_COMMA) {
-            ast->ptr--;
+            ast->ref_ptr--;
             return node_new(NODE_TYPE_CALL_ARGS, cur);
         }
         check("read ,");
@@ -494,11 +494,11 @@ cc_for_stmt(ast_t *ast, int dep) {
     ready();
     declare(node_for_stmt_t, cur);
     cur->contents = nodearr_new();
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->init_formula); \
         ast_del_nodes(ast, cur->comp_formula); \
         ast_del_nodes(ast, cur->update_formula); \
@@ -510,7 +510,7 @@ cc_for_stmt(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_STMT_FOR) {
         return_cleanup("");
     }
@@ -518,45 +518,45 @@ cc_for_stmt(ast_t *ast, int dep) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("reached EOF in for statement");
     }
 
-    t = *ast->ptr++;
+    t = *ast->ref_ptr++;
     if (t->type == TOKEN_TYPE_COLON) {
         // for : [ (( '@}' blocks '{@' ) | elems) ]* end
         check("read colon");
 
         // read contents start
         for (;;) {
-            if (!*ast->ptr) {
+            if (!*ast->ref_ptr) {
                 return_cleanup("reached EOF in for statement");
             }
 
             check("skip newlines");
             cc_skip_newlines(ast);
-            if (!*ast->ptr) {
+            if (!*ast->ref_ptr) {
                 return_cleanup("reached EOF in for statement");
             }
 
             // end?
-            t = *ast->ptr++;
+            t = *ast->ref_ptr++;
             if (t->type == TOKEN_TYPE_STMT_END) {
                 check("read 'end'");
                 break;
             } else {
-                --ast->ptr;
+                --ast->ref_ptr;
             }
 
             // read blocks or elems
-            t = *ast->ptr++;
+            t = *ast->ref_ptr++;
             if (t->type == TOKEN_TYPE_RBRACEAT) {
                 // read blocks
                 check("read '@}'");
 
                 check("skip newlines");
                 cc_skip_newlines(ast);
-                if (!*ast->ptr) {
+                if (!*ast->ref_ptr) {
                     return_cleanup("reached EOF in for statement");
                 }
 
@@ -571,11 +571,11 @@ cc_for_stmt(ast_t *ast, int dep) {
 
                 check("skip newlines");
                 cc_skip_newlines(ast);
-                if (!*ast->ptr) {
+                if (!*ast->ref_ptr) {
                     return_cleanup("reached EOF in for statement");
                 }
 
-                t = *ast->ptr++;
+                t = *ast->ref_ptr++;
                 if (t->type == TOKEN_TYPE_LBRACEAT) {
                     check("read '{@'");
                 } else {
@@ -583,7 +583,7 @@ cc_for_stmt(ast_t *ast, int dep) {
                 }
             } else {
                 // read elems
-                --ast->ptr;
+                --ast->ref_ptr;
                 node_t *elems = cc_elems(ast, dep+1);
                 if (ast_has_errors(ast)) {
                     return_cleanup("");
@@ -599,11 +599,11 @@ cc_for_stmt(ast_t *ast, int dep) {
         // for comp_formula : @} blocks {@
         // for init_formula ; comp_formula ; test_list : elems end
         // for init_formula ; comp_formula ; test_list : @} blocks {@ end
-        ast->ptr--;
+        ast->ref_ptr--;
 
         check("skip newlines");
         cc_skip_newlines(ast);
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_cleanup("reached EOF in for statement");
         }
 
@@ -618,13 +618,13 @@ cc_for_stmt(ast_t *ast, int dep) {
 
         check("skip newlines");
         cc_skip_newlines(ast);
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_cleanup("reached EOF in for statement");
         }
 
-        t = *ast->ptr++;
+        t = *ast->ref_ptr++;
         if (t->type == TOKEN_TYPE_COLON) {
-            ast->ptr--;
+            ast->ref_ptr--;
             // for <comp_formula> : elems end
             cur->comp_formula = cur->init_formula;
             cur->init_formula = NULL;
@@ -634,7 +634,7 @@ cc_for_stmt(ast_t *ast, int dep) {
 
             check("skip newlines");
             cc_skip_newlines(ast);
-            if (!*ast->ptr) {
+            if (!*ast->ref_ptr) {
                 return_cleanup("reached EOF in for statement");
             }
 
@@ -647,11 +647,11 @@ cc_for_stmt(ast_t *ast, int dep) {
 
             check("skip newlines");
             cc_skip_newlines(ast);
-            if (!*ast->ptr) {
+            if (!*ast->ref_ptr) {
                 return_cleanup("reached EOF in for statement");
             }
 
-            t = *ast->ptr++;
+            t = *ast->ref_ptr++;
             if (t->type != TOKEN_TYPE_SEMICOLON) {
                 return_cleanup("syntax error. not found semicolon (2)");
             }
@@ -659,7 +659,7 @@ cc_for_stmt(ast_t *ast, int dep) {
 
             check("skip newlines");
             cc_skip_newlines(ast);
-            if (!*ast->ptr) {
+            if (!*ast->ref_ptr) {
                 return_cleanup("reached EOF in for statement");
             }
 
@@ -677,11 +677,11 @@ cc_for_stmt(ast_t *ast, int dep) {
 
         check("skip newlines");
         cc_skip_newlines(ast);
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_cleanup("reached EOF in for statement");
         }
 
-        t = *ast->ptr++;
+        t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_COLON) {
             return_cleanup("syntax error. not found colon in for statement")
         }
@@ -689,34 +689,34 @@ cc_for_stmt(ast_t *ast, int dep) {
 
         // read contents start
         for (;;) {
-            if (!*ast->ptr) {
+            if (!*ast->ref_ptr) {
                 return_cleanup("reached EOF in for statement");
             }
 
             check("skip newlines");
             cc_skip_newlines(ast);
-            if (!*ast->ptr) {
+            if (!*ast->ref_ptr) {
                 return_cleanup("reached EOF in for statement");
             }
 
             // end?
-            t = *ast->ptr++;
+            t = *ast->ref_ptr++;
             if (t->type == TOKEN_TYPE_STMT_END) {
                 check("read 'end'");
                 break;
             } else {
-                --ast->ptr;
+                --ast->ref_ptr;
             }
 
             // read blocks or elems
-            t = *ast->ptr++;
+            t = *ast->ref_ptr++;
             if (t->type == TOKEN_TYPE_RBRACEAT) {
                 // read blocks
                 check("read '@}'");
 
                 check("skip newlines");
                 cc_skip_newlines(ast);
-                if (!*ast->ptr) {
+                if (!*ast->ref_ptr) {
                     return_cleanup("reached EOF in for statement");
                 }
 
@@ -731,11 +731,11 @@ cc_for_stmt(ast_t *ast, int dep) {
 
                 check("skip newlines");
                 cc_skip_newlines(ast);
-                if (!*ast->ptr) {
+                if (!*ast->ref_ptr) {
                     return_cleanup("reached EOF in for statement");
                 }
 
-                t = *ast->ptr++;
+                t = *ast->ref_ptr++;
                 if (t->type == TOKEN_TYPE_LBRACEAT) {
                     check("read '{@'");
                 } else {
@@ -743,7 +743,7 @@ cc_for_stmt(ast_t *ast, int dep) {
                 }
             } else {
                 // read elems
-                --ast->ptr;
+                --ast->ref_ptr;
                 node_t *elems = cc_elems(ast, dep+1);
                 if (ast_has_errors(ast)) {
                     return_cleanup("");
@@ -763,11 +763,11 @@ static node_t *
 cc_break_stmt(ast_t *ast, int dep) {
     ready();
     declare(node_break_stmt_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -775,7 +775,7 @@ cc_break_stmt(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_STMT_BREAK) {
         return_cleanup("");
     }
@@ -788,11 +788,11 @@ static node_t *
 cc_continue_stmt(ast_t *ast, int dep) {
     ready();
     declare(node_continue_stmt_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -800,7 +800,7 @@ cc_continue_stmt(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_STMT_CONTINUE) {
         return_cleanup("");
     }
@@ -813,11 +813,11 @@ static node_t *
 cc_return_stmt(ast_t *ast, int dep) {
     ready();
     declare(node_return_stmt_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -825,7 +825,7 @@ cc_return_stmt(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_STMT_RETURN) {
         // not error
         return_cleanup("");
@@ -845,11 +845,11 @@ static node_t *
 cc_augassign(ast_t *ast, int dep) {
     ready();
     declare(node_augassign_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -857,7 +857,7 @@ cc_augassign(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     switch (t->type) {
     default:
         return_cleanup("");
@@ -876,11 +876,11 @@ static node_t *
 cc_identifier(ast_t *ast, int dep) {
     ready();
     declare(node_identifier_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -888,7 +888,7 @@ cc_identifier(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_IDENTIFIER) {
         return_cleanup("");
     }
@@ -904,11 +904,11 @@ static node_t *
 cc_string(ast_t *ast, int dep) {
     ready();
     declare(node_string_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -916,7 +916,7 @@ cc_string(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_DQ_STRING) {
         return_cleanup("");
     }
@@ -933,11 +933,11 @@ cc_simple_assign(ast_t *ast, int dep) {
     ready();
     declare(node_simple_assign_t, cur);
     cur->nodearr = nodearr_new();
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -962,13 +962,13 @@ cc_simple_assign(ast_t *ast, int dep) {
     nodearr_moveb(cur->nodearr, lhs);
 
     for (;;) {
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_parse(node_new(NODE_TYPE_SIMPLE_ASSIGN, cur));
         }
 
-        token_t *t = *ast->ptr++;
+        token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_OP_ASS) {
-            ast->ptr--;
+            ast->ref_ptr--;
             return_parse(node_new(NODE_TYPE_SIMPLE_ASSIGN, cur));
         }
         check("read '='")
@@ -994,11 +994,11 @@ cc_array_elems(ast_t *ast, int dep) {
     ready();
     declare(node_array_elems_t, cur);
     cur->nodearr = nodearr_new();
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -1027,18 +1027,18 @@ cc_array_elems(ast_t *ast, int dep) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("reached EOF in array elems");
     }
 
     for (;;) {
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_ok;
         }
 
-        token_t *t = *ast->ptr++;
+        token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_COMMA) {
-            ast->ptr--;
+            ast->ref_ptr--;
             return_ok;
         }
         check("read ','")
@@ -1046,7 +1046,7 @@ cc_array_elems(ast_t *ast, int dep) {
         check("skip newlines");
         cc_skip_newlines(ast);
 
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_cleanup("reached EOF in array elems");
         }
 
@@ -1071,11 +1071,11 @@ static node_t *
 cc_array(ast_t *ast, int dep) {
     ready();
     declare(node_array_t_, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->array_elems); \
         free(cur); \
         if (strlen(msg)) { \
@@ -1084,7 +1084,7 @@ cc_array(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_LBRACKET) {
         return_cleanup(""); // not error
     }
@@ -1093,7 +1093,7 @@ cc_array(ast_t *ast, int dep) {
     check("skip newlines");
     cc_skip_newlines(ast);
 
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("reached EOF in compile array");
     }
 
@@ -1106,11 +1106,11 @@ cc_array(ast_t *ast, int dep) {
     check("skip newlines");
     cc_skip_newlines(ast);
 
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("reached EOF in compile array");
     }
 
-    t = *ast->ptr++;
+    t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_RBRACKET) {
         return_cleanup("not found ']' in array");
     }
@@ -1123,11 +1123,11 @@ static node_t *
 cc_dict_elem(ast_t *ast, int dep) {
     ready();
     declare(node_dict_elem_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->key_simple_assign); \
         ast_del_nodes(ast, cur->value_simple_assign); \
         free(cur); \
@@ -1147,11 +1147,11 @@ cc_dict_elem(ast_t *ast, int dep) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("reached EOF in dict elem");
     }
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_COLON) {
         return_cleanup("not found colon in parse dict elem");
     }
@@ -1159,7 +1159,7 @@ cc_dict_elem(ast_t *ast, int dep) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("reached EOF in dict elem");
     }
 
@@ -1179,11 +1179,11 @@ cc_dict_elems(ast_t *ast, int dep) {
     ready();
     declare(node_dict_elems_t, cur);
     cur->nodearr = nodearr_new();
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -1211,26 +1211,26 @@ cc_dict_elems(ast_t *ast, int dep) {
     nodearr_moveb(cur->nodearr, lhs);
 
     for (;;) {
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_ok;
         }
 
         check("skip newlines");
         cc_skip_newlines(ast);
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_cleanup("reached EOF in dict elems");
         }
 
-        token_t *t = *ast->ptr++;
+        token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_COMMA) {
-            ast->ptr--;
+            ast->ref_ptr--;
             return_ok;
         }
         check("read ','")
 
         check("skip newlines");
         cc_skip_newlines(ast);
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_cleanup("reached EOF in dict elems");
         }
 
@@ -1255,11 +1255,11 @@ static node_t *
 cc_dict(ast_t *ast, int dep) {
     ready();
     declare(node_dict_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->dict_elems); \
         free(cur); \
         if (strlen(msg)) { \
@@ -1268,7 +1268,7 @@ cc_dict(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_LBRACE) {
         return_cleanup("");
     }
@@ -1276,7 +1276,7 @@ cc_dict(ast_t *ast, int dep) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("reached EOF in dict");
     }
 
@@ -1290,15 +1290,15 @@ cc_dict(ast_t *ast, int dep) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("reached EOF in dict");
     }
 
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("reached EOF in parse dict")
     }
 
-    t = *ast->ptr++;
+    t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_RBRACE) {
         return_cleanup("not found right brace in parse dict");
     }
@@ -1311,11 +1311,11 @@ static node_t *
 cc_nil(ast_t *ast, int dep) {
     ready();
     declare(node_nil_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -1323,7 +1323,7 @@ cc_nil(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_NIL) {
         return_cleanup("");
     }
@@ -1336,11 +1336,11 @@ static node_t *
 cc_digit(ast_t *ast, int dep) {
     ready();
     declare(node_digit_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -1348,7 +1348,7 @@ cc_digit(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_INTEGER) {
         return_cleanup("");
     }
@@ -1363,11 +1363,11 @@ static node_t *
 cc_false_(ast_t *ast, int dep) {
     ready();
     declare(node_false_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -1375,7 +1375,7 @@ cc_false_(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_FALSE) {
         return_cleanup("");
     }
@@ -1389,11 +1389,11 @@ static node_t *
 cc_true_(ast_t *ast, int dep) {
     ready();
     declare(node_true_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -1401,7 +1401,7 @@ cc_true_(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_TRUE) {
         return_cleanup("");
     }
@@ -1415,11 +1415,11 @@ static node_t *
 cc_atom(ast_t *ast, int dep) {
     ready();
     declare(node_atom_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->nil); \
         ast_del_nodes(ast, cur->true_); \
         ast_del_nodes(ast, cur->false_); \
@@ -1514,11 +1514,11 @@ static node_t *
 cc_factor(ast_t *ast, int dep) {
     ready();
     declare(node_factor_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->atom); \
         ast_del_nodes(ast, cur->formula); \
         free(cur); \
@@ -1535,11 +1535,11 @@ cc_factor(ast_t *ast, int dep) {
             return_cleanup("");
         }
 
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_cleanup("syntax error. reached EOF in factor");
         }
 
-        token_t *t = *ast->ptr++;
+        token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_LPAREN) {
             return_cleanup(""); // not error
         }
@@ -1554,11 +1554,11 @@ cc_factor(ast_t *ast, int dep) {
             return_cleanup("syntax error. not found content of ( )");
         }
 
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_cleanup("syntax error. reached EOF in factor (2)");
         }
 
-        t = *ast->ptr++;
+        t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_RPAREN) {
             return_cleanup("syntax error. not found ) in factor"); // not error
         }
@@ -1573,12 +1573,12 @@ static node_t *
 cc_asscalc(ast_t *ast, int dep) {
     ready();
     declare(node_asscalc_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -1634,11 +1634,11 @@ cc_index(ast_t *ast, int dep) {
     ready();
     declare(node_index_t, cur);
     cur->nodearr = nodearr_new();
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->factor); \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -1662,13 +1662,13 @@ cc_index(ast_t *ast, int dep) {
     }
 
     for (;;) {
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_cleanup("reached EOF in index");
         }
 
-        token_t *t = *ast->ptr++;
+        token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_LBRACKET) {
-            ast->ptr--;
+            ast->ref_ptr--;
             return_parse(node_new(NODE_TYPE_INDEX, cur));
         }
         check("read '['");
@@ -1682,11 +1682,11 @@ cc_index(ast_t *ast, int dep) {
             return_cleanup("not found index by index access");
         }
 
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_cleanup("reached EOF in index (2)");
         }
 
-        t = *ast->ptr++;
+        t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_RBRACKET) {
             return_cleanup("not found ']' in index");
         }
@@ -1702,12 +1702,12 @@ static node_t *
 cc_term(ast_t *ast, int dep) {
     ready();
     declare(node_term_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -1762,11 +1762,11 @@ static node_t *
 cc_negative(ast_t *ast, int dep) {
     ready();
     declare(node_negative_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->dot); \
         free(cur); \
         if (strlen(msg)) { \
@@ -1775,9 +1775,9 @@ cc_negative(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_OP_SUB) {
-        --ast->ptr;
+        --ast->ref_ptr;
     } else {
         check("read op sub in negative");
         cur->is_negative = true;
@@ -1799,12 +1799,12 @@ static node_t *
 cc_dot(ast_t *ast, int dep) {
     ready();
     declare(node_dot_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -1860,11 +1860,11 @@ cc_call(ast_t *ast, int dep) {
     ready();
     declare(node_call_t, cur);
     cur->call_args_list = nodearr_new();
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->index); \
         for (; nodearr_len(cur->call_args_list); ) { \
             node_t *node = nodearr_popb(cur->call_args_list); \
@@ -1887,17 +1887,17 @@ cc_call(ast_t *ast, int dep) {
         return_cleanup(""); // not error
     }
 
-    if (!ast->ptr) {
+    if (!ast->ref_ptr) {
         // not error. this is single index (not caller)
         node_t *node = node_new(NODE_TYPE_CALL, cur);
         return_parse(node);
     }
 
-    for (; ast->ptr; ) {
-        token_t *lparen = *ast->ptr++;
+    for (; ast->ref_ptr; ) {
+        token_t *lparen = *ast->ref_ptr++;
         if (lparen->type != TOKEN_TYPE_LPAREN) {
             // not error. this is single index (not caller) or caller
-            --ast->ptr;
+            --ast->ref_ptr;
             node_t *node = node_new(NODE_TYPE_CALL, cur);
             return_parse(node);
         }
@@ -1914,11 +1914,11 @@ cc_call(ast_t *ast, int dep) {
         }
         check("read call_args");
 
-        if (!ast->ptr) {
+        if (!ast->ref_ptr) {
             return_cleanup("not found right paren in call");
         }
 
-        token_t *rparen = *ast->ptr++;
+        token_t *rparen = *ast->ref_ptr++;
         if (rparen->type != TOKEN_TYPE_RPAREN) {
             return_cleanup("not found right paren in call (2)")
         }
@@ -1935,11 +1935,11 @@ static node_t *
 cc_dot_op(ast_t *ast, int dep) {
     ready();
     declare(node_dot_op_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -1947,7 +1947,7 @@ cc_dot_op(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     switch (t->type) {
     default:
         return_cleanup(""); // not error
@@ -1963,11 +1963,11 @@ static node_t *
 cc_mul_div_op(ast_t *ast, int dep) {
     ready();
     declare(node_mul_div_op_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -1975,7 +1975,7 @@ cc_mul_div_op(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     switch (t->type) {
     default:
         return_cleanup(""); // not error
@@ -1992,11 +1992,11 @@ static node_t *
 cc_add_sub_op(ast_t *ast, int dep) {
     ready();
     declare(node_add_sub_op_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -2004,7 +2004,7 @@ cc_add_sub_op(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     switch (t->type) {
     default:
         return_cleanup(""); // not error
@@ -2021,12 +2021,12 @@ static node_t *
 cc_expr(ast_t *ast, int dep) {
     ready();
     declare(node_expr_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -2081,11 +2081,11 @@ static node_t *
 cc_comp_op(ast_t *ast, int dep) {
     ready();
     declare(node_comp_op_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -2093,10 +2093,10 @@ cc_comp_op(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     switch (t->type) {
     default:
-        ast->ptr--;
+        ast->ref_ptr--;
         return_cleanup(""); // not error
         break;
     case TOKEN_TYPE_OP_EQ:
@@ -2132,12 +2132,12 @@ static node_t *
 cc_comparison(ast_t *ast, int dep) {
     ready();
     declare(node_comparison_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -2193,11 +2193,11 @@ static node_t *
 cc_not_test(ast_t *ast, int dep) {
     ready();
     declare(node_not_test_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->not_test); \
         ast_del_nodes(ast, cur->comparison); \
         free(cur); \
@@ -2207,7 +2207,7 @@ cc_not_test(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type == TOKEN_TYPE_OP_NOT) {
         check("call cc_not_test");
         cur->not_test = cc_not_test(ast, dep+1);
@@ -2218,7 +2218,7 @@ cc_not_test(ast_t *ast, int dep) {
             return_cleanup("syntax error. not found operand in not operator");
         }
     } else {
-        ast->ptr--;
+        ast->ref_ptr--;
 
         check("call cc_comparison");
         cur->comparison = cc_comparison(ast, dep+1);
@@ -2238,11 +2238,11 @@ cc_and_test(ast_t *ast, int dep) {
     ready();
     declare(node_and_test_t, cur);
     cur->nodearr = nodearr_new();
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -2264,13 +2264,13 @@ cc_and_test(ast_t *ast, int dep) {
     nodearr_moveb(cur->nodearr, lhs);
 
     for (;;) {
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_parse(node_new(NODE_TYPE_AND_TEST, cur));
         }
 
-        token_t *t = *ast->ptr++;
+        token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_OP_AND) {
-            ast->ptr--;
+            ast->ref_ptr--;
             return_parse(node_new(NODE_TYPE_AND_TEST, cur));
         }
         check("read 'or'")
@@ -2296,11 +2296,11 @@ cc_or_test(ast_t *ast, int dep) {
     ready();
     declare(node_or_test_t, cur);
     cur->nodearr = nodearr_new();
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -2322,13 +2322,13 @@ cc_or_test(ast_t *ast, int dep) {
     nodearr_moveb(cur->nodearr, lhs);
 
     for (;;) {
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_parse(node_new(NODE_TYPE_OR_TEST, cur));
         }
 
-        token_t *t = *ast->ptr++;
+        token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_OP_OR) {
-            ast->ptr--;
+            ast->ref_ptr--;
             return_parse(node_new(NODE_TYPE_OR_TEST, cur));
         }
         check("read 'or'")
@@ -2353,11 +2353,11 @@ static node_t *
 cc_test(ast_t *ast, int dep) {
     ready();
     declare(node_test_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->or_test); \
         free(cur); \
         if (strlen(msg)) { \
@@ -2379,11 +2379,11 @@ cc_else_stmt(ast_t *ast, int dep) {
     ready();
     declare(node_else_stmt_t, cur);
     cur->contents = nodearr_new();
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         nodearr_del(cur->contents); \
         free(cur); \
         if (strlen(msg)) { \
@@ -2392,7 +2392,7 @@ cc_else_stmt(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_STMT_ELSE) {
         return_cleanup("invalid token type in else statement");
     }
@@ -2400,11 +2400,11 @@ cc_else_stmt(ast_t *ast, int dep) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("reached EOF in if statement");
     }
 
-    t = *ast->ptr++;
+    t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_COLON) {
         return_cleanup("not found colon in else statement");
     }
@@ -2414,21 +2414,21 @@ cc_else_stmt(ast_t *ast, int dep) {
     for (;;) {
         check("skip newlines");
         cc_skip_newlines(ast);
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_cleanup("reached EOF in if statement");
         }
 
-        t = *ast->ptr++;
+        t = *ast->ref_ptr++;
         if (t->type == TOKEN_TYPE_STMT_END) {
-            --ast->ptr;  // don't read 'end' token. this token will be read in if-statement
+            --ast->ref_ptr;  // don't read 'end' token. this token will be read in if-statement
             check("found 'end'");
             break;
         } else {
-            --ast->ptr;
+            --ast->ref_ptr;
         }
 
         // blocks or elems?
-        t = *ast->ptr++;
+        t = *ast->ref_ptr++;
         if (t->type == TOKEN_TYPE_RBRACEAT) {
             // read blocks
             check("read '@}'");
@@ -2443,18 +2443,18 @@ cc_else_stmt(ast_t *ast, int dep) {
             }
             // allow null
 
-            if (!*ast->ptr) {
+            if (!*ast->ref_ptr) {
                 return_cleanup("reached EOF in else statement");
             }
 
-            t = *ast->ptr++;
+            t = *ast->ref_ptr++;
             if (t->type != TOKEN_TYPE_LBRACEAT) {
                 return_cleanup("not found '{@'");
             }
             check("read '{@'");
         } else {
             // read elems
-            --ast->ptr;
+            --ast->ref_ptr;
 
             check("call cc_elems");
             node_t *elems = cc_elems(ast, dep+1);
@@ -2476,12 +2476,12 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
     ready();
     declare(node_if_stmt_t, cur);
     cur->contents = nodearr_new();
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
     node_type_t node_type = NODE_TYPE_IF_STMT;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->test); \
         nodearr_del(cur->contents); \
         ast_del_nodes(ast, cur->elif_stmt); \
@@ -2493,7 +2493,7 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (type == 0) {
         if (t->type != TOKEN_TYPE_STMT_IF) {
             return_cleanup("");  // not error
@@ -2512,14 +2512,14 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("reached EOF in if statement");
     }
 
     check("call cc_test");
     cur->test = cc_test(ast, dep+1);
     if (!cur->test) {
-        ast->ptr = save_ptr;
+        ast->ref_ptr = save_ptr;
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
@@ -2529,11 +2529,11 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("reached EOF in if statement");
     }
 
-    t = *ast->ptr++;
+    t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_COLON) {
         return_cleanup("syntax error. not found colon in if statement");
     }
@@ -2543,22 +2543,22 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
     for (;;) {
         check("skip newlines");
         cc_skip_newlines(ast);
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_cleanup("reached EOF in if statement");
         }
 
-        t = *ast->ptr++;
+        t = *ast->ref_ptr++;
         if (t->type == TOKEN_TYPE_STMT_END) {
             if (node_type == NODE_TYPE_ELIF_STMT) {
                 // do not read 'end' token because this token will read in if statement
-                --ast->ptr;
+                --ast->ref_ptr;
                 check("found 'end'")
             } else {
                 check("read 'end'");
             }
             break;
         } else if (t->type == TOKEN_TYPE_STMT_ELIF) {
-            --ast->ptr;
+            --ast->ref_ptr;
             node_t *elif = cc_if_stmt(ast, 1, dep+1);
             if (!elif || ast_has_errors(ast)) {
                 return_cleanup("failed to compile elif statement");
@@ -2567,7 +2567,7 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
             check("read elif");
             continue;
         } else if (t->type == TOKEN_TYPE_STMT_ELSE) {
-            --ast->ptr;
+            --ast->ref_ptr;
             node_t *else_ = cc_else_stmt(ast, dep+1);
             if (!else_ || ast_has_errors(ast)) {
                 return_cleanup("failed to compile else statement");
@@ -2576,17 +2576,17 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
             check("read else");
             continue;
         } else {
-            --ast->ptr;
+            --ast->ref_ptr;
         }
 
         // read blocks or elems
-        t = *ast->ptr++;
+        t = *ast->ref_ptr++;
         if (t->type == TOKEN_TYPE_RBRACEAT) {
             check("read '@}'");
 
             check("skip newlines");
             cc_skip_newlines(ast);
-            if (!*ast->ptr) {
+            if (!*ast->ref_ptr) {
                 return_cleanup("reached EOF in if statement");
             }
 
@@ -2602,17 +2602,17 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
 
             check("skip newlines");
             cc_skip_newlines(ast);
-            if (!*ast->ptr) {
+            if (!*ast->ref_ptr) {
                 return_cleanup("reached EOF in if statement");
             }
 
-            t = *ast->ptr++;
+            t = *ast->ref_ptr++;
             if (t->type != TOKEN_TYPE_LBRACEAT) {
                 return_cleanup("not found '{@' in if statement");
             }
             check("read '{@'");
         } else {
-            --ast->ptr;
+            --ast->ref_ptr;
 
             check("call cc_elems");
             node_t *elems = cc_elems(ast, dep+1);
@@ -2633,11 +2633,11 @@ static node_t *
 cc_import_as_stmt(ast_t *ast, int dep) {
     ready();
     declare(node_import_as_stmt_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->path); \
         ast_del_nodes(ast, cur->alias); \
         free(cur); \
@@ -2650,7 +2650,7 @@ cc_import_as_stmt(ast_t *ast, int dep) {
 #undef return_ok
 #define return_ok return_parse(node_new(NODE_TYPE_IMPORT_AS_STMT, cur))
 
-    const token_t *tok = *ast->ptr++;
+    const token_t *tok = *ast->ref_ptr++;
     if (tok->type != TOKEN_TYPE_STMT_IMPORT) {
         return_cleanup(""); // not error
     }
@@ -2662,11 +2662,11 @@ cc_import_as_stmt(ast_t *ast, int dep) {
         return_cleanup("not found path in compile import as statement");
     }
 
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("reached EOF in compile import as statement");
     }
 
-    tok = *ast->ptr++;
+    tok = *ast->ref_ptr++;
     if (tok->type != TOKEN_TYPE_AS) {
         return_cleanup("not found keyword 'as' in compile import as statement");
     }
@@ -2685,11 +2685,11 @@ static node_t *
 cc_import_var(ast_t *ast, int dep) {
     ready();
     declare(node_import_var_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->identifier); \
         ast_del_nodes(ast, cur->alias); \
         free(cur); \
@@ -2711,13 +2711,13 @@ cc_import_var(ast_t *ast, int dep) {
     }
     check("readed first identifier");
 
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("reached EOF in compile import variable");
     }
 
-    const token_t *tok = *ast->ptr++;
+    const token_t *tok = *ast->ref_ptr++;
     if (tok->type != TOKEN_TYPE_AS) {
-        --ast->ptr;
+        --ast->ref_ptr;
         return_ok;
     }
     check("readed 'as'");
@@ -2739,11 +2739,11 @@ cc_import_vars(ast_t *ast, int dep) {
     ready();
     declare(node_import_vars_t, cur);
     cur->nodearr = nodearr_new();
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (int32_t i = 0; i < nodearr_len(cur->nodearr); ++i) { \
             node_t *node = nodearr_get(cur->nodearr, i); \
             ast_del_nodes(ast, node); \
@@ -2763,10 +2763,10 @@ cc_import_vars(ast_t *ast, int dep) {
 #define push(node) nodearr_moveb(cur->nodearr, node)
 
     // read '(' or single import variable
-    const token_t *tok = *ast->ptr++;
+    const token_t *tok = *ast->ref_ptr++;
     if (tok->type != TOKEN_TYPE_LPAREN) {
         // read single import variable
-        --ast->ptr;
+        --ast->ref_ptr;
         node_t *import_var = cc_import_var(ast, dep+1);
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -2783,7 +2783,7 @@ cc_import_vars(ast_t *ast, int dep) {
 
     // read ... ')'
     for (;;) {
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_cleanup("reached EOF in compile import variables");
         }
 
@@ -2803,29 +2803,29 @@ cc_import_vars(ast_t *ast, int dep) {
         check("skip newlines");
         cc_skip_newlines(ast);
 
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_cleanup("reached EOF in compile import variables (2)");
         }
 
         check("skip newlines");
         cc_skip_newlines(ast);
 
-        tok = *ast->ptr++;
+        tok = *ast->ref_ptr++;
         if (tok->type == TOKEN_TYPE_COMMA) {
             check("readed comma");
 
             check("skip newlines");
             cc_skip_newlines(ast);
 
-            if (!*ast->ptr) {
+            if (!*ast->ref_ptr) {
                 return_cleanup("reached EOF in compile import variables (3)");
             }
-            tok = *ast->ptr++;
+            tok = *ast->ref_ptr++;
             if (tok->type == TOKEN_TYPE_RPAREN) {
                 check("readed ')'");
                 break; // end parse
             }
-            --ast->ptr;
+            --ast->ref_ptr;
         } else if (tok->type == TOKEN_TYPE_RPAREN) {
             check("readed ')'");
             break; // end parse
@@ -2841,11 +2841,11 @@ static node_t *
 cc_from_import_stmt(ast_t *ast, int dep) {
     ready();
     declare(node_from_import_stmt_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->path); \
         ast_del_nodes(ast, cur->import_vars); \
         free(cur); \
@@ -2858,7 +2858,7 @@ cc_from_import_stmt(ast_t *ast, int dep) {
 #undef return_ok
 #define return_ok return_parse(node_new(NODE_TYPE_FROM_IMPORT_STMT, cur))
 
-    const token_t *tok = *ast->ptr++;
+    const token_t *tok = *ast->ref_ptr++;
     if (tok->type != TOKEN_TYPE_FROM) {
         return_cleanup("");
     }
@@ -2873,7 +2873,7 @@ cc_from_import_stmt(ast_t *ast, int dep) {
     }
     check("readed path");
 
-    tok = *ast->ptr++;
+    tok = *ast->ref_ptr++;
     if (tok->type != TOKEN_TYPE_STMT_IMPORT) {
         return_cleanup("not found import in compile from import statement");
     }
@@ -2895,11 +2895,11 @@ static node_t *
 cc_import_stmt(ast_t *ast, int dep) {
     ready();
     declare(node_import_stmt_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->import_as_stmt); \
         ast_del_nodes(ast, cur->from_import_stmt); \
         free(cur); \
@@ -2930,11 +2930,11 @@ cc_import_stmt(ast_t *ast, int dep) {
         check("readed import as statement");
     }
 
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("reached EOF in compile import statement");
     }
 
-    const token_t *tok = *ast->ptr++;
+    const token_t *tok = *ast->ref_ptr++;
     if (!(tok->type == TOKEN_TYPE_NEWLINE ||
           tok->type == TOKEN_TYPE_RBRACEAT)) {
         return_cleanup(
@@ -2943,7 +2943,7 @@ cc_import_stmt(ast_t *ast, int dep) {
         );
     }
     check("found NEWLINE or '@}'");
-    --ast->ptr;
+    --ast->ref_ptr;
 
     return_ok;
 }
@@ -2952,11 +2952,11 @@ static node_t *
 cc_stmt(ast_t *ast, int dep) {
     ready();
     declare(node_stmt_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->import_stmt); \
         ast_del_nodes(ast, cur->if_stmt); \
         ast_del_nodes(ast, cur->for_stmt); \
@@ -3027,11 +3027,11 @@ static node_t *
 cc_elems(ast_t *ast, int dep) {
     ready();
     declare(node_elems_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->def); \
         ast_del_nodes(ast, cur->stmt); \
         ast_del_nodes(ast, cur->formula); \
@@ -3088,11 +3088,11 @@ static node_t *
 cc_text_block(ast_t *ast, int dep) {
     ready();
     declare(node_text_block_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_TEXT_BLOCK) {
-        ast->ptr = save_ptr;
+        ast->ref_ptr = save_ptr;
         free(cur);
         return_parse(NULL);
     }
@@ -3108,11 +3108,11 @@ static node_t *
 cc_ref_block(ast_t *ast, int dep) {
     ready();
     declare(node_ref_block_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->formula); \
         free(cur); \
         if (strlen(msg)) { \
@@ -3121,7 +3121,7 @@ cc_ref_block(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_LDOUBLE_BRACE) {
         return_cleanup("");
     }
@@ -3133,7 +3133,7 @@ cc_ref_block(ast_t *ast, int dep) {
         return_cleanup("");
     }
 
-    t = *ast->ptr++;
+    t = *ast->ref_ptr++;
     if (!t) {
         return_cleanup("syntax error. reached EOF in reference block");
     }
@@ -3149,11 +3149,11 @@ static node_t *
 cc_code_block(ast_t *ast, int dep) {
     ready();
     declare(node_code_block_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->elems); \
         free(cur); \
         if (strlen(msg)) { \
@@ -3162,7 +3162,7 @@ cc_code_block(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_LBRACEAT) {
         return_cleanup("");
     }
@@ -3181,7 +3181,7 @@ cc_code_block(ast_t *ast, int dep) {
     check("skip newlines");
     cc_skip_newlines(ast);
 
-    t = *ast->ptr++;
+    t = *ast->ref_ptr++;
     if (!t) {
         return_cleanup("syntax error. reached EOF in code block");
     }
@@ -3271,11 +3271,11 @@ static node_t *
 cc_def(ast_t *ast, int dep) {
     ready();
     declare(node_def_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->func_def); \
         free(cur); \
         if (strlen(msg)) { \
@@ -3301,11 +3301,11 @@ cc_func_def_args(ast_t *ast, int dep) {
     ready();
     declare(node_func_def_args_t, cur);
     cur->identifiers = nodearr_new();
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->identifiers); ) { \
             node_t *node = nodearr_popb(cur->identifiers); \
             ast_del_nodes(ast, node); \
@@ -3329,13 +3329,13 @@ cc_func_def_args(ast_t *ast, int dep) {
     nodearr_moveb(cur->identifiers, identifier);
 
     for (;;) {
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_parse(node_new(NODE_TYPE_FUNC_DEF_ARGS, cur));
         }
 
-        token_t *t = *ast->ptr++;
+        token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_COMMA) {
-            ast->ptr--;
+            ast->ref_ptr--;
             return_parse(node_new(NODE_TYPE_FUNC_DEF_ARGS, cur));
         }
         check("read ,");
@@ -3360,11 +3360,11 @@ static node_t *
 cc_func_def_params(ast_t *ast, int dep) {
     ready();
     declare(node_func_def_params_t, cur);
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->func_def_args); \
         free(cur); \
         if (strlen(msg)) { \
@@ -3373,7 +3373,7 @@ cc_func_def_params(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_LPAREN) {
         return_cleanup("");
     }
@@ -3388,11 +3388,11 @@ cc_func_def_params(ast_t *ast, int dep) {
         return_cleanup(""); // not error
     }
 
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("syntax error. reached EOF in func def params");
     }
 
-    t = *ast->ptr++;
+    t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_RPAREN) {
         return_cleanup("syntax error. not found ')' in func def params");
     }
@@ -3406,11 +3406,11 @@ cc_func_def(ast_t *ast, int dep) {
     ready();
     declare(node_func_def_t, cur);
     cur->contents = nodearr_new();
-    token_t **save_ptr = ast->ptr;
+    token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        ast->ptr = save_ptr; \
+        ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->identifier); \
         ast_del_nodes(ast, cur->func_def_params); \
         for (int32_t i = 0; i < nodearr_len(cur->contents); ++i) { \
@@ -3424,7 +3424,7 @@ cc_func_def(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ptr++;
+    token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_DEF) {
         return_cleanup("");
     }
@@ -3448,26 +3448,26 @@ cc_func_def(ast_t *ast, int dep) {
         return_cleanup(""); // not error
     }
 
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("syntax error. reached EOF in parse func def");
     }
 
-    t = *ast->ptr++;
+    t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_COLON) {
         return_cleanup(""); // not error
     }
     check("read :");
 
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("syntax error. reached EOF in parse func def (2)");
     }
 
     check("skip newlines");
     cc_skip_newlines(ast);
 
-    t = *ast->ptr++;
+    t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_RBRACEAT) {
-        ast->ptr--;
+        ast->ref_ptr--;
 
         check("call cc_elems");
         node_t *elems = cc_elems(ast, dep+1);
@@ -3479,14 +3479,14 @@ cc_func_def(ast_t *ast, int dep) {
         }
         // allow null because function allow empty contents
     } else {
-        --ast->ptr;
+        --ast->ref_ptr;
     }
 
     // read blocks
     for (;;) {
-        t = *ast->ptr++;
+        t = *ast->ref_ptr++;
         if (!t || t->type != TOKEN_TYPE_RBRACEAT) {
-            --ast->ptr;
+            --ast->ref_ptr;
             break;
         }
         check("read @}")
@@ -3501,11 +3501,11 @@ cc_func_def(ast_t *ast, int dep) {
         }
         // allow null because function allow empty blocks
 
-        if (!*ast->ptr) {
+        if (!*ast->ref_ptr) {
             return_cleanup("syntax error. reached EOF in parse func def (3)");
         }
 
-        t = *ast->ptr++;
+        t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_LBRACEAT) {
             return_cleanup("syntax error. not found {@ in parse func def");
         }
@@ -3524,13 +3524,13 @@ cc_func_def(ast_t *ast, int dep) {
     check("skip newlines");
     cc_skip_newlines(ast);
 
-    if (!*ast->ptr) {
+    if (!*ast->ref_ptr) {
         return_cleanup("syntax error. reached EOF in parse func def (5)");
     }
 
-    t = *ast->ptr++;
+    t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_RBRACEAT) {
-        ast->ptr--;
+        ast->ref_ptr--;
 
         check("call cc_elems (2)");
         node_t *elems = cc_elems(ast, dep+1);
@@ -3542,10 +3542,10 @@ cc_func_def(ast_t *ast, int dep) {
         }
         // allow null because function allow empty contents
     } else {
-        --ast->ptr;
+        --ast->ref_ptr;
     }
 
-    t = *ast->ptr++;
+    t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_STMT_END) {
         return_cleanup("not found 'end' in parse func def");
     }
