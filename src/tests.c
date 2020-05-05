@@ -19572,6 +19572,82 @@ test_trv_elif_stmt_5(void) {
 }
 
 static void
+test_trv_elif_stmt_6(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   if 0:\n"
+    "       puts(1)\n"
+    "   elif 1:\n"
+    "       puts(2)\n"
+    "   elif 1:\n"
+    "       puts(3)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   if 0:\n"
+    "       puts(1)\n"
+    "   elif 1:\n"
+    "       if 0:\n"
+    "           puts(21)\n"
+    "       elif 0:\n"
+    "           puts(22)\n"
+    "       elif 1:\n"
+    "           puts(23)\n"
+    "       end"
+    "   elif 1:\n"
+    "       puts(3)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "23\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   if 0:\n"
+    "       puts(1)\n"
+    "   elif 1:\n"
+    "       if 0:\n"
+    "           puts(21)\n"
+    "       elif 0:\n"
+    "           puts(22)\n"
+    "       elif 1:\n"
+    "           if 0:\n"
+    "           elif 1:\n"
+    "               puts(31)\n"
+    "           end"
+    "       end"
+    "   elif 1:\n"
+    "       puts(3)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "31\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_else_stmt_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -20294,7 +20370,7 @@ test_trv_for_stmt_4(void) {
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "\nyo\nyoyo\n"));
     }
-/*
+
     tkr_parse(tkr, "{@\n"
     "   def hiphop(rap, n):\n"
     "       for i = n-1; i >= 0; i -= 1:\n"
@@ -20312,7 +20388,7 @@ test_trv_for_stmt_4(void) {
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "yoyo\nyo\n\n"));
     }
-*/
+
     trv_cleanup;
 }
 
@@ -22755,6 +22831,7 @@ traverser_tests[] = {
     {"trv_elif_stmt_3", test_trv_elif_stmt_3},
     {"trv_elif_stmt_4", test_trv_elif_stmt_4},
     {"trv_elif_stmt_5", test_trv_elif_stmt_5},
+    {"trv_elif_stmt_6", test_trv_elif_stmt_6},
     {"trv_else_stmt_0", test_trv_elif_stmt_0},
     {"trv_else_stmt_1", test_trv_elif_stmt_1},
     {"trv_else_stmt_2", test_trv_elif_stmt_2},
