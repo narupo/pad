@@ -110,7 +110,7 @@ builtin_array_module_new(const config_t *ref_config, gc_t *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = ast_new(ref_config);
     context_t *ctx = ctx_new(ref_gc);
-    ast->context = ctx;  // set reference
+    ast->ref_context = ctx;  // set reference
 
     return obj_new_module_by(
         ref_gc,

@@ -190,8 +190,8 @@ trv_blocks(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
-    if (ctx_get_do_break(ast->context) ||
-        ctx_get_do_continue(ast->context)) {
+    if (ctx_get_do_break(ast->ref_context) ||
+        ctx_get_do_continue(ast->ref_context)) {
         return_trav(NULL);
     }
 
@@ -276,18 +276,18 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
         ast_pushb_error(ast, "can't refer object (%d)", result->type);
         break;
     case OBJ_TYPE_NIL:
-        ctx_pushb_stdout_buf(ast->context, "nil");
+        ctx_pushb_stdout_buf(ast->ref_context, "nil");
         break;
     case OBJ_TYPE_INT: {
         char n[1024]; // very large
         snprintf(n, sizeof n, "%ld", result->lvalue);
-        ctx_pushb_stdout_buf(ast->context, n);
+        ctx_pushb_stdout_buf(ast->ref_context, n);
     } break;
     case OBJ_TYPE_BOOL: {
         if (result->boolean) {
-            ctx_pushb_stdout_buf(ast->context, "true");
+            ctx_pushb_stdout_buf(ast->ref_context, "true");
         } else {
-            ctx_pushb_stdout_buf(ast->context, "false");
+            ctx_pushb_stdout_buf(ast->ref_context, "false");
         }
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -300,20 +300,20 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
             return_trav(NULL);
         }
         string_t *str = obj_to_str(obj);
-        ctx_pushb_stdout_buf(ast->context, str_getc(str));
+        ctx_pushb_stdout_buf(ast->ref_context, str_getc(str));
         str_del(str);
     } break;
     case OBJ_TYPE_STRING: {
-        ctx_pushb_stdout_buf(ast->context, str_getc(result->string));
+        ctx_pushb_stdout_buf(ast->ref_context, str_getc(result->string));
     } break;
     case OBJ_TYPE_ARRAY: {
-        ctx_pushb_stdout_buf(ast->context, "(array)");
+        ctx_pushb_stdout_buf(ast->ref_context, "(array)");
     } break;
     case OBJ_TYPE_DICT: {
-        ctx_pushb_stdout_buf(ast->context, "(dict)");
+        ctx_pushb_stdout_buf(ast->ref_context, "(dict)");
     } break;
     case OBJ_TYPE_FUNC: {
-        ctx_pushb_stdout_buf(ast->context, "(function)");
+        ctx_pushb_stdout_buf(ast->ref_context, "(function)");
     } break;
     } // switch
 
@@ -329,7 +329,7 @@ trv_text_block(ast_t *ast, trv_args_t *targs) {
     node_text_block_t *text_block = node->real;
 
     if (text_block->text) {
-        ctx_pushb_stdout_buf(ast->context, text_block->text);
+        ctx_pushb_stdout_buf(ast->ref_context, text_block->text);
         check("store text block to buf");
     }
 
@@ -363,10 +363,10 @@ trv_elems(ast_t *ast, trv_args_t *targs) {
             return_trav(NULL);
         }
 
-        if (ctx_get_do_break(ast->context) ||
-            ctx_get_do_continue(ast->context)) {
+        if (ctx_get_do_break(ast->ref_context) ||
+            ctx_get_do_continue(ast->ref_context)) {
             return_trav(result);
-        } else if (ctx_get_do_return(ast->context)) {
+        } else if (ctx_get_do_return(ast->ref_context)) {
             return_trav(result);
         }
     } else if (elems->formula) {
@@ -574,7 +574,7 @@ trv_import_as_stmt(ast_t *ast, trv_args_t *targs) {
         importer,
         ast->ref_gc,
         ast,
-        ast->context,
+        ast->ref_context,
         path,
         alias
     )) {
@@ -635,7 +635,7 @@ trv_from_import_stmt(ast_t *ast, trv_args_t *targs) {
         importer,
         ast->ref_gc,
         ast,
-        ast->context,
+        ast->ref_context,
         path,
         varsobj->objarr
     )) {
@@ -862,7 +862,7 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
             }
             result = NULL;
 
-            ctx_clear_jump_flags(ast->context);
+            ctx_clear_jump_flags(ast->ref_context);
 
             check("call _trv_traverse with contents");
             for (int32_t i = 0; i < nodearr_len(for_stmt->contents); ++i) {
@@ -876,7 +876,7 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
                 }
             } // allow null contents
 
-            if (ctx_get_do_break(ast->context)) {
+            if (ctx_get_do_break(ast->ref_context)) {
                 break;
             }
 
@@ -915,7 +915,7 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
                 }
             } // allow null contents
 
-            if (ctx_get_do_break(ast->context)) {
+            if (ctx_get_do_break(ast->ref_context)) {
                 break;
             }
         }
@@ -936,14 +936,14 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
                 }
             } // allow null contents
 
-            if (ctx_get_do_break(ast->context)) {
+            if (ctx_get_do_break(ast->ref_context)) {
                 break;
             }
         }
     }
 
 done:
-    ctx_clear_jump_flags(ast->context);
+    ctx_clear_jump_flags(ast->ref_context);
     return_trav(NULL);
 }
 
@@ -955,7 +955,7 @@ trv_break_stmt(ast_t *ast, trv_args_t *targs) {
     assert(node->type == NODE_TYPE_BREAK_STMT);
 
     check("set true at do break flag");
-    ctx_set_do_break(ast->context, true);
+    ctx_set_do_break(ast->ref_context, true);
 
     return_trav(NULL);
 }
@@ -968,7 +968,7 @@ trv_continue_stmt(ast_t *ast, trv_args_t *targs) {
     assert(node->type == NODE_TYPE_CONTINUE_STMT);
 
     check("set true at do continue flag");
-    ctx_set_do_continue(ast->context, true);
+    ctx_set_do_continue(ast->ref_context, true);
 
     return_trav(NULL);
 }
@@ -1028,7 +1028,7 @@ trv_return_stmt(ast_t *ast, trv_args_t *targs) {
     object_t *ret = obj_new_other(ref);
 
     check("set true at do return flag");
-    ctx_set_do_return(ast->context, true);
+    ctx_set_do_return(ast->ref_context, true);
 
     return_trav(ret);
 }
@@ -1709,7 +1709,7 @@ trv_roll_identifier_lhs(ast_t *ast, trv_args_t *targs) {
     ast_t *ref_ast = obj_get_idn_ref_ast(lhs);
     assert(ref_ast);
     const char *idn = obj_getc_idn_name(lhs);
-    object_t *lvar = ctx_find_var_ref(ref_ast->context, idn);
+    object_t *lvar = ctx_find_var_ref(ref_ast->ref_context, idn);
     if (!lvar) {
         ast_pushb_error(ast, "\"%s\" is not defined", idn);
         return_trav(NULL);
@@ -1735,7 +1735,7 @@ trv_roll_identifier_rhs(ast_t *ast, trv_args_t *targs) {
 
     ast_t *ref_ast = obj_get_idn_ref_ast(rhs);
     const char *idn = obj_getc_idn_name(rhs);
-    object_t *rvar = ctx_find_var_ref(ref_ast->context, idn);
+    object_t *rvar = ctx_find_var_ref(ref_ast->ref_context, idn);
     if (!rvar) {
         ast_pushb_error(
             ast,
@@ -1996,7 +1996,7 @@ trv_compare_or_bool(ast_t *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = ctx_find_var_ref(ast->context, obj_getc_idn_name(rhs));
+        object_t *rvar = ctx_find_var_ref(ast->ref_context, obj_getc_idn_name(rhs));
         if (!rvar) {
             ast_pushb_error(
                 ast,
@@ -3954,7 +3954,7 @@ trv_compare_not(ast_t *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *var = ctx_find_var_ref(ast->context, str_getc(operand->identifier.name));
+        object_t *var = ctx_find_var_ref(ast->ref_context, str_getc(operand->identifier.name));
         if (!var) {
             ast_pushb_error(
                 ast,
@@ -7811,7 +7811,7 @@ invoke_func_obj(ast_t *ast, trv_args_t *targs) {
     assert(func->args->type == OBJ_TYPE_ARRAY);
 
     // extract function arguments
-    ctx_pushb_scope(func->ref_ast->context);
+    ctx_pushb_scope(func->ref_ast->ref_context);
     if (args) {
         const object_array_t *formal_args = func->args->objarr;
         const object_array_t *actual_args = args->objarr;
@@ -7819,7 +7819,7 @@ invoke_func_obj(ast_t *ast, trv_args_t *targs) {
         if (objarr_len(formal_args) != objarr_len(actual_args)) {
             ast_pushb_error(ast, "arguments not same length");
             obj_del(args);
-            ctx_popb_scope(func->ref_ast->context);
+            ctx_popb_scope(func->ref_ast->ref_context);
             return NULL;
         }
 
@@ -7866,10 +7866,10 @@ invoke_func_obj(ast_t *ast, trv_args_t *targs) {
     obj_del(args);
 
     // swap current context stdout and stderr buffer to function's context buffer
-    string_t *cur_stdout_buf = ctx_swap_stdout_buf(ast->context, NULL);
-    string_t *save_stdout_buf = ctx_swap_stdout_buf(func->ref_ast->context, cur_stdout_buf);
-    string_t *cur_stderr_buf = ctx_swap_stderr_buf(ast->context, NULL);
-    string_t *save_stderr_buf = ctx_swap_stderr_buf(func->ref_ast->context, cur_stderr_buf);
+    string_t *cur_stdout_buf = ctx_swap_stdout_buf(ast->ref_context, NULL);
+    string_t *save_stdout_buf = ctx_swap_stdout_buf(func->ref_ast->ref_context, cur_stdout_buf);
+    string_t *cur_stderr_buf = ctx_swap_stderr_buf(ast->ref_context, NULL);
+    string_t *save_stderr_buf = ctx_swap_stderr_buf(func->ref_ast->ref_context, cur_stderr_buf);
 
     // execute function suites
     object_t *result = NULL;
@@ -7883,19 +7883,19 @@ invoke_func_obj(ast_t *ast, trv_args_t *targs) {
             errstack_extendb_other(ast->error_stack, func->ref_ast->error_stack);
             return NULL;
         }
-        if (ctx_get_do_return(func->ref_ast->context)) {
+        if (ctx_get_do_return(func->ref_ast->ref_context)) {
             break;
         }
     }
 
     // reset status
-    cur_stdout_buf = ctx_swap_stdout_buf(func->ref_ast->context, save_stdout_buf);
-    ctx_swap_stdout_buf(ast->context, cur_stdout_buf);
-    cur_stderr_buf = ctx_swap_stderr_buf(func->ref_ast->context, save_stderr_buf);
-    ctx_swap_stderr_buf(ast->context, cur_stderr_buf);
+    cur_stdout_buf = ctx_swap_stdout_buf(func->ref_ast->ref_context, save_stdout_buf);
+    ctx_swap_stdout_buf(ast->ref_context, cur_stdout_buf);
+    cur_stderr_buf = ctx_swap_stderr_buf(func->ref_ast->ref_context, save_stderr_buf);
+    ctx_swap_stderr_buf(ast->ref_context, cur_stderr_buf);
 
-    ctx_set_do_return(func->ref_ast->context, false);
-    ctx_popb_scope(func->ref_ast->context);
+    ctx_set_do_return(func->ref_ast->ref_context, false);
+    ctx_popb_scope(func->ref_ast->ref_context);
 
     // done
     if (!result) {
@@ -7910,7 +7910,7 @@ trv_invoke_func_obj(ast_t *ast, trv_args_t *targs) {
     const char *funcname = targs->funcname;
     assert(funcname);
 
-    object_t *funcobj = ctx_find_var_ref(ast->context, funcname);
+    object_t *funcobj = ctx_find_var_ref(ast->ref_context, funcname);
     if (!funcobj) {
         // not error
         return NULL;
@@ -7965,7 +7965,7 @@ again:
     }
 
     object_module_t *mod = &modobj->module;
-    object_dict_t *varmap = ctx_get_varmap_at_global(mod->ast->context);
+    object_dict_t *varmap = ctx_get_varmap_at_global(mod->ast->ref_context);
     assert(varmap);
 
     object_dict_item_t *item = objdict_get(varmap, funcname);
@@ -8063,7 +8063,7 @@ trv_invoke_builtin_modules(ast_t *ast, trv_args_t *targs) {
     }
 
     if (!module) {
-        object_dict_t *varmap = ctx_get_varmap_at_global(ast->context);
+        object_dict_t *varmap = ctx_get_varmap_at_global(ast->ref_context);
         object_dict_item_t *item = objdict_get(varmap, bltin_mod_name);
         if (!item) {
             return NULL;
@@ -8496,7 +8496,7 @@ _trv_traverse(ast_t *ast, trv_args_t *targs) {
 
 ast_t *
 trv_import_builtin_modules(ast_t *ast) {
-    object_dict_t *varmap = ctx_get_varmap(ast->context);
+    object_dict_t *varmap = ctx_get_varmap(ast->ref_context);
     object_t *mod = NULL;
 
     mod = builtin_module_new(ast->ref_config, ast->ref_gc);
@@ -8519,7 +8519,7 @@ trv_import_builtin_modules(ast_t *ast) {
 
 void
 trv_traverse(ast_t *ast, context_t *context) {
-    ast->context = context;
+    ast->ref_context = context;
     ast->ref_gc = ctx_get_gc(context);
 
     if (!trv_import_builtin_modules(ast)) {

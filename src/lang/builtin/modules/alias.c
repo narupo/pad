@@ -43,7 +43,7 @@ builtin_alias_set(builtin_func_args_t *fargs) {
     const char *val = str_getc(valobj->string);
     const char *desc = descobj ? str_getc(descobj->string) : NULL;
 
-    ctx_set_alias(ast->context, key, val, desc);
+    ctx_set_alias(ast->ref_context, key, val, desc);
 
     return obj_new_nil(ast->ref_gc);
 }
@@ -59,7 +59,7 @@ builtin_alias_module_new(const config_t *ref_config, gc_t *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     context_t *ctx = ctx_new(ref_gc);
     ast_t *ast = ast_new(ref_config);
-    ast->context = ctx;
+    ast->ref_context = ctx;
 
     return obj_new_module_by(
         ref_gc,

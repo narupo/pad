@@ -391,7 +391,7 @@ ast_getc_root(const ast_t *self) {
 static void
 ast_show_debug(const ast_t *self, const char *funcname) {
     if (self->debug) {
-        token_t *t = *self->ptr;
+        token_t *t = *self->ref_ptr;
         printf("debug: %s: token type[%d]\n", funcname, (t ? t->type : -1));
     }
 }
@@ -403,12 +403,12 @@ ast_clear(ast_t *self) {
 
     // do not delete. these is reference
     self->ref_tokens = NULL;
-    self->ptr = NULL;
+    self->ref_ptr = NULL;
 
     ast_del_nodes(self, self->root);
     self->root = NULL;  // deleted
 
-    self->context = NULL; // do not delete
+    self->ref_context = NULL; // do not delete
 
     opts_clear(self->opts);
     // do not null clear
@@ -464,6 +464,6 @@ ast_dump(const ast_t *self, FILE *fout) {
     }
 
     fprintf(fout, "ast[%p]\n", self);
-    fprintf(fout, "context[%p]\n", self->context);
-    ctx_dump(self->context, fout);
+    fprintf(fout, "ref_context[%p]\n", self->ref_context);
+    ctx_dump(self->ref_context, fout);
 }

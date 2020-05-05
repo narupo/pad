@@ -38,7 +38,7 @@ again:
         return obj_new_str(ref_ast->ref_gc, result);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        owner = ctx_find_var_ref(ref_ast->context, obj_getc_idn_name(owner));
+        owner = ctx_find_var_ref(ref_ast->ref_context, obj_getc_idn_name(owner));
         if (!owner) {
             ast_pushb_error(ref_ast, "not found \"%s\" in %s function", owner->identifier, method_name);
             return NULL;
@@ -99,7 +99,7 @@ builtin_string_module_new(const config_t *ref_config, gc_t *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = ast_new(ref_config);
     context_t *ctx = ctx_new(ref_gc);
-    ast->context = ctx;
+    ast->ref_context = ctx;
 
     return obj_new_module_by(
         ref_gc,

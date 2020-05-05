@@ -20749,7 +20749,7 @@ test_trv_func_def_4(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ast->context), "1\n"));
+        assert(!strcmp(ctx_getc_stdout_buf(ast->ref_context), "1\n"));
     }
 
     ctx_del(ctx);
