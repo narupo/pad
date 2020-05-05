@@ -19,19 +19,19 @@ mvcmd_parse_opts(mvcmd_t *self) {
         {"help", no_argument, 0, 'h'},
         {0},
     };
-    
+
     extern int opterr;
     extern int optind;
     opterr = 0; // ignore error messages
     optind = 0; // init index of parse
-    
+
     for (;;) {
         int optsindex;
         int cur = getopt_long(self->argc, self->argv, "h", longopts, &optsindex);
         if (cur == -1) {
             break;
         }
-    
+
         switch (cur) {
         case 0: /* long option only */ break;
         case 'h': self->opts.is_help = true; break;
@@ -39,12 +39,12 @@ mvcmd_parse_opts(mvcmd_t *self) {
         default: err_die("Unknown option"); break;
         }
     }
-    
+
     if (self->argc < optind) {
         err_die("Failed to parse option");
     }
 
-    self->optind = optind;  
+    self->optind = optind;
 }
 
 void
@@ -87,65 +87,32 @@ mvcmd_show_usage(mvcmd_t *self) {
     fflush(stderr);
 }
 
-static const char *
-mvcmd_get_org_by(mvcmd_t *self, const char *fname) {
-    if (fname[0] == '/') {
-        return self->config->home_path;
-    } else if (self->config->scope == CAP_SCOPE_LOCAL) {
-        return self->config->cd_path;
-    } else if (self->config->scope == CAP_SCOPE_GLOBAL) {
-        return self->config->home_path;
-    }
-    err_die("impossible. invalid state in mv");
-    return NULL;
-}
-
 static bool
-mvcmd_mv_file_to_dir(mvcmd_t *self, const char *fname, const char *dirname) {
-    const char *org;
+mvcmd_mv_file_to_dir(mvcmd_t *self, const char *cap_path, const char *dirname) {
     char srcpath[FILE_NPATH];
     char dstpath[FILE_NPATH];
     char tmppath[FILE_NPATH*3];
 
-    if (fname[0] == ':') {
-        if (!file_solve(srcpath, sizeof srcpath, fname+1)) {
-            err_error("failed to solve path for user's source file name");
-            return false;
-        }
-    } else {
-        org = mvcmd_get_org_by(self, fname);
-        snprintf(tmppath, sizeof tmppath, "%s/%s", org, fname);
-        if (!symlink_follow_path(self->config, srcpath, sizeof srcpath, tmppath)) {
-            err_error("failed to solve path for source file name");
-            return false;
-        }
+    if (!solve_cmdline_arg_path(self->config, srcpath, sizeof srcpath, cap_path)) {
+        err_error("failed to solve path for source file name");
+        return false;
     }
 
     if (!file_exists(srcpath)) {
-        err_error("\"%s\" is not exists", fname);
+        err_error("\"%s\" is not exists", cap_path);
         return false;
     }
 
     char basename[FILE_NPATH];
-    if (!file_basename(basename, sizeof basename, fname)) {
+    if (!file_basename(basename, sizeof basename, cap_path)) {
         err_error("failed to get basename from file name");
         return false;
     }
 
-    if (dirname[0] == ':') {
-        snprintf(tmppath, sizeof tmppath, "%s/%s", dirname+1, basename);
-        if (!file_solve(dstpath, sizeof dstpath, tmppath)) {
-            err_error("failed to solve path for user's destination file name");
-            return false;
-        }
-    } else {
-        org = mvcmd_get_org_by(self, dirname);
-
-        snprintf(tmppath, sizeof tmppath, "%s/%s/%s", org, dirname, basename);
-        if (!symlink_follow_path(self->config, dstpath, sizeof dstpath, tmppath)) {
-            err_error("failed to solve path for destination file name");
-            return false;
-        }
+    snprintf(tmppath, sizeof tmppath, "%s/%s", dirname, basename);
+    if (!solve_cmdline_arg_path(self->config, dstpath, sizeof dstpath, tmppath)) {
+        err_error("failed to solve path for destination file name");
+        return false;
     }
 
     if (file_rename(srcpath, dstpath) != 0) {
@@ -173,45 +140,27 @@ mvcmd_mv_files_to_dir(mvcmd_t *self) {
 
 static int
 mvcmd_mv_file_to_other(mvcmd_t *self) {
-    const char *srcfname = self->argv[self->optind];
-    const char *dst = self->argv[self->optind+1];
-    const char *org = mvcmd_get_org_by(self, srcfname);
+    const char *src_cap_path = self->argv[self->optind];
+    const char *dst_cap_path = self->argv[self->optind+1];
 
     char srcpath[FILE_NPATH];
     char tmppath[FILE_NPATH*2];
 
-    if (srcfname[0] == ':') {
-        if (!file_solve(srcpath, sizeof srcpath, srcfname+1)) {
-            err_error("failed to solve path for user's source file name");
-            return 1;
-        }
-    } else {
-        snprintf(tmppath, sizeof tmppath, "%s/%s", org, srcfname);
-        if (!symlink_follow_path(self->config, srcpath, sizeof srcpath, tmppath)) {
-            err_error("failed to follow path for source file name");
-            return 1;
-        }
+    if (!solve_cmdline_arg_path(self->config, srcpath, sizeof srcpath, src_cap_path)) {
+        err_error("failed to follow path for source file name");
+        return 1;
     }
 
     if (!file_exists(srcpath)) {
-        err_error("\"%s\" is not exists. can not move to other", srcfname);
+        err_error("\"%s\" is not exists. can not move to other", src_cap_path);
         return 1;
     }
 
     char dstpath[FILE_NPATH*2];
 
-    if (dst[0] == ':') {
-        if (!file_solve(dstpath, sizeof dstpath, dst+1)) {
-            err_error("failed to solve path for user's destination file name");
-            return 1;
-        }
-    } else {
-        org = mvcmd_get_org_by(self, dst);
-        snprintf(tmppath, sizeof tmppath, "%s/%s", org, dst);
-        if (!symlink_follow_path(self->config, dstpath, sizeof dstpath, tmppath)) {
-            err_error("failed to solve path for destination file name");
-            return 1;
-        }
+    if (!solve_cmdline_arg_path(self->config, dstpath, sizeof dstpath, dst_cap_path)) {
+        err_error("failed to solve path for destination file name");
+        return 1;
     }
 
     // remove last separate for stat
@@ -224,20 +173,20 @@ mvcmd_mv_file_to_other(mvcmd_t *self) {
     if (file_isdir(dstpath)) {
         char basename[FILE_NPATH];
 
-        if (srcfname[0] == ':') {
-            srcfname += 1;
+        if (src_cap_path[0] == ':') {
+            src_cap_path += 1;
         }
-        if (!file_basename(basename, sizeof basename, srcfname)) {
+        if (!file_basename(basename, sizeof basename, src_cap_path)) {
             err_error("failed to get basename in file to other");
             return 1;
         }
 
         char dstpath2[FILE_NPATH];
          snprintf(tmppath, sizeof tmppath, "%s/%s", dstpath, basename);
-        if (!symlink_follow_path(self->config, dstpath2, sizeof dstpath2, tmppath)) {
+        if (!file_solve(dstpath2, sizeof dstpath2, tmppath)) {
             err_error("failed to follow path for second destination path in file to other");
             return 1;
-        }        
+        }
 
         if (file_rename(srcpath, dstpath2) != 0) {
             err_error("failed to rename \"%s\" to \"%s\"", srcpath, dstpath2);
@@ -253,7 +202,7 @@ mvcmd_mv_file_to_other(mvcmd_t *self) {
     return 0;
 }
 
-static int 
+static int
 mvcmd_mv(mvcmd_t *self) {
     const int nargs = self->argc-self->optind;
     if (nargs >= 3) {
@@ -270,7 +219,7 @@ int
 mvcmd_run(mvcmd_t *self) {
     if (self->argc < self->optind+2) {
         mvcmd_show_usage(self);
-        return 0;        
+        return 0;
     }
 
     if (self->opts.is_help) {
