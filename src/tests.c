@@ -23376,6 +23376,38 @@ lang_object_dict_tests[] = {
     {0},
 };
 
+/*************
+* cd command *
+*************/
+
+static void
+test_cdcmd_default(void) {
+    config_t *config = config_new();
+    int argc = 2;
+    char *argv[] = {
+        "cd",
+        "tests/path/to/dir/",
+        NULL,
+    };
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "."));
+    assert(solve_path(config->var_cd_path, sizeof config->var_cd_path, "./tests/.cap/var/cd"));
+
+    cdcmd_t *cdcmd = cdcmd_new(config, argc, argv);
+    cdcmd_run(cdcmd);
+    cdcmd_del(cdcmd);
+
+    char line[1024];
+    assert(file_readline(line, sizeof line, config->var_cd_path));
+    assert(!strstr(line, "tests/.cap/var/cd"));
+}
+
+static const struct testcase
+cdcmd_tests[] = {
+    {"default", test_cdcmd_default},
+};
+
 /**************
 * cat command *
 **************/
@@ -23577,6 +23609,7 @@ catcmd_tests[] = {
 static const struct testmodule
 testmodules[] = {
     // commands
+    {"cd", cdcmd_tests},
     {"cat", catcmd_tests},
 
     // lib
