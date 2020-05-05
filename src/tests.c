@@ -20748,7 +20748,7 @@ test_trv_continue_stmt(void) {
 }
 
 static void
-test_trv_return_stmt(void) {
+test_trv_return_stmt_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
@@ -20771,6 +20771,156 @@ test_trv_return_stmt(void) {
     ast_del(ast);
     tkr_del(tkr);
     config_del(config);
+}
+
+static void
+test_trv_return_stmt_1(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@\n"
+    "   def f():\n"
+    "       puts(1)\n"
+    "       return 2\n"
+    "       puts(3)\n"
+    "   end\n"
+    "@}{: f() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n2"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
+test_trv_return_stmt_2(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f():\n"
+    "       for i = 0; i < 2; i += 1:\n"
+    "           puts(i)\n"
+    "           return 1\n"
+    "           puts(i)\n"
+    "       end\n"
+    "   end\n"
+    "@}{: f() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   def f():\n"
+    "       for i = 0; i < 2; i += 1:\n"
+    "           puts(i)\n"
+    "           for j = 0; j < 2; j += 1:\n"
+    "               puts(j)\n"
+    "               return 1\n"
+    "           end\n"
+    "       end\n"
+    "   end\n"
+    "@}{: f() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n0\n1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_return_stmt_3(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f():\n"
+    "       puts(0)\n"
+    "       if 1:\n"
+    "           puts(1)\n"
+    "           return 2\n"
+    "           puts(3)\n"
+    "       end\n"
+    "       puts(4)\n"
+    "   end\n"
+    "@}{: f() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n2"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   def f():\n"
+    "       puts(0)\n"
+    "       if 0:\n"
+    "           puts(100)\n"
+    "       else:\n"
+    "           puts(1)\n"
+    "           return 2\n"
+    "           puts(3)\n"
+    "       end\n"
+    "       puts(4)\n"
+    "   end\n"
+    "@}{: f() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n2"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   def f():\n"
+    "       puts(0)\n"
+    "       if 0:\n"
+    "           puts(100)\n"
+    "       elif 1:\n"
+    "           puts(1)\n"
+    "           return 2\n"
+    "           puts(3)\n"
+    "       else:\n"
+    "           puts(200)\n"
+    "       end\n"
+    "       puts(4)\n"
+    "   end\n"
+    "@}{: f() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n2"));
+    }
+
+    trv_cleanup;
 }
 
 static void
@@ -22924,7 +23074,10 @@ traverser_tests[] = {
     {"trv_for_stmt_12", test_trv_for_stmt_12},
     {"trv_break_stmt", test_trv_break_stmt},
     {"trv_continue_stmt", test_trv_continue_stmt},
-    {"trv_return_stmt", test_trv_return_stmt},
+    {"trv_return_stmt_0", test_trv_return_stmt_0},
+    {"trv_return_stmt_1", test_trv_return_stmt_1},
+    {"trv_return_stmt_2", test_trv_return_stmt_2},
+    {"trv_return_stmt_3", test_trv_return_stmt_3},
     {"trv_func_def_0", test_trv_func_def_0},
     {"trv_func_def_1", test_trv_func_def_1},
     {"trv_func_def_2", test_trv_func_def_2},
