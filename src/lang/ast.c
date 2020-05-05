@@ -401,8 +401,9 @@ ast_clear(ast_t *self) {
     // self->ref_config
     // do not null clear
 
-    self->tokens = NULL;  // do not delete
-    self->ptr = NULL;  // do not delete
+    // do not delete. these is reference
+    self->ref_tokens = NULL;
+    self->ptr = NULL;
 
     ast_del_nodes(self, self->root);
     self->root = NULL;  // deleted

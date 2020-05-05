@@ -21,14 +21,14 @@ enum {
 /**
  * structure of AST
  * this structure using in compiler and traverser modules
- * and this structure has error handling mechanizm by error_detail variable
+ * and this structure has the error handling mechanizm by error_stack variable
  */
 struct ast {
     const config_t *ref_config; // read only config
-    token_t **tokens; // token list with null at the last (DO NOT DELETE)
+    token_t **ref_tokens; // token list with null at the last (DO NOT DELETE)
     token_t **ptr; // pointer to tokens for tokenizer (DO NOT DELETE)
     node_t *root; // pointer to root for compiler and traverser
-    context_t *context; // context. update when traverse tree (DO NOT DELETE)
+    context_t *context; // reference of context. update when traverse tree (DO NOT DELETE)
     opts_t *opts; // options for builtin opts module
     gc_t *ref_gc; // reference to gc (DO NOT DELETE)
     int32_t import_level; // number of import level
