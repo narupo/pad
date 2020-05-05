@@ -1,6 +1,7 @@
 bin/
 test/
 .vscode/
+tests/.cap/var/*
 
 # Object files
 *.o

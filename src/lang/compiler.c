@@ -122,9 +122,9 @@ cc_expr(ast_t *ast, int dep);
 ************/
 
 ast_t *
-cc_compile(ast_t *ast, token_t *tokens[]) {
-    ast->tokens = tokens;
-    ast->ptr = tokens;
+cc_compile(ast_t *ast, token_t *ref_tokens[]) {
+    ast->ref_tokens = ref_tokens;
+    ast->ptr = ref_tokens;
     ast->root = cc_program(ast, 0);
     return ast;
 }
