@@ -33,9 +33,10 @@
 #include <lib/cl.h>
 #include <lib/error.h>
 #include <lib/cmdline.h>
-#include <cat/cat.h>
 #include <pwd/pwd.h>
 #include <cd/cd.h>
+#include <ls/ls.h>
+#include <cat/cat.h>
 #include <core/util.h>
 #include <core/symlink.h>
 #include <core/config.h>

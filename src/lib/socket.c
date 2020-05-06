@@ -21,11 +21,11 @@ typedef enum {
 	SOCK_MODE_ACCEPTCLIENT,
 } sock_mode_t;
 
-static const uint8_t SOCK_DEFAULT_PORT[] = "8000";
+static const char *SOCK_DEFAULT_PORT = "8000";
 
 struct socket {
-	uint8_t host[SOCK_NHOST];
-	uint8_t port[SOCK_NPORT];
+	char host[SOCK_NHOST];
+	char port[SOCK_NPORT];
 	int32_t socket;
 	sock_mode_t mode;
     char error[SOCK_ERR_SIZE];
@@ -59,24 +59,24 @@ wsa_sock_init(void) {
 *******************/
 
 static sock_mode_t
-sock_str_to_mode(const uint8_t *mode) {
-	if (strcasecmp((const char*) mode, "tcp-server") == 0) {
+sock_str_to_mode(const char *mode) {
+	if (strcasecmp(mode, "tcp-server") == 0) {
 		return SOCK_MODE_TCPSERVER;
-	} else if (strcasecmp((const char *) mode, "tcp-client") == 0) {
+	} else if (strcasecmp(mode, "tcp-client") == 0) {
 		return SOCK_MODE_TCPCLIENT;
 	} else {
 		return SOCK_MODE_NULL;
 	}
 }
 
-static const uint8_t *
+static const char *
 sock_mode_to_uint8(sock_mode_t mode) {
 	switch (mode) {
-	case SOCK_MODE_NULL: return (const uint8_t*) "null"; break;
-	case SOCK_MODE_TCPCLIENT: return (const uint8_t*) "tcp-client"; break;
-	case SOCK_MODE_TCPSERVER: return (const uint8_t*) "tcp-server"; break;
-	case SOCK_MODE_ACCEPTCLIENT: return (const uint8_t*) "tcp-accept-client"; break;
-	default: return (const uint8_t*) "unknown"; break;
+	case SOCK_MODE_NULL: return "null"; break;
+	case SOCK_MODE_TCPCLIENT: return "tcp-client"; break;
+	case SOCK_MODE_TCPSERVER: return "tcp-server"; break;
+	case SOCK_MODE_ACCEPTCLIENT: return "tcp-accept-client"; break;
+	default: return "unknown"; break;
 	}
 }
 
@@ -148,7 +148,7 @@ init_tcp_server(socket_t *self) {
 	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_flags = AI_PASSIVE;
 
-	if (getaddrinfo(NULL, (const char *) self->port, &hints, &infores) != 0) {
+	if (getaddrinfo(NULL, self->port, &hints, &infores) != 0) {
 		sock_set_error(self, "failed to getaddrinfo \"%s:%s\"", self->host, self->port);
 		return NULL;
 	}
@@ -205,7 +205,7 @@ init_tcp_client(socket_t *self) {
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = IPPROTO_TCP;
 
-	if (getaddrinfo((const char *) self->host, (const char *) self->port, &hints, &infores) != 0) {
+	if (getaddrinfo(self->host, self->port, &hints, &infores) != 0) {
 		sock_set_error(self, "failed to getaddrinfo \"%s:%s\"", self->host, self->port);
 		return NULL;
 	}
@@ -245,18 +245,18 @@ init_tcp_client(socket_t *self) {
 }
 
 static socket_t *
-parse_open_src(socket_t *self, const uint8_t *src) {
+parse_open_src(socket_t *self, const char *src) {
 	if (!self || !src) {
 		sock_set_error(self, "invalid arguments");
 		return NULL;
 	}
 
-	uint8_t *dst = self->host;
+	char *dst = self->host;
 	int32_t ndst = sizeof(self->host)-1;
 	int32_t di = 0;
 	int32_t m = 0;
 
-	for (const uint8_t *sp = src; *sp; ++sp) {
+	for (const char *sp = src; *sp; ++sp) {
 		switch (m) {
 		case 0:
 			if (*sp == ':') {
@@ -287,14 +287,14 @@ parse_open_src(socket_t *self, const uint8_t *src) {
 	}
 
 	if (self->port[0] == '\0') {
-		snprintf((char *) self->port, sizeof self->port, "%s", SOCK_DEFAULT_PORT);
+		snprintf(self->port, sizeof self->port, "%s", SOCK_DEFAULT_PORT);
 	}
 
 	return self;
 }
 
 socket_t *
-sock_open(const uint8_t *src, const uint8_t *mode) {
+sock_open(const char *src, const char *mode) {
 	socket_t *self = calloc(1, sizeof(socket_t));
 	if (!self) {
         perror("calloc");
@@ -343,7 +343,7 @@ sock_open(const uint8_t *src, const uint8_t *mode) {
 	return NULL;
 }
 
-const uint8_t *
+const char *
 sock_getc_host(const socket_t *self) {
 	if (!self) {
 		return NULL;
@@ -352,7 +352,7 @@ sock_getc_host(const socket_t *self) {
 	return self->host;
 }
 
-const uint8_t *
+const char *
 sock_getc_port(const socket_t *self) {
 	if (!self) {
 		return NULL;
@@ -391,7 +391,7 @@ sock_accept(socket_t *self) {
 }
 
 int32_t
-sock_recv_str(socket_t *self, uint8_t *dst, int32_t dstsz) {
+sock_recv_str(socket_t *self, char *dst, int32_t dstsz) {
     if (!self) {
         return -1;
     }
@@ -414,7 +414,7 @@ sock_recv_str(socket_t *self, uint8_t *dst, int32_t dstsz) {
 }
 
 int32_t
-sock_send_str(socket_t *self, const uint8_t *str) {
+sock_send_str(socket_t *self, const char *str) {
     if (!self) {
         return -1;
     }
@@ -425,7 +425,7 @@ sock_send_str(socket_t *self, const uint8_t *str) {
 	}
 
 	int32_t ret = 0;
-	int32_t len = strlen((const char *) str);
+	int32_t len = strlen(str);
 
 	ret = send(self->socket, str, len, 0);
 	if (ret < 0) {
@@ -438,7 +438,7 @@ sock_send_str(socket_t *self, const uint8_t *str) {
 }
 
 int32_t
-sock_send(socket_t *self, const uint8_t *bytes, int32_t size) {
+sock_send(socket_t *self, const char *bytes, int32_t size) {
     if (!self) {
         return -1;
     }
@@ -451,7 +451,7 @@ sock_send(socket_t *self, const uint8_t *bytes, int32_t size) {
 	int32_t ret = 0;
 
 #if defined(_CAP_WINDOWS)
-	ret = send(self->socket, (const char *)bytes, size, 0);
+	ret = send(self->socket, bytes, size, 0);
 #else
 	ret = send(self->socket, bytes, size, 0);
 #endif
