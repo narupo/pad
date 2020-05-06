@@ -6303,7 +6303,6 @@ test_cc_compile(void) {
     node_string_t *string;
     node_break_stmt_t *break_stmt;
     node_continue_stmt_t *continue_stmt;
-    node_return_stmt_t *return_stmt;
     node_def_t *def;
     node_func_def_t *func_def;
     node_func_def_params_t *func_def_params;
@@ -9876,110 +9875,6 @@ test_cc_compile(void) {
         stmt = elems->stmt->real;
         continue_stmt = stmt->continue_stmt->real;
         assert(continue_stmt);
-    }
-
-    tkr_parse(tkr, "{@ for 1; 1; 1: return end @}");
-    {
-        ast_clear(ast);
-        ast_clear(ast);
-        (cc_compile(ast, tkr_get_tokens(tkr)));
-        root = ast_getc_root(ast);
-        assert(root != NULL);
-        assert(root->type == NODE_TYPE_PROGRAM);
-        assert(root->real != NULL);
-        program = root->real;
-        assert(program->blocks != NULL);
-        assert(program->blocks->type == NODE_TYPE_BLOCKS);
-        assert(program->blocks->real != NULL);
-        blocks = program->blocks->real;
-        assert(blocks->code_block != NULL);
-        assert(blocks->code_block->type == NODE_TYPE_CODE_BLOCK);
-        assert(blocks->code_block->real != NULL);
-        assert(blocks->ref_block == NULL);
-        assert(blocks->text_block == NULL);
-        code_block = blocks->code_block->real;
-        assert(code_block->elems != NULL);
-        assert(code_block->elems->type == NODE_TYPE_ELEMS);
-        assert(code_block->elems->real != NULL);
-        elems = code_block->elems->real;
-        assert(elems->stmt != NULL);
-        assert(elems->stmt->type == NODE_TYPE_STMT);
-        assert(elems->stmt->real != NULL);
-        stmt = elems->stmt->real;
-        assert(stmt->import_stmt == NULL);
-        assert(stmt->if_stmt == NULL);
-        assert(stmt->for_stmt != NULL);
-        assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
-        assert(stmt->for_stmt->real != NULL);
-        for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_formula != NULL);
-        assert(for_stmt->init_formula->type == NODE_TYPE_FORMULA);
-        assert(for_stmt->init_formula->real != NULL);
-        assert(for_stmt->comp_formula != NULL);
-        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
-        assert(for_stmt->comp_formula->real != NULL);
-        assert(for_stmt->update_formula != NULL);
-        assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
-        assert(for_stmt->update_formula->real != NULL);
-        assert(nodearr_len(for_stmt->contents) == 1);
-        elems = nodearr_get(for_stmt->contents, 0)->real;
-        assert(elems->stmt != NULL);
-        stmt = elems->stmt->real;
-        return_stmt = stmt->return_stmt->real;
-        assert(return_stmt);
-        assert(return_stmt->formula == NULL);
-    }
-
-    tkr_parse(tkr, "{@ for 1; 1; 1: return 1 end @}");
-    {
-        ast_clear(ast);
-        ast_clear(ast);
-        (cc_compile(ast, tkr_get_tokens(tkr)));
-        root = ast_getc_root(ast);
-        assert(root != NULL);
-        assert(root->type == NODE_TYPE_PROGRAM);
-        assert(root->real != NULL);
-        program = root->real;
-        assert(program->blocks != NULL);
-        assert(program->blocks->type == NODE_TYPE_BLOCKS);
-        assert(program->blocks->real != NULL);
-        blocks = program->blocks->real;
-        assert(blocks->code_block != NULL);
-        assert(blocks->code_block->type == NODE_TYPE_CODE_BLOCK);
-        assert(blocks->code_block->real != NULL);
-        assert(blocks->ref_block == NULL);
-        assert(blocks->text_block == NULL);
-        code_block = blocks->code_block->real;
-        assert(code_block->elems != NULL);
-        assert(code_block->elems->type == NODE_TYPE_ELEMS);
-        assert(code_block->elems->real != NULL);
-        elems = code_block->elems->real;
-        assert(elems->stmt != NULL);
-        assert(elems->stmt->type == NODE_TYPE_STMT);
-        assert(elems->stmt->real != NULL);
-        stmt = elems->stmt->real;
-        assert(stmt->import_stmt == NULL);
-        assert(stmt->if_stmt == NULL);
-        assert(stmt->for_stmt != NULL);
-        assert(stmt->for_stmt->type == NODE_TYPE_FOR_STMT);
-        assert(stmt->for_stmt->real != NULL);
-        for_stmt = stmt->for_stmt->real;
-        assert(for_stmt->init_formula != NULL);
-        assert(for_stmt->init_formula->type == NODE_TYPE_FORMULA);
-        assert(for_stmt->init_formula->real != NULL);
-        assert(for_stmt->comp_formula != NULL);
-        assert(for_stmt->comp_formula->type == NODE_TYPE_FORMULA);
-        assert(for_stmt->comp_formula->real != NULL);
-        assert(for_stmt->update_formula != NULL);
-        assert(for_stmt->update_formula->type == NODE_TYPE_FORMULA);
-        assert(for_stmt->update_formula->real != NULL);
-        assert(nodearr_len(for_stmt->contents) == 1);
-        elems = nodearr_get(for_stmt->contents, 0)->real;
-        assert(elems->stmt != NULL);
-        stmt = elems->stmt->real;
-        return_stmt = stmt->return_stmt->real;
-        assert(return_stmt);
-        assert(return_stmt->formula);
     }
 
     tkr_del(tkr);
@@ -21271,6 +21166,83 @@ test_trv_return_stmt_3(void) {
 }
 
 static void
+test_trv_return_stmt_4(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   return\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid return statement. not in function"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   if 1:\n"
+    "       return\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid return statement. not in function"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   if 0:\n"
+    "   else:\n"
+    "       return\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid return statement. not in function"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   if 0:\n"
+    "   elif 1:\n"
+    "       return\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid return statement. not in function"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       return\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid return statement. not in function"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_def_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -23433,6 +23405,7 @@ traverser_tests[] = {
     {"trv_return_stmt_1", test_trv_return_stmt_1},
     {"trv_return_stmt_2", test_trv_return_stmt_2},
     {"trv_return_stmt_3", test_trv_return_stmt_3},
+    {"trv_return_stmt_4", test_trv_return_stmt_4},
     {"trv_func_def_0", test_trv_func_def_0},
     {"trv_func_def_1", test_trv_func_def_1},
     {"trv_func_def_2", test_trv_func_def_2},
