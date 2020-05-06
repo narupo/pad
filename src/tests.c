@@ -20822,6 +20822,62 @@ test_trv_break_stmt_2(void) {
 }
 
 static void
+test_trv_break_stmt_3(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   break\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid break statement. not in loop"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   def f():\n"
+    "       break\n"
+    "   end\n"
+    "\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       puts(0)\n"
+    "       f()\n"
+    "       puts(1)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid break statement. not in loop"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       def f():\n"
+    "           break\n"
+    "       end\n"
+    "       puts(i)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid break statement. not in loop"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_continue_stmt_0(void) {
     trv_ready;
 
@@ -23366,6 +23422,7 @@ traverser_tests[] = {
     {"trv_break_stmt_0", test_trv_break_stmt_0},
     {"trv_break_stmt_1", test_trv_break_stmt_1},
     {"trv_break_stmt_2", test_trv_break_stmt_2},
+    {"trv_break_stmt_3", test_trv_break_stmt_3},
     {"trv_continue_stmt_0", test_trv_continue_stmt_0},
     {"trv_continue_stmt_1", test_trv_continue_stmt_1},
     {"trv_continue_stmt_2", test_trv_continue_stmt_2},
