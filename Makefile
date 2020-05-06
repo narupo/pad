@@ -13,7 +13,6 @@ endif
 MKDIR := mkdir
 CC := gcc
 INCLUDE := src
-LIB := lib
 
 ifeq ($(OS), Windows_NT)
 	CFLAGS := -Wall \
@@ -24,7 +23,7 @@ ifeq ($(OS), Windows_NT)
 		-Wno-unused-result \
 		-D_DEBUG \
 		-I$(INCLUDE) \
-		-L$(LIB) \
+		-Llib/windows \
 		-lws2_32
 else
 	CFLAGS := -Wall \
