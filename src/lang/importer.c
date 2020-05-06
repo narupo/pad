@@ -122,8 +122,8 @@ importer_import_as(
     ctx_pushb_stderr_buf(dstctx, ctx_getc_stderr_buf(modobj->module.ast->ref_context));
     ctx_clear_stdout_buf(modobj->module.ast->ref_context);
 
-    object_dict_t *dst_global_varmap = ctx_get_varmap_at_global(dstctx);
-    objdict_move(dst_global_varmap, alias, mem_move(modobj));
+    object_dict_t *dst_varmap = ctx_get_varmap(dstctx);
+    objdict_move(dst_varmap, alias, mem_move(modobj));
 
     return self;
 }
@@ -162,7 +162,7 @@ importer_from_import(
     object_array_t *v = varobj->objarr; \
     assert(objarr_len(v) == 1 || objarr_len(v) == 2); \
 
-    object_dict_t *dst_global_varmap = ctx_get_varmap_at_global(dstctx);
+    object_dict_t *dst_varmap = ctx_get_varmap(dstctx);
 
     // assign objects at global varmap of current context from module context
     // increment a reference count of objects
@@ -197,14 +197,14 @@ importer_from_import(
         obj_inc_ref(objinmod); // increment reference-count!
 
         if (alias) {
-            objdict_set(dst_global_varmap, alias, objinmod);
+            objdict_set(dst_varmap, alias, objinmod);
         } else {
-            objdict_set(dst_global_varmap, objname, objinmod);
+            objdict_set(dst_varmap, objname, objinmod);
         }
     }
 
     // assign imported module at global varmap of current context
-    objdict_move(dst_global_varmap, str_getc(modobj->module.name), mem_move(modobj));
+    objdict_move(dst_varmap, str_getc(modobj->module.name), mem_move(modobj));
 
     return self;
 }
