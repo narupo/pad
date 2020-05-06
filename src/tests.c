@@ -617,26 +617,26 @@ test_cstring_cstr_app(void) {
 }
 
 static void
-test_cstring_cstr_appfmt(void) {
+test_cstring_cstr_app_fmt(void) {
     char dst[100] = {0};
 
-    assert(cstr_appfmt(dst, sizeof dst, NULL) == NULL);
-    assert(cstr_appfmt(NULL, sizeof dst, "source") == NULL);
-    assert(cstr_appfmt(dst, 0, "source") == NULL);
+    assert(cstr_app_fmt(dst, sizeof dst, NULL) == NULL);
+    assert(cstr_app_fmt(NULL, sizeof dst, "source") == NULL);
+    assert(cstr_app_fmt(dst, 0, "source") == NULL);
 
-    assert(cstr_appfmt(dst, 3, "source") != NULL);
+    assert(cstr_app_fmt(dst, 3, "source") != NULL);
     assert(strcmp(dst, "so") == 0);
 
     *dst = '\0';
-    assert(cstr_appfmt(dst, sizeof dst, "source") != NULL);
+    assert(cstr_app_fmt(dst, sizeof dst, "source") != NULL);
     assert(strcmp(dst, "source") == 0);
-    assert(cstr_appfmt(dst, sizeof dst, " is available.") != NULL);
+    assert(cstr_app_fmt(dst, sizeof dst, " is available.") != NULL);
     assert(strcmp(dst, "source is available.") == 0);
-    assert(cstr_appfmt(dst, sizeof dst, "") != NULL);
+    assert(cstr_app_fmt(dst, sizeof dst, "") != NULL);
     assert(strcmp(dst, "source is available.") == 0);
 
     *dst = '\0';
-    assert(cstr_appfmt(dst, sizeof dst, "n %d is %c", 10, 'i') != NULL);
+    assert(cstr_app_fmt(dst, sizeof dst, "n %d is %c", 10, 'i') != NULL);
     assert(strcmp(dst, "n 10 is i") == 0);
 }
 
@@ -673,11 +673,11 @@ test_str_del(void) {
 }
 
 static void
-test_str_escdel(void) {
+test_str_esc_del(void) {
     string_t *s = str_new();
     assert(s != NULL);
-    assert(str_escdel(NULL) == NULL);
-    char *ptr = str_escdel(s);
+    assert(str_esc_del(NULL) == NULL);
+    char *ptr = str_esc_del(s);
     assert(ptr != NULL);
     free(ptr);
 }
@@ -686,19 +686,6 @@ static void
 test_str_new(void) {
     string_t *s = str_new();
     assert(s != NULL);
-    str_del(s);
-}
-
-static void
-test_str_newother(void) {
-    string_t *s = str_new();
-    assert(s != NULL);
-    assert(str_set(s, "1234") != NULL);
-    assert(str_newother(NULL) == NULL);
-    string_t *o = str_newother(s);
-    assert(o != NULL);
-    assert(strcmp(str_getc(o), "1234") == 0);
-    str_del(o);
     str_del(s);
 }
 
@@ -859,10 +846,9 @@ test_str_app(void) {
 }
 
 static void
-test_str_appstream(void) {
+test_str_app_stream(void) {
     string_t *s = str_new();
     assert(s != NULL);
-
 
     char curdir[1024];
     char path[1024];
@@ -871,40 +857,46 @@ test_str_appstream(void) {
 
     FILE *fin = fopen(path, "r");
     assert(fin != NULL);
-    assert(str_appstream(NULL, fin) == NULL);
-    assert(str_appstream(s, NULL) == NULL);
-    assert(str_appstream(s, fin) != NULL);
+    assert(str_app_stream(NULL, fin) == NULL);
+    assert(str_app_stream(s, NULL) == NULL);
+    assert(str_app_stream(s, fin) != NULL);
     assert(fclose(fin) == 0);
 
     str_del(s);
 }
 
 static void
-test_str_appother(void) {
+test_str_app_other(void) {
     string_t *s = str_new();
     assert(s != NULL);
     assert(str_set(s, "1234") != NULL);
     string_t *o = str_new();
     assert(o != NULL);
     assert(str_set(o, "1234") != NULL);
-    assert(str_appother(NULL, o) == NULL);
-    assert(str_appother(s, NULL) == NULL);
-    assert(str_appother(s, o) != NULL);
+    assert(str_app_other(NULL, o) == NULL);
+    assert(str_app_other(s, NULL) == NULL);
+    assert(str_app_other(s, o) != NULL);
     assert(strcmp(str_getc(s), "12341234") == 0);
     str_del(o);
+    str_del(s);
+
+    s = str_new();
+    assert(str_set(s, "1234") != NULL);
+    assert(str_app_other(s, s) != NULL);
+    assert(strcmp(str_getc(s), "12341234") == 0);
     str_del(s);
 }
 
 static void
-test_str_appfmt(void) {
+test_str_app_fmt(void) {
     string_t *s = str_new();
     assert(s != NULL);
     char buf[1024];
-    assert(str_appfmt(NULL, buf, sizeof buf, "%s", "test") == NULL);
-    assert(str_appfmt(s, NULL, sizeof buf, "%s", "test") == NULL);
-    assert(str_appfmt(s, buf, 0, "%s", "test") == NULL);
-    assert(str_appfmt(s, buf, sizeof buf, NULL, "test") == NULL);
-    assert(str_appfmt(s, buf, sizeof buf, "%s %d %c", "1234", 1, '2') != NULL);
+    assert(str_app_fmt(NULL, buf, sizeof buf, "%s", "test") == NULL);
+    assert(str_app_fmt(s, NULL, sizeof buf, "%s", "test") == NULL);
+    assert(str_app_fmt(s, buf, 0, "%s", "test") == NULL);
+    assert(str_app_fmt(s, buf, sizeof buf, NULL, "test") == NULL);
+    assert(str_app_fmt(s, buf, sizeof buf, "%s %d %c", "1234", 1, '2') != NULL);
     assert(strcmp(str_getc(s), "1234 1 2") == 0);
     str_del(s);
 }
@@ -1151,13 +1143,13 @@ test_str_camel(void) {
 static const struct testcase
 string_tests[] = {
     {"cstr_app", test_cstring_cstr_app},
-    {"cstr_appfmt", test_cstring_cstr_appfmt},
+    {"cstr_app_fmt", test_cstring_cstr_app_fmt},
     {"cstr_cpywithout", test_cstring_cstr_cpywithout},
     {"cstr_edup", test_cstring_cstr_edup},
     {"str_del", test_str_del},
-    {"str_escdel", test_str_escdel},
+    {"str_esc_del", test_str_esc_del},
     {"str_new", test_str_new},
-    {"str_newother", test_str_newother},
+    {"str_new_other", test_str_new_other},
     {"str_new_other", test_str_new_other},
     {"str_len", test_str_len},
     {"str_capa", test_str_capa},
@@ -1171,9 +1163,9 @@ string_tests[] = {
     {"str_pushf", test_str_pushf},
     {"str_popf", test_str_popf},
     {"str_app", test_str_app},
-    {"str_appstream", test_str_appstream},
-    {"str_appother", test_str_appother},
-    {"str_appfmt", test_str_appfmt},
+    {"str_app_stream", test_str_app_stream},
+    {"str_app_other", test_str_app_other},
+    {"str_app_fmt", test_str_app_fmt},
     {"str_rstrip", test_str_rstrip},
     {"str_lstrip", test_str_lstrip},
     {"str_strip", test_str_strip},

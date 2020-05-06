@@ -200,7 +200,7 @@ tkr_read_identifier(tokenizer_t *self) {
     }
 
     token_t *token = token_new(TOKEN_TYPE_IDENTIFIER);
-    token_move_text(token, str_escdel(buf));
+    token_move_text(token, str_esc_del(buf));
     return token;
 }
 
@@ -273,7 +273,7 @@ tkr_read_dq_string(tokenizer_t *self) {
 
 done: {
         token_t *token = token_new(TOKEN_TYPE_DQ_STRING);
-        token_move_text(token, str_escdel(buf));
+        token_move_text(token, str_esc_del(buf));
         return token;
     }
 fail:
@@ -345,7 +345,7 @@ tkr_store_textblock(tokenizer_t *self) {
         return self;
     }
     token_t *textblock = token_new(TOKEN_TYPE_TEXT_BLOCK);
-    token_move_text(textblock, mem_move(str_escdel(self->buf)));
+    token_move_text(textblock, mem_move(str_esc_del(self->buf)));
     tkr_move_token(self, mem_move(textblock));
     self->buf = str_new();
     return self;

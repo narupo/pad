@@ -7169,7 +7169,7 @@ trv_calc_asscalc_mul_ass_string(ast_t *ast, trv_args_t *targs) {
         } else {
             string_t *other = str_new_other(lhs->string);
             for (objint_t i = 0; i < rhsref->lvalue-1; ++i) {
-                str_appother(lhs->string, other);
+                str_app_other(lhs->string, other);
             }
             str_del(other);
         }

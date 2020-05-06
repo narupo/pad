@@ -57,16 +57,16 @@ cstr_app(char *dst, int32_t dstsz, const char *src);
  * @return failed to pointer to NULL
  */
 char *
-cstr_appfmt(char *dst, int32_t dstsz, const char *fmt, ...);
+cstr_app_fmt(char *dst, int32_t dstsz, const char *fmt, ...);
 
 /**
  * Copy string without specified string
- * 
+ *
  * @param[out] dst destination buffer
  * @param[in] dstsz size of destination buffer
  * @param[in] src source string for copy
  * @param[in] without specified string
- * 
+ *
  * @return success to pointer to destination buffer
  * @return failed to NULL
  */

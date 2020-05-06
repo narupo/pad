@@ -13,7 +13,7 @@ static bool
 is_contain_header(char *data, uint32_t datasz) {
     size_t len1 = strlen(data);
     size_t len2 = strlen(SYMLINK_HEADER);
-    size_t size = len1 < len2 ? len1 : len2; 
+    size_t size = len1 < len2 ? len1 : len2;
     return memcmp(data, SYMLINK_HEADER, size) == 0;
 }
 
@@ -241,22 +241,22 @@ symlink_norm_path(const config_t *config, char *dst, uint32_t dstsz, const char 
 #ifdef _CAP_WINDOWS
     // append drive letter of Windows
     if (hasdriveletter) {
-        cstr_appfmt(dst, dstsz, "%c:", drtpath[0]);
+        cstr_app_fmt(dst, dstsz, "%c:", drtpath[0]);
     }
 #endif
 
     if (pathhead[0] == FILE_SEP) {
-        cstr_appfmt(dst, dstsz, "%c", FILE_SEP);
+        cstr_app_fmt(dst, dstsz, "%c", FILE_SEP);
     }
 
     for (int32_t i = 0; i < cstrarr_len(dsttoks)-1; ++i) {
         const char *tok = cstrarr_getc(dsttoks, i);
         cstr_app(dst, dstsz, tok);
-        cstr_appfmt(dst, dstsz, "%c", FILE_SEP);
+        cstr_app_fmt(dst, dstsz, "%c", FILE_SEP);
     }
     if (cstrarr_len(dsttoks)) {
         const char *tok = cstrarr_getc(dsttoks, cstrarr_len(dsttoks)-1);
-        cstr_app(dst, dstsz, tok);        
+        cstr_app(dst, dstsz, tok);
     }
 
     cstrarr_del(srctoks);

@@ -89,7 +89,7 @@ replace_slashes(const char *s) {
         }
     }
 
-    return str_escdel(dst);
+    return str_esc_del(dst);
 }
 
 int
