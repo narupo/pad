@@ -24,16 +24,39 @@ enum {
  * and this structure has the error handling mechanizm by error_stack variable
  */
 struct ast {
-    const config_t *ref_config;  // read only config
-    token_t **ref_tokens;  // token list with null at the last (DO NOT DELETE)
-    token_t **ref_ptr;  // pointer to tokens for tokenizer (DO NOT DELETE)
-    node_t *root;  // pointer to root for compiler and traverser
-    context_t *ref_context;  // reference of context. update when traverse tree (DO NOT DELETE)
-    opts_t *opts;  // options for builtin opts module
-    gc_t *ref_gc;  // reference to gc (DO NOT DELETE)
-    int32_t import_level;  // number of import level
-    errstack_t *error_stack;  // error stack for errors
-    bool debug;  // if do debug to true
+    // reference of config (do not delete)
+    const config_t *ref_config;
+
+    // reference of tokens with null terminated (do not delete)
+    token_t **ref_tokens;
+
+    // refenrece of tokens with null temrinated (do not delete)
+    token_t **ref_ptr;
+
+    // root node. compiler parsed
+    node_t *root;
+
+    // reference of context. update when traverse tree (do not delete)
+    context_t *ref_context;
+
+    // options for builtin opts module
+    opts_t *opts;
+
+    // reference to gc (DO NOT DELETE)
+    gc_t *ref_gc;
+
+    // number of import level
+    int32_t import_level;
+
+    // error stack for errors
+    errstack_t *error_stack;
+
+    // if do debug to true
+    bool debug;
+
+    // if current context is in loop-statement then store true else false
+    // this flag refer from jump statements
+    bool is_in_loop;
 };
 
 /**

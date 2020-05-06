@@ -39,6 +39,9 @@ typedef struct scope scope_t;
 struct ast;
 typedef struct ast ast_t;
 
+struct cc_args;
+typedef struct cc_args cc_args_t;
+
 struct trv_args;
 typedef struct trv_args trv_args_t;
 

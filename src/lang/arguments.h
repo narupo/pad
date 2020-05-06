@@ -15,6 +15,15 @@ typedef struct {
 } index_value_t;
 
 /**
+ * The abstract arguments of compiler functions
+ */
+struct cc_args {
+    depth_t depth;
+    bool is_in_loop;
+    int if_stmt_type;  // 0 ... if, 1 ... elif
+};
+
+/**
  * The abstract arguments of traverser functions
  */
 struct trv_args {
@@ -60,10 +69,10 @@ struct trv_args {
     // function name
     const char *funcname;
 
-    // A index value object
+    // a index value object
     index_value_t index_value;
 
-    // A callback function
+    // a callback function
     object_t * (*callback)(ast_t *ast, struct trv_args *targs);
 };
 
