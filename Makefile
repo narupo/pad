@@ -7,18 +7,35 @@ else
 	RMDIR := rm -rf
 	SEP := /
 endif
+
 # Windows's mkdir not have -p option
 MKDIR := mkdir
 CC := gcc
 INCLUDE := src
-CFLAGS := -Wall \
-	-g \
-	-O3 \
-	-std=c11 \
-	-Wno-unused-function \
-	-Wno-unused-result \
-	-D_DEBUG \
-	-I$(INCLUDE)
+LIB := lib
+
+ifeq ($(OS), Windows_NT)
+	CFLAGS := -Wall \
+		-g \
+		-O3 \
+		-std=c11 \
+		-Wno-unused-function \
+		-Wno-unused-result \
+		-D_DEBUG \
+		-I$(INCLUDE) \
+		-L$(LIB) \
+		-lws2_32
+else
+	CFLAGS := -Wall \
+		-g \
+		-O3 \
+		-std=c11 \
+		-Wno-unused-function \
+		-Wno-unused-result \
+		-D_DEBUG \
+		-I$(INCLUDE) \
+		-L$(LIB)
+endif
 
 # $(warning $(wildcard src/*.c))
 

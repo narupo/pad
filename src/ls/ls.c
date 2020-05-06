@@ -29,7 +29,7 @@ lscmd_parse_opts(lscmd_t *self) {
         {"all", no_argument, 0, 'a'},
         {0},
     };
-    
+
     self->opts = (struct opts){0};
     opterr = 0; // ignore error messages
     optind = 0; // init index of parse
@@ -102,7 +102,7 @@ print_fname(const lscmd_t *self, FILE *fout, bool print_color, const char *path,
         err_error("failed to solve path by name \"%s\"", name);
         return;
     }
-    
+
     if (file_isdir(fpath)) {
         term_cfprintf(fout, TERM_WHITE, TERM_GREEN, TERM_BRIGHT, "%s", name);
     } else if (symlink_is_link_file(fpath)) {
@@ -145,7 +145,7 @@ lscmd_dir2arr(const lscmd_t *self, file_dir_t *dir) {
     for (file_dirnode_t *nd; (nd = file_dirread(dir)); ) {
         const char *name = file_dirnodename(nd);
         if (lscmd_isdotfile(self, name) && !self->opts.is_all) {
-            continue;            
+            continue;
         }
         cstrarr_push(arr, name);
         file_dirnodedel(nd);
@@ -160,7 +160,7 @@ lscmd_ls(const lscmd_t *self, const char *path) {
         err_error("\"%s\" is out of home", path);
         return 1;
     }
-    
+
     file_dir_t *dir = file_diropen(path);
     if (!dir) {
         err_error("failed to open directory \"%s\"", path);

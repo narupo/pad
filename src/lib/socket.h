@@ -26,10 +26,9 @@
 #endif
 
 #if defined(_SOCKET_WINDOWS)
-# include <windows.h>
-# define _WIN32_WINNT 0x501
 # include <winsock2.h>
 # include <ws2tcpip.h>
+# include <windows.h>
 #else
 # undef _BSD_SOURCE
 # define _BSD_SOURCE 1 /* cap: socket.h: netdb.h */
@@ -79,7 +78,7 @@ sock_close(socket_t *self);
  * @return pointer to dynamic allocate memory of struct cap_socket
  */
 socket_t *
-sock_open(const uint8_t *src, const uint8_t *mode);
+sock_open(const char *src, const char *mode);
 
 /**
  * get host of C string by socket
@@ -88,7 +87,7 @@ sock_open(const uint8_t *src, const uint8_t *mode);
  *
  * @return pointer to memory of C string
  */
-const uint8_t *
+const char *
 sock_getc_host(const socket_t *self);
 
 /**
@@ -98,7 +97,7 @@ sock_getc_host(const socket_t *self);
  *
  * @return pointer to memory of C string
  */
-const uint8_t *
+const char *
 sock_getc_port(const socket_t *self);
 
 /**
@@ -124,7 +123,7 @@ sock_accept(socket_t *self);
  * @return failed to number of under of zero
  */
 int32_t
-sock_recv_str(socket_t *self, uint8_t *dst, int32_t dstsz);
+sock_recv_str(socket_t *self, char *dst, int32_t dstsz);
 
 /**
  * wrapper of send(2)
@@ -137,7 +136,7 @@ sock_recv_str(socket_t *self, uint8_t *dst, int32_t dstsz);
  * @return failed to number of under of zero
  */
 int32_t
-sock_send_str(socket_t *self, const uint8_t *str);
+sock_send_str(socket_t *self, const char *str);
 
 /**
  * wrapper of send(2)
@@ -151,7 +150,7 @@ sock_send_str(socket_t *self, const uint8_t *str);
  * @return failed to number of under of zero
  */
 int32_t
-sock_send(socket_t *self, const uint8_t *bytes, int32_t size);
+sock_send(socket_t *self, const char *bytes, int32_t size);
 
 /**
  * set error

@@ -24212,6 +24212,44 @@ pwdcmd_tests[] = {
     {0},
 };
 
+/*************
+* ls command *
+*************/
+
+static void
+test_lscmd_default(void) {
+
+    return;  // TODO
+
+    config_t *config = config_new();
+    int argc = 1;
+    char *argv[] = {
+        "ls",
+        NULL,
+    };
+
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/ls"));
+
+    char buf[1024] = {0};
+    setvbuf(stdout, buf, _IOFBF, sizeof buf);
+
+    lscmd_t *lscmd = lscmd_new(config, argc, argv);
+    lscmd_run(lscmd);
+    lscmd_del(lscmd);
+
+    fflush(stdout);
+    setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
+    assert(!strcmp(buf, "a\nb\nc\n"));
+    printf("stdout[%s]\n", buf);
+}
+
+static const struct testcase
+lscmd_tests[] = {
+    {"default", test_lscmd_default},
+    {0},
+};
+
 /**************
 * cat command *
 **************/
@@ -24414,8 +24452,9 @@ static const struct testmodule
 testmodules[] = {
     // commands
     {"cd", cdcmd_tests},
-    {"cat", catcmd_tests},
     {"pwd", pwdcmd_tests},
+    {"ls", lscmd_tests},
+    {"cat", catcmd_tests},
 
     // lib
     {"cstring_array", cstrarr_tests},
