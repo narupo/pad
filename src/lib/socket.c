@@ -124,6 +124,15 @@ sock_getc_error(const socket_t *self) {
     return self->error;
 }
 
+bool
+sock_has_error(const socket_t *self) {
+    if (!self || self->error[0] != '\0') {
+        return true;
+    }
+
+    return false;
+}
+
 static socket_t *
 init_tcp_server(socket_t *self) {
 	struct addrinfo *infores = NULL;
