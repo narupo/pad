@@ -20952,6 +20952,37 @@ test_trv_continue_stmt_3(void) {
 }
 
 static void
+test_trv_continue_stmt_4(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f():\n"
+    "       continue\n"
+    "   end\n"
+    "\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       puts(0)\n"
+    "       for j = 0; j < 2; j += 1:\n"
+    "           puts(10)\n"
+    "           f()\n"
+    "           puts(20)\n"
+    "       end\n"
+    "       puts(1)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n10\n20\n10\n20\n1\n0\n10\n20\n10\n20\n1\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_return_stmt_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -23283,6 +23314,7 @@ traverser_tests[] = {
     {"trv_continue_stmt_1", test_trv_continue_stmt_1},
     {"trv_continue_stmt_2", test_trv_continue_stmt_2},
     {"trv_continue_stmt_3", test_trv_continue_stmt_3},
+    {"trv_continue_stmt_4", test_trv_continue_stmt_4},
     {"trv_return_stmt_0", test_trv_return_stmt_0},
     {"trv_return_stmt_1", test_trv_return_stmt_1},
     {"trv_return_stmt_2", test_trv_return_stmt_2},
