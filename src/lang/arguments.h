@@ -24,6 +24,9 @@ struct cc_args {
     // if current context is in loop statement then store true else store false
     bool is_in_loop;
 
+    // if current context is in function the store true else store false
+    bool is_in_func;
+
     // if statement type
     // 0 ... if, 1 ... elif
     int if_stmt_type;

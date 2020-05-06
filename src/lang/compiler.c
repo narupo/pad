@@ -887,6 +887,10 @@ cc_return_stmt(ast_t *ast, cc_args_t *cargs) {
     }
     check("read 'return'");
 
+    if (!cargs->is_in_func) {
+        return_cleanup("invalid return statement. not in function");
+    }
+
     cargs->depth = depth + 1;
     cur->formula = cc_formula(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -3635,11 +3639,13 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
     cur->contents = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
     bool is_in_loop = cargs->is_in_loop;
+    bool is_in_func = cargs->is_in_func;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
         ast->ref_ptr = save_ptr; \
         cargs->is_in_loop = is_in_loop; \
+        cargs->is_in_func = is_in_func; \
         ast_del_nodes(ast, cur->identifier); \
         ast_del_nodes(ast, cur->func_def_params); \
         for (int32_t i = 0; i < nodearr_len(cur->contents); ++i) { \
@@ -3656,6 +3662,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
 #undef return_ok
 #define return_ok \
     cargs->is_in_loop = is_in_loop; \
+    cargs->is_in_func = is_in_func; \
     return_parse(node_new(NODE_TYPE_FUNC_DEF, cur)); \
 
     depth_t depth = cargs->depth;
@@ -3710,6 +3717,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
         check("call cc_elems");
         cargs->depth = depth + 1;
         cargs->is_in_loop = false;
+        cargs->is_in_func = true;
         node_t *elems = cc_elems(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -3734,6 +3742,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
         check("call cc_blocks")
         cargs->depth = depth + 1;
         cargs->is_in_loop = false;
+        cargs->is_in_func = true;
         node_t *blocks = cc_blocks(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -3755,6 +3764,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
         check("call cc_elems");
         cargs->depth = depth + 1;
         cargs->is_in_loop = false;
+        cargs->is_in_func = true;
         node_t *elems = cc_elems(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -3778,6 +3788,8 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
 
         check("call cc_elems (2)");
         cargs->depth = depth + 1;
+        cargs->is_in_loop = false;
+        cargs->is_in_func = true;
         node_t *elems = cc_elems(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
