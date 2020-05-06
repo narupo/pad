@@ -322,7 +322,7 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
     ctx_del(ctx);
     gc_del(gc);
 
-    return str_escdel(buf);
+    return str_esc_del(buf);
 }
 
 void

@@ -472,7 +472,7 @@ obj_to_str(const object_t *self) {
     case OBJ_TYPE_INT: {
         string_t *str = str_new();
         char buf[1024];
-        str_appfmt(str, buf, sizeof buf, "%ld", self->lvalue);
+        str_app_fmt(str, buf, sizeof buf, "%ld", self->lvalue);
         return str;
     } break;
     case OBJ_TYPE_BOOL: {
@@ -518,7 +518,7 @@ obj_to_str(const object_t *self) {
     case OBJ_TYPE_RESERV: {
         string_t *str = str_new();
         str_app(str, "(reserv: ");
-        str_appother(str, self->reserv.name);
+        str_app_other(str, self->reserv.name);
         str_app(str, ")");
         return str;
     } break;
@@ -627,37 +627,37 @@ obj_type_to_str(const object_t *self) {
 
     switch (self->type) {
     case OBJ_TYPE_NIL:
-        str_appfmt(s, tmp, sizeof tmp, "<%d: nil>", self->type);
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: nil>", self->type);
         break;
     case OBJ_TYPE_INT:
-        str_appfmt(s, tmp, sizeof tmp, "<%d: int>", self->type);
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: int>", self->type);
         break;
     case OBJ_TYPE_BOOL:
-        str_appfmt(s, tmp, sizeof tmp, "<%d: bool>", self->type);
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: bool>", self->type);
         break;
     case OBJ_TYPE_IDENTIFIER:
-        str_appfmt(s, tmp, sizeof tmp, "<%d: identifier>", self->type);
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: identifier>", self->type);
         break;
     case OBJ_TYPE_STRING:
-        str_appfmt(s, tmp, sizeof tmp, "<%d: string>", self->type);
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: string>", self->type);
         break;
     case OBJ_TYPE_ARRAY:
-        str_appfmt(s, tmp, sizeof tmp, "<%d: array>", self->type);
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: array>", self->type);
         break;
     case OBJ_TYPE_DICT:
-        str_appfmt(s, tmp, sizeof tmp, "<%d: dict>", self->type);
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: dict>", self->type);
         break;
     case OBJ_TYPE_FUNC:
-        str_appfmt(s, tmp, sizeof tmp, "<%d: func>", self->type);
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: func>", self->type);
         break;
     case OBJ_TYPE_INDEX:
-        str_appfmt(s, tmp, sizeof tmp, "<%d: index>", self->type);
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: index>", self->type);
         break;
     case OBJ_TYPE_MODULE:
-        str_appfmt(s, tmp, sizeof tmp, "<%d: module>", self->type);
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: module>", self->type);
         break;
     case OBJ_TYPE_RESERV:
-        str_appfmt(s, tmp, sizeof tmp, "<%d: reservation>", self->type);
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: reservation>", self->type);
         break;
     }
 

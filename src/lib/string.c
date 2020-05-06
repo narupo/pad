@@ -45,7 +45,7 @@ str_del(string_t *self) {
 }
 
 string_type_t *
-str_escdel(string_t *self) {
+str_esc_del(string_t *self) {
     if (!self) {
         return NULL;
     }
@@ -76,11 +76,6 @@ str_new(void) {
 }
 
 string_t *
-str_new_other(const string_t *other) {
-    return str_newother(other);
-}
-
-string_t *
 str_new_cstr(const char *str) {
     string_t *self = str_new();
     str_set(self, str);
@@ -88,7 +83,7 @@ str_new_cstr(const char *str) {
 }
 
 string_t *
-str_newother(const string_t *other) {
+str_new_other(const string_t *other) {
     if (!other) {
         return NULL;
     }
@@ -307,7 +302,7 @@ str_app(string_t *self, const string_type_t *src) {
 }
 
 string_t *
-str_appstream(string_t *self, FILE *fin) {
+str_app_stream(string_t *self, FILE *fin) {
     if (!self || !fin) {
         return NULL;
     }
@@ -322,17 +317,18 @@ str_appstream(string_t *self, FILE *fin) {
 }
 
 string_t *
-str_appother(string_t *self, const string_t *other) {
-
-    if (!self || !other) {
+str_app_other(string_t *self, const string_t *_other) {
+    if (!self || !_other) {
         return NULL;
     }
 
+    string_t *other = str_new_other(_other);
     string_t *ret = NULL;
 
     if (self == other) {
         string_type_t *buf = cstr_edup(self->buffer);
         if (!buf) {
+            str_del(other);
             return ret;
         }
         ret = str_app(self, buf);
@@ -341,11 +337,12 @@ str_appother(string_t *self, const string_t *other) {
         ret = str_app(self, other->buffer);
     }
 
+    str_del(other);
     return ret;
 }
 
 string_t *
-str_appfmt(string_t *self, string_type_t *buf, int32_t nbuf, const string_type_t *fmt, ...) {
+str_app_fmt(string_t *self, string_type_t *buf, int32_t nbuf, const string_type_t *fmt, ...) {
     if (!self || !buf || !fmt || nbuf == 0) {
         return NULL;
     }
@@ -862,7 +859,7 @@ test_del(int argc, char *argv[]) {
 
 static int
 test_escdel(int argc, char *argv[]) {
-    string_type_t *buf = str_escdel(kstr);
+    string_type_t *buf = str_esc_del(kstr);
     if (!buf) {
         return 1;
     }
@@ -898,7 +895,7 @@ test_newother(int argc, char *argv[]) {
         return 1;
     }
 
-    string_t *dst = str_newother(kstr);
+    string_t *dst = str_new_other(kstr);
     if (!dst) {
         return 2;
     }

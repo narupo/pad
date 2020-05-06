@@ -47,9 +47,11 @@ str_del(string_t *self);
  * destring with move semantics
  *
  * @param[in] self
+ *
+ * @return pointer to buffer
  */
 string_type_t *
-str_escdel(string_t *self);
+str_esc_del(string_t *self);
 
 /**
  * constring
@@ -79,19 +81,6 @@ str_new_other(const string_t *other);
  */
 string_t *
 str_new_cstr(const string_type_t *str);
-
-/**
- * @deprecated
- *
- * constring from other string
- * string is copy object of other string
- *
- * @param[in] other pointer to memory of other string
- *
- * @return pointer to dynamic allocate memory of string
- */
-string_t *
-str_newother(const string_t *other);
 
 /**
  * get number of length of buffer in string
@@ -235,7 +224,7 @@ str_app(string_t *self, const string_type_t *src);
  * @return failed to NULL
  */
 string_t *
-str_appstream(string_t *self, FILE *fin);
+str_app_stream(string_t *self, FILE *fin);
 
 /**
  * append other string at back of buffer in string
@@ -247,7 +236,7 @@ str_appstream(string_t *self, FILE *fin);
  * @return failed to NULL
  */
 string_t *
-str_appother(string_t *self, const string_t *other);
+str_app_other(string_t *self, const string_t *other);
 
 /**
  * append format string at back of buffer in string
@@ -262,7 +251,7 @@ str_appother(string_t *self, const string_t *other);
  * @return failed to NULL
  */
 string_t *
-str_appfmt(string_t *self, string_type_t *buf, int32_t nbuf, const string_type_t *fmt, ...);
+str_app_fmt(string_t *self, string_type_t *buf, int32_t nbuf, const string_type_t *fmt, ...);
 
 /**
  * strip elements at right of string

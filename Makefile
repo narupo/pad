@@ -33,8 +33,7 @@ else
 		-Wno-unused-function \
 		-Wno-unused-result \
 		-D_DEBUG \
-		-I$(INCLUDE) \
-		-L$(LIB)
+		-I$(INCLUDE)
 endif
 
 # this is benri tool

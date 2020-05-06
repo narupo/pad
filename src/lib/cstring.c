@@ -40,7 +40,7 @@ cstr_pop_newline(char *s) {
     for (char *p = s+strlen(s)-1; p >= s && (*p == '\r' || *p == '\n'); --p) {
         *p = '\0';
     }
-    
+
     return s;
 }
 
@@ -54,14 +54,14 @@ cstr_app(char *dst, int32_t dstsz, const char *src) {
     char *dp = dst + strlen(dst);
 
     for (const char *sp = src; *sp && dp < dend; *dp++ = *sp++) {
-    }   
+    }
     *dp = '\0';
-    
+
     return dst;
 }
 
 char *
-cstr_appfmt(char *dst, int32_t dstsz, const char *fmt, ...) {
+cstr_app_fmt(char *dst, int32_t dstsz, const char *fmt, ...) {
     if (!dst || dstsz <= 0 || !fmt) {
         return NULL;
     }
@@ -80,7 +80,7 @@ cstr_cpywithout(char *dst, int32_t dstsz, const char *src, const char *without) 
     if (!dst || dstsz <= 0 || !src || !without) {
         return NULL;
     }
-    
+
     int32_t di = 0;
     for (const char *p = src; *p; ++p) {
         if (strchr(without, *p)) {
@@ -281,7 +281,7 @@ __cstr_split(const char *str, char sep, split_opts_t *opts) {
             } else {
                 if (!tokens_move(toks, tok)) {
                     goto fail;
-                }                
+                }
             }
         } else {
             if (!buf_push(buf, *p)) {

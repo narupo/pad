@@ -47,7 +47,7 @@ cl_new(void) {
 cl_t *
 cl_resize(cl_t *self, int32_t newcapa) {
     if (!self || newcapa <= self->capa) {
-        return NULL; 
+        return NULL;
     }
 
     char **tmp = realloc(self->arr, sizeof(char *) * newcapa + sizeof(char *));
@@ -112,7 +112,7 @@ const char *
 cl_getc(const cl_t *self, int32_t idx) {
     if (!self || idx < 0 || idx >= self->len) {
         return NULL;
-    }   
+    }
 
     return self->arr[idx];
 }
@@ -143,7 +143,7 @@ clstr_del(cl_string_t *self) {
 }
 
 static char *
-clstr_escdel(cl_string_t *self) {
+clstr_esc_del(cl_string_t *self) {
     if (!self) {
         return NULL;
     }
@@ -473,7 +473,7 @@ cl_parse_str_opts(cl_t *self, const char *drtsrc, int32_t opts) {
             if (isnormch(c)) {
                 clstr_push(tmp, c);
             } else if (c == '=') {
-                m = 200;                
+                m = 200;
                 validatepush(self, tmp, opts);
             } else {
                 m = 0;
@@ -559,11 +559,11 @@ cl_parse_argv_opts(cl_t *self, int32_t argc, char *argv[], int32_t opts) {
         clstr_push(line, '\'');
         clstr_push(line, ' ');
     }
-    
+
     self = cl_parse_str_opts(self, clstr_getc(line), opts);
     clstr_del(line);
 
-    return self;    
+    return self;
 }
 
 cl_t *
@@ -604,5 +604,5 @@ cl_to_string(const cl_t *self) {
         clstr_app(line, "\"");
     }
 
-    return clstr_escdel(line);
+    return clstr_esc_del(line);
 }
