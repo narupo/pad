@@ -47,7 +47,7 @@ struct socket;
 typedef struct socket socket_t;
 
 /**
- * show parameters of socket to stderr
+ * dump parameters of socket to stream
  *
  * @param[in] self
  */
