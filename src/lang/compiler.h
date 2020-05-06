@@ -13,6 +13,7 @@
 #include <lang/context.h>
 #include <lang/opts.h>
 #include <lang/ast.h>
+#include <lang/arguments.h>
 
 ast_t *
 cc_compile(ast_t *ast, token_t *tokens[]);

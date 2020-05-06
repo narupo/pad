@@ -19,7 +19,7 @@
             __LINE__, \
             20, \
             __func__, \
-            dep, \
+            cargs->depth, \
             token_type_to_str(t), \
             ast_getc_last_error_message(ast) \
         ); \
@@ -38,7 +38,7 @@
             __LINE__, \
             20, \
             __func__, \
-            dep, \
+            cargs->depth, \
             ret, \
             token_type_to_str(t), \
             ast_getc_last_error_message(ast) \
@@ -55,7 +55,7 @@
             __LINE__, \
             20, \
             __func__, \
-            dep, \
+            cargs->depth, \
             msg, \
             token_type_to_str(*ast->ref_ptr), \
             ast_getc_last_error_message(ast) \
@@ -73,49 +73,49 @@
 *************/
 
 static node_t *
-cc_program(ast_t *ast, int dep);
+cc_program(ast_t *ast, cc_args_t *cargs);
 
 static node_t *
-cc_elems(ast_t *ast, int dep);
+cc_elems(ast_t *ast, cc_args_t *cargs);
 
 static node_t *
-cc_blocks(ast_t *ast, int dep);
+cc_blocks(ast_t *ast, cc_args_t *cargs);
 
 static node_t *
-cc_def(ast_t *ast, int dep);
+cc_def(ast_t *ast, cc_args_t *cargs);
 
 static node_t *
-cc_func_def(ast_t *ast, int dep);
+cc_func_def(ast_t *ast, cc_args_t *cargs);
 
 static node_t *
-cc_test(ast_t *ast, int dep);
+cc_test(ast_t *ast, cc_args_t *cargs);
 
 static node_t *
-cc_test_list(ast_t *ast, int dep);
+cc_test_list(ast_t *ast, cc_args_t *cargs);
 
 static node_t *
-cc_identifier(ast_t *ast, int dep);
+cc_identifier(ast_t *ast, cc_args_t *cargs);
 
 static node_t *
-cc_mul_div_op(ast_t *ast, int dep);
+cc_mul_div_op(ast_t *ast, cc_args_t *cargs);
 
 static node_t *
-cc_dot(ast_t *ast, int dep);
+cc_dot(ast_t *ast, cc_args_t *cargs);
 
 static node_t *
-cc_negative(ast_t *ast, int dep);
+cc_negative(ast_t *ast, cc_args_t *cargs);
 
 static node_t *
-cc_call(ast_t *ast, int dep);
+cc_call(ast_t *ast, cc_args_t *cargs);
 
 static node_t *
-cc_dot_op(ast_t *ast, int dep);
+cc_dot_op(ast_t *ast, cc_args_t *cargs);
 
 static node_t *
-cc_multi_assign(ast_t *ast, int dep);
+cc_multi_assign(ast_t *ast, cc_args_t *cargs);
 
 static node_t *
-cc_expr(ast_t *ast, int dep);
+cc_expr(ast_t *ast, cc_args_t *cargs);
 
 /************
 * functions *
@@ -125,7 +125,10 @@ ast_t *
 cc_compile(ast_t *ast, token_t *ref_tokens[]) {
     ast->ref_tokens = ref_tokens;
     ast->ref_ptr = ref_tokens;
-    ast->root = cc_program(ast, 0);
+    ast->root = cc_program(ast, &(cc_args_t) {
+        .depth = 0,
+        .is_in_loop = false,
+    });
     return ast;
 }
 
@@ -141,7 +144,7 @@ cc_skip_newlines(ast_t *ast) {
 }
 
 static node_t *
-cc_assign(ast_t *ast, int dep) {
+cc_assign(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_assign_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -162,8 +165,11 @@ cc_assign(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call lhs cc_test");
-    node_t *lhs = cc_test(ast, dep+1);
+    cargs->depth = depth + 1;
+    node_t *lhs = cc_test(ast, cargs);
     if (!lhs) {
         return_cleanup("");
     }
@@ -181,7 +187,8 @@ cc_assign(ast_t *ast, int dep) {
     check("read =");
 
     check("call rhs cc_test");
-    node_t *rhs = cc_test(ast, dep+1);
+    cargs->depth = depth + 1;
+    node_t *rhs = cc_test(ast, cargs);
     if (!rhs) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -204,7 +211,8 @@ cc_assign(ast_t *ast, int dep) {
         check("read =");
 
         check("call rhs cc_test");
-        rhs = cc_test(ast, dep+1);
+        cargs->depth = depth + 1;
+        rhs = cc_test(ast, cargs);
         if (!rhs) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -219,7 +227,7 @@ cc_assign(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_assign_list(ast_t *ast, int dep) {
+cc_assign_list(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_assign_list_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -240,8 +248,11 @@ cc_assign_list(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call first cc_assign");
-    node_t *first = cc_assign(ast, dep+1);
+    cargs->depth = depth + 1;
+    node_t *first = cc_assign(ast, cargs);
     if (!first) {
         return_cleanup("");
     }
@@ -261,7 +272,8 @@ cc_assign_list(ast_t *ast, int dep) {
         check("read ,");
 
         check("call cc_assign");
-        node_t *rhs = cc_assign(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *rhs = cc_assign(ast, cargs);
         if (!rhs) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -276,7 +288,7 @@ cc_assign_list(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_formula(ast_t *ast, int dep) {
+cc_formula(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_formula_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -293,8 +305,11 @@ cc_formula(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call cc_assign_list");
-    cur->assign_list = cc_assign_list(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->assign_list = cc_assign_list(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -303,19 +318,20 @@ cc_formula(ast_t *ast, int dep) {
     }
 
     check("call cc_multi_assign");
-    cur->multi_assign = cc_multi_assign(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->multi_assign = cc_multi_assign(ast, cargs);
     if (!cur->multi_assign) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
-        return_cleanup(""); // not error
+        return_cleanup("");  // not error
     }
 
     return_parse(node_new(NODE_TYPE_FORMULA, cur));
 }
 
 static node_t *
-cc_multi_assign(ast_t *ast, int dep) {
+cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_multi_assign_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -336,8 +352,11 @@ cc_multi_assign(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call first cc_test_list");
-    node_t *node = cc_test_list(ast, dep+1);
+    cargs->depth = depth + 1;
+    node_t *node = cc_test_list(ast, cargs);
     if (!node) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -359,7 +378,8 @@ cc_multi_assign(ast_t *ast, int dep) {
         }
 
         check("call rhs cc_test_list");
-        node = cc_test_list(ast, dep+1);
+        cargs->depth = depth + 1;
+        node = cc_test_list(ast, cargs);
         if (!node) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -374,7 +394,7 @@ cc_multi_assign(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_test_list(ast_t *ast, int dep) {
+cc_test_list(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_test_list_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -395,7 +415,10 @@ cc_test_list(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    node_t *lhs = cc_test(ast, dep+1);
+    depth_t depth = cargs->depth;
+
+    cargs->depth = depth + 1;
+    node_t *lhs = cc_test(ast, cargs);
     if (!lhs) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -417,7 +440,8 @@ cc_test_list(ast_t *ast, int dep) {
         }
         check("read ,");
 
-        node_t *rhs = cc_test(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *rhs = cc_test(ast, cargs);
         if (!rhs) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -432,7 +456,7 @@ cc_test_list(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_call_args(ast_t *ast, int dep) {
+cc_call_args(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_call_args_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -453,7 +477,10 @@ cc_call_args(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    node_t *lhs = cc_test(ast, dep+1);
+    depth_t depth = cargs->depth;
+
+    cargs->depth = depth + 1;
+    node_t *lhs = cc_test(ast, cargs);
     if (!lhs) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -475,7 +502,8 @@ cc_call_args(ast_t *ast, int dep) {
         }
         check("read ,");
 
-        node_t *rhs = cc_test(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *rhs = cc_test(ast, cargs);
         if (!rhs) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -490,7 +518,7 @@ cc_call_args(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_for_stmt(ast_t *ast, int dep) {
+cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_for_stmt_t, cur);
     cur->contents = nodearr_new();
@@ -509,6 +537,8 @@ cc_for_stmt(ast_t *ast, int dep) {
         } \
         return_parse(NULL); \
     } \
+
+    depth_t depth = cargs->depth;
 
     token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_STMT_FOR) {
@@ -560,7 +590,8 @@ cc_for_stmt(ast_t *ast, int dep) {
                     return_cleanup("reached EOF in for statement");
                 }
 
-                node_t *blocks = cc_blocks(ast, dep+1);
+                cargs->depth = depth + 1;
+                node_t *blocks = cc_blocks(ast, cargs);
                 if (ast_has_errors(ast)) {
                     return_cleanup("");
                 }
@@ -584,7 +615,8 @@ cc_for_stmt(ast_t *ast, int dep) {
             } else {
                 // read elems
                 --ast->ref_ptr;
-                node_t *elems = cc_elems(ast, dep+1);
+                cargs->depth = depth + 1;
+                node_t *elems = cc_elems(ast, cargs);
                 if (ast_has_errors(ast)) {
                     return_cleanup("");
                 }
@@ -608,7 +640,8 @@ cc_for_stmt(ast_t *ast, int dep) {
         }
 
         check("call cc_assign_list");
-        cur->init_formula = cc_formula(ast, dep+1);
+        cargs->depth = depth + 1;
+        cur->init_formula = cc_formula(ast, cargs);
         if (!cur->init_formula) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -639,7 +672,8 @@ cc_for_stmt(ast_t *ast, int dep) {
             }
 
             check("call cc_test");
-            cur->comp_formula = cc_formula(ast, dep+1);
+            cargs->depth = depth + 1;
+            cur->comp_formula = cc_formula(ast, cargs);
             // allow empty
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -664,7 +698,8 @@ cc_for_stmt(ast_t *ast, int dep) {
             }
 
             check("call cc_test_list");
-            cur->update_formula = cc_formula(ast, dep+1);
+            cargs->depth = depth + 1;
+            cur->update_formula = cc_formula(ast, cargs);
             // allow empty
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -720,7 +755,8 @@ cc_for_stmt(ast_t *ast, int dep) {
                     return_cleanup("reached EOF in for statement");
                 }
 
-                node_t *blocks = cc_blocks(ast, dep+1);
+                cargs->depth = depth + 1;
+                node_t *blocks = cc_blocks(ast, cargs);
                 if (ast_has_errors(ast)) {
                     return_cleanup("");
                 }
@@ -744,7 +780,9 @@ cc_for_stmt(ast_t *ast, int dep) {
             } else {
                 // read elems
                 --ast->ref_ptr;
-                node_t *elems = cc_elems(ast, dep+1);
+
+                cargs->depth = depth + 1;
+                node_t *elems = cc_elems(ast, cargs);
                 if (ast_has_errors(ast)) {
                     return_cleanup("");
                 }
@@ -760,7 +798,7 @@ cc_for_stmt(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_break_stmt(ast_t *ast, int dep) {
+cc_break_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_break_stmt_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -785,7 +823,7 @@ cc_break_stmt(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_continue_stmt(ast_t *ast, int dep) {
+cc_continue_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_continue_stmt_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -810,7 +848,7 @@ cc_continue_stmt(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_return_stmt(ast_t *ast, int dep) {
+cc_return_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_return_stmt_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -825,6 +863,8 @@ cc_return_stmt(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_STMT_RETURN) {
         // not error
@@ -832,7 +872,8 @@ cc_return_stmt(ast_t *ast, int dep) {
     }
     check("read 'return'");
 
-    cur->formula = cc_formula(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->formula = cc_formula(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -842,7 +883,7 @@ cc_return_stmt(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_augassign(ast_t *ast, int dep) {
+cc_augassign(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_augassign_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -873,7 +914,7 @@ cc_augassign(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_identifier(ast_t *ast, int dep) {
+cc_identifier(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_identifier_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -901,7 +942,7 @@ cc_identifier(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_string(ast_t *ast, int dep) {
+cc_string(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_string_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -929,7 +970,7 @@ cc_string(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_simple_assign(ast_t *ast, int dep) {
+cc_simple_assign(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_simple_assign_t, cur);
     cur->nodearr = nodearr_new();
@@ -950,8 +991,11 @@ cc_simple_assign(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call cc_test");
-    node_t *lhs = cc_test(ast, dep+1);
+    cargs->depth = depth + 1;
+    node_t *lhs = cc_test(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -974,7 +1018,8 @@ cc_simple_assign(ast_t *ast, int dep) {
         check("read '='")
 
         check("call cc_test");
-        node_t *rhs = cc_test(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *rhs = cc_test(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
@@ -990,7 +1035,7 @@ cc_simple_assign(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_array_elems(ast_t *ast, int dep) {
+cc_array_elems(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_array_elems_t, cur);
     cur->nodearr = nodearr_new();
@@ -1014,8 +1059,11 @@ cc_array_elems(ast_t *ast, int dep) {
 #undef return_ok
 #define return_ok return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur))
 
+    depth_t depth = cargs->depth;
+
     check("call cc_simple_assign");
-    node_t *lhs = cc_simple_assign(ast, dep+1);
+    cargs->depth = depth + 1;
+    node_t *lhs = cc_simple_assign(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1051,7 +1099,8 @@ cc_array_elems(ast_t *ast, int dep) {
         }
 
         check("call cc_simple_assign");
-        node_t *rhs = cc_simple_assign(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *rhs = cc_simple_assign(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
@@ -1068,7 +1117,7 @@ cc_array_elems(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_array(ast_t *ast, int dep) {
+cc_array(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_array_t_, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -1084,6 +1133,8 @@ cc_array(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_LBRACKET) {
         return_cleanup(""); // not error
@@ -1097,7 +1148,8 @@ cc_array(ast_t *ast, int dep) {
         return_cleanup("reached EOF in compile array");
     }
 
-    cur->array_elems = cc_array_elems(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->array_elems = cc_array_elems(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1120,7 +1172,7 @@ cc_array(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_dict_elem(ast_t *ast, int dep) {
+cc_dict_elem(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_dict_elem_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -1137,7 +1189,10 @@ cc_dict_elem(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    cur->key_simple_assign = cc_simple_assign(ast, dep+1);
+    depth_t depth = cargs->depth;
+
+    cargs->depth = depth + 1;
+    cur->key_simple_assign = cc_simple_assign(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1163,7 +1218,8 @@ cc_dict_elem(ast_t *ast, int dep) {
         return_cleanup("reached EOF in dict elem");
     }
 
-    cur->value_simple_assign = cc_simple_assign(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->value_simple_assign = cc_simple_assign(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1175,7 +1231,7 @@ cc_dict_elem(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_dict_elems(ast_t *ast, int dep) {
+cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_dict_elems_t, cur);
     cur->nodearr = nodearr_new();
@@ -1199,8 +1255,11 @@ cc_dict_elems(ast_t *ast, int dep) {
 #undef return_ok
 #define return_ok return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur))
 
+    depth_t depth = cargs->depth;
+
     check("call cc_dict_elem");
-    node_t *lhs = cc_dict_elem(ast, dep+1);
+    cargs->depth = depth + 1;
+    node_t *lhs = cc_dict_elem(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1235,7 +1294,8 @@ cc_dict_elems(ast_t *ast, int dep) {
         }
 
         check("call cc_dict_elem");
-        node_t *rhs = cc_dict_elem(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *rhs = cc_dict_elem(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
@@ -1252,7 +1312,7 @@ cc_dict_elems(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_dict(ast_t *ast, int dep) {
+cc_dict(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_dict_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -1268,6 +1328,8 @@ cc_dict(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_LBRACE) {
         return_cleanup("");
@@ -1280,7 +1342,8 @@ cc_dict(ast_t *ast, int dep) {
         return_cleanup("reached EOF in dict");
     }
 
-    cur->dict_elems = cc_dict_elems(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->dict_elems = cc_dict_elems(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1308,7 +1371,7 @@ cc_dict(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_nil(ast_t *ast, int dep) {
+cc_nil(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_nil_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -1333,7 +1396,7 @@ cc_nil(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_digit(ast_t *ast, int dep) {
+cc_digit(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_digit_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -1360,7 +1423,7 @@ cc_digit(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_false_(ast_t *ast, int dep) {
+cc_false_(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_false_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -1386,7 +1449,7 @@ cc_false_(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_true_(ast_t *ast, int dep) {
+cc_true_(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_true_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -1412,7 +1475,7 @@ cc_true_(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_atom(ast_t *ast, int dep) {
+cc_atom(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_atom_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -1435,8 +1498,11 @@ cc_atom(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call cc_nil");
-    cur->nil = cc_nil(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->nil = cc_nil(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1445,7 +1511,8 @@ cc_atom(ast_t *ast, int dep) {
     }
 
     check("call cc_false_");
-    cur->false_ = cc_false_(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->false_ = cc_false_(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1454,7 +1521,8 @@ cc_atom(ast_t *ast, int dep) {
     }
 
     check("call cc_true_");
-    cur->true_ = cc_true_(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->true_ = cc_true_(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1463,7 +1531,8 @@ cc_atom(ast_t *ast, int dep) {
     }
 
     check("call cc_digit");
-    cur->digit = cc_digit(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->digit = cc_digit(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1472,7 +1541,8 @@ cc_atom(ast_t *ast, int dep) {
     }
 
     check("call cc_string");
-    cur->string = cc_string(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->string = cc_string(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1481,7 +1551,8 @@ cc_atom(ast_t *ast, int dep) {
     }
 
     check("call cc_array");
-    cur->array = cc_array(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->array = cc_array(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1490,7 +1561,8 @@ cc_atom(ast_t *ast, int dep) {
     }
 
     check("call cc_dict");
-    cur->dict = cc_dict(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->dict = cc_dict(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1499,7 +1571,8 @@ cc_atom(ast_t *ast, int dep) {
     }
 
     check("call cc_identifier");
-    cur->identifier = cc_identifier(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->identifier = cc_identifier(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1511,7 +1584,7 @@ cc_atom(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_factor(ast_t *ast, int dep) {
+cc_factor(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_factor_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -1528,8 +1601,11 @@ cc_factor(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call cc_atom");
-    cur->atom = cc_atom(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->atom = cc_atom(ast, cargs);
     if (!cur->atom) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -1546,7 +1622,8 @@ cc_factor(ast_t *ast, int dep) {
         check("read (")
 
         check("call cc_formula");
-        cur->formula = cc_formula(ast, dep+1);
+        cargs->depth = depth + 1;
+        cur->formula = cc_formula(ast, cargs);
         if (!cur->formula) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -1570,7 +1647,7 @@ cc_factor(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_asscalc(ast_t *ast, int dep) {
+cc_asscalc(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_asscalc_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -1591,8 +1668,11 @@ cc_asscalc(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call cc_expr");
-    node_t *lhs = cc_expr(ast, dep+1);
+    cargs->depth = depth + 1;
+    node_t *lhs = cc_expr(ast, cargs);
     if (!lhs) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -1604,7 +1684,8 @@ cc_asscalc(ast_t *ast, int dep) {
 
     for (;;) {
         check("call cc_augassign");
-        node_t *op = cc_augassign(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *op = cc_augassign(ast, cargs);
         if (!op) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -1615,7 +1696,8 @@ cc_asscalc(ast_t *ast, int dep) {
         nodearr_moveb(cur->nodearr, op);
 
         check("call cc_expr");
-        node_t *rhs = cc_expr(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *rhs = cc_expr(ast, cargs);
         if (!rhs) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -1630,7 +1712,7 @@ cc_asscalc(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_index(ast_t *ast, int dep) {
+cc_index(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_index_t, cur);
     cur->nodearr = nodearr_new();
@@ -1652,8 +1734,11 @@ cc_index(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call cc_factor");
-    cur->factor = cc_factor(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->factor = cc_factor(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1674,7 +1759,8 @@ cc_index(ast_t *ast, int dep) {
         check("read '['");
 
         check("call cc_simple_assign");
-        node_t *simple_assign = cc_simple_assign(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *simple_assign = cc_simple_assign(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
@@ -1699,7 +1785,7 @@ cc_index(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_term(ast_t *ast, int dep) {
+cc_term(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_term_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -1720,8 +1806,11 @@ cc_term(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call left cc_dot");
-    node_t *lhs = cc_negative(ast, dep+1);
+    cargs->depth = depth + 1;
+    node_t *lhs = cc_negative(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1733,7 +1822,8 @@ cc_term(ast_t *ast, int dep) {
 
     for (;;) {
         check("call mul_div_op");
-        node_t *op = cc_mul_div_op(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *op = cc_mul_div_op(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
@@ -1744,7 +1834,8 @@ cc_term(ast_t *ast, int dep) {
         nodearr_moveb(cur->nodearr, op);
 
         check("call right cc_dot");
-        node_t *rhs = cc_negative(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *rhs = cc_negative(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
@@ -1759,7 +1850,7 @@ cc_term(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_negative(ast_t *ast, int dep) {
+cc_negative(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_negative_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -1775,6 +1866,8 @@ cc_negative(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_OP_SUB) {
         --ast->ref_ptr;
@@ -1784,7 +1877,8 @@ cc_negative(ast_t *ast, int dep) {
     }
 
     check("call left cc_dot");
-    cur->dot = cc_dot(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->dot = cc_dot(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1796,7 +1890,7 @@ cc_negative(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_dot(ast_t *ast, int dep) {
+cc_dot(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_dot_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -1817,8 +1911,11 @@ cc_dot(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call left cc_call");
-    node_t *lhs = cc_call(ast, dep+1);
+    cargs->depth = depth + 1;
+    node_t *lhs = cc_call(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1830,7 +1927,8 @@ cc_dot(ast_t *ast, int dep) {
 
     for (;;) {
         check("call cc_dot_op");
-        node_t *op = cc_dot_op(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *op = cc_dot_op(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
@@ -1841,7 +1939,8 @@ cc_dot(ast_t *ast, int dep) {
         nodearr_moveb(cur->nodearr, op);
 
         check("call right cc_call");
-        node_t *rhs = cc_call(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *rhs = cc_call(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
@@ -1856,7 +1955,7 @@ cc_dot(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_call(ast_t *ast, int dep) {
+cc_call(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_call_t, cur);
     cur->call_args_list = nodearr_new();
@@ -1878,8 +1977,11 @@ cc_call(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call cc_index");
-    cur->index = cc_index(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->index = cc_index(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -1904,7 +2006,8 @@ cc_call(ast_t *ast, int dep) {
         check("read lparen");
 
         check("call cc_call_args");
-        node_t *call_args = cc_call_args(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *call_args = cc_call_args(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
@@ -1932,7 +2035,7 @@ cc_call(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_dot_op(ast_t *ast, int dep) {
+cc_dot_op(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_dot_op_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -1960,7 +2063,7 @@ cc_dot_op(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_mul_div_op(ast_t *ast, int dep) {
+cc_mul_div_op(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_mul_div_op_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -1989,7 +2092,7 @@ cc_mul_div_op(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_add_sub_op(ast_t *ast, int dep) {
+cc_add_sub_op(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_add_sub_op_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -2018,7 +2121,7 @@ cc_add_sub_op(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_expr(ast_t *ast, int dep) {
+cc_expr(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_expr_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -2039,8 +2142,11 @@ cc_expr(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call left cc_term");
-    node_t *lhs = cc_term(ast, dep+1);
+    cargs->depth = depth + 1;
+    node_t *lhs = cc_term(ast, cargs);
     if (!lhs) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -2052,7 +2158,8 @@ cc_expr(ast_t *ast, int dep) {
 
     for (;;) {
         check("call add_sub_op");
-        node_t *op = cc_add_sub_op(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *op = cc_add_sub_op(ast, cargs);
         if (!op) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -2063,7 +2170,8 @@ cc_expr(ast_t *ast, int dep) {
         nodearr_moveb(cur->nodearr, op);
 
         check("call cc_term");
-        node_t *rhs = cc_term(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *rhs = cc_term(ast, cargs);
         if (!rhs) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -2078,7 +2186,7 @@ cc_expr(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_comp_op(ast_t *ast, int dep) {
+cc_comp_op(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_comp_op_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -2129,7 +2237,7 @@ cc_comp_op(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_comparison(ast_t *ast, int dep) {
+cc_comparison(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_comparison_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -2150,8 +2258,11 @@ cc_comparison(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call left cc_asscalc");
-    node_t *lexpr = cc_asscalc(ast, dep+1);
+    cargs->depth = depth + 1;
+    node_t *lexpr = cc_asscalc(ast, cargs);
     if (!lexpr) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -2163,7 +2274,8 @@ cc_comparison(ast_t *ast, int dep) {
 
     for (;;) {
         check("call cc_comp_op");
-        node_t *comp_op = cc_comp_op(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *comp_op = cc_comp_op(ast, cargs);
         if (!comp_op) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -2172,7 +2284,8 @@ cc_comparison(ast_t *ast, int dep) {
         }
 
         check("call right cc_asscalc");
-        node_t *rexpr = cc_asscalc(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *rexpr = cc_asscalc(ast, cargs);
         if (!rexpr) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -2190,7 +2303,7 @@ cc_comparison(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_not_test(ast_t *ast, int dep) {
+cc_not_test(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_not_test_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -2207,10 +2320,13 @@ cc_not_test(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     token_t *t = *ast->ref_ptr++;
     if (t->type == TOKEN_TYPE_OP_NOT) {
         check("call cc_not_test");
-        cur->not_test = cc_not_test(ast, dep+1);
+        cargs->depth = depth + 1;
+        cur->not_test = cc_not_test(ast, cargs);
         if (!cur->not_test) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -2221,7 +2337,8 @@ cc_not_test(ast_t *ast, int dep) {
         ast->ref_ptr--;
 
         check("call cc_comparison");
-        cur->comparison = cc_comparison(ast, dep+1);
+        cargs->depth = depth + 1;
+        cur->comparison = cc_comparison(ast, cargs);
         if (!cur->comparison) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -2234,7 +2351,7 @@ cc_not_test(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_and_test(ast_t *ast, int dep) {
+cc_and_test(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_and_test_t, cur);
     cur->nodearr = nodearr_new();
@@ -2255,8 +2372,11 @@ cc_and_test(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call cc_not_test");
-    node_t *lhs = cc_not_test(ast, dep+1);
+    cargs->depth = depth + 1;
+    node_t *lhs = cc_not_test(ast, cargs);
     if (!lhs) {
         return_cleanup("");
     }
@@ -2276,7 +2396,8 @@ cc_and_test(ast_t *ast, int dep) {
         check("read 'or'")
 
         check("call cc_not_test");
-        node_t *rhs = cc_not_test(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *rhs = cc_not_test(ast, cargs);
         if (!rhs) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -2292,7 +2413,7 @@ cc_and_test(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_or_test(ast_t *ast, int dep) {
+cc_or_test(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_or_test_t, cur);
     cur->nodearr = nodearr_new();
@@ -2313,8 +2434,11 @@ cc_or_test(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call cc_and_test");
-    node_t *lhs = cc_and_test(ast, dep+1);
+    cargs->depth = depth + 1;
+    node_t *lhs = cc_and_test(ast, cargs);
     if (!lhs) {
         return_cleanup("");
     }
@@ -2334,7 +2458,8 @@ cc_or_test(ast_t *ast, int dep) {
         check("read 'or'")
 
         check("call cc_or_test");
-        node_t *rhs = cc_and_test(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *rhs = cc_and_test(ast, cargs);
         if (!rhs) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -2350,7 +2475,7 @@ cc_or_test(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_test(ast_t *ast, int dep) {
+cc_test(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_test_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -2366,7 +2491,11 @@ cc_test(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
-    cur->or_test = cc_or_test(ast, dep+1);
+    depth_t depth = cargs->depth;
+
+    check("call cc_or_test");
+    cargs->depth = depth + 1;
+    cur->or_test = cc_or_test(ast, cargs);
     if (!cur->or_test) {
         return_cleanup("");
     }
@@ -2375,7 +2504,7 @@ cc_test(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_else_stmt(ast_t *ast, int dep) {
+cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_else_stmt_t, cur);
     cur->contents = nodearr_new();
@@ -2391,6 +2520,8 @@ cc_else_stmt(ast_t *ast, int dep) {
         } \
         return_parse(NULL); \
     } \
+
+    depth_t depth = cargs->depth;
 
     token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_STMT_ELSE) {
@@ -2434,7 +2565,8 @@ cc_else_stmt(ast_t *ast, int dep) {
             check("read '@}'");
 
             check("call cc_blocks");
-            node_t *blocks = cc_blocks(ast, dep+1);
+            cargs->depth = depth + 1;
+            node_t *blocks = cc_blocks(ast, cargs);
             if (ast_has_errors(ast)) {
                 return_cleanup("failed to compile blocks");
             }
@@ -2457,7 +2589,8 @@ cc_else_stmt(ast_t *ast, int dep) {
             --ast->ref_ptr;
 
             check("call cc_elems");
-            node_t *elems = cc_elems(ast, dep+1);
+            cargs->depth = depth + 1;
+            node_t *elems = cc_elems(ast, cargs);
             if (ast_has_errors(ast)) {
                 return_cleanup("failed to compile elems");
             }
@@ -2472,7 +2605,7 @@ cc_else_stmt(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_if_stmt(ast_t *ast, int type, int dep) {
+cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_if_stmt_t, cur);
     cur->contents = nodearr_new();
@@ -2493,14 +2626,16 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     token_t *t = *ast->ref_ptr++;
-    if (type == 0) {
+    if (cargs->if_stmt_type == 0) {
         if (t->type != TOKEN_TYPE_STMT_IF) {
             return_cleanup("");  // not error
         }
         node_type = NODE_TYPE_IF_STMT;
         check("read if");
-    } else if (type == 1) {
+    } else if (cargs->if_stmt_type == 1) {
         if (t->type != TOKEN_TYPE_STMT_ELIF) {
             return_cleanup("");  // not error
         }
@@ -2517,7 +2652,8 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
     }
 
     check("call cc_test");
-    cur->test = cc_test(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->test = cc_test(ast, cargs);
     if (!cur->test) {
         ast->ref_ptr = save_ptr;
         if (ast_has_errors(ast)) {
@@ -2559,7 +2695,10 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
             break;
         } else if (t->type == TOKEN_TYPE_STMT_ELIF) {
             --ast->ref_ptr;
-            node_t *elif = cc_if_stmt(ast, 1, dep+1);
+
+            cargs->depth = depth + 1;
+            cargs->if_stmt_type = 1;
+            node_t *elif = cc_if_stmt(ast, cargs);
             if (!elif || ast_has_errors(ast)) {
                 return_cleanup("failed to compile elif statement");
             }
@@ -2568,7 +2707,9 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
             continue;
         } else if (t->type == TOKEN_TYPE_STMT_ELSE) {
             --ast->ref_ptr;
-            node_t *else_ = cc_else_stmt(ast, dep+1);
+
+            cargs->depth = depth + 1;
+            node_t *else_ = cc_else_stmt(ast, cargs);
             if (!else_ || ast_has_errors(ast)) {
                 return_cleanup("failed to compile else statement");
             }
@@ -2591,7 +2732,8 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
             }
 
             check("call cc_blocks");
-            node_t *blocks = cc_blocks(ast, dep+1);
+            cargs->depth = depth + 1;
+            node_t *blocks = cc_blocks(ast, cargs);
             if (ast_has_errors(ast)) {
                 return_cleanup("failed to compile blocks");
             }
@@ -2615,7 +2757,8 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
             --ast->ref_ptr;
 
             check("call cc_elems");
-            node_t *elems = cc_elems(ast, dep+1);
+            cargs->depth = depth + 1;
+            node_t *elems = cc_elems(ast, cargs);
             if (ast_has_errors(ast)) {
                 return_cleanup("failed to compile elems");
             }
@@ -2630,7 +2773,7 @@ cc_if_stmt(ast_t *ast, int type, int dep) {
 }
 
 static node_t *
-cc_import_as_stmt(ast_t *ast, int dep) {
+cc_import_as_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_import_as_stmt_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -2650,12 +2793,15 @@ cc_import_as_stmt(ast_t *ast, int dep) {
 #undef return_ok
 #define return_ok return_parse(node_new(NODE_TYPE_IMPORT_AS_STMT, cur))
 
+    depth_t depth = cargs->depth;
+
     const token_t *tok = *ast->ref_ptr++;
     if (tok->type != TOKEN_TYPE_STMT_IMPORT) {
         return_cleanup(""); // not error
     }
 
-    cur->path = cc_string(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->path = cc_string(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     } else if (!cur->path) {
@@ -2671,7 +2817,8 @@ cc_import_as_stmt(ast_t *ast, int dep) {
         return_cleanup("not found keyword 'as' in compile import as statement");
     }
 
-    cur->alias = cc_identifier(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->alias = cc_identifier(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     } else if (!cur->alias) {
@@ -2682,7 +2829,7 @@ cc_import_as_stmt(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_import_var(ast_t *ast, int dep) {
+cc_import_var(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_import_var_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -2702,7 +2849,10 @@ cc_import_var(ast_t *ast, int dep) {
 #undef return_ok
 #define return_ok return_parse(node_new(NODE_TYPE_IMPORT_VAR, cur))
 
-    cur->identifier = cc_identifier(ast, dep+1);
+    depth_t depth = cargs->depth;
+
+    cargs->depth = depth + 1;
+    cur->identifier = cc_identifier(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -2722,7 +2872,8 @@ cc_import_var(ast_t *ast, int dep) {
     }
     check("readed 'as'");
 
-    cur->alias = cc_identifier(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->alias = cc_identifier(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -2735,7 +2886,7 @@ cc_import_var(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_import_vars(ast_t *ast, int dep) {
+cc_import_vars(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_import_vars_t, cur);
     cur->nodearr = nodearr_new();
@@ -2762,12 +2913,16 @@ cc_import_vars(ast_t *ast, int dep) {
 #undef push
 #define push(node) nodearr_moveb(cur->nodearr, node)
 
+    depth_t depth = cargs->depth;
+
     // read '(' or single import variable
     const token_t *tok = *ast->ref_ptr++;
     if (tok->type != TOKEN_TYPE_LPAREN) {
         // read single import variable
         --ast->ref_ptr;
-        node_t *import_var = cc_import_var(ast, dep+1);
+
+        cargs->depth = depth + 1;
+        node_t *import_var = cc_import_var(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
@@ -2790,7 +2945,8 @@ cc_import_vars(ast_t *ast, int dep) {
         check("skip newlines");
         cc_skip_newlines(ast);
 
-        node_t *import_var = cc_import_var(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *import_var = cc_import_var(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
@@ -2838,7 +2994,7 @@ cc_import_vars(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_from_import_stmt(ast_t *ast, int dep) {
+cc_from_import_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_from_import_stmt_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -2858,13 +3014,16 @@ cc_from_import_stmt(ast_t *ast, int dep) {
 #undef return_ok
 #define return_ok return_parse(node_new(NODE_TYPE_FROM_IMPORT_STMT, cur))
 
+    depth_t depth = cargs->depth;
+
     const token_t *tok = *ast->ref_ptr++;
     if (tok->type != TOKEN_TYPE_FROM) {
         return_cleanup("");
     }
     check("readed 'from'");
 
-    cur->path = cc_string(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->path = cc_string(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -2879,7 +3038,8 @@ cc_from_import_stmt(ast_t *ast, int dep) {
     }
     check("readed 'import'");
 
-    cur->import_vars = cc_import_vars(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->import_vars = cc_import_vars(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
@@ -2892,7 +3052,7 @@ cc_from_import_stmt(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_import_stmt(ast_t *ast, int dep) {
+cc_import_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_import_stmt_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -2912,13 +3072,17 @@ cc_import_stmt(ast_t *ast, int dep) {
 #undef return_ok
 #define return_ok return_parse(node_new(NODE_TYPE_IMPORT_STMT, cur))
 
+    depth_t depth = cargs->depth;
+
     // get import_as_stmt or from_import_stmt
-    cur->import_as_stmt = cc_import_as_stmt(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->import_as_stmt = cc_import_as_stmt(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!cur->import_as_stmt) {
-        cur->from_import_stmt = cc_from_import_stmt(ast, dep+1);
+        cargs->depth = depth + 1;
+        cur->from_import_stmt = cc_from_import_stmt(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
@@ -2949,7 +3113,7 @@ cc_import_stmt(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_stmt(ast_t *ast, int dep) {
+cc_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_stmt_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -2970,43 +3134,52 @@ cc_stmt(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call cc_import_stmt");
-    cur->import_stmt = cc_import_stmt(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->import_stmt = cc_import_stmt(ast, cargs);
     if (!cur->import_stmt) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
 
         check("call cc_if_stmt");
-        cur->if_stmt = cc_if_stmt(ast, 0, dep+1);
+        cargs->depth = depth + 1;
+        cargs->if_stmt_type = 0;
+        cur->if_stmt = cc_if_stmt(ast, cargs);
         if (!cur->if_stmt) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
 
             check("call cc_for_stmt");
-            cur->for_stmt = cc_for_stmt(ast, dep+1);
+            cargs->depth = depth + 1;
+            cur->for_stmt = cc_for_stmt(ast, cargs);
             if (!cur->for_stmt) {
                 if (ast_has_errors(ast)) {
                     return_cleanup("");
                 }
 
                 check("call cc_break_stmt");
-                cur->break_stmt = cc_break_stmt(ast, dep+1);
+                cargs->depth = depth + 1;
+                cur->break_stmt = cc_break_stmt(ast, cargs);
                 if (!cur->break_stmt) {
                     if (ast_has_errors(ast)) {
                         return_cleanup("");
                     }
 
                     check("call cc_continue_stmt");
-                    cur->continue_stmt = cc_continue_stmt(ast, dep+1);
+                    cargs->depth = depth + 1;
+                    cur->continue_stmt = cc_continue_stmt(ast, cargs);
                     if (!cur->continue_stmt) {
                         if (ast_has_errors(ast)) {
                             return_cleanup("");
                         }
 
                         check("call cc_return_stmt");
-                        cur->return_stmt = cc_return_stmt(ast, dep+1);
+                        cargs->depth = depth + 1;
+                        cur->return_stmt = cc_return_stmt(ast, cargs);
                         if (!cur->return_stmt) {
                             if (ast_has_errors(ast)) {
                                 return_cleanup("");
@@ -3024,7 +3197,7 @@ cc_stmt(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_elems(ast_t *ast, int dep) {
+cc_elems(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_elems_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -3043,22 +3216,27 @@ cc_elems(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call def");
-    cur->def = cc_def(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->def = cc_def(ast, cargs);
     if (!cur->def) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
 
         check("call cc_stmt");
-        cur->stmt = cc_stmt(ast, dep+1);
+        cargs->depth = depth + 1;
+        cur->stmt = cc_stmt(ast, cargs);
         if (!cur->stmt) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
 
             check("call cc_formula");
-            cur->formula = cc_formula(ast, dep+1);
+            cargs->depth = depth + 1;
+            cur->formula = cc_formula(ast, cargs);
             if (!cur->formula) {
                 if (ast_has_errors(ast)) {
                     return_cleanup("");
@@ -3073,7 +3251,8 @@ cc_elems(ast_t *ast, int dep) {
     cc_skip_newlines(ast);
 
     check("call cc_elems");
-    cur->elems = cc_elems(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->elems = cc_elems(ast, cargs);
     if (!cur->elems) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -3085,7 +3264,7 @@ cc_elems(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_text_block(ast_t *ast, int dep) {
+cc_text_block(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_text_block_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -3105,7 +3284,7 @@ cc_text_block(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_ref_block(ast_t *ast, int dep) {
+cc_ref_block(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_ref_block_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -3121,6 +3300,8 @@ cc_ref_block(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_LDOUBLE_BRACE) {
         return_cleanup("");
@@ -3128,7 +3309,8 @@ cc_ref_block(ast_t *ast, int dep) {
     check("read '{:'")
 
     check("call cc_formula");
-    cur->formula = cc_formula(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->formula = cc_formula(ast, cargs);
     if (!cur->formula) {
         return_cleanup("");
     }
@@ -3146,7 +3328,7 @@ cc_ref_block(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_code_block(ast_t *ast, int dep) {
+cc_code_block(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_code_block_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -3162,6 +3344,8 @@ cc_code_block(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_LBRACEAT) {
         return_cleanup("");
@@ -3172,7 +3356,8 @@ cc_code_block(ast_t *ast, int dep) {
     cc_skip_newlines(ast);
 
     check("call cc_elems");
-    cur->elems = cc_elems(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->elems = cc_elems(ast, cargs);
     // cur->elems allow null
     if (ast_has_errors(ast)) {
         return_cleanup("");
@@ -3199,7 +3384,7 @@ cc_code_block(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_blocks(ast_t *ast, int dep) {
+cc_blocks(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_blocks_t, cur);
 
@@ -3213,29 +3398,35 @@ cc_blocks(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call cc_code_block");
-    cur->code_block = cc_code_block(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->code_block = cc_code_block(ast, cargs);
     if (!cur->code_block) {
         if (ast_has_errors(ast)) {
             return_cleanup();
         }
 
         check("call cc_ref_block");
-        cur->ref_block = cc_ref_block(ast, dep+1);
+        cargs->depth = depth + 1;
+        cur->ref_block = cc_ref_block(ast, cargs);
         if (!cur->ref_block) {
             if (ast_has_errors(ast)) {
                 return_cleanup();
             }
 
             check("call cc_text_block");
-            cur->text_block = cc_text_block(ast, dep+1);
+            cargs->depth = depth + 1;
+            cur->text_block = cc_text_block(ast, cargs);
             if (!cur->text_block) {
                 return_cleanup();
             }
         }
     }
 
-    cur->blocks = cc_blocks(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->blocks = cc_blocks(ast, cargs);
     // allow null
     if (ast_has_errors(ast)) {
         return_cleanup();
@@ -3245,7 +3436,7 @@ cc_blocks(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_program(ast_t *ast, int dep) {
+cc_program(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_program_t, cur);
 
@@ -3256,8 +3447,11 @@ cc_program(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call cc_blocks");
-    cur->blocks = cc_blocks(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->blocks = cc_blocks(ast, cargs);
     if (!cur->blocks) {
         if (ast_has_errors(ast)) {
             return_cleanup();
@@ -3268,7 +3462,7 @@ cc_program(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_def(ast_t *ast, int dep) {
+cc_def(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_def_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -3284,8 +3478,11 @@ cc_def(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call cc_func_def");
-    cur->func_def = cc_func_def(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->func_def = cc_func_def(ast, cargs);
     if (!cur->func_def) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -3297,7 +3494,7 @@ cc_def(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_func_def_args(ast_t *ast, int dep) {
+cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_func_def_args_t, cur);
     cur->identifiers = nodearr_new();
@@ -3317,8 +3514,11 @@ cc_func_def_args(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     check("call cc_identifier");
-    node_t *identifier = cc_identifier(ast, dep+1);
+    cargs->depth = depth + 1;
+    node_t *identifier = cc_identifier(ast, cargs);
     if (!identifier) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -3341,7 +3541,8 @@ cc_func_def_args(ast_t *ast, int dep) {
         check("read ,");
 
         check("call cc_identifier");
-        identifier = cc_identifier(ast, dep+1);
+        cargs->depth = depth + 1;
+        identifier = cc_identifier(ast, cargs);
         if (!identifier) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
@@ -3357,7 +3558,7 @@ cc_func_def_args(ast_t *ast, int dep) {
 
 
 static node_t *
-cc_func_def_params(ast_t *ast, int dep) {
+cc_func_def_params(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_func_def_params_t, cur);
     token_t **save_ptr = ast->ref_ptr;
@@ -3373,6 +3574,8 @@ cc_func_def_params(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_LPAREN) {
         return_cleanup("");
@@ -3380,7 +3583,8 @@ cc_func_def_params(ast_t *ast, int dep) {
     check("read (");
 
     check("call cc_func_def_args");
-    cur->func_def_args = cc_func_def_args(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->func_def_args = cc_func_def_args(ast, cargs);
     if (!cur->func_def_args) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -3402,7 +3606,7 @@ cc_func_def_params(ast_t *ast, int dep) {
 }
 
 static node_t *
-cc_func_def(ast_t *ast, int dep) {
+cc_func_def(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_func_def_t, cur);
     cur->contents = nodearr_new();
@@ -3424,6 +3628,8 @@ cc_func_def(ast_t *ast, int dep) {
         return_parse(NULL); \
     } \
 
+    depth_t depth = cargs->depth;
+
     token_t *t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_DEF) {
         return_cleanup("");
@@ -3431,7 +3637,8 @@ cc_func_def(ast_t *ast, int dep) {
     check("read 'def'");
 
     check("call cc_identifier");
-    cur->identifier = cc_identifier(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->identifier = cc_identifier(ast, cargs);
     if (!cur->identifier) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -3440,7 +3647,8 @@ cc_func_def(ast_t *ast, int dep) {
     }
 
     check("call cc_func_def_params");
-    cur->func_def_params = cc_func_def_params(ast, dep+1);
+    cargs->depth = depth + 1;
+    cur->func_def_params = cc_func_def_params(ast, cargs);
     if (!cur->func_def_params) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -3470,7 +3678,8 @@ cc_func_def(ast_t *ast, int dep) {
         ast->ref_ptr--;
 
         check("call cc_elems");
-        node_t *elems = cc_elems(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *elems = cc_elems(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         } else if (elems) {
@@ -3492,7 +3701,8 @@ cc_func_def(ast_t *ast, int dep) {
         check("read @}")
 
         check("call cc_blocks")
-        node_t *blocks = cc_blocks(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *blocks = cc_blocks(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         } else if (blocks) {
@@ -3511,7 +3721,8 @@ cc_func_def(ast_t *ast, int dep) {
         }
 
         check("call cc_elems");
-        node_t *elems = cc_elems(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *elems = cc_elems(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         } else if (elems) {
@@ -3533,7 +3744,8 @@ cc_func_def(ast_t *ast, int dep) {
         ast->ref_ptr--;
 
         check("call cc_elems (2)");
-        node_t *elems = cc_elems(ast, dep+1);
+        cargs->depth = depth + 1;
+        node_t *elems = cc_elems(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         } else if (elems) {
