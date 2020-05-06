@@ -19,6 +19,7 @@
 #include <signal.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #if defined(_WIN32) || defined(_WIN64)
 # define _SOCKET_WINDOWS 1
@@ -170,3 +171,13 @@ sock_set_error(socket_t *self, const char *fmt, ...);
  */
 const char *
 sock_getc_error(const socket_t *self);
+
+/**
+ * if socket_t has error then return true else return false
+ *
+ * @param[in] *self
+ *
+ * @return true or false
+ */
+bool
+sock_has_error(const socket_t *self);
