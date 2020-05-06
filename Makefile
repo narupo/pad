@@ -1,3 +1,4 @@
+# get rm and rmdir and sep
 ifeq ($(OS), Windows_NT)
 	RM := del
 	RMDIR := rmdir /s /q
@@ -8,7 +9,7 @@ else
 	SEP := /
 endif
 
-# Windows's mkdir not have -p option
+# windows's mkdir not has -p option :/
 MKDIR := mkdir
 CC := gcc
 INCLUDE := src
@@ -37,6 +38,7 @@ else
 		-L$(LIB)
 endif
 
+# this is benri tool
 # $(warning $(wildcard src/*.c))
 
 all: tests cap
