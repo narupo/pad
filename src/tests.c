@@ -20676,13 +20676,8 @@ test_trv_for_stmt_12(void) {
 }
 
 static void
-test_trv_break_stmt(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+test_trv_break_stmt_0(void) {
+    trv_ready;
 
     tkr_parse(tkr, "{@ for: break end @}");
     {
@@ -20714,21 +20709,121 @@ test_trv_break_stmt(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
 }
 
 static void
-test_trv_continue_stmt(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+test_trv_break_stmt_1(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       puts(i)\n"
+    "       break\n"
+    "       puts(10)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       puts(i)\n"
+    "       for j = 4; j < 6; j += 1:\n"
+    "           puts(j)\n"
+    "           break\n"
+    "       end\n"
+    "       puts(10)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n4\n10\n1\n4\n10\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_break_stmt_2(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       puts(i)\n"
+    "       if 1:\n"
+    "           break\n"
+    "       end\n"
+    "       puts(10)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       puts(i)\n"
+    "       if 0:\n"
+    "           puts(100)\n"
+    "       else:\n"
+    "           break\n"
+    "       end\n"
+    "       puts(10)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       puts(i)\n"
+    "       if 0:\n"
+    "           puts(200)\n"
+    "       elif 1:\n"
+    "           break\n"
+    "       else:\n"
+    "           puts(100)\n"
+    "       end\n"
+    "       puts(10)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_continue_stmt_0(void) {
+    trv_ready;
 
     tkr_parse(tkr, "{@ j=0 for i=0; i<2; i+=1: continue\n j=i end @}{: j :}");
     {
@@ -20740,11 +20835,120 @@ test_trv_continue_stmt(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
+}
+
+static void
+test_trv_continue_stmt_1(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       puts(0)\n"
+    "       continue\n"
+    "       puts(1)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n0\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_continue_stmt_2(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       puts(0)\n"
+    "       if 1:\n"
+    "           continue\n"
+    "       end\n"
+    "       puts(1)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n0\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       puts(0)\n"
+    "       if 0:\n"
+    "       elif 1:\n"
+    "           continue\n"
+    "       end\n"
+    "       puts(1)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n0\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       puts(0)\n"
+    "       if 0:\n"
+    "       else:\n"
+    "           continue\n"
+    "       end\n"
+    "       puts(1)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n0\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_continue_stmt_3(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       puts(0)\n"
+    "       for j = 0; j < 2; j += 1:\n"
+    "           puts(10)\n"
+    "           continue\n"
+    "           puts(20)\n"
+    "       end\n"
+    "       puts(1)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n10\n10\n1\n0\n10\n10\n1\n"));
+    }
+
+    trv_cleanup;
 }
 
 static void
@@ -23072,8 +23276,13 @@ traverser_tests[] = {
     {"trv_for_stmt_10", test_trv_for_stmt_10},
     {"trv_for_stmt_11", test_trv_for_stmt_11},
     {"trv_for_stmt_12", test_trv_for_stmt_12},
-    {"trv_break_stmt", test_trv_break_stmt},
-    {"trv_continue_stmt", test_trv_continue_stmt},
+    {"trv_break_stmt_0", test_trv_break_stmt_0},
+    {"trv_break_stmt_1", test_trv_break_stmt_1},
+    {"trv_break_stmt_2", test_trv_break_stmt_2},
+    {"trv_continue_stmt_0", test_trv_continue_stmt_0},
+    {"trv_continue_stmt_1", test_trv_continue_stmt_1},
+    {"trv_continue_stmt_2", test_trv_continue_stmt_2},
+    {"trv_continue_stmt_3", test_trv_continue_stmt_3},
     {"trv_return_stmt_0", test_trv_return_stmt_0},
     {"trv_return_stmt_1", test_trv_return_stmt_1},
     {"trv_return_stmt_2", test_trv_return_stmt_2},
