@@ -887,7 +887,7 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
                 }
 
                 obj_del(result);
-            } // allow null contents
+            }  // for
 
             if (ctx_get_do_break(ast->ref_context)) {
                 break;
@@ -901,7 +901,7 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
                 goto done;
             }
             result = NULL;
-        } // for
+        }  // for
     } else if (for_stmt->comp_formula) {
         // for 1: end
         for (;;) {
@@ -976,8 +976,8 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
             if (ctx_get_do_break(ast->ref_context)) {
                 break;
             }
-        }
-    }
+        }  // for
+    }  // if
 
 done:
     ctx_clear_jump_flags(ast->ref_context);
