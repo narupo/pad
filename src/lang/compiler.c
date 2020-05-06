@@ -523,10 +523,12 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
     declare(node_for_stmt_t, cur);
     cur->contents = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
+    bool is_in_loop = cargs->is_in_loop;
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
         ast->ref_ptr = save_ptr; \
+        cargs->is_in_loop = is_in_loop; \
         ast_del_nodes(ast, cur->init_formula); \
         ast_del_nodes(ast, cur->comp_formula); \
         ast_del_nodes(ast, cur->update_formula); \
@@ -537,6 +539,11 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
         } \
         return_parse(NULL); \
     } \
+
+#undef return_ok
+#define return_ok \
+    cargs->is_in_loop = is_in_loop; \
+    return_parse(node_new(NODE_TYPE_FOR_STMT, cur)); \
 
     depth_t depth = cargs->depth;
 
@@ -591,6 +598,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
                 }
 
                 cargs->depth = depth + 1;
+                cargs->is_in_loop = true;
                 node_t *blocks = cc_blocks(ast, cargs);
                 if (ast_has_errors(ast)) {
                     return_cleanup("");
@@ -616,6 +624,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
                 // read elems
                 --ast->ref_ptr;
                 cargs->depth = depth + 1;
+                cargs->is_in_loop = true;
                 node_t *elems = cc_elems(ast, cargs);
                 if (ast_has_errors(ast)) {
                     return_cleanup("");
@@ -627,10 +636,8 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
             }
         }
     } else {
-        // for comp_formula : elems end
-        // for comp_formula : @} blocks {@
-        // for init_formula ; comp_formula ; test_list : elems end
-        // for init_formula ; comp_formula ; test_list : @} blocks {@ end
+        // for comp_formula : [ (( '@}' blocks '{@' ) | elems) ]* end
+        // for init_formula ; comp_formula ; test_list : [ (( '@}' blocks '{@' ) | elems) ]* end
         ast->ref_ptr--;
 
         check("skip newlines");
@@ -756,6 +763,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
                 }
 
                 cargs->depth = depth + 1;
+                cargs->is_in_loop = true;
                 node_t *blocks = cc_blocks(ast, cargs);
                 if (ast_has_errors(ast)) {
                     return_cleanup("");
@@ -782,6 +790,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
                 --ast->ref_ptr;
 
                 cargs->depth = depth + 1;
+                cargs->is_in_loop = true;
                 node_t *elems = cc_elems(ast, cargs);
                 if (ast_has_errors(ast)) {
                     return_cleanup("");
@@ -794,7 +803,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
         }  // for
     }
 
-    return_parse(node_new(NODE_TYPE_FOR_STMT, cur));
+    return_ok;
 }
 
 static node_t *
@@ -818,6 +827,9 @@ cc_break_stmt(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     check("read 'break'");
+    if (!cargs->is_in_loop) {
+        return_cleanup("invalid break statement. not in loop");
+    }
 
     return_parse(node_new(NODE_TYPE_BREAK_STMT, cur));
 }
@@ -843,6 +855,9 @@ cc_continue_stmt(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     check("read 'continue'");
+    if (!cargs->is_in_loop) {
+        return_cleanup("invalid continue statement. not in loop");
+    }
 
     return_parse(node_new(NODE_TYPE_CONTINUE_STMT, cur));
 }
@@ -1894,11 +1909,13 @@ cc_dot(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_dot_t, cur);
     token_t **save_ptr = ast->ref_ptr;
+    bool is_in_loop = cargs->is_in_loop;
     cur->nodearr = nodearr_new();
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
         ast->ref_ptr = save_ptr; \
+        cargs->is_in_loop = is_in_loop; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
             ast_del_nodes(ast, node); \
@@ -1911,10 +1928,16 @@ cc_dot(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
+#undef return_ok
+#define return_ok \
+    cargs->is_in_loop = is_in_loop; \
+    return_parse(node_new(NODE_TYPE_DOT, cur)); \
+
     depth_t depth = cargs->depth;
 
     check("call left cc_call");
     cargs->depth = depth + 1;
+    cargs->is_in_loop = false;
     node_t *lhs = cc_call(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
@@ -1933,7 +1956,7 @@ cc_dot(ast_t *ast, cc_args_t *cargs) {
             return_cleanup("");
         }
         if (!op) {
-            return_parse(node_new(NODE_TYPE_DOT, cur));
+            return_ok;
         }
 
         nodearr_moveb(cur->nodearr, op);
@@ -3611,10 +3634,12 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
     declare(node_func_def_t, cur);
     cur->contents = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
+    bool is_in_loop = cargs->is_in_loop;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
         ast->ref_ptr = save_ptr; \
+        cargs->is_in_loop = is_in_loop; \
         ast_del_nodes(ast, cur->identifier); \
         ast_del_nodes(ast, cur->func_def_params); \
         for (int32_t i = 0; i < nodearr_len(cur->contents); ++i) { \
@@ -3627,6 +3652,11 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
         } \
         return_parse(NULL); \
     } \
+
+#undef return_ok
+#define return_ok \
+    cargs->is_in_loop = is_in_loop; \
+    return_parse(node_new(NODE_TYPE_FUNC_DEF, cur)); \
 
     depth_t depth = cargs->depth;
 
@@ -3679,6 +3709,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
 
         check("call cc_elems");
         cargs->depth = depth + 1;
+        cargs->is_in_loop = false;
         node_t *elems = cc_elems(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -3691,7 +3722,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
         --ast->ref_ptr;
     }
 
-    // read blocks
+    // read contents
     for (;;) {
         t = *ast->ref_ptr++;
         if (!t || t->type != TOKEN_TYPE_RBRACEAT) {
@@ -3702,6 +3733,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
 
         check("call cc_blocks")
         cargs->depth = depth + 1;
+        cargs->is_in_loop = false;
         node_t *blocks = cc_blocks(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -3722,6 +3754,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
 
         check("call cc_elems");
         cargs->depth = depth + 1;
+        cargs->is_in_loop = false;
         node_t *elems = cc_elems(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
@@ -3763,7 +3796,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
     }
     check("read end");
 
-    return_parse(node_new(NODE_TYPE_FUNC_DEF, cur));
+    return_ok;
 }
 
 #undef viss

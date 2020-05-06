@@ -18,9 +18,15 @@ typedef struct {
  * The abstract arguments of compiler functions
  */
 struct cc_args {
+    // number of depth of recursion
     depth_t depth;
+
+    // if current context is in loop statement then store true else store false
     bool is_in_loop;
-    int if_stmt_type;  // 0 ... if, 1 ... elif
+
+    // if statement type
+    // 0 ... if, 1 ... elif
+    int if_stmt_type;
 };
 
 /**

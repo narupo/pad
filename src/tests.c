@@ -20975,8 +20975,8 @@ test_trv_continue_stmt_4(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n10\n20\n10\n20\n1\n0\n10\n20\n10\n20\n1\n"));
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid continue statement. not in loop"));
     }
 
     trv_cleanup;
@@ -20985,8 +20985,6 @@ test_trv_continue_stmt_4(void) {
 static void
 test_trv_continue_stmt_5(void) {
     trv_ready;
-
-    return;  // TODO
 
     tkr_parse(tkr, "{@\n"
     "   continue\n"
@@ -20997,7 +20995,7 @@ test_trv_continue_stmt_5(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "can't execute continue statement. not in loop"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid continue statement. not in loop"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -21017,7 +21015,7 @@ test_trv_continue_stmt_5(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "can't execute continue statement. not in loop"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid continue statement. not in loop"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -21025,15 +21023,16 @@ test_trv_continue_stmt_5(void) {
     "       def f():\n"
     "           continue\n"
     "       end\n"
+    "       puts(i)\n"
     "   end\n"
     "@}");
     {
         ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
+        (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "can't execute continue statement. not in loop"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid continue statement. not in loop"));
     }
 
     trv_cleanup;
