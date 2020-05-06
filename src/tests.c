@@ -18145,7 +18145,6 @@ test_trv_import_stmt_2(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "45\n"));
     }
 
-    // module set at global varmap
     tkr_parse(tkr,
         "{@\n"
         "   def func():\n"
@@ -18159,8 +18158,8 @@ test_trv_import_stmt_2(void) {
         assert(!ast_has_errors(ast));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(module)"));
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"count\" is not defined in ref block"));
     }
 
     trv_cleanup;
