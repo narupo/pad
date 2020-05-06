@@ -18057,6 +18057,116 @@ test_trv_import_stmt_1(void) {
 }
 
 static void
+test_trv_import_stmt_2(void) {
+    trv_ready;
+
+    tkr_parse(tkr,
+        "{@\n"
+        "   if 1:\n"
+        "       import \":tests/lang/modules/count.cap\" as count\n"
+        "   end"
+        "@}{: count.n :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_errors(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "45"));
+    }
+
+    tkr_parse(tkr,
+        "{@\n"
+        "   if 0:\n"
+        "   else:\n"
+        "       import \":tests/lang/modules/count.cap\" as count\n"
+        "   end"
+        "@}{: count.n :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_errors(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "45"));
+    }
+
+    tkr_parse(tkr,
+        "{@\n"
+        "   if 0:\n"
+        "   elif 1:\n"
+        "       import \":tests/lang/modules/count.cap\" as count\n"
+        "   end"
+        "@}{: count.n :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_errors(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "45"));
+    }
+
+    tkr_parse(tkr,
+        "{@\n"
+        "   for i = 0; i < 2; i += 1:\n"
+        "       import \":tests/lang/modules/count.cap\" as count\n"
+        "       puts(count.n)\n"
+        "   end"
+        "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_errors(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "45\n45\n"));
+    }
+
+    tkr_parse(tkr,
+        "{@\n"
+        "   def func():\n"
+        "       import \":tests/lang/modules/count.cap\" as count\n"
+        "       puts(count.n)\n"
+        "   end\n"
+        "   func()\n"
+        "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_errors(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "45\n"));
+    }
+
+    // module set at global varmap
+    tkr_parse(tkr,
+        "{@\n"
+        "   def func():\n"
+        "       import \":tests/lang/modules/count.cap\" as count\n"
+        "   end"
+        "   func()\n"
+        "@}{: count :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_errors(ast));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(module)"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_from_import_stmt_1(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -23349,6 +23459,7 @@ traverser_tests[] = {
     {"trv_text_block", test_trv_text_block},
     {"trv_import_stmt_0", test_trv_import_stmt_0},
     {"trv_import_stmt_1", test_trv_import_stmt_1},
+    {"trv_import_stmt_2", test_trv_import_stmt_2},
     {"trv_from_import_stmt_1", test_trv_from_import_stmt_1},
     {"trv_from_import_stmt_2", test_trv_from_import_stmt_2},
     {"trv_from_import_stmt_3", test_trv_from_import_stmt_3},
