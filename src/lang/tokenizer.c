@@ -428,10 +428,14 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 if (!tkr_parse_identifier(self)) {
                     goto fail;
                 }
-            } else if (c == '#') {
+            } else if (c == '/' && *self->ptr == '/') {
+                self->ptr++;
                 m = 100;
+            } else if (c == '/' && *self->ptr == '*') {
+                self->ptr++;
+                m = 150;
             } else if (c == '\r' && *self->ptr == '\n') {
-                ++self->ptr;
+                self->ptr++;
                 tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_NEWLINE)));
             } else if ((c == '\r' && *self->ptr != '\n') ||
                        (c == '\n')) {
@@ -611,12 +615,17 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 tkr_pushb_error(self, "syntax error. unsupported character \"%c\"", c);
                 goto fail;
             }
-        } else if (m == 100) {  // found '#' in {@ @}
+        } else if (m == 100) {  // found '//' in {@ @}
             if (c == '\r' && *self->ptr == '\n') {
-                ++self->ptr;
+                self->ptr++;
                 m = 10;
             } else if ((c == '\r' && *self->ptr != '\n') ||
                        (c == '\n')) {
+                m = 10;
+            }
+        } else if (m == 150) {  // found '/*' in {@ @}
+            if (c == '*' && *self->ptr == '/') {
+                self->ptr++;
                 m = 10;
             }
         }

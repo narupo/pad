@@ -3249,7 +3249,7 @@ test_tkr_parse(void) {
     **********/
 
     tkr_parse(tkr, "{@\n"
-    "# comment\n"
+    "// comment\n"
     "@}");
     {
         assert(tkr_tokens_len(tkr) == 3);
@@ -3262,8 +3262,8 @@ test_tkr_parse(void) {
     }
 
     tkr_parse(tkr, "{@\n"
-    "# comment\n"
-    "# comment\n"
+    "// comment\n"
+    "// comment\n"
     "@}");
     {
         assert(tkr_tokens_len(tkr) == 3);
@@ -3276,16 +3276,44 @@ test_tkr_parse(void) {
     }
 
     tkr_parse(tkr, "{@\n"
-    "# comment\n");
+    "// comment\n");
     {
         assert(tkr_has_error_stack(tkr));
         assert(!strcmp(tkr_getc_first_error_message(tkr), "not closed by block"));
     }
 
-    tkr_parse(tkr, "{@ # comment");
+    tkr_parse(tkr, "{@ // comment");
     {
         assert(tkr_has_error_stack(tkr));
         assert(!strcmp(tkr_getc_first_error_message(tkr), "not closed by block"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "/* comment */"
+    "@}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_NEWLINE);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "/* comment \n"
+    "   comment \n"
+    "   comment */"
+    "@}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_NEWLINE);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
 
     /***********
