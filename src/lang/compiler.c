@@ -926,6 +926,7 @@ cc_augassign(ast_t *ast, cc_args_t *cargs) {
     case TOKEN_TYPE_OP_SUB_ASS: cur->op = OP_SUB_ASS; break;
     case TOKEN_TYPE_OP_MUL_ASS: cur->op = OP_MUL_ASS; break;
     case TOKEN_TYPE_OP_DIV_ASS: cur->op = OP_DIV_ASS; break;
+    case TOKEN_TYPE_OP_MOD_ASS: cur->op = OP_MOD_ASS; break;
     }
     check("read op");
 
@@ -2112,6 +2113,7 @@ cc_mul_div_op(ast_t *ast, cc_args_t *cargs) {
         break;
     case TOKEN_TYPE_OP_MUL: cur->op = OP_MUL; break;
     case TOKEN_TYPE_OP_DIV: cur->op = OP_DIV; break;
+    case TOKEN_TYPE_OP_MOD: cur->op = OP_MOD; break;
     }
     check("read op");
 
