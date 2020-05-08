@@ -61,6 +61,11 @@ BNF of Cap's template language
                dot: call [ dot_op call ]*
               call: index [ '(' call_args ')' ]*
              index: factor [ '[' simple_assign ']' ]*
+
+                    インデックスとコールは同じレイヤーにしないといけない
+           - index: factor [ '[' simple_assign ']' ]*
+            - call: index [ '(' call_args ')' ]*
+
             factor: atom | '(' formula ')'
               atom: nil |
                     false |

@@ -22570,6 +22570,57 @@ test_trv_expr_4(void) {
 }
 
 static void
+test_trv_expr_4a(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "def f(arg):\n"
+    "   return arg\n"
+    "end\n"
+    "a = [f, 2, 3]\n"
+    "r = a[0](1)\n"
+    "@}{: r :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_expr_4b(void) {
+    trv_ready;
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+
+    tkr_parse(tkr, "{@\n"
+    "import \"/tests/lang/modules/func.cap\" as mod\n"
+    "def f(arg):\n"
+    "   return arg\n"
+    "end\n"
+    "a = [mod, 2, 3]\n"
+    "r = a[0].arrMod[0]\n"
+    "@}{: r :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_expr_5(void) {
     trv_ready;
 
@@ -22618,16 +22669,61 @@ test_trv_expr_6(void) {
     assert(solve_path(config->home_path, sizeof config->home_path, "."));
 
     tkr_parse(tkr, "{@\n"
-    "import \"/tests/lang/modules/array.cap\" as array\n"
+    "import \"/tests/lang/modules/array.cap\" as mod\n"
     "\n"
-    "r = count.array[0]\n"
+    "r = mod.array[0]\n"
     "@}{: r :}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        traceerr();
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_expr_7(void) {
+    trv_ready;
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+
+    tkr_parse(tkr, "{@\n"
+    "import \"/tests/lang/modules/func.cap\" as mod\n"
+    "\n"
+    "r = mod.func(1)\n"
+    "@}{: r :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_expr_8(void) {
+    trv_ready;
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+
+    tkr_parse(tkr, "{@\n"
+    "import \"/tests/lang/modules/func.cap\" as mod\n"
+    "\n"
+    "r = mod.arrMod.array[0]\n"
+    "@}{: r :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
@@ -23883,8 +23979,11 @@ traverser_tests[] = {
     {"trv_expr_2", test_trv_expr_2},
     {"trv_expr_3", test_trv_expr_3},
     {"trv_expr_4", test_trv_expr_4},
+    {"trv_expr_4a", test_trv_expr_4a},
     {"trv_expr_5", test_trv_expr_5},
     {"trv_expr_6", test_trv_expr_6},
+    {"trv_expr_7", test_trv_expr_7},
+    {"trv_expr_8", test_trv_expr_8},
     {"trv_term_0", test_trv_term_0},
     {"trv_term_1", test_trv_term_1},
     {"trv_term_2", test_trv_term_2},
