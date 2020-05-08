@@ -22779,6 +22779,83 @@ test_trv_term_2(void) {
 }
 
 static void
+test_trv_term_3(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{: 2 * 2 / 4 % 2 :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{: 4 / 2 * 2 % 2 :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    tkr_parse(tkr, "{: 3 % 2 * 3 / 3 :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{: 3 * 2 / 3 * 3 :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "6"));
+    }
+
+    tkr_parse(tkr, "{: 4 / 2 * 2 / 2 :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
+    }
+
+    tkr_parse(tkr, "{: 3 % 2 * 2 % 2 :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    tkr_parse(tkr, "{: 3 * 2 % 2 * 2 :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_call_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -23687,6 +23764,7 @@ traverser_tests[] = {
     {"trv_term_0", test_trv_term_0},
     {"trv_term_1", test_trv_term_1},
     {"trv_term_2", test_trv_term_2},
+    {"trv_term_3", test_trv_term_3},
     {"trv_call_0", test_trv_call_0},
     {"trv_call_1", test_trv_call_1},
     {"trv_call_2", test_trv_call_2},
