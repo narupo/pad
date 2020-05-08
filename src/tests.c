@@ -20003,12 +20003,7 @@ test_trv_else_stmt_2(void) {
 
 static void
 test_trv_else_stmt_3(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{@ if 0: @}{@ else: @}{@ if 1: @}1{@ end @}{@ end @}");
     {
@@ -20120,13 +20115,32 @@ test_trv_else_stmt_3(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
 }
 
+static void
+test_trv_else_stmt_4(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@"
+    "   if 0:\n"
+    "   else:\n"
+    "@}1{@\n"
+    "@}2{@\n"
+    "@}3{@\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "123"));
+    }
+
+    trv_cleanup;
+}
 static void
 test_trv_for_stmt_0(void) {
     config_t *config = config_new();
@@ -23475,10 +23489,11 @@ traverser_tests[] = {
     {"trv_elif_stmt_6", test_trv_elif_stmt_6},
     {"trv_elif_stmt_7", test_trv_elif_stmt_7},
 
-    {"trv_else_stmt_0", test_trv_elif_stmt_0},  // what happen?
-    {"trv_else_stmt_1", test_trv_elif_stmt_1},
-    {"trv_else_stmt_2", test_trv_elif_stmt_2},
-    {"trv_else_stmt_3", test_trv_elif_stmt_3},
+    {"trv_else_stmt_0", test_trv_else_stmt_0},  // what happen?
+    {"trv_else_stmt_1", test_trv_else_stmt_1},
+    {"trv_else_stmt_2", test_trv_else_stmt_2},
+    {"trv_else_stmt_3", test_trv_else_stmt_3},
+    {"trv_else_stmt_4", test_trv_else_stmt_4},
 
     {"trv_for_stmt_0", test_trv_for_stmt_0},
     {"trv_for_stmt_1", test_trv_for_stmt_1},
