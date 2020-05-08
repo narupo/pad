@@ -6381,7 +6381,6 @@ test_cc_compile(void) {
         ast_clear(ast);
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
-        traceerr();
         root = ast_getc_root(ast);
         assert(root);
         program = root->real;
@@ -10772,128 +10771,6 @@ compiler_tests[] = {
 ************/
 
 static void
-test_trv_dict(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
-
-    // fail
-
-    tkr_parse(tkr, "{@ a = { 1: 1 } @}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "key is not string in dict elem"));
-    }
-
-    // tkr_parse(tkr, "{@ a = { \"k\": 1 } \n a[0] @}");
-    // {
-    ast_clear(ast);
-    //     cc_compile(ast, tkr_get_tokens(tkr));
-    //     ctx_clear(ctx);
-    //     (trv_traverse(ast, ctx));
-    //     assert(ast_has_errors(ast));
-    //     assert(!strcmp(ast_getc_first_error_message(ast), "can not access by int to dict"));
-    // }
-
-    tkr_parse(tkr, "{@ k = 1 \n a = { k: 1 } @}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "invalid key type in variable of dict"));
-    }
-
-    // success
-
-    tkr_parse(tkr, "{@ a = { \"key\": 1 } @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
-    }
-
-    tkr_parse(tkr, "{@ a = { \"key\": 1 } @}{: a[\"key\"] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    }
-
-    tkr_parse(tkr, "{@ a = { \"key\": \"val\" } @}{: a[\"key\"] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "val"));
-    }
-
-    tkr_parse(tkr, "{@ a = { \"key\": [1, 2] } @}{: a[\"key\"] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
-    }
-
-    // tkr_parse(tkr, "{@ a = { \"key\": 1 }[\"key\"] @}{: a :}");
-    // {
-    ast_clear(ast);
-    //     cc_compile(ast, tkr_get_tokens(tkr));
-    //     ctx_clear(ctx);
-    //     trv_traverse(ast, ctx);
-    //     assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    // }
-
-    tkr_parse(tkr, "{@ a = { \"k1\": 1, \"k2\": 2 } @}{: a[\"k1\"] :},{: a[\"k2\"] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2"));
-    }
-
-    tkr_parse(tkr, "{@ a = { \"k1\": { \"k2\": 1 } } @}{: a[\"k1\"][\"k2\"] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    }
-
-    tkr_parse(tkr, "{@ k = \"key\" \n a = { k: 1 } @}{: a[k] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    }
-
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
-}
-
-static void
 test_trv_comparison(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -11107,6 +10984,30 @@ test_trv_comparison(void) {
     }
 
     tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" @}{: a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
+    }
+
+    /*********************************
+    * boolean can convert to integer *
+    *********************************/
+
+    tkr_parse(tkr, "{@ a = true == 1 @}{: a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ a = false == 0 @}{: a :}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
@@ -22606,12 +22507,7 @@ test_trv_expr_1(void) {
 
 static void
 test_trv_expr_2(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{@ a = 1 \n b = a - 1 @}{: b :}");
     {
@@ -22623,11 +22519,120 @@ test_trv_expr_2(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
+}
+
+static void
+test_trv_expr_3(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "a = [1, 2, 3]\n"
+    "def f(arg):\n"
+    "   return arg\n"
+    "end\n"
+    "r = f(a)\n"
+    "@}{: r :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_expr_4(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "a = [1, 2, 3]\n"
+    "def f(arg):\n"
+    "   return arg\n"
+    "end\n"
+    "r = f(a)[0]\n"
+    "@}{: r :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_expr_5(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "a = [1, 2, 3]\n"
+    "d = { \"a\": 1, \"b\": 2 }\n"
+    "def f(arg):\n"
+    "   return arg\n"
+    "end\n"
+    "r = a[f(a)[0]]\n"
+    "@}{: r :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        traceerr();
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "a = [1, 2, 3]\n"
+    "d = { \"a\": 1, \"b\": 2 }\n"
+    "def f(arg):\n"
+    "   return arg\n"
+    "end\n"
+    "r = a[f(a)[0] * 2] * 3 + f(10)\n"
+    "@}{: r :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "19"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_expr_6(void) {
+    trv_ready;
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+
+    tkr_parse(tkr, "{@\n"
+    "import \"/tests/lang/modules/array.cap\" as array\n"
+    "\n"
+    "r = count.array[0]\n"
+    "@}{: r :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        traceerr();
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    trv_cleanup;
 }
 
 static void
@@ -23403,6 +23408,121 @@ test_trv_dict_2(void) {
 }
 
 static void
+test_trv_dict_3(void) {
+    trv_ready;
+
+    /*******
+    * fail *
+    *******/
+
+    tkr_parse(tkr, "{@ a = { 1: 1 } @}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "key is not string in dict elem"));
+    }
+
+    tkr_parse(tkr, "{@ a = { \"k\": 1 } \n a[0] @}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid dict index value. value is not a string"));
+    }
+
+    tkr_parse(tkr, "{@ k = 1 \n a = { k: 1 } @}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid key type in variable of dict"));
+    }
+
+    // success
+
+    tkr_parse(tkr, "{@ a = { \"key\": 1 } @}{: a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(dict)"));
+    }
+
+    tkr_parse(tkr, "{@ a = { \"key\": 1 } @}{: a[\"key\"] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{@ a = { \"key\": \"val\" } @}{: a[\"key\"] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "val"));
+    }
+
+    tkr_parse(tkr, "{@ a = { \"key\": [1, 2] } @}{: a[\"key\"] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
+    }
+
+    // tkr_parse(tkr, "{@ a = { \"key\": 1 }[\"key\"] @}{: a :}");
+    // {
+    ast_clear(ast);
+    //     cc_compile(ast, tkr_get_tokens(tkr));
+    //     ctx_clear(ctx);
+    //     trv_traverse(ast, ctx);
+    //     assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    // }
+
+    tkr_parse(tkr, "{@ a = { \"k1\": 1, \"k2\": 2 } @}{: a[\"k1\"] :},{: a[\"k2\"] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2"));
+    }
+
+    tkr_parse(tkr, "{@ a = { \"k1\": { \"k2\": 1 } } @}{: a[\"k1\"][\"k2\"] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{@ k = \"key\" \n a = { k: 1 } @}{: a[k] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_identifier(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -23761,6 +23881,10 @@ traverser_tests[] = {
     {"trv_expr_0", test_trv_expr_0},
     {"trv_expr_1", test_trv_expr_1},
     {"trv_expr_2", test_trv_expr_2},
+    {"trv_expr_3", test_trv_expr_3},
+    {"trv_expr_4", test_trv_expr_4},
+    {"trv_expr_5", test_trv_expr_5},
+    {"trv_expr_6", test_trv_expr_6},
     {"trv_term_0", test_trv_term_0},
     {"trv_term_1", test_trv_term_1},
     {"trv_term_2", test_trv_term_2},
@@ -23783,10 +23907,10 @@ traverser_tests[] = {
     {"trv_true", test_trv_true},
     {"trv_digit", test_trv_digit},
     {"trv_string", test_trv_string},
-    {"trv_dict", test_trv_dict},
     {"trv_dict_0", test_trv_dict_0},
     {"trv_dict_1", test_trv_dict_1},
     {"trv_dict_2", test_trv_dict_2},
+    {"trv_dict_3", test_trv_dict_3},
     {"trv_identifier", test_trv_identifier},
     {"trv_builtin_alias_0", test_trv_builtin_alias_0},
     {"trv_builtin_modules_alias_0", test_trv_builtin_modules_alias_0},

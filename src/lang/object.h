@@ -60,7 +60,7 @@ typedef enum {
     // A module object
     // モジュールオブジェクト
     // このオブジェクトは内部にast_tへの参照を持つ
-    // このast_tへの参照はモジュール内の参照である
+    // このast_tへの参照はモジュール内のオブジェクト群への参照である
     OBJ_TYPE_MODULE,
 
     // A reservation object
