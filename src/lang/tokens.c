@@ -103,6 +103,7 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_OP_SUB: return "-"; break;
     case TOKEN_TYPE_OP_MUL: return "*"; break;
     case TOKEN_TYPE_OP_DIV: return "/"; break;
+    case TOKEN_TYPE_OP_MOD: return "%"; break;
     case TOKEN_TYPE_OP_OR: return "or"; break;
     case TOKEN_TYPE_OP_AND: return "and"; break;
     case TOKEN_TYPE_OP_NOT: return "not"; break;
@@ -113,6 +114,7 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_OP_SUB_ASS: return "-="; break;
     case TOKEN_TYPE_OP_MUL_ASS: return "*="; break;
     case TOKEN_TYPE_OP_DIV_ASS: return "/="; break;
+    case TOKEN_TYPE_OP_MOD_ASS: return "%="; break;
 
     // comparison operators
     case TOKEN_TYPE_OP_EQ: return "=="; break;
