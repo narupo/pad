@@ -78,9 +78,9 @@ BNF of Cap's template language
          dict_elem: simple_assign ':' simple_assign
            comp_op: '==' | '!=' | '<=' | '>=' | '<' | '>'
         add_sub_op: '+' | '-'
-        mul_div_op: '*' | '/'
+        mul_div_op: '*' | '/' | '%'
             dot_op: '.'
-         augassign: '+=' | '-=' | '*=' | '/='
+         augassign: '+=' | '-=' | '*=' | '/=' | '%='
                nil:
              digit: [0-9]+
            newline: '\n'

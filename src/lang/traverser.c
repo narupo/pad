@@ -6398,6 +6398,137 @@ trv_calc_term_div(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
+trv_calc_term_mod_int(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+
+    object_t *rhsref = extract_ref_of_obj(ast, rhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (rhsref->type) {
+    default:
+        ast_pushb_error(ast, "invalid right hand operand (%d)", rhsref->type);
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_BOOL: {
+        if (!rhsref->boolean) {
+            ast_pushb_error(ast, "zero division error");
+            return_trav(NULL);
+        }
+
+        // TODO: need imp float!
+        objint_t result = lhs->lvalue % ((objint_t) rhsref->boolean);
+        object_t *obj = obj_new_int(ast->ref_gc, result);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INT: {
+        if (!rhsref->lvalue) {
+            ast_pushb_error(ast, "zero division error");
+            return_trav(NULL);
+        }
+
+        // TODO: need imp float!
+        objint_t result = lhs->lvalue % rhsref->lvalue;
+        object_t *obj = obj_new_int(ast->ref_gc, result);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_term_mod_bool(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+
+    object_t *rhsref = extract_ref_of_obj(ast, rhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (rhsref->type) {
+    default:
+        ast_pushb_error(ast, "invalid right hand operand (%d)", rhsref->type);
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_BOOL: {
+        if (!rhsref->boolean) {
+            ast_pushb_error(ast, "zero division error");
+            return_trav(NULL);
+        }
+
+        // TODO: need imp float!
+        objint_t result = ((objint_t) lhs->boolean) % ((objint_t) rhsref->boolean);
+        object_t *obj = obj_new_int(ast->ref_gc, result);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INT: {
+        if (!rhsref->lvalue) {
+            ast_pushb_error(ast, "zero division error");
+            return_trav(NULL);
+        }
+
+        // TODO: need imp float!
+        objint_t result = ((objint_t) lhs->boolean) % rhsref->lvalue;
+        object_t *obj = obj_new_int(ast->ref_gc, result);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_term_mod(ast_t *ast, trv_args_t *targs) {
+    tready();
+    node_mul_div_op_t *op = targs->mul_div_op_node;
+    object_t *lhs = targs->lhs_obj;
+    assert(op->op == OP_MOD);
+    assert(lhs);
+
+    targs->depth += 1;
+
+    object_t *lhsref = extract_ref_of_obj(ast, lhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (lhsref->type) {
+    default:
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lhsref->type);
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_BOOL: {
+        check("call trv_calc_term_mod_int");
+        targs->lhs_obj = lhsref;
+        object_t *result = trv_calc_term_mod_bool(ast, targs);
+        return_trav(result);
+    } break;
+    case OBJ_TYPE_INT: {
+        check("call trv_calc_term_mod_int");
+        targs->lhs_obj = lhsref;
+        object_t *result = trv_calc_term_mod_int(ast, targs);
+        return_trav(result);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
 trv_calc_term(ast_t *ast, trv_args_t *targs) {
     tready();
 
@@ -6416,6 +6547,11 @@ trv_calc_term(ast_t *ast, trv_args_t *targs) {
     case OP_DIV: {
         check("call trv_calc_term_div");
         object_t *obj = trv_calc_term_div(ast, targs);
+        return_trav(obj);
+    } break;
+    case OP_MOD: {
+        check("call trv_call_term_mod");
+        object_t *obj = trv_calc_term_mod(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7357,6 +7493,139 @@ trv_calc_asscalc_div_ass(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
+trv_calc_asscalc_mod_ass_int(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_INT);
+
+    object_t *rhsref = extract_ref_of_obj(ast, rhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (rhsref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid right hand operand (%d)", rhsref->type);
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_INT: {
+        if (rhsref->lvalue == 0) {
+            ast_pushb_error(ast, "zero division error");
+            return_trav(NULL);
+        }
+
+        // TODO: need imp float!
+        lhs->lvalue %= rhsref->lvalue;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        if (!rhsref->boolean) {
+            ast_pushb_error(ast, "zero division error");
+            return_trav(NULL);
+        }
+
+        // TODO: need imp float!
+        lhs->lvalue %= (objint_t) rhsref->boolean;
+        return_trav(lhs);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_mod_ass_bool(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    object_t *rhsref = extract_ref_of_obj(ast, rhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (rhsref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid right hand operand");
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_INT: {
+        if (rhsref->lvalue == 0) {
+            ast_pushb_error(ast, "zero division error");
+            return_trav(NULL);
+        }
+
+        // TODO: need imp float!
+        objint_t result = ((objint_t)lhs->boolean) % rhsref->lvalue;
+        lhs->type = OBJ_TYPE_INT;
+        lhs->lvalue = result;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        if (!rhsref->boolean) {
+            ast_pushb_error(ast, "zero division error");
+            return_trav(NULL);
+        }
+
+        // TODO: need imp float!
+        objint_t result = ((objint_t)lhs->boolean) % ((objint_t)rhsref->boolean);
+        lhs->type = OBJ_TYPE_INT;
+        lhs->lvalue = result;
+        return_trav(lhs);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_mod_ass(ast_t *ast, trv_args_t *targs) {
+    object_t *lhs = targs->lhs_obj;
+    assert(lhs);
+    tready();
+
+    if (lhs->type != OBJ_TYPE_IDENTIFIER) {
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
+        return_trav(NULL);
+    }
+
+    object_t *lhsref = extract_ref_of_obj(ast, lhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return_trav(NULL);
+    }
+
+    targs->lhs_obj = lhsref;
+    targs->depth += 1;
+
+    switch (lhsref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid left hand operand");
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *result = trv_calc_asscalc_mod_ass_bool(ast, targs);
+        return_trav(result);
+    } break;
+    case OBJ_TYPE_INT: {
+        object_t *result = trv_calc_asscalc_mod_ass_int(ast, targs);
+        return_trav(result);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
 trv_calc_asscalc(ast_t *ast, trv_args_t *targs) {
     tready();
     node_augassign_t *augassign = targs->augassign_op_node;
@@ -7384,6 +7653,11 @@ trv_calc_asscalc(ast_t *ast, trv_args_t *targs) {
     case OP_DIV_ASS: {
         check("call trv_calc_asscalc_div_ass");
         object_t *obj = trv_calc_asscalc_div_ass(ast, targs);
+        return_trav(obj);
+    } break;
+    case OP_MOD_ASS: {
+        check("call trv_calc_asscalc_mod_ass");
+        object_t *obj = trv_calc_asscalc_mod_ass(ast, targs);
         return_trav(obj);
     } break;
     }

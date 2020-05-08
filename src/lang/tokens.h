@@ -37,11 +37,13 @@ typedef enum {
     TOKEN_TYPE_OP_SUB, // '-'
     TOKEN_TYPE_OP_MUL, // '*'
     TOKEN_TYPE_OP_DIV, // '/'
+    TOKEN_TYPE_OP_MOD, // '%'
     TOKEN_TYPE_OP_ASS, // '='
     TOKEN_TYPE_OP_ADD_ASS, // '+='
     TOKEN_TYPE_OP_SUB_ASS, // '-='
     TOKEN_TYPE_OP_MUL_ASS, // '*='
     TOKEN_TYPE_OP_DIV_ASS, // '/='
+    TOKEN_TYPE_OP_MOD_ASS, // '%='
     TOKEN_TYPE_OP_EQ, // '=='
 
     TOKEN_TYPE_OP_NOT_EQ, // '!='

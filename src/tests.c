@@ -2715,6 +2715,39 @@ test_tkr_parse(void) {
         assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
 
+    tkr_parse(tkr, "{@ * @}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_MUL);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@ / @}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_DIV);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@ % @}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_MOD);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
     tkr_parse(tkr, "{@ = @}");
     {
         assert(tkr_tokens_len(tkr) == 3);
@@ -2766,6 +2799,17 @@ test_tkr_parse(void) {
         assert(token->type == TOKEN_TYPE_LBRACEAT);
         token = tkr_tokens_getc(tkr, 1);
         assert(token->type == TOKEN_TYPE_OP_DIV_ASS);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@ %= @}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_MOD_ASS);
         token = tkr_tokens_getc(tkr, 2);
         assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
@@ -6309,6 +6353,7 @@ test_cc_compile(void) {
         ast_clear(ast);
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        traceerr();
         root = ast_getc_root(ast);
         assert(root);
         program = root->real;
@@ -10571,7 +10616,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "invalid token 42 in compile import variables"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid token 44 in compile import variables"));
     }
 
     tkr_parse(tkr, "{@ from \"path/to/module\" import ( aaa as \n a ) @}");
@@ -22625,12 +22670,7 @@ test_trv_term_0(void) {
 
 static void
 test_trv_term_1(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{: 4 / 2 :}");
     {
@@ -22641,12 +22681,73 @@ test_trv_term_1(void) {
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
+/*
+    tkr_parse(tkr, "{: 3 / 2 :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));  // TODO: imp float!
+    }
+*/
+    trv_cleanup;
+}
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+static void
+test_trv_term_2(void) {
+    trv_ready;
+
+    /*****
+    * ok *
+    *****/
+
+    tkr_parse(tkr, "{: 4 % 2 :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    tkr_parse(tkr, "{: 3 % 2 :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    /*******
+    * fail *
+    *******/
+
+    tkr_parse(tkr, "{: 4 % nil :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand (0)"));
+    }
+
+    tkr_parse(tkr, "{: nil % 2 :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (0)"));
+    }
+
+    trv_cleanup;
 }
 
 static void
@@ -23489,7 +23590,7 @@ traverser_tests[] = {
     {"trv_elif_stmt_6", test_trv_elif_stmt_6},
     {"trv_elif_stmt_7", test_trv_elif_stmt_7},
 
-    {"trv_else_stmt_0", test_trv_else_stmt_0},  // what happen?
+    {"trv_else_stmt_0", test_trv_else_stmt_0},
     {"trv_else_stmt_1", test_trv_else_stmt_1},
     {"trv_else_stmt_2", test_trv_else_stmt_2},
     {"trv_else_stmt_3", test_trv_else_stmt_3},
@@ -23557,6 +23658,7 @@ traverser_tests[] = {
     {"trv_expr_2", test_trv_expr_2},
     {"trv_term_0", test_trv_term_0},
     {"trv_term_1", test_trv_term_1},
+    {"trv_term_2", test_trv_term_2},
     {"trv_call_0", test_trv_call_0},
     {"trv_call_1", test_trv_call_1},
     {"trv_call_2", test_trv_call_2},
