@@ -6923,11 +6923,7 @@ trv_index(ast_t *ast, trv_args_t *targs) {
         ref_operand = pull_in_ref_by(operand);
         if (!ref_operand) {
             // can't index access to null
-            ast_pushb_error(
-                ast,
-                "\"%s\" is not defined",
-                str_getc(operand->identifier.name)
-            );
+            ast_pushb_error(ast, "\"%s\" is not defined", obj_getc_idn_name(operand));
             return_trav(NULL);
         }
     }
