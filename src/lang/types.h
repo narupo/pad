@@ -65,3 +65,21 @@ typedef long objint_t;
 
 // number of depth type for function recursion
 typedef int32_t depth_t;
+
+struct chain_node;
+typedef struct chain_node chain_node_t;
+
+struct chain_nodes;
+typedef struct chain_nodes chain_nodes_t;
+
+struct chain_object;
+typedef struct chain_object chain_object_t;
+
+struct chain_objects;
+typedef struct chain_objects chain_objects_t;
+
+struct object_chain;
+typedef struct object_chain object_chain_t;
+
+struct node;
+typedef struct node node_t;

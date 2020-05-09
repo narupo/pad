@@ -13,6 +13,8 @@
 #include <lang/object_dict.h>
 #include <lang/gc.h>
 #include <lang/builtin/function.h>
+#include <lang/chain_object.h>
+#include <lang/chain_objects.h>
 
 typedef enum {
     // A nil object
@@ -51,11 +53,11 @@ typedef enum {
     // Time to execute to execute this context
     OBJ_TYPE_FUNC,
 
-    // A index object
-    // 添字オブジェクト
-    // 添字でアクセス可能なオブジェクト
+    // A chain object
+    // チェインオブジェクト
+    // '.' | '[]' | '()' でアクセス可能なオブジェクト
     // 添字は配列で持っていて、参照時にこの添字を順に適用して実体を求める
-    OBJ_TYPE_INDEX,
+    OBJ_TYPE_CHAIN,
 
     // A module object
     // モジュールオブジェクト
@@ -115,6 +117,14 @@ struct object_identifier {
 };
 
 /**
+ * A chain object
+ */
+struct object_chain {
+    object_t *operand;
+    chain_objects_t *chain_objs;
+};
+
+/**
  * A abstract object
  */
 struct object {
@@ -128,9 +138,9 @@ struct object {
     objint_t lvalue;  // value of integer (type == OBJ_TYPE_INT)
     bool boolean;  // value of boolean (type == OBJ_TYPE_BOOL)
     object_func_t func;  // structure of function (type == OBJ_TYPE_FUNC)
-    object_index_t index;  // structure of index (type == OBJ_TYPE_INDEX)
     object_module_t module;  // structure of module (type == OBJ_TYPE_MODULE)
     object_reserv_t reserv;  // strcuture of reservation (type == OBJ_TYPE_RESERV)
+    object_chain_t chain;  // structure of chain (type == OBJ_TYPE_CHAIN)
 };
 
 /**
@@ -323,18 +333,18 @@ object_t *
 obj_new_func(gc_t *ref_gc, ast_t *ref_ast, object_t *move_name, object_t *move_args, node_array_t *ref_suites);
 
 /**
- * construct function object by parameters
+ * construct chain object by parameters
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc       reference to gc_t (do not delete)
- * @param[in] *move_operand pointer to object of index operand (with move semantics)
- * @param[in] *move_indices pointer to index objects (with move semantics)
+ * @param[in] *ref_gc          reference to gc_t (do not delete)
+ * @param[in] *move_operand    pointer to object_t (move semantics)
+ * @param[in] *move_chain_objs pointer to chain_objects_t (move semantics)
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_index(gc_t *ref_gc, object_t *move_operand, object_array_t *move_indices);
+obj_new_chain(gc_t *ref_gc, object_t *move_operand, chain_objects_t *move_chain_objs);
 
 /**
  * construct reservation object
@@ -471,3 +481,43 @@ obj_getc_idn_name(const object_t *self);
  */
 ast_t *
 obj_get_idn_ref_ast(const object_t *self);
+
+/**
+ * get chain objects in chain object (type == OBJ_TYPE_CHAIN)
+ *
+ * @param[in] *self
+ *
+ * @return pointer to chain_objects_t
+ */
+chain_objects_t *
+obj_get_chain_objs(object_t *self);
+
+/**
+ * get chain objects in chain object read-only (type == OBJ_TYPE_CHAIN)
+ *
+ * @param[in] *self
+ *
+ * @return pointer to chain_objects_t
+ */
+const chain_objects_t *
+obj_getc_chain_objs(const object_t *self);
+
+/**
+ * get operand in chain object
+ *
+ * @param[in] *self
+ *
+ * @return pointer to object_t
+ */
+object_t *
+obj_get_chain_operand(object_t *self);
+
+/**
+ * get operand in chain object read-only
+ *
+ * @param[in] *self
+ *
+ * @return pointer to object_t
+ */
+const object_t *
+obj_getc_chain_operand(const object_t *self);

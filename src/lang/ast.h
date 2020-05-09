@@ -10,6 +10,8 @@
 #include <lang/node_array.h>
 #include <lang/object.h>
 #include <lang/gc.h>
+#include <lang/chain_node.h>
+#include <lang/chain_nodes.h>
 
 /**
  * constant number of AST

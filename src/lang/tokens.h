@@ -15,8 +15,8 @@ typedef enum {
     TOKEN_TYPE_BLOCK,
     TOKEN_TYPE_LBRACEAT, // '{@'
     TOKEN_TYPE_RBRACEAT, // '@}'
-    TOKEN_TYPE_LDOUBLE_BRACE, // '{#'
-    TOKEN_TYPE_RDOUBLE_BRACE, // '#}'
+    TOKEN_TYPE_LDOUBLE_BRACE, // '{:'
+    TOKEN_TYPE_RDOUBLE_BRACE, // ':}'
     TOKEN_TYPE_DOT_OPE, // '.'
     TOKEN_TYPE_COMMA, // ','
     TOKEN_TYPE_COLON, // ':'

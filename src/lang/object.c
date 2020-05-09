@@ -59,11 +59,9 @@ obj_del(object_t *self) {
         self->func.args = NULL;
         // do not delete ref_suites, this is reference
         break;
-    case OBJ_TYPE_INDEX:
-        obj_del(self->index.operand);
-        self->index.operand = NULL; // do not delete, it is reference
-        objarr_del(self->index.indices);
-        self->index.indices = NULL;
+    case OBJ_TYPE_CHAIN:
+        obj_del(self->chain.operand);
+        chain_objs_del(self->chain.chain_objs);
         break;
     case OBJ_TYPE_MODULE:
         str_del(self->module.name);
@@ -136,18 +134,10 @@ obj_new_other(const object_t *other) {
         self->func.args = obj_new_other(other->func.args);
         self->func.ref_suites = other->func.ref_suites; // save reference
         break;
-    case OBJ_TYPE_INDEX: {
-        self->index.operand = other->index.operand;
-        obj_inc_ref(self->index.operand);
-
-        object_array_t *indices = objarr_new();
-        for (int32_t i = 0; i < objarr_len(other->index.indices); ++i) {
-            const object_t *obj = objarr_getc(other->index.indices, i);
-            object_t *cpobj = obj_new_other(obj);
-            objarr_moveb(indices, cpobj);
-        }
-        self->index.indices = indices;
-    } break;
+    case OBJ_TYPE_CHAIN:
+        self->chain.operand = obj_new_other(other->chain.operand);
+        self->chain.chain_objs = chain_objs_new_other(other->chain.chain_objs);
+        break;
     case OBJ_TYPE_MODULE:
         err_die("TODO: copy module! in object.c");
         self->module.name = str_new_other(other->module.name);
@@ -380,18 +370,18 @@ obj_new_func(gc_t *ref_gc, ast_t *ref_ast, object_t *move_name, object_t *move_a
 }
 
 object_t *
-obj_new_index(gc_t *ref_gc, object_t *move_operand, object_array_t *move_indices) {
-    if (!ref_gc || !move_operand || !move_indices) {
+obj_new_chain(gc_t *ref_gc, object_t *move_operand, chain_objects_t *move_chain_objs) {
+    if (!ref_gc || !move_operand || !move_chain_objs) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_INDEX);
+    object_t *self = obj_new(ref_gc, OBJ_TYPE_CHAIN);
     if (!self) {
         return NULL;
     }
 
-    self->index.operand = mem_move(move_operand);
-    self->index.indices = mem_move(move_indices);
+    self->chain.operand = mem_move(move_operand);
+    self->chain.chain_objs = mem_move(move_chain_objs);
 
     return self;
 }
@@ -505,9 +495,9 @@ obj_to_str(const object_t *self) {
         str_set(str, "(function)");
         return str;
     } break;
-    case OBJ_TYPE_INDEX: {
+    case OBJ_TYPE_CHAIN: {
         string_t *str = str_new();
-        str_set(str, "(index)");
+        str_set(str, "(chain)");
         return str;
     } break;
     case OBJ_TYPE_MODULE: {
@@ -650,8 +640,8 @@ obj_type_to_str(const object_t *self) {
     case OBJ_TYPE_FUNC:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: func>", self->type);
         break;
-    case OBJ_TYPE_INDEX:
-        str_app_fmt(s, tmp, sizeof tmp, "<%d: index>", self->type);
+    case OBJ_TYPE_CHAIN:
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: chain>", self->type);
         break;
     case OBJ_TYPE_MODULE:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: module>", self->type);
@@ -673,3 +663,24 @@ ast_t *
 obj_get_idn_ref_ast(const object_t *self) {
     return self->identifier.ref_ast;
 }
+
+chain_objects_t *
+obj_get_chain_objs(object_t *self) {
+    return self->chain.chain_objs;
+}
+
+const chain_objects_t *
+obj_getc_chain_objs(const object_t *self) {
+    return self->chain.chain_objs;
+}
+
+object_t *
+obj_get_chain_operand(object_t *self) {
+    return self->chain.operand;
+}
+
+const object_t *
+obj_getc_chain_operand(const object_t *self) {
+    return self->chain.operand;
+}
+

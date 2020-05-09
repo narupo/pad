@@ -54,10 +54,8 @@ typedef enum {
 
     NODE_TYPE_EXPR,
     NODE_TYPE_TERM,
-    NODE_TYPE_DOT,
     NODE_TYPE_NEGATIVE,
-    NODE_TYPE_CALL,
-    NODE_TYPE_INDEX,
+    NODE_TYPE_CHAIN,
     NODE_TYPE_ASSCALC,
     NODE_TYPE_FACTOR,
     NODE_TYPE_ATOM,
@@ -118,10 +116,10 @@ typedef enum {
 * node structures *
 ******************/
 
-typedef struct {
+struct {
     node_type_t type;
     void *real;
-} node_t;
+} node;
 
 typedef struct {
     node_t *blocks;
@@ -308,22 +306,13 @@ typedef struct {
 
 typedef struct {
     bool is_negative;
-    node_t *dot;
+    node_t *chain;
 } node_negative_t;
 
 typedef struct {
-    node_array_t *nodearr;
-} node_dot_t;
-
-typedef struct {
-    node_t *index;
-    node_array_t *call_args_list;
-} node_call_t;
-
-typedef struct {
     node_t *factor;
-    node_array_t *nodearr;
-} node_index_t;
+    chain_nodes_t *chain_nodes;
+} node_chain_t;
 
 typedef struct {
     node_array_t *nodearr;

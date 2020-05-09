@@ -219,28 +219,13 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         node_negative_t *negative = node->real;
         ast_del_nodes(self, negative->dot);
     } break;
-    case NODE_TYPE_DOT: {
-        node_dot_t *dot = node->real;
-        for (int32_t i = 0; i < nodearr_len(dot->nodearr); ++i) {
-            ast_del_nodes(self, nodearr_get(dot->nodearr, i));
+    case NODE_TYPE_CHAIN: {
+        node_chain_t *chain = node->real;
+        for (int32_t i = 0; i < chain_nodes_len(chain->chain_nodes); ++i) {
+            chain_node_t *cn = chain_nodes_get(chain->chain_nodes, i);
+            node_t *node = chain_node_get_node(cn);
+            ast_del_nodes(ast, node);
         }
-        nodearr_del_without_nodes(dot->nodearr);
-    } break;
-    case NODE_TYPE_CALL: {
-        node_call_t *call = node->real;
-        ast_del_nodes(self, call->index);
-        for (int32_t i = 0; i < nodearr_len(call->call_args_list); ++i) {
-            ast_del_nodes(self, nodearr_get(call->call_args_list, i));
-        }
-        nodearr_del_without_nodes(call->call_args_list);
-    } break;
-    case NODE_TYPE_INDEX: {
-        node_index_t *index = node->real;
-        ast_del_nodes(self, index->factor);
-        for (int32_t i = 0; i < nodearr_len(index->nodearr); ++i) {
-            ast_del_nodes(self, nodearr_get(index->nodearr, i));
-        }
-        nodearr_del_without_nodes(index->nodearr);
     } break;
     case NODE_TYPE_FACTOR: {
         node_factor_t *factor = node->real;

@@ -6562,10 +6562,10 @@ trv_calc_term(ast_t *ast, trv_args_t *targs) {
 
 static object_t *
 trv_term(ast_t *ast, trv_args_t *targs) {
+    tready();
     node_t *node = targs->ref_node;
     assert(node);
     node_term_t *term = node->real;
-    tready();
     assert(term);
 
     depth_t depth = targs->depth;
@@ -6629,10 +6629,10 @@ trv_term(ast_t *ast, trv_args_t *targs) {
 
 static object_t *
 trv_negative(ast_t *ast, trv_args_t *targs) {
+    tready();
     node_t *node = targs->ref_node;
     assert(node);
     node_negative_t *negative = node->real;
-    tready();
     assert(negative);
 
     depth_t depth = targs->depth;
@@ -6670,6 +6670,84 @@ trv_negative(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
+static object_t *
+trv_chain(ast_t *ast, trv_args_t *targs) {
+    tready();
+    node_t *node = targs->ref_node;
+    assert(node);
+    node_chain_t *chain = node->real;
+    assert(negative);
+
+    depth_t depth = targs->depth;
+
+    // get operand
+    node_t *factor = chain->factor;
+    assert(factor);
+
+    targs->ref_node = factor;
+    targs->depth = depth + 1;
+    object_t *operand = _trv_traverse(ast, targs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to traverse factor");
+        return_trav(NULL);
+    }
+    assert(operand);
+
+    // get objects
+    chain_nodes_t *cns = chain->chain_nodes;
+    assert(cns);
+    if (!chain_nodes_len(cns)) {
+        return_trav(operand);
+    }
+
+    chain_objects_t *chobjs = chain_objs_new();
+
+    for (int32_t i = 0; i < chain_nodes_len(cns); ++i) {
+        chain_node_t *cn = chain_nodes_get(cns, i);
+        assert(cn);
+        node_t *node = chain_node_get_node(cn);
+        assert(node);
+
+        targs->ref_node = node;
+        targs->depth = depth + 1;
+        object_t *elem = _trv_traverse(ast, targs);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to traverse node");
+            goto fail;
+        }
+
+        chain_object_type_t type;
+        switch (cn->type) {
+        case CHAIN_NODE_TYPE_DOT:   type = CHAIN_OBJ_TYPE_DOT;   break;
+        case CHAIN_NODE_TYPE_INDEX: type = CHAIN_OBJ_TYPE_INDEX; break;
+        case CHAIN_NODE_TYPE_CALL:  type = CHAIN_OBJ_TYPE_CALL;  break;
+        default:
+            ast_pushb_error(ast, "invalid chain node type (%d)", ch->type);
+            goto fail;
+            break;
+        }
+
+        chain_object_t *chobj = chain_obj_new(type, mem_move(elem));
+        chain_objs_moveb(chobjs, mem_move(chobj));
+    }
+    assert(chain_objs_len(chobjs) != 0);
+
+    // done
+    object_t *obj_chain = obj_new_chain(
+        ast->ref_gc,
+        mem_move(operand),
+        mem_move(chobjs)
+    );
+
+    return_trav(obj_chain);
+
+fail:
+    obj_del(operand);
+    chain_objs_del(chobjs);
+    return_trav(NULL);
+}
+
+#if 0
 static object_t *
 trv_dot(ast_t *ast, trv_args_t *targs) {
     node_t *node = targs->ref_node;
@@ -6970,6 +7048,7 @@ trv_index(ast_t *ast, trv_args_t *targs) {
     ret = obj_new_index(ast->ref_gc, mem_move(operand), mem_move(indices));
     return_trav(ret);
 }
+#endif
 
 static object_t *
 trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
@@ -8710,19 +8789,9 @@ _trv_traverse(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_negative(ast, targs);
         return_trav(obj);
     } break;
-    case NODE_TYPE_DOT: {
-        check("call trv_dot");
-        object_t *obj = trv_dot(ast, targs);
-        return_trav(obj);
-    } break;
-    case NODE_TYPE_CALL: {
-        check("call trv_call");
-        object_t *obj = trv_call(ast, targs);
-        return_trav(obj);
-    } break;
-    case NODE_TYPE_INDEX: {
-        check("call trv_index");
-        object_t *obj = trv_index(ast, targs);
+    case NODE_TYPE_CHAIN: {
+        check("call trv_chain");
+        object_t *obj = trv_chain(ast, targs);
         return_trav(obj);
     } break;
     case NODE_TYPE_ASSCALC: {
