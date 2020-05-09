@@ -22593,6 +22593,12 @@ test_trv_expr_4a(void) {
     trv_cleanup;
 }
 
+/*
+
+    a.b[0].c(0).d[0][0](0)
+
+*/
+
 static void
 test_trv_expr_4b(void) {
     trv_ready;
@@ -22605,7 +22611,34 @@ test_trv_expr_4b(void) {
     "   return arg\n"
     "end\n"
     "a = [mod, 2, 3]\n"
-    "r = a[0].arrMod[0]\n"
+    "r = a[0].arrMod.array[0]\n"
+    "@}{: r :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_expr_4c(void) {
+    trv_ready;
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+
+    tkr_parse(tkr, "{@\n"
+    "import \"/tests/lang/modules/func.cap\" as mod\n"
+    "def f(arg):\n"
+    "   return arg\n"
+    "end\n"
+    "a = [mod, 2, 3]\n"
+    "r = a[0].arrMod.funcArray[0](0)\n"
     "@}{: r :}");
     {
         ast_clear(ast);

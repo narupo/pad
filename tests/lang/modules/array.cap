@@ -1,3 +1,8 @@
 {@
+    def func(arg):
+        return arg
+    end
+
     array = [0, 1, 2]
+    funcArray = [func, func]
 @}
