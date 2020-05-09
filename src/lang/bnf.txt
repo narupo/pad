@@ -57,14 +57,14 @@ BNF of Cap's template language
            asscalc: expr [ augassign expr ]*
               expr: term [ add_sub_op term ]*
               term: negative [ mul_div_op negative ]*
-          nagative: ( '-' ) dot
-               dot: call [ dot_op call ]*
-              call: index [ '(' call_args ')' ]*
-             index: factor [ '[' simple_assign ']' ]*
+        + nagative: ( '-' ) dot
+        - nagative: ( '-' ) chain
 
-                    インデックスとコールは同じレイヤーにしないといけない
-           - index: factor [ '[' simple_assign ']' ]*
+             - dot: call [ dot_op call ]*
             - call: index [ '(' call_args ')' ]*
+           - index: factor [ '[' simple_assign ']' ]*
+
+           - chain: factor [ ('.' factor) | ('[' simple_assign ']') | ('(' call_args ')') ]*
 
             factor: atom | '(' formula ')'
               atom: nil |

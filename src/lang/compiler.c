@@ -5,7 +5,7 @@
 *********/
 
 #define declare(T, var) \
-    T* var = calloc(1, sizeof(T)); \
+    T *var = calloc(1, sizeof(T)); \
     if (!var) { \
         err_die("failed to alloc. LINE %d", __LINE__); \
     } \
@@ -116,6 +116,9 @@ cc_multi_assign(ast_t *ast, cc_args_t *cargs);
 
 static node_t *
 cc_expr(ast_t *ast, cc_args_t *cargs);
+
+static node_t *
+cc_chain(ast_t *ast, cc_args_t *cargs);
 
 /************
 * functions *
@@ -1732,79 +1735,6 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
 }
 
 static node_t *
-cc_index(ast_t *ast, cc_args_t *cargs) {
-    ready();
-    declare(node_index_t, cur);
-    cur->nodearr = nodearr_new();
-    token_t **save_ptr = ast->ref_ptr;
-
-#undef return_cleanup
-#define return_cleanup(msg) { \
-        ast->ref_ptr = save_ptr; \
-        ast_del_nodes(ast, cur->factor); \
-        for (; nodearr_len(cur->nodearr); ) { \
-            node_t *node = nodearr_popb(cur->nodearr); \
-            ast_del_nodes(ast, node); \
-        } \
-        nodearr_del_without_nodes(cur->nodearr); \
-        free(cur); \
-        if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
-        } \
-        return_parse(NULL); \
-    } \
-
-    depth_t depth = cargs->depth;
-
-    check("call cc_factor");
-    cargs->depth = depth + 1;
-    cur->factor = cc_factor(ast, cargs);
-    if (ast_has_errors(ast)) {
-        return_cleanup("");
-    }
-    if (!cur->factor) {
-        return_cleanup("");
-    }
-
-    for (;;) {
-        if (!*ast->ref_ptr) {
-            return_cleanup("reached EOF in index");
-        }
-
-        token_t *t = *ast->ref_ptr++;
-        if (t->type != TOKEN_TYPE_LBRACKET) {
-            ast->ref_ptr--;
-            return_parse(node_new(NODE_TYPE_INDEX, cur));
-        }
-        check("read '['");
-
-        check("call cc_simple_assign");
-        cargs->depth = depth + 1;
-        node_t *simple_assign = cc_simple_assign(ast, cargs);
-        if (ast_has_errors(ast)) {
-            return_cleanup("");
-        }
-        if (!simple_assign) {
-            return_cleanup("not found index by index access");
-        }
-
-        if (!*ast->ref_ptr) {
-            return_cleanup("reached EOF in index (2)");
-        }
-
-        t = *ast->ref_ptr++;
-        if (t->type != TOKEN_TYPE_RBRACKET) {
-            return_cleanup("not found ']' in index");
-        }
-        check("read ']'");
-
-        nodearr_moveb(cur->nodearr, simple_assign);
-    }
-
-    return_parse(node_new(NODE_TYPE_INDEX, cur));
-}
-
-static node_t *
 cc_term(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_term_t, cur);
@@ -1878,7 +1808,7 @@ cc_negative(ast_t *ast, cc_args_t *cargs) {
 #undef return_cleanup
 #define return_cleanup(msg) { \
         ast->ref_ptr = save_ptr; \
-        ast_del_nodes(ast, cur->dot); \
+        ast_del_nodes(ast, cur->chain); \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -1898,17 +1828,166 @@ cc_negative(ast_t *ast, cc_args_t *cargs) {
 
     check("call left cc_dot");
     cargs->depth = depth + 1;
-    cur->dot = cc_dot(ast, cargs);
+    cur->chain = cc_chain(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
-    if (!cur->dot) {
+    if (!cur->chain) {
         return_cleanup(""); // not error
     }
 
     return_parse(node_new(NODE_TYPE_NEGATIVE, mem_move(cur)));
 }
 
+static node_t *
+cc_chain(ast_t *ast, cc_args_t *cargs) {
+    ready();
+    declare(node_chain_t, cur);
+    cur->chain_nodes = chain_nodes_new();
+    token_t **save_ptr = ast->ref_ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        ast->ref_ptr = save_ptr; \
+        for (int32_t i = 0; i < chain_nodes_len(cur->chain_nodes); ++i) { \
+            chain_node_t *cn = chain_nodes_get(cur->chain_nodes, i); \
+            node_t *factor = chain_node_get_node(cn); \
+            ast_del_nodes(ast, factor); \
+        } \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_pushb_error(ast, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+#undef return_ok
+#define return_ok \
+    return_parse(node_new(NODE_TYPE_CHAIN, mem_move(cur))); \
+
+    depth_t depth = cargs->depth;
+    const token_t *t = NULL;
+    int32_t m = 0;
+
+    cargs->depth = depth + 1;
+    cur->factor = cc_factor(ast, cargs);
+    if (ast_has_errors(ast)) {
+        return_cleanup("failed to compile factor");
+    }
+    assert(cur->factor);
+
+    if (!*ast->ref_ptr) {
+        return_cleanup("");  // not error
+    }
+
+    t = *ast->ref_ptr++;
+    if (t->type == TOKEN_TYPE_NEWLINE ||
+        t->type == TOKEN_TYPE_RPAREN ||
+        t->type == TOKEN_TYPE_RDOUBLE_BRACE) {
+        ast->ref_ptr--;
+        return_ok;
+    }
+
+    for (;;) {
+        switch (m) {
+        case 0: {  // first
+            if (!*ast->ref_ptr) {
+                return_cleanup("");  // not error
+            }
+
+            t = *ast->ref_ptr++;
+            if (t->type == TOKEN_TYPE_DOT_OPE) {
+                m = 50;
+            } else if (t->type == TOKEN_TYPE_LBRACEAT) {
+                m = 100;
+            } else if (t->type == TOKEN_TYPE_LPAREN) {
+                m = 150;
+            } else {
+                ast->ref_ptr--;
+                return_ok;
+            }
+        } break;
+        case 50: {  // found '.'
+            if (!*ast->ref_ptr) {
+                return_cleanup("reached EOF after '.'");
+            }
+
+            check("call cc_factor");
+            cargs->depth = depth + 1;
+            node_t *factor = cc_factor(ast, cargs);
+            if (ast_has_errors(ast)) {
+                return_cleanup("failed to compile factor");
+            }
+            assert(factor);
+
+            chain_node_t *nchain = chain_node_new(CHAIN_NODE_TYPE_DOT, mem_move(factor));
+            chain_nodes_moveb(cur->chain_nodes, mem_move(nchain));
+            m = 0;
+        } break;
+        case 100: {  // found '['
+            if (!*ast->ref_ptr) {
+                return_cleanup("reached EOF after '['");
+            }
+
+            check("call cc_simple_assign");
+            cargs->depth = depth + 1;
+            node_t *simple_assign = cc_simple_assign(ast, cargs);
+            if (ast_has_errors(ast)) {
+                return_cleanup("failed to compile simple assign");
+            }
+            assert(simple_assign);
+
+            chain_node_t *nchain = chain_node_new(CHAIN_NODE_TYPE_INDEX, mem_move(simple_assign));
+            chain_nodes_moveb(cur->chain_nodes, mem_move(nchain));
+
+            if (!*ast->ref_ptr) {
+                return_cleanup("reached EOF");
+            }
+
+            t = *ast->ref_ptr++;
+            if (t->type != TOKEN_TYPE_RBRACEAT) {
+                return_cleanup("not found ']'");
+            }
+            check("read ']'")
+
+            m = 0;
+        } break;
+        case 150: {  // found '('
+            if (!*ast->ref_ptr) {
+                return_cleanup("reached EOF after '('");
+            }
+
+            check("call cc_call_args");
+            cargs->depth = depth + 1;
+            node_t *call_args = cc_call_args(ast, cargs);
+            if (ast_has_errors(ast)) {
+                return_cleanup("failed to compile simple assign");
+            }
+            assert(call_args);
+
+            chain_node_t *nchain = chain_node_new(CHAIN_NODE_TYPE_CALL, mem_move(call_args));
+            chain_nodes_moveb(cur->chain_nodes, mem_move(nchain));
+
+            if (!*ast->ref_ptr) {
+                return_cleanup("reached EOF");
+            }
+
+            t = *ast->ref_ptr++;
+            if (t->type != TOKEN_TYPE_RPAREN) {
+                return_cleanup("not found ')'");
+            }
+            check("read ')'")
+
+            m = 0;
+        } break;
+        }
+    }
+
+    assert(0 && "impossible");
+    return_parse(NULL);
+}
+
+#if 0
 static node_t *
 cc_dot(ast_t *ast, cc_args_t *cargs) {
     ready();
@@ -2089,6 +2168,80 @@ cc_dot_op(ast_t *ast, cc_args_t *cargs) {
 
     return_parse(node_new(NODE_TYPE_DOT_OP, cur));
 }
+
+static node_t *
+cc_index(ast_t *ast, cc_args_t *cargs) {
+    ready();
+    declare(node_index_t, cur);
+    cur->nodearr = nodearr_new();
+    token_t **save_ptr = ast->ref_ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        ast->ref_ptr = save_ptr; \
+        ast_del_nodes(ast, cur->factor); \
+        for (; nodearr_len(cur->nodearr); ) { \
+            node_t *node = nodearr_popb(cur->nodearr); \
+            ast_del_nodes(ast, node); \
+        } \
+        nodearr_del_without_nodes(cur->nodearr); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_pushb_error(ast, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    depth_t depth = cargs->depth;
+
+    check("call cc_factor");
+    cargs->depth = depth + 1;
+    cur->factor = cc_factor(ast, cargs);
+    if (ast_has_errors(ast)) {
+        return_cleanup("");
+    }
+    if (!cur->factor) {
+        return_cleanup("");
+    }
+
+    for (;;) {
+        if (!*ast->ref_ptr) {
+            return_cleanup("reached EOF in index");
+        }
+
+        token_t *t = *ast->ref_ptr++;
+        if (t->type != TOKEN_TYPE_LBRACKET) {
+            ast->ref_ptr--;
+            return_parse(node_new(NODE_TYPE_INDEX, cur));
+        }
+        check("read '['");
+
+        check("call cc_simple_assign");
+        cargs->depth = depth + 1;
+        node_t *simple_assign = cc_simple_assign(ast, cargs);
+        if (ast_has_errors(ast)) {
+            return_cleanup("");
+        }
+        if (!simple_assign) {
+            return_cleanup("not found index by index access");
+        }
+
+        if (!*ast->ref_ptr) {
+            return_cleanup("reached EOF in index (2)");
+        }
+
+        t = *ast->ref_ptr++;
+        if (t->type != TOKEN_TYPE_RBRACKET) {
+            return_cleanup("not found ']' in index");
+        }
+        check("read ']'");
+
+        nodearr_moveb(cur->nodearr, simple_assign);
+    }
+
+    return_parse(node_new(NODE_TYPE_INDEX, cur));
+}
+#endif
 
 static node_t *
 cc_mul_div_op(ast_t *ast, cc_args_t *cargs) {

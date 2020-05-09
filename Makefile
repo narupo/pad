@@ -142,6 +142,10 @@ SRCS := build/lib/error.c \
 	build/lang/kit.c \
 	build/lang/importer.c \
 	build/lang/arguments.c \
+	build/lang/chain_node.c \
+	build/lang/chain_nodes.c \
+	build/lang/chain_obj.c \
+	build/lang/chain_objs.c \
 	build/lang/builtin/functions.c \
 	build/lang/builtin/modules/string.c \
 	build/lang/builtin/modules/array.c \
@@ -281,6 +285,14 @@ build/lang/kit.o: src/lang/kit.c src/lang/kit.h
 build/lang/importer.o: src/lang/importer.c src/lang/importer.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/arguments.o: src/lang/arguments.c src/lang/arguments.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/chain_node.o: src/lang/chain_node.c src/lang/chain_node.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/chain_nodes.o: src/lang/chain_nodes.c src/lang/chain_nodes.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/chain_object.o: src/lang/chain_object.c src/lang/chain_object.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/chain_objects.o: src/lang/chain_objects.c src/lang/chain_objects.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/builtin/functions.o: src/lang/builtin/functions.c src/lang/builtin/functions.h
 	$(CC) $(CFLAGS) -c $< -o $@
