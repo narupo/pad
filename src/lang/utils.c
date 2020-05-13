@@ -301,18 +301,17 @@ again1:
         }
         goto again1;
     } break;
-    case OBJ_TYPE_MODULE:
+    case OBJ_TYPE_MODULE: {
+        const char *modname = str_getc(obj_getc_mod_name(owner));
+        if (!(cstr_eq(modname, "__builtin__") ||
+                cstr_eq(modname, "alias") ||
+                cstr_eq(modname, "opts"))) {
+            break;
+        }
+    } // fallthrough
     case OBJ_TYPE_STRING:
     case OBJ_TYPE_DICT:
     case OBJ_TYPE_ARRAY: {
-        if (owner->type == OBJ_TYPE_MODULE) {
-            const char *modname = str_getc(obj_getc_mod_name(owner));
-            if (!(cstr_eq(modname, "__builtin__") ||
-                  cstr_eq(modname, "alias") ||
-                  cstr_eq(modname, "opts"))) {
-                break;
-            }
-        }
         // create builtin module function object
         if (obj->type != OBJ_TYPE_IDENTIFIER) {
             ast_pushb_error(ast, "invalid method name type (%d)", obj->type);
