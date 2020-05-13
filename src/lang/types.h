@@ -24,6 +24,12 @@ typedef struct object_reserv object_reserv_t;
 struct object_identifier;
 typedef struct object_identifier object_identifier_t;
 
+struct object_chain;
+typedef struct object_chain object_chain_t;
+
+struct object_owners_method;
+typedef struct object_owners_method object_owners_method_t;
+
 struct node_array;
 typedef struct node_array node_array_t;
 
@@ -77,9 +83,6 @@ typedef struct chain_object chain_object_t;
 
 struct chain_objects;
 typedef struct chain_objects chain_objects_t;
-
-struct object_chain;
-typedef struct object_chain object_chain_t;
 
 struct node;
 typedef struct node node_t;

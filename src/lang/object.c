@@ -75,6 +75,12 @@ obj_del(object_t *self) {
         str_del(self->reserv.name);
         self->reserv.ref_ast = NULL;  // do not delete
         break;
+    case OBJ_TYPE_OWNERS_METHOD:
+        obj_del(self->owners_method.owner);
+        self->owners_method.owner = NULL;
+        str_del(self->owners_method.method_name);
+        self->owners_method.method_name = NULL;
+        break;
     }
 
     gc_free(self->ref_gc, &self->gc_item);
@@ -130,6 +136,7 @@ obj_new_other(const object_t *other) {
         break;
     case OBJ_TYPE_FUNC:
         // self->func.ref_ast is do not delete. this is reference
+        self->func.ref_ast = other->func.ref_ast;
         self->func.name = obj_new_other(other->func.name);
         self->func.args = obj_new_other(other->func.args);
         self->func.ref_suites = other->func.ref_suites; // save reference
@@ -403,6 +410,23 @@ obj_new_module(gc_t *ref_gc) {
 }
 
 object_t *
+obj_new_owners_method(gc_t *ref_gc, object_t *owner, string_t *move_method_name) {
+    if (!ref_gc || !owner || !move_method_name) {
+        return NULL;
+    }
+
+    object_t *self = obj_new(ref_gc, OBJ_TYPE_OWNERS_METHOD);
+    if (!self) {
+        return NULL;
+    }
+
+    self->owners_method.owner = owner;  // can obj_del
+    self->owners_method.method_name = mem_move(move_method_name);
+
+    return self;
+}
+
+object_t *
 obj_new_reserv(gc_t *ref_gc, ast_t *ref_ast, const char *name) {
     if (!ref_gc || !ref_ast || !name) {
         return NULL;
@@ -510,6 +534,11 @@ obj_to_str(const object_t *self) {
         str_app(str, "(reserv: ");
         str_app_other(str, self->reserv.name);
         str_app(str, ")");
+        return str;
+    } break;
+    case OBJ_TYPE_OWNERS_METHOD: {
+        string_t *str = str_new();
+        str_set(str, "(method)");
         return str;
     } break;
     } // switch
@@ -723,4 +752,24 @@ obj_getc_str(const object_t *self) {
 string_t *
 obj_get_str(object_t *self) {
     return self->string;
+}
+
+builtin_func_info_t *
+obj_get_module_builtin_func_infos(const object_t *self) {
+    return self->module.builtin_func_infos;
+}
+
+const string_t *
+obj_getc_owners_method_name(const object_t *self) {
+    return self->owners_method.method_name;
+}
+
+object_t *
+obj_get_owners_method_owner(object_t *self) {
+    return self->owners_method.owner;
+}
+
+const string_t *
+obj_getc_mod_name(const object_t *self) {
+    return self->module.name;
 }

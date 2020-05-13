@@ -70,6 +70,11 @@ typedef enum {
     // 定義されていないが、これから定義される予定のあるオブジェクト
     // 内部にast_tへの参照を持つ。これはこのオブジェクトが作成されたときの文脈のast_tへの参照である
     OBJ_TYPE_RESERV,
+
+    // A owner's method object
+    // array.push() や dict.pop("key") など、ドット演算子で繋げで呼び出すメソッド用のオブジェクト
+    // owner にメソッドのオーナーオブジェクト、method_name にメソッド名が保存される
+    OBJ_TYPE_OWNERS_METHOD,
 } obj_type_t;
 
 /**
@@ -117,6 +122,14 @@ struct object_chain {
 };
 
 /**
+ * A owner's method object
+ */
+struct object_owners_method {
+    object_t *owner;
+    string_t *method_name;
+};
+
+/**
  * A abstract object
  */
 struct object {
@@ -133,6 +146,7 @@ struct object {
     object_module_t module;  // structure of module (type == OBJ_TYPE_MODULE)
     object_reserv_t reserv;  // strcuture of reservation (type == OBJ_TYPE_RESERV)
     object_chain_t chain;  // structure of chain (type == OBJ_TYPE_CHAIN)
+    object_owners_method_t owners_method;  // structure of owners_method (type == OBJ_TYPE_OWNERS_METHOD)
 };
 
 /**
@@ -375,7 +389,7 @@ obj_new_module(gc_t *ref_gc);
  * @param[in] *move_ast   pointer to ast_t (with move semantics)
  * @param[in] *func_infos array of functions
  *
- * @return
+ * @return pointer to object_t
  */
 object_t *
 obj_new_module_by(
@@ -385,6 +399,19 @@ obj_new_module_by(
     ast_t *move_ast,
     builtin_func_info_t *func_infos
 );
+
+/**
+ * construct owner's method object
+ * if failed to allocate memory then exit from process
+ *
+ * @param[in] *ref_gc
+ * @param[in] *owner       owner object
+ * @param[in] *method_name method name
+ *
+ * @return pointer to object_t
+ */
+object_t *
+obj_new_owners_method(gc_t *ref_gc, object_t *owner, string_t *move_method_name);
 
 /**
  * object to string_t
@@ -583,3 +610,43 @@ obj_getc_str(const object_t *self);
  */
 string_t *
 obj_get_str(object_t *self);
+
+/**
+ * get builtin function informations
+ *
+ * @param[in] *self
+ *
+ * @return pointer to builtin_func_info_t
+ */
+builtin_func_info_t *
+obj_get_module_builtin_func_infos(const object_t *self);
+
+/**
+ * get method name of owner's method object read-only
+ *
+ * @param[in] *self
+ *
+ * @return pointer to string_t
+ */
+const string_t *
+obj_getc_owners_method_name(const object_t *self);
+
+/**
+ * get owner of owner's method object
+ *
+ * @param[in] *self
+ *
+ * @return pointer to object_t
+ */
+object_t *
+obj_get_owners_method_owner(object_t *self);
+
+/**
+ * get module name
+ *
+ * @param[in] *self
+ *
+ * @return pointer to C strings
+ */
+const string_t *
+obj_getc_mod_name(const object_t *self);

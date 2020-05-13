@@ -11276,7 +11276,7 @@ test_trv_array_index(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "index out of range of array"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "index out of range"));
     }
 
     /* tkr_parse(tkr, "{@ a = [1, 2] \n @}{: a[-1] :}");
@@ -11291,7 +11291,7 @@ test_trv_array_index(void) {
 
     // tkr_parse(tkr, "{@ a = (b, c = 1, 2)[0] \n @}{: a :}");
     // {
-    ast_clear(ast);
+    //     ast_clear(ast);
     //     cc_compile(ast, tkr_get_tokens(tkr));
     //     ctx_clear(ctx);
     //     (trv_traverse(ast, ctx));
@@ -12151,7 +12151,7 @@ test_trv_string_index(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "index out of range of string"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "index out of range"));
     }
 
     tkr_parse(tkr, "{@ a = (\"a\" + \"b\")[0] \n @}{: a :}");
@@ -12219,7 +12219,7 @@ test_trv_multi_assign(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "can't assign element to array"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid right operand (1)"));
     }
 
     // success
@@ -14343,7 +14343,7 @@ test_trv_builtin_string(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "can't call \"upper\""));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"upper\" is not defined"));
     }
 
     /********
@@ -14377,7 +14377,7 @@ test_trv_builtin_string(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "can't call \"lower\""));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"lower\" is not defined"));
     }
 
     /*************
@@ -14411,7 +14411,7 @@ test_trv_builtin_string(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "can't call \"capitalize\""));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"capitalize\" is not defined"));
     }
 
     /********
@@ -14445,7 +14445,7 @@ test_trv_builtin_string(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "can't call \"snake\""));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"snake\" is not defined"));
     }
 
     /********
@@ -14479,8 +14479,9 @@ test_trv_builtin_string(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "can't call \"camel\""));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"camel\" is not defined"));
     }
+
     ctx_del(ctx);
     gc_del(gc);
     ast_del(ast);
@@ -14756,6 +14757,27 @@ test_trv_builtin_modules_alias_1(void) {
         (trv_traverse(ast, ctx));
         assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't invoke alias.set. key is not string"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_builtin_modules_array_0(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "    arr = [1, 2]"
+    "    dst = []\n"
+    "    dst.push(arr[1])\n"
+    "@}{: dst[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
     trv_cleanup;
@@ -17256,7 +17278,6 @@ test_trv_assign_and_reference_6(void) {
         (cc_compile(ast, tkr_get_tokens(tkr)));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        ERR;
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "3,2,3,true"));
     }
@@ -18140,7 +18161,6 @@ test_trv_import_stmt_3(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\n"));
     }
 
@@ -20652,23 +20672,6 @@ test_trv_for_stmt_10(void) {
 
 static void
 test_trv_for_stmt_11(void) {
-    trv_ready;
-
-    tkr_parse(tkr, "{@\n"
-    "    arr = [1, 2]"
-    "    dst = []\n"
-    "    dst.push(arr[1])\n"
-    "@}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
-    }
-
-    trv_cleanup;
 }
 
 static void
@@ -22599,7 +22602,6 @@ test_trv_expr_4(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -22623,7 +22625,6 @@ test_trv_expr_4a(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
@@ -22656,7 +22657,6 @@ test_trv_expr_4b(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -22683,7 +22683,6 @@ test_trv_expr_4c(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
@@ -23566,7 +23565,7 @@ test_trv_dict_2(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "failed to refer index"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "not found key \"b\""));
     }
 
     trv_cleanup;
@@ -23597,7 +23596,7 @@ test_trv_dict_3(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "invalid dict index value. value is not a string"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "index isn't string"));
     }
 
     tkr_parse(tkr, "{@ k = 1 \n a = { k: 1 } @}");
@@ -23839,19 +23838,6 @@ test_trv_reservation_object(void) {
 
     tkr_parse(tkr, "{@\n"
     "   import \"/tests/lang/modules/string.cap\" as string\n"
-    "   string.a\n"
-    "@}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
-    }
-
-    tkr_parse(tkr, "{@\n"
-    "   import \"/tests/lang/modules/string.cap\" as string\n"
     "   string.a = 1\n"
     "@}{: string.a :}");
     {
@@ -23869,6 +23855,19 @@ test_trv_reservation_object(void) {
 
     tkr_parse(tkr, "{@\n"
     "   import \"/tests/lang/modules/string.cap\" as string\n"
+    "   string.a\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/string.cap\" as string\n"
     "@}{: string.a :}");
     {
         ast_clear(ast);
@@ -23876,7 +23875,7 @@ test_trv_reservation_object(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "can't refer object (10)"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -23889,7 +23888,7 @@ test_trv_reservation_object(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "owner is invalid object (10)"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -23902,7 +23901,7 @@ test_trv_reservation_object(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "owner is invalid object (10)"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -23915,7 +23914,7 @@ test_trv_reservation_object(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "owner is invalid object (10)"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -23927,7 +23926,7 @@ test_trv_reservation_object(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "owner is invalid object (10)"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
     }
 
     trv_cleanup;
@@ -24084,9 +24083,6 @@ traverser_tests[] = {
     {"trv_dict_2", test_trv_dict_2},
     {"trv_dict_3", test_trv_dict_3},
     {"trv_identifier", test_trv_identifier},
-    {"trv_builtin_alias_0", test_trv_builtin_alias_0},  // ?
-    {"trv_builtin_modules_alias_0", test_trv_builtin_modules_alias_0},
-    {"trv_builtin_modules_alias_1", test_trv_builtin_modules_alias_1},
     {"trv_traverse", test_trv_traverse},
     {"trv_comparison", test_trv_comparison},
     {"trv_array_index", test_trv_array_index},
@@ -24111,6 +24107,10 @@ traverser_tests[] = {
     {"trv_negative_0", test_trv_negative_0},
     {"trv_call", test_trv_call},
     {"trv_func_def", test_trv_func_def},
+    {"trv_builtin_alias_0", test_trv_builtin_alias_0},  // ?
+    {"trv_builtin_modules_alias_0", test_trv_builtin_modules_alias_0},
+    {"trv_builtin_modules_alias_1", test_trv_builtin_modules_alias_1},
+    {"trv_builtin_modules_array_0", test_trv_builtin_modules_array_0},
     {"trv_builtin_functions", test_trv_builtin_functions},
     {"trv_builtin_functions_puts_0", test_trv_builtin_functions_puts_0},
     {"trv_builtin_functions_len_0", test_trv_builtin_functions_len_0},
