@@ -11593,6 +11593,29 @@ test_trv_assign_1(void) {
 }
 
 static void
+test_trv_assign_2(void) {
+    trv_ready;
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+
+    tkr_parse(tkr, "{@\n"
+    "   import \"/tests/lang/modules/string.cap\" as string\n"
+    "   string.a = 1\n"
+    "@}{: string.a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        ERR;
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_atom_0(void) {
     trv_ready;
 
@@ -24090,6 +24113,7 @@ traverser_tests[] = {
     {"trv_ref_block_old", test_trv_ref_block_old},
     {"trv_assign_0", test_trv_assign_0},
     {"trv_assign_1", test_trv_assign_1},
+    {"trv_assign_2", test_trv_assign_2},
     {"trv_atom_0", test_trv_atom_0},
     {"trv_array", test_trv_array},
     {"trv_index", test_trv_index},
