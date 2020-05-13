@@ -344,6 +344,7 @@ again2:
             ast_pushb_error(ast, "\"%s\" is not defined", idn);
             return NULL;
         } else if (ref->type == OBJ_TYPE_IDENTIFIER) {
+            obj = ref;
             goto again2;
         }
         return ref;
