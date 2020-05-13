@@ -279,11 +279,57 @@ set_ref_at_cur_varmap(
     objdict_set(varmap, identifier, ref);
 }
 
+/**
+ * chain.dot
+ * chain [ . dot ] <--- chain object
+ */
 static object_t *
-refer_chain_dot(ast_t *ast, object_array_t *owners, const chain_object_t *co) {
-    const object_t *obj = chain_obj_getc_obj(co);
+refer_chain_dot(ast_t *ast, object_array_t *owners, chain_object_t *co) {
+    object_t *owner = objarr_get_last(owners);
+    assert(owner);
+    object_t *obj = chain_obj_get_obj(co);
 
-again:
+again1:
+    switch (owner->type) {
+    default:
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        owner = pull_in_ref_by(owner);
+        if (!owner) {
+            ast_pushb_error(ast, "\"%s\" is not defined");
+            return NULL;
+        }
+        goto again1;
+    } break;
+    case OBJ_TYPE_MODULE:
+    case OBJ_TYPE_STRING:
+    case OBJ_TYPE_DICT:
+    case OBJ_TYPE_ARRAY: {
+        if (owner->type == OBJ_TYPE_MODULE) {
+            const char *modname = str_getc(obj_getc_mod_name(owner));
+            if (!(cstr_eq(modname, "__builtin__") ||
+                  cstr_eq(modname, "alias") ||
+                  cstr_eq(modname, "opts"))) {
+                break;
+            }
+        }
+        // create builtin module function object
+        if (obj->type != OBJ_TYPE_IDENTIFIER) {
+            ast_pushb_error(ast, "invalid method name type (%d)", obj->type);
+            return NULL;
+        }
+
+        const char *idn = obj_getc_idn_name(obj);
+        string_t *methname = str_new();
+        str_set(methname, idn);
+
+        obj_inc_ref(owner);
+        object_t *owners_method = obj_new_owners_method(ast->ref_gc, owner, mem_move(methname));
+        return owners_method;
+    } break;
+    }
+
+again2:
     switch (obj->type) {
     default:
         ast_pushb_error(ast, "invalid operand type (%d)", obj->type);
@@ -297,9 +343,8 @@ again:
         if (!ref) {
             ast_pushb_error(ast, "\"%s\" is not defined", idn);
             return NULL;
-        }
-        if (ref->type == OBJ_TYPE_IDENTIFIER) {
-            goto again;
+        } else if (ref->type == OBJ_TYPE_IDENTIFIER) {
+            goto again2;
         }
         return ref;
     } break;
@@ -395,7 +440,7 @@ invoke_builtin_module_func(
     assert(mod && funcname && ref_args);
     assert(mod->type == OBJ_TYPE_MODULE);
 
-    builtin_func_info_t *infos = mod->module.builtin_func_infos;
+    builtin_func_info_t *infos = obj_get_module_builtin_func_infos(mod);
     if (!infos) {
         // allow null of bultin_func_infos. not error
         return NULL;
@@ -442,6 +487,7 @@ invoke_func_obj(
     assert(func->args->type == OBJ_TYPE_ARRAY);
 
     // extract function arguments
+    assert(func->ref_ast);
     ctx_pushb_scope(func->ref_ast->ref_context);
     if (args) {
         const object_array_t *formal_args = func->args->objarr;
@@ -627,7 +673,7 @@ refer_chain_call(ast_t *ast, object_array_t *owners, chain_object_t *co) {
 
     // build the owners array of function
     // the owners of this arguments contain first identifier
-    // so remove it
+    // so remove first identifier from this array
     object_array_t *func_owners = objarr_new();
     for (int32_t i = 1; i < objarr_len(owners); ++i) {
         object_t *obj = objarr_get(owners, i);
@@ -656,6 +702,13 @@ again:
     case OBJ_TYPE_FUNC: {
         funcobj = owner;
         funcname = obj_getc_func_name(owner);
+    } break;
+    case OBJ_TYPE_OWNERS_METHOD: {
+        const string_t *methname = obj_getc_owners_method_name(owner);
+        funcname = str_getc(methname);
+        object_t *own = obj_get_owners_method_owner(owner);
+        obj_inc_ref(own);
+        objarr_pushb(func_owners, own);
     } break;
     }
 
@@ -731,9 +784,23 @@ static object_t *
 refer_array_index(ast_t *ast, object_t *owner, object_t *indexobj) {
     assert(owner->type == OBJ_TYPE_ARRAY);
 
-    if (indexobj->type != OBJ_TYPE_INT) {
+again:
+    switch (indexobj->type) {
+    default:
         ast_pushb_error(ast, "index isn't integer");
         return NULL;
+        break;
+    case OBJ_TYPE_INT:
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(indexobj);
+        indexobj = pull_in_ref_by(indexobj);
+        if (!indexobj) {
+            ast_pushb_error(ast, "\"%s\" is not defined", idn);
+            return NULL;
+        }
+        goto again;
+    } break;
     }
 
     objint_t index = indexobj->lvalue;
@@ -752,11 +819,25 @@ refer_array_index(ast_t *ast, object_t *owner, object_t *indexobj) {
 
 static object_t *
 refer_dict_index(ast_t *ast, object_t *owner, object_t *indexobj) {
-    assert(owner->type == OBJ_TYPE_ARRAY);
+    assert(owner->type == OBJ_TYPE_DICT);
 
-    if (indexobj->type != OBJ_TYPE_STRING) {
+again:
+    switch (indexobj->type) {
+    default:
         ast_pushb_error(ast, "index isn't string");
         return NULL;
+        break;
+    case OBJ_TYPE_STRING:
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(indexobj);
+        indexobj = pull_in_ref_by(indexobj);
+        if (!indexobj) {
+            ast_pushb_error(ast, "\"%s\" is not defined", idn);
+            return NULL;
+        }
+        goto again;
+    } break;
     }
 
     object_dict_t *objdict = obj_get_dict(owner);
