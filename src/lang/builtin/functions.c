@@ -76,8 +76,8 @@ again:
     case OBJ_TYPE_FUNC: {
         return obj_new_cstr(ref_ast->ref_gc, "<func>");
     } break;
-    case OBJ_TYPE_INDEX: {
-        obj = obj->index.operand;
+    case OBJ_TYPE_CHAIN: {
+        obj = obj->chain.operand;
         goto again;
     } break;
     case OBJ_TYPE_MODULE: {
@@ -112,7 +112,7 @@ builtin_eputs(builtin_func_args_t *fargs) {
     for (int32_t i = 0; i < arrlen-1; ++i) {
         object_t *obj = objarr_get(args, i);
         assert(obj);
-        object_t *copy = copy_object_value(ref_ast, obj);
+        object_t *copy = extract_copy_of_obj(ref_ast, obj);
         string_t *s = obj_to_string(ref_ast, copy);
         obj_del(copy);
         if (!s) {
@@ -125,7 +125,7 @@ builtin_eputs(builtin_func_args_t *fargs) {
     if (arrlen) {
         object_t *obj = objarr_get(args, arrlen-1);
         assert(obj);
-        object_t *copy = copy_object_value(ref_ast, obj);
+        object_t *copy = extract_copy_of_obj(ref_ast, obj);
         string_t *s = obj_to_string(ref_ast, copy);
         obj_del(copy);
         if (!s) {
@@ -160,7 +160,7 @@ builtin_puts(builtin_func_args_t *fargs) {
     for (int32_t i = 0; i < arrlen-1; ++i) {
         object_t *obj = objarr_get(args, i);
         assert(obj);
-        object_t *copy = copy_object_value(ref_ast, obj);
+        object_t *copy = extract_copy_of_obj(ref_ast, obj);
         if (ast_has_errors(ref_ast)) {
             ast_pushb_error(ref_ast, "failed to get argument");
             return NULL;
@@ -177,7 +177,7 @@ builtin_puts(builtin_func_args_t *fargs) {
     if (arrlen) {
         object_t *obj = objarr_get(args, arrlen-1);
         assert(obj);
-        object_t *copy = copy_object_value(ref_ast, obj);
+        object_t *copy = extract_copy_of_obj(ref_ast, obj);
         if (ast_has_errors(ref_ast)) {
             ast_pushb_error(ref_ast, "failed to get argument");
             return NULL;

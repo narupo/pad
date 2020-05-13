@@ -59,9 +59,6 @@
 *************/
 
 static object_t *
-_trv_traverse(ast_t *ast, trv_args_t *targs);
-
-static object_t *
 trv_compare_or(ast_t *ast, trv_args_t *targs);
 
 static object_t *
@@ -141,15 +138,6 @@ trv_compare_comparison_not_eq_func(ast_t *ast, trv_args_t *targs);
 
 static object_t *
 trv_compare_comparison_lte_int(ast_t *ast, trv_args_t *targs);
-
-static object_t *
-trv_invoke_func_obj(ast_t *ast, trv_args_t *targs);
-
-static object_t *
-trv_invoke_owner_func_obj(ast_t *ast, trv_args_t *targs);
-
-static object_t *
-trv_invoke_builtin_modules(ast_t *ast, trv_args_t *targs);
 
 /************
 * functions *
@@ -261,14 +249,12 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
     assert(tmp);
 
     object_t *result = tmp;
-    if (tmp->type == OBJ_TYPE_INDEX) {
-        result = copy_value_of_index_obj(ast, tmp);
+    if (tmp->type == OBJ_TYPE_CHAIN) {
+        result = extract_ref_of_obj(ast, tmp);
         if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
-        if (!result) {
-            result = obj_new_nil(ast->ref_gc);
-        }
+        assert(result);
     }
 
     switch (result->type) {
@@ -1080,11 +1066,20 @@ trv_calc_assign_to_array(ast_t *ast, trv_args_t *targs) {
 
     depth_t depth = targs->depth;
 
+again:
     switch (rhs->type) {
     default:
-        ast_pushb_error(ast, "can't assign element to array");
+        ast_pushb_error(ast, "invalid right operand (%d)", rhs->type);
         return_trav(NULL);
         break;
+    case OBJ_TYPE_CHAIN: {
+        rhs = refer_chain_obj_with_ref(ast, rhs);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to refer chain object");
+            return_trav(NULL);
+        }
+        goto again;
+    } break;
     case OBJ_TYPE_ARRAY: {
         if (objarr_len(lhs->objarr) != objarr_len(rhs->objarr)) {
             ast_pushb_error(ast, "can't assign array to array. not same length");
@@ -1113,14 +1108,14 @@ trv_calc_assign_to_array(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
+#if 0
 static index_value_t *
 trv_obj_to_index_value(ast_t *ast, trv_args_t *targs) {
     index_value_t *idxval = &targs->index_value;
-    const object_t *obj = targs->cref_obj;
+    object_t *obj = targs->ref_obj;
     assert(obj);
 
     const object_t *src = obj;
-    object_t *delme = NULL;
 
     switch (obj->type) {
     default: break;
@@ -1137,22 +1132,20 @@ trv_obj_to_index_value(ast_t *ast, trv_args_t *targs) {
             return NULL;
         }
         break;
-    case OBJ_TYPE_INDEX:
-        delme = copy_value_of_index_obj(ast, obj);
+    case OBJ_TYPE_CHAIN: {
+        object_t *ref = extract_ref_of_obj(ast, obj);
         if (ast_has_errors(ast)) {
-            return NULL;
-        } else if (!delme) {
-            ast_pushb_error(ast, "index value is null in object to index value");
+            ast_pushb_error(ast, "failed to extract reference");
             return NULL;
         }
-        src = delme;
-        break;
+        assert(ref);
+        src = ref;
+    } break;
     }
 
     switch (src->type) {
     default:
         ast_pushb_error(ast, "invalid index object in object to index value");
-        obj_del(delme);
         return NULL;
         break;
     case OBJ_TYPE_INT:
@@ -1165,144 +1158,293 @@ trv_obj_to_index_value(ast_t *ast, trv_args_t *targs) {
         break;
     }
 
-    obj_del(delme);
     return idxval;
+}
+#endif
+
+static object_t *
+assign_to_chain_dot(
+    ast_t *ast,
+    object_array_t *owners,
+    chain_object_t *co,
+    object_t *rhs
+) {
+    object_t *obj = chain_obj_get_obj(co);
+
+    switch (obj->type) {
+    default:
+        ast_pushb_error(ast, "invalid type (%d)", obj->type);
+        return NULL;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(obj);
+        ast_t *ref_ast = obj_get_idn_ref_ast(obj);
+        set_ref_at_cur_varmap(ref_ast, owners, idn, rhs);
+        return rhs;
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return NULL;
 }
 
 static object_t *
-trv_assign_to_index(ast_t *ast, trv_args_t *targs) {
+assign_to_chain_call(
+    ast_t *ast,
+    object_array_t *owners,
+    chain_object_t *co,
+    object_t *rhs
+) {
+    object_t *obj = refer_chain_call(ast, owners, co);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to refer chain call");
+        return NULL;
+    }
+
+    return trv_calc_assign(ast, &(trv_args_t) {
+        .lhs_obj = obj,
+        .rhs_obj = rhs,
+        .ref_owners = owners,
+    });
+}
+
+static object_t *
+assign_to_chain_array_index(
+    ast_t *ast,
+    object_t *owner,
+    chain_object_t *co,
+    object_t *rhs
+) {
+    assert(owner->type == OBJ_TYPE_ARRAY);
+    const object_t *idxobj = chain_obj_get_obj(co);
+
+again:
+    switch (idxobj->type) {
+    default: {
+        ast_pushb_error(ast, "invalid index type (%d)", idxobj->type);
+        return NULL;
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(idxobj);
+        idxobj = pull_in_ref_by(idxobj);
+        if (!idxobj) {
+            ast_pushb_error(ast, "\"%s\" is not defined", idn);
+            return NULL;
+        }
+        goto again;
+    } break;
+    case OBJ_TYPE_INT: {
+        // pass
+    } break;
+    }
+
+    object_array_t *objarr = obj_get_array(owner);
+    objint_t idx = idxobj->lvalue;
+    if (idx < 0 || idx >= objarr_len(objarr)) {
+        ast_pushb_error(ast, "index out of range");
+        return NULL;
+    }
+
+    obj_inc_ref(rhs);
+    objarr_set(objarr, idx, rhs);
+
+    return rhs;
+}
+
+static object_t *
+assign_to_chain_dict_index(
+    ast_t *ast,
+    object_t *owner,
+    chain_object_t *co,
+    object_t *rhs
+) {
+    assert(owner->type == OBJ_TYPE_DICT);
+
+    object_t *idxobj = chain_obj_get_obj(co);
+
+again:
+    switch (idxobj->type) {
+    default: {
+        ast_pushb_error(ast, "invalid index (%d)", idxobj->type);
+        return NULL;
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(idxobj);
+        idxobj = pull_in_ref_by(idxobj);
+        if (!idxobj) {
+            ast_pushb_error(ast, "\"%s\" is not defined", idn);
+            return NULL;
+        }
+        goto again;
+    } break;
+    case OBJ_TYPE_STRING: {
+        // pass
+    } break;
+    }
+
+    const string_t *keystr = obj_getc_str(idxobj);
+    const char *key = str_getc(keystr);
+    object_dict_t *objdict = obj_get_dict(owner);
+
+    obj_inc_ref(rhs);
+    objdict_set(objdict, key, rhs);
+
+    return rhs;
+}
+
+static object_t *
+assign_to_chain_index(
+    ast_t *ast,
+    object_array_t *owners,
+    chain_object_t *co,
+    object_t *rhs
+) {
+    object_t *owner = objarr_get_last(owners);
+    if (!owner) {
+        ast_pushb_error(ast, "owner is null");
+        return NULL;
+    }
+
+again:
+    switch (owner->type) {
+    default: {
+        ast_pushb_error(ast, "can't assign to (%d)", owner->type);
+        return NULL;
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(owner);
+        owner = pull_in_ref_by(owner);
+        if (!owner) {
+            ast_pushb_error(ast, "\"%s\" is not defined", idn);
+            return NULL;
+        }
+        goto again;
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_t *result = assign_to_chain_array_index(ast, owner, co, rhs);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to assign to array");
+            return NULL;
+        }
+        return result;
+    } break;
+    case OBJ_TYPE_DICT: {
+        object_t *result = assign_to_chain_dict_index(ast, owner, co, rhs);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to assign to dict");
+            return NULL;
+        }
+        return result;
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return NULL;
+}
+
+static object_t *
+assign_to_chain_three_objs(
+    ast_t *ast,
+    object_array_t *owners,
+    chain_object_t *co,
+    object_t *rhs
+) {
+    assert(ast && owners && co);
+
+    switch (chain_obj_getc_type(co)) {
+    case CHAIN_OBJ_TYPE_DOT: {
+        object_t *result = assign_to_chain_dot(ast, owners, co, rhs);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to assign to chain dot");
+            return NULL;
+        }
+        return result;
+    } break;
+    case CHAIN_OBJ_TYPE_CALL: {
+        object_t *result = assign_to_chain_call(ast, owners, co, rhs);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to assign to chain call");
+            return NULL;
+        }
+        return result;
+    } break;
+    case CHAIN_OBJ_TYPE_INDEX: {
+        object_t *result = assign_to_chain_index(ast, owners, co, rhs);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to assign to chain index");
+            return NULL;
+        }
+        return result;
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return NULL;
+}
+
+static object_t *
+trv_assign_to_chain(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *lhs = targs->lhs_obj;
     object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INDEX);
-
-    object_t *ref_operand = lhs->index.operand;
-    assert(ref_operand);
-    obj_inc_ref(ref_operand);  // this is needed?
-
-    const object_array_t *indices = lhs->index.indices;
-    assert(indices);
-
-    const int32_t idxslen = objarr_len(indices);
-    object_t *ret = NULL;
-
     depth_t depth = targs->depth;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_CHAIN);
 
-    for (int32_t i = 0; i < idxslen; ++i) {
-        const object_t *el = objarr_getc(indices, i);
-        assert(el);
+    object_t *operand = obj_get_chain_operand(lhs);
+    assert(operand);
+    chain_objects_t *cos = obj_get_chain_objs(lhs);
+    assert(cos);
+    int32_t coslen = chain_objs_len(cos);
 
-        targs->index_value = (index_value_t){0};
-        targs->cref_obj = el;
+    if (!coslen) {
+        targs->lhs_obj = operand;
         targs->depth = depth + 1;
-        trv_obj_to_index_value(ast, targs);
-        if (ast_has_errors(ast)) {
-            ast_pushb_error(ast, "invalid index in assign to index");
-            return_trav(NULL);
-        }
-        index_value_t *idx = &targs->index_value;
-
-        if (ref_operand->type == OBJ_TYPE_IDENTIFIER) {
-            object_t *ref = pull_in_ref_by(ref_operand);
-            if (!ref) {
-                ast_pushb_error(
-                    ast,
-                    "\"%s\" is not defined in assign to index",
-                    obj_getc_idn_name(ref_operand)
-                );
-                return_trav(NULL);
-            }
-            ref_operand = ref;
-        }
-
-        switch (ref_operand->type) {
-        default:
-            ast_pushb_error(ast, "operand (%d) is not assignable", ref_operand->type);
-            return_trav(NULL);
-            break;
-        case OBJ_TYPE_ARRAY:
-            if (idx->type != 'i') {
-                ast_pushb_error(ast, "invalid index type. index is not integer");
-                return_trav(NULL);
-            }
-
-            if (i == idxslen-1) {
-                // assign to array element of operand of index object
-                object_t *ref = extract_ref_of_obj(ast, rhs);
-                if (ast_has_errors(ast)) {
-                    ast_pushb_error(ast, "failed to extract reference");
-                    return_trav(NULL);
-                }
-                ret = ref;
-
-                obj_inc_ref(ref);
-                if (!objarr_move(ref_operand->objarr, idx->ikey, mem_move(ref))) {
-                    ast_pushb_error(ast, "failed to move object at array");
-                    return_trav(NULL);
-                }
-            } else {
-                // next operand of index object
-                if (idx->ikey < 0 || idx->ikey >= objarr_len(ref_operand->objarr)) {
-                    ast_pushb_error(ast, "array index out of range");
-                    return_trav(NULL);
-                }
-                ref_operand = objarr_get(ref_operand->objarr, idx->ikey);
-            }
-            break;
-        case OBJ_TYPE_DICT:
-            if (idx->type != 's') {
-                ast_pushb_error(ast, "invalid index type. index is not string");
-                return_trav(NULL);
-            }
-
-            if (i == idxslen-1) {
-                // assign to
-                object_t *copy = copy_object_value(ast, rhs);
-                if (ast_has_errors(ast)) {
-                    ast_pushb_error(ast, "failed to copy object value");
-                    return_trav(NULL);
-                } else if (!copy) {
-                    ast_pushb_error(ast, "failed to copy object value");
-                    return_trav(NULL);
-                }
-
-                ret = obj_new_other(copy);
-
-                if (!objdict_move(ref_operand->objdict, idx->skey, mem_move(copy))) {
-                    ast_pushb_error(ast, "failed to move object at dict");
-                    obj_del(copy);
-                    obj_del(ret);
-                    return_trav(NULL);
-                }
-            } else {
-                // next operand
-                const object_dict_item_t *item = objdict_getc(ref_operand->objdict, idx->skey);
-                if (!item) {
-                    ast_pushb_error(ast, "invalid index key. \"%s\" is not found", idx->skey);
-                    return_trav(NULL);
-                }
-                ref_operand = item->value;
-            }
-            break;
-        }
+        return trv_calc_assign(ast, targs);
     }
 
-    assert(ret);
-    return_trav(ret);
+    // start loop
+    object_t *last = NULL;
+    object_array_t *owners = objarr_new();
+    obj_inc_ref(operand);
+    objarr_pushb(owners, operand);
+
+    for (int32_t i = 0; i < coslen-1; ++i) {
+        chain_object_t *co = chain_objs_get(cos, i);
+        assert(co);
+
+        last = refer_chain_three_objs(ast, owners, co);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to refer three objects");
+            return NULL;
+        }
+        assert(last);
+        obj_inc_ref(last);
+        objarr_pushb(owners, last);
+    }
+
+    chain_object_t *co = chain_objs_get(cos, coslen-1);
+    assert(co);
+    last = assign_to_chain_three_objs(ast, owners, co, rhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to assign to three objects");
+        return NULL;
+    }
+
+    objarr_del(owners);
+    return_trav(last);
 }
 
 static object_t *
-trv_calc_assign_to_index(ast_t *ast, trv_args_t *targs) {
+trv_calc_assign_to_chain(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *lhs = targs->lhs_obj;
     assert(lhs);
-    assert(lhs->type == OBJ_TYPE_INDEX);
+    assert(lhs->type == OBJ_TYPE_CHAIN);
 
     depth_t depth = targs->depth;
 
     targs->depth = depth + 1;
-    object_t *obj = trv_assign_to_index(ast, targs);
+    object_t *obj = trv_assign_to_chain(ast, targs);
     if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
@@ -1317,7 +1459,7 @@ trv_calc_assign_with_reserv(ast_t *ast, trv_args_t *targs) {
     object_t *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == OBJ_TYPE_RESERV);
-    object_array_t *ref_dot_owners = targs->ref_dot_owners;
+    object_array_t *ref_owners = targs->ref_owners;
 
     object_t *rhsref = extract_ref_of_obj(ast, rhs);
     if (ast_has_errors(ast)) {
@@ -1329,7 +1471,7 @@ trv_calc_assign_with_reserv(ast_t *ast, trv_args_t *targs) {
     ast_t *ref_ast = lhs->reserv.ref_ast;
 
     check("set reference of (%d) at (%s) of current context varmap", rhsref->type, idnname);
-    set_ref_at_cur_varmap(ref_ast, ref_dot_owners, idnname, rhsref);
+    set_ref_at_cur_varmap(ref_ast, ref_owners, idnname, rhsref);
 
     return_trav(rhsref);
 }
@@ -1360,9 +1502,9 @@ trv_calc_assign(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_calc_assign_to_array(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
+    case OBJ_TYPE_CHAIN: {
         targs->depth = depth + 1;
-        object_t *obj = trv_calc_assign_to_index(ast, targs);
+        object_t *obj = trv_calc_assign_to_chain(ast, targs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_RESERV: {
@@ -1453,6 +1595,11 @@ trv_assign(ast_t *ast, trv_args_t *targs) {
     }
 
     depth_t depth = targs->depth;
+    bool do_not_refer_chain = targs->do_not_refer_chain;
+
+#define _return(result) \
+        targs->do_not_refer_chain = do_not_refer_chain; \
+        return_trav(result); \
 
     int32_t arrlen = nodearr_len(assign_list->nodearr);
     node_t *rnode = nodearr_get(assign_list->nodearr, arrlen-1);
@@ -1463,7 +1610,7 @@ trv_assign(ast_t *ast, trv_args_t *targs) {
     targs->depth = depth + 1;
     object_t *rhs = _trv_traverse(ast, targs);
     if (ast_has_errors(ast)) {
-        return_trav(NULL);
+        _return(NULL);
     }
     assert(rhs);
 
@@ -1475,22 +1622,19 @@ trv_assign(ast_t *ast, trv_args_t *targs) {
         check("call _trv_traverse with test lnode");
         targs->ref_node = lnode;
         targs->depth = depth + 1;
+
+        // left hand side operand don't refer chain object
+        // this flag store true to don't refer chain object
+        targs->do_not_refer_chain = true;
+
         object_t *lhs = _trv_traverse(ast, targs);
         if (ast_has_errors(ast)) {
-            return_trav(NULL);
+            _return(NULL);
         }
         // why lhs in null?
         if (!lhs) {
             ast_pushb_error(ast, "left hand side object is null");
-            return_trav(NULL);
-        }
-
-        if (ast->debug) {
-            string_t *a = obj_to_str(lhs);
-            string_t *b = obj_to_str(rhs);
-            check("call trv_calc_assign lhs[%s] rhs[%s]", str_getc(a), str_getc(b));
-            str_del(a);
-            str_del(b);
+            _return(NULL);
         }
 
         targs->lhs_obj = lhs;
@@ -1498,13 +1642,13 @@ trv_assign(ast_t *ast, trv_args_t *targs) {
         targs->depth = depth + 1;
         object_t *result = trv_calc_assign(ast, targs);
         if (ast_has_errors(ast)) {
-            return_trav(NULL);
+            _return(NULL);
         }
 
         rhs = result;
     }
 
-    return_trav(rhs);
+    _return(rhs);
 }
 
 static object_t *
@@ -1703,11 +1847,13 @@ trv_call_args(ast_t *ast, trv_args_t *targs) {
 
         switch (ref->type) {
         default: {
+            obj_inc_ref(ref);
             objarr_pushb(arr, ref);
         } break;
-        case OBJ_TYPE_INDEX:
+        case OBJ_TYPE_CHAIN:
         case OBJ_TYPE_DICT:
             // set reference at array
+            obj_inc_ref(ref);
             objarr_pushb(arr, ref);
             break;
         }
@@ -1910,18 +2056,16 @@ trv_compare_or_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_compare_or(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare or int. index object value is null");
             return_trav(NULL);
         }
 
-        targs->lhs_obj = lhs;
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_or_int(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -2050,18 +2194,16 @@ trv_compare_or_bool(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_compare_or(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare or bool. index object value is null");
             return_trav(NULL);
         }
 
-        targs->lhs_obj = lhs;
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_or_bool(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -2182,18 +2324,16 @@ trv_compare_or_string(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare or string. index object value is null");
             return_trav(NULL);
         }
 
-        targs->lhs_obj = lhs;
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_or_string(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -2315,18 +2455,16 @@ trv_compare_or_array(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare or array. index object value is null");
             return_trav(NULL);
         }
 
-        targs->lhs_obj = lhs;
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_or_array(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -2448,18 +2586,16 @@ trv_compare_or_dict(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare or dict. index object value is null");
             return_trav(NULL);
         }
 
-        targs->lhs_obj = lhs;
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_or_dict(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -2496,18 +2632,16 @@ trv_compare_or_nil(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_other(rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare or nil. index object value is null");
             return_trav(NULL);
         }
 
-        targs->lhs_obj = lhs;
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_or_nil(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -2626,18 +2760,16 @@ trv_compare_or_func(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare or func. index object value is null");
             return_trav(NULL);
         }
 
-        targs->lhs_obj = lhs;
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_or_func(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -2756,18 +2888,16 @@ trv_compare_or_module(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare or func. index object value is null");
             return_trav(NULL);
         }
 
-        targs->lhs_obj = lhs;
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_or_func(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -2840,8 +2970,8 @@ trv_compare_or(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_compare_or_module(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *lval = copy_value_of_index_obj(ast, lhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *lval = extract_ref_of_obj(ast, lhs);
         if (!lval) {
             ast_pushb_error(ast, "can't compare or. index object value is null");
             return_trav(NULL);
@@ -2850,7 +2980,6 @@ trv_compare_or(ast_t *ast, trv_args_t *targs) {
         targs->lhs_obj = lval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_or(ast, targs);
-        obj_del(lval);
         return_trav(obj);
     } break;
     case OBJ_TYPE_RESERV: {
@@ -3024,18 +3153,16 @@ trv_compare_and_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare and int. index object value is null");
             return_trav(NULL);
         }
 
-        targs->lhs_obj = lhs;
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_and_int(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -3155,18 +3282,16 @@ trv_compare_and_bool(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare and bool. index object value is null");
             return_trav(NULL);
         }
 
-        targs->lhs_obj = lhs;
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_and_bool(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -3287,18 +3412,16 @@ trv_compare_and_string(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare and string. index object value is null");
             return_trav(NULL);
         }
 
-        targs->lhs_obj = lhs;
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_and_string(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -3410,18 +3533,16 @@ trv_compare_and_array(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare and array. index object value is null");
             return_trav(NULL);
         }
 
-        targs->lhs_obj = lhs;
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_and_array(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -3533,18 +3654,16 @@ trv_compare_and_dict(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare and dict. index object value is null");
             return_trav(NULL);
         }
 
-        targs->lhs_obj = lhs;
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_and_dict(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -3577,18 +3696,16 @@ trv_compare_and_nil(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare and nil. index object value is null");
             return_trav(NULL);
         }
 
-        targs->lhs_obj = lhs;
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_and_nil(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -3699,18 +3816,16 @@ trv_compare_and_func(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare and func. index object value is null");
             return_trav(NULL);
         }
 
-        targs->lhs_obj = lhs;
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_and_func(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -3819,8 +3934,8 @@ trv_compare_and_module(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't compare and func. index object value is null");
             return_trav(NULL);
@@ -3829,7 +3944,6 @@ trv_compare_and_module(ast_t *ast, trv_args_t *targs) {
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_and_func(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -3894,8 +4008,8 @@ trv_compare_and(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_compare_and_module(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *lval = copy_value_of_index_obj(ast, lhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *lval = extract_ref_of_obj(ast, lhs);
         if (!lval) {
             ast_pushb_error(ast, "can't compare and. index object value is null");
             return_trav(NULL);
@@ -3904,7 +4018,6 @@ trv_compare_and(ast_t *ast, trv_args_t *targs) {
         targs->lhs_obj = lval;
         targs->depth = depth + 1;
         object_t *result = trv_compare_and(ast, targs);
-        obj_del(lval);
         return_trav(result);
     } break;
     case OBJ_TYPE_RESERV: {
@@ -4019,8 +4132,8 @@ trv_compare_not(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_bool(ast->ref_gc, !objdict_len(operand->objdict));
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *val = copy_value_of_index_obj(ast, operand);
+    case OBJ_TYPE_CHAIN: {
+        object_t *val = extract_ref_of_obj(ast, operand);
         if (!val) {
             ast_pushb_error(ast, "can't compare not. index object value is null");
             return_trav(NULL);
@@ -4029,7 +4142,6 @@ trv_compare_not(ast_t *ast, trv_args_t *targs) {
         targs->ref_obj = val;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_not(ast, targs);
-        obj_del(val);
         return_trav(obj);
     } break;
     }
@@ -4109,8 +4221,8 @@ trv_compare_comparison_eq_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison eq int. index object value is null");
             return_trav(NULL);
@@ -4119,7 +4231,6 @@ trv_compare_comparison_eq_int(ast_t *ast, trv_args_t *targs) {
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_comparison_eq_int(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -4161,8 +4272,8 @@ trv_compare_comparison_eq_bool(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison eq bool. index object value is null");
             return_trav(NULL);
@@ -4171,7 +4282,6 @@ trv_compare_comparison_eq_bool(ast_t *ast, trv_args_t *targs) {
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_comparison_not_eq_bool(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -4213,8 +4323,8 @@ trv_compare_comparison_eq_string(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_bool(ast->ref_gc, b);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison eq string. index object value is null");
             return_trav(NULL);
@@ -4223,7 +4333,6 @@ trv_compare_comparison_eq_string(ast_t *ast, trv_args_t *targs) {
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_comparison_eq_string(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -4258,8 +4367,8 @@ trv_compare_comparison_eq_array(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison eq array. index object value is null");
             return_trav(NULL);
@@ -4268,7 +4377,6 @@ trv_compare_comparison_eq_array(ast_t *ast, trv_args_t *targs) {
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_comparison_not_eq_array(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -4306,8 +4414,8 @@ trv_compare_comparison_eq_nil(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_bool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison eq nil. index object value is null");
             return_trav(NULL);
@@ -4320,7 +4428,6 @@ trv_compare_comparison_eq_nil(ast_t *ast, trv_args_t *targs) {
             ast_pushb_error(ast, "failed to compare not equal to nil");
             return_trav(NULL);
         }
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -4359,8 +4466,8 @@ trv_compare_comparison_eq_func(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison eq func. index object value is null");
             return_trav(NULL);
@@ -4369,7 +4476,6 @@ trv_compare_comparison_eq_func(ast_t *ast, trv_args_t *targs) {
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_comparison_not_eq_func(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -4409,8 +4515,8 @@ trv_compare_comparison_eq_module(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison eq func. index object value is null");
             return_trav(NULL);
@@ -4419,7 +4525,6 @@ trv_compare_comparison_eq_module(ast_t *ast, trv_args_t *targs) {
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         object_t *obj = trv_compare_comparison_not_eq_func(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -4429,15 +4534,15 @@ trv_compare_comparison_eq_module(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
-trv_compare_comparison_eq_index(ast_t *ast, trv_args_t *targs) {
+trv_compare_comparison_eq_chain(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *lhs = targs->lhs_obj;
     assert(lhs);
-    assert(lhs->type == OBJ_TYPE_INDEX);
+    assert(lhs->type == OBJ_TYPE_CHAIN);
 
-    object_t *lval = copy_value_of_index_obj(ast, lhs);
+    object_t *lval = extract_ref_of_obj(ast, lhs);
     if (!lval) {
-        ast_pushb_error(ast, "index object value is null");
+        ast_pushb_error(ast, "chain object value is null");
         return_trav(NULL);
     }
 
@@ -4505,9 +4610,9 @@ trv_compare_comparison_eq(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_compare_comparison_eq_module(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        check("call trv_compare_comparison_eq_index");
-        object_t *obj = trv_compare_comparison_eq_index(ast, targs);
+    case OBJ_TYPE_CHAIN: {
+        check("call trv_compare_comparison_eq_chain");
+        object_t *obj = trv_compare_comparison_eq_chain(ast, targs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_RESERV: {
@@ -4553,8 +4658,8 @@ trv_compare_comparison_not_eq_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison not eq int. index object value is null");
             return_trav(NULL);
@@ -4562,7 +4667,6 @@ trv_compare_comparison_not_eq_int(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_compare_comparison_not_eq_int(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -4600,8 +4704,8 @@ trv_compare_comparison_not_eq_bool(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison not eq bool. index object value is null");
             return_trav(NULL);
@@ -4609,7 +4713,6 @@ trv_compare_comparison_not_eq_bool(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_compare_comparison_not_eq_bool(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -4647,8 +4750,8 @@ trv_compare_comparison_not_eq_string(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_bool(ast->ref_gc, b);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison not eq string. index object value is null");
             return_trav(NULL);
@@ -4656,7 +4759,6 @@ trv_compare_comparison_not_eq_string(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_compare_comparison_not_eq_string(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -4690,8 +4792,8 @@ trv_compare_comparison_not_eq_array(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison not eq array. index object value is null");
             return_trav(NULL);
@@ -4699,7 +4801,6 @@ trv_compare_comparison_not_eq_array(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_compare_comparison_not_eq_array(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -4743,8 +4844,8 @@ trv_compare_comparison_not_eq_nil(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison not eq nil. index object value is null");
             return_trav(NULL);
@@ -4752,7 +4853,6 @@ trv_compare_comparison_not_eq_nil(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_compare_comparison_not_eq_nil(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -4791,8 +4891,8 @@ trv_compare_comparison_not_eq_func(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison not eq func. index object value is null");
             return_trav(NULL);
@@ -4800,7 +4900,6 @@ trv_compare_comparison_not_eq_func(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_compare_comparison_not_eq_func(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -4839,8 +4938,8 @@ trv_compare_comparison_not_eq_module(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison not eq func. index object value is null");
             return_trav(NULL);
@@ -4848,7 +4947,6 @@ trv_compare_comparison_not_eq_module(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_compare_comparison_not_eq_func(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -4912,8 +5010,8 @@ trv_compare_comparison_not_eq(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_compare_comparison_not_eq_module(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *lval = copy_value_of_index_obj(ast, lhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *lval = extract_ref_of_obj(ast, lhs);
         if (!lval) {
             ast_pushb_error(ast, "can't comparison not eq. index object value is null");
             return_trav(NULL);
@@ -4921,7 +5019,6 @@ trv_compare_comparison_not_eq(ast_t *ast, trv_args_t *targs) {
 
         targs->lhs_obj = lval;
         object_t *obj = trv_compare_comparison_not_eq(ast, targs);
-        obj_del(lval);
         return_trav(obj);
     } break;
     case OBJ_TYPE_RESERV: {
@@ -4963,8 +5060,8 @@ trv_compare_comparison_lte_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison lte int. index object value is null");
             return_trav(NULL);
@@ -4972,7 +5069,6 @@ trv_compare_comparison_lte_int(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_compare_comparison_lte_int(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -5010,8 +5106,8 @@ trv_compare_comparison_lte_bool(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison lte bool. index object value is null");
             return_trav(NULL);
@@ -5019,7 +5115,6 @@ trv_compare_comparison_lte_bool(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_compare_comparison_lte_bool(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -5058,8 +5153,8 @@ trv_compare_comparison_lte(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *lval = copy_value_of_index_obj(ast, lhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *lval = extract_ref_of_obj(ast, lhs);
         if (!lval) {
             ast_pushb_error(ast, "can't comparison lte. index object value is null");
             return_trav(NULL);
@@ -5067,7 +5162,6 @@ trv_compare_comparison_lte(ast_t *ast, trv_args_t *targs) {
 
         targs->lhs_obj = lval;
         object_t *obj = trv_compare_comparison_lte(ast, targs);
-        obj_del(lval);
         return_trav(obj);
     } break;
     }
@@ -5105,8 +5199,8 @@ trv_compare_comparison_gte_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison gte int. index object value is null");
             return_trav(NULL);
@@ -5114,7 +5208,6 @@ trv_compare_comparison_gte_int(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_compare_comparison_gte_int(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -5152,8 +5245,8 @@ trv_compare_comparison_gte_bool(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison gte bool. index object value is null");
             return_trav(NULL);
@@ -5161,7 +5254,6 @@ trv_compare_comparison_gte_bool(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_compare_comparison_gte_bool(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -5199,8 +5291,8 @@ trv_compare_comparison_gte(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *lval = copy_value_of_index_obj(ast, lhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *lval = extract_ref_of_obj(ast, lhs);
         if (!lval) {
             ast_pushb_error(ast, "can't comparison gte. index object value is null");
             return_trav(NULL);
@@ -5208,7 +5300,6 @@ trv_compare_comparison_gte(ast_t *ast, trv_args_t *targs) {
 
         targs->lhs_obj = lval;
         object_t *obj = trv_compare_comparison_gte(ast, targs);
-        obj_del(lval);
         return_trav(obj);
     } break;
     }
@@ -5246,8 +5337,8 @@ trv_compare_comparison_lt_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison lt int. index object value is null");
             return_trav(NULL);
@@ -5255,7 +5346,6 @@ trv_compare_comparison_lt_int(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_compare_comparison_lt_int(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -5293,8 +5383,8 @@ trv_compare_comparison_lt_bool(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison lt bool. index object value is null");
             return_trav(NULL);
@@ -5302,7 +5392,6 @@ trv_compare_comparison_lt_bool(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_compare_comparison_lt_bool(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -5340,8 +5429,8 @@ trv_compare_comparison_lt(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *lval = copy_value_of_index_obj(ast, lhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *lval = extract_ref_of_obj(ast, lhs);
         if (!lval) {
             ast_pushb_error(ast, "can't comparison lt. index object value is null");
             return_trav(NULL);
@@ -5349,7 +5438,6 @@ trv_compare_comparison_lt(ast_t *ast, trv_args_t *targs) {
 
         targs->lhs_obj = lval;
         object_t *obj = trv_compare_comparison_lt(ast, targs);
-        obj_del(lval);
         return_trav(obj);
     } break;
     }
@@ -5387,8 +5475,8 @@ trv_compare_comparison_gt_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison gt int. index object value is null");
             return_trav(NULL);
@@ -5396,7 +5484,6 @@ trv_compare_comparison_gt_int(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_compare_comparison_gt_int(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -5434,8 +5521,8 @@ trv_compare_comparison_gt_bool(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't comparison gt bool. index object value is null");
             return_trav(NULL);
@@ -5443,7 +5530,6 @@ trv_compare_comparison_gt_bool(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_compare_comparison_gt_bool(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -5481,8 +5567,8 @@ trv_compare_comparison_gt(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *lval = copy_value_of_index_obj(ast, lhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *lval = extract_ref_of_obj(ast, lhs);
         if (!lval) {
             ast_pushb_error(ast, "can't comparison gt. index object value is null");
             return_trav(NULL);
@@ -5490,7 +5576,6 @@ trv_compare_comparison_gt(ast_t *ast, trv_args_t *targs) {
 
         targs->lhs_obj = lval;
         object_t *obj = trv_compare_comparison_gt(ast, targs);
-        obj_del(lval);
         return_trav(obj);
     } break;
     }
@@ -5644,8 +5729,8 @@ trv_calc_expr_add_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't add with int. index object value is null");
             return_trav(NULL);
@@ -5653,7 +5738,6 @@ trv_calc_expr_add_int(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_calc_expr_add(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -5691,8 +5775,8 @@ trv_calc_expr_add_bool(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't add with bool. index object value is null");
             return_trav(NULL);
@@ -5700,7 +5784,6 @@ trv_calc_expr_add_bool(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_calc_expr_add(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -5737,15 +5820,15 @@ trv_calc_expr_add_string(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_str(ast->ref_gc, s);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't add with string. index object value is null");
             return_trav(NULL);
         }
+
         targs->rhs_obj = rval;
         object_t *obj = trv_calc_expr_add(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -5788,8 +5871,8 @@ trv_calc_expr_add(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *lval = copy_value_of_index_obj(ast, lhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *lval = extract_ref_of_obj(ast, lhs);
         if (!lval) {
             ast_pushb_error(ast, "can't add with string. index object value is null");
             return_trav(NULL);
@@ -5797,7 +5880,6 @@ trv_calc_expr_add(ast_t *ast, trv_args_t *targs) {
 
         targs->lhs_obj = lval;
         object_t *obj = trv_calc_expr_add(ast, targs);
-        obj_del(lval);
         return_trav(obj);
     } break;
     }
@@ -5835,8 +5917,8 @@ trv_calc_expr_sub_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't sub with int. index object value is null");
             return_trav(NULL);
@@ -5844,7 +5926,6 @@ trv_calc_expr_sub_int(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_calc_expr_sub(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -5882,8 +5963,8 @@ trv_calc_expr_sub_bool(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't sub with bool. index object value is null");
             return_trav(NULL);
@@ -5891,7 +5972,6 @@ trv_calc_expr_sub_bool(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_calc_expr_sub(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -5930,15 +6010,15 @@ trv_calc_expr_sub(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *lval = copy_value_of_index_obj(ast, lhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *lval = extract_ref_of_obj(ast, lhs);
         if (!lval) {
             ast_pushb_error(ast, "can't sub. index object value is null");
             return_trav(NULL);
         }
+
         targs->lhs_obj = lval;
         object_t *obj = trv_calc_expr_sub(ast, targs);
-        obj_del(lval);
         return_trav(obj);
     } break;
     }
@@ -6081,8 +6161,8 @@ trv_calc_term_mul_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = mul_string_object(ast, rhs->string, lhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't mul with int. index object value is null");
             return_trav(NULL);
@@ -6090,7 +6170,6 @@ trv_calc_term_mul_int(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_calc_term_mul(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -6128,8 +6207,8 @@ trv_calc_term_mul_bool(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't mul with bool. index object value is null");
             return_trav(NULL);
@@ -6137,7 +6216,6 @@ trv_calc_term_mul_bool(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_calc_term_mul(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -6174,8 +6252,8 @@ trv_calc_term_mul_string(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_STRING:
         err_die("TODO: mul string 2");
         break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't mul with string. index object value is null");
             return_trav(NULL);
@@ -6183,7 +6261,6 @@ trv_calc_term_mul_string(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_calc_term_mul(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -6226,8 +6303,8 @@ trv_calc_term_mul(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_calc_term_mul_string(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *lval = copy_value_of_index_obj(ast, lhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *lval = extract_ref_of_obj(ast, lhs);
         if (!lval) {
             ast_pushb_error(ast, "can't mul. index object value is null");
             return_trav(NULL);
@@ -6235,7 +6312,6 @@ trv_calc_term_mul(ast_t *ast, trv_args_t *targs) {
 
         targs->lhs_obj = lval;
         object_t *obj = trv_calc_term_mul(ast, targs);
-        obj_del(lval);
         return_trav(obj);
     } break;
     }
@@ -6281,8 +6357,8 @@ trv_calc_term_div_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't division with int. index object value is null");
             return_trav(NULL);
@@ -6290,7 +6366,6 @@ trv_calc_term_div_int(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_calc_term_div(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -6332,8 +6407,8 @@ trv_calc_term_div_bool(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *rval = copy_value_of_index_obj(ast, rhs);
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
             ast_pushb_error(ast, "can't division with bool. index object value is null");
             return_trav(NULL);
@@ -6341,7 +6416,6 @@ trv_calc_term_div_bool(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         object_t *obj = trv_calc_term_div(ast, targs);
-        obj_del(rval);
         return_trav(obj);
     } break;
     }
@@ -6379,12 +6453,13 @@ trv_calc_term_div(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INDEX: {
-        object_t *lval = copy_value_of_index_obj(ast, lhs);
-        if (!lval) {
+    case OBJ_TYPE_CHAIN: {
+        object_t *lval = extract_copy_of_obj(ast, lhs);
+        if (ast_has_errors(ast)) {
             ast_pushb_error(ast, "can't division. index object value is null");
             return_trav(NULL);
         }
+        assert(lval);
 
         targs->lhs_obj = lval;
         object_t *obj = trv_calc_term_div(ast, targs);
@@ -6638,7 +6713,7 @@ trv_negative(ast_t *ast, trv_args_t *targs) {
     depth_t depth = targs->depth;
 
     check("call _trv_traverse with negative's dot")
-    targs->ref_node = negative->dot;
+    targs->ref_node = negative->chain;
     targs->depth = depth + 1;
     object_t *operand = _trv_traverse(ast, targs);
     if (ast_has_errors(ast)) {
@@ -6676,7 +6751,7 @@ trv_chain(ast_t *ast, trv_args_t *targs) {
     node_t *node = targs->ref_node;
     assert(node);
     node_chain_t *chain = node->real;
-    assert(negative);
+    assert(chain);
 
     depth_t depth = targs->depth;
 
@@ -6717,12 +6792,12 @@ trv_chain(ast_t *ast, trv_args_t *targs) {
         }
 
         chain_object_type_t type;
-        switch (cn->type) {
+        switch (chain_node_getc_type(cn)) {
         case CHAIN_NODE_TYPE_DOT:   type = CHAIN_OBJ_TYPE_DOT;   break;
         case CHAIN_NODE_TYPE_INDEX: type = CHAIN_OBJ_TYPE_INDEX; break;
         case CHAIN_NODE_TYPE_CALL:  type = CHAIN_OBJ_TYPE_CALL;  break;
         default:
-            ast_pushb_error(ast, "invalid chain node type (%d)", ch->type);
+            ast_pushb_error(ast, "invalid chain node type (%d)", chain_node_getc_type(cn));
             goto fail;
             break;
         }
@@ -6738,8 +6813,21 @@ trv_chain(ast_t *ast, trv_args_t *targs) {
         mem_move(operand),
         mem_move(chobjs)
     );
+    operand = NULL;
+    chobjs = NULL;
 
-    return_trav(obj_chain);
+    if (targs->do_not_refer_chain) {
+        return_trav(obj_chain);
+    } else {
+        object_t *result = refer_chain_obj_with_ref(ast, obj_chain);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to refer chain object");
+            goto fail;
+        }
+
+        obj_del(obj_chain);
+        return_trav(result);
+    }
 
 fail:
     obj_del(operand);
@@ -6776,9 +6864,9 @@ trv_dot(ast_t *ast, trv_args_t *targs) {
         }
         assert(lhs);
 
-        object_array_t *save_ref_dot_owners = targs->ref_dot_owners;
-        object_array_t *ref_dot_owners = objarr_new();
-        targs->ref_dot_owners = ref_dot_owners;
+        object_array_t *save_ref_owners = targs->ref_owners;
+        object_array_t *ref_owners = objarr_new();
+        targs->ref_owners = ref_owners;
 
         for (int i = 1; i < nodearr_len(dot->nodearr); i += 2) {
             node_t *node = nodearr_get(dot->nodearr, i);
@@ -6793,7 +6881,7 @@ trv_dot(ast_t *ast, trv_args_t *targs) {
             // swap owner object (start context of dot operation)
             check("store owner [%p]", lhs);
             obj_inc_ref(lhs);
-            objarr_pushb(ref_dot_owners, lhs);  // append owners by dot
+            objarr_pushb(ref_owners, lhs);  // append owners by dot
 
             check("call _trv_traverse with index");
             targs->ref_node = rnode;
@@ -6826,7 +6914,7 @@ trv_dot(ast_t *ast, trv_args_t *targs) {
                     result = obj;
                 } else {
                     // create reservation object for assign statement
-                    ast_t *ctx_ast = get_ast_by_owners(ast, ref_dot_owners);
+                    ast_t *ctx_ast = get_ast_by_owners(ast, ref_owners);
                     if (ast_has_errors(ast)) {
                         ast_pushb_error(ast, "failed to get ast");
                         return_trav(NULL);
@@ -6842,9 +6930,9 @@ trv_dot(ast_t *ast, trv_args_t *targs) {
             lhs = result;
         }  // for
 
-        // restore ref_dot_owners of targs
-        objarr_del(ref_dot_owners);
-        targs->ref_dot_owners = save_ref_dot_owners;
+        // restore ref_owners of targs
+        objarr_del(ref_owners);
+        targs->ref_owners = save_ref_owners;
 
         return_trav(lhs);
     }
@@ -7058,24 +7146,22 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
     object_t *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
-    object_array_t *ref_dot_owners = targs->ref_dot_owners;
+    object_array_t *ref_owners = targs->ref_owners;
 
     const char *idn = str_getc(lhs->identifier.name);
 
     switch (rhs->type) {
     default: {
         check("set reference of (%d) at (%s) of current varmap", rhs->type, idn);
-        set_ref_at_cur_varmap(ast, ref_dot_owners, idn, rhs);
+        set_ref_at_cur_varmap(ast, ref_owners, idn, rhs);
         return_trav(rhs);
     } break;
-    case OBJ_TYPE_INDEX: {
+    case OBJ_TYPE_CHAIN: {
         // TODO: fix me!
-        object_t *val = copy_value_of_index_obj(ast, rhs);
-        assert(val->type != OBJ_TYPE_IDENTIFIER);
+        object_t *val = extract_ref_of_obj(ast, rhs);
         check("move object of (%d) at (%s) of current varmap", val->type, idn);
-        move_obj_at_cur_varmap(ast, ref_dot_owners, idn, mem_move(val));
-        object_t *ret = obj_new_other(val);
-        return_trav(ret);
+        set_ref_at_cur_varmap(ast, ref_owners, idn, val);
+        return_trav(val);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *rval = pull_in_ref_by(rhs);
@@ -7089,7 +7175,7 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
 
         check("set reference of (%d) at (%s) of current varmap", rval->type, idn);
         obj_inc_ref(rval);
-        set_ref_at_cur_varmap(ast, ref_dot_owners, idn, rval);
+        set_ref_at_cur_varmap(ast, ref_owners, idn, rval);
         return_trav(rval);
     } break;
     }
@@ -7219,8 +7305,8 @@ trv_calc_asscalc_add_ass(ast_t *ast, trv_args_t *targs) {
         ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INDEX: {
-        err_die("TODO: add ass to index object");
+    case OBJ_TYPE_CHAIN: {
+        err_die("TODO: add ass to chain object");
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         check("call trv_calc_asscalc_add_ass_identifier");
@@ -8158,9 +8244,9 @@ trv_identifier(ast_t *ast, trv_args_t *targs) {
     assert(node);
     node_identifier_t *identifier = node->real;
     assert(identifier && node->type == NODE_TYPE_IDENTIFIER);
-    object_array_t *ref_dot_owners = targs->ref_dot_owners;
+    object_array_t *ref_owners = targs->ref_owners;
 
-    ast_t *ref_ast = get_ast_by_owners(ast, ref_dot_owners);
+    ast_t *ref_ast = get_ast_by_owners(ast, ref_owners);
     if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to get ast by owner");
         return_trav(NULL);
@@ -8172,308 +8258,6 @@ trv_identifier(ast_t *ast, trv_args_t *targs) {
         identifier->identifier
     );
     return_trav(obj);
-}
-
-static object_t *
-invoke_func_obj(ast_t *ast, trv_args_t *targs) {
-    object_t *funcobj = targs->ref_obj;
-    object_t *drtargs = targs->ref_args_obj;
-    object_array_t *ref_dot_owners = targs->ref_dot_owners;
-    assert(drtargs);
-
-    if (!funcobj) {
-        return NULL;
-    }
-    if (funcobj->type != OBJ_TYPE_FUNC) {
-        return NULL;
-    }
-
-    object_t *args = NULL;
-    if (drtargs) {
-        args = obj_to_array(drtargs);
-    }
-
-    object_func_t *func = &funcobj->func;
-    assert(func->args->type == OBJ_TYPE_ARRAY);
-
-    // extract function arguments
-    ctx_pushb_scope(func->ref_ast->ref_context);
-    if (args) {
-        const object_array_t *formal_args = func->args->objarr;
-        const object_array_t *actual_args = args->objarr;
-
-        if (objarr_len(formal_args) != objarr_len(actual_args)) {
-            ast_pushb_error(ast, "arguments not same length");
-            obj_del(args);
-            ctx_popb_scope(func->ref_ast->ref_context);
-            return NULL;
-        }
-
-        for (int32_t i = 0; i < objarr_len(formal_args); ++i) {
-            const object_t *farg = objarr_getc(formal_args, i);
-            assert(farg->type == OBJ_TYPE_IDENTIFIER);
-            const char *fargname = str_getc(farg->identifier.name);
-
-            // extract actual argument
-            object_t *aarg = objarr_get(actual_args, i);
-            object_t *ref_aarg = aarg;
-            if (aarg->type == OBJ_TYPE_IDENTIFIER) {
-                ref_aarg = pull_in_ref_by(aarg);  // pull from current context's ast
-                if (!ref_aarg) {
-                    ast_pushb_error(
-                        ast,
-                        "\"%s\" is not defined in invoke function",
-                        str_getc(aarg->identifier.name)
-                    );
-                    obj_del(args);
-                    return NULL;
-                }
-            }
-
-            // extract reference from current context
-            object_t *extref = extract_ref_of_obj(ast, ref_aarg);
-            if (ast_has_errors(ast)) {
-                ast_pushb_error(ast, "failed to extract reference");
-                return NULL;
-            }
-
-            // move actual argument reference at function's context as formal argument
-            object_t *copy_aarg = obj_new_other(extref);
-
-            move_obj_at_cur_varmap(
-                func->ref_ast,
-                ref_dot_owners,
-                fargname,  // formal argument name
-                mem_move(copy_aarg)  // actual argument
-            );
-        }
-    }
-
-    obj_del(args);
-
-    // swap current context stdout and stderr buffer to function's context buffer
-    string_t *cur_stdout_buf = ctx_swap_stdout_buf(ast->ref_context, NULL);
-    string_t *save_stdout_buf = ctx_swap_stdout_buf(func->ref_ast->ref_context, cur_stdout_buf);
-    string_t *cur_stderr_buf = ctx_swap_stderr_buf(ast->ref_context, NULL);
-    string_t *save_stderr_buf = ctx_swap_stderr_buf(func->ref_ast->ref_context, cur_stderr_buf);
-
-    // execute function suites
-    object_t *result = NULL;
-    for (int32_t i = 0; i < nodearr_len(func->ref_suites); ++i) {
-        node_t *ref_suite = nodearr_get(func->ref_suites, i);
-        result = _trv_traverse(func->ref_ast, &(trv_args_t) {
-            .ref_node = ref_suite,
-            .depth = targs->depth + 1,
-        });
-        if (ast_has_errors(func->ref_ast)) {
-            errstack_extendb_other(ast->error_stack, func->ref_ast->error_stack);
-            return NULL;
-        }
-        if (ctx_get_do_return(func->ref_ast->ref_context)) {
-            break;
-        }
-    }
-
-    // reset status
-    cur_stdout_buf = ctx_swap_stdout_buf(func->ref_ast->ref_context, save_stdout_buf);
-    ctx_swap_stdout_buf(ast->ref_context, cur_stdout_buf);
-    cur_stderr_buf = ctx_swap_stderr_buf(func->ref_ast->ref_context, save_stderr_buf);
-    ctx_swap_stderr_buf(ast->ref_context, cur_stderr_buf);
-
-    ctx_set_do_return(func->ref_ast->ref_context, false);
-    ctx_popb_scope(func->ref_ast->ref_context);
-
-    // done
-    if (!result) {
-        return obj_new_nil(ast->ref_gc);
-    }
-
-    return result;
-}
-
-static object_t *
-trv_invoke_func_obj(ast_t *ast, trv_args_t *targs) {
-    const char *funcname = targs->funcname;
-    assert(funcname);
-
-    object_t *funcobj = ctx_find_var_ref(ast->ref_context, funcname);
-    if (!funcobj) {
-        // not error
-        return NULL;
-    }
-
-    targs->ref_obj = funcobj;
-    targs->depth += 1;
-    return invoke_func_obj(ast, targs);
-}
-
-static object_t *
-trv_invoke_owner_func_obj(ast_t *ast, trv_args_t *targs) {
-    const char *funcname = targs->funcname;
-    object_t *drtargs = targs->ref_args_obj;
-    object_array_t *ref_dot_owners = targs->ref_dot_owners;
-    assert(funcname && drtargs);
-
-    depth_t depth = targs->depth;
-
-    // TODO: refactoring for get reference of owner
-    if (!ref_dot_owners || !objarr_len(ref_dot_owners)) {
-        return NULL;
-    }
-    int32_t nowns = objarr_len(ref_dot_owners);
-    object_t *ref_owner = objarr_get(ref_dot_owners, nowns-1);
-    assert(ref_owner);
-
-again:
-    switch (ref_owner->type) {
-    default: break;
-    case OBJ_TYPE_IDENTIFIER: {
-        ref_owner = pull_in_ref_by(ref_owner);
-        if (!ref_owner) {
-            return NULL;
-        }
-        if (ref_owner->type == OBJ_TYPE_IDENTIFIER) {
-            goto again;
-        }
-    } break;
-    }
-
-    object_t *modobj = NULL;
-
-    switch (ref_owner->type) {
-    default:
-        // not error
-        return NULL;
-        break;
-    case OBJ_TYPE_MODULE: {
-        modobj = ref_owner;
-    } break;
-    }
-
-    object_module_t *mod = &modobj->module;
-    object_dict_t *varmap = ctx_get_varmap_at_global(mod->ast->ref_context);
-    assert(varmap);
-
-    object_dict_item_t *item = objdict_get(varmap, funcname);
-    if (!item) {
-        return NULL;  // not found function in module
-    }
-    object_t *funcobj = item->value;
-    assert(funcobj);
-
-    targs->ref_obj = funcobj;
-    targs->ref_args_obj = drtargs;
-    targs->depth = depth + 1;
-    object_t *result = invoke_func_obj(ast, targs);
-    return result;
-}
-
-static object_t *
-trv_invoke_builtin_module_func(ast_t *ref_ast, trv_args_t *targs) {
-    const object_t *mod = targs->ref_obj;
-    const char *funcname = targs->funcname;
-    object_t *ref_args = targs->ref_args_obj;
-    object_array_t *ref_dot_owners = targs->ref_dot_owners;
-    assert(mod && funcname && ref_args);
-    assert(mod->type == OBJ_TYPE_MODULE);
-
-    builtin_func_info_t *infos = mod->module.builtin_func_infos;
-    if (!infos) {
-        // allow null of bultin_func_infos
-        return NULL;
-    }
-
-    builtin_func_args_t fargs = {
-        .ref_ast = ref_ast,
-        .ref_args = ref_args,
-        .ref_dot_owners = ref_dot_owners,
-    };
-
-    for (builtin_func_info_t *info = infos; info->name; ++info) {
-        if (cstr_eq(info->name, funcname)) {
-            return info->func(&fargs);
-        }
-    }
-
-    return NULL;
-}
-
-static object_t *
-trv_invoke_builtin_modules(ast_t *ast, trv_args_t *targs) {
-    const char *funcname = targs->funcname;
-    object_t *args = targs->ref_args_obj;
-    object_array_t *owners = targs->ref_dot_owners;
-    assert(funcname && args);
-
-    const char *bltin_mod_name = NULL;
-    object_t *module = NULL;
-
-    if (owners && objarr_len(owners)) {
-        int32_t ownslen = objarr_len(owners);
-        object_t *owner = objarr_get(owners, ownslen-1);
-        assert(owner);
-
-    again:
-        switch (owner->type) {
-        default:
-            // not error
-            return NULL;
-            break;
-        case OBJ_TYPE_STRING:
-            bltin_mod_name = "__str__";
-            break;
-        case OBJ_TYPE_ARRAY:
-            bltin_mod_name = "__array__";
-            break;
-        case OBJ_TYPE_MODULE:
-            module = owner;
-            break;
-        case OBJ_TYPE_IDENTIFIER: {
-            owner = pull_in_ref_by(owner);
-            if (!owner) {
-                return NULL;
-            }
-            goto again;
-        } break;
-        case OBJ_TYPE_INDEX: {
-            owner = refer_index_obj_with_ref(ast, owner);
-            if (!owner) {
-                ast_pushb_error(ast, "failed to refer index");
-                return NULL;
-            }
-            goto again;
-        } break;
-        }
-    } else {
-        bltin_mod_name = "__builtin__";
-    }
-
-    if (!module) {
-        object_dict_t *varmap = ctx_get_varmap_at_global(ast->ref_context);
-        object_dict_item_t *item = objdict_get(varmap, bltin_mod_name);
-        if (!item) {
-            return NULL;
-        }
-
-        module = item->value;
-        assert(module);
-    }
-
-    switch (module->type) {
-    default: /* not error */ break;
-    case OBJ_TYPE_MODULE: {
-        targs->ref_obj = module;
-        targs->ref_args_obj = args;
-        targs->funcname = funcname;
-        targs->depth += 1;
-        object_t *result = trv_invoke_builtin_module_func(ast, targs);
-        if (result) {
-            return result;
-        }
-    } break;
-    }
-
-    return NULL;
 }
 
 static object_t *
@@ -8498,7 +8282,7 @@ trv_func_def(ast_t *ast, trv_args_t *targs) {
     assert(node && node->type == NODE_TYPE_FUNC_DEF);
     node_func_def_t *func_def = node->real;
     assert(func_def);
-    object_array_t *ref_dot_owners = targs->ref_dot_owners;
+    object_array_t *ref_owners = targs->ref_owners;
     depth_t depth = targs->depth;
 
     check("call _trv_traverse with identifier");
@@ -8533,7 +8317,7 @@ trv_func_def(ast_t *ast, trv_args_t *targs) {
     check("set func at varmap");
     move_obj_at_cur_varmap(
         ast,
-        ref_dot_owners,
+        ref_owners,
         obj_getc_idn_name(name),
         mem_move(func_obj)
     );
@@ -8562,9 +8346,9 @@ trv_func_def_args(ast_t *ast, trv_args_t *targs) {
     assert(node && node->type == NODE_TYPE_FUNC_DEF_ARGS);
     node_func_def_args_t *func_def_args = node->real;
     assert(func_def_args && node->type == NODE_TYPE_FUNC_DEF_ARGS);
-    object_array_t *ref_dot_owners = targs->ref_dot_owners;
+    object_array_t *ref_owners = targs->ref_owners;
 
-    ast_t *ref_ast = get_ast_by_owners(ast, ref_dot_owners);
+    ast_t *ref_ast = get_ast_by_owners(ast, ref_owners);
     if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to get ast by owner");
         return_trav(NULL);
@@ -8585,7 +8369,7 @@ trv_func_def_args(ast_t *ast, trv_args_t *targs) {
     return obj_new_array(ast->ref_gc, args);
 }
 
-static object_t *
+object_t *
 _trv_traverse(ast_t *ast, trv_args_t *targs) {
     tready();
     node_t *node = targs->ref_node;

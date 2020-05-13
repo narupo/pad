@@ -15,7 +15,7 @@
         token_t *t = *ast->ref_ptr; \
         fprintf( \
             stderr, \
-            "debug: %5d: %*s: %3d: %s: %s\n", \
+            "debug: %5d: %*s: dep(%3d): token(%s): err(%s)\n", \
             __LINE__, \
             20, \
             __func__, \
@@ -34,7 +34,7 @@
         token_t *t = *ast->ref_ptr; \
         fprintf( \
             stderr, \
-            "debug: %5d: %*s: %3d: return %p: %s: %s\n", \
+            "debug: %5d: %*s: %3d: return (%p): token(%s): err(%s)\n", \
             __LINE__, \
             20, \
             __func__, \
@@ -1765,7 +1765,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     if (!lhs) {
-        return_cleanup(""); // not error
+        return_cleanup("");  // not error
     }
 
     nodearr_moveb(cur->nodearr, lhs);
@@ -1874,19 +1874,11 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
     if (ast_has_errors(ast)) {
         return_cleanup("failed to compile factor");
     }
-    assert(cur->factor);
-
-    if (!*ast->ref_ptr) {
+    if (!cur->factor) {
         return_cleanup("");  // not error
     }
-
-    t = *ast->ref_ptr++;
-    if (t->type == TOKEN_TYPE_NEWLINE ||
-        t->type == TOKEN_TYPE_RPAREN ||
-        t->type == TOKEN_TYPE_RDOUBLE_BRACE) {
-        ast->ref_ptr--;
-        return_ok;
-    }
+    assert(cur->factor);
+    check("read factor");
 
     for (;;) {
         switch (m) {
@@ -1898,7 +1890,7 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
             t = *ast->ref_ptr++;
             if (t->type == TOKEN_TYPE_DOT_OPE) {
                 m = 50;
-            } else if (t->type == TOKEN_TYPE_LBRACEAT) {
+            } else if (t->type == TOKEN_TYPE_LBRACKET) {
                 m = 100;
             } else if (t->type == TOKEN_TYPE_LPAREN) {
                 m = 150;
@@ -1945,7 +1937,8 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
             }
 
             t = *ast->ref_ptr++;
-            if (t->type != TOKEN_TYPE_RBRACEAT) {
+            if (t->type != TOKEN_TYPE_RBRACKET) {
+                printf("t[%d]\n", t->type);
                 return_cleanup("not found ']'");
             }
             check("read ']'")

@@ -116,10 +116,10 @@ typedef enum {
 * node structures *
 ******************/
 
-struct {
+struct node {
     node_type_t type;
     void *real;
-} node;
+};
 
 typedef struct {
     node_t *blocks;

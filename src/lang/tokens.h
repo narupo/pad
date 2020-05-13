@@ -19,8 +19,8 @@ typedef enum {
     TOKEN_TYPE_RDOUBLE_BRACE, // ':}'
     TOKEN_TYPE_DOT_OPE, // '.'
     TOKEN_TYPE_COMMA, // ','
-    TOKEN_TYPE_COLON, // ':'
 
+    TOKEN_TYPE_COLON, // ':'
     TOKEN_TYPE_SEMICOLON, // ';'
     TOKEN_TYPE_IDENTIFIER,
     TOKEN_TYPE_LPAREN, // '('
@@ -31,8 +31,8 @@ typedef enum {
     TOKEN_TYPE_RBRACE, // '}'
     TOKEN_TYPE_NIL, // 'nil'
     TOKEN_TYPE_DQ_STRING, // '"string"'
-    TOKEN_TYPE_INTEGER, // 123
 
+    TOKEN_TYPE_INTEGER, // 123
     TOKEN_TYPE_OP_ADD, // '+'
     TOKEN_TYPE_OP_SUB, // '-'
     TOKEN_TYPE_OP_MUL, // '*'
@@ -44,8 +44,8 @@ typedef enum {
     TOKEN_TYPE_OP_MUL_ASS, // '*='
     TOKEN_TYPE_OP_DIV_ASS, // '/='
     TOKEN_TYPE_OP_MOD_ASS, // '%='
-    TOKEN_TYPE_OP_EQ, // '=='
 
+    TOKEN_TYPE_OP_EQ, // '=='
     TOKEN_TYPE_OP_NOT_EQ, // '!='
     TOKEN_TYPE_OP_LTE, // '<='
     TOKEN_TYPE_OP_GTE, // '>='
@@ -57,8 +57,8 @@ typedef enum {
     TOKEN_TYPE_STMT_END, // 'end'
     TOKEN_TYPE_STMT_IMPORT, // 'import'
     TOKEN_TYPE_AS, // 'as'
-    TOKEN_TYPE_FROM, // 'from'
 
+    TOKEN_TYPE_FROM, // 'from'
     TOKEN_TYPE_STMT_IF, // 'if'
     TOKEN_TYPE_STMT_ELIF, // 'if'
     TOKEN_TYPE_STMT_ELSE, // 'if'

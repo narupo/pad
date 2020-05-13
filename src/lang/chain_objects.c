@@ -10,6 +10,9 @@ chain_obj_del(chain_object_t *self);
 chain_object_t *
 chain_obj_new_other(const chain_object_t *other);
 
+void
+chain_obj_dump(const chain_object_t *self, FILE *fout);
+
 /**********
 * numbers *
 **********/
@@ -118,4 +121,18 @@ chain_objs_get(chain_objects_t *self, int32_t idx) {
     }
 
     return self->chain_objs[idx];
+}
+
+void
+chain_objs_dump(const chain_objects_t *self, FILE *fout) {
+    if (!self || !fout) {
+        return;
+    }
+
+    fprintf(fout, "chain_objects_t[%p]\n", self);
+    for (int32_t i = 0; i < self->len; ++i) {
+        chain_object_t *co = self->chain_objs[i];
+        fprintf(fout, "[%d] = [%p]\n", i, co);
+        chain_obj_dump(co, fout);
+    }
 }

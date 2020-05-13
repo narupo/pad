@@ -7,6 +7,9 @@
 void
 obj_del(object_t *self);
 
+void
+obj_dump(object_t *self, FILE *fout);
+
 object_t *
 obj_new_other(const object_t *other);
 
@@ -23,7 +26,7 @@ struct chain_object {
 
     // obj
     // if type == CHAIN_OBJ_TYPE_DOT then object is factor
-    // if type == CHAIN_OBJ_TYPE_CALL then object is call_args
+    // if type == CHAIN_OBJ_TYPE_CALL then object is call_args (obj->type == OBJ_TYPE_ARRAY)
     // if type == CHAIN_OBJ_TYPE_INDEX then object is simple_assign
     object_t *obj;
 };
@@ -81,4 +84,15 @@ chain_obj_get_obj(chain_object_t *self) {
 const object_t *
 chain_obj_getc_obj(const chain_object_t *self) {
     return self->obj;
+}
+
+void
+chain_obj_dump(const chain_object_t *self, FILE *fout) {
+    if (!self || !fout) {
+        return;
+    }
+
+    fprintf(fout, "chain_object_t.type[%d]\n", self->type);
+    fprintf(fout, "chain_object_t.obj[%p]\n", self->obj);
+    obj_dump(self->obj, fout);
 }
