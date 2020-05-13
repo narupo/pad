@@ -35,13 +35,6 @@ again:
         // owner is has not ast so return default ast
         return default_ast;
         break;
-    case OBJ_TYPE_RESERV:
-        // reservation object can't become to owner
-        // this object temporary on context
-        // so, this refer on this to invalid context
-        ast_pushb_error(default_ast, "owner is invalid object (%d)", owner->type);
-        return NULL;
-        break;
     case OBJ_TYPE_MODULE:
         // module object has ast
         return owner->module.ast;
@@ -979,9 +972,6 @@ extract_copy_of_obj(ast_t *ast, object_t *obj) {
     default:
         return obj_new_other(obj);
         break;
-    case OBJ_TYPE_RESERV:
-        ast_pushb_error(ast, "can't copy from reservation object");
-        return NULL;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *ref = pull_in_ref_by(obj);
         if (!ref) {
@@ -1043,10 +1033,6 @@ extract_ref_of_obj(ast_t *ast, object_t *obj) {
     default:
         return obj;
         break;
-    case OBJ_TYPE_RESERV: {
-        ast_pushb_error(ast, "can't extract from reservation object");
-        return NULL;
-    } break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *ref = pull_in_ref_by(obj);
         if (!ref) {
@@ -1096,10 +1082,6 @@ parse_bool(ast_t *ast, object_t *obj) {
     switch (obj->type) {
     default:
         return true;
-        break;
-    case OBJ_TYPE_RESERV:
-        ast_pushb_error(ast, "can't conver to bool of reservation object");
-        return false;
         break;
     case OBJ_TYPE_NIL: return false; break;
     case OBJ_TYPE_INT: return obj->lvalue; break;

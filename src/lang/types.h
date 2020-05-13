@@ -18,9 +18,6 @@ typedef struct object_index object_index_t;
 struct object_module;
 typedef struct object_module object_module_t;
 
-struct object_reserv;
-typedef struct object_reserv object_reserv_t;
-
 struct object_identifier;
 typedef struct object_identifier object_identifier_t;
 

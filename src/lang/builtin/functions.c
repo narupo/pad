@@ -46,6 +46,8 @@ builtin_type(builtin_func_args_t *fargs) {
 
 again:
     switch (obj->type) {
+    default:
+        break;
     case OBJ_TYPE_NIL: {
         return obj_new_cstr(ref_ast->ref_gc, "<nil>");
     } break;
@@ -82,9 +84,6 @@ again:
     } break;
     case OBJ_TYPE_MODULE: {
         return obj_new_cstr(ref_ast->ref_gc, "<module>");
-    } break;
-    case OBJ_TYPE_RESERV: {
-        return obj_new_cstr(ref_ast->ref_gc, "<reserv>");
     } break;
     } // switch
 
