@@ -65,12 +65,6 @@ typedef enum {
     // このast_tへの参照はモジュール内のオブジェクト群への参照である
     OBJ_TYPE_MODULE,
 
-    // A reservation object
-    // 予約オブジェクト
-    // 定義されていないが、これから定義される予定のあるオブジェクト
-    // 内部にast_tへの参照を持つ。これはこのオブジェクトが作成されたときの文脈のast_tへの参照である
-    OBJ_TYPE_RESERV,
-
     // A owner's method object
     // array.push() や dict.pop("key") など、ドット演算子で繋げで呼び出すメソッド用のオブジェクト
     // owner にメソッドのオーナーオブジェクト、method_name にメソッド名が保存される
@@ -95,14 +89,6 @@ struct object_module {
     tokenizer_t *tokenizer;
     ast_t *ast;
     builtin_func_info_t *builtin_func_infos;  // builtin functions
-};
-
-/**
- * A reservation object
- */
-struct object_reserv {
-    ast_t *ref_ast;  // reference to ast_t of context on this object created (do not delete)
-    string_t *name;  // variable name for define
 };
 
 /**
@@ -144,7 +130,6 @@ struct object {
     bool boolean;  // value of boolean (type == OBJ_TYPE_BOOL)
     object_func_t func;  // structure of function (type == OBJ_TYPE_FUNC)
     object_module_t module;  // structure of module (type == OBJ_TYPE_MODULE)
-    object_reserv_t reserv;  // strcuture of reservation (type == OBJ_TYPE_RESERV)
     object_chain_t chain;  // structure of chain (type == OBJ_TYPE_CHAIN)
     object_owners_method_t owners_method;  // structure of owners_method (type == OBJ_TYPE_OWNERS_METHOD)
 };
@@ -351,20 +336,6 @@ obj_new_func(gc_t *ref_gc, ast_t *ref_ast, object_t *move_name, object_t *move_a
  */
 object_t *
 obj_new_chain(gc_t *ref_gc, object_t *move_operand, chain_objects_t *move_chain_objs);
-
-/**
- * construct reservation object
- * if failed to allocate memory then exit from process
- *
- * @param[in] *ref_gc  reference to gc_t (do not delete)
- * @param[in] *ref_ast reference to ast_t (do not delete)
- * @param[in] *name    pointer to C strings for identifier of variable
- *
- * @return success to pointer to object_t (new object)
- * @return failed to NULL
- */
-object_t *
-obj_new_reserv(gc_t *ref_gc, ast_t *ref_ast, const char *name);
 
 /**
  * construct module object (default constructor)

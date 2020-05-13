@@ -71,10 +71,6 @@ obj_del(object_t *self) {
         ast_del(self->module.ast);
         self->module.ast = NULL;
         break;
-    case OBJ_TYPE_RESERV:
-        str_del(self->reserv.name);
-        self->reserv.ref_ast = NULL;  // do not delete
-        break;
     case OBJ_TYPE_OWNERS_METHOD:
         obj_del(self->owners_method.owner);
         self->owners_method.owner = NULL;
@@ -153,9 +149,9 @@ obj_new_other(const object_t *other) {
         // self->module.context = ctx_new_other(other->module.context);
         self->module.builtin_func_infos = other->module.builtin_func_infos;
         break;
-    case OBJ_TYPE_RESERV:
-        self->reserv.name = str_new_other(other->reserv.name);
-        self->reserv.ref_ast = other->reserv.ref_ast;
+    case OBJ_TYPE_OWNERS_METHOD:
+        self->owners_method.owner = obj_new_other(other->owners_method.owner);
+        self->owners_method.method_name = str_new_other(other->owners_method.method_name);
         break;
     }
 
@@ -427,23 +423,6 @@ obj_new_owners_method(gc_t *ref_gc, object_t *owner, string_t *move_method_name)
 }
 
 object_t *
-obj_new_reserv(gc_t *ref_gc, ast_t *ref_ast, const char *name) {
-    if (!ref_gc || !ref_ast || !name) {
-        return NULL;
-    }
-
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_RESERV);
-    if (!self) {
-        return NULL;
-    }
-
-    self->reserv.ref_ast = ref_ast;
-    self->reserv.name = str_new_cstr(name);
-
-    return self;
-}
-
-object_t *
 obj_new_module_by(
     gc_t *ref_gc,
     const char *name,
@@ -527,13 +506,6 @@ obj_to_str(const object_t *self) {
     case OBJ_TYPE_MODULE: {
         string_t *str = str_new();
         str_set(str, "(module)");
-        return str;
-    } break;
-    case OBJ_TYPE_RESERV: {
-        string_t *str = str_new();
-        str_app(str, "(reserv: ");
-        str_app_other(str, self->reserv.name);
-        str_app(str, ")");
         return str;
     } break;
     case OBJ_TYPE_OWNERS_METHOD: {
@@ -681,8 +653,8 @@ obj_type_to_str(const object_t *self) {
     case OBJ_TYPE_MODULE:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: module>", self->type);
         break;
-    case OBJ_TYPE_RESERV:
-        str_app_fmt(s, tmp, sizeof tmp, "<%d: reservation>", self->type);
+    case OBJ_TYPE_OWNERS_METHOD:
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: owners-method>", self->type);
         break;
     }
 

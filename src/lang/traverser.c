@@ -1453,30 +1453,6 @@ trv_calc_assign_to_chain(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
-trv_calc_assign_with_reserv(ast_t *ast, trv_args_t *targs) {
-    tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_RESERV);
-    object_array_t *ref_owners = targs->ref_owners;
-
-    object_t *rhsref = extract_ref_of_obj(ast, rhs);
-    if (ast_has_errors(ast)) {
-        ast_pushb_error(ast, "failed to extract object");
-        return_trav(NULL);
-    }
-
-    const char *idnname = str_getc(lhs->reserv.name);
-    ast_t *ref_ast = lhs->reserv.ref_ast;
-
-    check("set reference of (%d) at (%s) of current context varmap", rhsref->type, idnname);
-    set_ref_at_cur_varmap(ref_ast, ref_owners, idnname, rhsref);
-
-    return_trav(rhsref);
-}
-
-static object_t *
 trv_calc_assign(ast_t *ast, trv_args_t *targs) {
     tready();
 
@@ -1505,11 +1481,6 @@ trv_calc_assign(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_CHAIN: {
         targs->depth = depth + 1;
         object_t *obj = trv_calc_assign_to_chain(ast, targs);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_RESERV: {
-        targs->depth = depth + 1;
-        object_t *obj = trv_calc_assign_with_reserv(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -2915,6 +2886,10 @@ trv_compare_or(ast_t *ast, trv_args_t *targs) {
     depth_t depth = targs->depth;
 
     switch (lhs->type) {
+    default:
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
+        return NULL;
+        break;
     case OBJ_TYPE_NIL: {
         check("call trv_compare_or_nil");
         targs->depth = depth + 1;
@@ -2981,10 +2956,6 @@ trv_compare_or(ast_t *ast, trv_args_t *targs) {
         targs->depth = depth + 1;
         object_t *obj = trv_compare_or(ast, targs);
         return_trav(obj);
-    } break;
-    case OBJ_TYPE_RESERV: {
-        ast_pushb_error(ast, "can't compare reservation object");
-        return_trav(NULL);
     } break;
     }
 
@@ -3961,6 +3932,10 @@ trv_compare_and(ast_t *ast, trv_args_t *targs) {
     depth_t depth = targs->depth;
 
     switch (lhs->type) {
+    default:
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
+        return NULL;
+        break;
     case OBJ_TYPE_NIL: {
         check("call trv_compare_and_nil");
         object_t *obj = trv_compare_and_nil(ast, targs);
@@ -4019,10 +3994,6 @@ trv_compare_and(ast_t *ast, trv_args_t *targs) {
         targs->depth = depth + 1;
         object_t *result = trv_compare_and(ast, targs);
         return_trav(result);
-    } break;
-    case OBJ_TYPE_RESERV: {
-        ast_pushb_error(ast, "can't compare reservation object");
-        return_trav(NULL);
     } break;
     }
 
@@ -4564,6 +4535,10 @@ trv_compare_comparison_eq(ast_t *ast, trv_args_t *targs) {
     targs->depth += 1;
 
     switch (lhs->type) {
+    default:
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
+        return NULL;
+        break;
     case OBJ_TYPE_NIL: {
         check("call trv_compare_comparison_eq_nil");
         object_t *obj = trv_compare_comparison_eq_nil(ast, targs);
@@ -4614,10 +4589,6 @@ trv_compare_comparison_eq(ast_t *ast, trv_args_t *targs) {
         check("call trv_compare_comparison_eq_chain");
         object_t *obj = trv_compare_comparison_eq_chain(ast, targs);
         return_trav(obj);
-    } break;
-    case OBJ_TYPE_RESERV: {
-        ast_pushb_error(ast, "can't compare reservation object");
-        return_trav(NULL);
     } break;
     }
 
@@ -4964,6 +4935,10 @@ trv_compare_comparison_not_eq(ast_t *ast, trv_args_t *targs) {
     targs->depth += 1;
 
     switch (lhs->type) {
+    default:
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
+        return NULL;
+        break;
     case OBJ_TYPE_NIL: {
         check("call trv_compare_comparison_not_eq_nil");
         object_t *obj = trv_compare_comparison_not_eq_nil(ast, targs);
@@ -5020,10 +4995,6 @@ trv_compare_comparison_not_eq(ast_t *ast, trv_args_t *targs) {
         targs->lhs_obj = lval;
         object_t *obj = trv_compare_comparison_not_eq(ast, targs);
         return_trav(obj);
-    } break;
-    case OBJ_TYPE_RESERV: {
-        ast_pushb_error(ast, "can't compare reservation object");
-        return_trav(NULL);
     } break;
     }
 
@@ -6834,309 +6805,6 @@ fail:
     chain_objs_del(chobjs);
     return_trav(NULL);
 }
-
-#if 0
-static object_t *
-trv_dot(ast_t *ast, trv_args_t *targs) {
-    node_t *node = targs->ref_node;
-    assert(node);
-    node_dot_t *dot = node->real;
-    tready();
-    assert(dot);
-
-    depth_t depth = targs->depth;
-
-    if (nodearr_len(dot->nodearr) == 1) {
-        node_t *node = nodearr_get(dot->nodearr, 0);
-        assert(node->type == NODE_TYPE_CALL);
-        check("call _trv_traverse with dot");
-        targs->ref_node = node;
-        object_t *result = _trv_traverse(ast, targs);
-        return_trav(result);
-    } else if (nodearr_len(dot->nodearr) >= 3) {
-        node_t *lnode = nodearr_get(dot->nodearr, 0);
-        assert(lnode->type == NODE_TYPE_CALL);
-        check("call _trv_traverse with dot");
-        targs->ref_node = lnode;
-        object_t *lhs = _trv_traverse(ast, targs);
-        if (ast_has_errors(ast)) {
-            return_trav(NULL);
-        }
-        assert(lhs);
-
-        object_array_t *save_ref_owners = targs->ref_owners;
-        object_array_t *ref_owners = objarr_new();
-        targs->ref_owners = ref_owners;
-
-        for (int i = 1; i < nodearr_len(dot->nodearr); i += 2) {
-            node_t *node = nodearr_get(dot->nodearr, i);
-            assert(node->type == NODE_TYPE_DOT_OP);
-            node_dot_op_t *op = node->real;
-            assert(op);
-
-            node_t *rnode = nodearr_get(dot->nodearr, i+1);
-            assert(rnode);
-            assert(rnode->type == NODE_TYPE_CALL);
-
-            // swap owner object (start context of dot operation)
-            check("store owner [%p]", lhs);
-            obj_inc_ref(lhs);
-            objarr_pushb(ref_owners, lhs);  // append owners by dot
-
-            check("call _trv_traverse with index");
-            targs->ref_node = rnode;
-            targs->depth = depth + 1;
-            object_t *result = _trv_traverse(ast, targs);
-            if (ast_has_errors(ast)) {
-                return_trav(NULL);
-            }
-            if (!result) {
-                ast_pushb_error(ast, "can't chain dot operation");
-                return_trav(NULL);
-            }
-
-            // dot演算子の文脈で（つまりref_dot_ownerが有効の間）識別子の実体を取得し、lhsとする
-            //
-            // たとえば module.a = 1 のような文脈では、先に module.a が解決される
-            // このとき、module.a の変数 a は定義されていないので、↓のpull_in_ref_by_ownerで NULL が返ってくる
-            // そのため、エラーになり、結果として module.a = 1 の代入を実行できない
-            // （dot の解決は、assign より優先度が高いため）
-            //
-            // 対応としては、たとえば「一時オブジェクト」のようなオブジェクトを定義して、
-            // こういった文脈に対応するなどが考えられる
-            // 要は↓で NULL が返ってこないでかつ、代入文の文脈で一時オブジェクトを参照できればいいわけだ
-            //
-            // この一時オブジェクトは「型は決定していないが、定義される予定がある」という特殊なオブジェクトになるだろう
-            // 上記の仕様で OBJ_TYPE_RESERV を実装した
-            if (result->type == OBJ_TYPE_IDENTIFIER) {
-                object_t *obj = pull_in_ref_by(result);
-                if (obj) {
-                    result = obj;
-                } else {
-                    // create reservation object for assign statement
-                    ast_t *ctx_ast = get_ast_by_owners(ast, ref_owners);
-                    if (ast_has_errors(ast)) {
-                        ast_pushb_error(ast, "failed to get ast");
-                        return_trav(NULL);
-                    }
-
-                    const char *idn = str_getc(result->identifier.name);
-                    check("create reservation object by \"%s\"", idn);
-                    object_t *reserv = obj_new_reserv(ast->ref_gc, ctx_ast, idn);
-                    result = reserv;
-                }
-            }
-
-            lhs = result;
-        }  // for
-
-        // restore ref_owners of targs
-        objarr_del(ref_owners);
-        targs->ref_owners = save_ref_owners;
-
-        return_trav(lhs);
-    }
-
-    assert(0 && "impossible. failed to traverse dot");
-    return_trav(NULL);
-}
-
-static object_t *
-trv_call(ast_t *ast, trv_args_t *targs) {
-    node_t *node = targs->ref_node;
-    assert(node);
-    node_call_t *call = node->real;
-    tready();
-    assert(call);
-
-    depth_t depth = targs->depth;
-
-    check("call _trv_traverse with call's index");
-    targs->ref_node = call->index;
-    targs->depth = depth + 1;
-    object_t *operand = _trv_traverse(ast, targs);
-    if (ast_has_errors(ast)) {
-        return_trav(NULL);
-    }
-    if (!operand) {
-        ast_pushb_error(ast, "not found operand in call");
-        return_trav(NULL);
-    }
-
-    if (operand->type == OBJ_TYPE_INDEX) {
-        object_t *ref = extract_ref_of_obj(ast, operand);
-        if (ast_has_errors(ast)) {
-            return_trav(NULL);
-        }
-        assert(ref);
-
-        if (ref->type == OBJ_TYPE_FUNC) {
-            operand = obj_new_other(ref->func.name);
-        } else {
-            return_trav(operand);
-        }
-    }
-
-    if (operand->type != OBJ_TYPE_IDENTIFIER) {
-        return_trav(operand);
-    }
-
-    object_t *result = NULL;
-
-    for (int32_t i = 0; i < nodearr_len(call->call_args_list); ++i) {
-        node_t *call_args = nodearr_get(call->call_args_list, i);
-        const char *funcname = NULL;
-
-        if (!operand) {
-            ast_pushb_error(ast, "operand is not callable");
-            return_trav(NULL);
-        } else if (operand->type == OBJ_TYPE_FUNC) {
-            funcname = str_getc(operand->func.name->identifier.name);
-        } else if (operand->type != OBJ_TYPE_IDENTIFIER) {
-            ast_pushb_error(ast, "operand (%d) is not callable", operand->type);
-            return_trav(NULL);
-        } else {
-            funcname = str_getc(operand->identifier.name);
-        }
-
-        check("call _trv_traverse with call's test_list");
-        targs->ref_node = call_args;
-        targs->depth = depth + 1;
-        object_t *actual_args = _trv_traverse(ast, targs);
-        if (ast_has_errors(ast)) {
-            ast_pushb_error(ast, "failed to traverse arguments");
-            return_trav(NULL);
-        }
-        assert(actual_args);
-        assert(actual_args->type == OBJ_TYPE_ARRAY);
-
-#define check_result \
-        if (ast_has_errors(ast)) { \
-            return_trav(NULL); \
-        } else if (result) { \
-            operand = result; \
-            result = NULL; \
-            continue; \
-        } \
-
-        check("call trv_invoke_func_obj");
-        targs->funcname = funcname;
-        targs->ref_args_obj = actual_args;
-        targs->depth = depth + 1;
-        result = trv_invoke_func_obj(ast, targs);
-        check_result;
-
-        check("call trv_invoke_builtin_modules");
-        targs->funcname = funcname;
-        targs->ref_args_obj = actual_args;
-        targs->depth = depth + 1;
-        result = trv_invoke_builtin_modules(ast, targs);
-        check_result;
-
-        check("call trv_invoke_owner_func_obj");
-        targs->funcname = funcname;
-        targs->ref_args_obj = actual_args;
-        targs->depth = depth + 1;
-        result = trv_invoke_owner_func_obj(ast, targs);
-        check_result;
-
-        if (!result) {
-            ast_pushb_error(ast, "can't call \"%s\"", funcname);
-            return_trav(NULL);
-        }
-
-        operand = result;
-    }
-
-    if (!result) {
-        return_trav(operand);
-    }
-
-    return_trav(result);
-}
-
-static object_t *
-trv_index(ast_t *ast, trv_args_t *targs) {
-    node_t *node = targs->ref_node;
-    assert(node);
-    node_index_t *index_node = node->real;
-    tready();
-    assert(index_node);
-    object_t *operand = NULL;
-    object_t *ref_operand = NULL;
-    object_t *ret = NULL;
-    depth_t depth = targs->depth;
-
-    targs->ref_node = index_node->factor;
-    targs->depth = depth + 1;
-    operand = _trv_traverse(ast, targs);
-    if (ast_has_errors(ast)) {
-        return_trav(NULL);
-    }
-    if (!operand) {
-        ast_pushb_error(ast, "not found operand in index access");
-        return_trav(NULL);
-    }
-
-    // operand is identifier?
-    ref_operand = operand;
-    if (operand->type == OBJ_TYPE_IDENTIFIER) {
-        if (!nodearr_len(index_node->nodearr)) {
-            return_trav(operand);
-        }
-
-        // get reference
-        ref_operand = pull_in_ref_by(operand);
-        if (!ref_operand) {
-            // can't index access to null
-            ast_pushb_error(ast, "\"%s\" is not defined", obj_getc_idn_name(operand));
-            return_trav(NULL);
-        }
-    }
-
-    if (!nodearr_len(index_node->nodearr)) {
-        return_trav(ref_operand);
-    }
-
-    // operand is indexable?
-    switch (ref_operand->type) {
-    default:
-        // not indexable
-        if (nodearr_len(index_node->nodearr)) {
-            ast_pushb_error(ast, "operand (%d) is not indexable", ref_operand->type);
-            return_trav(NULL);
-        }
-
-        return_trav(ref_operand);
-        break;
-    case OBJ_TYPE_IDENTIFIER:
-        err_die("impossible. operand is should be not identifier");
-        break;
-    case OBJ_TYPE_ARRAY:
-    case OBJ_TYPE_STRING:
-    case OBJ_TYPE_DICT:
-        // indexable
-        break;
-    }
-
-    object_array_t *indices = objarr_new();
-
-    // left priority
-    for (int32_t i = 0; i < nodearr_len(index_node->nodearr); ++i) {
-        node_t *node = nodearr_get(index_node->nodearr, i);
-        assert(node);
-        targs->ref_node = node;
-        targs->depth = depth + 1;
-        object_t *obj = _trv_traverse(ast, targs);
-        assert(obj);
-        objarr_moveb(indices, obj);
-    }
-
-    // set reference of operand
-    ret = obj_new_index(ast->ref_gc, mem_move(operand), mem_move(indices));
-    return_trav(ret);
-}
-#endif
 
 static object_t *
 trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
