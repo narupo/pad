@@ -83,14 +83,6 @@ struct object_func {
 };
 
 /**
- * A index object have reference to operand because for assign
- */
-struct object_index {
-    object_t *operand;  // reference to operand object
-    object_array_t *indices;  // indices objects
-};
-
-/**
  * A module object
  */
 struct object_module {
@@ -521,3 +513,73 @@ obj_get_chain_operand(object_t *self);
  */
 const object_t *
 obj_getc_chain_operand(const object_t *self);
+
+/**
+ * get function name of func-object
+ *
+ * @param[in] *self
+ *
+ * @return pointer to strings of function name
+ */
+const char *
+obj_getc_func_name(const object_t *self);
+
+/**
+ * get array of array-object
+ *
+ * @param[in] *self
+ *
+ * @return pointer to array
+ */
+object_array_t *
+obj_get_array(object_t *self);
+
+/**
+ * get array of array-object read-only
+ *
+ * @param[in] *self
+ *
+ * @return pointer to array
+ */
+const object_array_t *
+obj_getc_array(const object_t *self);
+
+/**
+ * get dict of dict-object
+ *
+ * @param[in] *self
+ *
+ * @return pointer to dict
+ */
+object_dict_t *
+obj_get_dict(object_t *self);
+
+/**
+ * get dict of dict-object read-only
+ *
+ * @param[in] *self
+ *
+ * @return pointer to dict
+ */
+const object_dict_t *
+obj_getc_dict(const object_t *self);
+
+/**
+ * get string in object_t
+ *
+ * @param[in] *self
+ *
+ * @return pointer to string_t
+ */
+const string_t *
+obj_getc_str(const object_t *self);
+
+/**
+ * get string in object_t read-only
+ *
+ * @param[in] *self
+ *
+ * @return pointer to string_t
+ */
+string_t *
+obj_get_str(object_t *self);

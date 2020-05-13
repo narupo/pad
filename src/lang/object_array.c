@@ -131,6 +131,11 @@ objarr_move(object_array_t* self, int32_t index, object_t *move_obj) {
 }
 
 object_array_t *
+objarr_set(object_array_t* self, int32_t index, object_t *ref_obj) {
+    return objarr_move(self, index, ref_obj);
+}
+
+object_array_t *
 objarr_moveb(object_array_t* self, object_t *obj) {
     if (self->len >= self->capa) {
         if (!objarr_resize(self, self->capa * 2)) {
@@ -184,6 +189,20 @@ objarr_popb(object_array_t *self) {
     self->parray[self->len] = NULL;
 
     return obj;
+}
+
+object_t *
+objarr_get_last(object_array_t *self) {
+    if (self->len <= 0) {
+        return NULL;
+    }
+
+    return self->parray[self->len-1];
+}
+
+const object_t *
+objarr_getc_last(const object_array_t *self) {
+    return objarr_get_last((object_array_t *) self);
 }
 
 void

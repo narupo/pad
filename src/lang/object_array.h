@@ -53,6 +53,19 @@ objarr_resize(object_array_t* self, int32_t capa);
 object_array_t *
 objarr_move(object_array_t* self, int32_t index, object_t *move_obj);
 
+/**
+ * set referencet at index
+ *
+ * @param[in] *self
+ * @param[in] index    number of index
+ * @param[in] *ref_obj reference of object_t
+ *
+ * @return success to pointer to self
+ * @return failed to NULL
+ */
+object_array_t *
+objarr_set(object_array_t* self, int32_t index, object_t *ref_obj);
+
 object_array_t *
 objarr_moveb(object_array_t* self, object_t *move_obj);
 
@@ -67,6 +80,12 @@ objarr_pushf(object_array_t* self, object_t *reference);
 
 object_t *
 objarr_popb(object_array_t *self);
+
+object_t *
+objarr_get_last(object_array_t *self);
+
+const object_t *
+objarr_getc_last(const object_array_t *self);
 
 /**
  * dump object array at stream

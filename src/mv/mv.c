@@ -144,7 +144,6 @@ mvcmd_mv_file_to_other(mvcmd_t *self) {
     const char *dst_cap_path = self->argv[self->optind+1];
 
     char srcpath[FILE_NPATH];
-    char tmppath[FILE_NPATH*2];
 
     if (!solve_cmdline_arg_path(self->config, srcpath, sizeof srcpath, src_cap_path)) {
         err_error("failed to follow path for source file name");
@@ -181,8 +180,9 @@ mvcmd_mv_file_to_other(mvcmd_t *self) {
             return 1;
         }
 
-        char dstpath2[FILE_NPATH];
-         snprintf(tmppath, sizeof tmppath, "%s/%s", dstpath, basename);
+        char dstpath2[FILE_NPATH * 3];
+        char tmppath[FILE_NPATH * 3];
+        snprintf(tmppath, sizeof tmppath, "%s/%s", dstpath, basename);
         if (!file_solve(dstpath2, sizeof dstpath2, tmppath)) {
             err_error("failed to follow path for second destination path in file to other");
             return 1;

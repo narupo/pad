@@ -61,9 +61,29 @@ objdict_new_other(object_dict_t *other);
 object_dict_t *
 objdict_resize(object_dict_t *self, int32_t newcapa);
 
+/**
+ * move object at key
+ *
+ * @param[in] *self
+ * @param[in] *key        key of strings
+ * @param[in] *move_value pointer to object_t (move semantics)
+ *
+ * @return success to pointer to self
+ * @return failed to NULL
+ */
 object_dict_t *
 objdict_move(object_dict_t *self, const char *key, object_t *move_value);
 
+/**
+ * set reference of object at key
+ *
+ * @param[in] *self
+ * @param[in] *key       key of strings
+ * @param[in] *ref_value reference to object_t
+ *
+ * @return success to pointer to self
+ * @return failed to NULL
+ */
 object_dict_t *
 objdict_set(object_dict_t *self, const char *key, object_t *ref_value);
 

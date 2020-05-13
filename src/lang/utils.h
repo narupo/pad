@@ -6,17 +6,18 @@
 #include <lang/object.h>
 #include <lang/context.h>
 #include <lang/nodes.h>
+#include <lang/arguments.h>
 
 /**
  * get reference of ast by owner object
  *
  * @param[in] *default_ast    default ast
- * @param[in] *ref_dot_owners reference to owners in array
+ * @param[in] *ref_owners reference to owners in array
  *
  * @return default ast or owner's ast
  */
 ast_t *
-get_ast_by_owners(ast_t *default_ast, object_array_t *ref_dot_owners);
+get_ast_by_owners(ast_t *default_ast, object_array_t *ref_owners);
 
 /**
  * pull-in reference of object by identifier object from varmap of current scope of context
@@ -29,17 +30,6 @@ get_ast_by_owners(ast_t *default_ast, object_array_t *ref_dot_owners);
  */
 object_t *
 pull_in_ref_by(const object_t *idn_obj);
-
-/**
- * copy value of index object
- *
- * @param[in] *ast       pointer to ast_t
- * @param[in] *index_obj index object
- *
- * @return copy object (can delete)
- */
-object_t *
-copy_value_of_index_obj(ast_t *ast, const object_t *index_obj);
 
 /**
  * object to string
@@ -56,30 +46,18 @@ string_t *
 obj_to_string(ast_t *ast, const object_t *obj);
 
 /**
- * copy object value
- * if object is identifier object or index object then copy that value
- *
- * @param[in] *ast pointer to ast_t
- * @param[in] *obj target object
- *
- * @return NULL | copied object (can delete)
- */
-object_t *
-copy_object_value(ast_t *ast, const object_t *obj);
-
-/**
  * set move object at varmap of current scope of context by identifier
  * this function do not increment reference count of object
  *
  * @param[in] *ast            pointer to ast_t
- * @param[in] *ref_dot_owners reference to owners in array
+ * @param[in] *ref_owners reference to owners in array
  * @param[in] *identifier     identifier string
  * @param[in] *move_obj       object with move semantics
  */
 void
 move_obj_at_cur_varmap(
     ast_t *ast,
-    object_array_t *ref_dot_owners,
+    object_array_t *ref_owners,
     const char *identifier,
     object_t *move_obj
 );
@@ -89,14 +67,14 @@ move_obj_at_cur_varmap(
  * this function auto increment reference count of object
  *
  * @param[in] *ast        pointer to ast_t
- * @param[in] *ref_dot_owners reference to owners in array
+ * @param[in] *ref_owners reference to owners in array
  * @param[in] *identifier key of dict item
  * @param[in] *ref        reference to object
  */
 void
 set_ref_at_cur_varmap(
     ast_t *ast,
-    object_array_t *ref_dot_owners,
+    object_array_t *ref_owners,
     const char *identifier,
     object_t *ref
 );
@@ -119,7 +97,7 @@ extract_ref_of_obj(ast_t *ast, object_t *obj);
  * @return new object
  */
 object_t *
-extract_copy_of_obj(ast_t *ast, const object_t *obj);
+extract_copy_of_obj(ast_t *ast, object_t *obj);
 
 /**
  * refer index object on context and return reference of refer value
@@ -131,7 +109,34 @@ extract_copy_of_obj(ast_t *ast, const object_t *obj);
  * @return failed to NULL
  */
 object_t *
-refer_index_obj_with_ref(ast_t *ast, const object_t *index_obj);
+refer_chain_obj_with_ref(ast_t *ast, object_t *chain_obj);
+
+/**
+ * refer three objects (dot, call, index)
+ * this function will be used in loop
+ *
+ * @param[in] *ast    pointer to ast_t
+ * @param[in] *owners owner objects (contain first operand)
+ * @param[in] *co     chain object
+ *
+ * @return success to refer object
+ * @return failed to NULL
+ */
+object_t *
+refer_chain_three_objs(ast_t *ast, object_array_t *owners, chain_object_t *co);
+
+/**
+ * refer chain call
+ *
+ * @param[in] *ast    pointer to ast_t
+ * @param[in] *owners owner objects (contain first operand)
+ * @param[in] *co     chain object
+ *
+ * @return success to refer object
+ * @return failed to NULL
+ */
+object_t *
+refer_chain_call(ast_t *ast, object_array_t *owners, chain_object_t *co);
 
 /**
  * dump array object's elements at stdout
@@ -150,4 +155,4 @@ dump_array_obj(const object_t *arrobj);
  * @return true or false
  */
 bool
-parse_bool(ast_t *ast, const object_t *obj);
+parse_bool(ast_t *ast, object_t *obj);

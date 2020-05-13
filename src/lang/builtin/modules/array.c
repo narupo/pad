@@ -7,7 +7,7 @@ builtin_array_push(builtin_func_args_t *fargs) {
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
-    object_array_t *ref_dot_owners = fargs->ref_dot_owners;
+    object_array_t *ref_owners = fargs->ref_owners;
 
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
@@ -15,13 +15,13 @@ builtin_array_push(builtin_func_args_t *fargs) {
         return NULL;
     }
 
-    if (!ref_dot_owners) {
+    if (!ref_owners) {
         ast_pushb_error(ref_ast, "owners is null. can't push");
         return NULL;
     }
 
-    int32_t nowns = objarr_len(ref_dot_owners);
-    object_t *ref_owner = objarr_get(ref_dot_owners, nowns-1);
+    int32_t nowns = objarr_len(ref_owners);
+    object_t *ref_owner = objarr_get(ref_owners, nowns-1);
     if (!ref_owner) {
         ast_pushb_error(ref_ast, "owner is null. can't push");
         return NULL;
@@ -59,15 +59,15 @@ builtin_array_pop(builtin_func_args_t *fargs) {
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
-    object_array_t *ref_dot_owners = fargs->ref_dot_owners;
+    object_array_t *ref_owners = fargs->ref_owners;
 
-    if (!ref_dot_owners) {
+    if (!ref_owners) {
         ast_pushb_error(ref_ast, "owners inull. can't pop");
         return NULL;
     }
 
-    int32_t nowns = objarr_len(ref_dot_owners);
-    object_t *ref_owner = objarr_get(ref_dot_owners, nowns-1);
+    int32_t nowns = objarr_len(ref_owners);
+    object_t *ref_owner = objarr_get(ref_owners, nowns-1);
     if (!ref_owner) {
         ast_pushb_error(ref_ast, "owner is null. can't pop");
         return NULL;

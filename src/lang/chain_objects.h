@@ -76,3 +76,12 @@ chain_objs_len(const chain_objects_t *self);
  */
 chain_object_t *
 chain_objs_get(chain_objects_t *self, int32_t idx);
+
+/**
+ * dump chain_objects_t
+ *
+ * @param[in] *self
+ * @param[in] *fout output stream
+ */
+void
+chain_objs_dump(const chain_objects_t *self, FILE *fout);

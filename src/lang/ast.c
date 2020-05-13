@@ -217,14 +217,14 @@ ast_del_nodes(const ast_t *self, node_t *node) {
     } break;
     case NODE_TYPE_NEGATIVE: {
         node_negative_t *negative = node->real;
-        ast_del_nodes(self, negative->dot);
+        ast_del_nodes(self, negative->chain);
     } break;
     case NODE_TYPE_CHAIN: {
         node_chain_t *chain = node->real;
         for (int32_t i = 0; i < chain_nodes_len(chain->chain_nodes); ++i) {
             chain_node_t *cn = chain_nodes_get(chain->chain_nodes, i);
             node_t *node = chain_node_get_node(cn);
-            ast_del_nodes(ast, node);
+            ast_del_nodes(self, node);
         }
     } break;
     case NODE_TYPE_FACTOR: {
@@ -433,6 +433,11 @@ ast_has_errors(const ast_t *self) {
 }
 
 void
+ast_clear_errors(ast_t *self) {
+    errstack_clear(self->error_stack);
+}
+
+void
 ast_set_debug(ast_t *self, bool debug) {
     self->debug = debug;
 }
@@ -451,4 +456,9 @@ ast_dump(const ast_t *self, FILE *fout) {
     fprintf(fout, "ast[%p]\n", self);
     fprintf(fout, "ref_context[%p]\n", self->ref_context);
     ctx_dump(self->ref_context, fout);
+}
+
+context_t *
+ast_get_ref_context(ast_t *self) {
+    return self->ref_context;
 }

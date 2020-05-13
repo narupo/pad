@@ -601,6 +601,12 @@ obj_dump(const object_t *self, FILE *fout) {
     case OBJ_TYPE_ARRAY:
         objarr_dump(self->objarr, fout);
         break;
+    case OBJ_TYPE_CHAIN:
+        fprintf(fout, "object.chain.operand[%p]\n", self->chain.operand);
+        obj_dump(self->chain.operand, fout);
+        fprintf(fout, "object.chain.chain_objs[%p]\n", self->chain.chain_objs);
+        chain_objs_dump(self->chain.chain_objs, fout);
+        break;
     }
 }
 
@@ -684,3 +690,37 @@ obj_getc_chain_operand(const object_t *self) {
     return self->chain.operand;
 }
 
+const char *
+obj_getc_func_name(const object_t *self) {
+    return obj_getc_idn_name(self->func.name);
+}
+
+object_array_t *
+obj_get_array(object_t *self) {
+    return self->objarr;
+}
+
+const object_array_t *
+obj_getc_array(const object_t *self) {
+    return self->objarr;
+}
+
+object_dict_t *
+obj_get_dict(object_t *self) {
+    return self->objdict;
+}
+
+const object_dict_t *
+obj_getc_dict(const object_t *self) {
+    return self->objdict;
+}
+
+const string_t *
+obj_getc_str(const object_t *self) {
+    return self->string;
+}
+
+string_t *
+obj_get_str(object_t *self) {
+    return self->string;
+}

@@ -71,3 +71,12 @@ chain_obj_get_obj(chain_object_t *self);
  */
 const object_t *
 chain_obj_getc_obj(const chain_object_t *self);
+
+/**
+ * dump chain_object_t
+ *
+ * @param[in] *self
+ * @param[in] *fout output stream
+ */
+void
+chain_obj_dump(const chain_object_t *self, FILE *fout);

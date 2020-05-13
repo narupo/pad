@@ -4,11 +4,10 @@ static object_t *
 call_basic_str_func(const char *method_name, builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
     assert(ref_ast);
-    object_array_t *ref_dot_owners = fargs->ref_dot_owners;
-    assert(ref_dot_owners);
+    object_array_t *ref_owners = fargs->ref_owners;
+    assert(ref_owners);
 
-    int32_t nowns = objarr_len(ref_dot_owners);
-    const object_t *owner = objarr_get(ref_dot_owners, nowns-1);
+    object_t *owner = objarr_get_last(ref_owners);
     if (!owner) {
         return obj_new_nil(ref_ast->ref_gc);
     }
@@ -45,8 +44,8 @@ again:
         }
         goto again;
     } break;
-    case OBJ_TYPE_INDEX: {
-        owner = refer_index_obj_with_ref(ref_ast, owner);
+    case OBJ_TYPE_CHAIN: {
+        owner = refer_chain_obj_with_ref(ref_ast, owner);
         if (!owner) {
             ast_pushb_error(ref_ast, "failed to refer index");
             return NULL;

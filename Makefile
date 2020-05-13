@@ -28,7 +28,7 @@ ifeq ($(OS), Windows_NT)
 else
 	CFLAGS := -Wall \
 		-g \
-		-O3 \
+		-O0 \
 		-std=c11 \
 		-Wno-unused-function \
 		-Wno-unused-result \
@@ -144,8 +144,8 @@ SRCS := build/lib/error.c \
 	build/lang/arguments.c \
 	build/lang/chain_node.c \
 	build/lang/chain_nodes.c \
-	build/lang/chain_obj.c \
-	build/lang/chain_objs.c \
+	build/lang/chain_object.c \
+	build/lang/chain_objects.c \
 	build/lang/builtin/functions.c \
 	build/lang/builtin/modules/string.c \
 	build/lang/builtin/modules/array.c \

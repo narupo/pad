@@ -158,6 +158,14 @@ bool
 ast_has_errors(const ast_t *self);
 
 /**
+ * clear error stack
+ *
+ * @param[in] *self
+ */
+void
+ast_clear_errors(ast_t *self);
+
+/**
  * set debug mode
  * debug of argument is true to debug mode false to non debug mode
  *
@@ -184,3 +192,13 @@ ast_trace_error_stack(const ast_t *self, FILE *fout);
  */
 void
 ast_dump(const ast_t *self, FILE *fout);
+
+/**
+ * get ast reference of context
+ *
+ * @param[in] *self
+ *
+ * @return reference to ast_t (do not delete)
+ */
+context_t *
+ast_get_ref_context(ast_t *self);
