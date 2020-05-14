@@ -61,7 +61,7 @@ typedef struct cmdline cmdline_t;
  *
  * @param[in] *self pointer to cmdline_object_t dynamic allocate memory
  */
-void 
+void
 cmdlineobj_del(cmdline_object_t *self);
 
 /**
@@ -71,7 +71,7 @@ cmdlineobj_del(cmdline_object_t *self);
  *
  * @return pointer to cmdline_object_t dynamic allocate memory
  */
-cmdline_object_t * 
+cmdline_object_t *
 cmdlineobj_new(cmdline_object_type_t type);
 
 /**
@@ -83,7 +83,7 @@ cmdlineobj_new(cmdline_object_type_t type);
  * @return success to pointer to cmdline_object_t dynamic allocate memory
  * @return failed to pointer to NULL
  */
-cmdline_object_t * 
+cmdline_object_t *
 cmdlineobj_parse(cmdline_object_t *self, const char *line);
 
 /**********
@@ -95,7 +95,7 @@ cmdlineobj_parse(cmdline_object_t *self, const char *line);
  *
  * @param[in] *self pointer to cmdline_t dynamic allocate memory
  */
-void 
+void
 cmdline_del(cmdline_t *self);
 
 /**
@@ -103,7 +103,7 @@ cmdline_del(cmdline_t *self);
  *
  * @return pointer to cmdline_t dynamic allocate memory
  */
-cmdline_t * 
+cmdline_t *
 cmdline_new(void);
 
 /**
@@ -115,7 +115,7 @@ cmdline_new(void);
  * @return success to pointer to cmdline_t dynamic allocate memory
  * @return failed to pointer to NULL
  */
-cmdline_t * 
+cmdline_t *
 cmdline_resize(cmdline_t *self, int32_t capa);
 
 /**
@@ -127,7 +127,7 @@ cmdline_resize(cmdline_t *self, int32_t capa);
  * @return success to pointer to cmdline_t dynamic allocate memory
  * @return failed to pointer to NULL
  */
-cmdline_t * 
+cmdline_t *
 cmdline_moveb(cmdline_t *self, cmdline_object_t *move_obj);
 
 /**
@@ -138,7 +138,7 @@ cmdline_moveb(cmdline_t *self, cmdline_object_t *move_obj);
  * @return if has error then true
  * @return if not has error then false
  */
-bool 
+bool
 cmdline_has_error(const cmdline_t *self);
 
 /**
@@ -148,7 +148,7 @@ cmdline_has_error(const cmdline_t *self);
  *
  * @return number of length of array
  */
-int32_t 
+int32_t
 cmdline_len(const cmdline_t *self);
 
 /**
@@ -160,7 +160,7 @@ cmdline_len(const cmdline_t *self);
  * @return success to pointer to cmdline_object_t dynamic allocate memory
  * @return failed to pointer to NULL
  */
-const cmdline_object_t * 
+const cmdline_object_t *
 cmdline_getc(const cmdline_t *self, int32_t index);
 
 /**
@@ -172,5 +172,5 @@ cmdline_getc(const cmdline_t *self, int32_t index);
  * @return success to pointer to cmdline_t dynamic allocate memory
  * @return failed to pointer to NULL
  */
-cmdline_t * 
+cmdline_t *
 cmdline_parse(cmdline_t *self, const char *line);

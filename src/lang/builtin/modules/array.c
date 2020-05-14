@@ -46,7 +46,6 @@ again:
     }
 
     object_t *arg = objarr_get(args, 0);
-    obj_inc_ref(arg);
     objarr_moveb(ref_owner->objarr, arg);
 
     return obj_new_other(ref_owner);

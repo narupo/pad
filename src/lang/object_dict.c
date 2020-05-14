@@ -25,6 +25,7 @@ objdict_del(object_dict_t *self) {
 
     for (int32_t i = 0; i < self->len; ++i) {
         object_t *obj = self->map[i].value;
+        obj_dec_ref(obj);
         obj_del(obj);
     }
 
@@ -80,7 +81,9 @@ objdict_new_other(object_dict_t *other) {
         object_dict_item_t *dstitem = &self->map[i];
         object_dict_item_t *srcitem = &other->map[i];
         strcpy(dstitem->key, srcitem->key);
-        dstitem->value = obj_new_other(srcitem->value);
+        object_t *obj = obj_new_other(srcitem->value);
+        obj_inc_ref(obj);
+        dstitem->value = obj;
     }
 
     return self;
@@ -111,7 +114,9 @@ objdict_move(object_dict_t *self, const char *key, struct object *move_value) {
     for (int i = 0; i < self->len; ++i) {
         if (cstr_eq(self->map[i].key, key)) {
             // over write
+            obj_dec_ref(self->map[i].value);
             obj_del(self->map[i].value);
+            obj_inc_ref(move_value);
             self->map[i].value = mem_move(move_value);
             return self;
         }
@@ -124,6 +129,7 @@ objdict_move(object_dict_t *self, const char *key, struct object *move_value) {
 
     object_dict_item_t *el = &self->map[self->len++];
     cstr_copy(el->key, OBJ_DICT_ITEM_KEY_SIZE, key);
+    obj_inc_ref(move_value);
     el->value = move_value;
 
     return self;
@@ -169,6 +175,7 @@ objdict_clear(object_dict_t *self) {
 
     for (int i = 0; i < self->len; ++i) {
         self->map[i].key[0] = '\0';
+        obj_dec_ref(self->map[i].value);
         obj_del(self->map[i].value);
         self->map[i].value = NULL;
     }

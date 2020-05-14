@@ -60,7 +60,7 @@ cmdline_del(cmdline_t *self) {
         cmdline_object_t *obj = self->objs[i];
         cmdlineobj_del(obj);
     }
-    
+
     free(self->objs);
     free(self);
 }

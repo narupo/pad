@@ -23,6 +23,7 @@ objarr_del(object_array_t* self) {
 
     for (int i = 0; i < self->len; ++i) {
         object_t *obj = self->parray[i];
+        obj_dec_ref(obj);
         obj_del(obj);
     }
 
@@ -62,7 +63,9 @@ objarr_new_other(object_array_t *other) {
     self->len = other->len;
 
     for (int i = 0; i < self->len; ++i) {
-        self->parray[i] = obj_new_other(other->parray[i]);
+        object_t *obj = obj_new_other(other->parray[i]);
+        obj_inc_ref(obj);
+        self->parray[i] = obj;
     }
 
     return self;
@@ -124,7 +127,9 @@ objarr_move(object_array_t* self, int32_t index, object_t *move_obj) {
     }
 
     object_t *old = self->parray[index];
+    obj_dec_ref(old);
     obj_del(old);
+    obj_inc_ref(move_obj);
     self->parray[index] = move_obj;
 
     return self;
@@ -143,6 +148,7 @@ objarr_moveb(object_array_t* self, object_t *obj) {
         }
     }
 
+    obj_inc_ref(obj);
     self->parray[self->len++] = obj;
     self->parray[self->len] = NULL;
 
@@ -161,6 +167,7 @@ objarr_movef(object_array_t* self, object_t *obj) {
         self->parray[i+1] = self->parray[i];
     }
 
+    obj_inc_ref(obj);
     self->parray[0] = obj;
     self->len++;
     self->parray[self->len] = NULL;

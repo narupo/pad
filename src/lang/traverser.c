@@ -1244,7 +1244,6 @@ again:
         return NULL;
     }
 
-    obj_inc_ref(rhs);
     objarr_set(objarr, idx, rhs);
 
     return rhs;
@@ -1285,7 +1284,6 @@ again:
     const char *key = str_getc(keystr);
     object_dict_t *objdict = obj_get_dict(owner);
 
-    obj_inc_ref(rhs);
     objdict_set(objdict, key, rhs);
 
     return rhs;
@@ -4519,9 +4517,11 @@ trv_compare_comparison_eq_chain(ast_t *ast, trv_args_t *targs) {
 
     depth_t depth = targs->depth;
 
+    obj_inc_ref(lval);
     targs->lhs_obj = lval;
     targs->depth = depth + 1;
     object_t *ret = trv_compare_comparison_eq(ast, targs);
+    obj_dec_ref(lval);
     obj_del(lval);
     return ret;
 }
@@ -6432,8 +6432,10 @@ trv_calc_term_div(ast_t *ast, trv_args_t *targs) {
         }
         assert(lval);
 
+        obj_inc_ref(lval);
         targs->lhs_obj = lval;
         object_t *obj = trv_calc_term_div(ast, targs);
+        obj_dec_ref(lval);
         obj_del(lval);
         return_trav(obj);
     } break;
@@ -6779,6 +6781,7 @@ trv_chain(ast_t *ast, trv_args_t *targs) {
     assert(chain_objs_len(chobjs) != 0);
 
     // done
+    obj_inc_ref(operand);
     object_t *obj_chain = obj_new_chain(
         ast->ref_gc,
         mem_move(operand),
@@ -7881,6 +7884,7 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
         }
 
         object_t *saveobj = obj_new_other(val);
+        obj_inc_ref(saveobj);
         objdict_move(objdict, skey, mem_move(saveobj));
         obj_del(arrobj);
     }
@@ -8031,6 +8035,7 @@ trv_func_def_args(ast_t *ast, trv_args_t *targs) {
         node_identifier_t *nidn = n->real;
 
         object_t *oidn = obj_new_cidentifier(ast->ref_gc, ref_ast, nidn->identifier);
+        obj_inc_ref(oidn);
         objarr_moveb(args, oidn);
     }
 

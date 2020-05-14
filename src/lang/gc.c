@@ -94,7 +94,7 @@ gc_alloc(gc_t *self, gc_item_t *item, int32_t size) {
 
     void *p = mem_ecalloc(1, size);
     item->ptr = p;
-    item->ref_counts = 1;
+    item->ref_counts = 0;
     item->id = self->len;
     self->pool[self->len++] = p;
 
@@ -107,12 +107,13 @@ gc_free(gc_t *self, gc_item_t *item) {
         return;
     }
 
-    item->ref_counts--;
-
     if (item->ref_counts <= 0) {
-        item->ptr = NULL;  // do not delete (duplicated address to pool[id]). deleted by obj_del
+        // do not delete (duplicated address of pool[id]). deleted by obj_del
+        item->ptr = NULL;
         int32_t id = item->id;
-        free(self->pool[id]);  // after can not access to item
+
+        // after can not access to item
+        free(self->pool[id]);
         self->pool[id] = NULL;
     }
 }

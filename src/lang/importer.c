@@ -123,6 +123,7 @@ importer_import_as(
     ctx_clear_stdout_buf(modobj->module.ast->ref_context);
 
     object_dict_t *dst_varmap = ctx_get_varmap(dstctx);
+    obj_inc_ref(modobj);
     objdict_move(dst_varmap, alias, mem_move(modobj));
 
     return self;
@@ -204,6 +205,7 @@ importer_from_import(
     }
 
     // assign imported module at global varmap of current context
+    obj_inc_ref(modobj);
     objdict_move(dst_varmap, str_getc(modobj->module.name), mem_move(modobj));
 
     return self;
