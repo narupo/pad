@@ -18,12 +18,9 @@ obj_del(object_t *self) {
         return;
     }
 
-    if (self->gc_item.ref_counts > 1) {
-        self->gc_item.ref_counts--;
+    if (self->gc_item.ref_counts != 0) {
         return;
     }
-    self->gc_item.ref_counts--;
-    assert(self->gc_item.ref_counts >= 0);
 
     switch (self->type) {
     case OBJ_TYPE_NIL:
@@ -53,13 +50,16 @@ obj_del(object_t *self) {
         self->objdict = NULL;
         break;
     case OBJ_TYPE_FUNC:
+        obj_dec_ref(self->func.name);
         obj_del(self->func.name);
         self->func.name = NULL;
+        obj_dec_ref(self->func.args);
         obj_del(self->func.args);
         self->func.args = NULL;
         // do not delete ref_suites, this is reference
         break;
     case OBJ_TYPE_CHAIN:
+        obj_dec_ref(self->chain.operand);
         obj_del(self->chain.operand);
         chain_objs_del(self->chain.chain_objs);
         break;
@@ -72,6 +72,7 @@ obj_del(object_t *self) {
         self->module.ast = NULL;
         break;
     case OBJ_TYPE_OWNERS_METHOD:
+        obj_dec_ref(self->owners_method.owner);
         obj_del(self->owners_method.owner);
         self->owners_method.owner = NULL;
         str_del(self->owners_method.method_name);
@@ -134,11 +135,14 @@ obj_new_other(const object_t *other) {
         // self->func.ref_ast is do not delete. this is reference
         self->func.ref_ast = other->func.ref_ast;
         self->func.name = obj_new_other(other->func.name);
+        obj_inc_ref(self->func.name);
         self->func.args = obj_new_other(other->func.args);
+        obj_inc_ref(self->func.args);
         self->func.ref_suites = other->func.ref_suites; // save reference
         break;
     case OBJ_TYPE_CHAIN:
         self->chain.operand = obj_new_other(other->chain.operand);
+        obj_inc_ref(self->chain.operand);
         self->chain.chain_objs = chain_objs_new_other(other->chain.chain_objs);
         break;
     case OBJ_TYPE_MODULE:
@@ -151,6 +155,7 @@ obj_new_other(const object_t *other) {
         break;
     case OBJ_TYPE_OWNERS_METHOD:
         self->owners_method.owner = obj_new_other(other->owners_method.owner);
+        obj_inc_ref(self->owners_method.owner);
         self->owners_method.method_name = str_new_other(other->owners_method.method_name);
         break;
     }

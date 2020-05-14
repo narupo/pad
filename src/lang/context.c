@@ -58,6 +58,7 @@ set_default_global_vars(context_t *self) {
     // set PATH string variable
     object_dict_t *varmap = scope_get_varmap(self->scope); // get global varmap
     object_t *path = obj_new_cstr(self->ref_gc, "");
+    obj_inc_ref(path);
     objdict_move(varmap, "PATH", mem_move(path));
 }
 

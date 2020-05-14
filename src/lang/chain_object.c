@@ -10,6 +10,12 @@ obj_del(object_t *self);
 void
 obj_dump(object_t *self, FILE *fout);
 
+void
+obj_inc_ref(object_t *self);
+
+void
+obj_dec_ref(object_t *self);
+
 object_t *
 obj_new_other(const object_t *other);
 
@@ -41,6 +47,7 @@ chain_obj_del(chain_object_t *self) {
         return;
     }
 
+    obj_dec_ref(self->obj);
     obj_del(self->obj);
     free(self);
 }
@@ -66,6 +73,7 @@ chain_obj_new_other(const chain_object_t *other) {
     }
 
     object_t *obj = obj_new_other(other->obj);
+    obj_inc_ref(obj);
     chain_object_t *self = chain_obj_new(other->type, mem_move(obj));
 
     return self;

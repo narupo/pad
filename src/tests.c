@@ -24521,7 +24521,7 @@ test_lang_gc_alloc(void) {
     gc_alloc(gc, &item, 100);
 
     assert(item.ptr);
-    assert(item.ref_counts == 1);
+    assert(item.ref_counts == 0);
 
     item.ref_counts++;
     item.ref_counts++;
@@ -24530,10 +24530,12 @@ test_lang_gc_alloc(void) {
     assert(item.ptr);
     assert(item.ref_counts == 2);
 
+    item.ref_counts--;
     gc_free(gc, &item);
     assert(item.ptr);
     assert(item.ref_counts == 1);
 
+    item.ref_counts--;
     gc_free(gc, &item);
     assert(item.ptr == NULL);
     assert(item.ref_counts == 0);
@@ -24558,10 +24560,12 @@ test_lang_objdict_move(void) {
     object_dict_t *d = objdict_new(gc);
 
     object_t *obj1 = obj_new_int(gc, 1);
+    obj_inc_ref(obj1);
     objdict_move(d, "abc", obj1);
     assert(objdict_len(d) == 1);
 
     object_t *obj2 = obj_new_int(gc, 1);
+    obj_inc_ref(obj2);
     objdict_move(d, "def", obj2);
     assert(objdict_len(d) == 2);
 
@@ -24581,10 +24585,12 @@ test_lang_objdict_set(void) {
     object_dict_t *d = objdict_new(gc);
 
     object_t *obj1 = obj_new_int(gc, 1);
+    obj_inc_ref(obj1);
     objdict_move(d, "abc", obj1);
     assert(objdict_len(d) == 1);
 
     object_t *obj2 = obj_new_int(gc, 1);
+    obj_inc_ref(obj2);
     objdict_move(d, "def", obj2);
     assert(objdict_len(d) == 2);
 
@@ -24608,6 +24614,7 @@ test_lang_objdict_pop(void) {
     object_dict_t *d = objdict_new(gc);
     object_t *obj = obj_new_int(gc, 0);
 
+    obj_inc_ref(obj);
     objdict_move(d, "abc", obj);
     assert(objdict_len(d) == 1);
     object_t *popped = objdict_pop(d, "abc");
@@ -24629,6 +24636,7 @@ test_lang_objdict_pop(void) {
         object_t *obj = obj_new_int(gc, i);
         char key[10];
         snprintf(key, sizeof key, "obj%d", i);
+        obj_inc_ref(obj);
         objdict_move(d, key, obj);
     }
     assert(objdict_len(d) == 10);

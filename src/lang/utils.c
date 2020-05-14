@@ -75,135 +75,6 @@ pull_in_ref_by(const object_t *idn_obj) {
     return ref;
 }
 
-#if 0
-object_t *
-copy_value_of_index_obj(
-    ast_t *ast,
-    const object_t *index_obj
-) {
-    assert(index_obj && index_obj->type == OBJ_TYPE_INDEX);
-
-    assert(index_obj->index.operand);
-    object_t *operand = obj_new_other(index_obj->index.operand);
-    object_t *tmp_operand = NULL;
-    assert(index_obj->index.indices);
-    const object_array_t *indices = index_obj->index.indices;
-    assert(operand);
-    assert(indices);
-
-    for (int32_t i = 0; i < objarr_len(indices); ++i) {
-        const object_t *el = objarr_getc(indices, i);
-        assert(el);
-
-        const object_t *idx = el;
-        if (el->type == OBJ_TYPE_IDENTIFIER) {
-            idx = pull_in_ref_by(el);
-            if (!idx) {
-                ast_pushb_error(
-                    ast,
-                    "\"%s\" is not defined in index object",
-                    obj_getc_idn_name(el)
-                );
-                obj_del(operand);
-                return NULL;
-            }
-        }
-
-        const char *skey = NULL;
-        long ikey = -1;
-        switch (idx->type) {
-        default: err_die("invalid index type in get value of index obj"); break;
-        case OBJ_TYPE_STRING: skey = str_getc(idx->string); break;
-        case OBJ_TYPE_INT: ikey = idx->lvalue; break;
-        }
-
-        if (operand->type == OBJ_TYPE_IDENTIFIER) {
-            object_t *ref = pull_in_ref_by(operand);
-            if (ast_has_errors(ast)) {
-                obj_del(operand);
-                return NULL;
-            } else if (!ref) {
-                ast_pushb_error(
-                    ast,
-                    "\"%s\" is not defined in get value of index object",
-                    obj_getc_idn_name(operand)
-                );
-                obj_del(operand);
-                return NULL;
-            }
-            obj_del(operand);
-            operand = obj_new_other(ref);
-        }
-
-        switch (operand->type) {
-        default:
-            ast_pushb_error(ast, "invalid operand type (%d) in get value of index object", operand->type);
-            obj_del(operand);
-            break;
-        case OBJ_TYPE_ARRAY: {
-            if (idx->type != OBJ_TYPE_INT) {
-                ast_pushb_error(ast, "invalid array index value. value is not integer");
-                obj_del(operand);
-                return NULL;
-            }
-
-            if (ikey < 0 || ikey >= objarr_len(operand->objarr)) {
-                ast_pushb_error(ast, "index out of range of array");
-                obj_del(operand);
-                return NULL;
-            }
-
-            tmp_operand = obj_new_other(objarr_getc(operand->objarr, ikey));
-            obj_del(operand);
-            operand = tmp_operand;
-            tmp_operand = NULL;
-        } break;
-        case OBJ_TYPE_STRING: {
-            if (idx->type != OBJ_TYPE_INT) {
-                ast_pushb_error(ast, "invalid string index value. value is not integer");
-                obj_del(operand);
-                return NULL;
-            }
-
-            if (ikey < 0 || ikey >= str_len(operand->string)) {
-                ast_pushb_error(ast, "index out of range of string");
-                obj_del(operand);
-                return NULL;
-            }
-
-            const char ch = str_getc(operand->string)[ikey];
-            string_t *str = str_new();
-            str_pushb(str, ch);
-
-            obj_del(operand);
-            operand = obj_new_str(ast->ref_gc, str);
-        } break;
-        case OBJ_TYPE_DICT: {
-            if (idx->type != OBJ_TYPE_STRING) {
-                ast_pushb_error(ast, "invalid dict index value. value is not a string");
-                obj_del(operand);
-                return NULL;
-            }
-            assert(skey);
-
-            const object_dict_item_t *item = objdict_getc(operand->objdict, skey);
-            if (!item) {
-                obj_del(operand);
-                return NULL;
-            }
-
-            tmp_operand = obj_new_other(item->value);
-            obj_del(operand);
-            operand = tmp_operand;
-            tmp_operand = NULL;
-        } break;
-        }
-    }
-
-    return operand;
-}
-#endif
-
 string_t *
 obj_to_string(ast_t *ast, const object_t *obj) {
     assert(obj);
@@ -244,6 +115,13 @@ move_obj_at_cur_varmap(
     }
 
     object_dict_t *varmap = ctx_get_varmap(ast->ref_context);
+    object_t *popped = objdict_pop(varmap, identifier);
+    if (popped != move_obj) {
+        obj_inc_ref(move_obj);
+    }
+
+    obj_dec_ref(popped);
+    obj_del(popped);
     objdict_move(varmap, identifier, mem_move(move_obj));
 }
 
@@ -268,6 +146,7 @@ set_ref_at_cur_varmap(
         obj_inc_ref(ref);
     }
 
+    obj_dec_ref(popped);
     obj_del(popped);
     objdict_set(varmap, identifier, ref);
 }
