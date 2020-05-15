@@ -11607,7 +11607,6 @@ test_trv_assign_2(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        ERR;
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
@@ -14810,6 +14809,21 @@ test_trv_builtin_modules_alias_1(void) {
         (trv_traverse(ast, ctx));
         assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "can't invoke alias.set. key is not string"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_builtin_modules_alias_2(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@ alias.set() @}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
     }
 
     trv_cleanup;
@@ -23818,30 +23832,6 @@ test_trv_identifier(void) {
 }
 
 static void
-test_trv_builtin_alias_0(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
-
-    tkr_parse(tkr, "{@ alias.set() @}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-    }
-
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
-}
-
-static void
 test_trv_builtin_array_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -24215,10 +24205,10 @@ traverser_tests[] = {
     {"trv_negative_0", test_trv_negative_0},
     {"trv_call", test_trv_call},
     {"trv_func_def", test_trv_func_def},
-    {"trv_builtin_alias_0", test_trv_builtin_alias_0},  // ?
     {"trv_builtin_modules_opts_0", test_trv_builtin_modules_opts_0},
     {"trv_builtin_modules_alias_0", test_trv_builtin_modules_alias_0},
     {"trv_builtin_modules_alias_1", test_trv_builtin_modules_alias_1},
+    {"trv_builtin_modules_alias_2", test_trv_builtin_modules_alias_2},
     {"trv_builtin_modules_array_0", test_trv_builtin_modules_array_0},
     {"trv_builtin_functions", test_trv_builtin_functions},
     {"trv_builtin_functions_puts_0", test_trv_builtin_functions_puts_0},
