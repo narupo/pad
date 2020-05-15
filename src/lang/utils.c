@@ -632,9 +632,23 @@ static object_t *
 refer_str_index(ast_t *ast, object_t *owner, object_t *indexobj) {
     assert(owner->type == OBJ_TYPE_STRING);
 
-    if (indexobj->type != OBJ_TYPE_INT) {
+again:
+    switch (indexobj->type) {
+    default:
         ast_pushb_error(ast, "index isn't integer");
         return NULL;
+    case OBJ_TYPE_INT:
+        // pass
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(indexobj);
+        indexobj = pull_in_ref_by(indexobj);
+        if (!indexobj) {
+            ast_pushb_error(ast, "\"%s\" is not defined", idn);
+            return NULL;
+        }
+        goto again;
+    } break;
     }
 
     objint_t index = indexobj->lvalue;
