@@ -23921,7 +23921,7 @@ test_trv_module_0(void) {
 }
 
 static void
-test_trv_reservation_object(void) {
+test_trv_chain_object(void) {
     trv_ready;
 
     assert(solve_path(config->home_path, sizeof config->home_path, "."));
@@ -24022,6 +24022,70 @@ test_trv_reservation_object(void) {
         (trv_traverse(ast, ctx));
         assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "\"a\" is not defined"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_etc_0(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def decolate(s):\n"
+    "       return \"***\" + s + \"***\"\n"
+    "   end\n"
+    "   s = decolate(\"i love life\")\n"
+    "   puts(s)\n"
+    "   for i = 0; i < len(s); i += 1:\n"
+    "       puts(s[i])\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "***i love life***\n*\n*\n*\ni\n \nl\no\nv\ne\n \nl\ni\nf\ne\n*\n*\n*\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_etc_1(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def slice(arr, n):\n"
+    "       mat = []\n"
+    "       for i = 0; i < len(arr); i += n:\n"
+    "           row = []\n"
+    "           for j = 0; j < n and i + j < len(arr); j += 1:\n"
+    "               row.push(arr[i+j])\n"
+    "           end\n"
+    "           mat.push(row)\n"
+    "       end\n"
+    "       return mat\n"
+    "   end\n"
+    "   arr = [1, 2, 3, 4]\n"
+    "   mat = slice(arr, 2)\n"
+    "   for i = 0; i < len(mat); i += 1:\n"
+    "       row = mat[i]\n"
+    "       for j = 0; j < len(row); j += 1:\n"
+    "           puts(row[j])\n"
+    "       end\n"
+    "       puts(\",\")\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n2\n,\n3\n4\n,\n"));
     }
 
     trv_cleanup;
@@ -24218,7 +24282,9 @@ traverser_tests[] = {
     {"trv_builtin_string", test_trv_builtin_string},
     {"trv_builtin_array_0", test_trv_builtin_array_0},
     {"trv_module_0", test_trv_module_0},
-    {"trv_reservation_object", test_trv_reservation_object},
+    {"trv_chain_object", test_trv_chain_object},
+    {"trv_etc_0", test_trv_etc_0},
+    {"trv_etc_1", test_trv_etc_1},
     {0},
 };
 
