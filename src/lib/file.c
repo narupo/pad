@@ -67,7 +67,7 @@ file_realpath(char *dst, uint32_t dstsz, const char *src) {
 
 char *
 file_get_user_home(char *dst, uint32_t dstsz) {
-#ifdef _FILE_WINDOWS	
+#ifdef _FILE_WINDOWS
     const char *drive = getenv("HOMEDRIVE");
     if (!drive) {
         return NULL;
@@ -78,14 +78,14 @@ file_get_user_home(char *dst, uint32_t dstsz) {
         return NULL;
     }
 
-    snprintf(dst, dstsz, "%s%s", drive, userhome);	
+    snprintf(dst, dstsz, "%s%s", drive, userhome);
 #else
     const char *userhome = getenv("HOME");
     if (!userhome) {
         return NULL;
     }
 
-    snprintf(dst, dstsz, "%s", userhome);	
+    snprintf(dst, dstsz, "%s", userhome);
 #endif
     return dst;
 }
@@ -230,7 +230,7 @@ file_isdir(const char *path) {
         } else {
             // Error. Break through
         }
-        return false; // Doe's not exists 
+        return false; // Doe's not exists
     } else {
         if (S_ISDIR(s.st_mode)) {
             return true;
@@ -296,7 +296,7 @@ file_trunc(const char *path) {
     }
 
     file_close(fout);
-    
+
     return true;
 }
 
@@ -411,7 +411,7 @@ file_basename(char *dst, uint32_t dstsz, const char *path) {
     }
 
     snprintf(dst, dstsz, "%s", p);
-    
+
     return dst;
 }
 
@@ -619,7 +619,7 @@ file_dirread(file_dir_t *self) {
     if (!self) {
         return NULL;
     }
-    
+
     file_dirnode_t * node = file_dirnodenew();
     if (!node) {
         return NULL;
@@ -728,4 +728,53 @@ file_conv_line_encoding(const char *encoding, const char *text) {
 int
 file_get_no(FILE *fp) {
     return fileno(fp);
+}
+
+char **
+file_load_lines(const char *fname) {
+    FILE *fin = fopen(fname, "r");
+    if (!fin) {
+        return NULL;
+    }
+
+    int32_t linessize = 4;
+    char **lines = calloc(linessize + 1, sizeof(char *));
+    int32_t linesi = 0;
+
+    int32_t bufsize = 4;
+    char *buf = calloc(bufsize + 1, sizeof(char));
+    int32_t bi = 0;
+
+    bool active = true;
+
+    for (; active ;) {
+        int32_t c = fgetc(fin);
+        if (c == EOF) {
+            active = false;
+            c = '\n';
+        }
+
+        if (c == '\n') {
+            if (linesi >= linessize) {
+                linessize *= 2;
+                lines = realloc(lines, linessize * sizeof(char *) + sizeof(char *));
+            }
+            lines[linesi++] = strdup(buf);
+            lines[linesi] = NULL;
+            buf[0] = '\0';
+            bi = 0;
+            continue;
+        }
+
+        if (bi >= bufsize) {
+            bufsize *= 2;
+            buf = realloc(buf, bufsize * sizeof(char) + sizeof(char));
+        }
+        buf[bi++] = c;
+        buf[bi] = '\0';
+    }
+
+    free(buf);
+    fclose(fin);
+    return lines;
 }

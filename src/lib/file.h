@@ -259,9 +259,9 @@ file_readcp_from_path(const char *path);
 
 /**
  * Get file size
- * 
+ *
  * @param[in] *stream pointer to FILE
- * 
+ *
  * @return success to file size
  * @return failed to under of zero
  */
@@ -270,9 +270,9 @@ file_size(FILE *stream);
 
 /**
  * Get suffix in file path
- * 
+ *
  * @param[in] *path string of file path
- * 
+ *
  * @return success to pointer to suffix in path
  * @return failed to NULL
  */
@@ -281,11 +281,11 @@ file_suffix(const char *path);
 
 /**
  * Get directory name in path
- * 
+ *
  * @param[out] *dst destination buffer
  * @param[in] dstsz size of destination buffer
  * @param[in] *path string of path
- * 
+ *
  * @return success to pointer to destination buffer
  * @return failed to NULL
  */
@@ -293,12 +293,12 @@ char *
 file_dirname(char *dst, uint32_t dstsz, const char *path);
 
 /**
- * Get base name in path 
- * 
+ * Get base name in path
+ *
  * @param[out] *dst destination buffer
  * @param[in] dstsz size of destination buffer
  * @param[in] *path string of path
- * 
+ *
  * @return success to pointer to destination buffer
  * @return failed to NULL
  */
@@ -307,11 +307,11 @@ file_basename(char *dst, uint32_t dstsz, const char *path);
 
 /**
  * Get line of string from stream
- * 
+ *
  * @param[out] *dst destination buffer
  * @param[in] dstsz size of destination buffer
  * @param[in] *fin pointer to FILE
- * 
+ *
  * @return success to number of get size
  * @return end of file or failed to EOF
  */
@@ -320,11 +320,11 @@ file_getline(char *dst, uint32_t dstsz, FILE *fin);
 
 /**
  * Read first line in file
- * 
+ *
  * @param[out] *dst destination buffer
  * @param[in] dstsz size of destination buffer
  * @param[in] *path string of file path
- * 
+ *
  * @return success to pointer to destination buffer
  * @return failed to NULL
  */
@@ -333,10 +333,10 @@ file_readline(char *dst, uint32_t dstsz, const char *path);
 
 /**
  * Write first line to file
- * 
+ *
  * @param[in] line string of line
  * @param[in] *path string of file path
- * 
+ *
  * @return success to pointer to destination buffer
  * @return failed to NULL
  */
@@ -430,3 +430,16 @@ file_dirread(file_dir_t *self);
  */
 int
 file_get_no(FILE *fp);
+
+/**
+ * TODO: test
+ *
+ * load lines from file path
+ *
+ * @param[in] *fname file path
+ *
+ * @return success to pointer to char **
+ * @return failed to NULL
+ */
+char **
+file_load_lines(const char *fname);
