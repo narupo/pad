@@ -6976,13 +6976,13 @@ trv_calc_asscalc_add_ass(ast_t *ast, trv_args_t *targs) {
         ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_CHAIN: {
-        err_die("TODO: add ass to chain object");
-    } break;
     case OBJ_TYPE_IDENTIFIER: {
         check("call trv_calc_asscalc_add_ass_identifier");
         object_t *obj = trv_calc_asscalc_add_ass_identifier(ast, targs);
         return_trav(obj);
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        err_die("TODO: add ass to chain object");
     } break;
     }
 
@@ -7507,6 +7507,11 @@ trv_asscalc(ast_t *ast, trv_args_t *targs) {
     assert(asscalc);
 
     depth_t depth = targs->depth;
+    bool do_not_refer_chain = targs->do_not_refer_chain;
+
+#define _return(result) \
+    targs->do_not_refer_chain = do_not_refer_chain; \
+    return_trav(result); \
 
     if (nodearr_len(asscalc->nodearr) == 1) {
         node_t *node = nodearr_get(asscalc->nodearr, 0);
@@ -7515,16 +7520,17 @@ trv_asscalc(ast_t *ast, trv_args_t *targs) {
         targs->ref_node = node;
         targs->depth = depth + 1;
         object_t *result = _trv_traverse(ast, targs);
-        return_trav(result);
+        _return(result);
     } else if (nodearr_len(asscalc->nodearr) >= 3) {
         node_t *lnode = nodearr_get(asscalc->nodearr, 0);
         assert(lnode->type == NODE_TYPE_EXPR);
         check("call _trv_traverse");
         targs->ref_node = lnode;
         targs->depth = depth + 1;
+        targs->do_not_refer_chain = true;
         object_t *lhs = _trv_traverse(ast, targs);
         if (ast_has_errors(ast)) {
-            return_trav(NULL);
+            _return(NULL);
         }
         assert(lhs);
 
@@ -7540,9 +7546,10 @@ trv_asscalc(ast_t *ast, trv_args_t *targs) {
             check("call _trv_traverse");
             targs->ref_node = rnode;
             targs->depth = depth + 1;
+            targs->do_not_refer_chain = true;
             object_t *rhs = _trv_traverse(ast, targs);
             if (ast_has_errors(ast)) {
-                return_trav(NULL);
+                _return(NULL);
             }
             assert(rnode);
 
@@ -7553,17 +7560,17 @@ trv_asscalc(ast_t *ast, trv_args_t *targs) {
             targs->depth = depth + 1;
             object_t *result = trv_calc_asscalc(ast, targs);
             if (ast_has_errors(ast)) {
-                return_trav(NULL);
+                _return(NULL);
             }
 
             lhs = result;
         }
 
-        return_trav(lhs);
+        _return(lhs);
     }
 
     assert(0 && "impossible. failed to traverse asscalc");
-    return_trav(NULL);
+    _return(NULL);
 }
 
 static object_t *

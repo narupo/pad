@@ -14742,6 +14742,36 @@ test_trv_builtin_functions(void) {
 }
 
 static void
+test_trv_builtin_modules_opts_0(void) {
+    trv_ready;
+
+    /*****
+    * ok *
+    *****/
+
+    tkr_parse(tkr, "{: opts.args(0) :},{: opts.args(1) :}");
+    {
+        int argc = 2;
+        char *argv[] = {
+            "cmd",
+            "aaa",
+            NULL
+        };
+        opts_t *opts = opts_new();
+        opts_parse(opts, argc, argv);
+        ast_clear(ast);
+        ast_move_opts(ast, mem_move(opts));
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "cmd,aaa"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_builtin_modules_alias_0(void) {
     trv_ready;
 
@@ -22507,6 +22537,58 @@ test_trv_asscalc_3(void) {
 }
 
 static void
+test_trv_asscalc_4(void) {
+    trv_ready;
+
+    return;  // TODO test
+
+    /*****
+    * ok *
+    *****/
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [1, 2]\n"
+    "   a[0] += 1\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_5(void) {
+    trv_ready;
+
+    return;  // TODO test
+
+    /*****
+    * ok *
+    *****/
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [1, 2]\n"
+    "   a[0] += a[0] += 1\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "4"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_expr_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -24069,6 +24151,8 @@ traverser_tests[] = {
     {"trv_asscalc_1", test_trv_asscalc_1},
     {"trv_asscalc_2", test_trv_asscalc_2},
     {"trv_asscalc_3", test_trv_asscalc_3},
+    {"trv_asscalc_4", test_trv_asscalc_4},
+    {"trv_asscalc_5", test_trv_asscalc_5},
     {"trv_expr_0", test_trv_expr_0},
     {"trv_expr_1", test_trv_expr_1},
     {"trv_expr_2", test_trv_expr_2},
@@ -24132,6 +24216,7 @@ traverser_tests[] = {
     {"trv_call", test_trv_call},
     {"trv_func_def", test_trv_func_def},
     {"trv_builtin_alias_0", test_trv_builtin_alias_0},  // ?
+    {"trv_builtin_modules_opts_0", test_trv_builtin_modules_opts_0},
     {"trv_builtin_modules_alias_0", test_trv_builtin_modules_alias_0},
     {"trv_builtin_modules_alias_1", test_trv_builtin_modules_alias_1},
     {"trv_builtin_modules_array_0", test_trv_builtin_modules_array_0},
