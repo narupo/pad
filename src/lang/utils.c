@@ -218,6 +218,7 @@ again2:
             obj = ref;
             goto again2;
         }
+        puts("ret");
         return ref;
     } break;
     }
