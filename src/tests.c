@@ -24091,6 +24091,66 @@ test_trv_etc_1(void) {
     trv_cleanup;
 }
 
+static void
+test_trv_etc_2(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def header(title):\n"
+    "@}<html>\n"
+    "<head>\n"
+    "<title>{: title :}</title>\n"
+    "</head>\n"
+    "{@\n"
+    "   end\n"
+    "\n"
+    "   def body(title, message):\n"
+    "@}<body>\n"
+    "<h1>{: title :}</h1>\n"
+    "<p>{: message :}</p>\n"
+    "</body>\n"
+    "{@\n"
+    "   end\n"
+    "\n"
+    "   def footer():\n"
+    "@}</html>\n"
+    "{@\n"
+    "   end\n"
+    "\n"
+    "   def index(kwargs):\n"
+    "       title = kwargs[\"title\"]\n"
+    "       message = kwargs[\"message\"]\n"
+    "       header(title)\n"
+    "       body(title, message)\n"
+    "       footer()\n"
+    "   end\n"
+    "\n"
+    "   index({\n"
+    "       \"title\": \"Good will hunting\",\n"
+    "       \"message\": \"I'm a robot\",\n"
+    "   })\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<html>\n"
+            "<head>\n"
+            "<title>Good will hunting</title>\n"
+            "</head>\n"
+            "<body>\n"
+            "<h1>Good will hunting</h1>\n"
+            "<p>I'm a robot</p>\n"
+            "</body>\n"
+            "</html>\n"
+        ));
+    }
+
+    trv_cleanup;
+}
+
 static const struct testcase
 traverser_tests[] = {
     {"trv_assign_and_reference_0", test_trv_assign_and_reference_0},
@@ -24285,6 +24345,7 @@ traverser_tests[] = {
     {"trv_chain_object", test_trv_chain_object},
     {"trv_etc_0", test_trv_etc_0},
     {"trv_etc_1", test_trv_etc_1},
+    {"trv_etc_2", test_trv_etc_2},
     {0},
 };
 
