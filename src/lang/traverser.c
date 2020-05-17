@@ -6966,10 +6966,384 @@ trv_calc_asscalc_add_ass_identifier(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
+trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_CHAIN);
+
+    object_t *lref = refer_chain_obj_with_ref(ast, lhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to refer chain object");
+        return NULL;
+    }
+
+    object_t *rref = extract_ref_of_obj(ast, rhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return NULL;
+    }
+
+    switch (lref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lref->type);
+        return NULL;
+    } break;
+    case OBJ_TYPE_INT: {
+        switch (rref->type) {
+        default: {
+            ast_pushb_error(ast, "invalid right hand operand (%d)", rref->type);
+            return NULL;
+        } break;
+        case OBJ_TYPE_INT: {
+            lref->lvalue += rref->lvalue;
+        } break;
+        case OBJ_TYPE_BOOL: {
+            lref->lvalue += (objint_t) rref->boolean;
+        } break;
+        }
+    } break;
+    case OBJ_TYPE_BOOL: {
+        switch (rref->type) {
+        default: {
+            ast_pushb_error(ast, "invalid right hand operand (%d)", rref->type);
+            return NULL;
+        } break;
+        case OBJ_TYPE_INT: {
+            lref->lvalue = ((objint_t) lref->boolean) + rref->lvalue;
+            lref->type = OBJ_TYPE_INT;
+        } break;
+        case OBJ_TYPE_BOOL: {
+            lref->lvalue = ((objint_t) lref->boolean) + ((objint_t) rref->boolean);
+            lref->type = OBJ_TYPE_INT;
+        } break;
+        }
+    } break;
+    case OBJ_TYPE_STRING: {
+        switch (rref->type) {
+        default: {
+            ast_pushb_error(ast, "invalid right hand operand (%d)", rref->type);
+            return NULL;
+        } break;
+        case OBJ_TYPE_STRING: {
+            str_app_other(lref->string, rref->string);
+        } break;
+        }
+    } break;
+    }
+
+    return lref;
+}
+
+/**
+ * TODO: use me!
+ * TODO: test
+ */
+static object_t *
+trv_calc_asscalc_sub_ass_chain(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_CHAIN);
+
+    object_t *lref = refer_chain_obj_with_ref(ast, lhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to refer chain object");
+        return NULL;
+    }
+
+    object_t *rref = extract_ref_of_obj(ast, rhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return NULL;
+    }
+
+    switch (lref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lref->type);
+        return NULL;
+    } break;
+    case OBJ_TYPE_INT: {
+        switch (rref->type) {
+        default: {
+            ast_pushb_error(ast, "invalid right hand operand (%d)", rref->type);
+            return NULL;
+        } break;
+        case OBJ_TYPE_INT: {
+            lref->lvalue -= rref->lvalue;
+        } break;
+        case OBJ_TYPE_BOOL: {
+            lref->lvalue -= (objint_t) rref->boolean;
+        } break;
+        }
+    } break;
+    case OBJ_TYPE_BOOL: {
+        switch (rref->type) {
+        default: {
+            ast_pushb_error(ast, "invalid right hand operand (%d)", rref->type);
+            return NULL;
+        } break;
+        case OBJ_TYPE_INT: {
+            lref->lvalue = ((objint_t) lref->boolean) - rref->lvalue;
+            lref->type = OBJ_TYPE_INT;
+        } break;
+        case OBJ_TYPE_BOOL: {
+            lref->lvalue = ((objint_t) lref->boolean) - ((objint_t) rref->boolean);
+            lref->type = OBJ_TYPE_INT;
+        } break;
+        }
+    } break;
+    }
+
+    return lref;
+}
+
+/**
+ * TODO: use me!
+ * TODO: test
+ */
+static object_t *
+trv_calc_asscalc_mul_ass_chain(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_CHAIN);
+
+    object_t *lref = refer_chain_obj_with_ref(ast, lhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to refer chain object");
+        return NULL;
+    }
+
+    object_t *rref = extract_ref_of_obj(ast, rhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return NULL;
+    }
+
+    switch (lref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lref->type);
+        return NULL;
+    } break;
+    case OBJ_TYPE_INT: {
+        switch (rref->type) {
+        default: {
+            ast_pushb_error(ast, "invalid right hand operand (%d)", rref->type);
+            return NULL;
+        } break;
+        case OBJ_TYPE_INT: {
+            lref->lvalue *= rref->lvalue;
+        } break;
+        case OBJ_TYPE_BOOL: {
+            lref->lvalue *= (objint_t) rref->boolean;
+        } break;
+        }
+    } break;
+    case OBJ_TYPE_BOOL: {
+        switch (rref->type) {
+        default: {
+            ast_pushb_error(ast, "invalid right hand operand (%d)", rref->type);
+            return NULL;
+        } break;
+        case OBJ_TYPE_INT: {
+            lref->lvalue = ((objint_t) lref->boolean) * rref->lvalue;
+            lref->type = OBJ_TYPE_INT;
+        } break;
+        case OBJ_TYPE_BOOL: {
+            lref->lvalue = ((objint_t) lref->boolean) * ((objint_t) rref->boolean);
+            lref->type = OBJ_TYPE_INT;
+        } break;
+        }
+    } break;
+    case OBJ_TYPE_STRING: {
+        switch (rref->type) {
+        default: {
+            ast_pushb_error(ast, "invalid right hand operand (%d)", rref->type);
+            return NULL;
+        } break;
+        case OBJ_TYPE_INT: {
+            string_t *s = str_mul(lref->string, rref->lvalue);
+            str_del(lref->string);
+            lref->string = s;
+        } break;
+        }
+    } break;
+    }
+
+    return lref;
+}
+
+/**
+ * TODO: use me!
+ * TODO: test
+ */
+static object_t *
+trv_calc_asscalc_div_ass_chain(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_CHAIN);
+
+    object_t *lref = refer_chain_obj_with_ref(ast, lhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to refer chain object");
+        return NULL;
+    }
+
+    object_t *rref = extract_ref_of_obj(ast, rhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return NULL;
+    }
+
+    switch (lref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lref->type);
+        return NULL;
+    } break;
+    case OBJ_TYPE_INT: {
+        switch (rref->type) {
+        default: {
+            ast_pushb_error(ast, "invalid right hand operand (%d)", rref->type);
+            return NULL;
+        } break;
+        case OBJ_TYPE_INT: {
+            if (rref->lvalue == 0) {
+                ast_pushb_error(ast, "zero division error");
+                return NULL;
+            }
+            lref->lvalue /= rref->lvalue;
+        } break;
+        case OBJ_TYPE_BOOL: {
+            if (!rref->boolean) {
+                ast_pushb_error(ast, "zero division error");
+                return NULL;
+            }
+            lref->lvalue /= (objint_t) rref->boolean;
+        } break;
+        }
+    } break;
+    case OBJ_TYPE_BOOL: {
+        switch (rref->type) {
+        default: {
+            ast_pushb_error(ast, "invalid right hand operand (%d)", rref->type);
+            return NULL;
+        } break;
+        case OBJ_TYPE_INT: {
+            if (rref->lvalue == 0) {
+                ast_pushb_error(ast, "zero division error");
+                return NULL;
+            }
+            lref->lvalue = ((objint_t) lref->boolean) / rref->lvalue;
+            lref->type = OBJ_TYPE_INT;
+        } break;
+        case OBJ_TYPE_BOOL: {
+            if (!rref->boolean) {
+                ast_pushb_error(ast, "zero division error");
+                return NULL;
+            }
+            lref->lvalue = ((objint_t) lref->boolean) / ((objint_t) rref->boolean);
+            lref->type = OBJ_TYPE_INT;
+        } break;
+        }
+    } break;
+    }
+
+    return lref;
+}
+
+/**
+ * TODO: use me!
+ * TODO: test
+ */
+static object_t *
+trv_calc_asscalc_mod_ass_chain(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_CHAIN);
+
+    object_t *lref = refer_chain_obj_with_ref(ast, lhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to refer chain object");
+        return NULL;
+    }
+
+    object_t *rref = extract_ref_of_obj(ast, rhs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return NULL;
+    }
+
+    switch (lref->type) {
+    default: {
+        ast_pushb_error(ast, "invalid left hand operand (%d)", lref->type);
+        return NULL;
+    } break;
+    case OBJ_TYPE_INT: {
+        switch (rref->type) {
+        default: {
+            ast_pushb_error(ast, "invalid right hand operand (%d)", rref->type);
+            return NULL;
+        } break;
+        case OBJ_TYPE_INT: {
+            if (rref->lvalue == 0) {
+                ast_pushb_error(ast, "zero division error");
+                return NULL;
+            }
+            lref->lvalue %= rref->lvalue;
+        } break;
+        case OBJ_TYPE_BOOL: {
+            if (!rref->boolean) {
+                ast_pushb_error(ast, "zero division error");
+                return NULL;
+            }
+            lref->lvalue %= (objint_t) rref->boolean;
+        } break;
+        }
+    } break;
+    case OBJ_TYPE_BOOL: {
+        switch (rref->type) {
+        default: {
+            ast_pushb_error(ast, "invalid right hand operand (%d)", rref->type);
+            return NULL;
+        } break;
+        case OBJ_TYPE_INT: {
+            if (rref->lvalue == 0) {
+                ast_pushb_error(ast, "zero division error");
+                return NULL;
+            }
+            lref->lvalue = ((objint_t) lref->boolean) % rref->lvalue;
+            lref->type = OBJ_TYPE_INT;
+        } break;
+        case OBJ_TYPE_BOOL: {
+            if (!rref->boolean) {
+                ast_pushb_error(ast, "zero division error");
+                return NULL;
+            }
+            lref->lvalue = ((objint_t) lref->boolean) % ((objint_t) rref->boolean);
+            lref->type = OBJ_TYPE_INT;
+        } break;
+        }
+    } break;
+    }
+
+    return lref;
+}
+
+static object_t *
 trv_calc_asscalc_add_ass(ast_t *ast, trv_args_t *targs) {
+    tready();
     object_t *lhs = targs->lhs_obj;
     assert(lhs);
-    tready();
+
+    targs->depth += 1;
 
     switch (lhs->type) {
     default:
@@ -6978,11 +7352,13 @@ trv_calc_asscalc_add_ass(ast_t *ast, trv_args_t *targs) {
         break;
     case OBJ_TYPE_IDENTIFIER: {
         check("call trv_calc_asscalc_add_ass_identifier");
-        object_t *obj = trv_calc_asscalc_add_ass_identifier(ast, targs);
-        return_trav(obj);
+        object_t *result = trv_calc_asscalc_add_ass_identifier(ast, targs);
+        return_trav(result);
     } break;
     case OBJ_TYPE_CHAIN: {
-        err_die("TODO: add ass to chain object");
+        check("call trv_calc_asscalc_add_ass_chain");
+        object_t *result = trv_calc_asscalc_add_ass_chain(ast, targs);
+        return_trav(result);
     } break;
     }
 
@@ -7069,6 +7445,11 @@ trv_calc_asscalc_sub_ass(ast_t *ast, trv_args_t *targs) {
         check("call trv_asscalc_sub_ass_idn");
         object_t *obj = trv_calc_asscalc_sub_ass_idn(ast, targs);
         return_trav(obj);
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        check("call trv_calc_asscalc_sub_ass_chain");
+        object_t *result = trv_calc_asscalc_sub_ass_chain(ast, targs);
+        return_trav(result);
     } break;
     }
 
@@ -7161,7 +7542,11 @@ trv_calc_asscalc_mul_ass(ast_t *ast, trv_args_t *targs) {
     object_t *lhs = targs->lhs_obj;
     assert(lhs);
 
-    if (lhs->type != OBJ_TYPE_IDENTIFIER) {
+    if (lhs->type == OBJ_TYPE_CHAIN) {
+        check("call trv_calc_asscalc_mul_ass_chain");
+        object_t *result = trv_calc_asscalc_mul_ass_chain(ast, targs);
+        return_trav(result);
+    } else if (lhs->type != OBJ_TYPE_IDENTIFIER) {
         ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
     }
@@ -7291,7 +7676,11 @@ trv_calc_asscalc_div_ass(ast_t *ast, trv_args_t *targs) {
     assert(lhs);
     tready();
 
-    if (lhs->type != OBJ_TYPE_IDENTIFIER) {
+    if (lhs->type == OBJ_TYPE_CHAIN) {
+        check("call trv_calc_asscalc_div_ass_chain");
+        object_t *result = trv_calc_asscalc_div_ass_chain(ast, targs);
+        return_trav(result);
+    } else if (lhs->type != OBJ_TYPE_IDENTIFIER) {
         ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
     }
@@ -7424,7 +7813,11 @@ trv_calc_asscalc_mod_ass(ast_t *ast, trv_args_t *targs) {
     assert(lhs);
     tready();
 
-    if (lhs->type != OBJ_TYPE_IDENTIFIER) {
+    if (lhs->type == OBJ_TYPE_CHAIN) {
+        check("call trv_calc_asscalc_mod_ass_chain");
+        object_t *result = trv_calc_asscalc_mod_ass_chain(ast, targs);
+        return_trav(result);
+    } else if (lhs->type != OBJ_TYPE_IDENTIFIER) {
         ast_pushb_error(ast, "invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
     }
@@ -7444,10 +7837,12 @@ trv_calc_asscalc_mod_ass(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     } break;
     case OBJ_TYPE_BOOL: {
+        check("trv_calc_asscalc_mod_ass_bool");
         object_t *result = trv_calc_asscalc_mod_ass_bool(ast, targs);
         return_trav(result);
     } break;
     case OBJ_TYPE_INT: {
+        check("trv_calc_asscalc_mod_ass_int");
         object_t *result = trv_calc_asscalc_mod_ass_int(ast, targs);
         return_trav(result);
     } break;
