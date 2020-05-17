@@ -348,7 +348,7 @@ string_t *
 str_camel(const string_t *other);
 
 /**
- * mul string
+ * mul string with copy
  *
  * @param[in] *self pointer to string_t
  *

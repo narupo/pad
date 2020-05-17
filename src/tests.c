@@ -22554,12 +22554,6 @@ static void
 test_trv_asscalc_4(void) {
     trv_ready;
 
-    return;  // TODO test
-
-    /*****
-    * ok *
-    *****/
-
     tkr_parse(tkr, "{@\n"
     "   a = [1, 2]\n"
     "   a[0] += 1\n"
@@ -22597,6 +22591,347 @@ test_trv_asscalc_5(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "4"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_6(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [\"aaa\", 2]\n"
+    "   a[0] += \"bbb\"\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "aaabbb"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_7(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [true, 2]\n"
+    "   a[0] += 1\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_8(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [true, 2]\n"
+    "   a[0] += true\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_9(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [1, 2]\n"
+    "   a[0] -= 1\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_10(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [true, 2]\n"
+    "   a[0] -= true\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_11(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [1, 2]\n"
+    "   a[0] *= 2\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_12(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [\"abc\", 2]\n"
+    "   a[0] *= 2\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcabc"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_13(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [true, 2]\n"
+    "   a[0] *= 2\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_14(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [true, 2]\n"
+    "   a[0] *= true\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_15(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [4, 2]\n"
+    "   a[0] /= 2\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_16(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [4, 2]\n"
+    "   a[0] /= 0\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "zero division error"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_17(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [4, 2]\n"
+    "   a[0] /= false\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "zero division error"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_18(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [1, 2]\n"
+    "   a[0] /= true\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_19(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [2, 2]\n"
+    "   a[0] %= 2\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_20(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [2, 2]\n"
+    "   a[0] %= true\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_21(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [2, 2]\n"
+    "   a[0] %= 0\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "zero division error"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_22(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = [2, 2]\n"
+    "   a[0] %= false\n"
+    "@}{: a[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "zero division error"));
     }
 
     trv_cleanup;
@@ -24267,6 +24602,23 @@ traverser_tests[] = {
     {"trv_asscalc_3", test_trv_asscalc_3},
     {"trv_asscalc_4", test_trv_asscalc_4},
     {"trv_asscalc_5", test_trv_asscalc_5},
+    {"trv_asscalc_6", test_trv_asscalc_6},
+    {"trv_asscalc_7", test_trv_asscalc_7},
+    {"trv_asscalc_8", test_trv_asscalc_8},
+    {"trv_asscalc_9", test_trv_asscalc_9},
+    {"trv_asscalc_10", test_trv_asscalc_10},
+    {"trv_asscalc_11", test_trv_asscalc_11},
+    {"trv_asscalc_12", test_trv_asscalc_12},
+    {"trv_asscalc_13", test_trv_asscalc_13},
+    {"trv_asscalc_14", test_trv_asscalc_14},
+    {"trv_asscalc_15", test_trv_asscalc_15},
+    {"trv_asscalc_16", test_trv_asscalc_16},
+    {"trv_asscalc_17", test_trv_asscalc_17},
+    {"trv_asscalc_18", test_trv_asscalc_18},
+    {"trv_asscalc_19", test_trv_asscalc_19},
+    {"trv_asscalc_20", test_trv_asscalc_20},
+    {"trv_asscalc_21", test_trv_asscalc_21},
+    {"trv_asscalc_22", test_trv_asscalc_22},
     {"trv_expr_0", test_trv_expr_0},
     {"trv_expr_1", test_trv_expr_1},
     {"trv_expr_2", test_trv_expr_2},
