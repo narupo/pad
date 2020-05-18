@@ -16427,31 +16427,6 @@ test_trv_traverse(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
-    /* TODO: sub ass
-    tkr_parse(tkr, "{@ a = 0 \n a -= 1 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "-1"));
-    }*/
-
-    /*********
-    * caller *
-    *********/
-/*
-    tkr_parse(tkr, "{@ my.func() @}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "\"my.func\" is not callable"));
-    }
-*/
-
     /*******************
     * import statement *
     *******************/
@@ -17443,12 +17418,7 @@ test_trv_assign_and_reference_9(void) {
 
 static void
 test_trv_assign_and_reference_10(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{@\n"
     "   def f(a):\n"
@@ -17465,11 +17435,7 @@ test_trv_assign_and_reference_10(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
 }
 
 static void
@@ -17602,6 +17568,28 @@ test_trv_assign_and_reference_15(void) {
 }
 
 static void
+test_trv_assign_and_reference_16(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(a):\n"
+    "       return a\n"
+    "   end\n"
+    "   f(1)"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_assign_and_reference_all(void) {
     test_trv_assign_and_reference_0();
     test_trv_assign_and_reference_1();
@@ -17619,6 +17607,7 @@ test_trv_assign_and_reference_all(void) {
     test_trv_assign_and_reference_13();
     test_trv_assign_and_reference_14();
     test_trv_assign_and_reference_15();
+    test_trv_assign_and_reference_16();
 }
 
 static void
@@ -24486,6 +24475,65 @@ test_trv_etc_2(void) {
     trv_cleanup;
 }
 
+static void
+test_trv_etc_3(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   d = {\"a\": 1}"
+    "   a = [d, 2]\n"
+    "   a[0][\"a\"] += 1\n"
+    "@}{: a[0][\"a\"] :},{: d[\"a\"] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2,2"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_etc_4(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(a):\n"
+    "       return a"
+    "   end\n"
+    "   a = f(f)\n"
+    "@}{: id(a) == id(f) :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(arg):\n"
+    "       return arg[\"a\"]"
+    "   end\n"
+    "   d = {\"a\": f}\n"
+    "   a = d[\"a\"](d)"
+    "@}{: a :},{: id(a) == id(f) :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function),true"));
+    }
+
+    trv_cleanup;
+}
+
 static const struct testcase
 traverser_tests[] = {
     {"trv_assign_and_reference_0", test_trv_assign_and_reference_0},
@@ -24504,6 +24552,7 @@ traverser_tests[] = {
     {"trv_assign_and_reference_13", test_trv_assign_and_reference_13},
     {"trv_assign_and_reference_14", test_trv_assign_and_reference_14},
     {"trv_assign_and_reference_15", test_trv_assign_and_reference_15},
+    {"trv_assign_and_reference_16", test_trv_assign_and_reference_16},
     {"trv_assign_and_reference_all", test_trv_assign_and_reference_all},
     {"trv_code_block", test_trv_code_block},
     {"trv_ref_block", test_trv_ref_block},
@@ -24698,6 +24747,8 @@ traverser_tests[] = {
     {"trv_etc_0", test_trv_etc_0},
     {"trv_etc_1", test_trv_etc_1},
     {"trv_etc_2", test_trv_etc_2},
+    {"trv_etc_3", test_trv_etc_3},
+    {"trv_etc_4", test_trv_etc_4},
     {0},
 };
 

@@ -334,6 +334,59 @@ invoke_builtin_module_func(
 }
 
 static object_t *
+copy_func_args(ast_t *ast, object_t *drtargs) {
+    assert(drtargs->type == OBJ_TYPE_ARRAY);
+    object_array_t *dstarr = objarr_new();
+    object_array_t *srcarr = drtargs->objarr;
+
+    for (int32_t i = 0; i < objarr_len(srcarr); ++i) {
+        object_t *arg = objarr_get(srcarr, i);
+        object_t *savearg = NULL;
+        assert(arg);
+
+    again:
+        switch (arg->type) {
+        case OBJ_TYPE_NIL:
+        case OBJ_TYPE_INT:
+        case OBJ_TYPE_BOOL:
+        case OBJ_TYPE_STRING:
+            // copy
+            savearg = obj_new_other(arg);
+            break;
+        case OBJ_TYPE_OWNERS_METHOD:
+        case OBJ_TYPE_ARRAY:
+        case OBJ_TYPE_DICT:
+        case OBJ_TYPE_FUNC:
+        case OBJ_TYPE_MODULE:
+            // reference
+            savearg = arg;
+            break;
+        case OBJ_TYPE_CHAIN:
+            arg = refer_chain_obj_with_ref(ast, arg);
+            if (ast_has_errors(ast)) {
+                ast_pushb_error(ast, "failed to refer chain object");
+                return NULL;
+            }
+            goto again;
+        case OBJ_TYPE_IDENTIFIER: {
+            const char *idn = obj_getc_idn_name(arg);
+            arg = pull_in_ref_by(arg);
+            if (!arg) {
+                ast_pushb_error(ast, "\"%s\" is not defined", idn);
+                return NULL;
+            }
+            goto again;
+        } break;
+        }
+
+        obj_inc_ref(savearg);
+        objarr_pushb(dstarr, savearg);
+    }
+
+    return obj_new_array(ast->ref_gc, mem_move(dstarr));
+}
+
+static object_t *
 invoke_func_obj(
     ast_t *ast,
     object_array_t *owners,
@@ -352,13 +405,17 @@ invoke_func_obj(
 
     object_t *args = NULL;
     if (drtargs) {
-        args = obj_to_array(drtargs);
+        args = copy_func_args(ast, drtargs);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to copy function arguments");
+            return NULL;
+        }
     }
 
     object_func_t *func = &funcobj->func;
     assert(func->args->type == OBJ_TYPE_ARRAY);
 
-    // extract function arguments
+    // extract function arguments to function's varmap
     assert(func->ref_ast);
     ctx_pushb_scope(func->ref_ast->ref_context);
     if (args) {
@@ -386,7 +443,7 @@ invoke_func_obj(
                     ast_pushb_error(
                         ast,
                         "\"%s\" is not defined in invoke function",
-                        str_getc(aarg->identifier.name)
+                        obj_getc_idn_name(aarg)
                     );
                     obj_del(args);
                     return NULL;
@@ -400,24 +457,21 @@ invoke_func_obj(
                 return NULL;
             }
 
-            // move actual argument reference at function's context as formal argument
-            object_t *copy_aarg = obj_new_other(extref);
-
-            move_obj_at_cur_varmap(
+            set_ref_at_cur_varmap(
                 func->ref_ast,
                 owners,
                 fargname,  // formal argument name
-                mem_move(copy_aarg)  // actual argument
+                extref  // actual argument
             );
-        }
-    }
+        }  // for
+    }  // if
 
     obj_del(args);
 
     // swap current context stdout and stderr buffer to function's context buffer
     string_t *cur_stdout_buf = ctx_swap_stdout_buf(ast->ref_context, NULL);
-    string_t *save_stdout_buf = ctx_swap_stdout_buf(func->ref_ast->ref_context, cur_stdout_buf);
     string_t *cur_stderr_buf = ctx_swap_stderr_buf(ast->ref_context, NULL);
+    string_t *save_stdout_buf = ctx_swap_stdout_buf(func->ref_ast->ref_context, cur_stdout_buf);
     string_t *save_stderr_buf = ctx_swap_stderr_buf(func->ref_ast->ref_context, cur_stderr_buf);
 
     // execute function suites
@@ -439,8 +493,8 @@ invoke_func_obj(
 
     // reset status
     cur_stdout_buf = ctx_swap_stdout_buf(func->ref_ast->ref_context, save_stdout_buf);
-    ctx_swap_stdout_buf(ast->ref_context, cur_stdout_buf);
     cur_stderr_buf = ctx_swap_stderr_buf(func->ref_ast->ref_context, save_stderr_buf);
+    ctx_swap_stdout_buf(ast->ref_context, cur_stdout_buf);
     ctx_swap_stderr_buf(ast->ref_context, cur_stderr_buf);
 
     ctx_set_do_return(func->ref_ast->ref_context, false);
@@ -1008,4 +1062,13 @@ parse_bool(ast_t *ast, object_t *obj) {
 
     assert(0 && "impossible. failed to parse bool");
     return false;
+}
+
+bool
+is_var_in_cur_scope(object_t *idnobj) {
+    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
+    const char *idn = obj_getc_idn_name(idnobj);
+    ast_t *ref_ast = obj_get_idn_ref_ast(idnobj);
+    context_t *ref_ctx = ast_get_ref_context(ref_ast);
+    return ctx_var_in_cur_scope(ref_ctx, idn);
 }

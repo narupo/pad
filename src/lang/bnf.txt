@@ -57,15 +57,8 @@ BNF of Cap's template language
            asscalc: expr [ augassign expr ]*
               expr: term [ add_sub_op term ]*
               term: negative [ mul_div_op negative ]*
-        + nagative: ( '-' ) dot
-        - nagative: ( '-' ) chain
-
-             - dot: call [ dot_op call ]*
-            - call: index [ '(' call_args ')' ]*
-           - index: factor [ '[' simple_assign ']' ]*
-
-           - chain: factor [ ('.' factor) | ('[' simple_assign ']') | ('(' call_args ')') ]*
-
+          nagative: ( '-' ) chain
+             chain: factor [ ('.' factor) | ('[' simple_assign ']') | ('(' call_args ')') ]*
             factor: atom | '(' formula ')'
               atom: nil |
                     false |

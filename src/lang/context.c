@@ -240,3 +240,19 @@ ctx_dump(const context_t *self, FILE *fout) {
     fprintf(fout, "context[%p]\n", self);
     scope_dump(self->scope, fout);
 }
+
+bool
+ctx_var_in_cur_scope(const context_t *self, const char *idn) {
+    scope_t *current_scope = scope_get_last(self->scope);
+    object_dict_t *varmap = scope_get_varmap(current_scope);
+
+    for (int32_t i = 0; i < objdict_len(varmap); ++i) {
+        const object_dict_item_t *item = objdict_getc_index(varmap, i);
+        assert(item);
+        if (cstr_eq(item->key, idn)) {
+            return true;
+        }
+    }
+
+    return false;
+}

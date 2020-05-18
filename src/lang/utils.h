@@ -156,3 +156,14 @@ dump_array_obj(const object_t *arrobj);
  */
 bool
 parse_bool(ast_t *ast, object_t *obj);
+
+/**
+ * if idnobj has in current scope then return true else return false
+ *
+ * @param[in] *ast
+ * @param[in] *idnobj identifier object (type == OBJ_TYPE_IDENTIFIER)
+ *
+ * @return true or false
+ */
+bool
+is_var_in_cur_scope(object_t *idnobj);
