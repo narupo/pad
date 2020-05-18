@@ -1036,23 +1036,54 @@ trv_return_stmt(ast_t *ast, trv_args_t *targs) {
     //     end
     //     x = func()
     //
-    // そのためここで実体をコピーで取得して返すようにする
+    // そのためここでidentifierの指す実体をコピーで取得して返すようにする
     //
     // TODO:
     // returnで返す値が、現在のスコープには無いオブジェクトの場合、
     // つまりグローバル変数などの場合はコピーではなく参照を返す必要がある
     // ↓の実装では全てコピーになっている
-    object_t *ref = extract_copy_of_obj(ast, result);
-    if (!ref) {
-        ast_pushb_error(ast, "failed to extract reference in return statement");
-        return_trav(NULL);
-    }
 
-    object_t *ret = obj_new_other(ref);
+    // return copy or reference ?
+    object_t *ret = NULL;
+again:
+    switch (result->type) {
+    default:
+        ast_pushb_error(ast, "invalid return type (%d)", result->type);
+        return NULL;
+        break;
+    case OBJ_TYPE_NIL:
+    case OBJ_TYPE_INT:
+    case OBJ_TYPE_BOOL:
+    case OBJ_TYPE_STRING:
+        ret = obj_new_other(result);
+        break;
+    case OBJ_TYPE_CHAIN:
+        result = refer_chain_obj_with_ref(ast, result);
+        goto again;
+        break;
+    case OBJ_TYPE_ARRAY:
+    case OBJ_TYPE_DICT:
+        ret = extract_copy_of_obj(ast, result);
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(result);
+        result = pull_in_ref_by(result);
+        if (!result) {
+            ast_pushb_error(ast, "\"%s\" is not defined", idn);
+            return NULL;
+        }
+        goto again;
+    } break;
+    case OBJ_TYPE_MODULE:
+    case OBJ_TYPE_FUNC:
+        ret = result;
+        break;
+    }
 
     check("set true at do return flag");
     ctx_set_do_return(ast->ref_context, true);
 
+    assert(ret);
     return_trav(ret);
 }
 
@@ -1107,60 +1138,6 @@ again:
     assert(0 && "impossible. failed to assign to array");
     return_trav(NULL);
 }
-
-#if 0
-static index_value_t *
-trv_obj_to_index_value(ast_t *ast, trv_args_t *targs) {
-    index_value_t *idxval = &targs->index_value;
-    object_t *obj = targs->ref_obj;
-    assert(obj);
-
-    const object_t *src = obj;
-
-    switch (obj->type) {
-    default: break;
-    case OBJ_TYPE_IDENTIFIER:
-        src = pull_in_ref_by(obj);
-        if (ast_has_errors(ast)) {
-            return NULL;
-        } else if (!src) {
-            ast_pushb_error(
-                ast,
-                "\"%s\" is not defined in extract index value",
-                obj_getc_idn_name(obj)
-            );
-            return NULL;
-        }
-        break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *ref = extract_ref_of_obj(ast, obj);
-        if (ast_has_errors(ast)) {
-            ast_pushb_error(ast, "failed to extract reference");
-            return NULL;
-        }
-        assert(ref);
-        src = ref;
-    } break;
-    }
-
-    switch (src->type) {
-    default:
-        ast_pushb_error(ast, "invalid index object in object to index value");
-        return NULL;
-        break;
-    case OBJ_TYPE_INT:
-        idxval->type = 'i';
-        idxval->ikey = src->lvalue;
-        break;
-    case OBJ_TYPE_STRING:
-        idxval->type = 's';
-        idxval->skey = str_getc(src->string);
-        break;
-    }
-
-    return idxval;
-}
-#endif
 
 static object_t *
 assign_to_chain_dot(
@@ -6775,6 +6752,7 @@ trv_chain(ast_t *ast, trv_args_t *targs) {
             break;
         }
 
+        obj_inc_ref(elem);
         chain_object_t *chobj = chain_obj_new(type, mem_move(elem));
         chain_objs_moveb(chobjs, mem_move(chobj));
     }
@@ -6830,7 +6808,6 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_CHAIN: {
         // TODO: fix me!
         object_t *val = extract_ref_of_obj(ast, rhs);
-        check("move object of (%d) at (%s) of current varmap", val->type, idn);
         set_ref_at_cur_varmap(ast, ref_owners, idn, val);
         return_trav(val);
     } break;
@@ -8246,16 +8223,15 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
         object_array_t *objarr = arrobj->objarr;
         assert(objarr_len(objarr) == 2);
         const object_t *key = objarr_getc(objarr, 0);
-        const object_t *tmp_val = objarr_getc(objarr, 1);
-        const object_t *val = tmp_val;
+        object_t *val = objarr_get(objarr, 1);
 
-        if (tmp_val->type == OBJ_TYPE_IDENTIFIER) {
-            val = pull_in_ref_by(tmp_val);
+        if (val->type == OBJ_TYPE_IDENTIFIER) {
+            val = pull_in_ref_by(val);
             if (!val) {
                 ast_pushb_error(
                     ast,
                     "\"%s\" is not defined. can not store to dict elements",
-                    str_getc(tmp_val->identifier.name)
+                    str_getc(val->identifier.name)
                 );
                 return_trav(NULL);
             }
@@ -8285,9 +8261,8 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
         } break;
         }
 
-        object_t *saveobj = obj_new_other(val);
-        obj_inc_ref(saveobj);
-        objdict_move(objdict, skey, mem_move(saveobj));
+        obj_inc_ref(val);
+        objdict_set(objdict, skey, val);
         obj_del(arrobj);
     }
 

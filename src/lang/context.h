@@ -311,3 +311,13 @@ ctx_swap_stderr_buf(context_t *self, string_t *stderr_buf);
  */
 void
 ctx_dump(const context_t *self, FILE *fout);
+
+/**
+ * if idn in current scope then return true else return false
+ *
+ * @param[in] *self
+ *
+ * @return true or false
+ */
+bool
+ctx_var_in_cur_scope(const context_t *self, const char *idn);
