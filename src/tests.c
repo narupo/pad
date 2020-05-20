@@ -24502,7 +24502,7 @@ test_trv_etc_4(void) {
 
     tkr_parse(tkr, "{@\n"
     "   def f(a):\n"
-    "       return a"
+    "       return a\n"
     "   end\n"
     "   a = f(f)\n"
     "@}{: id(a) == id(f) :}");
@@ -24517,7 +24517,7 @@ test_trv_etc_4(void) {
 
     tkr_parse(tkr, "{@\n"
     "   def f(arg):\n"
-    "       return arg[\"a\"]"
+    "       return arg[\"a\"]\n"
     "   end\n"
     "   d = {\"a\": f}\n"
     "   a = d[\"a\"](d)"
@@ -24529,6 +24529,79 @@ test_trv_etc_4(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "(function),true"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_etc_5(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(arg):\n"
+    "       return arg[\"a\"] + arg[\"b\"]\n"
+    "   end\n"
+    "   a = 1, b = 2\n"
+    "   c = f({ \"a\" : a, \"b\": b })"
+    "@}{: c :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(arg):\n"
+    "       return arg[\"d\"][\"a\"] + arg[\"c\"][\"b\"]\n"
+    "   end\n"
+    "   d = { \"a\": 1, \"b\": 2 }\n"
+    "   c = f({ \"d\" : d, \"c\": d })\n"
+    "@}{: c :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(arg):\n"
+    "       arg[\"d\"][\"a\"] += 1\n"
+    "       arg[\"c\"][\"b\"] += 1\n"
+    "   end\n"
+    "   d = { \"a\": 1, \"b\": 2 }\n"
+    "   c = f({ \"d\" : d, \"c\": d })\n"
+    "@}{: d[\"a\"] :},{: d[\"b\"] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2,3"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(arg):\n"
+    "       e = arg[\"d\"]\n"
+    "       e[\"a\"] += 1\n"
+    "   end\n"
+    "   d = { \"a\": 1 }\n"
+    "   c = f({ \"d\" : d })\n"
+    "@}{: d[\"a\"] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
 
     trv_cleanup;
@@ -24749,6 +24822,7 @@ traverser_tests[] = {
     {"trv_etc_2", test_trv_etc_2},
     {"trv_etc_3", test_trv_etc_3},
     {"trv_etc_4", test_trv_etc_4},
+    {"trv_etc_5", test_trv_etc_5},
     {0},
 };
 
