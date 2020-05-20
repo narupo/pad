@@ -29,7 +29,7 @@ makecmd_show_usage(makecmd_t *self) {
     fflush(stderr);
     fprintf(stderr, "Usage:\n"
         "\n"
-        "    cap make [file]\n"
+        "    cap make [file] [file-arguments]...\n"
         "\n"
     );
     fflush(stderr);
