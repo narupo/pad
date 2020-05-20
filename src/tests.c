@@ -24770,6 +24770,105 @@ test_trv_etc_6(void) {
     trv_cleanup;
 }
 
+static void
+test_trv_etc_7(void) {
+    trv_ready;
+
+    /*******************************
+    * theme: for and if statements *
+    *******************************/
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 4; i += 1:\n"
+    "       if i % 2 == 0:\n"
+    "           puts(\"nyan\")\n"
+    "       end\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "nyan\nnyan\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 4; i += 1:\n"
+    "       if i % 2 == 0:\n"
+    "           for j = 0; j < 2; j += 1:\n"
+    "               puts(j)"
+    "           end\n"
+    "       end\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n0\n1\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   m = 2\n"
+    "   if m == 2:\n"
+    "       for i = 0; i < 2; i += 1:\n"
+    "           puts(i)\n"
+    "       end\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   m = 3\n"
+    "   if m == 2:\n"
+    "   elif m == 3:\n"
+    "       for i = 0; i < 2; i += 1:\n"
+    "           puts(i)\n"
+    "       end\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   m = 4\n"
+    "   if m == 2:\n"
+    "   elif m == 3:\n"
+    "   else:\n"
+    "       for i = 0; i < 2; i += 1:\n"
+    "           puts(i)\n"
+    "       end\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
+    }
+
+    trv_cleanup;
+}
+
 static const struct testcase
 traverser_tests[] = {
     {"trv_assign_and_reference_0", test_trv_assign_and_reference_0},
@@ -24988,6 +25087,7 @@ traverser_tests[] = {
     {"trv_etc_4", test_trv_etc_4},
     {"trv_etc_5", test_trv_etc_5},
     {"trv_etc_6", test_trv_etc_6},
+    {"trv_etc_7", test_trv_etc_7},
     {0},
 };
 
