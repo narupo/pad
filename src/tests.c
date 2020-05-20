@@ -24500,6 +24500,10 @@ static void
 test_trv_etc_4(void) {
     trv_ready;
 
+    /***************************
+    * theme: dict and function *
+    ***************************/
+
     tkr_parse(tkr, "{@\n"
     "   def f(a):\n"
     "       return a\n"
@@ -24536,6 +24540,11 @@ test_trv_etc_4(void) {
 
 static void
 test_trv_etc_5(void) {
+
+    /***************************
+    * theme: dict and function *
+    ***************************/
+
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -24602,6 +24611,61 @@ test_trv_etc_5(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(arg):\n"
+    "       e = arg[\"d\"]\n"
+    "       e[\"a\"] += 1\n"
+    "   end\n"
+    "   d = { \"a\": 1 }\n"
+    "   c = f({ \"d\" : d })\n"
+    "@}{: d[\"a\"] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(arg):\n"
+    "       d = arg[\"d\"]\n"
+    "       l = d[\"a\"]\n"
+    "       l[0] += 1"
+    "   end\n"
+    "   l = [1, 2]\n"
+    "   d = { \"a\": l }\n"
+    "   c = f({ \"d\" : d })\n"
+    "@}{: l[0] :},{: l[1] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2,2"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(arg):\n"
+    "       d = arg[\"d\"]\n"
+    "       l = d[\"a\"]\n"
+    "       return { \"a\": l[0]+1, \"b\": l[1]+1 }\n"
+    "   end\n"
+    "   l = [1, 2]\n"
+    "   d = { \"a\": l }\n"
+    "   c = f({ \"d\" : d })\n"
+    "@}{: c[\"a\"] :},{: c[\"b\"] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2,3"));
     }
 
     trv_cleanup;
