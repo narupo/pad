@@ -24671,6 +24671,67 @@ test_trv_etc_5(void) {
     trv_cleanup;
 }
 
+static void
+test_trv_etc_6(void) {
+    trv_ready;
+
+    /***************************
+    * theme: list and function *
+    ***************************/
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(l):\n"
+    "       l.push(3)\n"
+    "   end\n"
+    "   l = [1, 2]\n"
+    "   f(l)\n"
+    "@}{: l[2] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(l):\n"
+    "       l.push([3, 4])\n"
+    "       return l"
+    "   end\n"
+    "   l = [1, 2]\n"
+    "   l2 = f(l)\n"
+    "@}{: l2[2][0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   g = 3"
+    "   def f(l):\n"
+    "       l.push(g)\n"
+    "   end\n"
+    "   l = [1, 2]\n"
+    "   f(l)\n"
+    "@}{: l[2] :},{: id(l[2]) == id(g) :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "3,true"));
+    }
+
+    trv_cleanup;
+}
+
 static const struct testcase
 traverser_tests[] = {
     {"trv_assign_and_reference_0", test_trv_assign_and_reference_0},
@@ -24887,6 +24948,7 @@ traverser_tests[] = {
     {"trv_etc_3", test_trv_etc_3},
     {"trv_etc_4", test_trv_etc_4},
     {"trv_etc_5", test_trv_etc_5},
+    {"trv_etc_6", test_trv_etc_6},
     {0},
 };
 
