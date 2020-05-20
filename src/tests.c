@@ -23243,6 +23243,44 @@ test_trv_expr_8(void) {
 }
 
 static void
+test_trv_expr_9(void) {
+    trv_ready;
+
+    /***********************
+    * theme: list and expr *
+    ***********************/
+
+    tkr_parse(tkr, "{@\n"
+    "   l = [1, 2]\n"
+    "   l2 = l + l\n"
+    "@}{: l2[0] :},{: l2[1] :},{: l2[2] :},{: l2[3] :},{: id(l2[0]) == id(l2[2]) :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2,1,2,true"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   l1 = [1, 2]\n"
+    "   l2 = [3, 4]\n"
+    "   l3 = l1 + l2\n"
+    "@}{: l3[0] :},{: l3[1] :},{: l3[2] :},{: l3[3] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2,3,4"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_term_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -24876,6 +24914,7 @@ traverser_tests[] = {
     {"trv_expr_6", test_trv_expr_6},
     {"trv_expr_7", test_trv_expr_7},
     {"trv_expr_8", test_trv_expr_8},
+    {"trv_expr_9", test_trv_expr_9},
     {"trv_term_0", test_trv_term_0},
     {"trv_term_1", test_trv_term_1},
     {"trv_term_2", test_trv_term_2},
