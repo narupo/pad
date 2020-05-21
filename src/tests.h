@@ -38,6 +38,7 @@
 #include <pwd/pwd.h>
 #include <ls/ls.h>
 #include <cat/cat.h>
+#include <make/make.h>
 #include <core/util.h>
 #include <core/symlink.h>
 #include <core/config.h>

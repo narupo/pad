@@ -26014,6 +26014,73 @@ catcmd_tests[] = {
     {0},
 };
 
+/***************
+* make command *
+***************/
+
+static void
+test_makecmd_default(void) {
+    config_t *config = config_new();
+    int argc = 2;
+    char *argv[] = {
+        "make",
+        "test.cap",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "./tests/make"));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/make"));
+
+    char buf[1024] = {0};
+    setvbuf(stdout, buf, _IOFBF, sizeof buf);
+
+    makecmd_t *makecmd = makecmd_new(config, argc, argv);
+    makecmd_run(makecmd);
+    makecmd_del(makecmd);
+
+    fflush(stdout);
+    setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
+    assert(!strcmp(buf, "1\n"));
+}
+
+static void
+test_makecmd_options(void) {
+    config_t *config = config_new();
+    int argc = 4;
+    char *argv[] = {
+        "make",
+        "test2.cap",
+        "--name",
+        "alice",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "./tests/make"));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/make"));
+
+    char buf[1024] = {0};
+    setvbuf(stdout, buf, _IOFBF, sizeof buf);
+
+    makecmd_t *makecmd = makecmd_new(config, argc, argv);
+    makecmd_run(makecmd);
+    makecmd_del(makecmd);
+
+    fflush(stdout);
+    setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
+    assert(!strcmp(buf, "alice\n"));
+}
+
+static const struct testcase
+makecmd_tests[] = {
+    {"default", test_makecmd_default},
+    {"options", test_makecmd_options},
+    {0},
+};
+
 /*******
 * main *
 *******/
@@ -26026,6 +26093,7 @@ testmodules[] = {
     {"pwd", pwdcmd_tests},
     {"ls", lscmd_tests},
     {"cat", catcmd_tests},
+    {"make", makecmd_tests},
 
     // lib
     {"cstring_array", cstrarr_tests},
