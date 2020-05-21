@@ -1,0 +1,3 @@
+{@
+    puts(opts.get("name"))
+@}
