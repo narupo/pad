@@ -25656,6 +25656,37 @@ lang_object_dict_tests[] = {
     {0},
 };
 
+/***************
+* home command *
+***************/
+
+static void
+test_homecmd_default(void) {
+    config_t *config = config_new();
+    int argc = 2;
+    char *argv[] = {
+        "cd",
+        "tests/home",
+        NULL,
+    };
+
+    assert(solve_path(config->var_home_path, sizeof config->var_home_path, "./tests/.cap/var/home"));
+
+    homecmd_t *homecmd = homecmd_new(config, argc, argv);
+    homecmd_run(homecmd);
+    homecmd_del(homecmd);
+
+    char line[1024];
+    assert(file_readline(line, sizeof line, config->var_home_path));
+    assert(strstr(line, "tests/home"));
+}
+
+static const struct testcase
+homecmd_tests[] = {
+    {"default", test_homecmd_default},
+    {0},
+};
+
 /*************
 * cd command *
 *************/
@@ -25990,6 +26021,7 @@ catcmd_tests[] = {
 static const struct testmodule
 testmodules[] = {
     // commands
+    {"home", homecmd_tests},
     {"cd", cdcmd_tests},
     {"pwd", pwdcmd_tests},
     {"ls", lscmd_tests},

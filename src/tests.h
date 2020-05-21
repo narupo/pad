@@ -33,8 +33,9 @@
 #include <lib/cl.h>
 #include <lib/error.h>
 #include <lib/cmdline.h>
-#include <pwd/pwd.h>
+#include <home/home.h>
 #include <cd/cd.h>
+#include <pwd/pwd.h>
 #include <ls/ls.h>
 #include <cat/cat.h>
 #include <core/util.h>
