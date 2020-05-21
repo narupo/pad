@@ -24869,6 +24869,56 @@ test_trv_etc_7(void) {
     trv_cleanup;
 }
 
+static void
+test_trv_etc_8(void) {
+    trv_ready;
+
+    /**************************
+    * theme: function and for *
+    **************************/
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(n):\n"
+    "       for i = 0; i < n; i += 1:\n"
+    "           puts(i)\n"
+    "       end\n"
+    "   end\n"
+    "   \n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       f(i+1)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n0\n1\n"));
+    }
+
+    tkr_parse(tkr, "{@\n"
+    "   for i = 0; i < 2; i += 1:\n"
+    "       def f(n):\n"
+    "           for i = 0; i < n; i += 1:\n"
+    "               puts(i)\n"
+    "           end\n"
+    "       end\n"
+    "       f(i+1)\n"
+    "   end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n0\n1\n"));
+    }
+
+    trv_cleanup;
+}
+
 static const struct testcase
 traverser_tests[] = {
     {"trv_assign_and_reference_0", test_trv_assign_and_reference_0},
@@ -25088,6 +25138,7 @@ traverser_tests[] = {
     {"trv_etc_5", test_trv_etc_5},
     {"trv_etc_6", test_trv_etc_6},
     {"trv_etc_7", test_trv_etc_7},
+    {"trv_etc_8", test_trv_etc_8},
     {0},
 };
 
