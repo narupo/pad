@@ -22,7 +22,7 @@ typedef struct alcmd alcmd_t;
  *
  * @param[in] *self pointer to alcmd_t
  */
-void 
+void
 alcmd_del(alcmd_t *self);
 
 /**
@@ -34,16 +34,16 @@ alcmd_del(alcmd_t *self);
  *
  * @return pointer to alcmd_t dynamic allocate memory
  */
-alcmd_t * 
+alcmd_t *
 alcmd_new(const config_t *config, int argc, char **argv);
 
 /**
  * run object
  *
- * @param[in] *self pointer to alcmd_t 
+ * @param[in] *self pointer to alcmd_t
  *
  * @return success to number of 0 else other
  */
-int 
+int
 alcmd_run(alcmd_t *self);
 

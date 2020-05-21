@@ -25679,6 +25679,8 @@ test_homecmd_default(void) {
     char line[1024];
     assert(file_readline(line, sizeof line, config->var_home_path));
     assert(strstr(line, "tests/home"));
+
+    config_del(config);
 }
 
 static const struct testcase
@@ -25712,6 +25714,8 @@ test_cdcmd_default(void) {
     char line[1024];
     assert(file_readline(line, sizeof line, config->var_cd_path));
     assert(!strstr(line, "tests/.cap/var/cd"));
+
+    config_del(config);
 }
 
 static const struct testcase
@@ -25745,6 +25749,8 @@ test_pwdcmd_default(void) {
     setbuf(stdout, NULL);
 
     assert(strstr(stdout_buf, "/tests/path/to/dir"));
+
+    config_del(config);
 }
 
 static void
@@ -25773,6 +25779,8 @@ test_pwdcmd_nomalize_opt(void) {
 #else
     assert(strstr(stdout_buf, "/tests/path/to/dir"));
 #endif
+
+    config_del(config);
 }
 
 static const struct testcase
@@ -25808,10 +25816,12 @@ test_lscmd_default(void) {
     lscmd_del(lscmd);
 
     fflush(stdout);
-    setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+    setvbuf(stdout, NULL, _IOLBF, BUFSIZ);
 
-    assert(!strcmp(buf, "a\nb\nc\n"));
-    printf("stdout[%s]\n", buf);
+    // printf("stdout[%s]\n", buf);
+    assert(!strcmp(buf, "a\nb\nc"));
+
+    config_del(config);
 }
 
 static const struct testcase
@@ -26043,6 +26053,8 @@ test_makecmd_default(void) {
     setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
     assert(!strcmp(buf, "1\n"));
+
+    config_del(config);
 }
 
 static void
@@ -26073,12 +26085,133 @@ test_makecmd_options(void) {
     setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
     assert(!strcmp(buf, "alice\ntrue\n"));
+
+    config_del(config);
 }
 
 static const struct testcase
 makecmd_tests[] = {
     {"default", test_makecmd_default},
     {"options", test_makecmd_options},
+    {0},
+};
+
+/**************
+* run command *
+**************/
+
+static void
+test_runcmd_default(void) {
+    // using safesystem
+}
+
+static const struct testcase
+runcmd_tests[] = {
+    {"default", test_runcmd_default},
+    {0},
+};
+
+/***************
+* exec command *
+***************/
+
+static void
+test_execcmd_default(void) {
+    // using safesystem or fork
+}
+
+static const struct testcase
+execcmd_tests[] = {
+    {"default", test_execcmd_default},
+    {0},
+};
+
+/****************
+* alias command *
+****************/
+
+static void
+test_alcmd_default(void) {
+
+    return;  // TODO: buffering is not working
+
+    config_t *config = config_new();
+    int argc = 1;
+    char *argv[] = {
+        "alias",
+        NULL,
+    };
+
+    assert(solve_path(config->home_path, sizeof config->home_path, "./tests/alias"));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/alias"));
+
+    char buf[1024] = {0};
+    setvbuf(stdout, buf, _IOFBF, sizeof buf);
+
+    alcmd_t *alcmd = alcmd_new(config, argc, argv);
+    alcmd_run(alcmd);
+    alcmd_del(alcmd);
+
+    fflush(stdout);
+    setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
+    assert(!strcmp(buf, "aaa    AAA\nbbb    BBB\n"));
+
+    config_del(config);
+}
+
+static const struct testcase
+alcmd_tests[] = {
+    {"default", test_alcmd_default},
+    {0},
+};
+
+/***************
+* edit command *
+***************/
+
+static void
+test_editcmd_default(void) {
+    // using safesystem
+}
+
+static const struct testcase
+editcmd_tests[] = {
+    {"default", test_editcmd_default},
+    {0},
+};
+
+/*****************
+* editor command *
+*****************/
+
+static void
+test_editorcmd_default(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 2;
+    char *argv[] = {
+        "editor",
+        "/path/to/editor",
+        NULL,
+    };
+
+    assert(solve_path(config->var_editor_path, sizeof config->var_editor_path, "./tests/editor/editor"));
+
+    editorcmd_t *editorcmd = editorcmd_new(config, argc, argv);
+    editorcmd_run(editorcmd);
+    editorcmd_del(editorcmd);
+
+    char line[256];
+    assert(file_readline(line, sizeof line, "./tests/editor/editor"));
+    assert(!strcmp(line, "/path/to/editor"));
+
+    config_del(config);
+}
+
+static const struct testcase
+editorcmd_tests[] = {
+    {"default", test_editorcmd_default},
     {0},
 };
 
@@ -26095,6 +26228,11 @@ testmodules[] = {
     {"ls", lscmd_tests},
     {"cat", catcmd_tests},
     {"make", makecmd_tests},
+    {"run", runcmd_tests},
+    {"exec", execcmd_tests},
+    {"alias", alcmd_tests},
+    {"edit", editcmd_tests},
+    {"editor", editorcmd_tests},
 
     // lib
     {"cstring_array", cstrarr_tests},

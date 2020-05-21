@@ -51,7 +51,7 @@ execcmd_show_usage(execcmd_t *self) {
 /**
  * Parse options
  *
- * @param[in] self pointer to execcmd_t 
+ * @param[in] self pointer to execcmd_t
  *
  * @return success to true
  * @return failed to false
@@ -156,7 +156,7 @@ execcmd_exec_first(execcmd_t *self) {
 static execcmd_t *
 execcmd_create_read_pipe(execcmd_t *self, HANDLE process, HANDLE *read_handle, HANDLE *write_handle) {
     HANDLE tmp_read_handle = NULL;
-    
+
     if (!CreatePipe(&tmp_read_handle, write_handle, NULL, 0)) {
         execcmd_set_error(self, "failed to create pipe");
         return NULL;
@@ -189,7 +189,7 @@ execcmd_create_read_pipe(execcmd_t *self, HANDLE process, HANDLE *read_handle, H
 static execcmd_t *
 execcmd_create_write_pipe(execcmd_t *self, HANDLE process, HANDLE *read_handle, HANDLE *write_handle) {
     HANDLE tmp_write_handle = NULL;
-    
+
     if (!CreatePipe(read_handle, &tmp_write_handle, NULL, 0)) {
         execcmd_set_error(self, "failed to create pipe");
         return NULL;
@@ -484,7 +484,7 @@ execcmd_redirect(execcmd_t *self, const cmdline_object_t *obj, const cmdline_obj
         }
 
         fwrite(str_getc(self->read_buffer), str_len(self->read_buffer), 1, fout);
-        
+
         fclose(fout);
 
         return self;
@@ -492,7 +492,7 @@ execcmd_redirect(execcmd_t *self, const cmdline_object_t *obj, const cmdline_obj
     }
 
     return NULL; // impossible
-} 
+}
 
 static execcmd_t *
 execcmd_exec_all_win(execcmd_t *self) {
@@ -536,7 +536,7 @@ execcmd_exec_all_unix(execcmd_t *self) {
             // AND
             const char *cmd = str_getc(obj->command);
             int status = safesystem(cmd, SAFESYSTEM_UNSAFE);
-            exit_code = WEXITSTATUS(status);            
+            exit_code = WEXITSTATUS(status);
             if (exit_code != 0) {
                 break;
             }

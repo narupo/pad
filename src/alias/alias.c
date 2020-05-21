@@ -155,7 +155,7 @@ print_key_val_desc(const alcmd_t *self, FILE *fout, bool print_color, int32_t ke
         printf("%-*s    %-*s    %s\n", keymaxlen, key, valmaxlen, val, desc);
         return;
     }
-    
+
     int32_t difkeylen = keymaxlen - strlen(key);
     int32_t difvallen = valmaxlen - strlen(val);
 
@@ -172,7 +172,7 @@ print_key_val(const alcmd_t *self, FILE *fout, bool print_color, int32_t keymaxl
         printf("%-*s    %s\n", keymaxlen, key, val);
         return;
     }
-    
+
     int32_t difkeylen = keymaxlen - strlen(key);
 
     term_cfprintf(fout, self->key_colors[0], self->key_colors[1], self->key_colors[2], "%s", key);
@@ -199,8 +199,6 @@ alcmd_show_list(alcmd_t *self) {
         keymaxlen = max(strlen(item->key), keymaxlen);
         valmaxlen = max(strlen(item->value), valmaxlen);
     }
-
-#undef max
 
     FILE *fout = stdout;
     bool print_color = isatty(file_get_no(fout));
