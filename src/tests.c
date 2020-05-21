@@ -26048,12 +26048,13 @@ test_makecmd_default(void) {
 static void
 test_makecmd_options(void) {
     config_t *config = config_new();
-    int argc = 4;
+    int argc = 5;
     char *argv[] = {
         "make",
         "test2.cap",
         "--name",
         "alice",
+        "-h",
         NULL,
     };
 
@@ -26071,7 +26072,7 @@ test_makecmd_options(void) {
     fflush(stdout);
     setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
-    assert(!strcmp(buf, "alice\n"));
+    assert(!strcmp(buf, "alice\ntrue\n"));
 }
 
 static const struct testcase

@@ -1,3 +1,4 @@
 {@
     puts(opts.get("name"))
+    puts(opts.has("h"))
 @}
