@@ -26252,6 +26252,228 @@ mkdircmd_tests[] = {
     {0},
 };
 
+/*************
+* rm command *
+*************/
+
+static void
+test_rmcmd_default(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 2;
+    char *argv[] = {
+        "rm",
+        "file1",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/rm"));
+
+    file_trunc("./tests/rm/file1");
+    assert(file_exists("./tests/rm/file1"));
+
+    rmcmd_t *rmcmd = rmcmd_new(config, argc, argv);
+    rmcmd_run(rmcmd);
+    rmcmd_del(rmcmd);
+
+    assert(!file_exists("./tests/rm/file1"));
+
+    config_del(config);
+}
+
+static void
+test_rmcmd_multi(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 3;
+    char *argv[] = {
+        "rm",
+        "file1",
+        "file2",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/rm"));
+
+    file_trunc("./tests/rm/file1");
+    file_trunc("./tests/rm/file2");
+    assert(file_exists("./tests/rm/file1"));
+    assert(file_exists("./tests/rm/file2"));
+
+    rmcmd_t *rmcmd = rmcmd_new(config, argc, argv);
+    rmcmd_run(rmcmd);
+    rmcmd_del(rmcmd);
+
+    assert(!file_exists("./tests/rm/file1"));
+    assert(!file_exists("./tests/rm/file2"));
+
+    config_del(config);
+}
+
+static void
+test_rmcmd_dir(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 2;
+    char *argv[] = {
+        "rm",
+        "dir1",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/rm"));
+
+    file_mkdirq("./tests/rm/dir1");
+    assert(file_exists("./tests/rm/dir1"));
+
+    rmcmd_t *rmcmd = rmcmd_new(config, argc, argv);
+    rmcmd_run(rmcmd);
+    rmcmd_del(rmcmd);
+
+    assert(!file_exists("./tests/rm/dir1"));
+
+    config_del(config);
+}
+
+static void
+test_rmcmd_dir_multi(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 3;
+    char *argv[] = {
+        "rm",
+        "dir1",
+        "dir2",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/rm"));
+
+    file_mkdirq("./tests/rm/dir1");
+    file_mkdirq("./tests/rm/dir2");
+    assert(file_exists("./tests/rm/dir1"));
+    assert(file_exists("./tests/rm/dir2"));
+
+    rmcmd_t *rmcmd = rmcmd_new(config, argc, argv);
+    rmcmd_run(rmcmd);
+    rmcmd_del(rmcmd);
+
+    assert(!file_exists("./tests/rm/dir1"));
+    assert(!file_exists("./tests/rm/dir2"));
+
+    config_del(config);
+}
+
+static void
+test_rmcmd_dir_r(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 3;
+    char *argv[] = {
+        "rm",
+        "dir1",
+        "-r",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/rm"));
+
+    if (!file_exists("./tests/rm/dir1")) {
+        file_mkdirq("./tests/rm/dir1");
+    }
+    if (!file_exists("./tests/rm/dir1/file1")) {
+        file_trunc("./tests/rm/dir1/file1");
+    }
+    if (!file_exists("./tests/rm/dir1/file2")) {
+        file_trunc("./tests/rm/dir1/file2");
+    }
+    assert(file_exists("./tests/rm/dir1"));
+    assert(file_exists("./tests/rm/dir1/file1"));
+    assert(file_exists("./tests/rm/dir1/file2"));
+
+    rmcmd_t *rmcmd = rmcmd_new(config, argc, argv);
+    rmcmd_run(rmcmd);
+    rmcmd_del(rmcmd);
+
+    assert(!file_exists("./tests/rm/dir1"));
+
+    config_del(config);
+}
+
+static void
+test_rmcmd_dir_r_multi(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 4;
+    char *argv[] = {
+        "rm",
+        "dir1",
+        "dir2",
+        "-r",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/rm"));
+
+    if (!file_exists("./tests/rm/dir1")) {
+        file_mkdirq("./tests/rm/dir1");
+    }
+    if (!file_exists("./tests/rm/dir1/file1")) {
+        file_trunc("./tests/rm/dir1/file1");
+    }
+    if (!file_exists("./tests/rm/dir1/file2")) {
+        file_trunc("./tests/rm/dir1/file2");
+    }
+    assert(file_exists("./tests/rm/dir1"));
+    assert(file_exists("./tests/rm/dir1/file1"));
+    assert(file_exists("./tests/rm/dir1/file2"));
+
+    if (!file_exists("./tests/rm/dir2")) {
+        file_mkdirq("./tests/rm/dir2");
+    }
+    if (!file_exists("./tests/rm/dir2/file1")) {
+        file_trunc("./tests/rm/dir2/file1");
+    }
+    if (!file_exists("./tests/rm/dir2/file2")) {
+        file_trunc("./tests/rm/dir2/file2");
+    }
+    assert(file_exists("./tests/rm/dir2"));
+    assert(file_exists("./tests/rm/dir2/file1"));
+    assert(file_exists("./tests/rm/dir2/file2"));
+
+    rmcmd_t *rmcmd = rmcmd_new(config, argc, argv);
+    rmcmd_run(rmcmd);
+    rmcmd_del(rmcmd);
+
+    assert(!file_exists("./tests/rm/dir1"));
+    assert(!file_exists("./tests/rm/dir2"));
+
+    config_del(config);
+}
+
+static const struct testcase
+rmcmd_tests[] = {
+    {"default", test_rmcmd_default},
+    {"multi", test_rmcmd_multi},
+    {"dir", test_rmcmd_dir},
+    {"dir_multi", test_rmcmd_dir_multi},
+    {"dir_r", test_rmcmd_dir_r},
+    {"dir_r_multi", test_rmcmd_dir_r_multi},
+    {0},
+};
+
 /*******
 * main *
 *******/
@@ -26271,6 +26493,7 @@ testmodules[] = {
     {"edit", editcmd_tests},
     {"editor", editorcmd_tests},
     {"mkdir", mkdircmd_tests},
+    {"rm", rmcmd_tests},
 
     // lib
     {"cstring_array", cstrarr_tests},

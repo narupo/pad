@@ -24,7 +24,7 @@ rmcmd_parse_opts(rmcmd_t *self) {
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"recursive", no_argument, 0, 'r'},
-        {},
+        {0},
     };
 
     opterr = 0; // ignore error messages
@@ -87,9 +87,11 @@ static void
 rmcmd_show_usage(rmcmd_t *self) {
     fflush(stdout);
     fflush(stderr);
-    fprintf(stderr, "Usage:\n"
+    fprintf(stderr, "Remove files or directories from environment.\n"
         "\n"
-        "   cap rm [path] [options...]\n"
+        "Usage:\n"
+        "\n"
+        "   cap rm [path]... [options]...\n"
         "\n"
         "The options are:\n"
         "\n"
