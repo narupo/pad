@@ -33,6 +33,11 @@
 #include <lib/cl.h>
 #include <lib/error.h>
 #include <lib/cmdline.h>
+#include <core/util.h>
+#include <core/symlink.h>
+#include <core/config.h>
+#include <core/alias_info.h>
+#include <core/error_stack.h>
 #include <home/home.h>
 #include <cd/cd.h>
 #include <pwd/pwd.h>
@@ -42,11 +47,7 @@
 #include <alias/alias.h>
 #include <editor/editor.h>
 #include <mkdir/mkdir.h>
-#include <core/util.h>
-#include <core/symlink.h>
-#include <core/config.h>
-#include <core/alias_info.h>
-#include <core/error_stack.h>
+#include <rm/rm.h>
 #include <lang/types.h>
 #include <lang/tokens.h>
 #include <lang/tokenizer.h>
