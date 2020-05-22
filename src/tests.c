@@ -26215,6 +26215,43 @@ editorcmd_tests[] = {
     {0},
 };
 
+/****************
+* mkdir command *
+****************/
+
+static void
+test_mkdircmd_default(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 2;
+    char *argv[] = {
+        "mkdir",
+        "dir",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/mkdir"));
+
+    file_remove("./tests/mkdir/dir");
+    assert(!file_exists("./tests/mkdir/dir"));
+
+    mkdircmd_t *mkdircmd = mkdircmd_new(config, argc, argv);
+    mkdircmd_run(mkdircmd);
+    mkdircmd_del(mkdircmd);
+
+    assert(file_exists("./tests/mkdir/dir"));
+
+    config_del(config);
+}
+
+static const struct testcase
+mkdircmd_tests[] = {
+    {"default", test_mkdircmd_default},
+    {0},
+};
+
 /*******
 * main *
 *******/
@@ -26233,6 +26270,7 @@ testmodules[] = {
     {"alias", alcmd_tests},
     {"edit", editcmd_tests},
     {"editor", editorcmd_tests},
+    {"mkdir", mkdircmd_tests},
 
     // lib
     {"cstring_array", cstrarr_tests},
