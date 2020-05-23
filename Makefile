@@ -28,7 +28,7 @@ ifeq ($(OS), Windows_NT)
 else
 	CFLAGS := -Wall \
 		-g \
-		-O0 \
+		-O3 \
 		-std=c11 \
 		-Wno-unused-function \
 		-Wno-unused-result \
