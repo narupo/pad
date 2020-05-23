@@ -48,6 +48,7 @@
 #include <editor/editor.h>
 #include <mkdir/mkdir.h>
 #include <rm/rm.h>
+#include <mv/mv.h>
 #include <lang/types.h>
 #include <lang/tokens.h>
 #include <lang/tokenizer.h>
