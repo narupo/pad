@@ -26206,6 +26206,8 @@ test_editorcmd_default(void) {
     assert(file_readline(line, sizeof line, "./tests/editor/editor"));
     assert(!strcmp(line, "/path/to/editor"));
 
+    file_remove("./tests/editor/editor");
+
     config_del(config);
 }
 
@@ -26242,6 +26244,8 @@ test_mkdircmd_default(void) {
     mkdircmd_del(mkdircmd);
 
     assert(file_exists("./tests/mkdir/dir"));
+
+    file_remove("./tests/mkdir/dir");
 
     config_del(config);
 }
@@ -26609,6 +26613,10 @@ test_mvcmd_files_to_dir(void) {
     assert(file_exists("./tests/mv/dir1"));
     assert(file_exists("./tests/mv/dir1/file1"));
     assert(file_exists("./tests/mv/dir1/file2"));
+
+    file_remove("./tests/mv/dir1/file1");
+    file_remove("./tests/mv/dir1/file2");
+    file_remove("./tests/mv/dir1");
 
     config_del(config);
 }
