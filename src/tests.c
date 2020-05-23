@@ -26474,6 +26474,192 @@ rmcmd_tests[] = {
     {0},
 };
 
+/*************
+* mv command *
+*************/
+
+static void
+test_mvcmd_default(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 3;
+    char *argv[] = {
+        "mv",
+        "file1",
+        "file2",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/mv"));
+
+    file_trunc("./tests/mv/file1");
+    assert(file_exists("./tests/mv/file1"));
+    assert(!file_exists("./tests/mv/file2"));
+
+    mvcmd_t *mvcmd = mvcmd_new(config, argc, argv);
+    mvcmd_run(mvcmd);
+    mvcmd_del(mvcmd);
+
+    assert(!file_exists("./tests/mv/file1"));
+    assert(file_exists("./tests/mv/file2"));
+
+    file_remove("./tests/mv/file2");
+
+    config_del(config);
+}
+
+static void
+test_mvcmd_dir(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 3;
+    char *argv[] = {
+        "mv",
+        "dir1",
+        "dir2",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/mv"));
+
+    file_mkdirq("./tests/mv/dir1");
+    assert(file_exists("./tests/mv/dir1"));
+
+    mvcmd_t *mvcmd = mvcmd_new(config, argc, argv);
+    mvcmd_run(mvcmd);
+    mvcmd_del(mvcmd);
+
+    assert(!file_exists("./tests/mv/dir1"));
+    assert(file_exists("./tests/mv/dir2"));
+
+    file_remove("./tests/mv/dir2");
+
+    config_del(config);
+}
+
+static void
+test_mvcmd_file_to_dir(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 3;
+    char *argv[] = {
+        "mv",
+        "file1",
+        "dir1",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/mv"));
+
+    file_trunc("./tests/mv/file1");
+    file_mkdirq("./tests/mv/dir1");
+    assert(file_exists("./tests/mv/file1"));
+    assert(file_exists("./tests/mv/dir1"));
+
+    mvcmd_t *mvcmd = mvcmd_new(config, argc, argv);
+    mvcmd_run(mvcmd);
+    mvcmd_del(mvcmd);
+
+    assert(!file_exists("./tests/mv/file1"));
+    assert(file_exists("./tests/mv/dir1"));
+    assert(file_exists("./tests/mv/dir1/file1"));
+
+    file_remove("./tests/mv/dir1/file1");
+    file_remove("./tests/mv/dir1");
+
+    config_del(config);
+}
+
+static void
+test_mvcmd_files_to_dir(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 4;
+    char *argv[] = {
+        "mv",
+        "file1",
+        "file2",
+        "dir1",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/mv"));
+
+    file_trunc("./tests/mv/file1");
+    file_trunc("./tests/mv/file2");
+    file_mkdirq("./tests/mv/dir1");
+    assert(file_exists("./tests/mv/file1"));
+    assert(file_exists("./tests/mv/file2"));
+    assert(file_exists("./tests/mv/dir1"));
+
+    mvcmd_t *mvcmd = mvcmd_new(config, argc, argv);
+    mvcmd_run(mvcmd);
+    mvcmd_del(mvcmd);
+
+    assert(!file_exists("./tests/mv/file1"));
+    assert(!file_exists("./tests/mv/file2"));
+    assert(file_exists("./tests/mv/dir1"));
+    assert(file_exists("./tests/mv/dir1/file1"));
+    assert(file_exists("./tests/mv/dir1/file2"));
+
+    config_del(config);
+}
+
+static void
+test_mvcmd_err_1(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 3;
+    char *argv[] = {
+        "mv",
+        "dir1",
+        "file1",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/mv"));
+
+    file_mkdirq("./tests/mv/dir1");
+    file_trunc("./tests/mv/file1");
+    assert(file_exists("./tests/mv/dir1"));
+    assert(file_exists("./tests/mv/file1"));
+
+    char buf[1024] = {0};
+    setbuf(stderr, buf);
+
+    mvcmd_t *mvcmd = mvcmd_new(config, argc, argv);
+    mvcmd_run(mvcmd);
+    mvcmd_del(mvcmd);
+
+    setbuf(stderr, NULL);
+    assert(strstr(buf, "Failed to rename"));
+
+    file_remove("./tests/mv/dir1");
+    file_remove("./tests/mv/file1");
+
+    config_del(config);
+}
+
+static const struct testcase
+mvcmd_tests[] = {
+    {"default", test_mvcmd_default},
+    {"dir", test_mvcmd_dir},
+    {"file_to_dir", test_mvcmd_file_to_dir},
+    {"files_to_dir", test_mvcmd_files_to_dir},
+    {"err_1", test_mvcmd_err_1},
+    {0},
+};
+
 /*******
 * main *
 *******/
@@ -26494,6 +26680,7 @@ testmodules[] = {
     {"editor", editorcmd_tests},
     {"mkdir", mkdircmd_tests},
     {"rm", rmcmd_tests},
+    {"mv", mvcmd_tests},
 
     // lib
     {"cstring_array", cstrarr_tests},
