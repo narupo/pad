@@ -26848,13 +26848,17 @@ test_cpcmd_dirs_r(void) {
 
     assert(file_exists("./tests/cp/dir1/file1"));
     assert(file_exists("./tests/cp/dir2/file1"));
-    assert(file_exists("./tests/cp/dir3/file1"));
+    assert(file_exists("./tests/cp/dir3/dir1/file1"));
+    assert(file_exists("./tests/cp/dir3/dir2/file1"));
 
     file_remove("./tests/cp/dir1/file1");
     file_remove("./tests/cp/dir1");
     file_remove("./tests/cp/dir2/file1");
     file_remove("./tests/cp/dir2");
-    file_remove("./tests/cp/dir3/file1");
+    file_remove("./tests/cp/dir3/dir1/file1");
+    file_remove("./tests/cp/dir3/dir1");
+    file_remove("./tests/cp/dir3/dir2/file1");
+    file_remove("./tests/cp/dir3/dir2");
     file_remove("./tests/cp/dir3");
 
     config_del(config);
