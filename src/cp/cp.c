@@ -272,13 +272,13 @@ fail:
 static bool
 cpcmd_cp_src2dst_r(cpcmd_t *self, const char *dst_path, const char *src_path) {
     // dst_path が存在する場合
-    //      dst_path がディレクトリの場合
-    //          dst_path 以下に src の親ディレクトリごとコピーする
-    //      dst_path がファイルの場合
-    //          エラーを出す
+    //     dst_path がディレクトリの場合
+    //         dst_path 以下に src の親ディレクトリごとコピーする
+    //     dst_path がファイルの場合
+    //         エラーを出す
     // dst_path が存在しない場合
-    //      dst_path を mkdir
-    //          作成したディレクトリ以下に src の親ディレクトリ以下をコピーする
+    //     dst_path を mkdir
+    //         作成したディレクトリ以下に src の親ディレクトリ以下をコピーする
     if (!file_isdir(src_path)) {
         cpcmd_set_err(self, CPCMD_ERR_COPY, "\"%s\" is not a directory (1)", src_path);
         return false;

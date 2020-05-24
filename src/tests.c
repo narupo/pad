@@ -26848,15 +26848,14 @@ test_cpcmd_dirs_r(void) {
 
     assert(file_exists("./tests/cp/dir1/file1"));
     assert(file_exists("./tests/cp/dir2/file1"));
-    assert(file_exists("./tests/cp/dir3/dir1/file1"));
+    assert(file_exists("./tests/cp/dir3/file1"));
     assert(file_exists("./tests/cp/dir3/dir2/file1"));
 
     file_remove("./tests/cp/dir1/file1");
     file_remove("./tests/cp/dir1");
     file_remove("./tests/cp/dir2/file1");
     file_remove("./tests/cp/dir2");
-    file_remove("./tests/cp/dir3/dir1/file1");
-    file_remove("./tests/cp/dir3/dir1");
+    file_remove("./tests/cp/dir3/file1");
     file_remove("./tests/cp/dir3/dir2/file1");
     file_remove("./tests/cp/dir3/dir2");
     file_remove("./tests/cp/dir3");
@@ -26871,6 +26870,77 @@ cpcmd_tests[] = {
     {"files_to_dir", test_cpcmd_files_to_dir},
     {"dir_r", test_cpcmd_dir_r},
     {"dirs_r", test_cpcmd_dirs_r},
+    {0},
+};
+
+/****************
+* touch command *
+****************/
+
+static void
+test_touchcmd_default(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 2;
+    char *argv[] = {
+        "touch",
+        "file1",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/touch"));
+
+    assert(!file_exists("./tests/touch/file1"));
+
+    touchcmd_t *touchcmd = touchcmd_new(config, argc, argv);
+    touchcmd_run(touchcmd);
+    touchcmd_del(touchcmd);
+
+    assert(file_exists("./tests/touch/file1"));
+
+    file_remove("./tests/touch/file1");
+
+    config_del(config);
+}
+
+static void
+test_touchcmd_multi(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 3;
+    char *argv[] = {
+        "touch",
+        "file1",
+        "file2",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/touch"));
+
+    assert(!file_exists("./tests/touch/file1"));
+    assert(!file_exists("./tests/touch/file2"));
+
+    touchcmd_t *touchcmd = touchcmd_new(config, argc, argv);
+    touchcmd_run(touchcmd);
+    touchcmd_del(touchcmd);
+
+    assert(file_exists("./tests/touch/file1"));
+    assert(file_exists("./tests/touch/file2"));
+
+    file_remove("./tests/touch/file1");
+    file_remove("./tests/touch/file2");
+
+    config_del(config);
+}
+
+static const struct testcase
+touchcmd_tests[] = {
+    {"default", test_touchcmd_default},
+    {"multi", test_touchcmd_multi},
     {0},
 };
 
@@ -26896,6 +26966,7 @@ testmodules[] = {
     {"rm", rmcmd_tests},
     {"mv", mvcmd_tests},
     {"cp", cpcmd_tests},
+    {"touch", touchcmd_tests},
 
     // lib
     {"cstring_array", cstrarr_tests},
