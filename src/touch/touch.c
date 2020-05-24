@@ -42,7 +42,7 @@ touchcmd_show_usage(touchcmd_t *self) {
 /**
  * Parse options
  *
- * @param[in] self pointer to touchcmd_t 
+ * @param[in] self pointer to touchcmd_t
  *
  * @return success to true
  * @return failed to false
@@ -54,7 +54,7 @@ touchcmd_parse_opts(touchcmd_t *self) {
         {"help", no_argument, 0, 'h'},
         {0},
     };
-    
+
     self->opts = (struct opts){0};
 
     extern int opterr;
@@ -153,7 +153,7 @@ touchcmd_run(touchcmd_t *self) {
 
     if (self->opts.is_help) {
         touchcmd_show_usage(self);
-        return 1;        
+        return 1;
     }
 
     return touchcmd_touch_all(self);
