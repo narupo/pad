@@ -74,7 +74,7 @@ cpcmd_show_usage(cpcmd_t *self) {
 /**
  * Parse options
  *
- * @param[in] self pointer to cpcmd_t 
+ * @param[in] self pointer to cpcmd_t
  *
  * @return success to true
  * @return failed to false
@@ -297,12 +297,12 @@ cpcmd_cp_src2dst_r(cpcmd_t *self, const char *dst_path, const char *src_path) {
             return cpcmd_copy_r(self, dstdirpath, src_path);
         } else {
             cpcmd_set_err(self, CPCMD_ERR_COPY, "\"%s\" is not a directory (2)", dst_path);
-            return false;            
+            return false;
         }
     } else {
         if (file_mkdirq(dst_path) != 0) {
             cpcmd_set_err(self, CPCMD_ERR_MKDIR, "failed to make directory \"%s\"", dst_path);
-            return false;            
+            return false;
         }
         return cpcmd_copy_r(self, dst_path, src_path);
     }
@@ -315,7 +315,7 @@ cpcmd_cp_src2dst(cpcmd_t *self, const char *dst_path, const char *src_path) {
             return cpcmd_cp_src2dst_r(self, dst_path, src_path);
         } else {
             cpcmd_set_err(self, CPCMD_ERR_COPY, "omitting directory \"%s\"", src_path);
-            return false;            
+            return false;
         }
     }
 
@@ -332,7 +332,7 @@ cpcmd_cp_src2dst(cpcmd_t *self, const char *dst_path, const char *src_path) {
         snprintf(tmppath, sizeof tmppath, "%s/%s", dst_path, basename);
         if (!symlink_follow_path(self->config, newdstpath, sizeof newdstpath, tmppath)) {
             cpcmd_set_err(self, CPCMD_ERR_SOLVEPATH, "failed to solve path from \"%s\"", basename);
-            return false;            
+            return false;
         }
 
         if (!cpcmd_copy_file(self, newdstpath, src_path)) {
