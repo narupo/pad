@@ -62,10 +62,6 @@ is_out_of_home(const char *homepath, const char *argpath) {
         return true;
     }
 
-    if (!file_exists(path)) {
-        return true;
-    }
-
     path_pop_tail_slash(home);
     path_pop_tail_slash(path);
 

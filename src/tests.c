@@ -26668,6 +26668,208 @@ mvcmd_tests[] = {
     {0},
 };
 
+/*************
+* cp command *
+*************/
+
+static void
+test_cpcmd_default(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 3;
+    char *argv[] = {
+        "cp",
+        "file1",
+        "file2",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/cp"));
+
+    file_trunc("./tests/cp/file1");
+    assert(file_exists("./tests/cp/file1"));
+
+    cpcmd_t *cpcmd = cpcmd_new(config, argc, argv);
+    cpcmd_run(cpcmd);
+    cpcmd_del(cpcmd);
+
+    assert(file_exists("./tests/cp/file1"));
+    assert(file_exists("./tests/cp/file2"));
+
+    file_remove("./tests/cp/file1");
+    file_remove("./tests/cp/file2");
+
+    config_del(config);
+}
+
+static void
+test_cpcmd_dir(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 3;
+    char *argv[] = {
+        "cp",
+        "file1",
+        "dir1",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/cp"));
+
+    file_trunc("./tests/cp/file1");
+    file_mkdirq("./tests/cp/dir1");
+    assert(file_exists("./tests/cp/file1"));
+    assert(file_exists("./tests/cp/dir1"));
+
+    cpcmd_t *cpcmd = cpcmd_new(config, argc, argv);
+    cpcmd_run(cpcmd);
+    cpcmd_del(cpcmd);
+
+    assert(file_exists("./tests/cp/file1"));
+    assert(file_exists("./tests/cp/dir1/file1"));
+
+    file_remove("./tests/cp/file1");
+    file_remove("./tests/cp/dir1/file1");
+    file_remove("./tests/cp/dir1");
+
+    config_del(config);
+}
+
+static void
+test_cpcmd_files_to_dir(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 4;
+    char *argv[] = {
+        "cp",
+        "file1",
+        "file2",
+        "dir1",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/cp"));
+
+    file_trunc("./tests/cp/file1");
+    file_trunc("./tests/cp/file2");
+    file_mkdirq("./tests/cp/dir1");
+    assert(file_exists("./tests/cp/file1"));
+    assert(file_exists("./tests/cp/file2"));
+    assert(file_exists("./tests/cp/dir1"));
+
+    cpcmd_t *cpcmd = cpcmd_new(config, argc, argv);
+    cpcmd_run(cpcmd);
+    cpcmd_del(cpcmd);
+
+    assert(file_exists("./tests/cp/file1"));
+    assert(file_exists("./tests/cp/file2"));
+    assert(file_exists("./tests/cp/dir1/file1"));
+    assert(file_exists("./tests/cp/dir1/file2"));
+
+    file_remove("./tests/cp/file1");
+    file_remove("./tests/cp/file2");
+    file_remove("./tests/cp/dir1/file1");
+    file_remove("./tests/cp/dir1/file2");
+    file_remove("./tests/cp/dir1");
+
+    config_del(config);
+}
+
+static void
+test_cpcmd_dir_r(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 4;
+    char *argv[] = {
+        "cp",
+        "dir1",
+        "dir2",
+        "-r",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/cp"));
+
+    file_mkdirq("./tests/cp/dir1");
+    file_trunc("./tests/cp/dir1/file1");
+    assert(file_exists("./tests/cp/dir1/file1"));
+
+    cpcmd_t *cpcmd = cpcmd_new(config, argc, argv);
+    cpcmd_run(cpcmd);
+    cpcmd_del(cpcmd);
+
+    assert(file_exists("./tests/cp/dir1/file1"));
+    assert(file_exists("./tests/cp/dir2/file1"));
+
+    file_remove("./tests/cp/dir1/file1");
+    file_remove("./tests/cp/dir1");
+    file_remove("./tests/cp/dir2/file1");
+    file_remove("./tests/cp/dir2");
+
+    config_del(config);
+}
+
+static void
+test_cpcmd_dirs_r(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 5;
+    char *argv[] = {
+        "cp",
+        "dir1",
+        "dir2",
+        "dir3",
+        "-r",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/cp"));
+
+    file_mkdirq("./tests/cp/dir1");
+    file_mkdirq("./tests/cp/dir2");
+    file_trunc("./tests/cp/dir1/file1");
+    file_trunc("./tests/cp/dir2/file1");
+    assert(file_exists("./tests/cp/dir1/file1"));
+    assert(file_exists("./tests/cp/dir2/file1"));
+
+    cpcmd_t *cpcmd = cpcmd_new(config, argc, argv);
+    cpcmd_run(cpcmd);
+    cpcmd_del(cpcmd);
+
+    assert(file_exists("./tests/cp/dir1/file1"));
+    assert(file_exists("./tests/cp/dir2/file1"));
+    assert(file_exists("./tests/cp/dir3/file1"));
+
+    file_remove("./tests/cp/dir1/file1");
+    file_remove("./tests/cp/dir1");
+    file_remove("./tests/cp/dir2/file1");
+    file_remove("./tests/cp/dir2");
+    file_remove("./tests/cp/dir3/file1");
+    file_remove("./tests/cp/dir3");
+
+    config_del(config);
+}
+
+static const struct testcase
+cpcmd_tests[] = {
+    {"default", test_cpcmd_default},
+    {"dir", test_cpcmd_dir},
+    {"files_to_dir", test_cpcmd_files_to_dir},
+    {"dir_r", test_cpcmd_dir_r},
+    {"dirs_r", test_cpcmd_dirs_r},
+    {0},
+};
+
 /*******
 * main *
 *******/
@@ -26689,6 +26891,7 @@ testmodules[] = {
     {"mkdir", mkdircmd_tests},
     {"rm", rmcmd_tests},
     {"mv", mvcmd_tests},
+    {"cp", cpcmd_tests},
 
     // lib
     {"cstring_array", cstrarr_tests},

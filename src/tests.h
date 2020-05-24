@@ -49,6 +49,7 @@
 #include <mkdir/mkdir.h>
 #include <rm/rm.h>
 #include <mv/mv.h>
+#include <cp/cp.h>
 #include <lang/types.h>
 #include <lang/tokens.h>
 #include <lang/tokenizer.h>
