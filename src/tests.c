@@ -26944,6 +26944,70 @@ touchcmd_tests[] = {
     {0},
 };
 
+/******************
+* snippet command *
+******************/
+
+static void
+test_snippetcmd_default(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 1;
+    char *argv[] = {
+        "snippet",
+        NULL,
+    };
+
+    snptcmd_t *snptcmd = snptcmd_new(config, argc, argv);
+    int result = snptcmd_run(snptcmd);
+    snptcmd_del(snptcmd);
+
+    assert(result == 0);
+
+    config_del(config);
+}
+
+static void
+test_snippetcmd_add(void) {
+    // ==2226== Syscall param read(buf) points to unaddressable byte(s)
+    // ==2226==    at 0x4F31260: __read_nocancel (syscall-template.S:84)
+    // ==2226==    by 0x4EB45E7: _IO_file_underflow@@GLIBC_2.2.5 (fileops.c:592)
+    // ==2226==    by 0x4EB560D: _IO_default_uflow (genops.c:413)
+    // ==2226==    by 0x4EB0107: getc (getc.c:38)
+    // ==2226==    by 0x46F893: snptcmd_add (snippet.c:106)
+    return;
+
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 3;
+    char *argv[] = {
+        "snippet",
+        "add",
+        "mysnippet",
+        NULL,
+    };
+
+    char buf[1024] = "test";
+    setbuf(stdin, buf);
+
+    assert(solve_path(config->codes_dir_path, sizeof config->codes_dir_path, "./tests/snippet"));
+    snptcmd_t *snptcmd = snptcmd_new(config, argc, argv);
+    int result = snptcmd_run(snptcmd);
+    snptcmd_del(snptcmd);
+
+    assert(result == 0);
+
+    setbuf(stdin, NULL);
+    config_del(config);
+}
+
+static const struct testcase
+snippetcmd_tests[] = {
+    {"default", test_snippetcmd_default},
+    {"add", test_snippetcmd_add},
+    {0},
+};
+
 /*******
 * main *
 *******/
@@ -26967,6 +27031,7 @@ testmodules[] = {
     {"mv", mvcmd_tests},
     {"cp", cpcmd_tests},
     {"touch", touchcmd_tests},
+    {"snippet", snippetcmd_tests},
 
     // lib
     {"cstring_array", cstrarr_tests},
