@@ -52,6 +52,7 @@
 #include <cp/cp.h>
 #include <touch/touch.h>
 #include <snippet/snippet.h>
+#include <link/link.h>
 #include <lang/types.h>
 #include <lang/tokens.h>
 #include <lang/tokenizer.h>
