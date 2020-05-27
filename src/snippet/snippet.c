@@ -86,11 +86,17 @@ snptcmd_add(snptcmd_t *self) {
     const char *name = self->argv[2];
     char path[FILE_NPATH];
 
+    if (!strlen(self->config->codes_dir_path)) {
+        err_error("codes directory path is empty");
+        return 1;
+    }
+
     if (!file_solvefmt(path, sizeof path, "%s/%s", self->config->codes_dir_path, name)) {
         err_error("failed to solve path for \"%s\"", name);
         return 1;
     }
 
+    printf("path[%s]\n", path);
     FILE *fout = file_open(path, "wb");
     if (!fout) {
         err_error("failed to open snippet \"%s\"", name);
@@ -106,7 +112,7 @@ snptcmd_add(snptcmd_t *self) {
     return 0;
 }
 
-static int 
+static int
 snptcmd_show(snptcmd_t *self) {
     if (self->argc < 2) {
         err_error("failed to show snippet. need file name");

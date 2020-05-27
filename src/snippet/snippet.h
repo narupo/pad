@@ -32,9 +32,9 @@ snptcmd_del(snptcmd_t *self);
 /**
  * Construct command
  *
- * @param[in] config reference to config_t 
+ * @param[in] config reference to config_t
  * @param[in] argc   number of arguments
- * @param[in] argv   reference to array of arguments 
+ * @param[in] argv   reference to array of arguments
  *
  * @return success to pointer to snptcmd_t
  * @return failed to NULL
