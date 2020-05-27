@@ -27008,6 +27008,90 @@ snippetcmd_tests[] = {
     {0},
 };
 
+/***************
+* link command *
+***************/
+
+static void
+test_linkcmd_default(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 3;
+    char *argv[] = {
+        "link",
+        "link-to-a",
+        "a",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/link"));
+
+    assert(!file_exists("./tests/link/link-to-a"));
+
+    linkcmd_t *linkcmd = linkcmd_new(config, argc, argv);
+    int result = linkcmd_run(linkcmd);
+    linkcmd_del(linkcmd);
+    assert(result == 0);
+
+    assert(file_exists("./tests/link/link-to-a"));
+    file_remove("./tests/link/link-to-a");
+
+    config_del(config);
+}
+
+static void
+test_linkcmd_unlink(void) {
+    // using safesystem
+    config_t *config = config_new();
+    int argc = 3;
+    char *argv[] = {
+        "link",
+        "link-to-a",
+        "a",
+        NULL,
+    };
+
+    config->scope = CAP_SCOPE_LOCAL;
+    assert(solve_path(config->home_path, sizeof config->home_path, "."));
+    assert(solve_path(config->cd_path, sizeof config->cd_path, "./tests/link"));
+
+    assert(!file_exists("./tests/link/link-to-a"));
+
+    linkcmd_t *linkcmd = linkcmd_new(config, argc, argv);
+    int result = linkcmd_run(linkcmd);
+    linkcmd_del(linkcmd);
+    assert(result == 0);
+
+    assert(file_exists("./tests/link/link-to-a"));
+
+    // unlink
+    int argc2 = 3;
+    char *argv2[] = {
+        "link",
+        "link-to-a",
+        "-u",
+        NULL,
+    };
+
+    linkcmd = linkcmd_new(config, argc2, argv2);
+    result = linkcmd_run(linkcmd);
+    linkcmd_del(linkcmd);
+    assert(result == 0);
+
+    assert(!file_exists("./tests/link/link-to-a"));
+
+    config_del(config);
+}
+
+static const struct testcase
+linkcmd_tests[] = {
+    {"default", test_linkcmd_default},
+    {"unlink", test_linkcmd_unlink},
+    {0},
+};
+
 /*******
 * main *
 *******/
@@ -27032,6 +27116,7 @@ testmodules[] = {
     {"cp", cpcmd_tests},
     {"touch", touchcmd_tests},
     {"snippet", snippetcmd_tests},
+    {"link", linkcmd_tests},
 
     // lib
     {"cstring_array", cstrarr_tests},
