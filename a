@@ -1,2 +1,0 @@
-rm -rf tests/cp/dir*
-make && valgrind ./build/tests cp dirs_r
