@@ -141,6 +141,16 @@ const char *
 tkr_getc_first_error_message(const tokenizer_t *self);
 
 /**
+ * get error stack read only
+ *
+ * @param[in] *self
+ *
+ * @return pointer to errstack_t
+ */
+const errstack_t *
+tkr_getc_error_stack(const tokenizer_t *self);
+
+/**
  * Get tokens from tokenizer
  *
  * @param[in] self pointer to dynamic allocate memory of tokenizer_t

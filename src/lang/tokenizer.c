@@ -672,6 +672,14 @@ tkr_getc_first_error_message(const tokenizer_t *self) {
     return elem->message;
 }
 
+const errstack_t *
+tkr_getc_error_stack(const tokenizer_t *self) {
+    if (!self) {
+        return NULL;
+    }
+    return self->error_stack;
+}
+
 token_t **
 tkr_get_tokens(tokenizer_t *self) {
     return self->tokens;

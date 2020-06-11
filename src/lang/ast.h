@@ -185,6 +185,16 @@ void
 ast_trace_error_stack(const ast_t *self, FILE *fout);
 
 /**
+ * get error stack read only
+ *
+ * @param[in] *self
+ *
+ * @return pointer to errstack_t
+ */
+const errstack_t *
+ast_getc_error_stack(const ast_t *self);
+
+/**
  * dump ast_t at stream
  *
  * @param[in] *self

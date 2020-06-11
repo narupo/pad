@@ -2081,7 +2081,7 @@ test_util_compile_argv(void) {
     };
     const char *src = "{: opts.get(\"a\") :}";
 
-    char *compiled = compile_argv(config, argc-1, argv+1, src);
+    char *compiled = compile_argv(config, NULL, argc-1, argv+1, src);
 
     printf("compiled[%s]\n", compiled);
     assert(!strcmp(compiled, "bbb"));

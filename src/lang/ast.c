@@ -444,7 +444,18 @@ ast_set_debug(ast_t *self, bool debug) {
 
 void
 ast_trace_error_stack(const ast_t *self, FILE *fout) {
+    if (!self || !fout) {
+        return;
+    }
     errstack_trace(self->error_stack, fout);
+}
+
+const errstack_t *
+ast_getc_error_stack(const ast_t *self) {
+    if (!self) {
+        return NULL;
+    }
+    return self->error_stack;
 }
 
 void
