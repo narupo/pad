@@ -141,10 +141,19 @@ snptcmd_show(snptcmd_t *self) {
 
     fclose(fin);
 
-    char *compiled = compile_argv(self->config, self->argc-2, self->argv+2, content);
+    errstack_t *errstack = errstack_new();
+    char *compiled = compile_argv(
+        self->config,
+        errstack,
+        self->argc-2,
+        self->argv+2,
+        content
+    );
     if (!compiled) {
-        err_error("failed to compile snippet");
+        errstack_trace(errstack, stderr);
+        fflush(stderr);
         free(content);
+        errstack_del(errstack);
         return 1;
     }
 
@@ -153,7 +162,7 @@ snptcmd_show(snptcmd_t *self) {
 
     free(compiled);
     free(content);
-
+    errstack_del(errstack);
     return 0;
 }
 

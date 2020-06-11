@@ -16,6 +16,7 @@ struct makecmd {
     int optind;
     char **argv;
     struct opts opts;
+    errstack_t *errstack;
 };
 
 /**
@@ -41,6 +42,7 @@ makecmd_del(makecmd_t *self) {
         return;
     }
 
+    errstack_del(self->errstack);
     free(self);
 }
 
@@ -51,6 +53,7 @@ makecmd_new(const config_t *config, int argc, char **argv) {
     self->config = config;
     self->argc = argc;
     self->argv = argv;
+    self->errstack = errstack_new();
 
     return self;
 }
@@ -90,9 +93,18 @@ makecmd_run(makecmd_t *self) {
         }
     }
 
-    char *compiled = compile_argv(self->config, self->argc-1, self->argv+1, src);
+    char *compiled = compile_argv(
+        self->config,
+        self->errstack,
+        self->argc-1,
+        self->argv+1,
+        src
+    );
     if (!compiled) {
-        err_error("failed to compile \"%s\"", self->argv[1]);
+        errstack_pushb(self->errstack, __FILE__, __LINE__, __func__,
+            "failed to compile from \"%s\"", (self->argv[1] ? self->argv[1] : "stdin"));
+        errstack_trace(self->errstack, stderr);
+        fflush(stderr);
         free(src);
         return 1;
     }

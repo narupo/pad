@@ -20,6 +20,7 @@
 #include <core/constant.h>
 #include <core/config.h>
 #include <core/symlink.h>
+#include <core/error_stack.h>
 #include <lang/gc.h>
 #include <lang/tokenizer.h>
 #include <lang/ast.h>
@@ -165,6 +166,7 @@ trim_first_line(char *dst, int32_t dstsz, const char *text);
  * compile source text with argv
  *
  * @param[in] *config read only config object
+ * @param[out] *errstack
  * @param[in] argc
  * @param[in] *argv[]
  * @param[in] *src    pointer to strings
@@ -173,7 +175,7 @@ trim_first_line(char *dst, int32_t dstsz, const char *text);
  * @return failed to NULL
  */
 char *
-compile_argv(const config_t *config, int argc, char *argv[], const char *src);
+compile_argv(const config_t *config, errstack_t *errstack, int argc, char *argv[], const char *src);
 
 /**
  * clear screen

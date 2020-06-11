@@ -271,7 +271,7 @@ trim_first_line(char *dst, int32_t dstsz, const char *text) {
 }
 
 char *
-compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
+compile_argv(const config_t *config, errstack_t *errstack, int argc, char *argv[], const char *src) {
     tokenizer_t *tkr = tkr_new(tkropt_new());
     ast_t *ast = ast_new(config);
     gc_t *gc = gc_new();
@@ -279,14 +279,19 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
     opts_t *opts = opts_new();
 
     if (!opts_parse(opts, argc, argv)) {
-        err_error("failed to compile argv. failed to parse options");
+        if (errstack) {
+            errstack_pushb(errstack,  __FILE__, __LINE__, __func__,
+                "failed to compile argv. failed to parse options");
+        }
         return NULL;
     }
 
     tkr_parse(tkr, src);
     if (tkr_has_error_stack(tkr)) {
-        tkr_trace_error_stack(tkr, stderr);
-        fflush(stderr);
+        if (errstack) {
+            const errstack_t *es = tkr_getc_error_stack(tkr);
+            errstack_extendb_other(errstack, es);
+        }
         return NULL;
     }
 
@@ -296,15 +301,19 @@ compile_argv(const config_t *config, int argc, char *argv[], const char *src) {
 
     cc_compile(ast, tkr_get_tokens(tkr));
     if (ast_has_errors(ast)) {
-        ast_trace_error_stack(ast, stderr);
-        fflush(stderr);
+        if (errstack) {
+            const errstack_t *es = tkr_getc_error_stack(tkr);
+            errstack_extendb_other(errstack, es);
+        }
         return NULL;
     }
 
     trv_traverse(ast, ctx);
     if (ast_has_errors(ast)) {
-        ast_trace_error_stack(ast, stderr);
-        fflush(stderr);
+        if (errstack) {
+            const errstack_t *es = tkr_getc_error_stack(tkr);
+            errstack_extendb_other(errstack, es);
+        }
         return NULL;
     }
 
@@ -355,10 +364,13 @@ show_snippet(const config_t *config, const char *fname, int argc, char **argv) {
         return false;
     }
 
-    char *compiled = compile_argv(config, argc, argv, content);
+    errstack_t *errstack = errstack_new();
+    char *compiled = compile_argv(config, errstack, argc, argv, content);
     if (!compiled) {
-        err_error("failed to compile snippet");
+        errstack_trace(errstack, stderr);
+        fflush(stderr);
         free(content);
+        errstack_del(errstack);
         return false;
     }
 
@@ -368,6 +380,7 @@ show_snippet(const config_t *config, const char *fname, int argc, char **argv) {
     free(content);
     free(compiled);
 
+    errstack_del(errstack);
     return true;
 }
 
