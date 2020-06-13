@@ -2,7 +2,7 @@
  * Cap
  *
  * License: MIT
- *  Author: Aizawa Yuta
+ *  Author: narupo
  *   Since: 2016, 2018
  */
 #include <lib/cstring_array.h>
@@ -69,12 +69,12 @@ cstrarr_push(cstring_array_t *self, const char *str) {
 	return cstrarr_pushb(self, str);
 }
 
-cstring_array_t * 
+cstring_array_t *
 cstrarr_pushb(cstring_array_t *self, const char *str) {
 	if (!self || !str) {
 		return NULL;
 	}
-	
+
 	if (self->len >= self->capa) {
 		if (!cstrarr_resize(self, self->capa*2)) {
 			return NULL;
@@ -101,7 +101,7 @@ cstrarr_pop_move(cstring_array_t *self) {
 	return el;
 }
 
-cstring_array_t * 
+cstring_array_t *
 cstrarr_move(cstring_array_t *arr, char *ptr) {
 	if (!arr) {
 		return NULL;
@@ -131,7 +131,7 @@ cstrarr_sort(cstring_array_t *arr) {
 	if (!arr) {
 		return NULL;
 	}
-	
+
 	qsort(arr->arr, arr->len, sizeof(arr->arr[0]), cstrarr_cmp);
 	return arr;
 }

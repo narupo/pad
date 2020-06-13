@@ -2,7 +2,7 @@
  * Cap
  *
  * license: MIT
- *  author: Aizawa Yuta
+ *  author: narupo
  *   since: 2016
  */
 #include <app.h>
@@ -59,7 +59,7 @@ app_parse_opts(app_t *self) {
     self->opts = (struct opts){0};
     optind = 0;
     opterr = 0;
-    
+
     // parse options
     for (;;) {
         int optsindex;
@@ -197,9 +197,9 @@ app_deploy_env(const app_t *self) {
 /**
  * parse arguments
  *
- * @param[in]  self   
- * @param[in]  argc    
- * @param[in]  argv 
+ * @param[in]  self
+ * @param[in]  argc
+ * @param[in]  argv
  *
  * @return success to true
  * @return failed to false
@@ -262,7 +262,7 @@ app_new(int argc, char *argv[]) {
 /**
  * show usage of module
  *
- * @param[in] app 
+ * @param[in] app
  */
 static void
 app_usage(app_t *app) {
@@ -561,7 +561,7 @@ app_run(app_t *self) {
         app_usage(self);
         return 0;
     }
-    
+
     const char *cmdname = self->cmd_argv[0];
     if (!cmdname) {
         err_error("command name is null");
@@ -614,6 +614,6 @@ main(int argc, char *argv[]) {
 
     int result = app_run(app);
     app_del(app);
-    
+
     return result;
 }

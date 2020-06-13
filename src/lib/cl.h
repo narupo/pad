@@ -4,7 +4,7 @@
  * CL is Command Line.
  *
  * License: MIT
- *  Author: Aizawa Yuta
+ *  Author: narupo
  *   Since: 2016
  */
 #pragma once
@@ -49,17 +49,17 @@ typedef struct cl cl_t;
 
 /**
  * Destruct cl
- * 
- * @param[in] *self 
+ *
+ * @param[in] *self
  */
 void
 cl_del(cl_t *self);
 
 /**
  * Destruct cl with move semantics
- * 
- * @param[in] *self 
- * 
+ *
+ * @param[in] *self
+ *
  * @return pointer to pointer to dynamic allocate memory of array like a argv. should be free(3)
  */
 char **
@@ -67,7 +67,7 @@ cl_escdel(cl_t *self);
 
 /**
  * Construct cl
- * 
+ *
  * @return success to pointer to dynamic allocate memory of cl
  * @return failed to NULL
  */
@@ -76,10 +76,10 @@ cl_new(void);
 
 /**
  * Resize cl
- * 
- * @param[in] *self   
+ *
+ * @param[in] *self
  * @param[in] newcapa number of resize new capacity
- * 
+ *
  * @return success to pointer to self
  * @return failed to NULL
  */
@@ -88,10 +88,10 @@ cl_resize(cl_t *self, int32_t newcapa);
 
 /**
  * Push element with copy
- * 
- * @param[in] *self 
+ *
+ * @param[in] *self
  * @param[in] *str string
- * 
+ *
  * @return success to pointer to self
  * @return failed to NULL
  */
@@ -100,19 +100,19 @@ cl_push(cl_t *self, const char *str);
 
 /**
  * Clear cl
- * 
- * @param[in] *self 
+ *
+ * @param[in] *self
  */
 void
 cl_clear(cl_t *self);
 
 /**
  * Parse string of command line by options
- * 
- * @param[in] *self   
+ *
+ * @param[in] *self
  * @param[in] *cmdline string
  * @param[in] opts number of cl options
- * 
+ *
  * @return success to pointer to self
  * @return failed to NULL
  */
@@ -121,10 +121,10 @@ cl_parse_str_opts(cl_t *self, const char *cmdline, int32_t opts);
 
 /**
  * Parse string of command line
- * 
- * @param[in] *self    
+ *
+ * @param[in] *self
  * @param[in] *cmdline string
- * 
+ *
  * @return success to pointer to self
  * @return failed to NULL
  */
@@ -133,12 +133,12 @@ cl_parse_str(cl_t *self, const char *cmdline);
 
 /**
  * Parse argv by options
- * 
+ *
  * @param[in] *self
  * @param[in] argc number of length of argv
  * @param[in] *argv[] pointer to pointer to string
  * @param[in] opts number of cl options
- * 
+ *
  * @return success to pointer to self
  * @return failed to NULL
  */
@@ -147,11 +147,11 @@ cl_parse_argv_opts(cl_t *self, int argc, char *argv[], int32_t opts);
 
 /**
  * Parse argv
- * 
- * @param[in] *self   
+ *
+ * @param[in] *self
  * @param[in] argc number of lenght of argv
  * @param[in] *argv[] pointer to pointer to string
- * 
+ *
  * @return success to pointer to self
  * @return failed to NULL
  */
@@ -160,8 +160,8 @@ cl_parse_argv(cl_t *self, int argc, char *argv[]);
 
 /**
  * Show cl to stream
- * 
- * @param[in] *self 
+ *
+ * @param[in] *self
  * @param[in] *fout pointer to destruct stream
  */
 void
@@ -169,9 +169,9 @@ cl_show(const cl_t *self, FILE *fout);
 
 /**
  * Get length of cl
- * 
- * @param[in] *self 
- * 
+ *
+ * @param[in] *self
+ *
  * @return number of length of cl
  */
 int32_t
@@ -180,8 +180,8 @@ cl_len(const cl_t *self);
 /**
  * Get capacity of cl
  *
- * @param[in] *self 
- * 
+ * @param[in] *self
+ *
  * @return number of capacity of cl
  */
 int32_t

@@ -2,7 +2,7 @@
  * Cap
  *
  * License: MIT
- *  Author: Aizawa Yuta
+ *  Author: narupo
  *   Since: 2019
  */
 #include <lib/cstring.h>

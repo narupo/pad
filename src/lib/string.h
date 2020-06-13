@@ -2,7 +2,7 @@
  * Cap
  *
  * License: MIT
- *  Author: Aizawa Yuta
+ *  Author: narupo
  *   Since: 2016, 2017, 2018
  */
 #pragma once

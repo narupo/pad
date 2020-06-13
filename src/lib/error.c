@@ -2,7 +2,7 @@
  * Cap
  *
  * License: MIT
- *  Author: Aizawa Yuta
+ *  Author: narupo
  *   Since: 2016
  */
 #include <lib/error.h>
@@ -104,7 +104,7 @@ errorap_unsafe(const char *title, va_list ap, const char *fmt) {
 	if (errno != 0) {
 		fprintf(stderr, " %s. ", strerror(errno));
 	}
-	
+
 	fprintf(stderr, "\n");
 	fflush(stderr);
 }

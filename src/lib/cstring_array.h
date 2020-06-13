@@ -2,7 +2,7 @@
  * Cap
  *
  * License: MIT
- *  Author: Aizawa Yuta
+ *  Author: narupo
  *   Since: 2016, 2018
  */
 #pragma once
@@ -27,18 +27,18 @@ typedef struct cstring_array cstring_array_t;
 
 /**
  * destruct array
- * 
- * @param[in] *self 
+ *
+ * @param[in] *self
  */
-void 
+void
 cstrarr_del(cstring_array_t *self);
 
 /**
  * destruct array with move semantics
  * need freeargv for the return value
- * 
- * @param[in] *self 
- * 
+ *
+ * @param[in] *self
+ *
  * @return pointer to array like a argv
  */
 char **
@@ -46,43 +46,43 @@ cstrarr_escdel(cstring_array_t *self);
 
 /**
  * construct array
- * 
+ *
  * @return success to pointer to dynamic allocate memory of array
  * @return failed to NULL
  */
-cstring_array_t * 
+cstring_array_t *
 cstrarr_new(void);
 
 /**
  * @deprecated
  *
  * push string to array with copy
- * 
- * @param[in] *self 
+ *
+ * @param[in] *self
  * @param[in] *str string
- * 
+ *
  * @return success to pointer to self
  * @return failed to NULL
  */
-cstring_array_t * 
+cstring_array_t *
 cstrarr_push(cstring_array_t *self, const char *str);
 
 /**
  * push back string at array with copy
- * 
- * @param[in] *self 
+ *
+ * @param[in] *self
  * @param[in] *str string
- * 
+ *
  * @return success to pointer to self
  * @return failed to NULL
  */
-cstring_array_t * 
+cstring_array_t *
 cstrarr_pushb(cstring_array_t *self, const char *str);
 
 /**
  * pop tail element in array with move semantics
  *
- * @param[in] *self 
+ * @param[in] *self
  *
  * @return success to pointer to dynamic allocate memory of C strings
  * @return if array is empty to NULL
@@ -92,33 +92,33 @@ cstrarr_pop_move(cstring_array_t *self);
 
 /**
  * move back pointer to dynamic allocate memory to array with move semantics
- * 
- * @param[in] *self 
- * @param[in] *ptr pointer to dynamic allocate memory of string 
- * 
+ *
+ * @param[in] *self
+ * @param[in] *ptr pointer to dynamic allocate memory of string
+ *
  * @return success to pointer to self
  * @return failed to NULL
  */
-cstring_array_t * 
+cstring_array_t *
 cstrarr_move(cstring_array_t *self, char *ptr);
 
 /**
  * sort elements
- * 
- * @param[in] *self 
- * 
+ *
+ * @param[in] *self
+ *
  * @return success to pointer to self
  * @return failed to NULL
  */
-cstring_array_t * 
+cstring_array_t *
 cstrarr_sort(cstring_array_t *self);
 
 /**
  * get element in array by index
- * 
- * @param[in] *self 
+ *
+ * @param[in] *self
  * @param[in] idx number of index of array
- * 
+ *
  * @return success to pointer to element in array
  * @return failed to NULL
  */
@@ -127,18 +127,18 @@ cstrarr_getc(const cstring_array_t *self, int idx);
 
 /**
  * get number of length of array
- * 
- * @param[in] *self 
- * 
+ *
+ * @param[in] *self
+ *
  * @return number of length of array
  */
 ssize_t
-cstrarr_len(const cstring_array_t *self); 
+cstrarr_len(const cstring_array_t *self);
 
 /**
  * dump array to stream
- * 
- * @param[in] *self 
+ *
+ * @param[in] *self
  * @param[out] *fout pointer to destination stream
  *
  * @return success to pointer to self
