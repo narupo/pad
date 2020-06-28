@@ -631,6 +631,44 @@ str_camel(const string_t *other) {
 }
 
 string_t *
+str_hacker(const string_t *other) {
+    if (!other) {
+        return NULL;
+    }
+
+    string_t *self = str_new();
+    int m = 0;
+
+    for (const char *p = str_getc(other); *p; ++p) {
+        switch (m) {
+        case 0:  // first
+            if (*p == '-' || *p == '_') {
+                m = 100;
+            } else if (isupper(*p)) {
+                str_pushb(self, tolower(*p));
+            } else if (islower(*p)) {
+                str_pushb(self, *p);
+            } else if (isdigit(*p)) {
+                str_pushb(self, *p);
+            } else {
+                str_pushb(self, *p);
+            }
+            break;
+        case 100:  // skip '-' or '_'
+            if (*p == '-' || *p == '_') {
+                // pass
+            } else {
+                --p;
+                m = 0;
+            }
+            break;
+        }
+    }
+
+    return self;
+}
+
+string_t *
 str_mul(const string_t *self, int32_t n) {
     string_t *buf = str_new();
 

@@ -1190,10 +1190,102 @@ test_str_camel(void) {
     str_del(s);
 }
 
-/**
- * 0 memory leaks
- * 2020/02/25
- */
+static void
+test_str_hacker(void) {
+#undef showcp
+#define showcp() printf("cp[%s]\n", str_getc(cp))
+
+    assert(str_hacker(NULL) == NULL);
+    string_t *s = str_new();
+    assert(s != NULL);
+
+    assert(str_set(s, "abc") != NULL);
+    string_t *cp = str_hacker(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abc"));
+    str_del(cp);
+
+    assert(str_set(s, "ABC") != NULL);
+    cp = str_hacker(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abc"));
+    str_del(cp);
+
+    assert(str_set(s, "AFormatB") != NULL);
+    cp = str_hacker(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "aformatb"));
+    str_del(cp);
+
+    assert(str_set(s, "ABFormat") != NULL);
+    cp = str_hacker(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abformat"));
+    str_del(cp);
+
+    assert(str_set(s, "abcDefGhi") != NULL);
+    cp = str_hacker(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcdefghi"));
+    str_del(cp);
+
+    assert(str_set(s, "AbcDefGhi") != NULL);
+    cp = str_hacker(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcdefghi"));
+    str_del(cp);
+
+    assert(str_set(s, "abc-def-ghi") != NULL);
+    cp = str_hacker(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcdefghi"));
+    str_del(cp);
+
+    assert(str_set(s, "_abcDefGhi") != NULL);
+    cp = str_hacker(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcdefghi"));
+    str_del(cp);
+
+    assert(str_set(s, "-abcDefGhi") != NULL);
+    cp = str_hacker(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcdefghi"));
+    str_del(cp);
+
+    assert(str_set(s, "_-abcDefGhi") != NULL);
+    cp = str_hacker(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcdefghi"));
+    str_del(cp);
+
+    assert(str_set(s, "abcDefGhi_abc-DefGhi") != NULL);
+    cp = str_hacker(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcdefghiabcdefghi"));
+    str_del(cp);
+
+    assert(str_set(s, "abcDefGhi__abc--DefGhi") != NULL);
+    cp = str_hacker(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcdefghiabcdefghi"));
+    str_del(cp);
+
+    assert(str_set(s, "abcDefGhi__abc--DefGhi") != NULL);
+    cp = str_hacker(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abcdefghiabcdefghi"));
+    str_del(cp);
+
+    assert(str_set(s, "abc0_12def_gh34i") != NULL);
+    cp = str_hacker(s);
+    assert(cp);
+    assert(!strcmp(str_getc(cp), "abc012defgh34i"));
+    str_del(cp);
+
+    str_del(s);
+}
+
 static const struct testcase
 string_tests[] = {
     {"cstr_app", test_cstring_cstr_app},
@@ -1229,6 +1321,7 @@ string_tests[] = {
     {"str_capitalize", test_str_capitalize},
     {"str_snake", test_str_snake},
     {"str_camel", test_str_camel},
+    {"str_hacker", test_str_hacker},
     {0},
 };
 
