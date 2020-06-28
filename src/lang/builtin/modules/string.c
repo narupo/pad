@@ -30,6 +30,8 @@ again:
             result = str_snake(owner->string);
         } else if (cstr_eq(method_name, "camel")) {
             result = str_camel(owner->string);
+        } else if (cstr_eq(method_name, "hacker")) {
+            result = str_hacker(owner->string);
         } else {
             ast_pushb_error(ref_ast, "invalid method name \"%s\" for call basic string function", method_name);
             return NULL;
@@ -83,6 +85,11 @@ builtin_string_camel(builtin_func_args_t *args) {
     return call_basic_str_func("camel", args);
 }
 
+static object_t *
+builtin_string_hacker(builtin_func_args_t *args) {
+    return call_basic_str_func("hacker", args);
+}
+
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"lower", builtin_string_lower},
@@ -90,6 +97,7 @@ builtin_func_infos[] = {
     {"capitalize", builtin_string_capitalize},
     {"snake", builtin_string_snake},
     {"camel", builtin_string_camel},
+    {"hacker", builtin_string_hacker},
     {0},
 };
 

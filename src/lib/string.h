@@ -348,11 +348,22 @@ string_t *
 str_camel(const string_t *other);
 
 /**
+ * convert to hacker style and copy it
+ *
+ * @param[in] *self
+ *
+ * @return success to pointer to string_t (copied)
+ * @return failed to pointer to NULL
+ */
+string_t *
+str_hacker(const string_t *other);
+
+/**
  * mul string with copy
  *
  * @param[in] *self pointer to string_t
  *
- * @return sucess to pointer to new string_t
+ * @return sucess to pointer to string_t (copied)
  * @return failed to poitner to NULL
  */
 string_t *
