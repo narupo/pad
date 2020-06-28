@@ -159,7 +159,6 @@ struct testmodule {
 * array *
 ********/
 
-
 void
 _freeescarr(char **arr) {
     for (char **p = arr; *p; ++p) {
@@ -228,6 +227,44 @@ test_cstrarr_push(void) {
     assert(cstrarr_push(arr, "1") != NULL);
 
     assert(cstrarr_len(arr) == 2);
+
+    cstrarr_del(arr);
+}
+
+void
+test_cstrarr_pushb(void) {
+    cstring_array_t *arr = cstrarr_new();
+    assert(arr != NULL);
+
+    assert(cstrarr_pushb(NULL, "1") == NULL);
+    assert(cstrarr_pushb(arr, NULL) == NULL);
+    assert(cstrarr_pushb(arr, "") != NULL);
+    assert(cstrarr_pushb(arr, "1") != NULL);
+
+    assert(cstrarr_len(arr) == 2);
+
+    cstrarr_del(arr);
+}
+
+void
+test_cstrarr_pop_move(void) {
+    cstring_array_t *arr = cstrarr_new();
+    assert(arr);
+
+    assert(cstrarr_pushb(arr, "1"));
+    assert(cstrarr_pushb(arr, "2"));
+    char *p = cstrarr_pop_move(arr);
+    assert(p);
+    assert(!strcmp(p, "2"));
+    free(p);
+
+    p = cstrarr_pop_move(arr);
+    assert(p);
+    assert(!strcmp(p, "1"));
+    free(p);
+
+    p = cstrarr_pop_move(arr);
+    assert(!p);
 
     cstrarr_del(arr);
 }
@@ -317,6 +354,20 @@ test_cstrarr_show(void) {
     cstrarr_del(arr);
 }
 
+void
+test_cstrarr_clear(void) {
+    cstring_array_t *arr = cstrarr_new();
+    assert(arr);
+
+    assert(cstrarr_pushb(arr, "1"));
+    assert(cstrarr_pushb(arr, "2"));
+    assert(cstrarr_len(arr) == 2);
+    cstrarr_clear(arr);
+    assert(cstrarr_len(arr) == 0);
+
+    cstrarr_del(arr);
+}
+
 /**
  * 0 memory leaks
  * 2020/02/25
@@ -326,11 +377,14 @@ cstrarr_tests[] = {
     {"cstrarr_new", test_cstrarr_new},
     {"cstrarr_escdel", test_cstrarr_escdel},
     {"cstrarr_push", test_cstrarr_push},
+    {"cstrarr_pushb", test_cstrarr_pushb},
+    {"cstrarr_pop_move", test_cstrarr_pop_move},
     {"cstrarr_move", test_cstrarr_move},
     {"cstrarr_sort", test_cstrarr_sort},
     {"cstrarr_getc", test_cstrarr_getc},
     {"cstrarr_len", test_cstrarr_len},
     {"cstrarr_show", test_cstrarr_show},
+    {"cstrarr_clear", test_cstrarr_clear},
     {0},
 };
 
