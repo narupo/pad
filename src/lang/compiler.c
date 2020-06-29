@@ -3467,6 +3467,7 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
     if (!cargs->func_def) {
         return_cleanup("can't access to function node");
     }
+
     node_t *node = node_new(NODE_TYPE_BLOCK_STMT, cur);
     node_identifier_t *idnnode = cur->identifier->real;
     assert(cargs->func_def->blocks);
@@ -3479,14 +3480,73 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
 static node_t *
 cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
-    cargs->depth += 1;
-    node_t *node = cc_block_stmt(ast, cargs);
-    if (!node || ast_has_errors(ast)) {
-        return_parse(NULL);
+    declare(node_inject_stmt_t, cur);
+    cur->contents = nodearr_new();
+    token_t **save_ptr = ast->ref_ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        ast->ref_ptr = save_ptr; \
+        ast_del_nodes(ast, cur->identifier); \
+        for (int32_t i = 0; i < nodearr_len(cur->contents); ++i) { \
+            node_t *n = nodearr_get(cur->contents, i); \
+            ast_del_nodes(ast, n); \
+        } \
+        nodearr_del(cur->contents); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_pushb_error(ast, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    depth_t depth = cargs->depth;
+    token_t *t = ast_read_token(ast);
+    if (!t || t->type != TOKEN_TYPE_STMT_INJECT) {
+        return_cleanup("");
     }
 
-    node->type = NODE_TYPE_INJECT_STMT;
+    cargs->depth = depth + 1;
+    cur->identifier = cc_identifier(ast, cargs);
+    if (ast_has_errors(ast)) {
+        return_cleanup("");
+    } else if (!cur->identifier) {
+        return_cleanup("not found identifier in inject statement");
+    }
 
+    t = ast_read_token(ast);
+    if (!t || t->type != TOKEN_TYPE_COLON) {
+        return_cleanup("not found colon in inject statement");
+    }
+
+    check("skip newlines");
+    cc_skip_newlines(ast);
+
+    for (;;) {
+        t = ast_read_token(ast);
+        if (!t) {
+            return_cleanup("not found 'end' in inject statement");
+        } else if (t->type == TOKEN_TYPE_STMT_END) {
+            break;
+        } else {
+            ast_prev_ptr(ast);
+        }
+
+        cargs->depth = depth + 1;
+        node_t *content = cc_content(ast, cargs);
+        if (!content || ast_has_errors(ast)) {
+            return_cleanup("");
+        }
+
+        nodearr_moveb(cur->contents, mem_move(content));
+    }
+
+    if (!cargs->func_def) {
+        return_cleanup("inject statement needs function");
+    }
+
+    // done
+    node_t *node = node_new(NODE_TYPE_INJECT_STMT, cur);
     return_parse(node);
 }
 

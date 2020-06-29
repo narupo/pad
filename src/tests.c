@@ -21612,6 +21612,80 @@ test_trv_block_stmt_1(void) {
 }
 
 static void
+test_trv_block_stmt_2(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "def func():\n"
+    "   block aaa:\n"
+    "   end\n"
+    "end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_errors(ast));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_inject_stmt_0(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "inject aaa:\n"
+    "end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "inject statement needs function"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_inject_stmt_1(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "inject:\n"
+    "end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "not found identifier in inject statement"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_inject_stmt_2(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "def func():\n"
+    "   inject aaa:\n"
+    "   end\n"
+    "end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_errors(ast));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_def_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -25191,6 +25265,10 @@ traverser_tests[] = {
     {"trv_return_stmt_4", test_trv_return_stmt_4},
     {"trv_block_stmt_0", test_trv_block_stmt_0},
     {"trv_block_stmt_1", test_trv_block_stmt_1},
+    {"trv_block_stmt_2", test_trv_block_stmt_2},
+    {"trv_inject_stmt_0", test_trv_inject_stmt_0},
+    {"trv_inject_stmt_1", test_trv_inject_stmt_1},
+    {"trv_inject_stmt_2", test_trv_inject_stmt_2},
     {"trv_func_def_0", test_trv_func_def_0},
     {"trv_func_def_1", test_trv_func_def_1},
     {"trv_func_def_2", test_trv_func_def_2},

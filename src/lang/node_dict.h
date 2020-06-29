@@ -34,6 +34,14 @@ void
 nodedict_del(node_dict_t *self);
 
 /**
+ * destruct node_dict_t. do not delete nodes in map
+ *
+ * @param[in] *self pointer to node_dict_t
+ */
+void
+nodedict_del_without_nodes(node_dict_t *self);
+
+/**
  * destruct node_dict_t with escape array of node_dict_item_t dynamic allocated
  *
  * @param[in] *self pointer to node_dict_t
