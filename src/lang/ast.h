@@ -212,3 +212,21 @@ ast_dump(const ast_t *self, FILE *fout);
  */
 context_t *
 ast_get_ref_context(ast_t *self);
+
+/**
+ * read token and increment pointer of tokens
+ *
+ * @param[in] *self
+ *
+ * @return
+ */
+token_t *
+ast_read_token(ast_t *self);
+
+/**
+ * step back pointer of tokens
+ *
+ * @param[in] *self
+ */
+void
+ast_prev_ptr(ast_t *self);

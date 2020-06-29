@@ -473,6 +473,24 @@ trv_stmt(ast_t *ast, trv_args_t *targs) {
             return_trav(NULL);
         }
         return_trav(result);
+    } else if (stmt->block_stmt) {
+        check("call _trv_traverse with block stmt");
+        targs->ref_node = stmt->block_stmt;
+        targs->depth = depth + 1;
+        result = _trv_traverse(ast, targs);
+        if (ast_has_errors(ast)) {
+            return_trav(NULL);
+        }
+        return_trav(result);
+    } else if (stmt->inject_stmt) {
+        check("call _trv_traverse with inject stmt");
+        targs->ref_node = stmt->inject_stmt;
+        targs->depth = depth + 1;
+        result = _trv_traverse(ast, targs);
+        if (ast_has_errors(ast)) {
+            return_trav(NULL);
+        }
+        return_trav(result);
     }
 
     assert(0 && "impossible. invalid state in traverse stmt");
@@ -1085,6 +1103,50 @@ again:
 
     assert(ret);
     return_trav(ret);
+}
+
+static object_t *
+trv_block_stmt(ast_t *ast, trv_args_t *targs) {
+    tready();
+    node_t *node = targs->ref_node;
+    assert(node);
+    assert(node->type == NODE_TYPE_BLOCK_STMT);
+    node_block_stmt_t *block_stmt = node->real;
+    assert(block_stmt);
+
+    depth_t depth = targs->depth;
+
+    targs->ref_node = block_stmt->identifier;
+    targs->depth = depth + 1;
+    object_t *idn = _trv_traverse(ast, targs);
+    if (!idn || ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to traverse identifier");
+        return_trav(NULL);
+    }
+
+    object_t *func_obj = targs->func_obj;
+    if (!func_obj) {
+        ast_pushb_error(ast, "block statement need function");
+        return_trav(NULL);
+    }
+
+    // return_trav(TODO);
+    return_trav(NULL);
+}
+
+static object_t *
+trv_inject_stmt(ast_t *ast, trv_args_t *targs) {
+    tready();
+    node_t *node = targs->ref_node;
+    assert(node);
+    assert(node->type == NODE_TYPE_INJECT_STMT);
+    node_inject_stmt_t *inject_stmt = node->real;
+    assert(inject_stmt);
+
+    // TODO
+
+    // return_trav(TODO);
+    return_trav(NULL);
 }
 
 static object_t *
@@ -8323,7 +8385,7 @@ trv_dict(ast_t *ast, trv_args_t *targs) {
     tready();
     node_t *node = targs->ref_node;
     assert(node);
-    node_dict_t *dict = node->real;
+    _node_dict_t *dict = node->real;
     assert(dict && node->type == NODE_TYPE_DICT);
     assert(dict->dict_elems);
 
@@ -8410,7 +8472,16 @@ trv_func_def(ast_t *ast, trv_args_t *targs) {
     assert(def_args->type == OBJ_TYPE_ARRAY);
 
     node_array_t *ref_suites = func_def->contents;
-    object_t *func_obj = obj_new_func(ast->ref_gc, ast, name, def_args, ref_suites);
+    assert(func_def->blocks);
+    object_t *func_obj = obj_new_func(
+        ast->ref_gc,
+        ast,
+        name,
+        def_args,
+        ref_suites,
+        func_def->blocks
+    );
+    assert(func_obj);
     check("set func at varmap");
     move_obj_at_cur_varmap(
         ast,
@@ -8619,6 +8690,16 @@ _trv_traverse(ast_t *ast, trv_args_t *targs) {
     case NODE_TYPE_RETURN_STMT: {
         check("call trv_return_stmt");
         object_t *obj = trv_return_stmt(ast, targs);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_BLOCK_STMT: {
+        check("call trv_block_stmt");
+        object_t *obj = trv_block_stmt(ast, targs);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_INJECT_STMT: {
+        check("call trv_inject_stmt");
+        object_t *obj = trv_inject_stmt(ast, targs);
         return_trav(obj);
     } break;
     case NODE_TYPE_TEST_LIST: {

@@ -139,9 +139,12 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_STMT_BREAK: return "break"; break;
     case TOKEN_TYPE_STMT_CONTINUE: return "continue"; break;
     case TOKEN_TYPE_STMT_RETURN: return "return"; break;
+    case TOKEN_TYPE_STMT_BLOCK: return "block"; break;
+    case TOKEN_TYPE_STMT_INJECT: return "inject"; break;
 
     // def
     case TOKEN_TYPE_DEF: return "def"; break;
+    case TOKEN_TYPE_EXTENDS: return "extends"; break;
     }
 
     return "unknown";

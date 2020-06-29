@@ -117,6 +117,28 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         node_return_stmt_t *return_stmt = node->real;
         ast_del_nodes(self, return_stmt->formula);
     } break;
+    case NODE_TYPE_BLOCK_STMT: {
+        node_block_stmt_t *block_stmt = node->real;
+        ast_del_nodes(self, block_stmt->identifier);
+        for (int32_t i = 0; i < nodearr_len(block_stmt->contents); ++i) {
+            node_t *node = nodearr_get(block_stmt->contents, i);
+            ast_del_nodes(self, node);
+        }
+        nodearr_del_without_nodes(block_stmt->contents);
+    } break;
+    case NODE_TYPE_INJECT_STMT: {
+        node_inject_stmt_t *inject_stmt = node->real;
+        ast_del_nodes(self, inject_stmt->identifier);
+        for (int32_t i = 0; i < nodearr_len(inject_stmt->contents); ++i) {
+            node_t *node = nodearr_get(inject_stmt->contents, i);
+            ast_del_nodes(self, node);
+        }
+        nodearr_del_without_nodes(inject_stmt->contents);
+    } break;
+    case NODE_TYPE_FUNC_EXTENDS: {
+        node_func_extends_t *func_extends = node->real;
+        ast_del_nodes(self, func_extends->identifier);
+    } break;
     case NODE_TYPE_FORMULA: {
         node_formula_t *formula = node->real;
         ast_del_nodes(self, formula->assign_list);
@@ -271,7 +293,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         nodearr_del_without_nodes(array_elems->nodearr);
     } break;
     case NODE_TYPE_DICT: {
-        node_dict_t *dict = node->real;
+        _node_dict_t *dict = node->real;
         ast_del_nodes(self, dict->dict_elems);
     } break;
     case NODE_TYPE_DICT_ELEMS: {
@@ -472,4 +494,22 @@ ast_dump(const ast_t *self, FILE *fout) {
 context_t *
 ast_get_ref_context(ast_t *self) {
     return self->ref_context;
+}
+
+token_t *
+ast_read_token(ast_t *self) {
+    if (!self || !self->ref_ptr) {
+        return NULL;
+    }
+
+    return *self->ref_ptr++;
+}
+
+void
+ast_prev_ptr(ast_t *self) {
+    if (!self) {
+        return;
+    }
+
+    self->ref_ptr--;
 }

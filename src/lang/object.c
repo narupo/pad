@@ -359,8 +359,16 @@ obj_new_dict(gc_t *ref_gc, object_dict_t *move_objdict) {
 }
 
 object_t *
-obj_new_func(gc_t *ref_gc, ast_t *ref_ast, object_t *move_name, object_t *move_args, node_array_t *ref_suites) {
-    if (!ref_gc || !ref_ast || !move_name || !move_args || !ref_suites) {
+obj_new_func(
+    gc_t *ref_gc,
+    ast_t *ref_ast,
+    object_t *move_name,
+    object_t *move_args,
+    node_array_t *ref_suites,
+    node_dict_t *ref_blocks
+) {
+    bool invalid_args = !ref_gc || !ref_ast || !move_name || !move_args || !ref_suites || !ref_blocks;
+    if (invalid_args) {
         return NULL;
     }
 
@@ -373,6 +381,7 @@ obj_new_func(gc_t *ref_gc, ast_t *ref_ast, object_t *move_name, object_t *move_a
     self->func.name = mem_move(move_name);
     self->func.args = mem_move(move_args);
     self->func.ref_suites = ref_suites;
+    self->func.ref_blocks = ref_blocks;
 
     return self;
 }

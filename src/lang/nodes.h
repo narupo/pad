@@ -4,7 +4,9 @@
 #include <stdint.h>
 
 #include <lib/memory.h>
+#include <lib/string.h>
 #include <lang/types.h>
+#include <lang/node_dict.h>
 
 /*************
 * node types *
@@ -36,6 +38,10 @@ typedef enum {
     NODE_TYPE_BREAK_STMT,
     NODE_TYPE_CONTINUE_STMT,
     NODE_TYPE_RETURN_STMT,
+    NODE_TYPE_BLOCK_STMT,
+    NODE_TYPE_INJECT_STMT,
+
+    NODE_TYPE_CONTENT,
 
     NODE_TYPE_FORMULA,
     NODE_TYPE_MULTI_ASSIGN,
@@ -85,6 +91,7 @@ typedef enum {
     NODE_TYPE_FUNC_DEF,
     NODE_TYPE_FUNC_DEF_PARAMS,
     NODE_TYPE_FUNC_DEF_ARGS,
+    NODE_TYPE_FUNC_EXTENDS,
 
     // bool
     NODE_TYPE_FALSE,
@@ -162,6 +169,8 @@ typedef struct {
     node_t *break_stmt;
     node_t *continue_stmt;
     node_t *return_stmt;
+    node_t *block_stmt;
+    node_t *inject_stmt;
 } node_stmt_t;
 
 typedef struct {
@@ -220,6 +229,16 @@ typedef struct {
     node_t *formula;
 } node_return_stmt_t;
 
+typedef struct {
+    node_t *identifier;
+    node_array_t *contents;
+} node_block_stmt_t;
+
+typedef struct {
+    node_t *identifier;
+    node_array_t *contents;
+} node_inject_stmt_t;
+
 /******
 * def *
 ******/
@@ -231,7 +250,9 @@ typedef struct {
 typedef struct {
     node_t *identifier;
     node_t *func_def_params;
-    node_array_t *contents;
+    node_t *func_extends;
+    node_array_t *contents;  // array of nodes
+    node_dict_t *blocks;  // nodes of block statement
 } node_func_def_t;
 
 typedef struct {
@@ -241,6 +262,19 @@ typedef struct {
 typedef struct {
     node_array_t *identifiers;
 } node_func_def_args_t;
+
+typedef struct {
+    node_t *identifier;
+} node_func_extends_t;
+
+/**********
+* content *
+**********/
+
+typedef struct {
+    node_t *elems;
+    node_t *blocks;
+} node_content_t;
 
 /**********
 * formula *
@@ -344,7 +378,7 @@ typedef struct {
 
 typedef struct {
     node_t *dict_elems;
-} node_dict_t;
+} _node_dict_t;
 
 typedef struct {
     node_array_t *nodearr;
@@ -451,3 +485,22 @@ node_get_real(node_t *self);
  */
 const void *
 node_getc_real(const node_t *self);
+
+/**
+ * node to string
+ *
+ * @param[in] *self
+ *
+ * @return pointer to string
+ */
+string_t *
+node_to_str(const node_t *self);
+
+/**
+ * dump node data
+ *
+ * @param[in] *self
+ * @param[in] *fout
+ */
+void
+node_dump(const node_t *self, FILE *fout);

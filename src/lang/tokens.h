@@ -66,7 +66,10 @@ typedef enum {
     TOKEN_TYPE_STMT_BREAK, // 'break'
     TOKEN_TYPE_STMT_CONTINUE, // 'continue'
     TOKEN_TYPE_STMT_RETURN, // 'return'
+    TOKEN_TYPE_STMT_BLOCK,  // 'block'
+    TOKEN_TYPE_STMT_INJECT,  // 'inject'
     TOKEN_TYPE_DEF, // 'def'
+    TOKEN_TYPE_EXTENDS,  // 'extends'
     TOKEN_TYPE_FALSE, // 'false'
     TOKEN_TYPE_TRUE, // 'true'
 } token_type_t;
