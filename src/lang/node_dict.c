@@ -31,6 +31,18 @@ nodedict_del(node_dict_t *self) {
     free(self);
 }
 
+void
+nodedict_del_without_nodes(node_dict_t *self) {
+    if (!self) {
+        return;
+    }
+
+    // do not delete nodes
+
+    free(self->map);
+    free(self);
+}
+
 node_dict_item_t *
 nodedict_escdel(node_dict_t *self) {
     if (!self) {

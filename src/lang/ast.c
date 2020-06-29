@@ -340,6 +340,12 @@ ast_del_nodes(const ast_t *self, node_t *node) {
             ast_del_nodes(self, content);
         }
         nodearr_del_without_nodes(func_def->contents);
+
+        for (int32_t i = 0; i < nodedict_len(func_def->blocks); ++i) {
+            const node_dict_item_t *item = nodedict_getc_index(func_def->blocks, i);
+            ast_del_nodes(self, item->value);
+        }
+        nodedict_del_without_nodes(func_def->blocks);
     } break;
     case NODE_TYPE_FUNC_DEF_PARAMS: {
         node_func_def_params_t *func_def_params = node->real;
