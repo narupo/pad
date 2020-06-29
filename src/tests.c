@@ -4241,7 +4241,7 @@ test_cc_dict(void) {
     node_chain_t *chain;
     node_factor_t *factor;
     node_atom_t *atom;
-    node_dict_t *dict;
+    _node_dict_t *dict;
     node_dict_elems_t *dict_elems;
     node_dict_elem_t *dict_elem;
     node_simple_assign_t *simple_assign;
@@ -20875,6 +20875,7 @@ test_trv_for_stmt_10(void) {
 
 static void
 test_trv_for_stmt_11(void) {
+    // ?
 }
 
 static void
@@ -21569,6 +21570,42 @@ test_trv_return_stmt_4(void) {
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
         assert(!strcmp(ast_getc_first_error_message(ast), "invalid return statement. not in function"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_block_stmt_0(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "block aaa:\n"
+    "end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "can't access to function node"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_block_stmt_1(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "block:\n"
+    "end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "not found identifier in block statement"));
     }
 
     trv_cleanup;
@@ -25152,6 +25189,8 @@ traverser_tests[] = {
     {"trv_return_stmt_2", test_trv_return_stmt_2},
     {"trv_return_stmt_3", test_trv_return_stmt_3},
     {"trv_return_stmt_4", test_trv_return_stmt_4},
+    {"trv_block_stmt_0", test_trv_block_stmt_0},
+    {"trv_block_stmt_1", test_trv_block_stmt_1},
     {"trv_func_def_0", test_trv_func_def_0},
     {"trv_func_def_1", test_trv_func_def_1},
     {"trv_func_def_2", test_trv_func_def_2},

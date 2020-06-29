@@ -438,7 +438,8 @@ invoke_func_obj(
             object_t *aarg = objarr_get(actual_args, i);
             object_t *ref_aarg = aarg;
             if (aarg->type == OBJ_TYPE_IDENTIFIER) {
-                ref_aarg = pull_in_ref_by(aarg);  // pull from current context's ast
+                // pull from current context's ast
+                ref_aarg = pull_in_ref_by(aarg);
                 if (!ref_aarg) {
                     ast_pushb_error(
                         ast,
@@ -481,6 +482,7 @@ invoke_func_obj(
         result = _trv_traverse(func->ref_ast, &(trv_args_t) {
             .ref_node = ref_suite,
             .depth = 0,
+            .func_obj = funcobj,
         });
         if (ast_has_errors(func->ref_ast)) {
             errstack_extendb_other(ast->error_stack, func->ref_ast->error_stack);

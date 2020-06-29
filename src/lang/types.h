@@ -30,6 +30,9 @@ typedef struct object_owners_method object_owners_method_t;
 struct node_array;
 typedef struct node_array node_array_t;
 
+struct node_dict;
+typedef struct node_dict node_dict_t;
+
 struct tokenizer;
 typedef struct tokenizer tokenizer_t;
 

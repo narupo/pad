@@ -13,10 +13,13 @@ BNF of Cap's template language
                     for_stmt |
                     break_stmt |
                     continue_stmt |
-                    return_stmt
+                    return_stmt |
+                    block_stmt |
+                    inject_stmt
 
                def: func_def
-          func_def: 'def' identifier func_def_params ':' (elems)? [ '@}' blocks '{@' ]* (elems)? 'end'
+          func_def: 'def' identifier func_def_params func_extends? ':' (elems)? [ '@}' blocks '{@' ]* (elems)? 'end'
+      func_extends: 'extends' identifier
    func_def_params: '(' func_def_args ')'
      func_def_args: identifier [ ',' identifier ]*
 
@@ -39,6 +42,10 @@ BNF of Cap's template language
         break_stmt: 'break'
      continue_stmt: 'continue'
        return_stmt: 'return' [ formula ]*
+        block_stmt: 'block' identifier ':' [ content ]* 'end'
+       inject_stmt: 'inject' identifier ':' [ content ]* 'end'
+
+           content: elems | '@}' blocks '{@'
 
            formula: assign_list |
                     multi_assign

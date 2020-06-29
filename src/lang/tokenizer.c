@@ -333,6 +333,12 @@ tkr_parse_identifier(tokenizer_t *self) {
         token->type = TOKEN_TYPE_TRUE;
     } else if (cstr_eq(token->text, "false")) {
         token->type = TOKEN_TYPE_FALSE;
+    } else if (cstr_eq(token->text, "block")) {
+        token->type = TOKEN_TYPE_STMT_BLOCK;
+    } else if (cstr_eq(token->text, "inject")) {
+        token->type = TOKEN_TYPE_STMT_INJECT;
+    } else if (cstr_eq(token->text, "extends")) {
+        token->type = TOKEN_TYPE_EXTENDS;
     }
 
     tkr_move_token(self, token);

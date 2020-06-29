@@ -30,6 +30,9 @@ struct cc_args {
     // if statement type
     // 0 ... if, 1 ... elif
     int if_stmt_type;
+
+    // if context is in function to enable this pointer
+    node_func_def_t *func_def;
 };
 
 /**
@@ -87,6 +90,10 @@ struct trv_args {
     // if do not refer chain object on context then store true else store false
     // this flag refer in trv_chain function
     bool do_not_refer_chain;
+
+    // if current context is in function block then store pointer
+    // of function object to this func_obj variable
+    object_t *func_obj;
 };
 
 /**
