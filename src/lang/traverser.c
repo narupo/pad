@@ -6835,6 +6835,7 @@ trv_chain(ast_t *ast, trv_args_t *targs) {
         return_trav(operand);
     }
 
+    // convert chain-nodes to chain-objects
     chain_objects_t *chobjs = chain_objs_new();
 
     for (int32_t i = 0; i < chain_nodes_len(cns); ++i) {
@@ -6878,6 +6879,7 @@ trv_chain(ast_t *ast, trv_args_t *targs) {
     operand = NULL;
     chobjs = NULL;
 
+    // do refer chain objects ?
     if (targs->do_not_refer_chain) {
         return_trav(obj_chain);
     } else {
@@ -8471,6 +8473,26 @@ trv_func_def(ast_t *ast, trv_args_t *targs) {
     assert(def_args);
     assert(def_args->type == OBJ_TYPE_ARRAY);
 
+    // need extends func ?
+    object_t *extends_func = NULL;
+    if (func_def->func_extends) {
+        targs->ref_node = func_def->func_extends;
+        targs->depth = depth + 1;
+        object_t *extends_func_name = _trv_traverse(ast, targs);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to traverse func-extends");
+            return_trav(NULL);
+        }
+        extends_func = pull_in_ref_by(extends_func_name);
+        if (!extends_func) {
+            ast_pushb_error(ast,
+                "not found \"%s\". can't extends",
+                obj_getc_idn_name(extends_func_name)
+            );
+        }
+        obj_inc_ref(extends_func);  // for obj_new_func
+    }
+
     node_array_t *ref_suites = func_def->contents;
     assert(func_def->blocks);
     object_t *func_obj = obj_new_func(
@@ -8479,7 +8501,8 @@ trv_func_def(ast_t *ast, trv_args_t *targs) {
         name,
         def_args,
         ref_suites,
-        func_def->blocks
+        func_def->blocks,
+        extends_func
     );
     assert(func_obj);
     check("set func at varmap");
@@ -8536,6 +8559,27 @@ trv_func_def_args(ast_t *ast, trv_args_t *targs) {
     }
 
     return obj_new_array(ast->ref_gc, args);
+}
+
+static object_t *
+trv_func_extends(ast_t *ast, trv_args_t *targs) {
+    tready();
+    node_t *node = targs->ref_node;
+    assert(node && node->type == NODE_TYPE_FUNC_EXTENDS);
+    node_func_extends_t *func_extends = node->real;
+    assert(func_extends);
+
+    depth_t depth = targs->depth;
+    targs->ref_node = func_extends->identifier;
+    targs->depth = depth + 1;
+    object_t *idnobj = _trv_traverse(ast, targs);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to traverse identifier");
+        return_trav(NULL);
+    }
+    assert(idnobj);
+
+    return idnobj;
 }
 
 object_t *
@@ -8625,6 +8669,11 @@ _trv_traverse(ast_t *ast, trv_args_t *targs) {
     case NODE_TYPE_FUNC_DEF_ARGS: {
         check("call trv_func_def_args");
         object_t *obj = trv_func_def_args(ast, targs);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_FUNC_EXTENDS: {
+        check("call trv_func_extends");
+        object_t *obj = trv_func_extends(ast, targs);
         return_trav(obj);
     } break;
     case NODE_TYPE_STMT: {

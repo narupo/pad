@@ -57,6 +57,8 @@ obj_del(object_t *self) {
         obj_del(self->func.args);
         self->func.args = NULL;
         // do not delete ref_suites, this is reference
+        obj_del(self->func.extends_func);
+        self->func.extends_func = NULL;
         break;
     case OBJ_TYPE_CHAIN:
         obj_dec_ref(self->chain.operand);
@@ -365,9 +367,11 @@ obj_new_func(
     object_t *move_name,
     object_t *move_args,
     node_array_t *ref_suites,
-    node_dict_t *ref_blocks
+    node_dict_t *ref_blocks,
+    object_t *extends_func  // allow null
 ) {
-    bool invalid_args = !ref_gc || !ref_ast || !move_name || !move_args || !ref_suites || !ref_blocks;
+    bool invalid_args = !ref_gc || !ref_ast || !move_name ||
+                        !move_args || !ref_suites || !ref_blocks;
     if (invalid_args) {
         return NULL;
     }
@@ -382,6 +386,7 @@ obj_new_func(
     self->func.args = mem_move(move_args);
     self->func.ref_suites = ref_suites;
     self->func.ref_blocks = ref_blocks;
+    self->func.extends_func = extends_func;
 
     return self;
 }
