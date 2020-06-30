@@ -79,7 +79,8 @@ struct object_func {
     object_t *name;  // type == OBJ_TYPE_IDENTIFIER
     object_t *args;  // type == OBJ_TYPE_ARRAY
     node_array_t *ref_suites;  // reference to suite (node tree) (DO NOT DELETE)
-    node_dict_t *ref_blocks;  // reference to blocks (build by block statement) in function (DO NOT DELETE)
+    node_dict_t *ref_blocks;  // reference to blocks (build by block-statement) in function (DO NOT DELETE)
+    object_t *extends_func;  // reference to function object of extended
 };
 
 /**
@@ -312,12 +313,13 @@ obj_new_dict(gc_t *ref_gc, object_dict_t *move_objdict);
  * construct function object by parameters
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc     reference to gc_t (do not delete)
- * @param[in] *ref_ast    reference to ast_t (do not delete). The function object refer this context
- * @param[in] *move_name  pointer to identifier object for function name (with move semantics)
- * @param[in] *move_args  pointer to array object for function arguments (with move semantics)
- * @param[in] *ref_suites reference to nodes of function content (do not delete)
- * @param[in] *ref_blocks reference to dict nodes of function blocks (do not delete)
+ * @param[in] *ref_gc       reference to gc_t (do not delete)
+ * @param[in] *ref_ast      reference to ast_t (do not delete). The function object refer this context
+ * @param[in] *move_name    pointer to identifier object for function name (with move semantics)
+ * @param[in] *move_args    pointer to array object for function arguments (with move semantics)
+ * @param[in] *ref_suites   reference to nodes of function content (do not delete)
+ * @param[in] *ref_blocks   reference to dict nodes of function blocks (do not delete)
+ * @param[in] *extends_func reference to function of extended
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
@@ -329,7 +331,8 @@ obj_new_func(
     object_t *move_name,
     object_t *move_args,
     node_array_t *ref_suites,
-    node_dict_t *ref_blocks
+    node_dict_t *ref_blocks,
+    object_t *extends_func
 );
 
 /**

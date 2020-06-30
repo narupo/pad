@@ -64,7 +64,7 @@ move_obj_at_cur_varmap(
 
 /**
  * set reference of object at varmap of current scope by key
- * this function auto increment reference count of object
+ * this function auto increment reference count of object (ref)
  *
  * @param[in] *ast        pointer to ast_t
  * @param[in] *ref_owners reference to owners in array
