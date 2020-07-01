@@ -1183,20 +1183,27 @@ trv_inject_stmt(ast_t *ast, trv_args_t *targs) {
     }
     func = &extends_func->func;
 
-    node_dict_t *ref_blocks = func->ref_blocks;
-    node_dict_item_t *item = nodedict_get(ref_blocks, idnname);
-    if (!item) {
-        ast_pushb_error(ast, "can't inject. \"%s\" is not found", idnname);
-        return_trav(NULL);
-    }
+    node_block_stmt_t *block_stmt = NULL;
+    for (;;) {
+        node_dict_t *ref_blocks = func->ref_blocks;
+        node_dict_item_t *item = nodedict_get(ref_blocks, idnname);
+        if (!item) {
+            if (!func->extends_func) {
+                ast_pushb_error(ast, "not found \"%s\" block", idnname);
+                return_trav(NULL);
+            }
+            func = &func->extends_func->func;
+            continue;
+        }
 
-    node = item->value;
-    assert(node && node->type == NODE_TYPE_BLOCK_STMT);
-    node_block_stmt_t *block_stmt = node->real;
+        node = item->value;
+        assert(node && node->type == NODE_TYPE_BLOCK_STMT);
+        block_stmt = node->real;
+        break;
+    }
 
     // inject contents at block
     block_stmt->contents = inject_stmt->contents;
-
     return_trav(NULL);
 }
 

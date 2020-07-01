@@ -8,7 +8,7 @@ object_t *
 _trv_traverse(ast_t *ast, trv_args_t *targs);
 
 static object_t *
-invoke_func_obj(ast_t *ast, object_array_t *owners, object_t *funcobj, object_t *drtargs);
+invoke_func_obj(ast_t *ast, object_array_t *owners, object_t *func_obj, object_t *drtargs);
 
 /************
 * functions *
@@ -235,13 +235,13 @@ invoke_func_by_name(
 ) {
     assert(funcname);
 
-    object_t *funcobj = ctx_find_var_ref(ast->ref_context, funcname);
-    if (!funcobj) {
+    object_t *func_obj = ctx_find_var_ref(ast->ref_context, funcname);
+    if (!func_obj) {
         // not error
         return NULL;
     }
 
-    return invoke_func_obj(ast, owners, funcobj, drtargs);
+    return invoke_func_obj(ast, owners, func_obj, drtargs);
 }
 
 static object_t *
@@ -294,10 +294,10 @@ again:
     if (!item) {
         return NULL;  // not found function in module
     }
-    object_t *funcobj = item->value;
-    assert(funcobj);
+    object_t *func_obj = item->value;
+    assert(func_obj);
 
-    object_t *result = invoke_func_obj(ast, owners, funcobj, drtargs);
+    object_t *result = invoke_func_obj(ast, owners, func_obj, drtargs);
     return result;
 }
 
@@ -386,20 +386,119 @@ copy_func_args(ast_t *ast, object_t *drtargs) {
     return obj_new_array(ast->ref_gc, mem_move(dstarr));
 }
 
+/**
+ * set function arguments at current scope varmap
+ */
+static void
+extract_func_args(
+    ast_t *ast,
+    object_array_t *owners,
+    object_t *func_obj,
+    object_t *args
+) {
+    if (!func_obj || !args) {
+        return;
+    }
+
+    object_func_t *func = &func_obj->func;
+    const object_array_t *formal_args = func->args->objarr;
+    const object_array_t *actual_args = args->objarr;
+
+    if (objarr_len(formal_args) != objarr_len(actual_args)) {
+        ast_pushb_error(ast, "arguments not same length");
+        obj_del(args);
+        ctx_popb_scope(func->ref_ast->ref_context);
+        return;
+    }
+
+    for (int32_t i = 0; i < objarr_len(formal_args); ++i) {
+        const object_t *farg = objarr_getc(formal_args, i);
+        assert(farg->type == OBJ_TYPE_IDENTIFIER);
+        const char *fargname = str_getc(farg->identifier.name);
+
+        // extract actual argument
+        object_t *aarg = objarr_get(actual_args, i);
+        object_t *ref_aarg = aarg;
+        if (aarg->type == OBJ_TYPE_IDENTIFIER) {
+            // pull from current context's ast
+            ref_aarg = pull_in_ref_by(aarg);
+            if (!ref_aarg) {
+                ast_pushb_error(
+                    ast,
+                    "\"%s\" is not defined in invoke function",
+                    obj_getc_idn_name(aarg)
+                );
+                obj_del(args);
+                return;
+            }
+        }
+
+        // extract reference from current context
+        object_t *extract_arg = extract_ref_of_obj(ast, ref_aarg);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to extract reference");
+            return;
+        }
+
+        set_ref_at_cur_varmap(
+            func->ref_ast,
+            owners,
+            fargname,  // formal argument name
+            extract_arg  // actual argument
+        );
+
+        // if this function extends other function
+        // then set arguments at extends function envrionment
+        if (func->extends_func) {
+            object_func_t *extends_func = &func->extends_func->func;
+            set_ref_at_cur_varmap(
+                extends_func->ref_ast,
+                owners,
+                fargname,  // formal argument name
+                extract_arg  // actual argument
+            );
+        }
+    }  // for
+}
+
+static object_t *
+exec_func_suites(ast_t *ast, object_t *func_obj) {
+    object_func_t *func = &func_obj->func;
+    object_t *result = NULL;
+
+    for (int32_t i = 0; i < nodearr_len(func->ref_suites); ++i) {
+        node_t *ref_suite = nodearr_get(func->ref_suites, i);
+        result = _trv_traverse(func->ref_ast, &(trv_args_t) {
+            .ref_node = ref_suite,
+            .depth = 0,
+            .func_obj = func_obj,
+        });
+        if (ast_has_errors(func->ref_ast)) {
+            errstack_extendb_other(ast->error_stack, func->ref_ast->error_stack);
+            return NULL;
+        }
+        if (ctx_get_do_return(func->ref_ast->ref_context)) {
+            break;
+        }
+    }
+
+    return result;
+}
+
 static object_t *
 invoke_func_obj(
     ast_t *ast,
     object_array_t *owners,
-    object_t *funcobj,
+    object_t *func_obj,
     object_t *drtargs
 ) {
     assert(owners);
     assert(drtargs);
 
-    if (!funcobj) {
+    if (!func_obj) {
         return NULL;
     }
-    if (funcobj->type != OBJ_TYPE_FUNC) {
+    if (func_obj->type != OBJ_TYPE_FUNC) {
         return NULL;
     }
 
@@ -412,7 +511,7 @@ invoke_func_obj(
         }
     }
 
-    object_func_t *func = &funcobj->func;
+    object_func_t *func = &func_obj->func;
     assert(func->args->type == OBJ_TYPE_ARRAY);
     assert(func->ref_ast);
 
@@ -425,55 +524,11 @@ invoke_func_obj(
     }
 
     // extract function arguments to function's varmap in current context
-    if (args) {
-        const object_array_t *formal_args = func->args->objarr;
-        const object_array_t *actual_args = args->objarr;
-
-        if (objarr_len(formal_args) != objarr_len(actual_args)) {
-            ast_pushb_error(ast, "arguments not same length");
-            obj_del(args);
-            ctx_popb_scope(func->ref_ast->ref_context);
-            return NULL;
-        }
-
-        for (int32_t i = 0; i < objarr_len(formal_args); ++i) {
-            const object_t *farg = objarr_getc(formal_args, i);
-            assert(farg->type == OBJ_TYPE_IDENTIFIER);
-            const char *fargname = str_getc(farg->identifier.name);
-
-            // extract actual argument
-            object_t *aarg = objarr_get(actual_args, i);
-            object_t *ref_aarg = aarg;
-            if (aarg->type == OBJ_TYPE_IDENTIFIER) {
-                // pull from current context's ast
-                ref_aarg = pull_in_ref_by(aarg);
-                if (!ref_aarg) {
-                    ast_pushb_error(
-                        ast,
-                        "\"%s\" is not defined in invoke function",
-                        obj_getc_idn_name(aarg)
-                    );
-                    obj_del(args);
-                    return NULL;
-                }
-            }
-
-            // extract reference from current context
-            object_t *extref = extract_ref_of_obj(ast, ref_aarg);
-            if (ast_has_errors(ast)) {
-                ast_pushb_error(ast, "failed to extract reference");
-                return NULL;
-            }
-
-            set_ref_at_cur_varmap(
-                func->ref_ast,
-                owners,
-                fargname,  // formal argument name
-                extref  // actual argument
-            );
-        }  // for
-    }  // if
-
+    extract_func_args(ast, owners, func_obj, args);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to extract function arguments");
+        return NULL;
+    }
     obj_del(args);
 
     // swap current context stdout and stderr buffer to function's context buffer
@@ -483,21 +538,10 @@ invoke_func_obj(
     string_t *save_stderr_buf = ctx_swap_stderr_buf(func->ref_ast->ref_context, cur_stderr_buf);
 
     // execute function suites
-    object_t *result = NULL;
-    for (int32_t i = 0; i < nodearr_len(func->ref_suites); ++i) {
-        node_t *ref_suite = nodearr_get(func->ref_suites, i);
-        result = _trv_traverse(func->ref_ast, &(trv_args_t) {
-            .ref_node = ref_suite,
-            .depth = 0,
-            .func_obj = funcobj,
-        });
-        if (ast_has_errors(func->ref_ast)) {
-            errstack_extendb_other(ast->error_stack, func->ref_ast->error_stack);
-            return NULL;
-        }
-        if (ctx_get_do_return(func->ref_ast->ref_context)) {
-            break;
-        }
+    object_t *result = exec_func_suites(ast, func_obj);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to execute function suites");
+        return NULL;
     }
 
     // reset status
@@ -618,7 +662,7 @@ refer_chain_call(ast_t *ast, object_array_t *owners, chain_object_t *co) {
         objarr_pushb(func_owners, obj);
     }
 
-    object_t *funcobj = NULL;
+    object_t *func_obj = NULL;
     const char *funcname = NULL;
 
 again:
@@ -637,7 +681,7 @@ again:
         }
     } break;
     case OBJ_TYPE_FUNC: {
-        funcobj = owner;
+        func_obj = owner;
         funcname = obj_getc_func_name(owner);
     } break;
     case OBJ_TYPE_OWNERS_METHOD: {
@@ -659,8 +703,8 @@ again:
 
     object_t *result = NULL;
 
-    if (funcobj) {
-        result = invoke_func_obj(ast, func_owners, funcobj, actual_args);
+    if (func_obj) {
+        result = invoke_func_obj(ast, func_owners, func_obj, actual_args);
         if (ast_has_errors(ast)) {
             ast_pushb_error(ast, "failed to invoke func obj");
             goto fail;
