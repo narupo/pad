@@ -260,9 +260,9 @@ typedef struct {
 typedef struct {
     node_t *identifier;
     node_t *func_def_params;
-    node_t *func_extends;
+    node_t *func_extends;  // function of extended
     node_array_t *contents;  // array of nodes
-    node_dict_t *blocks;  // nodes of block statement
+    node_dict_t *blocks;  // block nodes of block statement
 } node_func_def_t;
 
 typedef struct {
