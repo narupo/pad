@@ -1105,6 +1105,15 @@ again:
     return_trav(ret);
 }
 
+static void
+shallow_assign_varmap(object_dict_t *dst, object_dict_t *src) {
+    for (int32_t i = 0; i < objdict_len(src); ++i) {
+        const object_dict_item_t *item = objdict_getc_index(src, i);
+        assert(item);
+        objdict_set(dst, item->key, item->value);
+    }
+}
+
 static object_t *
 trv_block_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
@@ -1133,6 +1142,21 @@ trv_block_stmt(ast_t *ast, trv_args_t *targs) {
     assert(node && node->type == NODE_TYPE_BLOCK_STMT);
     block_stmt = node->real;
 
+    // push back scope
+    ast_t *ref_ast = func->ref_ast;
+    context_t *ref_context = ast_get_ref_context(ref_ast);
+    ctx_pushb_scope(ref_context);
+
+    // extract variables from injector's varmap to current scope
+    object_dict_t *src_varmap = block_stmt->inject_varmap;
+    if (src_varmap) {
+        assert(src_varmap);
+        object_dict_t *dst_varmap = ctx_get_ref_varmap_cur_scope(ref_context);
+        assert(dst_varmap);
+        shallow_assign_varmap(dst_varmap, src_varmap);
+    }
+
+    // execute contents nodes
     node_array_t *contents = block_stmt->contents;
     for (int32_t i = 0; i < nodearr_len(contents); ++i) {
         node_t *content = nodearr_get(contents, i);
@@ -1142,11 +1166,13 @@ trv_block_stmt(ast_t *ast, trv_args_t *targs) {
         object_t *result = _trv_traverse(ast, targs);
         if (ast_has_errors(ast)) {
             ast_pushb_error(ast, "failed to traverse content");
-            return_trav(NULL);
+            goto fail;
         }
         obj_del(result);
     }
 
+fail:
+    ctx_popb_scope(ref_context);
     return_trav(NULL);
 }
 
@@ -1201,6 +1227,13 @@ trv_inject_stmt(ast_t *ast, trv_args_t *targs) {
         block_stmt = node->real;
         break;
     }
+
+    // inject varmap at block
+    ast_t *ref_ast = func->ref_ast;
+    context_t *ref_context = ast_get_ref_context(ref_ast);
+    object_dict_t *ref_varmap = ctx_get_ref_varmap_cur_scope(ref_context);
+    object_dict_t *varmap = objdict_shallow_copy(ref_varmap);
+    block_stmt->inject_varmap = varmap;
 
     // inject contents at block
     block_stmt->contents = inject_stmt->contents;

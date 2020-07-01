@@ -22568,7 +22568,36 @@ test_trv_func_def_30(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2\n"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_def_31(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def base(a, b):\n"
+    "       block header:\n"
+    "       end\n"
+    "   end\n"
+    "   def index(a) extends base:\n"
+    "       inject header:\n"
+    "           puts(a, b)\n"
+    "       end\n"
+    "       super(2, 3)\n"
+    "   end\n"
+    "   index(1)\n"
+    "@}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1 3\n"));
     }
 
     trv_cleanup;
@@ -25897,6 +25926,7 @@ traverser_tests[] = {
     {"trv_func_def_28", test_trv_func_def_28},
     {"trv_func_def_29", test_trv_func_def_29},
     {"trv_func_def_30", test_trv_func_def_30},
+    {"trv_func_def_31", test_trv_func_def_31},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},

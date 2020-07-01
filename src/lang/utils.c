@@ -444,10 +444,10 @@ extract_func_args(
 
         // if this function extends other function
         // then set arguments at extends function envrionment
-        if (func->extends_func) {
-            object_func_t *extends_func = &func->extends_func->func;
-            set_ref_at_cur_varmap(extends_func->ref_ast, owners, fargname, extract_arg);
-        }
+        // if (func->extends_func) {
+        //     object_func_t *extends_func = &func->extends_func->func;
+        //     set_ref_at_cur_varmap(extends_func->ref_ast, owners, fargname, extract_arg);
+        // }
     }  // for
 }
 
