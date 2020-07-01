@@ -21605,7 +21605,7 @@ test_trv_block_stmt_1(void) {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "not found identifier in block statement"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "can't access to function node"));
     }
 
     trv_cleanup;
@@ -21624,6 +21624,7 @@ test_trv_block_stmt_2(void) {
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
+        showdetail();
         assert(!ast_has_errors(ast));
     }
 
@@ -22508,6 +22509,66 @@ test_trv_func_def_28(void) {
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n3\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_def_29(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def base():\n"
+    "       block header:\n"
+    "           @}<h1>Title</h1>{@\n"
+    "       end\n"
+    "   end\n"
+    "   def index() extends base:\n"
+    "       inject header:\n"
+    "           @}<h1>The title</h1>{@\n"
+    "       end\n"
+    "       super()\n"
+    "   end\n"
+    "   index()\n"
+    "@}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<h1>The title</h1>"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_def_30(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def base(a):\n"
+    "       block header:\n"
+    "           puts(a)"
+    "       end\n"
+    "   end\n"
+    "   def index(a) extends base:\n"
+    "       inject header:\n"
+    "           puts(a)\n"
+    "       end\n"
+    "       super(2)\n"
+    "   end\n"
+    "   index(1)\n"
+    "@}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2\n"));
     }
 
     trv_cleanup;
@@ -25834,6 +25895,8 @@ traverser_tests[] = {
     {"trv_func_def_26", test_trv_func_def_26},
     {"trv_func_def_27", test_trv_func_def_27},
     {"trv_func_def_28", test_trv_func_def_28},
+    {"trv_func_def_29", test_trv_func_def_29},
+    {"trv_func_def_30", test_trv_func_def_30},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},

@@ -15,7 +15,7 @@
         token_t *t = *ast->ref_ptr; \
         fprintf( \
             stderr, \
-            "debug: %5d: %*s: dep(%3d): token(%s): err(%s)\n", \
+            "debug: %5d: %*s: %3d: token(%s): err(%s)\n", \
             __LINE__, \
             20, \
             __func__, \
@@ -3414,7 +3414,7 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
             node_t *n = nodearr_get(cur->contents, i); \
             ast_del_nodes(ast, n); \
         } \
-        nodearr_del(cur->contents); \
+        nodearr_del_without_nodes(cur->contents); \
         free(cur); \
         if (strlen(msg)) { \
             ast_pushb_error(ast, msg); \
@@ -3426,6 +3426,10 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
     token_t *t = ast_read_token(ast);
     if (!t || t->type != TOKEN_TYPE_STMT_BLOCK) {
         return_cleanup("");
+    }
+
+    if (!cargs->func_def) {
+        return_cleanup("can't access to function node");
     }
 
     cargs->depth = depth + 1;
@@ -3456,16 +3460,13 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
 
         cargs->depth = depth + 1;
         node_t *content = cc_content(ast, cargs);
-        if (!content || ast_has_errors(ast)) {
+        if (ast_has_errors(ast)) {
             return_cleanup("");
+        } else if (!content) {
+            break;  // allow empty contents
         }
 
         nodearr_moveb(cur->contents, mem_move(content));
-    }
-
-    // set the block statement node at current function
-    if (!cargs->func_def) {
-        return_cleanup("can't access to function node");
     }
 
     node_t *node = node_new(NODE_TYPE_BLOCK_STMT, cur);
@@ -3571,6 +3572,9 @@ cc_content(ast_t *ast, cc_args_t *cargs) {
 #undef return_ok
 #define return_ok return_parse(node_new(NODE_TYPE_CONTENT, cur))
 
+    check("skip newlines");
+    cc_skip_newlines(ast);
+
     depth_t depth = cargs->depth;
     token_t *t = ast_read_token(ast);
     if (!t) {
@@ -3594,6 +3598,9 @@ cc_content(ast_t *ast, cc_args_t *cargs) {
             return_cleanup("");
         }
     }
+
+    check("skip newlines");
+    cc_skip_newlines(ast);
 
     return_ok;
 }
@@ -4056,7 +4063,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
     bool is_in_func = cargs->is_in_func;
 
 #undef return_cleanup
-#define return_cleanup(msg) { \
+#define return_cleanup(fmt) { \
         ast->ref_ptr = save_ptr; \
         cargs->is_in_loop = is_in_loop; \
         cargs->is_in_func = is_in_func; \
@@ -4067,8 +4074,8 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
         } \
         nodearr_del_without_nodes(cur->contents); \
         free(cur); \
-        if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+        if (strlen(fmt)) { \
+            ast_pushb_error(ast, fmt); \
         } \
         return_parse(NULL); \
     } \
@@ -4132,75 +4139,20 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
     check("skip newlines");
     cc_skip_newlines(ast);
 
-    t = *ast->ref_ptr++;
-    if (t->type != TOKEN_TYPE_RBRACEAT) {
-        ast->ref_ptr--;
-
-        check("call cc_elems");
-        node_t *elems = cc_elems(ast, &(cc_args_t) {
-            .depth = depth + 1,
-            .is_in_loop = false,
-            .is_in_func = true,
-            .func_def = cur,
-        });
-        if (ast_has_errors(ast)) {
-            return_cleanup("");
-        } else if (elems) {
-            check("store elems to contents");
-            nodearr_moveb(cur->contents, elems);
-        }
-        // allow null because function allow empty contents
-    } else {
-        --ast->ref_ptr;
-    }
-
     // read contents
+    cargs->depth = depth + 1;
+    cargs->is_in_func = true;
+    cargs->is_in_loop = false;
+    cargs->func_def = cur;
     for (;;) {
-        t = *ast->ref_ptr++;
-        if (!t || t->type != TOKEN_TYPE_RBRACEAT) {
-            --ast->ref_ptr;
+        node_t *content = cc_content(ast, cargs);
+        if (ast_has_errors(ast)) {
+            return_cleanup("failed to compile content")
+        } else if (!content) {
             break;
         }
-        check("read @}")
 
-        check("call cc_blocks")
-        node_t *blocks = cc_blocks(ast, &(cc_args_t) {
-            .depth = depth + 1,
-            .is_in_loop = false,
-            .is_in_func = true,
-            .func_def = cur,
-        });
-        if (ast_has_errors(ast)) {
-            return_cleanup("");
-        } else if (blocks) {
-            check("store blocks to contents");
-            nodearr_moveb(cur->contents, blocks);
-        }
-        // allow null because function allow empty blocks
-
-        if (!*ast->ref_ptr) {
-            return_cleanup("syntax error. reached EOF in parse func def (3)");
-        }
-
-        t = *ast->ref_ptr++;
-        if (t->type != TOKEN_TYPE_LBRACEAT) {
-            return_cleanup("syntax error. not found {@ in parse func def");
-        }
-
-        check("call cc_elems");
-        node_t *elems = cc_elems(ast, &(cc_args_t) {
-            .depth = depth + 1,
-            .is_in_loop = false,
-            .is_in_func = true,
-            .func_def = cur,
-        });
-        if (ast_has_errors(ast)) {
-            return_cleanup("");
-        } else if (elems) {
-            check("store elems to contents");
-            nodearr_moveb(cur->contents, elems);
-        }
-        // allow null because function allow empty elems
+        nodearr_moveb(cur->contents, content);
     }
 
     check("skip newlines");
@@ -4211,30 +4163,10 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
     }
 
     t = *ast->ref_ptr++;
-    if (t->type != TOKEN_TYPE_RBRACEAT) {
-        ast->ref_ptr--;
-
-        check("call cc_elems (2)");
-        node_t *elems = cc_elems(ast, &(cc_args_t) {
-            .depth = depth + 1,
-            .is_in_loop = false,
-            .is_in_func = true,
-            .func_def = cur,
-        });
-        if (ast_has_errors(ast)) {
-            return_cleanup("");
-        } else if (elems) {
-            check("store elems to contents (2)");
-            nodearr_moveb(cur->contents, elems);
-        }
-        // allow null because function allow empty contents
-    } else {
-        --ast->ref_ptr;
-    }
-
-    t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_STMT_END) {
-        return_cleanup("not found 'end' in parse func def");
+        char msg[1024];
+        snprintf(msg, sizeof msg, "not found 'end' in parse func def. token type is %d", t->type);
+        return_cleanup(msg);
     }
     check("read end");
 
