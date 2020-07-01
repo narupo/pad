@@ -440,23 +440,13 @@ extract_func_args(
             return;
         }
 
-        set_ref_at_cur_varmap(
-            func->ref_ast,
-            owners,
-            fargname,  // formal argument name
-            extract_arg  // actual argument
-        );
+        set_ref_at_cur_varmap(func->ref_ast, owners, fargname, extract_arg);
 
         // if this function extends other function
         // then set arguments at extends function envrionment
         if (func->extends_func) {
             object_func_t *extends_func = &func->extends_func->func;
-            set_ref_at_cur_varmap(
-                extends_func->ref_ast,
-                owners,
-                fargname,  // formal argument name
-                extract_arg  // actual argument
-            );
+            set_ref_at_cur_varmap(extends_func->ref_ast, owners, fargname, extract_arg);
         }
     }  // for
 }
@@ -1120,7 +1110,7 @@ parse_bool(ast_t *ast, object_t *obj) {
 }
 
 bool
-is_var_in_cur_scope(object_t *idnobj) {
+is_var_in_cur_scope(const object_t *idnobj) {
     assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
     const char *idn = obj_getc_idn_name(idnobj);
     ast_t *ref_ast = obj_get_idn_ref_ast(idnobj);

@@ -166,4 +166,4 @@ parse_bool(ast_t *ast, object_t *obj);
  * @return true or false
  */
 bool
-is_var_in_cur_scope(object_t *idnobj);
+is_var_in_cur_scope(const object_t *idnobj);
