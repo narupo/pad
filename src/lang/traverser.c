@@ -1125,12 +1125,28 @@ trv_block_stmt(ast_t *ast, trv_args_t *targs) {
     }
 
     object_t *func_obj = targs->func_obj;
-    if (!func_obj) {
-        ast_pushb_error(ast, "block statement need function");
-        return_trav(NULL);
+    object_func_t *func = &func_obj->func;
+    node_dict_t *ref_blocks = func->ref_blocks;
+    const node_dict_item_t *item = nodedict_getc(ref_blocks, obj_getc_idn_name(idn));
+    assert(item);
+    node = item->value;
+    assert(node && node->type == NODE_TYPE_BLOCK_STMT);
+    block_stmt = node->real;
+
+    node_array_t *contents = block_stmt->contents;
+    for (int32_t i = 0; i < nodearr_len(contents); ++i) {
+        node_t *content = nodearr_get(contents, i);
+        assert(content);
+        targs->ref_node = content;
+        targs->depth = depth + 1;
+        object_t *result = _trv_traverse(ast, targs);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to traverse content");
+            return_trav(NULL);
+        }
+        obj_del(result);
     }
 
-    // return_trav(TODO);
     return_trav(NULL);
 }
 
@@ -1143,10 +1159,82 @@ trv_inject_stmt(ast_t *ast, trv_args_t *targs) {
     node_inject_stmt_t *inject_stmt = node->real;
     assert(inject_stmt);
 
-    // TODO
+    if (!targs->func_obj) {
+        ast_pushb_error(ast, "can't inject in out of function");
+        return_trav(NULL);
+    }
 
-    // return_trav(TODO);
+    depth_t depth = targs->depth;
+
+    targs->ref_node = inject_stmt->identifier;
+    targs->depth = depth + 1;
+    object_t *idn = _trv_traverse(ast, targs);
+    if (!idn || ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to traverse identifier");
+        return_trav(NULL);
+    }
+    const char *idnname = obj_getc_idn_name(idn);
+
+    object_func_t *func = &targs->func_obj->func;
+    object_t *extends_func = func->extends_func;
+    if (!extends_func) {
+        ast_pushb_error(ast, "can't inject. not found extended function");
+        return_trav(NULL);
+    }
+    func = &extends_func->func;
+
+    node_dict_t *ref_blocks = func->ref_blocks;
+    node_dict_item_t *item = nodedict_get(ref_blocks, idnname);
+    if (!item) {
+        ast_pushb_error(ast, "can't inject. \"%s\" is not found", idnname);
+        return_trav(NULL);
+    }
+
+    node = item->value;
+    assert(node && node->type == NODE_TYPE_BLOCK_STMT);
+    node_block_stmt_t *block_stmt = node->real;
+
+    // inject contents at block
+    block_stmt->contents = inject_stmt->contents;
+
     return_trav(NULL);
+}
+
+static object_t *
+trv_content(ast_t *ast, trv_args_t *targs) {
+    tready();
+    node_t *node = targs->ref_node;
+    assert(node);
+    assert(node->type == NODE_TYPE_CONTENT);
+    node_content_t *content = node->real;
+    assert(content);
+
+    depth_t depth = targs->depth;
+    object_t *result = NULL;
+
+    if (content->elems) {
+        check("trv_traverse elems");
+        targs->ref_node = content->elems;
+        targs->depth = depth + 1;
+        result = _trv_traverse(ast, targs);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to traverse elems");
+            return_trav(NULL);
+        }
+    } else if (content->blocks) {
+        check("trv_traverse blocks");
+        targs->ref_node = content->blocks;
+        targs->depth = depth + 1;
+        result = _trv_traverse(ast, targs);
+        if (ast_has_errors(ast)) {
+            ast_pushb_error(ast, "failed to traverse blocks");
+            return_trav(NULL);
+        }
+    } else {
+        ast_pushb_error(ast, "invalid status of content");
+    }
+
+    return_trav(result);
 }
 
 static object_t *
@@ -8483,13 +8571,17 @@ trv_func_def(ast_t *ast, trv_args_t *targs) {
             ast_pushb_error(ast, "failed to traverse func-extends");
             return_trav(NULL);
         }
-        extends_func = pull_in_ref_by(extends_func_name);
-        if (!extends_func) {
+        object_t *ref_extends_func = pull_in_ref_by(extends_func_name);
+        if (!ref_extends_func) {
             ast_pushb_error(ast,
                 "not found \"%s\". can't extends",
                 obj_getc_idn_name(extends_func_name)
             );
+            return_trav(NULL);
         }
+
+        // deep copy
+        extends_func = obj_deep_copy(ref_extends_func);
         obj_inc_ref(extends_func);  // for obj_new_func
     }
 
@@ -8739,6 +8831,11 @@ _trv_traverse(ast_t *ast, trv_args_t *targs) {
     case NODE_TYPE_RETURN_STMT: {
         check("call trv_return_stmt");
         object_t *obj = trv_return_stmt(ast, targs);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_CONTENT: {
+        check("call trv_content");
+        object_t *obj = trv_content(ast, targs);
         return_trav(obj);
     } break;
     case NODE_TYPE_BLOCK_STMT: {

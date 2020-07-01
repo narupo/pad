@@ -5,8 +5,11 @@
 
 #include <lib/memory.h>
 #include <lib/string.h>
+#include <lib/cstring.h>
 #include <lang/types.h>
 #include <lang/node_dict.h>
+#include <lang/node_array.h>
+#include <lang/chain_nodes.h>
 
 /*************
 * node types *
@@ -79,8 +82,6 @@ typedef enum {
     NODE_TYPE_DICT,
     NODE_TYPE_DICT_ELEMS,
     NODE_TYPE_DICT_ELEM,
-
-    NODE_TYPE_IDENTIFIER_CHAIN,
 
     NODE_TYPE_ADD_SUB_OP,
     NODE_TYPE_MUL_DIV_OP,
@@ -239,6 +240,15 @@ typedef struct {
     node_array_t *contents;
 } node_inject_stmt_t;
 
+/**********
+* content *
+**********/
+
+typedef struct {
+    node_t *elems;
+    node_t *blocks;
+} node_content_t;
+
 /******
 * def *
 ******/
@@ -266,15 +276,6 @@ typedef struct {
 typedef struct {
     node_t *identifier;
 } node_func_extends_t;
-
-/**********
-* content *
-**********/
-
-typedef struct {
-    node_t *elems;
-    node_t *blocks;
-} node_content_t;
 
 /**********
 * formula *
@@ -455,6 +456,17 @@ node_del(node_t *self);
  */
 node_t *
 node_new(node_type_t type, void *real);
+
+/**
+ * Deep copy
+ *
+ * @param[in] *other
+ *
+ * @return success to pointer to node_t
+ * @return failed to NULL
+ */
+node_t *
+node_deep_copy(const node_t *other);
 
 /**
  * Get node type

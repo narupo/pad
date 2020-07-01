@@ -73,6 +73,16 @@ string_t *
 str_new_other(const string_t *other);
 
 /**
+ * deep copy
+ *
+ * @param[in] *other
+ *
+ * @return
+ */
+string_t *
+str_deep_copy(const string_t *other);
+
+/**
  * construct from C strings
  *
  * @param[in] *str pointer to C strings

@@ -53,6 +53,20 @@ chain_node_new(chain_node_type_t type, node_t *move_node) {
     return self;
 }
 
+chain_node_t *
+chain_node_deep_copy(const chain_node_t *other) {
+    if (!other) {
+        return NULL;
+    }
+
+    chain_node_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->type = other->type;
+    self->node = node_deep_copy(other->node);
+
+    return self;
+}
+
 chain_node_type_t
 chain_node_getc_type(const chain_node_t *self) {
     return self->type;

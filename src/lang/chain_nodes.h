@@ -2,6 +2,7 @@
 
 #include <lib/memory.h>
 #include <lang/types.h>
+#include <lang/chain_node.h>
 
 /**
  * destruct chain_nodes_t
@@ -20,6 +21,17 @@ chain_nodes_del(chain_nodes_t *self);
  */
 chain_nodes_t *
 chain_nodes_new(void);
+
+/**
+ * deep copy
+ *
+ * @param[in] *other
+ *
+ * @return success to pointer to chain_nodes_t (copied)
+ * @return failed to NULL
+ */
+chain_nodes_t *
+chain_nodes_deep_copy(const chain_nodes_t *other);
 
 /**
  * resize chain_nodes_t

@@ -414,10 +414,17 @@ invoke_func_obj(
 
     object_func_t *func = &funcobj->func;
     assert(func->args->type == OBJ_TYPE_ARRAY);
-
-    // extract function arguments to function's varmap
     assert(func->ref_ast);
+
+    // push scope
     ctx_pushb_scope(func->ref_ast->ref_context);
+
+    // this function has extends-function ? does set super ?
+    if (func->extends_func) {
+        set_ref_at_cur_varmap(func->ref_ast, owners, "super", func->extends_func);
+    }
+
+    // extract function arguments to function's varmap in current context
     if (args) {
         const object_array_t *formal_args = func->args->objarr;
         const object_array_t *actual_args = args->objarr;
@@ -500,6 +507,8 @@ invoke_func_obj(
     ctx_swap_stderr_buf(ast->ref_context, cur_stderr_buf);
 
     ctx_set_do_return(func->ref_ast->ref_context, false);
+
+    // pop scope
     ctx_popb_scope(func->ref_ast->ref_context);
 
     // done

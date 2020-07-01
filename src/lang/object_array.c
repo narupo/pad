@@ -71,6 +71,26 @@ objarr_new_other(object_array_t *other) {
     return self;
 }
 
+object_t *
+obj_deep_copy(const object_t *other);
+
+object_array_t*
+objarr_deep_copy(const object_array_t *other) {
+    object_array_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->parray = mem_ecalloc(other->capa+1, sizeof(object_t *));
+    self->capa = other->capa;
+    self->len = other->len;
+
+    for (int i = 0; i < self->len; ++i) {
+        object_t *obj = obj_deep_copy(other->parray[i]);
+        obj_inc_ref(obj);
+        self->parray[i] = obj;
+    }
+
+    return self;
+}
+
 /*********
 * getter *
 *********/

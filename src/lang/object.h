@@ -168,6 +168,16 @@ object_t *
 obj_new_other(const object_t *other);
 
 /**
+ * deep copy
+ *
+ * @param[in] *other
+ *
+ * @return
+ */
+object_t *
+obj_deep_copy(const object_t *other);
+
+/**
  * construct nil object
  * if failed to allocate memory then exit from process
  *
