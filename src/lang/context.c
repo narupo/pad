@@ -256,3 +256,9 @@ ctx_var_in_cur_scope(const context_t *self, const char *idn) {
 
     return false;
 }
+
+object_dict_t *
+ctx_get_ref_varmap_cur_scope(const context_t *self) {
+    scope_t *current_scope = scope_get_last(self->scope);
+    return scope_get_varmap(current_scope);
+}

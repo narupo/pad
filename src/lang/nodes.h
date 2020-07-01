@@ -233,6 +233,7 @@ typedef struct {
 typedef struct {
     node_t *identifier;
     node_array_t *contents;
+    object_dict_t *inject_varmap;
 } node_block_stmt_t;
 
 typedef struct {

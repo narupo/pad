@@ -55,9 +55,34 @@ objdict_escdel(object_dict_t *self);
 object_dict_t *
 objdict_new(gc_t *ref_gc);
 
-extern object_dict_t*
+/**
+ * copy constructor
+ *
+ * @param[in] *other
+ *
+ * @return
+ */
+object_dict_t*
 objdict_new_other(object_dict_t *other);
 
+/**
+ * shallow copy
+ *
+ * @param[in] *other
+ *
+ * @return pointer to object_dict_t (shallow copied)
+ */
+object_dict_t *
+objdict_shallow_copy(const object_dict_t *other);
+
+/**
+ * resize map
+ *
+ * @param[in] *self
+ * @param[in] newcapa
+ *
+ * @return
+ */
 object_dict_t *
 objdict_resize(object_dict_t *self, int32_t newcapa);
 
@@ -87,9 +112,25 @@ objdict_move(object_dict_t *self, const char *key, object_t *move_value);
 object_dict_t *
 objdict_set(object_dict_t *self, const char *key, object_t *ref_value);
 
+/**
+ * get dict item
+ *
+ * @param[in] *self
+ * @param[in] *key
+ *
+ * @return
+ */
 object_dict_item_t *
 objdict_get(object_dict_t *self, const char *key);
 
+/**
+ * get dict item read-only
+ *
+ * @param[in] *self
+ * @param[in] *key
+ *
+ * @return
+ */
 const object_dict_item_t *
 objdict_getc(const object_dict_t *self, const char *key);
 

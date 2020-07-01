@@ -321,3 +321,13 @@ ctx_dump(const context_t *self, FILE *fout);
  */
 bool
 ctx_var_in_cur_scope(const context_t *self, const char *idn);
+
+/**
+ * get reference of varmap from current scope
+ *
+ * @param[in] *self
+ *
+ * @return reference to varmap
+ */
+object_dict_t *
+ctx_get_ref_varmap_cur_scope(const context_t *self);
