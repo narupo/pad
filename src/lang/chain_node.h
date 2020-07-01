@@ -2,6 +2,7 @@
 
 #include <lib/memory.h>
 #include <lang/types.h>
+#include <lang/nodes.h>
 
 /**
  * number of type of chain_node_t
@@ -31,6 +32,17 @@ chain_node_del(chain_node_t *self);
  */
 chain_node_t *
 chain_node_new(chain_node_type_t type, node_t *move_noder);
+
+/**
+ * deep copy
+ *
+ * @param[in] *other
+ *
+ * @return success to pointer to chain_node_t (copied)
+ * @return failed to NULL
+ */
+chain_node_t *
+chain_node_deep_copy(const chain_node_t *other);
 
 /**
  * get type

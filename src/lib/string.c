@@ -84,6 +84,11 @@ str_new_cstr(const char *str) {
 
 string_t *
 str_new_other(const string_t *other) {
+    return str_deep_copy(other);
+}
+
+string_t *
+str_deep_copy(const string_t *other) {
     if (!other) {
         return NULL;
     }

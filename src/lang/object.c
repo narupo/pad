@@ -140,7 +140,9 @@ obj_new_other(const object_t *other) {
         obj_inc_ref(self->func.name);
         self->func.args = obj_new_other(other->func.args);
         obj_inc_ref(self->func.args);
-        self->func.ref_suites = other->func.ref_suites; // save reference
+        self->func.ref_suites = other->func.ref_suites;  // save reference
+        self->func.ref_blocks = other->func.ref_blocks;  // save reference
+        self->func.extends_func = obj_new_other(other->func.extends_func);
         break;
     case OBJ_TYPE_CHAIN:
         self->chain.operand = obj_new_other(other->chain.operand);
@@ -159,6 +161,51 @@ obj_new_other(const object_t *other) {
         self->owners_method.owner = obj_new_other(other->owners_method.owner);
         obj_inc_ref(self->owners_method.owner);
         self->owners_method.method_name = str_new_other(other->owners_method.method_name);
+        break;
+    }
+
+    return self;
+}
+
+object_t *
+obj_deep_copy(const object_t *other) {
+    if (!other) {
+        return NULL;
+    }
+
+    // allocate memory by gc
+    gc_item_t gc_item = {0};
+    if (!gc_alloc(other->ref_gc, &gc_item, sizeof(object_t))) {
+        return NULL;
+    }
+
+    // get pointer of allocated memory
+    object_t *self = gc_item.ptr;
+
+    // copy parameters
+    self->ref_gc = other->ref_gc;
+    self->gc_item = gc_item;
+    self->type = other->type;
+
+    // copy object
+    switch (other->type) {
+    default: assert(0 && "need implement!"); break;
+    case OBJ_TYPE_FUNC:
+        self->func.ref_ast = other->func.ref_ast;
+        self->func.name = obj_deep_copy(other->func.name);
+        obj_inc_ref(self->func.name);
+        self->func.args = obj_deep_copy(other->func.args);
+        obj_inc_ref(self->func.args);
+        self->func.ref_suites = nodearr_deep_copy(other->func.ref_suites);
+        self->func.ref_blocks = nodedict_deep_copy(other->func.ref_blocks);
+        self->func.extends_func = obj_deep_copy(other->func.extends_func);
+        break;
+    case OBJ_TYPE_IDENTIFIER:
+        self->identifier.ref_ast = other->identifier.ref_ast;
+        self->identifier.name = str_deep_copy(other->identifier.name);
+        break;
+    case OBJ_TYPE_ARRAY:
+        self->objarr = objarr_deep_copy(other->objarr);
         break;
     }
 

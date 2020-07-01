@@ -64,6 +64,26 @@ nodedict_new(void);
 extern node_dict_t*
 nodedict_new_other(node_dict_t *other);
 
+/**
+ * shallow copy node-dict
+ *
+ * @param[in] *self
+ *
+ * @return pointer to node_dict_t (copied)
+ */
+node_dict_t *
+nodedict_shallow_copy(node_dict_t *other);
+
+/**
+ * deep copy node-dict
+ *
+ * @param[in] *self
+ *
+ * @return pointer to node_dict_t (copied)
+ */
+node_dict_t *
+nodedict_deep_copy(const node_dict_t *other);
+
 node_dict_t *
 nodedict_resize(node_dict_t *self, int32_t newcapa);
 

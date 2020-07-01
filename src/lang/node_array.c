@@ -45,8 +45,30 @@ node_array_t*
 nodearr_new(void) {
     node_array_t *self = mem_ecalloc(1, sizeof(*self));
 
-    self->parray = mem_ecalloc(NODEARR_INIT_CAPA+1, sizeof(node_t *));
+    self->parray = mem_ecalloc(NODEARR_INIT_CAPA + 1, sizeof(node_t *));
     self->capa = NODEARR_INIT_CAPA;
+
+    return self;
+}
+
+node_t *
+node_deep_copy(const node_t *other);
+
+node_array_t *
+nodearr_deep_copy(const node_array_t *other) {
+    if (!other) {
+        return NULL;
+    }
+
+    node_array_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->capa = other->capa;
+    self->parray = mem_ecalloc(other->capa + 1, sizeof(node_t *));
+
+    for (int32_t i = 0; i < other->len; ++i) {
+        node_t *node = other->parray[i];
+        self->parray[self->len++] = node_deep_copy(node);
+    }
 
     return self;
 }
@@ -69,7 +91,7 @@ nodearry_capa(const node_array_t *self) {
     if (!self) {
         return 0;
     }
-    
+
     return self->capa;
 }
 

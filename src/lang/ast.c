@@ -359,6 +359,11 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         }
         nodearr_del_without_nodes(func_def_args->identifiers);
     } break;
+    case NODE_TYPE_CONTENT: {
+        node_content_t *content = node->real;
+        ast_del_nodes(self, content->elems);
+        ast_del_nodes(self, content->blocks);
+    } break;
     }
 
     node_del(node);
