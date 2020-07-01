@@ -302,7 +302,7 @@ compile_argv(const config_t *config, errstack_t *errstack, int argc, char *argv[
     cc_compile(ast, tkr_get_tokens(tkr));
     if (ast_has_errors(ast)) {
         if (errstack) {
-            const errstack_t *es = tkr_getc_error_stack(tkr);
+            const errstack_t *es = ast_getc_error_stack(ast);
             errstack_extendb_other(errstack, es);
         }
         return NULL;
@@ -311,7 +311,7 @@ compile_argv(const config_t *config, errstack_t *errstack, int argc, char *argv[
     trv_traverse(ast, ctx);
     if (ast_has_errors(ast)) {
         if (errstack) {
-            const errstack_t *es = tkr_getc_error_stack(tkr);
+            const errstack_t *es = ast_getc_error_stack(ast);
             errstack_extendb_other(errstack, es);
         }
         return NULL;
