@@ -62,6 +62,7 @@ pull_in_ref_by(const object_t *idn_obj) {
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
 
     ast_t *ref_ast = obj_get_idn_ref_ast(idn_obj);
+    assert(ref_ast);
     const char *idn = obj_getc_idn_name(idn_obj);
     object_t *ref = ctx_find_var_ref(ref_ast->ref_context, idn);
     if (!ref) {
@@ -441,13 +442,6 @@ extract_func_args(
         }
 
         set_ref_at_cur_varmap(func->ref_ast, owners, fargname, extract_arg);
-
-        // if this function extends other function
-        // then set arguments at extends function envrionment
-        // if (func->extends_func) {
-        //     object_func_t *extends_func = &func->extends_func->func;
-        //     set_ref_at_cur_varmap(extends_func->ref_ast, owners, fargname, extract_arg);
-        // }
     }  // for
 }
 
@@ -580,6 +574,9 @@ invoke_builtin_modules(
             break;
         case OBJ_TYPE_ARRAY:
             bltin_mod_name = "__array__";
+            break;
+        case OBJ_TYPE_DICT:
+            bltin_mod_name = "__dict__";
             break;
         case OBJ_TYPE_MODULE:
             module = owner;

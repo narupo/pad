@@ -25144,6 +25144,52 @@ test_trv_builtin_array_0(void) {
 }
 
 static void
+test_trv_builtin_dict_0(void) {
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@ d = {\"a\": 1} @}{: d.get(1) :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(ast_has_errors(ast));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid index type (1) of dict"));
+    }
+
+    tkr_parse(tkr, "{@ d = {\"a\": 1} @}{: d.get(\"a\") :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{@ d = {\"a\": 1} @}{: d.get(\"b\") :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+static void
 test_trv_module_0(void) {
     trv_ready;
 
@@ -26039,6 +26085,7 @@ traverser_tests[] = {
     {"trv_builtin_functions_type_dict", test_trv_builtin_functions_type_dict},
     {"trv_builtin_string", test_trv_builtin_string},
     {"trv_builtin_array_0", test_trv_builtin_array_0},
+    {"trv_builtin_dict_0", test_trv_builtin_dict_0},
     {"trv_module_0", test_trv_module_0},
     {"trv_chain_object", test_trv_chain_object},
     {"trv_etc_0", test_trv_etc_0},
