@@ -230,3 +230,13 @@ ast_read_token(ast_t *self);
  */
 void
 ast_prev_ptr(ast_t *self);
+
+/**
+ * get reference of gc_t
+ *
+ * @param[in] *self
+ *
+ * @return reference to gc_t (do not delete)
+ */
+gc_t *
+ast_get_ref_gc(ast_t *self);

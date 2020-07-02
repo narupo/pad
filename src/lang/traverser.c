@@ -9024,18 +9024,27 @@ trv_import_builtin_modules(ast_t *ast) {
     object_dict_t *varmap = ctx_get_varmap(ast->ref_context);
     object_t *mod = NULL;
 
+    // builtin functions
     mod = builtin_module_new(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
+    // builtin string
     mod = builtin_string_module_new(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
+    // builtin array
     mod = builtin_array_module_new(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
+    // builtin dict
+    mod = builtin_dict_module_new(ast->ref_config, ast->ref_gc);
+    objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
+
+    // builtin alias
     mod = builtin_alias_module_new(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
+    // builtin opts
     mod = builtin_opts_module_new(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 

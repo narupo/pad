@@ -524,3 +524,8 @@ ast_prev_ptr(ast_t *self) {
 
     self->ref_ptr--;
 }
+
+gc_t *
+ast_get_ref_gc(ast_t *self) {
+    return self->ref_gc;
+}

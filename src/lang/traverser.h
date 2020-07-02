@@ -12,6 +12,7 @@
 #include <lang/builtin/functions.h>
 #include <lang/builtin/modules/string.h>
 #include <lang/builtin/modules/array.h>
+#include <lang/builtin/modules/dict.h>
 #include <lang/builtin/modules/alias.h>
 #include <lang/builtin/modules/opts.h>
 
