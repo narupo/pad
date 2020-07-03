@@ -1209,6 +1209,7 @@ trv_inject_stmt(ast_t *ast, trv_args_t *targs) {
     }
     func = &extends_func->func;
 
+    // find block-stmt
     node_block_stmt_t *block_stmt = NULL;
     for (;;) {
         node_dict_t *ref_blocks = func->ref_blocks;
@@ -1219,17 +1220,17 @@ trv_inject_stmt(ast_t *ast, trv_args_t *targs) {
                 return_trav(NULL);
             }
             func = &func->extends_func->func;
-            continue;
+            continue;  // next
         }
 
         node = item->value;
         assert(node && node->type == NODE_TYPE_BLOCK_STMT);
         block_stmt = node->real;
-        break;
+        break;  // found
     }
 
     // inject varmap at block
-    ast_t *ref_ast = func->ref_ast;
+    ast_t *ref_ast = ast;
     context_t *ref_context = ast_get_ref_context(ref_ast);
     object_dict_t *ref_varmap = ctx_get_ref_varmap_cur_scope(ref_context);
     object_dict_t *varmap = objdict_shallow_copy(ref_varmap);

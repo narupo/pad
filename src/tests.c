@@ -22604,6 +22604,93 @@ test_trv_func_def_31(void) {
 }
 
 static void
+test_trv_func_def_32(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def base():\n"
+    "       block header:\n"
+    "       end\n"
+    "   end\n"
+    "   def index() extends base:\n"
+    "       i = 1\n"
+    "       inject header:\n"
+    "           puts(i)\n"
+    "       end\n"
+    "       super()\n"
+    "   end\n"
+    "   index()\n"
+    "@}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_def_33(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def base():\n"
+    "       block header:\n"
+    "       end\n"
+    "   end\n"
+    "   def index() extends base:\n"
+    "       i = 1\n"
+    "       inject header: @}{: i :}{@ end\n"
+    "       super()\n"
+    "   end\n"
+    "   index()\n"
+    "@}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_def_34(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   from \":tests/lang/modules/base.cap\" import base\n"
+    "\n"
+    "   def index() extends base:\n"
+    "       i = 1\n"
+    "       inject contents:\n"
+    "           puts(i)\n"
+    "       end\n"
+    "       super()\n"
+    "   end\n"
+    "\n"
+    "   index()\n"
+    "@}");
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_assign_list_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -25973,6 +26060,9 @@ traverser_tests[] = {
     {"trv_func_def_29", test_trv_func_def_29},
     {"trv_func_def_30", test_trv_func_def_30},
     {"trv_func_def_31", test_trv_func_def_31},
+    {"trv_func_def_32", test_trv_func_def_32},
+    {"trv_func_def_33", test_trv_func_def_33},
+    {"trv_func_def_34", test_trv_func_def_34},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},

@@ -1,0 +1,6 @@
+{@
+    def base():
+        block contents:
+        end
+    end
+@}
