@@ -6430,6 +6430,7 @@ test_cc_compile(void) {
     node_func_def_t *func_def;
     node_func_def_params_t *func_def_params;
     node_func_def_args_t *func_def_args;
+    node_content_t *content;
 
     /***********
     * func_def *
@@ -6524,8 +6525,9 @@ test_cc_compile(void) {
         assert(nodearr_len(func_def_args->identifiers) == 0);
 
         assert(func_def->contents);
-        elems = nodearr_get(func_def->contents, 0)->real;
-        assert(elems);
+        content = nodearr_get(func_def->contents, 0)->real;
+        assert(content);
+        elems = content->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
         assign = nodearr_get(assign_list->nodearr, 0)->real;
@@ -6600,7 +6602,8 @@ test_cc_compile(void) {
         func_def_args = func_def_params->func_def_args->real;
         assert(nodearr_len(func_def_args->identifiers) == 0);
 
-        elems = nodearr_get(func_def->contents, 0)->real;
+        content = nodearr_get(func_def->contents, 0)->real;
+        elems = content->elems->real;
         formula = elems->formula->real;
         assign_list = formula->assign_list->real;
         assign = nodearr_get(assign_list->nodearr, 0)->real;
@@ -21576,6 +21579,55 @@ test_trv_return_stmt_4(void) {
 }
 
 static void
+test_trv_return_stmt_5(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def func():\n"
+    "       if 1:\n"
+    "          return 1\n"
+    "       end\n"
+    "       return 2\n"
+    "   end\n"
+    "@}{: func() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_return_stmt_6(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def func():\n"
+    "       if 1:\n"
+    "          return\n"
+    "       end\n"
+    "       puts(1)\n"
+    "   end\n"
+    "@}{: func() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_block_stmt_0(void) {
     trv_ready;
 
@@ -21979,7 +22031,7 @@ test_trv_func_def_10(void) {
 }
 
 static void
-test_trv_func_def_11(void) {
+test_trv_func_extends_0(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22001,7 +22053,7 @@ test_trv_func_def_11(void) {
 }
 
 static void
-test_trv_func_def_12(void) {
+test_trv_func_extends_1(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22019,7 +22071,7 @@ test_trv_func_def_12(void) {
 }
 
 static void
-test_trv_func_def_13(void) {
+test_trv_func_super_0(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22045,7 +22097,7 @@ test_trv_func_def_13(void) {
 }
 
 static void
-test_trv_func_def_14(void) {
+test_trv_func_super_1(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22076,7 +22128,7 @@ test_trv_func_def_14(void) {
 }
 
 static void
-test_trv_func_def_15(void) {
+test_trv_func_super_2(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22106,7 +22158,7 @@ test_trv_func_def_15(void) {
 }
 
 static void
-test_trv_func_def_16(void) {
+test_trv_block_stmt_3(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22132,7 +22184,7 @@ test_trv_func_def_16(void) {
 }
 
 static void
-test_trv_func_def_17(void) {
+test_trv_block_stmt_4(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22159,7 +22211,7 @@ test_trv_func_def_17(void) {
 }
 
 static void
-test_trv_func_def_18(void) {
+test_trv_inject_stmt_3(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22189,7 +22241,7 @@ test_trv_func_def_18(void) {
 }
 
 static void
-test_trv_func_def_19(void) {
+test_trv_inject_stmt_4(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22221,7 +22273,7 @@ test_trv_func_def_19(void) {
 }
 
 static void
-test_trv_func_def_20(void) {
+test_trv_inject_stmt_5(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22257,7 +22309,7 @@ test_trv_func_def_20(void) {
 }
 
 static void
-test_trv_func_def_21(void) {
+test_trv_inject_stmt_6(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22290,7 +22342,7 @@ test_trv_func_def_21(void) {
 }
 
 static void
-test_trv_func_def_22(void) {
+test_trv_inject_stmt_7(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22329,7 +22381,7 @@ test_trv_func_def_22(void) {
 }
 
 static void
-test_trv_func_def_23(void) {
+test_trv_inject_stmt_8(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22371,7 +22423,7 @@ test_trv_func_def_23(void) {
 }
 
 static void
-test_trv_func_def_24(void) {
+test_trv_inject_stmt_9(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22401,7 +22453,7 @@ test_trv_func_def_24(void) {
 }
 
 static void
-test_trv_func_def_25(void) {
+test_trv_inject_stmt_10(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22429,7 +22481,7 @@ test_trv_func_def_25(void) {
 }
 
 static void
-test_trv_func_def_26(void) {
+test_trv_inject_stmt_11(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22454,37 +22506,7 @@ test_trv_func_def_26(void) {
 }
 
 static void
-test_trv_func_def_27(void) {
-    trv_ready;
-
-    tkr_parse(tkr, "{@\n"
-    "   def f1():\n"
-    "       block content:\n"
-    "           puts(2)\n"
-    "       end\n"
-    "   end\n"
-    "   def f2(a) extends f1:\n"
-    "       inject content:\n"
-    "           puts(a)\n"
-    "       end\n"
-    "       super()\n"
-    "   end\n"
-    "   f2(1)\n"
-    "@}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
-    }
-
-    trv_cleanup;
-}
-
-static void
-test_trv_func_def_28(void) {
+test_trv_inject_stmt_12(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22515,7 +22537,7 @@ test_trv_func_def_28(void) {
 }
 
 static void
-test_trv_func_def_29(void) {
+test_trv_inject_stmt_13(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22545,7 +22567,7 @@ test_trv_func_def_29(void) {
 }
 
 static void
-test_trv_func_def_30(void) {
+test_trv_inject_stmt_14(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22575,7 +22597,7 @@ test_trv_func_def_30(void) {
 }
 
 static void
-test_trv_func_def_31(void) {
+test_trv_inject_stmt_15(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22604,7 +22626,7 @@ test_trv_func_def_31(void) {
 }
 
 static void
-test_trv_func_def_32(void) {
+test_trv_inject_stmt_16(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22634,7 +22656,7 @@ test_trv_func_def_32(void) {
 }
 
 static void
-test_trv_func_def_33(void) {
+test_trv_inject_stmt_17(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22662,7 +22684,7 @@ test_trv_func_def_33(void) {
 }
 
 static void
-test_trv_func_def_34(void) {
+test_trv_inject_stmt_18(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -22681,6 +22703,36 @@ test_trv_func_def_34(void) {
     {
         ast_clear(ast);
         (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_inject_stmt_19(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f1():\n"
+    "       block content:\n"
+    "           puts(2)\n"
+    "       end\n"
+    "   end\n"
+    "   def f2(a) extends f1:\n"
+    "       inject content:\n"
+    "           puts(a)\n"
+    "       end\n"
+    "       super()\n"
+    "   end\n"
+    "   f2(1)\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
@@ -26022,6 +26074,8 @@ traverser_tests[] = {
     {"trv_return_stmt_2", test_trv_return_stmt_2},
     {"trv_return_stmt_3", test_trv_return_stmt_3},
     {"trv_return_stmt_4", test_trv_return_stmt_4},
+    {"trv_return_stmt_5", test_trv_return_stmt_5},
+    {"trv_return_stmt_6", test_trv_return_stmt_6},
     {"trv_block_stmt_0", test_trv_block_stmt_0},
     {"trv_block_stmt_1", test_trv_block_stmt_1},
     {"trv_block_stmt_2", test_trv_block_stmt_2},
@@ -26039,30 +26093,30 @@ traverser_tests[] = {
     {"trv_func_def_8", test_trv_func_def_8},
     {"trv_func_def_9", test_trv_func_def_9},
     {"trv_func_def_10", test_trv_func_def_10},
-    {"trv_func_def_11", test_trv_func_def_11},
-    {"trv_func_def_12", test_trv_func_def_12},
-    {"trv_func_def_13", test_trv_func_def_13},
-    {"trv_func_def_14", test_trv_func_def_14},
-    {"trv_func_def_15", test_trv_func_def_15},
-    {"trv_func_def_16", test_trv_func_def_16},
-    {"trv_func_def_17", test_trv_func_def_17},
-    {"trv_func_def_18", test_trv_func_def_18},
-    {"trv_func_def_19", test_trv_func_def_19},
-    {"trv_func_def_20", test_trv_func_def_20},
-    {"trv_func_def_21", test_trv_func_def_21},
-    {"trv_func_def_22", test_trv_func_def_22},
-    {"trv_func_def_23", test_trv_func_def_23},
-    {"trv_func_def_24", test_trv_func_def_24},
-    {"trv_func_def_25", test_trv_func_def_25},
-    {"trv_func_def_26", test_trv_func_def_26},
-    {"trv_func_def_27", test_trv_func_def_27},
-    {"trv_func_def_28", test_trv_func_def_28},
-    {"trv_func_def_29", test_trv_func_def_29},
-    {"trv_func_def_30", test_trv_func_def_30},
-    {"trv_func_def_31", test_trv_func_def_31},
-    {"trv_func_def_32", test_trv_func_def_32},
-    {"trv_func_def_33", test_trv_func_def_33},
-    {"trv_func_def_34", test_trv_func_def_34},
+    {"trv_func_extends_0", test_trv_func_extends_0},
+    {"trv_func_extends_1", test_trv_func_extends_1},
+    {"trv_func_super_0", test_trv_func_super_0},
+    {"trv_func_super_1", test_trv_func_super_1},
+    {"trv_func_super_2", test_trv_func_super_2},
+    {"trv_block_stmt_3", test_trv_block_stmt_3},
+    {"trv_block_stmt_4", test_trv_block_stmt_4},
+    {"trv_inject_stmt_3", test_trv_inject_stmt_3},
+    {"trv_inject_stmt_4", test_trv_inject_stmt_4},
+    {"trv_inject_stmt_5", test_trv_inject_stmt_5},
+    {"trv_inject_stmt_6", test_trv_inject_stmt_6},
+    {"trv_inject_stmt_7", test_trv_inject_stmt_7},
+    {"trv_inject_stmt_8", test_trv_inject_stmt_8},
+    {"trv_inject_stmt_9", test_trv_inject_stmt_9},
+    {"trv_inject_stmt_10", test_trv_inject_stmt_10},
+    {"trv_inject_stmt_11", test_trv_inject_stmt_11},
+    {"trv_inject_stmt_12", test_trv_inject_stmt_12},
+    {"trv_inject_stmt_13", test_trv_inject_stmt_13},
+    {"trv_inject_stmt_14", test_trv_inject_stmt_14},
+    {"trv_inject_stmt_15", test_trv_inject_stmt_15},
+    {"trv_inject_stmt_16", test_trv_inject_stmt_16},
+    {"trv_inject_stmt_17", test_trv_inject_stmt_17},
+    {"trv_inject_stmt_18", test_trv_inject_stmt_18},
+    {"trv_inject_stmt_19", test_trv_inject_stmt_19},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},

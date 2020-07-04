@@ -1026,7 +1026,11 @@ trv_return_stmt(ast_t *ast, trv_args_t *targs) {
     depth_t depth = targs->depth;
 
     if (!return_stmt->formula) {
-        return_trav(NULL);
+        context_t *ref_context = ast_get_ref_context(ast);
+        gc_t *ref_gc = ast_get_ref_gc(ast);
+        ctx_set_do_return(ref_context, true);
+        object_t *ret = obj_new_nil(ref_gc);
+        return_trav(ret);
     }
 
     check("call _trv_traverse with formula");
@@ -1099,7 +1103,8 @@ again:
     }
 
     check("set true at do return flag");
-    ctx_set_do_return(ast->ref_context, true);
+    context_t *ref_context = ast_get_ref_context(ast);
+    ctx_set_do_return(ref_context, true);
 
     assert(ret);
     return_trav(ret);
