@@ -52,7 +52,7 @@ str_esc_del(string_t *self) {
         return NULL;
     }
 
-    char *buf = self->buffer;
+    string_type_t *buf = self->buffer;
     free(self);
     return buf;
 }
@@ -438,7 +438,7 @@ str_strip(string_t *self, const string_type_t *rems) {
  * @return		  Success to pointer to found position in target string
  * @return		  Failed to NULL
  */
-static const char *
+static const string_type_t *
 bmfind(
     const string_type_t *restrict tex,
     int32_t texlen,
@@ -481,7 +481,7 @@ bmfind(
 }
 #undef MAX
 
-const char *
+const string_type_t *
 str_findc(const string_t *self, const string_type_t *target) {
     if (!self || !target) {
         return NULL;
