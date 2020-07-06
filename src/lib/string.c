@@ -38,10 +38,12 @@ enum {
 
 void
 str_del(string_t *self) {
-    if (self) {
-        free(self->buffer);
-        free(self);
+    if (!self) {
+        return;
     }
+
+    free(self->buffer);
+    free(self);
 }
 
 string_type_t *
@@ -76,7 +78,11 @@ str_new(void) {
 }
 
 string_t *
-str_new_cstr(const char *str) {
+str_new_cstr(const string_type_t *str) {
+    if (!str) {
+        return NULL;
+    }
+
     string_t *self = str_new();
     str_set(self, str);
     return self;
@@ -402,12 +408,18 @@ str_lstrip(string_t *self, const string_type_t *rems) {
 
 string_t *
 str_strip(string_t *self, const string_type_t *rems) {
+    if (!self || !rems) {
+        return NULL;
+    }
+
     if (!str_rstrip(self, rems)) {
         return NULL;
     }
+
     if (!str_lstrip(self, rems)) {
         return NULL;
     }
+
     return self;
 }
 
@@ -428,9 +440,9 @@ str_strip(string_t *self, const string_type_t *rems) {
  */
 static const char *
 bmfind(
-    const char *restrict tex,
+    const string_type_t *restrict tex,
     int32_t texlen,
-    const char *restrict pat,
+    const string_type_t *restrict pat,
     int32_t patlen
 ) {
     int32_t const max = CHAR_MAX+1;
@@ -470,7 +482,7 @@ bmfind(
 #undef MAX
 
 const char *
-str_findc(const string_t *self, const char *target) {
+str_findc(const string_t *self, const string_type_t *target) {
     if (!self || !target) {
         return NULL;
     }
@@ -536,7 +548,7 @@ str_snake(const string_t *other) {
     }
 
     int m = 0;
-    const char *p = str_getc(other);
+    const string_type_t *p = str_getc(other);
     string_t *self = str_new();
 
     for (; *p; ++p) {
@@ -582,8 +594,9 @@ str_camel(const string_t *other) {
 
     int m = 0;
     string_t *self = str_new();
+    const string_type_t *p = str_getc(other);
 
-    for (const char *p = str_getc(other); *p; ++p) {
+    for (; *p; ++p) {
         switch (m) {
         case 0:  // first
             if (*p == '-' || *p == '_') {
@@ -642,9 +655,10 @@ str_hacker(const string_t *other) {
     }
 
     string_t *self = str_new();
+    const string_type_t *p = str_getc(other);
     int m = 0;
 
-    for (const char *p = str_getc(other); *p; ++p) {
+    for (; *p; ++p) {
         switch (m) {
         case 0:  // first
             if (*p == '-' || *p == '_') {
@@ -677,7 +691,7 @@ string_t *
 str_mul(const string_t *self, int32_t n) {
     string_t *buf = str_new();
 
-    for (uint32_t i = 0; i < n; ++i) {
+    for (int32_t i = 0; i < n; ++i) {
         str_app(buf, self->buffer);
     }
 
@@ -690,493 +704,3 @@ str_mul(const string_t *self, int32_t n) {
 
 #undef NCHAR
 #undef NIL
-
-/***********
-* str test *
-***********/
-
-#if defined(_TEST_STRING)
-#include <ctype.h>
-
-/************
-* test args *
-************/
-
-struct args {
-    int capa;
-    int len;
-    char **args;
-};
-
-static void
-argsdel(struct args *self) {
-    if (!self) {
-        return;
-    }
-
-    for (int i = 0; i < self->len; ++i) {
-        free(self->args[i]);
-    }
-    free(self->args);
-    free(self);
-}
-
-static char **
-argsescdel(struct args *self) {
-    if (!self) {
-        return NULL;
-    }
-
-    char **args = self->args;
-    free(self);
-
-    return args;
-}
-
-static struct args *
-argsnew(void) {
-    struct args *self = calloc(1, sizeof(struct args));
-    if (!self) {
-        return NULL;
-    }
-
-    self->capa = 4;
-    self->args = calloc(self->capa+1, sizeof(char *));
-    if (!self) {
-        return NULL;
-    }
-
-    return self;
-}
-
-static struct args *
-argsresize(struct args *self, int newcapa) {
-    if (!self || newcapa <= self->capa) {
-        return NULL;
-    }
-
-    char **tmp = realloc(self->args, sizeof(char *) * newcapa + sizeof(char *));
-    if (!tmp) {
-        return NULL;
-    }
-
-    self->capa = newcapa;
-    self->args = tmp;
-
-    return self;
-}
-
-static struct args *
-argspush(struct args *self, const char *arg) {
-    if (!self || !arg) {
-        return NULL;
-    }
-
-    if (self->len >= self->capa) {
-        if (!argsresize(self, self->capa*2)) {
-            return NULL;
-        }
-    }
-
-    char *cp = cstr_edup(arg);
-    if (!cp) {
-        return NULL;
-    }
-
-    self->args[self->len++] = cp;
-    self->args[self->len] = NULL;
-
-    return self;
-}
-
-static void
-argsclear(struct args *self) {
-    if (!self) {
-        return;
-    }
-
-    for (int i = 0; i < self->len; ++i) {
-        free(self->args[i]);
-        self->args[i] = NULL;
-    }
-
-    self->len = 0;
-}
-
-static const char *
-argsgetc(const struct args *self, int idx) {
-    if (idx >= self->len) {
-        return NULL;
-    }
-    return self->args[idx];
-}
-
-static int
-argslen(const struct args *self) {
-    return self->len;
-}
-
-static void
-freeargv(int argc, char *argv[]) {
-    for (int i = 0; i < argc; ++i) {
-        free(argv[i]);
-    }
-    free(argv);
-}
-
-static void
-showargv(int argc, char *argv[]) {
-    for (int i = 0; i < argc; ++i) {
-        printf("[%d] = '%s'\n", i, argv[i]);
-    }
-}
-
-static void
-push(struct args *args, string_t *str) {
-    if (str_empty(str)) {
-        return;
-    }
-
-    if (!argspush(args, str_getc(str))) {
-        perror("argspush");
-        exit(1);
-    }
-
-    str_clear(str);
-}
-
-static struct args *
-makeargsby(const char *line) {
-    struct args *args = argsnew();
-    if (!args) {
-        perror("argsnew");
-        return NULL;
-    }
-
-    string_t *tmp = str_new();
-    if (!tmp) {
-        argsdel(args);
-        perror("str_new");
-        return NULL;
-    }
-
-    const char *p = line;
-    int m = 0;
-    do {
-        int c = *p;
-        if (c == '\0') {
-            c = ' ';
-        }
-
-        switch (m) {
-        case 0: // First
-            if (isspace(c)) {
-                push(args, tmp);
-            } else {
-                str_pushb(tmp, c);
-            }
-        break;
-        }
-    } while (*p++);
-
-    str_del(tmp);
-    return args;
-}
-
-/************
-* test main *
-************/
-
-static string_t *kstr;
-
-static int
-test_del(int argc, char *argv[]) {
-    str_del(kstr);
-    kstr = str_new();
-    if (!kstr) {
-        return 1;
-    }
-
-    return 0;
-}
-
-static int
-test_escdel(int argc, char *argv[]) {
-    string_type_t *buf = str_esc_del(kstr);
-    if (!buf) {
-        return 1;
-    }
-
-    free(buf);
-
-    kstr = str_new();
-    if (!kstr) {
-        return 2;
-    }
-
-    return 0;
-}
-
-static int
-test_new(int argc, char *argv[]) {
-    str_del(kstr);
-    kstr = str_new();
-    if (!kstr) {
-        return 1;
-    }
-
-    if (argc >= 2) {
-        str_set(kstr, argv[1]);
-    }
-
-    return 0;
-}
-
-static int
-test_newother(int argc, char *argv[]) {
-    if (!kstr) {
-        return 1;
-    }
-
-    string_t *dst = str_new_other(kstr);
-    if (!dst) {
-        return 2;
-    }
-
-    if (strcmp(kstr->buffer, dst->buffer) != 0) {
-        str_del(dst);
-        return 3;
-    }
-
-    str_del(dst);
-    return 0;
-}
-
-static int
-test_len(int argc, char *argv[]) {
-    printf("len: %d\n", str_len(kstr));
-    return 0;
-}
-
-static int
-test_capa(int argc, char *argv[]) {
-    printf("capa: %d\n", str_capa(kstr));
-    return 0;
-}
-
-static int
-test_getc(int argc, char *argv[]) {
-    const char *s = str_getc(kstr);
-    if (!s) {
-        return 1;
-    }
-
-    return 0;
-}
-
-static int
-test_empty(int argc, char *argv[]) {
-    printf("empty: %s\n", (str_empty(kstr) ? "true" : "false"));
-    return 0;
-}
-
-static int
-test_clear(int argc, char *argv[]) {
-    str_clear(kstr);
-    return 0;
-}
-
-static int
-test_set(int argc, char *argv[]) {
-    if (argc < 2) {
-        str_set(kstr, "");
-    } else {
-        str_set(kstr, argv[1]);
-    }
-    return 0;
-}
-
-static int
-test_resize(int argc, char *argv[]) {
-    if (argc < 2) {
-        return 0;
-    }
-
-    int n = atoi(argv[1]);
-    if (n <= 0) {
-        return 1;
-    }
-
-    str_resize(kstr, n);
-    return 0;
-}
-
-static int
-test_pushb(int argc, char *argv[]) {
-    if (argc < 2) {
-        return 2;
-    }
-
-    for (int i = 0, len = strlen(argv[1]); i < len; ++i) {
-        str_pushb(kstr, argv[1][i]);
-    }
-
-    return 0;
-}
-
-static int
-test_popb(int argc, char *argv[]) {
-    if (!str_empty(kstr)) {
-        if (str_popb(kstr) == '\0') {
-            return 2;
-        }
-    }
-
-    return 0;
-}
-
-static int
-test_pushf(int argc, char *argv[]) {
-    return 0;
-}
-
-static int
-test_popf(int argc, char *argv[]) {
-    return 0;
-}
-
-static int
-test_app(int argc, char *argv[]) {
-    return 0;
-}
-
-static int
-test_appstream(int argc, char *argv[]) {
-    return 0;
-}
-
-static int
-test_appother(int argc, char *argv[]) {
-    return 0;
-}
-
-static int
-test_appfmt(int argc, char *argv[]) {
-    return 0;
-}
-
-static int
-test_rstrip(int argc, char *argv[]) {
-    return 0;
-}
-
-static int
-test_lstrip(int argc, char *argv[]) {
-    return 0;
-}
-
-static int
-test_strip(int argc, char *argv[]) {
-    return 0;
-}
-
-static int
-test_findc(int argc, char *argv[]) {
-    return 0;
-}
-
-int
-main(int argc, char *argv[]) {
-    static const struct cmd {
-        const char *name;
-        int (*run)(int, char**);
-    } cmds[] = {
-        {"del", test_del},
-        {"escdel", test_escdel},
-        {"new", test_new},
-        {"newother", test_newother},
-        {"len", test_len},
-        {"capa", test_capa},
-        {"getc", test_getc},
-        {"empty", test_empty},
-        {"clear", test_clear},
-        {"set", test_set},
-        {"resize", test_resize},
-        {"pushb", test_pushb},
-        {"popb", test_popb},
-        {"pushf", test_pushf},
-        {"popf", test_popf},
-        {"app", test_app},
-        {"appstream", test_appstream},
-        {"appother", test_appother},
-        {"appfmt", test_appfmt},
-        {"rstrip", test_rstrip},
-        {"lstrip", test_lstrip},
-        {"strip", test_strip},
-        {"findc", test_findc},
-        {},
-    };
-
-    kstr = str_new();
-    if (!kstr) {
-        goto error;
-    }
-
-    // Command loop
-    char cmdline[256];
-    for (; fgets(cmdline, sizeof cmdline, stdin); ) {
-        // Remove newline
-        int32_t cmdlen = strlen(cmdline);
-        if (cmdline[cmdlen-1] == '\n') {
-            cmdline[--cmdlen] = '\0';
-        }
-
-        if (!strcasecmp(cmdline, "q")) {
-            goto done;
-        } else if (!strcasecmp(cmdline, "h")) {
-            for (const struct cmd *p = cmds; p->name; ++p) {
-                printf("%s\n", p->name);
-            }
-            continue;
-        }
-
-        // Command line to args
-        struct args *args = makeargsby(cmdline);
-        if (!args || argslen(args) <= 0) {
-            argsdel(args);
-            goto error;
-        }
-        int cmdargc = argslen(args);
-        char **cmdargv = argsescdel(args);
-
-        // Find command by input line. And execute
-        int status = -1;
-        for (const struct cmd *p = cmds; p->name; ++p) {
-            if (!strcmp(p->name, cmdargv[0])) {
-                // showargv(cmdargc, cmdargv);
-                status = p->run(cmdargc, cmdargv);
-                break;
-            }
-        }
-
-        freeargv(cmdargc, cmdargv);
-
-        // Check status
-        switch (status) {
-        case 0: fprintf(stderr, "ok: '%s': str buf[%s]\n", cmdline, str_getc(kstr)); break;
-        case -1: fprintf(stderr, "failed: not found command '%s': str buf[%s]\n", cmdline, str_getc(kstr)); goto error;
-        default: fprintf(stderr, "failed: status %d: str buf[%s]\n", status, str_getc(kstr)); goto error;
-        }
-    }
-
-done:
-    fprintf(stderr, "done: %s\n", str_getc(kstr));
-    str_del(kstr);
-    return 0;
-
-error:
-    perror("error");
-    str_del(kstr);
-    return 1;
-}
-#endif

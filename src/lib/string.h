@@ -152,7 +152,7 @@ str_clear(string_t *self);
  * @return failed to NULL
  */
 string_t *
-str_set(string_t *self, const char *src);
+str_set(string_t *self, const string_type_t *src);
 
 /**
  * resize buffer in string by number of new length of buffer
