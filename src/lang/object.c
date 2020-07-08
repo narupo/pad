@@ -149,8 +149,8 @@ obj_deep_copy(const object_t *other) {
         err_die("TODO: copy module! in object.c");
         self->module.name = str_deep_copy(other->module.name);
         // self->module.tokenizer = tkr_deep_copy(other->module.tokenizer);
-        // self->module.ast = ast_new_other(other->module.ast);
-        // self->module.context = ctx_new_other(other->module.context);
+        // self->module.ast = ast_deep_copy(other->module.ast);
+        // self->module.context = ctx_deep_copy(other->module.context);
         self->module.builtin_func_infos = other->module.builtin_func_infos;
         break;
     case OBJ_TYPE_OWNERS_METHOD:
