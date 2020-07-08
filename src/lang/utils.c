@@ -352,7 +352,7 @@ copy_func_args(ast_t *ast, object_t *drtargs) {
         case OBJ_TYPE_BOOL:
         case OBJ_TYPE_STRING:
             // copy
-            savearg = obj_new_other(arg);
+            savearg = obj_deep_copy(arg);
             break;
         case OBJ_TYPE_OWNERS_METHOD:
         case OBJ_TYPE_ARRAY:
@@ -959,7 +959,7 @@ extract_copy_of_obj(ast_t *ast, object_t *obj) {
 
     switch (obj->type) {
     default:
-        return obj_new_other(obj);
+        return obj_deep_copy(obj);
         break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *ref = pull_in_ref_by(obj);
@@ -971,7 +971,7 @@ extract_copy_of_obj(ast_t *ast, object_t *obj) {
             );
             return NULL;
         }
-        return obj_new_other(ref);
+        return obj_deep_copy(ref);
     } break;
     case OBJ_TYPE_DICT: {
         // copy dict elements recursive
@@ -1005,7 +1005,7 @@ extract_copy_of_obj(ast_t *ast, object_t *obj) {
             ast_pushb_error(ast, "failed to refer index");
             return NULL;
         }
-        return obj_new_other(ref);
+        return obj_deep_copy(ref);
     } break;
     }
 
@@ -1095,7 +1095,7 @@ parse_bool(ast_t *ast, object_t *obj) {
             return false;
         }
 
-        object_t *val = obj_new_other(ref);
+        object_t *val = obj_deep_copy(ref);
         bool result = parse_bool(ast, val);
         obj_del(val);
         return result;

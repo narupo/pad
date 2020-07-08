@@ -157,17 +157,6 @@ object_t *
 obj_new(gc_t *ref_gc, obj_type_t type);
 
 /**
- * copy construct
- *
- * @param[in] *other pointer to other object
- *
- * @return success to pointer to object_t (copied object)
- * @return failed to NULL
- */
-object_t *
-obj_new_other(const object_t *other);
-
-/**
  * deep copy
  *
  * @param[in] *other
