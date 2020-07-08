@@ -53,7 +53,7 @@ errstack_new(void) {
 }
 
 errstack_t *
-errstack_new_other(const errstack_t *other) {
+errstack_deep_copy(const errstack_t *other) {
     if (!other) {
         return NULL;
     }
@@ -145,7 +145,7 @@ errstack_extendf_other(errstack_t *self, const errstack_t *_other) {
     }
 
     // self == _other? need copy for safety
-    errstack_t *other = errstack_new_other(_other);
+    errstack_t *other = errstack_deep_copy(_other);
 
 #define copy(dst, src) \
     dst->lineno = src->lineno; \
@@ -201,7 +201,7 @@ errstack_extendb_other(errstack_t *self, const errstack_t *_other) {
     }
 
     // self == _other? need copy for safety
-    errstack_t *other = errstack_new_other(_other);
+    errstack_t *other = errstack_deep_copy(_other);
 
     // append other at front of self
     for (int32_t i = 0; i < other->len; ++i) {

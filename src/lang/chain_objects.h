@@ -22,14 +22,14 @@ chain_objects_t *
 chain_objs_new(void);
 
 /**
- * copy constructor
+ * deep copy
  *
  * @param[in] *other
  *
  * @return
  */
 chain_objects_t *
-chain_objs_new_other(const chain_objects_t *other);
+chain_objs_deep_copy(const chain_objects_t *other);
 
 /**
  * resize chain_objects_t

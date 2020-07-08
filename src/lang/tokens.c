@@ -18,7 +18,7 @@ token_new(int type) {
 }
 
 token_t *
-token_new_other(const token_t *other) {
+token_deep_copy(const token_t *other) {
     token_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->type = other->type;

@@ -86,10 +86,10 @@ obj_del(object_t *self) {
 }
 
 extern object_array_t*
-objarr_new_other(object_array_t *other);
+objarr_deep_copy(const object_array_t *other);
 
 extern object_dict_t*
-objdict_new_other(object_dict_t *other);
+objdict_deep_copy(const object_dict_t *other);
 
 object_t *
 obj_new_other(const object_t *other) {
@@ -128,10 +128,10 @@ obj_new_other(const object_t *other) {
         self->string = str_deep_copy(other->string);
         break;
     case OBJ_TYPE_ARRAY:
-        self->objarr = objarr_new_other(other->objarr);
+        self->objarr = objarr_deep_copy(other->objarr);
         break;
     case OBJ_TYPE_DICT:
-        self->objdict = objdict_new_other(other->objdict);
+        self->objdict = objdict_deep_copy(other->objdict);
         break;
     case OBJ_TYPE_FUNC:
         // self->func.ref_ast is do not delete. this is reference
@@ -147,12 +147,12 @@ obj_new_other(const object_t *other) {
     case OBJ_TYPE_CHAIN:
         self->chain.operand = obj_new_other(other->chain.operand);
         obj_inc_ref(self->chain.operand);
-        self->chain.chain_objs = chain_objs_new_other(other->chain.chain_objs);
+        self->chain.chain_objs = chain_objs_deep_copy(other->chain.chain_objs);
         break;
     case OBJ_TYPE_MODULE:
         err_die("TODO: copy module! in object.c");
         self->module.name = str_deep_copy(other->module.name);
-        // self->module.tokenizer = tkr_new_other(other->module.tokenizer);
+        // self->module.tokenizer = tkr_deep_copy(other->module.tokenizer);
         // self->module.ast = ast_new_other(other->module.ast);
         // self->module.context = ctx_new_other(other->module.context);
         self->module.builtin_func_infos = other->module.builtin_func_infos;
@@ -190,6 +190,27 @@ obj_deep_copy(const object_t *other) {
     // copy object
     switch (other->type) {
     default: assert(0 && "need implement!"); break;
+    case OBJ_TYPE_NIL:
+        break;
+    case OBJ_TYPE_INT:
+        self->lvalue = other->lvalue;
+        break;
+    case OBJ_TYPE_BOOL:
+        self->boolean = other->boolean;
+        break;
+    case OBJ_TYPE_IDENTIFIER:
+        self->identifier.ref_ast = other->identifier.ref_ast;
+        self->identifier.name = str_deep_copy(other->identifier.name);
+        break;
+    case OBJ_TYPE_STRING:
+        self->string = str_deep_copy(other->string);
+        break;
+    case OBJ_TYPE_ARRAY:
+        self->objarr = objarr_deep_copy(other->objarr);
+        break;
+    case OBJ_TYPE_DICT:
+        self->objdict = objdict_deep_copy(other->objdict);
+        break;
     case OBJ_TYPE_FUNC:
         self->func.ref_ast = other->func.ref_ast;
         self->func.name = obj_deep_copy(other->func.name);
@@ -200,12 +221,18 @@ obj_deep_copy(const object_t *other) {
         self->func.ref_blocks = nodedict_deep_copy(other->func.ref_blocks);
         self->func.extends_func = obj_deep_copy(other->func.extends_func);
         break;
-    case OBJ_TYPE_IDENTIFIER:
-        self->identifier.ref_ast = other->identifier.ref_ast;
-        self->identifier.name = str_deep_copy(other->identifier.name);
+    case OBJ_TYPE_MODULE:
+        err_die("TODO: copy module! in object.c");
+        self->module.name = str_deep_copy(other->module.name);
+        // self->module.tokenizer = tkr_deep_copy(other->module.tokenizer);
+        // self->module.ast = ast_new_other(other->module.ast);
+        // self->module.context = ctx_new_other(other->module.context);
+        self->module.builtin_func_infos = other->module.builtin_func_infos;
         break;
-    case OBJ_TYPE_ARRAY:
-        self->objarr = objarr_deep_copy(other->objarr);
+    case OBJ_TYPE_OWNERS_METHOD:
+        self->owners_method.owner = obj_new_other(other->owners_method.owner);
+        obj_inc_ref(self->owners_method.owner);
+        self->owners_method.method_name = str_deep_copy(other->owners_method.method_name);
         break;
     }
 
