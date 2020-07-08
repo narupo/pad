@@ -81,7 +81,17 @@ errstack_new_other(const errstack_t *other);
  * @return failed to pointer to NULL
  */
 errstack_t *
-errstack_pushb(errstack_t *self, const char *filename, int32_t lineno, const char *funcname, const char *fmt, ...);
+_errstack_pushb(
+    errstack_t *self,
+    const char *filename,
+    int32_t lineno,
+    const char *funcname,
+    const char *fmt,
+    ...
+);
+
+#define errstack_pushb(self, fmt, ...) \
+    _errstack_pushb(self, __FILE__, __LINE__, __func__, fmt, ##__VA_ARGS__)
 
 /**
  * get stack element from stack with read-only

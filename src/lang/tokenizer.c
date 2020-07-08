@@ -160,7 +160,7 @@ done:
     if (m == 0) {
         err_die("impossible. mode is first");
     } else if (m == 10) {
-        tkr_pushb_error(self, "invalid syntax. single '@' is not supported");
+        errstack_pushb(self->error_stack, "invalid syntax. single '@' is not supported");
     } else if (m == 20) {
         return token_new(TOKEN_TYPE_RBRACEAT);
     }
@@ -207,7 +207,7 @@ tkr_read_identifier(tokenizer_t *self) {
 static string_t *
 tkr_read_escape(tokenizer_t *self) {
     if (*self->ptr != '\\') {
-        tkr_pushb_error(self, "not found \\ in read escape");
+        errstack_pushb(self->error_stack, "not found \\ in read escape");
         return NULL;
     }
 
@@ -364,7 +364,7 @@ tkr_parse_op(
     token_type_t type_op,
     token_type_t type_op_ass) {
     if (*self->ptr != op) {
-        tkr_pushb_error(self, "not found '%c'", op);
+        errstack_pushb(self->error_stack, "not found '%c'", op);
         return NULL;
     }
 
@@ -391,7 +391,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
     tkr_clear_tokens(self);
 
     if (!tkropt_validate(self->option)) {
-        tkr_pushb_error(self, "validate error of tokenizer");
+        errstack_pushb(self->error_stack, "validate error of tokenizer");
         return NULL;
     }
 
@@ -527,7 +527,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
             } else if (isspace(c)) {
                 // pass
             } else {
-                tkr_pushb_error(self, "syntax error. unsupported character \"%c\"", c);
+                errstack_pushb(self->error_stack, "syntax error. unsupported character \"%c\"", c);
                 goto fail;
             }
         } else if (m == 20) {  // found '{:'
@@ -618,7 +618,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
             } else if (c == ' ') {
                 // pass
             } else {
-                tkr_pushb_error(self, "syntax error. unsupported character \"%c\"", c);
+                errstack_pushb(self->error_stack, "syntax error. unsupported character \"%c\"", c);
                 goto fail;
             }
         } else if (m == 100) {  // found '//' in {@ @}
@@ -645,7 +645,7 @@ tkr_parse(tokenizer_t *self, const char *src) {
 
     if (m == 10 || m == 20 || m == 100) {
         // on the way of '{@' or '{{'
-        tkr_pushb_error(self, "not closed by block");
+        errstack_pushb(self->error_stack, "not closed by block");
         goto fail;
     }
 
