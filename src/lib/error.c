@@ -156,13 +156,22 @@ _log_unsafe(const char *file, long line, const char *func, const char *type, con
 }
 
 void
-err_die(const char *fmt, ...) {
+_err_die(
+	const char *fname,
+	int32_t line,
+	const char *funcname,
+	const char *fmt,
+	...
+) {
 	char tmp[1024];
 	fmt = fmttoupper_unsafe(tmp, sizeof tmp, fmt);
 
+	char head[1024];
+	snprintf(head, sizeof head, "die: %s: %d: %s:", fname, line, funcname);
+
 	va_list ap;
 	va_start(ap, fmt);
-	errorap_unsafe(NULL, ap, fmt);
+	errorap_unsafe(head, ap, fmt);
 	va_end(ap);
 
 	exit(EXIT_FAILURE);

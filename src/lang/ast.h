@@ -115,7 +115,7 @@ ast_getc_root(const ast_t *self);
  * @param[in] ... arguments of format
  */
 #define ast_pushb_error(ast, fmt, ...) \
-    errstack_pushb(ast->error_stack, __FILE__, __LINE__, __func__, fmt, ##__VA_ARGS__)
+    errstack_pushb(ast->error_stack, fmt, ##__VA_ARGS__)
 
 /**
  * clear ast state (will call ast_del_nodes)

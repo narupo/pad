@@ -121,16 +121,6 @@ bool
 tkr_has_error_stack(const tokenizer_t *self);
 
 /**
- * push back error at tokenizer error stack
- *
- * @param[in] tkr pointer to tokenizer_t
- * @param[in] fmt format string (const char *)
- * @param[in] ... arguments of format
- */
-#define tkr_pushb_error(tkr, fmt, ...) \
-    errstack_pushb(tkr->error_stack, __FILE__, __LINE__, __func__, fmt, ##__VA_ARGS__)
-
-/**
  * Get error detail
  *
  * @param[in] self pointer to dynamic allocate memory of tokenizer_t

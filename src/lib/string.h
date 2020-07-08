@@ -16,6 +16,7 @@
 #include <stdint.h>
 #include <limits.h>
 #include <unistd.h>
+#include <wchar.h>
 
 #include <lib/cstring.h>
 

@@ -53,7 +53,16 @@ _log_unsafe(const char *file, long line, const char *func, const char *type, con
  * @param[in] ... arguments of format
  */
 void
-err_die(const char *fmt, ...);
+_err_die(
+	const char *fname,
+	int32_t line,
+	const char *funcname,
+	const char *fmt,
+	...
+);
+
+#define err_die(fmt, ...) \
+	_err_die(__FILE__, __LINE__, __func__, fmt, ##__VA_ARGS__)
 
 /**
  * Show error message

@@ -86,7 +86,7 @@ errstack_resize(errstack_t *self, int32_t newcapa) {
 }
 
 errstack_t *
-errstack_pushb(errstack_t *self, const char *filename, int32_t lineno, const char *funcname, const char *fmt, ...) {
+_errstack_pushb(errstack_t *self, const char *filename, int32_t lineno, const char *funcname, const char *fmt, ...) {
     if (self->len >= self->capa) {
         if (!errstack_resize(self, self->capa*2)) {
             return NULL;
