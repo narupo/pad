@@ -56,14 +56,14 @@ object_dict_t *
 objdict_new(gc_t *ref_gc);
 
 /**
- * copy constructor
+ * deep copy
  *
  * @param[in] *other
  *
  * @return
  */
 object_dict_t*
-objdict_new_other(object_dict_t *other);
+objdict_deep_copy(const object_dict_t *other);
 
 /**
  * shallow copy

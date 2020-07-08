@@ -61,9 +61,6 @@ nodedict_escdel(node_dict_t *self);
 node_dict_t *
 nodedict_new(void);
 
-extern node_dict_t*
-nodedict_new_other(node_dict_t *other);
-
 /**
  * shallow copy node-dict
  *

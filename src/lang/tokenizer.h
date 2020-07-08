@@ -39,7 +39,7 @@ tkropt_new(void);
  * @return
  */
 tokenizer_option_t *
-tkropt_new_other(const tokenizer_option_t *other);
+tkropt_deep_copy(const tokenizer_option_t *other);
 
 /************
 * tokenizer *
@@ -75,7 +75,7 @@ tkr_new(tokenizer_option_t *move_option);
  * @return
  */
 tokenizer_t *
-tkr_new_other(const tokenizer_t *other);
+tkr_deep_copy(const tokenizer_t *other);
 
 /**
  * Parse string and build tokens

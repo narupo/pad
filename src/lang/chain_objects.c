@@ -8,7 +8,7 @@ void
 chain_obj_del(chain_object_t *self);
 
 chain_object_t *
-chain_obj_new_other(const chain_object_t *other);
+chain_obj_deep_copy(const chain_object_t *other);
 
 void
 chain_obj_dump(const chain_object_t *self, FILE *fout);
@@ -60,7 +60,7 @@ chain_objs_new(void) {
 }
 
 chain_objects_t *
-chain_objs_new_other(const chain_objects_t *other) {
+chain_objs_deep_copy(const chain_objects_t *other) {
     if (!other) {
         return NULL;
     }
@@ -73,7 +73,7 @@ chain_objs_new_other(const chain_objects_t *other) {
 
     for (int32_t i = 0; i < other->len; ++i) {
         chain_object_t *co = other->chain_objs[i];
-        self->chain_objs[i] = chain_obj_new_other(co);
+        self->chain_objs[i] = chain_obj_deep_copy(co);
         self->chain_objs[i+1] = NULL;
     }
 

@@ -104,7 +104,7 @@ token_new(int type);
  * @return
  */
 token_t *
-token_new_other(const token_t *other);
+token_deep_copy(const token_t *other);
 
 /**
  * Move text pointer to token

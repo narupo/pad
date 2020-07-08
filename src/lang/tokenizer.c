@@ -26,10 +26,12 @@ tkropt_new(void) {
 }
 
 tokenizer_option_t *
-tkropt_new_other(const tokenizer_option_t *other) {
+tkropt_deep_copy(const tokenizer_option_t *other) {
     tokenizer_option_t *self = mem_ecalloc(1, sizeof(*self));
+
     self->ldbrace_value = other->ldbrace_value;
     self->rdbrace_value = other->rdbrace_value;
+
     return self;
 }
 
@@ -92,7 +94,7 @@ tkr_new(tokenizer_option_t *move_option) {
 }
 
 tokenizer_t *
-tkr_new_other(const tokenizer_t *other) {
+tkr_deep_copy(const tokenizer_t *other) {
     tokenizer_t *self = mem_ecalloc(1, sizeof(*self));
 
     // TODO: copy error_stack
@@ -103,14 +105,14 @@ tkr_new_other(const tokenizer_t *other) {
     self->tokens_len = other->tokens_len;
     self->tokens_capa = other->tokens_capa;
 
-    tokenizer_option_t *opt = tkropt_new_other(other->option);
+    tokenizer_option_t *opt = tkropt_deep_copy(other->option);
     self->option = mem_move(opt);
     self->debug = other->debug;
 
     self->tokens = mem_ecalloc(self->tokens_capa+1, sizeof(token_t *)); // +1 for final null
     for (int32_t i = 0; i < self->tokens_len; ++i) {
         const token_t *tok = other->tokens[i];
-        self->tokens[i] = token_new_other(tok);
+        self->tokens[i] = token_deep_copy(tok);
     }
 
     return self;

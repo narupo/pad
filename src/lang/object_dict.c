@@ -63,10 +63,10 @@ objdict_new(gc_t *ref_gc) {
 }
 
 extern object_t *
-obj_new_other(const object_t *other);
+obj_deep_copy(const object_t *other);
 
 object_dict_t*
-objdict_new_other(object_dict_t *other) {
+objdict_deep_copy(const object_dict_t *other) {
     if (!other) {
         return NULL;
     }
@@ -81,7 +81,7 @@ objdict_new_other(object_dict_t *other) {
         object_dict_item_t *dstitem = &self->map[i];
         object_dict_item_t *srcitem = &other->map[i];
         strcpy(dstitem->key, srcitem->key);
-        object_t *obj = obj_new_other(srcitem->value);
+        object_t *obj = obj_deep_copy(srcitem->value);
         obj_inc_ref(obj);
         dstitem->value = obj;
     }
