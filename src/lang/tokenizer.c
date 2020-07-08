@@ -99,7 +99,7 @@ tkr_new_other(const tokenizer_t *other) {
 
     self->src = other->src;
     self->ptr = other->ptr;
-    self->buf = str_new_other(other->buf);
+    self->buf = str_deep_copy(other->buf);
     self->tokens_len = other->tokens_len;
     self->tokens_capa = other->tokens_capa;
 

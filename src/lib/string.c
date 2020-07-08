@@ -89,11 +89,6 @@ str_new_cstr(const string_type_t *str) {
 }
 
 string_t *
-str_new_other(const string_t *other) {
-    return str_deep_copy(other);
-}
-
-string_t *
 str_deep_copy(const string_t *other) {
     if (!other) {
         return NULL;
@@ -333,7 +328,7 @@ str_app_other(string_t *self, const string_t *_other) {
         return NULL;
     }
 
-    string_t *other = str_new_other(_other);
+    string_t *other = str_deep_copy(_other);
     string_t *ret = NULL;
 
     if (self == other) {
@@ -496,7 +491,7 @@ str_lower(const string_t *other) {
         return NULL;
     }
 
-    string_t *self = str_new_other(other);
+    string_t *self = str_deep_copy(other);
     for (int32_t i = 0; i < self->length; ++i) {
         string_type_t ch = self->buffer[i];
         if (isupper(ch)) {
@@ -513,7 +508,7 @@ str_upper(const string_t *other) {
         return NULL;
     }
 
-    string_t *self = str_new_other(other);
+    string_t *self = str_deep_copy(other);
     for (int32_t i = 0; i < self->length; ++i) {
         string_type_t ch = self->buffer[i];
         if (islower(ch)) {
@@ -530,7 +525,7 @@ str_capitalize(const string_t *other) {
         return NULL;
     }
 
-    string_t *self = str_new_other(other);
+    string_t *self = str_deep_copy(other);
     if (self->length) {
         string_type_t ch = self->buffer[0];
         if (islower(ch)) {
