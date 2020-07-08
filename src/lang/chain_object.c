@@ -17,7 +17,7 @@ void
 obj_dec_ref(object_t *self);
 
 object_t *
-obj_new_other(const object_t *other);
+obj_deep_copy(const object_t *other);
 
 void
 objarr_del(object_array_t *self);
@@ -72,7 +72,7 @@ chain_obj_deep_copy(const chain_object_t *other) {
         return NULL;
     }
 
-    object_t *obj = obj_new_other(other->obj);
+    object_t *obj = obj_deep_copy(other->obj);
     obj_inc_ref(obj);
     chain_object_t *self = chain_obj_new(other->type, mem_move(obj));
 

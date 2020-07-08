@@ -48,7 +48,7 @@ again:
     object_t *arg = objarr_get(args, 0);
     objarr_moveb(ref_owner->objarr, arg);
 
-    return obj_new_other(ref_owner);
+    return obj_deep_copy(ref_owner);
 }
 
 static object_t *

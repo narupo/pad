@@ -1077,7 +1077,7 @@ again:
     case OBJ_TYPE_INT:
     case OBJ_TYPE_BOOL:
     case OBJ_TYPE_STRING:
-        ret = obj_new_other(result);
+        ret = obj_deep_copy(result);
         break;
     case OBJ_TYPE_CHAIN:
         result = refer_chain_obj_with_ref(ast, result);
@@ -2092,91 +2092,91 @@ trv_compare_or_int(ast_t *ast, trv_args_t *targs) {
     default: {
         object_t *obj = NULL;
         if (lhs->lvalue && rhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs->lvalue && !rhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs->lvalue && rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (lhs->lvalue && NULL) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs->lvalue && !NULL) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs->lvalue && NULL) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs->lvalue && rhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs->lvalue && !rhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs->lvalue && rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
         if (lhs->lvalue && rhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs->lvalue && !rhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs->lvalue && rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
         if (lhs->lvalue && str_len(rhs->string)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs->lvalue && !str_len(rhs->string)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs->lvalue && str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
         if (lhs->lvalue && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs->lvalue && !objarr_len(rhs->objarr)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs->lvalue && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_DICT: {
         object_t *obj = NULL;
         if (lhs->lvalue && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs->lvalue && !objdict_len(rhs->objdict)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs->lvalue && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
@@ -2230,91 +2230,91 @@ trv_compare_or_bool(ast_t *ast, trv_args_t *targs) {
     default: {
         object_t *obj = NULL;
         if (lhs->boolean && rhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs->boolean && !rhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs->boolean && rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (lhs->boolean && NULL) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs->boolean && !NULL) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs->boolean && NULL) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs->boolean && rhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs->boolean && !rhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs->boolean && rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
         if (lhs->boolean && rhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs->boolean && !rhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs->boolean && rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
         if (lhs->boolean && str_len(rhs->string)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs->boolean && !str_len(rhs->string)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs->boolean && str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
         if (lhs->boolean && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs->boolean && !objarr_len(rhs->objarr)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs->boolean && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_DICT: {
         object_t *obj = NULL;
         if (lhs->boolean && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs->boolean && !objdict_len(rhs->objdict)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs->boolean && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
@@ -2369,91 +2369,91 @@ trv_compare_or_string(ast_t *ast, trv_args_t *targs) {
     default: {
         object_t *obj = NULL;
         if (slen && rhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (slen && !rhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!slen && rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (slen && NULL) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (slen && !NULL) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!slen && NULL) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (slen && rhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (slen && !rhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!slen && rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
         if (slen && rhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (slen && !rhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!slen && rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
         if (slen && str_len(rhs->string)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (slen && !str_len(rhs->string)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!slen && str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
         if (slen && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (slen && !objarr_len(rhs->objarr)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!slen && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_DICT: {
         object_t *obj = NULL;
         if (slen && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (slen && !objdict_len(rhs->objdict)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!slen && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
@@ -2499,26 +2499,26 @@ trv_compare_or_array(ast_t *ast, trv_args_t *targs) {
     default: {
         object_t *obj = NULL;
         if (arrlen && rhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (arrlen && !rhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!arrlen && rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (arrlen && NULL) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (arrlen && !NULL) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!arrlen && NULL) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
         return_trav(obj);
@@ -2526,65 +2526,65 @@ trv_compare_or_array(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (arrlen && rhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (arrlen && !rhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!arrlen && rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
         if (arrlen && rhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (arrlen && !rhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!arrlen && rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
         if (arrlen && str_len(rhs->string)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (arrlen && !str_len(rhs->string)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!arrlen && str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
         if (arrlen && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (arrlen && !objarr_len(rhs->objarr)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!arrlen && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_DICT: {
         object_t *obj = NULL;
         if (arrlen && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (arrlen && !objdict_len(rhs->objdict)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!arrlen && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
@@ -2630,26 +2630,26 @@ trv_compare_or_dict(ast_t *ast, trv_args_t *targs) {
     default: {
         object_t *obj = NULL;
         if (dictlen && rhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (dictlen && !rhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!dictlen && rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (dictlen && NULL) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (dictlen && !NULL) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!dictlen && NULL) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
         return_trav(obj);
@@ -2657,65 +2657,65 @@ trv_compare_or_dict(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (dictlen && rhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (dictlen && !rhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!dictlen && rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
         if (dictlen && rhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (dictlen && !rhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!dictlen && rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
         if (dictlen && str_len(rhs->string)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (dictlen && !str_len(rhs->string)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!dictlen && str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
         if (dictlen && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (dictlen && !objarr_len(rhs->objarr)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!dictlen && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_DICT: {
         object_t *obj = NULL;
         if (dictlen && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (dictlen && !objdict_len(rhs->objdict)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!dictlen && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
@@ -2758,7 +2758,7 @@ trv_compare_or_nil(ast_t *ast, trv_args_t *targs) {
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_other(rhs);
+        object_t *obj = obj_deep_copy(rhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -2771,7 +2771,7 @@ trv_compare_or_nil(ast_t *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_FUNC: {
-        object_t *obj = obj_new_other(rhs);
+        object_t *obj = obj_deep_copy(rhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_CHAIN: {
@@ -2806,13 +2806,13 @@ trv_compare_or_func(ast_t *ast, trv_args_t *targs) {
     default: {
         object_t *obj = NULL;
         if (lhs && rhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs && !rhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs && rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
@@ -2820,76 +2820,76 @@ trv_compare_or_func(ast_t *ast, trv_args_t *targs) {
         object_t *obj = NULL;
         if (lhs && NULL) {
         } else if (lhs && !NULL) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs && NULL) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs && rhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs && !rhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs && rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
         if (lhs && rhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs && !rhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs && rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
         if (lhs && str_len(rhs->string)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs && !str_len(rhs->string)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs && str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
         if (lhs && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs && !objarr_len(rhs->objarr)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_DICT: {
         object_t *obj = NULL;
         if (lhs && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs && !objdict_len(rhs->objdict)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
@@ -2934,13 +2934,13 @@ trv_compare_or_module(ast_t *ast, trv_args_t *targs) {
     default: {
         object_t *obj = NULL;
         if (lhs && rhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs && !rhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs && rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
@@ -2948,76 +2948,76 @@ trv_compare_or_module(ast_t *ast, trv_args_t *targs) {
         object_t *obj = NULL;
         if (lhs && NULL) {
         } else if (lhs && !NULL) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs && NULL) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs && rhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs && !rhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs && rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
         if (lhs && rhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs && !rhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs && rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
         if (lhs && str_len(rhs->string)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs && !str_len(rhs->string)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs && str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
         if (lhs && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs && !objarr_len(rhs->objarr)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_DICT: {
         object_t *obj = NULL;
         if (lhs && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (lhs && !objdict_len(rhs->objdict)) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else if (!lhs && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         }
         return_trav(obj);
     } break;
@@ -3198,11 +3198,11 @@ trv_compare_and_int(ast_t *ast, trv_args_t *targs) {
     default: {
         object_t *obj = NULL;
         if (lhs->lvalue && rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3211,11 +3211,11 @@ trv_compare_and_int(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (lhs->lvalue && NULL) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!NULL) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3224,11 +3224,11 @@ trv_compare_and_int(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs->lvalue && rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3237,11 +3237,11 @@ trv_compare_and_int(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
         if (lhs->lvalue && rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3250,11 +3250,11 @@ trv_compare_and_int(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
         if (lhs->lvalue && str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3263,11 +3263,11 @@ trv_compare_and_int(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
         if (lhs->lvalue && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3276,11 +3276,11 @@ trv_compare_and_int(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_DICT: {
         object_t *obj = NULL;
         if (lhs->lvalue && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs->lvalue) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3327,11 +3327,11 @@ trv_compare_and_bool(ast_t *ast, trv_args_t *targs) {
     default: {
         object_t *obj = NULL;
         if (lhs->boolean && rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3340,11 +3340,11 @@ trv_compare_and_bool(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (lhs->boolean && NULL) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!NULL) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3353,11 +3353,11 @@ trv_compare_and_bool(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs->boolean && rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3366,11 +3366,11 @@ trv_compare_and_bool(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
         if (lhs->boolean && rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3379,11 +3379,11 @@ trv_compare_and_bool(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
         if (lhs->boolean && str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3392,11 +3392,11 @@ trv_compare_and_bool(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
         if (lhs->boolean && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3405,11 +3405,11 @@ trv_compare_and_bool(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_DICT: {
         object_t *obj = NULL;
         if (lhs->boolean && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs->boolean) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3457,11 +3457,11 @@ trv_compare_and_string(ast_t *ast, trv_args_t *targs) {
     default: {
         object_t *obj = NULL;
         if (slen && rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!slen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3470,11 +3470,11 @@ trv_compare_and_string(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_NIL: {
         object_t *obj = NULL;
         if (slen && NULL) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!NULL) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!slen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3483,11 +3483,11 @@ trv_compare_and_string(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (slen && rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!slen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3496,11 +3496,11 @@ trv_compare_and_string(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
         if (slen && rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!slen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3509,11 +3509,11 @@ trv_compare_and_string(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
         if (slen && str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!slen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3522,11 +3522,11 @@ trv_compare_and_string(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
         if (slen && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!slen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3535,11 +3535,11 @@ trv_compare_and_string(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_DICT: {
         object_t *obj = NULL;
         if (slen && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!slen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3587,28 +3587,28 @@ trv_compare_and_array(ast_t *ast, trv_args_t *targs) {
     default: {
         object_t *obj = NULL;
         if (arrlen && rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!arrlen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_other(rhs);
+        object_t *obj = obj_deep_copy(rhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (arrlen && rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!arrlen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3617,11 +3617,11 @@ trv_compare_and_array(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
         if (arrlen && rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!arrlen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3630,11 +3630,11 @@ trv_compare_and_array(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
         if (arrlen && str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!arrlen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3643,11 +3643,11 @@ trv_compare_and_array(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
         if (arrlen && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!arrlen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3656,11 +3656,11 @@ trv_compare_and_array(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_DICT: {
         object_t *obj = NULL;
         if (arrlen && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!arrlen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3708,28 +3708,28 @@ trv_compare_and_dict(ast_t *ast, trv_args_t *targs) {
     default: {
         object_t *obj = NULL;
         if (dictlen && rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!dictlen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_other(rhs);
+        object_t *obj = obj_deep_copy(rhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (dictlen && rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!dictlen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3738,11 +3738,11 @@ trv_compare_and_dict(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
         if (dictlen && rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!dictlen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3751,11 +3751,11 @@ trv_compare_and_dict(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
         if (dictlen && str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!dictlen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3764,11 +3764,11 @@ trv_compare_and_dict(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
         if (dictlen && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!dictlen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3777,11 +3777,11 @@ trv_compare_and_dict(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_DICT: {
         object_t *obj = NULL;
         if (dictlen && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!dictlen) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3826,7 +3826,7 @@ trv_compare_and_nil(ast_t *ast, trv_args_t *targs) {
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_other(lhs);
+        object_t *obj = obj_deep_copy(lhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -3870,28 +3870,28 @@ trv_compare_and_func(ast_t *ast, trv_args_t *targs) {
     default: {
         object_t *obj = NULL;
         if (lhs && rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_other(rhs);
+        object_t *obj = obj_deep_copy(rhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs && rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3900,11 +3900,11 @@ trv_compare_and_func(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
         if (lhs && rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3913,11 +3913,11 @@ trv_compare_and_func(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
         if (lhs && str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3926,11 +3926,11 @@ trv_compare_and_func(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
         if (lhs && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3939,11 +3939,11 @@ trv_compare_and_func(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_DICT: {
         object_t *obj = NULL;
         if (lhs && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -3990,28 +3990,28 @@ trv_compare_and_module(ast_t *ast, trv_args_t *targs) {
     default: {
         object_t *obj = NULL;
         if (lhs && rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
     case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_other(rhs);
+        object_t *obj = obj_deep_copy(rhs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_INT: {
         object_t *obj = NULL;
         if (lhs && rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs->lvalue) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -4020,11 +4020,11 @@ trv_compare_and_module(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_BOOL: {
         object_t *obj = NULL;
         if (lhs && rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!rhs->boolean) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -4033,11 +4033,11 @@ trv_compare_and_module(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_STRING: {
         object_t *obj = NULL;
         if (lhs && str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!str_len(rhs->string)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -4046,11 +4046,11 @@ trv_compare_and_module(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_ARRAY: {
         object_t *obj = NULL;
         if (lhs && objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!objarr_len(rhs->objarr)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -4059,11 +4059,11 @@ trv_compare_and_module(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_DICT: {
         object_t *obj = NULL;
         if (lhs && objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!objdict_len(rhs->objdict)) {
-            obj = obj_new_other(rhs);
+            obj = obj_deep_copy(rhs);
         } else if (!lhs) {
-            obj = obj_new_other(lhs);
+            obj = obj_deep_copy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
@@ -8362,7 +8362,7 @@ trv_array_elems(ast_t *ast, trv_args_t *targs) {
 
         switch (ref->type) {
         default: {
-            object_t *copy = obj_new_other(ref);
+            object_t *copy = obj_deep_copy(ref);
             objarr_moveb(objarr, mem_move(copy));
         } break;
         case OBJ_TYPE_ARRAY:

@@ -92,82 +92,6 @@ extern object_dict_t*
 objdict_deep_copy(const object_dict_t *other);
 
 object_t *
-obj_new_other(const object_t *other) {
-    if (!other) {
-        return NULL;
-    }
-
-    // allocate memory by gc
-    gc_item_t gc_item = {0};
-    if (!gc_alloc(other->ref_gc, &gc_item, sizeof(object_t))) {
-        return NULL;
-    }
-
-    // get pointer of allocated memory
-    object_t *self = gc_item.ptr;
-
-    // copy parameters
-    self->ref_gc = other->ref_gc;
-    self->gc_item = gc_item;
-    self->type = other->type;
-
-    switch(other->type) {
-    case OBJ_TYPE_NIL:
-        break;
-    case OBJ_TYPE_INT:
-        self->lvalue = other->lvalue;
-        break;
-    case OBJ_TYPE_BOOL:
-        self->boolean = other->boolean;
-        break;
-    case OBJ_TYPE_IDENTIFIER:
-        self->identifier.ref_ast = other->identifier.ref_ast;
-        self->identifier.name = str_deep_copy(other->identifier.name);
-        break;
-    case OBJ_TYPE_STRING:
-        self->string = str_deep_copy(other->string);
-        break;
-    case OBJ_TYPE_ARRAY:
-        self->objarr = objarr_deep_copy(other->objarr);
-        break;
-    case OBJ_TYPE_DICT:
-        self->objdict = objdict_deep_copy(other->objdict);
-        break;
-    case OBJ_TYPE_FUNC:
-        // self->func.ref_ast is do not delete. this is reference
-        self->func.ref_ast = other->func.ref_ast;
-        self->func.name = obj_new_other(other->func.name);
-        obj_inc_ref(self->func.name);
-        self->func.args = obj_new_other(other->func.args);
-        obj_inc_ref(self->func.args);
-        self->func.ref_suites = other->func.ref_suites;  // save reference
-        self->func.ref_blocks = other->func.ref_blocks;  // save reference
-        self->func.extends_func = obj_new_other(other->func.extends_func);
-        break;
-    case OBJ_TYPE_CHAIN:
-        self->chain.operand = obj_new_other(other->chain.operand);
-        obj_inc_ref(self->chain.operand);
-        self->chain.chain_objs = chain_objs_deep_copy(other->chain.chain_objs);
-        break;
-    case OBJ_TYPE_MODULE:
-        err_die("TODO: copy module! in object.c");
-        self->module.name = str_deep_copy(other->module.name);
-        // self->module.tokenizer = tkr_deep_copy(other->module.tokenizer);
-        // self->module.ast = ast_new_other(other->module.ast);
-        // self->module.context = ctx_new_other(other->module.context);
-        self->module.builtin_func_infos = other->module.builtin_func_infos;
-        break;
-    case OBJ_TYPE_OWNERS_METHOD:
-        self->owners_method.owner = obj_new_other(other->owners_method.owner);
-        obj_inc_ref(self->owners_method.owner);
-        self->owners_method.method_name = str_deep_copy(other->owners_method.method_name);
-        break;
-    }
-
-    return self;
-}
-
-object_t *
 obj_deep_copy(const object_t *other) {
     if (!other) {
         return NULL;
@@ -230,7 +154,7 @@ obj_deep_copy(const object_t *other) {
         self->module.builtin_func_infos = other->module.builtin_func_infos;
         break;
     case OBJ_TYPE_OWNERS_METHOD:
-        self->owners_method.owner = obj_new_other(other->owners_method.owner);
+        self->owners_method.owner = obj_deep_copy(other->owners_method.owner);
         obj_inc_ref(self->owners_method.owner);
         self->owners_method.method_name = str_deep_copy(other->owners_method.method_name);
         break;
@@ -623,11 +547,11 @@ obj_to_array(const object_t *obj) {
     switch (obj->type) {
     default: {
         object_array_t *objarr = objarr_new();
-        objarr_moveb(objarr, obj_new_other(obj));
+        objarr_moveb(objarr, obj_deep_copy(obj));
         return obj_new_array(obj->ref_gc, mem_move(objarr));
     } break;
     case OBJ_TYPE_ARRAY:
-        return obj_new_other(obj);
+        return obj_deep_copy(obj);
         break;
     }
 
