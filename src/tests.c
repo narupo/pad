@@ -744,12 +744,12 @@ test_str_new(void) {
 }
 
 static void
-test_str_new_other(void) {
+test_str_deep_copy(void) {
     string_t *s = str_new();
     assert(s != NULL);
     assert(str_set(s, "1234") != NULL);
-    assert(str_new_other(NULL) == NULL);
-    string_t *o = str_new_other(s);
+    assert(str_deep_copy(NULL) == NULL);
+    string_t *o = str_deep_copy(s);
     assert(o != NULL);
     assert(strcmp(str_getc(o), "1234") == 0);
     str_del(o);
@@ -1295,8 +1295,8 @@ string_tests[] = {
     {"str_del", test_str_del},
     {"str_esc_del", test_str_esc_del},
     {"str_new", test_str_new},
-    {"str_new_other", test_str_new_other},
-    {"str_new_other", test_str_new_other},
+    {"str_deep_copy", test_str_deep_copy},
+    {"str_deep_copy", test_str_deep_copy},
     {"str_len", test_str_len},
     {"str_capa", test_str_capa},
     {"str_getc", test_str_getc},

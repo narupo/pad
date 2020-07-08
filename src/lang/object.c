@@ -122,10 +122,10 @@ obj_new_other(const object_t *other) {
         break;
     case OBJ_TYPE_IDENTIFIER:
         self->identifier.ref_ast = other->identifier.ref_ast;
-        self->identifier.name = str_new_other(other->identifier.name);
+        self->identifier.name = str_deep_copy(other->identifier.name);
         break;
     case OBJ_TYPE_STRING:
-        self->string = str_new_other(other->string);
+        self->string = str_deep_copy(other->string);
         break;
     case OBJ_TYPE_ARRAY:
         self->objarr = objarr_new_other(other->objarr);
@@ -151,7 +151,7 @@ obj_new_other(const object_t *other) {
         break;
     case OBJ_TYPE_MODULE:
         err_die("TODO: copy module! in object.c");
-        self->module.name = str_new_other(other->module.name);
+        self->module.name = str_deep_copy(other->module.name);
         // self->module.tokenizer = tkr_new_other(other->module.tokenizer);
         // self->module.ast = ast_new_other(other->module.ast);
         // self->module.context = ctx_new_other(other->module.context);
@@ -160,7 +160,7 @@ obj_new_other(const object_t *other) {
     case OBJ_TYPE_OWNERS_METHOD:
         self->owners_method.owner = obj_new_other(other->owners_method.owner);
         obj_inc_ref(self->owners_method.owner);
-        self->owners_method.method_name = str_new_other(other->owners_method.method_name);
+        self->owners_method.method_name = str_deep_copy(other->owners_method.method_name);
         break;
     }
 
@@ -544,7 +544,7 @@ obj_to_str(const object_t *self) {
         return str;
     } break;
     case OBJ_TYPE_STRING: {
-        return str_new_other(self->string);
+        return str_deep_copy(self->string);
     } break;
     case OBJ_TYPE_ARRAY: {
         string_t *str = str_new();

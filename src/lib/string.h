@@ -63,17 +63,6 @@ string_t *
 str_new(void);
 
 /**
- * constring from other string
- * string is copy object of other string
- *
- * @param[in] other pointer to memory of other string
- *
- * @return pointer to dynamic allocate memory of string
- */
-string_t *
-str_new_other(const string_t *other);
-
-/**
  * deep copy
  *
  * @param[in] *other
