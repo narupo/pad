@@ -37,9 +37,9 @@ obj_del(object_t *self) {
         str_del(self->identifier.name);
         self->identifier.name = NULL;
         break;
-    case OBJ_TYPE_STRING:
-        str_del(self->string);
-        self->string = NULL;
+    case OBJ_TYPE_UNICODE:
+        uni_del(self->unicode);
+        self->unicode = NULL;
         break;
     case OBJ_TYPE_ARRAY:
         objarr_del(self->objarr);
@@ -126,8 +126,8 @@ obj_deep_copy(const object_t *other) {
         self->identifier.ref_ast = other->identifier.ref_ast;
         self->identifier.name = str_deep_copy(other->identifier.name);
         break;
-    case OBJ_TYPE_STRING:
-        self->string = str_deep_copy(other->string);
+    case OBJ_TYPE_UNICODE:
+        self->unicode = uni_deep_copy(other->unicode);
         break;
     case OBJ_TYPE_ARRAY:
         self->objarr = objarr_deep_copy(other->objarr);
@@ -250,7 +250,7 @@ obj_new_identifier(gc_t *ref_gc, ast_t *ref_ast, string_t *move_identifier) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_STRING);
+    object_t *self = obj_new(ref_gc, OBJ_TYPE_UNICODE);
     if (!self) {
         return NULL;
     }
@@ -267,29 +267,29 @@ obj_new_cstr(gc_t *ref_gc, const char *str) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_STRING);
+    object_t *self = obj_new(ref_gc, OBJ_TYPE_UNICODE);
     if (!self) {
         return NULL;
     }
 
-    self->string = str_new();
-    str_set(self->string, str);
+    self->unicode = uni_new();
+    uni_set_mb(self->unicode, str);
 
     return self;
 }
 
 object_t *
-obj_new_str(gc_t *ref_gc, string_t *move_str) {
-    if (!ref_gc || !move_str) {
+obj_new_unicode(gc_t *ref_gc, unicode_t *move_unicode) {
+    if (!ref_gc || !move_unicode) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_STRING);
+    object_t *self = obj_new(ref_gc, OBJ_TYPE_UNICODE);
     if (!self) {
         return NULL;
     }
 
-    self->string = move_str;
+    self->unicode = move_unicode;
 
     return self;
 }
@@ -494,8 +494,11 @@ obj_to_str(const object_t *self) {
         }
         return str;
     } break;
-    case OBJ_TYPE_STRING: {
-        return str_deep_copy(self->string);
+    case OBJ_TYPE_UNICODE: {
+        string_t *str = str_new();
+        const char *s = uni_getc_mb(self->unicode);
+        str_set(str, s);
+        return str;
     } break;
     case OBJ_TYPE_ARRAY: {
         string_t *str = str_new();
@@ -652,7 +655,7 @@ obj_type_to_str(const object_t *self) {
     case OBJ_TYPE_IDENTIFIER:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: identifier>", self->type);
         break;
-    case OBJ_TYPE_STRING:
+    case OBJ_TYPE_UNICODE:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: string>", self->type);
         break;
     case OBJ_TYPE_ARRAY:
@@ -733,14 +736,14 @@ obj_getc_dict(const object_t *self) {
     return self->objdict;
 }
 
-const string_t *
-obj_getc_str(const object_t *self) {
-    return self->string;
+unicode_t *
+obj_get_unicode(object_t *self) {
+    return self->unicode;
 }
 
-string_t *
-obj_get_str(object_t *self) {
-    return self->string;
+const unicode_t *
+obj_getc_unicode(const object_t *self) {
+    return self->unicode;
 }
 
 builtin_func_info_t *

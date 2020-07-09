@@ -253,6 +253,15 @@ uni_capa(const unicode_t *self) {
     return self->capacity;
 }
 
+unicode_type_t *
+uni_get(unicode_t *self) {
+    if (!self) {
+        return NULL;
+    }
+
+    return self->buffer;
+}
+
 const unicode_type_t *
 uni_getc(const unicode_t *self) {
     if (!self) {

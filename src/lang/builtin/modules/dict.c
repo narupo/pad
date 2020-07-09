@@ -64,9 +64,9 @@ again2:
         }
         goto again2;
     } break;
-    case OBJ_TYPE_STRING: {
-        const string_t *s = obj_getc_str(arg);
-        key = str_getc(s);
+    case OBJ_TYPE_UNICODE: {
+        unicode_t *u = obj_get_unicode(arg);
+        key = uni_getc_mb(u);
     } break;
     }
 

@@ -57,7 +57,7 @@ again:
     case OBJ_TYPE_BOOL: {
         return obj_new_cstr(ref_ast->ref_gc, "<bool>");
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         return obj_new_cstr(ref_ast->ref_gc, "<str>");
     } break;
     case OBJ_TYPE_ARRAY: {
@@ -262,8 +262,8 @@ again:
         arg = obj;
         goto again;
     } break;
-    case OBJ_TYPE_STRING:
-        len = str_len(arg->string);
+    case OBJ_TYPE_UNICODE:
+        len = uni_len(arg->unicode);
         break;
     case OBJ_TYPE_ARRAY:
         len = objarr_len(arg->objarr);

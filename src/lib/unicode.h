@@ -1,3 +1,4 @@
+#pragma once
 #include <stdio.h>
 #include <stdlib.h>
 #include <uchar.h>
@@ -317,6 +318,16 @@ uni_len(const unicode_t *self);
  */
 int32_t
 uni_capa(const unicode_t *self);
+
+/**
+ *
+ *
+ * @param[in] *self
+ *
+ * @return
+ */
+unicode_type_t *
+uni_get(unicode_t *self);
 
 /**
  *

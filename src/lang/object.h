@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include <lib/string.h>
+#include <lib/unicode.h>
 #include <lib/cstring.h>
 #include <lib/memory.h>
 #include <lib/error.h>
@@ -39,8 +40,8 @@ typedef enum {
     // 格納したりするのに使われる
     OBJ_TYPE_IDENTIFIER,
 
-    // A string object
-    OBJ_TYPE_STRING,
+    // A unicode object
+    OBJ_TYPE_UNICODE,
 
     // A array object
     OBJ_TYPE_ARRAY,
@@ -125,7 +126,7 @@ struct object {
     gc_t *ref_gc;  // reference to gc (DO NOT DELETE)
     gc_item_t gc_item;  // gc item for memory management
     object_identifier_t identifier;  // value of identifier (type == OBJ_TYPE_IDENTIFIER)
-    string_t *string;  // value of string (type == OBJ_TYPE_STRING)
+    unicode_t *unicode;  // value of unicode (type == OBJ_TYPE_UNICODE)
     object_array_t *objarr;  // value of array (type == OBJ_TYPE_ARRAY)
     object_dict_t *objdict;  // value of dict (type == OBJ_TYPE_DICT)
     objint_t lvalue;  // value of integer (type == OBJ_TYPE_INT)
@@ -257,7 +258,7 @@ object_t *
 obj_new_cstr(gc_t *ref_gc, const char *str);
 
 /**
- * construct string object by string_t
+ * construct unicode object by unicode_t
  * if failed to allocate memory then exit from process
  *
  * @param[in] *ref_gc   reference to gc_t (do not delete)
@@ -267,7 +268,7 @@ obj_new_cstr(gc_t *ref_gc, const char *str);
  * @return failed to NULL
  */
 object_t *
-obj_new_str(gc_t *ref_gc, string_t *move_str);
+obj_new_unicode(gc_t *ref_gc, unicode_t *move_unicode);
 
 /**
  * construct integer object by value
@@ -574,24 +575,24 @@ const object_dict_t *
 obj_getc_dict(const object_t *self);
 
 /**
- * get string in object_t
+ * get unicode in object_t read-only
  *
  * @param[in] *self
  *
- * @return pointer to string_t
+ * @return pointer to unicode_t
  */
-const string_t *
-obj_getc_str(const object_t *self);
+const unicode_t *
+obj_getc_unicode(const object_t *self);
 
 /**
- * get string in object_t read-only
+ * get unicode in object_t 
  *
  * @param[in] *self
  *
- * @return pointer to string_t
+ * @return pointer to unicode_t
  */
-string_t *
-obj_get_str(object_t *self);
+unicode_t *
+obj_get_unicode(object_t *self);
 
 /**
  * get builtin function informations

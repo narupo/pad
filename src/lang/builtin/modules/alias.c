@@ -19,13 +19,13 @@ builtin_alias_set(builtin_func_args_t *fargs) {
     }
 
     const object_t *keyobj = objarr_getc(args, 0);
-    if (keyobj->type != OBJ_TYPE_STRING) {
+    if (keyobj->type != OBJ_TYPE_UNICODE) {
         ast_pushb_error(ref_ast, "can't invoke alias.set. key is not string");
         return NULL;
     }
 
     const object_t *valobj = objarr_getc(args, 1);
-    if (valobj->type != OBJ_TYPE_STRING) {
+    if (valobj->type != OBJ_TYPE_UNICODE) {
         ast_pushb_error(ref_ast, "can't invoke alias.set. value is not string");
         return NULL;
     }
@@ -33,15 +33,15 @@ builtin_alias_set(builtin_func_args_t *fargs) {
     const object_t *descobj = NULL;
     if (objarr_len(args) == 3) {
         descobj = objarr_getc(args, 2);
-        if (descobj->type != OBJ_TYPE_STRING) {
-            ast_pushb_error(ref_ast, "can't invoke alias.set. description is not string");
+        if (descobj->type != OBJ_TYPE_UNICODE) {
+            ast_pushb_error(ref_ast, "can't invoke alias.set. description is not unicode");
             return NULL;
         }
     }
 
-    const char *key = str_getc(keyobj->string);
-    const char *val = str_getc(valobj->string);
-    const char *desc = descobj ? str_getc(descobj->string) : NULL;
+    const char *key = uni_getc_mb(keyobj->unicode);
+    const char *val = uni_getc_mb(valobj->unicode);
+    const char *desc = descobj ? uni_getc_mb(descobj->unicode) : NULL;
 
     ctx_set_alias(ref_ast->ref_context, key, val, desc);
 

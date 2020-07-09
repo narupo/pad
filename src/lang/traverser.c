@@ -289,8 +289,8 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
         ctx_pushb_stdout_buf(ast->ref_context, str_getc(str));
         str_del(str);
     } break;
-    case OBJ_TYPE_STRING: {
-        ctx_pushb_stdout_buf(ast->ref_context, str_getc(result->string));
+    case OBJ_TYPE_UNICODE: {
+        ctx_pushb_stdout_buf(ast->ref_context, uni_getc_mb(result->unicode));
     } break;
     case OBJ_TYPE_ARRAY: {
         ctx_pushb_stdout_buf(ast->ref_context, "(array)");
@@ -548,7 +548,7 @@ trv_import_as_stmt(ast_t *ast, trv_args_t *targs) {
     if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
-    if (!pathobj || pathobj->type != OBJ_TYPE_STRING) {
+    if (!pathobj || pathobj->type != OBJ_TYPE_UNICODE) {
         ast_pushb_error(ast, "invalid path object in import as statement");
         return_trav(NULL);
     }
@@ -569,7 +569,7 @@ trv_import_as_stmt(ast_t *ast, trv_args_t *targs) {
     }
 
     // import start
-    const char *path = str_getc(pathobj->string);
+    const char *path = uni_getc_mb(pathobj->unicode);
     const char *alias = obj_getc_idn_name(aliasobj);
 
     importer_t *importer = importer_new(ast->ref_config);
@@ -610,7 +610,7 @@ trv_from_import_stmt(ast_t *ast, trv_args_t *targs) {
     if (ast_has_errors(ast)) {
         return_trav(NULL);
     }
-    if (!pathobj || pathobj->type != OBJ_TYPE_STRING) {
+    if (!pathobj || pathobj->type != OBJ_TYPE_UNICODE) {
         ast_pushb_error(ast, "invalid path object in from import statement");
         obj_del(pathobj);
         return_trav(NULL);
@@ -632,7 +632,7 @@ trv_from_import_stmt(ast_t *ast, trv_args_t *targs) {
     }
 
     // import start
-    const char *path = str_getc(pathobj->string);
+    const char *path = uni_getc_mb(pathobj->unicode);
     importer_t *importer = importer_new(ast->ref_config);
 
     if (!importer_from_import(
@@ -1076,7 +1076,7 @@ again:
     case OBJ_TYPE_NIL:
     case OBJ_TYPE_INT:
     case OBJ_TYPE_BOOL:
-    case OBJ_TYPE_STRING:
+    case OBJ_TYPE_UNICODE:
         ret = obj_deep_copy(result);
         break;
     case OBJ_TYPE_CHAIN:
@@ -1448,13 +1448,13 @@ again:
         }
         goto again;
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         // pass
     } break;
     }
 
-    const string_t *keystr = obj_getc_str(idxobj);
-    const char *key = str_getc(keystr);
+    unicode_t *keyuni = obj_get_unicode(idxobj);
+    const char *key = uni_getc_mb(keyuni);
     object_dict_t *objdict = obj_get_dict(owner);
 
     objdict_set(objdict, key, rhs);
@@ -2141,13 +2141,13 @@ trv_compare_or_int(ast_t *ast, trv_args_t *targs) {
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         object_t *obj = NULL;
-        if (lhs->lvalue && str_len(rhs->string)) {
+        if (lhs->lvalue && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(lhs);
-        } else if (lhs->lvalue && !str_len(rhs->string)) {
+        } else if (lhs->lvalue && !uni_len(rhs->unicode)) {
             obj = obj_deep_copy(lhs);
-        } else if (!lhs->lvalue && str_len(rhs->string)) {
+        } else if (!lhs->lvalue && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
         } else {
             obj = obj_deep_copy(rhs);
@@ -2279,13 +2279,13 @@ trv_compare_or_bool(ast_t *ast, trv_args_t *targs) {
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         object_t *obj = NULL;
-        if (lhs->boolean && str_len(rhs->string)) {
+        if (lhs->boolean && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(lhs);
-        } else if (lhs->boolean && !str_len(rhs->string)) {
+        } else if (lhs->boolean && !uni_len(rhs->unicode)) {
             obj = obj_deep_copy(lhs);
-        } else if (!lhs->boolean && str_len(rhs->string)) {
+        } else if (!lhs->boolean && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
         } else {
             obj = obj_deep_copy(rhs);
@@ -2360,10 +2360,10 @@ trv_compare_or_string(ast_t *ast, trv_args_t *targs) {
     object_t *lhs = targs->lhs_obj;
     object_t *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_STRING);
+    assert(lhs->type == OBJ_TYPE_UNICODE);
 
     depth_t depth = targs->depth;
-    int32_t slen = str_len(lhs->string);
+    int32_t slen = uni_len(lhs->unicode);
 
     switch (rhs->type) {
     default: {
@@ -2418,13 +2418,13 @@ trv_compare_or_string(ast_t *ast, trv_args_t *targs) {
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         object_t *obj = NULL;
-        if (slen && str_len(rhs->string)) {
+        if (slen && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(lhs);
-        } else if (slen && !str_len(rhs->string)) {
+        } else if (slen && !uni_len(rhs->unicode)) {
             obj = obj_deep_copy(lhs);
-        } else if (!slen && str_len(rhs->string)) {
+        } else if (!slen && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
         } else {
             obj = obj_deep_copy(rhs);
@@ -2549,13 +2549,13 @@ trv_compare_or_array(ast_t *ast, trv_args_t *targs) {
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         object_t *obj = NULL;
-        if (arrlen && str_len(rhs->string)) {
+        if (arrlen && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(lhs);
-        } else if (arrlen && !str_len(rhs->string)) {
+        } else if (arrlen && !uni_len(rhs->unicode)) {
             obj = obj_deep_copy(lhs);
-        } else if (!arrlen && str_len(rhs->string)) {
+        } else if (!arrlen && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
         } else {
             obj = obj_deep_copy(rhs);
@@ -2680,13 +2680,13 @@ trv_compare_or_dict(ast_t *ast, trv_args_t *targs) {
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         object_t *obj = NULL;
-        if (dictlen && str_len(rhs->string)) {
+        if (dictlen && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(lhs);
-        } else if (dictlen && !str_len(rhs->string)) {
+        } else if (dictlen && !uni_len(rhs->unicode)) {
             obj = obj_deep_copy(lhs);
-        } else if (!dictlen && str_len(rhs->string)) {
+        } else if (!dictlen && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
         } else {
             obj = obj_deep_copy(rhs);
@@ -2854,13 +2854,13 @@ trv_compare_or_func(ast_t *ast, trv_args_t *targs) {
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         object_t *obj = NULL;
-        if (lhs && str_len(rhs->string)) {
+        if (lhs && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(lhs);
-        } else if (lhs && !str_len(rhs->string)) {
+        } else if (lhs && !uni_len(rhs->unicode)) {
             obj = obj_deep_copy(lhs);
-        } else if (!lhs && str_len(rhs->string)) {
+        } else if (!lhs && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
         } else {
             obj = obj_deep_copy(rhs);
@@ -2982,13 +2982,13 @@ trv_compare_or_module(ast_t *ast, trv_args_t *targs) {
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         object_t *obj = NULL;
-        if (lhs && str_len(rhs->string)) {
+        if (lhs && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(lhs);
-        } else if (lhs && !str_len(rhs->string)) {
+        } else if (lhs && !uni_len(rhs->unicode)) {
             obj = obj_deep_copy(lhs);
-        } else if (!lhs && str_len(rhs->string)) {
+        } else if (!lhs && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
         } else {
             obj = obj_deep_copy(rhs);
@@ -3079,7 +3079,7 @@ trv_compare_or(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_compare_or_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         check("call trv_compare_or_string");
         targs->depth = depth + 1;
         object_t *obj = trv_compare_or_string(ast, targs);
@@ -3247,11 +3247,11 @@ trv_compare_and_int(ast_t *ast, trv_args_t *targs) {
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         object_t *obj = NULL;
-        if (lhs->lvalue && str_len(rhs->string)) {
+        if (lhs->lvalue && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
-        } else if (!str_len(rhs->string)) {
+        } else if (!uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
         } else if (!lhs->lvalue) {
             obj = obj_deep_copy(lhs);
@@ -3376,11 +3376,11 @@ trv_compare_and_bool(ast_t *ast, trv_args_t *targs) {
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         object_t *obj = NULL;
-        if (lhs->boolean && str_len(rhs->string)) {
+        if (lhs->boolean && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
-        } else if (!str_len(rhs->string)) {
+        } else if (!uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
         } else if (!lhs->boolean) {
             obj = obj_deep_copy(lhs);
@@ -3448,10 +3448,10 @@ trv_compare_and_string(ast_t *ast, trv_args_t *targs) {
     object_t *lhs = targs->lhs_obj;
     object_t *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_STRING);
+    assert(lhs->type == OBJ_TYPE_UNICODE);
 
     depth_t depth = targs->depth;
-    int32_t slen = str_len(lhs->string);
+    int32_t slen = uni_len(lhs->unicode);
 
     switch (rhs->type) {
     default: {
@@ -3506,11 +3506,11 @@ trv_compare_and_string(ast_t *ast, trv_args_t *targs) {
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         object_t *obj = NULL;
-        if (slen && str_len(rhs->string)) {
+        if (slen && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
-        } else if (!str_len(rhs->string)) {
+        } else if (!uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
         } else if (!slen) {
             obj = obj_deep_copy(lhs);
@@ -3627,11 +3627,11 @@ trv_compare_and_array(ast_t *ast, trv_args_t *targs) {
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         object_t *obj = NULL;
-        if (arrlen && str_len(rhs->string)) {
+        if (arrlen && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
-        } else if (!str_len(rhs->string)) {
+        } else if (!uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
         } else if (!arrlen) {
             obj = obj_deep_copy(lhs);
@@ -3748,11 +3748,11 @@ trv_compare_and_dict(ast_t *ast, trv_args_t *targs) {
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         object_t *obj = NULL;
-        if (dictlen && str_len(rhs->string)) {
+        if (dictlen && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
-        } else if (!str_len(rhs->string)) {
+        } else if (!uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
         } else if (!dictlen) {
             obj = obj_deep_copy(lhs);
@@ -3910,11 +3910,11 @@ trv_compare_and_func(ast_t *ast, trv_args_t *targs) {
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         object_t *obj = NULL;
-        if (lhs && str_len(rhs->string)) {
+        if (lhs && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
-        } else if (!str_len(rhs->string)) {
+        } else if (!uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
         } else if (!lhs) {
             obj = obj_deep_copy(lhs);
@@ -4030,11 +4030,11 @@ trv_compare_and_module(ast_t *ast, trv_args_t *targs) {
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         object_t *obj = NULL;
-        if (lhs && str_len(rhs->string)) {
+        if (lhs && uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
-        } else if (!str_len(rhs->string)) {
+        } else if (!uni_len(rhs->unicode)) {
             obj = obj_deep_copy(rhs);
         } else if (!lhs) {
             obj = obj_deep_copy(lhs);
@@ -4122,7 +4122,7 @@ trv_compare_and(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_compare_and_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         check("call trv_compare_and_string");
         object_t *obj = trv_compare_and_string(ast, targs);
         return_trav(obj);
@@ -4262,8 +4262,8 @@ trv_compare_not(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_compare_not(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
-        object_t *obj = obj_new_bool(ast->ref_gc, !str_len(operand->string));
+    case OBJ_TYPE_UNICODE: {
+        object_t *obj = obj_new_bool(ast->ref_gc, !uni_len(operand->unicode));
         return_trav(obj);
     } break;
     case OBJ_TYPE_ARRAY: {
@@ -4438,13 +4438,13 @@ trv_compare_comparison_eq_string(ast_t *ast, trv_args_t *targs) {
     object_t *lhs = targs->lhs_obj;
     object_t *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_STRING);
+    assert(lhs->type == OBJ_TYPE_UNICODE);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default:
-        ast_pushb_error(ast, "can't compare equal with string");
+        ast_pushb_error(ast, "can't compare equal with unicode");
         return_trav(NULL);
         break;
     case OBJ_TYPE_NIL: {
@@ -4460,15 +4460,15 @@ trv_compare_comparison_eq_string(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
-        bool b = cstr_eq(str_getc(lhs->string), str_getc(rhs->string));
+    case OBJ_TYPE_UNICODE: {
+        bool b = u_strcmp(uni_getc(lhs->unicode), uni_getc(rhs->unicode)) == 0;
         object_t *obj = obj_new_bool(ast->ref_gc, b);
         return_trav(obj);
     } break;
     case OBJ_TYPE_CHAIN: {
         object_t *rval = extract_ref_of_obj(ast, rhs);
         if (!rval) {
-            ast_pushb_error(ast, "can't comparison eq string. index object value is null");
+            ast_pushb_error(ast, "can't comparison eq unicode. index object value is null");
             return_trav(NULL);
         }
 
@@ -4479,7 +4479,7 @@ trv_compare_comparison_eq_string(ast_t *ast, trv_args_t *targs) {
     } break;
     }
 
-    assert(0 && "impossible. failed to compare comparison string");
+    assert(0 && "impossible. failed to compare comparison unicode");
     return_trav(NULL);
 }
 
@@ -4727,7 +4727,7 @@ trv_compare_comparison_eq(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_compare_comparison_eq_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         check("call trv_compare_comparison_eq_string");
         object_t *obj = trv_compare_comparison_eq_string(ast, targs);
         return_trav(obj);
@@ -4871,7 +4871,7 @@ trv_compare_comparison_not_eq_string(ast_t *ast, trv_args_t *targs) {
     object_t *lhs = targs->lhs_obj;
     object_t *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_STRING);
+    assert(lhs->type == OBJ_TYPE_UNICODE);
 
     targs->depth += 1;
 
@@ -4889,8 +4889,8 @@ trv_compare_comparison_not_eq_string(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
-        bool b = !cstr_eq(str_getc(lhs->string), str_getc(rhs->string));
+    case OBJ_TYPE_UNICODE: {
+        bool b = u_strcmp(uni_getc(lhs->unicode), uni_getc(rhs->unicode)) != 0;
         object_t *obj = obj_new_bool(ast->ref_gc, b);
         return_trav(obj);
     } break;
@@ -5127,7 +5127,7 @@ trv_compare_comparison_not_eq(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_compare_comparison_not_eq_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         check("call trv_compare_comparison_not_eq_string");
         object_t *obj = trv_compare_comparison_not_eq_string(ast, targs);
         return_trav(obj);
@@ -5942,7 +5942,7 @@ trv_calc_expr_add_string(ast_t *ast, trv_args_t *targs) {
     object_t *lhs = targs->lhs_obj;
     object_t *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_STRING);
+    assert(lhs->type == OBJ_TYPE_UNICODE);
 
     targs->depth += 1;
 
@@ -5957,11 +5957,11 @@ trv_calc_expr_add_string(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
-        string_t *s = str_new();
-        str_app(s, str_getc(lhs->string));
-        str_app(s, str_getc(rhs->string));
-        object_t *obj = obj_new_str(ast->ref_gc, s);
+    case OBJ_TYPE_UNICODE: {
+        unicode_t *u = uni_new();
+        uni_app(u, uni_getc(lhs->unicode));
+        uni_app(u, uni_getc(rhs->unicode));
+        object_t *obj = obj_new_unicode(ast->ref_gc, u);
         return_trav(obj);
     } break;
     case OBJ_TYPE_CHAIN: {
@@ -6047,7 +6047,7 @@ trv_calc_expr_add(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_calc_expr_add_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         check("call trv_calc_expr_add_string");
         object_t *obj = trv_calc_expr_add_string(ast, targs);
         return_trav(obj);
@@ -6310,14 +6310,14 @@ trv_expr(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
-mul_string_object(ast_t *ast, const string_t *s, int32_t n) {
+mul_unicode_object(ast_t *ast, const unicode_t *s, int32_t n) {
     if (n < 0) {
         ast_pushb_error(ast, "can't mul string by negative value");
         return NULL;
     }
 
-    string_t *str = str_mul(s, n);
-    return obj_new_str(ast->ref_gc, mem_move(str));
+    unicode_t *u = uni_mul(s, n);
+    return obj_new_unicode(ast->ref_gc, mem_move(u));
 }
 
 static object_t *
@@ -6349,8 +6349,8 @@ trv_calc_term_mul_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
-        object_t *obj = mul_string_object(ast, rhs->string, lhs->lvalue);
+    case OBJ_TYPE_UNICODE: {
+        object_t *obj = mul_unicode_object(ast, rhs->unicode, lhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_CHAIN: {
@@ -6422,7 +6422,7 @@ trv_calc_term_mul_string(ast_t *ast, trv_args_t *targs) {
     object_t *lhs = targs->lhs_obj;
     object_t *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_STRING);
+    assert(lhs->type == OBJ_TYPE_UNICODE);
 
     targs->depth += 1;
 
@@ -6432,7 +6432,7 @@ trv_calc_term_mul_string(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
         break;
     case OBJ_TYPE_INT: {
-        object_t *obj = mul_string_object(ast, lhs->string, rhs->lvalue);
+        object_t *obj = mul_unicode_object(ast, lhs->unicode, rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -6441,7 +6441,7 @@ trv_calc_term_mul_string(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING:
+    case OBJ_TYPE_UNICODE:
         err_die("TODO: mul string 2");
         break;
     case OBJ_TYPE_CHAIN: {
@@ -6490,7 +6490,7 @@ trv_calc_term_mul(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         check("call trv_calc_term_mul_string");
         object_t *obj = trv_calc_term_mul_string(ast, targs);
         return_trav(obj);
@@ -7127,15 +7127,15 @@ trv_calc_asscalc_add_ass_identifier_string(ast_t *ast, trv_args_t *targs) {
     object_t *lhs = targs->lhs_obj;
     object_t *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_STRING);
+    assert(lhs->type == OBJ_TYPE_UNICODE);
 
     switch (rhs->type) {
     default:
         ast_pushb_error(ast, "invalid right hand operand (%d)", rhs->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_STRING: {
-        str_app(lhs->string, str_getc(rhs->string));
+    case OBJ_TYPE_UNICODE: {
+        uni_app(lhs->unicode, uni_getc(rhs->unicode));
         return_trav(lhs);
     } break;
     }
@@ -7177,7 +7177,7 @@ trv_calc_asscalc_add_ass_identifier(ast_t *ast, trv_args_t *targs) {
         targs->depth = depth + 1;
         result = trv_calc_asscalc_add_ass_identifier(ast, targs);
         break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         check("call trv_calc_asscalc_add_ass_identifier_string");
         targs->lhs_obj = lhsref;
         targs->depth = depth + 1;
@@ -7243,14 +7243,14 @@ trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
         } break;
         }
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         switch (rref->type) {
         default: {
             ast_pushb_error(ast, "invalid right hand operand (%d)", rref->type);
             return NULL;
         } break;
-        case OBJ_TYPE_STRING: {
-            str_app_other(lref->string, rref->string);
+        case OBJ_TYPE_UNICODE: {
+            uni_app_other(lref->unicode, rref->unicode);
         } break;
         }
     } break;
@@ -7382,16 +7382,16 @@ trv_calc_asscalc_mul_ass_chain(ast_t *ast, trv_args_t *targs) {
         } break;
         }
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         switch (rref->type) {
         default: {
             ast_pushb_error(ast, "invalid right hand operand (%d)", rref->type);
             return NULL;
         } break;
         case OBJ_TYPE_INT: {
-            string_t *s = str_mul(lref->string, rref->lvalue);
-            str_del(lref->string);
-            lref->string = s;
+            unicode_t *u = uni_mul(lref->unicode, rref->lvalue);
+            uni_del(lref->unicode);
+            lref->unicode = u;
         } break;
         }
     } break;
@@ -7719,7 +7719,7 @@ trv_calc_asscalc_mul_ass_string(ast_t *ast, trv_args_t *targs) {
     object_t *lhs = targs->lhs_obj;
     object_t *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_STRING);
+    assert(lhs->type == OBJ_TYPE_UNICODE);
 
     object_t *rhsref = extract_ref_of_obj(ast, rhs);
     if (ast_has_errors(ast)) {
@@ -7737,19 +7737,19 @@ trv_calc_asscalc_mul_ass_string(ast_t *ast, trv_args_t *targs) {
             ast_pushb_error(ast, "can't mul by negative value");
             return_trav(NULL);
         } else if (rhsref->lvalue == 0) {
-            str_clear(lhs->string);
+            uni_clear(lhs->unicode);
         } else {
-            string_t *other = str_deep_copy(lhs->string);
+            unicode_t *other = uni_deep_copy(lhs->unicode);
             for (objint_t i = 0; i < rhsref->lvalue-1; ++i) {
-                str_app_other(lhs->string, other);
+                uni_app_other(lhs->unicode, other);
             }
-            str_del(other);
+            uni_del(other);
         }
         return_trav(lhs);
     } break;
     case OBJ_TYPE_BOOL: {
         if (!rhsref->boolean) {
-            str_clear(lhs->string);
+            uni_clear(lhs->unicode);
         }
         return_trav(lhs);
     } break;
@@ -7791,7 +7791,7 @@ trv_calc_asscalc_mul_ass(ast_t *ast, trv_args_t *targs) {
         object_t *result = trv_calc_asscalc_mul_ass_int(ast, targs);
         return_trav(result);
     } break;
-    case OBJ_TYPE_STRING: {
+    case OBJ_TYPE_UNICODE: {
         check("call trv_calc_asscalc_mul_ass_string");
         targs->lhs_obj = lhsref;
         object_t *result = trv_calc_asscalc_mul_ass_string(ast, targs);
@@ -8418,7 +8418,7 @@ trv_dict_elem(ast_t *ast, trv_args_t *targs) {
         ast_pushb_error(ast, "key is not string in dict elem");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_STRING:
+    case OBJ_TYPE_UNICODE:
     case OBJ_TYPE_IDENTIFIER:
         break;
     }
@@ -8491,19 +8491,19 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
             objdict_del(objdict);
             return_trav(NULL);
             break;
-        case OBJ_TYPE_STRING:
-            skey = str_getc(key->string);
+        case OBJ_TYPE_UNICODE:
+            skey = uni_getc_mb(key->unicode);
             break;
         case OBJ_TYPE_IDENTIFIER: {
             const object_t *ref = pull_in_ref_by(key);
-            if (ref->type != OBJ_TYPE_STRING) {
+            if (ref->type != OBJ_TYPE_UNICODE) {
                 ast_pushb_error(ast, "invalid key type in variable of dict");
                 obj_del(arrobj);
                 objdict_del(objdict);
                 return_trav(NULL);
                 break;
             }
-            skey = str_getc(ref->string);
+            skey = uni_getc_mb(ref->unicode);
         } break;
         }
 
@@ -9034,8 +9034,8 @@ trv_import_builtin_modules(ast_t *ast) {
     mod = builtin_module_new(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
-    // builtin string
-    mod = builtin_string_module_new(ast->ref_config, ast->ref_gc);
+    // builtin unicode
+    mod = builtin_unicode_module_new(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
 
     // builtin array

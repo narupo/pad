@@ -11494,7 +11494,7 @@ test_trv_comparison(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "can't compare equal with string"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "can't compare equal with unicode"));
     }
 
     tkr_parse(tkr, "{@ a = \"abc\" == \"abc\" @}{: a :}");
@@ -11514,7 +11514,7 @@ test_trv_comparison(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "can't compare equal with string"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "can't compare equal with unicode"));
     }
 
     tkr_parse(tkr, "{@ a = 1 == 0 @}{: a :}");
@@ -12864,6 +12864,7 @@ test_trv_index(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
+        showdetail();
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcDef"));
     }

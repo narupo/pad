@@ -6,6 +6,7 @@
 
 #include <lib/memory.h>
 #include <lib/string.h>
+#include <lib/unicode.h>
 #include <lib/dict.h>
 #include <core/alias_info.h>
 #include <lang/types.h>
