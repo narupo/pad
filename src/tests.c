@@ -1325,6 +1325,594 @@ string_tests[] = {
     {0},
 };
 
+/**********
+* unicode *
+**********/
+
+static void
+test_uni_del(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    uni_del(NULL);
+    uni_del(u);
+}
+
+static void
+test_uni_esc_del(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_esc_del(NULL) == NULL);
+    unicode_type_t *ptr = uni_esc_del(u);
+    assert(ptr != NULL);
+    free(ptr);
+}
+
+static void
+test_uni_new(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    uni_del(u);
+}
+
+static void
+test_uni_deep_copy(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_set_mb(u, "1234") != NULL);
+    assert(uni_deep_copy(NULL) == NULL);
+    unicode_t *o = uni_deep_copy(u);
+    assert(o != NULL);
+    assert(u_strcmp(uni_getc(o), UNI_STR("1234")) == 0);
+    uni_del(o);
+    uni_del(u);
+}
+
+static void
+test_uni_len(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_len(NULL) == -1);
+    assert(uni_len(u) == 0);
+    assert(uni_app(u, UNI_STR("abc")) != NULL);
+    assert(uni_len(u) == 3);
+    uni_del(u);
+}
+
+static void
+test_uni_capa(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_capa(NULL) == -1);
+    assert(uni_capa(u) == 4);
+    assert(uni_app(u, UNI_STR("1234")) != NULL);
+    assert(uni_capa(u) == 8);
+    uni_del(u);
+}
+
+static void
+test_uni_getc(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_getc(NULL) == NULL);
+    assert(u_strcmp(uni_getc(u), UNI_STR("")) == 0);
+    assert(uni_app(u, UNI_STR("1234")) != NULL);
+    assert(u_strcmp(uni_getc(u), UNI_STR("1234")) == 0);
+    uni_del(u);
+}
+
+static void
+test_uni_empty(void) {
+    unicode_t *s = uni_new();
+    assert(s != NULL);
+    assert(uni_empty(NULL) == 0);
+    assert(uni_empty(s) == 1);
+    assert(uni_app(s, UNI_STR("1234")) != NULL);
+    assert(uni_empty(s) == 0);
+    uni_del(s);
+}
+
+static void
+test_uni_clear(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_app(NULL, UNI_STR("1234")) == NULL);
+    assert(uni_app(u, NULL) == NULL);
+    assert(uni_app(u, UNI_STR("1234")) != NULL);
+    assert(uni_len(u) == 4);
+    uni_clear(u);
+    assert(uni_len(u) == 0);
+    uni_del(u);
+}
+
+static void
+test_uni_set(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_set(NULL, UNI_STR("1234")) == NULL);
+    assert(uni_set(u, NULL) == NULL);
+    assert(uni_set(u, UNI_STR("1234")) != NULL);
+    assert(u_strcmp(uni_getc(u), UNI_STR("1234")) == 0);
+    assert(uni_set(u, UNI_STR("12")) != NULL);
+    assert(u_strcmp(uni_getc(u), UNI_STR("12")) == 0);
+    uni_del(u);
+}
+
+static void
+test_uni_resize(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_capa(NULL) == -1);
+    assert(uni_capa(u) == 4);
+    assert(uni_resize(u, 4 * 2) != NULL);
+    assert(uni_capa(u) == 8);
+    uni_del(u);
+}
+
+static void
+test_uni_pushb(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_pushb(NULL, UNI_CHAR('1')) == NULL);
+    assert(uni_pushb(u, 0) == NULL);
+    assert(uni_pushb(u, UNI_CHAR('\0')) == NULL);
+    assert(uni_pushb(u, UNI_CHAR('1')) != NULL);
+    assert(uni_pushb(u, UNI_CHAR('2')) != NULL);
+    assert(u_strcmp(uni_getc(u), UNI_STR("12")) == 0);
+    uni_del(u);
+}
+
+static void
+test_uni_popb(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_popb(NULL) == UNI_CHAR('\0'));
+    assert(uni_set(u, UNI_STR("1234")) != NULL);
+    assert(u_strcmp(uni_getc(u), UNI_STR("1234")) == 0);
+    assert(uni_popb(u) == UNI_CHAR('4'));
+    assert(uni_popb(u) == UNI_CHAR('3'));
+    assert(u_strcmp(uni_getc(u), UNI_STR("12")) == 0);
+    uni_del(u);
+}
+
+static void
+test_uni_pushf(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_pushf(NULL, UNI_CHAR('1')) == NULL);
+    assert(uni_pushf(u, 0) == NULL);
+    assert(uni_pushf(u, UNI_CHAR('\0')) == NULL);
+    assert(uni_pushf(u, UNI_CHAR('1')) != NULL);
+    assert(uni_pushf(u, UNI_CHAR('2')) != NULL);
+    assert(u_strcmp(uni_getc(u), UNI_STR("21")) == 0);
+    uni_del(u);
+}
+
+static void
+test_uni_popf(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_popf(NULL) == '\0');
+    assert(uni_set(u, UNI_STR("1234")) != NULL);
+    assert(uni_popf(u) == UNI_CHAR('1'));
+    assert(uni_popf(u) == UNI_CHAR('2'));
+    assert(u_strcmp(uni_getc(u), UNI_STR("34")) == 0);
+    uni_del(u);
+}
+
+static void
+test_uni_app(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_app(NULL, UNI_STR("1234")) == NULL);
+    assert(uni_app(u, NULL) == NULL);
+    assert(uni_app(u, UNI_STR("1234")) != NULL);
+    assert(u_strcmp(uni_getc(u), UNI_STR("1234")) == 0);
+    uni_del(u);
+}
+
+static void
+test_uni_app_stream(void) {
+    unicode_t *s = uni_new();
+    assert(s != NULL);
+
+    char curdir[1024];
+    char path[1024];
+    assert(file_realpath(curdir, sizeof curdir, ".") != NULL);
+    assert(file_solvefmt(path, sizeof path, "%s/src/tests.c", curdir) != NULL);
+
+    FILE *fin = fopen(path, "r");
+    assert(fin != NULL);
+    assert(uni_app_stream(NULL, fin) == NULL);
+    assert(uni_app_stream(s, NULL) == NULL);
+    assert(uni_app_stream(s, fin) != NULL);
+    assert(fclose(fin) == 0);
+
+    uni_del(s);
+}
+
+static void
+test_uni_app_other(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_set(u, UNI_STR("1234")) != NULL);
+    unicode_t *o = uni_new();
+    assert(o != NULL);
+    assert(uni_set(o, UNI_STR("1234")) != NULL);
+    assert(uni_app_other(NULL, o) == NULL);
+    assert(uni_app_other(u, NULL) == NULL);
+    assert(uni_app_other(u, o) != NULL);
+    assert(u_strcmp(uni_getc(u), UNI_STR("12341234")) == 0);
+    uni_del(o);
+    uni_del(u);
+
+    u = uni_new();
+    assert(uni_set(u, UNI_STR("1234")) != NULL);
+    assert(uni_app_other(u, u) != NULL);
+    assert(u_strcmp(uni_getc(u), UNI_STR("12341234")) == 0);
+    uni_del(u);
+}
+
+static void
+test_uni_app_fmt(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    char buf[1024];
+    assert(uni_app_fmt(NULL, buf, sizeof buf, "%s", "test") == NULL);
+    assert(uni_app_fmt(u, NULL, sizeof buf, "%s", "test") == NULL);
+    assert(uni_app_fmt(u, buf, 0, "%s", "test") == NULL);
+    assert(uni_app_fmt(u, buf, sizeof buf, NULL, "test") == NULL);
+    assert(uni_app_fmt(u, buf, sizeof buf, "%s %d %c", "1234", 1, '2') != NULL);
+    assert(u_strcmp(uni_getc(u), UNI_STR("1234 1 2")) == 0);
+    uni_del(u);
+}
+
+static void
+test_uni_rstrip(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_set(u, UNI_STR("1234")) != NULL);
+    assert(uni_rstrip(NULL, UNI_STR("34")) == NULL);
+    assert(uni_rstrip(u, NULL) == NULL);
+    assert(uni_rstrip(u, UNI_STR("34")) != NULL);
+    assert(u_strcmp(uni_getc(u), UNI_STR("12")) == 0);
+    uni_del(u);
+}
+
+static void
+test_uni_lstrip(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_set(u, UNI_STR("1234")) != NULL);
+    assert(uni_lstrip(NULL, UNI_STR("12")) == NULL);
+    assert(uni_lstrip(u, NULL) == NULL);
+    assert(uni_lstrip(u, UNI_STR("12")) != NULL);
+    assert(u_strcmp(uni_getc(u), UNI_STR("34")) == 0);
+    uni_del(u);
+}
+
+static void
+test_uni_strip(void) {
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_set(u, UNI_STR("--1234--")) != NULL);
+    assert(uni_strip(NULL, UNI_STR("-")) == NULL);
+    assert(uni_strip(u, NULL) == NULL);
+    assert(uni_strip(u, UNI_STR("-")) != NULL);
+    assert(u_strcmp(uni_getc(u), UNI_STR("1234")) == 0);
+    uni_del(u);
+}
+
+static void
+test_uni_lower(void) {
+    assert(uni_lower(NULL) == NULL);
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_set(u, UNI_STR("ABC")) != NULL);
+    unicode_t *cp = uni_lower(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc")));
+    uni_del(cp);
+    uni_del(u);
+}
+
+static void
+test_uni_upper(void) {
+    assert(uni_upper(NULL) == NULL);
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_set(u, UNI_STR("abc")) != NULL);
+    unicode_t *cp = uni_upper(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("ABC")));
+    uni_del(cp);
+    uni_del(u);
+}
+
+static void
+test_uni_capitalize(void) {
+    assert(uni_capitalize(NULL) == NULL);
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+    assert(uni_set(u, UNI_STR("abc")) != NULL);
+    unicode_t *cp = uni_capitalize(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("Abc")));
+    uni_del(cp);
+    uni_del(u);
+}
+
+static void
+test_uni_snake(void) {
+    assert(uni_snake(NULL) == NULL);
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+
+    assert(uni_set(u, UNI_STR("abc")) != NULL);
+    unicode_t *cp = uni_snake(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("abcDefGhi")) != NULL);
+    cp = uni_snake(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("AbcDefGhi")) != NULL);
+    cp = uni_snake(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("abc-def-ghi")) != NULL);
+    cp = uni_snake(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("_abcDefGhi")) != NULL);
+    cp = uni_snake(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("-abcDefGhi")) != NULL);
+    cp = uni_snake(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("_-abcDefGhi")) != NULL);
+    cp = uni_snake(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("abcDefGhi_abc-DefGhi")) != NULL);
+    cp = uni_snake(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi_abc_def_ghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("abcDefGhi__abc--DefGhi")) != NULL);
+    cp = uni_snake(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi_abc_def_ghi")));
+    uni_del(cp);
+
+    uni_del(u);
+}
+
+static void
+test_uni_camel(void) {
+    assert(uni_camel(NULL) == NULL);
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+
+    assert(uni_set(u, UNI_STR("abc")) != NULL);
+    unicode_t *cp = uni_camel(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("ABC")) != NULL);
+    cp = uni_camel(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("aBC")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("AFormatB")) != NULL);
+    cp = uni_camel(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("aFormatB")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("ABFormat")) != NULL);
+    cp = uni_camel(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("aBFormat")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("abcDefGhi")) != NULL);
+    cp = uni_camel(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("AbcDefGhi")) != NULL);
+    cp = uni_camel(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("abc-def-ghi")) != NULL);
+    cp = uni_camel(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("_abcDefGhi")) != NULL);
+    cp = uni_camel(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("-abcDefGhi")) != NULL);
+    cp = uni_camel(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("_-abcDefGhi")) != NULL);
+    cp = uni_camel(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("abcDefGhi_abc-DefGhi")) != NULL);
+    cp = uni_camel(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhiAbcDefGhi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("abcDefGhi__abc--DefGhi")) != NULL);
+    cp = uni_camel(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhiAbcDefGhi")));
+    uni_del(cp);
+
+    uni_del(u);
+}
+
+static void
+test_uni_hacker(void) {
+    assert(uni_hacker(NULL) == NULL);
+    unicode_t *u = uni_new();
+    assert(u != NULL);
+
+    assert(uni_set(u, UNI_STR("abc")) != NULL);
+    unicode_t *cp = uni_hacker(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("ABC")) != NULL);
+    cp = uni_hacker(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("AFormatB")) != NULL);
+    cp = uni_hacker(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("aformatb")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("ABFormat")) != NULL);
+    cp = uni_hacker(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abformat")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("abcDefGhi")) != NULL);
+    cp = uni_hacker(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("AbcDefGhi")) != NULL);
+    cp = uni_hacker(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("abc-def-ghi")) != NULL);
+    cp = uni_hacker(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("_abcDefGhi")) != NULL);
+    cp = uni_hacker(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("-abcDefGhi")) != NULL);
+    cp = uni_hacker(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("_-abcDefGhi")) != NULL);
+    cp = uni_hacker(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("abcDefGhi_abc-DefGhi")) != NULL);
+    cp = uni_hacker(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghiabcdefghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("abcDefGhi__abc--DefGhi")) != NULL);
+    cp = uni_hacker(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghiabcdefghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("abcDefGhi__abc--DefGhi")) != NULL);
+    cp = uni_hacker(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghiabcdefghi")));
+    uni_del(cp);
+
+    assert(uni_set(u, UNI_STR("abc0_12def_gh34i")) != NULL);
+    cp = uni_hacker(u);
+    assert(cp);
+    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc012defgh34i")));
+    uni_del(cp);
+
+    uni_del(u);
+}
+
+static const struct testcase
+unicode_tests[] = {
+    {"uni_del", test_str_del},
+    {"uni_esc_del", test_str_esc_del},
+    {"uni_new", test_uni_new},
+    {"uni_deep_copy", test_uni_deep_copy},
+    {"uni_deep_copy", test_uni_deep_copy},
+    {"uni_len", test_uni_len},
+    {"uni_capa", test_uni_capa},
+    {"uni_getc", test_uni_getc},
+    {"uni_empty", test_uni_empty},
+    {"uni_clear", test_uni_clear},
+    {"uni_set", test_uni_set},
+    {"uni_resize", test_uni_resize},
+    {"uni_pushb", test_uni_pushb},
+    {"uni_popb", test_uni_popb},
+    {"uni_pushf", test_uni_pushf},
+    {"uni_popf", test_uni_popf},
+    {"uni_app", test_uni_app},
+    {"uni_app_stream", test_uni_app_stream},
+    {"uni_app_other", test_uni_app_other},
+    {"uni_app_fmt", test_uni_app_fmt},
+    {"uni_rstrip", test_uni_rstrip},
+    {"uni_lstrip", test_uni_lstrip},
+    {"uni_strip", test_uni_strip},
+    // {"uni_findc", test_uni_findc},
+    {"uni_lower", test_uni_lower},
+    {"uni_upper", test_uni_upper},
+    {"uni_capitalize", test_uni_capitalize},
+    {"uni_snake", test_uni_snake},
+    {"uni_camel", test_uni_camel},
+    {"uni_hacker", test_uni_hacker},
+    {0},
+};
+
 /*******
 * file *
 *******/
@@ -28223,6 +28811,7 @@ testmodules[] = {
     // lib
     {"cstring_array", cstrarr_tests},
     {"string", string_tests},
+    {"unicode", unicode_tests},
     {"file", file_tests},
     {"cl", cl_tests},
     {"cmdline", cmdline_tests},

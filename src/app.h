@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <getopt.h>
+#include <locale.h>
 
 #include <lib/memory.h>
 #include <lib/cl.h>
