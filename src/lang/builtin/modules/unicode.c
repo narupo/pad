@@ -1,7 +1,7 @@
-#include <lang/builtin/modules/string.h>
+#include <lang/builtin/modules/unicode.h>
 
 static object_t *
-call_basic_str_func(const char *method_name, builtin_func_args_t *fargs) {
+call_basic_unicode_func(const char *method_name, builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
     assert(ref_ast);
     object_array_t *ref_owners = fargs->ref_owners;
@@ -18,25 +18,25 @@ again:
         ast_pushb_error(ref_ast, "can't call %s function", method_name);
         return NULL;
         break;
-    case OBJ_TYPE_STRING: {
-        string_t *result = NULL;
+    case OBJ_TYPE_UNICODE: {
+        unicode_t *result = NULL;
         if (cstr_eq(method_name, "lower")) {
-            result = str_lower(owner->string);
+            result = uni_lower(owner->unicode);
         } else if (cstr_eq(method_name, "upper")) {
-            result = str_upper(owner->string);
+            result = uni_upper(owner->unicode);
         } else if (cstr_eq(method_name, "capitalize")) {
-            result = str_capitalize(owner->string);
+            result = uni_capitalize(owner->unicode);
         } else if (cstr_eq(method_name, "snake")) {
-            result = str_snake(owner->string);
+            result = uni_snake(owner->unicode);
         } else if (cstr_eq(method_name, "camel")) {
-            result = str_camel(owner->string);
+            result = uni_camel(owner->unicode);
         } else if (cstr_eq(method_name, "hacker")) {
-            result = str_hacker(owner->string);
+            result = uni_hacker(owner->unicode);
         } else {
-            ast_pushb_error(ref_ast, "invalid method name \"%s\" for call basic string function", method_name);
+            ast_pushb_error(ref_ast, "invalid method name \"%s\" for call basic unicode function", method_name);
             return NULL;
         }
-        return obj_new_str(ref_ast->ref_gc, result);
+        return obj_new_unicode(ref_ast->ref_gc, result);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         owner = ctx_find_var_ref(ref_ast->ref_context, obj_getc_idn_name(owner));
@@ -56,53 +56,53 @@ again:
     } break;
     }
 
-    assert(0 && "impossible. failed to invoke basic string function");
+    assert(0 && "impossible. failed to invoke basic unicode function");
     return obj_new_nil(ref_ast->ref_gc);
 }
 
 static object_t *
-builtin_string_lower(builtin_func_args_t *args) {
-    return call_basic_str_func("lower", args);
+builtin_unicode_lower(builtin_func_args_t *args) {
+    return call_basic_unicode_func("lower", args);
 }
 
 static object_t *
-builtin_string_upper(builtin_func_args_t *args) {
-    return call_basic_str_func("upper", args);
+builtin_unicode_upper(builtin_func_args_t *args) {
+    return call_basic_unicode_func("upper", args);
 }
 
 static object_t *
-builtin_string_capitalize(builtin_func_args_t *args) {
-    return call_basic_str_func("capitalize", args);
+builtin_unicode_capitalize(builtin_func_args_t *args) {
+    return call_basic_unicode_func("capitalize", args);
 }
 
 static object_t *
-builtin_string_snake(builtin_func_args_t *args) {
-    return call_basic_str_func("snake", args);
+builtin_unicode_snake(builtin_func_args_t *args) {
+    return call_basic_unicode_func("snake", args);
 }
 
 static object_t *
-builtin_string_camel(builtin_func_args_t *args) {
-    return call_basic_str_func("camel", args);
+builtin_unicode_camel(builtin_func_args_t *args) {
+    return call_basic_unicode_func("camel", args);
 }
 
 static object_t *
-builtin_string_hacker(builtin_func_args_t *args) {
-    return call_basic_str_func("hacker", args);
+builtin_unicode_hacker(builtin_func_args_t *args) {
+    return call_basic_unicode_func("hacker", args);
 }
 
 static builtin_func_info_t
 builtin_func_infos[] = {
-    {"lower", builtin_string_lower},
-    {"upper", builtin_string_upper},
-    {"capitalize", builtin_string_capitalize},
-    {"snake", builtin_string_snake},
-    {"camel", builtin_string_camel},
-    {"hacker", builtin_string_hacker},
+    {"lower", builtin_unicode_lower},
+    {"upper", builtin_unicode_upper},
+    {"capitalize", builtin_unicode_capitalize},
+    {"snake", builtin_unicode_snake},
+    {"camel", builtin_unicode_camel},
+    {"hacker", builtin_unicode_hacker},
     {0},
 };
 
 object_t *
-builtin_string_module_new(const config_t *ref_config, gc_t *ref_gc) {
+builtin_unicode_module_new(const config_t *ref_config, gc_t *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = ast_new(ref_config);
     context_t *ctx = ctx_new(ref_gc);
@@ -110,7 +110,7 @@ builtin_string_module_new(const config_t *ref_config, gc_t *ref_gc) {
 
     return obj_new_module_by(
         ref_gc,
-        "__str__",
+        "__unicode__",
         mem_move(tkr),
         mem_move(ast),
         builtin_func_infos

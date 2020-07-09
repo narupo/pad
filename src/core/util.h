@@ -15,6 +15,7 @@
 #include <lib/error.h>
 #include <lib/cl.h>
 #include <lib/cstring_array.h>
+#include <lib/unicode.h>
 #include <lib/path.h>
 #include <core/types.h>
 #include <core/constant.h>

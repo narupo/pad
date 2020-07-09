@@ -460,7 +460,8 @@ load_path_var_from_resource(const config_t *config, const char *rcpath) {
     printf("%s", ctx_getc_stdout_buf(ctx));
     fflush(stdout);
 
-    char *path = cstr_edup(str_getc(item->value->string));
+    const char *s = uni_getc_mb(item->value->unicode);
+    char *path = cstr_edup(s);
 
     ctx_del(ctx);
     gc_del(gc);

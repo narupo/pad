@@ -1,7 +1,7 @@
 #pragma once
 
 #include <core/config.h>
-#include <lib/string.h>
+// #include <lib/unicode.h>
 #include <lang/types.h>
 #include <lang/object.h>
 #include <lang/ast.h>
@@ -20,4 +20,4 @@
  * @return
  */
 object_t *
-builtin_string_module_new(const config_t *ref_config, gc_t *ref_gc);
+builtin_unicode_module_new(const config_t *ref_config, gc_t *ref_gc);

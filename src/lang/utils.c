@@ -182,7 +182,7 @@ again1:
             break;
         }
     } // fallthrough
-    case OBJ_TYPE_STRING:
+    case OBJ_TYPE_UNICODE:
     case OBJ_TYPE_DICT:
     case OBJ_TYPE_ARRAY: {
         // create builtin module function object
@@ -350,7 +350,7 @@ copy_func_args(ast_t *ast, object_t *drtargs) {
         case OBJ_TYPE_NIL:
         case OBJ_TYPE_INT:
         case OBJ_TYPE_BOOL:
-        case OBJ_TYPE_STRING:
+        case OBJ_TYPE_UNICODE:
             // copy
             savearg = obj_deep_copy(arg);
             break;
@@ -569,8 +569,8 @@ invoke_builtin_modules(
             // not error
             return NULL;
             break;
-        case OBJ_TYPE_STRING:
-            bltin_mod_name = "__str__";
+        case OBJ_TYPE_UNICODE:
+            bltin_mod_name = "__unicode__";
             break;
         case OBJ_TYPE_ARRAY:
             bltin_mod_name = "__array__";
@@ -725,8 +725,8 @@ fail:
 }
 
 static object_t *
-refer_str_index(ast_t *ast, object_t *owner, object_t *indexobj) {
-    assert(owner->type == OBJ_TYPE_STRING);
+refer_unicode_index(ast_t *ast, object_t *owner, object_t *indexobj) {
+    assert(owner->type == OBJ_TYPE_UNICODE);
 
 again:
     switch (indexobj->type) {
@@ -748,18 +748,19 @@ again:
     }
 
     objint_t index = indexobj->lvalue;
-    const string_t *str = obj_getc_str(owner);
-    const char *cstr = str_getc(str);
-    string_t *s = str_new();
+    unicode_t *uni = obj_get_unicode(owner);
+    const char *cstr = uni_getc_mb(uni);
+    unicode_t *dst = uni_new();
 
     if (index < 0 || index >= strlen(cstr)) {
         ast_pushb_error(ast, "index out of range");
         return NULL;
     }
 
-    str_pushb(s, cstr[index]);
+    char mb[] = { cstr[index], 0 };
+    uni_set_mb(dst, mb);
 
-    return obj_new_str(ast->ref_gc, mem_move(s));
+    return obj_new_unicode(ast->ref_gc, mem_move(dst));
 }
 
 static object_t *
@@ -809,7 +810,7 @@ again:
         ast_pushb_error(ast, "index isn't string");
         return NULL;
         break;
-    case OBJ_TYPE_STRING:
+    case OBJ_TYPE_UNICODE:
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(indexobj);
@@ -824,8 +825,8 @@ again:
 
     object_dict_t *objdict = obj_get_dict(owner);
     assert(objdict);
-    const string_t *key = obj_getc_str(indexobj);
-    const char *ckey = str_getc(key);
+    unicode_t *key = obj_get_unicode(indexobj);
+    const char *ckey = uni_getc_mb(key);
 
     object_dict_item_t *item = objdict_get(objdict, ckey);
     if (!item) {
@@ -861,8 +862,8 @@ again:
         }
         goto again;
     } break;
-    case OBJ_TYPE_STRING:
-        return refer_str_index(ast, owner, indexobj);
+    case OBJ_TYPE_UNICODE:
+        return refer_unicode_index(ast, owner, indexobj);
         break;
     case OBJ_TYPE_ARRAY:
         return refer_array_index(ast, owner, indexobj);
@@ -1085,7 +1086,7 @@ parse_bool(ast_t *ast, object_t *obj) {
 
         return parse_bool(ast, obj);
     } break;
-    case OBJ_TYPE_STRING: return str_len(obj->string); break;
+    case OBJ_TYPE_UNICODE: return uni_len(obj->unicode); break;
     case OBJ_TYPE_ARRAY: return objarr_len(obj->objarr); break;
     case OBJ_TYPE_DICT: return objdict_len(obj->objdict); break;
     case OBJ_TYPE_CHAIN: {

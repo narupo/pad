@@ -18,13 +18,13 @@ builtin_opts_get(builtin_func_args_t *fargs) {
     const object_t *objname = objarr_getc(args, 0);
     assert(objname);
 
-    if (objname->type != OBJ_TYPE_STRING) {
+    if (objname->type != OBJ_TYPE_UNICODE) {
         ast_pushb_error(ref_ast, "can't invoke opts.get. argument is not string");
         return NULL;
     }
 
-    string_t *optname = objname->string;
-    const char *optval = opts_getc(ref_ast->opts, str_getc(optname));
+    unicode_t *optname = objname->unicode;
+    const char *optval = opts_getc(ref_ast->opts, uni_getc_mb(optname));
     if (!optval) {
         return obj_new_nil(ref_ast->ref_gc);
     }
@@ -50,13 +50,13 @@ builtin_opts_has(builtin_func_args_t *fargs) {
     const object_t *objname = objarr_getc(args, 0);
     assert(objname);
 
-    if (objname->type != OBJ_TYPE_STRING) {
+    if (objname->type != OBJ_TYPE_UNICODE) {
         ast_pushb_error(ref_ast, "can't invoke opts.get. argument is not string");
         return NULL;
     }
 
-    string_t *optname = objname->string;
-    bool has = opts_has(ref_ast->opts, str_getc(optname));
+    unicode_t *optname = objname->unicode;
+    bool has = opts_has(ref_ast->opts, uni_getc_mb(optname));
     return obj_new_bool(ref_ast->ref_gc, has);
 }
 
