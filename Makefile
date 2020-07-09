@@ -86,6 +86,7 @@ SRCS := build/lib/error.c \
 	build/lib/file.c \
 	build/lib/cstring.c \
 	build/lib/string.c \
+	build/lib/unicode.c \
 	build/lib/cstring_array.c \
 	build/lib/cl.c \
 	build/lib/format.c \
@@ -175,6 +176,8 @@ build/lib/file.o: src/lib/file.c src/lib/file.h
 build/lib/cstring.o: src/lib/cstring.c src/lib/cstring.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lib/string.o: src/lib/string.c src/lib/string.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lib/unicode.o: src/lib/unicode.c src/lib/unicode.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lib/cstring_array.o: src/lib/cstring_array.c src/lib/cstring_array.h
 	$(CC) $(CFLAGS) -c $< -o $@

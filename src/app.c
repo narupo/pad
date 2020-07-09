@@ -231,6 +231,8 @@ static app_t *
 app_new(int argc, char *argv[]) {
     app_t *self = mem_ecalloc(1, sizeof(*self));
 
+    setlocale(LC_CTYPE, "");  // for unicode object (char32_t, char16_t)
+
     if (!app_parse_args(self, argc, argv)) {
         err_error("failed to parse arguments");
         app_del(self);
