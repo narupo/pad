@@ -540,16 +540,16 @@ uni_set_mb(unicode_t *self, const char *mb) {
         return NULL;
     }
 
+    int32_t len = strlen(mb);
     mbstate_t mbstate = {0};
     int mbi = 0;
 
     uni_clear(self);
 
-    for (const char *p = mb; *p; ++p) {
+    for (; mbi < len;) {
         char32_t c32;
-        char s[2] = { *p, 0, };
         mbstate = (mbstate_t) {0};
-        const int result = mbrtoc32(&c32, s, 1, &mbstate);
+        const int result = mbrtoc32(&c32, &mb[mbi], MB_CUR_MAX, &mbstate);
         if (result > 0) {
             mbi += result;
         } else if (result == 0) {
@@ -558,6 +558,7 @@ uni_set_mb(unicode_t *self, const char *mb) {
         } else if (result == -1 || result == -2) {
             // invalid bytes
             fprintf(stderr, "uni_set_mb: invalid bytes\n");
+            perror("mbrtoc32");
             return NULL;
         } else if (result == -3) {
             // char32_t の文字を構成する残りの部分を得た。

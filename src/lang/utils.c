@@ -749,16 +749,15 @@ again:
 
     objint_t index = indexobj->lvalue;
     unicode_t *uni = obj_get_unicode(owner);
-    const char *cstr = uni_getc_mb(uni);
+    const unicode_type_t *cps = uni_getc(uni);
     unicode_t *dst = uni_new();
 
-    if (index < 0 || index >= strlen(cstr)) {
+    if (index < 0 || index >= u_len(cps)) {
         ast_pushb_error(ast, "index out of range");
         return NULL;
     }
 
-    char mb[] = { cstr[index], 0 };
-    uni_set_mb(dst, mb);
+    uni_pushb(dst, cps[index]);
 
     return obj_new_unicode(ast->ref_gc, mem_move(dst));
 }
