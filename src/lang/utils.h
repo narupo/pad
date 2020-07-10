@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <lib/error.h>
 #include <lib/string.h>
+#include <lib/unicode.h>
 #include <lib/cstring_array.h>
 #include <lang/ast.h>
 #include <lang/object.h>

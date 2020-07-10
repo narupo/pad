@@ -1452,12 +1452,19 @@ static void
 test_uni_pushb(void) {
     unicode_t *u = uni_new();
     assert(u != NULL);
+
     assert(uni_pushb(NULL, UNI_CHAR('1')) == NULL);
     assert(uni_pushb(u, 0) == NULL);
     assert(uni_pushb(u, UNI_CHAR('\0')) == NULL);
     assert(uni_pushb(u, UNI_CHAR('1')) != NULL);
     assert(uni_pushb(u, UNI_CHAR('2')) != NULL);
     assert(u_strcmp(uni_getc(u), UNI_STR("12")) == 0);
+    
+    uni_clear(u);
+    assert(uni_pushb(u, UNI_CHAR('あ')) != NULL);
+    assert(uni_pushb(u, UNI_CHAR('い')) != NULL);
+    assert(u_strcmp(uni_getc(u), UNI_STR("あい")) == 0);
+
     uni_del(u);
 }
 
@@ -26577,6 +26584,42 @@ test_trv_etc_8(void) {
     trv_cleanup;
 }
 
+static void
+test_trv_unicode_0(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   s = \"abc\""
+    "@}{: s[0] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "a"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_unicode_1(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   s = \"あいう\""
+    "@}{: s[0] :}{: s[2] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "あう"));
+    }
+
+    trv_cleanup;
+}
+
 static const struct testcase
 traverser_tests[] = {
     {"trv_assign_and_reference_0", test_trv_assign_and_reference_0},
@@ -26830,6 +26873,8 @@ traverser_tests[] = {
     {"trv_etc_6", test_trv_etc_6},
     {"trv_etc_7", test_trv_etc_7},
     {"trv_etc_8", test_trv_etc_8},
+    {"trv_unicode_0", test_trv_unicode_0},
+    {"trv_unicode_1", test_trv_unicode_1},
     {0},
 };
 
@@ -28984,6 +29029,8 @@ cleanup(void) {
 
 int
 main(int argc, char *argv[]) {
+    setlocale(LC_CTYPE, "");
+
     struct opts opts;
     if (parseopts(&opts, argc, argv) != 0) {
         die("failed to parse options");
