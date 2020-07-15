@@ -229,9 +229,10 @@ app_parse_args(app_t *self, int argc, char *argv[]) {
  */
 static app_t *
 app_new(int argc, char *argv[]) {
-    app_t *self = mem_ecalloc(1, sizeof(*self));
+    // set locale for unicode object (char32_t, char16_t)
+    setlocale(LC_CTYPE, "");
 
-    setlocale(LC_CTYPE, "");  // for unicode object (char32_t, char16_t)
+    app_t *self = mem_ecalloc(1, sizeof(*self));
 
     if (!app_parse_args(self, argc, argv)) {
         err_error("failed to parse arguments");
