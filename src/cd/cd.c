@@ -25,9 +25,11 @@ cdcmd_del(cdcmd_t *self) {
 cdcmd_t *
 cdcmd_new(const config_t *config, int argc, char *argv[]) {
     cdcmd_t *self = mem_ecalloc(1, sizeof(*self));
+
     self->config = config;
     self->argc = argc;
     self->argv = argv;
+    
     return self;
 }
 
