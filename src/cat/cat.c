@@ -5,10 +5,10 @@
  */
 struct opts {
     bool is_help;
-    int indent;
-    int tabspaces;
     bool is_tab;
     bool is_make;
+    int indent;
+    int tabspaces;
 };
 
 /**
@@ -47,9 +47,10 @@ catcmd_parse_opts(catcmd_t *self) {
 
     self->opts = (struct opts){
         .is_help = false,
+        .is_tab = false,
+        .is_make = false,
         .indent = 0,
         .tabspaces = 4,
-        .is_tab = false,
     };
     opterr = 0;
     optind = 0;
@@ -163,7 +164,7 @@ catcmd_setindent(catcmd_t *self, char *buf, size_t bufsize) {
         buf[0] = '\t';
         buf[1] = '\0';
     } else {
-        if (self->opts.tabspaces >= bufsize-1) {
+        if (self->opts.tabspaces >= bufsize - 1) {
             return false;
         }
 

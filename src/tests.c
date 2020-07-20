@@ -28267,8 +28267,13 @@ test_mvcmd_default(void) {
     mvcmd_run(mvcmd);
     mvcmd_del(mvcmd);
 
+    // rename("./tests/mv/file1", "./tests/mv/file2");  // ok
+    // rename("/mnt/d/src/cap/tests/mv/file1", "/mnt/d/src/cap/tests/mv/file2");  // ok
+
+    // rename("/mnt/d/src/cap/tests/mv/file1", "/mnt/d/src/cap/tests/mv/file2");
+
     assert(!file_exists("./tests/mv/file1"));
-    assert(file_exists("./tests/mv/file2"));
+    assert(file_exists("./tests/mv/file2")); 
 
     file_remove("./tests/mv/file2");
 

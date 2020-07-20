@@ -141,7 +141,7 @@ mvcmd_mv_files_to_dir(mvcmd_t *self) {
 static int
 mvcmd_mv_file_to_other(mvcmd_t *self) {
     const char *src_cap_path = self->argv[self->optind];
-    const char *dst_cap_path = self->argv[self->optind+1];
+    const char *dst_cap_path = self->argv[self->optind + 1];
 
     char srcpath[FILE_NPATH];
 
@@ -155,7 +155,7 @@ mvcmd_mv_file_to_other(mvcmd_t *self) {
         return 1;
     }
 
-    char dstpath[FILE_NPATH*2];
+    char dstpath[FILE_NPATH * 2];
 
     if (!solve_cmdline_arg_path(self->config, dstpath, sizeof dstpath, dst_cap_path)) {
         err_error("failed to solve path for destination file name");
@@ -164,8 +164,8 @@ mvcmd_mv_file_to_other(mvcmd_t *self) {
 
     // remove last separate for stat
     const int dstpathlen = strlen(dstpath);
-    if (dstpath[dstpathlen-1] == FILE_SEP) {
-        dstpath[dstpathlen-1] = '\0';
+    if (dstpath[dstpathlen - 1] == FILE_SEP) {
+        dstpath[dstpathlen - 1] = '\0';
     }
 
     // if dst path is directory then switch to process of directory
