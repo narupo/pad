@@ -1,4 +1,6 @@
 #pragma once
+
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <uchar.h>
@@ -593,4 +595,3 @@ uni_hacker(const unicode_t *other);
  */
 unicode_t *
 uni_mul(const unicode_t *self, int32_t n);
-

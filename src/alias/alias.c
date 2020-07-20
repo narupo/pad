@@ -1,9 +1,9 @@
 #include <alias/alias.h>
 
 struct opts {
-    bool ishelp;
-    bool isglobal;
-    bool isdesc;
+    bool is_help;
+    bool is_global;
+    bool is_desc;
 };
 
 struct alcmd {
@@ -45,9 +45,9 @@ alcmd_parse_opts(alcmd_t *self) {
 
         switch (cur) {
         case 0: /* long option only */ break;
-        case 'h': self->opts.ishelp = true; break;
-        case 'g': self->opts.isglobal = true; break;
-        case 'd': self->opts.isdesc = true; break;
+        case 'h': self->opts.is_help = true; break;
+        case 'g': self->opts.is_global = true; break;
+        case 'd': self->opts.is_desc = true; break;
         case '?':
         default: err_die("unknown option"); break;
         }
@@ -117,7 +117,7 @@ alcmd_new(const config_t *config, int argc, char **argv) {
 
 static alcmd_t *
 alcmd_load_alias_list_by_opts(alcmd_t* self) {
-    if (self->opts.isglobal) {
+    if (self->opts.is_global) {
         if (!almgr_load_alias_list(self->almgr, CAP_SCOPE_GLOBAL)) {
             if (almgr_has_error(self->almgr)) {
                 err_error(almgr_get_error_detail(self->almgr));
@@ -210,7 +210,7 @@ alcmd_show_list(alcmd_t *self) {
         }
 
         const char *desc = alinfo_getc_desc(alinfo, kv_item->key);
-        if (self->opts.isdesc && desc) {
+        if (self->opts.is_desc && desc) {
             char disp_desc[128] = {0};
             trim_first_line(disp_desc, sizeof disp_desc, desc);
 
@@ -248,8 +248,10 @@ alcmd_show_alias_value(alcmd_t *self) {
         err_error("not found alias \"%s\"", key);
         return 1;
     }
+
     puts(value);
     fflush(stdout);
+    
     return 0;
 }
 
@@ -264,12 +266,14 @@ alcmd_show_desc_of_alias(alcmd_t *self) {
     }
 
     puts(desc);
+    fflush(stdout);
+
     return 0;
 }
 
 int
 alcmd_run(alcmd_t *self) {
-    if (self->opts.ishelp) {
+    if (self->opts.is_help) {
         alcmd_show_usage(self);
         return 0;
     }
@@ -282,7 +286,7 @@ alcmd_run(alcmd_t *self) {
         return alcmd_show_list(self);
     }
 
-    if (self->opts.isdesc) {
+    if (self->opts.is_desc) {
         return alcmd_show_desc_of_alias(self);
     }
 
