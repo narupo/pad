@@ -28,6 +28,7 @@ read_sympath(const config_t *config, char *sympath, uint32_t sympathsz, const ch
     char line[FILE_NPATH + symheaderlen + 1];
     int32_t linelen = file_getline(line, sizeof line, fin);
     if (linelen == EOF) {
+        fclose(fin);
         return NULL;
     }
     if (fclose(fin) < 0) {
