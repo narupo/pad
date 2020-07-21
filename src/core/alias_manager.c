@@ -71,8 +71,7 @@ almgr_create_resource_path(almgr_t *self, char *dst, size_t dstsz, int scope) {
     char drtpath[FILE_NPATH*2];
     snprintf(drtpath, sizeof drtpath, "%s/.caprc", org);
 
-    // TODO: const cast (config_t *) is danger
-    if (!symlink_follow_path((config_t *) self->config, dst, dstsz, drtpath)) {
+    if (!symlink_follow_path(self->config, dst, dstsz, drtpath)) {
         almgr_set_error_detail(self, "failed to follow path of resource file");
         return NULL;
     }
