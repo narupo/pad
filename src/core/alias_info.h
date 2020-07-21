@@ -1,5 +1,5 @@
 /* alias_info modules is for alias manage in context module 
-   alias_info module have key and value, and key and description value */
+   alias_info module has key and value, and key and description value */
 #pragma once
 
 #include <lib/dict.h>
