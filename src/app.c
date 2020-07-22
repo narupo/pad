@@ -19,23 +19,21 @@ enum {
  * program option
  */
 struct opts {
-    bool ishelp;
-    bool isversion;
+    bool is_help;
+    bool is_version;
 };
 
 /**
  * application structure
  */
-struct app {
+typedef struct {
     int argc;
     char **argv;
     int cmd_argc;
     char **cmd_argv;
     config_t *config;
     struct opts opts;
-};
-
-typedef struct app app_t;
+} app_t;
 
 static int
 app_run(app_t *self);
@@ -69,8 +67,8 @@ app_parse_opts(app_t *self) {
         }
 
         switch (cur) {
-        case 'h': self->opts.ishelp = true; break;
-        case 'V': self->opts.isversion = true; break;
+        case 'h': self->opts.is_help = true; break;
+        case 'V': self->opts.is_version = true; break;
         case '?':
         default:
             err_error("invalid option");
@@ -550,12 +548,12 @@ app_execute_alias_by_name(app_t *self, bool *found, const char *name) {
  */
 static int
 app_run(app_t *self) {
-    if (self->opts.ishelp) {
+    if (self->opts.is_help) {
         app_usage(self);
         return 0;
     }
 
-    if (self->opts.isversion) {
+    if (self->opts.is_version) {
         app_version(self);
         return 0;
     }
