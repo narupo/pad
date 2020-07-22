@@ -154,7 +154,7 @@ str_set(string_t *self, const string_type_t *src);
  * @return failed to NULL
  */
 string_t *
-str_resize(string_t *self, int32_t newlen);
+str_resize(string_t *self, int32_t newcapa);
 
 /**
  * push data to back of buffer in string
@@ -236,7 +236,7 @@ str_app_stream(string_t *self, FILE *fin);
  * @return failed to NULL
  */
 string_t *
-str_app_other(string_t *self, const string_t *other);
+str_app_other(string_t *self, const string_t *_other);
 
 /**
  * append format string at back of buffer in string
@@ -295,40 +295,40 @@ str_findc(const string_t *self, const string_type_t *target);
 /**
  * convert strings to lower case and copy it
  *
- * @param[in] *self
+ * @param[in] *other
  *
  * @return success to pointer to string_t (copied)
  * @return failed to pointer to NULL
  */
 string_t *
-str_lower(const string_t *self);
+str_lower(const string_t *other);
 
 /**
  * convert strings to upper case and copy it
  *
- * @param[in] *self
+ * @param[in] *other
  *
  * @return success to pointer to string_t (copied)
  * @return failed to pointer to NULL
  */
 string_t *
-str_upper(const string_t *self);
+str_upper(const string_t *other);
 
 /**
  * capitalize strings and copy it
  *
- * @param[in] *self
+ * @param[in] *other
  *
  * @return success to pointer to string_t (copied)
  * @return failed to pointer to NULL
  */
 string_t *
-str_capitalize(const string_t *self);
+str_capitalize(const string_t *other);
 
 /**
  * convert to scake case and copy it
  *
- * @param[in] *self
+ * @param[in] *other
  *
  * @return success to pointer to string_t (copied)
  * @return failed to pointer to NULL
@@ -339,7 +339,7 @@ str_snake(const string_t *other);
 /**
  * convert to camel case and copy it
  *
- * @param[in] *self
+ * @param[in] *other
  *
  * @return success to pointer to string_t (copied)
  * @return failed to pointer to NULL
@@ -350,7 +350,7 @@ str_camel(const string_t *other);
 /**
  * convert to hacker style and copy it
  *
- * @param[in] *self
+ * @param[in] *other
  *
  * @return success to pointer to string_t (copied)
  * @return failed to pointer to NULL
