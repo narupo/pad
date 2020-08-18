@@ -2,7 +2,6 @@
 07_texture_loading_and_rendering/
 SDL2.dll
 SDL2_ttf.dll
-aho.c
 libfreetype-6.dll
 make/
 rename.c
