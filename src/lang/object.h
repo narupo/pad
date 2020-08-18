@@ -245,7 +245,7 @@ object_t *
 obj_new_identifier(gc_t *ref_gc, ast_t *ref_ast, string_t *move_identifier);
 
 /**
- * construct string object by C strings
+ * construct unicode object by C strings
  * if failed to allocate memory then exit from process
  *
  * @param[in] *ref_gc reference to gc_t (do not delete)
@@ -255,7 +255,7 @@ obj_new_identifier(gc_t *ref_gc, ast_t *ref_ast, string_t *move_identifier);
  * @return failed to NULL
  */
 object_t *
-obj_new_cstr(gc_t *ref_gc, const char *str);
+obj_new_unicode_cstr(gc_t *ref_gc, const char *str);
 
 /**
  * construct unicode object by unicode_t

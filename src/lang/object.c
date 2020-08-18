@@ -262,7 +262,7 @@ obj_new_identifier(gc_t *ref_gc, ast_t *ref_ast, string_t *move_identifier) {
 }
 
 object_t *
-obj_new_cstr(gc_t *ref_gc, const char *str) {
+obj_new_unicode_cstr(gc_t *ref_gc, const char *str) {
     if (!ref_gc || !str) {
         return NULL;
     }
@@ -656,7 +656,7 @@ obj_type_to_str(const object_t *self) {
         str_app_fmt(s, tmp, sizeof tmp, "<%d: identifier>", self->type);
         break;
     case OBJ_TYPE_UNICODE:
-        str_app_fmt(s, tmp, sizeof tmp, "<%d: string>", self->type);
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: unicode>", self->type);
         break;
     case OBJ_TYPE_ARRAY:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: array>", self->type);

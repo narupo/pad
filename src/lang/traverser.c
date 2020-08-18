@@ -8325,7 +8325,10 @@ trv_string(ast_t *ast, trv_args_t *targs) {
     assert(node && node->type == NODE_TYPE_STRING);
     node_string_t *string = node->real;
     assert(string);
-    object_t *obj = obj_new_cstr(ast->ref_gc, string->string);
+
+    // covert C string to unicode object
+    object_t *obj = obj_new_unicode_cstr(ast->ref_gc, string->string);
+
     return_trav(obj);
 }
 

@@ -49,22 +49,22 @@ again:
     default:
         break;
     case OBJ_TYPE_NIL: {
-        return obj_new_cstr(ref_ast->ref_gc, "<nil>");
+        return obj_new_unicode_cstr(ref_ast->ref_gc, "<nil>");
     } break;
     case OBJ_TYPE_INT: {
-        return obj_new_cstr(ref_ast->ref_gc, "<int>");
+        return obj_new_unicode_cstr(ref_ast->ref_gc, "<int>");
     } break;
     case OBJ_TYPE_BOOL: {
-        return obj_new_cstr(ref_ast->ref_gc, "<bool>");
+        return obj_new_unicode_cstr(ref_ast->ref_gc, "<bool>");
     } break;
     case OBJ_TYPE_UNICODE: {
-        return obj_new_cstr(ref_ast->ref_gc, "<str>");
+        return obj_new_unicode_cstr(ref_ast->ref_gc, "<str>");
     } break;
     case OBJ_TYPE_ARRAY: {
-        return obj_new_cstr(ref_ast->ref_gc, "<array>");
+        return obj_new_unicode_cstr(ref_ast->ref_gc, "<array>");
     } break;
     case OBJ_TYPE_DICT: {
-        return obj_new_cstr(ref_ast->ref_gc, "<dict>");
+        return obj_new_unicode_cstr(ref_ast->ref_gc, "<dict>");
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(obj);
@@ -76,14 +76,14 @@ again:
         goto again;
     } break;
     case OBJ_TYPE_FUNC: {
-        return obj_new_cstr(ref_ast->ref_gc, "<func>");
+        return obj_new_unicode_cstr(ref_ast->ref_gc, "<func>");
     } break;
     case OBJ_TYPE_CHAIN: {
         obj = obj->chain.operand;
         goto again;
     } break;
     case OBJ_TYPE_MODULE: {
-        return obj_new_cstr(ref_ast->ref_gc, "<module>");
+        return obj_new_unicode_cstr(ref_ast->ref_gc, "<module>");
     } break;
     } // switch
 

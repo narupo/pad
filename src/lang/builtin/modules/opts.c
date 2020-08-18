@@ -29,7 +29,7 @@ builtin_opts_get(builtin_func_args_t *fargs) {
         return obj_new_nil(ref_ast->ref_gc);
     }
 
-    return obj_new_cstr(ref_ast->ref_gc, optval);
+    return obj_new_unicode_cstr(ref_ast->ref_gc, optval);
 }
 
 static object_t *
@@ -86,7 +86,7 @@ builtin_opts_args(builtin_func_args_t *fargs) {
         return obj_new_nil(ref_ast->ref_gc);
     }
 
-    return obj_new_cstr(ref_ast->ref_gc, value);
+    return obj_new_unicode_cstr(ref_ast->ref_gc, value);
 }
 
 static builtin_func_info_t
