@@ -3,6 +3,7 @@ bin/
 tmp/
 .vscode/
 tests/.cap/var/*
+lib/
 
 # Object files
 *.o
