@@ -1,0 +1,13 @@
+07_texture_loading_and_rendering.zip
+07_texture_loading_and_rendering/
+SDL2.dll
+SDL2_ttf.dll
+aho.c
+libfreetype-6.dll
+make/
+rename.c
+res/
+testscroll.c
+testttf.c
+ws2_32.dll
+zlib1.dll
