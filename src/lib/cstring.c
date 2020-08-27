@@ -258,6 +258,10 @@ typedef struct {
 
 static char **
 __cstr_split(const char *str, char sep, split_opts_t *opts) {
+    if (!str) {
+        return NULL;
+    }
+    
     tokens_t *toks = tokens_new(4);
     if (!toks) {
         return NULL;
