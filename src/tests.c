@@ -812,10 +812,28 @@ test_cstring_cstr_split(void) {
     assert(!strcmp(arr[0], "abc"));
     assert(!strcmp(arr[1], "def"));
     assert(arr[2] == NULL);
-    
+
     free(arr[0]);
     free(arr[1]);
     free(arr);
+}
+
+static void
+test_cstring_cstr_eq(void) {
+    assert(!cstr_eq(NULL, NULL));
+    assert(!cstr_eq("abc", NULL));
+
+    assert(cstr_eq("abc", "abc"));
+    assert(!cstr_eq("abc", "def"));
+}
+
+static void
+test_cstring_cstr_isdigit(void) {
+    assert(!cstr_isdigit(NULL));
+
+    assert(cstr_isdigit("123"));
+    assert(!cstr_isdigit("abc"));
+    assert(!cstr_isdigit("12ab"));
 }
 
 static const struct testcase
@@ -827,6 +845,8 @@ cstring_tests[] = {
     {"cstr_app_fmt", test_cstring_cstr_app_fmt},
     {"cstr_edup", test_cstring_cstr_edup},
     {"cstr_split", test_cstring_cstr_split},
+    {"cstr_eq", test_cstring_cstr_eq},
+    {"cstr_isdigit", test_cstring_cstr_isdigit},
     {0},
 };
 
