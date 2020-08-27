@@ -261,7 +261,7 @@ __cstr_split(const char *str, char sep, split_opts_t *opts) {
     if (!str) {
         return NULL;
     }
-    
+
     tokens_t *toks = tokens_new(4);
     if (!toks) {
         return NULL;
@@ -329,6 +329,10 @@ cstr_split_ignore_empty(const char *str, char sep) {
 
 bool
 cstr_eq(const char *lhs, const char *rhs) {
+    if (!lhs || !rhs) {
+        return false;
+    }
+    
     return !strcmp(lhs, rhs);
 }
 
