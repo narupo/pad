@@ -880,6 +880,16 @@ test_str_new(void) {
 }
 
 static void
+test_str_new_cstr(void) {
+    assert(str_new_cstr(NULL) == NULL);
+    
+    string_t *s = str_new_cstr("abc");
+    assert(s);
+    assert(!strcmp(str_getc(s), "abc"));
+    str_del(s);
+}
+
+static void
 test_str_deep_copy(void) {
     string_t *s = str_new();
     assert(s != NULL);
@@ -1422,11 +1432,25 @@ test_str_hacker(void) {
     str_del(s);
 }
 
+static void
+test_str_mul(void) {
+    string_t *s = str_new();
+    str_set(s, "abc");
+
+    assert(str_mul(NULL, 0) == NULL);
+
+    string_t *m = str_mul(s, 2);
+    assert(!strcmp(str_getc(m), "abcabc"));
+
+    str_del(s);
+}
+
 static const struct testcase
 string_tests[] = {
     {"str_del", test_str_del},
     {"str_esc_del", test_str_esc_del},
     {"str_new", test_str_new},
+    {"str_new_cstr", test_str_new_cstr},
     {"str_deep_copy", test_str_deep_copy},
     {"str_deep_copy", test_str_deep_copy},
     {"str_len", test_str_len},
@@ -1454,6 +1478,7 @@ string_tests[] = {
     {"str_snake", test_str_snake},
     {"str_camel", test_str_camel},
     {"str_hacker", test_str_hacker},
+    {"str_mul", test_str_mul},
     {0},
 };
 

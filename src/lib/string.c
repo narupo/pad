@@ -684,6 +684,10 @@ str_hacker(const string_t *other) {
 
 string_t *
 str_mul(const string_t *self, int32_t n) {
+    if (!self) {
+        return NULL;
+    }
+    
     string_t *buf = str_new();
 
     for (int32_t i = 0; i < n; ++i) {
