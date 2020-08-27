@@ -646,9 +646,89 @@ cmdline_tests[] = {
     {0},
 };
 
-/*********
-* string *
-*********/
+/**********
+* cstring *
+**********/
+
+static void
+test_cstring_cstr_copy(void) {
+    const char *s = "test";
+    char dst[5];
+
+    assert(cstr_copy(NULL, 0, NULL) == NULL);
+    assert(cstr_copy(dst, 0, NULL) == NULL);
+
+    assert(cstr_copy(dst, 0, s));
+    assert(!strcmp(dst, ""));
+
+    assert(cstr_copy(dst, sizeof dst, s));
+    assert(!strcmp(dst, "test"));
+}
+
+static void
+test_cstring_cstr_pop_newline(void) {
+    char a[] = "test\n";
+
+    assert(cstr_pop_newline(NULL) == NULL);
+
+    assert(cstr_pop_newline(a));
+    assert(!strcmp(a, "test"));
+
+    char b[] = "b\r\n";
+    assert(cstr_pop_newline(b));
+    assert(!strcmp(b, "b"));
+
+    char c[] = "c\r\n\n";
+    assert(cstr_pop_newline(c));
+    assert(!strcmp(c, "c"));
+}
+
+static void
+test_cstring_cstr_cpywithout(void) {
+    char dst[100];
+
+    assert(cstr_cpywithout(NULL, 0, NULL, NULL) == NULL);
+    assert(cstr_cpywithout(dst, 0, NULL, NULL) == NULL);
+    assert(cstr_cpywithout(dst, sizeof dst, NULL, NULL) == NULL);
+    assert(cstr_cpywithout(dst, sizeof dst, "abcd", NULL) == NULL);
+
+    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "bc"));
+    assert(!strcmp(dst, "ad"));
+
+    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "cd"));
+    assert(!strcmp(dst, "ab"));
+
+    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "bcd"));
+    assert(!strcmp(dst, "a"));
+
+    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "abcd"));
+    assert(!strcmp(dst, ""));
+
+    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "a"));
+    assert(!strcmp(dst, "bcd"));
+
+    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "ab"));
+    assert(!strcmp(dst, "cd"));
+
+    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "abc"));
+    assert(!strcmp(dst, "d"));
+
+    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "ad"));
+    assert(!strcmp(dst, "bc"));
+
+    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "xyz"));
+    assert(!strcmp(dst, "abcd"));
+
+    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "axyz"));
+    assert(!strcmp(dst, "bcd"));
+
+    assert(cstr_cpywithout(dst, sizeof dst, "abc123def456", "") != NULL);
+    assert(strcmp(dst, "abc123def456") == 0);
+    assert(cstr_cpywithout(dst, sizeof dst, "abc123def456", "123456") != NULL);
+    assert(strcmp(dst, "abcdef") == 0);
+    assert(cstr_cpywithout(dst, sizeof dst, "abc123def456", "abcdef") != NULL);
+    assert(strcmp(dst, "123456") == 0);
+}
 
 static void
 test_cstring_cstr_app(void) {
@@ -695,28 +775,64 @@ test_cstring_cstr_app_fmt(void) {
 }
 
 static void
-test_cstring_cstr_cpywithout(void) {
-    char dst[100];
-
-    assert(cstr_cpywithout(NULL, sizeof dst, "abc123def456", "") == NULL);
-    assert(cstr_cpywithout(dst, 0, "abc123def456", "") == NULL);
-    assert(cstr_cpywithout(dst, sizeof dst, NULL, "") == NULL);
-    assert(cstr_cpywithout(dst, sizeof dst, "abc123def456", NULL) == NULL);
-
-    assert(cstr_cpywithout(dst, sizeof dst, "abc123def456", "") != NULL);
-    assert(strcmp(dst, "abc123def456") == 0);
-    assert(cstr_cpywithout(dst, sizeof dst, "abc123def456", "123456") != NULL);
-    assert(strcmp(dst, "abcdef") == 0);
-    assert(cstr_cpywithout(dst, sizeof dst, "abc123def456", "abcdef") != NULL);
-    assert(strcmp(dst, "123456") == 0);
-}
-
-static void
 test_cstring_cstr_edup(void) {
     char *p = cstr_edup("string");
     assert(strcmp(p, "string") == 0);
     free(p);
 }
+
+static void
+test_cstring_cstr_split(void) {
+    assert(cstr_split(NULL, '\0') == NULL);
+
+    char **arr = cstr_split("abc\ndef", '\n');
+
+    assert(!strcmp(arr[0], "abc"));
+    assert(!strcmp(arr[1], "def"));
+    assert(arr[2] == NULL);
+
+    free(arr[0]);
+    free(arr[1]);
+    free(arr);
+
+    arr = cstr_split("abc\ndef\n", '\n');
+
+    assert(!strcmp(arr[0], "abc"));
+    assert(!strcmp(arr[1], "def"));
+    assert(!strcmp(arr[2], ""));
+    assert(arr[3] == NULL);
+
+    free(arr[0]);
+    free(arr[1]);
+    free(arr[2]);
+    free(arr);
+
+    arr = cstr_split_ignore_empty("abc\ndef\n", '\n');
+
+    assert(!strcmp(arr[0], "abc"));
+    assert(!strcmp(arr[1], "def"));
+    assert(arr[2] == NULL);
+    
+    free(arr[0]);
+    free(arr[1]);
+    free(arr);
+}
+
+static const struct testcase
+cstring_tests[] = {
+    {"cstr_copy", test_cstring_cstr_copy},
+    {"cstr_pop_newline", test_cstring_cstr_pop_newline},
+    {"cstr_cpywithout", test_cstring_cstr_cpywithout},
+    {"cstr_app", test_cstring_cstr_app},
+    {"cstr_app_fmt", test_cstring_cstr_app_fmt},
+    {"cstr_edup", test_cstring_cstr_edup},
+    {"cstr_split", test_cstring_cstr_split},
+    {0},
+};
+
+/*********
+* string *
+*********/
 
 static void
 test_str_del(void) {
@@ -1288,10 +1404,6 @@ test_str_hacker(void) {
 
 static const struct testcase
 string_tests[] = {
-    {"cstr_app", test_cstring_cstr_app},
-    {"cstr_app_fmt", test_cstring_cstr_app_fmt},
-    {"cstr_cpywithout", test_cstring_cstr_cpywithout},
-    {"cstr_edup", test_cstring_cstr_edup},
     {"str_del", test_str_del},
     {"str_esc_del", test_str_esc_del},
     {"str_new", test_str_new},
@@ -28898,6 +29010,7 @@ testmodules[] = {
 
     // lib
     {"cstring_array", cstrarr_tests},
+    {"cstring", cstring_tests},
     {"string", string_tests},
     {"unicode", unicode_tests},
     {"file", file_tests},
