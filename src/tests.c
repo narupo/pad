@@ -377,10 +377,6 @@ test_cstrarr_resize(void) {
     cstrarr_del(arr);
 }
 
-/**
- * 0 memory leaks
- * 2020/02/25
- */
 static const struct testcase
 cstrarr_tests[] = {
     {"cstrarr_new", test_cstrarr_new},
@@ -641,6 +637,106 @@ test_cmdline_parse_redirect(void) {
     cmdline_del(cmdline);
 }
 
+void
+test_cmdline_resize(void) {
+    cmdline_t *cmdline = cmdline_new();
+    assert(cmdline);
+
+    assert(cmdline_resize(NULL, 0) == NULL);
+    assert(cmdline_resize(cmdline, 0) == NULL);
+
+    assert(cmdline_resize(cmdline, 32));
+    assert(cmdline_resize(cmdline, 8));
+    assert(cmdline_resize(cmdline, 16));
+
+    cmdline_del(cmdline);
+}
+
+void
+test_cmdline_moveb(void) {
+    cmdline_t *cmdline = cmdline_new();
+    assert(cmdline);
+
+    assert(cmdline_moveb(NULL, NULL) == NULL);
+    assert(cmdline_moveb(cmdline, NULL) == NULL);
+
+    cmdline_object_t *obj = cmdlineobj_new(CMDLINE_OBJECT_TYPE_CMD);
+
+    assert(cmdline_moveb(cmdline, mem_move(obj)));
+
+    cmdline_del(cmdline);
+}
+
+void
+test_cmdline_len(void) {
+    cmdline_t *cmdline = cmdline_new();
+    assert(cmdline);
+
+    assert(cmdline_moveb(NULL, NULL) == NULL);
+    assert(cmdline_moveb(cmdline, NULL) == NULL);
+    assert(cmdline_len(NULL) == -1);
+
+    cmdline_object_t *obj1 = cmdlineobj_new(CMDLINE_OBJECT_TYPE_CMD);
+    cmdline_object_t *obj2 = cmdlineobj_new(CMDLINE_OBJECT_TYPE_CMD);
+
+    assert(cmdline_moveb(cmdline, mem_move(obj1)));
+    assert(cmdline_len(cmdline) == 1);
+
+    assert(cmdline_moveb(cmdline, mem_move(obj2)));
+    assert(cmdline_len(cmdline) == 2);
+
+    cmdline_del(cmdline);
+}
+
+void
+test_cmdline_clear(void) {
+    cmdline_t *cmdline = cmdline_new();
+    assert(cmdline);
+
+    cmdline_clear(NULL);
+
+    cmdline_object_t *obj = cmdlineobj_new(CMDLINE_OBJECT_TYPE_CMD);
+
+    assert(cmdline_moveb(cmdline, mem_move(obj)));
+    assert(cmdline_len(cmdline) == 1);
+
+    cmdline_clear(cmdline);
+    assert(cmdline_len(cmdline) == 0);
+
+    cmdline_del(cmdline);
+}
+
+void
+test_cmdline_getc(void) {
+    cmdline_t *cmdline = cmdline_new();
+    assert(cmdline);
+
+    assert(cmdline_getc(NULL, -1) == NULL);
+    assert(cmdline_getc(cmdline, -1) == NULL);
+    assert(cmdline_getc(cmdline, 0) == NULL);
+
+    cmdline_object_t *obj = cmdlineobj_new(CMDLINE_OBJECT_TYPE_CMD);
+
+    assert(cmdline_moveb(cmdline, mem_move(obj)));
+    assert(cmdline_len(cmdline) == 1);
+
+    assert(cmdline_getc(cmdline, 0));
+    assert(cmdline_getc(cmdline, 1) == NULL);
+
+    cmdline_del(cmdline);
+}
+
+void
+test_cmdline_has_error(void) {
+    cmdline_t *cmdline = cmdline_new();
+    assert(cmdline);
+
+    assert(cmdline_parse(cmdline, "||||") == NULL);
+    assert(cmdline_has_error(cmdline));
+
+    cmdline_del(cmdline);
+}
+
 static const struct testcase
 cmdline_tests[] = {
     {"cmdline_new", test_cmdline_new},
@@ -653,6 +749,11 @@ cmdline_tests[] = {
     {"cmdline_parse_pipe", test_cmdline_parse_pipe},
     {"cmdline_parse_and", test_cmdline_parse_and},
     {"cmdline_parse_redirect", test_cmdline_parse_redirect},
+    {"cmdline_resize", test_cmdline_resize},
+    {"cmdline_moveb", test_cmdline_moveb},
+    {"cmdline_clear", test_cmdline_clear},
+    {"cmdline_getc", test_cmdline_getc},
+    {"cmdline_has_error", test_cmdline_has_error},
     {0},
 };
 
