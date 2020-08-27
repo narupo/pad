@@ -174,3 +174,11 @@ cmdline_getc(const cmdline_t *self, int32_t index);
  */
 cmdline_t *
 cmdline_parse(cmdline_t *self, const char *line);
+
+/**
+ * clear state
+ *
+ * @param[in] *self pointer to cmdline_t dynamic allocate memory
+ */
+void 
+cmdline_clear(cmdline_t *self);
