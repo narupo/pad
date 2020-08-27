@@ -368,6 +368,15 @@ test_cstrarr_clear(void) {
     cstrarr_del(arr);
 }
 
+void
+test_cstrarr_resize(void) {
+    cstring_array_t *arr = cstrarr_new();
+    assert(cstrarr_resize(arr, 32));
+    assert(cstrarr_resize(arr, 8));
+    assert(cstrarr_resize(arr, 16));
+    cstrarr_del(arr);
+}
+
 /**
  * 0 memory leaks
  * 2020/02/25
@@ -385,6 +394,7 @@ cstrarr_tests[] = {
     {"cstrarr_len", test_cstrarr_len},
     {"cstrarr_show", test_cstrarr_show},
     {"cstrarr_clear", test_cstrarr_clear},
+    {"cstrarr_resize", test_cstrarr_resize},
     {0},
 };
 

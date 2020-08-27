@@ -9,8 +9,8 @@
 
 struct cstring_array {
 	char **arr;
-	ssize_t len;
-	ssize_t capa;
+	int32_t len;
+	int32_t capa;
 };
 
 enum {
@@ -20,7 +20,7 @@ enum {
 void
 cstrarr_del(cstring_array_t *arr) {
 	if (arr) {
-		for (ssize_t i = 0; i < arr->len; ++i) {
+		for (int32_t i = 0; i < arr->len; ++i) {
 			free(arr->arr[i]);
 		}
 		free(arr->arr);
@@ -52,8 +52,8 @@ cstrarr_escdel(cstring_array_t *arr) {
 }
 
 cstring_array_t *
-cstrarr_resize(cstring_array_t *arr, ssize_t capa) {
-	ssize_t size = sizeof(arr->arr[0]);
+cstrarr_resize(cstring_array_t *arr, int32_t capa) {
+	int32_t size = sizeof(arr->arr[0]);
 	char **tmp = realloc(arr->arr, size*capa + size);
 	if (!tmp) {
 		return NULL;
@@ -149,7 +149,7 @@ cstrarr_getc(const cstring_array_t *arr, int idx) {
 	return arr->arr[idx];
 }
 
-ssize_t
+int32_t
 cstrarr_len(const cstring_array_t *arr) {
 	if (!arr) {
 		return 0;
@@ -164,7 +164,7 @@ cstrarr_show(const cstring_array_t *arr, FILE *fout) {
 		return NULL;
 	}
 
-	for (ssize_t i = 0; i < arr->len; ++i) {
+	for (int32_t i = 0; i < arr->len; ++i) {
 		fprintf(fout, "%s\n", arr->arr[i]);
 	}
 	fflush(fout);
@@ -178,7 +178,7 @@ cstrarr_clear(cstring_array_t *self) {
 		return;
 	}
 
-	for (ssize_t i = 0; i < self->len; ++i) {
+	for (int32_t i = 0; i < self->len; ++i) {
 		free(self->arr[i]);
 	}
 
