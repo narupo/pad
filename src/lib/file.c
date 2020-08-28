@@ -731,7 +731,7 @@ file_get_no(FILE *fp) {
 }
 
 char **
-file_load_lines(const char *fname) {
+file_read_lines(const char *fname) {
     FILE *fin = fopen(fname, "r");
     if (!fin) {
         return NULL;
@@ -755,6 +755,9 @@ file_load_lines(const char *fname) {
         }
 
         if (c == '\n') {
+            if (!strlen(buf)) {
+                continue;
+            }
             if (linesi >= linessize) {
                 linessize *= 2;
                 lines = realloc(lines, linessize * sizeof(char *) + sizeof(char *));

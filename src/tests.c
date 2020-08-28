@@ -2775,6 +2775,56 @@ test_file_conv_line_encoding(void) {
     free(encoded);
 }
 
+static void
+test_file_get_user_home(void) {
+    // can't test    
+}
+
+static void
+test_file_remove(void) {
+    if (!file_exists("tests/file/")) {
+        file_mkdirq("tests/file/");
+    }
+    file_trunc("tests/file/remove.txt");
+    assert(file_exists("tests/file/remove.txt"));
+    file_remove("tests/file/remove.txt");
+    assert(!file_exists("tests/file/remove.txt"));
+}
+
+static void
+test_file_rename(void) {
+    if (!file_exists("tests/file/")) {
+        file_mkdirq("tests/file/");
+    }
+    file_trunc("tests/file/rename.txt");
+    assert(file_exists("tests/file/rename.txt"));
+    file_rename("tests/file/rename.txt", "tests/file/renamed.txt");
+    assert(file_exists("tests/file/renamed.txt"));
+    file_remove("tests/file/renamed.txt");
+}
+
+static void
+test_file_read_lines(void) {
+    if (!file_exists("tests/file/")) {
+        file_mkdirq("tests/file/");
+    }
+    FILE *fout = fopen("tests/file/lines.txt", "wt");
+    assert(fout);
+    fputs("123\n", fout);
+    fputs("223\n", fout);
+    fputs("323\n", fout);
+    fclose(fout);
+
+    char **lines = file_read_lines("tests/file/lines.txt");
+    assert(lines);
+    assert(!strcmp(lines[0], "123"));
+    assert(!strcmp(lines[1], "223"));
+    assert(!strcmp(lines[2], "323"));
+    assert(lines[3] == NULL);
+
+    file_remove("tests/file/lines.txt");
+}
+
 /**
  * 0 memory leaks
  * 2020/02/25
@@ -2809,6 +2859,10 @@ file_tests[] = {
     {"file_diropen", test_file_diropen},
     {"file_dirread", test_file_dirread},
     {"file_conv_line_encoding", test_file_conv_line_encoding},
+    {"file_get_user_home", test_file_get_user_home},
+    {"file_remove", test_file_remove},
+    {"file_rename", test_file_rename},
+    {"file_read_lines", test_file_read_lines},
     {0},
 };
 

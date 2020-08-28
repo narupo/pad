@@ -442,4 +442,4 @@ file_get_no(FILE *fp);
  * @return failed to NULL
  */
 char **
-file_load_lines(const char *fname);
+file_read_lines(const char *fname);
