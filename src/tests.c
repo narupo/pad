@@ -2153,6 +2153,194 @@ test_uni_hacker(void) {
     uni_del(u);
 }
 
+static void
+test_uni_get(void) {
+    unicode_t *u = uni_new();
+    assert(u);
+
+    assert(uni_get(NULL) == NULL);
+
+    uni_set_mb(u, "abc");
+
+    unicode_type_t *s = uni_get(u);
+    assert(u_strcmp(s, U"abc") == 0);
+
+    uni_del(u);
+}
+
+static void
+test_uni_to_mb(void) {
+    unicode_t *u = uni_new();
+    assert(u);
+
+    assert(uni_to_mb(NULL) == NULL);
+
+    uni_set_mb(u, "abc");
+
+    char *s = uni_to_mb(u);
+    assert(strcmp(s, "abc") == 0);
+
+    free(s);
+    uni_del(u);
+}
+
+static void
+test_uni_set_mb(void) {
+    unicode_t *u = uni_new();
+    assert(u);
+
+    assert(uni_set_mb(NULL, NULL) == NULL);
+    assert(uni_set_mb(u, NULL) == NULL);
+
+    uni_set_mb(u, "abc");
+
+    unicode_type_t *s = uni_get(u);
+    assert(u_strcmp(s, U"abc") == 0);
+
+    uni_del(u);
+}
+
+static void
+test_uni_getc_mb(void) {
+    unicode_t *u = uni_new();
+    assert(u);
+
+    assert(uni_getc_mb(NULL) == NULL);
+
+    uni_set_mb(u, "abc");
+
+    const char *s = uni_getc_mb(u);
+    assert(strcmp(s, "abc") == 0);
+
+    uni_del(u);
+}
+
+static void
+test_uni_mul(void) {
+    unicode_t *u = uni_new();
+    assert(u);
+
+    assert(uni_mul(NULL, 0) == NULL);
+
+    uni_set_mb(u, "abc");
+
+    unicode_t *o = uni_mul(u, 3);
+    const char *s = uni_getc_mb(o);
+    assert(strcmp(s, "abcabcabc") == 0);
+
+    uni_del(u);
+}
+
+static void
+test_char32_len(void) {
+    const char32_t *s = U"abc";
+    assert(char32_len(s) == 3);
+}
+
+static void
+test_char16_len(void) {
+    const char16_t *s = u"abc";
+    assert(char16_len(s) == 3);
+}
+
+static void
+test_char32_dup(void) {
+    const char32_t *s = U"abc";
+    char32_t *o = char32_dup(s);
+    assert(char32_strcmp(s, o) == 0);
+    free(o);
+}
+
+static void
+test_char16_dup(void) {
+    const char16_t *s = u"abc";
+    char16_t *o = char16_dup(s);
+    assert(char16_strcmp(s, o) == 0);
+    free(o);
+}
+
+static void
+test_char32_isalpha(void) {
+    assert(char32_isalpha(U'a'));
+}
+
+static void
+test_char16_isalpha(void) {
+    assert(char16_isalpha(u'a'));
+}
+
+static void
+test_char32_islower(void) {
+    assert(char32_islower(U'a'));
+    assert(!char32_islower(U'A'));
+}
+
+static void
+test_char16_islower(void) {
+    assert(char16_islower(u'a'));
+    assert(!char16_islower(u'A'));
+}
+
+static void
+test_char32_isupper(void) {
+    assert(char32_isupper(U'A'));
+    assert(!char32_isupper(U'a'));
+}
+
+static void
+test_char16_isupper(void) {
+    assert(char16_isupper(u'A'));
+    assert(!char16_isupper(u'a'));
+}
+
+static void
+test_char32_tolower(void) {
+    assert(char32_tolower(U'A') == U'a');
+    assert(char32_tolower(U'a') == U'a');
+}
+
+static void
+test_char16_tolower(void) {
+    assert(char16_tolower(u'A') == u'a');
+    assert(char16_tolower(u'a') == u'a');
+}
+
+static void
+test_char32_toupper(void) {
+    assert(char32_toupper(U'A') == U'A');
+    assert(char32_toupper(U'a') == U'A');
+}
+
+static void
+test_char16_toupper(void) {
+    assert(char16_toupper(u'A') == u'A');
+    assert(char16_toupper(u'a') == u'A');
+}
+
+static void
+test_char32_isdigit(void) {
+    assert(!char32_isdigit(U'A'));
+    assert(char32_isdigit(U'1'));
+}
+
+static void
+test_char16_isdigit(void) {
+    assert(!char16_isdigit(u'A'));
+    assert(char16_isdigit(u'1'));
+}
+
+static void
+test_char32_strcmp(void) {
+    assert(char32_strcmp(U"abc", U"abc") == 0);
+    assert(char32_strcmp(U"abc", U"def") != 0);
+}
+
+static void
+test_char16_strcmp(void) {
+    assert(char16_strcmp(u"abc", u"abc") == 0);
+    assert(char16_strcmp(u"abc", u"def") != 0);
+}
+
 static const struct testcase
 unicode_tests[] = {
     {"uni_del", test_str_del},
@@ -2185,6 +2373,29 @@ unicode_tests[] = {
     {"uni_snake", test_uni_snake},
     {"uni_camel", test_uni_camel},
     {"uni_hacker", test_uni_hacker},
+    {"uni_get", test_uni_get},
+    {"uni_to_mb", test_uni_to_mb},
+    {"uni_set_mb", test_uni_set_mb},
+    {"uni_getc_mb", test_uni_getc_mb},
+    {"uni_mul", test_uni_mul},
+    {"char32_len", test_char32_len},
+    {"char16_len", test_char16_len},
+    {"char32_dup", test_char32_dup},
+    {"char16_dup", test_char16_dup},
+    {"char32_isalpha", test_char32_isalpha},
+    {"char16_isalpha", test_char16_isalpha},
+    {"char32_islower", test_char32_islower},
+    {"char16_islower", test_char16_islower},
+    {"char32_isupper", test_char32_isupper},
+    {"char16_isupper", test_char16_isupper},
+    {"char32_toupper", test_char32_toupper},
+    {"char16_toupper", test_char16_toupper},
+    {"char32_tolower", test_char32_tolower},
+    {"char16_tolower", test_char16_tolower},
+    {"char32_isdigit", test_char32_isdigit},
+    {"char16_isdigit", test_char16_isdigit},
+    {"char32_strcmp", test_char32_strcmp},
+    {"char16_strcmp", test_char16_strcmp},
     {0},
 };
 
