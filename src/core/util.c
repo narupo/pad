@@ -568,7 +568,7 @@ execute_program_by_caprc(const config_t *config, bool *found, int cmd_argc, char
     if (!path) {
         return 1;
     }
-
+    
     cstring_array_t *dirs = split_path_var(path);
     free(path);
     if (!cstrarr_len(dirs)) {
