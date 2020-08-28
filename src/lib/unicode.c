@@ -875,6 +875,10 @@ uni_hacker(const unicode_t *other) {
 
 unicode_t *
 uni_mul(const unicode_t *self, int32_t n) {
+    if (!self) {
+        return NULL;
+    }
+    
     unicode_t *buf = uni_new();
 
     for (int32_t i = 0; i < n; ++i) {
