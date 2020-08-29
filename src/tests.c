@@ -2870,16 +2870,15 @@ file_tests[] = {
 * cl *
 *****/
 
-
 static void
-test_cl_cldel(void) {
+test_cl_del(void) {
     cl_t *cl = cl_new();
     assert(cl != NULL);
     cl_del(cl);
 }
 
 static void
-test_cl_clescdel(void) {
+test_cl_escdel(void) {
     cl_t *cl = cl_new();
     assert(cl != NULL);
     size_t parrlen = cl_len(cl);
@@ -2889,12 +2888,12 @@ test_cl_clescdel(void) {
 }
 
 static void
-test_cl_clnew(void) {
-    // test_cl_cldel
+test_cl_new(void) {
+    // test_cl_del
 }
 
 static void
-test_cl_clresize(void) {
+test_cl_resize(void) {
     cl_t *cl = cl_new();
     assert(cl != NULL);
     assert(cl_capa(cl) == 4);
@@ -2904,7 +2903,7 @@ test_cl_clresize(void) {
 }
 
 static void
-test_cl_clpush(void) {
+test_cl_push(void) {
     cl_t *cl = cl_new();
     assert(cl != NULL);
     assert(cl_len(cl) == 0);
@@ -2917,7 +2916,7 @@ test_cl_clpush(void) {
 }
 
 static void
-test_cl_clgetc(void) {
+test_cl_getc(void) {
     cl_t *cl = cl_new();
     assert(cl != NULL);
     assert(cl_push(cl, "123"));
@@ -2926,7 +2925,7 @@ test_cl_clgetc(void) {
 }
 
 static void
-test_cl_clclear(void) {
+test_cl_clear(void) {
     cl_t *cl = cl_new();
     assert(cl != NULL);
     assert(cl_push(cl, "123"));
@@ -2938,7 +2937,7 @@ test_cl_clclear(void) {
 }
 
 static void
-test_cl_clparsestropts(void) {
+test_cl_parse_str_opts(void) {
     cl_t *cl = cl_new();
     assert(cl != NULL);
 
@@ -2979,7 +2978,7 @@ test_cl_clparsestropts(void) {
 }
 
 static void
-test_cl_clparsestr(void) {
+test_cl_parse_str(void) {
     cl_t *cl = cl_new();
     assert(cl != NULL);
 
@@ -3055,7 +3054,7 @@ test_cl_clparsestr(void) {
 }
 
 static void
-test_cl_clparseargvopts(void) {
+test_cl_parse_argv_opts(void) {
     cl_t *cl = cl_new();
     assert(cl != NULL);
 
@@ -3063,7 +3062,7 @@ test_cl_clparseargvopts(void) {
 }
 
 static void
-test_cl_clparseargv(void) {
+test_cl_parse_argv(void) {
     cl_t *cl = cl_new();
     assert(cl != NULL);
 
@@ -3071,7 +3070,7 @@ test_cl_clparseargv(void) {
 }
 
 static void
-test_cl_clshow(void) {
+test_cl_show(void) {
     cl_t *cl = cl_new();
     assert(cl != NULL);
 
@@ -3079,32 +3078,73 @@ test_cl_clshow(void) {
 }
 
 static void
-test_cl_cllen(void) {
+test_cl_len(void) {
     cl_t *cl = cl_new();
     assert(cl != NULL);
 
     cl_del(cl);
 }
 
-/**
- * 0 memory leaks
- * 2020/02/25
- */
+static void
+test_cl_capa(void) {
+    cl_t *cl = cl_new();
+    assert(cl);
+
+    assert(cl_capa(cl) == 4);
+
+    cl_del(cl);
+}
+
+static void
+test_cl_get_argv(void) {
+    cl_t *cl = cl_new();
+    assert(cl);
+
+    cl_push(cl, "abc");
+    cl_push(cl, "def");
+
+    char **argv = cl_get_argv(cl);
+    assert(!strcmp(argv[0], "abc"));
+    assert(!strcmp(argv[1], "def"));
+    assert(argv[2] == NULL);
+
+    cl_del(cl);
+}
+
+static void
+test_cl_to_string(void) {
+    cl_t *cl = cl_new();
+    assert(cl);
+
+    cl_push(cl, "abc");
+    cl_push(cl, "def");
+    cl_push(cl, "123");
+
+    char *s = cl_to_string(cl);
+    assert(!strcmp(s, "\"abc\" \"def\" \"123\""));
+
+    free(s);
+    cl_del(cl);
+}
+
 static const struct testcase
 cl_tests[] = {
-    {"cl_del", test_cl_cldel},
-    {"cl_escdel", test_cl_clescdel},
-    {"cl_new", test_cl_clnew},
-    {"cl_resize", test_cl_clresize},
-    {"cl_getc", test_cl_clgetc},
-    {"cl_push", test_cl_clpush},
-    {"cl_clear", test_cl_clclear},
-    {"cl_parse_str_opts", test_cl_clparsestropts},
-    {"cl_parse_str", test_cl_clparsestr},
-    {"cl_parseargvopts", test_cl_clparseargvopts},
-    {"cl_parseargv", test_cl_clparseargv},
-    {"cl_show", test_cl_clshow},
-    {"cl_len", test_cl_cllen},
+    {"cl_del", test_cl_del},
+    {"cl_escdel", test_cl_escdel},
+    {"cl_new", test_cl_new},
+    {"cl_resize", test_cl_resize},
+    {"cl_getc", test_cl_getc},
+    {"cl_push", test_cl_push},
+    {"cl_clear", test_cl_clear},
+    {"cl_parse_str_opts", test_cl_parse_str_opts},
+    {"cl_parse_str", test_cl_parse_str},
+    {"cl_parseargvopts", test_cl_parse_argv_opts},
+    {"cl_parseargv", test_cl_parse_argv},
+    {"cl_show", test_cl_show},
+    {"cl_len", test_cl_len},
+    {"cl_capa", test_cl_capa},
+    {"cl_get_argv", test_cl_get_argv},
+    {"cl_to_string", test_cl_to_string},
     {0},
 };
 
