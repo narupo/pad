@@ -3621,6 +3621,7 @@ test_util_execute_program(void) {
     assert(execute_program(config, &found, argc, argv, "nothing") == 1);
 
     config_del(config);
+    file_remove("tests/util/.caprc");
 }
 
 static void
@@ -28194,6 +28195,13 @@ test_homecmd_default(void) {
         "tests/home",
         NULL,
     };
+
+    if (!file_exists("tests/.cap")) {
+        file_mkdirq("tests/.cap");
+    }
+    if (!file_exists("tests/.cap/var")) {
+        file_mkdirq("tests/.cap/var");
+    }
 
     assert(solve_path(config->var_home_path, sizeof config->var_home_path, "./tests/.cap/var/home"));
 
