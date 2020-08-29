@@ -85,19 +85,6 @@ bool
 is_out_of_home(const char *homepath, const char *path);
 
 /**
- * Check path is out of cap's home?
- * If file is not exists to not checked
- *
- * @param[in] string varhome path of var home
- * @param[in] string path check path
- *
- * @return bool is out of home to true
- * @return bool is not out of home to false
- */
-bool
-is_out_of_home_no_exists(const char *homepath, const char *path);
-
-/**
  * Get random number of range.
  *
  * @param[in] min minimum number of range
