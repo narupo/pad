@@ -22,7 +22,11 @@ token_deep_copy(const token_t *other) {
     token_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->type = other->type;
-    self->text = cstr_edup(other->text);
+    if (other->text) {
+        self->text = cstr_edup(other->text);
+    } else {
+        self->text = NULL;
+    }
     self->lvalue = other->lvalue;
 
     return self;

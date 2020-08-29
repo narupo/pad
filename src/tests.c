@@ -5000,14 +5000,27 @@ test_tkr_parse(void) {
     tkr_del(tkr);
 }
 
-/**
- * 0 memory leaks
- * 2020/02/25
- */
+static void
+test_tkr_deep_copy(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    assert(tkr);
+
+    assert(tkr_parse(tkr, "{@ i = 0 @}"));
+    assert(tkr_tokens_len(tkr) == 5);
+
+    tokenizer_t *other = tkr_deep_copy(tkr);
+    assert(tkr_tokens_len(other) == 5);
+
+    tkr_del(other);
+    tkr_del(tkr);
+}
+
 static const struct testcase
 tokenizer_tests[] = {
     {"tkr_new", test_tkr_new},
     {"tkr_parse", test_tkr_parse},
+    {"tkr_deep_copy", test_tkr_deep_copy},
     {0},
 };
 
