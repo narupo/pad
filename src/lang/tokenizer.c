@@ -97,8 +97,7 @@ tokenizer_t *
 tkr_deep_copy(const tokenizer_t *other) {
     tokenizer_t *self = mem_ecalloc(1, sizeof(*self));
 
-    // TODO: copy error_stack
-
+    self->error_stack = errstack_deep_copy(other->error_stack);
     self->src = other->src;
     self->ptr = other->ptr;
     self->buf = str_deep_copy(other->buf);
@@ -109,7 +108,7 @@ tkr_deep_copy(const tokenizer_t *other) {
     self->option = mem_move(opt);
     self->debug = other->debug;
 
-    self->tokens = mem_ecalloc(self->tokens_capa+1, sizeof(token_t *)); // +1 for final null
+    self->tokens = mem_ecalloc(self->tokens_capa + 1, sizeof(token_t *));  // +1 for final null
     for (int32_t i = 0; i < self->tokens_len; ++i) {
         const token_t *tok = other->tokens[i];
         self->tokens[i] = token_deep_copy(tok);
