@@ -1,5 +1,9 @@
 #include <lib/cl.h>
 
+enum {
+    CL_INIT_CAPA = 4,
+};
+
 struct cl {
     int32_t capa;
     int32_t len;
@@ -22,6 +26,7 @@ cl_escdel(cl_t *self) {
     if (!self) {
         return NULL;
     }
+
     char **arr = self->arr;
     free(self);
     return arr;
@@ -35,7 +40,7 @@ cl_new(void) {
     }
 
     self->len = 0;
-    self->capa = 4;
+    self->capa = CL_INIT_CAPA;
     self->arr = calloc(self->capa+1, sizeof(char *));
     if (!self->arr) {
         return NULL;
