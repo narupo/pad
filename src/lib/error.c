@@ -7,13 +7,29 @@
  */
 #include <lib/error.h>
 
+static bool
+look_fname_ext(const char *p) {
+    for (; *p; ++p) {
+        char c = *(p + 1);
+        if (*p == ' ') {
+            return false;
+        } else if (*p == '.' && (isalpha(c) || isdigit(c))) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void
-err_fix_text(char *dst, uint32_t dstsz, const char *src, bool debug) {
+err_fix_text(char *dst, uint32_t dstsz, const char *src) {
     char *dst2 = mem_ecalloc(1, sizeof(char)*dstsz);
     const char *dend = dst2+dstsz-1;
     const char *sp = src;
     char *dp = dst2;
     int m = 0;
+    const char *deb = getenv("ERROR_DEBUG");
+    bool debug = deb && deb[0] == '1';
 
     for (; *sp && dp < dend; ++sp) {
         if (debug) {
@@ -28,7 +44,12 @@ err_fix_text(char *dst, uint32_t dstsz, const char *src, bool debug) {
                 m = 100;
             } else {
                 if (isalpha(*sp)) {
-                    *dp++ = toupper(*sp);
+                    if (!look_fname_ext(sp)) {
+                        *dp++ = toupper(*sp);
+                    } else {
+                        *dp++ = *sp;
+                        continue;
+                    }
                 } else {
                     *dp++ = *sp;
                 }
@@ -54,6 +75,12 @@ err_fix_text(char *dst, uint32_t dstsz, const char *src, bool debug) {
         } else if (m == 150) { // found .
             if (isspace(*sp)) {
                 // pass
+            } else if (*sp == '.' && *(sp + 1) == '.') {
+                *dp++ = *sp++;
+                *dp++ = *sp;
+                if (!(*sp != ' ' && *sp != '\0')) {
+                    *dp++ = ' ';
+                }
             } else if (*sp == '.') {
                 // pass
             } else if (*sp == '"') {
@@ -63,7 +90,12 @@ err_fix_text(char *dst, uint32_t dstsz, const char *src, bool debug) {
             } else {
                 *dp++ = ' '; // add space after dot
                 if (isalpha(*sp)) {
-                    *dp++ = toupper(*sp);
+                    if (!look_fname_ext(sp)) {
+                        *dp++ = toupper(*sp);
+                    } else {
+                        *dp++ = *sp;
+                        continue;
+                    }
                 } else {
                     *dp++ = *sp;
                 }
@@ -94,7 +126,7 @@ errorap_unsafe(const char *title, va_list ap, const char *fmt) {
 	if (fmtlen) {
         char tmp[1024*5] = {0};
 		vsnprintf(tmp, sizeof tmp, fmt, ap);
-        err_fix_text(tmp, sizeof tmp, tmp, false);
+        err_fix_text(tmp, sizeof tmp, tmp);
 		fprintf(stderr, "%s", tmp);
         if (strlen(tmp) && tmp[strlen(tmp)-1] != '.') {
             fprintf(stderr, ".");

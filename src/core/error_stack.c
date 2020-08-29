@@ -12,7 +12,7 @@ void
 errelem_show(const errelem_t *self, FILE *fout) {
     char msg[ERRELEM_MESSAGE_SIZE] = {0};
 
-    err_fix_text(msg, sizeof msg, self->message, false);
+    err_fix_text(msg, sizeof msg, self->message);
 
     fprintf(fout, "%s: %d: %s: %s\n",
         self->filename,
