@@ -175,7 +175,7 @@ linkcmd_link(linkcmd_t *self) {
         return 1;
     }
 
-    if (is_out_of_home_no_exists(self->config->home_path, dstpath)) {
+    if (is_out_of_home(self->config->home_path, dstpath)) {
         err_error("\"%s\" is out of home", linkname);
         return 1;
     }

@@ -3414,7 +3414,6 @@ test_util_compile_argv(void) {
 
     char *compiled = compile_argv(config, NULL, argc-1, argv+1, src);
 
-    printf("compiled[%s]\n", compiled);
     assert(!strcmp(compiled, "bbb"));
 
     free(compiled);
@@ -3451,6 +3450,120 @@ test_util_pop_tail_slash(void) {
 #endif
 }
 
+static void
+test_util_is_out_of_home(void) {
+    assert(!is_out_of_home(NULL, NULL));
+    assert(!is_out_of_home("", NULL));
+
+    assert(is_out_of_home("/my/home", "/path/to/dir"));
+    assert(is_out_of_home("/my/home", "/my"));
+    assert(!is_out_of_home("/my/home", "/my/home/file"));
+}
+
+static void
+test_util_get_origin(void) {
+    config_t *config = config_new();
+
+    strcpy(config->home_path, "/home");
+    strcpy(config->cd_path, "/cd");
+
+    assert(get_origin(NULL, NULL) == NULL);
+    assert(get_origin(config, NULL) == NULL);
+
+    const char *org = get_origin(config, "/file");
+    assert(!strcmp(org, "/home"));
+
+    config->scope = CAP_SCOPE_LOCAL;
+    org = get_origin(config, "file");
+    assert(!strcmp(org, "/cd"));
+
+    config->scope = CAP_SCOPE_GLOBAL;
+    org = get_origin(config, "file");
+    assert(!strcmp(org, "/home"));
+
+    config_del(config);
+}
+
+static void
+test_util_trim_first_line(void) {
+    char dst[100];
+    const char *lines = "aaa\nbbb\nccc\n";
+
+    trim_first_line(dst, sizeof dst, lines);
+    assert(!strcmp(dst, "aaa"));
+}
+
+static void
+test_util_clear_screen(void) {
+    // nothing todo
+}
+
+/*
+static void
+test_util_show_snippet(void) {
+    char root[FILE_NPATH];
+    file_solvefmt(root, sizeof root, "tests/util");
+
+    if (file_exists(root)) {
+        file_mkdirq(root);
+    }
+
+    FILE *fout = fopen("tests/util/file.txt", "wt");
+    fputs("abc\n", fout);
+    fclose(fout);
+
+    config_t *config = config_new();
+    strcpy(config->codes_dir_path, root);
+    int argc = 0;
+    char *argv[] = {
+        NULL,
+    };
+    assert(show_snippet(NULL, NULL, argc, NULL));
+    assert(show_snippet(config, NULL, argc, NULL));
+    assert(show_snippet(config, "", argc, NULL));
+
+    char buf[1024] = {0};
+    setbuf(stdout, buf);
+    assert(show_snippet(config, "file.txt", argc, argv));
+    setbuf(stdout, NULL);
+    assert(!strcmp(buf, "abc\n"));
+
+    config_del(config);
+}
+*/
+
+static void
+test_util_execute_snippet(void) {
+    char root[FILE_NPATH];
+    file_solvefmt(root, sizeof root, "./tests/util");
+    char path[FILE_NPATH];
+    file_solvefmt(path, sizeof path, "./tests/util/snippet.txt");
+
+    FILE *fout = fopen(path, "wt");
+    fputs("abc\n", fout);
+    fclose(fout);
+
+    config_t *config = config_new();
+    strcpy(config->codes_dir_path, root);
+    bool found = false;
+    int argc = 0;
+    char *argv[] = {
+        NULL,
+    };
+    assert(execute_snippet(NULL, NULL, 0, NULL, NULL) == 1);
+    assert(execute_snippet(config, NULL, 0, NULL, NULL) == 1);
+    assert(execute_snippet(config, &found, 0, NULL, NULL) == 1);
+    assert(execute_snippet(config, &found, argc, argv, NULL) == 1);
+
+    char buf[1024] = {0};
+    setbuf(stdout, buf);
+    assert(execute_snippet(config, &found, argc, argv, "snippet.txt") == 0);
+    setbuf(stdout, NULL);
+    assert(!strcmp(buf, "abc\n"));
+
+    config_del(config);
+}
+
 static const struct testcase
 utiltests[] = {
     {"freeargv", test_util_freeargv},
@@ -3463,6 +3576,12 @@ utiltests[] = {
     {"escape", test_util_escape},
     {"compile_argv", test_util_compile_argv},
     {"pop_tail_slash", test_util_pop_tail_slash},
+    {"is_out_of_home", test_util_is_out_of_home},
+    {"get_origin", test_util_get_origin},
+    {"trim_first_line", test_util_trim_first_line},
+    {"clear_screen", test_util_clear_screen},
+    // {"show_snippet", test_util_show_snippet},
+    {"execute_snippet", test_util_execute_snippet},
     {0},
 };
 

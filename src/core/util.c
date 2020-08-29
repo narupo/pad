@@ -54,6 +54,10 @@ isoutofhome(const char *varhome, const char *pth) {
 
 bool
 is_out_of_home(const char *homepath, const char *argpath) {
+    if (!homepath || !argpath) {
+        return false;
+    }
+
     char home[FILE_NPATH];
     char path[FILE_NPATH];
 
@@ -64,24 +68,6 @@ is_out_of_home(const char *homepath, const char *argpath) {
 
     path_pop_tail_slash(home);
     path_pop_tail_slash(path);
-
-    size_t homelen = strlen(home);
-    if (strncmp(home, path, homelen)) {
-        return true;
-    }
-
-    return false;
-}
-
-bool
-is_out_of_home_no_exists(const char *homepath, const char *argpath) {
-    char home[FILE_NPATH];
-    char path[FILE_NPATH];
-
-    if (!file_solve(home, sizeof home, homepath) ||
-        !file_solve(path, sizeof path, argpath)) {
-        return true;
-    }
 
     size_t homelen = strlen(home);
     if (strncmp(home, path, homelen)) {
@@ -234,6 +220,10 @@ argsbyoptind(int argc, char *argv[], int optind) {
 
 const char *
 get_origin(const config_t *config, const char *cap_path) {
+    if (!config || !cap_path) {
+        return NULL;
+    }
+
     if (cap_path[0] == '/') {
         return config->home_path;
     } else if (config->scope == CAP_SCOPE_LOCAL) {
@@ -352,6 +342,10 @@ clear_screen(void) {
  */
 static bool
 show_snippet(const config_t *config, const char *fname, int argc, char **argv) {
+    if (!config || !fname || !argv) {
+        return false;
+    }
+
     char path[FILE_NPATH];
     if (!file_solvefmt(path, sizeof path, "%s/%s", config->codes_dir_path, fname)) {
         err_error("failed to solve path for snippet file");
@@ -386,6 +380,11 @@ show_snippet(const config_t *config, const char *fname, int argc, char **argv) {
 
 int
 execute_snippet(const config_t *config, bool *found, int argc, char **argv, const char *name) {
+    if (!config || !found || !argv || !name) {
+        err_warn("util:execute_snippet: invalid arguments");
+        return 1;
+    }
+
     file_dir_t *dir = file_diropen(config->codes_dir_path);
     if (!dir) {
         err_error("failed to open directory \"%s\"", config->codes_dir_path);
