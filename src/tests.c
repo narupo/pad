@@ -3555,13 +3555,19 @@ test_util_execute_snippet(void) {
     assert(execute_snippet(config, &found, 0, NULL, NULL) == 1);
     assert(execute_snippet(config, &found, argc, argv, NULL) == 1);
 
+    assert(execute_snippet(config, &found, argc, argv, "nothing.txt") == -1);
+
     char buf[1024] = {0};
     setbuf(stdout, buf);
     assert(execute_snippet(config, &found, argc, argv, "snippet.txt") == 0);
     setbuf(stdout, NULL);
     assert(!strcmp(buf, "abc\n"));
 
+    strcpy(config->codes_dir_path, "nothing");
+    assert(execute_snippet(config, &found, argc, argv, "snippet.txt") == 1);
+
     config_del(config);
+    file_remove("./tests/util/snippet.txt");
 }
 
 static const struct testcase
