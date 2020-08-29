@@ -3685,7 +3685,7 @@ test_path_pop_back_of(void) {
     assert(!strcmp(s, "ab"));
 }
 
-void
+static void
 test_path_pop_tail_slash(void) {
     char s[100];
 
@@ -3827,6 +3827,75 @@ test_lang_opts_getc_args_1(void) {
     opts_del(opts);
 }
 
+static void
+test_lang_opts_clear(void) {
+    int argc = 1;
+    char *argv[] = {"abc", NULL};
+
+    opts_t *opts = opts_new();
+
+    assert(opts_parse(opts, argc, argv));
+    assert(opts_args_len(opts) == 1);
+    opts_clear(opts);
+    assert(opts_args_len(opts) == 0);
+
+    opts_del(opts);
+}
+
+static void
+test_lang_opts_getc(void) {
+    int argc = 5;
+    char *argv[] = {
+        "cmd",
+        "-a",
+        "aaa",
+        "-b",
+        "bbb",
+        NULL,
+    };
+    opts_t *opts = opts_new();
+
+    assert(opts_parse(opts, argc, argv));
+    assert(!strcmp(opts_getc(opts, "a"), "aaa"));
+    assert(!strcmp(opts_getc(opts, "b"), "bbb"));
+
+    opts_del(opts);
+}
+
+static void
+test_lang_opts_has(void) {
+    int argc = 3;
+    char *argv[] = {
+        "cmd",
+        "-a",
+        "aaa",
+        NULL,
+    };
+    opts_t *opts = opts_new();
+
+    assert(opts_parse(opts, argc, argv));
+    assert(opts_has(opts, "a"));
+
+    opts_del(opts);
+}
+
+static void
+test_lang_opts_args_len(void) {
+    int argc = 3;
+    char *argv[] = {
+        "cmd",
+        "arg1",
+        "arg2",
+        NULL,
+    };
+    opts_t *opts = opts_new();
+
+    assert(opts_parse(opts, argc, argv));
+    assert(opts_args_len(opts) == 3);
+
+    opts_del(opts);
+}
+
 static const struct testcase
 lang_opts_tests[] = {
     {"opts_new", test_lang_opts_new},
@@ -3834,12 +3903,16 @@ lang_opts_tests[] = {
     {"opts_parse_0", test_lang_opts_parse_0},
     {"opts_getc_args_0", test_lang_opts_getc_args_0},
     {"opts_getc_args_1", test_lang_opts_getc_args_1},
+    {"opts_clear", test_lang_opts_clear},
+    {"opts_getc", test_lang_opts_getc},
+    {"opts_has", test_lang_opts_has},
+    {"opts_args_len", test_lang_opts_args_len},
     {0},
 };
 
-/************
-* tokenizer *
-************/
+/*****************
+* lang/tokenizer *
+*****************/
 
 static void
 test_tkr_new(void) {
