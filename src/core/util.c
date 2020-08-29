@@ -412,7 +412,7 @@ execute_snippet(const config_t *config, bool *found, int argc, char **argv, cons
 }
 
 static char *
-load_path_var_from_resource(const config_t *config, const char *rcpath) {
+read_path_var_from_resource(const config_t *config, const char *rcpath) {
     char *src = file_readcp_from_path(rcpath);
 
     tokenizer_t *tkr = tkr_new(tkropt_new());
@@ -470,6 +470,10 @@ load_path_var_from_resource(const config_t *config, const char *rcpath) {
 
 cstring_array_t *
 split_to_array(const char *str, int ch) {
+    if (!str) {
+        return NULL;
+    }
+
     cstring_array_t *arr = cstrarr_new();
     string_t *s = str_new();
 
@@ -563,7 +567,7 @@ execute_program_by_caprc(const config_t *config, bool *found, int cmd_argc, char
         return 1;
     }
 
-    char *path = load_path_var_from_resource(config, rcpath);
+    char *path = read_path_var_from_resource(config, rcpath);
     if (!path) {
         return 1;
     }

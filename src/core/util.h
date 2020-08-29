@@ -186,9 +186,9 @@ int
 execute_snippet(const config_t *config, bool *found, int argc, char *argv[], const char *name);
 
 /**
- * execute program in directory of token of PATH
+ * execute program in directory of token of PATH in resource file
  * this function first find to local scope and next to find global scope and execute
- * if program is not found to store false at *found variable
+ * if program is not found to store a 'false' value at *found variable
  *
  * @param[in] *config
  * @param[in] *found

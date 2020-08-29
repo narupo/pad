@@ -3570,6 +3570,76 @@ test_util_execute_snippet(void) {
     file_remove("./tests/util/snippet.txt");
 }
 
+static void
+test_util_split_to_array(void) {
+    assert(split_to_array(NULL, 0) == NULL);
+
+    cstring_array_t *arr = split_to_array("abc:def:ghi", ':');
+    assert(arr);
+    assert(cstrarr_len(arr) == 3);
+    assert(!strcmp(cstrarr_getc(arr, 0), "abc"));
+    assert(!strcmp(cstrarr_getc(arr, 1), "def"));
+    assert(!strcmp(cstrarr_getc(arr, 2), "ghi"));
+    cstrarr_del(arr);
+
+    arr = split_to_array("abc:def:ghi:", ':');
+    assert(arr);
+    assert(cstrarr_len(arr) == 3);
+    assert(!strcmp(cstrarr_getc(arr, 0), "abc"));
+    assert(!strcmp(cstrarr_getc(arr, 1), "def"));
+    assert(!strcmp(cstrarr_getc(arr, 2), "ghi"));
+    cstrarr_del(arr);
+}
+
+static void
+test_util_execute_run(void) {
+    // nothing todo
+}
+
+static void
+test_util_execute_program(void) {
+    config_t *config = config_new();
+
+    config->scope = CAP_SCOPE_LOCAL;
+    strcpy(config->cd_path, "tests/util");
+    strcpy(config->home_path, "tests/util");
+
+    char rcpath[FILE_NPATH] = {0};
+    file_solvefmt(rcpath, sizeof rcpath, "tests/util/.caprc");
+
+    FILE *fout = fopen(rcpath, "wt");
+    fputs("PATH = \"bin\"\n", fout);
+    fclose(fout);
+
+    if (!file_exists("tests/util/bin")) {
+        file_mkdirq("tests/util/bin");
+    }
+
+    bool found = false;
+    int argc = 0;
+    char *argv[] = {NULL};
+    assert(execute_program(config, &found, argc, argv, "nothing") == 1);
+
+    config_del(config);
+}
+
+static void
+test_util_pushf_argv(void) {
+    int argc = 2;
+    char *argv[] = {"aaa", "bbb", NULL};
+    cstring_array_t *arr = pushf_argv(argc, argv, "ccc");
+    assert(cstrarr_len(arr) == 3);
+    assert(!strcmp(cstrarr_getc(arr, 0), "ccc"));
+    assert(!strcmp(cstrarr_getc(arr, 1), "aaa"));
+    assert(!strcmp(cstrarr_getc(arr, 2), "bbb"));
+}
+
+static void
+test_util_is_dot_file(void) {
+    assert(is_dot_file("."));
+    assert(is_dot_file(".."));
+}
+
 static const struct testcase
 utiltests[] = {
     {"freeargv", test_util_freeargv},
@@ -3588,6 +3658,11 @@ utiltests[] = {
     {"clear_screen", test_util_clear_screen},
     // {"show_snippet", test_util_show_snippet},
     {"execute_snippet", test_util_execute_snippet},
+    {"split_to_array", test_util_split_to_array},
+    {"execute_run", test_util_execute_run},
+    {"execute_program", test_util_execute_program},
+    {"pushf_argv", test_util_pushf_argv},
+    {"is_dot_file", test_util_is_dot_file},
     {0},
 };
 
