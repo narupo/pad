@@ -97,7 +97,6 @@ err_debug(const char *fmt, ...);
  * @param[in] dst   pointer to destination
  * @param[in] dstsz number of size of destination
  * @param[in] src   source text
- * @param[in] debug if debug to true
  */
 void
-err_fix_text(char *dst, uint32_t dstsz, const char *src, bool debug);
+err_fix_text(char *dst, uint32_t dstsz, const char *src);

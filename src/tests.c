@@ -3156,24 +3156,40 @@ static void
 test_error_fix_text(void) {
     char buf[BUFSIZ] = {0};
 
-    err_fix_text(buf, sizeof buf, "text", false);
-    assert(strcmp(buf, "Text.") == 0);
+    err_fix_text(buf, sizeof buf, "text");
+    assert(!strcmp(buf, "Text."));
     buf[0] = '\0';
 
-    err_fix_text(buf, sizeof buf, "text.text", false);
-    assert(strcmp(buf, "Text. Text.") == 0);
+    err_fix_text(buf, sizeof buf, "file.text");
+    assert(!strcmp(buf, "file.text."));
     buf[0] = '\0';
 
-    err_fix_text(buf, sizeof buf, "text. text", true);
-    assert(strcmp(buf, "Text. Text.") == 0);
+    err_fix_text(buf, sizeof buf, "file...");
+    assert(!strcmp(buf, "File..."));
     buf[0] = '\0';
 
-    err_fix_text(buf, sizeof buf, "text.     text", false);
-    assert(strcmp(buf, "Text. Text.") == 0);
+    err_fix_text(buf, sizeof buf, "the file...");
+    assert(!strcmp(buf, "The file..."));
     buf[0] = '\0';
 
-    err_fix_text(buf, sizeof buf, "Failed to open directory \"/path/to/dir\".failed to remove recursive.", false);
-    assert(strcmp(buf, "Failed to open directory \"/path/to/dir\". Failed to remove recursive.") == 0);
+    err_fix_text(buf, sizeof buf, "the file...test");
+    assert(!strcmp(buf, "The file... Test."));
+    buf[0] = '\0';
+
+    err_fix_text(buf, sizeof buf, "the file... test string");
+    assert(!strcmp(buf, "The file... Test string."));
+    buf[0] = '\0';
+
+    err_fix_text(buf, sizeof buf, "text. text");
+    assert(!strcmp(buf, "Text. Text."));
+    buf[0] = '\0';
+
+    err_fix_text(buf, sizeof buf, "text.     text");
+    assert(!strcmp(buf, "Text. Text."));
+    buf[0] = '\0';
+
+    err_fix_text(buf, sizeof buf, "Failed to open directory \"/path/to/dir\".failed to remove recursive.");
+    assert(!strcmp(buf, "Failed to open directory \"/path/to/dir\". Failed to remove recursive."));
     buf[0] = '\0';
 }
 
