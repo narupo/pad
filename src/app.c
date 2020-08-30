@@ -539,30 +539,14 @@ app_execute_alias_by_name(app_t *self, bool *found, const char *name) {
 }
 
 /**
- * run module
- *
- * @param[in] self
- *
- * @return success to 0
- * @return failed to not 0
+ * run module by cmdname of first argument of command arguments
+ * 
+ * @param[in] *self 
+ * 
+ * @return 
  */
 static int
-app_run(app_t *self) {
-    if (self->opts.is_help) {
-        app_usage(self);
-        return 0;
-    }
-
-    if (self->opts.is_version) {
-        app_version(self);
-        return 0;
-    }
-
-    if (self->cmd_argc == 0) {
-        app_usage(self);
-        return 0;
-    }
-
+app_run_cmdname(app_t *self) {
     const char *cmdname = self->cmd_argv[0];
     if (!cmdname) {
         err_error("command name is null");
@@ -595,6 +579,34 @@ app_run(app_t *self) {
     int argc = cstrarr_len(new_argv);
     char **argv = cstrarr_escdel(new_argv);
     return execute_run(self->config, argc, argv);
+}
+
+/**
+ * run module
+ *
+ * @param[in] self
+ *
+ * @return success to 0
+ * @return failed to not 0
+ */
+static int
+app_run(app_t *self) {
+    if (self->opts.is_help) {
+        app_usage(self);
+        return 0;
+    }
+
+    if (self->opts.is_version) {
+        app_version(self);
+        return 0;
+    }
+
+    if (self->cmd_argc == 0) {
+        app_usage(self);
+        return 0;
+    }
+
+    return app_run_cmdname(self);
 }
 
 /**
