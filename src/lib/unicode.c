@@ -556,12 +556,13 @@ uni_set_mb(unicode_t *self, const char *mb) {
         } else if (result == 0) {
             // reached null terminator
             break;
-        } else if (result == -1 || result == -2) {
+        } else if (result == -1) {
             // invalid bytes
-            if (errno != 0) {
-                fprintf(stderr, "uni_set_mb: invalid bytes\n");
-                perror("mbrtoc32");
-            }
+            fprintf(stderr, "uni_set_mb: invalid characters\n");
+            perror("mbrtoc32");
+            return NULL;
+        } else if (result == -2) {
+            fprintf(stderr, "uni_set_mb: incomplete input characters\n");
             return NULL;
         } else if (result == -3) {
             // char32_t の文字を構成する残りの部分を得た。
