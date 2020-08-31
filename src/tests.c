@@ -27461,6 +27461,73 @@ test_trv_etc_8(void) {
 }
 
 static void
+test_trv_etc_9(void) {
+    trv_ready;
+
+    const char *s = "{@\n"
+"arr = [3, 2, 4, 1]\n"
+"for j = 0; j < 4; j += 1:\n"
+"   for i = 0; i < len(arr) - 1; i += 1:\n"
+"       if arr[i] > arr[i + 1]:\n"
+"           tmp = arr[i]\n"
+"           arr[i] = arr[i + 1]\n"
+"           arr[i + 1] = tmp\n"
+"       end\n"
+"   end\n"
+"end\n"
+"puts(arr[0], arr[1], arr[2], arr[3])\n"
+"@}";
+
+    tkr_parse(tkr, s);
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1 2 3 4\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_etc_10(void) {
+    trv_ready;
+
+    const char *s = "{@\n"
+"arr = [4, 1, 2, 3]\n"
+"i = 0\n"
+"tmp = arr[i]\n"
+"arr[i] = arr[i + 1]\n"
+"arr[i + 1] = tmp\n"
+"i = 1\n"
+"tmp = arr[i]\n"
+"arr[i] = arr[i + 1]\n"
+"arr[i + 1] = tmp\n"
+"i = 2\n"
+"tmp = arr[i]\n"
+"arr[i] = arr[i + 1]\n"
+"arr[i + 1] = tmp\n"
+"i = 0\n"
+"tmp = arr[i]\n"
+"arr[i] = arr[i + 1]\n"
+"arr[i + 1] = tmp\n"
+"puts(arr[0], arr[1], arr[2], arr[3])\n"
+"@}";
+
+    tkr_parse(tkr, s);
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2 1 3 4\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_unicode_0(void) {
     trv_ready;
 
@@ -27749,6 +27816,8 @@ traverser_tests[] = {
     {"trv_etc_6", test_trv_etc_6},
     {"trv_etc_7", test_trv_etc_7},
     {"trv_etc_8", test_trv_etc_8},
+    {"trv_etc_9", test_trv_etc_9},
+    {"trv_etc_10", test_trv_etc_10},
     {"trv_unicode_0", test_trv_unicode_0},
     {"trv_unicode_1", test_trv_unicode_1},
     {0},

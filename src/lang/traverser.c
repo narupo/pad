@@ -1410,11 +1410,26 @@ again:
     } break;
     }
 
+    assert(owner->type == OBJ_TYPE_ARRAY);
     object_array_t *objarr = obj_get_array(owner);
     objint_t idx = idxobj->lvalue;
     if (idx < 0 || idx >= objarr_len(objarr)) {
         ast_pushb_error(ast, "index out of range");
         return NULL;
+    }
+
+again2:
+    switch (rhs->type) {
+    default: break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(rhs);
+        rhs = pull_in_ref_by(rhs);
+        if (!rhs) {
+            ast_pushb_error(ast, "%s is not defined", idn);
+            return NULL;
+        }
+        goto again2;
+    } break;
     }
 
     objarr_set(objarr, idx, rhs);

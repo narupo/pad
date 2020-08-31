@@ -579,13 +579,13 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
         // read contents start
         for (;;) {
             if (!*ast->ref_ptr) {
-                return_cleanup("reached EOF in for statement");
+                return_cleanup("reached EOF in for statement (2)");
             }
 
             check("skip newlines");
             cc_skip_newlines(ast);
             if (!*ast->ref_ptr) {
-                return_cleanup("reached EOF in for statement");
+                return_cleanup("reached EOF in for statement (3)");
             }
 
             // end?
@@ -606,7 +606,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
                 check("skip newlines");
                 cc_skip_newlines(ast);
                 if (!*ast->ref_ptr) {
-                    return_cleanup("reached EOF in for statement");
+                    return_cleanup("reached EOF in for statement (4)");
                 }
 
                 cargs->depth = depth + 1;
@@ -623,7 +623,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
                 check("skip newlines");
                 cc_skip_newlines(ast);
                 if (!*ast->ref_ptr) {
-                    return_cleanup("reached EOF in for statement");
+                    return_cleanup("reached EOF in for statement (5)");
                 }
 
                 t = *ast->ref_ptr++;
@@ -655,7 +655,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
         check("skip newlines");
         cc_skip_newlines(ast);
         if (!*ast->ref_ptr) {
-            return_cleanup("reached EOF in for statement");
+            return_cleanup("reached EOF in for statement (6)");
         }
 
         check("call cc_assign_list");
@@ -671,7 +671,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
         check("skip newlines");
         cc_skip_newlines(ast);
         if (!*ast->ref_ptr) {
-            return_cleanup("reached EOF in for statement");
+            return_cleanup("reached EOF in for statement (7)");
         }
 
         t = *ast->ref_ptr++;
@@ -687,7 +687,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
             check("skip newlines");
             cc_skip_newlines(ast);
             if (!*ast->ref_ptr) {
-                return_cleanup("reached EOF in for statement");
+                return_cleanup("reached EOF in for statement (8)");
             }
 
             check("call cc_test");
@@ -701,7 +701,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
             check("skip newlines");
             cc_skip_newlines(ast);
             if (!*ast->ref_ptr) {
-                return_cleanup("reached EOF in for statement");
+                return_cleanup("reached EOF in for statement (9)");
             }
 
             t = *ast->ref_ptr++;
@@ -713,7 +713,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
             check("skip newlines");
             cc_skip_newlines(ast);
             if (!*ast->ref_ptr) {
-                return_cleanup("reached EOF in for statement");
+                return_cleanup("reached EOF in for statement (10)");
             }
 
             check("call cc_test_list");
@@ -732,7 +732,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
         check("skip newlines");
         cc_skip_newlines(ast);
         if (!*ast->ref_ptr) {
-            return_cleanup("reached EOF in for statement");
+            return_cleanup("reached EOF in for statement (11)");
         }
 
         t = *ast->ref_ptr++;
@@ -744,13 +744,13 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
         // read contents start
         for (;;) {
             if (!*ast->ref_ptr) {
-                return_cleanup("reached EOF in for statement");
+                return_cleanup("reached EOF in for statement (12)");
             }
 
             check("skip newlines");
             cc_skip_newlines(ast);
             if (!*ast->ref_ptr) {
-                return_cleanup("reached EOF in for statement");
+                return_cleanup("reached EOF in for statement (13)");
             }
 
             // end?
@@ -771,7 +771,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
                 check("skip newlines");
                 cc_skip_newlines(ast);
                 if (!*ast->ref_ptr) {
-                    return_cleanup("reached EOF in for statement");
+                    return_cleanup("reached EOF in for statement (14)");
                 }
 
                 cargs->depth = depth + 1;
@@ -788,7 +788,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
                 check("skip newlines");
                 cc_skip_newlines(ast);
                 if (!*ast->ref_ptr) {
-                    return_cleanup("reached EOF in for statement");
+                    return_cleanup("reached EOF in for statement (15)");
                 }
 
                 t = *ast->ref_ptr++;
