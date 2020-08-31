@@ -8,9 +8,10 @@ struct dict {
 
 void
 dict_del(dict_t *self) {
-    if (self == NULL) {
+    if (!self) {
         return;
     }
+
     free(self->map);
     free(self);
 }
@@ -18,7 +19,7 @@ dict_del(dict_t *self) {
 dict_t *
 dict_new(size_t capa) {
     if (capa <= 0) {
-        err_die("invalid argument. can not set capacity to under of zero");
+        return NULL;
     }
 
     dict_t *self = mem_ecalloc(1, sizeof(*self));
@@ -30,6 +31,10 @@ dict_new(size_t capa) {
 
 dict_t *
 dict_resize(dict_t *self, size_t newcapa) {
+    if (!self || newcapa <= 0) {
+        return NULL;
+    }
+
     size_t byte = sizeof(dict_t);
     dict_item_t *tmp = mem_erealloc(self->map, newcapa*byte+byte);
     self->map = tmp;
@@ -39,6 +44,10 @@ dict_resize(dict_t *self, size_t newcapa) {
 
 dict_t *
 dict_set(dict_t *self, const char *key, const char *value) {
+    if (!self || !key || !value) {
+        return NULL;
+    }
+
     for (int i = 0; i < self->len; ++i) {
         if (!strcmp(self->map[i].key, key)) {
             cstr_copy(self->map[i].value, DICT_ITEM_VALUE_SIZE, value);
@@ -58,6 +67,10 @@ dict_set(dict_t *self, const char *key, const char *value) {
 
 dict_item_t *
 dict_get(dict_t *self, const char *key) {
+    if (!self || !key) {
+        return NULL;
+    }
+
     for (int i = 0; i < self->len; ++i) {
         if (!strcmp(self->map[i].key, key)) {
             return &self->map[i];
@@ -69,11 +82,19 @@ dict_get(dict_t *self, const char *key) {
 
 const dict_item_t *
 dict_getc(const dict_t *self, const char *key) {
+    if (!self || !key) {
+        return NULL;
+    }
+
     return dict_get((dict_t *)self, key);
 }
 
 void
 dict_clear(dict_t *self) {
+    if (!self) {
+        return;
+    }
+
     for (int i = 0; i < self->len; ++i) {
         self->map[i].key[0] = '\0';
         self->map[i].value[0] = '\0';
@@ -83,11 +104,19 @@ dict_clear(dict_t *self) {
 
 size_t
 dict_len(const dict_t *self) {
+    if (!self) {
+        return 0;
+    }
+
     return self->len;
 }
 
 const dict_item_t *
 dict_getc_index(const dict_t *self, size_t index) {
+    if (!self) {
+        return NULL;
+    }
+
     if (index >= self->len) {
         return NULL;
     }
@@ -96,6 +125,10 @@ dict_getc_index(const dict_t *self, size_t index) {
 
 bool
 dict_has_key(const dict_t *self, const char *key) {
+    if (!self || !key) {
+        return false;
+    }
+
     for (int i = 0; i < self->len; ++i) {
         if (!strcmp(self->map[i].key, key)) {
             return true;
@@ -107,6 +140,10 @@ dict_has_key(const dict_t *self, const char *key) {
 
 void
 dict_show(const dict_t *self, FILE *fout) {
+    if (!self || !fout) {
+        return;
+    }
+
     for (int i = 0; i < self->len; ++i) {
         fprintf(fout, "[%s] = [%s]\n", self->map[i].key, self->map[i].value);
     }    
