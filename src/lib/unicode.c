@@ -559,10 +559,16 @@ uni_set_mb(unicode_t *self, const char *mb) {
         } else if (result == -1) {
             // invalid bytes
             fprintf(stderr, "uni_set_mb: invalid characters\n");
-            perror("mbrtoc32");
+            if (errno) {
+                perror("mbrtoc32");
+            }
             return NULL;
         } else if (result == -2) {
-            fprintf(stderr, "uni_set_mb: incomplete input characters\n");
+            // don't display error messages (i hate these error messages)
+            // fprintf(stderr, "uni_set_mb: incomplete input characters\n");
+            if (errno) {
+                perror("mbrtoc32");
+            }
             return NULL;
         } else if (result == -3) {
             // char32_t の文字を構成する残りの部分を得た。
