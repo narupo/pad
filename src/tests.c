@@ -3173,7 +3173,7 @@ test_error_fix_text(void) {
     buf[0] = '\0';
 
     err_fix_text(buf, sizeof buf, "the file...test");
-    assert(!strcmp(buf, "The file... Test."));
+    assert(!strcmp(buf, "The file...test."));
     buf[0] = '\0';
 
     err_fix_text(buf, sizeof buf, "the file... test string");
@@ -3188,8 +3188,12 @@ test_error_fix_text(void) {
     assert(!strcmp(buf, "Text. Text."));
     buf[0] = '\0';
 
-    err_fix_text(buf, sizeof buf, "Failed to open directory \"/path/to/dir\".failed to remove recursive.");
+    err_fix_text(buf, sizeof buf, "Failed to open directory \"/path/to/dir\". failed to remove recursive.");
     assert(!strcmp(buf, "Failed to open directory \"/path/to/dir\". Failed to remove recursive."));
+    buf[0] = '\0';
+
+    err_fix_text(buf, sizeof buf, "src/core/error_stack.c");
+    assert(!strcmp(buf, "src/core/error_stack.c."));
     buf[0] = '\0';
 }
 
@@ -16473,6 +16477,28 @@ test_trv_builtin_modules_array_0(void) {
 }
 
 static void
+test_trv_builtin_modules_array_1(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   arr = []\n"
+    "   for i = 0; i < 3; i += 1:\n"
+    "       arr.push(i)\n"
+    "   end\n"
+    "@}{: arr[0] :},{: arr[1] :},{: arr[2] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,1,2"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_builtin_functions_type_dict(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -27298,7 +27324,7 @@ test_trv_etc_6(void) {
     "   end\n"
     "   l = [1, 2]\n"
     "   f(l)\n"
-    "@}{: l[2] :},{: id(l[2]) == id(g) :}");
+    "@}{: l[2] :},{: id(l[2]) != id(g) :}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
@@ -27797,6 +27823,7 @@ traverser_tests[] = {
     {"trv_builtin_modules_alias_1", test_trv_builtin_modules_alias_1},
     {"trv_builtin_modules_alias_2", test_trv_builtin_modules_alias_2},
     {"trv_builtin_modules_array_0", test_trv_builtin_modules_array_0},
+    {"trv_builtin_modules_array_1", test_trv_builtin_modules_array_1},
     {"trv_builtin_functions", test_trv_builtin_functions},
     {"trv_builtin_functions_puts_0", test_trv_builtin_functions_puts_0},
     {"trv_builtin_functions_len_0", test_trv_builtin_functions_len_0},

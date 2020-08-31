@@ -46,7 +46,28 @@ again:
     }
 
     object_t *arg = objarr_get(args, 0);
-    objarr_moveb(ref_owner->objarr, arg);
+    object_t *push_arg = arg;
+
+again2:
+    switch (arg->type) {
+    default: break;
+    case OBJ_TYPE_INT:
+    case OBJ_TYPE_UNICODE:
+        push_arg = obj_deep_copy(arg);
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(arg);
+        arg = pull_in_ref_by(arg);
+        if (!arg) {
+            ast_pushb_error(ref_ast, "\"%s\" is not defined", idn);
+            return NULL;
+        }
+        push_arg = arg;
+        goto again2;
+    } break;
+    }
+
+    objarr_moveb(ref_owner->objarr, push_arg);
 
     return obj_deep_copy(ref_owner);
 }

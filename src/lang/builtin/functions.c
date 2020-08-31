@@ -351,7 +351,7 @@ builtin_func_infos[] = {
     {"len", builtin_len},
     {"die", builtin_die},
     {"exit", builtin_exit},
-    {"deepcopy", builtin_deepcopy},
+    {"deep_copy", builtin_deepcopy},
     {0},
 };
 

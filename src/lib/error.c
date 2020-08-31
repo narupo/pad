@@ -7,13 +7,117 @@
  */
 #include <lib/error.h>
 
-static bool
-look_fname_ext(const char *p) {
-    for (; *p; ++p) {
-        char c = *(p + 1);
+typedef struct {
+    // t ... token ('abc' | '/path/to/dir')
+    // d ... dot ('.')
+    // s ... space (' ')
+    char type;
+    string_t *token;
+} err_token_t;
+
+static err_token_t *
+gen_token(char type, string_t *move_token) {
+    err_token_t *tok = mem_ecalloc(1, sizeof(*tok));
+
+    tok->type = type;
+    tok->token = mem_move(move_token);
+
+    return tok;
+}
+
+static char
+infer_type(const string_t *tok) {
+    if (!str_len(tok)) {
+        return 0;
+    }
+
+    const char *s = str_getc(tok);
+    char last = s[strlen(s) - 1];
+    switch (last) {
+    default: return 't'; break;
+    case '.': return 'd'; break;
+    case ' ': return 's'; break;
+    }
+}
+
+static err_token_t **
+tokenize(const char *src) {
+    int32_t capa = 4;
+    int32_t cursize = 0;
+    err_token_t **tokens = mem_ecalloc(capa + 1, sizeof(err_token_t));
+    string_t *buf = str_new();
+    char bef = 0;
+
+#define push(t) \
+    if (cursize >= capa) { \
+        int32_t nbyte = sizeof(err_token_t); \
+        capa *= 2; \
+        tokens = mem_erealloc(tokens, capa * nbyte + nbyte); \
+    } \
+    tokens[cursize++] = t; \
+    tokens[cursize] = NULL; \
+
+#define store \
+    if (str_len(buf)) { \
+        char type = infer_type(buf); \
+        err_token_t *tok = gen_token(type, mem_move(buf)); \
+        push(tok); \
+        buf = str_new(); \
+    } \
+
+    for (const char *p = src; *p; ++p) {
         if (*p == ' ') {
+            store;
+            if (bef != *p) {
+                str_pushb(buf, *p);
+                store;
+            }
+        } else if (*p == '.') {
+            store;
+            for (; *p == '.'; ++p) {
+                str_pushb(buf, *p);
+            }
+            --p;
+            store;
+        } else if (*p == '"') {
+            store;
+            str_pushb(buf, *p++);
+            for (; *p; ++p) {
+                if (*p == '\\') {
+                    str_pushb(buf, *p++);
+                    str_pushb(buf, *p);
+                } else if (*p == '"') {
+                    str_pushb(buf, *p);
+                    break;
+                } else {
+                    str_pushb(buf, *p);
+                }
+            }            
+        } else {
+            str_pushb(buf, *p);
+        }
+
+        bef = *p;
+    }
+
+    store;
+
+    str_del(buf);
+    return tokens;
+}
+
+static bool
+look_fname_ext(err_token_t **p) {
+    for (; *p; ++p) {
+        err_token_t *tok = *p;
+        err_token_t *second = *(p + 1);
+        char next = 0;
+        if (second) {
+            next = second->type;
+        }
+        if (tok->type == 's') {
             return false;
-        } else if (*p == '.' && (isalpha(c) || isdigit(c))) {
+        } else if (tok->type == 'd' && (next != 's' && next != 0)) {
             return true;
         }
     }
@@ -23,94 +127,74 @@ look_fname_ext(const char *p) {
 
 void
 err_fix_text(char *dst, uint32_t dstsz, const char *src) {
-    char *dst2 = mem_ecalloc(1, sizeof(char)*dstsz);
-    const char *dend = dst2+dstsz-1;
-    const char *sp = src;
-    char *dp = dst2;
-    int m = 0;
     const char *deb = getenv("ERROR_DEBUG");
     bool debug = deb && deb[0] == '1';
+    int m = 0;
 
-    for (; *sp && dp < dend; ++sp) {
+    err_token_t **tokens = tokenize(src);
+    if (!tokens) {
+        return;
+    }
+
+    for (err_token_t **p = tokens; *p; ++p) {
+        err_token_t *tok = *p;
         if (debug) {
-            printf("m[%d] c[%c]\n", m, *sp);
+            printf("m[%d] type[%c] token[%s]\n", m, tok->type, str_getc(tok->token));
         }
 
-        if (m == 0) {
-            if (isspace(*sp)) {
-                // pass
-            } else if (*sp == '"') {
-                *dp++ = *sp;
-                m = 100;
-            } else {
-                if (isalpha(*sp)) {
-                    if (!look_fname_ext(sp)) {
-                        *dp++ = toupper(*sp);
-                    } else {
-                        *dp++ = *sp;
-                        continue;
-                    }
+        switch (m) {
+        case 0:  // ended of dot
+            if (tok->type == 't') {
+                if (!look_fname_ext(p)) {
+                    string_t *copied = str_capitalize(tok->token);
+                    cstr_app(dst, dstsz, str_getc(copied));
+                    str_del(copied);
                 } else {
-                    *dp++ = *sp;
+                    cstr_app(dst, dstsz, str_getc(tok->token));
                 }
                 m = 10;
-            }
-        } else if (m == 10) { // found printable character
-            if (*sp == '"') {
-                *dp++ = *sp;
-                m = 100;
-            } else if (*sp == '.') {
-                *dp++ = *sp;
-                m = 150;
-            } else {
-                *dp++ = *sp;
-            }
-        } else if (m == 100) { // found string
-            if (*sp == '"') {
-                *dp++ = *sp;
-                m = 10;
-            } else {
-                *dp++ = *sp;
-            }
-        } else if (m == 150) { // found .
-            if (isspace(*sp)) {
+            } else if (tok->type == 's') {
                 // pass
-            } else if (*sp == '.' && *(sp + 1) == '.') {
-                *dp++ = *sp++;
-                *dp++ = *sp;
-                if (!(*sp != ' ' && *sp != '\0')) {
-                    *dp++ = ' ';
-                }
-            } else if (*sp == '.') {
+            } else if (tok->type == 'd') {
                 // pass
-            } else if (*sp == '"') {
-                *dp++ = ' '; // add space after dot
-                *dp++ = *sp;
-                m = 100;
-            } else {
-                *dp++ = ' '; // add space after dot
-                if (isalpha(*sp)) {
-                    if (!look_fname_ext(sp)) {
-                        *dp++ = toupper(*sp);
-                    } else {
-                        *dp++ = *sp;
-                        continue;
-                    }
-                } else {
-                    *dp++ = *sp;
-                }
-                m = 10;
             }
+            break;
+        case 10:  // found token
+            if (tok->type == 't') {
+                cstr_app(dst, dstsz, str_getc(tok->token));
+            } else if (tok->type == 's') {
+                cstr_app(dst, dstsz, str_getc(tok->token));
+            } else if (tok->type == 'd') {
+                cstr_app(dst, dstsz, str_getc(tok->token));
+                m = 20;
+            }
+            break;
+        case 20:  // found token -> dot
+            if (tok->type == 't') {
+                cstr_app(dst, dstsz, str_getc(tok->token));
+            } else if (tok->type == 's') {
+                cstr_app(dst, dstsz, str_getc(tok->token));
+                m = 0;
+            } else if (tok->type == 'd') {
+                cstr_app(dst, dstsz, str_getc(tok->token));
+            }
+            break;
         }
     }
 
-    if (*(dp-1) != '.') {
-        *dp++ = '.';
+    int32_t dstlen = strlen(dst);
+    if (dst[dstlen - 1] == ' ') {
+        dst[dstlen - 1] = '\0';
+        dstlen--;
     }
-    *dp = '\0';
+    if (dst[dstlen - 1] != '.') {
+        cstr_app(dst, dstsz, ".");
+    }
 
-    memmove(dst, dst2, dstsz);
-    free(dst2);
+    for (err_token_t **tok = tokens; *tok; ++tok) {
+        free(*tok);
+    }
+    free(tokens);
 }
 
 static void

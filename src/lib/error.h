@@ -19,6 +19,7 @@
 #include <strings.h>
 
 #include <lib/memory.h>
+#include <lib/string.h>
 
 /**
  * Write log

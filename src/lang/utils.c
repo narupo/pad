@@ -324,7 +324,7 @@ invoke_builtin_module_func(
         .ref_args = ref_args,
         .ref_owners = owners,
     };
-
+    
     for (builtin_func_info_t *info = infos; info->name; ++info) {
         if (cstr_eq(info->name, funcname)) {
             return info->func(&fargs);

@@ -101,8 +101,11 @@ makecmd_run(makecmd_t *self) {
         src
     );
     if (!compiled) {
-        errstack_pushb(self->errstack, __FILE__, __LINE__, __func__,
-            "failed to compile from \"%s\"", (self->argv[1] ? self->argv[1] : "stdin"));
+        errstack_pushb(
+            self->errstack,
+            "failed to compile from \"%s\"",
+            (self->argv[1] ? self->argv[1] : "stdin")
+        );
         errstack_trace(self->errstack, stderr);
         fflush(stderr);
         free(src);
