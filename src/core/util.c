@@ -270,8 +270,7 @@ compile_argv(const config_t *config, errstack_t *errstack, int argc, char *argv[
 
     if (!opts_parse(opts, argc, argv)) {
         if (errstack) {
-            errstack_pushb(errstack,  __FILE__, __LINE__, __func__,
-                "failed to compile argv. failed to parse options");
+            errstack_pushb(errstack, "failed to compile argv. failed to parse options");
         }
         return NULL;
     }

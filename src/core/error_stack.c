@@ -62,7 +62,7 @@ errstack_deep_copy(const errstack_t *other) {
 
     for (int32_t i = 0; i < other->len; ++i) {
         const errelem_t *elem = &other->stack[i];
-        errstack_pushb(
+        _errstack_pushb(
             self,
             elem->filename,
             elem->lineno,
@@ -178,13 +178,13 @@ errstack_extendf_other(errstack_t *self, const errstack_t *_other) {
     // append other at front of self
     for (int32_t i = 0; i < other->len; ++i) {
         const errelem_t *src = &other->stack[i];
-        errstack_pushb(self, src->filename, src->lineno, src->funcname, "%s", src->message);
+        _errstack_pushb(self, src->filename, src->lineno, src->funcname, "%s", src->message);
     }
 
     // append save stack at self stack
     for (int32_t i = 0; i < save_len; ++i) {
         const errelem_t *src = &save_stack[i];
-        errstack_pushb(self, src->filename, src->lineno, src->funcname, "%s", src->message);
+        _errstack_pushb(self, src->filename, src->lineno, src->funcname, "%s", src->message);
     }
 
     // free copy stack
@@ -206,7 +206,7 @@ errstack_extendb_other(errstack_t *self, const errstack_t *_other) {
     // append other at front of self
     for (int32_t i = 0; i < other->len; ++i) {
         const errelem_t *src = &other->stack[i];
-        errstack_pushb(self, src->filename, src->lineno, src->funcname, "%s", src->message);
+        _errstack_pushb(self, src->filename, src->lineno, src->funcname, "%s", src->message);
     }
 
     errstack_del(other);
