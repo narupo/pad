@@ -432,8 +432,6 @@ int
 file_get_no(FILE *fp);
 
 /**
- * TODO: test
- *
  * load lines from file path
  *
  * @param[in] *fname file path
