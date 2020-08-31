@@ -16,6 +16,7 @@ typedef struct config {
     char home_path[FILE_NPATH];  // value of home
     char editor[FILE_NPATH];  // value of editor
     char codes_dir_path[FILE_NPATH];  // snippet codes directory path
+    char std_lib_dir_path[FILE_NPATH];  // standard libraries directory path
 } config_t;
 
 /**

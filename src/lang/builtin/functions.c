@@ -321,6 +321,26 @@ builtin_exit(builtin_func_args_t *fargs) {
     return NULL;
 }
 
+static object_t *
+builtin_deepcopy(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
+    object_array_t *args = actual_args->objarr;
+    assert(args);
+
+    if (objarr_len(args) != 1) {
+        ast_pushb_error(ref_ast, "invalid arguments length for deepcopy");
+        return NULL;
+    }
+
+    const object_t *arg = objarr_getc(args, 0);
+    assert(arg);
+
+    return obj_deep_copy(arg);
+}
+
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"id", builtin_id},
@@ -331,6 +351,7 @@ builtin_func_infos[] = {
     {"len", builtin_len},
     {"die", builtin_die},
     {"exit", builtin_exit},
+    {"deepcopy", builtin_deepcopy},
     {0},
 };
 
