@@ -177,14 +177,21 @@ app_deploy_env(const app_t *self) {
     }
 
     // make snippets directory
-    char codesdir[FILE_NPATH];
-    if (!file_solvefmt(codesdir, sizeof codesdir, "%s/codes", appdir)) {
+    if (!file_solvefmt(path, sizeof path, "%s/codes", appdir)) {
         err_error("failed to solve path for snippet codes directory");
         return false;
     }
-    if (!file_exists(codesdir)) {
-        if (file_mkdirq(codesdir) != 0) {
+    if (!file_exists(path)) {
+        if (file_mkdirq(path) != 0) {
             err_error("failed to make directory for snippet codes directory");
+            return false;
+        }
+    }
+
+    // standard library directory
+    if (!file_exists(self->config->std_lib_dir_path)) {
+        if (file_mkdirq(self->config->std_lib_dir_path) != 0) {
+            err_error("failed to make directory for standard libraries directory");
             return false;
         }
     }
@@ -232,6 +239,13 @@ app_new(int argc, char *argv[]) {
 
     app_t *self = mem_ecalloc(1, sizeof(*self));
 
+    self->config = config_new();
+    if (!config_init(self->config)) {
+        err_error("failed to configuration");
+        app_del(self);
+        return NULL;
+    }
+
     if (!app_parse_args(self, argc, argv)) {
         err_error("failed to parse arguments");
         app_del(self);
@@ -246,13 +260,6 @@ app_new(int argc, char *argv[]) {
 
     if (!app_deploy_env(self)) {
         err_error("failed to deploy environment at file system");
-        app_del(self);
-        return NULL;
-    }
-
-    self->config = config_new();
-    if (!config_init(self->config)) {
-        err_error("failed to configuration");
         app_del(self);
         return NULL;
     }

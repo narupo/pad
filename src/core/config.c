@@ -58,5 +58,11 @@ config_init(config_t *self) {
         return false;
     }
 
+    // standard libraries
+    if (!file_solve(self->std_lib_dir_path, sizeof self->std_lib_dir_path, "~/.cap/stdlib")) {
+        err_error("failed to solve path for standard libraries directory");
+        return false;
+    }
+
     return self;
 }

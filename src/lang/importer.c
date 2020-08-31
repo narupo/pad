@@ -35,6 +35,39 @@ importer_getc_error(const importer_t *self) {
     return self->error;
 }
 
+static char *
+read_source(importer_t *self, const char *cap_path) {
+    // create path of module
+    char path[FILE_NPATH];
+    if (!solve_cmdline_arg_path(self->ref_config, path, sizeof path, cap_path)) {
+        importer_set_error(self, "failed to solve cap path of \"%s\"", cap_path);
+        return NULL;
+    }
+
+    // check path
+    if (!file_exists(path)) {
+        // create path of standard libraries
+        // will read source from standard library module
+        if (!file_solvefmt(path, sizeof path, "%s/%s", self->ref_config->std_lib_dir_path, cap_path)) {
+            importer_set_error(self, "failed to solve path for standard library");
+            return NULL;
+        }
+        if (!file_exists(path)) {
+            importer_set_error(self, "\"%s\" is not found", cap_path);
+            return NULL;
+        }
+    }
+
+    // read source of path of module
+    char *src = file_readcp_from_path(path);
+    if (!src) {
+        importer_set_error(self, "failed to read content from \"%s\"", path);
+        return NULL;
+    }
+
+    return src;
+}
+
 static object_t *
 create_modobj(
     importer_t *self,
@@ -42,23 +75,15 @@ create_modobj(
     const ast_t *ref_ast,
     const char *cap_path
 ) {
-    char path[FILE_NPATH];
-    if (!solve_cmdline_arg_path(self->ref_config, path, sizeof path, cap_path)) {
-        importer_set_error(self, "failed to solve cap path of \"%s\"", cap_path);
-        return NULL;
-    }
-
-    // read source
-    char *src = file_readcp_from_path(path);
+    char *src = read_source(self, cap_path);
     if (!src) {
-        importer_set_error(self, "failed to read content from \"%s\"", path);
         return NULL;
     }
 
     // compile source
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = ast_new(self->ref_config);
-    context_t *ctx = ctx_new(ref_gc); // LOOK ME! gc is *REFERENCE* from arguments!
+    context_t *ctx = ctx_new(ref_gc);  // LOOK ME! gc is *REFERENCE* from arguments!
 
     ast->import_level = ref_ast->import_level + 1;
     ast->debug = ref_ast->debug;
@@ -87,7 +112,7 @@ create_modobj(
 
     object_t *modobj = obj_new_module_by(
         ref_gc,
-        path,
+        cap_path,
         mem_move(tkr),
         mem_move(ast),
         NULL

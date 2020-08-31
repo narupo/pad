@@ -570,7 +570,9 @@ trv_import_as_stmt(ast_t *ast, trv_args_t *targs) {
 
     // import start
     const char *path = uni_getc_mb(pathobj->unicode);
+    assert(path);
     const char *alias = obj_getc_idn_name(aliasobj);
+    assert(alias);
 
     importer_t *importer = importer_new(ast->ref_config);
 
