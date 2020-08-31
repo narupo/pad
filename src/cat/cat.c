@@ -282,13 +282,13 @@ catcmd_write_stream(catcmd_t *self, FILE *fout, const string_t *buf) {
 
         switch (m) {
         case 0: { // Indent mode
-            char str[100] = {0};
-            if (!catcmd_setindent(self, str, sizeof str)) {
+            char indent[100] = {0};
+            if (!catcmd_setindent(self, indent, sizeof indent)) {
                 return false;
             }
 
             for (int i = 0; i < self->opts.indent; ++i) {
-                str_app(out, str);
+                str_app(out, indent);
             }
 
             str_pushb(out, c);

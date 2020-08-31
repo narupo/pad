@@ -5,7 +5,7 @@
 #include <locale.h>
 #include <stdint.h>
 #include <string.h>
-#include <iconv.h>
+// #include <iconv.h>
 #include <errno.h>
 
 #define NIL U'\0'
@@ -181,7 +181,7 @@ char16_isdigit(char16_t ch) {
 )(ch)
 
 void
-uni_set_mb(const char *mb) {
+mb_to_char32s(const char *mb) {
     int32_t len = strlen(mb);
     mbstate_t mbstate = {0};
     int mbi = 0;
@@ -199,21 +199,20 @@ uni_set_mb(const char *mb) {
             break;
         } else if (result == -1 || result == -2) {
             // invalid bytes
-            fprintf(stderr, "uni_set_mb: invalid bytes\n");
+            fprintf(stderr, "mb_to_char32s: invalid bytes\n");
             perror("mbrtoc32");
             return;
         } else if (result == -3) {
             // char32_t の文字を構成する残りの部分を得た。
             // マルチバイト文字側のバイトは消費していない
-            fprintf(stderr, "uni_set_mb: got -3\n");
+            fprintf(stderr, "mb_to_char32s: got -3\n");
         }
 
         printf("[%x]\n", c32);
     }
-
-    return;
 }
 
+#if 0
 char *
 conv(
     const char *tocode,
@@ -238,20 +237,13 @@ conv(
     iconv_close(ic);
     return dst;
 }
+#endif
 
 int
 main(void) {
     setlocale(LC_CTYPE, "");
-    printf("locale is %s\n", setlocale(LC_ALL, NULL));
 
-    char dst[1024];
-    const char *src = "あいう";
-
-    if (!conv("UTF-8", "CP932", dst, sizeof dst, src, strlen(src))) {
-        return 0;
-    }
-
-    printf("dst[%s]\n", dst);
+    mb_to_char32s("あいう");
 
     return 0;
 }
