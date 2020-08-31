@@ -23,7 +23,7 @@ ifeq ($(OS), Windows_NT)
 		-Wno-unused-result \
 		-D_DEBUG \
 		-I$(INCLUDE) \
-		-Llib/windows \
+		-LD:\\lib \
 		-lws2_32
 else
 	CFLAGS := -Wall \
