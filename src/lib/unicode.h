@@ -6,6 +6,7 @@
 #include <uchar.h>
 #include <locale.h>
 #include <lib/string.h>
+#include <lib/memory.h>
 
 #define UNI_CHAR32
 // #define UNI_CHAR16
@@ -257,7 +258,7 @@ char16_strcmp(const char16_t *s1, const char16_t *s2);
 **********/
 
 /**
- *
+ * destruct object
  *
  * @param[in] *self
  */
@@ -265,7 +266,7 @@ void
 uni_del(unicode_t *self);
 
 /**
- *
+ * destruct object with move semantics
  *
  * @param[in] *self
  */
@@ -273,7 +274,7 @@ unicode_type_t *
 uni_esc_del(unicode_t *self);
 
 /**
- *
+ * construct object
  *
  * @param[in] void
  *
@@ -283,7 +284,7 @@ unicode_t *
 uni_new(void);
 
 /**
- * 
+ * clear state of object
  * 
  * @param[in] *self 
  */
@@ -291,10 +292,10 @@ void
 uni_clear(unicode_t *self);
 
 /**
- *
+ * resize capacity
  *
  * @param[in] *self
- * @param[in] newcapa
+ * @param[in] newcapa number of new capacity
  *
  * @return
  */
@@ -302,7 +303,7 @@ unicode_t *
 uni_resize(unicode_t *self, int32_t newcapa);
 
 /**
- *
+ * get length of unicode strings
  *
  * @param[in] *self
  *
@@ -312,7 +313,7 @@ int32_t
 uni_len(const unicode_t *self);
 
 /**
- *
+ * get number of capacity
  *
  * @param[in] *self
  *
@@ -322,7 +323,7 @@ int32_t
 uni_capa(const unicode_t *self);
 
 /**
- *
+ * get buffer of object
  *
  * @param[in] *self
  *
@@ -332,7 +333,7 @@ unicode_type_t *
 uni_get(unicode_t *self);
 
 /**
- *
+ * get buffer of object (read-only)
  *
  * @param[in] *self
  *
@@ -342,137 +343,137 @@ const unicode_type_t *
 uni_getc(const unicode_t *self);
 
 /**
- *
+ * check buffer is empty?
  *
  * @param[in] *self
  *
- * @return
+ * @return if buffer is empty then return true else return false
  */
-int32_t
+bool
 uni_empty(const unicode_t *self);
 
 /**
- *
+ * set buffer at object (copy)
  *
  * @param[in] *self
  * @param[in] *src
  *
- * @return
+ * @return success to self else NULL
  */
 unicode_t *
 uni_set(unicode_t *self, const unicode_type_t *src);
 
 /**
- *
+ * push back unicode character at tail of buffer
  *
  * @param[in] *self
- * @param[in] ch
+ * @param[in] ch    unicode character
  *
- * @return
+ * @return success to self else NULL
  */
 unicode_t *
 uni_pushb(unicode_t *self, unicode_type_t ch);
 
 /**
- *
+ * pop back unicode character from tail of buffer
  *
  * @param[in] *self
  *
- * @return
+ * @return unicode character of tail of buffer
  */
 unicode_type_t
 uni_popb(unicode_t *self);
 
 /**
- *
+ * push front unicode character at front of buffer
  *
  * @param[in] *self
- * @param[in] ch
+ * @param[in] ch    unicode character
  *
- * @return
+ * @return success to self else NULL
  */
 unicode_t *
 uni_pushf(unicode_t *self, unicode_type_t ch);
 
 /**
- *
+ * pop front unicode chracter from front of buffer
  *
  * @param[in] *self
  *
- * @return
+ * @return unicode character
  */
 unicode_type_t
 uni_popf(unicode_t *self);
 
 /**
- *
+ * append unicode strings at tail of buffer
  *
  * @param[in] *self
- * @param[in] *src
+ * @param[in] *src  unicode strings (read-only)
  *
- * @return
+ * @return success to self else NULL
  */
 unicode_t *
 uni_app(unicode_t *self, const unicode_type_t *src);
 
 /**
- *
+ * append unicode string of stream at tail of buffer
  *
  * @param[in] *self
- * @param[in] *fin
+ * @param[in] *fin  stream (read-only)
  *
- * @return
+ * @return success to self else NULL
  */
 unicode_t *
 uni_app_stream(unicode_t *self, FILE *fin);
 
 /**
+ * deep copy object
  *
+ * @param[in] *other other object (read-only)
  *
- * @param[in] *other
- *
- * @return
+ * @return success to new object else NULL
  */
 unicode_t *
 uni_deep_copy(const unicode_t *other);
 
 /**
- *
+ * append other object at tail of buffer
  *
  * @param[in] *self
- * @param[in] *_other
+ * @param[in] *_other other object
  *
- * @return
+ * @return success to self else NULL
  */
 unicode_t *
 uni_app_other(unicode_t *self, const unicode_t *_other);
 
 /**
- *
+ * append format strings at tail of buffer
  *
  * @param[in] *self
- * @param[in] *buf
- * @param[in] nbuf
- * @param[in] *fmt
- * @param[in] ...
+ * @param[in] *buf  temporary buffer for format
+ * @param[in] nbuf  size of temporary buffer
+ * @param[in] *fmt  format strings
+ * @param[in] ...   arguments
  *
- * @return
+ * @return success to self else NULL
  */
 unicode_t *
 uni_app_fmt(unicode_t *self, char *buf, int32_t nbuf, const char *fmt, ...);
 
 /**
- *
+ * convert unicode string to multi byte strings
  *
  * @param[in] *self
  *
- * @return
+ * @return success to strings of dyanmic allocate memory else NULL
  */
 char *
 uni_to_mb(const unicode_t *self);
 
 /**
- *
+ * set multi byte strings after converted to unicode to buffer
  *
  * @param[in] *self
  * @param[in] *mb
@@ -483,115 +484,134 @@ unicode_t *
 uni_set_mb(unicode_t *self, const char *mb);
 
 /**
- *
+ * strip right side characters in buffer by designated characters
  *
  * @param[in] *self
- * @param[in] *rems
+ * @param[in] *rems designated target characters
  *
- * @return
+ * @return success to self else NULL
  */
 unicode_t *
 uni_rstrip(unicode_t *self, const unicode_type_t *rems);
 
 /**
- *
+ * strip left side characters in buffer by designated characters
  *
  * @param[in] *self
- * @param[in] *rems
+ * @param[in] *rems designated target characters
  *
- * @return
+ * @return success to self else NULL
  */
 unicode_t *
 uni_lstrip(unicode_t *self, const unicode_type_t *rems);
 
 /**
- *
+ * strip both side characters in buffer by designated characters
  *
  * @param[in] *self
- * @param[in] *rems
+ * @param[in] *rems designated target characters
  *
- * @return
+ * @return success to self else NULL
  */
 unicode_t *
 uni_strip(unicode_t *self, const unicode_type_t *rems);
 
 /**
- *
+ * get multi byte strings after converted from unicode strings
  *
  * @param[in] *self
  *
- * @return
+ * @return success to pointer to multi byte strings (read-only) else NULL
  */
 const char *
 uni_getc_mb(unicode_t *self);
 
 /**
+ * convert to lower case
  *
+ * @param[in] *other other object (read-only)
  *
- * @param[in] *other
- *
- * @return
+ * @return success to pointer to object (dynamic allocate memory)
+ * @return failed to NULL
  */
 unicode_t *
 uni_lower(const unicode_t *other);
 
 /**
+ * convert to upper case
  *
+ * @param[in] *other other object (read-only)
  *
- * @param[in] *other
- *
- * @return
+ * @return success to pointer to object (dynamic allocate memory)
+ * @return failed to NULL
  */
 unicode_t *
 uni_upper(const unicode_t *other);
 
 /**
+ * capitalize first character of buffer
  *
+ * @param[in] *other other object (read-only)
  *
- * @param[in] *other
- *
- * @return
+ * @return success to pointer to object (dynamic allocate memory)
+ * @return failed to NULL
  */
 unicode_t *
 uni_capitalize(const unicode_t *other);
 
 /**
+ * convert to snake case
  *
+ * @param[in] *other other object (read-only)
  *
- * @param[in] *other
- *
- * @return
+ * @return success to pointer to object (dynamic allocate memory)
+ * @return failed to NULL
  */
 unicode_t *
 uni_snake(const unicode_t *other);
 
 /**
+ * convert to camel case
  *
+ * @param[in] *other other object (read-only)
  *
- * @param[in] *other
- *
- * @return
+ * @return success to pointer to object (dynamic allocate memory)
+ * @return failed to NULL
  */
 unicode_t *
 uni_camel(const unicode_t *other);
 
 /**
+ * convert to hacker style case
  *
+ * @param[in] *other other object (read-only)
  *
- * @param[in] *other
- *
- * @return
+ * @return success to pointer to object (dynamic allocate memory)
+ * @return failed to NULL
  */
 unicode_t *
 uni_hacker(const unicode_t *other);
 
 /**
+ * multiply buffer by number
  *
+ * @param[in] *other other object (read-only)
+ * @param[in] n      number of count of multiply
  *
- * @param[in] *self
- * @param[in] n
- *
- * @return
+ * @return success to pointer to object (dynamic allocate memory)
+ * @return failed to NULL
  */
 unicode_t *
-uni_mul(const unicode_t *self, int32_t n);
+uni_mul(const unicode_t *other, int32_t n);
+
+/**
+ * split buffer by character
+ * 
+ * @param[in] *other other object (read-only)
+ * @param[in] ch     separate character for split
+ * 
+ * @return success to pointer array (dynamic allocate memory)
+ * @return failed to NULL
+ */
+unicode_t **
+uni_split(const unicode_t *other, const unicode_type_t *sep);

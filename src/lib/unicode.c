@@ -138,6 +138,10 @@ char16_isdigit(char16_t ch) {
 
 int32_t
 char32_strcmp(const char32_t *s1, const char32_t *s2) {
+    if (!s1 || !s2) {
+        return -1;
+    }
+
     for (const char32_t *p = s1, *q = s2; *p && *q; ++p, ++q) {
         if (*p != *q) {
             return *p - *q;
@@ -149,6 +153,10 @@ char32_strcmp(const char32_t *s1, const char32_t *s2) {
 
 int32_t
 char16_strcmp(const char16_t *s1, const char16_t *s2) {
+    if (!s1 || !s2) {
+        return -1;
+    }
+
     for (const char16_t *p = s1, *q = s2; *p && *q; ++p, ++q) {
         if (*p != *q) {
             return *p - *q;
@@ -271,7 +279,7 @@ uni_getc(const unicode_t *self) {
     return self->buffer;
 }
 
-int32_t
+bool
 uni_empty(const unicode_t *self) {
     if (!self) {
         return 0;
@@ -882,18 +890,56 @@ uni_hacker(const unicode_t *other) {
 }
 
 unicode_t *
-uni_mul(const unicode_t *self, int32_t n) {
-    if (!self) {
+uni_mul(const unicode_t *other, int32_t n) {
+    if (!other) {
         return NULL;
     }
     
     unicode_t *buf = uni_new();
 
     for (int32_t i = 0; i < n; ++i) {
-        uni_app(buf, self->buffer);
+        uni_app(buf, other->buffer);
     }
 
     return buf;
+}
+
+unicode_t **
+uni_split(const unicode_t *other, const unicode_type_t *sep) {
+    if (!other) {
+        return NULL;
+    }
+
+    int32_t capa = 4;
+    int32_t cursize = 0;
+    unicode_t **arr = mem_ecalloc(capa + 1, sizeof(unicode_t *));
+    unicode_t *u = uni_new();
+
+#define store(u) \
+    if (uni_len(u)) { \
+        if (capa >= cursize) { \
+            capa *= 2; \
+            int32_t nbyte = sizeof(unicode_t *); \
+            arr = mem_erealloc(arr, capa * nbyte + nbyte); \
+        } \
+        arr[cursize++] = mem_move(u); \
+        arr[cursize] = NULL; \
+        u = uni_new(); \
+    } \
+
+    for (const unicode_type_t *p = other->buffer; *p; ) {
+        if (!u_strcmp(p, sep)) {
+            store(u);
+            p += u_len(sep);
+        } else {
+            uni_pushb(u, *p++);
+        }
+    }
+
+    store(u);
+
+    uni_del(u);
+    return arr;
 }
 
 #undef NIL
