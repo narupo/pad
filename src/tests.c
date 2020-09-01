@@ -1848,8 +1848,12 @@ test_uni_rstrip(void) {
     assert(uni_set(u, UNI_STR("1234")) != NULL);
     assert(uni_rstrip(NULL, UNI_STR("34")) == NULL);
     assert(uni_rstrip(u, NULL) == NULL);
-    assert(uni_rstrip(u, UNI_STR("34")) != NULL);
-    assert(u_strcmp(uni_getc(u), UNI_STR("12")) == 0);
+
+    unicode_t *o = uni_rstrip(u, UNI_STR("34"));
+    assert(o);
+    assert(u_strcmp(uni_getc(o), UNI_STR("12")) == 0);
+
+    uni_del(o);
     uni_del(u);
 }
 
@@ -1860,8 +1864,12 @@ test_uni_lstrip(void) {
     assert(uni_set(u, UNI_STR("1234")) != NULL);
     assert(uni_lstrip(NULL, UNI_STR("12")) == NULL);
     assert(uni_lstrip(u, NULL) == NULL);
-    assert(uni_lstrip(u, UNI_STR("12")) != NULL);
-    assert(u_strcmp(uni_getc(u), UNI_STR("34")) == 0);
+
+    unicode_t *o = uni_lstrip(u, UNI_STR("12"));
+    assert(o);
+    assert(u_strcmp(uni_getc(o), UNI_STR("34")) == 0);
+
+    uni_del(o);
     uni_del(u);
 }
 
@@ -1872,8 +1880,12 @@ test_uni_strip(void) {
     assert(uni_set(u, UNI_STR("--1234--")) != NULL);
     assert(uni_strip(NULL, UNI_STR("-")) == NULL);
     assert(uni_strip(u, NULL) == NULL);
-    assert(uni_strip(u, UNI_STR("-")) != NULL);
-    assert(u_strcmp(uni_getc(u), UNI_STR("1234")) == 0);
+
+    unicode_t *o = uni_strip(u, UNI_STR("-"));
+    assert(o);
+    assert(u_strcmp(uni_getc(o), UNI_STR("1234")) == 0);
+
+    uni_del(o);
     uni_del(u);
 }
 

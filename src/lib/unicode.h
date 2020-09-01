@@ -489,10 +489,10 @@ uni_set_mb(unicode_t *self, const char *mb);
  * @param[in] *self
  * @param[in] *rems designated target characters
  *
- * @return success to self else NULL
+ * @return success to pointer to unicode_t (dynamic allocate memory) else NULL
  */
 unicode_t *
-uni_rstrip(unicode_t *self, const unicode_type_t *rems);
+uni_rstrip(const unicode_t *other, const unicode_type_t *rems);
 
 /**
  * strip left side characters in buffer by designated characters
@@ -500,10 +500,10 @@ uni_rstrip(unicode_t *self, const unicode_type_t *rems);
  * @param[in] *self
  * @param[in] *rems designated target characters
  *
- * @return success to self else NULL
+ * @return success to pointer to unicode_t (dynamic allocate memory) else NULL
  */
 unicode_t *
-uni_lstrip(unicode_t *self, const unicode_type_t *rems);
+uni_lstrip(const unicode_t *other, const unicode_type_t *rems);
 
 /**
  * strip both side characters in buffer by designated characters
@@ -511,10 +511,10 @@ uni_lstrip(unicode_t *self, const unicode_type_t *rems);
  * @param[in] *self
  * @param[in] *rems designated target characters
  *
- * @return success to self else NULL
+ * @return success to pointer to unicode_t (dynamic allocate memory) else NULL
  */
 unicode_t *
-uni_strip(unicode_t *self, const unicode_type_t *rems);
+uni_strip(const unicode_t *other, const unicode_type_t *rems);
 
 /**
  * get multi byte strings after converted from unicode strings
