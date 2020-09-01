@@ -58,8 +58,8 @@ makecmd_new(const config_t *config, int argc, char **argv) {
     return self;
 }
 
-int
-makecmd_run(makecmd_t *self) {
+static int
+run(makecmd_t *self) {
     bool use_stdin = false;
     if (self->argc < 2) {
         use_stdin = true;
@@ -74,7 +74,7 @@ makecmd_run(makecmd_t *self) {
     if (use_stdin) {
         src = file_readcp(stdin);
         if (!src) {
-            err_error("failed to read from stdin");
+            errstack_pushb(self->errstack, "failed to read from stdin");
             return 1;
         }
     } else {
@@ -82,13 +82,13 @@ makecmd_run(makecmd_t *self) {
         const char *cap_path = self->argv[1];
 
         if (!solve_cmdline_arg_path(self->config, path, sizeof path, cap_path)) {
-            err_error("failed to solve cap path");
+            errstack_pushb(self->errstack, "failed to solve cap path");
             return 1;
         }
 
         src = file_readcp_from_path(path);
         if (!src) {
-            err_error("failed to read from \"%s\"", path);
+            errstack_pushb(self->errstack, "failed to read from \"%s\"", path);
             return 1;
         }
     }
@@ -106,7 +106,6 @@ makecmd_run(makecmd_t *self) {
             "failed to compile from \"%s\"",
             (self->argv[1] ? self->argv[1] : "stdin")
         );
-        errstack_trace(self->errstack, stderr);
         fflush(stderr);
         free(src);
         return 1;
@@ -118,4 +117,14 @@ makecmd_run(makecmd_t *self) {
     free(compiled);
     free(src);
     return 0;
+}
+
+int
+makecmd_run(makecmd_t *self) {
+    int result = run(self);
+    if (result != 0) {
+        errstack_trace(self->errstack, stderr);
+    }
+
+    return result;
 }

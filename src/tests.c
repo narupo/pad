@@ -16550,7 +16550,7 @@ test_trv_builtin_functions_type_dict(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<dict>"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "dict"));
     }
 
     ctx_del(ctx);
@@ -16576,7 +16576,7 @@ test_trv_builtin_functions_type(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<nil>"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
     tkr_parse(tkr, "{: type(1) :}");
@@ -16586,7 +16586,7 @@ test_trv_builtin_functions_type(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<int>"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "int"));
     }
 
     tkr_parse(tkr, "{: type(true) :}");
@@ -16596,7 +16596,7 @@ test_trv_builtin_functions_type(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<bool>"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "bool"));
     }
 
     tkr_parse(tkr, "{: type(\"string\") :}");
@@ -16606,7 +16606,7 @@ test_trv_builtin_functions_type(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<str>"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "str"));
     }
 
     tkr_parse(tkr, "{: type([1, 2]) :}");
@@ -16616,7 +16616,7 @@ test_trv_builtin_functions_type(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<array>"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "array"));
     }
 
     tkr_parse(tkr, "{: type({ \"a\": 1 }) :}");
@@ -16626,7 +16626,7 @@ test_trv_builtin_functions_type(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<dict>"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "dict"));
     }
 
     tkr_parse(tkr, "{@ def f(): end @}{: type(f) :}");
@@ -16636,7 +16636,7 @@ test_trv_builtin_functions_type(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "<func>"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "func"));
     }
 
     tkr_parse(tkr, "{@ import \":tests/lang/modules/hello.cap\" as mod @}{: type(mod) :}");
@@ -16646,7 +16646,7 @@ test_trv_builtin_functions_type(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\n<module>"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nmodule"));
     }
 
     ctx_del(ctx);
