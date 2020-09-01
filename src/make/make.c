@@ -95,6 +95,7 @@ make_from_args(
         return 1;
     }
 
+    cstr_pop_last_newline(compiled);
     printf("%s", compiled);
     fflush(stdout);
 
