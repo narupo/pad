@@ -16216,7 +16216,7 @@ test_trv_builtin_string(void) {
 }
 
 static void
-test_trv_builtin_unicode_0(void) {
+test_trv_builtin_unicode_split(void) {
     trv_ready;
 
     tkr_parse(tkr, "{@ toks = \"abc\ndef\nghi\".split(\"\n\") @}"
@@ -16253,6 +16253,99 @@ test_trv_builtin_unicode_0(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_builtin_unicode_rstrip(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@ s = \"abc \r\n\".rstrip() @}"
+        "{: s :}"
+    );
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
+    }
+
+    tkr_parse(tkr, "{@ s = \"abcdef\".rstrip(\"def\") @}"
+        "{: s :}"
+    );
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_builtin_unicode_lstrip(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@ s = \"\r\n abc\".lstrip() @}"
+        "{: s :}"
+    );
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
+    }
+
+    tkr_parse(tkr, "{@ s = \"defabc\".lstrip(\"def\") @}"
+        "{: s :}"
+    );
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_builtin_unicode_strip(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@ s = \"\r\n abc\r\n \".strip() @}"
+        "{: s :}"
+    );
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
+    }
+
+    tkr_parse(tkr, "{@ s = \"defabcdef\".strip(\"def\") @}"
+        "{: s :}"
+    );
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc"));
     }
 
     trv_cleanup;
@@ -27951,7 +28044,10 @@ traverser_tests[] = {
     {"trv_builtin_functions_type", test_trv_builtin_functions_type},
     {"trv_builtin_functions_type_dict", test_trv_builtin_functions_type_dict},
     {"trv_builtin_string", test_trv_builtin_string},
-    {"trv_builtin_unicode_0", test_trv_builtin_unicode_0},
+    {"trv_builtin_unicode_split", test_trv_builtin_unicode_split},
+    {"trv_builtin_unicode_rstrip", test_trv_builtin_unicode_rstrip},
+    {"trv_builtin_unicode_lstrip", test_trv_builtin_unicode_lstrip},
+    {"trv_builtin_unicode_strip", test_trv_builtin_unicode_strip},
     {"trv_builtin_array_0", test_trv_builtin_array_0},
     {"trv_builtin_dict_0", test_trv_builtin_dict_0},
     {"trv_module_0", test_trv_module_0},
