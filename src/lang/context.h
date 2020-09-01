@@ -332,3 +332,11 @@ ctx_var_in_cur_scope(const context_t *self, const char *idn);
  */
 object_dict_t *
 ctx_get_ref_varmap_cur_scope(const context_t *self);
+
+/**
+ * pop last newline of stdout buf
+ * 
+ * @return 
+ */
+void
+ctx_pop_newline_of_stdout_buf(context_t *self);

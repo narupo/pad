@@ -262,3 +262,29 @@ ctx_get_ref_varmap_cur_scope(const context_t *self) {
     scope_t *current_scope = scope_get_last(self->scope);
     return scope_get_varmap(current_scope);
 }
+
+void
+ctx_pop_newline_of_stdout_buf(context_t *self) {
+    if (!self) {
+        return;
+    }
+
+    const char *s = str_getc(self->stdout_buf);
+    int32_t len = str_len(self->stdout_buf);
+    if (!len) {
+        return;
+    }
+
+    if (len >= 2) {
+        if ((s[len - 2] == '\r' && s[len - 1] == '\n') ||
+            s[len - 1] == '\r' ||
+            s[len - 1] == '\n') {
+            str_popb(self->stdout_buf);
+        }
+    } else {
+        if (s[len - 1] == '\n' ||
+            s[len - 1] == '\r') {
+            str_popb(self->stdout_buf);
+        } 
+    }
+}

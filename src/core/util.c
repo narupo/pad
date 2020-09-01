@@ -455,6 +455,7 @@ read_path_var_from_resource(const config_t *config, const char *rcpath) {
         return NULL;
     }
 
+    ctx_pop_newline_of_stdout_buf(ctx);
     printf("%s", ctx_getc_stdout_buf(ctx));
     fflush(stdout);
 
