@@ -593,8 +593,8 @@ uni_set_mb(unicode_t *self, const char *mb) {
     return self;
 }
 
-unicode_t *
-uni_rstrip(unicode_t *self, const unicode_type_t *rems) {
+static unicode_t *
+_uni_rstrip(unicode_t *self, const unicode_type_t *rems) {
     if (!self || !rems) {
         return NULL;
     }
@@ -616,7 +616,22 @@ uni_rstrip(unicode_t *self, const unicode_type_t *rems) {
 }
 
 unicode_t *
-uni_lstrip(unicode_t *self, const unicode_type_t *rems) {
+uni_rstrip(const unicode_t *other, const unicode_type_t *rems) {
+    if (!other || !rems) {
+        return NULL;
+    }
+
+    unicode_t *dst = uni_deep_copy(other);
+    if (!_uni_rstrip(dst, rems)) {
+        uni_del(dst);
+        return NULL;
+    }
+
+    return dst;
+}
+
+static unicode_t *
+_uni_lstrip(unicode_t *self, const unicode_type_t *rems) {
     if (!self || !rems) {
         return NULL;
     }
@@ -638,20 +653,39 @@ uni_lstrip(unicode_t *self, const unicode_type_t *rems) {
 }
 
 unicode_t *
-uni_strip(unicode_t *self, const unicode_type_t *rems) {
-    if (!self || !rems) {
+uni_lstrip(const unicode_t *other, const unicode_type_t *rems) {
+    if (!other || !rems) {
         return NULL;
     }
 
-    if (!uni_rstrip(self, rems)) {
+    unicode_t *dst = uni_deep_copy(other);
+    if (!_uni_lstrip(dst, rems)) {
+        uni_del(dst);
         return NULL;
     }
 
-    if (!uni_lstrip(self, rems)) {
+    return dst;
+}
+
+unicode_t *
+uni_strip(const unicode_t *other, const unicode_type_t *rems) {
+    if (!other || !rems) {
         return NULL;
     }
 
-    return self;
+    unicode_t *dst = uni_deep_copy(other);
+
+    if (!_uni_rstrip(dst, rems)) {
+        uni_del(dst);
+        return NULL;
+    }
+
+    if (!_uni_lstrip(dst, rems)) {
+        uni_del(dst);
+        return NULL;
+    }
+
+    return dst;
 }
 
 const char *
