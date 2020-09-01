@@ -1,3 +1,12 @@
+/**
+ * kit
+ *
+ * this module is utility for compile process of template language
+ *
+ * license: MIT
+ *  author: narupo
+ *   since: 2020
+ */
 #include <lang/kit.h>
 
 enum {
