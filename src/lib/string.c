@@ -367,8 +367,8 @@ str_app_fmt(string_t *self, string_type_t *buf, int32_t nbuf, const string_type_
     return self;
 }
 
-string_t *
-str_rstrip(string_t *self, const string_type_t *rems) {
+static string_t *
+_str_rstrip(string_t *self, const string_type_t *rems) {
     if (!self || !rems) {
         return NULL;
     }
@@ -385,7 +385,22 @@ str_rstrip(string_t *self, const string_type_t *rems) {
 }
 
 string_t *
-str_lstrip(string_t *self, const string_type_t *rems) {
+str_rstrip(const string_t *other, const string_type_t *rems) {
+    if (!other || !rems) {
+        return NULL;
+    }
+
+    string_t *dst = str_deep_copy(other);
+    if (!_str_rstrip(dst, rems)) {
+        str_del(dst);
+        return NULL;
+    }
+
+    return dst;
+}
+
+static string_t *
+_str_lstrip(string_t *self, const string_type_t *rems) {
     if (!self || !rems) {
         return NULL;
     }
@@ -402,20 +417,39 @@ str_lstrip(string_t *self, const string_type_t *rems) {
 }
 
 string_t *
-str_strip(string_t *self, const string_type_t *rems) {
-    if (!self || !rems) {
+str_lstrip(const string_t *other, const string_type_t *rems) {
+    if (!other || !rems) {
         return NULL;
     }
 
-    if (!str_rstrip(self, rems)) {
+    string_t *dst = str_deep_copy(other);
+    if (!_str_lstrip(dst, rems)) {
+        str_del(dst);
         return NULL;
     }
 
-    if (!str_lstrip(self, rems)) {
+    return dst;
+}
+
+string_t *
+str_strip(const string_t *other, const string_type_t *rems) {
+    if (!other || !rems) {
         return NULL;
     }
 
-    return self;
+    string_t *dst = str_deep_copy(other);
+
+    if (!_str_rstrip(dst, rems)) {
+        str_del(dst);
+        return NULL;
+    }
+
+    if (!_str_lstrip(dst, rems)) {
+        str_del(dst);
+        return NULL;
+    }
+
+    return dst;
 }
 
 /****************

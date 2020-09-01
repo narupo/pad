@@ -1219,8 +1219,12 @@ test_str_rstrip(void) {
     assert(str_set(s, "1234") != NULL);
     assert(str_rstrip(NULL, "34") == NULL);
     assert(str_rstrip(s, NULL) == NULL);
-    assert(str_rstrip(s, "34") != NULL);
-    assert(strcmp(str_getc(s), "12") == 0);
+
+    string_t *o = str_rstrip(s, "34");
+    assert(o);
+    assert(strcmp(str_getc(o), "12") == 0);
+
+    str_del(o);
     str_del(s);
 }
 
@@ -1231,8 +1235,12 @@ test_str_lstrip(void) {
     assert(str_set(s, "1234") != NULL);
     assert(str_lstrip(NULL, "12") == NULL);
     assert(str_lstrip(s, NULL) == NULL);
-    assert(str_lstrip(s, "12") != NULL);
-    assert(strcmp(str_getc(s), "34") == 0);
+
+    string_t *o = str_lstrip(s, "12");
+    assert(o);
+    assert(strcmp(str_getc(o), "34") == 0);
+
+    str_del(o);
     str_del(s);
 }
 
@@ -1243,8 +1251,12 @@ test_str_strip(void) {
     assert(str_set(s, "--1234--") != NULL);
     assert(str_strip(NULL, "-") == NULL);
     assert(str_strip(s, NULL) == NULL);
-    assert(str_strip(s, "-") != NULL);
-    assert(strcmp(str_getc(s), "1234") == 0);
+
+    string_t *o = str_strip(s, "-");
+    assert(o);
+    assert(strcmp(str_getc(o), "1234") == 0);
+
+    str_del(o);
     str_del(s);
 }
 

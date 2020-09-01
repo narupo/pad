@@ -196,7 +196,10 @@ cmdline_parse(cmdline_t *self, const char *line) {
                     return NULL;
                 }
 
-                str_strip(buf, " ");
+                string_t *copied = str_strip(buf, " ");
+                str_del(buf);
+                buf = copied;
+
                 str_del(obj->command);
                 obj->command = mem_move(buf);
                 buf = str_new();
@@ -233,7 +236,10 @@ cmdline_parse(cmdline_t *self, const char *line) {
                     return NULL;
                 }
 
-                str_strip(buf, " ");
+                string_t *copied = str_strip(buf, " ");
+                str_del(buf);
+                buf = copied;
+
                 str_del(obj->command);
                 obj->command = buf;
                 buf = str_new();
@@ -268,7 +274,10 @@ cmdline_parse(cmdline_t *self, const char *line) {
                     return NULL;
                 }
 
-                str_strip(buf, " ");
+                string_t *copied = str_strip(buf, " ");
+                str_del(buf);
+                buf = copied;
+
                 str_del(obj->command);
                 obj->command = buf;
                 buf = str_new();
@@ -320,7 +329,10 @@ cmdline_parse(cmdline_t *self, const char *line) {
             return NULL;
         }
 
-        str_strip(buf, " ");
+        string_t *copied = str_strip(buf, " ");
+        str_del(buf);
+        buf = copied;
+        
         str_del(obj->command);
         obj->command = mem_move(buf);
         buf = NULL;

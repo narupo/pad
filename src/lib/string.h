@@ -256,29 +256,38 @@ str_app_fmt(string_t *self, string_type_t *buf, int32_t nbuf, const string_type_
 /**
  * strip elements at right of string
  *
- * @return success to pointer to self
+ * @param[in] other
+ * @param[in] rems  target characters
+ *
+ * @return success to pointer to string_t (dynamic allocate memory)
  * @return failed to NULL
  */
 string_t *
-str_rstrip(string_t *self, const string_type_t *rems);
+str_rstrip(const string_t *other, const string_type_t *rems);
 
 /**
  * strip elements at left of string
  *
- * @return success to pointer to self
+ * @param[in] other
+ * @param[in] rems  target characters
+ *
+ * @return success to pointer to string_t (dynamic allocate memory)
  * @return failed to NULL
  */
 string_t *
-str_lstrip(string_t *self, const string_type_t *rems);
+str_lstrip(const string_t *other, const string_type_t *rems);
 
 /**
  * strip elements at both sides of string
  *
- * @return success to pointer to self
+ * @param[in] other
+ * @param[in] rems  target characters
+ *
+ * @return success to pointer to string_t (dynamic allocate memory)
  * @return failed to NULL
  */
 string_t *
-str_strip(string_t *self, const string_type_t *rems);
+str_strip(const string_t *other, const string_type_t *rems);
 
 /**
  * find token of string from front of buffer in string
