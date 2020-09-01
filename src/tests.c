@@ -2232,6 +2232,46 @@ test_uni_mul(void) {
 }
 
 static void
+test_uni_split(void) {
+    unicode_t *u = uni_new();
+    assert(u);
+
+    uni_set_mb(u, "あいう\nかきく\nさしす");
+    unicode_t **arr = uni_split(u, UNI_STR("\n"));
+    assert(!u_strcmp(uni_getc(arr[0]), UNI_STR("あいう")));
+    assert(!u_strcmp(uni_getc(arr[1]), UNI_STR("かきく")));
+    assert(!u_strcmp(uni_getc(arr[2]), UNI_STR("さしす")));
+    assert(arr[3] == NULL);
+
+    for (unicode_t **p = arr; *p; ++p) {
+        uni_del(*p);
+    }
+    free(arr);
+
+    uni_set_mb(u, "あいう\nかきく\n");
+    arr = uni_split(u, UNI_STR("\n"));
+    assert(!u_strcmp(uni_getc(arr[0]), UNI_STR("あいう")));
+    assert(!u_strcmp(uni_getc(arr[1]), UNI_STR("かきく")));
+    assert(arr[3] == NULL);
+
+    for (unicode_t **p = arr; *p; ++p) {
+        uni_del(*p);
+    }
+    free(arr);
+
+    uni_set_mb(u, "あいうアイウかきくアイウ");
+    arr = uni_split(u, UNI_STR("アイウ"));
+    assert(!u_strcmp(uni_getc(arr[0]), UNI_STR("あいう")));
+    assert(!u_strcmp(uni_getc(arr[1]), UNI_STR("かきく")));
+    assert(arr[3] == NULL);
+
+    for (unicode_t **p = arr; *p; ++p) {
+        uni_del(*p);
+    }
+    free(arr);
+}
+
+static void
 test_char32_len(void) {
     const char32_t *s = U"abc";
     assert(char32_len(s) == 3);
@@ -2378,6 +2418,7 @@ unicode_tests[] = {
     {"uni_set_mb", test_uni_set_mb},
     {"uni_getc_mb", test_uni_getc_mb},
     {"uni_mul", test_uni_mul},
+    {"uni_split", test_uni_split},
     {"char32_len", test_char32_len},
     {"char16_len", test_char16_len},
     {"char32_dup", test_char32_dup},
