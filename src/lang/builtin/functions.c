@@ -268,6 +268,9 @@ again:
     case OBJ_TYPE_ARRAY:
         len = objarr_len(arg->objarr);
         break;
+    case OBJ_TYPE_DICT:
+        len = objdict_len(arg->objdict);
+        break;
     }
 
     return obj_new_int(ref_ast->ref_gc, len);
