@@ -11,8 +11,9 @@
 #include <lang/gc.h>
 #include <lang/object.h>
 
-// TODO: test
-
+/**
+ * constant numbers
+ */
 enum {
     OBJ_DICT_ITEM_KEY_SIZE = 256,
 };
@@ -134,12 +135,32 @@ objdict_get(object_dict_t *self, const char *key);
 const object_dict_item_t *
 objdict_getc(const object_dict_t *self, const char *key);
 
+/**
+ * clear state
+ * 
+ * @param[in] *self 
+ */
 void
 objdict_clear(object_dict_t *self);
 
+/**
+ * get length
+ * 
+ * @param[in] *self 
+ * 
+ * @return 
+ */
 int32_t
 objdict_len(const object_dict_t *self);
 
+/**
+ * get dict item by number of index
+ * 
+ * @param[in] *self 
+ * @param[in] index number of index
+ * 
+ * @return if index is exists then return pointer to item else return NULL
+ */
 const object_dict_item_t *
 objdict_getc_index(const object_dict_t *self, int32_t index);
 
