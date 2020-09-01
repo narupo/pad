@@ -350,3 +350,29 @@ cstr_isdigit(const char *str) {
 
     return true;
 }
+
+void
+cstr_pop_last_newline(char *str) {
+    if (!str) {
+        return;
+    }
+
+    int32_t len = strlen(str);
+    if (!len) {
+        return;
+    }
+
+    if (len >= 2) {
+        if (str[len - 2] == '\r' && str[len - 1] == '\n') {
+            str[len - 2] = '\0';
+        } else if (str[len - 1] == '\r' ||
+                   str[len - 1] == '\n') {
+            str[len - 1] = '\0';
+        }
+    } else {
+        if (str[len - 1] == '\n' ||
+            str[len - 1] == '\r') {
+            str[len - 1] = '\0';
+        } 
+    }
+}

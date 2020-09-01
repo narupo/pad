@@ -128,3 +128,13 @@ cstr_eq(const char *lhs, const char *rhs);
  */
 bool
 cstr_isdigit(const char *str);
+
+/**
+ * pop last newline
+ * 
+ * @param[in] *str pointer to string
+ * 
+ * @return 
+ */
+void
+cstr_pop_last_newline(char *str);
