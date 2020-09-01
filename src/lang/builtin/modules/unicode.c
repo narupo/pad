@@ -151,6 +151,73 @@ builtin_unicode_split(builtin_func_args_t *fargs) {
     return ret;
 }
 
+static object_t *
+strip_work(const char *method_name, builtin_func_args_t *fargs) {
+    if (!fargs) {
+        return NULL;
+    }
+
+    object_array_t *args = fargs->ref_args->objarr;
+    assert(args);
+
+    const unicode_type_t *unirems = NULL;
+    if (objarr_len(args)) {
+        const object_t *rems = objarr_getc(args, 0);
+        if (rems->type != OBJ_TYPE_UNICODE) {
+            ast_pushb_error(fargs->ref_ast, "invalid argument");
+            return NULL;
+        }
+        unirems = uni_getc(rems->unicode);
+    } else {
+        unirems = UNI_STR(" \r\n\t");  // default value
+    }
+
+    object_t *owner = extract_unicode_object(
+        fargs->ref_ast,
+        fargs->ref_owners,
+        method_name
+    );
+    if (!owner) {
+        ast_pushb_error(fargs->ref_ast, "failed to extract unicode object");
+        return NULL;
+    }
+
+    unicode_t *result = NULL;
+    if (cstr_eq(method_name, "rstrip")) {
+        result = uni_rstrip(owner->unicode, unirems);
+    } else if (cstr_eq(method_name, "lstrip")) {
+        result = uni_lstrip(owner->unicode, unirems);
+    } else if (cstr_eq(method_name, "strip")) {
+        result = uni_strip(owner->unicode, unirems);
+    } else {
+        ast_pushb_error(fargs->ref_ast, "invalid method name \"%s\"", method_name);
+        return NULL;
+    }
+
+    if (!result) {
+        ast_pushb_error(fargs->ref_ast, "failed to rstrip");
+        return NULL;
+    }
+
+    object_t *ret = obj_new_unicode(fargs->ref_ast->ref_gc, mem_move(result));
+    return ret;
+}
+
+static object_t *
+builtin_unicode_rstrip(builtin_func_args_t *fargs) {
+    return strip_work("rstrip", fargs);
+}
+ 
+static object_t *
+builtin_unicode_lstrip(builtin_func_args_t *fargs) {
+    return strip_work("lstrip", fargs);
+}
+ 
+static object_t *
+builtin_unicode_strip(builtin_func_args_t *fargs) {
+    return strip_work("strip", fargs);
+}
+ 
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"lower", builtin_unicode_lower},
@@ -160,6 +227,9 @@ builtin_func_infos[] = {
     {"camel", builtin_unicode_camel},
     {"hacker", builtin_unicode_hacker},
     {"split", builtin_unicode_split},
+    {"rstrip", builtin_unicode_rstrip},
+    {"lstrip", builtin_unicode_lstrip},
+    {"strip", builtin_unicode_strip},
     {0},
 };
 
