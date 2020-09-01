@@ -3153,7 +3153,7 @@ cl_tests[] = {
 ********/
 
 static void
-test_error_fix_text(void) {
+test_error_fix_text_1(void) {
     char buf[BUFSIZ] = {0};
 
     err_fix_text(buf, sizeof buf, "text");
@@ -3195,6 +3195,11 @@ test_error_fix_text(void) {
     err_fix_text(buf, sizeof buf, "src/core/error_stack.c");
     assert(!strcmp(buf, "src/core/error_stack.c."));
     buf[0] = '\0';
+
+    err_fix_text(buf, sizeof buf, "newline\n");
+    puts(buf);
+    assert(!strcmp(buf, "Newline\n."));
+    buf[0] = '\0';
 }
 
 static void
@@ -3214,7 +3219,7 @@ test_error_die(void) {
 }
 
 static void
-test_error_error(void) {
+test_error_error_1(void) {
     char buf[BUFSIZ] = {0};
     setbuf(stderr, buf);
 
@@ -3224,16 +3229,24 @@ test_error_error(void) {
     setbuf(stderr, NULL);
 }
 
+static void
+test_error_error_2(void) {
+    err_error("test1");
+    err_error("test2");
+    err_error("test3");
+}
+
 /**
  * 0 memory leaks
  * 2020/02/25
  */
 static const struct testcase
 error_tests[] = {
-    {"fix_text", test_error_fix_text},
+    {"fix_text_1", test_error_fix_text_1},
     {"_log", test_error__log},
     {"die", test_error_die},
-    {"error", test_error_error},
+    {"error_1", test_error_error_1},
+    {"error_2", test_error_error_2},
     {0},
 };
 

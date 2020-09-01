@@ -207,12 +207,15 @@ errorap_unsafe(const char *title, va_list ap, const char *fmt) {
 		fprintf(stderr, "%c%s: ", toupper(title[0]), title+1);
 	}
 
+    printf("fmt[%s]\n", fmt);
+
 	if (fmtlen) {
-        char tmp[1024*5] = {0};
+        char tmp[1024 * 5] = {0},
+             msg[1024 * 5] = {0};
 		vsnprintf(tmp, sizeof tmp, fmt, ap);
-        err_fix_text(tmp, sizeof tmp, tmp);
-		fprintf(stderr, "%s", tmp);
-        if (strlen(tmp) && tmp[strlen(tmp)-1] != '.') {
+        err_fix_text(msg, sizeof msg, tmp);
+		fprintf(stderr, "%s", msg);
+        if (strlen(msg) && msg[strlen(msg)-1] != '.') {
             fprintf(stderr, ".");
         }
 	}
