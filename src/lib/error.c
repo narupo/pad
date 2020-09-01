@@ -207,8 +207,6 @@ errorap_unsafe(const char *title, va_list ap, const char *fmt) {
 		fprintf(stderr, "%c%s: ", toupper(title[0]), title+1);
 	}
 
-    printf("fmt[%s]\n", fmt);
-
 	if (fmtlen) {
         char tmp[1024 * 5] = {0},
              msg[1024 * 5] = {0};
