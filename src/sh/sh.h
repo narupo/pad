@@ -31,17 +31,18 @@
 #include <snippet/snippet.h>
 #include <link/link.h>
 #include <make/make.h>
+#include <cook/cook.h>
 #include <find/find.h>
 #include <lang/kit.h>
 
 /**
- * Structure and type of command
+ * structure and type of command
  */
 struct sh;
 typedef struct sh shcmd_t;
 
 /**
- * Destruct command
+ * destruct command
  *
  * @param[in] self pointer to shcmd_t
  */
@@ -49,7 +50,7 @@ void
 shcmd_del(shcmd_t *self);
 
 /**
- * Construct command
+ * construct command
  *
  * @param[in] config pointer to config_t (writable)
  * @param[in] argc   number of arguments
@@ -62,7 +63,7 @@ shcmd_t *
 shcmd_new(config_t *config, int argc, char **argv);
 
 /**
- * Run command
+ * run command
  *
  * @param[in] self pointer to shcmd_t
  *

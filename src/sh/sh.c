@@ -320,6 +320,8 @@ shcmd_exec_command(shcmd_t *self, int argc, char **argv) {
         routine(linkcmd);
     } else if (cstr_eq(cmdname, "make")) {
         routine(makecmd);
+    } else if (cstr_eq(cmdname, "cook")) {
+        routine(cookcmd);
     } else if (cstr_eq(cmdname, "find")) {
         routine(findcmd);
     } else {
