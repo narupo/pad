@@ -71,6 +71,7 @@ init:
 	build$(SEP)hub \
 	build$(SEP)hub$(SEP)commands \
 	build$(SEP)make \
+	build$(SEP)cook \
 	build$(SEP)sh \
 	build$(SEP)find \
 	build$(SEP)lang$(SEP) \
@@ -122,6 +123,7 @@ SRCS := build/lib/error.c \
 	build/link/link.c \
 	build/hub/hub.c \
 	build/make/make.c \
+	build/cook/cook.c \
 	build/sh/sh.c \
 	build/find/find.c \
 	build/find/arguments_manager.c \
@@ -248,6 +250,8 @@ build/link/link.o: src/link/link.c src/link/link.h
 build/hub/hub.o: src/hub/hub.c src/hub/hub.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/make/make.o: src/make/make.c src/make/make.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/cook/cook.o: src/cook/cook.c src/cook/cook.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/sh/sh.o: src/sh/sh.c src/sh/sh.h
 	$(CC) $(CFLAGS) -c $< -o $@

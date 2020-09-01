@@ -90,20 +90,20 @@ runcmd_run(runcmd_t *self) {
     char tmppath[FILE_NPATH];
     snprintf(tmppath, sizeof tmppath, "%s/%s", org, argpath);
 
-    char spath[FILE_NPATH];
-    if (!symlink_follow_path(self->config, spath, sizeof spath, tmppath)) {
+    char filepath[FILE_NPATH];
+    if (!symlink_follow_path(self->config, filepath, sizeof filepath, tmppath)) {
         err_error("failed to follow path");
         return 1;
     }
 
-    if (is_out_of_home(self->config->home_path, spath)) {
-        err_error("invalid script. \"%s\" is out of home.", spath);
+    if (is_out_of_home(self->config->home_path, filepath)) {
+        err_error("invalid script. \"%s\" is out of home.", filepath);
         return 1;
     }
 
     // Read script line in file
     char script[NSCRIPTNAME];
-    if (!runcmd_read_script_line(self, script, sizeof script, spath)) {
+    if (!runcmd_read_script_line(self, script, sizeof script, filepath)) {
         script[0] = '\0';
     }
 
@@ -113,7 +113,7 @@ runcmd_run(runcmd_t *self) {
         str_app(cmdline, script);
         str_app(cmdline, " ");
     }
-    str_app(cmdline, spath);
+    str_app(cmdline, filepath);
     str_app(cmdline, " ");
 
     for (int32_t i = 2; i < self->argc; ++i) {
@@ -131,7 +131,8 @@ runcmd_run(runcmd_t *self) {
         option |= SAFESYSTEM_DETACH;
     }
 
-    int status = safesystem(str_getc(cmdline), option);
+    const char *scmdline = str_getc(cmdline);
+    int status = safesystem(scmdline, option);
 #if _CAP_WINDOWS
     int exit_code = status;
 #else

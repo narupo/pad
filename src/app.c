@@ -381,6 +381,7 @@ app_is_cap_cmdname(const app_t *self, const char *cmdname) {
         "link",
         "hub",
         "make",
+        "cook",
         "sh",
         "find",
         NULL,
@@ -459,6 +460,8 @@ app_execute_command_by_name(app_t *self, const char *name) {
         routine(linkcmd);
     } else if (cstr_eq(name, "make")) {
         routine(makecmd);
+    } else if (cstr_eq(name, "cook")) {
+        routine(cookcmd);
     } else if (cstr_eq(name, "sh")) {
         routine(shcmd);
     } else if (cstr_eq(name, "find")) {
