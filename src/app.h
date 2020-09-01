@@ -32,6 +32,7 @@
 #include <snippet/snippet.h>
 #include <link/link.h>
 #include <make/make.h>
+#include <cook/cook.h>
 #include <sh/sh.h>
 #include <find/find.h>
 #include <lang/ast.h>
