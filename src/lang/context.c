@@ -276,9 +276,11 @@ ctx_pop_newline_of_stdout_buf(context_t *self) {
     }
 
     if (len >= 2) {
-        if ((s[len - 2] == '\r' && s[len - 1] == '\n') ||
-            s[len - 1] == '\r' ||
-            s[len - 1] == '\n') {
+        if (s[len - 2] == '\r' && s[len - 1] == '\n') {
+            str_popb(self->stdout_buf);
+            str_popb(self->stdout_buf);
+        } else if (s[len - 1] == '\r' ||
+                   s[len - 1] == '\n') {
             str_popb(self->stdout_buf);
         }
     } else {
