@@ -120,12 +120,13 @@ errstack_getc(const errstack_t *self, int32_t idx) {
 
 void
 errstack_trace(const errstack_t *self, FILE *fout) {
-    fprintf(fout, "Stack trace:\n");
+    fprintf(fout, "Stack trace:\n\n");
     for (int32_t i = 0; i < self->len; ++i) {
         const errelem_t *elem = &self->stack[i];
         fprintf(fout, "    ");
         errelem_show(elem, fout);
     }
+    fprintf(fout, "\n");
 }
 
 int32_t
