@@ -294,6 +294,7 @@ app_usage(app_t *app) {
         "    ls         show list in current directory\n"
         "    cat        concatenate files and show\n"
         "    make       compile template language\n"
+        "    cook       compile template language with not solve of path\n"
         "    run        run script\n"
         "    exec       execute command line\n"
         "    alias      run alias command\n"
