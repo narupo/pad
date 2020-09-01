@@ -44,7 +44,7 @@ static err_token_t **
 tokenize(const char *src) {
     int32_t capa = 4;
     int32_t cursize = 0;
-    err_token_t **tokens = mem_ecalloc(capa + 1, sizeof(err_token_t));
+    err_token_t **tokens = mem_ecalloc(capa + 1, sizeof(err_token_t *));
     string_t *buf = str_new();
     char bef = 0;
 
