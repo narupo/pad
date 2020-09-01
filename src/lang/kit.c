@@ -42,7 +42,13 @@ kit_new(const config_t *config) {
 kit_t *
 kit_compile_from_path(kit_t *self, const char *path) {
     char *src = file_readcp_from_path(path);
+    if (!src) {
+        return NULL;
+    }
+
     kit_t *result = kit_compile_from_string(self, src);
+    // allow null
+
     free(src);
     return result;
 }
