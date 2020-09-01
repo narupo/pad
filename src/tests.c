@@ -16216,6 +16216,49 @@ test_trv_builtin_string(void) {
 }
 
 static void
+test_trv_builtin_unicode_0(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@ toks = \"abc\ndef\nghi\".split(\"\n\") @}"
+        "{: len(toks) :}"
+    );
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
+    }
+
+    tkr_parse(tkr, "{@ toks = \"abc\ndef\nghi\n\".split(\"\n\") @}"
+        "{: len(toks) :}"
+    );
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
+    }
+
+    tkr_parse(tkr, "{@ toks = \"\".split(\"\n\") @}"
+        "{: len(toks) :}"
+    );
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_builtin_functions(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -27908,6 +27951,7 @@ traverser_tests[] = {
     {"trv_builtin_functions_type", test_trv_builtin_functions_type},
     {"trv_builtin_functions_type_dict", test_trv_builtin_functions_type_dict},
     {"trv_builtin_string", test_trv_builtin_string},
+    {"trv_builtin_unicode_0", test_trv_builtin_unicode_0},
     {"trv_builtin_array_0", test_trv_builtin_array_0},
     {"trv_builtin_dict_0", test_trv_builtin_dict_0},
     {"trv_module_0", test_trv_module_0},
