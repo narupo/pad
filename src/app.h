@@ -14,6 +14,7 @@
 #include <core/util.h>
 #include <core/alias_manager.h>
 #include <core/args.h>
+#include <core/error_stack.h>
 #include <home/home.h>
 #include <cd/cd.h>
 #include <pwd/pwd.h>

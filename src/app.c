@@ -33,10 +33,11 @@ typedef struct {
     char **cmd_argv;
     config_t *config;
     struct opts opts;
+    errstack_t *errstack;
 } app_t;
 
 static int
-app_run(app_t *self);
+app_run(app_t *self, int argc, char *argv[]);
 
 /**
  * parse options
@@ -71,7 +72,7 @@ app_parse_opts(app_t *self) {
         case 'V': self->opts.is_version = true; break;
         case '?':
         default:
-            err_error("invalid option");
+            errstack_pushb(self->errstack, "invalid option");
             return false; break;
         }
     }
@@ -94,6 +95,7 @@ app_del(app_t *self) {
         config_del(self->config);
         freeargv(self->argc, self->argv);
         freeargv(self->cmd_argc, self->cmd_argv);
+        errstack_del(self->errstack);
         free(self);
     }
 }
@@ -109,20 +111,20 @@ static bool
 app_deploy_env(const app_t *self) {
     char userhome[FILE_NPATH];
     if (!file_get_user_home(userhome, sizeof userhome)) {
-        err_error("failed to get user's home directory. what is your file system?");
+        errstack_pushb(self->errstack, "failed to get user's home directory. what is your file system?");
         return false;
     }
 
     // make application directory
     char appdir[FILE_NPATH];
     if (!file_solvefmt(appdir, sizeof appdir, "%s/.cap", userhome)) {
-        err_error("faield to create application directory path");
+        errstack_pushb(self->errstack, "faield to create application directory path");
         return false;
     }
 
     if (!file_exists(appdir)) {
         if (file_mkdirq(appdir) != 0) {
-            err_error("failed to make application directory");
+            errstack_pushb(self->errstack, "failed to make application directory");
             return false;
         }
     }
@@ -130,13 +132,13 @@ app_deploy_env(const app_t *self) {
     // make variable directory
     char vardir[FILE_NPATH];
     if (!file_solvefmt(vardir, sizeof vardir, "%s/var", appdir)) {
-        err_error("failed to create path of variable");
+        errstack_pushb(self->errstack, "failed to create path of variable");
         return false;
     }
 
     if (!file_exists(vardir)) {
         if (file_mkdirq(vardir) != 0) {
-            err_error("failed to make variable directory");
+            errstack_pushb(self->errstack, "failed to make variable directory");
             return false;
         }
     }
@@ -144,46 +146,46 @@ app_deploy_env(const app_t *self) {
     // make variable files
     char path[FILE_NPATH];
     if (!file_solvefmt(path, sizeof path, "%s/cd", vardir)) {
-        err_error("failed to create path of cd variable");
+        errstack_pushb(self->errstack, "failed to create path of cd variable");
         return false;
     }
     if (!file_exists(path)) {
         if (!file_writeline(userhome, path)) {
-            err_error("failed to write line to cd of variable");
+            errstack_pushb(self->errstack, "failed to write line to cd of variable");
             return false;
         }
     }
 
     if (!file_solvefmt(path, sizeof path, "%s/home", vardir)) {
-        err_error("failed to create path of home variable");
+        errstack_pushb(self->errstack, "failed to create path of home variable");
         return false;
     }
     if (!file_exists(path)) {
         if (!file_writeline(userhome, path)) {
-            err_error("failed to write line to home of variable");
+            errstack_pushb(self->errstack, "failed to write line to home of variable");
             return false;
         }
     }
 
     if (!file_solvefmt(path, sizeof path, "%s/editor", vardir)) {
-        err_error("failed to create path of home variable");
+        errstack_pushb(self->errstack, "failed to create path of home variable");
         return false;
     }
     if (!file_exists(path)) {
         if (!file_writeline("", path)) {
-            err_error("failed to write line to home of variable");
+            errstack_pushb(self->errstack, "failed to write line to home of variable");
             return false;
         }
     }
 
     // make snippets directory
     if (!file_solvefmt(path, sizeof path, "%s/codes", appdir)) {
-        err_error("failed to solve path for snippet codes directory");
+        errstack_pushb(self->errstack, "failed to solve path for snippet codes directory");
         return false;
     }
     if (!file_exists(path)) {
         if (file_mkdirq(path) != 0) {
-            err_error("failed to make directory for snippet codes directory");
+            errstack_pushb(self->errstack, "failed to make directory for snippet codes directory");
             return false;
         }
     }
@@ -191,7 +193,7 @@ app_deploy_env(const app_t *self) {
     // standard library directory
     if (!file_exists(self->config->std_lib_dir_path)) {
         if (file_mkdirq(self->config->std_lib_dir_path) != 0) {
-            err_error("failed to make directory for standard libraries directory");
+            errstack_pushb(self->errstack, "failed to make directory for standard libraries directory");
             return false;
         }
     }
@@ -213,6 +215,7 @@ static bool
 app_parse_args(app_t *self, int argc, char *argv[]) {
     distribute_args_t dargs = {0};
     if (!distribute_args(&dargs, argc, argv)) {
+        errstack_pushb(self->errstack, "failed to distribute arguments");
         return false;
     }
 
@@ -233,36 +236,11 @@ app_parse_args(app_t *self, int argc, char *argv[]) {
  * @return failed to NULL
  */
 static app_t *
-app_new(int argc, char *argv[]) {
-    // set locale for unicode object (char32_t, char16_t)
-    setlocale(LC_CTYPE, "");
-
+app_new(void) {
     app_t *self = mem_ecalloc(1, sizeof(*self));
 
+    self->errstack = errstack_new();
     self->config = config_new();
-    if (!config_init(self->config)) {
-        err_error("failed to configuration");
-        app_del(self);
-        return NULL;
-    }
-
-    if (!app_parse_args(self, argc, argv)) {
-        err_error("failed to parse arguments");
-        app_del(self);
-        return NULL;
-    }
-
-    if (!app_parse_opts(self)) {
-        err_error("failed to parse options");
-        app_del(self);
-        return NULL;
-    }
-
-    if (!app_deploy_env(self)) {
-        err_error("failed to deploy environment at file system");
-        app_del(self);
-        return NULL;
-    }
 
     return self;
 }
@@ -446,7 +424,7 @@ app_execute_command_by_name(app_t *self, const char *name) {
         result = rmcmd_run(cmd);
         switch (rmcmd_errno(cmd)) {
         case RMCMD_ERR_NOERR: break;
-        default: err_error(rmcmd_what(cmd)); break;
+        default: errstack_pushb(self->errstack, rmcmd_what(cmd)); break;
         }
         rmcmd_del(cmd);
     } else if (cstr_eq(name, "mv")) {
@@ -468,7 +446,7 @@ app_execute_command_by_name(app_t *self, const char *name) {
     } else if (cstr_eq(name, "find")) {
         routine(findcmd);
     } else {
-        err_error("invalid command name \"%s\"", name);
+        errstack_pushb(self->errstack, "invalid command name \"%s\"", name);
         result = 1;
     }
 
@@ -531,22 +509,19 @@ app_execute_alias_by_name(app_t *self, bool *found, const char *name) {
     freeargv(self->argc, self->argv);
     freeargv(self->cmd_argc, self->cmd_argv);
 
-    if (!app_parse_args(self, argc, argv)) {
-        err_error("failed to parse arguments");
-        return 1;
-    }
-    freeargv(argc, argv);
-
     // increment recursion count for safety
     self->config->recursion_count++;
 
     // run application
     if (self->config->recursion_count >= MAX_RECURSION_LIMIT) {
-        err_error("reached recursion limit");
+        errstack_pushb(self->errstack, "reached recursion limit");
         return 1;
     }
 
-    return app_run(self);
+    int result = app_run(self, argc, argv);
+    freeargv(argc, argv);
+
+    return result;
 }
 
 /**
@@ -575,7 +550,7 @@ app_run(app_t *self) {
     
     const char *cmdname = self->cmd_argv[0];
     if (!cmdname) {
-        err_error("command name is null");
+        errstack_pushb(self->errstack, "command name is null");
         return 1; // impossible
     }
 
@@ -607,6 +582,31 @@ app_run(app_t *self) {
     return execute_run(self->config, argc, argv);
 }
 
+static bool
+app_init(app_t *self, int argc, char *argv[]) {
+    if (!config_init(self->config)) {
+        errstack_pushb(self->errstack, "failed to configuration");
+        return false;
+    }
+
+    if (!app_parse_args(self, argc, argv)) {
+        errstack_pushb(self->errstack, "failed to parse arguments");
+        return false;
+    }
+
+    if (!app_parse_opts(self)) {
+        errstack_pushb(self->errstack, "failed to parse options");
+        return false;
+    }
+
+    if (!app_deploy_env(self)) {
+        errstack_pushb(self->errstack, "failed to deploy environment at file system");
+        return false;
+    }
+
+    return true;
+}
+
 /**
  * run module
  *
@@ -616,7 +616,11 @@ app_run(app_t *self) {
  * @return failed to not 0
  */
 static int
-app_run(app_t *self) {
+app_run(app_t *self, int argc, char *argv[]) {
+    if (!app_init(self, argc, argv)) {
+        return 1;
+    }
+
     if (self->opts.is_help) {
         app_usage(self);
         return 0;
@@ -636,6 +640,20 @@ app_run(app_t *self) {
 }
 
 /**
+ * stack trace
+ * 
+ * @param[in] *self
+ */
+static void
+app_trace(const app_t *self) {
+    if (errstack_len(self->errstack)) {
+        fflush(stdout);
+        errstack_trace(self->errstack, stderr);
+        fflush(stderr);        
+    }
+}
+
+/**
  * main routine
  *
  * @param[in] argc
@@ -646,12 +664,19 @@ app_run(app_t *self) {
  */
 int
 main(int argc, char *argv[]) {
-    app_t *app = app_new(argc, argv);
+    // set locale for unicode object (char32_t, char16_t)
+    setlocale(LC_CTYPE, "");
+
+    app_t *app = app_new();
     if (!app) {
         err_die("failed to start application");
     }
 
-    int result = app_run(app);
+    int result = app_run(app, argc, argv);
+    if (result != 0) {
+        app_trace(app);
+    }
+
     app_del(app);
     
     return result;
