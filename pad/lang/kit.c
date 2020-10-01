@@ -48,20 +48,6 @@ kit_new(const config_t *config) {
     return self;
 }
 
-kit_t *
-kit_compile_from_path(kit_t *self, const char *path) {
-    char *src = file_readcp_from_path(path);
-    if (!src) {
-        return NULL;
-    }
-
-    kit_t *result = kit_compile_from_string(self, src);
-    // allow null
-
-    free(src);
-    return result;
-}
-
 bool
 kit_has_error(const kit_t *self) {
     return self->error[0] != '\0';
@@ -73,8 +59,37 @@ kit_getc_error(const kit_t *self) {
 }
 
 kit_t *
-kit_compile_from_string(kit_t *self, const char *str) {
+kit_compile_from_path(kit_t *self, const char *path) {
+    return kit_compile_from_path_args(self, path, 0, NULL);
+}
+
+kit_t *
+kit_compile_from_path_args(kit_t *self, const char *path, int argc, char *argv[]) {
+    char *src = file_readcp_from_path(path);
+    if (!src) {
+        return NULL;
+    }
+
+    kit_t *result = kit_compile_from_string_args(self, src, argc, argv);
+    // allow null
+
+    free(src);
+    return result;
+}
+
+kit_t *
+kit_compile_from_string_args(kit_t *self, const char *str, int argc, char *argv[]) {
     self->error[0] = '\0';
+    opts_t *opts = NULL;
+
+    if (argv) {
+        opts = opts_new();
+        if (!opts_parse(opts, argc, argv)) {
+            snprintf(self->error, sizeof self->error, "failed to parse options");
+            return NULL;
+        }
+    }
+
     tkr_parse(self->tkr, str);
     if (tkr_has_error_stack(self->tkr)) {
         snprintf(self->error, sizeof self->error, "%s", tkr_getc_first_error_message(self->tkr));
@@ -82,6 +97,11 @@ kit_compile_from_string(kit_t *self, const char *str) {
     }
 
     ast_clear(self->ast);
+    if (opts) {
+        ast_move_opts(self->ast, mem_move(opts));
+        opts = NULL;
+    }
+
     cc_compile(self->ast, tkr_get_tokens(self->tkr));
     if (ast_has_errors(self->ast)) {
         snprintf(self->error, sizeof self->error, "%s", ast_getc_first_error_message(self->ast));
@@ -95,6 +115,11 @@ kit_compile_from_string(kit_t *self, const char *str) {
     }
 
     return self;
+}
+
+kit_t *
+kit_compile_from_string(kit_t *self, const char *str) {
+    return kit_compile_from_string_args(self, str, 0, NULL);
 }
 
 void

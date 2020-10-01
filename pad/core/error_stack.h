@@ -8,6 +8,16 @@
 #include <pad/lib/cstring_array.h>
 #include <pad/lib/error.h>
 
+/*********
+* macros *
+*********/
+
+#define pusherr(fmt, ...) \
+    errstack_pushb(self->errstack, fmt, #__VA_ARGS__)
+
+#define errstack_pushb(self, fmt, ...) \
+    _errstack_pushb(self, __FILE__, __LINE__, __func__, fmt, ##__VA_ARGS__)
+
 /**********
 * errelem *
 **********/
@@ -89,9 +99,6 @@ _errstack_pushb(
     const char *fmt,
     ...
 );
-
-#define errstack_pushb(self, fmt, ...) \
-    _errstack_pushb(self, __FILE__, __LINE__, __func__, fmt, ##__VA_ARGS__)
 
 /**
  * get stack element from stack with read-only

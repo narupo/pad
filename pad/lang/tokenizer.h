@@ -90,6 +90,17 @@ tokenizer_t *
 tkr_parse(tokenizer_t *self, const char *src);
 
 /**
+ * move option
+ * 
+ * @param[in] *self 
+ * @param[in] *move_opt  
+ * 
+ * @return 
+ */
+tokenizer_t *
+tkr_move_opt(tokenizer_t *self, tokenizer_option_t *move_opt);
+
+/**
  * Get length of tokens list
  *
  * @param[in] self pointer to dynamic allocate memory of tokenizer_t
