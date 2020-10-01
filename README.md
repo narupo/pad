@@ -17,8 +17,26 @@ How to build of the pad.
 
 ```
 {@
-    for i = 0; i < 4; i += 1:
-        puts("Hello", i)
+    // Bubble sort program
+    arr = [3, 2, 4, 1]
+    k = 0
+    flag = true
+
+    for flag:
+        flag = false
+        for i = 0; i < len(arr) - 1 - k; i += 1:
+            if arr[i] > arr[i + 1]:
+                tmp = arr[i]
+                arr[i] = arr[i + 1]
+                arr[i + 1] = tmp
+                flag = true
+            end
+        end
+        k += 1
+    end
+
+    for i = 0; i < len(arr); i += 1:
+        puts(arr[i])
     end
 @}
 ```
