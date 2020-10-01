@@ -1,39 +1,35 @@
-# Cap
+# Pad
 
-Cap is shell for programmer's snippet codes.
+Pad is programming language.
 
 # Build
 
-How to build of cap.
+How to build of the pad.
 
 ## UNIX
 
-    $ git clone https://github.com/narupo/cap
-    $ cd cap
+    $ git clone https://github.com/narupo/pad
+    $ cd pad
     $ make init && make
-    $ ./build/cap -h
+    $ ./build/pad -h
 
 
 ## Windows
 
 Using MinGW's make (recommend TDM-GCC).
 
-    $ git clone https://github.com/narupo/cap
-    $ cd cap
+    $ git clone https://github.com/narupo/pad
+    $ cd pad
     $ mingw32-make init && mingw32-make
-    $ ./build/cap -h   
+    $ ./build/pad -h   
 
-# How to use
+# Syntax and feature
 
-You should be set home.
-
-    $ cap home /my/snippet/directory
-
-Show your snippet codes.
-
-    $ cap cat mysnippet.code
-
-And run shell.
-
-    $ cap sh
+```
+{@
+    for i = 0; i < 4; i += 1:
+        puts("Hello", i)
+    end
+@}
+```
 
