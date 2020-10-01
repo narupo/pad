@@ -1,4 +1,4 @@
 {@
-    from "/tests/lang/modules/if-2.cap" import f2
+    from "tests/lang/modules/if-2.cap" import f2
     f2()
 @}

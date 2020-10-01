@@ -1,0 +1,41 @@
+#pragma once
+
+#include <pad/lib/memory.h>
+#include <pad/core/config.h>
+#include <pad/lang/context.h>
+#include <pad/lang/ast.h>
+#include <pad/lang/compiler.h>
+#include <pad/lang/tokenizer.h>
+#include <pad/lang/traverser.h>
+#include <pad/lang/gc.h>
+#include <pad/lang/opts.h>
+
+struct kit;
+typedef struct kit kit_t;
+
+void
+kit_del(kit_t *self);
+
+kit_t *
+kit_new(const config_t *config);
+
+kit_t *
+kit_compile_from_path(kit_t *self, const char *path);
+
+kit_t *
+kit_compile_from_string(kit_t *self, const char *str);
+
+const char *
+kit_getc_compiled(const kit_t *self);
+
+void
+kit_clear_context(kit_t *self);
+
+bool
+kit_has_error(const kit_t *self);
+
+const char *
+kit_getc_error(const kit_t *self);
+
+void
+kit_clear_context_buffer(kit_t *self);
