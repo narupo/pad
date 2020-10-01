@@ -8,14 +8,6 @@
 #include <pad/app.h>
 
 /**
- * numbers
- */
-enum {
-    MAX_RECURSION_LIMIT = 8,
-    NOT_FOUND = -1,
-};
-
-/**
  * program option
  */
 struct opts {
