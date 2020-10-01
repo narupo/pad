@@ -7,6 +7,7 @@
 #include <pad/lang/utils.h>
 #include <pad/lang/gc.h>
 #include <pad/lang/arguments.h>
+#include <pad/lang/tokenizer.h>
 
 /**
  * construct module

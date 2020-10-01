@@ -23,7 +23,13 @@ kit_t *
 kit_compile_from_path(kit_t *self, const char *path);
 
 kit_t *
+kit_compile_from_path_args(kit_t *self, const char *path, int argc, char *argv[]);
+
+kit_t *
 kit_compile_from_string(kit_t *self, const char *str);
+
+kit_t *
+kit_compile_from_string_args(kit_t *self, const char *str, int argc, char *argv[]);
 
 const char *
 kit_getc_compiled(const kit_t *self);

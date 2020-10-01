@@ -117,6 +117,20 @@ tkr_deep_copy(const tokenizer_t *other) {
     return self;
 }
 
+tokenizer_t *
+tkr_move_opt(tokenizer_t *self, tokenizer_option_t *move_opt) {
+    if (!self || !move_opt) {
+        return NULL;
+    }
+
+    if (self->option) {
+        tkropt_del(self->option);
+    }
+    self->option = mem_move(move_opt);
+
+    return self;
+}
+
 static void
 tkr_resize_tokens(tokenizer_t *self, int32_t capa) {
     size_t byte = sizeof(token_t *);

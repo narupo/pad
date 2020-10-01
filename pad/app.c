@@ -29,6 +29,8 @@ struct opts {
 typedef struct {
     int argc;
     char **argv;
+    int cmd_argc;
+    char **cmd_argv;
     config_t *config;
     struct opts opts;
     errstack_t *errstack;
@@ -45,7 +47,7 @@ app_run(app_t *self, int argc, char *argv[]);
  * @return failed to false
  */
 static bool
-app_parse_opts(app_t *self, int argc, char *argv[]) {
+app_parse_opts(app_t *self) {
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"version", no_argument, 0, 'V'},
@@ -53,8 +55,6 @@ app_parse_opts(app_t *self, int argc, char *argv[]) {
     };
 
     // init status
-    self->argc = argc;
-    self->argv = argv;
     self->opts = (struct opts){0};
     optind = 0;
     opterr = 0;
@@ -72,7 +72,7 @@ app_parse_opts(app_t *self, int argc, char *argv[]) {
         case 'V': self->opts.is_version = true; break;
         case '?':
         default:
-            errstack_pushb(self->errstack, "invalid option");
+            pusherr("invalid option");
             return false; break;
         }
     }
@@ -109,20 +109,20 @@ static bool
 app_deploy_env(const app_t *self) {
     char userhome[FILE_NPATH];
     if (!file_get_user_home(userhome, sizeof userhome)) {
-        errstack_pushb(self->errstack, "failed to get user's home directory. what is your file system?");
+        pusherr("failed to get user's home directory. what is your file system?");
         return false;
     }
 
     // make application directory
     char appdir[FILE_NPATH];
     if (!file_solvefmt(appdir, sizeof appdir, "%s/.cap", userhome)) {
-        errstack_pushb(self->errstack, "faield to create application directory path");
+        pusherr("faield to create application directory path");
         return false;
     }
 
     if (!file_exists(appdir)) {
         if (file_mkdirq(appdir) != 0) {
-            errstack_pushb(self->errstack, "failed to make application directory");
+            pusherr("failed to make application directory");
             return false;
         }
     }
@@ -188,19 +188,35 @@ app_version(app_t *self) {
 }
 
 static bool
+app_parse_args(app_t *self, int argc, char *argv[]) {
+    distribute_args_t dargs = {0};
+    distribute_args(&dargs, argc, argv);
+    self->argc = dargs.argc;
+    self->argv = dargs.argv;
+    self->cmd_argc = dargs.cmd_argc;
+    self->cmd_argv = dargs.cmd_argv;
+    return true;
+}
+
+static bool
 app_init(app_t *self, int argc, char *argv[]) {
     if (!config_init(self->config)) {
-        errstack_pushb(self->errstack, "failed to configuration");
+        pusherr("failed to configuration");
         return false;
     }
 
-    if (!app_parse_opts(self, argc, argv)) {
-        errstack_pushb(self->errstack, "failed to parse options");
+    if (!app_parse_args(self, argc, argv)) {
+        pusherr("failed to parse arguments");
+        return false;
+    }
+
+    if (!app_parse_opts(self)) {
+        pusherr("failed to parse options");
         return false;
     }
 
     if (!app_deploy_env(self)) {
-        errstack_pushb(self->errstack, "failed to deploy environment at file system");
+        pusherr("failed to deploy environment at file system");
         return false;
     }
 
@@ -211,13 +227,13 @@ static int
 _app_run(app_t *self) {
     char *content = file_readcp(stdin);
     if (!content) {
-        errstack_pushb(self->errstack, "failed to read from stdin");
+        pusherr("failed to read from stdin");
         return 1;
     }
 
     kit_t *kit = kit_new(self->config);
     if (!kit_compile_from_string(kit, content)) {
-        errstack_pushb(self->errstack, "failed to compile from string");
+        pusherr("failed to compile from string");
         return 1;
     }
 
@@ -226,6 +242,29 @@ _app_run(app_t *self) {
     kit_del(kit);
     free(content);
 
+    return 0;
+}
+
+static int
+app_run_args(app_t *self) {
+    int argc = self->cmd_argc;
+    char **argv = self->cmd_argv;
+    if (!argc) {
+        pusherr("invalid arguments");
+        return 1;
+    }
+
+    const char *path = argv[0];
+    kit_t *kit = kit_new(self->config);
+
+    if (!kit_compile_from_path_args(kit, path, argc, argv)) {
+        pusherr("failed to compile \"%s\"", path);
+        return 1;
+    }
+
+    printf("%s", kit_getc_compiled(kit));
+
+    kit_del(kit);
     return 0;
 }
 
@@ -251,6 +290,10 @@ app_run(app_t *self, int argc, char *argv[]) {
     if (self->opts.is_version) {
         app_version(self);
         return 0;
+    }
+
+    if (self->cmd_argc >= 0) {
+        return app_run_args(self);
     }
 
     return _app_run(self);
