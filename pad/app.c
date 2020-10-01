@@ -292,7 +292,7 @@ app_run(app_t *self, int argc, char *argv[]) {
         return 0;
     }
 
-    if (self->cmd_argc >= 0) {
+    if (self->cmd_argc >= 1) {
         return app_run_args(self);
     }
 
