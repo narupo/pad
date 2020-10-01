@@ -39,7 +39,7 @@ endif
 # this is benri tool
 # $(warning $(wildcard pad/*.c))
 
-all: tests cap
+all: tests pad
 
 .PHONY: clean
 clean:
@@ -114,8 +114,8 @@ OBJS := $(SRCS:.c=.o)
 tests: build/tests.o $(OBJS)
 	$(CC) $(CFLAGS) -o build/tests $^
 
-cap: build/app.o $(OBJS)
-	$(CC) $(CFLAGS) -o build/cap $^
+pad: build/app.o $(OBJS)
+	$(CC) $(CFLAGS) -o build/pad $^
 
 build/app.o: pad/app.c pad/app.h
 	$(CC) $(CFLAGS) -c $< -o $@
