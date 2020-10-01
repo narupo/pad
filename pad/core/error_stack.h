@@ -13,7 +13,7 @@
 *********/
 
 #define pusherr(fmt, ...) \
-    errstack_pushb(self->errstack, fmt, #__VA_ARGS__)
+    errstack_pushb(self->errstack, fmt, ##__VA_ARGS__)
 
 #define errstack_pushb(self, fmt, ...) \
     _errstack_pushb(self, __FILE__, __LINE__, __func__, fmt, ##__VA_ARGS__)
