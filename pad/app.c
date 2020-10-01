@@ -1,5 +1,5 @@
 /**
- * Cap
+ * Pad
  *
  * license: MIT
  *  author: narupo
@@ -91,7 +91,7 @@ app_del(app_t *self) {
 }
 
 /**
- * deploy Cap's environment at user's file system
+ * deploy Pad's environment at user's file system
  *
  * @param[in] self
  * @return success to true
@@ -107,7 +107,7 @@ app_deploy_env(const app_t *self) {
 
     // make application directory
     char appdir[FILE_NPATH];
-    if (!file_solvefmt(appdir, sizeof appdir, "%s/.cap", userhome)) {
+    if (!file_solvefmt(appdir, sizeof appdir, "%s/.pad", userhome)) {
         pusherr("faield to create application directory path");
         return false;
     }
@@ -149,11 +149,11 @@ app_new(void) {
 static void
 app_usage(app_t *app) {
     static const char usage[] =
-        "Cap is shell for snippet codes.\n"
+        "Pad is programming language.\n"
         "\n"
         "Usage:\n"
         "\n"
-        "    cap [options] [command] [arguments]\n"
+        "    pad [options]... [file] [arguments]...\n"
         "\n"
         "The options are:\n"
         "\n"
