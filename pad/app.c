@@ -225,7 +225,9 @@ _app_run(app_t *self) {
 
     kit_t *kit = kit_new(self->config);
     if (!kit_compile_from_string(kit, content)) {
-        pusherr("failed to compile from string");
+        const errstack_t *errstack = kit_getc_error_stack(kit);
+        errstack_extendf_other(self->errstack, errstack);
+        pusherr("failed to compile from stdin");
         return 1;
     }
 
@@ -247,9 +249,16 @@ app_run_args(app_t *self) {
     }
 
     const char *path = argv[0];
+    if (!file_exists(path)) {
+        pusherr("not found \"%s\"", path);
+        return 1;
+    }
+
     kit_t *kit = kit_new(self->config);
 
     if (!kit_compile_from_path_args(kit, path, argc, argv)) {
+        const errstack_t *errstack = kit_getc_error_stack(kit);
+        errstack_extendf_other(self->errstack, errstack);
         pusherr("failed to compile \"%s\"", path);
         return 1;
     }

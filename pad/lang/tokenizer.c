@@ -632,6 +632,12 @@ tkr_parse(tokenizer_t *self, const char *src) {
                 tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_COLON)));
             } else if (c == ' ') {
                 // pass
+            } else if (c == '\r' && *self->ptr == '\n') {
+                self->ptr++;
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_NEWLINE)));
+            } else if ((c == '\r' && *self->ptr != '\n') ||
+                       (c == '\n')) {
+                tkr_move_token(self, mem_move(token_new(TOKEN_TYPE_NEWLINE)));
             } else {
                 errstack_pushb(self->error_stack, "syntax error. unsupported character \"%c\"", c);
                 goto fail;

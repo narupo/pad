@@ -2,6 +2,7 @@
 
 #include <pad/lib/memory.h>
 #include <pad/core/config.h>
+#include <pad/core/error_stack.h>
 #include <pad/lang/context.h>
 #include <pad/lang/ast.h>
 #include <pad/lang/compiler.h>
@@ -38,10 +39,10 @@ void
 kit_clear_context(kit_t *self);
 
 bool
-kit_has_error(const kit_t *self);
+kit_has_error_stack(const kit_t *self);
 
-const char *
-kit_getc_error(const kit_t *self);
+const errstack_t *
+kit_getc_error_stack(const kit_t *self);
 
 void
 kit_clear_context_buffer(kit_t *self);
