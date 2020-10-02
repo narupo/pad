@@ -3717,6 +3717,8 @@ cc_ref_block(ast_t *ast, cc_args_t *cargs) {
     }
     check("read '{:'")
 
+    cc_skip_newlines(ast);
+    
     check("call cc_formula");
     cargs->depth = depth + 1;
     cur->formula = cc_formula(ast, cargs);
@@ -3724,6 +3726,8 @@ cc_ref_block(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
 
+    cc_skip_newlines(ast);
+    
     t = *ast->ref_ptr++;
     if (!t) {
         return_cleanup("syntax error. reached EOF in reference block");

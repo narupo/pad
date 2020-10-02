@@ -19,7 +19,7 @@ struct kit {
     ast_t *ast;
     gc_t *gc;
     context_t *ctx;
-    char error[ERR_SIZE];
+    errstack_t *errstack;
 };
 
 void
@@ -44,18 +44,9 @@ kit_new(const config_t *config) {
     self->ast = ast_new(config);
     self->gc = gc_new();
     self->ctx = ctx_new(self->gc);
+    self->errstack = errstack_new();
 
     return self;
-}
-
-bool
-kit_has_error(const kit_t *self) {
-    return self->error[0] != '\0';
-}
-
-const char *
-kit_getc_error(const kit_t *self) {
-    return self->error;
 }
 
 kit_t *
@@ -79,20 +70,21 @@ kit_compile_from_path_args(kit_t *self, const char *path, int argc, char *argv[]
 
 kit_t *
 kit_compile_from_string_args(kit_t *self, const char *str, int argc, char *argv[]) {
-    self->error[0] = '\0';
+    errstack_clear(self->errstack);
     opts_t *opts = NULL;
 
     if (argv) {
         opts = opts_new();
         if (!opts_parse(opts, argc, argv)) {
-            snprintf(self->error, sizeof self->error, "failed to parse options");
+            pusherr("failed to parse options");
             return NULL;
         }
     }
 
     tkr_parse(self->tkr, str);
     if (tkr_has_error_stack(self->tkr)) {
-        snprintf(self->error, sizeof self->error, "%s", tkr_getc_first_error_message(self->tkr));
+        const errstack_t *errstack = tkr_getc_error_stack(self->tkr);
+        errstack_extendf_other(self->errstack, errstack);
         return NULL;
     }
 
@@ -104,13 +96,15 @@ kit_compile_from_string_args(kit_t *self, const char *str, int argc, char *argv[
 
     cc_compile(self->ast, tkr_get_tokens(self->tkr));
     if (ast_has_errors(self->ast)) {
-        snprintf(self->error, sizeof self->error, "%s", ast_getc_first_error_message(self->ast));
+        const errstack_t *errstack = ast_getc_error_stack(self->ast);
+        errstack_extendf_other(self->errstack, errstack);
         return NULL;
     }
 
     trv_traverse(self->ast, self->ctx);
     if (ast_has_errors(self->ast)) {
-        snprintf(self->error, sizeof self->error, "%s", ast_getc_first_error_message(self->ast));
+        const errstack_t *errstack = ast_getc_error_stack(self->ast);
+        errstack_extendf_other(self->errstack, errstack);
         return NULL;
     }
 
@@ -135,4 +129,14 @@ kit_clear_context_buffer(kit_t *self) {
 const char *
 kit_getc_compiled(const kit_t *self) {
     return ctx_getc_stdout_buf(self->ctx);
+}
+
+bool
+kit_has_error_stack(const kit_t *self) {
+    return errstack_len(self->errstack);
+}
+
+const errstack_t *
+kit_getc_error_stack(const kit_t *self) {
+    return self->errstack;
 }
