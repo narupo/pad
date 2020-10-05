@@ -7,6 +7,9 @@
 object_t *
 _trv_traverse(ast_t *ast, trv_args_t *targs);
 
+ast_t *
+trv_import_builtin_modules(ast_t *ast);
+
 static object_t *
 invoke_func_obj(ast_t *ast, object_array_t *owners, object_t *func_obj, object_t *drtargs);
 
@@ -701,6 +704,7 @@ gen_struct(
     ast_set_ref_parent(struct_ast, ast);
     ast_set_ref_context(struct_ast, struct_ctx);
     ast_set_ref_gc(struct_ast, ast->ref_gc);
+    trv_import_builtin_modules(struct_ast);
 
     object_t *result = _trv_traverse(struct_ast, &(trv_args_t) {
         .ref_node = ref->def_struct.ref_elems,
