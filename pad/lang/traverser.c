@@ -355,6 +355,14 @@ trv_elems(ast_t *ast, trv_args_t *targs) {
         } else if (ctx_get_do_return(ast->ref_context)) {
             return_trav(result);
         }
+    } else if (elems->struct_) {
+        check("call _trv_traverse with struct_");
+        targs->ref_node = elems->struct_; 
+        targs->depth = depth + 1;
+        _trv_traverse(ast, targs);
+        if (ast_has_errors(ast)) {
+            return_trav(NULL);
+        }        
     } else if (elems->formula) {
         check("call _trv_traverse with formula");
         targs->ref_node = elems->formula;
@@ -1249,6 +1257,50 @@ trv_inject_stmt(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
+trv_def_struct(ast_t *ast, trv_args_t *targs) {
+    tready();
+    node_t *node = targs->ref_node;
+    assert(node);
+    assert(node->type == NODE_TYPE_STRUCT);
+    node_struct_t *struct_ = node->real;
+    assert(struct_);
+
+    depth_t depth = targs->depth;
+
+    targs->ref_node = struct_->identifier;
+    targs->depth = depth + 1;
+    object_t *idn = _trv_traverse(ast, targs);
+    if (!idn || ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to traverse identifier");
+        return_trav(NULL);
+    }
+
+    object_t *def_struct = obj_new_def_struct(
+        ast->ref_gc,
+        ast,
+        mem_move(idn),
+        struct_->elems
+    );
+    if (!def_struct) {
+        ast_pushb_error(ast, "failed to create def-struct object");
+        return_trav(NULL);
+    }
+
+    move_obj_at_cur_varmap(
+        ast,
+        targs->ref_owners,
+        obj_getc_idn_name(idn),
+        mem_move(def_struct)
+    );
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to move object");
+        return_trav(NULL);
+    }
+
+    return_trav(NULL);
+}
+
+static object_t *
 trv_content(ast_t *ast, trv_args_t *targs) {
     tready();
     node_t *node = targs->ref_node;
@@ -1344,16 +1396,43 @@ assign_to_chain_dot(
     chain_object_t *co,
     object_t *rhs
 ) {
-    object_t *obj = chain_obj_get_obj(co);
+    object_t *ref_owner = objarr_get_last(owners);
+    object_t *child = chain_obj_get_obj(co);
+    ast_t *ast_ = ast;
 
-    switch (obj->type) {
+    if (!ref_owner) {
+        goto refer_child;
+    }
+
+again:
+    switch (ref_owner->type) {
     default:
-        ast_pushb_error(ast, "invalid type (%d)", obj->type);
+        ast_pushb_error(ast, "unsupported object (%d)", ref_owner->type);
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        ref_owner = pull_in_ref_by(ref_owner);
+        if (!ref_owner) {
+            return NULL;
+        }
+        goto again;
+    } break;
+    case OBJ_TYPE_OBJECT: {
+        ast_ = ref_owner->object.ast;
+    } break;
+    case OBJ_TYPE_MODULE: {
+        ast_ = ref_owner->module.ast;
+    } break;
+    }
+
+refer_child:
+    switch (child->type) {
+    default:
+        ast_pushb_error(ast, "invalid type (%d)", child->type);
         return NULL;
     case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = obj_getc_idn_name(obj);
-        ast_t *ref_ast = obj_get_idn_ref_ast(obj);
-        set_ref_at_cur_varmap(ref_ast, owners, idn, rhs);
+        const char *idn = obj_getc_idn_name(child);
+        set_ref_at_cur_varmap(ast_, owners, idn, rhs);
         return rhs;
     } break;
     }
@@ -8914,6 +8993,11 @@ _trv_traverse(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_inject_stmt(ast, targs);
         return_trav(obj);
     } break;
+    case NODE_TYPE_STRUCT: {
+        check("call trv_def_struct");
+        object_t *obj = trv_def_struct(ast, targs);
+        return_trav(obj);
+    } break;
     case NODE_TYPE_TEST_LIST: {
         check("call trv_test_list");
         object_t *obj = trv_test_list(ast, targs);
@@ -9079,8 +9163,8 @@ trv_import_builtin_modules(ast_t *ast) {
 
 void
 trv_traverse(ast_t *ast, context_t *context) {
-    ast->ref_context = context;
-    ast->ref_gc = ctx_get_gc(context);
+    ast_set_ref_context(ast, context);
+    ast_set_ref_gc(ast, ctx_get_gc(context));
 
     if (!trv_import_builtin_modules(ast)) {
         ast_pushb_error(ast, "failed to import builtin modules");

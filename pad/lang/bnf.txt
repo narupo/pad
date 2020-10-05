@@ -1,4 +1,4 @@
-BNF of Cap's template language
+BNF of Pad's template language
 
            program: blocks
 
@@ -6,7 +6,13 @@ BNF of Cap's template language
         code_block: '{@' elems '@}'
          ref_block: '{:' formula ':}'
         text_block: .*
-             elems: ( def | stmt | formula ) elems
+             elems: ( def | stmt | struct | formula ) elems
+
+               def: func_def
+          func_def: 'def' identifier func_def_params func_extends? ':' [ content ]* 'end'
+      func_extends: 'extends' identifier
+   func_def_params: '(' func_def_args ')'
+     func_def_args: identifier [ ',' identifier ]*
 
               stmt: import_stmt |
                     if_stmt |
@@ -16,12 +22,6 @@ BNF of Cap's template language
                     return_stmt |
                     block_stmt |
                     inject_stmt
-
-               def: func_def
-          func_def: 'def' identifier func_def_params func_extends? ':' [ content ]* 'end'
-      func_extends: 'extends' identifier
-   func_def_params: '(' func_def_args ')'
-     func_def_args: identifier [ ',' identifier ]*
 
        import_stmt: import_as_stmt | from_import_stmt
     import_as_stmt: 'import' string 'as' identifier
@@ -44,6 +44,8 @@ BNF of Cap's template language
        return_stmt: 'return' [ formula ]*
         block_stmt: 'block' identifier ':' [ content ]* 'end'
        inject_stmt: 'inject' identifier ':' [ content ]* 'end'
+
+            struct: 'struct' identifier ':' elems 'end'
 
            content: elems | '@}' blocks '{@'
 

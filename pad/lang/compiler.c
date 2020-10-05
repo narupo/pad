@@ -129,6 +129,9 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs);
 static node_t *
 cc_block_stmt(ast_t *ast, cc_args_t *cargs);
 
+static node_t *
+cc_struct(ast_t *ast, cc_args_t *cargs);
+
 /************
 * functions *
 ************/
@@ -3552,6 +3555,71 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
 }
 
 static node_t *
+cc_struct(ast_t *ast, cc_args_t *cargs) {
+    ready();
+    declare(node_struct_t, cur);
+    token_t **save_ptr = ast->ref_ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg, ...) { \
+        ast->ref_ptr = save_ptr; \
+        ast_del_nodes(ast, cur->identifier); \
+        ast_del_nodes(ast, cur->elems); \
+        free(cur); \
+        if (strlen(msg)) { \
+            ast_pushb_error(ast, msg, ##__VA_ARGS__); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    depth_t depth = cargs->depth;
+    token_t *t = ast_read_token(ast);
+    if (!t) {
+        return_cleanup("reached EOF in read struct");
+    }
+    if (t->type != TOKEN_TYPE_STRUCT) {
+        return_cleanup("");  // not error
+    }
+
+    cargs->depth = depth + 1;
+    cur->identifier = cc_identifier(ast, cargs);
+    if (ast_has_errors(ast) || !cur->identifier) {
+        return_cleanup("");
+    }
+
+    t = ast_read_token(ast);
+    if (!t) {
+        return_cleanup("reached EOF in read colon");
+    }
+    if (t->type != TOKEN_TYPE_COLON) {
+        return_cleanup("not found colon in struct");
+    }
+
+    cc_skip_newlines(ast);
+
+    cargs->depth = depth + 1;
+    cur->elems = cc_elems(ast, cargs);
+    if (ast_has_errors(ast)) {
+        return_cleanup("");
+    }
+    // allow null
+
+    cc_skip_newlines(ast);
+
+    t = ast_read_token(ast);
+    if (!t) {
+        return_cleanup("reached EOF in read 'end'");
+    }
+    if (t->type != TOKEN_TYPE_STMT_END) {
+        return_cleanup("not found 'end'. found token is %d", t->type);
+    }
+
+    // done
+    node_t *node = node_new(NODE_TYPE_STRUCT, cur);
+    return_parse(node);
+}
+
+static node_t *
 cc_content(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_content_t, cur);
@@ -3616,6 +3684,7 @@ cc_elems(ast_t *ast, cc_args_t *cargs) {
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->def); \
         ast_del_nodes(ast, cur->stmt); \
+        ast_del_nodes(ast, cur->struct_); \
         ast_del_nodes(ast, cur->formula); \
         ast_del_nodes(ast, cur->elems); \
         free(cur); \
@@ -3630,32 +3699,48 @@ cc_elems(ast_t *ast, cc_args_t *cargs) {
     check("call def");
     cargs->depth = depth + 1;
     cur->def = cc_def(ast, cargs);
-    if (!cur->def) {
-        if (ast_has_errors(ast)) {
-            return_cleanup("");
-        }
-
-        check("call cc_stmt");
-        cargs->depth = depth + 1;
-        cur->stmt = cc_stmt(ast, cargs);
-        if (!cur->stmt) {
-            if (ast_has_errors(ast)) {
-                return_cleanup("");
-            }
-
-            check("call cc_formula");
-            cargs->depth = depth + 1;
-            cur->formula = cc_formula(ast, cargs);
-            if (!cur->formula) {
-                if (ast_has_errors(ast)) {
-                    return_cleanup("");
-                }
-                // empty elems
-                return_cleanup(""); // not error
-            }
-        }
+    if (ast_has_errors(ast)) {
+        return_cleanup("");
+    }
+    if (cur->def) {
+        goto elem_readed;
     }
 
+    check("call cc_stmt");
+    cargs->depth = depth + 1;
+    cur->stmt = cc_stmt(ast, cargs);
+    if (ast_has_errors(ast)) {
+        return_cleanup("");
+    }
+    if (cur->stmt) {
+        goto elem_readed;
+    }
+
+    check("call cc_struct");
+    cargs->depth = depth + 1;
+    cur->struct_ = cc_struct(ast, cargs);
+    if (ast_has_errors(ast)) {
+        return_cleanup("");
+    }
+    if (cur->struct_) {
+        goto elem_readed;
+    }
+
+    check("call cc_formula");
+    cargs->depth = depth + 1;
+    cur->formula = cc_formula(ast, cargs);
+    if (ast_has_errors(ast)) {
+        return_cleanup("");
+    }
+    if (cur->formula) {
+        goto elem_readed;
+    }
+
+    // elems is empty!
+
+    return_cleanup(""); // not error. allow empty
+
+elem_readed:
     check("skip newlines");
     cc_skip_newlines(ast);
 

@@ -85,6 +85,12 @@ again:
     case OBJ_TYPE_MODULE: {
         return obj_new_unicode_cstr(ref_ast->ref_gc, "module");
     } break;
+    case OBJ_TYPE_DEF_STRUCT: {
+        return obj_new_unicode_cstr(ref_ast->ref_gc, "struct");
+    } break;
+    case OBJ_TYPE_OBJECT: {
+        return obj_new_unicode_cstr(ref_ast->ref_gc, "object");
+    } break;
     } // switch
 
     ast_pushb_error(ref_ast, "not supported type \"%d\"", obj->type);
