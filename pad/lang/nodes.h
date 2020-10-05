@@ -44,6 +44,8 @@ typedef enum {
     NODE_TYPE_BLOCK_STMT,
     NODE_TYPE_INJECT_STMT,
 
+    NODE_TYPE_STRUCT,
+
     NODE_TYPE_CONTENT,
 
     NODE_TYPE_FORMULA,
@@ -155,6 +157,7 @@ typedef struct {
 typedef struct {
     node_t *def;
     node_t *stmt;
+    node_t *struct_;
     node_t *formula;
     node_t *elems;
 } node_elems_t;
@@ -240,6 +243,15 @@ typedef struct {
     node_t *identifier;
     node_array_t *contents;
 } node_inject_stmt_t;
+
+/*********
+* struct *
+*********/
+
+typedef struct {
+    node_t *identifier;
+    node_t *elems;
+} node_struct_t;
 
 /**********
 * content *

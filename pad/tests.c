@@ -15,6 +15,8 @@
 #define showerr() printf("stderr[%s]\n", ctx_getc_stderr_buf(ctx))
 
 #define showdetail() printf("detail[%s]\n", ast_getc_first_error_message(ast))
+
+#define trace() ast_trace_error_stack(ast, stderr)
 #define ERR errstack_trace(ast->error_stack, stderr)
 
 #define ast_debug(stmt) { \
@@ -4538,11 +4540,13 @@ test_tkr_parse(void) {
 
     tkr_parse(tkr, "{:\n:}");
     {
-        assert(tkr_tokens_len(tkr) == 1);
+        assert(tkr_tokens_len(tkr) == 3);
         token = tkr_tokens_getc(tkr, 0);
         assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
-        assert(tkr_has_error_stack(tkr) == true);
-        assert(strcmp(tkr_getc_first_error_message(tkr), "syntax error. unsupported character \"\n\"") == 0);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_NEWLINE);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
     }
 
     tkr_parse(tkr, "{:abc:}");
@@ -19412,14 +19416,22 @@ test_trv_ref_block(void) {
 
     tkr_parse(tkr, "{: 1\n :}");
     {
-        assert(tkr_has_error_stack(tkr));
-        assert(!strcmp(tkr_getc_first_error_message(tkr), "syntax error. unsupported character \"\n\""));
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
     tkr_parse(tkr, "{: \n1 :}");
     {
-        assert(tkr_has_error_stack(tkr));
-        assert(!strcmp(tkr_getc_first_error_message(tkr), "syntax error. unsupported character \"\n\""));
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
     tkr_parse(tkr, "\n{: 1 :}\n");
@@ -23236,6 +23248,270 @@ test_trv_inject_stmt_2(void) {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
         assert(!ast_has_errors(ast));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_1(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "struct Animal:\n"
+    "end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_errors(ast));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_2(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "struct Animal:\n"
+    "   a = 1\n"
+    "   b = 2\n"
+    "   def aaa():\n"
+    "       puts(1)\n"
+    "   end\n"
+    "   struct Body:\n"
+    "       c = 3\n"
+    "   end\n"
+    "end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_errors(ast));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_3(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "struct Animal:\n"
+    "   def aaa(): @}\n"
+    "       text\n"
+    "   {@ end\n"
+    "end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!ast_has_errors(ast));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_4(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "struct Animal:\n"
+    "   @}text{@"
+    "end\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        assert(!strcmp(ast_getc_first_error_message(ast), "not found 'end'. found token is 5"));
+        assert(ast_has_errors(ast));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_5(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "struct Animal:\n"
+    "   a = 1\n"
+    "   b = 2\n"
+    "end\n"
+    "animal = Animal()\n"
+    "@}{: type(animal) :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "object"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_6(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "struct Animal:\n"
+    "   a = 1\n"
+    "end\n"
+    "animal = Animal()\n"
+    "@}{: animal.a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_7(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "struct Animal:\n"
+    "   def func():\n"
+    "       return 1\n"
+    "   end\n"
+    "end\n"
+    "animal = Animal()\n"
+    "@}{: animal.func() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_8(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "struct Animal:\n"
+    "   struct Body:\n"
+    "       a = 1\n"
+    "   end\n"
+    "   body = Body()\n"
+    "end\n"
+    "animal = Animal()\n"
+    "@}{: animal.body.a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_9(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "struct Animal:\n"
+    "end\n"
+    "animal = Animal()\n"
+    "animal.a = 1\n"
+    "@}{: animal.a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        trace();
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_10(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "struct Animal:\n"
+    "   a = 1\n"
+    "end\n"
+    "animal = Animal()\n"
+    "animal.a = 2\n"
+    "@}{: animal.a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_11(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "from \"tests/lang/modules/struct-1.pad\" import Animal\n"
+    "animal = Animal()"
+    "@}{: animal.a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_12(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "a = 1\n"
+    "struct Animal:\n"
+    "   b = a\n"
+    "end\n"
+    "animal = Animal()"
+    "@}{: animal.b :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
     trv_cleanup;
@@ -27701,6 +27977,18 @@ traverser_tests[] = {
     {"trv_inject_stmt_17", test_trv_inject_stmt_17},
     {"trv_inject_stmt_18", test_trv_inject_stmt_18},
     {"trv_inject_stmt_19", test_trv_inject_stmt_19},
+    {"trv_struct_1", test_trv_struct_1},
+    {"trv_struct_2", test_trv_struct_2},
+    {"trv_struct_3", test_trv_struct_3},
+    {"trv_struct_4", test_trv_struct_4},
+    {"trv_struct_5", test_trv_struct_5},
+    {"trv_struct_6", test_trv_struct_6},
+    {"trv_struct_7", test_trv_struct_7},
+    {"trv_struct_8", test_trv_struct_8},
+    {"trv_struct_9", test_trv_struct_9},
+    {"trv_struct_10", test_trv_struct_10},
+    {"trv_struct_11", test_trv_struct_11},
+    {"trv_struct_12", test_trv_struct_12},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},

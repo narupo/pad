@@ -207,6 +207,13 @@ node_deep_copy(const node_t *other) {
         copy_node_array(dst, src, contents);
         self->real = dst;
     } break;
+    case NODE_TYPE_STRUCT: {
+        declare(node_struct_t, dst);
+        node_struct_t *src = other->real;
+        dst->identifier = node_deep_copy(src->identifier);
+        dst->elems = node_deep_copy(src->elems);
+        self->real = dst;
+    } break;
     case NODE_TYPE_CONTENT: {
         declare(node_content_t, dst);
         node_content_t *src = other->real;
@@ -526,6 +533,7 @@ node_to_str(const node_t *self) {
     case NODE_TYPE_RETURN_STMT: str_set(s, "return"); break;
     case NODE_TYPE_BLOCK_STMT: str_set(s, "block"); break;
     case NODE_TYPE_INJECT_STMT: str_set(s, "inject"); break;
+    case NODE_TYPE_STRUCT: str_set(s, "struct"); break;
     case NODE_TYPE_CONTENT: str_set(s, "content"); break;
     case NODE_TYPE_FORMULA: str_set(s, "formula"); break;
     case NODE_TYPE_MULTI_ASSIGN: str_set(s, "multi assign"); break;

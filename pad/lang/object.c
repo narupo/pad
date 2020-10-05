@@ -73,6 +73,19 @@ obj_del(object_t *self) {
         ast_del(self->module.ast);
         self->module.ast = NULL;
         break;
+    case OBJ_TYPE_DEF_STRUCT:
+        self->def_struct.ref_ast = NULL;
+        obj_del(self->def_struct.identifier);
+        self->def_struct.identifier = NULL;
+        self->def_struct.ref_elems = NULL;
+        break;
+    case OBJ_TYPE_OBJECT:
+        self->object.ref_ast = NULL;
+        ast_del(self->object.ast);
+        self->object.ast = NULL;
+        ctx_del(self->object.context);
+        self->object.context = NULL;
+        break;
     case OBJ_TYPE_OWNERS_METHOD:
         obj_dec_ref(self->owners_method.owner);
         obj_del(self->owners_method.owner);
@@ -423,6 +436,54 @@ obj_new_module(gc_t *ref_gc) {
 }
 
 object_t *
+obj_new_def_struct(
+    gc_t *ref_gc,
+    ast_t *ref_ast,
+    object_t *move_idn,
+    node_t *ref_elems
+) {
+    if (!ref_gc || !ref_ast || !move_idn) {
+        return NULL;
+    }
+    // ref_elems allow null
+
+    object_t *self = obj_new(ref_gc, OBJ_TYPE_DEF_STRUCT);
+    if (!self) {
+        return NULL;
+    }
+
+    self->def_struct.ref_ast = ref_ast;
+    self->def_struct.identifier = mem_move(move_idn);
+    self->def_struct.ref_elems = ref_elems;
+
+    return self;    
+}
+
+object_t *
+obj_new_object(
+    gc_t *ref_gc,
+    ast_t *ref_ast,
+    ast_t *move_ast,
+    context_t *move_context
+) {
+    if (!ref_ast || !move_ast || !move_context) {
+        return NULL;
+    }
+
+
+    object_t *self = obj_new(ref_gc, OBJ_TYPE_OBJECT);
+    if (!self) {
+        return NULL;
+    }
+
+    self->object.ref_ast = ref_ast;
+    self->object.ast = mem_move(move_ast);
+    self->object.context = mem_move(move_context);
+
+    return self;
+}
+
+object_t *
 obj_new_owners_method(gc_t *ref_gc, object_t *owner, string_t *move_method_name) {
     if (!ref_gc || !owner || !move_method_name) {
         return NULL;
@@ -526,6 +587,16 @@ obj_to_str(const object_t *self) {
     case OBJ_TYPE_MODULE: {
         string_t *str = str_new();
         str_set(str, "(module)");
+        return str;
+    } break;
+    case OBJ_TYPE_DEF_STRUCT: {
+        string_t *str = str_new();
+        str_set(str, "(struct)");
+        return str;
+    } break;
+    case OBJ_TYPE_OBJECT: {
+        string_t *str = str_new();
+        str_set(str, "(object)");
         return str;
     } break;
     case OBJ_TYPE_OWNERS_METHOD: {
@@ -673,6 +744,12 @@ obj_type_to_str(const object_t *self) {
     case OBJ_TYPE_MODULE:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: module>", self->type);
         break;
+    case OBJ_TYPE_DEF_STRUCT:
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: def-struct>", self->type);
+        break;
+    case OBJ_TYPE_OBJECT:
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: object>", self->type);
+        break;
     case OBJ_TYPE_OWNERS_METHOD:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: owners-method>", self->type);
         break;
@@ -684,6 +761,11 @@ obj_type_to_str(const object_t *self) {
 const char *
 obj_getc_idn_name(const object_t *self) {
     return str_getc(self->identifier.name);
+}
+
+const char *
+obj_getc_def_struct_idn_name(const object_t *self) {
+    return obj_getc_idn_name(self->def_struct.identifier);
 }
 
 ast_t *

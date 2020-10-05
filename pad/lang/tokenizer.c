@@ -354,6 +354,8 @@ tkr_parse_identifier(tokenizer_t *self) {
         token->type = TOKEN_TYPE_STMT_INJECT;
     } else if (cstr_eq(token->text, "extends")) {
         token->type = TOKEN_TYPE_EXTENDS;
+    } else if (cstr_eq(token->text, "struct")) {
+        token->type = TOKEN_TYPE_STRUCT;
     }
 
     tkr_move_token(self, token);

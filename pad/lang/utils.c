@@ -62,11 +62,16 @@ pull_in_ref_by(const object_t *idn_obj) {
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
 
     ast_t *ref_ast = obj_get_idn_ref_ast(idn_obj);
+
+again:
     assert(ref_ast);
     const char *idn = obj_getc_idn_name(idn_obj);
     object_t *ref = ctx_find_var_ref(ref_ast->ref_context, idn);
     if (!ref) {
-        // do not push error stack
+        if (ref_ast->ref_parent) {
+            ref_ast = ast_get_ref_parent(ref_ast);
+            goto again;
+        }
         return NULL;
     }
     if (ref->type == OBJ_TYPE_IDENTIFIER) {
@@ -158,24 +163,24 @@ set_ref_at_cur_varmap(
  */
 static object_t *
 refer_chain_dot(ast_t *ast, object_array_t *owners, chain_object_t *co) {
-    object_t *owner = objarr_get_last(owners);
-    assert(owner);
-    object_t *obj = chain_obj_get_obj(co);
+    object_t *ref_owner = objarr_get_last(owners);
+    assert(ref_owner);
+    object_t *rhs_obj = chain_obj_get_obj(co);
 
 again1:
-    switch (owner->type) {
+    switch (ref_owner->type) {
     default:
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        owner = pull_in_ref_by(owner);
-        if (!owner) {
+        ref_owner = pull_in_ref_by(ref_owner);
+        if (!ref_owner) {
             ast_pushb_error(ast, "\"%s\" is not defined");
             return NULL;
         }
         goto again1;
     } break;
     case OBJ_TYPE_MODULE: {
-        const char *modname = str_getc(obj_getc_mod_name(owner));
+        const char *modname = str_getc(obj_getc_mod_name(ref_owner));
         if (!(cstr_eq(modname, "__builtin__") ||
                 cstr_eq(modname, "alias") ||
                 cstr_eq(modname, "opts"))) {
@@ -186,29 +191,44 @@ again1:
     case OBJ_TYPE_DICT:
     case OBJ_TYPE_ARRAY: {
         // create builtin module function object
-        if (obj->type != OBJ_TYPE_IDENTIFIER) {
-            ast_pushb_error(ast, "invalid method name type (%d)", obj->type);
+        if (rhs_obj->type != OBJ_TYPE_IDENTIFIER) {
+            ast_pushb_error(ast, "invalid method name type (%d)", rhs_obj->type);
             return NULL;
         }
 
-        const char *idn = obj_getc_idn_name(obj);
+        const char *idn = obj_getc_idn_name(rhs_obj);
         string_t *methname = str_new();
         str_set(methname, idn);
 
-        obj_inc_ref(owner);
-        object_t *owners_method = obj_new_owners_method(ast->ref_gc, owner, mem_move(methname));
+        obj_inc_ref(ref_owner);
+        object_t *owners_method = obj_new_owners_method(ast->ref_gc, ref_owner, mem_move(methname));
         return owners_method;
+    } break;
+    case OBJ_TYPE_OBJECT: {
+        if (rhs_obj->type != OBJ_TYPE_IDENTIFIER) {
+            ast_pushb_error(ast, "invalid identitifer type (%d)", rhs_obj->type);
+            return NULL;
+        }
+
+        const char *idn = obj_getc_idn_name(rhs_obj);
+        object_t *valobj = ctx_find_var_ref(ref_owner->object.context, idn);
+        if (!valobj) {
+            ast_pushb_error(ast, "not found \"%s\"", idn);
+            return NULL;
+        }
+
+        return valobj;
     } break;
     }
 
 again2:
-    switch (obj->type) {
+    switch (rhs_obj->type) {
     default:
-        ast_pushb_error(ast, "invalid operand type (%d)", obj->type);
+        ast_pushb_error(ast, "invalid operand type (%d)", rhs_obj->type);
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = obj_getc_idn_name(obj);
+        const char *idn = obj_getc_idn_name(rhs_obj);
         ast_t *owner_ast = get_ast_by_owners(ast, owners);
         context_t *ref_ctx = ast_get_ref_context(owner_ast);
         object_t *ref = ctx_find_var_ref(ref_ctx, idn);
@@ -216,7 +236,7 @@ again2:
             ast_pushb_error(ast, "\"%s\" is not defined", idn);
             return NULL;
         } else if (ref->type == OBJ_TYPE_IDENTIFIER) {
-            obj = ref;
+            rhs_obj = ref;
             goto again2;
         }
         return ref;
@@ -358,6 +378,8 @@ copy_func_args(ast_t *ast, object_t *drtargs) {
         case OBJ_TYPE_ARRAY:
         case OBJ_TYPE_DICT:
         case OBJ_TYPE_FUNC:
+        case OBJ_TYPE_DEF_STRUCT:
+        case OBJ_TYPE_OBJECT:
         case OBJ_TYPE_MODULE:
             // reference
             savearg = arg;
@@ -631,6 +653,69 @@ invoke_builtin_modules(
     return NULL;
 }
 
+static object_t *
+gen_struct(
+    ast_t *ast,
+    object_array_t *owners,
+    const char *idn,
+    object_t *drtargs
+) {
+    assert(idn && drtargs);
+    object_t *ref_owner = objarr_get_last(owners);
+    ast_t *ref_ast = ast;
+
+    if (ref_owner) {
+    again:
+        switch (ref_owner->type) {
+        default:
+            ast_pushb_error(ast, "invalid owner (%d) in generate struct", ref_owner->type);
+            return NULL;
+            break;
+        case OBJ_TYPE_IDENTIFIER: {
+            ref_owner = pull_in_ref_by(ref_owner);
+            if (!ref_owner) {
+                return NULL;
+            }
+            if (ref_owner->type == OBJ_TYPE_IDENTIFIER) {
+                goto again;
+            }
+            idn = obj_getc_idn_name(ref_owner);
+        } break;
+        }
+    } else {
+        ref_owner = ctx_find_var_ref(ast->ref_context, idn);
+        if (!ref_owner) {
+            // not error
+            return NULL;
+        }
+    }
+
+    object_t *ref = extract_ref_of_obj(ref_ast, ref_owner);
+    if (ast_has_errors(ref_ast)) {
+        ast_pushb_error(ast, "failed to extract reference");
+        return NULL;
+    }
+
+    context_t *struct_ctx = ctx_new(ast->ref_gc);
+    ast_t *struct_ast = ast_new(ast->ref_config);
+    ast_set_ref_parent(struct_ast, ast);
+    ast_set_ref_context(struct_ast, struct_ctx);
+    ast_set_ref_gc(struct_ast, ast->ref_gc);
+
+    object_t *result = _trv_traverse(struct_ast, &(trv_args_t) {
+        .ref_node = ref->def_struct.ref_elems,
+        .depth = 0,
+    });
+    assert(!result);
+
+    return obj_new_object(
+        ast->ref_gc,
+        ast,
+        mem_move(struct_ast),
+        mem_move(struct_ctx)
+    );
+}
+
 object_t *
 refer_chain_call(ast_t *ast, object_array_t *owners, chain_object_t *co) {
     object_t *owner = objarr_get_last(owners);
@@ -642,15 +727,15 @@ refer_chain_call(ast_t *ast, object_array_t *owners, chain_object_t *co) {
     // build the owners array of function
     // the owners of this arguments contain first identifier
     // so remove first identifier from this array
-    object_array_t *func_owners = objarr_new();
+    object_array_t *owners_ = objarr_new();
     for (int32_t i = 1; i < objarr_len(owners); ++i) {
         object_t *obj = objarr_get(owners, i);
         obj_inc_ref(obj);
-        objarr_pushb(func_owners, obj);
+        objarr_pushb(owners_, obj);
     }
 
     object_t *func_obj = NULL;
-    const char *funcname = NULL;
+    const char *idn = NULL;
 
 again:
     switch (owner->type) {
@@ -661,7 +746,7 @@ again:
     case OBJ_TYPE_IDENTIFIER: {
         object_t *ref = pull_in_ref_by(owner);
         if (!ref) {
-            funcname = obj_getc_idn_name(owner);
+            idn = obj_getc_idn_name(owner);
         } else {
             owner = ref;
             goto again;
@@ -669,18 +754,21 @@ again:
     } break;
     case OBJ_TYPE_FUNC: {
         func_obj = owner;
-        funcname = obj_getc_func_name(owner);
+        idn = obj_getc_func_name(owner);
+    } break;
+    case OBJ_TYPE_DEF_STRUCT: {
+        idn = obj_getc_def_struct_idn_name(owner);
     } break;
     case OBJ_TYPE_OWNERS_METHOD: {
         const string_t *methname = obj_getc_owners_method_name(owner);
-        funcname = str_getc(methname);
+        idn = str_getc(methname);
         object_t *own = obj_get_owners_method_owner(owner);
         obj_inc_ref(own);
-        objarr_pushb(func_owners, own);
+        objarr_pushb(owners_, own);
     } break;
     }
 
-    assert(funcname);
+    assert(idn);
 
     object_t *actual_args = chain_obj_get_obj(co);
     if (actual_args->type != OBJ_TYPE_ARRAY) {
@@ -691,7 +779,7 @@ again:
     object_t *result = NULL;
 
     if (func_obj) {
-        result = invoke_func_obj(ast, func_owners, func_obj, actual_args);
+        result = invoke_func_obj(ast, owners_, func_obj, actual_args);
         if (ast_has_errors(ast)) {
             ast_pushb_error(ast, "failed to invoke func obj");
             goto fail;
@@ -700,7 +788,7 @@ again:
         }
     }
 
-    result = invoke_builtin_modules(ast, func_owners, funcname, actual_args);
+    result = invoke_builtin_modules(ast, owners_, idn, actual_args);
     if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to invoke builtin modules");
         goto fail;
@@ -708,7 +796,7 @@ again:
         return result;
     }
 
-    result = invoke_owner_func_obj(ast, func_owners, funcname, actual_args);
+    result = invoke_owner_func_obj(ast, owners_, idn, actual_args);
     if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to invoke owner func obj");
         goto fail;
@@ -716,11 +804,19 @@ again:
         return result;
     }
 
-    ast_pushb_error(ast, "can't call \"%s\"", funcname);
+    result = gen_struct(ast, owners_, idn, actual_args);
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to generate structure");
+        goto fail;
+    } else if (result) {
+        return result;
+    }
+
+    ast_pushb_error(ast, "can't call \"%s\"", idn);
     return NULL;
 
 fail:
-    objarr_del(func_owners);
+    objarr_del(owners_);
     return NULL;
 }
 

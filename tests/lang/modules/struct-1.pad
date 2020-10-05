@@ -1,0 +1,5 @@
+{@
+    struct Animal:
+        a = 1
+    end
+@}

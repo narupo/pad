@@ -146,6 +146,9 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_STMT_BLOCK: return "block"; break;
     case TOKEN_TYPE_STMT_INJECT: return "inject"; break;
 
+    // struct
+    case TOKEN_TYPE_STRUCT: return "struct"; break;
+
     // def
     case TOKEN_TYPE_DEF: return "def"; break;
     case TOKEN_TYPE_EXTENDS: return "extends"; break;

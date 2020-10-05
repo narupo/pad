@@ -507,6 +507,26 @@ ast_get_ref_context(ast_t *self) {
     return self->ref_context;
 }
 
+ast_t *
+ast_get_ref_parent(const ast_t *self) {
+    return self->ref_parent;
+}
+
+void
+ast_set_ref_context(ast_t *ast, context_t *ref_context) {
+    ast->ref_context = ref_context;
+}
+
+void
+ast_set_ref_gc(ast_t *ast, gc_t *ref_gc) {
+    ast->ref_gc = ref_gc;
+}
+
+void
+ast_set_ref_parent(ast_t *ast, ast_t *ref_parent) {
+    ast->ref_parent = ref_parent;
+}
+
 token_t *
 ast_read_token(ast_t *self) {
     if (!self || !self->ref_ptr) {
