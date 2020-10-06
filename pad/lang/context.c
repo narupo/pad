@@ -7,6 +7,7 @@ enum {
 };
 
 struct context {
+    context_t *ref_prev;  // reference to prev context
     gc_t *ref_gc;  // reference to gc (DO NOT DELETE)
     alinfo_t *alinfo;  // alias info for builtin alias module
     string_t *stdout_buf;  // stdout buffer in context
@@ -289,4 +290,14 @@ ctx_pop_newline_of_stdout_buf(context_t *self) {
             str_popb(self->stdout_buf);
         } 
     }
+}
+
+void
+ctx_set_ref_prev(context_t *self, context_t *ref_prev) {
+    self->ref_prev = ref_prev;
+}
+
+context_t *
+ctx_get_ref_prev(const context_t *self) {
+    return self->ref_prev;
 }

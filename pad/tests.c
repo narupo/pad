@@ -23518,6 +23518,31 @@ test_trv_struct_12(void) {
 }
 
 static void
+test_trv_struct_13(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "struct Animal:\n"
+    "   def func():\n"
+    "       puts(1)\n"
+    "   end\n"
+    "end\n"
+    "animal = Animal()\n"
+    "animal.func()"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_def_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -27989,6 +28014,7 @@ traverser_tests[] = {
     {"trv_struct_10", test_trv_struct_10},
     {"trv_struct_11", test_trv_struct_11},
     {"trv_struct_12", test_trv_struct_12},
+    {"trv_struct_13", test_trv_struct_13},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},

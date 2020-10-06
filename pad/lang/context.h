@@ -340,3 +340,9 @@ ctx_get_ref_varmap_cur_scope(const context_t *self);
  */
 void
 ctx_pop_newline_of_stdout_buf(context_t *self);
+
+void
+ctx_set_ref_prev(context_t *self, context_t *ref_prev);
+
+context_t *
+ctx_get_ref_prev(const context_t *self);
