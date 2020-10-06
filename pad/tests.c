@@ -23510,7 +23510,6 @@ test_trv_struct_12(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        trace();
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
@@ -23538,6 +23537,162 @@ test_trv_struct_13(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_14(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "def a():\n"
+    "   puts(1)\n"
+    "end\n"
+    "struct Animal:\n"
+    "   func = a\n"
+    "end\n"
+    "animal = Animal()\n"
+    "animal.func()"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        trace();
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_15(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "def a():\n"
+    "   puts(1)\n"
+    "end\n"
+    "struct Animal:\n"
+    "   struct Body:\n"
+    "       func = a\n"
+    "   end\n"
+    "   body = Body()\n"
+    "end\n"
+    "animal = Animal()\n"
+    "animal.body.func()"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_16(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "def func():\n"
+    "   puts(1)\n"
+    "end\n"
+    "struct Animal:\n"
+    "   struct Body:\n"
+    "       legs = func\n"
+    "   end\n"
+    "   body = Body()\n"
+    "end\n"
+    "struct Human:\n"
+    "   body = nil\n"
+    "end\n"
+    "animal = Animal()\n"
+    "human = Human()\n"
+    "human.body = animal.body\n"
+    "human.body.legs()\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_17(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "def func(n):\n"
+    "   puts(n)\n"
+    "end\n"
+    "struct Animal:\n"
+    "   two = 2"
+    "   struct Head:\n"
+    "       eyes = two\n"
+    "   end\n"
+    "   head = Head()\n"
+    "   struct Body:\n"
+    "       legs = func\n"
+    "   end\n"
+    "   body = Body()\n"
+    "end\n"
+    "struct Human:\n"
+    "   head = nil\n"
+    "   body = nil\n"
+    "end\n"
+    "animal = Animal()\n"
+    "human = Human()\n"
+    "human.head = animal.head\n"
+    "human.body = animal.body\n"
+    "human.body.legs(human.head.eyes)\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2\n"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_18(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "struct Animal:\n"
+    "   sum = 0\n"
+    "   for i = 0; i < 10; i += 1:\n"
+    "       sum += i\n"
+    "   end\n"
+    "end\n"
+    "animal = Animal()\n"
+    "@}{: animal.sum :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "45\n"));
     }
 
     trv_cleanup;
@@ -28016,6 +28171,11 @@ traverser_tests[] = {
     {"trv_struct_11", test_trv_struct_11},
     {"trv_struct_12", test_trv_struct_12},
     {"trv_struct_13", test_trv_struct_13},
+    {"trv_struct_14", test_trv_struct_14},
+    {"trv_struct_15", test_trv_struct_15},
+    {"trv_struct_16", test_trv_struct_16},
+    {"trv_struct_17", test_trv_struct_17},
+    {"trv_struct_18", test_trv_struct_18},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},

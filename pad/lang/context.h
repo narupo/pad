@@ -65,6 +65,9 @@ ctx_clear(context_t *self);
 context_t *
 ctx_set_alias(context_t *self, const char *key, const char *value, const char *desc);
 
+void
+ctx_set_default_global_vars(context_t *self);
+
 /**
  * get alias value of key
  *

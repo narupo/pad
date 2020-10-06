@@ -129,7 +129,6 @@ objdict_resize(object_dict_t *self, int32_t newcapa) {
 
 object_dict_t *
 objdict_move(object_dict_t *self, const char *key, struct object *move_value) {
-    // printf("objdict_move (%p) key (%s) val (%p)\n", self, key, move_value);
     if (!self || !key || !move_value) {
         return NULL;
     }

@@ -7154,7 +7154,7 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
         return_trav(val);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rval = pull_in_ref_by(rhs);
+        object_t *rval = pull_in_ref_by_all(rhs);
         if (!rval) {
             ast_pushb_error(
                 ast,
@@ -9164,6 +9164,7 @@ trv_import_builtin_modules(ast_t *ast) {
 
 void
 trv_traverse(ast_t *ast, context_t *context) {
+    ctx_set_default_global_vars(context);
     ast_set_ref_context(ast, context);
     ast_set_ref_gc(ast, ctx_get_gc(context));
 
