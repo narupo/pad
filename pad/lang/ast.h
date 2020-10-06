@@ -26,9 +26,6 @@ enum {
  * and this structure has the error handling mechanizm by error_stack variable
  */
 struct ast {
-    // reference to parent object
-    ast_t *ref_parent;
-
     // reference of config (do not delete)
     const config_t *ref_config;
 
@@ -105,9 +102,6 @@ ast_set_ref_context(ast_t *ast, context_t *ref_context);
 
 void
 ast_set_ref_gc(ast_t *ast, gc_t *ref_gc);
-
-void
-ast_set_ref_parent(ast_t *ast, ast_t *ref_parent);
 
 /**
  * get root node read-only
@@ -224,9 +218,6 @@ ast_dump(const ast_t *self, FILE *fout);
  */
 context_t *
 ast_get_ref_context(ast_t *self);
-
-ast_t *
-ast_get_ref_parent(const ast_t *self);
 
 /**
  * read token and increment pointer of tokens

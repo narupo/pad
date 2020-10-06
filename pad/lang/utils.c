@@ -65,14 +65,16 @@ pull_in_ref_by(const object_t *idn_obj) {
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
 
     ast_t *ref_ast = obj_get_idn_ref_ast(idn_obj);
+    context_t *ref_context = ast_get_ref_context(ref_ast);
 
 again:
-    assert(ref_ast);
+    assert(ref_context);
     const char *idn = obj_getc_idn_name(idn_obj);
-    object_t *ref = ctx_find_var_ref(ref_ast->ref_context, idn);
+    object_t *ref = ctx_find_var_ref(ref_context, idn);
     if (!ref) {
-        if (ref_ast->ref_parent) {
-            ref_ast = ast_get_ref_parent(ref_ast);
+        context_t *ref_prev = ctx_get_ref_prev(ref_context);
+        if (ref_prev) {
+            ref_context = ref_prev;
             goto again;
         }
         return NULL;
@@ -626,10 +628,16 @@ invoke_builtin_modules(
         bltin_mod_name = "__builtin__";
     }
 
+    context_t *ref_context = ast_get_ref_context(ast);
+again2:
     if (!module) {
-        object_dict_t *varmap = ctx_get_varmap_at_global(ast->ref_context);
+        object_dict_t *varmap = ctx_get_varmap_at_global(ref_context);
         object_dict_item_t *item = objdict_get(varmap, bltin_mod_name);
         if (!item) {
+            ref_context = ctx_get_ref_prev(ref_context);
+            if (ref_context) {
+                goto again2;
+            }
             return NULL;
         }
 
@@ -700,8 +708,9 @@ gen_struct(
     }
 
     context_t *struct_ctx = ctx_new(ast->ref_gc);
+    ctx_set_ref_prev(struct_ctx, ast_get_ref_context(ast));
+
     ast_t *struct_ast = ast_new(ast->ref_config);
-    ast_set_ref_parent(struct_ast, ast);
     ast_set_ref_context(struct_ast, struct_ctx);
     ast_set_ref_gc(struct_ast, ast->ref_gc);
     trv_import_builtin_modules(struct_ast);
