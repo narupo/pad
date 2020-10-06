@@ -23853,6 +23853,33 @@ test_trv_struct_24(void) {
 }
 
 static void
+test_trv_struct_25(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "struct File:\n"
+    "   fileno = nil\n"
+    "end\n"
+    "def fileNew(fileno):\n"
+    "   self = File()\n"
+    "   self.fileno = fileno\n"
+    "   return self\n"
+    "end\n"
+    "file = fileNew(1)\n"
+    "@}{: file.fileno :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_def_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -28328,6 +28355,7 @@ traverser_tests[] = {
     {"trv_struct_22", test_trv_struct_22},
     {"trv_struct_23", test_trv_struct_23},
     {"trv_struct_24", test_trv_struct_24},
+    {"trv_struct_25", test_trv_struct_25},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},

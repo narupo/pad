@@ -1,0 +1,12 @@
+{@
+    struct File:
+        fileno = nil
+    end
+
+    def fileNew(fileno):
+        self = File()
+        self.fileno = fileno
+    end
+
+    fileNew(1)
+@}
