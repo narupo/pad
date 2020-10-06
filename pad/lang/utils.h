@@ -33,6 +33,12 @@ object_t *
 pull_in_ref_by(const object_t *idn_obj);
 
 /**
+ * traverse previous context
+ */
+object_t *
+pull_in_ref_by_all(const object_t *idn_obj);
+
+/**
  * object to string
  * if object is identifier object then pull reference and convert to string
  * if error to set ast error detail

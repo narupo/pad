@@ -7,7 +7,7 @@ enum {
 };
 
 struct context {
-    context_t *ref_prev;  // reference to prev context
+    context_t *ref_prev;  // reference to previous context
     gc_t *ref_gc;  // reference to gc (DO NOT DELETE)
     alinfo_t *alinfo;  // alias info for builtin alias module
     string_t *stdout_buf;  // stdout buffer in context
@@ -200,7 +200,27 @@ ctx_popb_scope(context_t *self) {
 
 object_t *
 ctx_find_var_ref(context_t *self, const char *key) {
+    if (!self || !key) {
+        return NULL;
+    }
+
     return scope_find_var_ref(self->scope, key);
+}
+
+object_t *
+ctx_find_var_ref_all(context_t *self, const char *key) {
+    if (!self || !key) {
+        return NULL;
+    }
+    
+    for (context_t *cur = self; cur; cur = cur->ref_prev) {
+        object_t *ref = scope_find_var_ref(cur->scope, key);
+        if (ref) {
+            return ref;
+        }
+    }
+
+    return NULL;
 }
 
 gc_t *

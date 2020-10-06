@@ -257,6 +257,19 @@ object_t *
 ctx_find_var_ref(context_t *self, const char *key);
 
 /**
+ * find variable from varmap of scope at tail to head in scope chain
+ * traverse previous context on find
+ *
+ * @param[in] *self pointer to context_t
+ * @param[in] *key  key strings
+ *
+ * @return found to poitner to object_t
+ * @return not found to pointer to NULL
+ */
+object_t *
+ctx_find_var_ref_all(context_t *self, const char *key);
+
+/**
  * get reference of gc_t in context
  *
  * @param[in] *self pointer to context_t
