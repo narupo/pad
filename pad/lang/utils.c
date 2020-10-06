@@ -66,9 +66,9 @@ _pull_in_ref_by(const object_t *idn_obj, bool all) {
 
     ast_t *ref_ast = obj_get_idn_ref_ast(idn_obj);
     context_t *ref_context = ast_get_ref_context(ref_ast);
-
     assert(ref_context);
     const char *idn = obj_getc_idn_name(idn_obj);
+
     object_t *ref = NULL;
     if (all) {
         ref = ctx_find_var_ref_all(ref_context, idn);
@@ -639,7 +639,7 @@ invoke_builtin_modules(
 
     context_t *ref_context = ast_get_ref_context(ast);
     if (!module) {
-        module = ctx_find_var_ref(ref_context, bltin_mod_name);
+        module = ctx_find_var_ref_all(ref_context, bltin_mod_name);
         if (!module) {
             return NULL;
         }
@@ -713,7 +713,6 @@ gen_struct(
     ast_t *struct_ast = ast_new(ast->ref_config);
     ast_set_ref_context(struct_ast, struct_ctx);
     ast_set_ref_gc(struct_ast, ast->ref_gc);
-    trv_import_builtin_modules(struct_ast);
 
     object_t *result = _trv_traverse(struct_ast, &(trv_args_t) {
         .ref_node = ref->def_struct.ref_elems,
@@ -757,7 +756,7 @@ again:
         goto fail;
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *ref = pull_in_ref_by(owner);
+        object_t *ref = pull_in_ref_by_all(owner);
         if (!ref) {
             idn = obj_getc_idn_name(owner);
         } else {
