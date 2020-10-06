@@ -54,8 +54,8 @@ ctx_escdel_global_varmap(context_t *self) {
  *
  * @param[in] self
  */
-static void
-set_default_global_vars(context_t *self) {
+void
+ctx_set_default_global_vars(context_t *self) {
     // set PATH string variable
     object_dict_t *varmap = scope_get_varmap(self->scope); // get global varmap
     object_t *path = obj_new_unicode_cstr(self->ref_gc, "");
@@ -72,7 +72,6 @@ ctx_new(gc_t *ref_gc) {
     self->stdout_buf = str_new();
     self->stderr_buf = str_new();
     self->scope = scope_new(ref_gc);
-    set_default_global_vars(self);
 
     return self;
 }
@@ -83,7 +82,6 @@ ctx_clear(context_t *self) {
     str_clear(self->stdout_buf);
     str_clear(self->stderr_buf);
     scope_clear(self->scope);
-    set_default_global_vars(self);
 }
 
 context_t *
