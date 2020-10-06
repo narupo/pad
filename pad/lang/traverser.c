@@ -7154,7 +7154,7 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
         return_trav(val);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rval = pull_in_ref_by_all(rhs);
+        object_t *rval = pull_in_ref_by(rhs);
         if (!rval) {
             ast_pushb_error(
                 ast,
