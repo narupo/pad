@@ -1423,11 +1423,26 @@ assign_to_chain_dot(
     object_t *child = chain_obj_get_obj(co);
     ast_t *ast_ = ast;
 
+again1:
+    switch (rhs->type) {
+    default:
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(rhs);
+        rhs = pull_in_ref_by(rhs);
+        if (!rhs) {
+            ast_pushb_error(ast, "not found \"%s\"", idn);
+            return NULL;
+        } 
+        goto again1;
+    } break;
+    }
+
     if (!ref_owner) {
         goto refer_child;
     }
 
-again:
+again2:
     switch (ref_owner->type) {
     default:
         ast_pushb_error(ast, "unsupported object (%d)", ref_owner->type);
@@ -1438,7 +1453,7 @@ again:
         if (!ref_owner) {
             return NULL;
         }
-        goto again;
+        goto again2;
     } break;
     case OBJ_TYPE_OBJECT: {
         ast_ = ref_owner->object.ref_struct_ast;
