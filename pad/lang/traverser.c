@@ -1112,6 +1112,7 @@ again:
     } break;
     case OBJ_TYPE_MODULE:
     case OBJ_TYPE_FUNC:
+    case OBJ_TYPE_OBJECT:
         ret = result;
         break;
     }
@@ -8489,6 +8490,7 @@ trv_array_elems(ast_t *ast, trv_args_t *targs) {
         } break;
         case OBJ_TYPE_ARRAY:
         case OBJ_TYPE_DICT:
+        case OBJ_TYPE_OBJECT:
             // if object is array or dict then store reference at array
             obj_inc_ref(ref);
             objarr_pushb(objarr, ref);
