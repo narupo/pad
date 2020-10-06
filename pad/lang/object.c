@@ -74,17 +74,15 @@ obj_del(object_t *self) {
         self->module.ast = NULL;
         break;
     case OBJ_TYPE_DEF_STRUCT:
-        self->def_struct.ref_ast = NULL;
         obj_del(self->def_struct.identifier);
         self->def_struct.identifier = NULL;
-        self->def_struct.ref_elems = NULL;
+        ctx_del(self->def_struct.context);
+        self->def_struct.context = NULL;
         break;
     case OBJ_TYPE_OBJECT:
         self->object.ref_ast = NULL;
-        ast_del(self->object.ast);
-        self->object.ast = NULL;
-        ctx_del(self->object.context);
-        self->object.context = NULL;
+        self->object.ref_struct_ast = NULL;
+        self->object.ref_struct_context = NULL;
         break;
     case OBJ_TYPE_OWNERS_METHOD:
         obj_dec_ref(self->owners_method.owner);
@@ -438,11 +436,11 @@ obj_new_module(gc_t *ref_gc) {
 object_t *
 obj_new_def_struct(
     gc_t *ref_gc,
-    ast_t *ref_ast,
     object_t *move_idn,
-    node_t *ref_elems
+    ast_t *move_ast,
+    context_t *move_context
 ) {
-    if (!ref_gc || !ref_ast || !move_idn) {
+    if (!ref_gc || !move_idn || !move_ast || !move_context) {
         return NULL;
     }
     // ref_elems allow null
@@ -452,9 +450,9 @@ obj_new_def_struct(
         return NULL;
     }
 
-    self->def_struct.ref_ast = ref_ast;
     self->def_struct.identifier = mem_move(move_idn);
-    self->def_struct.ref_elems = ref_elems;
+    self->def_struct.ast = mem_move(move_ast);
+    self->def_struct.context = mem_move(move_context);
 
     return self;    
 }
@@ -463,13 +461,12 @@ object_t *
 obj_new_object(
     gc_t *ref_gc,
     ast_t *ref_ast,
-    ast_t *move_ast,
-    context_t *move_context
+    ast_t *ref_struct_ast,
+    context_t *ref_struct_context
 ) {
-    if (!ref_ast || !move_ast || !move_context) {
+    if (!ref_gc || !ref_ast || !ref_struct_ast || !ref_struct_context) {
         return NULL;
     }
-
 
     object_t *self = obj_new(ref_gc, OBJ_TYPE_OBJECT);
     if (!self) {
@@ -477,8 +474,8 @@ obj_new_object(
     }
 
     self->object.ref_ast = ref_ast;
-    self->object.ast = mem_move(move_ast);
-    self->object.context = mem_move(move_context);
+    self->object.ref_struct_ast = ref_struct_ast;
+    self->object.ref_struct_context = ref_struct_context;
 
     return self;
 }

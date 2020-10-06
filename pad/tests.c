@@ -19577,6 +19577,7 @@ test_trv_import_stmt_0(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
+        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\n"));
     }
 
@@ -23536,6 +23537,7 @@ test_trv_struct_13(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
+        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -23692,7 +23694,34 @@ test_trv_struct_18(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "45\n"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "45"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_19(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "struct Animal:\n"
+    "   puts(1)\n"  // コンテキストが違うのでstdout_bufが異なっている
+    "end\n"
+    "struct Human:\n"
+    "   puts(2)\n"
+    "end\n"
+    "Animal()\n"
+    "Human()\n"
+    "@}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        showbuf();
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n2\n"));
     }
 
     trv_cleanup;
@@ -23908,6 +23937,7 @@ test_trv_func_def_7(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
+        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "    program\n\n    comment\n"));
     }
 
@@ -28176,6 +28206,7 @@ traverser_tests[] = {
     {"trv_struct_16", test_trv_struct_16},
     {"trv_struct_17", test_trv_struct_17},
     {"trv_struct_18", test_trv_struct_18},
+    {"trv_struct_19", test_trv_struct_19},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},

@@ -236,7 +236,6 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
     node_t *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_REF_BLOCK);
     node_ref_block_t *ref_block = node->real;
-
     depth_t depth = targs->depth;
 
     check("call _trv_traverse");
@@ -257,23 +256,26 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
         assert(result);
     }
 
+    context_t *context = ctx_find_most_prev(ast->ref_context);
+    assert(context);
+
     switch (result->type) {
     default:
         ast_pushb_error(ast, "can't refer object (%d)", result->type);
         break;
     case OBJ_TYPE_NIL:
-        ctx_pushb_stdout_buf(ast->ref_context, "nil");
+        ctx_pushb_stdout_buf(context, "nil");
         break;
     case OBJ_TYPE_INT: {
         char n[1024]; // very large
         snprintf(n, sizeof n, "%ld", result->lvalue);
-        ctx_pushb_stdout_buf(ast->ref_context, n);
+        ctx_pushb_stdout_buf(context, n);
     } break;
     case OBJ_TYPE_BOOL: {
         if (result->boolean) {
-            ctx_pushb_stdout_buf(ast->ref_context, "true");
+            ctx_pushb_stdout_buf(context, "true");
         } else {
-            ctx_pushb_stdout_buf(ast->ref_context, "false");
+            ctx_pushb_stdout_buf(context, "false");
         }
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -286,20 +288,20 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
             return_trav(NULL);
         }
         string_t *str = obj_to_str(obj);
-        ctx_pushb_stdout_buf(ast->ref_context, str_getc(str));
+        ctx_pushb_stdout_buf(context, str_getc(str));
         str_del(str);
     } break;
     case OBJ_TYPE_UNICODE: {
-        ctx_pushb_stdout_buf(ast->ref_context, uni_getc_mb(result->unicode));
+        ctx_pushb_stdout_buf(context, uni_getc_mb(result->unicode));
     } break;
     case OBJ_TYPE_ARRAY: {
-        ctx_pushb_stdout_buf(ast->ref_context, "(array)");
+        ctx_pushb_stdout_buf(context, "(array)");
     } break;
     case OBJ_TYPE_DICT: {
-        ctx_pushb_stdout_buf(ast->ref_context, "(dict)");
+        ctx_pushb_stdout_buf(context, "(dict)");
     } break;
     case OBJ_TYPE_FUNC: {
-        ctx_pushb_stdout_buf(ast->ref_context, "(function)");
+        ctx_pushb_stdout_buf(context, "(function)");
     } break;
     } // switch
 
@@ -313,9 +315,11 @@ trv_text_block(ast_t *ast, trv_args_t *targs) {
     node_t *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_TEXT_BLOCK);
     node_text_block_t *text_block = node->real;
+    context_t *context = ctx_find_most_prev(ast->ref_context);
+    assert(context);
 
     if (text_block->text) {
-        ctx_pushb_stdout_buf(ast->ref_context, text_block->text);
+        ctx_pushb_stdout_buf(context, text_block->text);
         check("store text block to buf");
     }
 
@@ -1275,11 +1279,29 @@ trv_def_struct(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
+    // parse elems
+    context_t *struct_ctx = ctx_new(ast->ref_gc);
+    ctx_set_ref_prev(struct_ctx, ast_get_ref_context(ast));
+
+    ast_t *struct_ast = ast_new(ast->ref_config);
+    ast_set_ref_context(struct_ast, struct_ctx);
+    ast_set_ref_gc(struct_ast, ast->ref_gc);
+
+    object_t *result = _trv_traverse(struct_ast, &(trv_args_t) {
+        .ref_node = struct_->elems,
+        .depth = 0,
+    });
+    if (ast_has_errors(ast)) {
+        ast_pushb_error(ast, "failed to traverse elems in struct");
+        return_trav(NULL);
+    }
+    assert(!result);
+
     object_t *def_struct = obj_new_def_struct(
         ast->ref_gc,
-        ast,
         mem_move(idn),
-        struct_->elems
+        mem_move(struct_ast),
+        mem_move(struct_ctx)
     );
     if (!def_struct) {
         ast_pushb_error(ast, "failed to create def-struct object");
@@ -1418,7 +1440,7 @@ again:
         goto again;
     } break;
     case OBJ_TYPE_OBJECT: {
-        ast_ = ref_owner->object.ast;
+        ast_ = ref_owner->object.ref_struct_ast;
     } break;
     case OBJ_TYPE_MODULE: {
         ast_ = ref_owner->module.ast;

@@ -7,12 +7,25 @@ enum {
 };
 
 struct context {
+    // ref_prevにはコンテキストをつなげたい時に、親のコンテキストを設定する
+    // contextはこのref_prevを使い親のコンテキストを辿れるようになっている
+    // これによってルートのコンテキストや1つ前のコンテキストを辿れる
     context_t *ref_prev;  // reference to previous context
+
     gc_t *ref_gc;  // reference to gc (DO NOT DELETE)
     alinfo_t *alinfo;  // alias info for builtin alias module
+
+    // ルートのcontextのstdout_buf, stderr_bufにputsなどの組み込み関数の出力が保存される
+    // その他ref_blockやtext_blockなどの出力もルートのcontextに保存されるようになっている
+    // 2020/10/06以前はコンテキストごとにputsの出力を保存していた
     string_t *stdout_buf;  // stdout buffer in context
     string_t *stderr_buf;  // stderr buffer in context
+
+    // コンテキストはスコープを管理する
+    // 関数などのブロックに入るとスコープがプッシュされ、関数のスコープになる
+    // 関数から出るとこのスコープがポップされ、スコープから出る
     scope_t *scope;  // scope in context
+
     bool do_break;  // if do break from current context then store true
     bool do_continue;  // if do continue on current context then store
     bool do_return;
@@ -257,6 +270,7 @@ ctx_dump(const context_t *self, FILE *fout) {
     }
 
     fprintf(fout, "context[%p]\n", self);
+    fprintf(fout, "ref_prev[%p]\n", self->ref_prev);
     scope_dump(self->scope, fout);
 }
 
@@ -312,10 +326,32 @@ ctx_pop_newline_of_stdout_buf(context_t *self) {
 
 void
 ctx_set_ref_prev(context_t *self, context_t *ref_prev) {
+    if (!self) {
+        return;
+    }
+
     self->ref_prev = ref_prev;
 }
 
 context_t *
 ctx_get_ref_prev(const context_t *self) {
+    if (!self) {
+        return NULL;
+    }
+
     return self->ref_prev;
+}
+
+context_t *
+ctx_find_most_prev(context_t *self) {
+    if (!self) {
+        return NULL;
+    }
+
+    context_t *most_prev = self;
+    for (context_t *cur = self; cur; cur = cur->ref_prev) {
+        most_prev = cur;
+    }
+
+    return most_prev;
 }

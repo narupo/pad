@@ -105,10 +105,13 @@ builtin_eputs(builtin_func_args_t *fargs) {
     assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
 
+    context_t *context = ctx_find_most_prev(ref_ast->ref_context);
+    assert(context);
+
     object_array_t *args = actual_args->objarr;
 
     if (!objarr_len(args)) {
-        ctx_pushb_stderr_buf(ref_ast->ref_context, "\n");
+        ctx_pushb_stderr_buf(context, "\n");
         return obj_new_int(ref_ast->ref_gc, 0);
     }
 
@@ -124,7 +127,7 @@ builtin_eputs(builtin_func_args_t *fargs) {
             continue;
         }
         str_pushb(s, ' ');
-        ctx_pushb_stderr_buf(ref_ast->ref_context, str_getc(s));
+        ctx_pushb_stderr_buf(context, str_getc(s));
         str_del(s);
     }
     if (arrlen) {
@@ -136,12 +139,12 @@ builtin_eputs(builtin_func_args_t *fargs) {
         if (!s) {
             goto done;
         }
-        ctx_pushb_stderr_buf(ref_ast->ref_context, str_getc(s));
+        ctx_pushb_stderr_buf(context, str_getc(s));
         str_del(s);
     }
 
 done:
-    ctx_pushb_stderr_buf(ref_ast->ref_context, "\n");
+    ctx_pushb_stderr_buf(context, "\n");
     return obj_new_int(ref_ast->ref_gc, arrlen);
 }
 
@@ -153,10 +156,13 @@ builtin_puts(builtin_func_args_t *fargs) {
     assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
 
+    context_t *context = ctx_find_most_prev(ref_ast->ref_context);
+    assert(context);
+
     object_array_t *args = actual_args->objarr;
 
     if (!objarr_len(args)) {
-        ctx_pushb_stdout_buf(ref_ast->ref_context, "\n");
+        ctx_pushb_stdout_buf(context, "\n");
         return obj_new_int(ref_ast->ref_gc, 0);
     }
 
@@ -176,7 +182,7 @@ builtin_puts(builtin_func_args_t *fargs) {
             continue;
         }
         str_pushb(s, ' ');
-        ctx_pushb_stdout_buf(ref_ast->ref_context, str_getc(s));
+        ctx_pushb_stdout_buf(context, str_getc(s));
         str_del(s);
     }
     if (arrlen) {
@@ -192,12 +198,12 @@ builtin_puts(builtin_func_args_t *fargs) {
         if (!s) {
             goto done;
         }
-        ctx_pushb_stdout_buf(ref_ast->ref_context, str_getc(s));
+        ctx_pushb_stdout_buf(context, str_getc(s));
         str_del(s);
     }
 
 done:
-    ctx_pushb_stdout_buf(ref_ast->ref_context, "\n");
+    ctx_pushb_stdout_buf(context, "\n");
     return obj_new_int(ref_ast->ref_gc, arrlen);
 }
 
