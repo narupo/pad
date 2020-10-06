@@ -126,7 +126,7 @@ scope_clear(scope_t *self) {
     }
 
     self->next = NULL;
-    objdict_clear(self->varmap); // clear global variables
+    objdict_clear(self->varmap);  // clear global variables
     return self;
 }
 

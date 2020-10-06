@@ -60,30 +60,39 @@ again:
 /**
  * this function do not push error at ast's error stack
  */
-object_t *
-pull_in_ref_by(const object_t *idn_obj) {
+static object_t *
+_pull_in_ref_by(const object_t *idn_obj, bool all) {
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
 
     ast_t *ref_ast = obj_get_idn_ref_ast(idn_obj);
     context_t *ref_context = ast_get_ref_context(ref_ast);
 
-again:
     assert(ref_context);
     const char *idn = obj_getc_idn_name(idn_obj);
-    object_t *ref = ctx_find_var_ref(ref_context, idn);
+    object_t *ref = NULL;
+    if (all) {
+        ref = ctx_find_var_ref_all(ref_context, idn);
+    } else {
+        ref = ctx_find_var_ref(ref_context, idn);
+    }
     if (!ref) {
-        context_t *ref_prev = ctx_get_ref_prev(ref_context);
-        if (ref_prev) {
-            ref_context = ref_prev;
-            goto again;
-        }
         return NULL;
     }
     if (ref->type == OBJ_TYPE_IDENTIFIER) {
-        return pull_in_ref_by(ref);
+        return _pull_in_ref_by(ref, all);
     }
 
     return ref;
+}
+
+object_t *
+pull_in_ref_by(const object_t *idn_obj) {
+    return _pull_in_ref_by(idn_obj, false);
+}
+
+object_t *
+pull_in_ref_by_all(const object_t *idn_obj) {
+    return _pull_in_ref_by(idn_obj, true);
 }
 
 string_t *
@@ -629,20 +638,11 @@ invoke_builtin_modules(
     }
 
     context_t *ref_context = ast_get_ref_context(ast);
-again2:
     if (!module) {
-        object_dict_t *varmap = ctx_get_varmap_at_global(ref_context);
-        object_dict_item_t *item = objdict_get(varmap, bltin_mod_name);
-        if (!item) {
-            ref_context = ctx_get_ref_prev(ref_context);
-            if (ref_context) {
-                goto again2;
-            }
+        module = ctx_find_var_ref(ref_context, bltin_mod_name);
+        if (!module) {
             return NULL;
         }
-
-        module = item->value;
-        assert(module);
     }
 
     switch (module->type) {
