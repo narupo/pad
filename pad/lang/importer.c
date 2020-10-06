@@ -81,6 +81,7 @@ create_modobj(
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = ast_new(self->ref_config);
     context_t *ctx = ctx_new(ref_gc);  // LOOK ME! gc is *REFERENCE* from arguments!
+    ctx_set_ref_prev(ctx, ref_ast->ref_context);
 
     ast->import_level = ref_ast->import_level + 1;
     ast->debug = ref_ast->debug;
@@ -140,10 +141,6 @@ importer_import_as(
         return NULL;
     }
 
-    ctx_pushb_stdout_buf(dstctx, ctx_getc_stdout_buf(modobj->module.ast->ref_context));
-    ctx_pushb_stderr_buf(dstctx, ctx_getc_stderr_buf(modobj->module.ast->ref_context));
-    ctx_clear_stdout_buf(modobj->module.ast->ref_context);
-
     object_dict_t *dst_varmap = ctx_get_varmap(dstctx);
     obj_inc_ref(modobj);
     objdict_move(dst_varmap, alias, mem_move(modobj));
@@ -171,9 +168,6 @@ importer_from_import(
     if (!modobj) {
         return NULL;
     }
-
-    ctx_pushb_stdout_buf(dstctx, ctx_getc_stdout_buf(modobj->module.ast->ref_context));
-    ctx_clear_stdout_buf(modobj->module.ast->ref_context);
 
 /**
  * extract import-var from import-vars

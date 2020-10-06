@@ -225,7 +225,7 @@ again1:
         }
 
         const char *idn = obj_getc_idn_name(rhs_obj);
-        object_t *valobj = ctx_find_var_ref(ref_owner->object.context, idn);
+        object_t *valobj = ctx_find_var_ref(ref_owner->object.ref_struct_context, idn);
         if (!valobj) {
             ast_pushb_error(ast, "not found \"%s\"", idn);
             return NULL;
@@ -551,12 +551,6 @@ invoke_func_obj(
     }
     obj_del(args);
 
-    // swap current context stdout and stderr buffer to function's context buffer
-    string_t *cur_stdout_buf = ctx_swap_stdout_buf(ast->ref_context, NULL);
-    string_t *cur_stderr_buf = ctx_swap_stderr_buf(ast->ref_context, NULL);
-    string_t *save_stdout_buf = ctx_swap_stdout_buf(func->ref_ast->ref_context, cur_stdout_buf);
-    string_t *save_stderr_buf = ctx_swap_stderr_buf(func->ref_ast->ref_context, cur_stderr_buf);
-
     // execute function suites
     object_t *result = exec_func_suites(ast, func_obj);
     if (ast_has_errors(ast)) {
@@ -565,11 +559,6 @@ invoke_func_obj(
     }
 
     // reset status
-    cur_stdout_buf = ctx_swap_stdout_buf(func->ref_ast->ref_context, save_stdout_buf);
-    cur_stderr_buf = ctx_swap_stderr_buf(func->ref_ast->ref_context, save_stderr_buf);
-    ctx_swap_stdout_buf(ast->ref_context, cur_stdout_buf);
-    ctx_swap_stderr_buf(ast->ref_context, cur_stderr_buf);
-
     ctx_set_do_return(func->ref_ast->ref_context, false);
 
     // pop scope
@@ -706,25 +695,13 @@ gen_struct(
         ast_pushb_error(ast, "failed to extract reference");
         return NULL;
     }
-
-    context_t *struct_ctx = ctx_new(ast->ref_gc);
-    ctx_set_ref_prev(struct_ctx, ast_get_ref_context(ast));
-
-    ast_t *struct_ast = ast_new(ast->ref_config);
-    ast_set_ref_context(struct_ast, struct_ctx);
-    ast_set_ref_gc(struct_ast, ast->ref_gc);
-
-    object_t *result = _trv_traverse(struct_ast, &(trv_args_t) {
-        .ref_node = ref->def_struct.ref_elems,
-        .depth = 0,
-    });
-    assert(!result);
+    assert(ref->type == OBJ_TYPE_DEF_STRUCT);
 
     return obj_new_object(
         ast->ref_gc,
         ast,
-        mem_move(struct_ast),
-        mem_move(struct_ctx)
+        ref->def_struct.ast,
+        ref->def_struct.context
     );
 }
 

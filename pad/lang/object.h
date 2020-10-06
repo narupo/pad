@@ -128,9 +128,10 @@ struct object_owners_method {
  * A struct object
  */
 struct object_def_struct {
-    ast_t *ref_ast;
-    object_t *identifier;
-    node_t *ref_elems;
+    ast_t *ref_ast;  // reference
+    object_t *identifier;  // moved
+    ast_t *ast;  // moved (struct's context ast)
+    context_t *context;  // moved (struct's context)
 };
 
 /**
@@ -138,8 +139,8 @@ struct object_def_struct {
  */
 struct object_object {
     ast_t *ref_ast;  // DO NOT DELETE
-    ast_t *ast;  // moved (new)
-    context_t *context;  // moved (new)
+    ast_t *ref_struct_ast;  // DO NOT DELETE
+    context_t *ref_struct_context;  // DO NOT DELETE
 };
 
 /**
@@ -391,30 +392,20 @@ obj_new_module(gc_t *ref_gc);
  * construct def-struct-object 
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc    reference to gc_t (DO NOT DELETE)
- * @param[in] *ref_ast   reference to ast_t (DO NOT DELETE)
- * @param[in] *move_idn  identifier object (unicode or string or)
- * @param[in] *ref_elems reference of elems node (DO NOT DELETE)
- *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
 obj_new_def_struct(
     gc_t *ref_gc,
-    ast_t *ref_ast,
     object_t *move_idn,
-    node_t *ref_elems
+    ast_t *move_ast,
+    context_t *move_context
 );
 
 /**
  * construct object object
  * if failed to allocate memory then exit from process
- * 
- * @param[in] *ref_gc    reference to gc_t (DO NOT DELETE)
- * @param[in] *ref_ast      reference to ast_t (DO NOT DELETE)
- * @param[in] *move_ast     ast (moved)
- * @param[in] *move_context context (moved)
  * 
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
@@ -423,8 +414,8 @@ object_t *
 obj_new_object(
     gc_t *ref_gc,
     ast_t *ref_ast,
-    ast_t *move_ast,
-    context_t *move_context
+    ast_t *ref_struct_ast,
+    context_t *ref_struct_context
 );
 
 /**
