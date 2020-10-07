@@ -13,11 +13,10 @@
 
 #define showbuf() printf("stdout[%s]\n", ctx_getc_stdout_buf(ctx))
 #define showerr() printf("stderr[%s]\n", ctx_getc_stderr_buf(ctx))
-
 #define showdetail() printf("detail[%s]\n", ast_getc_first_error_message(ast))
-
 #define trace() ast_trace_error_stack(ast, stderr)
 #define ERR errstack_trace(ast->error_stack, stderr)
+#define eq(s) assert(!strcmp(ctx_getc_stdout_buf(ctx), s))
 
 #define ast_debug(stmt) { \
     ast_set_debug(ast, true); \
@@ -13127,6 +13126,44 @@ test_trv_assign_2(void) {
 }
 
 static void
+test_trv_assign_3(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a = 1\n"
+    "@}{: a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_assign_4(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   a, b = 1, 2\n"
+    "@}{: a :},{: b :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_atom_0(void) {
     trv_ready;
 
@@ -13185,82 +13222,6 @@ test_trv_atom_0(void) {
     }
 
     trv_cleanup;
-}
-
-static void
-test_trv_array(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
-
-    tkr_parse(tkr, "{@ a = [] @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
-    }
-
-    tkr_parse(tkr, "{@ a = [1] @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
-    }
-
-    tkr_parse(tkr, "{@ a = [1] \n b = a @}{: a :},{: b :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array),(array)"));
-    }
-
-    tkr_parse(tkr, "{@ a = [1, 2] @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
-    }
-
-    tkr_parse(tkr, "{@ a = [b = 1, c = 2] @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
-    }
-
-    tkr_parse(tkr, "{@ a = [1, b = 2] @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
-    }
-
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
 }
 
 static void
@@ -18092,7 +18053,6 @@ test_trv_traverse(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -26948,9 +26908,6 @@ test_trv_array_0(void) {
 
 static void
 test_trv_array_1(void) {
-
-    return;  // TODO
-
     trv_ready;
 
     tkr_parse(tkr, "{@\n"
@@ -27046,6 +27003,235 @@ test_trv_array_4(void) {
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1234"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_array_5(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@ a = [] @}{: a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
+    }
+
+    tkr_parse(tkr, "{@ a = [1] @}{: a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
+    }
+
+    tkr_parse(tkr, "{@ a = [1] \n b = a @}{: a :},{: b :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array),(array)"));
+    }
+
+    tkr_parse(tkr, "{@ a = [1, 2] @}{: a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
+    }
+
+    tkr_parse(tkr, "{@ a = [b = 1, c = 2] @}{: a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
+    }
+
+    tkr_parse(tkr, "{@ a = [1, b = 2] @}{: a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_array_6(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@ a = [] @}{: a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_array_7(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+        "a = [[0, 1], [2, 3]]\n"
+        "@}{: a[0][0] :},{: a[0][1] :},{: a[1][0] :},{: a[1][1] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        eq("0,1,2,3");
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_array_8(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+        "struct A:\n"
+        "end\n"
+        "a = [A(), A()]\n"
+        "@}{: a[0] :},{: a[1] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        eq("(object),(object)");
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_array_9(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+        "struct A:\n"
+        "end\n"
+        "a = [A(), A()]\n"
+        "@}{: a[0] :},{: a[1] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        eq("(object),(object)");
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_array_10(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+        "struct A:\n"
+        "end\n"
+        "def f():\n"
+        "end\n"
+        "a = [A(), f]\n"
+        "@}{: a[0] :},{: a[1] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        eq("(object),(function)");
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_array_11(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+        "d = {\"a\": 1, \"b\": 2}\n"
+        "a = [d, d]\n"
+        "@}{: a[0] :},{: a[1] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        eq("(object),(function)");
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_array_12(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+        "d = {\"a\": 1, \"b\": 2}\n"
+        "a = [d, d]\n"
+        "@}{: a[0][\"a\"] :},{: a[1][\"b\"] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        eq("1,2");
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_array_13(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+        "d = {\"a\": 1, \"b\": 2}\n"
+        "b = [2, d]\n"
+        "a = [1, b, 3]\n"
+        "@}{: a[1][1][\"b\"] :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        eq("2");
     }
 
     trv_cleanup;
@@ -28475,6 +28661,14 @@ traverser_tests[] = {
     {"trv_array_2", test_trv_array_2},
     {"trv_array_3", test_trv_array_3},
     {"trv_array_4", test_trv_array_4},
+    {"trv_array_5", test_trv_array_5},
+    {"trv_array_6", test_trv_array_6},
+    {"trv_array_7", test_trv_array_7},
+    {"trv_array_8", test_trv_array_8},
+    {"trv_array_9", test_trv_array_9},
+    {"trv_array_10", test_trv_array_10},
+    {"trv_array_11", test_trv_array_11},
+    {"trv_array_12", test_trv_array_12},
     {"trv_nil", test_trv_nil},
     {"trv_false", test_trv_false},
     {"trv_true", test_trv_true},
@@ -28493,8 +28687,9 @@ traverser_tests[] = {
     {"trv_assign_0", test_trv_assign_0},
     {"trv_assign_1", test_trv_assign_1},
     {"trv_assign_2", test_trv_assign_2},
+    {"trv_assign_3", test_trv_assign_3},
+    {"trv_assign_4", test_trv_assign_4},
     {"trv_atom_0", test_trv_atom_0},
-    {"trv_array", test_trv_array},
     {"trv_index", test_trv_index},
     {"trv_string_index", test_trv_string_index},
     {"trv_multi_assign", test_trv_multi_assign},
