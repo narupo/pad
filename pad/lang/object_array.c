@@ -127,10 +127,12 @@ objarr_move(object_array_t* self, int32_t index, object_t *move_obj) {
     }
 
     object_t *old = self->parray[index];
-    obj_dec_ref(old);
-    obj_del(old);
-    obj_inc_ref(move_obj);
-    self->parray[index] = move_obj;
+    if (old != move_obj) {
+        obj_dec_ref(old);
+        obj_del(old);
+        obj_inc_ref(move_obj);
+        self->parray[index] = move_obj;
+    }
 
     return self;
 }

@@ -137,10 +137,12 @@ objdict_move(object_dict_t *self, const char *key, struct object *move_value) {
     for (int i = 0; i < self->len; ++i) {
         if (cstr_eq(self->map[i].key, key)) {
             // over write
-            obj_dec_ref(self->map[i].value);
-            obj_del(self->map[i].value);
-            obj_inc_ref(move_value);
-            self->map[i].value = mem_move(move_value);
+            if (self->map[i].value != move_value) {
+                obj_dec_ref(self->map[i].value);
+                obj_del(self->map[i].value);
+                obj_inc_ref(move_value);
+                self->map[i].value = mem_move(move_value);
+            }
             return self;
         }
     }

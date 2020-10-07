@@ -18075,8 +18075,7 @@ test_trv_traverse(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "xy"));
+        // TODO: want to occurs to error
     }
 
     tkr_parse(tkr, "{@\n"
@@ -18093,6 +18092,7 @@ test_trv_traverse(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
+        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
@@ -19139,13 +19139,75 @@ test_trv_assign_and_reference_11(void) {
 }
 
 static void
+test_trv_assign_and_reference_11_5(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(a):\n"
+    "       return a\n"
+    "   end\n"
+    "   j = 1\n"
+    "   k = f(j)\n"
+    "@}{: id(k) == id(j) :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_assign_and_reference_11_6(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f():\n"
+    "       return 1, 2\n"
+    "   end\n"
+    "   i, j = f()\n"
+    "@}{: i :},{: j :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_assign_and_reference_11_7(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "   def f(a):\n"
+    "       return a, a\n"
+    "   end\n"
+    "   i, j = f(1)\n"
+    "@}{: i :},{: j :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
 test_trv_assign_and_reference_12(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{@\n"
     "   def f(a):\n"
@@ -19153,7 +19215,7 @@ test_trv_assign_and_reference_12(void) {
     "   end\n"
     "   k = 1\n"
     "   i, j = f(k)\n"
-    "@}{: i :},{: j :},{: id(i) != id(j) :},{: id(k) != id(i) :},{: id(k) != id(j) :}");
+    "@}{: i :},{: j :},{: id(i) == id(j) :},{: id(k) == id(i) :},{: id(k) == id(j) :}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
@@ -19163,11 +19225,7 @@ test_trv_assign_and_reference_12(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1,true,true,true"));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
 }
 
 static void
@@ -19577,7 +19635,6 @@ test_trv_import_stmt_0(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\n"));
     }
 
@@ -23136,7 +23193,6 @@ test_trv_return_stmt_6(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
     }
 
@@ -23444,7 +23500,6 @@ test_trv_struct_9(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        trace();
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
@@ -23537,7 +23592,6 @@ test_trv_struct_13(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
@@ -23563,7 +23617,6 @@ test_trv_struct_14(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
-        trace();
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
@@ -24084,7 +24137,6 @@ test_trv_func_def_7(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "    program\n\n    comment\n"));
     }
 
@@ -25872,7 +25924,6 @@ test_trv_asscalc_12(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
-        showbuf();
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcabc"));
     }
 
@@ -28216,6 +28267,9 @@ traverser_tests[] = {
     {"trv_assign_and_reference_9", test_trv_assign_and_reference_9},
     {"trv_assign_and_reference_10", test_trv_assign_and_reference_10},
     {"trv_assign_and_reference_11", test_trv_assign_and_reference_11},
+    {"trv_assign_and_reference_11_5", test_trv_assign_and_reference_11_5},
+    {"trv_assign_and_reference_11_6", test_trv_assign_and_reference_11_6},
+    {"trv_assign_and_reference_11_7", test_trv_assign_and_reference_11_7},
     {"trv_assign_and_reference_12", test_trv_assign_and_reference_12},
     {"trv_assign_and_reference_13", test_trv_assign_and_reference_13},
     {"trv_assign_and_reference_14", test_trv_assign_and_reference_14},
