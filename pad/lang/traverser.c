@@ -371,10 +371,11 @@ trv_elems(ast_t *ast, trv_args_t *targs) {
         check("call _trv_traverse with formula");
         targs->ref_node = elems->formula;
         targs->depth = depth + 1;
-        _trv_traverse(ast, targs);
+        object_t *result = _trv_traverse(ast, targs);
         if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
+        obj_del(result);
     }
 
     check("call _trv_traverse with elems");
@@ -1060,26 +1061,6 @@ trv_return_stmt(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
-    // return文の場合、formulaの結果がidentifierだったらidentifierが指す
-    // 実体を取得して返さなければならない
-    // 関数の戻り値に、関数内の変数を使っていた場合、ここでidentifierをそのまま返すと、
-    // 関数呼び出し時の代入で関数内の変数のidentifierが代入されてしまう
-    // 例えば以下のようなコードである
-    //
-    //     def func():
-    //         a = 1
-    //         return a
-    //     end
-    //     x = func()
-    //
-    // そのためここでidentifierの指す実体をコピーで取得して返すようにする
-    //
-    // TODO:
-    // returnで返す値が、現在のスコープには無いオブジェクトの場合、
-    // つまりグローバル変数などの場合はコピーではなく参照を返す必要がある
-    // ↓の実装では全てコピーになっている
-
-    // return copy or reference ?
     object_t *ret = NULL;
 again:
     switch (result->type) {
@@ -1087,19 +1068,9 @@ again:
         ast_pushb_error(ast, "invalid return type (%d)", result->type);
         return NULL;
         break;
-    case OBJ_TYPE_NIL:
-    case OBJ_TYPE_INT:
-    case OBJ_TYPE_BOOL:
-    case OBJ_TYPE_UNICODE:
-        ret = obj_deep_copy(result);
-        break;
     case OBJ_TYPE_CHAIN:
         result = refer_chain_obj_with_ref(ast, result);
         goto again;
-        break;
-    case OBJ_TYPE_ARRAY:
-    case OBJ_TYPE_DICT:
-        ret = extract_copy_of_obj(ast, result);
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(result);
@@ -1110,6 +1081,14 @@ again:
         }
         goto again;
     } break;
+    case OBJ_TYPE_ARRAY:
+    case OBJ_TYPE_DICT:
+        ret = extract_ref_of_obj(ast, result);
+        break;
+    case OBJ_TYPE_NIL:
+    case OBJ_TYPE_INT:
+    case OBJ_TYPE_BOOL:
+    case OBJ_TYPE_UNICODE:
     case OBJ_TYPE_MODULE:
     case OBJ_TYPE_FUNC:
     case OBJ_TYPE_OBJECT:
@@ -7197,7 +7176,7 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
             ast_pushb_error(
                 ast,
                 "\"%s\" is not defined in asscalc ass idn",
-                str_getc(rhs->identifier.name)
+                obj_getc_idn_name(rhs)
             );
             return_trav(NULL);
         }
@@ -7261,7 +7240,8 @@ trv_calc_asscalc_add_ass_identifier_string(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *lhs = targs->lhs_obj;
     object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
+    const char *idn = targs->identifier;
+    assert(lhs && rhs && idn);
     assert(lhs->type == OBJ_TYPE_UNICODE);
 
     switch (rhs->type) {
@@ -7270,8 +7250,19 @@ trv_calc_asscalc_add_ass_identifier_string(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
         break;
     case OBJ_TYPE_UNICODE: {
-        uni_app(lhs->unicode, uni_getc(rhs->unicode));
-        return_trav(lhs);
+        unicode_t *dst = uni_deep_copy(lhs->unicode);
+        uni_app(dst, uni_getc(rhs->unicode));
+        object_t *ret = obj_new_unicode(ast->ref_gc, mem_move(dst));
+
+        // replace variable because unicode is immutable object
+        set_ref_at_cur_varmap(
+            ast,
+            targs->ref_owners,
+            idn,
+            ret
+        );
+
+        return_trav(ret);
     } break;
     }
 
@@ -7286,6 +7277,7 @@ trv_calc_asscalc_add_ass_identifier(ast_t *ast, trv_args_t *targs) {
     assert(lhs);
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
 
+    const char *idn = obj_getc_idn_name(lhs);
     object_t *lhsref = extract_ref_of_obj(ast, lhs);
     if (!lhsref) {
         ast_pushb_error(ast, "failed to extract object");
@@ -7315,6 +7307,7 @@ trv_calc_asscalc_add_ass_identifier(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_UNICODE: {
         check("call trv_calc_asscalc_add_ass_identifier_string");
         targs->lhs_obj = lhsref;
+        targs->identifier = idn;
         targs->depth = depth + 1;
         result = trv_calc_asscalc_add_ass_identifier_string(ast, targs);
     } break;

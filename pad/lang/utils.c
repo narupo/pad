@@ -162,13 +162,14 @@ set_ref_at_cur_varmap(
 
     object_dict_t *varmap = ctx_get_varmap(ast->ref_context);
     object_t *popped = objdict_pop(varmap, identifier);
-    if (popped != ref) {
+    if (popped == ref) {
+        objdict_set(varmap, identifier, ref);
+    } else {
         obj_inc_ref(ref);
+        obj_dec_ref(popped);
+        obj_del(popped);
+        objdict_set(varmap, identifier, ref);
     }
-
-    obj_dec_ref(popped);
-    obj_del(popped);
-    objdict_set(varmap, identifier, ref);
 }
 
 /**
@@ -385,9 +386,6 @@ copy_func_args(ast_t *ast, object_t *drtargs) {
         case OBJ_TYPE_INT:
         case OBJ_TYPE_BOOL:
         case OBJ_TYPE_UNICODE:
-            // copy
-            savearg = obj_deep_copy(arg);
-            break;
         case OBJ_TYPE_OWNERS_METHOD:
         case OBJ_TYPE_ARRAY:
         case OBJ_TYPE_DICT:
@@ -1058,6 +1056,14 @@ extract_copy_of_obj(ast_t *ast, object_t *obj) {
         }
         return obj_deep_copy(ref);
     } break;
+    case OBJ_TYPE_CHAIN: {
+        object_t *ref = refer_chain_obj_with_ref(ast, obj);
+        if (!ref) {
+            ast_pushb_error(ast, "failed to refer index");
+            return NULL;
+        }
+        return obj_deep_copy(ref);
+    } break;
     case OBJ_TYPE_DICT: {
         // copy dict elements recursive
         object_dict_t *objdict = objdict_new(ast->ref_gc);
@@ -1083,14 +1089,6 @@ extract_copy_of_obj(ast_t *ast, object_t *obj) {
         }
 
         return obj_new_array(ast->ref_gc, objarr);
-    } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *ref = refer_chain_obj_with_ref(ast, obj);
-        if (!ref) {
-            ast_pushb_error(ast, "failed to refer index");
-            return NULL;
-        }
-        return obj_deep_copy(ref);
     } break;
     }
 
@@ -1122,6 +1120,30 @@ extract_ref_of_obj(ast_t *ast, object_t *obj) {
             return NULL;
         }
         return ref;
+    } break;
+    case OBJ_TYPE_DICT: {
+        object_dict_t *d = obj->objdict;
+
+        for (int32_t i = 0; i < objdict_len(d); ++i) {
+            const object_dict_item_t *item = objdict_getc_index(d, i);
+            assert(item);
+            object_t *el = item->value;
+            object_t *ref = extract_ref_of_obj(ast, el);
+            objdict_set(d, item->key, ref);
+        }
+
+        return obj;
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_array_t *arr = obj->objarr;
+
+        for (int32_t i = 0; i < objarr_len(arr); ++i) {
+            object_t *el = objarr_get(arr, i);
+            object_t *ref = extract_ref_of_obj(ast, el);
+            objarr_set(arr, i, ref);
+        }
+
+        return obj;
     } break;
     }
 
