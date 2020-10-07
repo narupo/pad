@@ -127,8 +127,13 @@ kit_clear_context_buffer(kit_t *self) {
 }
 
 const char *
-kit_getc_compiled(const kit_t *self) {
+kit_getc_stdout_buf(const kit_t *self) {
     return ctx_getc_stdout_buf(self->ctx);
+}
+
+const char *
+kit_getc_stderr_buf(const kit_t *self) {
+    return ctx_getc_stderr_buf(self->ctx);
 }
 
 bool
