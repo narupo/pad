@@ -231,7 +231,11 @@ _app_run(app_t *self) {
         return 1;
     }
 
-    printf("%s", kit_getc_compiled(kit));
+    printf("%s", kit_getc_stdout_buf(kit));
+    fflush(stdout);
+
+    fprintf(stderr, "%s", kit_getc_stderr_buf(kit));
+    fflush(stderr);
 
     kit_del(kit);
     free(content);
@@ -263,7 +267,11 @@ app_run_args(app_t *self) {
         return 1;
     }
 
-    printf("%s", kit_getc_compiled(kit));
+    printf("%s", kit_getc_stdout_buf(kit));
+    fflush(stdout);
+
+    fprintf(stderr, "%s", kit_getc_stderr_buf(kit));
+    fflush(stderr);
 
     kit_del(kit);
     return 0;

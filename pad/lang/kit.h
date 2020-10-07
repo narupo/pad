@@ -33,7 +33,10 @@ kit_t *
 kit_compile_from_string_args(kit_t *self, const char *str, int argc, char *argv[]);
 
 const char *
-kit_getc_compiled(const kit_t *self);
+kit_getc_stdout_buf(const kit_t *self);
+
+const char *
+kit_getc_stderr_buf(const kit_t *self);
 
 void
 kit_clear_context(kit_t *self);

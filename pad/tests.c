@@ -26092,12 +26092,7 @@ test_trv_asscalc_22(void) {
 
 static void
 test_trv_expr_0(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{: 1 + 1 :}");
     {
@@ -26119,21 +26114,12 @@ test_trv_expr_0(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
 }
 
 static void
 test_trv_expr_1(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{: 1 - 1 :}");
     {
@@ -26145,11 +26131,7 @@ test_trv_expr_1(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
 }
 
 static void
@@ -26237,12 +26219,6 @@ test_trv_expr_4a(void) {
 
     trv_cleanup;
 }
-
-/*
-
-    a.b[0].c(0).d[0][0](0)
-
-*/
 
 static void
 test_trv_expr_4b(void) {
@@ -26400,9 +26376,9 @@ static void
 test_trv_expr_9(void) {
     trv_ready;
 
-    /***********************
-    * theme: list and expr *
-    ***********************/
+    /************************
+    * theme: array and expr *
+    ************************/
 
     tkr_parse(tkr, "{@\n"
     "   l = [1, 2]\n"
@@ -26436,12 +26412,7 @@ test_trv_expr_9(void) {
 
 static void
 test_trv_term_0(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{: 2 * 2 :}");
     {
@@ -26493,11 +26464,7 @@ test_trv_term_0(void) {
         assert(!strcmp(ast_getc_first_error_message(ast), "can't mul string by negative value"));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
 }
 
 static void
@@ -26513,17 +26480,7 @@ test_trv_term_1(void) {
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
-/*
-    tkr_parse(tkr, "{: 3 / 2 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));  // TODO: imp float!
-    }
-*/
+
     trv_cleanup;
 }
 
@@ -26661,12 +26618,7 @@ test_trv_term_3(void) {
 
 static void
 test_trv_call_0(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{@ def f(): end f() @}");
     {
@@ -26678,11 +26630,7 @@ test_trv_call_0(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
 }
 
 static void
@@ -26839,12 +26787,7 @@ test_trv_call_5(void) {
 
 static void
 test_trv_index_0(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{@ a = [0, 1] @}{: a[0] :},{: a[1] :}");
     {
@@ -26856,21 +26799,12 @@ test_trv_index_0(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,1"));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
 }
 
 static void
 test_trv_index_1(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{@ a = [0, 1] @}{: a[0] :}");
     {
@@ -26882,11 +26816,7 @@ test_trv_index_1(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
 }
 
 static void
