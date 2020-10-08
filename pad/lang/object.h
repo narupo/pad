@@ -414,7 +414,7 @@ object_t *
 obj_new_object(
     gc_t *ref_gc,
     ast_t *ref_ast,
-    context_t *move_struct_context
+    context_t *move_context
 );
 
 /**
