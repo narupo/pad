@@ -12283,6 +12283,203 @@ test_trv_comparison(void) {
     check_ok("{@ a = 1 == 1 == 0 @}{: a :}", "false");
     check_ok("{@ a = 1 != 1 @}{: a :}", "false");
 
+    check_ok("{: 1 == 1 :}", "true");
+    check_ok("{: 1 != 1 :}", "false");
+
+    check_ok("{: 1 == true :}", "true");
+    check_ok("{: 1 != true :}", "false");
+    check_ok("{: 1 == false :}", "false");
+    check_ok("{: 1 != false :}", "true");
+    check_ok("{: true == 1 :}", "true");
+    check_ok("{: true != 1 :}", "false");
+    check_ok("{: false == 1 :}", "false");
+    check_ok("{: false != 1 :}", "true");
+
+    check_ok("{: [] == 1 :}", "false");
+    check_ok("{: [] != 1 :}", "true");
+    check_ok("{: 1 == [] :}", "false");
+    check_ok("{: 1 != [] :}", "true");
+
+    check_ok("{: {} == 1 :}", "false");
+    check_ok("{: {} != 1 :}", "true");
+    check_ok("{: 1 == {} :}", "false");
+    check_ok("{: 1 != {} :}", "true");
+
+    check_ok("{@ def f(): end @}{: f == 1 :}", "false");
+    check_ok("{@ def f(): end @}{: f != 1 :}", "true");
+    check_ok("{@ def f(): end @}{: 1 == f :}", "false");
+    check_ok("{@ def f(): end @}{: 1 != f :}", "true");
+
+    check_ok("{@ struct A: end @}{: A == 1 :}", "false");
+    check_ok("{@ struct A: end @}{: A != 1 :}", "true");
+    check_ok("{@ struct A: end @}{: 1 == A :}", "false");
+    check_ok("{@ struct A: end @}{: 1 != A :}", "true");
+
+    check_ok("{@ struct A: end @}{: A() == 1 :}", "false");
+    check_ok("{@ struct A: end @}{: A() != 1 :}", "true");
+    check_ok("{@ struct A: end @}{: 1 == A() :}", "false");
+    check_ok("{@ struct A: end @}{: 1 != A() :}", "true");
+
+    /*******
+    * bool *
+    *******/
+
+    check_ok("{: true == true :}", "true");
+    check_ok("{: false == false :}", "true");
+    check_ok("{: true != true :}", "false");
+    check_ok("{: false != false :}", "false");
+    check_ok("{: false == true :}", "false");
+    check_ok("{: true == false :}", "false");
+    check_ok("{: false != true :}", "true");
+    check_ok("{: false != false :}", "false");
+
+    check_ok("{: true == \"a\" :}", "false");
+    check_ok("{: false == \"a\" :}", "false");
+    check_ok("{: true != \"a\" :}", "true");
+    check_ok("{: false != \"a\" :}", "true");
+    check_ok("{: \"a\" == true :}", "false");
+    check_ok("{: \"a\" == false :}", "false");
+    check_ok("{: \"a\" != true :}", "true");
+    check_ok("{: \"a\" != false :}", "true");
+
+    check_ok("{: true == [] :}", "false");
+    check_ok("{: false == [] :}", "false");
+    check_ok("{: true != [] :}", "true");
+    check_ok("{: false != [] :}", "true");
+    check_ok("{: [] == true :}", "false");
+    check_ok("{: [] == false :}", "false");
+    check_ok("{: [] != true :}", "true");
+    check_ok("{: [] != false :}", "true");
+
+    check_ok("{: true == {} :}", "false");
+    check_ok("{: false == {} :}", "false");
+    check_ok("{: true != {} :}", "true");
+    check_ok("{: false != {} :}", "true");
+    check_ok("{: {} == true :}", "false");
+    check_ok("{: {} == false :}", "false");
+    check_ok("{: {} != true :}", "true");
+    check_ok("{: {} != false :}", "true");
+
+    check_ok("{@ def f(): end @}{: true == f :}", "false");
+    check_ok("{@ def f(): end @}{: false == f :}", "false");
+    check_ok("{@ def f(): end @}{: true != f :}", "true");
+    check_ok("{@ def f(): end @}{: false != f :}", "true");
+    check_ok("{@ def f(): end @}{: f == true :}", "false");
+    check_ok("{@ def f(): end @}{: f == false :}", "false");
+    check_ok("{@ def f(): end @}{: f != true :}", "true");
+    check_ok("{@ def f(): end @}{: f != false :}", "true");
+
+    check_ok("{@ struct A: end @}{: true == A :}", "false");
+    check_ok("{@ struct A: end @}{: false == A :}", "false");
+    check_ok("{@ struct A: end @}{: true != A :}", "true");
+    check_ok("{@ struct A: end @}{: false != A :}", "true");
+    check_ok("{@ struct A: end @}{: A == true :}", "false");
+    check_ok("{@ struct A: end @}{: A == false :}", "false");
+    check_ok("{@ struct A: end @}{: A != true :}", "true");
+    check_ok("{@ struct A: end @}{: A != false :}", "true");
+
+    check_ok("{@ struct A: end @}{: true == A() :}", "false");
+    check_ok("{@ struct A: end @}{: false == A() :}", "false");
+    check_ok("{@ struct A: end @}{: true != A() :}", "true");
+    check_ok("{@ struct A: end @}{: false != A() :}", "true");
+    check_ok("{@ struct A: end @}{: A() == true :}", "false");
+    check_ok("{@ struct A: end @}{: A() == false :}", "false");
+    check_ok("{@ struct A: end @}{: A() != true :}", "true");
+    check_ok("{@ struct A: end @}{: A() != false :}", "true");
+
+    /**********
+    * unicode *
+    **********/
+
+    check_ok("{@ a = 1 == \"abc\" @}{: a :}", "false");
+    check_ok("{@ a = \"abc\" == 1 @}{: a :}", "false");
+    check_ok("{@ a = \"abc\" == \"abc\" @}{: a :}", "true");
+    check_ok("{@ a = 1 != \"abc\" @}{: a :}", "true");
+    check_ok("{@ a = \"abc\" != 1 @}{: a :}", "true");
+    check_ok("{@ a = \"abc\" != \"def\" @}{: a :}", "true");
+    check_ok("{@ a = \"abc\" == \"abc\" @}{: a :}", "true");
+
+    /**
+     * well-formed on Python
+     * ill-formed on Ruby
+     */
+    check_ok("{@ a = \"abc\" == \"abc\" == \"def\" @}{: a :}", "false");
+    check_ok("{@ a = \"abc\" == \"abc\" @}{: a :}", "true");
+
+    check_ok("{: \"a\" == [] :}", "false");
+    check_ok("{: \"a\" != [] :}", "true");
+    check_ok("{: [] == \"a\" :}", "false");
+    check_ok("{: [] != \"a\" :}", "true");
+
+    check_ok("{: \"a\" == {} :}", "false");
+    check_ok("{: \"a\" != {} :}", "true");
+    check_ok("{: {} == \"a\" :}", "false");
+    check_ok("{: {} != \"a\" :}", "true");
+
+    check_ok("{@ def f(): end @}{: \"a\" == f :}", "false");
+    check_ok("{@ def f(): end @}{: \"a\" != f :}", "true");
+    check_ok("{@ def f(): end @}{: f == \"a\" :}", "false");
+    check_ok("{@ def f(): end @}{: f != \"a\" :}", "true");
+
+    check_ok("{@ struct A: end @}{: \"a\" == A :}", "false");
+    check_ok("{@ struct A: end @}{: \"a\" != A :}", "true");
+    check_ok("{@ struct A: end @}{: A == \"a\" :}", "false");
+    check_ok("{@ struct A: end @}{: A != \"a\" :}", "true");
+
+    check_ok("{@ struct A: end @}{: \"a\" == A() :}", "false");
+    check_ok("{@ struct A: end @}{: \"a\" != A() :}", "true");
+    check_ok("{@ struct A: end @}{: A() == \"a\" :}", "false");
+    check_ok("{@ struct A: end @}{: A() != \"a\" :}", "true");
+
+    /********
+    * array *
+    ********/
+
+    check_ok("{: [] == [] :}", "false");
+    check_ok("{: [] != [] :}", "true");
+
+    check_ok("{: [] == {} :}", "false");
+    check_ok("{: [] != {} :}", "true");
+    check_ok("{: {} == [] :}", "false");
+    check_ok("{: {} != [] :}", "true");
+
+    check_ok("{@ def f(): end @}{: [] == f :}", "false");
+    check_ok("{@ def f(): end @}{: [] != f :}", "true");
+    check_ok("{@ def f(): end @}{: f == [] :}", "false");
+    check_ok("{@ def f(): end @}{: f != [] :}", "true");
+
+    check_ok("{@ struct A: end @}{: A == [] :}", "false");
+    check_ok("{@ struct A: end @}{: A != [] :}", "true");
+    check_ok("{@ struct A: end @}{: [] == A :}", "false");
+    check_ok("{@ struct A: end @}{: [] != A :}", "true");
+
+    check_ok("{@ struct A: end @}{: A() == [] :}", "false");
+    check_ok("{@ struct A: end @}{: A() != [] :}", "true");
+    check_ok("{@ struct A: end @}{: [] == A() :}", "false");
+    check_ok("{@ struct A: end @}{: [] != A() :}", "true");
+
+    /*******
+    * dict *
+    *******/
+
+    check_ok("{: {} == {} :}", "false");
+    check_ok("{: {} != {} :}", "true");
+
+    check_ok("{@ def f(): end @}{: {} == f :}", "false");
+    check_ok("{@ def f(): end @}{: {} != f :}", "true");
+    check_ok("{@ def f(): end @}{: f == {} :}", "false");
+    check_ok("{@ def f(): end @}{: f != {} :}", "true");
+
+    check_ok("{@ struct A: end @}{: A == {} :}", "false");
+    check_ok("{@ struct A: end @}{: A != {} :}", "true");
+    check_ok("{@ struct A: end @}{: {} == A :}", "false");
+    check_ok("{@ struct A: end @}{: {} != A :}", "true");
+
+    check_ok("{@ struct A: end @}{: A() == {} :}", "false");
+    check_ok("{@ struct A: end @}{: A() != {} :}", "true");
+    check_ok("{@ struct A: end @}{: {} == A() :}", "false");
+    check_ok("{@ struct A: end @}{: {} != A() :}", "true");
+
     /***********
     * function *
     ***********/
@@ -12291,6 +12488,11 @@ test_trv_comparison(void) {
     check_ok("{@ def f(): end \n a = \"abc\" == f @}{: a :}", "false");
     check_ok("{@ def f(): end \n a = f != 1 @}{: a :}", "true");
     check_ok("{@ def f(): end \n a = 1 != f @}{: a :}", "true");
+
+    check_ok("{@ struct A: end \n def f(): end @}{: A == f :}", "false")
+    check_ok("{@ struct A: end \n def f(): end @}{: A != f :}", "true")
+    check_ok("{@ struct A: end \n def f(): end @}{: f == A:}", "false")
+    check_ok("{@ struct A: end \n def f(): end @}{: f != A :}", "true")
 
     /*********
     * object *
@@ -12355,25 +12557,6 @@ test_trv_comparison(void) {
     check_ok("{@ struct A: end @}{: \"a\" != A :}", "true");
     check_ok("{@ struct A: end @}{: A == \"a\" :}", "false");
     check_ok("{@ struct A: end @}{: \"a\" == A :}", "false");
-
-    /*********
-    * string *
-    *********/
-
-    check_ok("{@ a = 1 == \"abc\" @}{: a :}", "false");
-    check_ok("{@ a = \"abc\" == 1 @}{: a :}", "false");
-    check_ok("{@ a = \"abc\" == \"abc\" @}{: a :}", "true");
-    check_ok("{@ a = 1 != \"abc\" @}{: a :}", "true");
-    check_ok("{@ a = \"abc\" != 1 @}{: a :}", "true");
-    check_ok("{@ a = \"abc\" != \"def\" @}{: a :}", "true");
-    check_ok("{@ a = \"abc\" == \"abc\" @}{: a :}", "true");
-
-    /**
-     * well-formed on Python
-     * ill-formed on Ruby
-     */
-    check_ok("{@ a = \"abc\" == \"abc\" == \"def\" @}{: a :}", "false");
-    check_ok("{@ a = \"abc\" == \"abc\" @}{: a :}", "true");
 
     /*********************************
     * boolean can convert to integer *
