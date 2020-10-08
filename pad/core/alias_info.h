@@ -24,6 +24,9 @@ alinfo_del(alinfo_t *self);
 alinfo_t * 
 alinfo_new(void);
 
+alinfo_t *
+alinfo_deep_copy(const alinfo_t *self);
+
 /**
  * get value of alias
  *

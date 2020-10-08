@@ -9,8 +9,14 @@ tkr_del(tokenizer_t *self);
 extern void
 ast_del(ast_t *self);
 
+extern ast_t *
+ast_deep_copy(const ast_t *other);
+
 extern void
 ctx_del(context_t *self);
+
+extern context_t *
+ctx_deep_copy(const context_t *other);
 
 void
 obj_del(object_t *self) {
@@ -81,8 +87,7 @@ obj_del(object_t *self) {
         break;
     case OBJ_TYPE_OBJECT:
         self->object.ref_ast = NULL;
-        self->object.ref_struct_ast = NULL;
-        self->object.ref_struct_context = NULL;
+        ctx_del(self->object.struct_context);
         break;
     case OBJ_TYPE_OWNERS_METHOD:
         obj_dec_ref(self->owners_method.owner);
@@ -124,7 +129,10 @@ obj_deep_copy(const object_t *other) {
 
     // copy object
     switch (other->type) {
-    default: assert(0 && "need implement!"); break;
+    default:
+        fprintf(stderr, "object type is %d\n", other->type);
+        assert(0 && "need implement!");
+        break;
     case OBJ_TYPE_NIL:
         break;
     case OBJ_TYPE_INT:
@@ -163,6 +171,17 @@ obj_deep_copy(const object_t *other) {
         // self->module.ast = ast_deep_copy(other->module.ast);
         // self->module.context = ctx_deep_copy(other->module.context);
         self->module.builtin_func_infos = other->module.builtin_func_infos;
+        break;
+    case OBJ_TYPE_DEF_STRUCT:
+        self->def_struct.ref_ast = other->def_struct.ref_ast;
+        self->def_struct.identifier = obj_deep_copy(other->def_struct.identifier); 
+        self->def_struct.ast = ast_deep_copy(other->def_struct.ast);
+        self->def_struct.context = ctx_deep_copy(other->def_struct.context);
+        break;
+    case OBJ_TYPE_OBJECT:
+        self->object.ref_ast = other->object.ref_ast;
+        self->object.ref_struct_ast = other->object.ref_struct_ast;
+        self->object.struct_context = ctx_deep_copy(other->object.struct_context);
         break;
     case OBJ_TYPE_OWNERS_METHOD:
         self->owners_method.owner = obj_deep_copy(other->owners_method.owner);
@@ -461,10 +480,9 @@ object_t *
 obj_new_object(
     gc_t *ref_gc,
     ast_t *ref_ast,
-    ast_t *ref_struct_ast,
-    context_t *ref_struct_context
+    context_t *move_struct_context
 ) {
-    if (!ref_gc || !ref_ast || !ref_struct_ast || !ref_struct_context) {
+    if (!ref_gc || !ref_ast || !move_struct_context) {
         return NULL;
     }
 
@@ -474,8 +492,7 @@ obj_new_object(
     }
 
     self->object.ref_ast = ref_ast;
-    self->object.ref_struct_ast = ref_struct_ast;
-    self->object.ref_struct_context = ref_struct_context;
+    self->object.struct_context = move_struct_context;
 
     return self;
 }

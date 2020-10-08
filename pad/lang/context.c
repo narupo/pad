@@ -355,3 +355,24 @@ ctx_find_most_prev(context_t *self) {
 
     return most_prev;
 }
+
+context_t *
+ctx_deep_copy(const context_t *other) {
+    if (!other) {
+        return NULL;
+    }
+    
+    context_t *self = ctx_new(other->ref_gc);
+
+    self->ref_prev = other->ref_prev;
+    self->ref_gc = other->ref_gc;
+    self->alinfo = alinfo_deep_copy(other->alinfo);
+    self->stdout_buf = str_deep_copy(other->stdout_buf);
+    self->stderr_buf = str_deep_copy(other->stderr_buf);
+    self->scope = scope_deep_copy(other->scope);
+    self->do_break = other->do_break;
+    self->do_continue = other->do_continue;
+    self->do_return = other->do_return;
+
+    return self;
+}

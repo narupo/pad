@@ -36,10 +36,54 @@ scope_escdel_head_varmap(scope_t *self) {
 
 scope_t *
 scope_new(gc_t *ref_gc) {
+    if (!ref_gc) {
+        return NULL;
+    }
+
     scope_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->ref_gc = ref_gc;
     self->varmap = objdict_new(ref_gc);
+
+    return self;
+}
+
+static scope_t *
+scope_deep_copy_once(const scope_t *other) {
+    if (!other) {
+        return NULL;
+    }
+
+    scope_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->ref_gc = other->ref_gc;
+    self->varmap = objdict_deep_copy(other->varmap);
+
+    return self;
+}
+
+scope_t *
+scope_deep_copy(const scope_t *other) {
+    if (!other) {
+        return NULL;
+    }
+
+    scope_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->ref_gc = other->ref_gc;
+    self->varmap = objdict_deep_copy(other->varmap);
+
+    scope_t *dst = self;
+    for (scope_t *cur = other->prev; cur; cur = cur->prev) {
+        dst->prev = scope_deep_copy_once(cur);
+        dst = dst->prev;
+    }
+
+    dst = self;
+    for (scope_t *cur = other->next; cur; cur = cur->next) {
+        dst->next = scope_deep_copy_once(cur);
+        dst = dst->next;
+    }
 
     return self;
 }

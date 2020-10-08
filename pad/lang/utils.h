@@ -12,13 +12,16 @@
 /**
  * get reference of ast by owner object
  *
- * @param[in] *default_ast    default ast
+ * @param[in] *def_ast    default ast
  * @param[in] *ref_owners reference to owners in array
  *
  * @return default ast or owner's ast
  */
 ast_t *
-get_ast_by_owners(ast_t *default_ast, object_array_t *ref_owners);
+get_ast_by_owners(ast_t *def_ast, object_array_t *ref_owners);
+
+context_t *
+get_context_by_owners(context_t *def_context, object_array_t *ref_owners);
 
 /**
  * pull-in reference of object by identifier object from varmap of current scope of context
@@ -53,17 +56,13 @@ string_t *
 obj_to_string(ast_t *ast, const object_t *obj);
 
 /**
- * set move object at varmap of current scope of context by identifier
+ * move object at varmap of current scope of context by identifier
  * this function do not increment reference count of object
- *
- * @param[in] *ast            pointer to ast_t
- * @param[in] *ref_owners reference to owners in array
- * @param[in] *identifier     identifier string
- * @param[in] *move_obj       object with move semantics
  */
 void
 move_obj_at_cur_varmap(
-    ast_t *ast,
+    errstack_t *errstack,
+    context_t *context,
     object_array_t *ref_owners,
     const char *identifier,
     object_t *move_obj
@@ -80,7 +79,8 @@ move_obj_at_cur_varmap(
  */
 void
 set_ref_at_cur_varmap(
-    ast_t *ast,
+    errstack_t *errstack,
+    context_t *context,
     object_array_t *ref_owners,
     const char *identifier,
     object_t *ref

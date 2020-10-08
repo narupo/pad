@@ -392,6 +392,29 @@ ast_new(const config_t *ref_config) {
     return self;
 }
 
+ast_t *
+ast_deep_copy(const ast_t *other) {
+    if (!other) {
+        return NULL;
+    }
+
+    ast_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->ref_config = other->ref_config;
+    self->ref_tokens = other->ref_tokens;
+    self->ref_ptr = other->ref_ptr;
+    self->root = node_deep_copy(other->root);
+    self->ref_context = other->ref_context;
+    self->opts = opts_deep_copy(other->opts);
+    self->ref_gc = other->ref_gc;
+    self->import_level = other->import_level;
+    self->error_stack = errstack_deep_copy(other->error_stack);
+    self->debug = other->debug;
+    self->is_in_loop = other->is_in_loop;
+
+    return self;
+}
+
 void
 ast_move_opts(ast_t *self, opts_t *move_opts) {
     if (self->opts) {

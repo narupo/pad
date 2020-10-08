@@ -365,3 +365,6 @@ ctx_get_ref_prev(const context_t *self);
 
 context_t *
 ctx_find_most_prev(context_t *self);
+
+context_t *
+ctx_deep_copy(const context_t *self);

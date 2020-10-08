@@ -129,8 +129,8 @@ struct object_owners_method {
  */
 struct object_def_struct {
     ast_t *ref_ast;  // reference
-    object_t *identifier;  // moved
-    ast_t *ast;  // moved (struct's context ast)
+    object_t *identifier;  // moved (type == OBJ_TYPE_UNICODE)
+    ast_t *ast;  // moved (struct's ast (node tree))
     context_t *context;  // moved (struct's context)
 };
 
@@ -140,7 +140,7 @@ struct object_def_struct {
 struct object_object {
     ast_t *ref_ast;  // DO NOT DELETE
     ast_t *ref_struct_ast;  // DO NOT DELETE
-    context_t *ref_struct_context;  // DO NOT DELETE
+    context_t *struct_context;  // moved
 };
 
 /**
@@ -414,8 +414,7 @@ object_t *
 obj_new_object(
     gc_t *ref_gc,
     ast_t *ref_ast,
-    ast_t *ref_struct_ast,
-    context_t *ref_struct_context
+    context_t *move_struct_context
 );
 
 /**
