@@ -23873,7 +23873,7 @@ static void
 test_trv_struct_30(void) {
     trv_ready;
 
-    check_ok_trace("{@\n"
+    check_ok("{@\n"
     "struct ns:\n"
     "   struct Animal:\n"
     "       n = 1\n"
@@ -23881,6 +23881,39 @@ test_trv_struct_30(void) {
     "end\n"
     "a = ns.Animal()\n"
     "@}{: a.n :}", "1");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_31(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "struct a:\n"
+    "   struct b:\n"
+    "       def c():\n"
+    "           puts(1)\n"
+    "       end\n"
+    "   end\n"
+    "end\n"
+    "a.b.c()\n"
+    "@}", "1\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_32(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "struct A:\n"
+    "   def b():\n"
+    "       return A()"
+    "   end\n"
+    "end\n"
+    "@}{: A.b() :}", "(object)");
 
     trv_cleanup;
 }
@@ -28751,6 +28784,8 @@ traverser_tests[] = {
     {"trv_struct_28", test_trv_struct_28},
     {"trv_struct_29", test_trv_struct_29},
     {"trv_struct_30", test_trv_struct_30},
+    {"trv_struct_31", test_trv_struct_31},
+    {"trv_struct_32", test_trv_struct_32},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},

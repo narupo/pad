@@ -732,7 +732,7 @@ gen_struct(
     object_t *ref_owner = objarr_get_last(owners);
 
     if (!ref_owner) {
-        ref_owner = ctx_find_var_ref(ast->ref_context, idn);
+        ref_owner = ctx_find_var_ref_all(ast->ref_context, idn);
     }
     if (!ref_owner) {
         return NULL;  // not error
