@@ -23982,6 +23982,78 @@ test_trv_struct_25(void) {
 }
 
 static void
+test_trv_struct_26(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@\n"
+    "struct File:\n"
+    "   n = 1\n"
+    "end\n"
+    "@}{: File.n :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_27(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "struct File:\n"
+    "   n = 1\n"
+    "end\n"
+    "f = File()\n"
+    "File.n = 2\n"
+    "@}{: f.n :}", "1");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_28(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "struct File:\n"
+    "   n = 1\n"
+    "end\n"
+    "f = File()\n"
+    "f.n = 2\n"
+    "@}{: File.n :}", "1");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_29(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "struct File:\n"
+    "   n = 1\n"
+    "   def f(self):\n"
+    "       self.n += 1\n"
+    "       puts(self.n)\n"
+    "   end\n"
+    "end\n"
+    "f1 = File()\n"
+    "f2 = File()\n"
+    "f1.f(f1)\n"
+    "f2.f(f2)\n"
+    "@}", "2\n2\n");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_def_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -28634,6 +28706,10 @@ traverser_tests[] = {
     {"trv_struct_23", test_trv_struct_23},
     {"trv_struct_24", test_trv_struct_24},
     {"trv_struct_25", test_trv_struct_25},
+    {"trv_struct_26", test_trv_struct_26},
+    {"trv_struct_27", test_trv_struct_27},
+    {"trv_struct_28", test_trv_struct_28},
+    {"trv_struct_29", test_trv_struct_29},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},

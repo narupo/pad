@@ -26,6 +26,20 @@ alinfo_new(void) {
     return self;
 }
 
+alinfo_t *
+alinfo_deep_copy(const alinfo_t *other) {
+    if (!other) {
+        return NULL;
+    }
+
+    alinfo_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->key_val_map = dict_deep_copy(other->key_val_map);
+    self->key_desc_map = dict_deep_copy(other->key_desc_map);
+
+    return self;
+}
+
 const char *
 alinfo_getc_value(const alinfo_t *self, const char *key) {
    const dict_item_t *item = dict_getc(self->key_val_map, key);

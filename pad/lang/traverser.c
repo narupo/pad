@@ -1298,7 +1298,8 @@ trv_def_struct(ast_t *ast, trv_args_t *targs) {
     }
 
     move_obj_at_cur_varmap(
-        ast,
+        ast->error_stack,
+        ast->ref_context,
         targs->ref_owners,
         obj_getc_idn_name(idn),
         mem_move(def_struct)
@@ -1409,7 +1410,8 @@ assign_to_chain_dot(
 ) {
     object_t *ref_owner = objarr_get_last(owners);
     object_t *child = chain_obj_get_obj(co);
-    ast_t *ast_ = ast;
+    errstack_t *errstack = ast->error_stack;
+    context_t *ref_context = ast->ref_context;
 
 again1:
     switch (rhs->type) {
@@ -1443,11 +1445,14 @@ again2:
         }
         goto again2;
     } break;
+    case OBJ_TYPE_DEF_STRUCT: {
+        ref_context = ref_owner->def_struct.context;
+    } break;
     case OBJ_TYPE_OBJECT: {
-        ast_ = ref_owner->object.ref_struct_ast;
+        ref_context = ref_owner->object.struct_context;
     } break;
     case OBJ_TYPE_MODULE: {
-        ast_ = ref_owner->module.ast;
+        ref_context = ref_owner->module.ast->ref_context;
     } break;
     }
 
@@ -1458,7 +1463,7 @@ refer_child:
         return NULL;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(child);
-        set_ref_at_cur_varmap(ast_, owners, idn, rhs);
+        set_ref_at_cur_varmap(errstack, ref_context, owners, idn, rhs);
         return rhs;
     } break;
     }
@@ -7404,13 +7409,25 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
     switch (rhs->type) {
     default: {
         check("set reference of (%d) at (%s) of current varmap", rhs->type, idn);
-        set_ref_at_cur_varmap(ast, ref_owners, idn, rhs);
+        set_ref_at_cur_varmap(
+            ast->error_stack,
+            ast->ref_context,
+            ref_owners,
+            idn,
+            rhs
+        );
         return_trav(rhs);
     } break;
     case OBJ_TYPE_CHAIN: {
         // TODO: fix me!
         object_t *val = extract_ref_of_obj(ast, rhs);
-        set_ref_at_cur_varmap(ast, ref_owners, idn, val);
+        set_ref_at_cur_varmap(
+            ast->error_stack,
+            ast->ref_context,
+            ref_owners,
+            idn,
+            val
+        );
         return_trav(val);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -7426,7 +7443,13 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
 
         check("set reference of (%d) at (%s) of current varmap", rval->type, idn);
         obj_inc_ref(rval);
-        set_ref_at_cur_varmap(ast, ref_owners, idn, rval);
+        set_ref_at_cur_varmap(
+            ast->error_stack,
+            ast->ref_context,
+            ref_owners,
+            idn,
+            rval
+        );
         return_trav(rval);
     } break;
     }
@@ -7499,7 +7522,8 @@ trv_calc_asscalc_add_ass_identifier_string(ast_t *ast, trv_args_t *targs) {
 
         // replace variable because unicode is immutable object
         set_ref_at_cur_varmap(
-            ast,
+            ast->error_stack,
+            ast->ref_context,
             targs->ref_owners,
             idn,
             ret
@@ -9020,7 +9044,8 @@ trv_func_def(ast_t *ast, trv_args_t *targs) {
     assert(func_obj);
     check("set func at varmap");
     move_obj_at_cur_varmap(
-        ast,
+        ast->error_stack,
+        ast->ref_context,
         ref_owners,
         obj_getc_idn_name(name),
         mem_move(func_obj)

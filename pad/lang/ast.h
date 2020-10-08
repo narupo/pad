@@ -88,6 +88,9 @@ ast_del(ast_t *self);
 ast_t *
 ast_new(const config_t *ref_config);
 
+ast_t *
+ast_deep_copy(const ast_t *other);
+
 /**
  * move opts at ast
  *

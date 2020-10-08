@@ -10,6 +10,7 @@ opts_del(opts_t *self) {
     if (!self) {
         return;
     }
+    
     dict_del(self->opts);
     cstrarr_del(self->args);
     free(self);
@@ -21,6 +22,20 @@ opts_new(void) {
 
     self->opts = dict_new(100);
     self->args = cstrarr_new();
+
+    return self;
+}
+
+opts_t *
+opts_deep_copy(const opts_t *other) {
+    if (!other) {
+        return NULL;
+    }
+
+    opts_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->opts = dict_deep_copy(other->opts);
+    self->args = cstrarr_deep_copy(other->args);
 
     return self;
 }

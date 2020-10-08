@@ -17,26 +17,66 @@ invoke_func_obj(ast_t *ast, object_array_t *owners, object_t *func_obj, object_t
 * functions *
 ************/
 
-ast_t *
-get_ast_by_owners(ast_t *default_ast, object_array_t *ref_owners) {
-    if (!default_ast) {
+context_t *
+get_context_by_owners(context_t *def_context, object_array_t *ref_owners) {
+    if (!def_context) {
         return NULL;
     }
     if (!ref_owners || !objarr_len(ref_owners)) {
-        return default_ast;
+        return def_context;
     }
 
     int32_t ownslen = objarr_len(ref_owners);
     object_t *owner = objarr_get(ref_owners, ownslen-1);
     if (!owner) {
-        return default_ast;
+        return def_context;
     }
 
 again:
     switch (owner->type) {
     default:
         // owner is has not ast so return default ast
-        return default_ast;
+        return def_context;
+        break;
+    case OBJ_TYPE_MODULE:
+        // module object has ast
+        return owner->module.ast->ref_context;
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        // do not use pull_in_ref_by_owner
+        // find owner object from current scope of ast
+        owner = pull_in_ref_by(owner);
+        if (!owner) {
+            return def_context;
+        }
+        goto again;
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return NULL;
+}
+
+ast_t *
+get_ast_by_owners(ast_t *def_ast, object_array_t *ref_owners) {
+    if (!def_ast) {
+        return NULL;
+    }
+    if (!ref_owners || !objarr_len(ref_owners)) {
+        return def_ast;
+    }
+
+    int32_t ownslen = objarr_len(ref_owners);
+    object_t *owner = objarr_get(ref_owners, ownslen-1);
+    if (!owner) {
+        return def_ast;
+    }
+
+again:
+    switch (owner->type) {
+    default:
+        // owner is has not ast so return default ast
+        return def_ast;
         break;
     case OBJ_TYPE_MODULE:
         // module object has ast
@@ -47,7 +87,7 @@ again:
         // find owner object from current scope of ast
         owner = pull_in_ref_by(owner);
         if (!owner) {
-            return default_ast;
+            return def_ast;
         }
         goto again;
     } break;
@@ -121,20 +161,21 @@ obj_to_string(ast_t *ast, const object_t *obj) {
 
 void
 move_obj_at_cur_varmap(
-    ast_t *ast,
+    errstack_t *errstack,
+    context_t *context,
     object_array_t *ref_owners,
     const char *identifier,
     object_t *move_obj
 ) {
     assert(move_obj->type != OBJ_TYPE_IDENTIFIER);
 
-    ast = get_ast_by_owners(ast, ref_owners);
-    if (ast_has_errors(ast)) {
-        ast_pushb_error(ast, "can't move object");
+    context = get_context_by_owners(context, ref_owners);
+    if (!context) {
+        errstack_pushb(errstack, "can't move object");
         return;
     }
 
-    object_dict_t *varmap = ctx_get_varmap(ast->ref_context);
+    object_dict_t *varmap = ctx_get_varmap(context);
     object_t *popped = objdict_pop(varmap, identifier);
     if (popped != move_obj) {
         obj_inc_ref(move_obj);
@@ -147,20 +188,21 @@ move_obj_at_cur_varmap(
 
 void
 set_ref_at_cur_varmap(
-    ast_t *ast,
+    errstack_t *errstack,
+    context_t *context,
     object_array_t *ref_owners,
     const char *identifier,
     object_t *ref
 ) {
     assert(ref->type != OBJ_TYPE_IDENTIFIER);
 
-    ast = get_ast_by_owners(ast, ref_owners);
-    if (ast_has_errors(ast)) {
-        ast_pushb_error(ast, "can't set reference");
+    context = get_context_by_owners(context, ref_owners);
+    if (!context) {
+        errstack_pushb(errstack, "can't set reference");
         return;
     }
 
-    object_dict_t *varmap = ctx_get_varmap(ast->ref_context);
+    object_dict_t *varmap = ctx_get_varmap(context);
     object_t *popped = objdict_pop(varmap, identifier);
     if (popped == ref) {
         objdict_set(varmap, identifier, ref);
@@ -219,6 +261,23 @@ again1:
         object_t *owners_method = obj_new_owners_method(ast->ref_gc, ref_owner, mem_move(methname));
         return owners_method;
     } break;
+    case OBJ_TYPE_DEF_STRUCT: {
+        if (rhs_obj->type != OBJ_TYPE_IDENTIFIER) {
+            ast_pushb_error(ast, "invalid identitifer type (%d)", rhs_obj->type);
+            return NULL;
+        }
+
+        const char *idn = obj_getc_idn_name(rhs_obj);
+        context_t *ref_ctx = ref_owner->def_struct.context;
+        assert(ref_ctx);
+        object_t *valobj = ctx_find_var_ref(ref_ctx, idn);
+        if (!valobj) {
+            ast_pushb_error(ast, "not found \"%s\"", idn);
+            return NULL;
+        }
+
+        return valobj;
+    } break;
     case OBJ_TYPE_OBJECT: {
         if (rhs_obj->type != OBJ_TYPE_IDENTIFIER) {
             ast_pushb_error(ast, "invalid identitifer type (%d)", rhs_obj->type);
@@ -226,7 +285,7 @@ again1:
         }
 
         const char *idn = obj_getc_idn_name(rhs_obj);
-        object_t *valobj = ctx_find_var_ref(ref_owner->object.ref_struct_context, idn);
+        object_t *valobj = ctx_find_var_ref(ref_owner->object.struct_context, idn);
         if (!valobj) {
             ast_pushb_error(ast, "not found \"%s\"", idn);
             return NULL;
@@ -244,8 +303,7 @@ again2:
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(rhs_obj);
-        ast_t *owner_ast = get_ast_by_owners(ast, owners);
-        context_t *ref_ctx = ast_get_ref_context(owner_ast);
+        context_t *ref_ctx = get_context_by_owners(ast->ref_context, owners);
         object_t *ref = ctx_find_var_ref(ref_ctx, idn);
         if (!ref) {
             ast_pushb_error(ast, "\"%s\" is not defined", idn);
@@ -475,7 +533,13 @@ extract_func_args(
             return;
         }
 
-        set_ref_at_cur_varmap(func->ref_ast, owners, fargname, extract_arg);
+        set_ref_at_cur_varmap(
+            ast->error_stack,
+            func->ref_ast->ref_context,
+            owners,
+            fargname,
+            extract_arg
+        );
     }  // for
 }
 
@@ -538,7 +602,13 @@ invoke_func_obj(
 
     // this function has extends-function ? does set super ?
     if (func->extends_func) {
-        set_ref_at_cur_varmap(func->ref_ast, owners, "super", func->extends_func);
+        set_ref_at_cur_varmap(
+            ast->error_stack,
+            func->ref_ast->ref_context,
+            owners,
+            "super",
+            func->extends_func
+        );
     }
 
     // extract function arguments to function's varmap in current context
@@ -695,11 +765,11 @@ gen_struct(
     }
     assert(ref->type == OBJ_TYPE_DEF_STRUCT);
 
+    context_t *context = ctx_deep_copy(ref->def_struct.context);
     return obj_new_object(
         ast->ref_gc,
         ast,
-        ref->def_struct.ast,
-        ref->def_struct.context
+        mem_move(context)
     );
 }
 
