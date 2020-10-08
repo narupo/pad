@@ -730,7 +730,6 @@ gen_struct(
 ) {
     assert(idn && drtargs);
     object_t *ref_owner = objarr_get_last(owners);
-    ast_t *ref_ast = ast;
 
     if (!ref_owner) {
         ref_owner = ctx_find_var_ref(ast->ref_context, idn);
@@ -739,8 +738,8 @@ gen_struct(
         return NULL;  // not error
     }
 
-    object_t *ref = extract_ref_of_obj(ref_ast, ref_owner);
-    if (ast_has_errors(ref_ast)) {
+    object_t *ref = extract_ref_of_obj(ast, ref_owner);
+    if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to extract reference");
         return NULL;
     }
