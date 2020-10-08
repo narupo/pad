@@ -23596,6 +23596,18 @@ test_trv_struct_11(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
 
+    tkr_parse(tkr, "{@\n"
+    "from \"tests/lang/modules/struct-2.pad\" import animal\n"
+    "@}{: animal.a :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
     trv_cleanup;
 }
 
