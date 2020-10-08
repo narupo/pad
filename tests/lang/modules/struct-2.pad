@@ -1,0 +1,7 @@
+{@
+    struct Animal:
+        a = 1
+    end
+
+    animal = Animal()
+@}
