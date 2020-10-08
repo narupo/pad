@@ -161,21 +161,21 @@ obj_to_string(ast_t *ast, const object_t *obj) {
 
 void
 move_obj_at_cur_varmap(
-    errstack_t *errstack,
-    context_t *context,
+    errstack_t *err,
+    context_t *ctx,
     object_array_t *ref_owners,
     const char *identifier,
     object_t *move_obj
 ) {
     assert(move_obj->type != OBJ_TYPE_IDENTIFIER);
 
-    context = get_context_by_owners(context, ref_owners);
-    if (!context) {
-        errstack_pushb(errstack, "can't move object");
+    ctx = get_context_by_owners(ctx, ref_owners);
+    if (!ctx) {
+        errstack_pushb(err, "can't move object");
         return;
     }
 
-    object_dict_t *varmap = ctx_get_varmap(context);
+    object_dict_t *varmap = ctx_get_varmap(ctx);
     object_t *popped = objdict_pop(varmap, identifier);
     if (popped != move_obj) {
         obj_inc_ref(move_obj);
@@ -188,21 +188,21 @@ move_obj_at_cur_varmap(
 
 void
 set_ref_at_cur_varmap(
-    errstack_t *errstack,
-    context_t *context,
+    errstack_t *err,
+    context_t *ctx,
     object_array_t *ref_owners,
     const char *identifier,
     object_t *ref
 ) {
     assert(ref->type != OBJ_TYPE_IDENTIFIER);
 
-    context = get_context_by_owners(context, ref_owners);
-    if (!context) {
-        errstack_pushb(errstack, "can't set reference");
+    ctx = get_context_by_owners(ctx, ref_owners);
+    if (!ctx) {
+        errstack_pushb(err, "can't set reference");
         return;
     }
 
-    object_dict_t *varmap = ctx_get_varmap(context);
+    object_dict_t *varmap = ctx_get_varmap(ctx);
     object_t *popped = objdict_pop(varmap, identifier);
     if (popped == ref) {
         objdict_set(varmap, identifier, ref);

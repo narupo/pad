@@ -61,8 +61,8 @@ obj_to_string(ast_t *ast, const object_t *obj);
  */
 void
 move_obj_at_cur_varmap(
-    errstack_t *errstack,
-    context_t *context,
+    errstack_t *err,
+    context_t *ctx,
     object_array_t *ref_owners,
     const char *identifier,
     object_t *move_obj
@@ -79,8 +79,8 @@ move_obj_at_cur_varmap(
  */
 void
 set_ref_at_cur_varmap(
-    errstack_t *errstack,
-    context_t *context,
+    errstack_t *err,
+    context_t *ctx,
     object_array_t *ref_owners,
     const char *identifier,
     object_t *ref
