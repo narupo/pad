@@ -12321,6 +12321,11 @@ test_trv_comparison(void) {
     check_ok("{@ struct A: end @}{: A() == 1 :}", "false");
     check_ok("{@ struct A: end @}{: 1 == A() :}", "false");
 
+    check_ok("{@ struct A: end @}{: A() != \"a\" :}", "true");
+    check_ok("{@ struct A: end @}{: \"a\" != A() :}", "true");
+    check_ok("{@ struct A: end @}{: A() == \"a\" :}", "false");
+    check_ok("{@ struct A: end @}{: \"a\" == A() :}", "false");
+
     /*********
     * string *
     *********/
