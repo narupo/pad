@@ -12326,6 +12326,36 @@ test_trv_comparison(void) {
     check_ok("{@ struct A: end @}{: A() == \"a\" :}", "false");
     check_ok("{@ struct A: end @}{: \"a\" == A() :}", "false");
 
+    check_ok("{@ struct A: end @}{: A != nil :}", "true");
+    check_ok("{@ struct A: end @}{: nil != A :}", "true");
+    check_ok("{@ struct A: end @}{: A == nil :}", "false");
+    check_ok("{@ struct A: end @}{: nil == A :}", "false");
+
+    check_ok("{@ struct A: end \n def f(): end @}{: A != f :}", "true");
+    check_ok("{@ struct A: end \n def f(): end @}{: f != A :}", "true");
+    check_ok("{@ struct A: end \n def f(): end @}{: A == f :}", "false");
+    check_ok("{@ struct A: end \n def f(): end @}{: f == A :}", "false");
+
+    check_ok("{@ struct A: end \n arr = [] @}{: A != arr :}", "true");
+    check_ok("{@ struct A: end \n arr = [] @}{: arr != A :}", "true");
+    check_ok("{@ struct A: end \n arr = [] @}{: A == arr :}", "false");
+    check_ok("{@ struct A: end \n arr = [] @}{: arr == A :}", "false");
+
+    check_ok("{@ struct A: end \n d = {} @}{: A != d :}", "true");
+    check_ok("{@ struct A: end \n d = {} @}{: d != A :}", "true");
+    check_ok("{@ struct A: end \n d = {} @}{: A == d :}", "false");
+    check_ok("{@ struct A: end \n d = {} @}{: d == A :}", "false");
+
+    check_ok("{@ struct A: end @}{: A != 1 :}", "true");
+    check_ok("{@ struct A: end @}{: 1 != A :}", "true");
+    check_ok("{@ struct A: end @}{: A == 1 :}", "false");
+    check_ok("{@ struct A: end @}{: 1 == A :}", "false");
+
+    check_ok("{@ struct A: end @}{: A != \"a\" :}", "true");
+    check_ok("{@ struct A: end @}{: \"a\" != A :}", "true");
+    check_ok("{@ struct A: end @}{: A == \"a\" :}", "false");
+    check_ok("{@ struct A: end @}{: \"a\" == A :}", "false");
+
     /*********
     * string *
     *********/

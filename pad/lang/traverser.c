@@ -83,6 +83,9 @@ static object_t *
 trv_compare_comparison_eq(ast_t *ast, trv_args_t *targs);
 
 static object_t *
+trv_compare_comparison_eq_def_struct(ast_t *ast, trv_args_t *targs);
+
+static object_t *
 trv_compare_comparison_not_eq(ast_t *ast, trv_args_t *targs);
 
 static object_t *
@@ -132,6 +135,9 @@ trv_compare_comparison_not_eq_nil(ast_t *ast, trv_args_t *targs);
 
 static object_t *
 trv_compare_comparison_not_eq_int(ast_t *ast, trv_args_t *targs);
+
+static object_t *
+trv_compare_comparison_not_eq_def_struct(ast_t *ast, trv_args_t *targs);
 
 static object_t *
 trv_compare_comparison_not_eq_func(ast_t *ast, trv_args_t *targs);
@@ -4815,6 +4821,49 @@ trv_compare_comparison_eq_object(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
+trv_compare_comparison_eq_def_struct(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_DEF_STRUCT);
+    depth_t depth = targs->depth;
+
+    switch (rhs->type) {
+    default: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_NIL: {
+        object_t *obj = obj_new_bool(ast->ref_gc, false);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        check("call trv_roll_identifier_rhs");
+        targs->callback = trv_compare_comparison_eq;
+        targs->depth = depth + 1;
+        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
+        if (!rval) {
+            ast_pushb_error(ast, "can't comparison eq struct. index object value is null");
+            return_trav(NULL);
+        }
+
+        targs->rhs_obj = rval;
+        targs->depth = depth + 1;
+        object_t *obj = trv_compare_comparison_eq_def_struct(ast, targs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison def struct");
+    return_trav(NULL);
+}
+
+static object_t *
 trv_compare_comparison_eq_module(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *lhs = targs->lhs_obj;
@@ -4939,6 +4988,11 @@ trv_compare_comparison_eq(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_OBJECT: {
         check("call trv_compare_comparison_eq_object");
         object_t *obj = trv_compare_comparison_eq_object(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_DEF_STRUCT: {
+        check("call trv_compare_comparison_not_eq_def_struct");
+        object_t *obj = trv_compare_comparison_eq_def_struct(ast, targs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_MODULE: {
@@ -5203,7 +5257,7 @@ trv_compare_comparison_not_eq_nil(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_IDENTIFIER: {
         check("call trv_roll_identifier_lhs with trv_compare_comparison_not_eq");
         targs->callback = trv_compare_comparison_not_eq;
-        object_t *obj = trv_roll_identifier_lhs(ast, targs);
+        object_t *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_CHAIN: {
@@ -5350,6 +5404,48 @@ trv_compare_comparison_not_eq_object(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
+trv_compare_comparison_not_eq_def_struct(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_DEF_STRUCT);
+
+    targs->depth += 1;
+
+    switch (rhs->type) {
+    default: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_NIL: {
+        object_t *obj = obj_new_bool(ast->ref_gc, true);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        check("call trv_roll_identifier_rhs");
+        targs->callback = trv_compare_comparison_not_eq;
+        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = extract_ref_of_obj(ast, rhs);
+        if (!rval) {
+            ast_pushb_error(ast, "can't comparison not eq struct. index object value is null");
+            return_trav(NULL);
+        }
+
+        targs->rhs_obj = rval;
+        object_t *obj = trv_compare_comparison_not_eq_def_struct(ast, targs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison not eq struct");
+    return_trav(NULL);
+}
+
+static object_t *
 trv_compare_comparison_not_eq(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *lhs = targs->lhs_obj;
@@ -5411,6 +5507,11 @@ trv_compare_comparison_not_eq(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_OBJECT: {
         check("call trv_compare_comparison_not_eq_object");
         object_t *obj = trv_compare_comparison_not_eq_object(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_DEF_STRUCT: {
+        check("call trv_compare_comparison_not_eq_object");
+        object_t *obj = trv_compare_comparison_not_eq_def_struct(ast, targs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_CHAIN: {
