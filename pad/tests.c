@@ -15691,202 +15691,6 @@ test_trv_call(void) {
 }
 
 static void
-test_trv_func_def(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
-
-    tkr_parse(tkr, "{@ def f(): end @}{: f() :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
-    }
-
-    tkr_parse(tkr, "{@ def f(a): return a end @}{: f(1) :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    }
-
-    tkr_parse(tkr, "{@ def f(a, b): return a + b end @}{: f(1, 2) :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
-    }
-
-    tkr_parse(tkr, "{@ def f(): return true end @}{: f() :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
-    }
-
-    tkr_parse(tkr, "{@ def f(): return 0 end @}{: f() :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
-    }
-
-    tkr_parse(tkr, "{@ def f(): return 1 + 2 end @}{: f() :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
-    }
-
-    tkr_parse(tkr, "{@ def f(): @}abc{@ end @}{: f() :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcnil"));
-    }
-
-    tkr_parse(tkr, "{@ def f(): @}abc{@ a = 1 @}def{@ end @}{: f() :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcdefnil"));
-    }
-
-    tkr_parse(tkr, "{@ def f(): @}abc{@ a = 1 @}{: a :}{@ end @}{: f() :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc1nil"));
-    }
-
-    tkr_parse(tkr, "{@ def f(a): @}{: a :}{@ b = 123 @}{: b :}{@ end @}{: f(\"abc\") :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc123nil"));
-    }
-
-    tkr_parse(tkr,
-        "{@\n"
-        "    def usage():\n"
-        "@}abc{@\n"
-        "    end\n"
-        "@}{: usage() :}"
-    );
-    {
-        ast_clear(ast);
-        (cc_compile(ast, tkr_get_tokens(tkr)));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcnil"));
-    }
-
-    tkr_parse(tkr,
-        "{@\n"
-        "    def func():\n"
-        "        puts(\"hi\")\n"
-        "    end\n"
-        "\n"
-        "    d = { \"f\": func }\n"
-        "    f = d[\"f\"]\n"
-        "    f()\n"
-        "@}"
-    );
-    {
-        ast_clear(ast);
-        (cc_compile(ast, tkr_get_tokens(tkr)));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "hi\n"));
-    }
-
-    tkr_parse(tkr,
-        "{@\n"
-        "    def func():\n"
-        "        puts(\"hi\")\n"
-        "    end\n"
-        "\n"
-        "    def func2(kwargs):\n"
-        "        f = kwargs[\"f\"]\n"
-        "        f()\n"
-        "    end\n"
-        "\n"
-        "    func2({ \"f\": func })\n"
-        "@}"
-    );
-    {
-        ast_clear(ast);
-        (cc_compile(ast, tkr_get_tokens(tkr)));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "hi\n"));
-    }
-
-    tkr_parse(tkr,
-        "{@\n"
-        "    def func():\n"
-        "       i = 0\n"
-        "@}{: i :},{@\n"
-        "       j = 1\n"
-        "@}{: j :}{@"
-        "    end\n"
-        "\n"
-        "    func()\n"
-        "@}"
-    );
-    {
-        ast_clear(ast);
-        (cc_compile(ast, tkr_get_tokens(tkr)));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,1"));
-    }
-
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
-}
-
-static void
 test_trv_builtin_string(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -24346,6 +24150,212 @@ test_trv_func_def_10(void) {
 }
 
 static void
+test_trv_func_def_11(void) {
+    trv_ready;
+
+    tkr_parse(tkr, "{@ def f(): end @}{: f() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
+    }
+
+    tkr_parse(tkr, "{@ def f(a): return a end @}{: f(1) :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
+    }
+
+    tkr_parse(tkr, "{@ def f(a, b): return a + b end @}{: f(1, 2) :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): return true end @}{: f() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): return 0 end @}{: f() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): return 1 + 2 end @}{: f() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "3"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): @}abc{@ end @}{: f() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcnil"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): @}abc{@ a = 1 @}def{@ end @}{: f() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcdefnil"));
+    }
+
+    tkr_parse(tkr, "{@ def f(): @}abc{@ a = 1 @}{: a :}{@ end @}{: f() :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc1nil"));
+    }
+
+    tkr_parse(tkr, "{@ def f(a): @}{: a :}{@ b = 123 @}{: b :}{@ end @}{: f(\"abc\") :}");
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abc123nil"));
+    }
+
+    tkr_parse(tkr,
+        "{@\n"
+        "    def usage():\n"
+        "@}abc{@\n"
+        "    end\n"
+        "@}{: usage() :}"
+    );
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcnil"));
+    }
+
+    tkr_parse(tkr,
+        "{@\n"
+        "    def func():\n"
+        "        puts(\"hi\")\n"
+        "    end\n"
+        "\n"
+        "    d = { \"f\": func }\n"
+        "    f = d[\"f\"]\n"
+        "    f()\n"
+        "@}"
+    );
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "hi\n"));
+    }
+
+    tkr_parse(tkr,
+        "{@\n"
+        "    def func():\n"
+        "        puts(\"hi\")\n"
+        "    end\n"
+        "\n"
+        "    def func2(kwargs):\n"
+        "        f = kwargs[\"f\"]\n"
+        "        f()\n"
+        "    end\n"
+        "\n"
+        "    func2({ \"f\": func })\n"
+        "@}"
+    );
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "hi\n"));
+    }
+
+    tkr_parse(tkr,
+        "{@\n"
+        "    def func():\n"
+        "       i = 0\n"
+        "@}{: i :},{@\n"
+        "       j = 1\n"
+        "@}{: j :}{@"
+        "    end\n"
+        "\n"
+        "    func()\n"
+        "@}"
+    );
+    {
+        ast_clear(ast);
+        (cc_compile(ast, tkr_get_tokens(tkr)));
+        ctx_clear(ctx);
+        (trv_traverse(ast, ctx));
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,1"));
+    }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_def_12(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+        "def func():\n"
+        "   a = 1\n"
+        "   def inner():\n"
+        "       a += 1\n"
+        "       puts(a)\n"
+        "   end\n"
+        "   inner()\n"
+        "end\n"
+        "func()\n"
+        "@}", "2\n");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_extends_0(void) {
     trv_ready;
 
@@ -28669,6 +28679,8 @@ traverser_tests[] = {
     {"trv_func_def_8", test_trv_func_def_8},
     {"trv_func_def_9", test_trv_func_def_9},
     {"trv_func_def_10", test_trv_func_def_10},
+    {"trv_func_def_11", test_trv_func_def_11},
+    {"trv_func_def_12", test_trv_func_def_12},
     {"trv_func_extends_0", test_trv_func_extends_0},
     {"trv_func_extends_1", test_trv_func_extends_1},
     {"trv_func_super_0", test_trv_func_super_0},
@@ -28831,7 +28843,6 @@ traverser_tests[] = {
     {"trv_dot_5", test_trv_dot_5},
     {"trv_negative_0", test_trv_negative_0},
     {"trv_call", test_trv_call},
-    {"trv_func_def", test_trv_func_def},
     {"trv_builtin_modules_opts_0", test_trv_builtin_modules_opts_0},
     {"trv_builtin_modules_alias_0", test_trv_builtin_modules_alias_0},
     {"trv_builtin_modules_alias_1", test_trv_builtin_modules_alias_1},
