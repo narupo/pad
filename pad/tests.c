@@ -23870,6 +23870,22 @@ test_trv_struct_29(void) {
 }
 
 static void
+test_trv_struct_30(void) {
+    trv_ready;
+
+    check_ok_trace("{@\n"
+    "struct ns:\n"
+    "   struct Animal:\n"
+    "       n = 1\n"
+    "   end\n"
+    "end\n"
+    "a = ns.Animal()\n"
+    "@}{: a.n :}", "1");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_def_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -28734,6 +28750,7 @@ traverser_tests[] = {
     {"trv_struct_27", test_trv_struct_27},
     {"trv_struct_28", test_trv_struct_28},
     {"trv_struct_29", test_trv_struct_29},
+    {"trv_struct_30", test_trv_struct_30},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},

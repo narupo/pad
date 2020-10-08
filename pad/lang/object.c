@@ -18,6 +18,9 @@ ctx_del(context_t *self);
 extern context_t *
 ctx_deep_copy(const context_t *other);
 
+extern void
+ctx_dump(const context_t *self, FILE *fout);
+
 void
 obj_del(object_t *self) {
     if (!self) {
@@ -480,9 +483,9 @@ object_t *
 obj_new_object(
     gc_t *ref_gc,
     ast_t *ref_ast,
-    context_t *move_struct_context
+    context_t *move_context
 ) {
-    if (!ref_gc || !ref_ast || !move_struct_context) {
+    if (!ref_gc || !ref_ast || !move_context) {
         return NULL;
     }
 
@@ -492,7 +495,7 @@ obj_new_object(
     }
 
     self->object.ref_ast = ref_ast;
-    self->object.struct_context = move_struct_context;
+    self->object.struct_context = move_context;
 
     return self;
 }
@@ -712,6 +715,13 @@ obj_dump(const object_t *self, FILE *fout) {
         obj_dump(self->chain.operand, fout);
         fprintf(fout, "object.chain.chain_objs[%p]\n", self->chain.chain_objs);
         chain_objs_dump(self->chain.chain_objs, fout);
+        break;
+    case OBJ_TYPE_DEF_STRUCT:
+        fprintf(fout, "def-struct.ref_ast[%p]\n", self->def_struct.ref_ast);
+        fprintf(fout, "def-struct.identifier[%s]\n", obj_getc_idn_name(self->def_struct.identifier));
+        fprintf(fout, "def-struct.ast[%p]\n", self->def_struct.ast);
+        fprintf(fout, "def-struct.context\n");
+        ctx_dump(self->def_struct.context, fout);
         break;
     }
 }

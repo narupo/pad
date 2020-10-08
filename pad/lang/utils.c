@@ -732,30 +732,11 @@ gen_struct(
     object_t *ref_owner = objarr_get_last(owners);
     ast_t *ref_ast = ast;
 
-    if (ref_owner) {
-    again:
-        switch (ref_owner->type) {
-        default:
-            ast_pushb_error(ast, "invalid owner (%d) in generate struct", ref_owner->type);
-            return NULL;
-            break;
-        case OBJ_TYPE_IDENTIFIER: {
-            ref_owner = pull_in_ref_by(ref_owner);
-            if (!ref_owner) {
-                return NULL;
-            }
-            if (ref_owner->type == OBJ_TYPE_IDENTIFIER) {
-                goto again;
-            }
-            idn = obj_getc_idn_name(ref_owner);
-        } break;
-        }
-    } else {
+    if (!ref_owner) {
         ref_owner = ctx_find_var_ref(ast->ref_context, idn);
-        if (!ref_owner) {
-            // not error
-            return NULL;
-        }
+    }
+    if (!ref_owner) {
+        return NULL;  // not error
     }
 
     object_t *ref = extract_ref_of_obj(ref_ast, ref_owner);
