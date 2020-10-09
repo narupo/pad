@@ -20,7 +20,7 @@
             fp.fileno = 1
             fp.mode = mode
             fp.filename = fname
-            return fp
+            return fp, nil
         end
 
         /**
@@ -33,6 +33,7 @@
             fp.mode = nil
             fp.filename = nil
             fp.buffer = ""
+            return nil
         end
 
         /**
@@ -41,13 +42,32 @@
          * @param {object} fin file object
          */
         def read(fin):
-            return fin.filename
+            return fin.filename, nil
         end
     end
 
-    // Test of File functions
-    fin = File.open("file.txt", "r")
-    content = File.read(fin)
-    puts(content)
-    File.close(fin)
+    def main():
+        // Test of File functions
+        fin, err = File.open("file.txt", "r")
+        if err != nil:
+            eputs("failed to open file")
+            return
+        end
+
+        contents, err = File.read(fin)
+        if err != nil:
+            eputs("failed to read contents")
+            return
+        end
+
+        puts(contents)
+
+        err = File.close(fin)
+        if err != nil:
+            eputs("failed to close file")
+            return
+        end
+    end
+
+    main()
 @}
