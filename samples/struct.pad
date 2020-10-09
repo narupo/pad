@@ -1,27 +1,44 @@
 {@
+    /**
+     * File structure
+     */
     struct File:
-        fileno = nil
-        mode = nil
-        filename = nil
-        buffer = ""
+        fileno = nil  // number of file descriptor
+        mode = nil  // mode of file
+        filename = nil  // file name
+        buffer = ""  // buffer for stdout/stderr
+
+        /**
+         * Open file by file name and mode
+         */
+        def open(fname, mode):
+            fp = File()
+            fp.fileno = 1
+            fp.mode = mode
+            fp.filename = fname
+            return fp
+        end
+
+        /**
+         * Close file
+         */
+        def close(fp):
+            fp.fileno = nil
+            fp.mode = nil
+            fp.filename = nil
+            fp.buffer = ""
+        end
+
+        /**
+         * Read file contents
+         */
+        def read(fin):
+            return fin.filename
+        end
     end
 
-    def fileNew(fileno, mode, filename):
-        self = File()
-        self.fileno = fileno
-        self.mode = mode
-        self.filename = filename
-        self.buffer = ""
-        return self
-    end
-
-    def fileShow(self):
-        puts("fileno", self.fileno)
-        puts("mode", self.mode)
-        puts("filename", self.filename)
-        puts("buffer", self.buffer)
-    end
-
-    file = fileNew(1, "r", "file.txt")
-    fileShow(file)
+    fin = File.open("file.txt", "r")
+    content = File.read(fin)
+    puts(content)
+    File.close(fin)
 @}
