@@ -26,8 +26,7 @@ get_context_by_owners(context_t *def_context, object_array_t *ref_owners) {
         return def_context;
     }
 
-    int32_t ownslen = objarr_len(ref_owners);
-    object_t *owner = objarr_get(ref_owners, ownslen-1);
+    object_t *owner = objarr_get_last(ref_owners);
     if (!owner) {
         return def_context;
     }
@@ -40,11 +39,9 @@ again:
         break;
     case OBJ_TYPE_MODULE:
         // module object has ast
-        return owner->module.ast->ref_context;
+        return owner->module.context;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        // do not use pull_in_ref_by_owner
-        // find owner object from current scope of ast
         owner = pull_in_ref_by(owner);
         if (!owner) {
             return def_context;
