@@ -347,6 +347,26 @@ again2:
 }
 
 static object_t *
+extract_idn(object_t *obj) {
+again:
+    switch (obj->type) {
+    default:
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        obj = pull_in_ref_by(obj);
+        if (!obj) {
+            return NULL;
+        }
+        if (obj->type == OBJ_TYPE_IDENTIFIER) {
+            goto again;
+        }
+    } break;
+    }
+
+    return obj;
+}
+
+static object_t *
 invoke_owner_func_obj(
     ast_t *ast,
     object_array_t *ref_owners,
@@ -363,18 +383,9 @@ invoke_owner_func_obj(
     object_t *ref_owner = objarr_get_last(ref_owners);
     assert(ref_owner);
 
-again:
-    switch (ref_owner->type) {
-    default: break;
-    case OBJ_TYPE_IDENTIFIER: {
-        ref_owner = pull_in_ref_by(ref_owner);
-        if (!ref_owner) {
-            return NULL;
-        }
-        if (ref_owner->type == OBJ_TYPE_IDENTIFIER) {
-            goto again;
-        }
-    } break;
+    ref_owner = extract_idn(ref_owner);
+    if (!ref_owner) {
+        return NULL;
     }
 
     object_t *modobj = NULL;
