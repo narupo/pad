@@ -59,6 +59,20 @@
         {@ end
     end
 
+    struct Animal:
+        name = nil
+
+        def new(name):
+            animal = Animal()
+            animal.name = name
+            return animal
+        end
+
+        me show(self):
+            puts(self.name)
+        end
+    end
+
     def test1():
         // Test of File functions
         fin, err = File.open("file.txt", "r")
@@ -88,6 +102,12 @@
         T.verboseRender("red")
     end
 
+    def test3():
+        animal = Animal.new()
+        animal.show()
+    end
+
     test1()
     test2()
+    test3()
 @}
