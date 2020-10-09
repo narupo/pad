@@ -26,24 +26,24 @@ get_context_by_owners(context_t *def_context, object_array_t *ref_owners) {
         return def_context;
     }
 
-    object_t *owner = objarr_get_last(ref_owners);
-    if (!owner) {
+    object_t *ref_owner = objarr_get_last(ref_owners);
+    if (!ref_owner) {
         return def_context;
     }
 
 again:
-    switch (owner->type) {
+    switch (ref_owner->type) {
     default:
-        // owner is has not ast so return default ast
+        // ref_owner is has not ast so return default ast
         return def_context;
         break;
     case OBJ_TYPE_MODULE:
         // module object has ast
-        return owner->module.context;
+        return ref_owner->module.context;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        owner = pull_in_ref_by(owner);
-        if (!owner) {
+        ref_owner = pull_in_ref_by(ref_owner);
+        if (!ref_owner) {
             return def_context;
         }
         goto again;
