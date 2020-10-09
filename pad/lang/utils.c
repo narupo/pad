@@ -349,17 +349,20 @@ again2:
 static object_t *
 invoke_owner_func_obj(
     ast_t *ast,
-    object_array_t *owners,
+    object_array_t *ref_owners,
     const char *funcname,
     object_t *drtargs
 ) {
+    if (!ast || !ref_owners || !funcname || !drtargs) {
+        return NULL;
+    }
     assert(funcname && drtargs);
 
     // TODO: refactoring for get reference of owner
-    if (!owners || !objarr_len(owners)) {
+    if (!ref_owners || !objarr_len(ref_owners)) {
         return NULL;
     }
-    object_t *ref_owner = objarr_get_last(owners);
+    object_t *ref_owner = objarr_get_last(ref_owners);
     assert(ref_owner);
 
 again:
@@ -399,7 +402,7 @@ again:
     object_t *func_obj = item->value;
     assert(func_obj);
 
-    object_t *result = invoke_func_obj(ast, owners, func_obj, drtargs);
+    object_t *result = invoke_func_obj(ast, ref_owners, func_obj, drtargs);
     return result;
 }
 
