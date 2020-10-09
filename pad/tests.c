@@ -29428,6 +29428,54 @@ lang_object_dict_tests[] = {
     {0},
 };
 
+/**************
+* stdlib/list *
+**************/
+
+static void
+test_lang_stdlib_list_dump(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+        "from \"lib/std/list.pad\" import List\n"
+        "list = List()\n"
+        "List.push(list, 1)\n"
+        "List.push(list, 2)\n"
+        "List.push(list, 3)\n"
+        "List.dump(list)\n"
+        "@}", "1\n2\n3\n");
+
+    trv_cleanup;
+}
+
+static void
+test_lang_stdlib_list_push(void) {
+    // @see list_dump
+}
+
+static void
+test_lang_stdlib_list_pop(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+        "from \"lib/std/list.pad\" import List\n"
+        "list = List()\n"
+        "List.push(list, 1)\n"
+        "List.push(list, 2)\n"
+        "val = List.pop(list)\n"
+        "@}{: val :}", "2");
+
+    trv_cleanup;
+}
+
+static const struct testcase
+stdlib_list_tests[] = {
+    {"dump", test_lang_stdlib_list_dump},
+    {"push", test_lang_stdlib_list_push},
+    {"pop", test_lang_stdlib_list_pop},
+    {0},
+};
+
 /*******
 * main *
 *******/
@@ -29449,6 +29497,7 @@ testmodules[] = {
     {"tokenizer", tokenizer_tests},
     {"compiler", compiler_tests},
     {"traverser", traverser_tests},
+    {"stdlib.list", stdlib_list_tests},
     {"error_stack", errstack_tests},
     {"gc", lang_gc_tests},
     {"objdict", lang_object_dict_tests},
