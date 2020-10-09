@@ -364,6 +364,11 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         ast_del_nodes(self, content->elems);
         ast_del_nodes(self, content->blocks);
     } break;
+    case NODE_TYPE_STRUCT: {
+        node_struct_t *struct_ = node->real;
+        ast_del_nodes(self, struct_->identifier);
+        ast_del_nodes(self, struct_->elems);
+    } break;
     }
 
     node_del(node);

@@ -17,6 +17,11 @@
 #define trace() ast_trace_error_stack(ast, stderr)
 #define ERR errstack_trace(ast->error_stack, stderr)
 #define eq(s) assert(!strcmp(ctx_getc_stdout_buf(ctx), s))
+#define ast_debug(stmt) { \
+    ast_set_debug(ast, true); \
+    stmt; \
+    ast_set_debug(ast, false); \
+}
 #define check_ok(code, hope) \
     tkr_parse(tkr, code); \
     { \
@@ -69,11 +74,6 @@
         assert(ast_has_errors(ast)); \
         assert(!strcmp(ast_getc_first_error_message(ast), hope)); \
     }
-#define ast_debug(stmt) { \
-    ast_set_debug(ast, true); \
-    stmt; \
-    ast_set_debug(ast, false); \
-}
 
 /********
 * utils *
