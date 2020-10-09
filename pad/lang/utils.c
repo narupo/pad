@@ -98,25 +98,25 @@ static object_t *
 _pull_in_ref_by(const object_t *idn_obj, bool all) {
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
 
+    const char *idn = obj_getc_idn_name(idn_obj);
     ast_t *ref_ast = obj_get_idn_ref_ast(idn_obj);
     context_t *ref_context = ast_get_ref_context(ref_ast);
-    assert(ref_context);
-    const char *idn = obj_getc_idn_name(idn_obj);
+    assert(idn && ref_context);
 
-    object_t *ref = NULL;
+    object_t *ref_obj = NULL;
     if (all) {
-        ref = ctx_find_var_ref_all(ref_context, idn);
+        ref_obj = ctx_find_var_ref_all(ref_context, idn);
     } else {
-        ref = ctx_find_var_ref(ref_context, idn);
-    }
-    if (!ref) {
-        return NULL;
-    }
-    if (ref->type == OBJ_TYPE_IDENTIFIER) {
-        return _pull_in_ref_by(ref, all);
+        ref_obj = ctx_find_var_ref(ref_context, idn);
     }
 
-    return ref;
+    if (!ref_obj) {
+        return NULL;
+    } else if (ref_obj->type == OBJ_TYPE_IDENTIFIER) {
+        return _pull_in_ref_by(ref_obj, all);
+    }
+
+    return ref_obj;
 }
 
 object_t *
