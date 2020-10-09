@@ -96,6 +96,9 @@ again:
  */
 static object_t *
 _pull_in_ref_by(const object_t *idn_obj, bool all) {
+    if (!idn_obj) {
+        return NULL;
+    }
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
 
     const char *idn = obj_getc_idn_name(idn_obj);
