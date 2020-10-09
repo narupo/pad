@@ -190,32 +190,38 @@ move_obj_at_cur_varmap(
     return true;
 }
 
-void
+bool
 set_ref_at_cur_varmap(
     errstack_t *err,
     context_t *ctx,
     object_array_t *ref_owners,
     const char *identifier,
-    object_t *ref
+    object_t *ref_obj
 ) {
-    assert(ref->type != OBJ_TYPE_IDENTIFIER);
+    if (!err || !ctx || !identifier || !ref_obj) {
+        return false;
+    }
+    assert(ref_obj->type != OBJ_TYPE_IDENTIFIER);
+    // allow ref_owners is null
 
     ctx = get_context_by_owners(ctx, ref_owners);
     if (!ctx) {
         errstack_pushb(err, "can't set reference");
-        return;
+        return false;
     }
 
     object_dict_t *varmap = ctx_get_varmap(ctx);
     object_t *popped = objdict_pop(varmap, identifier);
-    if (popped == ref) {
-        objdict_set(varmap, identifier, ref);
+    if (popped == ref_obj) {
+        objdict_set(varmap, identifier, ref_obj);
     } else {
-        obj_inc_ref(ref);
+        obj_inc_ref(ref_obj);
         obj_dec_ref(popped);
         obj_del(popped);
-        objdict_set(varmap, identifier, ref);
+        objdict_set(varmap, identifier, ref_obj);
     }
+
+    return true;
 }
 
 /**

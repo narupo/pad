@@ -74,7 +74,7 @@ move_obj_at_cur_varmap(
  * @param[in] *identifier key of dict item
  * @param[in] *ref        reference to object
  */
-void
+bool
 set_ref_at_cur_varmap(
     errstack_t *err,
     context_t *ctx,
