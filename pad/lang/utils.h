@@ -46,14 +46,11 @@ pull_in_ref_by_all(const object_t *idn_obj);
  * if object is identifier object then pull reference and convert to string
  * if error to set ast error detail
  *
- * @param[in] *ast pointer to ast_t
- * @param[in] *obj target object
- *
  * @return failed to NULL
  * @return success to pointer to string_t copied (can delete)
  */
 string_t *
-obj_to_string(ast_t *ast, const object_t *obj);
+obj_to_string(errstack_t *err, const object_t *obj);
 
 /**
  * move object at varmap of current scope of context by identifier

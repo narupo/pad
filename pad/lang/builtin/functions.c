@@ -121,7 +121,7 @@ builtin_eputs(builtin_func_args_t *fargs) {
         object_t *obj = objarr_get(args, i);
         assert(obj);
         object_t *copy = extract_copy_of_obj(ref_ast, obj);
-        string_t *s = obj_to_string(ref_ast, copy);
+        string_t *s = obj_to_string(ref_ast->error_stack, copy);
         obj_del(copy);
         if (!s) {
             continue;
@@ -134,7 +134,7 @@ builtin_eputs(builtin_func_args_t *fargs) {
         object_t *obj = objarr_get(args, arrlen-1);
         assert(obj);
         object_t *copy = extract_copy_of_obj(ref_ast, obj);
-        string_t *s = obj_to_string(ref_ast, copy);
+        string_t *s = obj_to_string(ref_ast->error_stack, copy);
         obj_del(copy);
         if (!s) {
             goto done;
@@ -176,7 +176,7 @@ builtin_puts(builtin_func_args_t *fargs) {
             ast_pushb_error(ref_ast, "failed to get argument");
             return NULL;
         }
-        string_t *s = obj_to_string(ref_ast, copy);
+        string_t *s = obj_to_string(ref_ast->error_stack, copy);
         obj_del(copy);
         if (!s) {
             continue;
@@ -193,7 +193,7 @@ builtin_puts(builtin_func_args_t *fargs) {
             ast_pushb_error(ref_ast, "failed to get argument");
             return NULL;
         }
-        string_t *s = obj_to_string(ref_ast, copy);
+        string_t *s = obj_to_string(ref_ast->error_stack, copy);
         obj_del(copy);
         if (!s) {
             goto done;
