@@ -23949,7 +23949,7 @@ static void
 test_trv_struct_34(void) {
     trv_ready;
 
-    check_ok_trace("{@\n"
+    check_ok("{@\n"
     "import \"tests/lang/modules/struct-3.pad\" as mod\n"
     "struct File:\n"
     "   def read():\n"
@@ -23966,7 +23966,7 @@ static void
 test_trv_struct_35(void) {
     trv_ready;
 
-    check_ok_trace("{@\n"
+    check_ok("{@\n"
     "import \"tests/lang/modules/struct-4.pad\" as mod\n"
     "struct File:\n"
     "   def read():\n"
@@ -23974,6 +23974,23 @@ test_trv_struct_35(void) {
     "   end\n"
     "end\n"
     "@}{: File.read() :}", "readed");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_36(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "struct A:\n"
+    "   def f():\n"
+    "       a = nil\n"
+    "       puts(a)\n"
+    "   end\n"
+    "end\n"
+    "A.f()\n"
+    "@}", "nil\n");
 
     trv_cleanup;
 }
@@ -28849,6 +28866,7 @@ traverser_tests[] = {
     {"trv_struct_33", test_trv_struct_33},
     {"trv_struct_34", test_trv_struct_34},
     {"trv_struct_35", test_trv_struct_35},
+    {"trv_struct_36", test_trv_struct_36},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},
