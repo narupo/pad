@@ -24013,6 +24013,180 @@ test_trv_struct_37(void) {
 }
 
 static void
+test_trv_struct_38(void) {
+    trv_ready;
+
+    check_ok_trace("{@\n"
+    "struct A:\n"
+    "   def init(self):\n"
+    "       self.a = 1\n"
+    "       self.b = 2\n"
+    "       self.c = 3\n"
+    "       return self\n"
+    "   end\n"
+    "   def dump(self):\n"
+    "       puts(self.a, self.b, self.c)\n"
+    "   end\n"
+    "end\n"
+    "a = A()\n"
+    "A.init(a)\n"
+    "A.dump(a)\n"
+    "@}", "1 2 3\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_39(void) {
+    trv_ready;
+
+    check_ok(
+"{@\n"
+"struct Node:\n"
+"    value = nil\n"
+"    prev = nil\n"
+"    next = nil\n"
+"end\n"
+"\n"
+"struct List:\n"
+"    head = nil\n"
+"    tail = nil\n"
+"\n"
+"    def dump(self):\n"
+"        for cur = self.head; cur; cur = cur.next:\n"
+"            puts(cur.value)\n"
+"        end\n"
+"    end\n"
+"\n"
+"    def push(self, value):\n"
+"        if not self.head:\n"
+"            self.head = Node()\n"
+"            self.head.value = value\n"
+"            self.tail = self.head\n"
+"            return\n"
+"        end\n"
+"\n"
+"        tail = nil\n"
+"        for cur = self.head; cur; cur = cur.next:\n"
+"            tail = cur\n"
+"        end\n"
+"\n"
+"        if tail:\n"
+"            node = Node()\n"
+"            node.value = value\n"
+"            node.prev = tail\n"
+"            tail.next = node\n"
+"            self.tail = node\n"
+"        end\n"
+"    end\n"
+"\n"
+"    def pop(self):\n"
+"        if not self.tail:\n"
+"            return nil\n"
+"        end\n"
+"\n"
+"        tail = self.tail\n"
+"\n"
+"        if tail.prev:\n"
+"            tail.prev.next = nil\n"
+"            self.tail = tail.prev\n"
+"        else:\n"
+"            self.head = nil\n"
+"            self.tail = nil\n"
+"        end\n"
+"\n"
+"        tail.prev = nil\n"
+"        return tail.value\n"
+"    end\n"
+"end\n"
+"list = List()\n"
+"List.push(list, 0)\n"
+"List.push(list, 1)\n"
+"List.push(list, 2)\n"
+"puts(List.pop(list))\n"
+"puts(List.pop(list))\n"
+"puts(List.pop(list))\n"
+"@}", "2\n1\n0\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_40(void) {
+    trv_ready;
+
+    check_ok(
+"{@\n"
+"struct Node:\n"
+"    value = nil\n"
+"    prev = nil\n"
+"    next = nil\n"
+"end\n"
+"\n"
+"struct List:\n"
+"    head = nil\n"
+"    tail = nil\n"
+"\n"
+"    def dump(self):\n"
+"        for cur = self.head; cur; cur = cur.next:\n"
+"            puts(cur.value)\n"
+"        end\n"
+"    end\n"
+"\n"
+"    def push(self, value):\n"
+"        if not self.head:\n"
+"            self.head = Node()\n"
+"            self.head.value = value\n"
+"            self.tail = self.head\n"
+"            return\n"
+"        end\n"
+"\n"
+"        tail = nil\n"
+"        for cur = self.head; cur; cur = cur.next:\n"
+"            tail = cur\n"
+"        end\n"
+"        puts(tail)\n"
+"        if tail:\n"
+"            node = Node()\n"
+"            node.value = value\n"
+"            node.prev = tail\n"
+"            tail.next = node\n"
+"            self.tail = node\n"
+"        end\n"
+"    end\n"
+"\n"
+"    def pop(self):\n"
+"        if not self.tail:\n"
+"            return nil\n"
+"        end\n"
+"\n"
+"        tail = self.tail\n"
+"\n"
+"        if tail.prev:\n"
+"            tail.prev.next = nil\n"
+"            self.tail = tail.prev\n"
+"        else:\n"
+"            self.head = nil\n"
+"            self.tail = nil\n"
+"        end\n"
+"\n"
+"        tail.prev = nil\n"
+"        return tail.value\n"
+"    end\n"
+"end\n"
+"list = List()\n"
+"List.push(list, 0)\n"
+"List.push(list, 1)\n"
+"List.push(list, 2)\n"
+"puts(List.pop(list))\n"
+"puts(List.pop(list))\n"
+"puts(List.pop(list))\n"
+"@}", "(object)\n(object)\n2\n1\n0\n");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_def_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -28885,6 +29059,9 @@ traverser_tests[] = {
     {"trv_struct_35", test_trv_struct_35},
     {"trv_struct_36", test_trv_struct_36},
     {"trv_struct_37", test_trv_struct_37},
+    {"trv_struct_38", test_trv_struct_38},
+    {"trv_struct_39", test_trv_struct_39},
+    {"trv_struct_40", test_trv_struct_40},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},

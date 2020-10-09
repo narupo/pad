@@ -120,9 +120,8 @@ builtin_eputs(builtin_func_args_t *fargs) {
     for (int32_t i = 0; i < arrlen-1; ++i) {
         object_t *obj = objarr_get(args, i);
         assert(obj);
-        object_t *copy = extract_copy_of_obj(ref_ast, obj);
-        string_t *s = obj_to_string(ref_ast->error_stack, copy);
-        obj_del(copy);
+        object_t *ref = extract_ref_of_obj(ref_ast, obj);
+        string_t *s = obj_to_string(ref_ast->error_stack, ref);
         if (!s) {
             continue;
         }
@@ -133,9 +132,8 @@ builtin_eputs(builtin_func_args_t *fargs) {
     if (arrlen) {
         object_t *obj = objarr_get(args, arrlen-1);
         assert(obj);
-        object_t *copy = extract_copy_of_obj(ref_ast, obj);
-        string_t *s = obj_to_string(ref_ast->error_stack, copy);
-        obj_del(copy);
+        object_t *ref = extract_ref_of_obj(ref_ast, obj);
+        string_t *s = obj_to_string(ref_ast->error_stack, ref);
         if (!s) {
             goto done;
         }
@@ -171,13 +169,12 @@ builtin_puts(builtin_func_args_t *fargs) {
     for (int32_t i = 0; i < arrlen-1; ++i) {
         object_t *obj = objarr_get(args, i);
         assert(obj);
-        object_t *copy = extract_copy_of_obj(ref_ast, obj);
+        object_t *ref = extract_ref_of_obj(ref_ast, obj);
         if (ast_has_errors(ref_ast)) {
             ast_pushb_error(ref_ast, "failed to get argument");
             return NULL;
         }
-        string_t *s = obj_to_string(ref_ast->error_stack, copy);
-        obj_del(copy);
+        string_t *s = obj_to_string(ref_ast->error_stack, ref);
         if (!s) {
             continue;
         }
@@ -188,13 +185,12 @@ builtin_puts(builtin_func_args_t *fargs) {
     if (arrlen) {
         object_t *obj = objarr_get(args, arrlen-1);
         assert(obj);
-        object_t *copy = extract_copy_of_obj(ref_ast, obj);
+        object_t *ref = extract_ref_of_obj(ref_ast, obj);
         if (ast_has_errors(ref_ast)) {
             ast_pushb_error(ref_ast, "failed to get argument");
             return NULL;
         }
-        string_t *s = obj_to_string(ref_ast->error_stack, copy);
-        obj_del(copy);
+        string_t *s = obj_to_string(ref_ast->error_stack, ref);
         if (!s) {
             goto done;
         }
