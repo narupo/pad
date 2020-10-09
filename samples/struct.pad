@@ -46,7 +46,20 @@
         end
     end
 
-    def main():
+    struct Template:
+        def render(familyName): @}
+            This is my favorite things.
+            My family name is {: familyName :}.
+        {@ end
+
+        def verboseRender(familyName): @}
+            Today is very funny day.
+            I'm very fine so I want to walk out side.
+            {: familyName :} take shoes for me.
+        {@ end
+    end
+
+    def test1():
         // Test of File functions
         fin, err = File.open("file.txt", "r")
         if err != nil:
@@ -69,5 +82,11 @@
         end
     end
 
-    main()
+    def test2():
+        Template.render("blue")
+        Template.verboseRender("red")
+    end
+
+    test1()
+    test2()
 @}
