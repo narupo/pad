@@ -84,7 +84,8 @@
 
     def test2():
         Template.render("blue")
-        Template.verboseRender("red")
+        T = Template
+        T.verboseRender("red")
     end
 
     test1()
