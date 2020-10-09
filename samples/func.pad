@@ -1,0 +1,18 @@
+{@
+    def show(name):
+        puts("Title:", name)
+        block footer: end
+    end
+
+    def dump(name) extends show:
+        inject footer:
+            def inner():
+                puts("Welcome to my", name)
+            end
+            inner()
+        end
+        super(name)
+    end
+
+    dump("Homepage")
+@}
