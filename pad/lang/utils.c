@@ -134,10 +134,15 @@ pull_in_ref_by_all(const object_t *idn_obj) {
 
 string_t *
 obj_to_string(ast_t *ast, const object_t *obj) {
-    assert(obj);
+    if (!ast || !obj) {
+        return NULL;
+    }
 
+again:
     switch (obj->type) {
-    default: return obj_to_str(obj); break;
+    default:
+        return obj_to_str(obj);
+        break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *var = pull_in_ref_by(obj);
         if (!var) {
@@ -148,7 +153,7 @@ obj_to_string(ast_t *ast, const object_t *obj) {
             );
             return NULL;
         }
-        return obj_to_str(var);
+        goto again;
     } break;
     }
 
