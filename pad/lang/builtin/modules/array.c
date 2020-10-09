@@ -137,6 +137,7 @@ builtin_array_module_new(const config_t *ref_config, gc_t *ref_gc) {
         "__array__",
         mem_move(tkr),
         mem_move(ast),
+        mem_move(ctx),
         builtin_func_infos
     );
 }

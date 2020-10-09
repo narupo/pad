@@ -45,7 +45,12 @@ read_source(importer_t *self, const char *cap_path) {
     if (!file_exists(path)) {
         // create path of standard libraries
         // will read source from standard library module
-        if (!file_solvefmt(path, sizeof path, "%s/%s", self->ref_config->std_lib_dir_path, cap_path)) {
+        if (!file_solvefmt(
+                path,
+                sizeof path,
+                "%s/%s",
+                self->ref_config->std_lib_dir_path, cap_path
+        )) {
             importer_set_error(self, "failed to solve path for standard library");
             return NULL;
         }
@@ -113,6 +118,7 @@ create_modobj(
         cap_path,
         mem_move(tkr),
         mem_move(ast),
+        mem_move(ctx),
         NULL
     );
 
