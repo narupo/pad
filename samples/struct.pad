@@ -10,6 +10,10 @@
 
         /**
          * Open file by file name and mode
+         *
+         * @param {str} fname file name
+         * @param {str} mode mode
+         * @return {object} file object
          */
         def open(fname, mode):
             fp = File()
@@ -21,6 +25,8 @@
 
         /**
          * Close file
+         *
+         * @param {object} fp file object
          */
         def close(fp):
             fp.fileno = nil
@@ -31,12 +37,15 @@
 
         /**
          * Read file contents
+         *
+         * @param {object} fin file object
          */
         def read(fin):
             return fin.filename
         end
     end
 
+    // Test of File functions
     fin = File.open("file.txt", "r")
     content = File.read(fin)
     puts(content)
