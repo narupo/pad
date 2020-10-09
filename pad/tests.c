@@ -23988,6 +23988,31 @@ test_trv_struct_36(void) {
 }
 
 static void
+test_trv_struct_37(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "struct A:\n"
+    "   def a():\n"
+    "       struct B:\n"
+    "           def b():\n"
+    "               struct C:\n"
+    "                   def c():\n"
+    "                       return 1\n"
+    "                   end\n"
+    "               end\n"
+    "               return C.c()\n"
+    "           end\n"
+    "       end\n"
+    "       return B.b()"
+    "   end\n"
+    "end\n"
+    "@}{: A.a() :}", "1");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_def_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -28859,6 +28884,7 @@ traverser_tests[] = {
     {"trv_struct_34", test_trv_struct_34},
     {"trv_struct_35", test_trv_struct_35},
     {"trv_struct_36", test_trv_struct_36},
+    {"trv_struct_37", test_trv_struct_37},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},

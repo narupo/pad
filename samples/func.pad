@@ -17,4 +17,8 @@
 
     result, err = dump("Homepage")
     puts(result, err)
+
+    thread = Thread()
+    Thread.start(thread)
+    Thread.join(thread)
 @}

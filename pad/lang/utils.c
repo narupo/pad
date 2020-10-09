@@ -390,9 +390,8 @@ invoke_owner_func_obj(
     if (ref_owner->type != OBJ_TYPE_MODULE) {
         return NULL;  // not error
     }
-    object_t *modobj = ref_owner;
 
-    object_module_t *mod = &modobj->module;
+    object_module_t *mod = &ref_owner->module;
     object_dict_t *varmap = ctx_get_varmap_at_global(mod->context);
     assert(varmap);
 
