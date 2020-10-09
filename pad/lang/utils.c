@@ -347,24 +347,6 @@ again2:
 }
 
 static object_t *
-invoke_func_by_name(
-    ast_t *ast,
-    object_array_t *owners,
-    const char *funcname,
-    object_t *drtargs
-) {
-    assert(funcname);
-
-    object_t *func_obj = ctx_find_var_ref(ast->ref_context, funcname);
-    if (!func_obj) {
-        // not error
-        return NULL;
-    }
-
-    return invoke_func_obj(ast, owners, func_obj, drtargs);
-}
-
-static object_t *
 invoke_owner_func_obj(
     ast_t *ast,
     object_array_t *owners,
