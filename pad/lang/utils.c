@@ -223,20 +223,23 @@ refer_chain_dot(ast_t *ast, object_array_t *owners, chain_object_t *co) {
     object_t *ref_owner = objarr_get_last(owners);
     assert(ref_owner);
     object_t *rhs_obj = chain_obj_get_obj(co);
+    context_t *ref_context = ast->ref_context;
 
 again1:
     switch (ref_owner->type) {
     default:
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        ref_owner = pull_in_ref_by(ref_owner);
+        const char *idn = obj_getc_idn_name(ref_owner);
+        ref_owner = pull_in_ref_by_all(ref_owner);
         if (!ref_owner) {
-            ast_pushb_error(ast, "\"%s\" is not defined");
+            ast_pushb_error(ast, "\"%s\" is not defined", idn);
             return NULL;
         }
         goto again1;
     } break;
     case OBJ_TYPE_MODULE: {
+        ref_context = ref_owner->module.context;
         const char *modname = str_getc(obj_getc_mod_name(ref_owner));
         if (!(cstr_eq(modname, "__builtin__") ||
                 cstr_eq(modname, "alias") ||
@@ -303,7 +306,7 @@ again2:
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(rhs_obj);
-        context_t *ref_ctx = get_context_by_owners(ast->ref_context, owners);
+        context_t *ref_ctx = get_context_by_owners(ref_context, owners);
         object_t *ref = ctx_find_var_ref(ref_ctx, idn);
         if (!ref) {
             ast_pushb_error(ast, "\"%s\" is not defined", idn);
@@ -1156,7 +1159,7 @@ extract_ref_of_obj(ast_t *ast, object_t *obj) {
         return obj;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *ref = pull_in_ref_by(obj);
+        object_t *ref = pull_in_ref_by_all(obj);
         if (!ref) {
             ast_pushb_error(ast, "\"%s\" is not defined", obj_getc_idn_name(obj));
             return NULL;

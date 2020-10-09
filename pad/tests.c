@@ -27,6 +27,16 @@
         assert(!ast_has_errors(ast)); \
         assert(!strcmp(ctx_getc_stdout_buf(ctx), hope)); \
     }
+#define check_ok_debug_traverse(code, hope) \
+    tkr_parse(tkr, code); \
+    { \
+        ast_clear(ast); \
+        cc_compile(ast, tkr_get_tokens(tkr)); \
+        ctx_clear(ctx); \
+        ast_debug(trv_traverse(ast, ctx)); \
+        assert(!ast_has_errors(ast)); \
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), hope)); \
+    }
 #define check_ok_trace(code, hope) \
     tkr_parse(tkr, code); \
     { \
@@ -23919,6 +23929,56 @@ test_trv_struct_32(void) {
 }
 
 static void
+test_trv_struct_33(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "import \"tests/lang/modules/struct-3.pad\" as sys\n"
+    "struct File:\n"
+    "   def read():\n"
+    "       puts(sys)\n"
+    "   end\n"
+    "end\n"
+    "File.read()\n"
+    "@}", "(module)\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_34(void) {
+    trv_ready;
+
+    check_ok_trace("{@\n"
+    "import \"tests/lang/modules/struct-3.pad\" as mod\n"
+    "struct File:\n"
+    "   def read():\n"
+    "       mod.test()\n"
+    "   end\n"
+    "end\n"
+    "File.read()\n"
+    "@}", "");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_35(void) {
+    trv_ready;
+
+    check_ok_trace("{@\n"
+    "import \"tests/lang/modules/struct-4.pad\" as mod\n"
+    "struct File:\n"
+    "   def read():\n"
+    "       return mod.read()\n"
+    "   end\n"
+    "end\n"
+    "@}{: File.read() :}", "readed");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_def_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -28786,6 +28846,9 @@ traverser_tests[] = {
     {"trv_struct_30", test_trv_struct_30},
     {"trv_struct_31", test_trv_struct_31},
     {"trv_struct_32", test_trv_struct_32},
+    {"trv_struct_33", test_trv_struct_33},
+    {"trv_struct_34", test_trv_struct_34},
+    {"trv_struct_35", test_trv_struct_35},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},
