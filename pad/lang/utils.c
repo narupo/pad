@@ -179,13 +179,14 @@ move_obj_at_cur_varmap(
 
     object_dict_t *varmap = ctx_get_varmap(ctx);
     object_t *popped = objdict_pop(varmap, identifier);
-    if (popped != move_obj) {
+    if (popped == move_obj) {
+        objdict_move(varmap, identifier, mem_move(move_obj));        
+    } else {
         obj_inc_ref(move_obj);
+        obj_dec_ref(popped);
+        obj_del(popped);
+        objdict_move(varmap, identifier, mem_move(move_obj));        
     }
-
-    obj_dec_ref(popped);
-    obj_del(popped);
-    objdict_move(varmap, identifier, mem_move(move_obj));
 
     return true;
 }
