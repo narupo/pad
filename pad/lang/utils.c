@@ -157,7 +157,7 @@ again:
     return NULL;
 }
 
-void
+bool
 move_obj_at_cur_varmap(
     errstack_t *err,
     context_t *ctx,
@@ -165,12 +165,16 @@ move_obj_at_cur_varmap(
     const char *identifier,
     object_t *move_obj
 ) {
+    if (!err || !ctx || !identifier || !move_obj) {
+        return false;
+    }
     assert(move_obj->type != OBJ_TYPE_IDENTIFIER);
+    // allow ref_owners is null
 
     ctx = get_context_by_owners(ctx, ref_owners);
     if (!ctx) {
         errstack_pushb(err, "can't move object");
-        return;
+        return false;
     }
 
     object_dict_t *varmap = ctx_get_varmap(ctx);
@@ -182,6 +186,8 @@ move_obj_at_cur_varmap(
     obj_dec_ref(popped);
     obj_del(popped);
     objdict_move(varmap, identifier, mem_move(move_obj));
+
+    return true;
 }
 
 void
