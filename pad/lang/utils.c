@@ -230,11 +230,19 @@ set_ref_at_cur_varmap(
  * chain [ . dot ] <--- chain object
  */
 static object_t *
-refer_chain_dot(ast_t *ast, object_array_t *owners, chain_object_t *co) {
-    object_t *ref_owner = objarr_get_last(owners);
+refer_chain_dot(
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    object_array_t *ref_owners,
+    chain_object_t *co
+) {
+    if (!err || !ref_gc || !ref_context || !ref_owners || !co) {
+        return NULL;
+    }
+    object_t *ref_owner = objarr_get_last(ref_owners);
     assert(ref_owner);
     object_t *rhs_obj = chain_obj_get_obj(co);
-    context_t *ref_context = ast->ref_context;
 
 again1:
     switch (ref_owner->type) {
@@ -244,7 +252,7 @@ again1:
         const char *idn = obj_getc_idn_name(ref_owner);
         ref_owner = pull_in_ref_by_all(ref_owner);
         if (!ref_owner) {
-            ast_pushb_error(ast, "\"%s\" is not defined", idn);
+            errstack_pushb(err, "\"%s\" is not defined", idn);
             return NULL;
         }
         goto again1;
@@ -263,7 +271,7 @@ again1:
     case OBJ_TYPE_ARRAY: {
         // create builtin module function object
         if (rhs_obj->type != OBJ_TYPE_IDENTIFIER) {
-            ast_pushb_error(ast, "invalid method name type (%d)", rhs_obj->type);
+            errstack_pushb(err, "invalid method name type (%d)", rhs_obj->type);
             return NULL;
         }
 
@@ -272,12 +280,16 @@ again1:
         str_set(methname, idn);
 
         obj_inc_ref(ref_owner);
-        object_t *owners_method = obj_new_owners_method(ast->ref_gc, ref_owner, mem_move(methname));
+        object_t *owners_method = obj_new_owners_method(
+            ref_gc,
+            ref_owner,
+            mem_move(methname)
+        );
         return owners_method;
     } break;
     case OBJ_TYPE_DEF_STRUCT: {
         if (rhs_obj->type != OBJ_TYPE_IDENTIFIER) {
-            ast_pushb_error(ast, "invalid identitifer type (%d)", rhs_obj->type);
+            errstack_pushb(err, "invalid identitifer type (%d)", rhs_obj->type);
             return NULL;
         }
 
@@ -286,7 +298,7 @@ again1:
         assert(ref_ctx);
         object_t *valobj = ctx_find_var_ref(ref_ctx, idn);
         if (!valobj) {
-            ast_pushb_error(ast, "not found \"%s\"", idn);
+            errstack_pushb(err, "not found \"%s\"", idn);
             return NULL;
         }
 
@@ -294,14 +306,14 @@ again1:
     } break;
     case OBJ_TYPE_OBJECT: {
         if (rhs_obj->type != OBJ_TYPE_IDENTIFIER) {
-            ast_pushb_error(ast, "invalid identitifer type (%d)", rhs_obj->type);
+            errstack_pushb(err, "invalid identitifer type (%d)", rhs_obj->type);
             return NULL;
         }
 
         const char *idn = obj_getc_idn_name(rhs_obj);
         object_t *valobj = ctx_find_var_ref(ref_owner->object.struct_context, idn);
         if (!valobj) {
-            ast_pushb_error(ast, "not found \"%s\"", idn);
+            errstack_pushb(err, "not found \"%s\"", idn);
             return NULL;
         }
 
@@ -312,15 +324,15 @@ again1:
 again2:
     switch (rhs_obj->type) {
     default:
-        ast_pushb_error(ast, "invalid operand type (%d)", rhs_obj->type);
+        errstack_pushb(err, "invalid operand type (%d)", rhs_obj->type);
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(rhs_obj);
-        context_t *ref_ctx = get_context_by_owners(ref_context, owners);
+        context_t *ref_ctx = get_context_by_owners(ref_context, ref_owners);
         object_t *ref = ctx_find_var_ref(ref_ctx, idn);
         if (!ref) {
-            ast_pushb_error(ast, "\"%s\" is not defined", idn);
+            errstack_pushb(err, "\"%s\" is not defined", idn);
             return NULL;
         } else if (ref->type == OBJ_TYPE_IDENTIFIER) {
             rhs_obj = ref;
@@ -1029,7 +1041,13 @@ refer_chain_three_objs(ast_t *ast, object_array_t *owners, chain_object_t *co) {
 
     switch (chain_obj_getc_type(co)) {
     case CHAIN_OBJ_TYPE_DOT: {
-        operand = refer_chain_dot(ast, owners, co);
+        operand = refer_chain_dot(
+            ast->error_stack,
+            ast->ref_gc,
+            ast->ref_context,
+            owners,
+            co
+        );
         if (ast_has_errors(ast)) {
             ast_pushb_error(ast, "failed to refer chain dot");
             return NULL;
