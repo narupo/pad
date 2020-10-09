@@ -18952,20 +18952,12 @@ static void
 test_trv_assign_and_reference_10(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok_trace("{@\n"
     "   def f(a):\n"
     "       return a\n"
     "   end\n"
     "   i = f(1)"
-    "@}{: i :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    }
+    "@}{: i :}", "1");
 
     trv_cleanup;
 }

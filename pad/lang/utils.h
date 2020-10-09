@@ -56,7 +56,7 @@ obj_to_string(errstack_t *err, const object_t *obj);
  * move object at varmap of current scope of context by identifier
  * this function do not increment reference count of object
  */
-void
+bool
 move_obj_at_cur_varmap(
     errstack_t *err,
     context_t *ctx,
