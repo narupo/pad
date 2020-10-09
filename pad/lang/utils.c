@@ -63,27 +63,24 @@ get_ast_by_owners(ast_t *def_ast, object_array_t *ref_owners) {
         return def_ast;
     }
 
-    int32_t ownslen = objarr_len(ref_owners);
-    object_t *owner = objarr_get(ref_owners, ownslen-1);
-    if (!owner) {
+    object_t *ref_owner = objarr_get_last(ref_owners);
+    if (!ref_owner) {
         return def_ast;
     }
 
 again:
-    switch (owner->type) {
+    switch (ref_owner->type) {
     default:
-        // owner is has not ast so return default ast
+        // ref_owner is has not ast so return default ast
         return def_ast;
         break;
     case OBJ_TYPE_MODULE:
         // module object has ast
-        return owner->module.ast;
+        return ref_owner->module.ast;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        // do not use pull_in_ref_by_owner
-        // find owner object from current scope of ast
-        owner = pull_in_ref_by(owner);
-        if (!owner) {
+        ref_owner = pull_in_ref_by(ref_owner);
+        if (!ref_owner) {
             return def_ast;
         }
         goto again;
