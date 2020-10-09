@@ -2,6 +2,7 @@
     def show(name):
         puts("Title:", name)
         block footer: end
+        return name, nil
     end
 
     def dump(name) extends show:
@@ -11,8 +12,9 @@
             end
             inner()
         end
-        super(name)
+        return super(name)
     end
 
-    dump("Homepage")
+    result, err = dump("Homepage")
+    puts(result, err)
 @}
