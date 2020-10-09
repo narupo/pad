@@ -16,6 +16,12 @@ scope_escdel_head_varmap(scope_t *self);
 scope_t *
 scope_new(gc_t *gc);
 
+/**
+ * !!! WARNING !!!
+ *
+ * this function may be to recursion loop of deep copy
+ * because varmap has objects of def_struct and module
+ */
 scope_t *
 scope_deep_copy(const scope_t *other);
 

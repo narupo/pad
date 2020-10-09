@@ -1,5 +1,4 @@
 dist/
-bin/
 tmp/
 .vscode/
 tests/.cap/var/*

@@ -93,6 +93,10 @@ extract_ref_of_obj(ast_t *ast, object_t *obj);
  * extract identifier objects
  * return copied object
  *
+ * !!! WARNING !!!
+ *
+ * this function may happen to recusive deep copy loop
+ *
  * @return new object
  */
 object_t *
