@@ -1,0 +1,59 @@
+{@
+struct Node:
+    value = nil
+    prev = nil
+    next = nil
+end
+
+struct List:
+    head = nil
+    tail = nil
+
+    def dump(self):
+        for cur = self.head; cur; cur = cur.next:
+            puts(cur.value)
+        end
+    end
+
+    def push(self, value):
+        if not self.head:
+            self.head = Node()
+            self.head.value = value
+            self.tail = self.head
+            return
+        end
+
+        tail = nil
+        for cur = self.head; cur; cur = cur.next:
+            tail = cur
+        end
+
+        if tail:
+            node = Node()
+            node.value = value
+            node.prev = tail
+            tail.next = node
+            self.tail = node
+        end
+    end
+
+    def pop(self):
+        if not self.tail:
+            return nil
+        end
+
+        tail = self.tail
+
+        if tail.prev:
+            tail.prev.next = nil
+            self.tail = tail.prev
+        else:
+            self.head = nil
+            self.tail = nil
+        end
+
+        tail.prev = nil
+        return tail.value
+    end
+end
+@}
