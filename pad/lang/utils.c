@@ -133,8 +133,8 @@ pull_in_ref_by_all(const object_t *idn_obj) {
 }
 
 string_t *
-obj_to_string(ast_t *ast, const object_t *obj) {
-    if (!ast || !obj) {
+obj_to_string(errstack_t *err, const object_t *obj) {
+    if (!err || !obj) {
         return NULL;
     }
 
@@ -146,11 +146,7 @@ again:
     case OBJ_TYPE_IDENTIFIER: {
         object_t *var = pull_in_ref_by(obj);
         if (!var) {
-            ast_pushb_error(
-                ast,
-                "\"%s\" is not defined in object to string",
-                obj_getc_idn_name(obj)
-            );
+            errstack_pushb(err, "\"%s\" is not defined in object to string", obj_getc_idn_name(obj));
             return NULL;
         }
         goto again;
