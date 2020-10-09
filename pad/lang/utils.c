@@ -387,21 +387,13 @@ invoke_owner_func_obj(
     if (!ref_owner) {
         return NULL;
     }
-
-    object_t *modobj = NULL;
-
-    switch (ref_owner->type) {
-    default:
-        // not error
-        return NULL;
-        break;
-    case OBJ_TYPE_MODULE: {
-        modobj = ref_owner;
-    } break;
+    if (ref_owner->type != OBJ_TYPE_MODULE) {
+        return NULL;  // not error
     }
+    object_t *modobj = ref_owner;
 
     object_module_t *mod = &modobj->module;
-    object_dict_t *varmap = ctx_get_varmap_at_global(mod->ast->ref_context);
+    object_dict_t *varmap = ctx_get_varmap_at_global(mod->context);
     assert(varmap);
 
     object_dict_item_t *item = objdict_get(varmap, funcname);
