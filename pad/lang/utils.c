@@ -356,10 +356,8 @@ invoke_owner_func_obj(
     if (!ast || !ref_owners || !funcname || !drtargs) {
         return NULL;
     }
-    assert(funcname && drtargs);
 
-    // TODO: refactoring for get reference of owner
-    if (!ref_owners || !objarr_len(ref_owners)) {
+    if (!objarr_len(ref_owners)) {
         return NULL;
     }
     object_t *ref_owner = objarr_get_last(ref_owners);
