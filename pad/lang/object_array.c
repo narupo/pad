@@ -223,7 +223,16 @@ objarr_get_last(object_array_t *self) {
         return NULL;
     }
 
-    return self->parray[self->len-1];
+    return self->parray[self->len - 1];
+}
+
+object_t *
+objarr_get_last_2(object_array_t *self) {
+    if (self->len <= 1) {
+        return NULL;
+    }
+
+    return self->parray[self->len - 2];
 }
 
 const object_t *
@@ -244,4 +253,12 @@ objarr_dump(const object_array_t *self, FILE *fout) {
         fprintf(fout, "parray[%d] = obj[%p]\n", i, obj);
         obj_dump(obj, fout);
     }
+}
+
+void
+objarr_dump_s(const object_array_t *self, FILE *fout) {
+    for (int32_t i = 0; i < self->len; ++i) {
+        const object_t *obj = self->parray[i];
+        fprintf(fout, "[%d] = obj[%p]\n", i, obj);
+    }    
 }

@@ -90,6 +90,9 @@ objarr_popb(object_array_t *self);
 object_t *
 objarr_get_last(object_array_t *self);
 
+object_t *
+objarr_get_last_2(object_array_t *self);
+
 const object_t *
 objarr_getc_last(const object_array_t *self);
 
@@ -101,3 +104,6 @@ objarr_getc_last(const object_array_t *self);
  */
 void
 objarr_dump(const object_array_t *self, FILE *fout);
+
+void
+objarr_dump_s(const object_array_t *self, FILE *fout);

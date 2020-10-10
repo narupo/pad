@@ -20,6 +20,10 @@ again:
     case OBJ_TYPE_UNICODE: {
         return owner;
     } break;
+    case OBJ_TYPE_OWNERS_METHOD: {
+        owner = owner->owners_method.owner;
+        goto again;
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
         owner = ctx_find_var_ref(ref_ast->ref_context, obj_getc_idn_name(owner));
         if (!owner) {

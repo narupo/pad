@@ -13,31 +13,35 @@ builtin_dict_get(builtin_func_args_t *fargs) {
 
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, "can't invoke array.push. need one argument");
+        ast_pushb_error(ref_ast, "can't invoke dict.get. need one argument");
         return NULL;
     }
 
     if (!ref_owners) {
-        ast_pushb_error(ref_ast, "owners is null. can't push");
+        ast_pushb_error(ref_ast, "owners is null. can't get");
         return NULL;
     }
 
     object_t *ref_owner = objarr_get_last(ref_owners);
     if (!ref_owner) {
-        ast_pushb_error(ref_ast, "owner is null. can't push");
+        ast_pushb_error(ref_ast, "owner is null. can't get");
         return NULL;
     }
 
 again:
     switch (ref_owner->type) {
     default:
-        ast_pushb_error(ref_ast, "unsupported object type (%d). can't push", ref_owner->type);
+        ast_pushb_error(ref_ast, "unsupported object type (%d). can't get", ref_owner->type);
         return NULL;
+        break;
+    case OBJ_TYPE_OWNERS_METHOD:
+        ref_owner = ref_owner->owners_method.owner;
+        goto again;
         break;
     case OBJ_TYPE_IDENTIFIER:
         ref_owner = pull_in_ref_by(ref_owner);
         if (!ref_owner) {
-            ast_pushb_error(ref_ast, "object is not found. can't push");
+            ast_pushb_error(ref_ast, "object is not found. can't get");
             return NULL;
         }
         goto again;

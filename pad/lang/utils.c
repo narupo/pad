@@ -11,39 +11,48 @@ ast_t *
 trv_import_builtin_modules(ast_t *ast);
 
 static object_t *
-invoke_func_obj(ast_t *ast, object_array_t *owners, object_t *func_obj, object_t *drtargs);
+invoke_func_obj(ast_t *ast, object_array_t *owns, object_t *func_obj, object_t *drtargs);
+
+static object_t *
+invoke_builtin_module_func(
+    ast_t *ref_ast,
+    object_array_t *owns,
+    const object_t *mod,
+    const char *funcname,
+    object_t *ref_args
+);
 
 /************
 * functions *
 ************/
 
 context_t *
-get_context_by_owners(context_t *def_context, object_array_t *ref_owners) {
+get_context_by_owners(context_t *def_context, object_array_t *owns) {
     if (!def_context) {
         return NULL;
     }
-    if (!ref_owners || !objarr_len(ref_owners)) {
+    if (!owns || !objarr_len(owns)) {
         return def_context;
     }
 
-    object_t *ref_owner = objarr_get_last(ref_owners);
-    if (!ref_owner) {
+    object_t *own = objarr_get_last(owns);
+    if (!own) {
         return def_context;
     }
 
 again:
-    switch (ref_owner->type) {
+    switch (own->type) {
     default:
-        // ref_owner is has not ast so return default ast
+        // own is has not ast so return default ast
         return def_context;
         break;
     case OBJ_TYPE_MODULE:
         // module object has ast
-        return ref_owner->module.context;
+        return own->module.context;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        ref_owner = pull_in_ref_by(ref_owner);
-        if (!ref_owner) {
+        own = pull_in_ref_by(own);
+        if (!own) {
             return def_context;
         }
         goto again;
@@ -55,32 +64,32 @@ again:
 }
 
 ast_t *
-get_ast_by_owners(ast_t *def_ast, object_array_t *ref_owners) {
+get_ast_by_owners(ast_t *def_ast, object_array_t *owns) {
     if (!def_ast) {
         return NULL;
     }
-    if (!ref_owners || !objarr_len(ref_owners)) {
+    if (!owns || !objarr_len(owns)) {
         return def_ast;
     }
 
-    object_t *ref_owner = objarr_get_last(ref_owners);
-    if (!ref_owner) {
+    object_t *own = objarr_get_last(owns);
+    if (!own) {
         return def_ast;
     }
 
 again:
-    switch (ref_owner->type) {
+    switch (own->type) {
     default:
-        // ref_owner is has not ast so return default ast
+        // own is has not ast so return default ast
         return def_ast;
         break;
     case OBJ_TYPE_MODULE:
         // module object has ast
-        return ref_owner->module.ast;
+        return own->module.ast;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        ref_owner = pull_in_ref_by(ref_owner);
-        if (!ref_owner) {
+        own = pull_in_ref_by(own);
+        if (!own) {
             return def_ast;
         }
         goto again;
@@ -161,7 +170,7 @@ bool
 move_obj_at_cur_varmap(
     errstack_t *err,
     context_t *ctx,
-    object_array_t *ref_owners,
+    object_array_t *owns,
     const char *identifier,
     object_t *move_obj
 ) {
@@ -169,9 +178,9 @@ move_obj_at_cur_varmap(
         return false;
     }
     assert(move_obj->type != OBJ_TYPE_IDENTIFIER);
-    // allow ref_owners is null
+    // allow owns is null
 
-    ctx = get_context_by_owners(ctx, ref_owners);
+    ctx = get_context_by_owners(ctx, owns);
     if (!ctx) {
         errstack_pushb(err, "can't move object");
         return false;
@@ -195,7 +204,7 @@ bool
 set_ref_at_cur_varmap(
     errstack_t *err,
     context_t *ctx,
-    object_array_t *ref_owners,
+    object_array_t *owns,
     const char *identifier,
     object_t *ref_obj
 ) {
@@ -203,9 +212,9 @@ set_ref_at_cur_varmap(
         return false;
     }
     assert(ref_obj->type != OBJ_TYPE_IDENTIFIER);
-    // allow ref_owners is null
+    // allow owns is null
 
-    ctx = get_context_by_owners(ctx, ref_owners);
+    ctx = get_context_by_owners(ctx, owns);
     if (!ctx) {
         errstack_pushb(err, "can't set reference");
         return false;
@@ -234,32 +243,32 @@ refer_chain_dot(
     errstack_t *err,
     gc_t *ref_gc,
     context_t *ref_context,
-    object_array_t *ref_owners,
+    object_array_t *owns,
     chain_object_t *co
 ) {
-    if (!err || !ref_gc || !ref_context || !ref_owners || !co) {
+    if (!err || !ref_gc || !ref_context || !owns || !co) {
         return NULL;
     }
-    object_t *ref_owner = objarr_get_last(ref_owners);
-    assert(ref_owner);
+    object_t *own = objarr_get_last(owns);
+    assert(own);
     object_t *rhs_obj = chain_obj_get_obj(co);
 
 again1:
-    switch (ref_owner->type) {
+    switch (own->type) {
     default:
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = obj_getc_idn_name(ref_owner);
-        ref_owner = pull_in_ref_by_all(ref_owner);
-        if (!ref_owner) {
+        const char *idn = obj_getc_idn_name(own);
+        own = pull_in_ref_by_all(own);
+        if (!own) {
             errstack_pushb(err, "\"%s\" is not defined", idn);
             return NULL;
         }
         goto again1;
     } break;
     case OBJ_TYPE_MODULE: {
-        ref_context = ref_owner->module.context;
-        const char *modname = str_getc(obj_getc_mod_name(ref_owner));
+        ref_context = own->module.context;
+        const char *modname = str_getc(obj_getc_mod_name(own));
         if (!(cstr_eq(modname, "__builtin__") ||
                 cstr_eq(modname, "alias") ||
                 cstr_eq(modname, "opts"))) {
@@ -279,10 +288,10 @@ again1:
         string_t *methname = str_new();
         str_set(methname, idn);
 
-        obj_inc_ref(ref_owner);
+        obj_inc_ref(own);
         object_t *owners_method = obj_new_owners_method(
             ref_gc,
-            ref_owner,
+            own,
             mem_move(methname)
         );
         return owners_method;
@@ -294,7 +303,7 @@ again1:
         }
 
         const char *idn = obj_getc_idn_name(rhs_obj);
-        context_t *ref_ctx = ref_owner->def_struct.context;
+        context_t *ref_ctx = own->def_struct.context;
         assert(ref_ctx);
         object_t *valobj = ctx_find_var_ref(ref_ctx, idn);
         if (!valobj) {
@@ -311,7 +320,7 @@ again1:
         }
 
         const char *idn = obj_getc_idn_name(rhs_obj);
-        object_t *valobj = ctx_find_var_ref(ref_owner->object.struct_context, idn);
+        object_t *valobj = ctx_find_var_ref(own->object.struct_context, idn);
         if (!valobj) {
             errstack_pushb(err, "not found \"%s\"", idn);
             return NULL;
@@ -329,7 +338,7 @@ again2:
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(rhs_obj);
-        context_t *ref_ctx = get_context_by_owners(ref_context, ref_owners);
+        context_t *ref_ctx = get_context_by_owners(ref_context, owns);
         object_t *ref = ctx_find_var_ref(ref_ctx, idn);
         if (!ref) {
             errstack_pushb(err, "\"%s\" is not defined", idn);
@@ -348,12 +357,16 @@ again2:
 
 static object_t *
 extract_idn(object_t *obj) {
+    if (!obj) {
+        return NULL;
+    }
+
 again:
     switch (obj->type) {
     default:
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        obj = pull_in_ref_by(obj);
+        obj = pull_in_ref_by_all(obj);
         if (!obj) {
             return NULL;
         }
@@ -369,47 +382,62 @@ again:
 static object_t *
 invoke_owner_func_obj(
     ast_t *ast,
-    object_array_t *ref_owners,
-    const char *funcname,
+    object_array_t *owns,
     object_t *drtargs
 ) {
-    if (!ast || !ref_owners || !funcname || !drtargs) {
+    if (!ast || !owns || !drtargs) {
+        return NULL;
+    }
+    if (!objarr_len(owns)) {
         return NULL;
     }
 
-    if (!objarr_len(ref_owners)) {
+    object_t *own = objarr_get_last(owns);
+    if (own->type != OBJ_TYPE_OWNERS_METHOD) {
         return NULL;
     }
-    object_t *ref_owner = objarr_get_last(ref_owners);
-    assert(ref_owner);
 
-    ref_owner = extract_idn(ref_owner);
-    if (!ref_owner) {
+    const char *funcname = str_getc(own->owners_method.method_name);
+    own = own->owners_method.owner;
+    assert(own && funcname);
+
+    own = extract_idn(own);
+    if (!own) {
         return NULL;
     }
-    if (ref_owner->type != OBJ_TYPE_MODULE) {
-        return NULL;  // not error
+
+    object_t *mod = NULL;
+
+    switch (own->type) {
+    default:
+        return NULL;
+        break;
+    case OBJ_TYPE_UNICODE:
+        mod = ctx_find_var_ref_all(ast->ref_context, "__unicode__");
+        break;
+    case OBJ_TYPE_ARRAY:
+        mod = ctx_find_var_ref_all(ast->ref_context, "__array__");
+        break;
+    case OBJ_TYPE_DICT:
+        mod = ctx_find_var_ref_all(ast->ref_context, "__dict__");
+        break;
+    case OBJ_TYPE_MODULE: {
+        mod = own;
+    } break;
     }
 
-    object_module_t *mod = &ref_owner->module;
-    object_dict_t *varmap = ctx_get_varmap_at_global(mod->context);
-    assert(varmap);
-
-    object_dict_item_t *item = objdict_get(varmap, funcname);
-    if (!item) {
-        return NULL;  // not found function in module
+    if (!mod) {
+        return NULL;
     }
-    object_t *func_obj = item->value;
-    assert(func_obj);
+    assert(mod->type == OBJ_TYPE_MODULE);
 
-    object_t *result = invoke_func_obj(ast, ref_owners, func_obj, drtargs);
-    return result;
+    return invoke_builtin_module_func(ast, owns, mod, funcname, drtargs);
 }
 
 static object_t *
 invoke_builtin_module_func(
     ast_t *ref_ast,
-    object_array_t *owners,
+    object_array_t *owns,
     const object_t *mod,
     const char *funcname,
     object_t *ref_args
@@ -426,7 +454,7 @@ invoke_builtin_module_func(
     builtin_func_args_t fargs = {
         .ref_ast = ref_ast,
         .ref_args = ref_args,
-        .ref_owners = owners,
+        .ref_owners = owns,
     };
     
     for (builtin_func_info_t *info = infos; info->name; ++info) {
@@ -496,7 +524,7 @@ copy_func_args(ast_t *ast, object_t *drtargs) {
 static void
 extract_func_args(
     ast_t *ast,
-    object_array_t *ref_owners,
+    object_array_t *owns,
     object_t *func_obj,
     object_t *args
 ) {
@@ -504,13 +532,13 @@ extract_func_args(
         return;
     }
 
-    object_t *ref_owner = objarr_get_last(ref_owners);
+    object_t *ownpar = objarr_get_last_2(owns);
     object_func_t *func = &func_obj->func;
     const object_array_t *formal_args = func->args->objarr;
     object_array_t *actual_args = args->objarr;
 
-    if (ref_owner && func->is_met) {
-        objarr_pushb(actual_args, ref_owner);
+    if (ownpar && func->is_met) {
+        objarr_pushb(actual_args, ownpar);
     }
 
     if (objarr_len(formal_args) != objarr_len(actual_args)) {
@@ -552,7 +580,7 @@ extract_func_args(
         set_ref_at_cur_varmap(
             ast->error_stack,
             func->ref_ast->ref_context,
-            ref_owners,
+            owns,
             fargname,
             extract_arg
         );
@@ -586,11 +614,11 @@ exec_func_suites(ast_t *ast, object_t *func_obj) {
 static object_t *
 invoke_func_obj(
     ast_t *ast,
-    object_array_t *owners,
+    object_array_t *owns,
     object_t *func_obj,
     object_t *drtargs
 ) {
-    assert(owners);
+    assert(owns);
     assert(drtargs);
 
     if (!func_obj) {
@@ -621,14 +649,14 @@ invoke_func_obj(
         set_ref_at_cur_varmap(
             ast->error_stack,
             func->ref_ast->ref_context,
-            owners,
+            owns,
             "super",
             func->extends_func
         );
     }
 
     // extract function arguments to function's varmap in current context
-    extract_func_args(ast, owners, func_obj, args);
+    extract_func_args(ast, owns, func_obj, args);
     if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to extract function arguments");
         return NULL;
@@ -656,24 +684,45 @@ invoke_func_obj(
     return result;
 }
 
+static const char *
+extract_idn_name(const object_t *obj) {
+    if (!obj) {
+        return NULL;
+    }
+
+    switch (obj->type) {
+    default:
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER:
+        return obj_getc_idn_name(obj);
+        break;
+    }
+}
+
 static object_t *
 invoke_builtin_modules(
     ast_t *ast,
-    object_array_t *owners,
-    const char *funcname,
+    object_array_t *owns,
     object_t *args
 ) {
-    assert(funcname && args);
+    assert(args);
+
+    object_t *own = objarr_get_last(owns);
+    const char *funcname = extract_idn_name(own);
+    if (!funcname) {
+        return NULL;
+    }
 
     const char *bltin_mod_name = NULL;
     object_t *module = NULL;
 
-    if (owners && objarr_len(owners)) {
-        object_t *owner = objarr_get_last(owners);
-        assert(owner);
+    if (owns && objarr_len(owns) >= 2) {
+        object_t *ownpar = objarr_get_last_2(owns);
+        assert(ownpar);
 
     again:
-        switch (owner->type) {
+        switch (ownpar->type) {
         default:
             // not error
             return NULL;
@@ -688,18 +737,18 @@ invoke_builtin_modules(
             bltin_mod_name = "__dict__";
             break;
         case OBJ_TYPE_MODULE:
-            module = owner;
+            module = ownpar;
             break;
         case OBJ_TYPE_IDENTIFIER: {
-            owner = pull_in_ref_by(owner);
-            if (!owner) {
+            ownpar = pull_in_ref_by(ownpar);
+            if (!ownpar) {
                 return NULL;
             }
             goto again;
         } break;
         case OBJ_TYPE_CHAIN: {
-            owner = refer_chain_obj_with_ref(ast, owner);
-            if (!owner) {
+            ownpar = refer_chain_obj_with_ref(ast, ownpar);
+            if (!ownpar) {
                 ast_pushb_error(ast, "failed to refer index");
                 return NULL;
             }
@@ -723,7 +772,7 @@ invoke_builtin_modules(
     case OBJ_TYPE_MODULE: {
         object_t *result = invoke_builtin_module_func(
             ast,
-            owners,
+            owns,
             module,
             funcname,
             args
@@ -740,28 +789,22 @@ invoke_builtin_modules(
 static object_t *
 gen_struct(
     ast_t *ast,
-    object_array_t *owners,
-    const char *idn,
-    object_t *drtargs
+    object_array_t *owns,
+    object_t *drtargs  // <- TODO use
 ) {
-    assert(idn && drtargs);
-    object_t *ref_owner = objarr_get_last(owners);
-
-    if (!ref_owner) {
-        ref_owner = ctx_find_var_ref_all(ast->ref_context, idn);
-    }
-    if (!ref_owner) {
-        return NULL;  // not error
-    }
-
-    object_t *ref = extract_ref_of_obj(ast, ref_owner);
-    if (ast_has_errors(ast)) {
-        ast_pushb_error(ast, "failed to extract reference");
+    if (!ast || !drtargs) {
         return NULL;
     }
-    assert(ref->type == OBJ_TYPE_DEF_STRUCT);
+    object_t *own = objarr_get_last(owns);
+    own = extract_idn(own);
+    if (!own) {
+        return NULL;
+    }
+    if (own->type != OBJ_TYPE_DEF_STRUCT) {
+        return NULL;
+    }
 
-    context_t *context = ctx_deep_copy(ref->def_struct.context);
+    context_t *context = ctx_deep_copy(own->def_struct.context);
     return obj_new_object(
         ast->ref_gc,
         ast,
@@ -769,106 +812,106 @@ gen_struct(
     );
 }
 
-object_t *
-refer_chain_call(ast_t *ast, object_array_t *owners, chain_object_t *co) {
-    object_t *owner = objarr_get_last(owners);
-    if (!owner) {
-        ast_pushb_error(ast, "owner is null");
+static object_t *
+extract_func(object_t *obj) {
+    if (!obj) {
         return NULL;
     }
 
-    // build the owners array of function
-    // the owners of this arguments contain first identifier
-    // so remove first identifier from this array
-    object_array_t *owners_ = objarr_new();
-    for (int32_t i = 1; i < objarr_len(owners); ++i) {
-        object_t *obj = objarr_get(owners, i);
-        obj_inc_ref(obj);
-        objarr_pushf(owners_, obj);
-    }
-
-    object_t *func_obj = NULL;
-    const char *idn = NULL;
-
 again:
-    switch (owner->type) {
-    default: {
-        ast_pushb_error(ast, "invalid owner type (%d)", owner->type);
-        goto fail;
-    } break;
+    switch (obj->type) {
+    default:
+        return NULL;
+        break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *ref = pull_in_ref_by_all(owner);
-        if (!ref) {
-            idn = obj_getc_idn_name(owner);
-        } else {
-            owner = ref;
-            goto again;
+        obj = pull_in_ref_by(obj);
+        if (!obj) {
+            return NULL;
         }
+        goto again;
     } break;
-    case OBJ_TYPE_FUNC: {
-        func_obj = owner;
-        idn = obj_getc_func_name(owner);
-    } break;
-    case OBJ_TYPE_DEF_STRUCT: {
-        idn = obj_getc_def_struct_idn_name(owner);
-    } break;
+    case OBJ_TYPE_FUNC:
+        return obj;
+        break;
+    }
+}
+
+static const char *
+extract_own_meth_name(const object_t *obj) {
+again:
+    switch (obj->type) {
+    default:
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        obj = pull_in_ref_by(obj);
+        if (!obj) {
+            return NULL;
+        }
+        goto again;
+    }
     case OBJ_TYPE_OWNERS_METHOD: {
-        const string_t *methname = obj_getc_owners_method_name(owner);
-        idn = str_getc(methname);
-        object_t *own = obj_get_owners_method_owner(owner);
-        obj_inc_ref(own);
-        objarr_pushb(owners_, own);
+        return str_getc(obj_getc_owners_method_name(obj));
     } break;
     }
+}
 
-    assert(idn);
+object_t *
+refer_chain_call(ast_t *ast, object_array_t *owns, chain_object_t *co) {
+    object_t *result = NULL;
+    object_t *own = objarr_get_last(owns);
+    if (!own) {
+        ast_pushb_error(ast, "own is null");
+        return NULL;
+    }
 
     object_t *actual_args = chain_obj_get_obj(co);
     if (actual_args->type != OBJ_TYPE_ARRAY) {
         ast_pushb_error(ast, "arguments isn't array");
-        goto fail;
+        return NULL;
     }
 
-    object_t *result = NULL;
-
+    object_t *func_obj = extract_func(own);
     if (func_obj) {
-        result = invoke_func_obj(ast, owners_, func_obj, actual_args);
+        result = invoke_func_obj(ast, owns, func_obj, actual_args);
         if (ast_has_errors(ast)) {
             ast_pushb_error(ast, "failed to invoke func obj");
-            goto fail;
+            return NULL;
         } else if (result) {
             return result;
         }
     }
 
-    result = invoke_builtin_modules(ast, owners_, idn, actual_args);
+    result = invoke_builtin_modules(ast, owns, actual_args);
     if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to invoke builtin modules");
-        goto fail;
+        return NULL;
     } else if (result) {
         return result;
     }
 
-    result = invoke_owner_func_obj(ast, owners_, idn, actual_args);
+    result = invoke_owner_func_obj(ast, owns, actual_args);
     if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to invoke owner func obj");
-        goto fail;
+        return NULL;
     } else if (result) {
         return result;
     }
 
-    result = gen_struct(ast, owners_, idn, actual_args);
+    result = gen_struct(ast, owns, actual_args);
     if (ast_has_errors(ast)) {
         ast_pushb_error(ast, "failed to generate structure");
-        goto fail;
+        return NULL;
     } else if (result) {
         return result;
+    }
+
+    const char *idn = extract_idn_name(own);
+    if (!idn) {
+        idn = extract_own_meth_name(own);
     }
 
     ast_pushb_error(ast, "can't call \"%s\"", idn);
-    return NULL;
-
-fail:
     return NULL;
 }
 
@@ -985,8 +1028,8 @@ again:
 }
 
 static object_t *
-refer_chain_index(ast_t *ast, object_array_t *owners, chain_object_t *co) {
-    object_t *owner = objarr_get_last(owners);
+refer_chain_index(ast_t *ast, object_array_t *owns, chain_object_t *co) {
+    object_t *owner = objarr_get_last(owns);
     if (!owner) {
         ast_pushb_error(ast, "owner is null");
         return NULL;
@@ -1025,7 +1068,7 @@ again:
 }
 
 object_t *
-refer_chain_three_objs(ast_t *ast, object_array_t *owners, chain_object_t *co) {
+refer_chain_three_objs(ast_t *ast, object_array_t *owns, chain_object_t *co) {
     object_t *operand = NULL;
 
     switch (chain_obj_getc_type(co)) {
@@ -1034,7 +1077,7 @@ refer_chain_three_objs(ast_t *ast, object_array_t *owners, chain_object_t *co) {
             ast->error_stack,
             ast->ref_gc,
             ast->ref_context,
-            owners,
+            owns,
             co
         );
         if (ast_has_errors(ast)) {
@@ -1043,14 +1086,14 @@ refer_chain_three_objs(ast_t *ast, object_array_t *owners, chain_object_t *co) {
         }
     } break;
     case CHAIN_OBJ_TYPE_CALL: {
-        operand = refer_chain_call(ast, owners, co);
+        operand = refer_chain_call(ast, owns, co);
         if (ast_has_errors(ast)) {
             ast_pushb_error(ast, "failed to refer chain call");
             return NULL;
         }
     } break;
     case CHAIN_OBJ_TYPE_INDEX: {
-        operand = refer_chain_index(ast, owners, co);
+        operand = refer_chain_index(ast, owns, co);
         if (ast_has_errors(ast)) {
             ast_pushb_error(ast, "failed to refer chain index");
             return NULL;
@@ -1080,29 +1123,29 @@ refer_chain_obj_with_ref(ast_t *ast, object_t *chain_obj) {
         return operand;
     }
 
-    object_array_t *owners = objarr_new();
+    object_array_t *owns = objarr_new();
     obj_inc_ref(operand);
-    objarr_pushb(owners, operand);
+    objarr_pushb(owns, operand);
 
     for (int32_t i = 0; i < chain_objs_len(cos); ++i) {
         chain_object_t *co = chain_objs_get(cos, i);
         assert(co);
 
-        operand = refer_chain_three_objs(ast, owners, co);
+        operand = refer_chain_three_objs(ast, owns, co);
         if (ast_has_errors(ast)) {
             ast_pushb_error(ast, "failed to refer three objects");
             goto fail;
         }
 
         obj_inc_ref(operand);
-        objarr_pushb(owners, operand);
+        objarr_pushb(owns, operand);
     }
 
-    objarr_del(owners);
+    objarr_del(owns);
     return operand;
 
 fail:
-    objarr_del(owners);
+    objarr_del(owns);
     return NULL;
 }
 
