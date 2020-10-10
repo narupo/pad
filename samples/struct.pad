@@ -59,21 +59,44 @@
         {@ end
     end
 
+    /**
+     * Structure and methods
+     */
     struct Animal:
         name = nil
 
+        /**
+         * Constructor (function)
+         *
+         * @param {str} name animal's name
+         * @return {object} object of Animal
+         */
         def new(name):
             animal = Animal()
             animal.name = name
             return animal
         end
 
+        /**
+         * Show name
+         */
         met show(self):
-            puts("my name is", self.name)
+            name = self.name
+            if type(name) != "str":
+                name = "Unknown"
+            end
+            puts("my name is", name.capitalize())
         end
 
+        /**
+         * Decolation name with head and tail
+         *
+         * @param {str} head
+         * @param {str} tail
+         * @return {str} decolated name
+         */
         met decolate(self, head, tail):
-            return self.name
+            return head + self.name + tail
         end
     end
 
