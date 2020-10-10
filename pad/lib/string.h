@@ -72,6 +72,9 @@ str_new(void);
 string_t *
 str_deep_copy(const string_t *other);
 
+string_t *
+str_shallow_copy(const string_t *other);
+
 /**
  * construct from C strings
  *

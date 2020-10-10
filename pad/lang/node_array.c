@@ -73,6 +73,11 @@ nodearr_deep_copy(const node_array_t *other) {
     return self;
 }
 
+node_array_t *
+nodearr_shallow_copy(const node_array_t *other) {
+    return nodearr_deep_copy(other);
+}
+
 /*********
 * getter *
 *********/

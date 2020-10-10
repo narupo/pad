@@ -77,6 +77,9 @@ tkr_new(tokenizer_option_t *move_option);
 tokenizer_t *
 tkr_deep_copy(const tokenizer_t *other);
 
+tokenizer_t *
+tkr_shallow_copy(const tokenizer_t *other);
+
 /**
  * Parse string and build tokens
  *

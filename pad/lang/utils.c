@@ -784,7 +784,7 @@ refer_chain_call(ast_t *ast, object_array_t *owners, chain_object_t *co) {
     for (int32_t i = 1; i < objarr_len(owners); ++i) {
         object_t *obj = objarr_get(owners, i);
         obj_inc_ref(obj);
-        objarr_pushb(owners_, obj);
+        objarr_pushf(owners_, obj);
     }
 
     object_t *func_obj = NULL;
@@ -869,7 +869,6 @@ again:
     return NULL;
 
 fail:
-    objarr_del(owners_);
     return NULL;
 }
 

@@ -12,17 +12,26 @@ ast_del(ast_t *self);
 extern ast_t *
 ast_deep_copy(const ast_t *other);
 
+extern ast_t *
+ast_shallow_copy(const ast_t *other);
+
 extern void
 ctx_del(context_t *self);
 
 extern context_t *
 ctx_deep_copy(const context_t *other);
 
+extern context_t *
+ctx_shallow_copy(const context_t *other);
+
 extern void
 ctx_dump(const context_t *self, FILE *fout);
 
 tokenizer_t *
 tkr_deep_copy(const tokenizer_t *self);
+
+tokenizer_t *
+tkr_shallow_copy(const tokenizer_t *self);
 
 void
 obj_del(object_t *self) {
@@ -195,6 +204,92 @@ obj_deep_copy(const object_t *other) {
         self->owners_method.owner = obj_deep_copy(other->owners_method.owner);
         obj_inc_ref(self->owners_method.owner);
         self->owners_method.method_name = str_deep_copy(other->owners_method.method_name);
+        break;
+    }
+
+    return self;
+}
+
+object_t *
+obj_shallow_copy(const object_t *other) {
+    if (!other) {
+        return NULL;
+    }
+
+    // allocate memory by gc
+    gc_item_t gc_item = {0};
+    if (!gc_alloc(other->ref_gc, &gc_item, sizeof(object_t))) {
+        return NULL;
+    }
+
+    // get pointer of allocated memory
+    object_t *self = gc_item.ptr;
+
+    // copy parameters
+    self->ref_gc = other->ref_gc;
+    self->gc_item = gc_item;
+    self->type = other->type;
+
+    // copy object
+    switch (other->type) {
+    default:
+        fprintf(stderr, "object type is %d\n", other->type);
+        assert(0 && "need implement!");
+        break;
+    case OBJ_TYPE_NIL:
+        break;
+    case OBJ_TYPE_INT:
+        self->lvalue = other->lvalue;
+        break;
+    case OBJ_TYPE_BOOL:
+        self->boolean = other->boolean;
+        break;
+    case OBJ_TYPE_IDENTIFIER:
+        self->identifier.ref_ast = other->identifier.ref_ast;
+        self->identifier.name = str_shallow_copy(other->identifier.name);
+        break;
+    case OBJ_TYPE_UNICODE:
+        self->unicode = uni_shallow_copy(other->unicode);
+        break;
+    case OBJ_TYPE_ARRAY:
+        self->objarr = objarr_shallow_copy(other->objarr);
+        break;
+    case OBJ_TYPE_DICT:
+        self->objdict = objdict_shallow_copy(other->objdict);
+        break;
+    case OBJ_TYPE_FUNC:
+        self->func.ref_ast = other->func.ref_ast;
+        self->func.name = obj_shallow_copy(other->func.name);
+        obj_inc_ref(self->func.name);
+        self->func.args = obj_shallow_copy(other->func.args);
+        obj_inc_ref(self->func.args);
+        self->func.ref_suites = nodearr_shallow_copy(other->func.ref_suites);
+        self->func.ref_blocks = nodedict_shallow_copy(other->func.ref_blocks);
+        self->func.extends_func = obj_shallow_copy(other->func.extends_func);
+        self->func.is_met = other->func.is_met;
+        break;
+    case OBJ_TYPE_MODULE:
+        self->module.name = str_shallow_copy(other->module.name);
+        self->module.tokenizer = tkr_shallow_copy(other->module.tokenizer);
+        self->module.ast = ast_shallow_copy(other->module.ast);
+        self->module.context = ctx_shallow_copy(other->module.context);
+        self->module.builtin_func_infos = other->module.builtin_func_infos;
+        break;
+    case OBJ_TYPE_DEF_STRUCT:
+        self->def_struct.ref_ast = other->def_struct.ref_ast;
+        self->def_struct.identifier = obj_shallow_copy(other->def_struct.identifier); 
+        self->def_struct.ast = ast_shallow_copy(other->def_struct.ast);
+        self->def_struct.context = ctx_shallow_copy(other->def_struct.context);
+        break;
+    case OBJ_TYPE_OBJECT:
+        self->object.ref_ast = other->object.ref_ast;
+        self->object.ref_struct_ast = other->object.ref_struct_ast;
+        self->object.struct_context = ctx_shallow_copy(other->object.struct_context);
+        break;
+    case OBJ_TYPE_OWNERS_METHOD:
+        self->owners_method.owner = obj_shallow_copy(other->owners_method.owner);
+        obj_inc_ref(self->owners_method.owner);
+        self->owners_method.method_name = str_shallow_copy(other->owners_method.method_name);
         break;
     }
 

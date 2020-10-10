@@ -483,6 +483,12 @@ node_deep_copy(const node_t *other) {
     return self;
 }
 
+node_t *
+node_shallow_copy(const node_t *other) {
+    return node_deep_copy(other);
+}
+
+
 node_type_t
 node_getc_type(const node_t *self) {
     if (self == NULL) {

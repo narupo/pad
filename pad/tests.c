@@ -18679,6 +18679,7 @@ test_trv_assign_and_reference_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
+        trace();
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
     }
@@ -23875,7 +23876,7 @@ static void
 test_trv_struct_30(void) {
     trv_ready;
 
-    check_ok("{@\n"
+    check_ok_trace("{@\n"
     "struct ns:\n"
     "   struct Animal:\n"
     "       n = 1\n"
@@ -24700,6 +24701,40 @@ test_trv_func_met_1(void) {
         "end\n"
         "a()"
         "@}", "arguments not same length");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_met_2(void) {
+
+    return;  // ATODO
+    
+    trv_ready;
+
+    check_ok_trace(
+    "{@\n"
+    "    struct Animal:\n"
+    "        name = nil\n"
+    "\n"
+    "        def new(name):\n"
+    "            animal = Animal()\n"
+    "            animal.name = name\n"
+    "            return animal\n"
+    "        end\n"
+    "\n"
+    "        met show(self):\n"
+    "            puts(self.name)\n"
+    "        end\n"
+    "    end\n"
+    "\n"
+    "    def test3():\n"
+    "        animal = Animal.new(\"Mike\")\n"
+    "        animal.show()\n"
+    "    end\n"
+    "\n"
+    "    test3()\n"
+    "@}", "Mike\n");
 
     trv_cleanup;
 }
@@ -29032,6 +29067,7 @@ traverser_tests[] = {
     {"trv_func_def_12", test_trv_func_def_12},
     {"trv_func_met_0", test_trv_func_met_0},
     {"trv_func_met_1", test_trv_func_met_1},
+    {"trv_func_met_2", test_trv_func_met_2},
     {"trv_func_extends_0", test_trv_func_extends_0},
     {"trv_func_extends_1", test_trv_func_extends_1},
     {"trv_func_super_0", test_trv_func_super_0},

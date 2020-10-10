@@ -27,6 +27,12 @@ objarr_new(void);
 object_array_t*
 objarr_deep_copy(const object_array_t *other);
 
+object_array_t*
+objarr_shallow_copy(const object_array_t *other);
+
+object_array_t*
+objarr_shallow_copy(const object_array_t *other);
+
 /*********
 * getter *
 *********/

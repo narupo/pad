@@ -26,6 +26,9 @@ scope_t *
 scope_deep_copy(const scope_t *other);
 
 scope_t *
+scope_shallow_copy(const scope_t *other);
+
+scope_t *
 scope_moveb(scope_t *self, scope_t *move_scope);
 
 scope_t *

@@ -482,6 +482,9 @@ node_new(node_type_t type, void *real);
 node_t *
 node_deep_copy(const node_t *other);
 
+node_t *
+node_shallow_copy(const node_t *other);
+
 /**
  * Get node type
  *

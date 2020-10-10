@@ -75,6 +75,11 @@ errstack_deep_copy(const errstack_t *other) {
     return self;
 }
 
+errstack_t *
+errstack_shallow_copy(const errstack_t *other) {
+    return errstack_deep_copy(other);
+}
+
 static errstack_t *
 errstack_resize(errstack_t *self, int32_t newcapa) {
     int32_t byte = sizeof(errelem_t);

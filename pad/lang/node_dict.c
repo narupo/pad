@@ -68,28 +68,6 @@ nodedict_new(void) {
 }
 
 node_dict_t *
-nodedict_shallow_copy(node_dict_t *other) {
-    if (!other) {
-        return NULL;
-    }
-
-    node_dict_t *self = mem_ecalloc(1, sizeof(*self));
-
-    self->capa = other->capa;
-    self->len = other->len;
-    self->map = mem_ecalloc(self->capa + 1, sizeof(node_dict_item_t));
-
-    for (int32_t i = 0; i < other->len; ++i) {
-        node_dict_item_t *dstitem = &self->map[i];
-        node_dict_item_t *srcitem = &other->map[i];
-        strcpy(dstitem->key, srcitem->key);
-        dstitem->value = srcitem->value;  // shallow copy
-    }
-
-    return self;
-}
-
-node_dict_t *
 nodedict_deep_copy(const node_dict_t *other) {
     if (!other) {
         return NULL;
@@ -106,6 +84,28 @@ nodedict_deep_copy(const node_dict_t *other) {
         node_dict_item_t *srcitem = &other->map[i];
         strcpy(dstitem->key, srcitem->key);
         dstitem->value = node_deep_copy(srcitem->value);  // deep copy
+    }
+
+    return self;
+}
+
+node_dict_t *
+nodedict_shallow_copy(const node_dict_t *other) {
+    if (!other) {
+        return NULL;
+    }
+
+    node_dict_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->capa = other->capa;
+    self->len = other->len;
+    self->map = mem_ecalloc(self->capa + 1, sizeof(node_dict_item_t));
+
+    for (int32_t i = 0; i < other->len; ++i) {
+        node_dict_item_t *dstitem = &self->map[i];
+        node_dict_item_t *srcitem = &other->map[i];
+        strcpy(dstitem->key, srcitem->key);
+        dstitem->value = node_shallow_copy(srcitem->value);  // deep copy
     }
 
     return self;

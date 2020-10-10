@@ -367,4 +367,7 @@ context_t *
 ctx_find_most_prev(context_t *self);
 
 context_t *
-ctx_deep_copy(const context_t *self);
+ctx_deep_copy(const context_t *other);
+
+context_t *
+ctx_shallow_copy(const context_t *other);

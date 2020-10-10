@@ -32,6 +32,9 @@ opts_new(void);
 opts_t *
 opts_deep_copy(const opts_t *other);
 
+opts_t *
+opts_shallow_copy(const opts_t *other);
+
 /**
  * parse arguments and store values at opts_t
  *

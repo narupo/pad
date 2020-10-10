@@ -40,6 +40,20 @@ opts_deep_copy(const opts_t *other) {
     return self;
 }
 
+opts_t *
+opts_shallow_copy(const opts_t *other) {
+    if (!other) {
+        return NULL;
+    }
+
+    opts_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->opts = dict_shallow_copy(other->opts);
+    self->args = cstrarr_shallow_copy(other->args);
+
+    return self;    
+}
+
 void
 opts_clear(opts_t *self) {
     if (!self) {
