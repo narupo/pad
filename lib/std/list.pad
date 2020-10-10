@@ -19,6 +19,10 @@ struct List:
     head = nil
     tail = nil
 
+    def new():
+        return List()
+    end
+
     met dump(self):
         for cur = self.head; cur; cur = cur.next:
             puts(cur.value)
