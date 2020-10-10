@@ -46,12 +46,25 @@
         end
     end
 
-    struct Template:
+    /**
+     * Namespace of structure
+     */
+    struct template:
+        /**
+         * Render family name
+         *
+         * @param {str} familyName
+         */
         def render(familyName): @}
             This is my favorite things.
             My family name is {: familyName :}.
         {@ end
 
+        /**
+         * Render family name verbose
+         *
+         * @param {str} familyName
+         */
         def verboseRender(familyName): @}
             Today is very funny day.
             I'm very fine so I want to walk out side.
@@ -124,8 +137,8 @@
     end
 
     def test2():
-        Template.render("blue")
-        T = Template
+        template.render("blue")
+        T = template
         T.verboseRender("red")
     end
 
