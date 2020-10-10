@@ -151,6 +151,7 @@ token_type_to_str(const token_t *self) {
 
     // def
     case TOKEN_TYPE_DEF: return "def"; break;
+    case TOKEN_TYPE_MET: return "met"; break;
     case TOKEN_TYPE_EXTENDS: return "extends"; break;
     }
 
