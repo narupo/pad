@@ -538,7 +538,8 @@ extract_func_args(
     object_array_t *actual_args = args->objarr;
 
     if (ownpar && func->is_met) {
-        objarr_pushb(actual_args, ownpar);
+        ownpar = extract_idn(ownpar);
+        objarr_pushf(actual_args, ownpar);
     }
 
     if (objarr_len(formal_args) != objarr_len(actual_args)) {
