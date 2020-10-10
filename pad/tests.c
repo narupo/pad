@@ -15564,19 +15564,12 @@ static void
 test_trv_dot_2(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "    arr = [1, 2]\n"
     "    dst = []\n"
     "    dst.push(arr[1])\n"
-    "@}{: dst[0] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
-    }
+    "@}{: dst[0] :}"
+    , "2");
 
     trv_cleanup;
 }
@@ -15585,19 +15578,12 @@ static void
 test_trv_dot_3(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok_trace("{@\n"
     "    arr = [1, 2]\n"
     "    dst = []\n"
     "    dst.push(arr.pop())\n"
-    "@}{: dst[0] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
-    }
+    "@}{: dst[0] :}"
+    , "2");
 
     trv_cleanup;
 }
@@ -15640,6 +15626,16 @@ test_trv_dot_5(void) {
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
     }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_dot_6(void) {
+    trv_ready;
+
+    check_ok_trace("{: \"abc\".capitalize() :}"
+    , "Abc");
 
     trv_cleanup;
 }
@@ -16454,15 +16450,7 @@ test_trv_builtin_functions_type(void) {
     gc_t *gc = gc_new();
     context_t *ctx = ctx_new(gc);
 
-    tkr_parse(tkr, "{: type(nil) :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "nil"));
-    }
+    check_ok_trace("{: type(nil) :}", "nil");
 
     tkr_parse(tkr, "{: type(1) :}");
     {
@@ -19524,19 +19512,9 @@ test_trv_import_stmt_0(void) {
         assert(!strcmp(ast_getc_first_error_message(ast), "not found alias in compile import as statement"));
     }
 
-    tkr_parse(tkr,
-        "{@ import \"tests/lang/modules/hello.cap\" as hello \n"
+    check_ok_trace("{@ import \"tests/lang/modules/hello.cap\" as hello \n"
         "hello.world() @}"
-    );
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_errors(ast));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nhello, world\n"));
-    }
+        , "imported\nhello, world\n");
 
     tkr_parse(tkr,
         "{@ import \"tests/lang/modules/count.cap\" as count \n"
@@ -19818,19 +19796,21 @@ static void
 test_trv_import_stmt_4(void) {
     trv_ready;
 
-    tkr_parse(tkr,
-        "{@ import \"tests/lang/modules/hello.cap\" as hello \n"
-        "hello.world() @}"
-    );
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!ast_has_errors(ast));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nhello, world\n"));
-    }
+    check_ok("{@ import \"tests/lang/modules/hello.cap\" as hello \n"
+    "hello.world() @}"
+    , "imported\nhello, world\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_import_stmt_5(void) {
+    trv_ready;
+
+    check_ok_trace(
+    "{@ import \"tests/lang/modules/hello.cap\" as hello \n"
+    "hello.world() @}"
+    , "imported\nhello, world\n");
 
     trv_cleanup;
 }
@@ -23296,22 +23276,15 @@ static void
 test_trv_struct_7(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "struct Animal:\n"
     "   def func():\n"
     "       return 1\n"
     "   end\n"
     "end\n"
     "animal = Animal()\n"
-    "@}{: animal.func() :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    }
+    "@}{: animal.func() :}"
+    , "1");
 
     trv_cleanup;
 }
@@ -24697,7 +24670,7 @@ test_trv_func_met_1(void) {
 
     check_fail("{@\n"
         "met a(self):\n"
-        "    puts(self.name)\n"
+        "    puts(self)\n"
         "end\n"
         "a()"
         "@}", "arguments not same length");
@@ -24709,7 +24682,7 @@ static void
 test_trv_func_met_2(void) {
 
     return;  // ATODO
-    
+
     trv_ready;
 
     check_ok_trace(
@@ -28177,6 +28150,7 @@ test_trv_builtin_dict_0(void) {
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
+        trace();
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
     }
@@ -28981,14 +28955,6 @@ traverser_tests[] = {
     {"trv_code_block", test_trv_code_block},
     {"trv_ref_block", test_trv_ref_block},
     {"trv_text_block", test_trv_text_block},
-    {"trv_import_stmt_0", test_trv_import_stmt_0},
-    {"trv_import_stmt_1", test_trv_import_stmt_1},
-    {"trv_import_stmt_2", test_trv_import_stmt_2},
-    {"trv_import_stmt_3", test_trv_import_stmt_3},
-    {"trv_import_stmt_4", test_trv_import_stmt_4},
-    {"trv_from_import_stmt_1", test_trv_from_import_stmt_1},
-    {"trv_from_import_stmt_2", test_trv_from_import_stmt_2},
-    {"trv_from_import_stmt_3", test_trv_from_import_stmt_3},
     {"trv_if_stmt_0", test_trv_if_stmt_0},
     {"trv_if_stmt_1", test_trv_if_stmt_1},
     {"trv_if_stmt_2", test_trv_if_stmt_2},
@@ -29239,6 +29205,7 @@ traverser_tests[] = {
     {"trv_dot_3", test_trv_dot_3},
     {"trv_dot_4", test_trv_dot_4},
     {"trv_dot_5", test_trv_dot_5},
+    {"trv_dot_6", test_trv_dot_6},
     {"trv_negative_0", test_trv_negative_0},
     {"trv_call", test_trv_call},
     {"trv_builtin_modules_opts_0", test_trv_builtin_modules_opts_0},
@@ -29274,6 +29241,15 @@ traverser_tests[] = {
     {"trv_etc_10", test_trv_etc_10},
     {"trv_unicode_0", test_trv_unicode_0},
     {"trv_unicode_1", test_trv_unicode_1},
+    {"trv_import_stmt_0", test_trv_import_stmt_0},
+    {"trv_import_stmt_1", test_trv_import_stmt_1},
+    {"trv_import_stmt_2", test_trv_import_stmt_2},
+    {"trv_import_stmt_3", test_trv_import_stmt_3},
+    {"trv_import_stmt_4", test_trv_import_stmt_4},
+    {"trv_import_stmt_5", test_trv_import_stmt_5},
+    {"trv_from_import_stmt_1", test_trv_from_import_stmt_1},
+    {"trv_from_import_stmt_2", test_trv_from_import_stmt_2},
+    {"trv_from_import_stmt_3", test_trv_from_import_stmt_3},
     {0},
 };
 

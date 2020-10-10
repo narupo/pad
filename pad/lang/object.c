@@ -603,7 +603,11 @@ obj_new_object(
 }
 
 object_t *
-obj_new_owners_method(gc_t *ref_gc, object_t *owner, string_t *move_method_name) {
+obj_new_owners_method(
+    gc_t *ref_gc,
+    object_t *owner,
+    string_t *move_method_name
+) {
     if (!ref_gc || !owner || !move_method_name) {
         return NULL;
     }

@@ -33,6 +33,10 @@ again:
         ast_pushb_error(ref_ast, "unsupported object type (%d). can't push", ref_owner->type);
         return NULL;
         break;
+    case OBJ_TYPE_OWNERS_METHOD:
+        ref_owner = ref_owner->owners_method.owner;
+        goto again;
+        break;
     case OBJ_TYPE_IDENTIFIER:
         ref_owner = pull_in_ref_by(ref_owner);
         if (!ref_owner) {
@@ -98,6 +102,10 @@ again:
     default:
         ast_pushb_error(ref_ast, "unsupported object type (%d). can't pop", ref_owner->type);
         return NULL;
+        break;
+    case OBJ_TYPE_OWNERS_METHOD:
+        ref_owner = ref_owner->owners_method.owner;
+        goto again;
         break;
     case OBJ_TYPE_IDENTIFIER:
         ref_owner = pull_in_ref_by(ref_owner);
