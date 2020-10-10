@@ -72,6 +72,7 @@ typedef enum {
     TOKEN_TYPE_STRUCT,  // 'struct'
 
     TOKEN_TYPE_DEF, // 'def'
+    TOKEN_TYPE_MET, // 'met'
     TOKEN_TYPE_EXTENDS,  // 'extends'
     TOKEN_TYPE_FALSE, // 'false'
     TOKEN_TYPE_TRUE, // 'true'

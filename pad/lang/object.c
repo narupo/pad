@@ -171,6 +171,7 @@ obj_deep_copy(const object_t *other) {
         self->func.ref_suites = nodearr_deep_copy(other->func.ref_suites);
         self->func.ref_blocks = nodedict_deep_copy(other->func.ref_blocks);
         self->func.extends_func = obj_deep_copy(other->func.extends_func);
+        self->func.is_met = other->func.is_met;
         break;
     case OBJ_TYPE_MODULE:
         self->module.name = str_deep_copy(other->module.name);
@@ -403,7 +404,8 @@ obj_new_func(
     object_t *move_args,
     node_array_t *ref_suites,
     node_dict_t *ref_blocks,
-    object_t *extends_func  // allow null
+    object_t *extends_func,  // allow null
+    bool is_met
 ) {
     bool invalid_args = !ref_gc || !ref_ast || !move_name ||
                         !move_args || !ref_suites || !ref_blocks;
@@ -422,6 +424,7 @@ obj_new_func(
     self->func.ref_suites = ref_suites;
     self->func.ref_blocks = ref_blocks;
     self->func.extends_func = extends_func;
+    self->func.is_met = is_met;
 
     return self;
 }

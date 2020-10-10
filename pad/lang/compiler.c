@@ -3981,10 +3981,10 @@ cc_def(ast_t *ast, cc_args_t *cargs) {
     check("call cc_func_def");
     cargs->depth = depth + 1;
     cur->func_def = cc_func_def(ast, cargs);
+    if (ast_has_errors(ast)) {
+        return_cleanup("");
+    }
     if (!cur->func_def) {
-        if (ast_has_errors(ast)) {
-            return_cleanup("");
-        }
         return_cleanup(""); // not error
     }
 
@@ -4178,10 +4178,15 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     token_t *t = *ast->ref_ptr++;
-    if (t->type != TOKEN_TYPE_DEF) {
+    if (!(t->type == TOKEN_TYPE_DEF ||
+          t->type == TOKEN_TYPE_MET)) {
         return_cleanup("");
     }
-    check("read 'def'");
+    check("read 'def' or 'met'");
+
+    if (t->type == TOKEN_TYPE_MET) {
+        cur->is_met = true;
+    }
 
     check("call cc_identifier");
     cargs->depth = depth + 1;

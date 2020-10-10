@@ -9039,7 +9039,8 @@ trv_func_def(ast_t *ast, trv_args_t *targs) {
         def_args,
         ref_suites,
         func_def->blocks,
-        extends_func
+        extends_func,
+        func_def->is_met
     );
     assert(func_obj);
     check("set func at varmap");

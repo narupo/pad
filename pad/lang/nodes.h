@@ -276,6 +276,7 @@ typedef struct {
     node_t *func_extends;  // function of extended
     node_array_t *contents;  // array of nodes
     node_dict_t *blocks;  // block nodes of block statement
+    bool is_met;
 } node_func_def_t;
 
 typedef struct {
