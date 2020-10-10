@@ -1,10 +1,20 @@
 {@
+/*
+    Created at 2020/10/09
+*/
+
+/**
+ * Node of list
+ */
 struct Node:
-    value = nil
-    prev = nil
-    next = nil
+    value = nil  // value of node
+    prev = nil  // previous node
+    next = nil  // next node
 end
 
+/**
+ * Linked list structure
+ */
 struct List:
     head = nil
     tail = nil
