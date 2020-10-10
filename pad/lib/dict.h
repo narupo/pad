@@ -31,6 +31,9 @@ dict_t *
 dict_deep_copy(const dict_t *other);
 
 dict_t *
+dict_shallow_copy(const dict_t *other);
+
+dict_t *
 dict_resize(dict_t *self, size_t newcapa);
 
 dict_t *

@@ -56,6 +56,11 @@ cstrarr_deep_copy(const cstring_array_t *other) {
 	return self;
 }
 
+cstring_array_t *
+cstrarr_shallow_copy(const cstring_array_t *other) {
+	return cstrarr_deep_copy(other);
+}
+
 char **
 cstrarr_escdel(cstring_array_t *arr) {
 	if (!arr) {

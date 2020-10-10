@@ -118,6 +118,11 @@ tkr_deep_copy(const tokenizer_t *other) {
 }
 
 tokenizer_t *
+tkr_shallow_copy(const tokenizer_t *other) {
+    return tkr_deep_copy(other);
+}
+
+tokenizer_t *
 tkr_move_opt(tokenizer_t *self, tokenizer_option_t *move_opt) {
     if (!self || !move_opt) {
         return NULL;

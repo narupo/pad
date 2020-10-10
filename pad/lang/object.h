@@ -197,6 +197,16 @@ object_t *
 obj_deep_copy(const object_t *other);
 
 /**
+ * shallow copy
+ *
+ * @param[in] *other
+ *
+ * @return
+ */
+object_t *
+obj_shallow_copy(const object_t *other);
+
+/**
  * construct nil object
  * if failed to allocate memory then exit from process
  *

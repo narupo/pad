@@ -77,6 +77,9 @@ errstack_new(void);
 errstack_t *
 errstack_deep_copy(const errstack_t *other);
 
+errstack_t *
+errstack_shallow_copy(const errstack_t *other);
+
 /**
  * push back error stack info
  *

@@ -8,6 +8,7 @@
 #include <pad/lang/context.h>
 #include <pad/lang/opts.h>
 #include <pad/lang/node_array.h>
+#include <pad/lang/nodes.h>
 #include <pad/lang/object.h>
 #include <pad/lang/gc.h>
 #include <pad/lang/chain_node.h>
@@ -90,6 +91,9 @@ ast_new(const config_t *ref_config);
 
 ast_t *
 ast_deep_copy(const ast_t *other);
+
+ast_t *
+ast_shallow_copy(const ast_t *other);
 
 /**
  * move opts at ast

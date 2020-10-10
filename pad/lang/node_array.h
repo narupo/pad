@@ -23,6 +23,9 @@ nodearr_new(void);
 node_array_t *
 nodearr_deep_copy(const node_array_t *other);
 
+node_array_t *
+nodearr_shallow_copy(const node_array_t *other);
+
 /*********
 * getter *
 *********/

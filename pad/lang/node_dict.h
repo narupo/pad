@@ -69,7 +69,7 @@ nodedict_new(void);
  * @return pointer to node_dict_t (copied)
  */
 node_dict_t *
-nodedict_shallow_copy(node_dict_t *other);
+nodedict_shallow_copy(const node_dict_t *other);
 
 /**
  * deep copy node-dict

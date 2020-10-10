@@ -115,6 +115,11 @@ str_deep_copy(const string_t *other) {
     return self;
 }
 
+string_t *
+str_shallow_copy(const string_t *other) {
+    return str_deep_copy(other);
+}
+
 /*************
 * str getter *
 *************/

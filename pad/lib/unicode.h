@@ -437,6 +437,9 @@ uni_app_stream(unicode_t *self, FILE *fin);
 unicode_t *
 uni_deep_copy(const unicode_t *other);
 
+unicode_t *
+uni_shallow_copy(const unicode_t *other);
+
 /**
  * append other object at tail of buffer
  *

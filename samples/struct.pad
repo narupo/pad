@@ -103,7 +103,7 @@
     end
 
     def test3():
-        animal = Animal.new()
+        animal = Animal.new("Mike")
         animal.show()
     end
 

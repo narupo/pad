@@ -466,6 +466,11 @@ uni_deep_copy(const unicode_t *other) {
 }
 
 unicode_t *
+uni_shallow_copy(const unicode_t *other) {
+    return uni_deep_copy(other);
+}
+
+unicode_t *
 uni_app_other(unicode_t *self, const unicode_t *_other) {
     if (!self || !_other) {
         return NULL;

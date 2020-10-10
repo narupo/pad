@@ -52,6 +52,11 @@ dict_deep_copy(const dict_t *other) {
 }
 
 dict_t *
+dict_shallow_copy(const dict_t *other) {
+    return dict_deep_copy(other);
+}
+
+dict_t *
 dict_resize(dict_t *self, size_t newcapa) {
     if (!self || newcapa <= 0) {
         return NULL;
