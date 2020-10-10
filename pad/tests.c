@@ -24680,12 +24680,9 @@ test_trv_func_met_1(void) {
 
 static void
 test_trv_func_met_2(void) {
-
-    return;  // ATODO
-
     trv_ready;
 
-    check_ok_trace(
+    check_ok(
     "{@\n"
     "    struct Animal:\n"
     "        name = nil\n"
@@ -24708,6 +24705,73 @@ test_trv_func_met_2(void) {
     "\n"
     "    test3()\n"
     "@}", "Mike\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_met_3(void) {
+    trv_ready;
+
+    check_ok(
+    "{@\n"
+    "    struct Animal:\n"
+    "        age = \"aaa\"\n"
+    "        met getAge(self):\n"
+    "           return self.age\n"
+    "        end\n"
+    "    end\n"
+    "    a = Animal()\n"
+    "@}{: a.getAge() :}", "aaa");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_met_4(void) {
+    trv_ready;
+
+    check_ok_showbuf(
+    "{@\n"
+    "    struct Animal:\n"
+    "        name = nil\n"
+    "\n"
+    "        def new(name):\n"
+    "            animal = Animal()\n"
+    "            animal.name = name\n"
+    "            return animal\n"
+    "        end\n"
+    "\n"
+    "        met decolate(self, head, tail):\n"
+    "            return head + self.name + tail\n"
+    "        end\n"
+    "    end\n"
+    "\n"
+    "    def test():\n"
+    "        animal = Animal.new(\"Mike\")\n"
+    "        puts(animal.decolate(\"The \", \" Man\"))\n"
+    "    end\n"
+    "\n"
+    "    test()\n"
+    "@}", "The Mike Man\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_met_5(void) {
+    trv_ready;
+
+    check_ok(
+    "{@\n"
+    "    struct Animal:\n"
+    "        met show(self, msg):\n"
+    "            puts(self, msg)\n"
+    "        end\n"
+    "    end\n"
+    "    animal = Animal()\n"
+    "    animal.show(1)\n"
+    "@}", "(object) 1\n");
 
     trv_cleanup;
 }
@@ -29034,6 +29098,9 @@ traverser_tests[] = {
     {"trv_func_met_0", test_trv_func_met_0},
     {"trv_func_met_1", test_trv_func_met_1},
     {"trv_func_met_2", test_trv_func_met_2},
+    {"trv_func_met_3", test_trv_func_met_3},
+    {"trv_func_met_4", test_trv_func_met_4},
+    {"trv_func_met_5", test_trv_func_met_5},
     {"trv_func_extends_0", test_trv_func_extends_0},
     {"trv_func_extends_1", test_trv_func_extends_1},
     {"trv_func_super_0", test_trv_func_super_0},
