@@ -496,7 +496,7 @@ copy_func_args(ast_t *ast, object_t *drtargs) {
 static void
 extract_func_args(
     ast_t *ast,
-    object_array_t *owners,
+    object_array_t *ref_owners,
     object_t *func_obj,
     object_t *args
 ) {
@@ -504,9 +504,14 @@ extract_func_args(
         return;
     }
 
+    object_t *ref_owner = objarr_get_last(ref_owners);
     object_func_t *func = &func_obj->func;
     const object_array_t *formal_args = func->args->objarr;
-    const object_array_t *actual_args = args->objarr;
+    object_array_t *actual_args = args->objarr;
+
+    if (ref_owner && func->is_met) {
+        objarr_pushb(actual_args, ref_owner);
+    }
 
     if (objarr_len(formal_args) != objarr_len(actual_args)) {
         ast_pushb_error(ast, "arguments not same length");
@@ -547,7 +552,7 @@ extract_func_args(
         set_ref_at_cur_varmap(
             ast->error_stack,
             func->ref_ast->ref_context,
-            owners,
+            ref_owners,
             fargname,
             extract_arg
         );

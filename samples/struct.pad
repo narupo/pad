@@ -68,7 +68,7 @@
             return animal
         end
 
-        me show(self):
+        met show(self):
             puts(self.name)
         end
     end

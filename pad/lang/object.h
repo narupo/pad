@@ -88,6 +88,7 @@ struct object_func {
     node_array_t *ref_suites;  // reference to suite (node tree) (DO NOT DELETE)
     node_dict_t *ref_blocks;  // reference to blocks (build by block-statement) in function (DO NOT DELETE)
     object_t *extends_func;  // reference to function object of extended
+    bool is_met;  // is method?
 };
 
 /**
@@ -360,7 +361,8 @@ obj_new_func(
     object_t *move_args,
     node_array_t *ref_suites,
     node_dict_t *ref_blocks,
-    object_t *extends_func
+    object_t *extends_func,
+    bool is_met
 );
 
 /**

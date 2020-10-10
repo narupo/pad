@@ -24673,6 +24673,38 @@ test_trv_func_def_12(void) {
 }
 
 static void
+test_trv_func_met_0(void) {
+    trv_ready;
+
+    check_ok_trace("{@\n"
+        "struct A:\n"
+        "   name = 1\n"
+        "   met a(self):\n"
+        "       puts(self.name)\n"
+        "   end\n"
+        "end\n"
+        "a = A()\n"
+        "a.a()"
+        "@}", "1\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_met_1(void) {
+    trv_ready;
+
+    check_fail("{@\n"
+        "met a(self):\n"
+        "    puts(self.name)\n"
+        "end\n"
+        "a()"
+        "@}", "arguments not same length");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_extends_0(void) {
     trv_ready;
 
@@ -28998,6 +29030,8 @@ traverser_tests[] = {
     {"trv_func_def_10", test_trv_func_def_10},
     {"trv_func_def_11", test_trv_func_def_11},
     {"trv_func_def_12", test_trv_func_def_12},
+    {"trv_func_met_0", test_trv_func_met_0},
+    {"trv_func_met_1", test_trv_func_met_1},
     {"trv_func_extends_0", test_trv_func_extends_0},
     {"trv_func_extends_1", test_trv_func_extends_1},
     {"trv_func_super_0", test_trv_func_super_0},
