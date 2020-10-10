@@ -113,6 +113,54 @@
         end
     end
 
+    struct Stream:
+        index = 0
+        length = 0
+        buf = nil
+
+        def new(buf):
+            self = Stream()
+            self.buf = buf
+            self.length = len(buf)
+            return self
+        end
+
+        met cur(self, ofs):
+            i = self.index + ofs
+            if i < 0 or i >= self.length:
+                return nil
+            end
+            return self.buf[i]
+        end
+
+        met next(self):
+            if self.index >= self.length:
+                return 
+            end
+            self.index += 1
+        end
+
+        met prev(self):
+            if self.index <= 0:
+                return 
+            end
+            self.index -= 1
+        end
+
+        met eof(self):
+            return self.index < 0 or self.index >= self.length
+        end
+
+        met get(self):
+            if self.eof():
+                return nil
+            end
+            c = self.buf[self.index]
+            self.next()
+            return c
+        end
+    end
+
     def test1():
         // Test of File functions
         fin, err = File.open("file.txt", "r")
@@ -148,7 +196,16 @@
         puts(animal.decolate("The ", " Man"))
     end
 
+    def test4():
+        strm = Stream.new("abc")
+        puts(strm.get())
+        puts(strm.get())
+        puts(strm.get())
+        puts(strm.get())
+    end
+
     test1()
     test2()
     test3()
+    test4()
 @}

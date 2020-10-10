@@ -1,0 +1,84 @@
+{@
+/*
+    Created at 2020/10/11
+*/
+
+/**
+ * Stream structure for parser
+ */
+struct Stream:
+    index = 0
+    length = 0
+    buf = nil
+
+    /**
+     * Constructor
+     *
+     * @param {str} buf buffer
+     */
+    def new(buf):
+        self = Stream()
+        self.buf = buf
+        self.length = len(buf)
+        return self
+    end
+
+    /**
+     * Get current character
+     *
+     * @param {int} ofs offset value
+     * @return {str} character
+     */
+    met cur(self, ofs):
+        i = self.index + ofs
+        if i < 0 or i >= self.length:
+            return nil
+        end
+        return self.buf[i]
+    end
+
+    /**
+     * Step to next of index
+     */
+    met next(self):
+        if self.index >= self.length:
+            return 
+        end
+        self.index += 1
+    end
+
+    /**
+     * Step to previous of index
+     */
+    met prev(self):
+        if self.index <= 0:
+            return 
+        end
+        self.index -= 1
+    end
+
+    /**
+     * Check EOF of stream
+     * If stream's index is EOF then return true else return false
+     *
+     * @return {bool}
+     */
+    met eof(self):
+        return self.index < 0 or self.index >= self.length
+    end
+
+    /**
+     * Get current character and step to next of index
+     *
+     * @return {str} character
+     */
+    met get(self):
+        if self.eof():
+            return nil
+        end
+        c = self.buf[self.index]
+        self.next()
+        return c
+    end
+end
+@}
