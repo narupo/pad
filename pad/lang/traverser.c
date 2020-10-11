@@ -1379,11 +1379,19 @@ again:
             return_trav(NULL);
         }
 
+        object_array_t *rhsarr = objarr_new();
+
+        for (int32_t i = 0; i < objarr_len(rhs->objarr); ++i) {
+            object_t *rh = objarr_get(rhs->objarr, i);
+            object_t *real = extract_ref_of_obj(ast, rh);
+            objarr_moveb(rhsarr, real);
+        }
+
         object_array_t *results = objarr_new();
 
-        for (int i = 0; i < objarr_len(lhs->objarr); ++i) {
+        for (int32_t i = 0; i < objarr_len(lhs->objarr); ++i) {
             object_t *lh = objarr_get(lhs->objarr, i);
-            object_t *rh = objarr_get(rhs->objarr, i);
+            object_t *rh = objarr_get(rhsarr, i);
             check("call trv_calc_assign");
             targs->lhs_obj = lh;
             targs->rhs_obj = rh;
@@ -1392,6 +1400,7 @@ again:
             objarr_moveb(results, result);
         }
 
+        objarr_del(rhsarr);
         object_t *ret = obj_new_array(ast->ref_gc, mem_move(results));
         return_trav(ret);
     } break;
@@ -7403,7 +7412,6 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
     assert(lhs && rhs);
     assert(lhs->type == OBJ_TYPE_IDENTIFIER);
     object_array_t *ref_owners = targs->ref_owners;
-
     const char *idn = str_getc(lhs->identifier.name);
 
     switch (rhs->type) {
