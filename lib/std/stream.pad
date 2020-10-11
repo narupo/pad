@@ -1,15 +1,17 @@
 {@
 /*
     Created at 2020/10/11
+
+    NEED TEST!
 */
 
 /**
  * Stream structure for parser
  */
 struct Stream:
-    index = 0
-    length = 0
     buf = nil
+    length = 0
+    index = 0
 
     /**
      * Constructor
@@ -17,10 +19,7 @@ struct Stream:
      * @param {str} buf buffer
      */
     def new(buf):
-        self = Stream()
-        self.buf = buf
-        self.length = len(buf)
-        return self
+        return Stream(buf, len(buf))
     end
 
     /**
