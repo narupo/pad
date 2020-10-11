@@ -24222,6 +24222,25 @@ test_trv_struct_43(void) {
 }
 
 static void
+test_trv_struct_44(void) {
+    trv_ready;
+
+    check_ok_trace(
+"{@\n"
+"struct Body:\n"
+"   legs = 4\n"
+"end\n"
+"body_ = Body()\n"
+"struct Animal:\n"
+"   body = body_\n"
+"end\n"
+"a = Animal()\n"
+"@}{: a.body.legs :}", "4");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_def_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -29229,6 +29248,7 @@ traverser_tests[] = {
     {"trv_struct_41", test_trv_struct_41},
     {"trv_struct_42", test_trv_struct_42},
     {"trv_struct_43", test_trv_struct_43},
+    {"trv_struct_44", test_trv_struct_44},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},
