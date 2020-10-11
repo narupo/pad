@@ -58,7 +58,7 @@
         def render(familyName): @}
             This is my favorite things.
             My family name is {: familyName :}.
-        {@ end
+{@ end
 
         /**
          * Render family name verbose
@@ -69,7 +69,7 @@
             Today is very funny day.
             I'm very fine so I want to walk out side.
             {: familyName :} take shoes for me.
-        {@ end
+{@ end
     end
 
     /**
@@ -156,7 +156,30 @@
         end
     end
 
+    /********************
+    * Interface methods *
+    ********************/
+
+    met metWalk(self):
+        puts(self.name, "is walking")
+    end
+
+    met metSleep(self):
+        puts(self.name, "is sleeping")
+    end
+
+    struct Tiger:
+        name = "Tiger"
+        walk = metWalk
+        sleep = metSleep
+    end
+
+    /*****************
+    * Test functions *
+    *****************/
+
     def test1():
+        puts("Testing File structure")
         // Test of File functions
         fin, err = File.open("file.txt", "r")
         if err != nil:
@@ -177,30 +200,47 @@
             eputs("failed to close file")
             return
         end
+
+        puts("-" * 40)
     end
 
     def test2():
+        puts("Testing template namespace")
         template.render("blue")
         T = template
         T.verboseRender("red")
+        puts("-" * 40)
     end
 
     def test3():
+        puts("Testing struct methods")
         animal = Animal.new("Mike")
         animal.show()
         puts(animal.decolate("The ", " Man"))
+        puts("-" * 40)
     end
 
     def test4():
+        puts("Testing stream")
         strm = Stream.new("abc")
         puts(strm.get())
         puts(strm.get())
         puts(strm.get())
         puts(strm.get())
+        puts("-" * 40)
+    end
+
+    def test5():
+        puts("Testing interface methods")
+        tiger = Tiger()
+        tiger.walk()
+        tiger.sleep()
+        puts("-" * 40)
     end
 
     test1()
     test2()
     test3()
     test4()
+    test5()
 @}
