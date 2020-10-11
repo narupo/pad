@@ -618,3 +618,9 @@ uni_mul(const unicode_t *other, int32_t n);
  */
 unicode_t **
 uni_split(const unicode_t *other, const unicode_type_t *sep);
+
+bool
+uni_is_digit(const unicode_t *self);
+
+bool
+uni_is_alpha(const unicode_t *self);
