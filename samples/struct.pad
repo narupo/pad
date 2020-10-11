@@ -58,7 +58,7 @@
         def render(familyName): @}
             This is my favorite things.
             My family name is {: familyName :}.
-{@ end
+{@      end
 
         /**
          * Render family name verbose
@@ -69,7 +69,7 @@
             Today is very funny day.
             I'm very fine so I want to walk out side.
             {: familyName :} take shoes for me.
-{@ end
+{@      end
     end
 
     /**
@@ -242,7 +242,7 @@
         tiger = Tiger()
         tiger.walk()
         tiger.sleep()
-        
+
         puts("-" * 40)
     end
 
