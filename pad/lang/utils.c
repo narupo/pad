@@ -790,10 +790,10 @@ invoke_builtin_modules(
 static context_t *
 unpack_args(context_t *ctx, object_t *args) {
     if (!ctx || !args) {
-        return false;
+        return NULL;
     }
     if (args->type != OBJ_TYPE_ARRAY) {
-        return false;
+        return NULL;
     }
 
     object_array_t *arr = args->objarr;
