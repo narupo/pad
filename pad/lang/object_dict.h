@@ -165,6 +165,17 @@ const object_dict_item_t *
 objdict_getc_index(const object_dict_t *self, int32_t index);
 
 /**
+ * get dict item by number of index
+ * 
+ * @param[in] *self 
+ * @param[in] index number of index
+ * 
+ * @return if index is exists then return pointer to item else return NULL
+ */
+object_dict_item_t *
+objdict_get_index(object_dict_t *self, int32_t index);
+
+/**
  * pop object from object dict
  *
  * @param[in] *self

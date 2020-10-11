@@ -24161,6 +24161,67 @@ test_trv_struct_40(void) {
 }
 
 static void
+test_trv_struct_41(void) {
+    trv_ready;
+
+    check_ok_trace(
+"{@\n"
+"struct Animal:\n"
+"   a = 0\n"
+"   b = 1\n"
+"   c = 2\n"
+"end\n"
+"a = Animal(10, 11, 12)\n"
+"@}{: a.a :},{: a.b :},{: a.c :}", "10,11,12");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_42(void) {
+    trv_ready;
+
+    check_ok_trace(
+"{@\n"
+"struct Animal:\n"
+"   a = 0\n"
+"   b = 1\n"
+"   c = 2\n"
+"end\n"
+"a = Animal(10, 11)\n"
+"@}{: a.a :},{: a.b :},{: a.c :}", "10,11,2");
+
+    check_ok_trace(
+"{@\n"
+"struct Animal:\n"
+"   a = 0\n"
+"   b = 1\n"
+"   c = 2\n"
+"end\n"
+"a = Animal(10)\n"
+"@}{: a.a :},{: a.b :},{: a.c :}", "10,1,2");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_43(void) {
+    trv_ready;
+
+    check_ok_trace(
+"{@\n"
+"struct Animal:\n"
+"   a = 0\n"
+"   b = 1\n"
+"   c = 2\n"
+"end\n"
+"a = Animal(10, 11, 12, 13)\n"
+"@}{: a.a :},{: a.b :},{: a.c :}", "10,11,12");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_def_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -29165,6 +29226,9 @@ traverser_tests[] = {
     {"trv_struct_38", test_trv_struct_38},
     {"trv_struct_39", test_trv_struct_39},
     {"trv_struct_40", test_trv_struct_40},
+    {"trv_struct_41", test_trv_struct_41},
+    {"trv_struct_42", test_trv_struct_42},
+    {"trv_struct_43", test_trv_struct_43},
     {"trv_assign_list_0", test_trv_assign_list_0},
     {"trv_assign_list_1", test_trv_assign_list_1},
     {"trv_assign_list_2", test_trv_assign_list_2},
