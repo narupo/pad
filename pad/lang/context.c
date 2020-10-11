@@ -397,3 +397,28 @@ ctx_shallow_copy(const context_t *other) {
 
     return self;
 }
+
+context_t *
+ctx_unpack_objarr_to_cur_scope(context_t *self, object_array_t *arr) {
+    if (!self || !arr) {
+        return NULL;
+    }
+
+    scope_t *scope = self->scope;
+    object_dict_t *varmap = scope_get_varmap(scope);
+
+    for (int32_t i = 0; i < objdict_len(varmap) && i < objarr_len(arr); ++i) {
+        object_dict_item_t *item = objdict_get_index(varmap, i);
+        object_t *obj = objarr_get(arr, i);
+        if (item->value == obj) {
+            continue;
+        }
+
+        obj_dec_ref(item->value);
+        obj_del(item->value);
+        obj_inc_ref(obj);
+        item->value = obj;
+    }
+
+    return self;
+}

@@ -787,11 +787,24 @@ invoke_builtin_modules(
     return NULL;
 }
 
+static context_t *
+unpack_args(context_t *ctx, object_t *args) {
+    if (!ctx || !args) {
+        return false;
+    }
+    if (args->type != OBJ_TYPE_ARRAY) {
+        return false;
+    }
+
+    object_array_t *arr = args->objarr;
+    return ctx_unpack_objarr_to_cur_scope(ctx, arr);
+}
+
 static object_t *
 gen_struct(
     ast_t *ast,
     object_array_t *owns,
-    object_t *drtargs  // <- TODO use
+    object_t *drtargs
 ) {
     if (!ast || !drtargs) {
         return NULL;
@@ -806,6 +819,11 @@ gen_struct(
     }
 
     context_t *context = ctx_deep_copy(own->def_struct.context);
+    if (!unpack_args(context, drtargs)) {
+        ast_pushb_error(ast, "failed to unpack arguments for struct");
+        return NULL;
+    }
+
     return obj_new_object(
         ast->ref_gc,
         ast,

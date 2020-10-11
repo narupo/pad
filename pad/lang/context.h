@@ -371,3 +371,6 @@ ctx_deep_copy(const context_t *other);
 
 context_t *
 ctx_shallow_copy(const context_t *other);
+
+context_t *
+ctx_unpack_objarr_to_cur_scope(context_t *self, object_array_t *arr);

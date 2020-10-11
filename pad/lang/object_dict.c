@@ -216,17 +216,21 @@ objdict_len(const object_dict_t *self) {
     return self->len;
 }
 
-const object_dict_item_t *
-objdict_getc_index(const object_dict_t *self, int32_t index) {
+object_dict_item_t *
+objdict_get_index(object_dict_t *self, int32_t index) {
     if (!self) {
         return NULL;
     }
-
     if (index < 0 || index >= self->len) {
         return NULL;
     }
 
     return &self->map[index];
+}
+
+const object_dict_item_t *
+objdict_getc_index(const object_dict_t *self, int32_t index) {
+    return objdict_get_index((object_dict_t *) self, index);
 }
 
 object_t *
