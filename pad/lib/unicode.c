@@ -981,4 +981,34 @@ uni_split(const unicode_t *other, const unicode_type_t *sep) {
     return arr;
 }
 
+bool
+uni_is_digit(const unicode_t *self) {
+    if (!self) {
+        return false;
+    }
+
+    for (const unicode_type_t *p = self->buffer; *p; ++p) {
+        if (!u_isdigit(*p)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool
+uni_is_alpha(const unicode_t *self) {
+    if (!self) {
+        return false;
+    }
+
+    for (const unicode_type_t *p = self->buffer; *p; ++p) {
+        if (!u_isalpha(*p)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 #undef NIL

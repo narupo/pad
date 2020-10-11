@@ -2348,6 +2348,30 @@ test_uni_split(void) {
 }
 
 static void
+test_uni_is_digit(void) {
+    unicode_t *u = uni_new();
+    uni_set_mb(u, "123");
+    assert(uni_is_digit(u));
+    uni_set_mb(u, "abc");
+    assert(!uni_is_digit(u));
+    uni_set_mb(u, "12ab");
+    assert(!uni_is_digit(u));
+    uni_del(u);
+}
+
+static void
+test_uni_is_alpha(void) {
+    unicode_t *u = uni_new();
+    uni_set_mb(u, "123");
+    assert(!uni_is_alpha(u));
+    uni_set_mb(u, "abc");
+    assert(uni_is_alpha(u));
+    uni_set_mb(u, "12ab");
+    assert(!uni_is_alpha(u));
+    uni_del(u);
+}
+
+static void
 test_char32_len(void) {
     const char32_t *s = U"abc";
     assert(char32_len(s) == 3);
@@ -2495,6 +2519,8 @@ unicode_tests[] = {
     {"uni_getc_mb", test_uni_getc_mb},
     {"uni_mul", test_uni_mul},
     {"uni_split", test_uni_split},
+    {"uni_is_digit", test_uni_is_digit},
+    {"uni_is_alpha", test_uni_is_alpha},
     {"char32_len", test_char32_len},
     {"char16_len", test_char16_len},
     {"char32_dup", test_char32_dup},
@@ -25965,17 +25991,18 @@ static void
 test_trv_comparison_6(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
-        "struct A: end\n"
-        "@}{: A() != nil :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
-    }
+    check_ok("{@\n"
+    "struct A: end\n"
+    "@}{: A() != nil :}", "true");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_comparison_7(void) {
+    trv_ready;
+
+    check_ok("{@ c = \"a\" @}{: c == \">\" :}", "false");
 
     trv_cleanup;
 }
@@ -29287,13 +29314,6 @@ traverser_tests[] = {
     {"trv_or_test_0", test_trv_or_test_0},
     {"trv_and_test_0", test_trv_and_test_0},
     {"trv_not_test_0", test_trv_not_test_0},
-    {"trv_comparison_0", test_trv_comparison_0},
-    {"trv_comparison_1", test_trv_comparison_1},
-    {"trv_comparison_2", test_trv_comparison_2},
-    {"trv_comparison_3", test_trv_comparison_3},
-    {"trv_comparison_4", test_trv_comparison_4},
-    {"trv_comparison_5", test_trv_comparison_5},
-    {"trv_comparison_6", test_trv_comparison_6},
     {"trv_asscalc_0", test_trv_asscalc_0},
     {"trv_asscalc_1", test_trv_asscalc_1},
     {"trv_asscalc_2", test_trv_asscalc_2},
@@ -29365,6 +29385,14 @@ traverser_tests[] = {
     {"trv_identifier", test_trv_identifier},
     {"trv_traverse", test_trv_traverse},
     {"trv_comparison", test_trv_comparison},
+    {"trv_comparison_0", test_trv_comparison_0},
+    {"trv_comparison_1", test_trv_comparison_1},
+    {"trv_comparison_2", test_trv_comparison_2},
+    {"trv_comparison_3", test_trv_comparison_3},
+    {"trv_comparison_4", test_trv_comparison_4},
+    {"trv_comparison_5", test_trv_comparison_5},
+    {"trv_comparison_6", test_trv_comparison_6},
+    {"trv_comparison_7", test_trv_comparison_7},
     {"trv_array_index", test_trv_array_index},
     {"trv_text_block_old", test_trv_text_block_old},
     {"trv_ref_block_old", test_trv_ref_block_old},
