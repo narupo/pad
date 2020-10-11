@@ -1374,11 +1374,18 @@ again:
         goto again;
     } break;
     case OBJ_TYPE_ARRAY: {
+        // if not same length left-hand objects and right-hand objects
+        // then cause an error
         if (objarr_len(lhs->objarr) != objarr_len(rhs->objarr)) {
             ast_pushb_error(ast, "can't assign array to array. not same length");
             return_trav(NULL);
         }
 
+        // extract right-hand objects first
+        // because swap sentence needs not reference of right-hand objects
+        // 
+        //     a, b = b, a
+        // 
         object_array_t *rhsarr = objarr_new();
 
         for (int32_t i = 0; i < objarr_len(rhs->objarr); ++i) {
@@ -1387,6 +1394,7 @@ again:
             objarr_moveb(rhsarr, real);
         }
 
+        // assign right-hand objects to left-hand objects
         object_array_t *results = objarr_new();
 
         for (int32_t i = 0; i < objarr_len(lhs->objarr); ++i) {
