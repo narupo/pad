@@ -180,7 +180,7 @@
 
     def test1():
         puts("Testing File structure")
-        // Test of File functions
+
         fin, err = File.open("file.txt", "r")
         if err != nil:
             eputs("failed to open file")
@@ -206,35 +206,43 @@
 
     def test2():
         puts("Testing template namespace")
+
         template.render("blue")
         T = template
         T.verboseRender("red")
+
         puts("-" * 40)
     end
 
     def test3():
         puts("Testing struct methods")
+
         animal = Animal.new("Mike")
         animal.show()
         puts(animal.decolate("The ", " Man"))
+
         puts("-" * 40)
     end
 
     def test4():
         puts("Testing stream")
+
         strm = Stream.new("abc")
         puts(strm.get())
         puts(strm.get())
         puts(strm.get())
         puts(strm.get())
+
         puts("-" * 40)
     end
 
     def test5():
         puts("Testing interface methods")
+
         tiger = Tiger()
         tiger.walk()
         tiger.sleep()
+        
         puts("-" * 40)
     end
 
