@@ -16622,6 +16622,24 @@ test_trv_builtin_functions_deepcopy_0(void) {
 }
 
 static void
+test_trv_builtin_functions_assert_0(void) {
+    trv_ready;
+
+    check_fail("{@ assert(0) @}", "assertion error");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_builtin_functions_assert_1(void) {
+    trv_ready;
+
+    check_ok("{@ assert(1) @}", "");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_traverse(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -29385,6 +29403,8 @@ traverser_tests[] = {
     {"trv_builtin_functions_type_dict", test_trv_builtin_functions_type_dict},
     {"trv_builtin_functions_copy_0", test_trv_builtin_functions_copy_0},
     {"trv_builtin_functions_deepcopy_0", test_trv_builtin_functions_deepcopy_0},
+    {"trv_builtin_functions_assert_0", test_trv_builtin_functions_assert_0},
+    {"trv_builtin_functions_assert_1", test_trv_builtin_functions_assert_1},
     {"trv_builtin_string", test_trv_builtin_string},
     {"trv_builtin_unicode_split", test_trv_builtin_unicode_split},
     {"trv_builtin_unicode_rstrip", test_trv_builtin_unicode_rstrip},
