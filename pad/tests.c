@@ -25685,7 +25685,7 @@ static void
 test_trv_multi_assign_1(void) {
     trv_ready;
 
-    check_ok_showbuf("{@ a, b = 1, 2 \n a, b = b, a @}{: a :},{: b :}", "2,1");
+    check_ok("{@ a, b = 1, 2 \n a, b = b, a @}{: a :},{: b :}", "2,1");
 
     trv_cleanup;
 }
