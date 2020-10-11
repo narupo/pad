@@ -5,7 +5,7 @@
  *  Author: Aizawa Yuta
  *   Since: 2016
  */
-#include <pad/tests.h>
+#include <tests/tests.h>
 
 /*********
 * macros *

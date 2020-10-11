@@ -119,7 +119,7 @@ pad: build/app.o $(OBJS)
 
 build/app.o: pad/app.c pad/app.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/tests.o: pad/tests.c pad/tests.h
+build/tests.o: tests/tests.c tests/tests.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lib/error.o: pad/lib/error.c pad/lib/error.h
 	$(CC) $(CFLAGS) -c $< -o $@
