@@ -79,15 +79,13 @@
         name = nil
 
         /**
-         * Constructor (function)
+         * Proxy constructor (function)
          *
          * @param {str} name animal's name
          * @return {object} object of Animal
          */
         def new(name):
-            animal = Animal()
-            animal.name = name
-            return animal
+            return Animal(name)
         end
 
         /**
@@ -114,15 +112,12 @@
     end
 
     struct Stream:
-        index = 0
-        length = 0
         buf = nil
+        length = 0
+        index = 0
 
         def new(buf):
-            self = Stream()
-            self.buf = buf
-            self.length = len(buf)
-            return self
+            return Stream(buf, len(buf))
         end
 
         met cur(self, ofs):
