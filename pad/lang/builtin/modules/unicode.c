@@ -221,6 +221,45 @@ static object_t *
 builtin_unicode_strip(builtin_func_args_t *fargs) {
     return strip_work("strip", fargs);
 }
+
+static object_t *
+builtin_unicode_is(const char *method_name, builtin_func_args_t *fargs) {
+    if (!fargs) {
+        return NULL;
+    }
+    ast_t *ref_ast = fargs->ref_ast;
+
+    object_t *owner = extract_unicode_object(
+        fargs->ref_ast,
+        fargs->ref_owners,
+        method_name
+    );
+    if (!owner) {
+        ast_pushb_error(ref_ast, "failed to extract unicode object");
+        return NULL;
+    }
+
+    bool boolean = false;
+    if (cstr_eq(method_name, "isdigit")) {
+        boolean = uni_is_digit(owner->unicode);
+    } else if (cstr_eq(method_name, "isalpha")) {
+        boolean = uni_is_alpha(owner->unicode);
+    } else {
+        ast_pushb_error(ref_ast, "unsupported method \"%s\"", method_name);
+    }
+
+    return obj_new_bool(ref_ast->ref_gc, boolean);
+}
+ 
+static object_t *
+builtin_unicode_isdigit(builtin_func_args_t *fargs) {
+    return builtin_unicode_is("isdigit", fargs);
+}
+ 
+static object_t *
+builtin_unicode_isalpha(builtin_func_args_t *fargs) {
+    return builtin_unicode_is("isalpha", fargs);
+}
  
 static builtin_func_info_t
 builtin_func_infos[] = {
@@ -234,6 +273,8 @@ builtin_func_infos[] = {
     {"rstrip", builtin_unicode_rstrip},
     {"lstrip", builtin_unicode_lstrip},
     {"strip", builtin_unicode_strip},
+    {"isdigit", builtin_unicode_isdigit},
+    {"isalpha", builtin_unicode_isalpha},
     {0},
 };
 
