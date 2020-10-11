@@ -1,4 +1,9 @@
 {@
+    /**
+     * Draw base page by the web site title
+     *
+     * @param {str} title web site title
+     */
     def drawBase(title):
         block header: @}
             <html>
@@ -18,6 +23,11 @@
         {@ end
     end
 
+    /**
+     * Draw home page by the web site title
+     *
+     * @param {str} title web site title
+     */
     def drawHome(title) extends drawBase:
         inject content: @}
             <h1>Welcome to {: title.capitalize() :}!</h1>
