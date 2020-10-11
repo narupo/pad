@@ -13247,17 +13247,18 @@ static void
 test_trv_assign_4(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   a, b = 1, 2\n"
-    "@}{: a :},{: b :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2"));
-    }
+    "@}{: a :},{: b :}", "1,2");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_assign_5(void) {
+    trv_ready;
+
+    check_fail("{@ a @}{: a :}", "\"a\" is not defined in ref block");
 
     trv_cleanup;
 }
@@ -29354,6 +29355,7 @@ traverser_tests[] = {
     {"trv_assign_2", test_trv_assign_2},
     {"trv_assign_3", test_trv_assign_3},
     {"trv_assign_4", test_trv_assign_4},
+    {"trv_assign_5", test_trv_assign_5},
     {"trv_atom_0", test_trv_atom_0},
     {"trv_index", test_trv_index},
     {"trv_string_index", test_trv_string_index},
