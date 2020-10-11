@@ -1216,7 +1216,7 @@ test_str_app_stream(void) {
     char curdir[1024];
     char path[1024];
     assert(file_realpath(curdir, sizeof curdir, ".") != NULL);
-    assert(file_solvefmt(path, sizeof path, "%s/pad/tests.c", curdir) != NULL);
+    assert(file_solvefmt(path, sizeof path, "%s/tests/tests.c", curdir) != NULL);
 
     FILE *fin = fopen(path, "r");
     assert(fin != NULL);
@@ -1857,7 +1857,7 @@ test_uni_app_stream(void) {
     char curdir[1024];
     char path[1024];
     assert(file_realpath(curdir, sizeof curdir, ".") != NULL);
-    assert(file_solvefmt(path, sizeof path, "%s/pad/tests.c", curdir) != NULL);
+    assert(file_solvefmt(path, sizeof path, "%s/tests/tests.c", curdir) != NULL);
 
     FILE *fin = fopen(path, "r");
     assert(fin != NULL);
@@ -16046,6 +16046,28 @@ test_trv_builtin_unicode_strip(void) {
 }
 
 static void
+test_trv_builtin_unicode_isdigit(void) {
+    trv_ready;
+
+    check_ok("{: \"123\".isdigit() :}", "true");
+    check_ok("{: \"abc\".isdigit() :}", "false");
+    check_ok("{: \"123abc\".isdigit() :}", "false");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_builtin_unicode_isalpha(void) {
+    trv_ready;
+
+    check_ok("{: \"123\".isalpha() :}", "false");
+    check_ok("{: \"abc\".isalpha() :}", "true");
+    check_ok("{: \"123abc\".isalpha() :}", "false");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_builtin_functions(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -29438,6 +29460,8 @@ traverser_tests[] = {
     {"trv_builtin_unicode_rstrip", test_trv_builtin_unicode_rstrip},
     {"trv_builtin_unicode_lstrip", test_trv_builtin_unicode_lstrip},
     {"trv_builtin_unicode_strip", test_trv_builtin_unicode_strip},
+    {"trv_builtin_unicode_isdigit", test_trv_builtin_unicode_isdigit},
+    {"trv_builtin_unicode_isalpha", test_trv_builtin_unicode_isalpha},
     {"trv_builtin_array_0", test_trv_builtin_array_0},
     {"trv_builtin_dict_0", test_trv_builtin_dict_0},
     {"trv_module_0", test_trv_module_0},
