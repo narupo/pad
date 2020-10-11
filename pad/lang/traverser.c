@@ -5932,7 +5932,7 @@ trv_compare_comparison_lt(ast_t *ast, trv_args_t *targs) {
 
     switch (lhs->type) {
     default:
-        ast_pushb_error(ast, "can't compare with lt");
+        ast_pushb_error(ast, "can't compare with lt (%d)", lhs->type);
         return_trav(NULL);
         break;
     case OBJ_TYPE_INT: {
