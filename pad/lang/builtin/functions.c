@@ -331,6 +331,32 @@ builtin_shallowcopy(builtin_func_args_t *fargs) {
     return builtin_copy(fargs, false);
 }
 
+static object_t *
+builtin_assert(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
+    assert(actual_args->type == OBJ_TYPE_ARRAY);
+
+    object_array_t *args = actual_args->objarr;
+    if (objarr_len(args) != 1) {
+        ast_pushb_error(ref_ast, "len function need one argument");
+        return NULL;
+    }
+
+    object_t *arg = objarr_get(args, 0);
+    assert(arg);
+
+    bool ok = parse_bool(ref_ast, arg);
+    if (!ok) {
+        ast_pushb_error(ref_ast, "assertion error");
+        return NULL;
+    }
+
+    return obj_new_nil(ref_ast->ref_gc);
+}
+
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"id", builtin_id},
@@ -342,6 +368,7 @@ builtin_func_infos[] = {
     {"exit", builtin_exit},
     {"copy", builtin_shallowcopy},
     {"deepcopy", builtin_deepcopy},
+    {"assert", builtin_assert},
     {0},
 };
 
