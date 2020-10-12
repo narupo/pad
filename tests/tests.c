@@ -24831,7 +24831,7 @@ static void
 test_trv_func_met_0(void) {
     trv_ready;
 
-    check_ok_trace("{@\n"
+    check_ok("{@\n"
         "struct A:\n"
         "   name = 1\n"
         "   met a(self):\n"
@@ -24912,7 +24912,7 @@ static void
 test_trv_func_met_4(void) {
     trv_ready;
 
-    check_ok_showbuf(
+    check_ok(
     "{@\n"
     "    struct Animal:\n"
     "        name = nil\n"
@@ -29990,6 +29990,105 @@ stdlib_list_tests[] = {
     {0},
 };
 
+/****************
+* stdlib/stream *
+****************/
+
+static void
+test_lang_stdlib_stream_new(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+        "from \"lib/std/stream.pad\" import Stream\n"
+        "s = Stream.new(\"abc\")\n"
+        "@}{: s.buf :},{: s.index :},{: s.length :}", "abc,0,3");
+
+    trv_cleanup;
+}
+
+static void
+test_lang_stdlib_stream_get(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+        "from \"lib/std/stream.pad\" import Stream\n"
+        "s = Stream.new(\"abc\")\n"
+        "puts(s.get())\n"
+        "puts(s.get())\n"
+        "puts(s.get())\n"
+        "puts(s.get())\n"
+        "@}", "a\nb\nc\nnil\n");
+
+    trv_cleanup;
+}
+
+static void
+test_lang_stdlib_stream_next(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+        "from \"lib/std/stream.pad\" import Stream\n"
+        "s = Stream.new(\"abc\")\n"
+        "puts(s.cur(0))\n"
+        "s.next()\n"
+        "puts(s.cur(0))\n"
+        "s.next()\n"
+        "puts(s.cur(0))\n"
+        "s.next()\n"
+        "puts(s.cur(0))\n"
+        "s.next()\n"
+        "puts(s.index)\n"
+        "@}", "a\nb\nc\nnil\n3\n");
+
+    trv_cleanup;
+}
+
+static void
+test_lang_stdlib_stream_prev(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+        "from \"lib/std/stream.pad\" import Stream\n"
+        "src = \"abc\""
+        "s = Stream.new(src)\n"
+        "s.index = len(src)\n"
+        "puts(s.cur(0))\n"
+        "s.prev()\n"
+        "puts(s.cur(0))\n"
+        "s.prev()\n"
+        "puts(s.cur(0))\n"
+        "s.prev()\n"
+        "puts(s.cur(0))\n"
+        "s.prev()\n"
+        "puts(s.cur(0))\n"
+        "@}", "nil\nc\nb\na\na\n");
+
+    trv_cleanup;
+}
+
+static void
+test_lang_stdlib_stream_cur(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+        "from \"lib/std/stream.pad\" import Stream\n"
+        "s = Stream.new(\"abc\")\n"
+        "puts(s.cur(0))\n"
+        "@}", "a\n");
+
+    trv_cleanup;
+}
+
+static const struct testcase
+stdlib_stream_tests[] = {
+    {"new", test_lang_stdlib_stream_new},
+    {"get", test_lang_stdlib_stream_get},
+    {"next", test_lang_stdlib_stream_next},
+    {"prev", test_lang_stdlib_stream_prev},
+    {"cur", test_lang_stdlib_stream_cur},
+    {0},
+};
+
 /*******
 * main *
 *******/
@@ -30012,6 +30111,7 @@ testmodules[] = {
     {"compiler", compiler_tests},
     {"traverser", traverser_tests},
     {"stdlib.list", stdlib_list_tests},
+    {"stdlib.stream", stdlib_stream_tests},
     {"error_stack", errstack_tests},
     {"gc", lang_gc_tests},
     {"objdict", lang_object_dict_tests},
