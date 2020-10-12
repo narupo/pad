@@ -261,6 +261,9 @@ app_run_args(app_t *self) {
 
     kit_t *kit = kit_new(self->config);
 
+    context_t *ctx = kit_get_context(kit);
+    ctx_set_use_buf(ctx, false);  // no use stdout/stderr buffer
+    
     if (!kit_compile_from_path_args(kit, path, argc, argv)) {
         const errstack_t *errstack = kit_getc_error_stack(kit);
         errstack_extendf_other(self->errstack, errstack);

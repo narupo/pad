@@ -98,6 +98,7 @@ ctx_clear(context_t *self) {
     str_clear(self->stdout_buf);
     str_clear(self->stderr_buf);
     scope_clear(self->scope);
+    self->is_use_buf = true;
 }
 
 context_t *
@@ -384,6 +385,7 @@ ctx_deep_copy(const context_t *other) {
     self->do_break = other->do_break;
     self->do_continue = other->do_continue;
     self->do_return = other->do_return;
+    self->is_use_buf = other->is_use_buf;
 
     return self;
 }
@@ -405,6 +407,7 @@ ctx_shallow_copy(const context_t *other) {
     self->do_break = other->do_break;
     self->do_continue = other->do_continue;
     self->do_return = other->do_return;
+    self->is_use_buf = other->is_use_buf;
 
     return self;
 }
@@ -442,3 +445,9 @@ ctx_set_use_buf(context_t *self, bool is_use_buf) {
 
     self->is_use_buf = is_use_buf;
 }
+
+bool
+ctx_get_is_use_buf(const context_t *self) {
+    return self->is_use_buf;
+}
+
