@@ -30027,11 +30027,13 @@ test_lang_stdlib_stream_get(void) {
     check_ok("{@\n"
         "from \"lib/std/stream.pad\" import Stream\n"
         "s = Stream.new(\"abc\")\n"
+        "puts(s.eof())\n"
         "puts(s.get())\n"
         "puts(s.get())\n"
         "puts(s.get())\n"
         "puts(s.get())\n"
-        "@}", "a\nb\nc\nnil\n");
+        "puts(s.eof())\n"
+        "@}", "false\na\nb\nc\nnil\ntrue\n");
 
     trv_cleanup;
 }

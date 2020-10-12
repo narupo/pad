@@ -41,6 +41,9 @@ kit_getc_stderr_buf(const kit_t *self);
 void
 kit_clear_context(kit_t *self);
 
+context_t *
+kit_get_context(kit_t *self);
+
 bool
 kit_has_error_stack(const kit_t *self);
 
