@@ -166,6 +166,16 @@ char16_strcmp(const char16_t *s1, const char16_t *s2) {
     return 0;
 }
 
+bool
+char16_isspace(char16_t ch) {
+    return ch == u'\n' || ch == u'\t' || ch == u' ';
+}
+
+bool
+char32_isspace(char32_t ch) {
+    return ch == U'\n' || ch == U'\t' || ch == U' ';
+}
+
 /**********
 * unicode *
 **********/
@@ -1004,6 +1014,21 @@ uni_is_alpha(const unicode_t *self) {
 
     for (const unicode_type_t *p = self->buffer; *p; ++p) {
         if (!u_isalpha(*p)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool
+uni_is_space(const unicode_t *self) {
+    if (!self) {
+        return false;
+    }
+
+    for (const unicode_type_t *p = self->buffer; *p; ++p) {
+        if (!u_isspace(*p)) {
             return false;
         }
     }

@@ -208,6 +208,12 @@ char32_strcmp(const char32_t *s1, const char32_t *s2);
 int32_t
 char16_strcmp(const char16_t *s1, const char16_t *s2);
 
+bool
+char16_isspace(char16_t ch);
+
+bool
+char32_isspace(char32_t ch);
+
 #define u_len(str) _Generic((str[0]), \
     char32_t: char32_len, \
     char16_t: char16_len \
@@ -252,6 +258,11 @@ char16_strcmp(const char16_t *s1, const char16_t *s2);
   char32_t: char32_strcmp, \
   char16_t: char16_strcmp \
 )(s1, s2)
+
+#define u_isspace(ch) _Generic((ch), \
+  char32_t: char32_isspace, \
+  char16_t: char16_isspace \
+)(ch)
 
 /**********
 * unicode *
@@ -624,3 +635,6 @@ uni_is_digit(const unicode_t *self);
 
 bool
 uni_is_alpha(const unicode_t *self);
+
+bool
+uni_is_space(const unicode_t *self);
