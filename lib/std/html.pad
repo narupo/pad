@@ -1,0 +1,153 @@
+{@
+from "lib/std/stream.pad" import Stream  // TODO: remove lib/
+
+/**
+ * Tag
+ */
+struct Tag:
+    def new():
+        return Tag()
+    end
+
+    met isnamehead(self, c):
+        return c.isalpha() or c.isdigit() or c == "_"
+    end
+
+    met isname(self, c):
+        return c.isalpha() or c.isdigit() or c == "_" or c == "-"
+    end
+
+    met skipsp(self):
+        for not self.strm.eof():
+            if self.strm.get() != " ":  // TODO: isspace
+                self.strm.prev()
+                break
+            end
+        end
+    end
+
+    met parse(self, strm):
+        self.strm = strm
+        self.childs = []
+        m = "first"
+        buf = ""
+
+        for not self.strm.eof():
+            c = self.strm.get()
+            if m == "first":
+                if c == "<":
+                    m = "found <"
+                else:
+                    buf += c
+                    m = "read text tag"
+                end
+            elif m == "read text tag":
+                if c == "<":
+                    self.strm.prev()
+                    self.text = buf
+                    return
+                else:
+                    buf += c
+                end
+            elif m == "found <":
+                if self.isnamehead(c):
+                    m = "read name"
+                    buf += c
+                elif c == " ":  // TODO: isspace()
+                    // pass
+                end
+            elif m == "read name":
+                if self.isname(c):
+                    buf += c
+                elif c == " ":
+                    self.name = buf
+                    buf = ""
+                elif c == "/":
+                    self.skipsp()
+                    c = self.strm.get()
+                    if c == ">":
+                        return
+                    else:
+                        self.strm.prev()
+                        m = "first"
+                    end
+                elif c == ">":
+                    m = "first"
+                    tag = Tag()
+                    tag.parse(self.strm)
+                    self.childs.push(tag)
+                end
+            end
+        end
+    end
+end
+
+/**
+ * Document
+ */
+struct Document:
+    def new():
+        return Document()
+    end
+
+    met parse(self, strm):
+        self.strm = strm
+        self.childs = []
+        buf = ""
+        m = "first"
+
+        for not self.strm.eof():
+            c = self.strm.get()
+            if m == "first":
+                if c == "<":
+                    self.strm.prev()
+                    tag = Tag()
+                    tag.parse(self.strm)
+                    self.childs.push(tag)
+                else:
+                    m = "read text tag"
+                    buf += c
+                end
+            elif m == "read text tag":
+                if c == "<":
+                    tag = Tag()
+                    tag.text = buf
+                    buf = ""
+                    self.childs.push(tag)
+
+                    self.strm.prev()
+                    tag = Tag()
+                    tag.parse(self.strm)
+                    self.childs.push(tag)
+                else:
+                    buf += c
+                end
+            end
+        end
+    end
+end
+
+/**
+ * HTML Parser
+ */
+struct HtmlParser:
+    def new():
+        return HtmlParser()
+    end
+
+    met parse(self, src):
+        strm = Stream.new(src)
+        self.document = Document.new()
+        self.document.parse(strm)
+    end
+end
+
+def test():
+    parser = HtmlParser.new()
+    parser.parse("<h1>Title</h1>")
+    // h1 = parser.find("h1")
+    // assert(h1.text == "Title")
+end
+
+test()
+@}
