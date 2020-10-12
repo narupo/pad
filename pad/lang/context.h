@@ -377,3 +377,6 @@ ctx_unpack_objarr_to_cur_scope(context_t *self, object_array_t *arr);
 
 void
 ctx_set_use_buf(context_t *self, bool is_use_buf);
+
+bool
+ctx_get_is_use_buf(const context_t *self);
