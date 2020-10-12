@@ -244,6 +244,8 @@ builtin_unicode_is(const char *method_name, builtin_func_args_t *fargs) {
         boolean = uni_is_digit(owner->unicode);
     } else if (cstr_eq(method_name, "isalpha")) {
         boolean = uni_is_alpha(owner->unicode);
+    } else if (cstr_eq(method_name, "isspace")) {
+        boolean = uni_is_space(owner->unicode);
     } else {
         ast_pushb_error(ref_ast, "unsupported method \"%s\"", method_name);
     }
@@ -261,6 +263,11 @@ builtin_unicode_isalpha(builtin_func_args_t *fargs) {
     return builtin_unicode_is("isalpha", fargs);
 }
  
+static object_t *
+builtin_unicode_isspace(builtin_func_args_t *fargs) {
+    return builtin_unicode_is("isspace", fargs);
+}
+ 
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"lower", builtin_unicode_lower},
@@ -275,6 +282,7 @@ builtin_func_infos[] = {
     {"strip", builtin_unicode_strip},
     {"isdigit", builtin_unicode_isdigit},
     {"isalpha", builtin_unicode_isalpha},
+    {"isspace", builtin_unicode_isspace},
     {0},
 };
 
