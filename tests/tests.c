@@ -20738,6 +20738,22 @@ test_trv_if_stmt_11(void) {
 }
 
 static void
+test_trv_if_stmt_12(void) {
+    trv_ready;
+
+    puts("test_trv_if_stmt_12");
+    check_ok("{@\n"
+    "if 1:\n"
+    "   puts(1)\n"
+    "else:\n"
+    "elif 1:\n"
+    "end"
+    "@}", "1\n");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_elif_stmt_0(void) {
     trv_ready;
 
@@ -29189,6 +29205,7 @@ traverser_tests[] = {
     {"trv_if_stmt_9", test_trv_if_stmt_9},
     {"trv_if_stmt_10", test_trv_if_stmt_10},
     {"trv_if_stmt_11", test_trv_if_stmt_11},
+    {"trv_if_stmt_12", test_trv_if_stmt_12},
     {"trv_elif_stmt_0", test_trv_elif_stmt_0},
     {"trv_elif_stmt_1", test_trv_elif_stmt_1},
     {"trv_elif_stmt_2", test_trv_elif_stmt_2},
