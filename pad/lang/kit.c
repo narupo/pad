@@ -145,3 +145,8 @@ const errstack_t *
 kit_getc_error_stack(const kit_t *self) {
     return self->errstack;
 }
+
+context_t *
+kit_get_context(kit_t *self) {
+    return self->ctx;
+}

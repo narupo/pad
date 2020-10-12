@@ -29,6 +29,8 @@ struct context {
     bool do_break;  // if do break from current context then store true
     bool do_continue;  // if do continue on current context then store
     bool do_return;
+
+    bool is_use_buf;  // if true then context use stdout/stderr buffer
 };
 
 void
@@ -85,6 +87,7 @@ ctx_new(gc_t *ref_gc) {
     self->stdout_buf = str_new();
     self->stderr_buf = str_new();
     self->scope = scope_new(ref_gc);
+    self->is_use_buf = true;
 
     return self;
 }
@@ -124,13 +127,21 @@ ctx_get_alias_desc(context_t *self, const char *key) {
 
 context_t *
 ctx_pushb_stdout_buf(context_t *self, const char *str) {
-    str_app(self->stdout_buf, str);
+    if (self->is_use_buf) {
+        str_app(self->stdout_buf, str);
+    } else {
+        fprintf(stdout, "%s", str);
+    }
     return self;
 }
 
 context_t *
 ctx_pushb_stderr_buf(context_t *self, const char *str) {
-    str_app(self->stderr_buf, str);
+    if (self->is_use_buf) {
+        str_app(self->stderr_buf, str);
+    } else {
+        fprintf(stderr, "%s", str);
+    }
     return self;
 }
 
@@ -421,4 +432,13 @@ ctx_unpack_objarr_to_cur_scope(context_t *self, object_array_t *arr) {
     }
 
     return self;
+}
+
+void
+ctx_set_use_buf(context_t *self, bool is_use_buf) {
+    if (!self) {
+        return;
+    }
+
+    self->is_use_buf = is_use_buf;
 }

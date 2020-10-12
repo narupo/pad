@@ -224,6 +224,10 @@ _app_run(app_t *self) {
     }
 
     kit_t *kit = kit_new(self->config);
+
+    context_t *ctx = kit_get_context(kit);
+    ctx_set_use_buf(ctx, false);  // no use stdout/stderr buffer
+
     if (!kit_compile_from_string(kit, content)) {
         const errstack_t *errstack = kit_getc_error_stack(kit);
         errstack_extendf_other(self->errstack, errstack);
@@ -231,10 +235,7 @@ _app_run(app_t *self) {
         return 1;
     }
 
-    printf("%s", kit_getc_stdout_buf(kit));
     fflush(stdout);
-
-    fprintf(stderr, "%s", kit_getc_stderr_buf(kit));
     fflush(stderr);
 
     kit_del(kit);
