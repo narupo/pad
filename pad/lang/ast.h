@@ -19,6 +19,7 @@
  */
 enum {
     AST_ERR_DETAIL_SIZE = 1024, // ast's error message size
+    AST_ERR_TOKENS_SIZE = 256,
 };
 
 /**
@@ -48,11 +49,15 @@ struct ast {
     // reference to gc (DO NOT DELETE)
     gc_t *ref_gc;
 
-    // number of import level
-    int32_t import_level;
-
     // error stack for errors
     errstack_t *error_stack;
+
+    // error tokens for display error to developer
+    token_t *error_tokens[AST_ERR_TOKENS_SIZE];
+    int32_t error_tokens_pos;
+
+    // number of import level
+    int32_t import_level;
 
     // if do debug to true
     bool debug;
@@ -127,8 +132,8 @@ ast_getc_root(const ast_t *self);
  * @param[in] fmt format string (const char *)
  * @param[in] ... arguments of format
  */
-#define ast_pushb_error(ast, fmt, ...) \
-    errstack_pushb(ast->error_stack, fmt, ##__VA_ARGS__)
+#define ast_pushb_error(ast, fname, lineno, src, pos, fmt, ...) \
+    errstack_pushb(ast->error_stack, fname, lineno, src, pos, fmt, ##__VA_ARGS__)
 
 /**
  * clear ast state (will call ast_del_nodes)
@@ -195,7 +200,7 @@ ast_set_debug(ast_t *self, bool debug);
  * @param[in] *fout stream
  */
 void
-ast_trace_error_stack(const ast_t *self, FILE *fout);
+ast_trace_error(const ast_t *self, FILE *fout);
 
 /**
  * get error stack read only
@@ -253,3 +258,6 @@ ast_prev_ptr(ast_t *self);
  */
 gc_t *
 ast_get_ref_gc(ast_t *self);
+
+ast_t *
+ast_pushb_error_token(ast_t *self, token_t *ref_token);

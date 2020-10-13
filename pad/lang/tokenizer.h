@@ -180,4 +180,4 @@ tkr_set_debug(tokenizer_t *self, bool debug);
  * @param[in] *fout
  */
 void
-tkr_trace_error_stack(const tokenizer_t *self, FILE *fout);
+tkr_trace_error(const tokenizer_t *self, FILE *fout);

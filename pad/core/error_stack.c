@@ -22,6 +22,13 @@ errelem_show(const errelem_t *self, FILE *fout) {
     );
 }
 
+void
+errelem_show_msg(const errelem_t *self, FILE *fout) {
+    char msg[ERRELEM_MESSAGE_SIZE] = {0};
+    err_fix_text(msg, sizeof msg, self->message);
+    fprintf(fout, "%s\n", msg);
+}
+
 /***********
 * errstack *
 ***********/
@@ -64,6 +71,10 @@ errstack_deep_copy(const errstack_t *other) {
         const errelem_t *elem = &other->stack[i];
         _errstack_pushb(
             self,
+            elem->program_filename,
+            elem->program_lineno,
+            elem->program_source,
+            elem->program_source_pos,
             elem->filename,
             elem->lineno,
             elem->funcname,
@@ -91,7 +102,18 @@ errstack_resize(errstack_t *self, int32_t newcapa) {
 }
 
 errstack_t *
-_errstack_pushb(errstack_t *self, const char *filename, int32_t lineno, const char *funcname, const char *fmt, ...) {
+_errstack_pushb(
+    errstack_t *self,
+    const char *program_filename,
+    int32_t program_lineno,
+    const char *program_source,
+    int32_t program_source_pos,
+    const char *filename,
+    int32_t lineno,
+    const char *funcname,
+    const char *fmt,
+    ...
+) {
     if (self->len >= self->capa) {
         if (!errstack_resize(self, self->capa*2)) {
             return NULL;
@@ -100,9 +122,13 @@ _errstack_pushb(errstack_t *self, const char *filename, int32_t lineno, const ch
 
     errelem_t *elem = &self->stack[self->len];
 
-    snprintf(elem->filename, sizeof elem->filename, "%s", filename);
+    elem->program_filename = program_filename;
+    elem->program_lineno = program_lineno;
+    elem->program_source = program_source;
+    elem->program_source_pos = program_source_pos;
+    elem->filename = filename;
     elem->lineno = lineno;
-    snprintf(elem->funcname, sizeof elem->funcname, "%s", funcname);
+    elem->funcname = funcname;
 
     va_list ap;
 
@@ -123,13 +149,104 @@ errstack_getc(const errstack_t *self, int32_t idx) {
     return &self->stack[idx];
 }
 
+string_t *
+errstack_trim_around(const char *src, int32_t pos) {
+    if (!src || pos < 0) {
+        return NULL;
+    }
+
+    string_t *s = str_new();
+    const char *beg = src;
+    const char *end = src + strlen(src);
+    const char *curs = &src[pos];
+    const char *p = &src[pos];
+
+    // seek to before newline
+    if (*(p - 1) == '\r' && *p == '\n') {
+        p -= 2;
+    } else if (*p == '\n' || *p == '\r') {
+        --p;
+    }
+
+    for (; p >= beg; --p) {
+        if ((*(p - 1) == '\r' && *p == '\n') ||
+            (*p == '\n') ||
+            (*p == '\r')) {
+            ++p;
+            break;
+        }
+    }
+    if (p < beg) {
+        ++p;
+    }
+    int32_t curspos = curs - p - 1;
+
+    // trim to next newline or EOS
+    int32_t len = 0;
+    for (; p < end; ++p, ++len) {
+        if ((*p == '\r' && *(p + 1) == '\n') ||
+            (*p == '\n') ||
+            (*p == '\r')) {
+            break;
+        }
+        str_pushb(s, *p);
+    }
+
+    // set cursor
+    str_pushb(s, '\n');
+    for (int32_t i = 0; i < len; ++i) {
+        if (i == curspos) {
+            str_pushb(s, '^');
+            str_pushb(s, '\n');
+            break;
+        } else {
+            str_pushb(s, ' ');
+        }
+    }
+
+    return s;
+}
+
+static void
+show_trim_around(const errelem_t *elem, FILE *fout) {
+    if (!elem) {
+        return;
+    }
+
+    string_t *s = errstack_trim_around(elem->program_source, elem->program_source_pos);
+    string_t *ss = str_indent(s, ' ', 1, 4);
+    str_del(s);
+    fprintf(fout, "\n%s", str_getc(ss));
+    str_del(ss);
+}
+
 void
 errstack_trace(const errstack_t *self, FILE *fout) {
+    if (!self || !self->len || !fout) {
+        return;
+    }
+
     fprintf(fout, "Stack trace:\n");
-    for (int32_t i = 0; i < self->len; ++i) {
+
+    for (int32_t i = self->len - 1; i >= 0; --i) {
         const errelem_t *elem = &self->stack[i];
         fprintf(fout, "    ");
         errelem_show(elem, fout);
+    }
+
+    const errelem_t *first = &self->stack[0];
+    show_trim_around(first, fout);
+}
+
+void
+errstack_trace_simple(const errstack_t *self, FILE *fout) {
+    if (!self || !self->len || !fout) {
+        return;
+    }
+
+    for (int32_t i = self->len - 1; i >= 0; --i) {
+        const errelem_t *elem = &self->stack[i];
+        errelem_show_msg(elem, fout);
     }
 }
 
@@ -154,8 +271,12 @@ errstack_extendf_other(errstack_t *self, const errstack_t *_other) {
 
 #define copy(dst, src) \
     dst->lineno = src->lineno; \
-    snprintf(dst->filename, sizeof dst->filename, "%s", src->filename); \
-    snprintf(dst->funcname, sizeof dst->funcname, "%s", src->filename); \
+    dst->program_lineno = src->program_lineno; \
+    dst->program_filename = src->program_filename; \
+    dst->program_source = src->program_source; \
+    dst->program_source_pos = src->program_source_pos; \
+    dst->filename = src->filename; \
+    dst->funcname = src->filename; \
     snprintf(dst->message, sizeof dst->message, "%s", src->message); \
 
     // copy stack
@@ -183,13 +304,35 @@ errstack_extendf_other(errstack_t *self, const errstack_t *_other) {
     // append other at front of self
     for (int32_t i = 0; i < other->len; ++i) {
         const errelem_t *src = &other->stack[i];
-        _errstack_pushb(self, src->filename, src->lineno, src->funcname, "%s", src->message);
+        _errstack_pushb(
+            self,
+            src->program_filename,
+            src->program_lineno,
+            src->program_source,
+            src->program_source_pos,
+            src->filename,
+            src->lineno,
+            src->funcname,
+            "%s",
+            src->message
+        );
     }
 
     // append save stack at self stack
     for (int32_t i = 0; i < save_len; ++i) {
         const errelem_t *src = &save_stack[i];
-        _errstack_pushb(self, src->filename, src->lineno, src->funcname, "%s", src->message);
+        _errstack_pushb(
+            self,
+            src->program_filename,
+            src->program_lineno,
+            src->program_source,
+            src->program_source_pos,
+            src->filename,
+            src->lineno,
+            src->funcname,
+            "%s",
+            src->message
+        );
     }
 
     // free copy stack
@@ -211,7 +354,18 @@ errstack_extendb_other(errstack_t *self, const errstack_t *_other) {
     // append other at front of self
     for (int32_t i = 0; i < other->len; ++i) {
         const errelem_t *src = &other->stack[i];
-        _errstack_pushb(self, src->filename, src->lineno, src->funcname, "%s", src->message);
+        _errstack_pushb(
+            self,
+            src->program_filename,
+            src->program_lineno,
+            src->program_source,
+            src->program_source_pos,
+            src->filename,
+            src->lineno,
+            src->funcname,
+            "%s",
+            src->message
+        );
     }
 
     errstack_del(other);

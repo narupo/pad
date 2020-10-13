@@ -11,7 +11,7 @@ builtin_opts_get(builtin_func_args_t *fargs) {
     object_array_t *args = actual_args->objarr;
 
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, "can't invoke opts.get. need one argument");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. need one argument");
         return NULL;
     }
 
@@ -19,7 +19,7 @@ builtin_opts_get(builtin_func_args_t *fargs) {
     assert(objname);
 
     if (objname->type != OBJ_TYPE_UNICODE) {
-        ast_pushb_error(ref_ast, "can't invoke opts.get. argument is not string");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. argument is not string");
         return NULL;
     }
 
@@ -43,7 +43,7 @@ builtin_opts_has(builtin_func_args_t *fargs) {
     object_array_t *args = actual_args->objarr;
 
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, "can't invoke opts.get. need one argument");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. need one argument");
         return NULL;
     }
 
@@ -51,7 +51,7 @@ builtin_opts_has(builtin_func_args_t *fargs) {
     assert(objname);
 
     if (objname->type != OBJ_TYPE_UNICODE) {
-        ast_pushb_error(ref_ast, "can't invoke opts.get. argument is not string");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. argument is not string");
         return NULL;
     }
 
@@ -70,13 +70,13 @@ builtin_opts_args(builtin_func_args_t *fargs) {
     object_array_t *args = actual_args->objarr;
 
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, "can't invoke opts.args. need one argument");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.args. need one argument");
         return NULL;
     }
 
     const object_t *arg = objarr_getc(args, 0);
     if (arg->type != OBJ_TYPE_INT) {
-        ast_pushb_error(ref_ast, "invalid argument type. argument is not int");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid argument type. argument is not int");
         return NULL;
     }
 

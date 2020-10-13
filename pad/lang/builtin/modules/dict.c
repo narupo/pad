@@ -13,25 +13,25 @@ builtin_dict_get(builtin_func_args_t *fargs) {
 
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, "can't invoke dict.get. need one argument");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "can't invoke dict.get. need one argument");
         return NULL;
     }
 
     if (!ref_owners) {
-        ast_pushb_error(ref_ast, "owners is null. can't get");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "owners is null. can't get");
         return NULL;
     }
 
     object_t *ref_owner = objarr_get_last(ref_owners);
     if (!ref_owner) {
-        ast_pushb_error(ref_ast, "owner is null. can't get");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "owner is null. can't get");
         return NULL;
     }
 
 again:
     switch (ref_owner->type) {
     default:
-        ast_pushb_error(ref_ast, "unsupported object type (%d). can't get", ref_owner->type);
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "unsupported object type (%d). can't get", ref_owner->type);
         return NULL;
         break;
     case OBJ_TYPE_OWNERS_METHOD:
@@ -41,7 +41,7 @@ again:
     case OBJ_TYPE_IDENTIFIER:
         ref_owner = pull_in_ref_by(ref_owner);
         if (!ref_owner) {
-            ast_pushb_error(ref_ast, "object is not found. can't get");
+            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "object is not found. can't get");
             return NULL;
         }
         goto again;
@@ -56,14 +56,14 @@ again:
 again2:
     switch (arg->type) {
     default:
-        ast_pushb_error(ref_ast, "invalid index type (%d) of dict", arg->type);
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid index type (%d) of dict", arg->type);
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(arg);
         arg = pull_in_ref_by(arg);
         if (!arg) {
-            ast_pushb_error(ref_ast, "\"%s\" is not defined", idn);
+            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
             return NULL;
         }
         goto again2;
