@@ -5,33 +5,48 @@
 #include <stdint.h>
 
 #include <pad/lib/memory.h>
-#include <pad/lib/cstring_array.h>
 #include <pad/lib/error.h>
+#include <pad/lib/cstring_array.h>
+#include <pad/lib/string.h>
+#include <pad/lang/tokens.h>
 
 /*********
 * macros *
 *********/
 
 #define pusherr(fmt, ...) \
-    errstack_pushb(self->errstack, fmt, ##__VA_ARGS__)
+    errstack_pushb(self->errstack, NULL, 0, NULL, 0, fmt, ##__VA_ARGS__)
 
-#define errstack_pushb(self, fmt, ...) \
-    _errstack_pushb(self, __FILE__, __LINE__, __func__, fmt, ##__VA_ARGS__)
+#define errstack_pushb(self, prog_fname, prog_lineno, prog_src, prog_src_pos, fmt, ...) \
+    _errstack_pushb( \
+        self, \
+        prog_fname, \
+        prog_lineno, \
+        prog_src, \
+        prog_src_pos, \
+        __FILE__, \
+        __LINE__, \
+        __func__, \
+        fmt, \
+        ##__VA_ARGS__ \
+    )
 
 /**********
 * errelem *
 **********/
 
 enum {
-    ERRELEM_FILENAME_SIZE = 1024,
-    ERRELEM_FUNCNAME_SIZE = 1024,
     ERRELEM_MESSAGE_SIZE = 1024,
 };
 
 typedef struct {
+    const char *program_filename;
+    const char *program_source;
+    const char *filename;
+    const char *funcname;
+    int32_t program_lineno;
+    int32_t program_source_pos;
     int32_t lineno;
-    char filename[ERRELEM_FILENAME_SIZE];
-    char funcname[ERRELEM_FUNCNAME_SIZE];
     char message[ERRELEM_MESSAGE_SIZE];
 } errelem_t;
 
@@ -96,6 +111,10 @@ errstack_shallow_copy(const errstack_t *other);
 errstack_t *
 _errstack_pushb(
     errstack_t *self,
+    const char *program_filename,
+    int32_t program_lineno,
+    const char *program_source,
+    int32_t program_source_pos,
     const char *filename,
     int32_t lineno,
     const char *funcname,
@@ -123,6 +142,9 @@ errstack_getc(const errstack_t *self, int32_t idx);
  */
 void
 errstack_trace(const errstack_t *self, FILE *fout);
+
+void
+errstack_trace_simple(const errstack_t *self, FILE *fout);
 
 /**
  * get length of stack
@@ -163,3 +185,6 @@ errstack_extendf_other(errstack_t *self, const errstack_t *other);
  */
 errstack_t *
 errstack_extendb_other(errstack_t *self, const errstack_t *other);
+
+string_t *
+errstack_trim_around(const char *src, int32_t pos);

@@ -1,0 +1,10 @@
+{@
+    def a():
+        def b() extends:
+            puts(1)
+        end
+        b()
+    end
+
+    a()
+@}

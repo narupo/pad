@@ -9,7 +9,7 @@ builtin_id(builtin_func_args_t *fargs) {
     assert(actual_args->type == OBJ_TYPE_ARRAY);
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, "invalid arguments length");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid arguments length");
         return NULL;
     }
 
@@ -21,7 +21,7 @@ builtin_id(builtin_func_args_t *fargs) {
         return NULL;
     }
     if (!obj) {
-        ast_pushb_error(ref_ast, "failed to extract reference");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to extract reference");
         return NULL;
     }
 
@@ -37,7 +37,7 @@ builtin_type(builtin_func_args_t *fargs) {
     assert(actual_args->type == OBJ_TYPE_ARRAY);
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, "invalid arguments length");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid arguments length");
         return NULL;
     }
 
@@ -70,7 +70,7 @@ again:
         const char *idn = obj_getc_idn_name(obj);
         obj = pull_in_ref_by(obj);
         if (!obj) {
-            ast_pushb_error(ref_ast, "not defined \"%s\" in type()", idn);
+            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "not defined \"%s\" in type()", idn);
             return NULL;
         }
         goto again;
@@ -93,7 +93,7 @@ again:
     } break;
     } // switch
 
-    ast_pushb_error(ref_ast, "not supported type \"%d\"", obj->type);
+    ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "not supported type \"%d\"", obj->type);
     return NULL;
 }
 
@@ -171,7 +171,7 @@ builtin_puts(builtin_func_args_t *fargs) {
         assert(obj);
         object_t *ref = extract_ref_of_obj(ref_ast, obj);
         if (ast_has_errors(ref_ast)) {
-            ast_pushb_error(ref_ast, "failed to get argument");
+            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to get argument");
             return NULL;
         }
         string_t *s = obj_to_string(ref_ast->error_stack, ref);
@@ -187,7 +187,7 @@ builtin_puts(builtin_func_args_t *fargs) {
         assert(obj);
         object_t *ref = extract_ref_of_obj(ref_ast, obj);
         if (ast_has_errors(ref_ast)) {
-            ast_pushb_error(ref_ast, "failed to get argument");
+            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to get argument");
             return NULL;
         }
         string_t *s = obj_to_string(ref_ast->error_stack, ref);
@@ -213,7 +213,7 @@ builtin_len(builtin_func_args_t *fargs) {
 
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, "len function need one argument");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "len function need one argument");
         return NULL;
     }
 
@@ -223,13 +223,13 @@ builtin_len(builtin_func_args_t *fargs) {
 again:
     switch (arg->type) {
     default:
-        ast_pushb_error(ref_ast, "not supported object (%d) for len", arg->type);
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "not supported object (%d) for len", arg->type);
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *obj = pull_in_ref_by(arg);
         if (!obj) {
-            ast_pushb_error(ref_ast, "not found object for len");
+            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "not found object for len");
             return NULL;
         }
         arg = obj;
@@ -275,13 +275,13 @@ builtin_exit(builtin_func_args_t *fargs) {
     object_array_t *args = actual_args->objarr;
 
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, "invalid arguments length for exit");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid arguments length for exit");
         return NULL;
     }
 
     const object_t *codeobj = objarr_getc(args, 0);
     if (codeobj->type != OBJ_TYPE_INT) {
-        ast_pushb_error(ref_ast, "invalid exit code type for exit");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid exit code type for exit");
         return NULL;
     }
 
@@ -307,7 +307,7 @@ builtin_copy(builtin_func_args_t *fargs, bool deep) {
     assert(args);
 
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, "invalid arguments length for copy");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid arguments length for copy");
         return NULL;
     }
 
@@ -341,7 +341,7 @@ builtin_assert(builtin_func_args_t *fargs) {
 
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, "len function need one argument");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "len function need one argument");
         return NULL;
     }
 
@@ -350,7 +350,7 @@ builtin_assert(builtin_func_args_t *fargs) {
 
     bool ok = parse_bool(ref_ast, arg);
     if (!ok) {
-        ast_pushb_error(ref_ast, "assertion error");
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "assertion error");
         return NULL;
     }
 

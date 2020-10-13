@@ -68,6 +68,21 @@
 #define viss(fmt) \
     if (ast->debug) fprintf(stderr, "viss: %d: " fmt "\n", __LINE__); \
 
+#undef pushb_error
+#define pushb_error(ast, tok, fmt, ...) { \
+        const char *fname = NULL; \
+        int32_t lineno = -1; \
+        const char *src = NULL; \
+        int32_t pos = 0; \
+        if (tok) { \
+            fname = tok->program_filename; \
+            lineno = tok->program_lineno; \
+            src = tok->program_source; \
+            pos = tok->program_source_pos; \
+        } \
+        errstack_pushb(ast->error_stack, fname, lineno, src, pos, fmt, ##__VA_ARGS__); \
+    }
+
 /*************
 * prototypes *
 *************/
@@ -167,6 +182,7 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -175,7 +191,7 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -250,6 +266,7 @@ cc_assign_list(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -258,7 +275,7 @@ cc_assign_list(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -310,12 +327,13 @@ cc_formula(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->assign_list); \
         ast_del_nodes(ast, cur->multi_assign); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -354,6 +372,7 @@ cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -362,7 +381,7 @@ cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -417,6 +436,7 @@ cc_test_list(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -425,7 +445,7 @@ cc_test_list(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -479,6 +499,7 @@ cc_call_args(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -487,7 +508,7 @@ cc_call_args(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -542,6 +563,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         cargs->is_in_loop = is_in_loop; \
         ast_del_nodes(ast, cur->init_formula); \
@@ -550,7 +572,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
         nodearr_del(cur->contents); \
         free(cur); \
         if (strlen(fmt)) { \
-            ast_pushb_error(ast, fmt, ##__VA_ARGS__); \
+            pushb_error(ast, curtok, fmt, ##__VA_ARGS__); \
         } \
         return_parse(NULL); \
     } \
@@ -829,10 +851,11 @@ cc_break_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -857,10 +880,11 @@ cc_continue_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -885,10 +909,11 @@ cc_return_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -924,10 +949,11 @@ cc_augassign(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -956,10 +982,11 @@ cc_identifier(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -984,10 +1011,11 @@ cc_string(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1013,6 +1041,7 @@ cc_simple_assign(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -1021,7 +1050,7 @@ cc_simple_assign(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1078,6 +1107,7 @@ cc_array_elems(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -1086,7 +1116,7 @@ cc_array_elems(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1159,11 +1189,12 @@ cc_array(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->array_elems); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1214,12 +1245,13 @@ cc_dict_elem(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->key_simple_assign); \
         ast_del_nodes(ast, cur->value_simple_assign); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1274,6 +1306,7 @@ cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -1282,7 +1315,7 @@ cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1354,11 +1387,12 @@ cc_dict(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->dict_elems); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1413,10 +1447,11 @@ cc_nil(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1438,10 +1473,11 @@ cc_digit(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1465,10 +1501,11 @@ cc_false_(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1491,10 +1528,11 @@ cc_true_(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1517,6 +1555,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->nil); \
         ast_del_nodes(ast, cur->true_); \
@@ -1528,7 +1567,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
         ast_del_nodes(ast, cur->identifier); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1626,12 +1665,13 @@ cc_factor(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->atom); \
         ast_del_nodes(ast, cur->formula); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1690,6 +1730,7 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -1698,7 +1739,7 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1755,6 +1796,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -1763,7 +1805,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1819,11 +1861,12 @@ cc_negative(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->chain); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -1860,6 +1903,7 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (int32_t i = 0; i < chain_nodes_len(cur->chain_nodes); ++i) { \
             chain_node_t *cn = chain_nodes_get(cur->chain_nodes, i); \
@@ -1868,7 +1912,7 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
         } \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2012,7 +2056,7 @@ cc_dot(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2084,7 +2128,7 @@ cc_call(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->call_args_list); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2157,7 +2201,7 @@ cc_dot_op(ast_t *ast, cc_args_t *cargs) {
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2192,7 +2236,7 @@ cc_index(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2256,10 +2300,11 @@ cc_mul_div_op(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2286,10 +2331,11 @@ cc_add_sub_op(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2316,6 +2362,7 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -2324,7 +2371,7 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2380,10 +2427,11 @@ cc_comp_op(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2432,6 +2480,7 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -2440,7 +2489,7 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2497,12 +2546,13 @@ cc_not_test(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->not_test); \
         ast_del_nodes(ast, cur->comparison); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2546,6 +2596,7 @@ cc_and_test(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -2554,7 +2605,7 @@ cc_and_test(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2608,6 +2659,7 @@ cc_or_test(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -2616,7 +2668,7 @@ cc_or_test(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2669,11 +2721,12 @@ cc_test(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->or_test); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2699,11 +2752,12 @@ cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         nodearr_del(cur->contents); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2801,6 +2855,7 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->test); \
         nodearr_del(cur->contents); \
@@ -2808,7 +2863,7 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
         ast_del_nodes(ast, cur->else_stmt); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -2967,12 +3022,13 @@ cc_import_as_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->path); \
         ast_del_nodes(ast, cur->alias); \
         free(cur); \
         if (strlen(fmt)) { \
-            ast_pushb_error(ast, fmt, ##__VA_ARGS__); \
+            pushb_error(ast, curtok, fmt, ##__VA_ARGS__); \
         } \
         return_parse(NULL); \
     } \
@@ -3023,12 +3079,13 @@ cc_import_var(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->identifier); \
         ast_del_nodes(ast, cur->alias); \
         free(cur); \
         if (strlen(fmt)) { \
-            ast_pushb_error(ast, fmt, ##__VA_ARGS__); \
+            pushb_error(ast, curtok, fmt, ##__VA_ARGS__); \
         } \
         return_parse(NULL); \
     } \
@@ -3081,6 +3138,7 @@ cc_import_vars(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (int32_t i = 0; i < nodearr_len(cur->nodearr); ++i) { \
             node_t *node = nodearr_get(cur->nodearr, i); \
@@ -3089,7 +3147,7 @@ cc_import_vars(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->nodearr); \
         free(cur); \
         if (strlen(fmt)) { \
-            ast_pushb_error(ast, fmt, ##__VA_ARGS__); \
+            pushb_error(ast, curtok, fmt, ##__VA_ARGS__); \
         } \
         return_parse(NULL); \
     } \
@@ -3188,12 +3246,13 @@ cc_from_import_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->path); \
         ast_del_nodes(ast, cur->import_vars); \
         free(cur); \
         if (strlen(fmt)) { \
-            ast_pushb_error(ast, fmt, ##__VA_ARGS__); \
+            pushb_error(ast, curtok, fmt, ##__VA_ARGS__); \
         } \
         return_parse(NULL); \
     } \
@@ -3246,12 +3305,13 @@ cc_import_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->import_as_stmt); \
         ast_del_nodes(ast, cur->from_import_stmt); \
         free(cur); \
         if (strlen(fmt)) { \
-            ast_pushb_error(ast, fmt, ##__VA_ARGS__); \
+            pushb_error(ast, curtok, fmt, ##__VA_ARGS__); \
         } \
         return_parse(NULL); \
     } \
@@ -3307,6 +3367,7 @@ cc_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->import_stmt); \
         ast_del_nodes(ast, cur->if_stmt); \
@@ -3316,7 +3377,7 @@ cc_stmt(ast_t *ast, cc_args_t *cargs) {
         ast_del_nodes(ast, cur->return_stmt); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -3411,6 +3472,7 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->identifier); \
         for (int32_t i = 0; i < nodearr_len(cur->contents); ++i) { \
@@ -3420,7 +3482,7 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->contents); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -3490,6 +3552,7 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->identifier); \
         for (int32_t i = 0; i < nodearr_len(cur->contents); ++i) { \
@@ -3499,7 +3562,7 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
         nodearr_del(cur->contents); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -3562,12 +3625,13 @@ cc_struct(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg, ...) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->identifier); \
         ast_del_nodes(ast, cur->elems); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg, ##__VA_ARGS__); \
+            pushb_error(ast, curtok, msg, ##__VA_ARGS__); \
         } \
         return_parse(NULL); \
     } \
@@ -3627,12 +3691,13 @@ cc_content(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->elems); \
         ast_del_nodes(ast, cur->blocks); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -3681,6 +3746,7 @@ cc_elems(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->def); \
         ast_del_nodes(ast, cur->stmt); \
@@ -3689,7 +3755,7 @@ cc_elems(ast_t *ast, cc_args_t *cargs) {
         ast_del_nodes(ast, cur->elems); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -3785,11 +3851,12 @@ cc_ref_block(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->formula); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -3833,11 +3900,12 @@ cc_code_block(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->elems); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -3967,11 +4035,12 @@ cc_def(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->func_def); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -4000,6 +4069,7 @@ cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->identifiers); ) { \
             node_t *node = nodearr_popb(cur->identifiers); \
@@ -4007,7 +4077,7 @@ cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
         } \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -4063,11 +4133,12 @@ cc_func_def_params(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->func_def_args); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -4111,11 +4182,12 @@ cc_func_extends(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->identifier); \
         free(cur); \
         if (strlen(msg)) { \
-            ast_pushb_error(ast, msg); \
+            pushb_error(ast, curtok, msg); \
         } \
         return_parse(NULL); \
     } \
@@ -4153,6 +4225,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt) { \
+        token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         cargs->is_in_loop = is_in_loop; \
         cargs->is_in_func = is_in_func; \
@@ -4164,7 +4237,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
         nodearr_del_without_nodes(cur->contents); \
         free(cur); \
         if (strlen(fmt)) { \
-            ast_pushb_error(ast, fmt); \
+            pushb_error(ast, curtok, fmt); \
         } \
         return_parse(NULL); \
     } \

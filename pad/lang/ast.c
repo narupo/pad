@@ -527,10 +527,27 @@ ast_set_debug(ast_t *self, bool debug) {
 }
 
 void
-ast_trace_error_stack(const ast_t *self, FILE *fout) {
+ast_trace_error_tokens(const ast_t *self, FILE *fout) {
     if (!self || !fout) {
         return;
     }
+
+    if (!self->error_tokens_pos) {
+        return;
+    }
+
+    token_t *token = self->error_tokens[0];
+    // TODO: fix me!
+    fprintf(fout, "[%s] pos[%d]\n", token->program_source, token->program_source_pos);
+}
+
+void
+ast_trace_error(const ast_t *self, FILE *fout) {
+    if (!self || !fout) {
+        return;
+    }
+
+    ast_trace_error_tokens(self, fout);
     errstack_trace(self->error_stack, fout);
 }
 
@@ -589,4 +606,18 @@ ast_prev_ptr(ast_t *self) {
 gc_t *
 ast_get_ref_gc(ast_t *self) {
     return self->ref_gc;
+}
+
+ast_t *
+ast_pushb_error_token(ast_t *self, token_t *ref_token) {
+    if (!self || !ref_token) {
+        return NULL;
+    }
+
+    if (self->error_tokens_pos >= AST_ERR_TOKENS_SIZE) {
+        return NULL;
+    }
+
+    self->error_tokens[self->error_tokens_pos++] = ref_token;
+    return self;
 }

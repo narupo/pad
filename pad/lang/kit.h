@@ -52,3 +52,6 @@ kit_getc_error_stack(const kit_t *self);
 
 void
 kit_clear_context_buffer(kit_t *self);
+
+void
+kit_trace_error(const kit_t *self, FILE *fout);

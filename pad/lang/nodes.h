@@ -10,6 +10,7 @@
 #include <pad/lang/node_dict.h>
 #include <pad/lang/node_array.h>
 #include <pad/lang/chain_nodes.h>
+#include <pad/lang/tokens.h>
 
 /*************
 * node types *
@@ -129,6 +130,7 @@ typedef enum {
 struct node {
     node_type_t type;
     void *real;
+    token_t *token;
 };
 
 typedef struct {

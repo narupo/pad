@@ -78,10 +78,17 @@ typedef enum {
     TOKEN_TYPE_TRUE, // 'true'
 } token_type_t;
 
+/**
+ * abstract token
+ */
 typedef struct token {
-    token_type_t type;
-    char *text;
-    objint_t lvalue;
+    char *text;  // value of token text
+    const char *program_filename;  // pointer to program file name
+    const char *program_source;  // pointer to program source strings
+    int32_t program_lineno;  // program line number
+    int32_t program_source_pos;  // position of token in program source strings
+    token_type_t type;  // token type
+    objint_t lvalue;  // value of token value
 } token_t;
 
 /**
@@ -98,7 +105,13 @@ token_del(token_t *self);
  * @param[in] type number of token type
  */
 token_t *
-token_new(int type);
+token_new(
+    token_type_t type,
+    const char *program_filename,
+    int32_t program_lineno,
+    const char *program_source,
+    int32_t program_source_pos
+);
 
 /**
  * copy constructor

@@ -9,10 +9,20 @@ token_del(token_t *self) {
 }
 
 token_t *
-token_new(int type) {
+token_new(
+    token_type_t type,
+    const char *program_filename,
+    int32_t program_lineno,
+    const char *program_source,
+    int32_t program_source_pos
+) {
     token_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->type = type;
+    self->program_filename = program_filename;
+    self->program_lineno = program_lineno;
+    self->program_source = program_source;
+    self->program_source_pos = program_source_pos;
 
     return self;
 }
