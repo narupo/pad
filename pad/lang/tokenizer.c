@@ -109,6 +109,7 @@ tkr_new(tokenizer_option_t *move_option) {
     self->buf = str_new();
     self->option = mem_move(move_option);
     self->debug = false;
+    self->program_lineno = 1;
 
     return self;
 }
@@ -487,6 +488,14 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
                 tkr_store_textblock(self);
                 tkr_move_token(self, mem_move(token));
                 m = 20;
+            } else if (c == '\r' && *self->ptr == '\n') {
+                tkr_next(self);
+                str_app(self->buf, "\r\n");
+                self->program_lineno++;
+            } else if ((c == '\r' && *self->ptr != '\n') ||
+                       (c == '\n')) {
+                str_pushb(self->buf, c);
+                self->program_lineno++;
             } else {
                 str_pushb(self->buf, c);
             }
@@ -513,9 +522,11 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
             } else if (c == '\r' && *self->ptr == '\n') {
                 tkr_next(self);
                 tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_NEWLINE)));
+                self->program_lineno++;
             } else if ((c == '\r' && *self->ptr != '\n') ||
                        (c == '\n')) {
                 tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_NEWLINE)));
+                self->program_lineno++;
             } else if (c == '@') {
                 tkr_prev(self);
                 token_t *token = tkr_read_atmark(self);
@@ -690,9 +701,11 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
             } else if (c == '\r' && *self->ptr == '\n') {
                 tkr_next(self);
                 tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_NEWLINE)));
+                self->program_lineno++;
             } else if ((c == '\r' && *self->ptr != '\n') ||
                        (c == '\n')) {
                 tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_NEWLINE)));
+                self->program_lineno++;
             } else {
                 pushb_error("syntax error. unsupported character \"%c\"", c);
                 goto fail;
@@ -701,9 +714,11 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
             if (c == '\r' && *self->ptr == '\n') {
                 tkr_next(self);
                 m = 10;
+                self->program_lineno++;
             } else if ((c == '\r' && *self->ptr != '\n') ||
                        (c == '\n')) {
                 m = 10;
+                self->program_lineno++;
             }
         } else if (m == 150) {  // found '/*' in {@ @}
             if (c == '*' && *self->ptr == '/') {
@@ -775,4 +790,9 @@ tkr_set_debug(tokenizer_t *self, bool debug) {
 void
 tkr_trace_error(const tokenizer_t *self, FILE *fout) {
     errstack_trace(self->error_stack, fout);
+}
+
+void
+tkr_set_program_filename(tokenizer_t *self, const char *program_filename) {
+    self->program_filename = program_filename;
 }
