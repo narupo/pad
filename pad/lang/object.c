@@ -87,8 +87,12 @@ obj_del(object_t *self) {
         chain_objs_del(self->chain.chain_objs);
         break;
     case OBJ_TYPE_MODULE:
-        str_del(self->module.name);
+        free(self->module.name);
         self->module.name = NULL;
+        free(self->module.program_filename);
+        self->module.program_filename = NULL;
+        free(self->module.program_source);
+        self->module.program_source = NULL;
         tkr_del(self->module.tokenizer);
         self->module.tokenizer = NULL;
         ast_del(self->module.ast);
@@ -183,7 +187,15 @@ obj_deep_copy(const object_t *other) {
         self->func.is_met = other->func.is_met;
         break;
     case OBJ_TYPE_MODULE:
-        self->module.name = str_deep_copy(other->module.name);
+        if (other->module.name) {
+            self->module.name = cstr_edup(other->module.name);
+        }
+        if (other->module.program_filename) {
+            self->module.program_filename = cstr_edup(other->module.program_filename);
+        }
+        if (other->module.program_source) {
+            self->module.program_source = cstr_edup(other->module.program_source);
+        }
         self->module.tokenizer = tkr_deep_copy(other->module.tokenizer);
         self->module.ast = ast_deep_copy(other->module.ast);
         self->module.context = ctx_deep_copy(other->module.context);
@@ -269,7 +281,15 @@ obj_shallow_copy(const object_t *other) {
         self->func.is_met = other->func.is_met;
         break;
     case OBJ_TYPE_MODULE:
-        self->module.name = str_shallow_copy(other->module.name);
+        if (other->module.name) {
+            self->module.name = cstr_edup(other->module.name);
+        }
+        if (other->module.program_filename) {
+            self->module.program_filename = cstr_edup(other->module.program_filename);
+        }
+        if (other->module.program_source) {
+            self->module.program_source = cstr_edup(other->module.program_source);
+        }
         self->module.tokenizer = tkr_shallow_copy(other->module.tokenizer);
         self->module.ast = ast_shallow_copy(other->module.ast);
         self->module.context = ctx_shallow_copy(other->module.context);
@@ -552,8 +572,6 @@ obj_new_module(gc_t *ref_gc) {
         return NULL;
     }
 
-    self->module.name = str_new();
-
     return self;
 }
 
@@ -627,6 +645,8 @@ object_t *
 obj_new_module_by(
     gc_t *ref_gc,
     const char *name,
+    const char *program_filename,
+    char *move_program_source,
     tokenizer_t *move_tkr,
     ast_t *move_ast,
     context_t *move_context,
@@ -635,15 +655,20 @@ obj_new_module_by(
     if (!ref_gc || !name || !move_tkr || !move_ast || !move_context) {
         return NULL;
     }
+    // allow program_filename, move_program_source is null
 
     object_t *self = obj_new(ref_gc, OBJ_TYPE_MODULE);
     if (!self) {
         return NULL;
     }
 
-    self->module.name = str_new();
-    str_set(self->module.name, name);
-
+    if (name) {
+        self->module.name = cstr_edup(name);
+    }
+    if (program_filename) {
+        self->module.program_filename = cstr_edup(program_filename);
+    }
+    self->module.program_source = mem_move(move_program_source);
     self->module.tokenizer = mem_move(move_tkr);
     self->module.ast = mem_move(move_ast);
     self->module.context = mem_move(move_context);
@@ -813,7 +838,7 @@ obj_dump(const object_t *self, FILE *fout) {
         fprintf(fout, "object.lvalue[%ld]\n", self->lvalue);
         break;
     case OBJ_TYPE_MODULE:
-        fprintf(fout, "object.module.name[%s]\n", str_getc(self->module.name));
+        fprintf(fout, "object.module.name[%s]\n", self->module.name);
         break;
     case OBJ_TYPE_ARRAY:
         objarr_dump(self->objarr, fout);
@@ -975,7 +1000,7 @@ obj_get_owners_method_owner(object_t *self) {
     return self->owners_method.owner;
 }
 
-const string_t *
+const char *
 obj_getc_mod_name(const object_t *self) {
     return self->module.name;
 }

@@ -1,0 +1,4 @@
+{@
+    import "samples/errors/module.pad" as mod
+    mod.func()
+@}

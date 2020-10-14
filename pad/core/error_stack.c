@@ -26,11 +26,13 @@ errelem_show(const errelem_t *self, FILE *fout) {
     char msg[ERRELEM_MESSAGE_SIZE] = {0};
     err_fix_text(msg, sizeof msg, self->message);
 
-    fprintf(fout, "%s: %d: %s\n",
-        self->program_filename,
-        self->program_lineno,
-        msg
-    );
+    const char *fname = self->program_filename;
+    int32_t lineno = self->program_lineno;
+    if (!fname) {
+        fname = "(filename is null)";
+    }
+
+    fprintf(fout, "%s: %d: %s\n", fname, lineno, msg);
 }
 
 void
