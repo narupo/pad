@@ -74,6 +74,28 @@
         assert(ast_has_errors(ast)); \
         assert(!strcmp(ast_getc_first_error_message(ast), hope)); \
     }
+#define check_fail_showbuf(code, hope) \
+    tkr_parse(tkr, code); \
+    { \
+        ast_clear(ast); \
+        cc_compile(ast, tkr_get_tokens(tkr)); \
+        ctx_clear(ctx); \
+        trv_traverse(ast, ctx); \
+        printf("%s\n", ast_getc_first_error_message(ast)); \
+        assert(ast_has_errors(ast)); \
+        assert(!strcmp(ast_getc_first_error_message(ast), hope)); \
+    }
+#define check_fail_trace(code, hope) \
+    tkr_parse(tkr, code); \
+    { \
+        ast_clear(ast); \
+        cc_compile(ast, tkr_get_tokens(tkr)); \
+        ctx_clear(ctx); \
+        trv_traverse(ast, ctx); \
+        ast_trace_error(ast, stderr); \
+        assert(ast_has_errors(ast)); \
+        assert(!strcmp(ast_getc_first_error_message(ast), hope)); \
+    }
 
 /********
 * utils *
@@ -24855,16 +24877,31 @@ test_trv_func_def_12(void) {
     trv_ready;
 
     check_ok("{@\n"
-        "def func():\n"
-        "   a = 1\n"
-        "   def inner():\n"
-        "       a += 1\n"
-        "       puts(a)\n"
-        "   end\n"
-        "   inner()\n"
-        "end\n"
-        "func()\n"
-        "@}", "2\n");
+    "def func():\n"
+    "   a = 1\n"
+    "   def inner():\n"
+    "       a += 1\n"
+    "       puts(a)\n"
+    "   end\n"
+    "   inner()\n"
+    "end\n"
+    "func()\n"
+    "@}", "2\n"
+    );
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_def_fail_0(void) {
+    trv_ready;
+
+    // TODO: fix me!
+    
+    check_ok("{@\n"
+    "def\n"
+    "@}", ""
+    );
 
     trv_cleanup;
 }
@@ -29312,6 +29349,7 @@ traverser_tests[] = {
     {"func_def_10", test_trv_func_def_10},
     {"func_def_11", test_trv_func_def_11},
     {"func_def_12", test_trv_func_def_12},
+    {"func_def_fail_0", test_trv_func_def_fail_0},
     {"func_met_0", test_trv_func_met_0},
     {"func_met_1", test_trv_func_met_1},
     {"func_met_2", test_trv_func_met_2},
