@@ -55,3 +55,6 @@ kit_clear_context_buffer(kit_t *self);
 
 void
 kit_trace_error(const kit_t *self, FILE *fout);
+
+void
+kit_trace_error_debug(const kit_t *self, FILE *fout);

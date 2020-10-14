@@ -71,7 +71,7 @@
 #undef pushb_error
 #define pushb_error(ast, tok, fmt, ...) { \
         const char *fname = NULL; \
-        int32_t lineno = -1; \
+        int32_t lineno = 0; \
         const char *src = NULL; \
         int32_t pos = 0; \
         if (tok) { \
