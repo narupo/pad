@@ -15,10 +15,13 @@ node_del(node_t *self) {
 }
 
 node_t *
-node_new(node_type_t type, void *real) {
+node_new(node_type_t type, void *real, const token_t *ref_token) {
     node_t *self = mem_ecalloc(1, sizeof(*self));
+
     self->type = type;
     self->real = real;
+    self->ref_token = ref_token;
+
     return self;
 }
 
@@ -595,4 +598,13 @@ node_dump(const node_t *self, FILE *fout) {
     fprintf(fout, "node_t\n");
     fprintf(fout, "type: %d\n", self->type);
     fprintf(fout, "real: %p\n", self->real);
+}
+
+const token_t *
+node_getc_ref_token(const node_t *self) {
+    if (!self) {
+        return NULL;
+    }
+
+    return self->ref_token;
 }
