@@ -231,13 +231,13 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         if (!*ast->ref_ptr) {
-            return_parse(node_new(NODE_TYPE_ASSIGN, cur, NULL));
+            return_parse(node_new(NODE_TYPE_ASSIGN, cur));
         }
 
         token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_OP_ASS) {
             ast->ref_ptr--;
-            node_t *node = node_new(NODE_TYPE_ASSIGN, cur, *ast->ref_ptr);
+            node_t *node = node_new(NODE_TYPE_ASSIGN, cur);
             return_parse(node);
         }
         check("read =");

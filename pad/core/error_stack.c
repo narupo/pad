@@ -226,7 +226,7 @@ show_trim_around(const errelem_t *elem, FILE *fout) {
     string_t *s = errstack_trim_around(elem->program_source, elem->program_source_pos);
     string_t *ss = str_indent(s, ' ', 1, 4);
     str_del(s);
-    fprintf(fout, "\n%s", str_getc(ss));
+    fprintf(fout, "%s\n", str_getc(ss));
     str_del(ss);
 }
 
