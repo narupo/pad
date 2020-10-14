@@ -32,12 +32,29 @@
 # include <windows.h>
 #endif
 
+/*********
+* macros *
+*********/
+
+#undef safe_free
+#define safe_free(ptr) \
+    free(ptr); \
+    ptr = NULL;
+
+/**********
+* numbers *
+**********/
+
 enum {
     SAFESYSTEM_DEFAULT = 1 << 0,
     SAFESYSTEM_EDIT = 1 << 1,
     SAFESYSTEM_DETACH = 1 << 2,
     SAFESYSTEM_UNSAFE = 1 << 3,
 };
+
+/************
+* functions *
+************/
 
 /**
  * Free allocate memory of argv.

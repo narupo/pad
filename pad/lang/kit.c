@@ -15,6 +15,7 @@ enum {
 
 struct kit {
     const config_t *ref_config;
+    char *program_source;
     tokenizer_t *tkr;
     ast_t *ast;
     gc_t *gc;
@@ -28,6 +29,7 @@ kit_del(kit_t *self) {
         return;
     }
 
+    free(self->program_source);
     tkr_del(self->tkr);
     ast_del(self->ast);
     ctx_del(self->ctx);
@@ -56,15 +58,18 @@ kit_compile_from_path(kit_t *self, const char *path) {
 
 kit_t *
 kit_compile_from_path_args(kit_t *self, const char *path, int argc, char *argv[]) {
-    char *src = file_readcp_from_path(path);
-    if (!src) {
+    if (self->program_source) {
+        safe_free(self->program_source);
+    }
+
+    self->program_source = file_readcp_from_path(path);
+    if (!self->program_source) {
         return NULL;
     }
 
-    kit_t *result = kit_compile_from_string_args(self, path, src, argc, argv);
+    kit_t *result = kit_compile_from_string_args(self, path, self->program_source, argc, argv);
     // allow null
 
-    free(src);
     return result;
 }
 
@@ -72,7 +77,7 @@ kit_t *
 kit_compile_from_string_args(
     kit_t *self,
     const char *path,
-    const char *str,
+    const char *src,
     int argc,
     char *argv[]
 ) {
@@ -93,7 +98,7 @@ kit_compile_from_string_args(
     }
 
     tkr_set_program_filename(self->tkr, program_filename);
-    tkr_parse(self->tkr, str);
+    tkr_parse(self->tkr, src);
     if (tkr_has_error_stack(self->tkr)) {
         const errstack_t *err = tkr_getc_error_stack(self->tkr);
         errstack_extendf_other(self->errstack, err);
