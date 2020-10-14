@@ -130,7 +130,7 @@ typedef enum {
 struct node {
     node_type_t type;
     void *real;
-    token_t *token;
+    token_t *ref_token;
 };
 
 typedef struct {
@@ -471,7 +471,7 @@ node_del(node_t *self);
  * @return pointer to dynamic allocate memory of node_t
  */
 node_t *
-node_new(node_type_t type, void *real);
+node_new(node_type_t type, void *real, const token_t *ref_token);
 
 /**
  * Deep copy
@@ -535,3 +535,6 @@ node_to_str(const node_t *self);
  */
 void
 node_dump(const node_t *self, FILE *fout);
+
+const token_t *
+node_getc_ref_token(const node_t *self);
