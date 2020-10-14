@@ -58,15 +58,17 @@
 #undef pushb_error
 #define pushb_error(ast, node, fmt, ...) { \
         const char *fname = NULL; \
-        int32_t lineno = -1; \
+        int32_t lineno = 0; \
         const char *src = NULL; \
         int32_t pos = 0; \
         if (node) { \
             const token_t *t = node_getc_ref_token(node); \
-            fname = t->program_filename; \
-            lineno = t->program_lineno; \
-            src = t->program_source; \
-            pos = t->program_source_pos; \
+            if (t) { \
+                fname = t->program_filename; \
+                lineno = t->program_lineno; \
+                src = t->program_source; \
+                pos = t->program_source_pos; \
+            } \
         } \
         errstack_pushb(ast->error_stack, fname, lineno, src, pos, fmt, ##__VA_ARGS__); \
     }
@@ -819,7 +821,7 @@ trv_if_stmt(ast_t *ast, trv_args_t *targs) {
             targs->depth = depth + 1;
             result = _trv_traverse(ast, targs);
             if (ast_has_errors(ast)) {
-                pushb_error(ast, targs->ref_node, "failed to execute contents in if-statement");
+                pushb_error(ast, node, "failed to execute contents in if-statement");
                 return_trav(NULL);
             }
         }
@@ -7550,7 +7552,7 @@ trv_calc_asscalc_add_ass_identifier_string(ast_t *ast, trv_args_t *targs) {
 
     switch (rhs->type) {
     default:
-        pushb_error(ast, targs->ref_node, "invalid right hand operand (%d)", rhs->type);
+        pushb_error(ast, NULL, "invalid right hand operand (%d)", rhs->type);
         return_trav(NULL);
         break;
     case OBJ_TYPE_UNICODE: {

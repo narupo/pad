@@ -9,7 +9,7 @@ enum {
 **********/
 
 void
-errelem_show_dev(const errelem_t *self, FILE *fout) {
+errelem_show_debug(const errelem_t *self, FILE *fout) {
     char msg[ERRELEM_MESSAGE_SIZE] = {0};
     err_fix_text(msg, sizeof msg, self->message);
 
@@ -29,7 +29,7 @@ errelem_show(const errelem_t *self, FILE *fout) {
     const char *fname = self->program_filename;
     int32_t lineno = self->program_lineno;
     if (!fname) {
-        fname = "(filename is null)";
+        fname = "(unknown module)";
     }
 
     fprintf(fout, "%s: %d: %s\n", fname, lineno, msg);
@@ -233,7 +233,7 @@ show_trim_around(const errelem_t *elem, FILE *fout) {
 }
 
 void
-errstack_trace(const errstack_t *self, FILE *fout) {
+_errstack_trace(const errstack_t *self, FILE *fout, bool debug) {
     if (!self || !self->len || !fout) {
         return;
     }
@@ -243,13 +243,27 @@ errstack_trace(const errstack_t *self, FILE *fout) {
     for (int32_t i = self->len - 1; i >= 0; --i) {
         const errelem_t *elem = &self->stack[i];
         fprintf(fout, "    ");
-        errelem_show(elem, fout);
+        if (debug) {
+            errelem_show_debug(elem, fout);
+        } else {
+            errelem_show(elem, fout);
+        }
     }
 
     fputs("\n", fout);
 
     const errelem_t *first = &self->stack[0];
     show_trim_around(first, fout);
+}
+
+void
+errstack_trace(const errstack_t *self, FILE *fout) {
+    _errstack_trace(self, fout, false);
+}
+
+void
+errstack_trace_debug(const errstack_t *self, FILE *fout) {
+    _errstack_trace(self, fout, true);
 }
 
 void

@@ -13,6 +13,7 @@
 struct opts {
     bool is_help;
     bool is_version;
+    bool is_debug;
 };
 
 /**
@@ -43,6 +44,7 @@ app_parse_opts(app_t *self) {
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"version", no_argument, 0, 'V'},
+        {"debug", no_argument, 0, 'd'},
         {0},
     };
 
@@ -54,7 +56,7 @@ app_parse_opts(app_t *self) {
     // parse options
     for (;;) {
         int optsindex;
-        int cur = getopt_long(self->argc, self->argv, "hV", longopts, &optsindex);
+        int cur = getopt_long(self->argc, self->argv, "hVd", longopts, &optsindex);
         if (cur == -1) {
             break;
         }
@@ -62,6 +64,7 @@ app_parse_opts(app_t *self) {
         switch (cur) {
         case 'h': self->opts.is_help = true; break;
         case 'V': self->opts.is_version = true; break;
+        case 'd': self->opts.is_debug = true; break;
         case '?':
         default:
             pusherr("invalid option");
@@ -215,6 +218,15 @@ app_init(app_t *self, int argc, char *argv[]) {
     return true;
 }
 
+static void
+trace(const app_t *self, const kit_t *kit, FILE *fout) {
+    if (self->opts.is_debug) {
+        kit_trace_error_debug(kit, fout);
+    } else {
+        kit_trace_error(kit, fout);
+    }
+}
+
 static int
 _app_run(app_t *self) {
     char *content = file_readcp(stdin);
@@ -229,7 +241,7 @@ _app_run(app_t *self) {
     ctx_set_use_buf(ctx, false);  // no use stdout/stderr buffer
 
     if (!kit_compile_from_string(kit, content)) {
-        kit_trace_error(kit, stderr);
+        trace(self, kit, stderr);
         pusherr("failed to compile from stdin");
         return 1;
     }
@@ -264,7 +276,7 @@ app_run_args(app_t *self) {
     ctx_set_use_buf(ctx, false);  // no use stdout/stderr buffer
     
     if (!kit_compile_from_path_args(kit, path, argc, argv)) {
-        kit_trace_error(kit, stderr);
+        trace(self, kit, stderr);
         pusherr("failed to compile \"%s\"", path);
         return 1;
     }

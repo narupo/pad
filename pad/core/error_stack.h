@@ -144,6 +144,9 @@ void
 errstack_trace(const errstack_t *self, FILE *fout);
 
 void
+errstack_trace_debug(const errstack_t *self, FILE *fout);
+
+void
 errstack_trace_simple(const errstack_t *self, FILE *fout);
 
 /**

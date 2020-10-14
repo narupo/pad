@@ -95,9 +95,8 @@ kit_compile_from_string_args(
     tkr_set_program_filename(self->tkr, program_filename);
     tkr_parse(self->tkr, str);
     if (tkr_has_error_stack(self->tkr)) {
-        fflush(stdout);
-        tkr_trace_error(self->tkr, stderr);
-        fflush(stderr);
+        const errstack_t *err = tkr_getc_error_stack(self->tkr);
+        errstack_extendf_other(self->errstack, err);
         return NULL;
     }
 
@@ -109,17 +108,15 @@ kit_compile_from_string_args(
 
     cc_compile(self->ast, tkr_get_tokens(self->tkr));
     if (ast_has_errors(self->ast)) {
-        fflush(stdout);
-        ast_trace_error(self->ast, stderr);
-        fflush(stderr);        
+        const errstack_t *err = ast_getc_error_stack(self->ast);
+        errstack_extendf_other(self->errstack, err);
         return NULL;
     }
 
     trv_traverse(self->ast, self->ctx);
     if (ast_has_errors(self->ast)) {
-        fflush(stdout);
-        ast_trace_error(self->ast, stderr);
-        fflush(stderr);
+        const errstack_t *err = ast_getc_error_stack(self->ast);
+        errstack_extendf_other(self->errstack, err);
         return NULL;
     }
 
@@ -168,9 +165,18 @@ kit_get_context(kit_t *self) {
 
 void
 kit_trace_error(const kit_t *self, FILE *fout) {
-    if (!self) {
+    if (!self || !fout) {
         return;
     }
 
     errstack_trace(self->errstack, fout);
+}
+
+void
+kit_trace_error_debug(const kit_t *self, FILE *fout) {
+    if (!self || !fout) {
+        return;
+    }
+
+    errstack_trace_debug(self->errstack, fout);
 }
