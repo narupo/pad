@@ -130,7 +130,7 @@ typedef enum {
 struct node {
     node_type_t type;
     void *real;
-    token_t *ref_token;
+    const token_t *ref_token;
 };
 
 typedef struct {

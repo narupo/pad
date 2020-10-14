@@ -9477,27 +9477,27 @@ trv_import_builtin_modules(ast_t *ast) {
 
     // builtin functions
     mod = builtin_module_new(ast->ref_config, ast->ref_gc);
-    objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
+    objdict_move(varmap, mod->module.name, mem_move(mod));
 
     // builtin unicode
     mod = builtin_unicode_module_new(ast->ref_config, ast->ref_gc);
-    objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
+    objdict_move(varmap, mod->module.name, mem_move(mod));
 
     // builtin array
     mod = builtin_array_module_new(ast->ref_config, ast->ref_gc);
-    objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
+    objdict_move(varmap, mod->module.name, mem_move(mod));
 
     // builtin dict
     mod = builtin_dict_module_new(ast->ref_config, ast->ref_gc);
-    objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
+    objdict_move(varmap, mod->module.name, mem_move(mod));
 
     // builtin alias
     mod = builtin_alias_module_new(ast->ref_config, ast->ref_gc);
-    objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
+    objdict_move(varmap, mod->module.name, mem_move(mod));
 
     // builtin opts
     mod = builtin_opts_module_new(ast->ref_config, ast->ref_gc);
-    objdict_move(varmap, str_getc(mod->module.name), mem_move(mod));
+    objdict_move(varmap, mod->module.name, mem_move(mod));
 
     return ast;
 }

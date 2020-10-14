@@ -296,6 +296,8 @@ builtin_unicode_module_new(const config_t *ref_config, gc_t *ref_gc) {
     return obj_new_module_by(
         ref_gc,
         "__unicode__",
+        NULL,
+        NULL,
         mem_move(tkr),
         mem_move(ast),
         mem_move(ctx),

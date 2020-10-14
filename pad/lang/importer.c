@@ -115,14 +115,15 @@ create_modobj(
 
     object_t *modobj = obj_new_module_by(
         ref_gc,
-        path,
+        path,  // module name
+        path,  // program_filename
+        mem_move(src),  // program_source
         mem_move(tkr),
         mem_move(ast),
         mem_move(ctx),
         NULL
     );
 
-    free(src);
     return modobj;
 }
 
@@ -228,7 +229,7 @@ importer_from_import(
 
     // assign imported module at global varmap of current context
     obj_inc_ref(modobj);
-    objdict_move(dst_varmap, str_getc(modobj->module.name), mem_move(modobj));
+    objdict_move(dst_varmap, modobj->module.name, mem_move(modobj));
 
     return self;
 }

@@ -268,7 +268,7 @@ again1:
     } break;
     case OBJ_TYPE_MODULE: {
         ref_context = own->module.context;
-        const char *modname = str_getc(obj_getc_mod_name(own));
+        const char *modname = obj_getc_mod_name(own);
         if (!(cstr_eq(modname, "__builtin__") ||
                 cstr_eq(modname, "alias") ||
                 cstr_eq(modname, "opts"))) {

@@ -95,7 +95,9 @@ struct object_func {
  * A module object
  */
 struct object_module {
-    string_t *name;  // module name
+    char *name;  // module name
+    char *program_filename;
+    char *program_source;
     tokenizer_t *tokenizer;
     ast_t *ast;
     context_t *context;
@@ -447,6 +449,8 @@ object_t *
 obj_new_module_by(
     gc_t *ref_gc,
     const char *name,
+    const char *program_filename,
+    char *move_program_source,
     tokenizer_t *move_tkr,
     ast_t *move_ast,
     context_t *move_context,
@@ -711,5 +715,5 @@ obj_get_owners_method_owner(object_t *self);
  *
  * @return pointer to C strings
  */
-const string_t *
+const char *
 obj_getc_mod_name(const object_t *self);

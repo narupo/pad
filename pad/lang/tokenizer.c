@@ -70,7 +70,7 @@ tkropt_validate(tokenizer_option_t *self) {
 
 struct tokenizer {
     errstack_t *error_stack;
-    const char *program_filename;
+    char *program_filename;
     const char *program_source;
     const char *ptr;
     token_t **tokens;
@@ -84,16 +84,19 @@ struct tokenizer {
 
 void
 tkr_del(tokenizer_t *self) {
-    if (self) {
-        for (int32_t i = 0; i < self->tokens_len; ++i) {
-            token_del(self->tokens[i]);
-        }
-        free(self->tokens);
-        errstack_del(self->error_stack);
-        str_del(self->buf);
-        tkropt_del(self->option);
-        free(self);
+    if (!self) {
+        return;
     }
+
+    for (int32_t i = 0; i < self->tokens_len; ++i) {
+        token_del(self->tokens[i]);
+    }
+    free(self->program_filename);
+    free(self->tokens);
+    errstack_del(self->error_stack);
+    str_del(self->buf);
+    tkropt_del(self->option);
+    free(self);
 }
 
 tokenizer_t *
@@ -119,7 +122,9 @@ tkr_deep_copy(const tokenizer_t *other) {
     tokenizer_t *self = mem_ecalloc(1, sizeof(*self));
 
     self->error_stack = errstack_deep_copy(other->error_stack);
-    self->program_filename = other->program_filename;
+    if (other->program_filename) {
+        self->program_filename = cstr_edup(other->program_filename);
+    }
     self->program_lineno = other->program_lineno;
     self->program_source = other->program_source;
     self->ptr = other->ptr;
@@ -794,5 +799,5 @@ tkr_trace_error(const tokenizer_t *self, FILE *fout) {
 
 void
 tkr_set_program_filename(tokenizer_t *self, const char *program_filename) {
-    self->program_filename = program_filename;
+    self->program_filename = cstr_edup(program_filename);
 }
