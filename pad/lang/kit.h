@@ -30,7 +30,7 @@ kit_t *
 kit_compile_from_string(kit_t *self, const char *str);
 
 kit_t *
-kit_compile_from_string_args(kit_t *self, const char *str, int argc, char *argv[]);
+kit_compile_from_string_args(kit_t *self, const char *path, const char *str, int argc, char *argv[]);
 
 const char *
 kit_getc_stdout_buf(const kit_t *self);

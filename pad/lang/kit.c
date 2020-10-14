@@ -61,7 +61,7 @@ kit_compile_from_path_args(kit_t *self, const char *path, int argc, char *argv[]
         return NULL;
     }
 
-    kit_t *result = kit_compile_from_string_args(self, src, argc, argv);
+    kit_t *result = kit_compile_from_string_args(self, path, src, argc, argv);
     // allow null
 
     free(src);
@@ -69,9 +69,20 @@ kit_compile_from_path_args(kit_t *self, const char *path, int argc, char *argv[]
 }
 
 kit_t *
-kit_compile_from_string_args(kit_t *self, const char *str, int argc, char *argv[]) {
+kit_compile_from_string_args(
+    kit_t *self,
+    const char *path,
+    const char *str,
+    int argc,
+    char *argv[]
+) {
     errstack_clear(self->errstack);
     opts_t *opts = NULL;
+
+    const char *program_filename = path;
+    if (!program_filename) {
+        program_filename = "stdin";
+    }
 
     if (argv) {
         opts = opts_new();
@@ -81,6 +92,7 @@ kit_compile_from_string_args(kit_t *self, const char *str, int argc, char *argv[
         }
     }
 
+    tkr_set_program_filename(self->tkr, program_filename);
     tkr_parse(self->tkr, str);
     if (tkr_has_error_stack(self->tkr)) {
         fflush(stdout);
@@ -116,7 +128,7 @@ kit_compile_from_string_args(kit_t *self, const char *str, int argc, char *argv[
 
 kit_t *
 kit_compile_from_string(kit_t *self, const char *str) {
-    return kit_compile_from_string_args(self, str, 0, NULL);
+    return kit_compile_from_string_args(self, NULL, str, 0, NULL);
 }
 
 void

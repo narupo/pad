@@ -9,15 +9,26 @@ enum {
 **********/
 
 void
-errelem_show(const errelem_t *self, FILE *fout) {
+errelem_show_dev(const errelem_t *self, FILE *fout) {
     char msg[ERRELEM_MESSAGE_SIZE] = {0};
-
     err_fix_text(msg, sizeof msg, self->message);
 
     fprintf(fout, "%s: %d: %s: %s\n",
         self->filename,
         self->lineno,
         self->funcname,
+        msg
+    );
+}
+
+void
+errelem_show(const errelem_t *self, FILE *fout) {
+    char msg[ERRELEM_MESSAGE_SIZE] = {0};
+    err_fix_text(msg, sizeof msg, self->message);
+
+    fprintf(fout, "%s: %d: %s\n",
+        self->program_filename,
+        self->program_lineno,
         msg
     );
 }
@@ -197,7 +208,6 @@ errstack_trim_around(const char *src, int32_t pos) {
     for (int32_t i = 0; i < len; ++i) {
         if (i == curspos) {
             str_pushb(s, '^');
-            str_pushb(s, '\n');
             break;
         } else {
             str_pushb(s, ' ');
@@ -209,7 +219,7 @@ errstack_trim_around(const char *src, int32_t pos) {
 
 static void
 show_trim_around(const errelem_t *elem, FILE *fout) {
-    if (!elem) {
+    if (!elem || !elem->program_source) {
         return;
     }
 
@@ -233,6 +243,8 @@ errstack_trace(const errstack_t *self, FILE *fout) {
         fprintf(fout, "    ");
         errelem_show(elem, fout);
     }
+
+    fputs("\n", fout);
 
     const errelem_t *first = &self->stack[0];
     show_trim_around(first, fout);
