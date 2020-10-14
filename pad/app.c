@@ -219,7 +219,7 @@ app_init(app_t *self, int argc, char *argv[]) {
 }
 
 static void
-trace(const app_t *self, const kit_t *kit, FILE *fout) {
+trace_kit(const app_t *self, const kit_t *kit, FILE *fout) {
     if (self->opts.is_debug) {
         kit_trace_error_debug(kit, fout);
     } else {
@@ -236,12 +236,11 @@ _app_run(app_t *self) {
     }
 
     kit_t *kit = kit_new(self->config);
-
     context_t *ctx = kit_get_context(kit);
     ctx_set_use_buf(ctx, false);  // no use stdout/stderr buffer
 
     if (!kit_compile_from_string(kit, content)) {
-        trace(self, kit, stderr);
+        trace_kit(self, kit, stderr);
         pusherr("failed to compile from stdin");
         return 1;
     }
@@ -251,7 +250,6 @@ _app_run(app_t *self) {
 
     kit_del(kit);
     free(content);
-
     return 0;
 }
 
@@ -271,20 +269,16 @@ app_run_args(app_t *self) {
     }
 
     kit_t *kit = kit_new(self->config);
-
     context_t *ctx = kit_get_context(kit);
     ctx_set_use_buf(ctx, false);  // no use stdout/stderr buffer
     
     if (!kit_compile_from_path_args(kit, path, argc, argv)) {
-        trace(self, kit, stderr);
+        trace_kit(self, kit, stderr);
         pusherr("failed to compile \"%s\"", path);
         return 1;
     }
 
-    printf("%s", kit_getc_stdout_buf(kit));
     fflush(stdout);
-
-    fprintf(stderr, "%s", kit_getc_stderr_buf(kit));
     fflush(stderr);
 
     kit_del(kit);
