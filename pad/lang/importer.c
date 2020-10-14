@@ -36,38 +36,24 @@ importer_getc_error(const importer_t *self) {
 }
 
 static char *
-read_source(importer_t *self, const char *cap_path) {
-    // create path of module
-    char path[FILE_NPATH];
-    snprintf(path, sizeof path, "%s", cap_path);  // TODO
-
-    // check path
-    if (!file_exists(path)) {
-        // create path of standard libraries
-        // will read source from standard library module
-        if (!file_solvefmt(
-                path,
-                sizeof path,
-                "%s/%s",
-                self->ref_config->std_lib_dir_path, cap_path
-        )) {
-            importer_set_error(self, "failed to solve path for standard library");
-            return NULL;
-        }
-        if (!file_exists(path)) {
-            importer_set_error(self, "\"%s\" is not found", cap_path);
-            return NULL;
-        }
-    }
-
-    // read source of path of module
-    char *src = file_readcp_from_path(path);
-    if (!src) {
-        importer_set_error(self, "failed to read content from \"%s\"", path);
+fix_path(importer_t *self, char *dst, int32_t dstsz, const char *path) {
+    if (!dst || dstsz <= 0 || !path) {
+        importer_set_error(self, "invalid arguments");
         return NULL;
     }
 
-    return src;
+    if (file_exists(path)) {
+        snprintf(dst, dstsz, "%s", path);
+        return dst;
+    }
+
+    if (!file_solvefmt(dst, sizeof dst, "%s/%s", self->ref_config->std_lib_dir_path, path
+    )) {
+        importer_set_error(self, "failed to solve path for standard library");
+        return NULL;
+    }
+
+    return dst;
 }
 
 static object_t *
@@ -75,10 +61,23 @@ create_modobj(
     importer_t *self,
     gc_t *ref_gc,
     const ast_t *ref_ast,
-    const char *cap_path
+    const char *path
 ) {
-    char *src = read_source(self, cap_path);
+    // read source
+    char src_path[FILE_NPATH];
+    if (!fix_path(self, src_path, sizeof src_path, path)) {
+        importer_set_error(self, "failed to fix path from \"%s\"", path);
+        return NULL; 
+    }
+
+    if (!file_exists(src_path)) {
+        importer_set_error(self, "\"%s\" is not found", src_path);
+        return NULL;
+    }
+
+    char *src = file_readcp_from_path(src_path);
     if (!src) {
+        importer_set_error(self, "failed to read content from \"%s\"", src_path);
         return NULL;
     }
 
@@ -91,6 +90,7 @@ create_modobj(
     ast->import_level = ref_ast->import_level + 1;
     ast->debug = ref_ast->debug;
 
+    tkr_set_program_filename(tkr, src_path);
     tkr_parse(tkr, src);
     if (tkr_has_error_stack(tkr)) {
         importer_set_error(self, tkr_getc_first_error_message(tkr));
@@ -115,7 +115,7 @@ create_modobj(
 
     object_t *modobj = obj_new_module_by(
         ref_gc,
-        cap_path,
+        path,
         mem_move(tkr),
         mem_move(ast),
         mem_move(ctx),
@@ -132,7 +132,7 @@ importer_import_as(
     gc_t *ref_gc,
     const ast_t *ref_ast,
     context_t *dstctx,
-    const char *cap_path,
+    const char *path,
     const char *alias
 ) {
     self->error[0] = '\0';
@@ -141,7 +141,7 @@ importer_import_as(
         self,
         ref_gc,
         ref_ast,
-        cap_path
+        path
     );
     if (!modobj) {
         return NULL;
@@ -160,7 +160,7 @@ importer_from_import(
     gc_t *ref_gc,
     const ast_t *ref_ast,
     context_t *dstctx,
-    const char *cap_path,
+    const char *path,
     object_array_t *vars   // import_vars
 ) {
     self->error[0] = '\0';
@@ -169,7 +169,7 @@ importer_from_import(
         self,
         ref_gc,
         ref_ast,
-        cap_path
+        path
     );
     if (!modobj) {
         return NULL;
@@ -211,7 +211,7 @@ importer_from_import(
         if (!objinmod) {
             importer_set_error(self,
                 "\"%s\" is can't import from module \"%s\"",
-                objname, cap_path
+                objname, path
             );
             obj_del(modobj);
             return NULL;

@@ -29822,7 +29822,7 @@ test_errstack_trim_around(void) {
     assert(s);
     assert(!strcmp(str_getc(s),
 "the source strings\n"
-"         ^\n"));
+"         ^"));
 
     errstack_del(stack);
 }
