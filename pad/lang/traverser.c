@@ -7568,11 +7568,21 @@ trv_calc_asscalc_add_ass_identifier_string(ast_t *ast, trv_args_t *targs) {
     assert(lhs && rhs && idn);
     assert(lhs->type == OBJ_TYPE_UNICODE);
 
+again:
     switch (rhs->type) {
     default:
-        pushb_error(ast, NULL, "invalid right hand operand (%d)", rhs->type);
+        pushb_error(ast, targs->ref_node, "invalid right hand operand (%d)", rhs->type);
         return_trav(NULL);
         break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(rhs);
+        rhs = pull_in_ref_by(rhs);
+        if (!rhs) {
+            pushb_error(ast, targs->ref_node, "not found \"%s\"", idn);
+            return_trav(NULL);
+        }
+        goto again;
+    } break;
     case OBJ_TYPE_UNICODE: {
         unicode_t *dst = uni_deep_copy(lhs->unicode);
         uni_app(dst, uni_getc(rhs->unicode));
