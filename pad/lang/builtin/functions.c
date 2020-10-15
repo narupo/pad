@@ -16,7 +16,7 @@ builtin_id(builtin_func_args_t *fargs) {
     object_t *obj = objarr_get(args, 0);
     assert(obj);
 
-    obj = extract_ref_of_obj(ref_ast, obj);
+    obj = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
     if (ast_has_errors(ref_ast)) {
         return NULL;
     }
@@ -120,7 +120,7 @@ builtin_eputs(builtin_func_args_t *fargs) {
     for (int32_t i = 0; i < arrlen-1; ++i) {
         object_t *obj = objarr_get(args, i);
         assert(obj);
-        object_t *ref = extract_ref_of_obj(ref_ast, obj);
+        object_t *ref = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
         string_t *s = obj_to_string(ref_ast->error_stack, ref);
         if (!s) {
             continue;
@@ -132,7 +132,7 @@ builtin_eputs(builtin_func_args_t *fargs) {
     if (arrlen) {
         object_t *obj = objarr_get(args, arrlen-1);
         assert(obj);
-        object_t *ref = extract_ref_of_obj(ref_ast, obj);
+        object_t *ref = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
         string_t *s = obj_to_string(ref_ast->error_stack, ref);
         if (!s) {
             goto done;
@@ -169,7 +169,7 @@ builtin_puts(builtin_func_args_t *fargs) {
     for (int32_t i = 0; i < arrlen-1; ++i) {
         object_t *obj = objarr_get(args, i);
         assert(obj);
-        object_t *ref = extract_ref_of_obj(ref_ast, obj);
+        object_t *ref = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
         if (ast_has_errors(ref_ast)) {
             ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to get argument");
             return NULL;
@@ -185,7 +185,7 @@ builtin_puts(builtin_func_args_t *fargs) {
     if (arrlen) {
         object_t *obj = objarr_get(args, arrlen-1);
         assert(obj);
-        object_t *ref = extract_ref_of_obj(ref_ast, obj);
+        object_t *ref = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
         if (ast_has_errors(ref_ast)) {
             ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to get argument");
             return NULL;
@@ -348,7 +348,7 @@ builtin_assert(builtin_func_args_t *fargs) {
     object_t *arg = objarr_get(args, 0);
     assert(arg);
 
-    bool ok = parse_bool(ref_ast, arg);
+    bool ok = parse_bool(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, arg);
     if (!ok) {
         ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "assertion error");
         return NULL;

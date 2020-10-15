@@ -16744,7 +16744,7 @@ static void
 test_trv_builtin_functions_assert_1(void) {
     trv_ready;
 
-    check_ok("{@ assert(1) @}", "");
+    check_ok_trace("{@ assert(1) @}", "");
 
     trv_cleanup;
 }

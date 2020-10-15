@@ -1,5 +1,13 @@
 #include <pad/lang/utils.h>
 
+/*********
+* macros *
+*********/
+
+#undef pushb_error
+#define pushb_error(fmt, ...) \
+    pushb_error_node(err, ref_node, fmt, ##__VA_ARGS__)
+
 /*************
 * prototypes *
 *************/
@@ -11,7 +19,16 @@ ast_t *
 trv_import_builtin_modules(ast_t *ast);
 
 static object_t *
-invoke_func_obj(ast_t *ast, object_array_t *owns, object_t *func_obj, object_t *drtargs);
+invoke_func_obj(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_array_t *owns,  // TODO const
+    object_t *func_obj,
+    object_t *drtargs
+);
 
 static object_t *
 invoke_builtin_module_func(
@@ -381,11 +398,12 @@ again:
 
 static object_t *
 invoke_owner_func_obj(
-    ast_t *ast,
-    object_array_t *owns,
+    ast_t *ref_ast,
+    context_t *ref_context,
+    object_array_t *owns,  // TODO const
     object_t *drtargs
 ) {
-    if (!ast || !owns || !drtargs) {
+    if (!ref_ast || !ref_context || !owns || !drtargs) {
         return NULL;
     }
     if (!objarr_len(owns)) {
@@ -413,13 +431,13 @@ invoke_owner_func_obj(
         return NULL;
         break;
     case OBJ_TYPE_UNICODE:
-        mod = ctx_find_var_ref_all(ast->ref_context, "__unicode__");
+        mod = ctx_find_var_ref_all(ref_context, "__unicode__");
         break;
     case OBJ_TYPE_ARRAY:
-        mod = ctx_find_var_ref_all(ast->ref_context, "__array__");
+        mod = ctx_find_var_ref_all(ref_context, "__array__");
         break;
     case OBJ_TYPE_DICT:
-        mod = ctx_find_var_ref_all(ast->ref_context, "__dict__");
+        mod = ctx_find_var_ref_all(ref_context, "__dict__");
         break;
     case OBJ_TYPE_MODULE: {
         mod = own;
@@ -431,7 +449,7 @@ invoke_owner_func_obj(
     }
     assert(mod->type == OBJ_TYPE_MODULE);
 
-    return invoke_builtin_module_func(ast, owns, mod, funcname, drtargs);
+    return invoke_builtin_module_func(ref_ast, owns, mod, funcname, drtargs);
 }
 
 static object_t *
@@ -467,7 +485,14 @@ invoke_builtin_module_func(
 }
 
 static object_t *
-copy_func_args(ast_t *ast, object_t *drtargs) {
+copy_func_args(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *drtargs
+) {
     assert(drtargs->type == OBJ_TYPE_ARRAY);
     object_array_t *dstarr = objarr_new();
     object_array_t *srcarr = drtargs->objarr;
@@ -494,9 +519,9 @@ copy_func_args(ast_t *ast, object_t *drtargs) {
             savearg = arg;
             break;
         case OBJ_TYPE_CHAIN:
-            arg = refer_chain_obj_with_ref(ast, arg);
-            if (ast_has_errors(ast)) {
-                ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to refer chain object");
+            arg = refer_chain_obj_with_ref(ref_ast, err, ref_gc, ref_context, ref_node, arg);
+            if (errstack_len(err)) {
+                pushb_error("failed to refer chain object");
                 return NULL;
             }
             goto again;
@@ -504,7 +529,7 @@ copy_func_args(ast_t *ast, object_t *drtargs) {
             const char *idn = obj_getc_idn_name(arg);
             arg = pull_in_ref_by(arg);
             if (!arg) {
-                ast_pushb_error(ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
+                pushb_error("\"%s\" is not defined", idn);
                 return NULL;
             }
             goto again;
@@ -515,7 +540,7 @@ copy_func_args(ast_t *ast, object_t *drtargs) {
         objarr_pushb(dstarr, savearg);
     }
 
-    return obj_new_array(ast->ref_gc, mem_move(dstarr));
+    return obj_new_array(ref_gc, mem_move(dstarr));
 }
 
 /**
@@ -523,8 +548,12 @@ copy_func_args(ast_t *ast, object_t *drtargs) {
  */
 static void
 extract_func_args(
-    ast_t *ast,
-    object_array_t *owns,
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_array_t *owns,  // TODO const
     object_t *func_obj,
     object_t *args
 ) {
@@ -543,7 +572,7 @@ extract_func_args(
     }
 
     if (objarr_len(formal_args) != objarr_len(actual_args)) {
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "arguments not same length");
+        pushb_error("arguments not same length");
         obj_del(args);
         ctx_popb_scope(func->ref_ast->ref_context);
         return;
@@ -558,32 +587,23 @@ extract_func_args(
         object_t *aarg = objarr_get(actual_args, i);
         object_t *ref_aarg = aarg;
         if (aarg->type == OBJ_TYPE_IDENTIFIER) {
-            // pull from current context's ast
             ref_aarg = pull_in_ref_by(aarg);
             if (!ref_aarg) {
-                ast_pushb_error(
-                    ast,
-                    NULL,
-                    0,
-                    NULL,
-                    0,
-                    "\"%s\" is not defined in invoke function",
-                    obj_getc_idn_name(aarg)
-                );
+                pushb_error("\"%s\" is not defined in invoke function", obj_getc_idn_name(aarg));
                 obj_del(args);
                 return;
             }
         }
 
         // extract reference from current context
-        object_t *extract_arg = extract_ref_of_obj(ast, ref_aarg);
-        if (ast_has_errors(ast)) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to extract reference");
+        object_t *extract_arg = extract_ref_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, ref_aarg);
+        if (errstack_len(err)) {
+            pushb_error("failed to extract reference");
             return;
         }
 
         set_ref_at_cur_varmap(
-            ast->error_stack,
+            err,
             func->ref_ast->ref_context,
             owns,
             fargname,
@@ -593,7 +613,7 @@ extract_func_args(
 }
 
 static object_t *
-exec_func_suites(ast_t *ast, object_t *func_obj) {
+exec_func_suites(errstack_t *err, object_t *func_obj) {
     object_func_t *func = &func_obj->func;
     object_t *result = NULL;
 
@@ -605,7 +625,7 @@ exec_func_suites(ast_t *ast, object_t *func_obj) {
             .func_obj = func_obj,
         });
         if (ast_has_errors(func->ref_ast)) {
-            errstack_extendb_other(ast->error_stack, func->ref_ast->error_stack);
+            errstack_extendb_other(err, func->ref_ast->error_stack);
             return NULL;
         }
         if (ctx_get_do_return(func->ref_ast->ref_context)) {
@@ -618,8 +638,12 @@ exec_func_suites(ast_t *ast, object_t *func_obj) {
 
 static object_t *
 invoke_func_obj(
-    ast_t *ast,
-    object_array_t *owns,
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_array_t *owns,  // TODO const
     object_t *func_obj,
     object_t *drtargs
 ) {
@@ -635,9 +659,9 @@ invoke_func_obj(
 
     object_t *args = NULL;
     if (drtargs) {
-        args = copy_func_args(ast, drtargs);
-        if (ast_has_errors(ast)) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to copy function arguments");
+        args = copy_func_args(ref_ast, err, ref_gc, ref_context, ref_node, drtargs);
+        if (errstack_len(err)) {
+            pushb_error("failed to copy function arguments");
             return NULL;
         }
     }
@@ -652,7 +676,7 @@ invoke_func_obj(
     // this function has extends-function ? does set super ?
     if (func->extends_func) {
         set_ref_at_cur_varmap(
-            ast->error_stack,
+            err,
             func->ref_ast->ref_context,
             owns,
             "super",
@@ -661,17 +685,17 @@ invoke_func_obj(
     }
 
     // extract function arguments to function's varmap in current context
-    extract_func_args(ast, owns, func_obj, args);
-    if (ast_has_errors(ast)) {
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to extract function arguments");
+    extract_func_args(ref_ast, err, ref_gc, ref_context, ref_node, owns, func_obj, args);
+    if (errstack_len(err)) {
+        pushb_error("failed to extract function arguments");
         return NULL;
     }
     obj_del(args);
 
     // execute function suites
-    object_t *result = exec_func_suites(ast, func_obj);
-    if (ast_has_errors(ast)) {
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to execute function suites");
+    object_t *result = exec_func_suites(err, func_obj);
+    if (errstack_len(err)) {
+        pushb_error("failed to execute function suites");
         return NULL;
     }
 
@@ -683,7 +707,7 @@ invoke_func_obj(
 
     // done
     if (!result) {
-        return obj_new_nil(ast->ref_gc);
+        return obj_new_nil(ref_gc);
     }
 
     return result;
@@ -707,8 +731,12 @@ extract_idn_name(const object_t *obj) {
 
 static object_t *
 invoke_builtin_modules(
-    ast_t *ast,
-    object_array_t *owns,
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_array_t *owns,  // TODO const
     object_t *args
 ) {
     assert(args);
@@ -752,9 +780,9 @@ invoke_builtin_modules(
             goto again;
         } break;
         case OBJ_TYPE_CHAIN: {
-            ownpar = refer_chain_obj_with_ref(ast, ownpar);
+            ownpar = refer_chain_obj_with_ref(ref_ast, err, ref_gc, ref_context, ref_node, ownpar);
             if (!ownpar) {
-                ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to refer index");
+                pushb_error("failed to refer index");
                 return NULL;
             }
             goto again;
@@ -764,7 +792,6 @@ invoke_builtin_modules(
         bltin_mod_name = "__builtin__";
     }
 
-    context_t *ref_context = ast_get_ref_context(ast);
     if (!module) {
         module = ctx_find_var_ref_all(ref_context, bltin_mod_name);
         if (!module) {
@@ -776,7 +803,7 @@ invoke_builtin_modules(
     default: /* not error */ break;
     case OBJ_TYPE_MODULE: {
         object_t *result = invoke_builtin_module_func(
-            ast,
+            ref_ast,
             owns,
             module,
             funcname,
@@ -806,13 +833,17 @@ unpack_args(context_t *ctx, object_t *args) {
 
 static object_t *
 gen_struct(
-    ast_t *ast,
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    const node_t *ref_node,
     object_array_t *owns,
     object_t *drtargs
 ) {
-    if (!ast || !drtargs) {
+    if (!ref_ast || !err || !ref_gc || !drtargs) {
         return NULL;
     }
+
     object_t *own = objarr_get_last(owns);
     own = extract_idn(own);
     if (!own) {
@@ -824,13 +855,13 @@ gen_struct(
 
     context_t *context = ctx_deep_copy(own->def_struct.context);
     if (!unpack_args(context, drtargs)) {
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to unpack arguments for struct");
+        pushb_error("failed to unpack arguments for struct");
         return NULL;
     }
 
     return obj_new_object(
-        ast->ref_gc,
-        ast,
+        ref_gc,
+        ref_ast,
         mem_move(context)
     );
 }
@@ -880,50 +911,67 @@ again:
 }
 
 object_t *
-refer_chain_call(ast_t *ast, object_array_t *owns, chain_object_t *co) {
+refer_chain_call(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_array_t *owns,  // TODO: const
+    chain_object_t *co
+) {
+#define _invoke_func_obj(func_obj, actual_args) \
+    invoke_func_obj(ref_ast, err, ref_gc, ref_context, ref_node, owns, func_obj, actual_args)
+#define _invoke_builtin_modules(actual_args) \
+    invoke_builtin_modules(ref_ast, err, ref_gc, ref_context, ref_node, owns, actual_args)
+#define _invoke_owner_func_obj(actual_args) \
+    invoke_owner_func_obj(ref_ast, ref_context, owns, actual_args)
+#define _gen_struct(actual_args) \
+    gen_struct(ref_ast, err, ref_gc, ref_node, owns, actual_args)
+
     object_t *result = NULL;
     object_t *own = objarr_get_last(owns);
     if (!own) {
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "own is null");
+        pushb_error("own is null");
         return NULL;
     }
 
     object_t *actual_args = chain_obj_get_obj(co);
     if (actual_args->type != OBJ_TYPE_ARRAY) {
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "arguments isn't array");
+        pushb_error("arguments isn't array");
         return NULL;
     }
 
     object_t *func_obj = extract_func(own);
     if (func_obj) {
-        result = invoke_func_obj(ast, owns, func_obj, actual_args);
-        if (ast_has_errors(ast)) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to invoke func obj");
+        result = _invoke_func_obj(func_obj, actual_args);
+        if (errstack_len(err)) {
+            pushb_error("failed to invoke func obj");
             return NULL;
         } else if (result) {
             return result;
         }
     }
 
-    result = invoke_builtin_modules(ast, owns, actual_args);
-    if (ast_has_errors(ast)) {
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to invoke builtin modules");
+    result = _invoke_builtin_modules(actual_args);
+    if (errstack_len(err)) {
+        pushb_error("failed to invoke builtin modules");
         return NULL;
     } else if (result) {
         return result;
     }
 
-    result = invoke_owner_func_obj(ast, owns, actual_args);
-    if (ast_has_errors(ast)) {
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to invoke owner func obj");
+    result = _invoke_owner_func_obj(actual_args);
+    if (errstack_len(err)) {
+        pushb_error("failed to invoke owner func obj");
         return NULL;
     } else if (result) {
         return result;
     }
 
-    result = gen_struct(ast, owns, actual_args);
-    if (ast_has_errors(ast)) {
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to generate structure");
+    result = _gen_struct(actual_args);
+    if (errstack_len(err)) {
+        pushb_error("failed to generate structure");
         return NULL;
     } else if (result) {
         return result;
@@ -934,18 +982,24 @@ refer_chain_call(ast_t *ast, object_array_t *owns, chain_object_t *co) {
         idn = extract_own_meth_name(own);
     }
 
-    ast_pushb_error(ast, NULL, 0, NULL, 0, "can't call \"%s\"", idn);
+    pushb_error("can't call \"%s\"", idn);
     return NULL;
 }
 
 static object_t *
-refer_unicode_index(ast_t *ast, object_t *owner, object_t *indexobj) {
+refer_unicode_index(
+    errstack_t *err,
+    gc_t *ref_gc,
+    const node_t *ref_node,
+    object_t *owner,
+    object_t *indexobj
+) {
     assert(owner->type == OBJ_TYPE_UNICODE);
 
 again:
     switch (indexobj->type) {
     default:
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "index isn't integer");
+        pushb_error("index isn't integer");
         return NULL;
     case OBJ_TYPE_INT:
         // pass
@@ -954,7 +1008,7 @@ again:
         const char *idn = obj_getc_idn_name(indexobj);
         indexobj = pull_in_ref_by(indexobj);
         if (!indexobj) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
+            pushb_error("\"%s\" is not defined", idn);
             return NULL;
         }
         goto again;
@@ -967,23 +1021,28 @@ again:
     unicode_t *dst = uni_new();
 
     if (index < 0 || index >= u_len(cps)) {
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "index out of range");
+        pushb_error("index out of range");
         return NULL;
     }
 
     uni_pushb(dst, cps[index]);
 
-    return obj_new_unicode(ast->ref_gc, mem_move(dst));
+    return obj_new_unicode(ref_gc, mem_move(dst));
 }
 
 static object_t *
-refer_array_index(ast_t *ast, object_t *owner, object_t *indexobj) {
+refer_array_index(
+    errstack_t *err,
+    const node_t *ref_node,
+    object_t *owner,
+    object_t *indexobj
+) {
     assert(owner->type == OBJ_TYPE_ARRAY);
 
 again:
     switch (indexobj->type) {
     default:
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "index isn't integer");
+        pushb_error("index isn't integer");
         return NULL;
         break;
     case OBJ_TYPE_INT:
@@ -992,7 +1051,7 @@ again:
         const char *idn = obj_getc_idn_name(indexobj);
         indexobj = pull_in_ref_by(indexobj);
         if (!indexobj) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
+            pushb_error("\"%s\" is not defined", idn);
             return NULL;
         }
         goto again;
@@ -1003,7 +1062,7 @@ again:
     object_array_t *objarr = obj_get_array(owner);
 
     if (index < 0 || index >= objarr_len(objarr)) {
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "index out of range");
+        pushb_error("index out of range");
         return NULL;
     }
 
@@ -1014,13 +1073,18 @@ again:
 }
 
 static object_t *
-refer_dict_index(ast_t *ast, object_t *owner, object_t *indexobj) {
+refer_dict_index(
+    errstack_t *err, 
+    const node_t *ref_node,
+    object_t *owner,
+    object_t *indexobj
+) {
     assert(owner->type == OBJ_TYPE_DICT);
 
 again:
     switch (indexobj->type) {
     default:
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "index isn't string");
+        pushb_error("index isn't string");
         return NULL;
         break;
     case OBJ_TYPE_UNICODE:
@@ -1029,7 +1093,7 @@ again:
         const char *idn = obj_getc_idn_name(indexobj);
         indexobj = pull_in_ref_by(indexobj);
         if (!indexobj) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
+            pushb_error("\"%s\" is not defined", idn);
             return NULL;
         }
         goto again;
@@ -1043,7 +1107,7 @@ again:
 
     object_dict_item_t *item = objdict_get(objdict, ckey);
     if (!item) {
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "not found key \"%s\"", ckey);
+        pushb_error("not found key \"%s\"", ckey);
         return NULL;
     }
 
@@ -1051,10 +1115,16 @@ again:
 }
 
 static object_t *
-refer_chain_index(ast_t *ast, object_array_t *owns, chain_object_t *co) {
+refer_chain_index(
+    errstack_t *err,
+    gc_t *ref_gc,
+    const node_t *ref_node,
+    object_array_t *owns,
+    chain_object_t *co
+) {
     object_t *owner = objarr_get_last(owns);
     if (!owner) {
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "owner is null");
+        pushb_error("owner is null");
         return NULL;
     }
 
@@ -1063,26 +1133,26 @@ refer_chain_index(ast_t *ast, object_array_t *owns, chain_object_t *co) {
 again:
     switch (owner->type) {
     default:
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "not indexable (%d)", owner->type);
+        pushb_error("not indexable (%d)", owner->type);
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(owner);
         owner = pull_in_ref_by(owner);
         if (!owner) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
+            pushb_error("\"%s\" is not defined", idn);
             return NULL;
         }
         goto again;
     } break;
     case OBJ_TYPE_UNICODE:
-        return refer_unicode_index(ast, owner, indexobj);
+        return refer_unicode_index(err, ref_gc, ref_node, owner, indexobj);
         break;
     case OBJ_TYPE_ARRAY:
-        return refer_array_index(ast, owner, indexobj);
+        return refer_array_index(err, ref_node, owner, indexobj);
         break;
     case OBJ_TYPE_DICT:
-        return refer_dict_index(ast, owner, indexobj);
+        return refer_dict_index(err, ref_node, owner, indexobj);
         break;
     }
 
@@ -1091,34 +1161,36 @@ again:
 }
 
 object_t *
-refer_chain_three_objs(ast_t *ast, object_array_t *owns, chain_object_t *co) {
+refer_chain_three_objs(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_array_t *owns,
+    chain_object_t *co
+) {
     object_t *operand = NULL;
 
     switch (chain_obj_getc_type(co)) {
     case CHAIN_OBJ_TYPE_DOT: {
-        operand = refer_chain_dot(
-            ast->error_stack,
-            ast->ref_gc,
-            ast->ref_context,
-            owns,
-            co
-        );
-        if (ast_has_errors(ast)) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to refer chain dot");
+        operand = refer_chain_dot(err, ref_gc, ref_context, owns, co);
+        if (errstack_len(err)) {
+            pushb_error("failed to refer chain dot");
             return NULL;
         }
     } break;
     case CHAIN_OBJ_TYPE_CALL: {
-        operand = refer_chain_call(ast, owns, co);
-        if (ast_has_errors(ast)) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to refer chain call");
+        operand = refer_chain_call(ref_ast, err, ref_gc, ref_context, ref_node, owns, co);
+        if (errstack_len(err)) {
+            pushb_error("failed to refer chain call");
             return NULL;
         }
     } break;
     case CHAIN_OBJ_TYPE_INDEX: {
-        operand = refer_chain_index(ast, owns, co);
-        if (ast_has_errors(ast)) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to refer chain index");
+        operand = refer_chain_index(err, ref_gc, ref_node, owns, co);
+        if (errstack_len(err)) {
+            pushb_error("failed to refer chain index");
             return NULL;
         }
     } break;
@@ -1128,12 +1200,16 @@ refer_chain_three_objs(ast_t *ast, object_array_t *owns, chain_object_t *co) {
 }
 
 object_t *
-refer_chain_obj_with_ref(ast_t *ast, object_t *chain_obj) {
-    if (!ast) {
-        return NULL;
-    }
+refer_chain_obj_with_ref(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *chain_obj
+) {
     if (!chain_obj) {
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "chain object is null");
+        pushb_error("chain object is null");
         return NULL;
     }
 
@@ -1154,9 +1230,9 @@ refer_chain_obj_with_ref(ast_t *ast, object_t *chain_obj) {
         chain_object_t *co = chain_objs_get(cos, i);
         assert(co);
 
-        operand = refer_chain_three_objs(ast, owns, co);
-        if (ast_has_errors(ast)) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to refer three objects");
+        operand = refer_chain_three_objs(ref_ast, err, ref_gc, ref_context, ref_node, owns, co);
+        if (errstack_len(err)) {
+            pushb_error("failed to refer three objects");
             goto fail;
         }
 
@@ -1173,8 +1249,14 @@ fail:
 }
 
 object_t *
-extract_copy_of_obj(ast_t *ast, object_t *obj) {
-    assert(ast);
+extract_copy_of_obj(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *obj
+) {
     assert(obj);
 
     switch (obj->type) {
@@ -1184,40 +1266,32 @@ extract_copy_of_obj(ast_t *ast, object_t *obj) {
     case OBJ_TYPE_IDENTIFIER: {
         object_t *ref = pull_in_ref_by(obj);
         if (!ref) {
-            ast_pushb_error(
-                ast,
-                NULL,
-                0,
-                NULL,
-                0,
-                "\"%s\" is not defined in extract obj",
-                obj_getc_idn_name(obj)
-            );
+            pushb_error("\"%s\" is not defined in extract obj", obj_getc_idn_name(obj));
             return NULL;
         }
         return obj_deep_copy(ref);
     } break;
     case OBJ_TYPE_CHAIN: {
-        object_t *ref = refer_chain_obj_with_ref(ast, obj);
+        object_t *ref = refer_chain_obj_with_ref(ref_ast, err, ref_gc, ref_context, ref_node, obj);
         if (!ref) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to refer index");
+            pushb_error("failed to refer index");
             return NULL;
         }
         return obj_deep_copy(ref);
     } break;
     case OBJ_TYPE_DICT: {
         // copy dict elements recursive
-        object_dict_t *objdict = objdict_new(ast->ref_gc);
+        object_dict_t *objdict = objdict_new(ref_gc);
 
         for (int32_t i = 0; i < objdict_len(obj->objdict); ++i) {
             const object_dict_item_t *item = objdict_getc_index(obj->objdict, i);
             assert(item);
             object_t *el = item->value;
-            object_t *newel = extract_copy_of_obj(ast, el);
+            object_t *newel = extract_copy_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, el);
             objdict_move(objdict, item->key, mem_move(newel));
         }
 
-        return obj_new_dict(ast->ref_gc, objdict);
+        return obj_new_dict(ref_gc, objdict);
     } break;
     case OBJ_TYPE_ARRAY: {
         // copy array elements recursive
@@ -1225,11 +1299,11 @@ extract_copy_of_obj(ast_t *ast, object_t *obj) {
 
         for (int32_t i = 0; i < objarr_len(obj->objarr); ++i) {
             object_t *el = objarr_get(obj->objarr, i);
-            object_t *newel = extract_copy_of_obj(ast, el);
+            object_t *newel = extract_copy_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, el);
             objarr_moveb(objarr, mem_move(newel));
         }
 
-        return obj_new_array(ast->ref_gc, objarr);
+        return obj_new_array(ref_gc, objarr);
     } break;
     }
 
@@ -1238,8 +1312,14 @@ extract_copy_of_obj(ast_t *ast, object_t *obj) {
 }
 
 object_t *
-extract_ref_of_obj(ast_t *ast, object_t *obj) {
-    assert(ast);
+extract_ref_of_obj(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *obj
+) {
     assert(obj);
 
     switch (obj->type) {
@@ -1249,15 +1329,15 @@ extract_ref_of_obj(ast_t *ast, object_t *obj) {
     case OBJ_TYPE_IDENTIFIER: {
         object_t *ref = pull_in_ref_by_all(obj);
         if (!ref) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "\"%s\" is not defined", obj_getc_idn_name(obj));
+            pushb_error("\"%s\" is not defined", obj_getc_idn_name(obj));
             return NULL;
         }
         return ref;
     } break;
     case OBJ_TYPE_CHAIN: {
-        object_t *ref = refer_chain_obj_with_ref(ast, obj);
+        object_t *ref = refer_chain_obj_with_ref(ref_ast, err, ref_gc, ref_context, ref_node, obj);
         if (!ref) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to refer chain object");
+            pushb_error("failed to refer chain object");
             return NULL;
         }
         return ref;
@@ -1269,7 +1349,7 @@ extract_ref_of_obj(ast_t *ast, object_t *obj) {
             const object_dict_item_t *item = objdict_getc_index(d, i);
             assert(item);
             object_t *el = item->value;
-            object_t *ref = extract_ref_of_obj(ast, el);
+            object_t *ref = extract_ref_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, el);
             objdict_set(d, item->key, ref);
         }
 
@@ -1280,7 +1360,7 @@ extract_ref_of_obj(ast_t *ast, object_t *obj) {
 
         for (int32_t i = 0; i < objarr_len(arr); ++i) {
             object_t *el = objarr_get(arr, i);
-            object_t *ref = extract_ref_of_obj(ast, el);
+            object_t *ref = extract_ref_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, el);
             objarr_set(arr, i, ref);
         }
 
@@ -1307,12 +1387,19 @@ dump_array_obj(const object_t *arrobj) {
 }
 
 bool
-parse_bool(ast_t *ast, object_t *obj) {
-    if (!ast) {
+parse_bool(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *obj
+) {
+    if (!err || !ref_gc || !ref_context) {
         return false;
     }
     if (!obj) {
-        ast_pushb_error(ast, NULL, 0, NULL, 0, "object is null");
+        pushb_error("object is null");
         return false;
     }
 
@@ -1325,26 +1412,26 @@ parse_bool(ast_t *ast, object_t *obj) {
     case OBJ_TYPE_BOOL: return obj->boolean; break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(obj);
-        object_t *obj = ctx_find_var_ref(ast->ref_context, idn);
+        object_t *obj = ctx_find_var_ref(ref_context, idn);
         if (!obj) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "\"%s\" is not defined in if statement", idn);
+            pushb_error("\"%s\" is not defined in if statement", idn);
             return false;
         }
 
-        return parse_bool(ast, obj);
+        return parse_bool(ref_ast, err, ref_gc, ref_context, ref_node, obj);
     } break;
     case OBJ_TYPE_UNICODE: return uni_len(obj->unicode); break;
     case OBJ_TYPE_ARRAY: return objarr_len(obj->objarr); break;
     case OBJ_TYPE_DICT: return objdict_len(obj->objdict); break;
     case OBJ_TYPE_CHAIN: {
-        object_t *ref = refer_chain_obj_with_ref(ast, obj);
-        if (ast_has_errors(ast)) {
-            ast_pushb_error(ast, NULL, 0, NULL, 0, "failed to refer chain object");
+        object_t *ref = refer_chain_obj_with_ref(ref_ast, err, ref_gc, ref_context, ref_node, obj);
+        if (errstack_len(err)) {
+            pushb_error("failed to refer chain object");
             return false;
         }
 
         object_t *val = obj_deep_copy(ref);
-        bool result = parse_bool(ast, val);
+        bool result = parse_bool(ref_ast, err, ref_gc, ref_context, ref_node, val);
         obj_del(val);
         return result;
     } break;

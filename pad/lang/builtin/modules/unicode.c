@@ -33,7 +33,7 @@ again:
         goto again;
     } break;
     case OBJ_TYPE_CHAIN: {
-        owner = refer_chain_obj_with_ref(ref_ast, owner);
+        owner = refer_chain_obj_with_ref(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, owner);
         if (!owner) {
             ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to refer index");
             return NULL;
