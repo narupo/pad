@@ -9,6 +9,49 @@
 #include <pad/lang/nodes.h>
 #include <pad/lang/arguments.h>
 
+/*********
+* macros *
+*********/
+
+#undef pushb_error_token
+#define pushb_error_token(errstack, token, fmt, ...) { \
+        const token_t *t = token; \
+        const char *fname = NULL; \
+        int32_t lineno = 0; \
+        const char *src = NULL; \
+        int32_t pos = 0; \
+        if (t) { \
+            fname = t->program_filename; \
+            lineno = t->program_lineno; \
+            src = t->program_source; \
+            pos = t->program_source_pos; \
+        } \
+        errstack_pushb(errstack, fname, lineno, src, pos, fmt, ##__VA_ARGS__); \
+    }
+
+#undef pushb_error_node
+#define pushb_error_node(errstack, node, fmt, ...) { \
+        const node_t *n = node; \
+        const char *fname = NULL; \
+        int32_t lineno = 0; \
+        const char *src = NULL; \
+        int32_t pos = 0; \
+        if (n) { \
+            const token_t *t = n->ref_token; \
+            if (t) { \
+                fname = t->program_filename; \
+                lineno = t->program_lineno; \
+                src = t->program_source; \
+                pos = t->program_source_pos; \
+            } \
+        } \
+        errstack_pushb(errstack, fname, lineno, src, pos, fmt, ##__VA_ARGS__); \
+    }
+
+/************
+* functions *
+************/
+
 /**
  * get reference of ast by owner object
  *
@@ -81,13 +124,17 @@ set_ref_at_cur_varmap(
 /**
  * extract identifier object and index object and etc to reference
  *
- * @param[in] *ast
- * @param[in] *obj
- *
  * @return reference to object
  */
 object_t *
-extract_ref_of_obj(ast_t *ast, object_t *obj);
+extract_ref_of_obj(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *obj
+);
 
 /**
  * extract identifier objects
@@ -100,7 +147,14 @@ extract_ref_of_obj(ast_t *ast, object_t *obj);
  * @return new object
  */
 object_t *
-extract_copy_of_obj(ast_t *ast, object_t *obj);
+extract_copy_of_obj(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *obj
+);
 
 /**
  * refer index object on context and return reference of refer value
@@ -112,7 +166,14 @@ extract_copy_of_obj(ast_t *ast, object_t *obj);
  * @return failed to NULL
  */
 object_t *
-refer_chain_obj_with_ref(ast_t *ast, object_t *chain_obj);
+refer_chain_obj_with_ref(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *chain_obj
+);
 
 /**
  * refer three objects (dot, call, index)
@@ -126,7 +187,15 @@ refer_chain_obj_with_ref(ast_t *ast, object_t *chain_obj);
  * @return failed to NULL
  */
 object_t *
-refer_chain_three_objs(ast_t *ast, object_array_t *owners, chain_object_t *co);
+refer_chain_three_objs(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_array_t *owns,
+    chain_object_t *co
+);
 
 /**
  * refer chain call
@@ -139,7 +208,15 @@ refer_chain_three_objs(ast_t *ast, object_array_t *owners, chain_object_t *co);
  * @return failed to NULL
  */
 object_t *
-refer_chain_call(ast_t *ast, object_array_t *owners, chain_object_t *co);
+refer_chain_call(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_array_t *owns,  // TODO: const
+    chain_object_t *co
+);
 
 /**
  * dump array object's elements at stdout
@@ -152,13 +229,17 @@ dump_array_obj(const object_t *arrobj);
 /**
  * objectをbool値にする
  *
- * @param[in] *ast
- * @param[in] *obj
- *
  * @return true or false
  */
 bool
-parse_bool(ast_t *ast, object_t *obj);
+parse_bool(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *obj
+);
 
 /**
  * if idnobj has in current scope then return true else return false

@@ -299,9 +299,13 @@ errstack_extendf_other(errstack_t *self, const errstack_t *_other) {
 
 #define copy(dst, src) \
     dst->lineno = src->lineno; \
-    dst->program_filename = cstr_edup(src->program_filename); \
+    if (src->program_filename) { \
+        dst->program_filename = cstr_edup(src->program_filename); \
+    } \
     dst->program_lineno = src->program_lineno; \
-    dst->program_source = cstr_edup(src->program_source); \
+    if (src->program_source) { \
+        dst->program_source = cstr_edup(src->program_source); \
+    } \
     dst->program_source_pos = src->program_source_pos; \
     dst->filename = src->filename; \
     dst->funcname = src->filename; \
