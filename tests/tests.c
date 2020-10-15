@@ -19357,6 +19357,7 @@ test_trv_assign_fail_0(void) {
 
     check_ok("", "");
     check_ok("{@ a @}", "");  // TODO: error? or ok?
+    check_fail("{@ a @}{: a :}", "\"a\" is not defined in ref block"); 
     check_fail("{@ a = @}", "syntax error. not found rhs test in assign list");
     check_fail("{@ 1 = @}", "syntax error. not found rhs test in assign list");
     check_fail("{@ 1 = 1 @}", "invalid left hand operand (1)");
