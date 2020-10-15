@@ -70,15 +70,16 @@
 
 #undef pushb_error
 #define pushb_error(ast, tok, fmt, ...) { \
+        const token_t *t = tok; \
         const char *fname = NULL; \
         int32_t lineno = 0; \
         const char *src = NULL; \
         int32_t pos = 0; \
-        if (tok) { \
-            fname = tok->program_filename; \
-            lineno = tok->program_lineno; \
-            src = tok->program_source; \
-            pos = tok->program_source_pos; \
+        if (t) { \
+            fname = t->program_filename; \
+            lineno = t->program_lineno; \
+            src = t->program_source; \
+            pos = t->program_source_pos; \
         } \
         errstack_pushb(ast->error_stack, fname, lineno, src, pos, fmt, ##__VA_ARGS__); \
     }
@@ -1559,7 +1560,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
-#define return_cleanup(msg) { \
+#define return_cleanup(fmt, ...) { \
         token_t *curtok = *ast->ref_ptr; \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->nil); \
@@ -1571,8 +1572,8 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
         ast_del_nodes(ast, cur->dict); \
         ast_del_nodes(ast, cur->identifier); \
         free(cur); \
-        if (strlen(msg)) { \
-            pushb_error(ast, curtok, msg); \
+        if (strlen(fmt)) { \
+            pushb_error(ast, curtok, fmt, ##__VA_ARGS__); \
         } \
         return_parse(NULL); \
     } \
@@ -3941,10 +3942,8 @@ cc_code_block(ast_t *ast, cc_args_t *cargs) {
     if (!t) {
         return_cleanup("syntax error. reached EOF in code block");
     }
-
     if (t->type != TOKEN_TYPE_RBRACEAT) {
         return_cleanup("");
-        // return_cleanup("syntax error. not found \"@}\"");
     }
     check("read @}");
 
@@ -4012,9 +4011,12 @@ cc_program(ast_t *ast, cc_args_t *cargs) {
     declare(node_program_t, cur);
 
 #undef return_cleanup
-#define return_cleanup() { \
+#define return_cleanup(fmt) { \
         ast_del_nodes(ast, cur->blocks); \
         free(cur); \
+        if (strlen(fmt)) { \
+            pushb_error(ast, NULL, fmt); \
+        } \
         return_parse(NULL); \
     } \
 
@@ -4023,10 +4025,11 @@ cc_program(ast_t *ast, cc_args_t *cargs) {
     check("call cc_blocks");
     cargs->depth = depth + 1;
     cur->blocks = cc_blocks(ast, cargs);
+    if (ast_has_errors(ast)) {
+        return_cleanup("");
+    }
     if (!cur->blocks) {
-        if (ast_has_errors(ast)) {
-            return_cleanup();
-        }
+        return_cleanup("not found blocks");
     }
 
     return_parse(make_node(NODE_TYPE_PROGRAM, cur));

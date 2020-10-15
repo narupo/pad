@@ -32,6 +32,16 @@
         assert(!ast_has_errors(ast)); \
         assert(!strcmp(ctx_getc_stdout_buf(ctx), hope)); \
     }
+#define check_ok_debug_compile(code, hope) \
+    tkr_parse(tkr, code); \
+    { \
+        ast_clear(ast); \
+        ast_debug(cc_compile(ast, tkr_get_tokens(tkr))); \
+        ctx_clear(ctx); \
+        trv_traverse(ast, ctx); \
+        assert(!ast_has_errors(ast)); \
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), hope)); \
+    }
 #define check_ok_debug_traverse(code, hope) \
     tkr_parse(tkr, code); \
     { \
@@ -81,7 +91,9 @@
         cc_compile(ast, tkr_get_tokens(tkr)); \
         ctx_clear(ctx); \
         trv_traverse(ast, ctx); \
-        printf("%s\n", ast_getc_first_error_message(ast)); \
+        const char *msg = ast_getc_first_error_message(ast); \
+        if (msg) printf("%s\n", msg); \
+        else printf("%p\n", msg); \
         assert(ast_has_errors(ast)); \
         assert(!strcmp(ast_getc_first_error_message(ast), hope)); \
     }
@@ -93,6 +105,26 @@
         ctx_clear(ctx); \
         trv_traverse(ast, ctx); \
         ast_trace_error(ast, stderr); \
+        assert(ast_has_errors(ast)); \
+        assert(!strcmp(ast_getc_first_error_message(ast), hope)); \
+    }
+#define check_fail_debug_compile(code, hope) \
+    tkr_parse(tkr, code); \
+    { \
+        ast_clear(ast); \
+        ast_debug(cc_compile(ast, tkr_get_tokens(tkr))); \
+        ctx_clear(ctx); \
+        trv_traverse(ast, ctx); \
+        assert(ast_has_errors(ast)); \
+        assert(!strcmp(ast_getc_first_error_message(ast), hope)); \
+    }
+#define check_fail_debug_traverse(code, hope) \
+    tkr_parse(tkr, code); \
+    { \
+        ast_clear(ast); \
+        cc_compile(ast, tkr_get_tokens(tkr)); \
+        ctx_clear(ctx); \
+        ast_debug(trv_traverse(ast, ctx)); \
         assert(ast_has_errors(ast)); \
         assert(!strcmp(ast_getc_first_error_message(ast), hope)); \
     }
@@ -10254,8 +10286,7 @@ test_cc_compile(void) {
     tkr_parse(tkr, "{@ if 1: @}{@ end @}");
     {
         ast_clear(ast);
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
+        (cc_compile(ast, tkr_get_tokens(tkr)));
         root = ast_getc_root(ast);
         assert(root != NULL);
         assert(root->type == NODE_TYPE_PROGRAM);
@@ -19289,20 +19320,12 @@ static void
 test_trv_assign_and_reference_16(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   def f(a):\n"
     "       return a\n"
     "   end\n"
     "   f(1)"
-    "@}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
-    }
+    "@}", "");
 
     trv_cleanup;
 }
@@ -19326,6 +19349,28 @@ test_trv_assign_and_reference_all(void) {
     test_trv_assign_and_reference_14();
     test_trv_assign_and_reference_15();
     test_trv_assign_and_reference_16();
+}
+
+static void
+test_trv_assign_fail_0(void) {
+    trv_ready;
+
+    check_ok("", "");
+    check_ok("{@ a @}", "");  // TODO: error? or ok?
+    check_fail("{@ a = @}", "syntax error. not found rhs test in assign list");
+    check_fail("{@ 1 = @}", "syntax error. not found rhs test in assign list");
+    check_fail("{@ 1 = 1 @}", "invalid left hand operand (1)");
+    check_fail("{@ 1 = a @}", "invalid left hand operand (1)");
+    check_fail("{@ a = a @}", "\"a\" is not defined in asscalc ass idn");
+    check_fail("{@ a, b = 1 @}", "invalid right operand (1)");
+    check_fail("{@ a, @}", "syntax error. not found test in test list");
+    check_fail("{@ a, = 1 @}", "syntax error. not found test in test list");
+    check_fail("{@ ,a @}", "not found blocks");
+    check_fail("{@ ,a = 1 @}", "not found blocks");
+    check_fail("{@ a, b = 1, @}", "syntax error. not found test in test list");
+    check_ok("{@ a = 1, 2 @}", "");  // ok
+
+    trv_cleanup;
 }
 
 static void
@@ -23377,17 +23422,11 @@ static void
 test_trv_struct_4(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_fail("{@\n"
     "struct Animal:\n"
-    "   @}text{@"
+    "   @}text{@\n"
     "end\n"
-    "@}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        assert(!strcmp(ast_getc_first_error_message(ast), "not found 'end'. found token is 5"));
-        assert(ast_has_errors(ast));
-    }
+    "@}", "not found 'end'. found token is 2");
 
     trv_cleanup;
 }
@@ -24896,12 +24935,7 @@ static void
 test_trv_func_def_fail_0(void) {
     trv_ready;
 
-    // TODO: fix me!
-    
-    check_ok("{@\n"
-    "def\n"
-    "@}", ""
-    );
+    check_fail("{@ def @}", "not found blocks");
 
     trv_cleanup;
 }
@@ -29521,6 +29555,7 @@ traverser_tests[] = {
     {"assign_3", test_trv_assign_3},
     {"assign_4", test_trv_assign_4},
     {"assign_5", test_trv_assign_5},
+    {"assign_fail_0", test_trv_assign_fail_0},
     {"atom_0", test_trv_atom_0},
     {"index", test_trv_index},
     {"string_index", test_trv_string_index},
