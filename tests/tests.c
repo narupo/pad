@@ -14,7 +14,7 @@
 #define showbuf() printf("stdout[%s]\n", ctx_getc_stdout_buf(ctx))
 #define showerr() printf("stderr[%s]\n", ctx_getc_stderr_buf(ctx))
 #define showdetail() printf("detail[%s]\n", ast_getc_first_error_message(ast))
-#define trace() ast_trace_error(ast, stderr)
+#define trace() errstack_trace_debug(ast->error_stack, stderr)
 #define ERR errstack_trace(ast->error_stack, stderr)
 #define eq(s) assert(!strcmp(ctx_getc_stdout_buf(ctx), s))
 #define ast_debug(stmt) { \
@@ -59,7 +59,7 @@
         cc_compile(ast, tkr_get_tokens(tkr)); \
         ctx_clear(ctx); \
         trv_traverse(ast, ctx); \
-        ast_trace_error(ast, stderr); \
+        trace(); \
         assert(!ast_has_errors(ast)); \
         assert(!strcmp(ctx_getc_stdout_buf(ctx), hope)); \
     }
@@ -104,7 +104,7 @@
         cc_compile(ast, tkr_get_tokens(tkr)); \
         ctx_clear(ctx); \
         trv_traverse(ast, ctx); \
-        ast_trace_error(ast, stderr); \
+        trace(); \
         assert(ast_has_errors(ast)); \
         assert(!strcmp(ast_getc_first_error_message(ast), hope)); \
     }
@@ -29267,22 +29267,96 @@ static void
 test_trv_unicode_1(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   s = \"あいう\""
-    "@}{: s[0] :}{: s[2] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "あう"));
-    }
+    "@}{: s[0] :}{: s[2] :}", "あう");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_scope_0(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "a = 0\n"
+    "if true:\n"
+    "   a = 1\n"
+    "end\n"
+    "@}{: a :}", "1");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_scope_1(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "a = 0\n"
+    "def f():\n"
+    "   a = 1\n"
+    "end\n"
+    "f()\n"
+    "@}{: a :}", "0");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_scope_2(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "a = 0\n"
+    "def f():\n"
+    "   a = 1\n"
+    "end\n"
+    "f()\n"
+    "@}{: a :}", "0");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_scope_3(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "a = 0\n"
+    "def f():\n"
+    "   puts(a)\n"
+    "end\n"
+    "f()\n"
+    "@}", "0\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_scope_4(void) {
+    trv_ready;
+
+    check_ok_trace("{@\n"
+    "def f(a):\n"
+    "   def inner():\n"
+    "       return a\n"
+    "   end\n"
+    "   return inner\n"
+    "end\n"
+    "c = f(1)\n"
+    "@}{: c() :}", "1");
 
     trv_cleanup;
 }
 
 static const struct testcase
 traverser_tests[] = {
+    {"scope_0", test_trv_scope_0},
+    {"scope_1", test_trv_scope_1},
+    {"scope_2", test_trv_scope_2},
+    {"scope_3", test_trv_scope_3},
+    {"scope_4", test_trv_scope_4},
     {"assign_and_reference_0", test_trv_assign_and_reference_0},
     {"assign_and_reference_1", test_trv_assign_and_reference_1},
     {"assign_and_reference_2", test_trv_assign_and_reference_2},
