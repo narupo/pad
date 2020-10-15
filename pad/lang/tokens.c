@@ -167,3 +167,18 @@ token_type_to_str(const token_t *self) {
 
     return "unknown";
 }
+
+void
+token_dump(const token_t *self, FILE *fout) {
+    if (!self || !fout) {
+        return;
+    }
+
+    fprintf(fout, "text[%s]\n", self->text);
+    fprintf(fout, "program_filename[%s]\n", self->program_filename);
+    fprintf(fout, "program_source[%s]\n", self->program_source);
+    fprintf(fout, "program_lineno[%d]\n", self->program_lineno);
+    fprintf(fout, "program_source_pos[%d]\n", self->program_source_pos);
+    fprintf(fout, "type[%d]\n", self->type);
+    fprintf(fout, "lvalue[%ld]\n", self->lvalue);
+}

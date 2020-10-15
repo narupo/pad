@@ -170,3 +170,6 @@ token_copy_text(const token_t *self);
  */
 const char *
 token_type_to_str(const token_t *self);
+
+void
+token_dump(const token_t *self, FILE *fout);

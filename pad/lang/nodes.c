@@ -596,8 +596,13 @@ node_dump(const node_t *self, FILE *fout) {
     }
 
     fprintf(fout, "node_t\n");
-    fprintf(fout, "type: %d\n", self->type);
-    fprintf(fout, "real: %p\n", self->real);
+    fprintf(fout, "type[%d]\n", self->type);
+    fprintf(fout, "real[%p]\n", self->real);
+    if (self->ref_token) {
+        token_dump(self->ref_token, fout);
+    } else {
+        fprintf(fout, "ref_token[%p]\n", self->ref_token);
+    }
 }
 
 const token_t *
