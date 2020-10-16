@@ -19376,12 +19376,7 @@ test_trv_assign_fail_0(void) {
 
 static void
 test_trv_code_block(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     tkr_parse(tkr, "{@@}");
     {
@@ -19483,11 +19478,17 @@ test_trv_code_block(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "\n\n\n"));
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
+}
+
+static void
+test_trv_code_block_fail(void) {
+    trv_ready;
+
+    check_fail("{@", "syntax error. reached EOF in code block");
+    check_fail("{@@", "syntax error. reached EOF in code block");
+
+    trv_cleanup;
 }
 
 static void
@@ -29376,6 +29377,7 @@ traverser_tests[] = {
     {"assign_and_reference_16", test_trv_assign_and_reference_16},
     {"assign_and_reference_all", test_trv_assign_and_reference_all},
     {"code_block", test_trv_code_block},
+    {"code_block_fail", test_trv_code_block_fail},
     {"ref_block", test_trv_ref_block},
     {"text_block", test_trv_text_block},
     {"if_stmt_0", test_trv_if_stmt_0},
