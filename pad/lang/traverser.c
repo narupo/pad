@@ -6699,9 +6699,9 @@ trv_expr(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
-mul_unicode_object(ast_t *ast, const unicode_t *s, int32_t n) {
+mul_unicode_object(ast_t *ast, trv_args_t *targs, const unicode_t *s, int32_t n) {
     if (n < 0) {
-        pushb_error_node(ast->error_stack, NULL, "can't mul string by negative value");
+        pushb_error("can't mul string by negative value");
         return NULL;
     }
 
@@ -6739,7 +6739,7 @@ trv_calc_term_mul_int(ast_t *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_UNICODE: {
-        object_t *obj = mul_unicode_object(ast, rhs->unicode, lhs->lvalue);
+        object_t *obj = mul_unicode_object(ast, targs, rhs->unicode, lhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_CHAIN: {
@@ -6821,7 +6821,7 @@ trv_calc_term_mul_string(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
         break;
     case OBJ_TYPE_INT: {
-        object_t *obj = mul_unicode_object(ast, lhs->unicode, rhs->lvalue);
+        object_t *obj = mul_unicode_object(ast, targs, lhs->unicode, rhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
