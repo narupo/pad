@@ -20470,7 +20470,7 @@ test_trv_if_stmt_4(void) {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
         ctx_clear(ctx);
-        trv_traverse(ast, ctx);
+        (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
@@ -22228,51 +22228,26 @@ test_trv_for_stmt_2(void) {
 
 static void
 test_trv_for_stmt_3(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
-    tkr_parse(tkr, "{@ for i = 0; i < 2; i += 1: @}{: i :},{@ end @}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,1,"));
-    }
-
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@ for i = 0; i < 2; i += 1: @}{: i :},{@ end @}", "0,1,");
+    check_ok_trace("{@\n"
     "def func():\n"
     "   for i = 0; i < 2; i += 1: @}"
     "{: i :}\n"
     "{@ end \n"
     "end \n"
     "\n"
-    " func() @}");
-    {
-        ast_clear(ast);
-        (cc_compile(ast, tkr_get_tokens(tkr)));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n1\n"));
-    }
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    " func() @}", "0\n1\n");
+
+    trv_cleanup;
 }
 
 static void
 test_trv_for_stmt_4(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok_trace("{@\n"
     "   def hiphop(rap, n):\n"
     "       puts(rap * n)\n"
     "   end\n"
@@ -22280,15 +22255,7 @@ test_trv_for_stmt_4(void) {
     "   for i = 0; i < 3; i += 1:\n"
     "       hiphop(\"yo\", i)\n"
     "   end\n"
-    "@}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "\nyo\nyoyo\n"));
-    }
+    "@}", "\nyo\nyoyo\n");
 
     tkr_parse(tkr, "{@\n"
     "   for i = 0; i < 3; i += 1:\n"
@@ -24660,20 +24627,12 @@ static void
 test_trv_func_def_8(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok_trace("{@\n"
     "   def f(arr):\n"
     "       puts(arr[0], arr[1], arr[2])\n"
     "   end\n"
     "   f([1, 2, 3])\n"
-    "@}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1 2 3\n"));
-    }
+    "@}", "1 2 3\n");
 
     trv_cleanup;
 }
@@ -24865,7 +24824,7 @@ test_trv_func_def_11(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "hi\n"));
     }
 
-    tkr_parse(tkr,
+    check_ok_trace(
         "{@\n"
         "    def func():\n"
         "        puts(\"hi\")\n"
@@ -24878,15 +24837,7 @@ test_trv_func_def_11(void) {
         "\n"
         "    func2({ \"f\": func })\n"
         "@}"
-    );
-    {
-        ast_clear(ast);
-        (cc_compile(ast, tkr_get_tokens(tkr)));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "hi\n"));
-    }
+    , "hi\n");
 
     tkr_parse(tkr,
         "{@\n"
@@ -24916,7 +24867,7 @@ static void
 test_trv_func_def_12(void) {
     trv_ready;
 
-    check_ok("{@\n"
+    check_fail("{@\n"
     "def func():\n"
     "   a = 1\n"
     "   def inner():\n"
@@ -24926,7 +24877,7 @@ test_trv_func_def_12(void) {
     "   inner()\n"
     "end\n"
     "func()\n"
-    "@}", "2\n"
+    "@}", "\"a\" is not defined"
     );
 
     trv_cleanup;
@@ -29350,6 +29301,49 @@ test_trv_scope_4(void) {
     trv_cleanup;
 }
 
+static void
+test_trv_scope_5(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "a = 0\n"
+    "def f():\n"
+    "   return a\n"
+    "end\n"
+    "@}{: f() :}", "0");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_scope_6(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "a = 0\n"
+    "def f():\n"
+    "   return a + 1\n"
+    "end\n"
+    "@}{: f() :}", "1");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_scope_7(void) {
+    trv_ready;
+
+    check_fail("{@\n"
+    "a = 0\n"
+    "def f():\n"
+    "   a += 1\n"
+    "   return a\n"
+    "end\n"
+    "@}{: f() :}", "\"a\" is not defined");
+
+    trv_cleanup;
+}
+
 static const struct testcase
 traverser_tests[] = {
     {"scope_0", test_trv_scope_0},
@@ -29357,6 +29351,9 @@ traverser_tests[] = {
     {"scope_2", test_trv_scope_2},
     {"scope_3", test_trv_scope_3},
     {"scope_4", test_trv_scope_4},
+    {"scope_5", test_trv_scope_5},
+    {"scope_6", test_trv_scope_6},
+    {"scope_7", test_trv_scope_7},
     {"assign_and_reference_0", test_trv_assign_and_reference_0},
     {"assign_and_reference_1", test_trv_assign_and_reference_1},
     {"assign_and_reference_2", test_trv_assign_and_reference_2},

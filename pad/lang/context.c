@@ -237,7 +237,7 @@ ctx_find_var_ref_all(context_t *self, const char *key) {
     }
     
     for (context_t *cur = self; cur; cur = cur->ref_prev) {
-        object_t *ref = scope_find_var_ref(cur->scope, key);
+        object_t *ref = scope_find_var_ref_all(cur->scope, key);
         if (ref) {
             return ref;
         }

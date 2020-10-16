@@ -56,6 +56,9 @@ scope_clear(scope_t *self);
 object_t *
 scope_find_var_ref(scope_t *self, const char *key);
 
+object_t *
+scope_find_var_ref_all(scope_t *self, const char *key);
+
 /**
  * dump scope_t at stream
  *

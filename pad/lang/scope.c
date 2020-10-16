@@ -228,19 +228,41 @@ scope_getc_varmap(const scope_t *self) {
     return scope_get_varmap((scope_t *) self);
 }
 
+static scope_t *
+find_tail(scope_t *self) {
+    scope_t *last = self;
+    for (scope_t *cur = self; cur; cur = cur->next) {
+        if (!cur->next) {
+            last = cur;
+            break;
+        }
+    }
+
+    return last;
+}
+
 object_t *
 scope_find_var_ref(scope_t *self, const char *key) {
     if (!self) {
         return NULL;
     }
 
-    scope_t *tail = NULL;
-    for (scope_t *cur = self; cur; cur = cur->next) {
-        if (!cur->next) {
-            tail = cur;
-            break;
-        }
+    scope_t *tail = find_tail(self);
+    object_dict_item_t *item = objdict_get(tail->varmap, key);
+    if (item) {
+        return item->value;
     }
+
+    return NULL;
+}
+
+object_t *
+scope_find_var_ref_all(scope_t *self, const char *key) {
+    if (!self) {
+        return NULL;
+    }
+
+    scope_t *tail = find_tail(self);
 
     for (scope_t *cur = tail; cur; cur = cur->prev) {
         object_dict_item_t *item = objdict_get(cur->varmap, key);

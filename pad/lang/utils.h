@@ -136,6 +136,16 @@ extract_ref_of_obj(
     object_t *obj
 );
 
+object_t *
+extract_ref_of_obj_all(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *obj
+);
+
 /**
  * extract identifier objects
  * return copied object
