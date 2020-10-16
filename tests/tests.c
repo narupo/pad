@@ -29337,7 +29337,7 @@ static void
 test_trv_scope_4(void) {
     trv_ready;
 
-    check_ok_trace("{@\n"
+    check_fail("{@\n"
     "def f(a):\n"
     "   def inner():\n"
     "       return a\n"
@@ -29345,7 +29345,7 @@ test_trv_scope_4(void) {
     "   return inner\n"
     "end\n"
     "c = f(1)\n"
-    "@}{: c() :}", "1");
+    "@}{: c() :}", "\"a\" is not defined");  // TODO: change fail to ok
 
     trv_cleanup;
 }

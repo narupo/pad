@@ -128,8 +128,7 @@ _pull_in_ref_by(const object_t *idn_obj, bool all) {
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
 
     const char *idn = obj_getc_idn_name(idn_obj);
-    ast_t *ref_ast = obj_get_idn_ref_ast(idn_obj);
-    context_t *ref_context = ast_get_ref_context(ref_ast);
+    context_t *ref_context = obj_get_idn_ref_context(idn_obj);
     assert(idn && ref_context);
 
     object_t *ref_obj = NULL;
@@ -669,15 +668,16 @@ invoke_func_obj(
     object_func_t *func = &func_obj->func;
     assert(func->args->type == OBJ_TYPE_ARRAY);
     assert(func->ref_ast);
+    assert(func->ref_context);
 
     // push scope
-    ctx_pushb_scope(func->ref_ast->ref_context);
+    ctx_pushb_scope(func->ref_context);
 
     // this function has extends-function ? does set super ?
     if (func->extends_func) {
         set_ref_at_cur_varmap(
             err,
-            func->ref_ast->ref_context,
+            func->ref_context,
             owns,
             "super",
             func->extends_func
@@ -700,10 +700,10 @@ invoke_func_obj(
     }
 
     // reset status
-    ctx_set_do_return(func->ref_ast->ref_context, false);
+    ctx_set_do_return(func->ref_context, false);
 
     // pop scope
-    ctx_popb_scope(func->ref_ast->ref_context);
+    ctx_popb_scope(func->ref_context);
 
     // done
     if (!result) {
@@ -1445,7 +1445,6 @@ bool
 is_var_in_cur_scope(const object_t *idnobj) {
     assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
     const char *idn = obj_getc_idn_name(idnobj);
-    ast_t *ref_ast = obj_get_idn_ref_ast(idnobj);
-    context_t *ref_ctx = ast_get_ref_context(ref_ast);
+    context_t *ref_ctx = obj_get_idn_ref_context(idnobj);
     return ctx_var_in_cur_scope(ref_ctx, idn);
 }

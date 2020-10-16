@@ -54,7 +54,7 @@ obj_del(object_t *self) {
         // nothing todo
         break;
     case OBJ_TYPE_IDENTIFIER:
-        self->identifier.ref_ast = NULL;  // do not delete
+        self->identifier.ref_context = NULL;  // do not delete
         str_del(self->identifier.name);
         self->identifier.name = NULL;
         break;
@@ -163,7 +163,7 @@ obj_deep_copy(const object_t *other) {
         self->boolean = other->boolean;
         break;
     case OBJ_TYPE_IDENTIFIER:
-        self->identifier.ref_ast = other->identifier.ref_ast;
+        self->identifier.ref_context = other->identifier.ref_context;
         self->identifier.name = str_deep_copy(other->identifier.name);
         break;
     case OBJ_TYPE_UNICODE:
@@ -177,6 +177,7 @@ obj_deep_copy(const object_t *other) {
         break;
     case OBJ_TYPE_FUNC:
         self->func.ref_ast = other->func.ref_ast;
+        self->func.ref_context = other->func.ref_context;
         self->func.name = obj_deep_copy(other->func.name);
         obj_inc_ref(self->func.name);
         self->func.args = obj_deep_copy(other->func.args);
@@ -257,7 +258,7 @@ obj_shallow_copy(const object_t *other) {
         self->boolean = other->boolean;
         break;
     case OBJ_TYPE_IDENTIFIER:
-        self->identifier.ref_ast = other->identifier.ref_ast;
+        self->identifier.ref_context = other->identifier.ref_context;
         self->identifier.name = str_shallow_copy(other->identifier.name);
         break;
     case OBJ_TYPE_UNICODE:
@@ -271,6 +272,7 @@ obj_shallow_copy(const object_t *other) {
         break;
     case OBJ_TYPE_FUNC:
         self->func.ref_ast = other->func.ref_ast;
+        self->func.ref_context = other->func.ref_context;
         self->func.name = obj_shallow_copy(other->func.name);
         obj_inc_ref(self->func.name);
         self->func.args = obj_shallow_copy(other->func.args);
@@ -380,8 +382,12 @@ obj_new_true(gc_t *ref_gc) {
 }
 
 object_t *
-obj_new_cidentifier(gc_t *ref_gc, ast_t *ref_ast, const char *identifier) {
-    if (!ref_gc || !ref_ast || !identifier) {
+obj_new_cidentifier(
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const char *identifier
+) {
+    if (!ref_gc || !ref_context || !identifier) {
         return NULL;
     }
 
@@ -390,7 +396,7 @@ obj_new_cidentifier(gc_t *ref_gc, ast_t *ref_ast, const char *identifier) {
         return NULL;
     }
 
-    self->identifier.ref_ast = ref_ast;
+    self->identifier.ref_context = ref_context;
     self->identifier.name = str_new();
     str_set(self->identifier.name, identifier);
 
@@ -398,8 +404,12 @@ obj_new_cidentifier(gc_t *ref_gc, ast_t *ref_ast, const char *identifier) {
 }
 
 object_t *
-obj_new_identifier(gc_t *ref_gc, ast_t *ref_ast, string_t *move_identifier) {
-    if (!ref_gc || !ref_ast || !move_identifier) {
+obj_new_identifier(
+    gc_t *ref_gc,
+    context_t *ref_context,
+    string_t *move_identifier
+) {
+    if (!ref_gc || !ref_context || !move_identifier) {
         return NULL;
     }
 
@@ -408,8 +418,8 @@ obj_new_identifier(gc_t *ref_gc, ast_t *ref_ast, string_t *move_identifier) {
         return NULL;
     }
 
-    self->identifier.ref_ast = ref_ast;
-    self->identifier.name = move_identifier;
+    self->identifier.ref_context = ref_context;
+    self->identifier.name = mem_move(move_identifier);
 
     return self;
 }
@@ -515,6 +525,7 @@ object_t *
 obj_new_func(
     gc_t *ref_gc,
     ast_t *ref_ast,
+    context_t *ref_context,
     object_t *move_name,
     object_t *move_args,
     node_array_t *ref_suites,
@@ -522,7 +533,7 @@ obj_new_func(
     object_t *extends_func,  // allow null
     bool is_met
 ) {
-    bool invalid_args = !ref_gc || !ref_ast || !move_name ||
+    bool invalid_args = !ref_gc || !ref_ast || !ref_context || !move_name ||
                         !move_args || !ref_suites || !ref_blocks;
     if (invalid_args) {
         return NULL;
@@ -534,6 +545,7 @@ obj_new_func(
     }
 
     self->func.ref_ast = ref_ast;  // do not delete
+    self->func.ref_context = ref_context;
     self->func.name = mem_move(move_name);
     self->func.args = mem_move(move_args);
     self->func.ref_suites = ref_suites;
@@ -925,9 +937,9 @@ obj_getc_def_struct_idn_name(const object_t *self) {
     return obj_getc_idn_name(self->def_struct.identifier);
 }
 
-ast_t *
-obj_get_idn_ref_ast(const object_t *self) {
-    return self->identifier.ref_ast;
+context_t *
+obj_get_idn_ref_context(const object_t *self) {
+    return self->identifier.ref_context;
 }
 
 chain_objects_t *

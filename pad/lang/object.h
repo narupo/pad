@@ -83,6 +83,7 @@ typedef enum {
  */
 struct object_func {
     ast_t *ref_ast;  // function object refer this reference of ast on execute
+    context_t *ref_context;  // reference of context
     object_t *name;  // type == OBJ_TYPE_IDENTIFIER
     object_t *args;  // type == OBJ_TYPE_ARRAY
     node_array_t *ref_suites;  // reference to suite (node tree) (DO NOT DELETE)
@@ -108,7 +109,7 @@ struct object_module {
  * A identifier object
  */
 struct object_identifier {
-    ast_t *ref_ast;
+    context_t *ref_context;
     string_t *name;
 };
 
@@ -261,15 +262,20 @@ obj_new_bool(gc_t *ref_gc, bool boolean);
  * construct identifier object by C string
  * if failed to allocate memory then exit from process
  *
- * @param[in]     *ref_gc     reference to gc_t (do not delete)
- * @param[in|out] *ref_ast    reference to ast_t current context (do not delete)
- * @param[in]     *identifier C strings of identifier
+ * @param[in]      *ref_gc      reference to gc_t (do not delete)
+ * @param[in|out]  *ref_ast     reference to ast_t current context (do not delete)
+ * @param [in|out] *ref_context reference to context_t
+ * @param[in]      *identifier  C strings of identifier
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_cidentifier(gc_t *ref_gc, ast_t *ref_ast, const char *identifier);
+obj_new_cidentifier(
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const char *identifier
+);
 
 /**
  * construct identifier object by string_t
@@ -277,13 +283,18 @@ obj_new_cidentifier(gc_t *ref_gc, ast_t *ref_ast, const char *identifier);
  *
  * @param[in]     *ref_gc          reference to gc_t (do not delete)
  * @param[in|out] *ref_ast         reference to ast_t current context (do not delete)
+ * @param [in|out] *ref_context    reference to context_t
  * @param[in]     *move_identifier pointer to string_t (with move semantics)
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_identifier(gc_t *ref_gc, ast_t *ref_ast, string_t *move_identifier);
+obj_new_identifier(
+    gc_t *ref_gc,
+    context_t *ref_context,
+    string_t *move_identifier
+);
 
 /**
  * construct unicode object by C strings
@@ -369,6 +380,7 @@ object_t *
 obj_new_func(
     gc_t *ref_gc,
     ast_t *ref_ast,
+    context_t *ref_context,
     object_t *move_name,
     object_t *move_args,
     node_array_t *ref_suites,
@@ -558,15 +570,8 @@ obj_getc_idn_name(const object_t *self);
 const char *
 obj_getc_def_struct_idn_name(const object_t *self);
 
-/**
- * get reference of ast in identifier object
- *
- * @param[in] *self
- *
- * @return reference to ast_t (do not delete)
- */
-ast_t *
-obj_get_idn_ref_ast(const object_t *self);
+context_t *
+obj_get_idn_ref_context(const object_t *self);
 
 /**
  * get chain objects in chain object (type == OBJ_TYPE_CHAIN)

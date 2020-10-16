@@ -1101,7 +1101,7 @@ again:
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(result);
-        result = pull_in_ref_by(result);
+        result = pull_in_ref_by_all(result);
         if (!result) {
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
@@ -2197,10 +2197,10 @@ trv_roll_identifier_lhs(ast_t *ast, trv_args_t *targs) {
 
     depth_t depth = targs->depth;
 
-    ast_t *ref_ast = obj_get_idn_ref_ast(lhs);
-    assert(ref_ast);
+    context_t *ref_context = obj_get_idn_ref_context(lhs);
+    assert(ref_context);
     const char *idn = obj_getc_idn_name(lhs);
-    object_t *lvar = ctx_find_var_ref(ref_ast->ref_context, idn);
+    object_t *lvar = ctx_find_var_ref(ref_context, idn);
     if (!lvar) {
         pushb_error("\"%s\" is not defined", idn);
         return_trav(NULL);
@@ -2224,9 +2224,9 @@ trv_roll_identifier_rhs(ast_t *ast, trv_args_t *targs) {
 
     depth_t depth = targs->depth;
 
-    ast_t *ref_ast = obj_get_idn_ref_ast(rhs);
+    context_t *ref_context = obj_get_idn_ref_context(rhs);
     const char *idn = obj_getc_idn_name(rhs);
-    object_t *rvar = ctx_find_var_ref(ref_ast->ref_context, idn);
+    object_t *rvar = ctx_find_var_ref(ref_context, idn);
     if (!rvar) {
         pushb_error("\"%s\" is not defined in roll identifier rhs",
             obj_getc_idn_name(rhs));
@@ -8973,7 +8973,7 @@ trv_identifier(ast_t *ast, trv_args_t *targs) {
 
     object_t *obj = obj_new_cidentifier(
         ast->ref_gc,
-        ref_ast,
+        ref_ast->ref_context,
         identifier->identifier
     );
     return_trav(obj);
@@ -9057,6 +9057,7 @@ trv_func_def(ast_t *ast, trv_args_t *targs) {
     object_t *func_obj = obj_new_func(
         ast->ref_gc,
         ast,
+        ast->ref_context,
         name,
         def_args,
         ref_suites,
@@ -9114,7 +9115,11 @@ trv_func_def_args(ast_t *ast, trv_args_t *targs) {
         assert(n->type == NODE_TYPE_IDENTIFIER);
         node_identifier_t *nidn = n->real;
 
-        object_t *oidn = obj_new_cidentifier(ast->ref_gc, ref_ast, nidn->identifier);
+        object_t *oidn = obj_new_cidentifier(
+            ast->ref_gc,
+            ref_ast->ref_context,
+            nidn->identifier
+        );
         obj_inc_ref(oidn);
         objarr_moveb(args, oidn);
     }
