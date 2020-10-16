@@ -218,6 +218,10 @@ obj_deep_copy(const object_t *other) {
         obj_inc_ref(self->owners_method.owner);
         self->owners_method.method_name = str_deep_copy(other->owners_method.method_name);
         break;
+    case OBJ_TYPE_CHAIN:
+        self->chain.operand = obj_deep_copy(other->chain.operand);
+        self->chain.chain_objs = chain_objs_deep_copy(other->chain.chain_objs);
+        break;
     }
 
     return self;
@@ -312,6 +316,10 @@ obj_shallow_copy(const object_t *other) {
         self->owners_method.owner = obj_shallow_copy(other->owners_method.owner);
         obj_inc_ref(self->owners_method.owner);
         self->owners_method.method_name = str_shallow_copy(other->owners_method.method_name);
+        break;
+    case OBJ_TYPE_CHAIN:
+        self->chain.operand = obj_shallow_copy(other->chain.operand);
+        self->chain.chain_objs = chain_objs_shallow_copy(other->chain.chain_objs);
         break;
     }
 

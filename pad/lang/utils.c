@@ -1231,7 +1231,15 @@ refer_chain_obj_with_ref(
         chain_object_t *co = chain_objs_get(cos, i);
         assert(co);
 
-        operand = refer_chain_three_objs(ref_ast, err, ref_gc, ref_context, ref_node, owns, co);
+        operand = refer_chain_three_objs(
+            ref_ast,
+            err,
+            ref_gc,
+            ref_context,
+            ref_node,
+            owns,
+            co
+        );
         if (errstack_len(err)) {
             pushb_error("failed to refer three objects");
             goto fail;

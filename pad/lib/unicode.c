@@ -992,7 +992,7 @@ uni_split(const unicode_t *other, const unicode_type_t *sep) {
 }
 
 bool
-uni_is_digit(const unicode_t *self) {
+uni_isdigit(const unicode_t *self) {
     if (!self) {
         return false;
     }
@@ -1007,7 +1007,7 @@ uni_is_digit(const unicode_t *self) {
 }
 
 bool
-uni_is_alpha(const unicode_t *self) {
+uni_isalpha(const unicode_t *self) {
     if (!self) {
         return false;
     }
@@ -1022,7 +1022,7 @@ uni_is_alpha(const unicode_t *self) {
 }
 
 bool
-uni_is_space(const unicode_t *self) {
+uni_isspace(const unicode_t *self) {
     if (!self) {
         return false;
     }
