@@ -241,11 +241,11 @@ builtin_unicode_is(const char *method_name, builtin_func_args_t *fargs) {
 
     bool boolean = false;
     if (cstr_eq(method_name, "isdigit")) {
-        boolean = uni_is_digit(owner->unicode);
+        boolean = uni_isdigit(owner->unicode);
     } else if (cstr_eq(method_name, "isalpha")) {
-        boolean = uni_is_alpha(owner->unicode);
+        boolean = uni_isalpha(owner->unicode);
     } else if (cstr_eq(method_name, "isspace")) {
-        boolean = uni_is_space(owner->unicode);
+        boolean = uni_isspace(owner->unicode);
     } else {
         ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "unsupported method \"%s\"", method_name);
     }

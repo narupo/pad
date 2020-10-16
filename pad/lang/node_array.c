@@ -116,6 +116,15 @@ nodearr_getc(const node_array_t *self, int32_t index) {
     return self->parray[index];
 }
 
+node_t *
+nodearr_get_last(const node_array_t *self) {
+    if (!self || !self->len) {
+        return NULL;
+    }
+    
+    return self->parray[self->len - 1];
+}
+
 /*********
 * setter *
 *********/

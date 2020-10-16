@@ -8031,6 +8031,7 @@ again:
     }
 }
 
+// TODO: remove me?
 static object_t *
 trv_calc_asscalc_add_ass_unicode(ast_t *ast, trv_args_t *targs) {
     object_t *lhs = targs->lhs_obj;
@@ -8061,6 +8062,7 @@ again:
     }
 }
 
+// TODO: remove me?
 static object_t *
 trv_calc_asscalc_add_ass_array(ast_t *ast, trv_args_t *targs) {
     object_t *lhs = targs->lhs_obj;
@@ -8104,21 +8106,6 @@ trv_calc_asscalc_add_ass(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        check("call trv_calc_asscalc_add_ass_identifier_int");
-        object_t *result = trv_calc_asscalc_add_ass_identifier_int(ast, targs);
-        return_trav(result);
-    } break;
-    case OBJ_TYPE_UNICODE: {
-        check("call trv_calc_asscalc_add_ass_unicode");
-        object_t *result = trv_calc_asscalc_add_ass_unicode(ast, targs);
-        return_trav(result);
-    } break;
-    case OBJ_TYPE_ARRAY: {
-        check("call trv_calc_asscalc_add_ass_array");
-        object_t *result = trv_calc_asscalc_add_ass_array(ast, targs);
-        return_trav(result);
-    } break;
     case OBJ_TYPE_IDENTIFIER: {
         check("call trv_calc_asscalc_add_ass_identifier");
         object_t *result = trv_calc_asscalc_add_ass_identifier(ast, targs);
@@ -8662,6 +8649,9 @@ trv_calc_asscalc(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
+/**
+ *  right priority
+ */
 static object_t *
 trv_asscalc(ast_t *ast, trv_args_t *targs) {
     tready();
@@ -8686,51 +8676,53 @@ trv_asscalc(ast_t *ast, trv_args_t *targs) {
         object_t *result = _trv_traverse(ast, targs);
         _return(result);
     } else if (nodearr_len(asscalc->nodearr) >= 3) {
-        node_t *lnode = nodearr_get(asscalc->nodearr, 0);
-        assert(lnode->type == NODE_TYPE_EXPR);
+        node_array_t *nodearr = asscalc->nodearr;
+        node_t *rnode = nodearr_get_last(nodearr);
+        assert(rnode->type == NODE_TYPE_EXPR);
         check("call _trv_traverse");
-        targs->ref_node = lnode;
+        targs->ref_node = rnode;
         targs->depth = depth + 1;
         targs->do_not_refer_chain = true;
-        object_t *lhs = _trv_traverse(ast, targs);
+        object_t *rhs = _trv_traverse(ast, targs);
         if (ast_has_errors(ast)) {
             _return(NULL);
         }
-        assert(lhs);
+        assert(rhs);
 
-        for (int i = 1; i < nodearr_len(asscalc->nodearr); i += 2) {
-            node_t *node = nodearr_get(asscalc->nodearr, i);
+        for (int i = nodearr_len(nodearr) - 2; i > 0; i -= 2) {
+            node_t *node = nodearr_get(nodearr, i);
             assert(node->type == NODE_TYPE_AUGASSIGN);
             node_augassign_t *op = node->real;
             assert(op);
 
-            node_t *rnode = nodearr_get(asscalc->nodearr, i+1);
-            assert(rnode);
-            assert(rnode->type == NODE_TYPE_EXPR);
+            node_t *lnode = nodearr_get(nodearr, i - 1);
+            assert(lnode);
+            assert(lnode->type == NODE_TYPE_EXPR);
             check("call _trv_traverse");
-            targs->ref_node = rnode;
+            targs->ref_node = lnode;
             targs->depth = depth + 1;
             targs->do_not_refer_chain = true;
-            object_t *rhs = _trv_traverse(ast, targs);
+            object_t *lhs = _trv_traverse(ast, targs);
             if (ast_has_errors(ast)) {
                 _return(NULL);
             }
-            assert(rnode);
+            assert(lnode);
 
             check("call trv_calc_asscalc");
-            targs->lhs_obj = lhs;
-            targs->augassign_op_node = op;
             targs->rhs_obj = rhs;
+            targs->augassign_op_node = op;
+            targs->lhs_obj = lhs;
             targs->depth = depth + 1;
             object_t *result = trv_calc_asscalc(ast, targs);
             if (ast_has_errors(ast)) {
                 _return(NULL);
             }
+            assert(result);
 
-            lhs = result;
+            rhs = result;
         }
 
-        _return(lhs);
+        _return(rhs);
     }
 
     assert(0 && "impossible. failed to traverse asscalc");

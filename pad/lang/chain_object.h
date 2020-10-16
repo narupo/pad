@@ -33,6 +33,8 @@ chain_object_t *
 chain_obj_new(chain_object_type_t type, object_t *move_obj);
 
 /**
+ * TODO: test
+ *
  * deep copy
  *
  * @param[in] *other
@@ -41,6 +43,12 @@ chain_obj_new(chain_object_type_t type, object_t *move_obj);
  */
 chain_object_t *
 chain_obj_deep_copy(const chain_object_t *other);
+
+/**
+ * TODO: test
+ */
+chain_object_t *
+chain_obj_shallow_copy(const chain_object_t *other);
 
 /**
  * get type

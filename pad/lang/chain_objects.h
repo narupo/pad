@@ -22,6 +22,8 @@ chain_objects_t *
 chain_objs_new(void);
 
 /**
+ * TODO: test
+ *
  * deep copy
  *
  * @param[in] *other
@@ -30,6 +32,12 @@ chain_objs_new(void);
  */
 chain_objects_t *
 chain_objs_deep_copy(const chain_objects_t *other);
+
+/**
+ * TODO: test
+ */
+chain_objects_t *
+chain_objs_shallow_copy(const chain_objects_t *other);
 
 /**
  * resize chain_objects_t

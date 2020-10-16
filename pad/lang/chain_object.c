@@ -19,6 +19,9 @@ obj_dec_ref(object_t *self);
 object_t *
 obj_deep_copy(const object_t *other);
 
+object_t *
+obj_shallow_copy(const object_t *other);
+
 void
 objarr_del(object_array_t *self);
 
@@ -67,16 +70,32 @@ chain_obj_new(chain_object_type_t type, object_t *move_obj) {
 }
 
 chain_object_t *
-chain_obj_deep_copy(const chain_object_t *other) {
+_chain_obj_copy(const chain_object_t *other, bool deep) {
     if (!other) {
         return NULL;
     }
 
-    object_t *obj = obj_deep_copy(other->obj);
+    object_t *obj;
+    if (deep) {
+        obj = obj_deep_copy(other->obj);
+    } else {
+        obj = obj_shallow_copy(other->obj);
+    }
+
     obj_inc_ref(obj);
     chain_object_t *self = chain_obj_new(other->type, mem_move(obj));
 
     return self;
+}
+
+chain_object_t *
+chain_obj_deep_copy(const chain_object_t *other) {
+    return _chain_obj_copy(other, true);
+}
+
+chain_object_t *
+chain_obj_shallow_copy(const chain_object_t *other) {
+    return _chain_obj_copy(other, false);
 }
 
 chain_object_type_t

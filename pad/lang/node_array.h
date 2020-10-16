@@ -42,6 +42,9 @@ nodearr_get(const node_array_t *self, int32_t index);
 const node_t *
 nodearr_getc(const node_array_t *self, int32_t index);
 
+node_t *
+nodearr_get_last(const node_array_t *self);
+
 /*********
 * setter *
 *********/
