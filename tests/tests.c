@@ -25715,7 +25715,7 @@ static void
 test_trv_inject_stmt_19(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   def f1():\n"
     "       block content:\n"
     "           puts(2)\n"
@@ -25728,15 +25728,166 @@ test_trv_inject_stmt_19(void) {
     "       super()\n"
     "   end\n"
     "   f2(1)\n"
-    "@}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
-    }
+    "@}", "1\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_inject_stmt_20(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "a = 1\n"
+    "def f1():\n"
+    "   block content:\n"
+    "       puts(a)\n"
+    "   end\n"
+    "end\n"
+    "f1()\n"
+    "@}", "1\n");
+
+    check_ok("{@\n"
+    "def f1():\n"
+    "   a = 1\n"
+    "   block content:\n"
+    "       puts(a)\n"
+    "   end\n"
+    "end\n"
+    "f1()\n"
+    "@}", "1\n");
+
+    check_ok(
+    "{@\n"
+    "    def f1():\n"
+    "        puts(\"f1\")\n"
+    "        block a:\n"
+    "            puts(\"f1.a\")\n"
+    "            block b:\n"
+    "                puts(\"f1.b\")\n"
+    "            end\n"
+    "        end\n"
+    "    end\n"
+    "\n"
+    "    def f2() extends f1:\n"
+    "        inject b:\n"
+    "            puts(1)\n"
+    "        end\n"
+    "        super()\n"
+    "    end\n"
+    "\n"
+    "    f2()\n"
+    "@}", "f1\nf1.a\n1\n");
+
+    check_ok(
+    "{@\n"
+    "    def f1():\n"
+    "        puts(\"f1\")\n"
+    "        block a:\n"
+    "            puts(\"f1.a\")\n"
+    "            block b:\n"
+    "                puts(\"f1.b\")\n"
+    "            end\n"
+    "        end\n"
+    "    end\n"
+    "\n"
+    "    def f2() extends f1:\n"
+    "        puts(\"f2\")\n"
+    "        block a:\n"
+    "            puts(\"f2.a\")\n"
+    "        end\n"
+    "        super()\n"
+    "    end\n"
+    "\n"
+    "    def f3() extends f2:\n"
+    "        puts(\"f3\")"
+    "        inject a:\n"
+    "            puts(\"inject a from f3\")\n"
+    "        end\n"
+    "        inject b:\n"
+    "            puts(\"inject b from f3\")\n"
+    "        end\n"
+    "        super()\n"
+    "    end\n"
+    "\n"
+    "    f3()\n"
+    "@}", "f3\nf2\ninject a from f3\nf1\nf1.a\ninject b from f3\n");
+
+    check_ok(
+    "{@\n"
+    "    def f1():\n"
+    "        puts(\"f1\")\n"
+    "        block a:\n"
+    "            puts(\"f1.a\")\n"
+    "            block b:\n"
+    "                puts(\"f1.b\")\n"
+    "            end\n"
+    "        end\n"
+    "    end\n"
+    "\n"
+    "    def f2() extends f1:\n"
+    "        puts(\"f2\")\n"
+    "        block a:\n"
+    "            puts(\"f2.a\")\n"
+    "        end\n"
+    "        super()\n"
+    "    end\n"
+    "\n"
+    "    def f3() extends f2:\n"
+    "        puts(\"f3\")\n"
+    "        inject a:\n"
+    "            puts(\"inject a from f3\")\n"
+    "            inject b:\n"
+    "                puts(\"inject b from f3\")\n"
+    "            end\n"
+    "        end\n"
+    "        super()\n"
+    "    end\n"
+    "\n"
+    "    f3()\n"
+    "@}"
+    , "f3\n"
+    "f2\n"
+    "inject a from f3\n"
+    "f1\n"
+    "f1.a\n"
+    "inject b from f3\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_inject_stmt_fail_0(void) {
+    trv_ready;
+
+    check_fail("{@\n"
+    "def f1():\n"
+    "   bl:\n"
+    "   end\n"
+    "end\n"
+    "@}", "not found 'end' in parse func def. token type is 10");
+
+    check_fail("{@\n"
+    "def f1():\n"
+    "   block:\n"
+    "   end\n"
+    "end\n"
+    "@}", "not found identifier in block statement");
+
+    check_fail(
+    "{@\n"
+    "    def f1():\n"
+    "    end\n"
+    "\n"
+    "    def f2() extends f1:\n"
+    "        inject a:\n"
+    "            puts(\"f2.a\")\n"
+    "        end\n"
+    "        super()\n"
+    "    end\n"
+    "\n"
+    "    f2()\n"
+    "@}", "not found \"a\" block");
 
     trv_cleanup;
 }
@@ -29494,6 +29645,8 @@ traverser_tests[] = {
     {"inject_stmt_17", test_trv_inject_stmt_17},
     {"inject_stmt_18", test_trv_inject_stmt_18},
     {"inject_stmt_19", test_trv_inject_stmt_19},
+    {"inject_stmt_20", test_trv_inject_stmt_20},
+    {"inject_stmt_fail_0", test_trv_inject_stmt_fail_0},
     {"struct_1", test_trv_struct_1},
     {"struct_2", test_trv_struct_2},
     {"struct_3", test_trv_struct_3},
