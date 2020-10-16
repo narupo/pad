@@ -68,7 +68,7 @@ again:
         return own->module.context;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        own = pull_in_ref_by(own);
+        own = pull_in_ref_by_all(own);
         if (!own) {
             return def_context;
         }
@@ -105,7 +105,7 @@ again:
         return own->module.ast;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        own = pull_in_ref_by(own);
+        own = pull_in_ref_by_all(own);
         if (!own) {
             return def_ast;
         }
@@ -169,7 +169,7 @@ again:
         return obj_to_str(obj);
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *var = pull_in_ref_by(obj);
+        object_t *var = pull_in_ref_by_all(obj);
         if (!var) {
             errstack_pushb(err, NULL, 0, NULL, 0, "\"%s\" is not defined in object to string", obj_getc_idn_name(obj));
             return NULL;
@@ -321,7 +321,7 @@ again1:
         const char *idn = obj_getc_idn_name(rhs_obj);
         context_t *ref_ctx = own->def_struct.context;
         assert(ref_ctx);
-        object_t *valobj = ctx_find_var_ref(ref_ctx, idn);
+        object_t *valobj = ctx_find_var_ref_all(ref_ctx, idn);
         if (!valobj) {
             errstack_pushb(err, NULL, 0, NULL, 0, "not found \"%s\"", idn);
             return NULL;
@@ -336,7 +336,7 @@ again1:
         }
 
         const char *idn = obj_getc_idn_name(rhs_obj);
-        object_t *valobj = ctx_find_var_ref(own->object.struct_context, idn);
+        object_t *valobj = ctx_find_var_ref_all(own->object.struct_context, idn);
         if (!valobj) {
             errstack_pushb(err, NULL, 0, NULL, 0, "not found \"%s\"", idn);
             return NULL;
@@ -526,7 +526,7 @@ copy_func_args(
             goto again;
         case OBJ_TYPE_IDENTIFIER: {
             const char *idn = obj_getc_idn_name(arg);
-            arg = pull_in_ref_by(arg);
+            arg = pull_in_ref_by_all(arg);
             if (!arg) {
                 pushb_error("\"%s\" is not defined", idn);
                 return NULL;
@@ -586,7 +586,7 @@ extract_func_args(
         object_t *aarg = objarr_get(actual_args, i);
         object_t *ref_aarg = aarg;
         if (aarg->type == OBJ_TYPE_IDENTIFIER) {
-            ref_aarg = pull_in_ref_by(aarg);
+            ref_aarg = pull_in_ref_by_all(aarg);
             if (!ref_aarg) {
                 pushb_error("\"%s\" is not defined in invoke function", obj_getc_idn_name(aarg));
                 obj_del(args);
@@ -595,7 +595,7 @@ extract_func_args(
         }
 
         // extract reference from current context
-        object_t *extract_arg = extract_ref_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, ref_aarg);
+        object_t *extract_arg = extract_ref_of_obj_all(ref_ast, err, ref_gc, ref_context, ref_node, ref_aarg);
         if (errstack_len(err)) {
             pushb_error("failed to extract reference");
             return;
@@ -773,7 +773,7 @@ invoke_builtin_modules(
             module = ownpar;
             break;
         case OBJ_TYPE_IDENTIFIER: {
-            ownpar = pull_in_ref_by(ownpar);
+            ownpar = pull_in_ref_by_all(ownpar);
             if (!ownpar) {
                 return NULL;
             }
@@ -878,7 +878,7 @@ again:
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        obj = pull_in_ref_by(obj);
+        obj = pull_in_ref_by_all(obj);
         if (!obj) {
             return NULL;
         }
@@ -898,7 +898,7 @@ again:
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        obj = pull_in_ref_by(obj);
+        obj = pull_in_ref_by_all(obj);
         if (!obj) {
             return NULL;
         }
@@ -910,6 +910,7 @@ again:
     }
 }
 
+// ATODO
 object_t *
 refer_chain_call(
     ast_t *ref_ast,
@@ -1006,7 +1007,7 @@ again:
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(indexobj);
-        indexobj = pull_in_ref_by(indexobj);
+        indexobj = pull_in_ref_by_all(indexobj);
         if (!indexobj) {
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
@@ -1049,7 +1050,7 @@ again:
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(indexobj);
-        indexobj = pull_in_ref_by(indexobj);
+        indexobj = pull_in_ref_by_all(indexobj);
         if (!indexobj) {
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
@@ -1091,7 +1092,7 @@ again:
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(indexobj);
-        indexobj = pull_in_ref_by(indexobj);
+        indexobj = pull_in_ref_by_all(indexobj);
         if (!indexobj) {
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
@@ -1138,7 +1139,7 @@ again:
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(owner);
-        owner = pull_in_ref_by(owner);
+        owner = pull_in_ref_by_all(owner);
         if (!owner) {
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
@@ -1264,7 +1265,7 @@ extract_copy_of_obj(
         return obj_deep_copy(obj);
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *ref = pull_in_ref_by(obj);
+        object_t *ref = pull_in_ref_by_all(obj);
         if (!ref) {
             pushb_error("\"%s\" is not defined in extract obj", obj_getc_idn_name(obj));
             return NULL;
@@ -1311,14 +1312,15 @@ extract_copy_of_obj(
     return NULL;
 }
 
-object_t *
-extract_ref_of_obj(
+static object_t *
+_extract_ref_of_obj(
     ast_t *ref_ast,
     errstack_t *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
-    object_t *obj
+    object_t *obj,
+    bool all
 ) {
     assert(obj);
 
@@ -1327,7 +1329,12 @@ extract_ref_of_obj(
         return obj;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *ref = pull_in_ref_by_all(obj);
+        object_t *ref = NULL;
+        if (all) {
+            ref = pull_in_ref_by_all(obj);
+        } else {
+            ref = pull_in_ref_by(obj);
+        }
         if (!ref) {
             pushb_error("\"%s\" is not defined", obj_getc_idn_name(obj));
             return NULL;
@@ -1349,7 +1356,7 @@ extract_ref_of_obj(
             const object_dict_item_t *item = objdict_getc_index(d, i);
             assert(item);
             object_t *el = item->value;
-            object_t *ref = extract_ref_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, el);
+            object_t *ref = _extract_ref_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, el, all);
             objdict_set(d, item->key, ref);
         }
 
@@ -1360,7 +1367,7 @@ extract_ref_of_obj(
 
         for (int32_t i = 0; i < objarr_len(arr); ++i) {
             object_t *el = objarr_get(arr, i);
-            object_t *ref = extract_ref_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, el);
+            object_t *ref = _extract_ref_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, el, all);
             objarr_set(arr, i, ref);
         }
 
@@ -1370,6 +1377,30 @@ extract_ref_of_obj(
 
     assert(0 && "impossible. failed to extract reference");
     return NULL;
+}
+
+object_t *
+extract_ref_of_obj(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *obj
+) {
+    return _extract_ref_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, obj, false);
+}
+
+object_t *
+extract_ref_of_obj_all(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *obj
+) {
+    return _extract_ref_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, obj, true);
 }
 
 void
@@ -1412,7 +1443,7 @@ parse_bool(
     case OBJ_TYPE_BOOL: return obj->boolean; break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(obj);
-        object_t *obj = ctx_find_var_ref(ref_context, idn);
+        object_t *obj = ctx_find_var_ref_all(ref_context, idn);
         if (!obj) {
             pushb_error("\"%s\" is not defined in if statement", idn);
             return false;
