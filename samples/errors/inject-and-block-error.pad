@@ -1,0 +1,13 @@
+{@
+    def f1():
+    end
+
+    def f2() extends f1:
+        inject a:
+            puts("f2.a")
+        end
+        super()
+    end
+
+    f2()
+@}
