@@ -24889,6 +24889,12 @@ test_trv_func_def_fail_0(void) {
     trv_ready;
 
     check_fail("{@ def @}", "not found blocks");
+    check_fail("{@ def f @}", "not found blocks");
+    check_fail("{@ def f() @}", "not found blocks");
+    check_fail("{@ def f(): @}", "not found 'end' in parse func def. token type is 5");
+    check_fail("{@ def f(): en @}", "not found 'end' in parse func def. token type is 5");
+    check_ok("{@ def f(): end @}", "");
+    check_fail("{@ def f(a, ): end @}", "syntax error. not found identifier in func def args");
 
     trv_cleanup;
 }
