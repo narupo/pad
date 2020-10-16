@@ -1535,6 +1535,7 @@ assign_to_chain_call(
 static object_t *
 assign_to_chain_array_index(
     ast_t *ast,
+    trv_args_t *targs,
     object_t *owner,
     chain_object_t *co,
     object_t *rhs
@@ -1545,14 +1546,14 @@ assign_to_chain_array_index(
 again:
     switch (idxobj->type) {
     default: {
-        pushb_error_node(ast->error_stack, NULL, "invalid index type (%d)", idxobj->type);
+        pushb_error("invalid index type (%d)", idxobj->type);
         return NULL;
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(idxobj);
         idxobj = pull_in_ref_by_all(idxobj);
         if (!idxobj) {
-            pushb_error_node(ast->error_stack, NULL, "\"%s\" is not defined", idn);
+            pushb_error("\"%s\" is not defined", idn);
             return NULL;
         }
         goto again;
@@ -1592,25 +1593,25 @@ again2:
 static object_t *
 assign_to_chain_dict_index(
     ast_t *ast,
+    trv_args_t *targs,
     object_t *owner,
     chain_object_t *co,
     object_t *rhs
 ) {
     assert(owner->type == OBJ_TYPE_DICT);
-
     object_t *idxobj = chain_obj_get_obj(co);
 
 again:
     switch (idxobj->type) {
     default: {
-        pushb_error_node(ast->error_stack, NULL, "invalid index (%d)", idxobj->type);
+        pushb_error("invalid index (%d)", idxobj->type);
         return NULL;
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(idxobj);
         idxobj = pull_in_ref_by_all(idxobj);
         if (!idxobj) {
-            pushb_error_node(ast->error_stack, NULL, "\"%s\" is not defined", idn);
+            pushb_error("\"%s\" is not defined", idn);
             return NULL;
         }
         goto again;
@@ -1659,7 +1660,7 @@ again:
         goto again;
     } break;
     case OBJ_TYPE_ARRAY: {
-        object_t *result = assign_to_chain_array_index(ast, owner, co, rhs);
+        object_t *result = assign_to_chain_array_index(ast, targs, owner, co, rhs);
         if (ast_has_errors(ast)) {
             pushb_error("failed to assign to array");
             return NULL;
@@ -1667,7 +1668,7 @@ again:
         return result;
     } break;
     case OBJ_TYPE_DICT: {
-        object_t *result = assign_to_chain_dict_index(ast, owner, co, rhs);
+        object_t *result = assign_to_chain_dict_index(ast, targs, owner, co, rhs);
         if (ast_has_errors(ast)) {
             pushb_error("failed to assign to dict");
             return NULL;
