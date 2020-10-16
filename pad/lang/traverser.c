@@ -1474,7 +1474,7 @@ again1:
 again2:
     switch (ref_owner->type) {
     default:
-        pushb_error_node(ast->error_stack, NULL, "unsupported object (%d)", ref_owner->type);
+        pushb_error("unsupported object (%d)", ref_owner->type);
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -1498,7 +1498,7 @@ again2:
 refer_child:
     switch (child->type) {
     default:
-        pushb_error_node(ast->error_stack, NULL, "invalid type (%d)", child->type);
+        pushb_error("invalid type (%d)", child->type);
         return NULL;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(child);
@@ -1521,7 +1521,7 @@ assign_to_chain_call(
 ) {
     object_t *obj = refer_chain_call(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, owners, co);
     if (ast_has_errors(ast)) {
-        pushb_error_node(ast->error_stack, NULL, "failed to refer chain call");
+        pushb_error("failed to refer chain call");
         return NULL;
     }
 
@@ -1567,7 +1567,7 @@ again:
     object_array_t *objarr = obj_get_array(owner);
     objint_t idx = idxobj->lvalue;
     if (idx < 0 || idx >= objarr_len(objarr)) {
-        pushb_error_node(ast->error_stack, NULL, "index out of range");
+        pushb_error("index out of range");
         return NULL;
     }
 
@@ -1578,7 +1578,7 @@ again2:
         const char *idn = obj_getc_idn_name(rhs);
         rhs = pull_in_ref_by_all(rhs);
         if (!rhs) {
-            pushb_error_node(ast->error_stack, NULL, "%s is not defined", idn);
+            pushb_error("%s is not defined", idn);
             return NULL;
         }
         goto again2;
@@ -1640,14 +1640,14 @@ assign_to_chain_index(
 ) {
     object_t *owner = objarr_get_last(owners);
     if (!owner) {
-        pushb_error_node(ast->error_stack, NULL, "owner is null");
+        pushb_error("owner is null");
         return NULL;
     }
 
 again:
     switch (owner->type) {
     default: {
-        pushb_error_node(ast->error_stack, NULL, "can't assign to (%d)", owner->type);
+        pushb_error("can't assign to (%d)", owner->type);
         return NULL;
     } break;
     case OBJ_TYPE_IDENTIFIER: {
