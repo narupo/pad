@@ -7627,25 +7627,25 @@ trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
     object_t *lref = _refer_chain_obj_with_ref(lhs);
     if (ast_has_errors(ast)) {
         pushb_error("failed to refer chain object");
-        return NULL;
+        return_trav(NULL);
     }
 
     object_t *rref = _extract_ref_of_obj_all(rhs);
     if (ast_has_errors(ast)) {
         pushb_error("failed to extract reference");
-        return NULL;
+        return_trav(NULL);
     }
 
     switch (lref->type) {
     default: {
         pushb_error("invalid left hand operand (%d)", lref->type);
-        return NULL;
+        return_trav(NULL);
     } break;
     case OBJ_TYPE_INT: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
-            return NULL;
+            return_trav(NULL);
         } break;
         case OBJ_TYPE_INT: {
             lref->lvalue += rref->lvalue;
@@ -7659,7 +7659,7 @@ trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
-            return NULL;
+            return_trav(NULL);
         } break;
         case OBJ_TYPE_INT: {
             lref->lvalue = ((objint_t) lref->boolean) + rref->lvalue;
@@ -7675,10 +7675,21 @@ trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
-            return NULL;
+            return_trav(NULL);
         } break;
         case OBJ_TYPE_UNICODE: {
             uni_app_other(lref->unicode, rref->unicode);
+        } break;
+        }
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        switch (rref->type) {
+        default: {
+            pushb_error("invalid right hand operand (%d)", rref->type);
+            return_trav(NULL);
+        } break;
+        case OBJ_TYPE_ARRAY: {
+            objarr_app_other(lref->objarr, rref->objarr);
         } break;
         }
     } break;
@@ -7989,6 +8000,98 @@ trv_calc_asscalc_mod_ass_chain(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
+extract_idn_and_chain(ast_t *ast, trv_args_t *targs, object_t *obj) {
+    if (!ast || !targs || !obj) {
+        return NULL;
+    }
+
+again:
+    switch (obj->type) {
+    default: {
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(obj);
+        obj = pull_in_ref_by_all(obj);
+        if (!obj) {
+            pushb_error("\"%s\" is not defined", idn);
+            return_trav(NULL);
+        }
+        goto again;
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        obj = _refer_chain_obj_with_ref(obj);
+        if (ast_has_errors(ast)) {
+            pushb_error("failed to refer chain object");
+            return_trav(NULL);
+        }
+        assert(obj);
+        goto again;
+    } break;
+    }
+}
+
+static object_t *
+trv_calc_asscalc_add_ass_unicode(ast_t *ast, trv_args_t *targs) {
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs && lhs->type == OBJ_TYPE_UNICODE);
+
+again:
+    switch (rhs->type) {
+    default: {
+        pushb_error("invalid right hand operand (%d)", rhs->type);
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_IDENTIFIER:
+    case OBJ_TYPE_CHAIN: {
+        rhs = extract_idn_and_chain(ast, targs, rhs);
+        if (ast_has_errors(ast)) {
+            pushb_error("failed to extract identifier and chain object");
+            return_trav(NULL);
+        }
+        goto again;
+    } break;
+    case OBJ_TYPE_UNICODE: {
+        unicode_t *dst = lhs->unicode;
+        unicode_t *src = rhs->unicode;
+        uni_app_other(dst, src);
+        return_trav(lhs);
+    } break;
+    }
+}
+
+static object_t *
+trv_calc_asscalc_add_ass_array(ast_t *ast, trv_args_t *targs) {
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs && lhs->type == OBJ_TYPE_ARRAY);
+
+again:
+    switch (rhs->type) {
+    default: {
+        pushb_error("invalid right hand operand (%d)", rhs->type);
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_IDENTIFIER:
+    case OBJ_TYPE_CHAIN: {
+        rhs = extract_idn_and_chain(ast, targs, rhs);
+        if (ast_has_errors(ast)) {
+            pushb_error("failed to extract identifier and chain object");
+            return_trav(NULL);
+        }
+        goto again;
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        object_array_t *dst = lhs->objarr;
+        object_array_t *src = rhs->objarr;
+        objarr_app_other(dst, src);
+        return_trav(lhs);
+    } break;
+    }
+}
+
+static object_t *
 trv_calc_asscalc_add_ass(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *lhs = targs->lhs_obj;
@@ -8001,6 +8104,21 @@ trv_calc_asscalc_add_ass(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
         break;
+    case OBJ_TYPE_INT: {
+        check("call trv_calc_asscalc_add_ass_identifier_int");
+        object_t *result = trv_calc_asscalc_add_ass_identifier_int(ast, targs);
+        return_trav(result);
+    } break;
+    case OBJ_TYPE_UNICODE: {
+        check("call trv_calc_asscalc_add_ass_unicode");
+        object_t *result = trv_calc_asscalc_add_ass_unicode(ast, targs);
+        return_trav(result);
+    } break;
+    case OBJ_TYPE_ARRAY: {
+        check("call trv_calc_asscalc_add_ass_array");
+        object_t *result = trv_calc_asscalc_add_ass_array(ast, targs);
+        return_trav(result);
+    } break;
     case OBJ_TYPE_IDENTIFIER: {
         check("call trv_calc_asscalc_add_ass_identifier");
         object_t *result = trv_calc_asscalc_add_ass_identifier(ast, targs);
