@@ -242,7 +242,7 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
         token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_OP_ASS) {
             ast->ref_ptr--;
-            node_t *node = make_node(NODE_TYPE_ASSIGN, cur);
+            node_t *node = node_new(NODE_TYPE_ASSIGN, cur, t);
             return_parse(node);
         }
         check("read =");
@@ -260,7 +260,7 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
         nodearr_moveb(cur->nodearr, rhs);
     }
 
-    return_parse(make_node(NODE_TYPE_ASSIGN, cur));
+    assert(0 && "impossible");
 }
 
 static node_t *
@@ -305,7 +305,7 @@ cc_assign_list(ast_t *ast, cc_args_t *cargs) {
         token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_COMMA) {
             ast->ref_ptr--;
-            return_parse(make_node(NODE_TYPE_ASSIGN_LIST, cur));
+            return_parse(node_new(NODE_TYPE_ASSIGN_LIST, cur, t));
         }
         check("read ,");
 
@@ -322,7 +322,7 @@ cc_assign_list(ast_t *ast, cc_args_t *cargs) {
         nodearr_moveb(cur->nodearr, rhs);
     }
 
-    return_parse(make_node(NODE_TYPE_ASSIGN_LIST, cur));
+    assert(0 && "impossible");
 }
 
 static node_t *
@@ -347,16 +347,18 @@ cc_formula(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     check("call cc_assign_list");
+    const token_t *savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->assign_list = cc_assign_list(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->assign_list) {
-        return_parse(make_node(NODE_TYPE_FORMULA, cur));
+        return_parse(node_new(NODE_TYPE_FORMULA, cur, savetok));
     }
 
     check("call cc_multi_assign");
+    savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->multi_assign = cc_multi_assign(ast, cargs);
     if (!cur->multi_assign) {
@@ -366,7 +368,7 @@ cc_formula(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");  // not error
     }
 
-    return_parse(make_node(NODE_TYPE_FORMULA, cur));
+    return_parse(node_new(NODE_TYPE_FORMULA, cur, savetok));
 }
 
 static node_t *
@@ -414,7 +416,7 @@ cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
         token_t *t = *ast->ref_ptr++;
         if (t->type != TOKEN_TYPE_OP_ASS) {
             ast->ref_ptr--;
-            return_parse(make_node(NODE_TYPE_MULTI_ASSIGN, cur));
+            return_parse(node_new(NODE_TYPE_MULTI_ASSIGN, cur, t));
         }
 
         check("call rhs cc_test_list");
@@ -430,7 +432,7 @@ cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
         nodearr_moveb(cur->nodearr, node);
     }
 
-    return_parse(make_node(NODE_TYPE_MULTI_ASSIGN, cur));
+    assert(0 && "impossible");
 }
 
 static node_t *
@@ -493,7 +495,7 @@ cc_test_list(ast_t *ast, cc_args_t *cargs) {
         nodearr_moveb(cur->nodearr, rhs);
     }
 
-    return make_node(NODE_TYPE_TEST_LIST, cur);
+    assert(0 && "impossible");
 }
 
 static node_t *
@@ -521,13 +523,14 @@ cc_call_args(ast_t *ast, cc_args_t *cargs) {
 
     depth_t depth = cargs->depth;
 
+    const token_t *savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     node_t *lhs = cc_test(ast, cargs);
     if (!lhs) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
-        return make_node(NODE_TYPE_CALL_ARGS, cur);
+        return node_new(NODE_TYPE_CALL_ARGS, cur, savetok);
     }
 
     nodearr_moveb(cur->nodearr, lhs);
@@ -556,7 +559,7 @@ cc_call_args(ast_t *ast, cc_args_t *cargs) {
         nodearr_moveb(cur->nodearr, rhs);
     }
 
-    return make_node(NODE_TYPE_CALL_ARGS, cur);
+    assert(0 && "impossible");
 }
 
 static node_t *
@@ -875,7 +878,7 @@ cc_break_stmt(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("invalid break statement. not in loop");
     }
 
-    return_parse(make_node(NODE_TYPE_BREAK_STMT, cur));
+    return_parse(node_new(NODE_TYPE_BREAK_STMT, cur, t));
 }
 
 static node_t *
@@ -904,7 +907,7 @@ cc_continue_stmt(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("invalid continue statement. not in loop");
     }
 
-    return_parse(make_node(NODE_TYPE_CONTINUE_STMT, cur));
+    return_parse(node_new(NODE_TYPE_CONTINUE_STMT, cur, t));
 }
 
 static node_t *
@@ -937,6 +940,7 @@ cc_return_stmt(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("invalid return statement. not in function");
     }
 
+    const token_t *savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->formula = cc_formula(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -944,7 +948,7 @@ cc_return_stmt(ast_t *ast, cc_args_t *cargs) {
     }
     // allow null
 
-    return_parse(make_node(NODE_TYPE_RETURN_STMT, cur));
+    return_parse(node_new(NODE_TYPE_RETURN_STMT, cur, savetok));
 }
 
 static node_t *
@@ -977,7 +981,7 @@ cc_augassign(ast_t *ast, cc_args_t *cargs) {
     }
     check("read op");
 
-    return_parse(make_node(NODE_TYPE_AUGASSIGN, cur));
+    return_parse(node_new(NODE_TYPE_AUGASSIGN, cur, t));
 }
 
 static node_t *
@@ -1006,7 +1010,7 @@ cc_identifier(ast_t *ast, cc_args_t *cargs) {
     // copy text
     cur->identifier = cstr_edup(t->text);
 
-    return_parse(make_node(NODE_TYPE_IDENTIFIER, cur));
+    return_parse(node_new(NODE_TYPE_IDENTIFIER, cur, t));
 }
 
 static node_t *
@@ -1035,7 +1039,7 @@ cc_string(ast_t *ast, cc_args_t *cargs) {
     // copy text
     cur->string = cstr_edup(t->text);
 
-    return_parse(make_node(NODE_TYPE_STRING, cur));
+    return_parse(node_new(NODE_TYPE_STRING, cur, t));
 }
 
 static node_t *
@@ -1240,7 +1244,7 @@ cc_array(ast_t *ast, cc_args_t *cargs) {
     }
     check("read ']'");
 
-    return_parse(make_node(NODE_TYPE_ARRAY, cur));
+    return_parse(node_new(NODE_TYPE_ARRAY, cur, t));
 }
 
 static node_t *
@@ -1291,6 +1295,7 @@ cc_dict_elem(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("reached EOF in dict elem");
     }
 
+    const token_t *savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->value_simple_assign = cc_simple_assign(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -1300,7 +1305,7 @@ cc_dict_elem(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("not found value in parse dict elem");
     }
 
-    return_parse(make_node(NODE_TYPE_DICT_ELEM, cur));
+    return_parse(node_new(NODE_TYPE_DICT_ELEM, cur, savetok));
 }
 
 static node_t *
@@ -1442,7 +1447,7 @@ cc_dict(ast_t *ast, cc_args_t *cargs) {
     }
     check("read '}'");
 
-    return_parse(make_node(NODE_TYPE_DICT, cur));
+    return_parse(node_new(NODE_TYPE_DICT, cur, t));
 }
 
 static node_t *
@@ -1468,7 +1473,7 @@ cc_nil(ast_t *ast, cc_args_t *cargs) {
     }
     check("read nil");
 
-    return_parse(make_node(NODE_TYPE_NIL, cur));
+    return_parse(node_new(NODE_TYPE_NIL, cur, t));
 }
 
 static node_t *
@@ -1496,7 +1501,7 @@ cc_digit(ast_t *ast, cc_args_t *cargs) {
 
     cur->lvalue = t->lvalue;
 
-    return_parse(make_node(NODE_TYPE_DIGIT, cur));
+    return_parse(node_new(NODE_TYPE_DIGIT, cur, t));
 }
 
 static node_t *
@@ -1523,7 +1528,7 @@ cc_false_(ast_t *ast, cc_args_t *cargs) {
 
     cur->boolean = false;
 
-    return_parse(make_node(NODE_TYPE_FALSE, cur));
+    return_parse(node_new(NODE_TYPE_FALSE, cur, t));
 }
 
 static node_t *
@@ -1550,7 +1555,7 @@ cc_true_(ast_t *ast, cc_args_t *cargs) {
 
     cur->boolean = true;
 
-    return_parse(make_node(NODE_TYPE_TRUE, cur));
+    return_parse(node_new(NODE_TYPE_TRUE, cur, t));
 }
 
 static node_t *
@@ -1581,83 +1586,91 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     check("call cc_nil");
+    const token_t *savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->nil = cc_nil(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->nil) {
-        return_parse(make_node(NODE_TYPE_ATOM, cur));
+        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
     }
 
     check("call cc_false_");
+    savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->false_ = cc_false_(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->false_) {
-        return_parse(make_node(NODE_TYPE_ATOM, cur));
+        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
     }
 
     check("call cc_true_");
+    savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->true_ = cc_true_(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->true_) {
-        return_parse(make_node(NODE_TYPE_ATOM, cur));
+        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
     }
 
     check("call cc_digit");
+    savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->digit = cc_digit(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->digit) {
-        return_parse(make_node(NODE_TYPE_ATOM, cur));
+        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
     }
 
     check("call cc_string");
+    savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->string = cc_string(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->string) {
-        return_parse(make_node(NODE_TYPE_ATOM, cur));
+        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
     }
 
     check("call cc_array");
+    savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->array = cc_array(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->array) {
-        return_parse(make_node(NODE_TYPE_ATOM, cur));
+        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
     }
 
     check("call cc_dict");
+    savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->dict = cc_dict(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->dict) {
-        return_parse(make_node(NODE_TYPE_ATOM, cur));
+        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
     }
 
     check("call cc_identifier");
+    savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->identifier = cc_identifier(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (cur->identifier) {
-        return_parse(make_node(NODE_TYPE_ATOM, cur));
+        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
     }
 
     return_cleanup("");
@@ -1766,13 +1779,14 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         check("call cc_augassign");
+        const token_t *savetok = *ast->ref_ptr;
         cargs->depth = depth + 1;
         node_t *op = cc_augassign(ast, cargs);
         if (!op) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
-            return_parse(make_node(NODE_TYPE_ASSCALC, cur));
+            return_parse(node_new(NODE_TYPE_ASSCALC, cur, savetok));
         }
 
         nodearr_moveb(cur->nodearr, op);
@@ -1832,13 +1846,14 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         check("call mul_div_op");
+        const token_t *savetok = *ast->ref_ptr;
         cargs->depth = depth + 1;
         node_t *op = cc_mul_div_op(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         if (!op) {
-            return_parse(make_node(NODE_TYPE_TERM, cur));
+            return_parse(node_new(NODE_TYPE_TERM, cur, savetok));
         }
 
         nodearr_moveb(cur->nodearr, op);
@@ -1888,6 +1903,7 @@ cc_negative(ast_t *ast, cc_args_t *cargs) {
     }
 
     check("call left cc_dot");
+    const token_t *savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->chain = cc_chain(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -1897,7 +1913,7 @@ cc_negative(ast_t *ast, cc_args_t *cargs) {
         return_cleanup(""); // not error
     }
 
-    return_parse(make_node(NODE_TYPE_NEGATIVE, mem_move(cur)));
+    return_parse(node_new(NODE_TYPE_NEGATIVE, mem_move(cur), savetok));
 }
 
 static node_t *
@@ -2070,7 +2086,7 @@ cc_mul_div_op(ast_t *ast, cc_args_t *cargs) {
     }
     check("read op");
 
-    return_parse(make_node(NODE_TYPE_MUL_DIV_OP, cur));
+    return_parse(node_new(NODE_TYPE_MUL_DIV_OP, cur, t));
 }
 
 static node_t *
@@ -2100,7 +2116,7 @@ cc_add_sub_op(ast_t *ast, cc_args_t *cargs) {
     }
     check("read op");
 
-    return_parse(make_node(NODE_TYPE_ADD_SUB_OP, cur));
+    return_parse(node_new(NODE_TYPE_ADD_SUB_OP, cur, t));
 }
 
 static node_t *
@@ -2142,13 +2158,14 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         check("call add_sub_op");
+        const token_t *savetok = *ast->ref_ptr;
         cargs->depth = depth + 1;
         node_t *op = cc_add_sub_op(ast, cargs);
         if (!op) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
-            return_parse(make_node(NODE_TYPE_EXPR, cur));
+            return_parse(node_new(NODE_TYPE_EXPR, cur, savetok));
         }
 
         nodearr_moveb(cur->nodearr, op);
@@ -2218,7 +2235,7 @@ cc_comp_op(ast_t *ast, cc_args_t *cargs) {
         break;
     }
 
-    return_parse(make_node(NODE_TYPE_COMP_OP, cur));
+    return_parse(node_new(NODE_TYPE_COMP_OP, cur, t));
 }
 
 static node_t *
@@ -2260,13 +2277,14 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         check("call cc_comp_op");
+        const token_t *savetok = *ast->ref_ptr;
         cargs->depth = depth + 1;
         node_t *comp_op = cc_comp_op(ast, cargs);
         if (!comp_op) {
             if (ast_has_errors(ast)) {
                 return_cleanup("");
             }
-            return_parse(make_node(NODE_TYPE_COMPARISON, cur));
+            return_parse(node_new(NODE_TYPE_COMPARISON, cur, savetok));
         }
 
         check("call right cc_asscalc");
@@ -2334,7 +2352,7 @@ cc_not_test(ast_t *ast, cc_args_t *cargs) {
         }
     }
 
-    return_parse(make_node(NODE_TYPE_NOT_TEST, cur));
+    return_parse(node_new(NODE_TYPE_NOT_TEST, cur, t));
 }
 
 static node_t *
@@ -2484,13 +2502,14 @@ cc_test(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     check("call cc_or_test");
+    const token_t *savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->or_test = cc_or_test(ast, cargs);
     if (!cur->or_test) {
         return_cleanup("");
     }
 
-    return_parse(make_node(NODE_TYPE_TEST, cur));
+    return_parse(node_new(NODE_TYPE_TEST, cur, savetok));
 }
 
 static node_t *
@@ -3338,6 +3357,7 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
+    const token_t *savetok = *ast->ref_ptr;
 
     for (;;) {
         t = ast_read_token(ast);
@@ -3349,6 +3369,7 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
             ast_prev_ptr(ast);
         }
 
+        savetok = *ast->ref_ptr;
         cargs->depth = depth + 1;
         node_t *content = cc_content(ast, cargs);
         if (!content || ast_has_errors(ast)) {
@@ -3363,7 +3384,7 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
     }
 
     // done
-    node_t *node = make_node(NODE_TYPE_INJECT_STMT, cur);
+    node_t *node = node_new(NODE_TYPE_INJECT_STMT, cur, savetok);
     return_parse(node);
 }
 
@@ -3429,7 +3450,7 @@ cc_struct(ast_t *ast, cc_args_t *cargs) {
     }
 
     // done
-    node_t *node = make_node(NODE_TYPE_STRUCT, cur);
+    node_t *node = node_new(NODE_TYPE_STRUCT, cur, t);
     return_parse(node);
 }
 
@@ -3561,16 +3582,17 @@ elem_readed:
     cc_skip_newlines(ast);
 
     check("call cc_elems");
+    const token_t *savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->elems = cc_elems(ast, cargs);
     if (!cur->elems) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
-        return_parse(make_node(NODE_TYPE_ELEMS, cur));
+        return_parse(node_new(NODE_TYPE_ELEMS, cur, savetok));
     }
 
-    return_parse(make_node(NODE_TYPE_ELEMS, cur));
+    return_parse(node_new(NODE_TYPE_ELEMS, cur, savetok));
 }
 
 static node_t *
@@ -3590,7 +3612,7 @@ cc_text_block(ast_t *ast, cc_args_t *cargs) {
     // copy text
     cur->text = cstr_edup(t->text);
 
-    return_parse(make_node(NODE_TYPE_TEXT_BLOCK, cur));
+    return_parse(node_new(NODE_TYPE_TEXT_BLOCK, cur, t));
 }
 
 static node_t *
@@ -3639,7 +3661,7 @@ cc_ref_block(ast_t *ast, cc_args_t *cargs) {
     }
     check("read ':}'")
 
-    return_parse(make_node(NODE_TYPE_REF_BLOCK, cur));
+    return_parse(node_new(NODE_TYPE_REF_BLOCK, cur, t));
 }
 
 static node_t *
@@ -3694,7 +3716,7 @@ cc_code_block(ast_t *ast, cc_args_t *cargs) {
     cc_skip_newlines(ast);
     check("skip newlines");
 
-    return_parse(make_node(NODE_TYPE_CODE_BLOCK, cur));
+    return_parse(node_new(NODE_TYPE_CODE_BLOCK, cur, t));
 }
 
 static node_t *
@@ -3739,6 +3761,7 @@ cc_blocks(ast_t *ast, cc_args_t *cargs) {
         }
     }
 
+    const token_t *savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->blocks = cc_blocks(ast, cargs);
     // allow null
@@ -3746,7 +3769,7 @@ cc_blocks(ast_t *ast, cc_args_t *cargs) {
         return_cleanup();
     }
 
-    return_parse(make_node(NODE_TYPE_BLOCKS, cur));
+    return_parse(node_new(NODE_TYPE_BLOCKS, cur, savetok));
 }
 
 static node_t *
@@ -3767,6 +3790,7 @@ cc_program(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     check("call cc_blocks");
+    const token_t *savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->blocks = cc_blocks(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -3776,7 +3800,7 @@ cc_program(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("not found blocks");
     }
 
-    return_parse(make_node(NODE_TYPE_PROGRAM, cur));
+    return_parse(node_new(NODE_TYPE_PROGRAM, cur, savetok));
 }
 
 static node_t *
@@ -3800,6 +3824,7 @@ cc_def(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     check("call cc_func_def");
+    const token_t *savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->func_def = cc_func_def(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -3809,7 +3834,7 @@ cc_def(ast_t *ast, cc_args_t *cargs) {
         return_cleanup(""); // not error
     }
 
-    return_parse(make_node(NODE_TYPE_DEF, cur));
+    return_parse(node_new(NODE_TYPE_DEF, cur, savetok));
 }
 
 static node_t *
@@ -3837,13 +3862,14 @@ cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     check("call cc_identifier");
+    const token_t *savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     node_t *identifier = cc_identifier(ast, cargs);
     if (!identifier) {
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
-        return_parse(make_node(NODE_TYPE_FUNC_DEF_ARGS, cur)); // not error, empty args
+        return_parse(node_new(NODE_TYPE_FUNC_DEF_ARGS, cur, savetok)); // not error, empty args
     }
 
     nodearr_moveb(cur->identifiers, identifier);
@@ -3873,7 +3899,7 @@ cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
         nodearr_moveb(cur->identifiers, identifier);
     }
 
-    return_parse(make_node(NODE_TYPE_FUNC_DEF_ARGS, cur));
+    assert(0 && "impossible");
 }
 
 
@@ -3923,7 +3949,7 @@ cc_func_def_params(ast_t *ast, cc_args_t *cargs) {
     }
     check("read )");
 
-    return_parse(make_node(NODE_TYPE_FUNC_DEF_PARAMS, cur));
+    return_parse(node_new(NODE_TYPE_FUNC_DEF_PARAMS, cur, t));
 }
 
 static node_t *
