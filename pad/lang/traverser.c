@@ -7602,7 +7602,6 @@ trv_calc_asscalc_add_ass_identifier(ast_t *ast, trv_args_t *targs) {
         check("call trv_calc_asscalc_add_ass_identifier");
         targs->lhs_obj = lhsref;
         targs->depth = depth + 1;
-        // ATODO
         result = trv_calc_asscalc_add_ass_identifier(ast, targs);
         break;
     case OBJ_TYPE_UNICODE: {
@@ -7610,7 +7609,6 @@ trv_calc_asscalc_add_ass_identifier(ast_t *ast, trv_args_t *targs) {
         targs->lhs_obj = lhsref;
         targs->identifier = idn;
         targs->depth = depth + 1;
-        // ATODO
         result = trv_calc_asscalc_add_ass_identifier_string(ast, targs);
     } break;
     }
