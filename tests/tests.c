@@ -26728,18 +26728,10 @@ static void
 test_trv_asscalc_4(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   a = [1, 2]\n"
     "   a[0] += 1\n"
-    "@}{: a[0] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
-    }
+    "@}{: a[0] :}", "2");
 
     trv_cleanup;
 }
