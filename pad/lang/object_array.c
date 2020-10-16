@@ -218,6 +218,26 @@ objarr_popb(object_array_t *self) {
 }
 
 object_t *
+objarr_app_other(object_array_t *self, object_array_t *other) {
+    bool same = self == other;
+    if (same) {
+        other = objarr_shallow_copy(other);
+    }
+
+    for (int32_t i = 0; i < other->len; ++i) {
+        object_t *obj = other->parray[i];
+        obj_inc_ref(obj);
+        objarr_pushb(self, obj);
+    }
+
+    if (same) {
+        objarr_del(other);
+    }
+
+    return self;
+}
+
+object_t *
 objarr_get_last(object_array_t *self) {
     if (self->len <= 0) {
         return NULL;

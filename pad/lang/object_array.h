@@ -97,6 +97,12 @@ const object_t *
 objarr_getc_last(const object_array_t *self);
 
 /**
+ * TODO: test
+ */
+object_t *
+objarr_app_other(object_array_t *self, object_array_t *other);
+
+/**
  * dump object array at stream
  *
  * @param[in] *self
