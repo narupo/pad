@@ -20854,18 +20854,32 @@ test_trv_if_stmt_11(void) {
 
 static void
 test_trv_if_stmt_12(void) {
-
-    return;  // TODO
-
     trv_ready;
 
-    check_ok("{@\n"
+    check_ok("{@ if 0: @}123{@ elif 1: @}223{@ end @}", "223");
+    check_ok("{@ if 0: @}123{@ elif 0: @}223{@ elif 1: @}323{@ end @}", "323");
+    check_ok("{@ if 0: @}123{@ else: @}223{@ end @}", "223");
+    check_ok("{@ if 0: @}123{@ elif 0: @}223{@ else: @}323{@ end @}", "323");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_if_stmt_fail_0(void) {
+    trv_ready;
+
+    check_fail("{@\n"
     "if 1:\n"
     "   puts(1)\n"
     "else:\n"
     "elif 1:\n"
     "end"
-    "@}", "1\n");
+    "@}", "syntax error. invalid token");
+
+    check_fail("{@ if 1: @}\n"
+    "{@ else: @}\n"
+    "{@ elif 1: @}\n"
+    "{@ end @}", "syntax error. invalid token");
 
     trv_cleanup;
 }
@@ -20951,15 +20965,7 @@ static void
 test_trv_elif_stmt_1(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@ if 0: @}{@ elif 1: @}1{@ end @}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    }
+    check_ok_trace("{@ if 0: @}{@ elif 1: @}1{@ end @}", "1");
 
     tkr_parse(tkr, "{@ \nif 0: @}{@ elif 1: @}1{@ end @}");
     {
@@ -29492,6 +29498,7 @@ traverser_tests[] = {
     {"if_stmt_10", test_trv_if_stmt_10},
     {"if_stmt_11", test_trv_if_stmt_11},
     {"if_stmt_12", test_trv_if_stmt_12},
+    {"if_stmt_fail_0", test_trv_if_stmt_fail_0},
     {"elif_stmt_0", test_trv_elif_stmt_0},
     {"elif_stmt_1", test_trv_elif_stmt_1},
     {"elif_stmt_2", test_trv_elif_stmt_2},
