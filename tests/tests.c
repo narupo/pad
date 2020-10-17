@@ -26753,10 +26753,13 @@ static void
 test_trv_asscalc_5(void) {
     trv_ready;
 
+    /* this specification is different many languages.
+       this language select equal to 4 on this expression */
+
     check_ok("{@\n"
     "   a = [1, 2]\n"
     "   a[0] += a[0] += 1\n"
-    "@}{: a[0] :}", "4");  // TODO: Ruby is eq 3
+    "@}{: a[0] :}", "4");  // TODO: Ruby is eq 3, C/C++ is eq 4
 
     check_ok("{@\n"
     "   a = [\"a\", \"b\"]\n"
