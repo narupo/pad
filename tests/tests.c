@@ -19588,6 +19588,19 @@ test_trv_ref_block(void) {
 }
 
 static void
+test_trv_ref_block_fail(void) {
+    trv_ready;
+
+    check_fail("{:", "not found blocks");
+    check_fail("{: 1", "not found blocks");
+    check_fail("{: 1 :", "syntax error. not found \":}\"");
+    check_ok("{: 1 :}", "1");
+    check_fail("{: :}", "not found blocks");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_text_block(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -29468,6 +29481,7 @@ traverser_tests[] = {
     {"code_block", test_trv_code_block},
     {"code_block_fail", test_trv_code_block_fail},
     {"ref_block", test_trv_ref_block},
+    {"ref_block_fail", test_trv_ref_block_fail},
     {"text_block", test_trv_text_block},
     {"if_stmt_0", test_trv_if_stmt_0},
     {"if_stmt_1", test_trv_if_stmt_1},
