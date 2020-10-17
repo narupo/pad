@@ -2597,6 +2597,10 @@ cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
         } else {
             // read elems
             --ast->ref_ptr;
+            const token_t *t = *ast->ref_ptr;
+            if (t->type == TOKEN_TYPE_STMT_ELIF) {
+                return_cleanup("syntax error. invalid token");
+            }
 
             check("call cc_elems");
             cargs->depth = depth + 1;
