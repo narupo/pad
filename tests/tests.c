@@ -18093,20 +18093,13 @@ test_trv_traverse(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "ab"));
     }
 
-    tkr_parse(tkr, "{@\n"
-        "a = \"x\"\n"
-        "def f():\n"
-        "   a += \"y\"\n"
-        "end\n"
-        "f()\n"
-        "@}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        // TODO: want to occurs to error
-    }
+    check_fail("{@\n"
+    "a = \"x\"\n"
+    "def f():\n"
+    "   a += \"y\"\n"
+    "end\n"
+    "f()\n"
+    "@}{: a :}", "\"a\" is not defined");
 
     tkr_parse(tkr, "{@\n"
         "    def add(a):\n"
