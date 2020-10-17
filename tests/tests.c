@@ -26786,18 +26786,10 @@ static void
 test_trv_asscalc_8(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   a = [true, 2]\n"
     "   a[0] += true\n"
-    "@}{: a[0] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
-    }
+    "@}{: a[0] :}", "2");
 
     trv_cleanup;
 }
@@ -26806,18 +26798,10 @@ static void
 test_trv_asscalc_9(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   a = [1, 2]\n"
     "   a[0] -= 1\n"
-    "@}{: a[0] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
-    }
+    "@}{: a[0] :}", "0");
 
     trv_cleanup;
 }
@@ -26826,18 +26810,10 @@ static void
 test_trv_asscalc_10(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   a = [true, 2]\n"
     "   a[0] -= true\n"
-    "@}{: a[0] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
-    }
+    "@}{: a[0] :}", "0");
 
     trv_cleanup;
 }
@@ -26846,18 +26822,10 @@ static void
 test_trv_asscalc_11(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   a = [1, 2]\n"
     "   a[0] *= 2\n"
-    "@}{: a[0] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
-    }
+    "@}{: a[0] :}", "2");
 
     trv_cleanup;
 }
@@ -26866,18 +26834,10 @@ static void
 test_trv_asscalc_12(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   a = [\"abc\", 2]\n"
     "   a[0] *= 2\n"
-    "@}{: a[0] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcabc"));
-    }
+    "@}{: a[0] :}", "abcabc");
 
     trv_cleanup;
 }
