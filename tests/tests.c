@@ -15749,58 +15749,14 @@ test_trv_dot_6(void) {
 
 static void
 test_trv_call(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
-    tkr_parse(tkr, "{@ def f(): return 1 end @}{: f() :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    }
+    check_ok("{@ def f(): return 1 end @}{: f() :}", "1");
+    check_ok("{@ puts(1) @}", "1\n");
+    check_ok("{@ def f(): return 1 end \n funcs = { \"a\": f } @}{: funcs[\"a\"]() :}", "1");
+    check_ok("{@ def a(n): return n*2 end \n def b(): return a end @}{: b()(2) :}", "4");
 
-    tkr_parse(tkr, "{@ puts(1) @}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
-    }
-
-    tkr_parse(tkr, "{@ def f(): return 1 end \n funcs = { \"a\": f } @}{: funcs[\"a\"]() :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    }
-
-    tkr_parse(tkr, "{@ def a(n): return n*2 end \n def b(): return a end @}{: b()(2) :}");
-    {
-        ast_clear(ast);
-        (cc_compile(ast, tkr_get_tokens(tkr)));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "4"));
-    }
-
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
 }
 
 static void
@@ -24889,6 +24845,7 @@ static void
 test_trv_func_def_12(void) {
     trv_ready;
 
+    // TODO: you need closure?
     check_fail("{@\n"
     "def func():\n"
     "   a = 1\n"
@@ -24900,6 +24857,24 @@ test_trv_func_def_12(void) {
     "end\n"
     "func()\n"
     "@}", "\"a\" is not defined"
+    );
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_def_13(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "def f1(a):\n"
+    "   puts(a)\n"
+    "end\n"
+    "def f2(callback, a):\n"
+    "   callback(a)\n"
+    "end\n"
+    "f2(f1, 1)\n"
+    "@}", "1\n"
     );
 
     trv_cleanup;
@@ -29573,6 +29548,7 @@ traverser_tests[] = {
     {"func_def_10", test_trv_func_def_10},
     {"func_def_11", test_trv_func_def_11},
     {"func_def_12", test_trv_func_def_12},
+    {"func_def_13", test_trv_func_def_13},
     {"func_def_fail_0", test_trv_func_def_fail_0},
     {"func_met_0", test_trv_func_met_0},
     {"func_met_1", test_trv_func_met_1},
