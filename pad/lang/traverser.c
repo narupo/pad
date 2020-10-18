@@ -6926,7 +6926,7 @@ trv_calc_term_div_int(ast_t *ast, trv_args_t *targs) {
     } break;
     case OBJ_TYPE_BOOL: {
         if (!rhs->boolean) {
-            pushb_error("zero division error (2)");
+            pushb_error("zero division error");
             return_trav(NULL);
         }
         object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue / rhs->boolean);
@@ -6972,13 +6972,13 @@ trv_calc_term_div_bool(ast_t *ast, trv_args_t *targs) {
         break;
     case OBJ_TYPE_INT:
         if (!rhs->lvalue) {
-            pushb_error("zero division error (3)");
+            pushb_error("zero division error");
             return_trav(NULL);
         }
         return obj_new_int(ast->ref_gc, lhs->boolean / rhs->lvalue);
     case OBJ_TYPE_BOOL:
         if (!rhs->boolean) {
-            pushb_error("zero division error (4)");
+            pushb_error("zero division error");
             return_trav(NULL);
         }
         return obj_new_int(ast->ref_gc, lhs->boolean / rhs->boolean);
