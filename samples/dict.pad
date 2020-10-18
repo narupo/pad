@@ -1,0 +1,11 @@
+{@
+    d = {
+        "bird": "I'm bird",
+        "cat": "I'm cat",
+        "dog": "I'm dog",
+    }
+
+    puts(d["bird"])
+    puts(d["cat"])
+    puts(d["dog"])
+@}
