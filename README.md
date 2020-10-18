@@ -15,6 +15,8 @@ How to build of the pad.
 
 # Syntax and feature
 
+Bubble sort program.
+
 ```
 {@
     // Bubble sort program
@@ -41,3 +43,25 @@ How to build of the pad.
 @}
 ```
 
+Structure and functions and methods.
+
+```
+{@
+    struct Animal:
+        name = nil
+
+        def new(name):
+            return Animal(name)
+        end
+
+        met getName(self):
+            return self.name
+        end
+    end
+
+    animal = Animal.new("Rocket man")
+    puts(animal.getName())
+@}
+```
+
+Functions and inject-block statement.
