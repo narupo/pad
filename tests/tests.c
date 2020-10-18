@@ -27361,55 +27361,13 @@ static void
 test_trv_term_0(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{: 2 * 2 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "4"));
-    }
-
-    tkr_parse(tkr, "{: 2 * \"abc\" :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcabc"));
-    }
-
-    tkr_parse(tkr, "{: \"abc\" * 2 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "abcabc"));
-    }
-
-    tkr_parse(tkr, "{: 0 * \"abc\" :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
-    }
-
-    tkr_parse(tkr, "{: -1 * \"abc\" :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "can't mul string by negative value"));
-    }
+    check_ok("{: 2 * 2 :}", "4");
+    check_ok("{: 2 * 2 * 3 :}", "12");
+    check_ok("{: 2 * \"abc\" :}", "abcabc");
+    check_ok("{: \"abc\" * 2 :}", "abcabc");
+    check_ok("{: \"abc\" * 2 * 2 :}", "abcabcabcabc");
+    check_ok("{: 0 * \"abc\" :}", "");
+    check_fail("{: -1 * \"abc\" :}", "can't mul string by negative value");
 
     trv_cleanup;
 }
