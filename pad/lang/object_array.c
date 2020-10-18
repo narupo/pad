@@ -217,7 +217,7 @@ objarr_popb(object_array_t *self) {
     return obj;
 }
 
-object_t *
+object_array_t *
 objarr_app_other(object_array_t *self, object_array_t *other) {
     bool same = self == other;
     if (same) {
