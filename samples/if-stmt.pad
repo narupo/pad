@@ -1,0 +1,24 @@
+{@
+    /**
+     * Flag test
+     *
+     * @param {bool} flag
+     */
+    def checkFlag(flag):
+        if flag == 0:
+            if not flag:
+                puts("flag is 0")
+            elif flag:
+                puts("flag is", flag)
+            end
+        elif flag == 1:
+            puts("flag is 1")
+        else:
+            puts("invalid flag")
+        end
+    end
+
+    checkFlag(0)
+    checkFlag(1)
+    checkFlag(2)
+@}
