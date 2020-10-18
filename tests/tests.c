@@ -24891,6 +24891,7 @@ test_trv_func_def_fail_0(void) {
     check_fail("{@ def f(): en @}", "not found 'end' in parse func def. token type is 5");
     check_ok("{@ def f(): end @}", "");
     check_fail("{@ def f(a, ): end @}", "syntax error. not found identifier in func def args");
+    check_fail("{@ def f(a): end f(1, 2) @}", "arguments not same length");
 
     trv_cleanup;
 }
