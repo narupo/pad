@@ -27376,15 +27376,21 @@ static void
 test_trv_term_1(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{: 4 / 2 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
-    }
+    check_ok("{: 4 / 2 :}", "2");
+    check_ok("{: 4 / true :}", "4");
+
+    check_fail("{: 4 / 0 :}", "zero division error");
+    check_fail("{: 4 / false :}", "zero division error (2)");
+    check_fail("{: 4 / \"aa\" :}", "invalid right hand operand");
+    check_fail("{: 4 / [] :}", "invalid right hand operand");
+    check_fail("{: 4 / {} :}", "invalid right hand operand");
+
+    check_ok("{: true / 1 :}", "1");
+    check_ok("{: false / 1 :}", "0");
+    
+    check_fail("{: \"aa\" / 1 :}", "can't division");
+    check_fail("{: [] / 1 :}", "can't division");
+    check_fail("{: {} / 1 :}", "can't division");
 
     trv_cleanup;
 }
@@ -27393,53 +27399,11 @@ static void
 test_trv_term_2(void) {
     trv_ready;
 
-    /*****
-    * ok *
-    *****/
+    check_ok("{: 4 % 2 :}", "0");
+    check_ok("{: 3 % 2 :}", "1");
 
-    tkr_parse(tkr, "{: 4 % 2 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
-    }
-
-    tkr_parse(tkr, "{: 3 % 2 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    }
-
-    /*******
-    * fail *
-    *******/
-
-    tkr_parse(tkr, "{: 4 % nil :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand (0)"));
-    }
-
-    tkr_parse(tkr, "{: nil % 2 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (0)"));
-    }
+    check_fail("{: 4 % nil :}", "invalid right hand operand (0)");
+    check_fail("{: nil % 2 :}", "invalid left hand operand (0)");
 
     trv_cleanup;
 }
@@ -27448,75 +27412,13 @@ static void
 test_trv_term_3(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{: 2 * 2 / 4 % 2 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    }
-
-    tkr_parse(tkr, "{: 4 / 2 * 2 % 2 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
-    }
-
-    tkr_parse(tkr, "{: 3 % 2 * 3 / 3 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    }
-
-    tkr_parse(tkr, "{: 3 * 2 / 3 * 3 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "6"));
-    }
-
-    tkr_parse(tkr, "{: 4 / 2 * 2 / 2 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
-    }
-
-    tkr_parse(tkr, "{: 3 % 2 * 2 % 2 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
-    }
-
-    tkr_parse(tkr, "{: 3 * 2 % 2 * 2 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
-    }
+    check_ok("{: 2 * 2 / 4 % 2 :}", "1");
+    check_ok("{: 4 / 2 * 2 % 2 :}", "0");
+    check_ok("{: 3 % 2 * 3 / 3 :}", "1");
+    check_ok("{: 3 * 2 / 3 * 3 :}", "6");
+    check_ok("{: 4 / 2 * 2 / 2 :}", "2");
+    check_ok("{: 3 % 2 * 2 % 2 :}", "0");
+    check_ok("{: 3 * 2 % 2 * 2 :}", "0");
 
     trv_cleanup;
 }

@@ -6913,7 +6913,7 @@ trv_calc_term_div_int(ast_t *ast, trv_args_t *targs) {
 
     switch (rhs->type) {
     default:
-        pushb_error("can't division with int");
+        pushb_error("invalid right hand operand");
         return_trav(NULL);
         break;
     case OBJ_TYPE_INT: {
