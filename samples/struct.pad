@@ -68,7 +68,7 @@
         def verboseRender(familyName): @}
             Today is very funny day.
             I'm very fine so I want to walk out side.
-            {: familyName :} take shoes for me.
+            {: familyName :} takes shoes for me.
 {@      end
     end
 
