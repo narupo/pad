@@ -2780,7 +2780,17 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
             if (elems) {
                 nodearr_moveb(cur->contents, elems);
             }
-            // allow null
+            // allow elems is null
+
+            const token_t *t = *ast->ref_ptr;
+            bool hope = t->type == TOKEN_TYPE_STMT_ELIF ||
+                        t->type == TOKEN_TYPE_STMT_ELSE ||
+                        t->type == TOKEN_TYPE_STMT_END ||
+                        t->type == TOKEN_TYPE_RBRACEAT;
+            if (!hope) {
+                token_dump(t, stdout);
+                return_cleanup("syntax error");
+            }
         }
     }
 
