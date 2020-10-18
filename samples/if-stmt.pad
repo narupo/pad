@@ -21,4 +21,15 @@
     checkFlag(0)
     checkFlag(1)
     checkFlag(2)
+
+    if 0: @}
+        That's true!
+{@
+    elif 1: @}
+        That's true too!
+{@
+    else: @}
+        Else!
+{@
+    end
 @}
