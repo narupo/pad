@@ -15685,7 +15685,7 @@ static void
 test_trv_dot_3(void) {
     trv_ready;
 
-    check_ok_trace("{@\n"
+    check_ok("{@\n"
     "    arr = [1, 2]\n"
     "    dst = []\n"
     "    dst.push(arr.pop())\n"
@@ -15741,7 +15741,7 @@ static void
 test_trv_dot_6(void) {
     trv_ready;
 
-    check_ok_trace("{: \"abc\".capitalize() :}"
+    check_ok("{: \"abc\".capitalize() :}"
     , "Abc");
 
     trv_cleanup;
@@ -16592,7 +16592,7 @@ test_trv_builtin_functions_type(void) {
     gc_t *gc = gc_new();
     context_t *ctx = ctx_new(gc);
 
-    check_ok_trace("{: type(nil) :}", "nil");
+    check_ok("{: type(nil) :}", "nil");
 
     tkr_parse(tkr, "{: type(1) :}");
     {
@@ -16775,7 +16775,7 @@ static void
 test_trv_builtin_functions_assert_1(void) {
     trv_ready;
 
-    check_ok_trace("{@ assert(1) @}", "");
+    check_ok("{@ assert(1) @}", "");
 
     trv_cleanup;
 }
@@ -19112,7 +19112,7 @@ static void
 test_trv_assign_and_reference_10(void) {
     trv_ready;
 
-    check_ok_trace("{@\n"
+    check_ok("{@\n"
     "   def f(a):\n"
     "       return a\n"
     "   end\n"
@@ -19712,7 +19712,7 @@ test_trv_import_stmt_0(void) {
         assert(!strcmp(ast_getc_first_error_message(ast), "not found alias in compile import as statement"));
     }
 
-    check_ok_trace("{@ import \"tests/lang/modules/hello.cap\" as hello \n"
+    check_ok("{@ import \"tests/lang/modules/hello.cap\" as hello \n"
         "hello.world() @}"
         , "imported\nhello, world\n");
 
@@ -20007,7 +20007,7 @@ static void
 test_trv_import_stmt_5(void) {
     trv_ready;
 
-    check_ok_trace(
+    check_ok(
     "{@ import \"tests/lang/modules/hello.cap\" as hello \n"
     "hello.world() @}"
     , "imported\nhello, world\n");
@@ -20830,7 +20830,7 @@ static void
 test_trv_if_stmt_11(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   if 1:\n"
     "       i = 0\n"
     "@}{: i :}{@"
@@ -20839,15 +20839,7 @@ test_trv_if_stmt_11(void) {
     "       k = 2\n"
     "@}{: k :}{@\n"
     "   end\n"
-    "@}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "012"));
-    }
+    "@}", "012");
 
     trv_cleanup;
 }
@@ -20871,6 +20863,12 @@ test_trv_if_stmt_fail_0(void) {
     check_fail("{@\n"
     "if 1:\n"
     "   puts(1)\n"
+    "e"
+    "@}", "reached EOF in if statement");
+
+    check_fail("{@\n"
+    "if 1:\n"
+    "   puts(1)\n"
     "else:\n"
     "elif 1:\n"
     "end"
@@ -20880,6 +20878,25 @@ test_trv_if_stmt_fail_0(void) {
     "{@ else: @}\n"
     "{@ elif 1: @}\n"
     "{@ end @}", "syntax error. invalid token");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_if_stmt_fail_1(void) {
+    trv_ready;
+
+    check_fail("{@\n"
+    "if 1:\n"
+    "el:"
+    "end"
+    "@}", "syntax error");
+
+    check_fail("{@\n"
+    "if 1:\n"
+    "el def:"
+    "end"
+    "@}", "syntax error");
 
     trv_cleanup;
 }
@@ -20965,7 +20982,7 @@ static void
 test_trv_elif_stmt_1(void) {
     trv_ready;
 
-    check_ok_trace("{@ if 0: @}{@ elif 1: @}1{@ end @}", "1");
+    check_ok("{@ if 0: @}{@ elif 1: @}1{@ end @}", "1");
 
     tkr_parse(tkr, "{@ \nif 0: @}{@ elif 1: @}1{@ end @}");
     {
@@ -21370,7 +21387,7 @@ test_trv_elif_stmt_4(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "6\n"));
     }
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   i = 0\n"
     "   j = 0\n"
     "   if 0:\n"
@@ -21394,15 +21411,7 @@ test_trv_elif_stmt_4(void) {
     "           puts(10 * 123)\n"
     "       end\n"
     "   end\n"
-    "@}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1230\n"));
-    }
+    "@}", "1230\n");
 
     trv_cleanup;
 }
@@ -22244,7 +22253,7 @@ test_trv_for_stmt_3(void) {
     trv_ready;
 
     check_ok("{@ for i = 0; i < 2; i += 1: @}{: i :},{@ end @}", "0,1,");
-    check_ok_trace("{@\n"
+    check_ok("{@\n"
     "def func():\n"
     "   for i = 0; i < 2; i += 1: @}"
     "{: i :}\n"
@@ -22260,7 +22269,7 @@ static void
 test_trv_for_stmt_4(void) {
     trv_ready;
 
-    check_ok_trace("{@\n"
+    check_ok("{@\n"
     "   def hiphop(rap, n):\n"
     "       puts(rap * n)\n"
     "   end\n"
@@ -24034,7 +24043,7 @@ static void
 test_trv_struct_30(void) {
     trv_ready;
 
-    check_ok_trace("{@\n"
+    check_ok("{@\n"
     "struct ns:\n"
     "   struct Animal:\n"
     "       n = 1\n"
@@ -24175,7 +24184,7 @@ static void
 test_trv_struct_38(void) {
     trv_ready;
 
-    check_ok_trace("{@\n"
+    check_ok("{@\n"
     "struct A:\n"
     "   def init(self):\n"
     "       self.a = 1\n"
@@ -24349,7 +24358,7 @@ static void
 test_trv_struct_41(void) {
     trv_ready;
 
-    check_ok_trace(
+    check_ok(
 "{@\n"
 "struct Animal:\n"
 "   a = 0\n"
@@ -24366,7 +24375,7 @@ static void
 test_trv_struct_42(void) {
     trv_ready;
 
-    check_ok_trace(
+    check_ok(
 "{@\n"
 "struct Animal:\n"
 "   a = 0\n"
@@ -24376,7 +24385,7 @@ test_trv_struct_42(void) {
 "a = Animal(10, 11)\n"
 "@}{: a.a :},{: a.b :},{: a.c :}", "10,11,2");
 
-    check_ok_trace(
+    check_ok(
 "{@\n"
 "struct Animal:\n"
 "   a = 0\n"
@@ -24393,7 +24402,7 @@ static void
 test_trv_struct_43(void) {
     trv_ready;
 
-    check_ok_trace(
+    check_ok(
 "{@\n"
 "struct Animal:\n"
 "   a = 0\n"
@@ -24410,7 +24419,7 @@ static void
 test_trv_struct_44(void) {
     trv_ready;
 
-    check_ok_trace(
+    check_ok(
 "{@\n"
 "struct Body:\n"
 "   legs = 4\n"
@@ -24640,7 +24649,7 @@ static void
 test_trv_func_def_8(void) {
     trv_ready;
 
-    check_ok_trace("{@\n"
+    check_ok("{@\n"
     "   def f(arr):\n"
     "       puts(arr[0], arr[1], arr[2])\n"
     "   end\n"
@@ -24837,7 +24846,7 @@ test_trv_func_def_11(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "hi\n"));
     }
 
-    check_ok_trace(
+    check_ok(
         "{@\n"
         "    def func():\n"
         "        puts(\"hi\")\n"
@@ -29499,6 +29508,7 @@ traverser_tests[] = {
     {"if_stmt_11", test_trv_if_stmt_11},
     {"if_stmt_12", test_trv_if_stmt_12},
     {"if_stmt_fail_0", test_trv_if_stmt_fail_0},
+    {"if_stmt_fail_1", test_trv_if_stmt_fail_1},
     {"elif_stmt_0", test_trv_elif_stmt_0},
     {"elif_stmt_1", test_trv_elif_stmt_1},
     {"elif_stmt_2", test_trv_elif_stmt_2},
