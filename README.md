@@ -59,7 +59,7 @@ Structure and functions and methods.
         end
     end
 
-    animal = Animal.new("Rocket man")
+    animal = Animal.new("Tama")
     puts(animal.getName())
 @}
 ```
