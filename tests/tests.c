@@ -27026,18 +27026,46 @@ static void
 test_trv_asscalc_22(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_fail("{@\n"
     "   a = [2, 2]\n"
     "   a[0] %= false\n"
-    "@}{: a[0] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "zero division error"));
-    }
+    "@}{: a[0] :}", "zero division error");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_23(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "   a = \"ab\"\n"
+    "   a *= 2\n"
+    "@}{: a :}", "abab");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_24(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "   a = [\"ab\"]\n"
+    "   a[0] *= 2\n"
+    "@}{: a[0] :}", "abab");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_asscalc_25(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "   a = {\"b\": \"cd\"}\n"
+    "   a[\"b\"] *= 2\n"
+    "@}{: a[\"b\"] :}", "cdcd");
 
     trv_cleanup;
 }
@@ -29659,6 +29687,9 @@ traverser_tests[] = {
     {"asscalc_20", test_trv_asscalc_20},
     {"asscalc_21", test_trv_asscalc_21},
     {"asscalc_22", test_trv_asscalc_22},
+    {"asscalc_23", test_trv_asscalc_23},
+    {"asscalc_24", test_trv_asscalc_24},
+    {"asscalc_25", test_trv_asscalc_25},
     {"expr_0", test_trv_expr_0},
     {"expr_1", test_trv_expr_1},
     {"expr_2", test_trv_expr_2},
