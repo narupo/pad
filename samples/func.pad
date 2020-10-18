@@ -1,20 +1,55 @@
 {@
-    def show(name):
-        puts("Title:", name)
-        block footer: end
+    /*****************
+    * Basic function *
+    *****************/
+
+    def basicFunc(a, b):
+        return a + b
+    end
+
+    puts(basicFunc(1, 2))  // 3
+
+    /*************************
+    * Multiple return values *
+    *************************/
+
+    def multiple(a, b, c):
+        return a + 1, b + 2, c + 3
+    end
+
+    a, b, c = multiple(1, 2, 3)
+    puts(a, b, c)  // 2 4 6
+
+    /*****************
+    * Error handling *
+    *****************/
+
+    def getErr(a):
+        return a, "failed"
+    end
+
+    result, err = getErr(1)
+    if err != nil:
+        puts(err.capitalize())  // Failed
+    end
+
+    /********************
+    * Callback function *
+    ********************/
+
+    def show(name, callback):
+        callback("The " + name)
         return name, nil
     end
 
-    def dump(name) extends show:
-        inject footer:
-            def inner():
-                puts("Welcome to my", name)
-            end
-            inner()
+    def dump(name):
+        def handler(name):
+            puts("In handler:", name)
         end
-        return super(name)
+
+        return show(name, handler)
     end
 
     result, err = dump("Homepage")
-    puts(result, err)
+    puts(result, err)  // Homepage nil
 @}
