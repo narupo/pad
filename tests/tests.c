@@ -27387,7 +27387,7 @@ test_trv_term_1(void) {
 
     check_ok("{: true / 1 :}", "1");
     check_ok("{: false / 1 :}", "0");
-    
+
     check_fail("{: \"aa\" / 1 :}", "can't division");
     check_fail("{: [] / 1 :}", "can't division");
     check_fail("{: {} / 1 :}", "can't division");
@@ -27401,6 +27401,17 @@ test_trv_term_2(void) {
 
     check_ok("{: 4 % 2 :}", "0");
     check_ok("{: 3 % 2 :}", "1");
+    check_ok("{: 1 % true :}", "0");
+
+    check_fail("{: 1 % 0 :}", "zero division error");
+    check_fail("{: 1 % false :}", "zero division error");
+    check_fail("{: \"a\" % 1 :}", "invalid left hand operand (4)");
+    check_fail("{: [] % 1 :}", "invalid left hand operand (5)");
+    check_fail("{: {} % 1 :}", "invalid left hand operand (6)");
+
+    check_fail("{: 1 % \"a\" :}", "invalid right hand operand (4)");
+    check_fail("{: 1 % [] :}", "invalid right hand operand (5)");
+    check_fail("{: 1 % {} :}", "invalid right hand operand (6)");
 
     check_fail("{: 4 % nil :}", "invalid right hand operand (0)");
     check_fail("{: nil % 2 :}", "invalid left hand operand (0)");
