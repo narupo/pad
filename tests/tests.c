@@ -27380,7 +27380,7 @@ test_trv_term_1(void) {
     check_ok("{: 4 / true :}", "4");
 
     check_fail("{: 4 / 0 :}", "zero division error");
-    check_fail("{: 4 / false :}", "zero division error (2)");
+    check_fail("{: 4 / false :}", "zero division error");
     check_fail("{: 4 / \"aa\" :}", "invalid right hand operand");
     check_fail("{: 4 / [] :}", "invalid right hand operand");
     check_fail("{: 4 / {} :}", "invalid right hand operand");
