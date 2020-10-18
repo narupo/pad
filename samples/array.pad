@@ -1,0 +1,15 @@
+{@
+    arr = [1, 2, 3]
+
+    for i = 0; i < len(arr); i += 1:
+        puts(arr[i])
+    end
+
+    arr.push(4)
+    arr.push(5)
+
+    puts(arr[len(arr) - 1])
+
+    last = arr.pop()
+    puts(last)
+@}
