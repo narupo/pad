@@ -27074,25 +27074,8 @@ static void
 test_trv_expr_0(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{: 1 + 1 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2"));
-    }
-
-    tkr_parse(tkr, "{@ a = 1 b = a @}{: b :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    }
+    check_ok("{: 1 + 1 :}", "2");
+    check_ok("{@ a = 1 b = a @}{: b :}", "1");
 
     trv_cleanup;
 }
@@ -27101,15 +27084,7 @@ static void
 test_trv_expr_1(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{: 1 - 1 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
-    }
+    check_ok("{: 1 - 1 :}", "0");
 
     trv_cleanup;
 }
@@ -27118,15 +27093,7 @@ static void
 test_trv_expr_2(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@ a = 1 \n b = a - 1 @}{: b :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
-    }
+    check_ok("{@ a = 1 \n b = a - 1 @}{: b :}", "0");
 
     trv_cleanup;
 }
