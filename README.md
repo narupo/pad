@@ -65,3 +65,26 @@ Structure and functions and methods.
 ```
 
 Functions and inject-block statement.
+
+```
+{@
+    def base(title):
+        block header: @}
+            <h1>{: title :}</h1>
+        {@ end
+
+        block content:
+        end
+    end
+
+    def index(title) extends base:
+        inject content: @}
+            <p>Welcome to my homepage!</p>
+        {@ end
+
+        super(title)
+    end
+
+    index("Pad")
+@}
+```
