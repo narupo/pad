@@ -4083,11 +4083,13 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
+    // allow cur->func_extends is null
 
     // colon
     t = *ast->ref_ptr++;
     if (t->type != TOKEN_TYPE_COLON) {
-        return_cleanup(""); // not error
+        ast->ref_ptr--;
+        return_cleanup("not found colon"); // not error
     }
     check("read :");
 

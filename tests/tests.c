@@ -24886,7 +24886,7 @@ test_trv_func_def_fail_0(void) {
 
     check_fail("{@ def @}", "not found blocks");
     check_fail("{@ def f @}", "not found blocks");
-    check_fail("{@ def f() @}", "not found blocks");
+    check_fail("{@ def f() @}", "not found colon");
     check_fail("{@ def f(): @}", "not found 'end' in parse func def. token type is 5");
     check_fail("{@ def f(): en @}", "not found 'end' in parse func def. token type is 5");
     check_ok("{@ def f(): end @}", "");
@@ -25049,19 +25049,23 @@ test_trv_func_extends_0(void) {
 }
 
 static void
-test_trv_func_extends_1(void) {
+test_trv_func_extends_fail_0(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_fail("{@\n"
     "   def f2() extends:\n"
     "   end\n"
-    "@}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "not found identifier in function extends"));
-    }
+    "@}", "not found identifier in function extends");
+
+    check_fail("{@\n"
+    "   def f2() ext:\n"
+    "   end\n"
+    "@}", "not found colon");
+
+    check_fail("{@\n"
+    "   def f2() extends f1:\n"
+    "   end\n"
+    "@}", "not found \"f1\". can't extends");
 
     trv_cleanup;
 }
@@ -29424,7 +29428,7 @@ traverser_tests[] = {
     {"func_met_4", test_trv_func_met_4},
     {"func_met_5", test_trv_func_met_5},
     {"func_extends_0", test_trv_func_extends_0},
-    {"func_extends_1", test_trv_func_extends_1},
+    {"func_extends_fail_0", test_trv_func_extends_fail_0},
     {"func_super_0", test_trv_func_super_0},
     {"func_super_1", test_trv_func_super_1},
     {"func_super_2", test_trv_func_super_2},
