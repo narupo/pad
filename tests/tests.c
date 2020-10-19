@@ -25176,7 +25176,7 @@ static void
 test_trv_block_stmt_3(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   def f1():\n"
     "       puts(1)\n"
     "       block content:\n"
@@ -25185,15 +25185,7 @@ test_trv_block_stmt_3(void) {
     "       puts(3)\n"
     "   end\n"
     "   f1()\n"
-    "@}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n2\n3\n"));
-    }
+    "@}", "1\n2\n3\n");
 
     trv_cleanup;
 }
@@ -25202,7 +25194,7 @@ static void
 test_trv_block_stmt_4(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   def f1():\n"
     "       block content:\n"
     "           puts(1)\n"
@@ -25212,15 +25204,42 @@ test_trv_block_stmt_4(void) {
     "       super()\n"
     "   end\n"
     "   f1()\n"
-    "@}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
-    }
+    "@}", "1\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_block_stmt_fail_0(void) {
+    trv_ready;
+
+    check_fail("{@\n"
+    "   def f1():\n"
+    "       block:\n"
+    "       end\n"
+    "   end\n"
+    "   f1()\n"
+    "@}", "not found identifier in block statement");
+
+    check_fail("{@\n"
+    "   def f1():\n"
+    "       bl:\n"
+    "       end\n"
+    "   end\n"
+    "   f1()\n"
+    "@}", "not found 'end' in parse func def. token type is 10");
+
+    check_fail("{@\n"
+    "   def f1():\n"
+    "       block content:\n"
+    "   end\n"
+    "   f1()\n"
+    "@}", "not found 'end' in parse func def. token type is 5");
+
+    check_fail("{@\n"
+    "block content:\n"
+    "end\n"
+    "@}", "can't access to function node");
 
     trv_cleanup;
 }
@@ -29450,6 +29469,7 @@ traverser_tests[] = {
     {"func_super_fail_0", test_trv_func_super_fail_0},
     {"block_stmt_3", test_trv_block_stmt_3},
     {"block_stmt_4", test_trv_block_stmt_4},
+    {"block_stmt_fail_0", test_trv_block_stmt_fail_0},
     {"inject_stmt_3", test_trv_inject_stmt_3},
     {"inject_stmt_4", test_trv_inject_stmt_4},
     {"inject_stmt_5", test_trv_inject_stmt_5},
