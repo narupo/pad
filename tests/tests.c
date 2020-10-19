@@ -26169,6 +26169,17 @@ test_trv_not_test_0(void) {
 }
 
 static void
+test_trv_not_test_fail_0(void) {
+    trv_ready;
+
+    check_fail("{: not :}", "syntax error. not found operand in not operator");
+    check_fail("{: 1 not :}", "syntax error. not found \":}\"");
+    check_fail("{: not 1 2 :}", "syntax error. not found \":}\"");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_comparison_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -29588,6 +29599,7 @@ traverser_tests[] = {
     {"and_test_0", test_trv_and_test_0},
     {"and_test_fail_0", test_trv_and_test_fail_0},
     {"not_test_0", test_trv_not_test_0},
+    {"not_test_fail_0", test_trv_not_test_fail_0},
     {"asscalc_0", test_trv_asscalc_0},
     {"asscalc_1", test_trv_asscalc_1},
     {"asscalc_2", test_trv_asscalc_2},
