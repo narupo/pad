@@ -27445,32 +27445,45 @@ test_trv_expr_9(void) {
     * theme: array and expr *
     ************************/
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   l = [1, 2]\n"
     "   l2 = l + l\n"
-    "@}{: l2[0] :},{: l2[1] :},{: l2[2] :},{: l2[3] :},{: id(l2[0]) == id(l2[2]) :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2,1,2,true"));
-    }
+    "@}{: l2[0] :},{: l2[1] :},{: l2[2] :},{: l2[3] :},{: id(l2[0]) == id(l2[2]) :}"
+    , "1,2,1,2,true");
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   l1 = [1, 2]\n"
     "   l2 = [3, 4]\n"
     "   l3 = l1 + l2\n"
-    "@}{: l3[0] :},{: l3[1] :},{: l3[2] :},{: l3[3] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,2,3,4"));
-    }
+    "@}{: l3[0] :},{: l3[1] :},{: l3[2] :},{: l3[3] :}"
+    , "1,2,3,4");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_expr_fail_0(void) {
+    trv_ready;
+
+    check_fail("{@ 1 + + @}", "syntax error. not found rhs operand in expr");
+    check_fail("{@ + 1 + @}", "not found blocks");
+    check_fail("{@ 1 + + @}", "syntax error. not found rhs operand in expr");
+    check_fail("{@ 1 + [] @}", "can't add with int");
+    check_fail("{@ [] + 1 @}", "invalid right hand operand (1)");
+    check_fail("{@ 1 + {} @}", "can't add with int");
+    check_fail("{@ {} + 1 @}", "can't add");
+    check_fail("{@ 1 + \"a\" @}", "can't add with int");
+    check_fail("{@ \"a\" + 1 @}", "can't add 1 with string");
+
+    check_fail("{@ 1 - - @}", "syntax error. not found rhs operand in expr");
+    check_fail("{@ - 1 - @}", "syntax error. not found rhs operand in expr");
+    check_fail("{@ 1 - - @}", "syntax error. not found rhs operand in expr");
+    check_fail("{@ 1 - [] @}", "can't sub with int");
+    check_fail("{@ [] - 1 @}", "can't sub");
+    check_fail("{@ 1 - {} @}", "can't sub with int");
+    check_fail("{@ {} - 1 @}", "can't sub");
+    check_fail("{@ 1 - \"a\" @}", "can't sub with int");
+    check_fail("{@ \"a\" - 1 @}", "can't sub");
 
     trv_cleanup;
 }
@@ -29666,6 +29679,7 @@ traverser_tests[] = {
     {"expr_7", test_trv_expr_7},
     {"expr_8", test_trv_expr_8},
     {"expr_9", test_trv_expr_9},
+    {"expr_fail_0", test_trv_expr_fail_0},
     {"term_0", test_trv_term_0},
     {"term_1", test_trv_term_1},
     {"term_2", test_trv_term_2},
