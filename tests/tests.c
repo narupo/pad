@@ -24391,6 +24391,66 @@ test_trv_struct_44(void) {
 }
 
 static void
+test_trv_struct_fail_0(void) {
+    trv_ready;
+
+    check_fail(
+"{@\n"
+"st:\n"
+"end\n"
+"@}", "not found blocks");
+
+    check_fail(
+"{@\n"
+"struct:\n"
+"end\n"
+"@}", "not found identifier");
+
+    check_fail(
+"{@\n"
+"struct A:\n"
+"@}", "not found 'end'. found token is 5");
+
+    check_fail(
+"{@\n"
+"struct A:\n"
+"en\n"
+"@}", "not found 'end'. found token is 5");
+
+    check_fail(
+"{@\n"
+"struct A:\n"
+"   a\n"
+"end\n"
+"@}{: A.a :}", "not found \"a\"");
+
+    check_fail(
+"{@\n"
+"struct A:\n"
+"   a\n"
+"end\n"
+"@}{: A.a :}", "not found \"a\"");
+
+    check_fail(
+"{@\n"
+"a = struct A:\n"
+"end\n"
+"@}", "syntax error. not found rhs test in assign list");
+
+    check_fail(
+"{@\n"
+"[struct A: end]\n"
+"@}", "not found ']' in array");
+
+    check_fail(
+"{@\n"
+"struct A: end = 1\n"
+"@}", "not found blocks");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_def_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -29437,9 +29497,31 @@ traverser_tests[] = {
     {"block_stmt_0", test_trv_block_stmt_0},
     {"block_stmt_1", test_trv_block_stmt_1},
     {"block_stmt_2", test_trv_block_stmt_2},
+    {"block_stmt_3", test_trv_block_stmt_3},
+    {"block_stmt_4", test_trv_block_stmt_4},
+    {"block_stmt_fail_0", test_trv_block_stmt_fail_0},
     {"inject_stmt_0", test_trv_inject_stmt_0},
     {"inject_stmt_1", test_trv_inject_stmt_1},
     {"inject_stmt_2", test_trv_inject_stmt_2},
+    {"inject_stmt_3", test_trv_inject_stmt_3},
+    {"inject_stmt_4", test_trv_inject_stmt_4},
+    {"inject_stmt_5", test_trv_inject_stmt_5},
+    {"inject_stmt_6", test_trv_inject_stmt_6},
+    {"inject_stmt_7", test_trv_inject_stmt_7},
+    {"inject_stmt_8", test_trv_inject_stmt_8},
+    {"inject_stmt_9", test_trv_inject_stmt_9},
+    {"inject_stmt_10", test_trv_inject_stmt_10},
+    {"inject_stmt_11", test_trv_inject_stmt_11},
+    {"inject_stmt_12", test_trv_inject_stmt_12},
+    {"inject_stmt_13", test_trv_inject_stmt_13},
+    {"inject_stmt_14", test_trv_inject_stmt_14},
+    {"inject_stmt_15", test_trv_inject_stmt_15},
+    {"inject_stmt_16", test_trv_inject_stmt_16},
+    {"inject_stmt_17", test_trv_inject_stmt_17},
+    {"inject_stmt_18", test_trv_inject_stmt_18},
+    {"inject_stmt_19", test_trv_inject_stmt_19},
+    {"inject_stmt_20", test_trv_inject_stmt_20},
+    {"inject_stmt_fail_0", test_trv_inject_stmt_fail_0},
     {"func_def_0", test_trv_func_def_0},
     {"func_def_1", test_trv_func_def_1},
     {"func_def_2", test_trv_func_def_2},
@@ -29467,28 +29549,6 @@ traverser_tests[] = {
     {"func_super_1", test_trv_func_super_1},
     {"func_super_2", test_trv_func_super_2},
     {"func_super_fail_0", test_trv_func_super_fail_0},
-    {"block_stmt_3", test_trv_block_stmt_3},
-    {"block_stmt_4", test_trv_block_stmt_4},
-    {"block_stmt_fail_0", test_trv_block_stmt_fail_0},
-    {"inject_stmt_3", test_trv_inject_stmt_3},
-    {"inject_stmt_4", test_trv_inject_stmt_4},
-    {"inject_stmt_5", test_trv_inject_stmt_5},
-    {"inject_stmt_6", test_trv_inject_stmt_6},
-    {"inject_stmt_7", test_trv_inject_stmt_7},
-    {"inject_stmt_8", test_trv_inject_stmt_8},
-    {"inject_stmt_9", test_trv_inject_stmt_9},
-    {"inject_stmt_10", test_trv_inject_stmt_10},
-    {"inject_stmt_11", test_trv_inject_stmt_11},
-    {"inject_stmt_12", test_trv_inject_stmt_12},
-    {"inject_stmt_13", test_trv_inject_stmt_13},
-    {"inject_stmt_14", test_trv_inject_stmt_14},
-    {"inject_stmt_15", test_trv_inject_stmt_15},
-    {"inject_stmt_16", test_trv_inject_stmt_16},
-    {"inject_stmt_17", test_trv_inject_stmt_17},
-    {"inject_stmt_18", test_trv_inject_stmt_18},
-    {"inject_stmt_19", test_trv_inject_stmt_19},
-    {"inject_stmt_20", test_trv_inject_stmt_20},
-    {"inject_stmt_fail_0", test_trv_inject_stmt_fail_0},
     {"struct_1", test_trv_struct_1},
     {"struct_2", test_trv_struct_2},
     {"struct_3", test_trv_struct_3},
@@ -29533,6 +29593,7 @@ traverser_tests[] = {
     {"struct_42", test_trv_struct_42},
     {"struct_43", test_trv_struct_43},
     {"struct_44", test_trv_struct_44},
+    {"struct_fail_0", test_trv_struct_fail_0},
     {"assign_list_0", test_trv_assign_list_0},
     {"assign_list_1", test_trv_assign_list_1},
     {"assign_list_2", test_trv_assign_list_2},
