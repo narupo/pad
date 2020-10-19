@@ -27161,6 +27161,93 @@ test_trv_asscalc_25(void) {
 }
 
 static void
+test_trv_asscalc_fail_0(void) {
+    trv_ready;
+
+    check_fail("{@\n"
+    "   += \n"
+    "@}", "not found blocks");
+
+    check_fail("{@\n"
+    "   -= \n"
+    "@}", "not found blocks");
+
+    check_fail("{@\n"
+    "   *= \n"
+    "@}", "not found blocks");
+
+    check_fail("{@\n"
+    "   /= \n"
+    "@}", "not found blocks");
+
+    check_fail("{@\n"
+    "   %= \n"
+    "@}", "not found blocks");
+
+    check_fail("{@\n"
+    "   a += \n"
+    "@}", "syntax error. not found rhs operand in asscalc");
+
+    check_fail("{@\n"
+    "   a -= \n"
+    "@}", "syntax error. not found rhs operand in asscalc");
+
+    check_fail("{@\n"
+    "   a *= \n"
+    "@}", "syntax error. not found rhs operand in asscalc");
+
+    check_fail("{@\n"
+    "   a /= \n"
+    "@}", "syntax error. not found rhs operand in asscalc");
+
+    check_fail("{@\n"
+    "   a %= \n"
+    "@}", "syntax error. not found rhs operand in asscalc");
+
+    check_fail("{@\n"
+    "   1 += 1\n"
+    "@}", "invalid left hand operand (1)");
+
+    check_fail("{@\n"
+    "   1 -= 1\n"
+    "@}", "invalid left hand operand type (1)");
+
+    check_fail("{@\n"
+    "   1 *= 1\n"
+    "@}", "invalid left hand operand (1)");
+
+    check_fail("{@\n"
+    "   1 /= 1\n"
+    "@}", "invalid left hand operand (1)");
+
+    check_fail("{@\n"
+    "   1 %= 1\n"
+    "@}", "invalid left hand operand (1)");
+
+    check_fail("{@\n"
+    "   a += b\n"
+    "@}", "\"a\" is not defined");
+
+    check_fail("{@\n"
+    "   a -= b\n"
+    "@}", "\"a\" is not defined");
+
+    check_fail("{@\n"
+    "   a *= b\n"
+    "@}", "\"a\" is not defined");
+
+    check_fail("{@\n"
+    "   a /= b\n"
+    "@}", "\"a\" is not defined");
+
+    check_fail("{@\n"
+    "   a %= b\n"
+    "@}", "\"a\" is not defined");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_expr_0(void) {
     trv_ready;
 
@@ -29626,6 +29713,7 @@ traverser_tests[] = {
     {"asscalc_23", test_trv_asscalc_23},
     {"asscalc_24", test_trv_asscalc_24},
     {"asscalc_25", test_trv_asscalc_25},
+    {"asscalc_fail_0", test_trv_asscalc_fail_0},
     {"expr_0", test_trv_expr_0},
     {"expr_1", test_trv_expr_1},
     {"expr_2", test_trv_expr_2},
