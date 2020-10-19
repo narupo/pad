@@ -25131,7 +25131,7 @@ static void
 test_trv_func_super_2(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   def f1():\n"
     "       puts(1)\n"
     "   end\n"
@@ -25144,15 +25144,30 @@ test_trv_func_super_2(void) {
     "       super()\n"
     "   end\n"
     "   f3()\n"
-    "@}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "3\n2\n1\n"));
-    }
+    "@}", "3\n2\n1\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_func_super_fail_0(void) {
+    trv_ready;
+
+    check_fail("{@\n"
+    "   def f1():\n"
+    "       super()\n"
+    "   end\n"
+    "   f1()\n"
+    "@}", "can't call \"super\"");
+
+    check_fail("{@\n"
+    "   def f1():\n"
+    "   end\n"
+    "   def f2() extends f1:\n"
+    "       sup()\n"
+    "   end\n"
+    "   f2()\n"
+    "@}", "can't call \"sup\"");
 
     trv_cleanup;
 }
@@ -29432,6 +29447,7 @@ traverser_tests[] = {
     {"func_super_0", test_trv_func_super_0},
     {"func_super_1", test_trv_func_super_1},
     {"func_super_2", test_trv_func_super_2},
+    {"func_super_fail_0", test_trv_func_super_fail_0},
     {"block_stmt_3", test_trv_block_stmt_3},
     {"block_stmt_4", test_trv_block_stmt_4},
     {"inject_stmt_3", test_trv_inject_stmt_3},
