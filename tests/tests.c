@@ -27164,85 +27164,26 @@ static void
 test_trv_asscalc_fail_0(void) {
     trv_ready;
 
-    check_fail("{@\n"
-    "   += \n"
-    "@}", "not found blocks");
-
-    check_fail("{@\n"
-    "   -= \n"
-    "@}", "not found blocks");
-
-    check_fail("{@\n"
-    "   *= \n"
-    "@}", "not found blocks");
-
-    check_fail("{@\n"
-    "   /= \n"
-    "@}", "not found blocks");
-
-    check_fail("{@\n"
-    "   %= \n"
-    "@}", "not found blocks");
-
-    check_fail("{@\n"
-    "   a += \n"
-    "@}", "syntax error. not found rhs operand in asscalc");
-
-    check_fail("{@\n"
-    "   a -= \n"
-    "@}", "syntax error. not found rhs operand in asscalc");
-
-    check_fail("{@\n"
-    "   a *= \n"
-    "@}", "syntax error. not found rhs operand in asscalc");
-
-    check_fail("{@\n"
-    "   a /= \n"
-    "@}", "syntax error. not found rhs operand in asscalc");
-
-    check_fail("{@\n"
-    "   a %= \n"
-    "@}", "syntax error. not found rhs operand in asscalc");
-
-    check_fail("{@\n"
-    "   1 += 1\n"
-    "@}", "invalid left hand operand (1)");
-
-    check_fail("{@\n"
-    "   1 -= 1\n"
-    "@}", "invalid left hand operand type (1)");
-
-    check_fail("{@\n"
-    "   1 *= 1\n"
-    "@}", "invalid left hand operand (1)");
-
-    check_fail("{@\n"
-    "   1 /= 1\n"
-    "@}", "invalid left hand operand (1)");
-
-    check_fail("{@\n"
-    "   1 %= 1\n"
-    "@}", "invalid left hand operand (1)");
-
-    check_fail("{@\n"
-    "   a += b\n"
-    "@}", "\"a\" is not defined");
-
-    check_fail("{@\n"
-    "   a -= b\n"
-    "@}", "\"a\" is not defined");
-
-    check_fail("{@\n"
-    "   a *= b\n"
-    "@}", "\"a\" is not defined");
-
-    check_fail("{@\n"
-    "   a /= b\n"
-    "@}", "\"a\" is not defined");
-
-    check_fail("{@\n"
-    "   a %= b\n"
-    "@}", "\"a\" is not defined");
+    check_fail("{@ += @}", "not found blocks");
+    check_fail("{@ -= @}", "not found blocks");
+    check_fail("{@ *= @}", "not found blocks");
+    check_fail("{@ /= @}", "not found blocks");
+    check_fail("{@ %= @}", "not found blocks");
+    check_fail("{@ a += @}", "syntax error. not found rhs operand in asscalc");
+    check_fail("{@ a -= @}", "syntax error. not found rhs operand in asscalc");
+    check_fail("{@ a *= @}", "syntax error. not found rhs operand in asscalc");
+    check_fail("{@ a /= @}", "syntax error. not found rhs operand in asscalc");
+    check_fail("{@ a %= @}", "syntax error. not found rhs operand in asscalc");
+    check_fail("{@ 1 += 1 @}", "invalid left hand operand (1)");
+    check_fail("{@ 1 -= 1 @}", "invalid left hand operand type (1)");
+    check_fail("{@ 1 *= 1 @}", "invalid left hand operand (1)");
+    check_fail("{@ 1 /= 1 @}", "invalid left hand operand (1)");
+    check_fail("{@ 1 %= 1 @}", "invalid left hand operand (1)");
+    check_fail("{@ a += b @}", "\"a\" is not defined");
+    check_fail("{@ a -= b @}", "\"a\" is not defined");
+    check_fail("{@ a *= b @}", "\"a\" is not defined");
+    check_fail("{@ a /= b @}", "\"a\" is not defined");
+    check_fail("{@ a %= b @}", "\"a\" is not defined");
 
     trv_cleanup;
 }
