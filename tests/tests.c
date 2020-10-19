@@ -26106,29 +26106,36 @@ test_trv_multi_assign_1(void) {
 }
 
 static void
+test_trv_multi_assign_fail_0(void) {
+    trv_ready;
+
+    check_fail("{@ a, = 1, 2 @}", "syntax error. not found test in test list");
+    check_fail("{@ a, b = 1, @}", "syntax error. not found test in test list");
+    check_fail("{@ a, = 1, @}", "syntax error. not found test in test list");
+    check_fail("{@ 1, 2 = 1, 2 @}", "invalid left hand operand (1)");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_or_test_0(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
-    tkr_parse(tkr, "{: 1 or 0 :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1"));
-    }
+    check_ok("{: 1 or 0 :}", "1");
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
+}
+
+static void
+test_trv_or_test_fail_0(void) {
+    trv_ready;
+
+    check_fail("{: or :}", "not found blocks");
+    check_fail("{: or 1 :}", "not found blocks");
+    check_fail("{: 1 or :}", "syntax error. not found rhs operand in 'or' operator");
+    check_fail("{: 1 or 2 o :}", "syntax error. not found \":}\"");
+
+    trv_cleanup;
 }
 
 static void
@@ -29597,7 +29604,9 @@ traverser_tests[] = {
     {"assign_list_fail_0", test_trv_assign_list_fail_0},
     {"multi_assign_0", test_trv_multi_assign_0},
     {"multi_assign_1", test_trv_multi_assign_1},
+    {"multi_assign_fail_0", test_trv_multi_assign_fail_0},
     {"or_test_0", test_trv_or_test_0},
+    {"or_test_fail_0", test_trv_or_test_fail_0},
     {"and_test_0", test_trv_and_test_0},
     {"not_test_0", test_trv_not_test_0},
     {"asscalc_0", test_trv_asscalc_0},
