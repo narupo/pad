@@ -3430,10 +3430,12 @@ cc_struct(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");  // not error
     }
 
+    token_t **saveptr = ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->identifier = cc_identifier(ast, cargs);
     if (ast_has_errors(ast) || !cur->identifier) {
-        return_cleanup("");
+        ast->ref_ptr = saveptr;
+        return_cleanup("not found identifier");
     }
 
     t = ast_read_token(ast);
@@ -3455,11 +3457,13 @@ cc_struct(ast_t *ast, cc_args_t *cargs) {
 
     cc_skip_newlines(ast);
 
+    saveptr = ast->ref_ptr;
     t = ast_read_token(ast);
     if (!t) {
         return_cleanup("reached EOF in read 'end'");
     }
     if (t->type != TOKEN_TYPE_STMT_END) {
+        ast->ref_ptr = saveptr;
         return_cleanup("not found 'end'. found token is %d", t->type);
     }
 
