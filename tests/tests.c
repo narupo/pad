@@ -26067,28 +26067,24 @@ test_trv_assign_list_2(void) {
 
 static void
 test_trv_assign_list_3(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
-    tkr_parse(tkr, "{@ a = b = 1, c = 2 @}{: a :},{: b :},{: c :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1,1,2"));
-    }
+    check_ok("{@ a = b = 1, c = 2 @}{: a :},{: b :},{: c :}", "1,1,2");
 
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
+}
+
+static void
+test_trv_assign_list_fail_0(void) {
+    trv_ready;
+
+    check_fail("{@ = @}", "not found blocks");
+    check_fail("{@ a = @}", "syntax error. not found rhs test in assign list");
+    check_fail("{@ a = 1, @}", "syntax error. not found test in test list");
+    check_fail("{@ a = 1, = @}", "syntax error. not found test in test list");
+    check_fail("{@ a = 1, b = @}", "syntax error. not found rhs test in assign list");
+
+    trv_cleanup;
 }
 
 static void
@@ -29598,6 +29594,7 @@ traverser_tests[] = {
     {"assign_list_1", test_trv_assign_list_1},
     {"assign_list_2", test_trv_assign_list_2},
     {"assign_list_3", test_trv_assign_list_3},
+    {"assign_list_fail_0", test_trv_assign_list_fail_0},
     {"multi_assign_0", test_trv_multi_assign_0},
     {"multi_assign_1", test_trv_multi_assign_1},
     {"or_test_0", test_trv_or_test_0},
