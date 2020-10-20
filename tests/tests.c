@@ -23368,11 +23368,11 @@ static void
 test_trv_struct_4(void) {
     trv_ready;
 
-    check_fail("{@\n"
+    check_fail_showbuf("{@\n"
     "struct Animal:\n"
     "   @}text{@\n"
     "end\n"
-    "@}", "not found 'end'. found token is 2");
+    "@}", "not found 'end'. found token is 5");
 
     trv_cleanup;
 }
@@ -27566,6 +27566,37 @@ test_trv_term_3(void) {
 }
 
 static void
+test_trv_term_fail_0(void) {
+    trv_ready;
+
+    check_fail("{: * :}", "not found blocks");
+    check_fail("{: 1 * :}", "syntax error. not found rhs operand in term");
+    check_fail("{: * 1 :}", "not found blocks");
+    check_ok("{: 1 * true :}", "1");
+    check_ok("{: false * 1 :}", "0");
+    check_ok("{: 1 * \"a\" :}", "a");
+    check_ok("{: \"a\" * 1 :}", "a");
+    check_fail("{: 1 * [] :}", "can't mul with int");
+    check_fail("{: [] * 1 :}", "can't mul");
+    check_fail("{: 1 * {} :}", "can't mul with int");
+    check_fail("{: {} * 1 :}", "can't mul");
+
+    check_fail("{: / :}", "not found blocks");
+    check_fail("{: 1 / :}", "syntax error. not found rhs operand in term");
+    check_fail("{: / 1 :}", "not found blocks");
+    check_ok("{: 1 / true :}", "1");
+    check_ok("{: false / 1 :}", "0");
+    check_fail("{: 1 / \"a\" :}", "invalid right hand operand");
+    check_fail("{: \"a\" / 1 :}", "can't division");
+    check_fail("{: 1 / [] :}", "invalid right hand operand");
+    check_fail("{: [] / 1 :}", "can't division");
+    check_fail("{: 1 / {} :}", "invalid right hand operand");
+    check_fail("{: {} / 1 :}", "can't division");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_call_0(void) {
     trv_ready;
 
@@ -29684,6 +29715,7 @@ traverser_tests[] = {
     {"term_1", test_trv_term_1},
     {"term_2", test_trv_term_2},
     {"term_3", test_trv_term_3},
+    {"term_fail_0", test_trv_term_fail_0},
     {"call_0", test_trv_call_0},
     {"call_1", test_trv_call_1},
     {"call_2", test_trv_call_2},
