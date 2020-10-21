@@ -27738,7 +27738,7 @@ static void
 test_trv_call_5(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   def f1(a):\n"
     "       puts(a)\n"
     "       return a * 2\n"
@@ -27752,15 +27752,49 @@ test_trv_call_5(void) {
     "   def f4(a):\n"
     "       return f3(a)\n"
     "   end\n"
-    "@}{: f4(2) :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "2\n4"));
-    }
+    "@}{: f4(2) :}", "2\n4");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_call_fail_0(void) {
+    trv_ready;
+
+    check_fail("{@\n"
+    "def f():\n"
+    "end\n"
+    "f(\n"
+    "@}"
+    , "not found ')'");
+
+    check_fail("{@\n"
+    "def f():\n"
+    "end\n"
+    "f)\n"
+    "@}"
+    , "not found blocks");
+
+    check_fail("{@\n"
+    "def f():\n"
+    "end\n"
+    "f(1)\n"
+    "@}"
+    , "arguments not same length");
+
+    check_ok("{@\n"
+    "def f(a):\n"
+    "end\n"
+    "f(1)\n"
+    "@}"
+    , "");
+
+    check_fail("{@\n"
+    "def f(a):\n"
+    "end\n"
+    "f(1, 2)\n"
+    "@}"
+    , "arguments not same length");
 
     trv_cleanup;
 }
@@ -29722,6 +29756,7 @@ traverser_tests[] = {
     {"call_3", test_trv_call_3},
     {"call_4", test_trv_call_4},
     {"call_5", test_trv_call_5},
+    {"call_fail_0", test_trv_call_fail_0},
     {"index_0", test_trv_index_0},
     {"index_1", test_trv_index_1},
     {"array_0", test_trv_array_0},
