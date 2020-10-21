@@ -2000,12 +2000,16 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
             }
 
             check("call cc_simple_assign");
+            token_t **saveptr = ast->ref_ptr;
             cargs->depth = depth + 1;
             node_t *simple_assign = cc_simple_assign(ast, cargs);
             if (ast_has_errors(ast)) {
                 return_cleanup("failed to compile simple assign");
             }
-            assert(simple_assign);
+            if (!simple_assign) {
+                ast->ref_ptr = saveptr;
+                return_cleanup("not found expression");
+            }
 
             chain_node_t *nchain = chain_node_new(CHAIN_NODE_TYPE_INDEX, mem_move(simple_assign));
             chain_nodes_moveb(cur->chain_nodes, mem_move(nchain));

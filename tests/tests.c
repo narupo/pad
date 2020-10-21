@@ -27803,15 +27803,7 @@ static void
 test_trv_index_0(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@ a = [0, 1] @}{: a[0] :},{: a[1] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0,1"));
-    }
+    check_ok("{@ a = [0, 1] @}{: a[0] :},{: a[1] :}", "0,1");
 
     trv_cleanup;
 }
@@ -27820,15 +27812,20 @@ static void
 test_trv_index_1(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@ a = [0, 1] @}{: a[0] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
-    }
+    check_ok("{@ a = [0, 1] @}{: a[0] :}", "0");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_index_fail_0(void) {
+    trv_ready;
+
+    check_fail("{@ a = [0, 1] @}{: a[ :}", "not found expression");
+    check_fail("{@ a = [0, 1] @}{: a] :}", "syntax error. not found \":}\"");
+    check_fail("{@ a = [0, 1] @}{: a[] :}", "not found expression");
+    check_fail("{@ a = [0, 1] @}{: a[\"a\"] :}", "index isn't integer");
+    check_fail("{@ a = [0, 1] @}{: a[0][0] :}", "not indexable (1)");
 
     trv_cleanup;
 }
@@ -27837,15 +27834,7 @@ static void
 test_trv_array_0(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@ a = [0, 1] @}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), ""));
-    }
+    check_ok("{@ a = [0, 1] @}", "");
 
     trv_cleanup;
 }
@@ -29759,6 +29748,7 @@ traverser_tests[] = {
     {"call_fail_0", test_trv_call_fail_0},
     {"index_0", test_trv_index_0},
     {"index_1", test_trv_index_1},
+    {"index_fail_0", test_trv_index_fail_0},
     {"array_0", test_trv_array_0},
     {"array_1", test_trv_array_1},
     {"array_2", test_trv_array_2},
