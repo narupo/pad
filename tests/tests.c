@@ -28133,18 +28133,11 @@ static void
 test_trv_array_12(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
-        "d = {\"a\": 1, \"b\": 2}\n"
-        "a = [d, d]\n"
-        "@}{: a[0][\"a\"] :},{: a[1][\"b\"] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        eq("1,2");
-    }
+    check_ok("{@\n"
+    "d = {\"a\": 1, \"b\": 2}\n"
+    "a = [d, d]\n"
+    "@}{: a[0][\"a\"] :},{: a[1][\"b\"] :}"
+    , "1,2");
 
     trv_cleanup;
 }
@@ -28166,6 +28159,21 @@ test_trv_array_13(void) {
         assert(!ast_has_errors(ast));
         eq("2");
     }
+
+    trv_cleanup;
+}
+
+static void
+test_trv_array_fail_0(void) {
+    trv_ready;
+
+    check_fail("{@ a = [ @}", "not found ']' in array");
+    check_fail("{@ a = ] @}", "syntax error. not found rhs test in assign list");
+    check_fail("{@ a = [,] @}", "not found ']' in array");
+    check_fail("{@ a = [,,] @}", "not found ']' in array");
+    check_ok("{@ a = [1,] @}", "");
+    check_ok("{@ a = [1,2,] @}", "");
+    check_fail("{@ a = [,1] @}", "not found ']' in array");
 
     trv_cleanup;
 }
@@ -29762,6 +29770,8 @@ traverser_tests[] = {
     {"array_10", test_trv_array_10},
     {"array_11", test_trv_array_11},
     {"array_12", test_trv_array_12},
+    {"array_13", test_trv_array_13},
+    {"array_fail_0", test_trv_array_fail_0},
     {"nil", test_trv_nil},
     {"false", test_trv_false},
     {"true", test_trv_true},
