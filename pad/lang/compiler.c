@@ -1180,8 +1180,7 @@ cc_array_elems(ast_t *ast, cc_args_t *cargs) {
             return_cleanup("");
         }
         if (!rhs) {
-            // not error
-            return_ok;
+            return_ok;  // not error
         }
 
         nodearr_moveb(cur->nodearr, rhs);
