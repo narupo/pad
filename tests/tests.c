@@ -28012,15 +28012,7 @@ static void
 test_trv_array_6(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@ a = [] @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(array)"));
-    }
+    check_ok("{@ a = [] @}{: a :}", "(array)");
 
     trv_cleanup;
 }
@@ -28029,17 +28021,10 @@ static void
 test_trv_array_7(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
-        "a = [[0, 1], [2, 3]]\n"
-        "@}{: a[0][0] :},{: a[0][1] :},{: a[1][0] :},{: a[1][1] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        eq("0,1,2,3");
-    }
+    check_ok("{@\n"
+    "a = [[0, 1], [2, 3]]\n"
+    "@}{: a[0][0] :},{: a[0][1] :},{: a[1][0] :},{: a[1][1] :}"
+    , "0,1,2,3");
 
     trv_cleanup;
 }
@@ -28048,19 +28033,11 @@ static void
 test_trv_array_8(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
-        "struct A:\n"
-        "end\n"
-        "a = [A(), A()]\n"
-        "@}{: a[0] :},{: a[1] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        eq("(object),(object)");
-    }
+    check_ok("{@\n"
+    "struct A:\n"
+    "end\n"
+    "a = [A(), A()]\n"
+    "@}{: a[0] :},{: a[1] :}", "(object),(object)");
 
     trv_cleanup;
 }
@@ -28069,19 +28046,11 @@ static void
 test_trv_array_9(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
-        "struct A:\n"
-        "end\n"
-        "a = [A(), A()]\n"
-        "@}{: a[0] :},{: a[1] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        eq("(object),(object)");
-    }
+    check_ok("{@\n"
+    "struct A:\n"
+    "end\n"
+    "a = [A(), A()]\n"
+    "@}{: a[0] :},{: a[1] :}", "(object),(object)");
 
     trv_cleanup;
 }
@@ -28090,21 +28059,13 @@ static void
 test_trv_array_10(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
-        "struct A:\n"
-        "end\n"
-        "def f():\n"
-        "end\n"
-        "a = [A(), f]\n"
-        "@}{: a[0] :},{: a[1] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        eq("(object),(function)");
-    }
+    check_ok("{@\n"
+    "struct A:\n"
+    "end\n"
+    "def f():\n"
+    "end\n"
+    "a = [A(), f]\n"
+    "@}{: a[0] :},{: a[1] :}", "(object),(function)");
 
     trv_cleanup;
 }
@@ -28113,18 +28074,10 @@ static void
 test_trv_array_11(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
-        "d = {\"a\": 1, \"b\": 2}\n"
-        "a = [d, d]\n"
-        "@}{: a[0] :},{: a[1] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        eq("(dict),(dict)");
-    }
+    check_ok("{@\n"
+    "d = {\"a\": 1, \"b\": 2}\n"
+    "a = [d, d]\n"
+    "@}{: a[0] :},{: a[1] :}", "(dict),(dict)");
 
     trv_cleanup;
 }
@@ -28146,19 +28099,11 @@ static void
 test_trv_array_13(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
-        "d = {\"a\": 1, \"b\": 2}\n"
-        "b = [2, d]\n"
-        "a = [1, b, 3]\n"
-        "@}{: a[1][1][\"b\"] :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        eq("2");
-    }
+    check_ok("{@\n"
+    "d = {\"a\": 1, \"b\": 2}\n"
+    "b = [2, d]\n"
+    "a = [1, b, 3]\n"
+    "@}{: a[1][1][\"b\"] :}", "2");
 
     trv_cleanup;
 }
