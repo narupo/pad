@@ -1,0 +1,53 @@
+{@
+    struct File:
+        fileno = -1
+
+        met open(self, fname):
+            self.fileno = 1
+        end
+
+        met close(self):
+            self.fileno = -1
+        end
+    end
+
+    struct TextFileInterface:
+        met readLines(self):
+            return ["a", "b"]
+        end
+    end
+
+    struct BinaryFileInterface:
+        met read(self):
+            return [0, 1]
+        end
+    end
+
+    struct TextFile:
+        extract(File, TextFileInterface)
+    end
+
+    struct BinaryFile:
+        extract(File, BinaryFileInterface)
+    end
+
+    puts("--- text ----")
+    f = TextFile()
+    f.open("file.txt")
+    puts(f.fileno)
+    lines = f.readLines()
+    for i = 0; i < len(lines); i += 1:
+        puts(i, lines[i])
+    end
+    f.close()
+
+    puts("--- binary ----")
+    f = BinaryFile()
+    f.open("file.dat")
+    puts(f.fileno)
+    data = f.read()
+    for i = 0; i < len(data); i += 1:
+        puts(i, data[i])
+    end
+    f.close()
+@}
