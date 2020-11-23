@@ -16749,6 +16749,26 @@ test_trv_builtin_functions_extract_0(void) {
 }
 
 static void
+test_trv_builtin_functions_setattr_0(void) {
+    trv_ready;
+
+    check_ok("{@ struct A: end \n setattr(A, \"a\", 1) @}{: A.a :}", "1");
+    check_ok("{@ struct A: end \n a = A() \n setattr(a, \"a\", 1) @}{: a.a :}", "1");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_builtin_functions_getattr_0(void) {
+    trv_ready;
+
+    check_ok("{@ struct A: end \n setattr(A, \"a\", 1) @}{: getattr(A, \"a\") :}", "1");
+    check_ok_showbuf("{@ struct A: end \n a = A() \n setattr(a, \"a\", 1) @}{: getattr(a, \"a\") :}", "1");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_traverse(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -29791,6 +29811,8 @@ traverser_tests[] = {
     {"builtin_functions_assert_0", test_trv_builtin_functions_assert_0},
     {"builtin_functions_assert_1", test_trv_builtin_functions_assert_1},
     {"builtin_functions_extract_0", test_trv_builtin_functions_extract_0},
+    {"builtin_functions_setattr_0", test_trv_builtin_functions_setattr_0},
+    {"builtin_functions_getattr_0", test_trv_builtin_functions_getattr_0},
     {"builtin_string", test_trv_builtin_string},
     {"builtin_unicode_split", test_trv_builtin_unicode_split},
     {"builtin_unicode_rstrip", test_trv_builtin_unicode_rstrip},
