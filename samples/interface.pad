@@ -15,6 +15,26 @@
     end
 
     animal = Animal()
-    animal.show()
-    animal.walk()
+    animal.show()  // My name is Tama
+    animal.walk()  // Tam is walking
+
+    struct A:
+        met show(self):
+            puts("A is", self.name)
+        end
+    end
+
+    struct B:
+        met show(self):
+            puts("B is", self.name)
+        end
+    end
+
+    struct Robot:
+        name = "Dora"
+        extract(A, B)
+    end
+
+    robot = Robot()
+    robot.show()  // B is dora
 @}
