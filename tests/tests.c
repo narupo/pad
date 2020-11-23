@@ -16755,6 +16755,9 @@ test_trv_builtin_functions_setattr_0(void) {
     check_ok("{@ struct A: end \n setattr(A, \"a\", 1) @}{: A.a :}", "1");
     check_ok("{@ struct A: end \n a = A() \n setattr(a, \"a\", 1) @}{: a.a :}", "1");
 
+    check_fail("{@ struct A: end \n setattr(nil, nil, nil) @}", "unsupported object type");
+    check_fail("{@ struct A: end \n setattr(A, nil, nil) @}", "invalid key");
+
     trv_cleanup;
 }
 
@@ -16763,7 +16766,10 @@ test_trv_builtin_functions_getattr_0(void) {
     trv_ready;
 
     check_ok("{@ struct A: end \n setattr(A, \"a\", 1) @}{: getattr(A, \"a\") :}", "1");
-    check_ok_showbuf("{@ struct A: end \n a = A() \n setattr(a, \"a\", 1) @}{: getattr(a, \"a\") :}", "1");
+    check_ok("{@ struct A: end \n a = A() \n setattr(a, \"a\", 1) @}{: getattr(a, \"a\") :}", "1");
+
+    check_fail("{@ struct A: end \n getattr(nil, nil) @}", "unsupported object type");
+    check_fail("{@ struct A: end \n getattr(A, nil) @}", "invalid key");
 
     trv_cleanup;
 }

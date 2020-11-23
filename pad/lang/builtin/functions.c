@@ -431,6 +431,26 @@ builtin_extract(builtin_func_args_t *fargs) {
     return obj_new_nil(ref_ast->ref_gc);
 }
 
+static const char *
+extract_unicode_mb(const object_t *obj) {
+again:
+    switch (obj->type) {
+    default: {
+        return NULL;
+    } break;
+    case OBJ_TYPE_UNICODE: {
+        return uni_getc_mb(obj->unicode);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        obj = pull_in_ref_by(obj);
+        if (!obj) {
+            return NULL;
+        }
+        goto again;
+    } break;
+    }
+}
+
 static object_t *
 builtin_setattr(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
@@ -450,13 +470,10 @@ builtin_setattr(builtin_func_args_t *fargs) {
     const object_t *key_ = objarr_getc(args, 1);
     object_t *obj = objarr_get(args, 2);
     assert(dst && key_ && obj);
-    string_t *skey = obj_to_string(errstack, key_);
-    const char *key = str_getc(skey);
     context_t *ref_context = NULL;
 
     switch (dst->type) {
     default: {
-        str_del(skey);
         ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "unsupported object type");
         return NULL;
     } break;
@@ -471,8 +488,13 @@ builtin_setattr(builtin_func_args_t *fargs) {
     } break;
     }
 
+    const char *key = extract_unicode_mb(key_);
+    if (!key) {
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid key");
+        return NULL;
+    }
+
     set_ref_at_cur_varmap(errstack, ref_context, NULL, key, obj);
-    str_del(skey);
     if (errstack_len(errstack)) {
         ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to set reference at varmap");
         return NULL;
@@ -484,7 +506,6 @@ builtin_setattr(builtin_func_args_t *fargs) {
 static object_t *
 builtin_getattr(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
-    errstack_t *errstack = ref_ast->error_stack;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -499,13 +520,10 @@ builtin_getattr(builtin_func_args_t *fargs) {
     const object_t *dst = objarr_getc(args, 0);
     const object_t *key_ = objarr_getc(args, 1);
     assert(dst && key_);
-    string_t *skey = obj_to_string(errstack, key_);
-    const char *key = str_getc(skey);
     context_t *ref_context = NULL;
 
     switch (dst->type) {
     default: {
-        str_del(skey);
         ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "unsupported object type");
         return NULL;
     } break;
@@ -520,8 +538,13 @@ builtin_getattr(builtin_func_args_t *fargs) {
     } break;
     }
 
+    const char *key = extract_unicode_mb(key_);
+    if (!key) {
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid key");
+        return NULL;
+    }
+
     object_t *ref = ctx_find_var_ref(ref_context, key);
-    str_del(skey);
     if (!ref) {
         return obj_new_nil(ref_ast->ref_gc);
     }
