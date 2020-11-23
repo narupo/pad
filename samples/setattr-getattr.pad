@@ -1,0 +1,12 @@
+{@
+    struct A:
+    end
+
+    setattr(A, "a", 1)
+    setattr(A, "b", 2)
+
+    puts(A.a, A.b)
+
+    puts(getattr(A, "a"))
+    puts(getattr(A, "b"))
+@}
