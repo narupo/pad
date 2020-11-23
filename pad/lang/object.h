@@ -50,6 +50,7 @@ typedef enum {
     OBJ_TYPE_DICT,
 
     // A struct object
+    // これは宣言。実体ではない
     OBJ_TYPE_DEF_STRUCT,
 
     // A object (instance of struct and others)

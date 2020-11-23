@@ -16737,6 +16737,18 @@ test_trv_builtin_functions_assert_1(void) {
 }
 
 static void
+test_trv_builtin_functions_extract_0(void) {
+    trv_ready;
+
+    check_ok("{@ struct I: a = 1 \n b = 2 \n end \n extract(I) @}{: a :},{: b :}", "1,2");
+    check_ok("{@ struct I: a = 1 \n b = 2 \n end \n extract(I()) @}{: a :},{: b :}", "1,2");
+    check_ok("{@ struct I: a = 1 \n b = 2 \n end \n struct A: extract(I) end @}{: A.a :},{: A.b :}", "1,2");
+    check_ok("{@ struct I: a = 1 \n b = 2 \n end \n struct A: extract(I) end \n a = A() @}{: a.a :},{: a.b :}", "1,2");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_traverse(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -29778,6 +29790,7 @@ traverser_tests[] = {
     {"builtin_functions_deepcopy_0", test_trv_builtin_functions_deepcopy_0},
     {"builtin_functions_assert_0", test_trv_builtin_functions_assert_0},
     {"builtin_functions_assert_1", test_trv_builtin_functions_assert_1},
+    {"builtin_functions_extract_0", test_trv_builtin_functions_extract_0},
     {"builtin_string", test_trv_builtin_string},
     {"builtin_unicode_split", test_trv_builtin_unicode_split},
     {"builtin_unicode_rstrip", test_trv_builtin_unicode_rstrip},
