@@ -1,0 +1,26 @@
+{@
+    struct Animal:
+        name = "Tama"
+        isWalking = false
+
+        met showName(self):
+            puts(self.name)
+        end
+
+        met walk(self):
+            self.isWalking = true
+        end
+    end
+
+    struct Cat:
+        extract(Animal)
+        matatabi = true
+
+        met showName(self):
+            puts(self.name, self.matatabi)
+        end
+    end
+
+    cat = Cat()
+    cat.showName()
+@}
