@@ -431,6 +431,104 @@ builtin_extract(builtin_func_args_t *fargs) {
     return obj_new_nil(ref_ast->ref_gc);
 }
 
+static object_t *
+builtin_setattr(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    errstack_t *errstack = ref_ast->error_stack;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
+    object_array_t *args = actual_args->objarr;
+    assert(args);
+
+    if (objarr_len(args) != 3) {
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid arguments length for setattr");
+        return NULL;
+    }    
+
+    const object_t *dst = objarr_getc(args, 0);
+    const object_t *key_ = objarr_getc(args, 1);
+    object_t *obj = objarr_get(args, 2);
+    assert(dst && key_ && obj);
+    string_t *skey = obj_to_string(errstack, key_);
+    const char *key = str_getc(skey);
+    context_t *ref_context = NULL;
+
+    switch (dst->type) {
+    default: {
+        str_del(skey);
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "unsupported object type");
+        return NULL;
+    } break;
+    case OBJ_TYPE_DEF_STRUCT: {
+        ref_context = dst->def_struct.context;
+    } break;
+    case OBJ_TYPE_OBJECT: {
+        ref_context = dst->object.struct_context;
+    } break;
+    case OBJ_TYPE_MODULE: {
+        ref_context = dst->module.context;
+    } break;
+    }
+
+    set_ref_at_cur_varmap(errstack, ref_context, NULL, key, obj);
+    str_del(skey);
+    if (errstack_len(errstack)) {
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to set reference at varmap");
+        return NULL;
+    }
+
+    return obj;
+}
+
+static object_t *
+builtin_getattr(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    errstack_t *errstack = ref_ast->error_stack;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
+    object_array_t *args = actual_args->objarr;
+    assert(args);
+
+    if (objarr_len(args) != 2) {
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid arguments length for getattr");
+        return NULL;
+    }    
+
+    const object_t *dst = objarr_getc(args, 0);
+    const object_t *key_ = objarr_getc(args, 1);
+    assert(dst && key_);
+    string_t *skey = obj_to_string(errstack, key_);
+    const char *key = str_getc(skey);
+    context_t *ref_context = NULL;
+
+    switch (dst->type) {
+    default: {
+        str_del(skey);
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "unsupported object type");
+        return NULL;
+    } break;
+    case OBJ_TYPE_DEF_STRUCT: {
+        ref_context = dst->def_struct.context;
+    } break;
+    case OBJ_TYPE_OBJECT: {
+        ref_context = dst->object.struct_context;
+    } break;
+    case OBJ_TYPE_MODULE: {
+        ref_context = dst->module.context;
+    } break;
+    }
+
+    object_t *ref = ctx_find_var_ref(ref_context, key);
+    str_del(skey);
+    if (!ref) {
+        return obj_new_nil(ref_ast->ref_gc);
+    }
+
+    return ref;
+}
+
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"id", builtin_id},
@@ -444,6 +542,8 @@ builtin_func_infos[] = {
     {"deepcopy", builtin_deepcopy},
     {"assert", builtin_assert},
     {"extract", builtin_extract},
+    {"setattr", builtin_setattr},
+    {"getattr", builtin_getattr},
     {0},
 };
 
