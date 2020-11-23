@@ -36,5 +36,5 @@
     end
 
     robot = Robot()
-    robot.show()  // B is dora
+    robot.show()  // B is Dora
 @}
