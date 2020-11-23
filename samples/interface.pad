@@ -16,7 +16,7 @@
 
     animal = Animal()
     animal.show()  // My name is Tama
-    animal.walk()  // Tam is walking
+    animal.walk()  // Tama is walking
 
     struct A:
         met show(self):
