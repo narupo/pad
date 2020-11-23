@@ -1,0 +1,34 @@
+{@
+    struct Animal:
+        name = "Animal"
+
+        def new(name):
+            self = Animal()
+            Animal.init(self, name)
+            return self
+        end
+
+        def init(self, name):
+            self.name = name
+        end
+
+        met showName(self):
+            puts(self.name)
+        end
+    end
+
+    struct Cat:
+        extract(Animal)
+        legs = 0
+
+        def new(name, legs):
+            self = Cat()
+            Animal.init(self, name)
+            self.legs = legs
+            return self
+        end
+    end
+
+    cat = Cat.new("Tama", 4)
+    cat.showName()
+@}
