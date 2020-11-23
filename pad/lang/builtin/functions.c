@@ -357,6 +357,80 @@ builtin_assert(builtin_func_args_t *fargs) {
     return obj_new_nil(ref_ast->ref_gc);
 }
 
+static bool
+extract_varmap(object_dict_t *dst, object_dict_t *src) {
+    if (!dst || !src) {
+        return false;
+    }
+
+    for (int32_t i = 0; i < objdict_len(src); i++) {
+        const object_dict_item_t *src_item = objdict_getc_index(src, i);
+        assert(src_item);
+        obj_inc_ref(src_item->value);
+        objdict_set(dst, src_item->key, src_item->value);
+    }
+
+    return true;
+}
+
+static bool
+extract_context(context_t *dst, context_t *src) {
+    if (!dst || !src) {
+        return false;
+    }
+
+    return extract_varmap(ctx_get_varmap(dst), ctx_get_varmap(src));
+}
+
+static bool
+extract_arg(ast_t *ref_ast, const object_t *arg) {
+    if (!ref_ast || !arg) {
+        return false;
+    }
+
+    switch (arg->type) {
+    default:
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "unsupported object");
+        return false;
+        break;
+    case OBJ_TYPE_OBJECT: {
+        return extract_context(ref_ast->ref_context, arg->object.struct_context);
+    } break;
+    case OBJ_TYPE_DEF_STRUCT: {
+        return extract_context(ref_ast->ref_context, arg->def_struct.context);
+    } break;
+    }
+
+    assert(0 && "need implement");
+    return false;
+}
+
+static object_t *
+builtin_extract(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
+    object_array_t *args = actual_args->objarr;
+    assert(args);
+
+    if (objarr_len(args) <= 0) {
+        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid arguments length for extract");
+        return NULL;
+    }    
+
+    for (int32_t i = 0; i < objarr_len(args); i++) {
+        const object_t *arg = objarr_getc(args, i);
+        assert(arg);
+        if (!extract_arg(ref_ast, arg)) {
+            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to extract argument");
+            return NULL;
+        }
+    }
+
+    return obj_new_nil(ref_ast->ref_gc);
+}
+
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"id", builtin_id},
@@ -369,6 +443,7 @@ builtin_func_infos[] = {
     {"copy", builtin_shallowcopy},
     {"deepcopy", builtin_deepcopy},
     {"assert", builtin_assert},
+    {"extract", builtin_extract},
     {0},
 };
 
