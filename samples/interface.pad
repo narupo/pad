@@ -1,0 +1,20 @@
+{@
+	struct Interface:
+		met show(self):
+			puts("My name is", self.name)
+		end
+
+		met walk(self):
+			puts(self.name, "is walking")
+		end
+	end
+
+	struct Animal:
+		name = "Tama"
+		extract(Interface)
+	end
+
+	animal = Animal()
+	animal.show()
+	animal.walk()
+@}
