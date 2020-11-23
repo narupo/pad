@@ -24,8 +24,12 @@
         def new(name, legs):
             self = Cat()
             Animal.init(self, name)
-            self.legs = legs
+            Cat.init(self, legs)
             return self
+        end
+
+        def init(self, legs):
+            self.legs = legs
         end
     end
 
