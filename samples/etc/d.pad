@@ -1,0 +1,30 @@
+{@
+    struct Base:
+        met draw(self):
+            puts("base")
+        end
+    end
+
+    struct Home:
+        extract(Base)
+        _draw = draw
+
+        met draw(self):
+            self._draw()
+            puts("home")
+        end
+    end
+
+    struct MyHome:
+        extract(Home)
+        __draw = draw
+
+        met draw(self):
+            self.__draw()
+            puts("my home")
+        end
+    end
+
+    home = MyHome()
+    home.draw()
+@}
