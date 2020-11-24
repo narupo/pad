@@ -93,8 +93,8 @@ Functions and inject-block statement.
 
 # Development policy
 
-* Pad is interpreter Like C 
-* Pad keep simple
+* Pad is interpreter like C 
+* Pad keeps simple
 * Pad needs many test cases
 * Pad needs many standard libraries
 
