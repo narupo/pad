@@ -23,4 +23,5 @@
 
     cat = Cat()
     cat.showName()
+    puts(type(cat))
 @}

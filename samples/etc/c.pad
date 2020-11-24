@@ -1,0 +1,7 @@
+{@
+    arr = []
+    setattr(arr, "a", 1)  // error
+
+    di = {}
+    setattr(di, "a", 1)  // error
+@}

@@ -128,9 +128,14 @@ ast_getc_root(const ast_t *self);
 /**
  * push back error at ast error stack
  *
- * @param[in] ast pointer to ast_t
- * @param[in] fmt format string (const char *)
- * @param[in] ... arguments of format
+ * @param[in] ast    pointer to ast_t
+ * @param[in] fname  file name of current module
+ * @param[in] lineno line number of current module
+ * @param[in] src    source string of current module
+ * @param[in] pos    number of position in src
+ * @param[in] fname  file name of module
+ * @param[in] fmt    format string (const char *)
+ * @param[in] ...   arguments of format
  */
 #define ast_pushb_error(ast, fname, lineno, src, pos, fmt, ...) \
     errstack_pushb(ast->error_stack, fname, lineno, src, pos, fmt, ##__VA_ARGS__)

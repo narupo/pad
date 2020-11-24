@@ -104,6 +104,7 @@ struct trv_args {
  */
 struct builtin_func_args {
     ast_t *ref_ast;  // the ast of current context
+    const node_t *ref_node;  // reference of node for errors
     object_t *ref_args;  // the arguments object of builtin functions
     object_array_t *ref_owners;  // reference to owners of array
 };
