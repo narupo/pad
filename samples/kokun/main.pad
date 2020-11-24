@@ -12,15 +12,17 @@
     request = Request.new(path, method)
 
     if path == "/":
-        err = home(request)
+        out, err = home(request)
     elif path == "/about":
-        err = about(request)
+        out, err = about(request)
     else:
-        puts("404 Not Found")
+        err = "404 Not Found"
     end
 
     if err != nil:
         puts("500 Internal Server Error")
         puts(err)
+    else:
+        puts(out)
     end
 @}

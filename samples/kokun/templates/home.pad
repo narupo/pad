@@ -1,0 +1,10 @@
+{@
+    from "samples/kokun/templates/base.pad" import base
+
+    def home(context) extends base:
+        inject content: @}
+            <h1>Welcome to my homepage!</h1>
+        {@ end
+        return super(context)
+    end
+@}
