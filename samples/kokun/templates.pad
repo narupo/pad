@@ -10,13 +10,16 @@
         block footer: @}
             <p>2020 (c) kokun</p>
         {@ end
+
+        return nil
     end
 
     def home(context) extends base:
         inject content: @}
             <p>Welcome to my homepage</p>
         {@ end
-        super(context)
+
+        return super(context)
     end
 
     def about(context) extends base:
@@ -24,6 +27,7 @@
             <h1>About of my homepage</h1>
             <p>This homepage made by Pad.</p>
         {@ end
-        super(context)
+    
+        return super(context)
     end
 @}

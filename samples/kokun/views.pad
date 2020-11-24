@@ -6,11 +6,11 @@
 
     def home(request):
         context = {}
-        homeTemplate(context)
+        return homeTemplate(context)
     end
 
     def about(request):
         context = []
-        aboutTemplate(context)
+        return aboutTemplate(context)
     end
 @}
