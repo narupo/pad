@@ -28473,7 +28473,16 @@ test_trv_dict_fail_0(void) {
     trv_ready;    
 
     check_fail("{@ d = { @}", "not found right brace in parse dict");
-    // TODO: 2020/11/25 more test!
+    check_fail("{@ {1} @}", "not found colon in parse dict elem");
+    check_fail("{@ {1:} @}", "not found value in parse dict elem");
+    check_fail("{@ {1:2} @}", "key is not string in dict elem");
+    check_fail("{@ {\"a\": 1, 2} @}", "not found colon in parse dict elem");
+    check_ok("{@ {\"a\": 1, } @}", "");
+    check_fail("{@ {\"a\": 1, \"b\"} @}", "not found colon in parse dict elem");
+    check_fail("{@ {\"a\": 1, \"b\":} @}", "not found value in parse dict elem");
+    check_fail("{@ {\"a\": b} @}", "\"b\" is not defined. can not store to dict elements");
+    check_fail("{@ {[]} @}", "not found colon in parse dict elem");
+    check_fail("{@ {{}} @}", "not found colon in parse dict elem");
 
     trv_cleanup;
 }
