@@ -20851,6 +20851,16 @@ test_trv_if_stmt_12(void) {
 }
 
 static void
+test_trv_if_stmt_13(void) {
+    trv_ready;
+
+    check_ok("{@ path = \"/\" if path == \"/\": puts(1) elif path == \"/about\": puts(2) else: puts(3) end @}", "1\n");
+    check_ok("{@ path = \"/about\" if path == \"/\": puts(1) elif path == \"/about\": puts(2) else: puts(3) end @}", "2\n");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_if_stmt_fail_0(void) {
     trv_ready;
 
@@ -26389,6 +26399,8 @@ test_trv_comparison_7(void) {
     trv_ready;
 
     check_ok("{@ c = \"a\" @}{: c == \">\" :}", "false");
+    check_ok("{@ path = \"/\" @}{: path == \"/\" :}", "true");
+    check_ok("{@ path = \"/about\" @}{: path == \"/about\" :}", "true");
 
     trv_cleanup;
 }
@@ -29544,6 +29556,7 @@ traverser_tests[] = {
     {"if_stmt_10", test_trv_if_stmt_10},
     {"if_stmt_11", test_trv_if_stmt_11},
     {"if_stmt_12", test_trv_if_stmt_12},
+    {"if_stmt_13", test_trv_if_stmt_13},
     {"if_stmt_fail_0", test_trv_if_stmt_fail_0},
     {"if_stmt_fail_1", test_trv_if_stmt_fail_1},
     {"elif_stmt_0", test_trv_elif_stmt_0},

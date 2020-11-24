@@ -1,0 +1,13 @@
+{@
+    struct Request:
+        path = nil
+        method = nil
+        
+        def new(path, method):
+            self = Request()
+            self.path = path
+            self.method = method
+            return self
+        end
+    end
+@}
