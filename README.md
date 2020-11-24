@@ -2,13 +2,6 @@
 
 Pad is programming language.
 
-# Development policy
-
-* Pad is interpreter Like C 
-* Pad keep simple
-* Pad needs many test cases
-* Pad needs many standard libraries
-
 # Build
 
 How to build of the pad.
@@ -97,3 +90,11 @@ Functions and inject-block statement.
     index("Pad")
 @}
 ```
+
+# Development policy
+
+* Pad is interpreter Like C 
+* Pad keep simple
+* Pad needs many test cases
+* Pad needs many standard libraries
+
