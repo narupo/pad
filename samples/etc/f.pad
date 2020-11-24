@@ -1,0 +1,24 @@
+{@
+    from "samples/etc/e.pad" import (Slyme, Goblin)
+
+    struct EnemyFactory:
+        met create(self, key, name):
+            if key == "slyme":
+                return Slyme(name), nil
+            elif key == "goblin":
+                return Goblin(name), nil
+            else:
+                return nil, "invalid key"
+            end
+        end
+    end
+
+    f = EnemyFactory()
+    slyme, err = f.create("slyme", "suralin")
+    if err != nil:
+        eputs(err)
+        exit(1)
+    end
+
+    slyme.attack()
+@}
