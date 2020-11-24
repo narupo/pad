@@ -1,0 +1,16 @@
+{@
+    def base(context):
+        block header: @}
+            <h1>Kokun's homepage</h1>
+        {@ end
+
+        block content:
+        end
+
+        block footer: @}
+            <p>2020 (c) kokun</p>
+        {@ end
+
+        return nil
+    end
+@}

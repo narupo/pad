@@ -1,24 +1,11 @@
 {@
-    from "samples/kokun/templates.pad" import (
-        home as homeTemplate,
-        about as aboutTemplate,
-    )
-
     def home(request):
         context = {}
-        return homeTemplate(context)
+        return render(request, "samples/kokun/templates/home.pad", context)
     end
 
     def about(request):
         context = {}
-        return aboutTemplate(context)
-    end
-
-    def test(request) extends base:
-        context = {}
-        fin = open("samples/kokun/templates/test.pad", "r")
-        out, err = dance(fin.read(), context)
-        fin.close()
-        return out, err
+        return render(request, "samples/kokun/templates/about.pad", context)
     end
 @}
