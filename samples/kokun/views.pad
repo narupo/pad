@@ -1,29 +1,16 @@
 {@
-    def base(request):
-        block header: @}
-            <h1>Kokun's homepage</h1>
-        {@ end
+    from "samples/kokun/templates.pad" import (
+        home as homeTemplate,
+        about as aboutTemplate,
+    )
 
-        block content:
-        end
-
-        block footer: @}
-            <p>2020 (c) kokun</p>
-        {@ end
+    def home(request):
+        context = {}
+        homeTemplate(context)
     end
 
-    def home(request) extends base:
-        inject content: @}
-            <p>Welcome to my homepage</p>
-        {@ end
-        super(request)
-    end
-
-    def about(request) extends base:
-        inject content: @}
-            <h1>About of my homepage</h1>
-            <p>This homepage made by Pad.</p>
-        {@ end
-        super(request)
+    def about(request):
+        context = []
+        aboutTemplate(context)
     end
 @}
