@@ -1,0 +1,21 @@
+{@
+    from "samples/kokun/models.pad" import (
+        Request,
+    )
+    from "samples/kokun/views.pad" import (
+        home,
+        about,
+    )
+
+    path = opts.get("path")
+    method = opts.get("method")
+    request = Request.new(path, method)
+
+    if path == "/":
+        home(request)
+    elif path == "/about":
+        about(request)
+    else:
+        puts("404 Not Found")
+    end
+@}

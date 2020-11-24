@@ -141,6 +141,9 @@ char32_strcmp(const char32_t *s1, const char32_t *s2) {
     if (!s1 || !s2) {
         return -1;
     }
+    if (char32_len(s1) != char32_len(s2)) {
+        return -1;
+    }
 
     for (const char32_t *p = s1, *q = s2; *p && *q; ++p, ++q) {
         if (*p != *q) {
@@ -154,6 +157,9 @@ char32_strcmp(const char32_t *s1, const char32_t *s2) {
 int32_t
 char16_strcmp(const char16_t *s1, const char16_t *s2) {
     if (!s1 || !s2) {
+        return -1;
+    }
+    if (char16_len(s1) != char16_len(s2)) {
         return -1;
     }
 
