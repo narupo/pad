@@ -28469,6 +28469,16 @@ test_trv_dict_3(void) {
 }
 
 static void
+test_trv_dict_fail_0(void) {
+    trv_ready;    
+
+    check_fail("{@ d = { @}", "not found right brace in parse dict");
+    // TODO: 2020/11/25 more test!
+
+    trv_cleanup;
+}
+
+static void
 test_trv_identifier(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -29764,6 +29774,7 @@ traverser_tests[] = {
     {"dict_1", test_trv_dict_1},
     {"dict_2", test_trv_dict_2},
     {"dict_3", test_trv_dict_3},
+    {"dict_fail_0", test_trv_dict_fail_0},
     {"identifier", test_trv_identifier},
     {"traverse", test_trv_traverse},
     {"comparison", test_trv_comparison},

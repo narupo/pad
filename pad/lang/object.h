@@ -449,12 +449,14 @@ obj_new_object(
  * construct module object by parameters
  * if failed to allocate memory then exit from process
  *
- *
- * @param[in] *ref_gc     reference to gc_t (do not delete)
- * @param[in] *name       pointer to C strings for module name
- * @param[in] *move_tkr   pointer to tokenizer_t (with move semantics)
- * @param[in] *move_ast   pointer to ast_t (with move semantics)
- * @param[in] *func_infos array of functions
+ * @param[in] *ref_gc              reference to gc_t (do not delete)
+ * @param[in] *name                pointer to C strings for module name
+ * @param[in] *program_filename    file name
+ * @param[in] *move_program_source program source
+ * @param[in] *move_tkr            pointer to tokenizer_t (with move semantics)
+ * @param[in] *move_ast            pointer to ast_t (with move semantics)
+ * @param[in] *move_context        context
+ * @param[in] *func_infos          array of functions
  *
  * @return pointer to object_t
  */
