@@ -9014,9 +9014,10 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
         object_t *val = objarr_get(objarr, 1);
 
         if (val->type == OBJ_TYPE_IDENTIFIER) {
+            const char *idn = str_getc(val->identifier.name);
             val = pull_in_ref_by_all(val);
             if (!val) {
-                pushb_error("\"%s\" is not defined. can not store to dict elements", str_getc(val->identifier.name));
+                pushb_error("\"%s\" is not defined. can not store to dict elements", idn);
                 return_trav(NULL);
             }
         }
