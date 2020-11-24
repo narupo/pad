@@ -16775,6 +16775,17 @@ test_trv_builtin_functions_getattr_0(void) {
 }
 
 static void
+test_trv_builtin_functions_dance_0(void) {
+    trv_ready;
+
+    check_ok("{@ out, err = dance(\"{@ puts(1) @}\") @}{: out :},{: err :}", "1\n,nil");
+    check_ok("{@ out, err = dance(\"{@ a = b @}\") @}{: out :},{: err :}", "nil,\"b\" is not defined in asscalc ass idn");
+    check_ok("{@ out, err = dance(\"{@ a = b @}{: a :}\", {\"b\": 1}) @}{: out :},{: err :}", "1,nil");
+
+    trv_cleanup;    
+}
+
+static void
 test_trv_traverse(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -29852,6 +29863,7 @@ traverser_tests[] = {
     {"builtin_functions_extract_0", test_trv_builtin_functions_extract_0},
     {"builtin_functions_setattr_0", test_trv_builtin_functions_setattr_0},
     {"builtin_functions_getattr_0", test_trv_builtin_functions_getattr_0},
+    {"builtin_functions_dance_0", test_trv_builtin_functions_dance_0},
     {"builtin_string", test_trv_builtin_string},
     {"builtin_unicode_split", test_trv_builtin_unicode_split},
     {"builtin_unicode_rstrip", test_trv_builtin_unicode_rstrip},

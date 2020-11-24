@@ -8,6 +8,8 @@
 #include <pad/lang/gc.h>
 #include <pad/lang/arguments.h>
 #include <pad/lang/tokenizer.h>
+#include <pad/lang/compiler.h>
+#include <pad/lang/traverser.h>
 
 /**
  * construct module

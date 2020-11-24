@@ -27,7 +27,7 @@
             <h1>About of my homepage</h1>
             <p>This homepage made by Pad.</p>
         {@ end
-    
+
         return super(context)
     end
 @}
