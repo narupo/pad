@@ -10,7 +10,15 @@
     end
 
     def about(request):
-        context = []
+        context = {}
         return aboutTemplate(context)
+    end
+
+    def test(request) extends base:
+        context = {}
+        fin = open("samples/kokun/templates/test.pad", "r")
+        out, err = dance(fin.read(), context)
+        fin.close()
+        return out, err
     end
 @}

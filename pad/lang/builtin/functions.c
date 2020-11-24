@@ -574,6 +574,101 @@ builtin_getattr(builtin_func_args_t *fargs) {
     return ref;
 }
 
+static object_t *
+builtin_dance(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    const node_t *ref_node = fargs->ref_node;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
+    object_array_t *args = actual_args->objarr;
+    assert(args);
+
+    if (objarr_len(args) < 1) {
+        push_error("need one argument");
+        return NULL;
+    }    
+    const object_t *src = objarr_getc(args, 0);
+    const char *code = extract_unicode_mb(src);
+    if (!code) {
+        push_error("invalid source code");
+        return NULL;
+    }
+
+    const object_t *codectx = NULL;
+    if (objarr_len(args) >= 2) {
+        codectx = objarr_getc(args, 1);
+        if (codectx->type != OBJ_TYPE_DICT) {
+            push_error("invalid context type. context will be dict");
+            return NULL;
+        }
+    }
+
+    object_array_t *retarr = objarr_new();
+    tokenizer_t *tkr = tkr_new(tkropt_new());
+    ast_t *ast = ast_new(ref_ast->ref_config);
+    context_t *ctx = ctx_new(ref_ast->ref_gc);
+    opts_t *opts = opts_new();
+
+    if (codectx) {
+        object_dict_t *varmap = ctx_get_varmap(ctx);
+        for (int32_t i = 0; i < objdict_len(codectx->objdict); ++i) {
+            const object_dict_item_t *item = objdict_getc_index(codectx->objdict, i);
+            objdict_set(varmap, item->key, item->value);
+        }
+    }
+
+#define return_err(es) \
+    const errelem_t *elem = errstack_getc(es, errstack_len(es) - 1); \
+    object_t *err = obj_new_unicode_cstr(ref_ast->ref_gc, elem->message); \
+    objarr_moveb(retarr, mem_move(obj_new_nil(ref_ast->ref_gc))); \
+    objarr_moveb(retarr, mem_move(err)); \
+    return obj_new_array(ref_ast->ref_gc, mem_move(retarr));
+
+    tkr_parse(tkr, code);
+    if (tkr_has_error_stack(tkr)) {
+        const errstack_t *es = tkr_getc_error_stack(tkr);
+        return_err(es);
+    }
+
+    ast_clear(ast);
+    ast_move_opts(ast, mem_move(opts));
+    opts = NULL;
+
+    cc_compile(ast, tkr_get_tokens(tkr));
+    if (ast_has_errors(ast)) {
+        const errstack_t *es = ast_getc_error_stack(ast);
+        return_err(es);
+    }
+
+    trv_traverse(ast, ctx);
+    if (ast_has_errors(ast)) {
+        const errstack_t *es = ast_getc_error_stack(ast);
+        return_err(es);
+    }
+
+    tkr_del(tkr);
+    ast_del(ast);
+
+    const char *out = ctx_getc_stdout_buf(ctx);
+    const char *err = ctx_getc_stderr_buf(ctx);
+    object_t *retout = obj_new_unicode_cstr(ref_ast->ref_gc, out);
+    object_t *reterr = NULL;
+    if (strlen(err)) {
+        reterr = obj_new_unicode_cstr(ref_ast->ref_gc, err);
+    } else {
+        reterr = obj_new_nil(ref_ast->ref_gc);
+    }
+
+    objarr_moveb(retarr, retout);
+    objarr_moveb(retarr, reterr);
+    object_t *ret = obj_new_array(ref_ast->ref_gc, mem_move(retarr));
+
+    ctx_del(ctx);
+
+    return ret;
+}
+
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"id", builtin_id},
@@ -589,6 +684,7 @@ builtin_func_infos[] = {
     {"extract", builtin_extract},
     {"setattr", builtin_setattr},
     {"getattr", builtin_getattr},
+    {"dance", builtin_dance},
     {0},
 };
 
