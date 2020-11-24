@@ -1,0 +1,6 @@
+{@
+    import "std/io" as io
+
+    data = io.stdin.read()
+    puts(data)
+@}
