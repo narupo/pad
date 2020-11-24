@@ -1,15 +1,28 @@
 #include <pad/lang/builtin/functions.h>
 
+/*********
+* macros *
+*********/
+
+#undef push_error
+#define push_error(fmt, ...) \
+    pushb_error_node(ref_ast->error_stack, ref_node, fmt, ##__VA_ARGS__)
+
+/************
+* functions *
+************/
+
 static object_t *
 builtin_id(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
+    const node_t *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid arguments length");
+        push_error( "invalid arguments length");
         return NULL;
     }
 
@@ -21,7 +34,7 @@ builtin_id(builtin_func_args_t *fargs) {
         return NULL;
     }
     if (!obj) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to extract reference");
+        push_error( "failed to extract reference");
         return NULL;
     }
 
@@ -31,13 +44,14 @@ builtin_id(builtin_func_args_t *fargs) {
 static object_t *
 builtin_type(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
+    const node_t *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid arguments length");
+        push_error("invalid arguments length");
         return NULL;
     }
 
@@ -70,7 +84,7 @@ again:
         const char *idn = obj_getc_idn_name(obj);
         obj = pull_in_ref_by(obj);
         if (!obj) {
-            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "not defined \"%s\" in type()", idn);
+            push_error("not defined \"%s\" in type()", idn);
             return NULL;
         }
         goto again;
@@ -93,7 +107,7 @@ again:
     } break;
     } // switch
 
-    ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "not supported type \"%d\"", obj->type);
+    push_error("not supported type \"%d\"", obj->type);
     return NULL;
 }
 
@@ -149,6 +163,7 @@ done:
 static object_t *
 builtin_puts(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
+    const node_t *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -171,7 +186,7 @@ builtin_puts(builtin_func_args_t *fargs) {
         assert(obj);
         object_t *ref = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
         if (ast_has_errors(ref_ast)) {
-            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to get argument");
+            push_error("failed to get argument");
             return NULL;
         }
         string_t *s = obj_to_string(ref_ast->error_stack, ref);
@@ -187,7 +202,7 @@ builtin_puts(builtin_func_args_t *fargs) {
         assert(obj);
         object_t *ref = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
         if (ast_has_errors(ref_ast)) {
-            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to get argument");
+            push_error("failed to get argument");
             return NULL;
         }
         string_t *s = obj_to_string(ref_ast->error_stack, ref);
@@ -206,6 +221,7 @@ done:
 static object_t *
 builtin_len(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
+    const node_t *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -213,7 +229,7 @@ builtin_len(builtin_func_args_t *fargs) {
 
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "len function need one argument");
+        push_error("len function need one argument");
         return NULL;
     }
 
@@ -223,13 +239,13 @@ builtin_len(builtin_func_args_t *fargs) {
 again:
     switch (arg->type) {
     default:
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "not supported object (%d) for len", arg->type);
+        push_error("not supported object (%d) for len", arg->type);
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER: {
         object_t *obj = pull_in_ref_by(arg);
         if (!obj) {
-            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "not found object for len");
+            push_error("not found object for len");
             return NULL;
         }
         arg = obj;
@@ -268,6 +284,7 @@ builtin_die(builtin_func_args_t *fargs) {
 static object_t *
 builtin_exit(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
+    const node_t *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -275,13 +292,13 @@ builtin_exit(builtin_func_args_t *fargs) {
     object_array_t *args = actual_args->objarr;
 
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid arguments length for exit");
+        push_error("invalid arguments length for exit");
         return NULL;
     }
 
     const object_t *codeobj = objarr_getc(args, 0);
     if (codeobj->type != OBJ_TYPE_INT) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid exit code type for exit");
+        push_error("invalid exit code type for exit");
         return NULL;
     }
 
@@ -300,6 +317,7 @@ builtin_exit(builtin_func_args_t *fargs) {
 static object_t *
 builtin_copy(builtin_func_args_t *fargs, bool deep) {
     ast_t *ref_ast = fargs->ref_ast;
+    const node_t *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -307,7 +325,7 @@ builtin_copy(builtin_func_args_t *fargs, bool deep) {
     assert(args);
 
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid arguments length for copy");
+        push_error("invalid arguments length for copy");
         return NULL;
     }
 
@@ -334,6 +352,7 @@ builtin_shallowcopy(builtin_func_args_t *fargs) {
 static object_t *
 builtin_assert(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
+    const node_t *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -341,7 +360,7 @@ builtin_assert(builtin_func_args_t *fargs) {
 
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "len function need one argument");
+        push_error("len function need one argument");
         return NULL;
     }
 
@@ -350,7 +369,7 @@ builtin_assert(builtin_func_args_t *fargs) {
 
     bool ok = parse_bool(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, arg);
     if (!ok) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "assertion error");
+        push_error("assertion error");
         return NULL;
     }
 
@@ -383,14 +402,14 @@ extract_context(context_t *dst, context_t *src) {
 }
 
 static bool
-extract_arg(ast_t *ref_ast, const object_t *arg) {
+extract_arg(ast_t *ref_ast, const node_t *ref_node, const object_t *arg) {
     if (!ref_ast || !arg) {
         return false;
     }
 
     switch (arg->type) {
     default:
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "unsupported object");
+        push_error("unsupported object");
         return false;
         break;
     case OBJ_TYPE_OBJECT: {
@@ -408,6 +427,7 @@ extract_arg(ast_t *ref_ast, const object_t *arg) {
 static object_t *
 builtin_extract(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
+    const node_t *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -415,15 +435,15 @@ builtin_extract(builtin_func_args_t *fargs) {
     assert(args);
 
     if (objarr_len(args) <= 0) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid arguments length for extract");
+        push_error("invalid arguments length for extract");
         return NULL;
     }    
 
     for (int32_t i = 0; i < objarr_len(args); i++) {
         const object_t *arg = objarr_getc(args, i);
         assert(arg);
-        if (!extract_arg(ref_ast, arg)) {
-            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to extract argument");
+        if (!extract_arg(ref_ast, ref_node, arg)) {
+            push_error("failed to extract argument");
             return NULL;
         }
     }
@@ -454,6 +474,7 @@ again:
 static object_t *
 builtin_setattr(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
+    const node_t *ref_node = fargs->ref_node;
     errstack_t *errstack = ref_ast->error_stack;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
@@ -462,7 +483,7 @@ builtin_setattr(builtin_func_args_t *fargs) {
     assert(args);
 
     if (objarr_len(args) != 3) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid arguments length for setattr");
+        push_error("invalid arguments length for setattr");
         return NULL;
     }    
 
@@ -474,7 +495,7 @@ builtin_setattr(builtin_func_args_t *fargs) {
 
     switch (dst->type) {
     default: {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "unsupported object type");
+        push_error("unsupported object type");
         return NULL;
     } break;
     case OBJ_TYPE_DEF_STRUCT: {
@@ -490,13 +511,13 @@ builtin_setattr(builtin_func_args_t *fargs) {
 
     const char *key = extract_unicode_mb(key_);
     if (!key) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid key");
+        push_error("invalid key");
         return NULL;
     }
 
     set_ref_at_cur_varmap(errstack, ref_context, NULL, key, obj);
     if (errstack_len(errstack)) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to set reference at varmap");
+        push_error("failed to set reference at varmap");
         return NULL;
     }
 
@@ -506,6 +527,7 @@ builtin_setattr(builtin_func_args_t *fargs) {
 static object_t *
 builtin_getattr(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
+    const node_t *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -513,7 +535,7 @@ builtin_getattr(builtin_func_args_t *fargs) {
     assert(args);
 
     if (objarr_len(args) != 2) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid arguments length for getattr");
+        push_error("invalid arguments length for getattr");
         return NULL;
     }    
 
@@ -524,7 +546,7 @@ builtin_getattr(builtin_func_args_t *fargs) {
 
     switch (dst->type) {
     default: {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "unsupported object type");
+        push_error("unsupported object type");
         return NULL;
     } break;
     case OBJ_TYPE_DEF_STRUCT: {
@@ -540,7 +562,7 @@ builtin_getattr(builtin_func_args_t *fargs) {
 
     const char *key = extract_unicode_mb(key_);
     if (!key) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid key");
+        push_error("invalid key");
         return NULL;
     }
 

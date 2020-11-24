@@ -33,6 +33,7 @@ invoke_func_obj(
 static object_t *
 invoke_builtin_module_func(
     ast_t *ref_ast,
+    const node_t *ref_node,
     object_array_t *owns,
     const object_t *mod,
     const char *funcname,
@@ -399,10 +400,11 @@ static object_t *
 invoke_owner_func_obj(
     ast_t *ref_ast,
     context_t *ref_context,
+    const node_t *ref_node,
     object_array_t *owns,  // TODO const
     object_t *drtargs
 ) {
-    if (!ref_ast || !ref_context || !owns || !drtargs) {
+    if (!ref_ast || !ref_context || !ref_node || !owns || !drtargs) {
         return NULL;
     }
     if (!objarr_len(owns)) {
@@ -448,12 +450,13 @@ invoke_owner_func_obj(
     }
     assert(mod->type == OBJ_TYPE_MODULE);
 
-    return invoke_builtin_module_func(ref_ast, owns, mod, funcname, drtargs);
+    return invoke_builtin_module_func(ref_ast, ref_node, owns, mod, funcname, drtargs);
 }
 
 static object_t *
 invoke_builtin_module_func(
     ast_t *ref_ast,
+    const node_t *ref_node,
     object_array_t *owns,
     const object_t *mod,
     const char *funcname,
@@ -470,6 +473,7 @@ invoke_builtin_module_func(
 
     builtin_func_args_t fargs = {
         .ref_ast = ref_ast,
+        .ref_node = ref_node,
         .ref_args = ref_args,
         .ref_owners = owns,
     };
@@ -804,6 +808,7 @@ invoke_builtin_modules(
     case OBJ_TYPE_MODULE: {
         object_t *result = invoke_builtin_module_func(
             ref_ast,
+            ref_node,
             owns,
             module,
             funcname,
@@ -926,7 +931,7 @@ refer_chain_call(
 #define _invoke_builtin_modules(actual_args) \
     invoke_builtin_modules(ref_ast, err, ref_gc, ref_context, ref_node, owns, actual_args)
 #define _invoke_owner_func_obj(actual_args) \
-    invoke_owner_func_obj(ref_ast, ref_context, owns, actual_args)
+    invoke_owner_func_obj(ref_ast, ref_context, ref_node, owns, actual_args)
 #define _gen_struct(actual_args) \
     gen_struct(ref_ast, err, ref_gc, ref_node, owns, actual_args)
 

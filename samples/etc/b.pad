@@ -1,0 +1,21 @@
+{@
+    struct Home:
+        title = "Home"
+        desc = "Welcome to my homepage!"
+
+        def new(title, desc):
+            self = Home()
+            self.title = title
+            self.desc = desc
+            return self
+        end
+
+        met draw(self): @}
+            <h1>{: self.title :}</h1>
+            <p>{: self.desc :}</p>
+        {@ return ""
+        end
+    end
+
+    home = Home.new("Taro's home", "Welcome to Taro's home!")
+@}{: home.draw() :}
