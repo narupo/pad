@@ -208,6 +208,12 @@ char32_strcmp(const char32_t *s1, const char32_t *s2);
 int32_t
 char16_strcmp(const char16_t *s1, const char16_t *s2);
 
+int32_t
+char32_strncmp(const char32_t *s1, const char32_t *s2, int32_t n);
+
+int32_t
+char16_strncmp(const char16_t *s1, const char16_t *s2, int32_t n);
+
 bool
 char16_isspace(char16_t ch);
 
@@ -258,6 +264,11 @@ char32_isspace(char32_t ch);
   char32_t: char32_strcmp, \
   char16_t: char16_strcmp \
 )(s1, s2)
+
+#define u_strncmp(s1, s2, n) _Generic((s1[0]), \
+  char32_t: char32_strncmp, \
+  char16_t: char16_strncmp \
+)(s1, s2, n)
 
 #define u_isspace(ch) _Generic((ch), \
   char32_t: char32_isspace, \
