@@ -172,6 +172,40 @@ char16_strcmp(const char16_t *s1, const char16_t *s2) {
     return 0;
 }
 
+int32_t
+char32_strncmp(const char32_t *s1, const char32_t *s2, int32_t n) {
+    if (!s1 || !s2) {
+        return -1;
+    }
+    int32_t s1len = u_len(s1);
+    int32_t s2len = u_len(s2);
+
+    for (int32_t i = 0; i < n && i < s1len && i < s2len; i++) {
+        if (s1[i] != s2[i]) {
+            return s1[i] - s2[i];
+        }
+    }
+
+    return 0;
+}
+
+int32_t
+char16_strncmp(const char16_t *s1, const char16_t *s2, int32_t n) {
+    if (!s1 || !s2) {
+        return -1;
+    }
+    int32_t s1len = u_len(s1);
+    int32_t s2len = u_len(s2);
+
+    for (int32_t i = 0; i < n && i < s1len && i < s2len; i++) {
+        if (s1[i] != s2[i]) {
+            return s1[i] - s2[i];
+        }
+    }
+
+    return 0;
+}
+
 bool
 char16_isspace(char16_t ch) {
     return ch == u'\n' || ch == u'\t' || ch == u' ';
@@ -982,10 +1016,12 @@ uni_split(const unicode_t *other, const unicode_type_t *sep) {
         u = uni_new(); \
     } \
 
+    int32_t seplen = u_len(sep);
+
     for (const unicode_type_t *p = other->buffer; *p; ) {
-        if (!u_strcmp(p, sep)) {
+        if (!u_strncmp(p, sep, seplen)) {
             store(u);
-            p += u_len(sep);
+            p += seplen;
         } else {
             uni_pushb(u, *p++);
         }

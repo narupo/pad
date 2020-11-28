@@ -2395,6 +2395,7 @@ test_uni_split(void) {
 
     uni_set_mb(u, "あいう\nかきく\nさしす");
     unicode_t **arr = uni_split(u, UNI_STR("\n"));
+    printf("arr[0] = [%s]\n", uni_getc_mb(arr[0]));
     assert(!u_strcmp(uni_getc(arr[0]), UNI_STR("あいう")));
     assert(!u_strcmp(uni_getc(arr[1]), UNI_STR("かきく")));
     assert(!u_strcmp(uni_getc(arr[2]), UNI_STR("さしす")));
