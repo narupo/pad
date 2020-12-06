@@ -32,6 +32,7 @@ _cap_log(const char *file, long line, const char *func, const char *type, const 
 	}
 
 	fprintf(fout, "\n");
+	fflush(fout);
 	return true;
 }
 
