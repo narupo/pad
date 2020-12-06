@@ -208,9 +208,27 @@ char32_strcmp(const char32_t *s1, const char32_t *s2);
 int32_t
 char16_strcmp(const char16_t *s1, const char16_t *s2);
 
+/**
+ * TODO: test
+ * 
+ * @param[in] *s1 
+ * @param[in] *s2 
+ * @param[in] n   
+ * 
+ * @return 
+ */
 int32_t
 char32_strncmp(const char32_t *s1, const char32_t *s2, int32_t n);
 
+/**
+ * TODO: test
+ * 
+ * @param[in] *s1 
+ * @param[in] *s2 
+ * @param[in] n   
+ * 
+ * @return 
+ */
 int32_t
 char16_strncmp(const char16_t *s1, const char16_t *s2, int32_t n);
 
