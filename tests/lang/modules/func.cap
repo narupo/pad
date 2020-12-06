@@ -1,5 +1,5 @@
 {@
-    import "/tests/lang/modules/array.cap" as arrMod
+    import "tests/lang/modules/array.cap" as arrMod
 
     def func(arg):
         return arg

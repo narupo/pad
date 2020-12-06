@@ -12,7 +12,7 @@ endif
 # windows's mkdir not has -p option :/
 MKDIR := mkdir
 CC := gcc
-INCLUDE := src
+INCLUDE := .
 
 ifeq ($(OS), Windows_NT)
 	CFLAGS := -Wall \
@@ -37,7 +37,7 @@ else
 endif
 
 # this is benri tool
-# $(warning $(wildcard src/*.c))
+# $(warning $(wildcard pad/*.c))
 
 all: tests cap
 
@@ -51,29 +51,6 @@ init:
 	build \
 	build$(SEP)lib \
 	build$(SEP)core \
-	build$(SEP)home \
-	build$(SEP)cd \
-	build$(SEP)pwd \
-	build$(SEP)ls \
-	build$(SEP)cat \
-	build$(SEP)run \
-	build$(SEP)exec \
-	build$(SEP)alias \
-	build$(SEP)edit \
-	build$(SEP)editor \
-	build$(SEP)mkdir \
-	build$(SEP)rm \
-	build$(SEP)mv \
-	build$(SEP)cp \
-	build$(SEP)touch \
-	build$(SEP)snippet \
-	build$(SEP)link \
-	build$(SEP)hub \
-	build$(SEP)hub$(SEP)commands \
-	build$(SEP)make \
-	build$(SEP)cook \
-	build$(SEP)sh \
-	build$(SEP)find \
 	build$(SEP)lang$(SEP) \
 	build$(SEP)lang$(SEP)builtin \
 	build$(SEP)lang$(SEP)builtin$(SEP)modules
@@ -99,34 +76,9 @@ SRCS := build/lib/error.c \
 	build/lib/socket.c \
 	build/core/config.c \
 	build/core/util.c \
-	build/core/alias_manager.c \
 	build/core/alias_info.c \
-	build/core/symlink.c \
 	build/core/args.c \
 	build/core/error_stack.c \
-	build/home/home.c \
-	build/cd/cd.c \
-	build/pwd/pwd.c \
-	build/ls/ls.c \
-	build/cat/cat.c \
-	build/run/run.c \
-	build/exec/exec.c \
-	build/alias/alias.c \
-	build/edit/edit.c \
-	build/editor/editor.c \
-	build/mkdir/mkdir.c \
-	build/rm/rm.c \
-	build/mv/mv.c \
-	build/cp/cp.c \
-	build/touch/touch.c \
-	build/snippet/snippet.c \
-	build/link/link.c \
-	build/hub/hub.c \
-	build/make/make.c \
-	build/cook/cook.c \
-	build/sh/sh.c \
-	build/find/find.c \
-	build/find/arguments_manager.c \
 	build/lang/tokens.c \
 	build/lang/tokenizer.c \
 	build/lang/nodes.c \
@@ -165,156 +117,106 @@ tests: build/tests.o $(OBJS)
 cap: build/app.o $(OBJS)
 	$(CC) $(CFLAGS) -o build/cap $^
 
-build/app.o: src/app.c src/app.h
+build/app.o: pad/app.c pad/app.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/tests.o: src/tests.c src/tests.h
+build/tests.o: pad/tests.c pad/tests.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/error.o: src/lib/error.c src/lib/error.h
+build/lib/error.o: pad/lib/error.c pad/lib/error.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/memory.o: src/lib/memory.c src/lib/memory.h
+build/lib/memory.o: pad/lib/memory.c pad/lib/memory.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/file.o: src/lib/file.c src/lib/file.h
+build/lib/file.o: pad/lib/file.c pad/lib/file.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/cstring.o: src/lib/cstring.c src/lib/cstring.h
+build/lib/cstring.o: pad/lib/cstring.c pad/lib/cstring.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/string.o: src/lib/string.c src/lib/string.h
+build/lib/string.o: pad/lib/string.c pad/lib/string.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/unicode.o: src/lib/unicode.c src/lib/unicode.h
+build/lib/unicode.o: pad/lib/unicode.c pad/lib/unicode.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/cstring_array.o: src/lib/cstring_array.c src/lib/cstring_array.h
+build/lib/cstring_array.o: pad/lib/cstring_array.c pad/lib/cstring_array.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/cl.o: src/lib/cl.c src/lib/cl.h
+build/lib/cl.o: pad/lib/cl.c pad/lib/cl.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/format.o: src/lib/format.c src/lib/format.h
+build/lib/format.o: pad/lib/format.c pad/lib/format.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/dict.o: src/lib/dict.c src/lib/dict.h
+build/lib/dict.o: pad/lib/dict.c pad/lib/dict.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/cmdline.o: src/lib/cmdline.c src/lib/cmdline.h
+build/lib/cmdline.o: pad/lib/cmdline.c pad/lib/cmdline.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/pipe.o: src/lib/pipe.c src/lib/pipe.h
+build/lib/pipe.o: pad/lib/pipe.c pad/lib/pipe.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/term.o: src/lib/term.c src/lib/term.h
+build/lib/term.o: pad/lib/term.c pad/lib/term.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/path.o: src/lib/path.c src/lib/path.h
+build/lib/path.o: pad/lib/path.c pad/lib/path.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/socket.o: src/lib/socket.c src/lib/socket.h
+build/lib/socket.o: pad/lib/socket.c pad/lib/socket.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/core/config.o: src/core/config.c src/core/config.h
+build/core/config.o: pad/core/config.c pad/core/config.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/core/util.o: src/core/util.c src/core/util.h
+build/core/util.o: pad/core/util.c pad/core/util.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/core/alias_manager.o: src/core/alias_manager.c src/core/alias_manager.h
+build/core/alias_info.o: pad/core/alias_info.c pad/core/alias_info.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/core/alias_info.o: src/core/alias_info.c src/core/alias_info.h
+build/core/error_stack.o: pad/core/error_stack.c pad/core/error_stack.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/core/symlink.o: src/core/symlink.c src/core/symlink.h
+build/core/args.o: pad/core/args.c pad/core/args.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/core/error_stack.o: src/core/error_stack.c src/core/error_stack.h
+build/lang/tokenizer.o: pad/lang/tokenizer.c pad/lang/tokenizer.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/core/args.o: src/core/args.c src/core/args.h
+build/lang/tokens.o: pad/lang/tokens.c pad/lang/tokens.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/home/home.o: src/home/home.c src/home/home.h
+build/lang/nodes.o: pad/lang/nodes.c pad/lang/nodes.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/cd/cd.o: src/cd/cd.c src/cd/cd.h
+build/lang/ast.o: pad/lang/ast.c pad/lang/ast.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/pwd/pwd.o: src/pwd/pwd.c src/pwd/pwd.h
+build/lang/compiler.o: pad/lang/compiler.c pad/lang/compiler.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/ls/ls.o: src/ls/ls.c src/ls/ls.h
+build/lang/traverser.o: pad/lang/traverser.c pad/lang/traverser.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/cat/cat.o: src/cat/cat.c src/cat/cat.h
+build/lang/context.o: pad/lang/context.c pad/lang/context.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/run/run.o: src/run/run.c src/run/run.h
+build/lang/object.o: pad/lang/object.c pad/lang/object.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/exec/exec.o: src/exec/exec.c src/exec/exec.h
+build/lang/object_array.o: pad/lang/object_array.c pad/lang/object_array.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/alias/alias.o: src/alias/alias.c src/alias/alias.h
+build/lang/object_dict.o: pad/lang/object_dict.c pad/lang/object_dict.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/edit/edit.o: src/edit/edit.c src/edit/edit.h
+build/lang/node_array.o: pad/lang/node_array.c pad/lang/node_array.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/editor/editor.o: src/editor/editor.c src/editor/editor.h
+build/lang/node_dict.o: pad/lang/node_dict.c pad/lang/node_dict.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/mkdir/mkdir.o: src/mkdir/mkdir.c src/mkdir/mkdir.h
+build/lang/opts.o: pad/lang/opts.c pad/lang/opts.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/rm/rm.o: src/rm/rm.c src/rm/rm.h
+build/lang/scope.o: pad/lang/scope.c pad/lang/scope.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/mv/mv.o: src/mv/mv.c src/mv/mv.h
+build/lang/utils.o: pad/lang/utils.c pad/lang/utils.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/cp/cp.o: src/cp/cp.c src/cp/cp.h
+build/lang/gc.o: pad/lang/gc.c pad/lang/gc.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/touch/touch.o: src/touch/touch.c src/touch/touch.h
+build/lang/kit.o: pad/lang/kit.c pad/lang/kit.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/snippet/snippet.o: src/snippet/snippet.c src/snippet/snippet.h
+build/lang/importer.o: pad/lang/importer.c pad/lang/importer.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/link/link.o: src/link/link.c src/link/link.h
+build/lang/arguments.o: pad/lang/arguments.c pad/lang/arguments.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/hub/hub.o: src/hub/hub.c src/hub/hub.h
+build/lang/chain_node.o: pad/lang/chain_node.c pad/lang/chain_node.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/make/make.o: src/make/make.c src/make/make.h
+build/lang/chain_nodes.o: pad/lang/chain_nodes.c pad/lang/chain_nodes.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/cook/cook.o: src/cook/cook.c src/cook/cook.h
+build/lang/chain_object.o: pad/lang/chain_object.c pad/lang/chain_object.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/sh/sh.o: src/sh/sh.c src/sh/sh.h
+build/lang/chain_objects.o: pad/lang/chain_objects.c pad/lang/chain_objects.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/find/find.o: src/find/find.c src/find/find.h
+build/lang/builtin/functions.o: pad/lang/builtin/functions.c pad/lang/builtin/functions.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/find/arguments_manager.o: src/find/arguments_manager.c src/find/arguments_manager.h
+build/lang/builtin/modules/unicode.o: pad/lang/builtin/modules/unicode.c pad/lang/builtin/modules/unicode.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/tokenizer.o: src/lang/tokenizer.c src/lang/tokenizer.h
+build/lang/builtin/modules/array.o: pad/lang/builtin/modules/array.c pad/lang/builtin/modules/array.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/tokens.o: src/lang/tokens.c src/lang/tokens.h
+build/lang/builtin/modules/dict.o: pad/lang/builtin/modules/dict.c pad/lang/builtin/modules/dict.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/nodes.o: src/lang/nodes.c src/lang/nodes.h
+build/lang/builtin/modules/opts.o: pad/lang/builtin/modules/opts.c pad/lang/builtin/modules/opts.h
 	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/ast.o: src/lang/ast.c src/lang/ast.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/compiler.o: src/lang/compiler.c src/lang/compiler.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/traverser.o: src/lang/traverser.c src/lang/traverser.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/context.o: src/lang/context.c src/lang/context.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/object.o: src/lang/object.c src/lang/object.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/object_array.o: src/lang/object_array.c src/lang/object_array.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/object_dict.o: src/lang/object_dict.c src/lang/object_dict.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/node_array.o: src/lang/node_array.c src/lang/node_array.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/node_dict.o: src/lang/node_dict.c src/lang/node_dict.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/opts.o: src/lang/opts.c src/lang/opts.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/scope.o: src/lang/scope.c src/lang/scope.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/utils.o: src/lang/utils.c src/lang/utils.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/gc.o: src/lang/gc.c src/lang/gc.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/kit.o: src/lang/kit.c src/lang/kit.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/importer.o: src/lang/importer.c src/lang/importer.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/arguments.o: src/lang/arguments.c src/lang/arguments.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/chain_node.o: src/lang/chain_node.c src/lang/chain_node.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/chain_nodes.o: src/lang/chain_nodes.c src/lang/chain_nodes.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/chain_object.o: src/lang/chain_object.c src/lang/chain_object.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/chain_objects.o: src/lang/chain_objects.c src/lang/chain_objects.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/builtin/functions.o: src/lang/builtin/functions.c src/lang/builtin/functions.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/builtin/modules/unicode.o: src/lang/builtin/modules/unicode.c src/lang/builtin/modules/unicode.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/builtin/modules/array.o: src/lang/builtin/modules/array.c src/lang/builtin/modules/array.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/builtin/modules/dict.o: src/lang/builtin/modules/dict.c src/lang/builtin/modules/dict.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/builtin/modules/opts.o: src/lang/builtin/modules/opts.c src/lang/builtin/modules/opts.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lang/builtin/modules/alias.o: src/lang/builtin/modules/alias.c src/lang/builtin/modules/alias.h
+build/lang/builtin/modules/alias.o: pad/lang/builtin/modules/alias.c pad/lang/builtin/modules/alias.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
