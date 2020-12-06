@@ -1,0 +1,4 @@
+# Comment
+home = "/home/narupo/src/cap/src"
+cd = "/home/narupo/src/cap/src"
+editor = "/usr/bin/vi"
