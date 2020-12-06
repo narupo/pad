@@ -132,8 +132,8 @@ cstrarr_getc(const cstring_array_t *self, int idx);
  * 
  * @return number of length of array
  */
-ssize_t
-cstrarr_len(const cstring_array_t *self); 
+int32_t
+cstrarr_len(const cstring_array_t *self);
 
 /**
  * dump array to stream
@@ -154,3 +154,16 @@ cstrarr_show(const cstring_array_t *self, FILE *fout);
  */
 void
 cstrarr_clear(cstring_array_t *self);
+
+/**
+ * resize array
+ *
+ * @param[in] *arr 
+ * @param[in] capa 
+ *
+ * @return success to pointer to self
+ * @return failed to pointer to NULL
+ */
+cstring_array_t * 
+cstrarr_resize(cstring_array_t *self, int32_t capa);
+
