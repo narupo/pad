@@ -7,16 +7,20 @@ typedef enum {
 
 struct Process {
 	ProcessType type;
-	void* process;
+#if defined(PROCESS_WINDOWS)
+	WindowProcess* process;
+#elif defined(PROCESS_LINUX)
+	LinuxProcess* process;
+#endif
 };
 
 void
 process_delete(Process* self) {
 	if (self) {
 #if defined(PROCESS_WINDOWS)
-		winprocess_delete((WindowsProcess*) self->process);
+		winprocess_delete(self->process);
 #elif defined(PROCESS_LINUX)
-		linprocess_delete((LinuxProcess*) self->process);
+		linprocess_delete(self->process);
 #endif
 		free(self);
 	}
@@ -32,7 +36,7 @@ process_new(void) {
 
 #if defined(PROCESS_WINDOWS)
 	self->type = ProcessTypeWindows;
-	self->process = (void*) winprocess_new();
+	self->process = winprocess_new();
 	if (!self->process) {
 		free(self);
 		perror("WindowProcess");
@@ -40,7 +44,7 @@ process_new(void) {
 	}
 #elif defined(PROCESS_LINUX)
 	self->type = ProcessTypeLinux;
-	self->process = (void*) linprocess_new();
+	self->process = linprocess_new();
 	if (!self->process) {
 		free(self);
 		perror("LinuxProcess");
@@ -51,12 +55,29 @@ process_new(void) {
 	return self;
 }
 
+/*****************
+* Process getter *
+*****************/
+
+char const*
+process_type_to_string(Process const* self) {
+	switch (self->type) {
+	default: return "Unknown type of process"; break;
+	case ProcessTypeLinux: return "Linux"; break;
+	case ProcessTypeWindows: return "Windows"; break;
+	}
+}
+
+/******************
+* Process wrapper *
+******************/
+
 bool
-process_start(Process* self) {
+process_start(Process* self, char const* cmdname) {
 #if defined(PROCESS_WINDOWS)
-	return winprocess_start((WindowsProcess*) self->process);
+	return winprocess_start(self->process);
 #elif defined(PROCESS_LINUX)
-	return linprocess_start((WindowsProcess*) self->process);
+	return linprocess_start(self->process, cmdname);
 #endif
 }
 
@@ -65,6 +86,7 @@ process_start(Process* self) {
 
 int
 test_win(int argc, char* argv[]) {
+#if defined(PROCESS_WINDOWS)
 	LPSTR cmdline = "notepad.exe";
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
@@ -90,13 +112,15 @@ test_win(int argc, char* argv[]) {
 
 		printf("exit code=%ld\n", res);
 	}
-
+#endif
 	return 0;
 }
 
 int
 test_process(int argc, char* argv[]) {
 	Process* proc = process_new();
+
+	fprintf(stderr, "Process type \"%s\"\n", process_type_to_string(proc));
 
 	process_delete(proc);
 	return 0;

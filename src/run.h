@@ -7,7 +7,7 @@
 #include "cap-file.h"
 #include "atcap.h"
 
-void _Noreturn
+void
 run_usage(void);
 
 int
