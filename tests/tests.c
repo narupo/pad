@@ -2,7 +2,7 @@
  * Pad
  *
  * License: MIT
- *  Author: Aizawa Yuta
+ *  Author: narupo
  *   Since: 2016
  */
 #include <tests/tests.h>
