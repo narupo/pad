@@ -1,0 +1,29 @@
+{@
+    struct ListItem:
+        met draw(self):
+            return "<li>item</li>"
+        end
+    end
+
+    struct List:
+        listItem = ListItem()
+
+        met draw(self, n):
+            s = "<ul>\n"
+            for i = 0; i < n; i += 1:
+                s += self.listItem.draw() + "\n"
+            end
+            s += "</ul>\n"
+            return s
+        end
+    end
+
+    def draw(n):
+        list = List()
+        return list.draw(n)
+    end
+
+    for i = 1; i <= 4; i += 1: @}
+        {: draw(i) :}
+    {@ end
+@}
