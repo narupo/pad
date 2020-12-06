@@ -1,6 +1,7 @@
 #ifndef EDIT_H
 #define EDIT_H
 
+#include "define.h"
 #include "util.h"
 #include "term.h"
 #include "config.h"

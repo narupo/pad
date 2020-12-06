@@ -1,6 +1,7 @@
 #ifndef ATCAP_H
 #define ATCAP_H
 
+#include "define.h"
 #include "util.h"
 #include "string.h"
 #include "strarray.h"

@@ -1,12 +1,13 @@
 #ifndef TERM_H
 #define TERM_H
 
+#include "define.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <pthread.h>
 #include <stdbool.h>
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 #  include "windows.h"
 #endif
 
@@ -65,7 +66,6 @@ term_eputsf(char const* fmt, ...);
 ********************/
 
 typedef enum {
-	TA_RESET     = 0,
 	TA_BRIGHT    = 1,
 	TA_DIM       = 2,
 	TA_BLINK     = 3,

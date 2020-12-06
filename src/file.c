@@ -2,7 +2,7 @@
 
 char*
 file_realpath(char* dst, size_t dstsize, char const* src) {
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 	char* fpart;
 
 	if (!GetFullPathName(src, dstsize, dst, &fpart)) {
@@ -142,7 +142,7 @@ notfound:
 
 int
 file_mkdir_mode(char const* dirpath, mode_t mode) {
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 	return mkdir(dirpath);
 #else
 	return mkdir(dirpath, mode);
@@ -151,7 +151,7 @@ file_mkdir_mode(char const* dirpath, mode_t mode) {
 
 int
 file_mkdir(char const* dirpath, char const* mode) {
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 	return mkdir(dirpath);
 #else
 	DIE("TODO");
@@ -296,7 +296,7 @@ file_read_script_line(char* dst, size_t dstsize, FILE* stream) {
 	// Parse script name
 	char* src = line + preflen;
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 	char* p = strrchr(src, '/');
 	if (p) {
 		p += 1; // +1 for '/'
@@ -319,7 +319,7 @@ file_read_script_line(char* dst, size_t dstsize, FILE* stream) {
 *********************/
 
 struct DirectoryNode {
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 	WIN32_FIND_DATA finddata;
 #else
 	struct dirent* node;
@@ -353,7 +353,7 @@ dirnode_new(void) {
 
 char const*
 dirnode_name(DirectoryNode const* self) {
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 	return self->finddata.cFileName;
 #else
 	return self->node->d_name;
@@ -365,7 +365,7 @@ dirnode_name(DirectoryNode const* self) {
 *****************/
 
 struct Directory {
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 	HANDLE handle;
 	char dirpath[FILE_NPATH];
 #else
@@ -380,7 +380,7 @@ struct Directory {
 void
 dir_close(Directory* self) {
 	if (self) {
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 		if (self->handle) {
 			if (!FindClose(self->handle)) {
 				WARN("Failed to close directory");
@@ -406,7 +406,7 @@ dir_open(char const* path) {
 		return NULL;
 	}
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 	if (!file_is_exists(path)) {
 		WARN("Not found path \"%s\"", path);
 		return NULL;
@@ -437,7 +437,7 @@ dir_read_node(Directory* self) {
 		return NULL;
 	}
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 	if (!self->handle) {
 		if ((self->handle = FindFirstFile(self->dirpath, &node->finddata)) == INVALID_HANDLE_VALUE) {
 			WARN("Failed to open directory \"%s\"", self->dirpath);
@@ -496,7 +496,7 @@ test_mkdir(int argc, char* argv[]) {
 
 static char*
 solve_path(char* dst, size_t dstsize, char const* path) {
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 	char* fpart;
 
 	if (!GetFullPathName(path, dstsize, dst, &fpart)) {
@@ -521,7 +521,7 @@ test_solve_path(int argc, char* argv[]) {
 
 static int
 test_directory(int argc, char* argv[]) {
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 	char const* dirpath = "C:/Windows/Temp";
 	
 	if (argc >= 2) {

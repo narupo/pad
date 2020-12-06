@@ -77,7 +77,7 @@ thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* 
 
 		dirnode_delete(node);
 	}
-
+	dir_close(dir);
 	buffer_append_string(content,
 		"</body>\n"
 		"</html>\n"
@@ -88,6 +88,10 @@ thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* 
 	snprintf(contlen, sizeof contlen, "Content-Length: %d\r\n", buffer_length(content));
 
 	Buffer* response = buffer_new();
+	if (!response) {
+		buffer_delete(content);
+		return caperr_printf(PROGNAME, CAPERR_CONSTRUCT, "buffer");
+	}
 
 	buffer_append_string(response,
 		"HTTP/1.1 200 OK\r\n"
@@ -105,7 +109,6 @@ thread_index_page_by_path(HttpHeader const* header, Socket* client, char const* 
 	// Done
 	buffer_delete(response);
 	buffer_delete(content);
-	dir_close(dir);
 
 	thread_ceprintf(TC_GREEN, TC_BLACK, "200 OK\n");
 	return 0;
@@ -285,6 +288,7 @@ thread_method_get(
 				String const* cmd = jsonobj_value(obj);
 				String const* suf = jsonobj_name_const(obj);
 				if (strcmp(suffix, str_get_const(suf)) == 0) {
+					// With script
 					thread_method_get_script(header, client, str_get_const(cmd), path);
 					return;
 				}

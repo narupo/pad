@@ -1,6 +1,7 @@
 #ifndef JSON_H
 #define JSON_H
 
+#include "define.h"
 #include "memory.h"
 #include "string.h"
 #include "strarray.h"

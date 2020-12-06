@@ -1,6 +1,7 @@
 #ifndef PATH_H
 #define PATH_H
 
+#include "define.h"
 #include "util.h"
 #include "term.h"
 #include "config.h"

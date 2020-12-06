@@ -1,6 +1,7 @@
 #ifndef RUN_H
 #define RUN_H
 
+#include "define.h"
 #include "util.h"
 #include "term.h"
 #include "config.h"

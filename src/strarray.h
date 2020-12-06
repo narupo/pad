@@ -1,6 +1,7 @@
 #ifndef STRARRAY_H
 #define STRARRAY_H
 
+#include "define.h"
 #include "buffer.h"
 #include <stdlib.h>
 

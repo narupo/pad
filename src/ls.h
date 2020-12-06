@@ -1,6 +1,7 @@
 #ifndef LS_H
 #define LS_H
 
+#include "define.h"
 #include "term.h"
 #include "file.h"
 #include "config.h"

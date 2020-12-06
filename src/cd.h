@@ -1,6 +1,7 @@
 #ifndef CD_H
 #define CD_H
 
+#include "define.h"
 #include "util.h"
 #include "term.h"
 #include "caperr.h"

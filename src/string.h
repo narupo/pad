@@ -1,6 +1,7 @@
 #ifndef STRING_H
 #define STRING_H
 
+#include "define.h"
 #include "util.h"
 #include "memory.h"
 #include <limits.h>

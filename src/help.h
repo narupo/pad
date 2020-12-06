@@ -1,6 +1,7 @@
 #ifndef HELP_H
 #define HELP_H
 
+#include "define.h"
 #include "util.h"
 #include "term.h"
 #include "cat.h"

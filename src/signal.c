@@ -1,6 +1,6 @@
 #include "signal.h"
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 // Nothing todo
 #else
 

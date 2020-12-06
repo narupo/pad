@@ -1,6 +1,7 @@
 #ifndef RM_H
 #define RM_H
 
+#include "define.h"
 #include "util.h"
 #include "term.h"
 #include "caperr.h"

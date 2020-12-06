@@ -1,6 +1,7 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
+#include "define.h"
 #include "util.h"
 #include <stdlib.h>
 

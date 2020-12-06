@@ -10,12 +10,12 @@ enum {
 
 typedef struct {
 	int saveerrno;
-	int number;
+	int number; // Number of CAPERR
 	int lineno;
 	char fname[NFNAME];
 	char funcname[NFUNCNAME];
-	char header[NHEADER];
-	char message[NMESSAGE];
+	char header[NHEADER]; // Line header message
+	char body[NMESSAGE]; // Line body message
 } CapErr;
 
 static struct {
@@ -94,7 +94,7 @@ caperrs_push(
 		snprintf(s->fname, sizeof(s->fname), "%s", fname);
 		snprintf(s->funcname, sizeof(s->funcname), "%s", funcname);
 		snprintf(s->header, sizeof(s->header), "%s", header);
-		vsnprintf(s->message, sizeof(s->message), fmt, args);
+		vsnprintf(s->body, sizeof(s->body), fmt, args);
 	}
 
 	if (!caperrs_unlock()) {
@@ -235,7 +235,7 @@ caperr_display_record_unsafe(FILE* stream, CapErr const* e) {
 	term_cfprintf(stream, TC_YELLOW, TC_BLACK, "%s", caperr_to_string_unsafe(e->number));
 
 	// Display user's message
-	size_t msglen = strlen(e->message);
+	size_t msglen = strlen(e->body);
 
 	if (!msglen) {
 		fprintf(stream, ".");
@@ -245,10 +245,10 @@ caperr_display_record_unsafe(FILE* stream, CapErr const* e) {
 		}
 
 		// Display
-		term_cfprintf(stream, TC_YELLOW, TC_BLACK, "%s", e->message);
+		term_cfprintf(stream, TC_YELLOW, TC_BLACK, "%s", e->body);
 		
 		// Fix tail format of string
-		if (e->message[msglen-1] != '.') {
+		if (e->body[msglen-1] != '.') {
 			fprintf(stream, ".");
 		}
 	}

@@ -1,6 +1,7 @@
 #ifndef CSVLINE_H
 #define CSVLINE_H
 
+#include "define.h"
 #include "util.h"
 #include "string.h"
 

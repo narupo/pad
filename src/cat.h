@@ -1,6 +1,7 @@
 #ifndef CAT_H
 #define CAT_H
 
+#include "define.h"
 #include "util.h"
 #include "file.h"
 #include "config.h"

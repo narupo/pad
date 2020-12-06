@@ -132,12 +132,11 @@ term_eputsf(char const* fmt, ...) {
 * term color family *
 ********************/
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_CAP_WINDOWS)
 static WORD
 attrtowinattrflag(TermAttr termattr) {
 	switch (termattr) {
 	default:
-	case TA_RESET:
 	case TA_DIM:
 	case TA_BLINK:
 	case TA_UNDERLINE:
@@ -191,7 +190,7 @@ term_ftextcolor(FILE* fout, TermAttr attr, TermColor fg, TermColor bg) {
 static int
 _acfprintf_unsafe(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char const* fmt, va_list args) {
 	// Set state
-#if defined(_WIN32) || defined(_WIN64)
+#if !defined(_CAP_MSYS) && defined(_CAP_WINDOWS)
 	DWORD nhandle = STD_OUTPUT_HANDLE;
 	if (fout == stderr) {
 		nhandle = STD_ERROR_HANDLE;
@@ -217,13 +216,13 @@ _acfprintf_unsafe(FILE* fout, TermAttr attr, TermColor fg, TermColor bg, char co
 
 	// Draw
 	int len = vfprintf(fout, fmt, args);
-
+	
 	// Undo state
-#if defined(_WIN32) || defined(_WIN64)
+#if !defined(_CAP_MSYS) && defined(_CAP_WINDOWS)
 	SetConsoleTextAttribute(stdh, oldattr);
 #else
 	if (fout == stdout || fout == stderr) {
-		term_ftextcolor(fout, TA_RESET, fg, bg);
+		fprintf(fout, "\033[0m");
 	}
 #endif
 
