@@ -6,6 +6,7 @@
 #include "cat.h"
 #include "ls.h"
 #include "cd.h"
+#include "pwd.h"
 #include "home.h"
 #include "edit.h"
 #include "editor.h"

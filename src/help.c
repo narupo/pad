@@ -19,6 +19,7 @@ static const struct Command {
 	{"make", make_usage},
 	{"path", path_usage},
 	{"run", run_usage},
+	{"pwd", pwd_usage},
 	{"alias", alias_usage},
 	{"brief", brief_usage},
 	{NULL, NULL},
@@ -67,6 +68,7 @@ help_usage(void) {
 		"\tcd     display or set current directory path\n"
 		"\tcat    display cap file\n"
 		"\trun    run script\n"
+		"\tpwd    display current directory\n"
 		"\thome   display or set home directory path\n"
 		"\tmake   display and make by cap's make roule\n"
 		"\tedit   edit cap file\n"
