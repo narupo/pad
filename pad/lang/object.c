@@ -50,6 +50,9 @@ obj_del(object_t *self) {
     case OBJ_TYPE_INT:
         // nothing todo
         break;
+    case OBJ_TYPE_FLOAT:
+        // nothing todo
+        break;
     case OBJ_TYPE_BOOL:
         // nothing todo
         break;
@@ -482,6 +485,22 @@ obj_new_int(gc_t *ref_gc, objint_t lvalue) {
 }
 
 object_t *
+obj_new_float(gc_t *ref_gc, objfloat_t value) {
+    if (!ref_gc) {
+        return NULL;
+    }
+
+    object_t *self = obj_new(ref_gc, OBJ_TYPE_FLOAT);
+    if (!self) {
+        return NULL;
+    }
+
+    self->float_value = value;
+
+    return self;
+}
+
+object_t *
 obj_new_bool(gc_t *ref_gc, bool boolean) {
     if (!ref_gc) {
         return NULL;
@@ -716,6 +735,14 @@ obj_to_str(const object_t *self) {
         str_app_fmt(str, buf, sizeof buf, "%ld", self->lvalue);
         return str;
     } break;
+    case OBJ_TYPE_FLOAT: {
+        string_t *str = str_new();
+        char buf[1024];
+        snprintf(buf, sizeof buf, "%lf", self->float_value);
+        cstr_rstrip_float_zero(buf);
+        str_set(str, buf);
+        return str;
+    } break;
     case OBJ_TYPE_BOOL: {
         string_t *str = str_new();
         if (self->boolean) {
@@ -896,6 +923,9 @@ obj_type_to_str(const object_t *self) {
         break;
     case OBJ_TYPE_INT:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: int>", self->type);
+        break;
+    case OBJ_TYPE_FLOAT:
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: float>", self->type);
         break;
     case OBJ_TYPE_BOOL:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: bool>", self->type);

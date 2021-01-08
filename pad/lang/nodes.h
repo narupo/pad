@@ -78,6 +78,7 @@ typedef enum {
     // atoms
     NODE_TYPE_NIL,
     NODE_TYPE_DIGIT,
+    NODE_TYPE_FLOAT,
     NODE_TYPE_STRING,
     NODE_TYPE_IDENTIFIER,
     NODE_TYPE_ARRAY,
@@ -379,6 +380,7 @@ typedef struct {
     node_t *true_;
     node_t *false_;
     node_t *digit;
+    node_t *float_;
     node_t *string;
     node_t *array;
     node_t *dict;
@@ -431,8 +433,12 @@ typedef struct {
 } node_nil_t;
 
 typedef struct {
-    objint_t lvalue;
+    objint_t lvalue;  // TODO: lvalue to value
 } node_digit_t;
+
+typedef struct {
+    objfloat_t value;
+} node_float_t;
 
 typedef struct {
     bool boolean;

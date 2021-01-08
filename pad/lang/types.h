@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 struct object_dict;
 typedef struct object_dict object_dict_t;
@@ -74,6 +75,7 @@ struct gc_item;
 typedef struct gc_item gc_item_t;
 
 typedef long objint_t;
+typedef double objfloat_t;
 
 // number of depth type for function recursion
 typedef int32_t depth_t;

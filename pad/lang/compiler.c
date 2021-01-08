@@ -1504,6 +1504,34 @@ cc_digit(ast_t *ast, cc_args_t *cargs) {
 }
 
 static node_t *
+cc_float(ast_t *ast, cc_args_t *cargs) {
+    ready();
+    declare(node_float_t, cur);
+    token_t **save_ptr = ast->ref_ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        token_t *curtok = *ast->ref_ptr; \
+        ast->ref_ptr = save_ptr; \
+        free(cur); \
+        if (strlen(msg)) { \
+            pushb_error(ast, curtok, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    token_t *t = *ast->ref_ptr++;
+    if (t->type != TOKEN_TYPE_FLOAT) {
+        return_cleanup("");
+    }
+    check("read float");
+
+    cur->value = t->float_value;
+
+    return_parse(node_new(NODE_TYPE_FLOAT, cur, t));
+}
+
+static node_t *
 cc_false_(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_false_t, cur);
@@ -1571,6 +1599,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
         ast_del_nodes(ast, cur->true_); \
         ast_del_nodes(ast, cur->false_); \
         ast_del_nodes(ast, cur->digit); \
+        ast_del_nodes(ast, cur->float_); \
         ast_del_nodes(ast, cur->string); \
         ast_del_nodes(ast, cur->array); \
         ast_del_nodes(ast, cur->dict); \
@@ -1625,6 +1654,17 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     if (cur->digit) {
+        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
+    }
+
+    check("call cc_float");
+    savetok = *ast->ref_ptr;
+    cargs->depth = depth + 1;
+    cur->float_ = cc_float(ast, cargs);
+    if (ast_has_errors(ast)) {
+        return_cleanup("");
+    }
+    if (cur->float_) {
         return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
     }
 

@@ -376,3 +376,18 @@ cstr_pop_last_newline(char *str) {
         } 
     }
 }
+
+char *
+cstr_rstrip_float_zero(char *n) {
+    for (char *p = n + strlen(n) - 1; p >= n; ) {
+        if (*p - '0' == 0 && *(p - 1) == '.') {
+            break;
+        } else if (*p - '0' == 0) {
+            *p = '\0';
+            --p;
+        } else {
+            break;
+        }
+    }
+    return n;
+}

@@ -5069,10 +5069,201 @@ test_tkr_deep_copy(void) {
     tkr_del(tkr);
 }
 
+static void
+test_tkr_parse_int(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    const token_t *token;
+
+    tkr_parse(tkr, "{@123@}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->lvalue == 123);
+        assert(strcmp(token->text, "123") == 0);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_del(tkr);
+}
+
+static void
+test_tkr_parse_int_plus(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    const token_t *token;
+
+    tkr_parse(tkr, "{@+123@}");
+    {
+        assert(tkr_tokens_len(tkr) == 4);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_ADD);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->lvalue == 123);
+        assert(strcmp(token->text, "123") == 0);
+        token = tkr_tokens_getc(tkr, 3);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_del(tkr);
+}
+
+static void
+test_tkr_parse_int_minus(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    const token_t *token;
+
+    tkr_parse(tkr, "{@-123@}");
+    {
+        assert(tkr_tokens_len(tkr) == 4);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_SUB);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->lvalue == 123);
+        assert(strcmp(token->text, "123") == 0);
+        token = tkr_tokens_getc(tkr, 3);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_del(tkr);
+}
+
+static void
+test_tkr_parse_float(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    const token_t *token;
+
+    tkr_parse(tkr, "{@123.456@}");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_FLOAT);
+        assert(token->float_value == 123.456);
+        assert(strcmp(token->text, "123.456") == 0);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_del(tkr);
+}
+
+static void
+test_tkr_parse_float_plus(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    const token_t *token;
+
+    tkr_parse(tkr, "{@+123.456@}");
+    {
+        assert(tkr_tokens_len(tkr) == 4);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_ADD);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_FLOAT);
+        assert(token->float_value == 123.456);
+        assert(strcmp(token->text, "123.456") == 0);
+        token = tkr_tokens_getc(tkr, 3);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_del(tkr);
+}
+
+static void
+test_tkr_parse_float_minus(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    const token_t *token;
+
+    tkr_parse(tkr, "{@-123.456@}");
+    {
+        assert(tkr_tokens_len(tkr) == 4);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_OP_SUB);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_FLOAT);
+        assert(token->float_value == 123.456);
+        assert(strcmp(token->text, "123.456") == 0);
+        token = tkr_tokens_getc(tkr, 3);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_del(tkr);
+}
+
+static void
+test_tkr_parse_float_errors(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    const token_t *token;
+
+    assert(tkr_parse(tkr, "{@123.@}") == NULL);
+    assert(strcmp(tkr_getc_first_error_message(tkr), "invalid float") == 0);
+
+    tkr_parse(tkr, "{@.456@}");
+    {
+        assert(tkr_tokens_len(tkr) == 4);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_DOT_OPE);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(strcmp(token->text, "456") == 0);
+        token = tkr_tokens_getc(tkr, 3);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@123.456.789@}");
+    {
+        assert(tkr_tokens_len(tkr) == 5);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_FLOAT);
+        assert(strcmp(token->text, "123.456") == 0);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_DOT_OPE);
+        token = tkr_tokens_getc(tkr, 3);
+        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(strcmp(token->text, "789") == 0);
+        token = tkr_tokens_getc(tkr, 4);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+
+    tkr_del(tkr);
+}
+
 static const struct testcase
 tokenizer_tests[] = {
     {"tkr_new", test_tkr_new},
     {"tkr_parse", test_tkr_parse},
+    {"tkr_parse_int", test_tkr_parse_int},
+    {"tkr_parse_int_plus", test_tkr_parse_int_plus},
+    {"tkr_parse_int_minus", test_tkr_parse_int_minus},
+    {"tkr_parse_float", test_tkr_parse_float},
+    {"tkr_parse_float_plus", test_tkr_parse_float_plus},
+    {"tkr_parse_float_minus", test_tkr_parse_float_minus},
+    {"tkr_parse_float_errors", test_tkr_parse_float_errors},
     {"tkr_deep_copy", test_tkr_deep_copy},
     {0},
 };
@@ -12255,7 +12446,7 @@ test_cc_import_stmt(void) {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "invalid token 44 in compile import variables"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid token 45 in compile import variables"));
     }
 
     tkr_parse(tkr, "{@ from \"path/to/module\" import ( aaa as \n a ) @}");
@@ -27524,6 +27715,27 @@ test_trv_expr_9(void) {
 }
 
 static void
+test_trv_expr_float(void) {
+    trv_ready;
+
+    check_ok("{: 1.1 + 1.2 :}", "2.3");
+    check_ok("{: 1 + 1.2 :}", "2.2");
+    check_ok("{: 1.1 + true :}", "2.1");
+    check_ok("{: 1.2 - 1.1 :}", "0.1");
+    check_ok("{: 2 - 1.1 :}", "0.9");
+    check_ok("{: 1.2 - true :}", "0.2");
+    check_ok("{: 1.2 * 1.3 :}", "1.56");
+    check_ok("{: 2 * 1.3 :}", "2.6");
+    check_ok("{: 1.2 * true :}", "1.2");
+    check_ok("{: 4.0 / 2.0 :}", "2.0");
+    check_ok("{: 4 / 2.0 :}", "2.0");
+    check_ok("{: 4.0 / true :}", "4.0");
+    check_ok("{@ a = 1.1 b = a @}{: b :}", "1.1");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_expr_fail_0(void) {
     trv_ready;
 
@@ -29768,6 +29980,7 @@ traverser_tests[] = {
     {"expr_7", test_trv_expr_7},
     {"expr_8", test_trv_expr_8},
     {"expr_9", test_trv_expr_9},
+    {"expr_float", test_trv_expr_float},
     {"expr_fail_0", test_trv_expr_fail_0},
     {"term_0", test_trv_term_0},
     {"term_1", test_trv_term_1},

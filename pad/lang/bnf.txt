@@ -69,10 +69,11 @@ BNF of Pad's template language
           nagative: ( '-' ) chain
              chain: factor [ ('.' factor) | ('[' simple_assign ']') | ('(' call_args ')') ]*
             factor: atom | '(' formula ')'
-              atom: nil |
+            * atom: nil |
                     false |
                     true |
                     digit |
+                    float |
                     string |
                     array |
                     dict |
@@ -90,6 +91,7 @@ BNF of Pad's template language
          augassign: '+=' | '-=' | '*=' | '/=' | '%='
                nil:
              digit: [0-9]+
+           * float: [0-9]+ '.' [0-9]+
            newline: '\n'
   identifier_chain: ( identifier | identifier '.' ) identifier_chain
             string: '"' .* '"'

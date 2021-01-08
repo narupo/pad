@@ -365,10 +365,7 @@ tkr_parse_identifier(tokenizer_t *self) {
         return NULL;
     }
 
-    if (cstr_isdigit(token->text)) {
-        token->type = TOKEN_TYPE_INTEGER;
-        token->lvalue = strtol(token->text, NULL, 10);
-    } else if (cstr_eq(token->text, "end")) {
+    if (cstr_eq(token->text, "end")) {
         token->type = TOKEN_TYPE_STMT_END;
     } else if (cstr_eq(token->text, "import")) {
         token->type = TOKEN_TYPE_STMT_IMPORT;
@@ -458,6 +455,84 @@ tkr_parse_op(
     return self;
 }
 
+static tokenizer_t *
+tkr_parse_int_or_float(tokenizer_t *self) {
+    const char *save = self->ptr;
+    int m = 0;
+    string_t *buf = str_new();
+    token_type_t type = TOKEN_TYPE_INTEGER;
+
+    for (; *self->ptr; ) {
+        char c = *self->ptr++;
+        switch (m) {
+        case 0:
+            if (isdigit(c)) {
+                m = 200;
+                str_pushb(buf, c);
+            } else {
+                self->ptr = save;
+                pushb_error("invalid statement");
+                return NULL;
+            }
+            break;
+        case 100:  // found sign
+            if (isdigit(c)) {
+                m = 200;
+                str_pushb(buf, c);
+            } else {
+                self->ptr = save;
+                pushb_error("invalid sign");
+                return NULL;
+            }
+            break;
+        case 200:  // found int
+            if (isdigit(c)) {
+                str_pushb(buf, c);
+            } else if (c == '.') {
+                m = 300;
+                type = TOKEN_TYPE_FLOAT;
+                str_pushb(buf, c);
+            } else {
+                self->ptr--;
+                goto done;
+            }
+            break;
+        case 300:  // found .
+            if (isdigit(c)) {
+                str_pushb(buf, c);
+                m = 400;
+            } else {
+                self->ptr = save;
+                pushb_error("invalid float");
+                return NULL;
+            }
+            break;
+        case 400:  // found digit
+            if (isdigit(c)) {
+                str_pushb(buf, c);
+            } else {
+                self->ptr--;
+                goto done;
+            }
+            break;
+        }
+    }
+
+    token_t *token;
+done:
+    token = tok_new(type);
+    if (type == TOKEN_TYPE_INTEGER) {
+        token->lvalue = strtol(str_getc(buf), NULL, 10);
+    } else {
+        token->float_value = strtod(str_getc(buf), NULL);
+    }
+
+    token->text = str_esc_del(buf);
+    tkr_move_token(self, mem_move(token));
+
+    return self;
+}
+
 tokenizer_t *
 tkr_parse(tokenizer_t *self, const char *program_source) {
     self->program_source = program_source;
@@ -513,6 +588,11 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
                     goto fail;
                 }
                 tkr_move_token(self, mem_move(token));
+            } else if (isdigit(c)) {
+                tkr_prev(self);
+                if (!tkr_parse_int_or_float(self)) {
+                    goto fail;
+                }
             } else if (tkr_is_identifier_char(self, c)) {
                 tkr_prev(self);
                 if (!tkr_parse_identifier(self)) {
@@ -625,6 +705,11 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
                     goto fail;
                 }
                 tkr_move_token(self, mem_move(token));
+            } else if (isdigit(c)) {
+                tkr_prev(self);
+                if (!tkr_parse_int_or_float(self)) {
+                    goto fail;
+                }
             } else if (tkr_is_identifier_char(self, c)) {
                 tkr_prev(self);
                 if (!tkr_parse_identifier(self)) {

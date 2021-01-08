@@ -33,6 +33,7 @@ typedef enum {
     TOKEN_TYPE_DQ_STRING, // '"string"'
 
     TOKEN_TYPE_INTEGER, // 123
+    TOKEN_TYPE_FLOAT, // 123.456
     TOKEN_TYPE_OP_ADD, // '+'
     TOKEN_TYPE_OP_SUB, // '-'
     TOKEN_TYPE_OP_MUL, // '*'
@@ -82,13 +83,14 @@ typedef enum {
  * abstract token
  */
 typedef struct token {
-    char *text;  // value of token text
+    char *text;  // value of token text (dynamic allocate memory)
     const char *program_filename;  // pointer to program file name
     const char *program_source;  // pointer to program source strings
     int32_t program_lineno;  // program line number
     int32_t program_source_pos;  // position of token in program source strings
     token_type_t type;  // token type
     objint_t lvalue;  // value of token value
+    objfloat_t float_value;  // value of float value
 } token_t;
 
 /**

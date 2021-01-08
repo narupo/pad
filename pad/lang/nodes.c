@@ -344,6 +344,7 @@ node_deep_copy(const node_t *other) {
         dst->true_ = node_deep_copy(src->true_);
         dst->false_ = node_deep_copy(src->false_);
         dst->digit = node_deep_copy(src->digit);
+        dst->float_ = node_deep_copy(src->float_);
         dst->string = node_deep_copy(src->string);
         dst->array = node_deep_copy(src->array);
         dst->dict = node_deep_copy(src->dict);
@@ -390,6 +391,12 @@ node_deep_copy(const node_t *other) {
         declare(node_digit_t, dst);
         node_digit_t *src = other->real;
         dst->lvalue = src->lvalue;
+        self->real = dst;
+    } break;
+    case NODE_TYPE_FLOAT: {
+        declare(node_float_t, dst);
+        node_float_t *src = other->real;
+        dst->value = src->value;
         self->real = dst;
     } break;
     case NODE_TYPE_STRING: {
@@ -567,6 +574,7 @@ node_to_str(const node_t *self) {
     case NODE_TYPE_COMP_OP: str_set(s, "comp op"); break;
     case NODE_TYPE_NIL: str_set(s, "nil"); break;
     case NODE_TYPE_DIGIT: str_set(s, "digit"); break;
+    case NODE_TYPE_FLOAT: str_set(s, "float"); break;
     case NODE_TYPE_STRING: str_set(s, "string"); break;
     case NODE_TYPE_IDENTIFIER: str_set(s, "identifier"); break;
     case NODE_TYPE_ARRAY: str_set(s, "array"); break;

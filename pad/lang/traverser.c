@@ -301,6 +301,12 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
         snprintf(n, sizeof n, "%ld", result->lvalue);
         ctx_pushb_stdout_buf(context, n);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        char n[1024]; // very large
+        snprintf(n, sizeof n, "%lf", result->float_value);
+        cstr_rstrip_float_zero(n);
+        ctx_pushb_stdout_buf(context, n);
+    } break;
     case OBJ_TYPE_BOOL: {
         if (result->boolean) {
             ctx_pushb_stdout_buf(context, "true");
@@ -6252,6 +6258,10 @@ trv_calc_expr_add_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue + rhs->lvalue);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->lvalue + rhs->float_value);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue + rhs->boolean);
         return_trav(obj);
@@ -6276,6 +6286,56 @@ trv_calc_expr_add_int(ast_t *ast, trv_args_t *targs) {
     }
 
     assert(0 && "impossible. failed to calc expr int");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_expr_add_float(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_FLOAT);
+
+    targs->depth += 1;
+
+    switch (rhs->type) {
+    default:
+        pushb_error("can't add with float");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INT: {
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value + rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value + rhs->float_value);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value + rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        check("call trv_roll_identifier_rhs");
+        targs->callback = trv_calc_expr_add;
+        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = _extract_ref_of_obj_all(rhs);
+        if (!rval) {
+            pushb_error("can't add with int. index object value is null");
+            return_trav(NULL);
+        }
+
+        targs->rhs_obj = rval;
+        object_t *obj = trv_calc_expr_add(ast, targs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to calc expr float");
     return_trav(NULL);
 }
 
@@ -6431,6 +6491,11 @@ trv_calc_expr_add(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_calc_expr_add_int(ast, targs);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        check("call trv_calc_expr_add_float");
+        object_t *obj = trv_calc_expr_add_float(ast, targs);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         check("call trv_calc_expr_add_bool");
         object_t *obj = trv_calc_expr_add_bool(ast, targs);
@@ -6488,8 +6553,62 @@ trv_calc_expr_sub_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue - rhs->lvalue);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->lvalue - rhs->float_value);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue - rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        check("call trv_roll_identifier_rhs");
+        targs->callback = trv_calc_expr_sub;
+        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = _extract_ref_of_obj_all(rhs);
+        if (!rval) {
+            pushb_error("can't sub with int. index object value is null");
+            return_trav(NULL);
+        }
+
+        targs->rhs_obj = rval;
+        object_t *obj = trv_calc_expr_sub(ast, targs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to calc expr sub int");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_expr_sub_float(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_FLOAT);
+
+    targs->depth += 1;
+
+    switch (rhs->type) {
+    default:
+        pushb_error("can't sub with float");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INT: {
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value - rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value - rhs->float_value);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value - rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -6578,6 +6697,11 @@ trv_calc_expr_sub(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_INT: {
         check("call trv_calc_expr_sub_int");
         object_t *obj = trv_calc_expr_sub_int(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        check("call trv_calc_expr_sub_float");
+        object_t *obj = trv_calc_expr_sub_float(ast, targs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
@@ -6728,8 +6852,66 @@ trv_calc_term_mul_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue * rhs->lvalue);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->lvalue * rhs->float_value);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue * rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        check("call trv_roll_identifier_rhs");
+        targs->callback = trv_calc_term_mul;
+        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_UNICODE: {
+        object_t *obj = mul_unicode_object(ast, targs, rhs->unicode, lhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = _extract_ref_of_obj_all(rhs);
+        if (!rval) {
+            pushb_error("can't mul with int. index object value is null");
+            return_trav(NULL);
+        }
+
+        targs->rhs_obj = rval;
+        object_t *obj = trv_calc_term_mul(ast, targs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to calc term mul int");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_term_mul_float(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_FLOAT);
+
+    targs->depth += 1;
+
+    switch (rhs->type) {
+    default:
+        pushb_error("can't mul with float");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INT: {
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value * rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value * rhs->float_value);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value * rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -6868,6 +7050,11 @@ trv_calc_term_mul(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_calc_term_mul_int(ast, targs);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        check("call trv_calc_term_mul_float");
+        object_t *obj = trv_calc_term_mul_float(ast, targs);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         check("call trv_calc_term_mul_bool");
         object_t *obj = trv_calc_term_mul_bool(ast, targs);
@@ -6924,12 +7111,82 @@ trv_calc_term_div_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue / rhs->lvalue);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        if (!rhs->float_value) {
+            pushb_error("zero division error");
+            return_trav(NULL);
+        }
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->lvalue / rhs->float_value);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         if (!rhs->boolean) {
             pushb_error("zero division error");
             return_trav(NULL);
         }
         object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue / rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        check("trv_roll_identifier_rhs");
+        targs->callback = trv_calc_term_div;
+        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = _extract_ref_of_obj_all(rhs);
+        if (!rval) {
+            pushb_error("can't division with int. index object value is null");
+            return_trav(NULL);
+        }
+
+        targs->rhs_obj = rval;
+        object_t *obj = trv_calc_term_div(ast, targs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to calc term div int");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_term_div_float(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_FLOAT);
+
+    targs->depth += 1;
+
+    switch (rhs->type) {
+    default:
+        pushb_error("invalid right hand operand");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INT: {
+        if (!rhs->lvalue) {
+            pushb_error("zero division error");
+            return_trav(NULL);
+        }
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value / rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        if (!rhs->float_value) {
+            pushb_error("zero division error");
+            return_trav(NULL);
+        }
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value / rhs->float_value);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        if (!rhs->boolean) {
+            pushb_error("zero division error");
+            return_trav(NULL);
+        }
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value / rhs->boolean);
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -7021,6 +7278,11 @@ trv_calc_term_div(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_INT: {
         check("call trv_calc_term_div_int");
         object_t *obj = trv_calc_term_div_int(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        check("call trv_calc_term_div_float");
+        object_t *obj = trv_calc_term_div_float(ast, targs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
@@ -8785,6 +9047,11 @@ trv_atom(ast_t *ast, trv_args_t *targs) {
         targs->ref_node = atom->digit;
         object_t *obj = _trv_traverse(ast, targs);
         return_trav(obj);
+    } else if (atom->float_) {
+        check("call _trv_traverse with digit");
+        targs->ref_node = atom->float_;
+        object_t *obj = _trv_traverse(ast, targs);
+        return_trav(obj);        
     } else if (atom->string) {
         check("call _trv_traverse with string");
         targs->ref_node = atom->string;
@@ -8853,6 +9120,17 @@ trv_digit(ast_t *ast, trv_args_t *targs) {
     node_digit_t *digit = node->real;
     assert(digit);
     object_t *obj = obj_new_int(ast->ref_gc, digit->lvalue);
+    return_trav(obj);
+}
+
+static object_t *
+trv_float(ast_t *ast, trv_args_t *targs) {
+    tready();
+    node_t *node = targs->ref_node;
+    assert(node && node->type == NODE_TYPE_FLOAT);
+    node_float_t *float_ = node->real;
+    assert(float_);
+    object_t *obj = obj_new_float(ast->ref_gc, float_->value);
     return_trav(obj);
 }
 
@@ -9530,6 +9808,11 @@ _trv_traverse(ast_t *ast, trv_args_t *targs) {
     case NODE_TYPE_DIGIT: {
         check("call trv_digit");
         object_t *obj = trv_digit(ast, targs);
+        return_trav(obj);
+    } break;
+    case NODE_TYPE_FLOAT: {
+        check("call trv_digit");
+        object_t *obj = trv_float(ast, targs);
         return_trav(obj);
     } break;
     case NODE_TYPE_STRING: {

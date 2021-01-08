@@ -260,6 +260,7 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         ast_del_nodes(self, atom->true_);
         ast_del_nodes(self, atom->false_);
         ast_del_nodes(self, atom->digit);
+        ast_del_nodes(self, atom->float_);
         ast_del_nodes(self, atom->string);
         ast_del_nodes(self, atom->array);
         ast_del_nodes(self, atom->dict);
@@ -275,6 +276,9 @@ ast_del_nodes(const ast_t *self, node_t *node) {
         // nothing todo
     } break;
     case NODE_TYPE_DIGIT: {
+        // nothing todo
+    } break;
+    case NODE_TYPE_FLOAT: {
         // nothing todo
     } break;
     case NODE_TYPE_STRING: {

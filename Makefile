@@ -47,8 +47,10 @@ clean:
 
 .PHONY: init
 init:
+	$(RMDIR) build
 	$(MKDIR) \
 	build \
+	build$(SEP)tests \
 	build$(SEP)lib \
 	build$(SEP)core \
 	build$(SEP)lang$(SEP) \
@@ -112,7 +114,7 @@ SRCS := build/lib/error.c \
 OBJS := $(SRCS:.c=.o)
 
 tests: build/tests.o $(OBJS)
-	$(CC) $(CFLAGS) -o build/tests $^
+	$(CC) $(CFLAGS) -o build/pad_tests $^
 
 pad: build/app.o $(OBJS)
 	$(CC) $(CFLAGS) -o build/pad $^

@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include <pad/lib/string.h>
+#include <pad/lib/cstring.h>
 #include <pad/lib/unicode.h>
 #include <pad/lib/cstring.h>
 #include <pad/lib/memory.h>
@@ -25,6 +26,11 @@ typedef enum {
     // 整数オブジェクト
     // 整数の範囲は lang/types.h@objint_t を参照
     OBJ_TYPE_INT,
+
+    // A float object
+    // 浮動小数点数オブジェクト
+    // 値の範囲は lang/types.h@objint_t を参照
+    OBJ_TYPE_FLOAT,
 
     // A boolean object
     // A boolean object has true or false
@@ -161,6 +167,7 @@ struct object {
     object_array_t *objarr;  // value of array (type == OBJ_TYPE_ARRAY)
     object_dict_t *objdict;  // value of dict (type == OBJ_TYPE_DICT)
     objint_t lvalue;  // value of integer (type == OBJ_TYPE_INT)
+    objfloat_t float_value;  // value of float (type == OBJ_TYPE_FLOAT)
     bool boolean;  // value of boolean (type == OBJ_TYPE_BOOL)
     object_func_t func;  // structure of function (type == OBJ_TYPE_FUNC)
     object_def_struct_t def_struct;  // structure of pad's structure (type == OBJ_TYPE_DEF_STRUCT)
@@ -335,6 +342,9 @@ obj_new_unicode(gc_t *ref_gc, unicode_t *move_unicode);
  */
 object_t *
 obj_new_int(gc_t *ref_gc, objint_t lvalue);
+
+object_t *
+obj_new_float(gc_t *ref_gc, objfloat_t value);
 
 /**
  * construct array object by object_array_t

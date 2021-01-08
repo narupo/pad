@@ -138,3 +138,15 @@ cstr_isdigit(const char *str);
  */
 void
 cstr_pop_last_newline(char *str);
+
+/**
+ * right strip zero of float value
+ *
+ * 1.230000 -> 1.23
+ * 1.0 -> 1.0
+ *
+ * @param[in|out] n pointer to strings
+ * @return pointer to n
+ */
+char *
+cstr_rstrip_float_zero(char *n);

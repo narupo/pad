@@ -108,6 +108,10 @@ token_type_to_str(const token_t *self) {
         snprintf(str, sizeof str, "int[%ld]", self->lvalue);
         return str;
         break;
+    case TOKEN_TYPE_FLOAT:
+        snprintf(str, sizeof str, "float[%lf]", self->float_value);
+        return str;
+        break;
 
     case TOKEN_TYPE_FALSE: return "false"; break;
     case TOKEN_TYPE_TRUE: return "true"; break;
