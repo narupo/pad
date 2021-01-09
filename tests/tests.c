@@ -26665,35 +26665,9 @@ test_trv_asscalc_0(void) {
     * fail *
     *******/
 
-    tkr_parse(tkr, "{@ 0 += 1 @}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (1)"));
-    }
-
-    tkr_parse(tkr, "{@ true += 1 @}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (2)"));
-    }
-
-    tkr_parse(tkr, "{@ a = 0 \n a += \"b\" @}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand (4)"));
-    }
+    check_fail("{@ 0 += 1 @}", "invalid left hand operand (1)");
+    check_fail("{@ true += 1 @}", "invalid left hand operand (3)");
+    check_fail("{@ a = 0 \n a += \"b\" @}", "invalid right hand operand (5)");
 
     ctx_del(ctx);
     gc_del(gc);
@@ -26776,7 +26750,7 @@ test_trv_asscalc_1(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand type (2)"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand type (3)"));
     }
 
     tkr_parse(tkr, "{@ a = 0 \n a -= \"c\" @}");
@@ -26786,7 +26760,7 @@ test_trv_asscalc_1(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand type (4)"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand type (5)"));
     }
 
     ctx_del(ctx);
@@ -26920,7 +26894,7 @@ test_trv_asscalc_2(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (2)"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (3)"));
     }
 
     tkr_parse(tkr, "{@ a = 2 \n a *= \"b\" @}");
@@ -26930,7 +26904,7 @@ test_trv_asscalc_2(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand (4)"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand (5)"));
     }
 
     ctx_del(ctx);
@@ -27024,7 +26998,7 @@ test_trv_asscalc_3(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (2)"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid left hand operand (3)"));
     }
 
     tkr_parse(tkr, "{@ a = 4 \n a /= false @}");
@@ -27054,7 +27028,7 @@ test_trv_asscalc_3(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(ast_has_errors(ast));
-        assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand (4)"));
+        assert(!strcmp(ast_getc_first_error_message(ast), "invalid right hand operand (5)"));
     }
 
     ctx_del(ctx);
@@ -27850,13 +27824,13 @@ test_trv_term_2(void) {
 
     check_fail("{: 1 % 0 :}", "zero division error");
     check_fail("{: 1 % false :}", "zero division error");
-    check_fail("{: \"a\" % 1 :}", "invalid left hand operand (4)");
-    check_fail("{: [] % 1 :}", "invalid left hand operand (5)");
-    check_fail("{: {} % 1 :}", "invalid left hand operand (6)");
+    check_fail("{: \"a\" % 1 :}", "invalid left hand operand (5)");
+    check_fail("{: [] % 1 :}", "invalid left hand operand (6)");
+    check_fail("{: {} % 1 :}", "invalid left hand operand (7)");
 
-    check_fail("{: 1 % \"a\" :}", "invalid right hand operand (4)");
-    check_fail("{: 1 % [] :}", "invalid right hand operand (5)");
-    check_fail("{: 1 % {} :}", "invalid right hand operand (6)");
+    check_fail("{: 1 % \"a\" :}", "invalid right hand operand (5)");
+    check_fail("{: 1 % [] :}", "invalid right hand operand (6)");
+    check_fail("{: 1 % {} :}", "invalid right hand operand (7)");
 
     check_fail("{: 4 % nil :}", "invalid right hand operand (0)");
     check_fail("{: nil % 2 :}", "invalid left hand operand (0)");
