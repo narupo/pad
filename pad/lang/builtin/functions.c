@@ -577,30 +577,46 @@ builtin_getattr(builtin_func_args_t *fargs) {
 static object_t *
 builtin_dance(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
-    const node_t *ref_node = fargs->ref_node;
+    gc_t *ref_gc = ref_ast->ref_gc;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
     object_array_t *args = actual_args->objarr;
     assert(args);
 
+#undef return_fail
+#define return_fail(s) { \
+        object_array_t *ret = objarr_new(); \
+        object_t *err = obj_new_unicode_cstr(ref_gc, s); \
+        objarr_moveb(ret, mem_move(obj_new_nil(ref_gc))); \
+        objarr_moveb(ret, mem_move(err)); \
+        return obj_new_array(ref_gc, mem_move(ret)); \
+    } \
+
+#undef return_fail_es
+#define return_fail_es(es) { \
+        object_array_t *ret = objarr_new(); \
+        const errelem_t *elem = errstack_getc(es, errstack_len(es) - 1); \
+        object_t *err = obj_new_unicode_cstr(ref_gc, elem->message); \
+        objarr_moveb(ret, mem_move(obj_new_nil(ref_gc))); \
+        objarr_moveb(ret, mem_move(err)); \
+        return obj_new_array(ref_gc, mem_move(ret)); \
+    } \
+
     if (objarr_len(args) < 1) {
-        push_error("need one argument");
-        return NULL;
+        return_fail("need one argument");
     }    
     const object_t *src = objarr_getc(args, 0);
     const char *code = extract_unicode_mb(src);
     if (!code) {
-        push_error("invalid source code");
-        return NULL;
+        return_fail("invalid source code");
     }
 
     const object_t *codectx = NULL;
     if (objarr_len(args) >= 2) {
         codectx = objarr_getc(args, 1);
         if (codectx->type != OBJ_TYPE_DICT) {
-            push_error("invalid context type. context will be dict");
-            return NULL;
+            return_fail("invalid context type. context will be dict");
         }
     }
 
@@ -618,17 +634,10 @@ builtin_dance(builtin_func_args_t *fargs) {
         }
     }
 
-#define return_err(es) \
-    const errelem_t *elem = errstack_getc(es, errstack_len(es) - 1); \
-    object_t *err = obj_new_unicode_cstr(ref_ast->ref_gc, elem->message); \
-    objarr_moveb(retarr, mem_move(obj_new_nil(ref_ast->ref_gc))); \
-    objarr_moveb(retarr, mem_move(err)); \
-    return obj_new_array(ref_ast->ref_gc, mem_move(retarr));
-
     tkr_parse(tkr, code);
     if (tkr_has_error_stack(tkr)) {
         const errstack_t *es = tkr_getc_error_stack(tkr);
-        return_err(es);
+        return_fail_es(es);
     }
 
     ast_clear(ast);
@@ -638,13 +647,13 @@ builtin_dance(builtin_func_args_t *fargs) {
     cc_compile(ast, tkr_get_tokens(tkr));
     if (ast_has_errors(ast)) {
         const errstack_t *es = ast_getc_error_stack(ast);
-        return_err(es);
+        return_fail_es(es);
     }
 
     trv_traverse(ast, ctx);
     if (ast_has_errors(ast)) {
         const errstack_t *es = ast_getc_error_stack(ast);
-        return_err(es);
+        return_fail_es(es);
     }
 
     tkr_del(tkr);
@@ -669,6 +678,79 @@ builtin_dance(builtin_func_args_t *fargs) {
     return ret;
 }
 
+static object_t *
+builtin_ord(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    gc_t *ref_gc = ref_ast->ref_gc;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
+    object_array_t *args = actual_args->objarr;
+    assert(args);
+
+#undef return_fail
+#define return_fail(s) \
+        object_array_t *ret = objarr_new(); \
+        objarr_moveb(ret, obj_new_nil(ref_gc)); \
+        objarr_moveb(ret, obj_new_unicode_cstr(ref_gc, s)); \
+        return obj_new_array(ref_gc, mem_move(ret)); \
+
+    if (objarr_len(args) < 1) {
+        return_fail("need one argument");
+    }    
+    
+    const object_t *u = objarr_getc(args, 0);
+    if (u->type != OBJ_TYPE_UNICODE) {
+        return_fail("invalid type");
+    }
+    if (!uni_len(u->unicode)) {
+        return_fail("empty strings");
+    }
+
+    const unicode_type_t c = uni_getc(u->unicode)[0];
+    object_t *i = obj_new_int(ref_gc, (objint_t) c);
+    object_t *nil = obj_new_nil(ref_gc);
+    object_array_t *ret = objarr_new();
+    objarr_moveb(ret, mem_move(i));
+    objarr_moveb(ret, mem_move(nil));
+    return obj_new_array(ref_gc, mem_move(ret));
+}
+
+static object_t *
+builtin_chr(builtin_func_args_t *fargs) {
+    ast_t *ref_ast = fargs->ref_ast;
+    gc_t *ref_gc = ref_ast->ref_gc;
+    assert(ref_ast);
+    object_t *actual_args = fargs->ref_args;
+    assert(actual_args);
+    object_array_t *args = actual_args->objarr;
+    assert(args);
+
+#define return_fail(s) \
+        object_array_t *ret = objarr_new(); \
+        objarr_moveb(ret, obj_new_nil(ref_gc)); \
+        objarr_moveb(ret, obj_new_unicode_cstr(ref_gc, s)); \
+        return obj_new_array(ref_gc, mem_move(ret)); \
+
+    if (objarr_len(args) < 1) {
+        return_fail("need one argument");
+    }    
+    
+    const object_t *i = objarr_getc(args, 0);
+    if (i->type != OBJ_TYPE_INT) {
+        return_fail("invalid type");
+    }
+
+    unicode_t *u = uni_new();
+    uni_pushb(u, i->lvalue);
+    object_t *uni = obj_new_unicode(ref_gc, mem_move(u));
+    object_t *nil = obj_new_nil(ref_gc);
+    object_array_t *ret = objarr_new();
+    objarr_moveb(ret, mem_move(uni));
+    objarr_moveb(ret, mem_move(nil));
+    return obj_new_array(ref_gc, mem_move(ret));
+}
+
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"id", builtin_id},
@@ -685,6 +767,8 @@ builtin_func_infos[] = {
     {"setattr", builtin_setattr},
     {"getattr", builtin_getattr},
     {"dance", builtin_dance},
+    {"ord", builtin_ord},
+    {"chr", builtin_chr},
     {0},
 };
 

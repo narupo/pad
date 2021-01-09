@@ -1,4 +1,24 @@
 {@
+    def usage():
+        puts("Draw Kokun homepage.
+
+Usage:
+
+    pad main.pad [options]...
+
+The options are:
+
+    -h, --help    Show usage.
+    --path        Path of site.
+    --method      Method (GET, POST, etc)
+")
+    end
+
+    if opts.has("h") or opts.has("help"):
+        usage()
+        exit(0)
+    end
+
     from "samples/kokun/models.pad" import (
         Request,
     )
@@ -20,7 +40,6 @@
     end
 
     if err != nil:
-        puts("500 Internal Server Error")
         puts(err)
     else:
         puts(out)

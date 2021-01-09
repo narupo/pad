@@ -1,4 +1,8 @@
 {@
+    def render(request, path, context):
+        return "TODO File/IO", nil
+    end
+
     def home(request):
         context = {}
         return render(request, "samples/kokun/templates/home.pad", context)

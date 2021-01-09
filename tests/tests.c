@@ -15776,6 +15776,10 @@ test_trv_negative_0(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "0"));
     }
 
+    check_ok("{: -true :}", "-1");
+    check_ok_showbuf("{: -1.0 :}", "-1.0");
+    check_ok("{@ a = 1 @}{: -a :}", "-1");
+
     ctx_del(ctx);
     gc_del(gc);
     ast_del(ast);
@@ -16973,6 +16977,29 @@ test_trv_builtin_functions_dance_0(void) {
     check_ok("{@ out, err = dance(\"{@ puts(1) @}\") @}{: out :},{: err :}", "1\n,nil");
     check_ok("{@ out, err = dance(\"{@ a = b @}\") @}{: out :},{: err :}", "nil,\"b\" is not defined in asscalc ass idn");
     check_ok("{@ out, err = dance(\"{@ a = b @}{: a :}\", {\"b\": 1}) @}{: out :},{: err :}", "1,nil");
+
+    trv_cleanup;    
+}
+
+static void
+test_trv_builtin_functions_ord_0(void) {
+    trv_ready;
+
+    check_ok("{: ord(\"a\")[0] :}", "97");
+    check_ok("{: ord()[1] :}", "need one argument");
+    check_ok("{: ord(\"\")[1] :}", "empty strings");
+    check_ok("{: ord(nil)[1] :}", "invalid type");
+
+    trv_cleanup;    
+}
+
+static void
+test_trv_builtin_functions_chr_0(void) {
+    trv_ready;
+
+    check_ok("{: chr(97)[0] :}", "a");
+    check_ok("{: chr()[1] :}", "need one argument");
+    check_ok("{: chr(\"a\")[1] :}", "invalid type");
 
     trv_cleanup;    
 }
@@ -30178,6 +30205,8 @@ traverser_tests[] = {
     {"builtin_functions_setattr_0", test_trv_builtin_functions_setattr_0},
     {"builtin_functions_getattr_0", test_trv_builtin_functions_getattr_0},
     {"builtin_functions_dance_0", test_trv_builtin_functions_dance_0},
+    {"builtin_functions_ord_0", test_trv_builtin_functions_ord_0},
+    {"builtin_functions_chr_0", test_trv_builtin_functions_chr_0},
     {"builtin_string", test_trv_builtin_string},
     {"builtin_unicode_split", test_trv_builtin_unicode_split},
     {"builtin_unicode_rstrip", test_trv_builtin_unicode_rstrip},

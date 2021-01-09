@@ -7945,6 +7945,7 @@ trv_negative(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
+again:
     switch (operand->type) {
     default:
         if (negative->is_negative) {
@@ -7957,6 +7958,27 @@ trv_negative(ast_t *ast, trv_args_t *targs) {
         if (negative->is_negative) {
             object_t *obj = obj_new_int(ast->ref_gc, -operand->lvalue);
             return_trav(obj);
+        }
+        return_trav(operand);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        if (negative->is_negative) {
+            object_t *obj = obj_new_int(ast->ref_gc, -operand->boolean);
+            return_trav(obj);
+        }
+        return_trav(operand);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        if (negative->is_negative) {
+            object_t *obj = obj_new_float(ast->ref_gc, -operand->float_value);
+            return_trav(obj);
+        }
+        return_trav(operand);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        if (negative->is_negative) {
+            operand = _extract_ref_of_obj_all(operand);
+            goto again;
         }
         return_trav(operand);
     } break;

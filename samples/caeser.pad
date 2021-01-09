@@ -1,0 +1,21 @@
+{@
+    def encode(s, nshift):
+        d = ""
+        for i = 0; i < len(s); i += 1:
+            n, err = ord(s[i])
+            ch, err = chr(n + nshift)
+            d += ch
+        end
+        return d
+    end
+
+    def decode(s, nshift):
+        return encode(s, -nshift)
+    end
+
+    s = encode("abcdef", 3)
+    puts("encoded:", s)
+
+    s = decode(s, 3)
+    puts("decoded:", s)
+@}
