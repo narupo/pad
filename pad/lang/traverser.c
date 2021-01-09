@@ -4543,6 +4543,62 @@ trv_compare_comparison_eq_int(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
+trv_compare_comparison_eq_float(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_FLOAT);
+
+    depth_t depth = targs->depth;
+
+    switch (rhs->type) {
+    default: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_NIL: {
+        object_t *obj = obj_new_bool(ast->ref_gc, false);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value == rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value == rhs->float_value);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value == rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        check("call trv_roll_identifier_rhs");
+        targs->callback = trv_compare_comparison_eq;
+        targs->depth = depth + 1;
+        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = _extract_ref_of_obj_all(rhs);
+        if (!rval) {
+            pushb_error("can't comparison eq int. index object value is null");
+            return_trav(NULL);
+        }
+
+        targs->rhs_obj = rval;
+        targs->depth = depth + 1;
+        object_t *obj = trv_compare_comparison_eq_int(ast, targs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison eq int");
+    return_trav(NULL);
+}
+
+static object_t *
 trv_compare_comparison_eq_bool(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *lhs = targs->lhs_obj;
@@ -4993,6 +5049,11 @@ trv_compare_comparison_eq(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_compare_comparison_eq_int(ast, targs);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        check("call trv_compare_comparison_eq_float");
+        object_t *obj = trv_compare_comparison_eq_float(ast, targs);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         check("call trv_compare_comparison_eq_bool");
         object_t *obj = trv_compare_comparison_eq_bool(ast, targs);
@@ -5073,6 +5134,10 @@ trv_compare_comparison_not_eq_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue != rhs->lvalue);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue != rhs->float_value);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue != rhs->boolean);
         return_trav(obj);
@@ -5101,6 +5166,60 @@ trv_compare_comparison_not_eq_int(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
+trv_compare_comparison_not_eq_float(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_FLOAT);
+
+    targs->depth += 1;
+
+    switch (rhs->type) {
+    default: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_NIL: {
+        object_t *obj = obj_new_bool(ast->ref_gc, true);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_INT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value != rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value != rhs->float_value);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value != rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        check("call trv_roll_identifier_rhs with trv_compare_comparison_not_eq");
+        targs->callback = trv_compare_comparison_not_eq;
+        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = _extract_ref_of_obj_all(rhs);
+        if (!rval) {
+            pushb_error("can't comparison not eq int. index object value is null");
+            return_trav(NULL);
+        }
+
+        targs->rhs_obj = rval;
+        object_t *obj = trv_compare_comparison_not_eq_float(ast, targs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison not eq int");
+    return_trav(NULL);
+}
+
+static object_t *
 trv_compare_comparison_not_eq_bool(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *lhs = targs->lhs_obj;
@@ -5117,6 +5236,10 @@ trv_compare_comparison_not_eq_bool(ast_t *ast, trv_args_t *targs) {
     } break;
     case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean != rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean != rhs->float_value);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
@@ -5507,6 +5630,11 @@ trv_compare_comparison_not_eq(ast_t *ast, trv_args_t *targs) {
         object_t *obj = trv_compare_comparison_not_eq_int(ast, targs);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        check("call trv_compare_comparison_not_eq_float");
+        object_t *obj = trv_compare_comparison_not_eq_float(ast, targs);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         check("call trv_compare_comparison_not_eq_bool");
         object_t *obj = trv_compare_comparison_not_eq_bool(ast, targs);
@@ -5589,6 +5717,10 @@ trv_compare_comparison_lte_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue <= rhs->lvalue);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue <= rhs->float_value);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue <= rhs->boolean);
         return_trav(obj);
@@ -5617,6 +5749,56 @@ trv_compare_comparison_lte_int(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
+trv_compare_comparison_lte_float(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_FLOAT);
+
+    targs->depth += 1;
+
+    switch (rhs->type) {
+    default:
+        pushb_error("can't compare lte with int");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value <= rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value <= rhs->float_value);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value <= rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        check("call trv_roll_identifier_rhs with trv_compare_comparison_lte");
+        targs->callback = trv_compare_comparison_lte;
+        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = _extract_ref_of_obj_all(rhs);
+        if (!rval) {
+            pushb_error("can't comparison lte int. index object value is null");
+            return_trav(NULL);
+        }
+
+        targs->rhs_obj = rval;
+        object_t *obj = trv_compare_comparison_lte_float(ast, targs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison lte int");
+    return_trav(NULL);
+}
+
+static object_t *
 trv_compare_comparison_lte_bool(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *lhs = targs->lhs_obj;
@@ -5633,6 +5815,10 @@ trv_compare_comparison_lte_bool(ast_t *ast, trv_args_t *targs) {
         break;
     case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean <= rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean <= rhs->float_value);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
@@ -5679,6 +5865,11 @@ trv_compare_comparison_lte(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_INT: {
         check("call trv_compare_comparison_lte_int");
         object_t *obj = trv_compare_comparison_lte_int(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        check("call trv_compare_comparison_lte_float");
+        object_t *obj = trv_compare_comparison_lte_float(ast, targs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
@@ -5728,6 +5919,10 @@ trv_compare_comparison_gte_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue >= rhs->lvalue);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue >= rhs->float_value);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue >= rhs->boolean);
         return_trav(obj);
@@ -5756,6 +5951,56 @@ trv_compare_comparison_gte_int(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
+trv_compare_comparison_gte_float(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_FLOAT);
+
+    targs->depth += 1;
+
+    switch (rhs->type) {
+    default:
+        pushb_error("can't compare gte with float");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value >= rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value >= rhs->float_value);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value >= rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        check("call trv_roll_identifier_rhs with trv_compare_comparison_gte");
+        targs->callback = trv_compare_comparison_gte;
+        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = _extract_ref_of_obj_all(rhs);
+        if (!rval) {
+            pushb_error("can't comparison gte int. index object value is null");
+            return_trav(NULL);
+        }
+
+        targs->rhs_obj = rval;
+        object_t *obj = trv_compare_comparison_gte_float(ast, targs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison gte int");
+    return_trav(NULL);
+}
+
+static object_t *
 trv_compare_comparison_gte_bool(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *lhs = targs->lhs_obj;
@@ -5772,6 +6017,10 @@ trv_compare_comparison_gte_bool(ast_t *ast, trv_args_t *targs) {
         break;
     case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean >= rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean >= rhs->float_value);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
@@ -5817,6 +6066,11 @@ trv_compare_comparison_gte(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_INT: {
         check("call trv_compare_comparison_gte_int");
         object_t *obj = trv_compare_comparison_gte_int(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        check("call trv_compare_comparison_gte_float");
+        object_t *obj = trv_compare_comparison_gte_float(ast, targs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
@@ -5866,6 +6120,10 @@ trv_compare_comparison_lt_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue < rhs->lvalue);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue < rhs->float_value);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue < rhs->boolean);
         return_trav(obj);
@@ -5894,6 +6152,56 @@ trv_compare_comparison_lt_int(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
+trv_compare_comparison_lt_float(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_FLOAT);
+
+    targs->depth += 1;
+
+    switch (rhs->type) {
+    default:
+        pushb_error("can't compare lt with int");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value < rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value < rhs->float_value);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value < rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        check("call trv_roll_identifier_rhs with trv_compare_comparison_lt");
+        targs->callback = trv_compare_comparison_lt;
+        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = _extract_ref_of_obj_all(rhs);
+        if (!rval) {
+            pushb_error("can't comparison lt int. index object value is null");
+            return_trav(NULL);
+        }
+
+        targs->rhs_obj = rval;
+        object_t *obj = trv_compare_comparison_lt_float(ast, targs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison lt int");
+    return_trav(NULL);
+}
+
+static object_t *
 trv_compare_comparison_lt_bool(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *lhs = targs->lhs_obj;
@@ -5910,6 +6218,10 @@ trv_compare_comparison_lt_bool(ast_t *ast, trv_args_t *targs) {
         break;
     case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean < rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean < rhs->float_value);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
@@ -5955,6 +6267,11 @@ trv_compare_comparison_lt(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_INT: {
         check("call trv_compare_comparison_lt_int");
         object_t *obj = trv_compare_comparison_lt_int(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        check("call trv_compare_comparison_lt_float");
+        object_t *obj = trv_compare_comparison_lt_float(ast, targs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
@@ -6004,6 +6321,10 @@ trv_compare_comparison_gt_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue > rhs->lvalue);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue > rhs->float_value);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue > rhs->boolean);
         return_trav(obj);
@@ -6032,6 +6353,56 @@ trv_compare_comparison_gt_int(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
+trv_compare_comparison_gt_float(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_FLOAT);
+
+    targs->depth += 1;
+
+    switch (rhs->type) {
+    default:
+        pushb_error("can't compare gt with float");
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value > rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value > rhs->float_value);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value > rhs->boolean);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        check("call trv_roll_identifier_rhs with trv_compare_comparison_gt");
+        targs->callback = trv_compare_comparison_gt;
+        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        object_t *rval = _extract_ref_of_obj_all(rhs);
+        if (!rval) {
+            pushb_error("can't comparison gt int. index object value is null");
+            return_trav(NULL);
+        }
+
+        targs->rhs_obj = rval;
+        object_t *obj = trv_compare_comparison_gt_float(ast, targs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison gt int");
+    return_trav(NULL);
+}
+
+static object_t *
 trv_compare_comparison_gt_bool(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *lhs = targs->lhs_obj;
@@ -6048,6 +6419,10 @@ trv_compare_comparison_gt_bool(ast_t *ast, trv_args_t *targs) {
         break;
     case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean > rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean > rhs->float_value);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
@@ -6093,6 +6468,11 @@ trv_compare_comparison_gt(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_INT: {
         check("call trv_compare_comparison_gt_int");
         object_t *obj = trv_compare_comparison_gt_int(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        check("call trv_compare_comparison_gt_float");
+        object_t *obj = trv_compare_comparison_gt_float(ast, targs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
@@ -6918,10 +7298,6 @@ trv_calc_term_mul_float(ast_t *ast, trv_args_t *targs) {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_calc_term_mul;
         object_t *obj = trv_roll_identifier_rhs(ast, targs);
-        return_trav(obj);
-    } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = mul_unicode_object(ast, targs, rhs->unicode, lhs->lvalue);
         return_trav(obj);
     } break;
     case OBJ_TYPE_CHAIN: {

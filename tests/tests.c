@@ -27706,6 +27706,15 @@ test_trv_expr_float(void) {
     check_ok("{: 4.0 / true :}", "4.0");
     check_ok("{@ a = 1.1 b = a @}{: b :}", "1.1");
 
+    check_fail("{: 1.0 + \"a\" :}", "can't add with float");
+    check_fail("{: 1.0 - \"a\" :}", "can't sub with float");
+    check_fail("{: 1.0 * \"a\" :}", "can't mul with float");
+    check_fail("{: 1.0 / \"a\" :}", "invalid right hand operand");
+    check_fail("{: \"a\" + 1.0 :}", "can't add 2 with string");
+    check_fail("{: \"a\" - 1.0 :}", "can't sub");
+    check_fail("{: \"a\" * 1.0 :}", "can't mul with string");
+    check_fail("{: \"a\" / 1.0 :}", "can't division");
+
     check_ok("{@ a = 0.0 a += 0.1 @}{: a :}", "0.1");
     check_ok("{@ a = 0.0 a += 1 @}{: a :}", "1.0");
     check_ok("{@ a = 0.0 a += true @}{: a :}", "1.0");
@@ -27719,6 +27728,11 @@ test_trv_expr_float(void) {
     check_ok("{@ a = 4.0 a /= 2 @}{: a :}", "2.0");
     check_ok("{@ a = 4.0 a /= true @}{: a :}", "4.0");
 
+    check_fail("{@ a = 1.0 a += nil @}", "invalid right hand operand (0)");
+    check_fail("{@ a = 1.0 a += \"a\" @}", "invalid right hand operand (5)");
+    check_fail("{@ a = 1.0 a += [] @}", "invalid right hand operand (6)");
+    check_fail("{@ a = 1.0 a += {} @}", "invalid right hand operand (7)");
+
     check_ok("{@ a = 1 a += 1.0 @}{: a :}", "2.0");
     check_ok("{@ a = 1 a -= 1.0 @}{: a :}", "0.0");
     check_ok("{@ a = 1 a *= 2.0 @}{: a :}", "2.0");
@@ -27729,6 +27743,75 @@ test_trv_expr_float(void) {
     check_ok("{@ a = true a *= 2.0 @}{: a :}", "2.0");
     check_ok("{@ a = true a /= 2.0 @}{: a :}", "0.5");
 
+    check_ok("{: 1 == 0.0 :}", "false");
+    check_ok("{: 1.0 == 0.0 :}", "false");
+    check_ok("{: true == 0.0 :}", "false");
+    check_ok("{: 1 != 0.0 :}", "true");
+    check_ok("{: 1.0 != 0.0 :}", "true");
+    check_ok("{: true != 0.0 :}", "true");
+    check_ok("{: 1 < 0.0 :}", "false");
+    check_ok("{: 1.0 < 0.0 :}", "false");
+    check_ok("{: true < 0.0 :}", "false");
+    check_ok("{: 1 <= 0.0 :}", "false");
+    check_ok("{: 1.0 <= 0.0 :}", "false");
+    check_ok("{: true <= 0.0 :}", "false");
+    check_ok("{: 1 > 0.0 :}", "true");
+    check_ok("{: 1.0 > 0.0 :}", "true");
+    check_ok("{: true > 0.0 :}", "true");
+    check_ok("{: 1 >= 0.0 :}", "true");
+    check_ok("{: 1.0 >= 0.0 :}", "true");
+    check_ok("{: true >= 0.0 :}", "true");
+
+    check_fail("{: 1.0 < nil :}", "can't compare lt with int");
+    check_fail("{: 1.0 < \"a\" :}", "can't compare lt with int");
+    check_fail("{: 1.0 < [] :}", "can't compare lt with int");
+    check_fail("{: 1.0 < {} :}", "can't compare lt with int");
+    check_fail("{: 1.0 <= nil :}", "can't compare lte with int");
+    check_fail("{: 1.0 <= \"a\" :}", "can't compare lte with int");
+    check_fail("{: 1.0 <= [] :}", "can't compare lte with int");
+    check_fail("{: 1.0 <= {} :}", "can't compare lte with int");
+    check_fail("{: 1.0 > \"a\" :}", "can't compare gt with float");
+    check_fail("{: 1.0 > nil :}", "can't compare gt with float");
+    check_fail("{: 1.0 > [] :}", "can't compare gt with float");
+    check_fail("{: 1.0 > {} :}", "can't compare gt with float");
+    check_fail("{: 1.0 >= nil :}", "can't compare gte with float");
+    check_fail("{: 1.0 >= \"a\" :}", "can't compare gte with float");
+    check_fail("{: 1.0 >= [] :}", "can't compare gte with float");
+    check_fail("{: 1.0 >= {} :}", "can't compare gte with float");
+    check_fail("{: nil < 1.0 :}", "can't compare with lt (0)");
+    check_fail("{: \"a\" < 1.0 :}", "can't compare with lt (5)");
+    check_fail("{: [] < 1.0 :}", "can't compare with lt (6)");
+    check_fail("{: {} < 1.0 :}", "can't compare with lt (7)");
+    check_fail("{: nil <= 1.0 :}", "can't compare with lte");
+    check_fail("{: \"a\" <= 1.0 :}", "can't compare with lte");
+    check_fail("{: [] <= 1.0 :}", "can't compare with lte");
+    check_fail("{: {} <= 1.0 :}", "can't compare with lte");
+    check_fail("{: nil > 1.0 :}", "can't compare with gt");
+    check_fail("{: \"a\" > 1.0 :}", "can't compare with gt");
+    check_fail("{: [] > 1.0 :}", "can't compare with gt");
+    check_fail("{: {} > 1.0 :}", "can't compare with gt");
+    check_fail("{: nil >= 1.0 :}", "can't compare with gte");
+    check_fail("{: \"a\" >= 1.0 :}", "can't compare with gte");
+    check_fail("{: [] >= 1.0 :}", "can't compare with gte");
+    check_fail("{: {} >= 1.0 :}", "can't compare with gte");
+
+    check_ok("{: 1.0 == nil :}", "false");
+    check_ok("{: 1.0 == \"a\" :}", "false");
+    check_ok("{: 1.0 == [] :}", "false");
+    check_ok("{: 1.0 == {} :}", "false");
+    check_ok("{: nil == 1.0 :}", "false");
+    check_ok("{: \"a\" == 1.0 :}", "false");
+    check_ok("{: [] == 1.0 :}", "false");
+    check_ok("{: {} == 1.0 :}", "false");
+    check_ok("{: 1.0 != nil :}", "true");
+    check_ok("{: 1.0 != \"a\" :}", "true");
+    check_ok("{: 1.0 != [] :}", "true");
+    check_ok("{: 1.0 != {} :}", "true");
+    check_ok("{: nil != 1.0 :}", "true");
+    check_ok("{: \"a\" != 1.0 :}", "true");
+    check_ok("{: [] != 1.0 :}", "true");
+    check_ok("{: {} != 1.0 :}", "true");
+
     check_fail("{@ a = 1.0 a /= 0 @}{: a :}", "zero division error");
     check_fail("{@ a = 1.0 a /= 0.0 @}{: a :}", "zero division error");
     check_fail("{@ a = 1.0 a /= false @}{: a :}", "zero division error");
@@ -27738,6 +27821,8 @@ test_trv_expr_float(void) {
     check_fail("{@ a = true a /= 0 @}{: a :}", "zero division error");
     check_fail("{@ a = true a /= 0.0 @}{: a :}", "zero division error");
     check_fail("{@ a = true a /= false @}{: a :}", "zero division error");
+
+    // TODO: chain object and float
 
     trv_cleanup;
 }
