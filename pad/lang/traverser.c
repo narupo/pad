@@ -7762,6 +7762,11 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, trv_args_t *targs) {
         lhs->lvalue += rhs->lvalue;
         return_trav(lhs);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        lhs->float_value = lhs->lvalue + rhs->float_value;
+        lhs->type = OBJ_TYPE_FLOAT;
+        return_trav(lhs);
+    } break;
     case OBJ_TYPE_BOOL: {
         lhs->lvalue += (objint_t) rhs->boolean;
         return_trav(lhs);
@@ -7778,6 +7783,103 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, trv_args_t *targs) {
         targs->rhs_obj = rvar;
         targs->depth = depth + 1;
         object_t *obj = trv_calc_asscalc_add_ass_identifier_int(ast, targs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to calc asscalc add ass identifier int");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_add_ass_identifier_float(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_FLOAT);
+
+    depth_t depth = targs->depth;
+
+    switch (rhs->type) {
+    default:
+        pushb_error("invalid right hand operand (%d)", rhs->type);
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INT: {
+        lhs->float_value += rhs->lvalue;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        lhs->float_value += rhs->float_value;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        lhs->float_value += (objint_t) rhs->boolean;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *rvar = _extract_ref_of_obj_all(rhs);
+        if (ast_has_errors(ast)) {
+            pushb_error("failed to extract object");
+            return_trav(NULL);
+        }
+
+        check("call trv_calc_asscalc_add_ass_identifier_int");
+        targs->lhs_obj = lhs;
+        targs->rhs_obj = rvar;
+        targs->depth = depth + 1;
+        object_t *obj = trv_calc_asscalc_add_ass_identifier_float(ast, targs);
+        return_trav(obj);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to calc asscalc add ass identifier int");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_add_ass_identifier_bool(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    depth_t depth = targs->depth;
+
+    switch (rhs->type) {
+    default:
+        pushb_error("invalid right hand operand (%d)", rhs->type);
+        return_trav(NULL);
+        break;
+    case OBJ_TYPE_INT: {
+        lhs->lvalue = lhs->boolean + rhs->lvalue;
+        lhs->type = OBJ_TYPE_INT;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        lhs->float_value = lhs->boolean + rhs->float_value;
+        lhs->type = OBJ_TYPE_FLOAT;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        lhs->lvalue = lhs->boolean + rhs->boolean;
+        lhs->type = OBJ_TYPE_INT;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        object_t *rvar = _extract_ref_of_obj_all(rhs);
+        if (ast_has_errors(ast)) {
+            pushb_error("failed to extract object");
+            return_trav(NULL);
+        }
+
+        check("call trv_calc_asscalc_add_ass_identifier_bool");
+        targs->lhs_obj = lhs;
+        targs->rhs_obj = rvar;
+        targs->depth = depth + 1;
+        object_t *obj = trv_calc_asscalc_add_ass_identifier_bool(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7859,6 +7961,18 @@ trv_calc_asscalc_add_ass_identifier(ast_t *ast, trv_args_t *targs) {
         targs->lhs_obj = lhsref;
         targs->depth = depth + 1;
         result = trv_calc_asscalc_add_ass_identifier_int(ast, targs);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        check("call trv_calc_asscalc_add_ass_identifier_float");
+        targs->lhs_obj = lhsref;
+        targs->depth = depth + 1;
+        result = trv_calc_asscalc_add_ass_identifier_float(ast, targs);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        check("call trv_calc_asscalc_add_ass_identifier_bool");
+        targs->lhs_obj = lhsref;
+        targs->depth = depth + 1;
+        result = trv_calc_asscalc_add_ass_identifier_bool(ast, targs);
     } break;
     case OBJ_TYPE_IDENTIFIER:
         check("call trv_calc_asscalc_add_ass_identifier");
@@ -8407,8 +8521,90 @@ trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, trv_args_t *targs) {
         lhs->lvalue -= rhsref->lvalue;
         return_trav(lhs);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        lhs->float_value = lhs->lvalue - rhsref->float_value;
+        lhs->type = OBJ_TYPE_FLOAT;
+        return_trav(lhs);
+    } break;
     case OBJ_TYPE_BOOL: {
         lhs->lvalue -= (objint_t) rhsref->boolean;
+        return_trav(lhs);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_sub_ass_idn_float(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_FLOAT);
+
+    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    if (ast_has_errors(ast)) {
+        pushb_error("failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (rhsref->type) {
+    default: {
+        pushb_error("invalid right hand operand type (%d)", rhsref->type);
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_INT: {
+        lhs->float_value -= rhsref->lvalue;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        lhs->float_value -= rhsref->float_value;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        lhs->float_value -= (objfloat_t) rhsref->boolean;
+        return_trav(lhs);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_sub_ass_idn_bool(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    if (ast_has_errors(ast)) {
+        pushb_error("failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (rhsref->type) {
+    default: {
+        pushb_error("invalid right hand operand type (%d)", rhsref->type);
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_INT: {
+        lhs->lvalue = lhs->boolean - rhsref->lvalue;
+        lhs->type = OBJ_TYPE_INT;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        lhs->float_value = lhs->boolean - rhsref->float_value;
+        lhs->type = OBJ_TYPE_FLOAT;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        lhs->lvalue = lhs->boolean - rhsref->boolean;
+        lhs->type = OBJ_TYPE_INT;
         return_trav(lhs);
     } break;
     }
@@ -8438,6 +8634,16 @@ trv_calc_asscalc_sub_ass_idn(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_INT: {
         targs->lhs_obj = lhsref;
         object_t *result = trv_calc_asscalc_sub_ass_idn_int(ast, targs);
+        return_trav(result);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        targs->lhs_obj = lhsref;
+        object_t *result = trv_calc_asscalc_sub_ass_idn_float(ast, targs);
+        return_trav(result);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        targs->lhs_obj = lhsref;
+        object_t *result = trv_calc_asscalc_sub_ass_idn_bool(ast, targs);
         return_trav(result);
     } break;
     }
@@ -8498,8 +8704,90 @@ trv_calc_asscalc_mul_ass_int(ast_t *ast, trv_args_t *targs) {
         lhs->lvalue *= rhsref->lvalue;
         return_trav(lhs);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        lhs->float_value = lhs->lvalue * rhsref->float_value;
+        lhs->type = OBJ_TYPE_FLOAT;
+        return_trav(lhs);
+    } break;
     case OBJ_TYPE_BOOL: {
         lhs->lvalue *= (objint_t) rhsref->boolean;
+        return_trav(lhs);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_mul_ass_float(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_FLOAT);
+
+    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    if (ast_has_errors(ast)) {
+        pushb_error("failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (rhsref->type) {
+    default: {
+        pushb_error("invalid right hand operand (%d)", rhsref->type);
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_INT: {
+        lhs->float_value *= rhsref->lvalue;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        lhs->float_value *= rhsref->float_value;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        lhs->float_value *= (objfloat_t) rhsref->boolean;
+        return_trav(lhs);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_mul_ass_bool(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_BOOL);
+
+    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    if (ast_has_errors(ast)) {
+        pushb_error("failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (rhsref->type) {
+    default: {
+        pushb_error("invalid right hand operand (%d)", rhsref->type);
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_INT: {
+        lhs->lvalue = lhs->boolean * rhsref->lvalue;
+        lhs->type = OBJ_TYPE_INT;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        lhs->float_value = lhs->boolean * rhsref->float_value;
+        lhs->type = OBJ_TYPE_FLOAT;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        lhs->lvalue = lhs->boolean * rhsref->boolean;
+        lhs->type = OBJ_TYPE_INT;
         return_trav(lhs);
     } break;
     }
@@ -8586,6 +8874,18 @@ trv_calc_asscalc_mul_ass(ast_t *ast, trv_args_t *targs) {
         object_t *result = trv_calc_asscalc_mul_ass_int(ast, targs);
         return_trav(result);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        check("call trv_calc_asscalc_mul_ass_float");
+        targs->lhs_obj = lhsref;
+        object_t *result = trv_calc_asscalc_mul_ass_float(ast, targs);
+        return_trav(result);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        check("call trv_calc_asscalc_mul_ass_bool");
+        targs->lhs_obj = lhsref;
+        object_t *result = trv_calc_asscalc_mul_ass_bool(ast, targs);
+        return_trav(result);
+    } break;
     case OBJ_TYPE_UNICODE: {
         check("call trv_calc_asscalc_mul_ass_string");
         targs->lhs_obj = lhsref;
@@ -8626,6 +8926,16 @@ trv_calc_asscalc_div_ass_int(ast_t *ast, trv_args_t *targs) {
         lhs->lvalue /= rhsref->lvalue;
         return_trav(lhs);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        if (rhsref->float_value == 0.0) {
+            pushb_error("zero division error");
+            return_trav(NULL);
+        }
+
+        lhs->float_value = lhs->lvalue / rhsref->float_value;
+        lhs->type = OBJ_TYPE_FLOAT;
+        return_trav(lhs);
+    } break;
     case OBJ_TYPE_BOOL: {
         if (!rhsref->boolean) {
             pushb_error("zero division error");
@@ -8633,6 +8943,58 @@ trv_calc_asscalc_div_ass_int(ast_t *ast, trv_args_t *targs) {
         }
 
         lhs->lvalue /= (objint_t) rhsref->boolean;
+        return_trav(lhs);
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return_trav(NULL);
+}
+
+static object_t *
+trv_calc_asscalc_div_ass_float(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_FLOAT);
+
+    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    if (ast_has_errors(ast)) {
+        pushb_error("failed to extract reference");
+        return_trav(NULL);
+    }
+
+    switch (rhsref->type) {
+    default: {
+        pushb_error("invalid right hand operand (%d)", rhsref->type);
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_INT: {
+        if (rhsref->lvalue == 0) {
+            pushb_error("zero division error");
+            return_trav(NULL);
+        }
+
+        lhs->float_value /= rhsref->lvalue;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        if (rhsref->float_value == 0.0) {
+            pushb_error("zero division error");
+            return_trav(NULL);
+        }
+
+        lhs->float_value /= rhsref->float_value;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_BOOL: {
+        if (!rhsref->boolean) {
+            pushb_error("zero division error");
+            return_trav(NULL);
+        }
+
+        lhs->float_value /= (objfloat_t) rhsref->boolean;
         return_trav(lhs);
     } break;
     }
@@ -8669,6 +9031,17 @@ trv_calc_asscalc_div_ass_bool(ast_t *ast, trv_args_t *targs) {
         objint_t result = ((objint_t)lhs->boolean) / rhsref->lvalue;
         lhs->type = OBJ_TYPE_INT;
         lhs->lvalue = result;
+        return_trav(lhs);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        if (rhsref->float_value == 0) {
+            pushb_error("zero division error");
+            return_trav(NULL);
+        }
+
+        objfloat_t result = ((objfloat_t)lhs->boolean) / rhsref->float_value;
+        lhs->type = OBJ_TYPE_FLOAT;
+        lhs->float_value = result;
         return_trav(lhs);
     } break;
     case OBJ_TYPE_BOOL: {
@@ -8723,6 +9096,10 @@ trv_calc_asscalc_div_ass(ast_t *ast, trv_args_t *targs) {
     } break;
     case OBJ_TYPE_INT: {
         object_t *result = trv_calc_asscalc_div_ass_int(ast, targs);
+        return_trav(result);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *result = trv_calc_asscalc_div_ass_float(ast, targs);
         return_trav(result);
     } break;
     }

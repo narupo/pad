@@ -27732,6 +27732,46 @@ test_trv_expr_float(void) {
     check_ok("{: 4.0 / true :}", "4.0");
     check_ok("{@ a = 1.1 b = a @}{: b :}", "1.1");
 
+    check_ok("{@ a = 0.0 a += 0.1 @}{: a :}", "0.1");
+    check_ok("{@ a = 0.0 a += 1 @}{: a :}", "1.0");
+    check_ok("{@ a = 0.0 a += true @}{: a :}", "1.0");
+    check_ok("{@ a = 0.0 a -= 0.1 @}{: a :}", "-0.1");
+    check_ok("{@ a = 0.0 a -= 1 @}{: a :}", "-1.0");
+    check_ok("{@ a = 0.0 a -= true @}{: a :}", "-1.0");
+    check_ok("{@ a = 2.0 a *= 0.2 @}{: a :}", "0.4");
+    check_ok("{@ a = 2.0 a *= 1 @}{: a :}", "2.0");
+    check_ok("{@ a = 2.0 a *= true @}{: a :}", "2.0");
+    check_ok("{@ a = 4.0 a /= 2.0 @}{: a :}", "2.0");
+    check_ok("{@ a = 4.0 a /= 2 @}{: a :}", "2.0");
+    check_ok("{@ a = 4.0 a /= true @}{: a :}", "4.0");
+
+    check_ok("{@ a = 1 a += 1.0 @}{: a :}", "2.0");
+    check_ok("{@ a = 1 a -= 1.0 @}{: a :}", "0.0");
+    check_ok("{@ a = 1 a *= 2.0 @}{: a :}", "2.0");
+    check_ok("{@ a = 2 a /= 2.0 @}{: a :}", "1.0");
+
+    check_ok("{@ a = true a += 1.0 @}{: a :}", "2.0");
+    check_ok("{@ a = true a -= 1.0 @}{: a :}", "0.0");
+    check_ok("{@ a = true a *= 2.0 @}{: a :}", "2.0");
+    check_ok("{@ a = true a /= 2.0 @}{: a :}", "0.5");
+
+    check_fail("{@ a = 1.0 a /= 0 @}{: a :}", "zero division error");
+    check_fail("{@ a = 1.0 a /= 0.0 @}{: a :}", "zero division error");
+    check_fail("{@ a = 1.0 a /= false @}{: a :}", "zero division error");
+    check_fail("{@ a = 1 a /= 0 @}{: a :}", "zero division error");
+    check_fail("{@ a = 1 a /= 0.0 @}{: a :}", "zero division error");
+    check_fail("{@ a = 1 a /= false @}{: a :}", "zero division error");
+    check_fail("{@ a = true a /= 0 @}{: a :}", "zero division error");
+    check_fail("{@ a = true a /= 0.0 @}{: a :}", "zero division error");
+    check_fail("{@ a = true a /= false @}{: a :}", "zero division error");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_expr_float_fail(void) {
+    trv_ready;
+
     trv_cleanup;
 }
 
@@ -29981,6 +30021,7 @@ traverser_tests[] = {
     {"expr_8", test_trv_expr_8},
     {"expr_9", test_trv_expr_9},
     {"expr_float", test_trv_expr_float},
+    {"expr_float_fail", test_trv_expr_float_fail},
     {"expr_fail_0", test_trv_expr_fail_0},
     {"term_0", test_trv_term_0},
     {"term_1", test_trv_term_1},
