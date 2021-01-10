@@ -1815,6 +1815,7 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
     }
 
     nodearr_moveb(cur->nodearr, lhs);
+    cc_skip_newlines(ast);
 
     for (;;) {
         check("call cc_augassign");
@@ -1829,6 +1830,7 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
         }
 
         nodearr_moveb(cur->nodearr, op);
+        cc_skip_newlines(ast);
 
         check("call cc_expr");
         cargs->depth = depth + 1;
@@ -1841,6 +1843,7 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
         }
 
         nodearr_moveb(cur->nodearr, rhs);
+        cc_skip_newlines(ast);
     }
 
     assert(0 && "impossible. failed to ast asscalc");
@@ -1882,6 +1885,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
     }
 
     nodearr_moveb(cur->nodearr, lhs);
+    cc_skip_newlines(ast);
 
     for (;;) {
         check("call mul_div_op");
@@ -1896,6 +1900,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
         }
 
         nodearr_moveb(cur->nodearr, op);
+        cc_skip_newlines(ast);
 
         check("call right cc_dot");
         cargs->depth = depth + 1;
@@ -1908,6 +1913,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
         }
 
         nodearr_moveb(cur->nodearr, rhs);
+        cc_skip_newlines(ast);
     }
 
     assert(0 && "impossible. failed to ast term");
@@ -2198,6 +2204,7 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
     }
 
     nodearr_moveb(cur->nodearr, lhs);
+    cc_skip_newlines(ast);
 
     for (;;) {
         check("call add_sub_op");
@@ -2212,6 +2219,7 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
         }
 
         nodearr_moveb(cur->nodearr, op);
+        cc_skip_newlines(ast);
 
         check("call cc_term");
         cargs->depth = depth + 1;
@@ -2224,6 +2232,7 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
         }
 
         nodearr_moveb(cur->nodearr, rhs);
+        cc_skip_newlines(ast);
     }
 
     assert(0 && "impossible. failed to ast expr");
@@ -2317,6 +2326,7 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
     }
 
     nodearr_moveb(cur->nodearr, lexpr);
+    cc_skip_newlines(ast);
 
     for (;;) {
         check("call cc_comp_op");
@@ -2331,6 +2341,8 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
         }
 
         check("call right cc_asscalc");
+        cc_skip_newlines(ast);
+
         cargs->depth = depth + 1;
         node_t *rexpr = cc_asscalc(ast, cargs);
         if (!rexpr) {
@@ -2343,6 +2355,7 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
 
         nodearr_moveb(cur->nodearr, comp_op);
         nodearr_moveb(cur->nodearr, rexpr);
+        cc_skip_newlines(ast);
     }
 
     assert(0 && "impossible. failed to comparison");
@@ -2373,6 +2386,8 @@ cc_not_test(ast_t *ast, cc_args_t *cargs) {
     token_t *t = *ast->ref_ptr++;
     if (t->type == TOKEN_TYPE_OP_NOT) {
         check("call cc_not_test");
+        cc_skip_newlines(ast);
+
         cargs->depth = depth + 1;
         cur->not_test = cc_not_test(ast, cargs);
         if (!cur->not_test) {
@@ -2383,8 +2398,8 @@ cc_not_test(ast_t *ast, cc_args_t *cargs) {
         }
     } else {
         ast->ref_ptr--;
-
         check("call cc_comparison");
+
         cargs->depth = depth + 1;
         cur->comparison = cc_comparison(ast, cargs);
         if (!cur->comparison) {
@@ -2431,6 +2446,7 @@ cc_and_test(ast_t *ast, cc_args_t *cargs) {
     }
 
     nodearr_moveb(cur->nodearr, lhs);
+    cc_skip_newlines(ast);
 
     for (;;) {
         if (!*ast->ref_ptr) {
@@ -2443,6 +2459,7 @@ cc_and_test(ast_t *ast, cc_args_t *cargs) {
             return_parse(make_node(NODE_TYPE_AND_TEST, cur));
         }
         check("read 'or'")
+        cc_skip_newlines(ast);
 
         check("call cc_not_test");
         cargs->depth = depth + 1;
@@ -2455,6 +2472,7 @@ cc_and_test(ast_t *ast, cc_args_t *cargs) {
         }
 
         nodearr_moveb(cur->nodearr, rhs);
+        cc_skip_newlines(ast);
     }
 
     assert(0 && "impossible. failed to and test");
@@ -2494,6 +2512,7 @@ cc_or_test(ast_t *ast, cc_args_t *cargs) {
     }
 
     nodearr_moveb(cur->nodearr, lhs);
+    cc_skip_newlines(ast);
 
     for (;;) {
         if (!*ast->ref_ptr) {
@@ -2506,6 +2525,7 @@ cc_or_test(ast_t *ast, cc_args_t *cargs) {
             return_parse(make_node(NODE_TYPE_OR_TEST, cur));
         }
         check("read 'or'")
+        cc_skip_newlines(ast);
 
         check("call cc_or_test");
         cargs->depth = depth + 1;
@@ -2518,6 +2538,7 @@ cc_or_test(ast_t *ast, cc_args_t *cargs) {
         }
 
         nodearr_moveb(cur->nodearr, rhs);
+        cc_skip_newlines(ast);
     }
 
     assert(0 && "impossible. failed to or test");

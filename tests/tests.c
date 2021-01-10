@@ -27842,8 +27842,10 @@ test_trv_expr_float(void) {
 }
 
 static void
-test_trv_expr_float_fail(void) {
+test_trv_expr_string_0(void) {
     trv_ready;
+
+    check_ok("{: \"abc\" \n + \n \"def\" :}", "abcdef");
 
     trv_cleanup;
 }
@@ -30094,7 +30096,7 @@ traverser_tests[] = {
     {"expr_8", test_trv_expr_8},
     {"expr_9", test_trv_expr_9},
     {"expr_float", test_trv_expr_float},
-    {"expr_float_fail", test_trv_expr_float_fail},
+    {"expr_string_0", test_trv_expr_string_0},
     {"expr_fail_0", test_trv_expr_fail_0},
     {"term_0", test_trv_term_0},
     {"term_1", test_trv_term_1},

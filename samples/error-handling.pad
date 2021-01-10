@@ -1,0 +1,54 @@
+{@
+    /**
+     * Error object
+     */
+    struct Error:
+        message = nil  // message of errors
+        no = nil  // detail number (string) of errors
+
+        // constants values
+        INVALID_ARGUMENTS = "invalid arguments"
+
+        /**
+         * Get error detail strings
+         *
+         * @return {str} strings
+         */
+        met what(self):
+            return self.message.capitalize() + ". " + 
+                   self.no.capitalize() + "."
+        end
+    end
+
+    /**
+     * Run function with argument
+     *
+     * @param[in] {int} arg the argument
+     */
+    def run(arg):
+        if arg != 1:
+            err = Error("failed to run", Error.INVALID_ARGUMENTS)
+            return nil, err
+        end
+
+        return arg, nil
+    end
+
+    // Non error
+    result, err = run(1)
+    if err != nil:
+        puts(err.what())
+        exit(1)
+    end
+    puts(result)
+
+    // Errors occured
+    result, err = run(0)
+    if err != nil:
+        puts(err.what())  // Detail?
+        if err.no == Error.INVALID_ARGUMENTS:  // Error detail is...
+            puts("Your gave the arguments was invalid.")
+        end
+        exit(1)
+    end
+@}
