@@ -1,5 +1,5 @@
 {@
-    struct Interface:
+    struct Mixin:
         met show(self):
             puts("My name is", self.name)
         end
@@ -11,7 +11,7 @@
 
     struct Animal:
         name = "Tama"
-        extract(Interface)
+        extract(Mixin)
     end
 
     animal = Animal()
