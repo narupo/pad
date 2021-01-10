@@ -162,6 +162,9 @@ obj_deep_copy(const object_t *other) {
     case OBJ_TYPE_INT:
         self->lvalue = other->lvalue;
         break;
+    case OBJ_TYPE_FLOAT:
+        self->float_value = other->float_value;
+        break;
     case OBJ_TYPE_BOOL:
         self->boolean = other->boolean;
         break;

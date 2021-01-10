@@ -6738,6 +6738,10 @@ trv_calc_expr_add_bool(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean + rhs->lvalue);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->boolean + rhs->float_value);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean + rhs->boolean);
         return_trav(obj);
@@ -7031,6 +7035,10 @@ trv_calc_expr_sub_bool(ast_t *ast, trv_args_t *targs) {
         break;
     case OBJ_TYPE_INT: {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean - rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->boolean - rhs->float_value);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
@@ -7336,6 +7344,10 @@ trv_calc_term_mul_bool(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean * rhs->lvalue);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_float(ast->ref_gc, lhs->boolean * rhs->float_value);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean * rhs->boolean);
         return_trav(obj);
@@ -7609,6 +7621,12 @@ trv_calc_term_div_bool(ast_t *ast, trv_args_t *targs) {
             return_trav(NULL);
         }
         return obj_new_int(ast->ref_gc, lhs->boolean / rhs->lvalue);
+    case OBJ_TYPE_FLOAT:
+        if (!rhs->float_value) {
+            pushb_error("zero division error");
+            return_trav(NULL);
+        }
+        return obj_new_float(ast->ref_gc, lhs->boolean / rhs->float_value);
     case OBJ_TYPE_BOOL:
         if (!rhs->boolean) {
             pushb_error("zero division error");
@@ -8424,8 +8442,29 @@ trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
         case OBJ_TYPE_INT: {
             lref->lvalue += rref->lvalue;
         } break;
+        case OBJ_TYPE_FLOAT: {
+            lref->float_value = lref->lvalue + rref->float_value;
+            lref->type = OBJ_TYPE_FLOAT;
+        } break;
         case OBJ_TYPE_BOOL: {
             lref->lvalue += (objint_t) rref->boolean;
+        } break;
+        }
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        switch (rref->type) {
+        default: {
+            pushb_error("invalid right hand operand (%d)", rref->type);
+            return_trav(NULL);
+        } break;
+        case OBJ_TYPE_INT: {
+            lref->float_value += rref->lvalue;
+        } break;
+        case OBJ_TYPE_FLOAT: {
+            lref->float_value += rref->float_value;
+        } break;
+        case OBJ_TYPE_BOOL: {
+            lref->float_value += (objfloat_t) rref->boolean;
         } break;
         }
     } break;
@@ -8438,6 +8477,10 @@ trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
         case OBJ_TYPE_INT: {
             lref->lvalue = ((objint_t) lref->boolean) + rref->lvalue;
             lref->type = OBJ_TYPE_INT;
+        } break;
+        case OBJ_TYPE_FLOAT: {
+            lref->float_value = ((objfloat_t) lref->boolean) + rref->float_value;
+            lref->type = OBJ_TYPE_FLOAT;
         } break;
         case OBJ_TYPE_BOOL: {
             lref->lvalue = ((objint_t) lref->boolean) + ((objint_t) rref->boolean);
@@ -8510,8 +8553,29 @@ trv_calc_asscalc_sub_ass_chain(ast_t *ast, trv_args_t *targs) {
         case OBJ_TYPE_INT: {
             lref->lvalue -= rref->lvalue;
         } break;
+        case OBJ_TYPE_FLOAT: {
+            lref->float_value = lref->lvalue - rref->float_value;
+            lref->type = OBJ_TYPE_FLOAT;
+        } break;
         case OBJ_TYPE_BOOL: {
             lref->lvalue -= (objint_t) rref->boolean;
+        } break;
+        }
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        switch (rref->type) {
+        default: {
+            pushb_error("invalid right hand operand (%d)", rref->type);
+            return NULL;
+        } break;
+        case OBJ_TYPE_INT: {
+            lref->float_value -= rref->lvalue;
+        } break;
+        case OBJ_TYPE_FLOAT: {
+            lref->float_value -= rref->float_value;
+        } break;
+        case OBJ_TYPE_BOOL: {
+            lref->float_value -= (objfloat_t) rref->boolean;
         } break;
         }
     } break;
@@ -8524,6 +8588,10 @@ trv_calc_asscalc_sub_ass_chain(ast_t *ast, trv_args_t *targs) {
         case OBJ_TYPE_INT: {
             lref->lvalue = ((objint_t) lref->boolean) - rref->lvalue;
             lref->type = OBJ_TYPE_INT;
+        } break;
+        case OBJ_TYPE_FLOAT: {
+            lref->float_value = ((objfloat_t) lref->boolean) - rref->float_value;
+            lref->type = OBJ_TYPE_FLOAT;
         } break;
         case OBJ_TYPE_BOOL: {
             lref->lvalue = ((objint_t) lref->boolean) - ((objint_t) rref->boolean);
@@ -8574,8 +8642,29 @@ trv_calc_asscalc_mul_ass_chain(ast_t *ast, trv_args_t *targs) {
         case OBJ_TYPE_INT: {
             lref->lvalue *= rref->lvalue;
         } break;
+        case OBJ_TYPE_FLOAT: {
+            lref->float_value = lref->lvalue * rref->float_value;
+            lref->type = OBJ_TYPE_FLOAT;
+        } break;
         case OBJ_TYPE_BOOL: {
             lref->lvalue *= (objint_t) rref->boolean;
+        } break;
+        }
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        switch (rref->type) {
+        default: {
+            pushb_error("invalid right hand operand (%d)", rref->type);
+            return NULL;
+        } break;
+        case OBJ_TYPE_INT: {
+            lref->float_value *= rref->lvalue;
+        } break;
+        case OBJ_TYPE_FLOAT: {
+            lref->float_value *= rref->float_value;
+        } break;
+        case OBJ_TYPE_BOOL: {
+            lref->float_value *= (objfloat_t) rref->boolean;
         } break;
         }
     } break;
@@ -8588,6 +8677,10 @@ trv_calc_asscalc_mul_ass_chain(ast_t *ast, trv_args_t *targs) {
         case OBJ_TYPE_INT: {
             lref->lvalue = ((objint_t) lref->boolean) * rref->lvalue;
             lref->type = OBJ_TYPE_INT;
+        } break;
+        case OBJ_TYPE_FLOAT: {
+            lref->float_value = ((objfloat_t) lref->boolean) * rref->float_value;
+            lref->type = OBJ_TYPE_FLOAT;
         } break;
         case OBJ_TYPE_BOOL: {
             lref->lvalue = ((objint_t) lref->boolean) * ((objint_t) rref->boolean);
@@ -8655,12 +8748,49 @@ trv_calc_asscalc_div_ass_chain(ast_t *ast, trv_args_t *targs) {
             }
             lref->lvalue /= rref->lvalue;
         } break;
+        case OBJ_TYPE_FLOAT: {
+            if (rref->float_value == 0.0) {
+                pushb_error("zero division error");
+                return NULL;
+            }
+            lref->float_value = lref->lvalue / rref->float_value;
+            lref->type = OBJ_TYPE_FLOAT;
+        } break;
         case OBJ_TYPE_BOOL: {
             if (!rref->boolean) {
                 pushb_error("zero division error");
                 return NULL;
             }
             lref->lvalue /= (objint_t) rref->boolean;
+        } break;
+        }
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        switch (rref->type) {
+        default: {
+            pushb_error("invalid right hand operand (%d)", rref->type);
+            return NULL;
+        } break;
+        case OBJ_TYPE_INT: {
+            if (rref->lvalue == 0) {
+                pushb_error("zero division error");
+                return NULL;
+            }
+            lref->float_value /= rref->lvalue;
+        } break;
+        case OBJ_TYPE_FLOAT: {
+            if (rref->float_value == 0.0) {
+                pushb_error("zero division error");
+                return NULL;
+            }
+            lref->float_value /= rref->float_value;
+        } break;
+        case OBJ_TYPE_BOOL: {
+            if (!rref->boolean) {
+                pushb_error("zero division error");
+                return NULL;
+            }
+            lref->float_value /= (objfloat_t) rref->boolean;
         } break;
         }
     } break;
@@ -8677,6 +8807,14 @@ trv_calc_asscalc_div_ass_chain(ast_t *ast, trv_args_t *targs) {
             }
             lref->lvalue = ((objint_t) lref->boolean) / rref->lvalue;
             lref->type = OBJ_TYPE_INT;
+        } break;
+        case OBJ_TYPE_FLOAT: {
+            if (rref->float_value == 0.0) {
+                pushb_error("zero division error");
+                return NULL;
+            }
+            lref->float_value = ((objfloat_t) lref->boolean) / rref->float_value;
+            lref->type = OBJ_TYPE_FLOAT;
         } break;
         case OBJ_TYPE_BOOL: {
             if (!rref->boolean) {

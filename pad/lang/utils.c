@@ -509,6 +509,7 @@ copy_func_args(
         switch (arg->type) {
         case OBJ_TYPE_NIL:
         case OBJ_TYPE_INT:
+        case OBJ_TYPE_FLOAT:
         case OBJ_TYPE_BOOL:
         case OBJ_TYPE_UNICODE:
         case OBJ_TYPE_OWNERS_METHOD:

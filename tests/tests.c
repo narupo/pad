@@ -27849,7 +27849,76 @@ test_trv_expr_float(void) {
     check_fail("{@ a = true a /= 0.0 @}{: a :}", "zero division error");
     check_fail("{@ a = true a /= false @}{: a :}", "zero division error");
 
-    // TODO: chain object and float
+    // chain-object and float
+    // - add operator
+    check_ok("{@ a = [1.0] @}{: a[0] + 1.0 :}", "2.0");
+    check_ok("{@ a = [1.0] @}{: a[0] + 1 :}", "2.0");
+    check_ok("{@ a = [1.0] @}{: a[0] + true :}", "2.0");
+
+    check_ok("{@ a = [1.0] @}{: 1.0 + a[0] :}", "2.0");
+    check_ok("{@ a = [1.0] @}{: 1 + a[0] :}", "2.0");
+    check_ok("{@ a = [1.0] @}{: true + a[0] :}", "2.0");
+
+    // - sub operator
+    check_ok("{@ a = [1.0] @}{: a[0] - 1.0 :}", "0.0");
+    check_ok("{@ a = [1.0] @}{: a[0] - 1 :}", "0.0");
+    check_ok("{@ a = [1.0] @}{: a[0] - true :}", "0.0");
+
+    check_ok("{@ a = [1.0] @}{: 1.0 - a[0] :}", "0.0");
+    check_ok("{@ a = [1.0] @}{: 1 - a[0] :}", "0.0");
+    check_ok("{@ a = [1.0] @}{: true - a[0] :}", "0.0");
+
+    // - mul operator
+    check_ok("{@ a = [2.0] @}{: a[0] * 2.0 :}", "4.0");
+    check_ok("{@ a = [2.0] @}{: a[0] * 2 :}", "4.0");
+    check_ok("{@ a = [2.0] @}{: a[0] * true :}", "2.0");
+
+    check_ok("{@ a = [2.0] @}{: 2.0 * a[0] :}", "4.0");
+    check_ok("{@ a = [2.0] @}{: 2 * a[0] :}", "4.0");
+    check_ok("{@ a = [2.0] @}{: true * a[0] :}", "2.0");
+
+    // - div operator
+    check_ok("{@ a = [4.0] @}{: a[0] / 2.0 :}", "2.0");
+    check_ok("{@ a = [4.0] @}{: a[0] / 2 :}", "2.0");
+    check_ok("{@ a = [4.0] @}{: a[0] / true :}", "4.0");
+
+    check_ok("{@ a = [2.0] @}{: 4.0 / a[0] :}", "2.0");
+    check_ok("{@ a = [2.0] @}{: 4 / a[0] :}", "2.0");
+    check_ok("{@ a = [2.0] @}{: true / a[0] :}", "0.5");
+
+    // - add assign operator
+    check_ok("{@ a = [1.0] a[0] += 1.0 @}{: a[0] :}", "2.0");
+    check_ok("{@ a = [1.0] a[0] += 1 @}{: a[0] :}", "2.0");
+    check_ok("{@ a = [1.0] a[0] += true @}{: a[0] :}", "2.0");
+
+    check_ok("{@ a = [1] a[0] += 1.0 @}{: a[0] :}", "2.0");
+    check_ok("{@ a = [true] a[0] += 1.0 @}{: a[0] :}", "2.0");
+
+    // - sub assign operator
+    check_ok("{@ a = [1.0] a[0] -= 1.0 @}{: a[0] :}", "0.0");
+    check_ok("{@ a = [1.0] a[0] -= 1 @}{: a[0] :}", "0.0");
+    check_ok("{@ a = [1.0] a[0] -= true @}{: a[0] :}", "0.0");
+
+    check_ok("{@ a = [1] a[0] -= 1.0 @}{: a[0] :}", "0.0");
+    check_ok("{@ a = [true] a[0] -= 1.0 @}{: a[0] :}", "0.0");
+
+    // - mul assign operator
+    check_ok("{@ a = [2.0] a[0] *= 2.0 @}{: a[0] :}", "4.0");
+    check_ok("{@ a = [2.0] a[0] *= 2 @}{: a[0] :}", "4.0");
+    check_ok("{@ a = [2.0] a[0] *= true @}{: a[0] :}", "2.0");
+
+    check_ok("{@ a = [2] a[0] *= 2.0 @}{: a[0] :}", "4.0");
+    check_ok("{@ a = [true] a[0] *= 2.0 @}{: a[0] :}", "2.0");
+
+    // - div assign operator
+    check_ok("{@ a = [4.0] a[0] /= 2.0 @}{: a[0] :}", "2.0");
+    check_ok("{@ a = [4.0] a[0] /= 2 @}{: a[0] :}", "2.0");
+    check_ok("{@ a = [4.0] a[0] /= true @}{: a[0] :}", "4.0");
+
+    check_ok_trace("{@ a = [4] a[0] /= 2.0 @}{: a[0] :}", "2.0");
+    check_ok("{@ a = [true] a[0] /= 2.0 @}{: a[0] :}", "0.5");
+
+    // TODO: more test cases for comparison operators
 
     trv_cleanup;
 }
