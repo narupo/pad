@@ -12951,6 +12951,10 @@ test_trv_comparison(void) {
     check_ok("{: 0 <= true :}", "true");
     check_ok("{: 2 <= true :}", "false");
 
+    check_ok("{@ def f(n): return n end @}{: 1 <= f(2) :}", "true")
+
+    check_ok("{@ def f(n): return n end @}{: 1 <= ord(\"a\")[0] :}", "true")
+
     // check_fail("", ""); TODO [] {} def etc
 
     /******
@@ -27272,6 +27276,16 @@ test_trv_asscalc_25(void) {
 }
 
 static void
+test_trv_asscalc_add_ass_string(void) {
+    trv_ready;
+
+    check_ok("{@ a = \"a\" a += \"b\" @}{: a :}", "ab");
+    check_ok_trace("{@ a = \"a\" b = [\"b\"] a += b[0] @}{: a :}", "ab");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_asscalc_fail_0(void) {
     trv_ready;
 
@@ -30083,6 +30097,7 @@ traverser_tests[] = {
     {"asscalc_23", test_trv_asscalc_23},
     {"asscalc_24", test_trv_asscalc_24},
     {"asscalc_25", test_trv_asscalc_25},
+    {"asscalc_add_ass_string", test_trv_asscalc_add_ass_string},
     {"asscalc_fail_0", test_trv_asscalc_fail_0},
     {"expr_0", test_trv_expr_0},
     {"expr_1", test_trv_expr_1},

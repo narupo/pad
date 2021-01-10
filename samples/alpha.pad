@@ -1,0 +1,11 @@
+{@
+    def f(a, b):
+        s = ""
+        for i = ord(a)[0]; i <= ord(b)[0]; i += 1:
+            s += chr(i)[0]
+            puts(s)
+        end
+    end
+
+    f("a", "k")
+@}

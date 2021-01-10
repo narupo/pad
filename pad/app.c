@@ -162,6 +162,7 @@ app_usage(app_t *app) {
         "\n"
         "    -h, --help       show usage\n"
         "    -V, --version    show version\n"
+        "    -d, --debug      debug mode\n"
         "\n"
     ;
     fprintf(stderr,

@@ -5718,6 +5718,7 @@ trv_compare_comparison_lte_int(ast_t *ast, trv_args_t *targs) {
 
     switch (rhs->type) {
     default:
+        printf("[%d]\n", rhs->type);
         pushb_error("can't compare lte with int");
         return_trav(NULL);
         break;
@@ -8351,6 +8352,14 @@ again:
         );
 
         return_trav(ret);
+    } break;
+    case OBJ_TYPE_CHAIN: {
+        rhs = _extract_ref_of_obj_all(rhs);
+        if (errstack_len(ast->error_stack)) {
+            pushb_error("failed to extract chain object");
+            return_trav(NULL);
+        }
+        goto again;
     } break;
     }
 
