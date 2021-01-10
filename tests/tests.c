@@ -12951,7 +12951,7 @@ test_trv_comparison(void) {
     check_ok("{: 0 <= true :}", "true");
     check_ok("{: 2 <= true :}", "false");
 
-    // check_fail("", ""); TODO [] {} etc
+    // check_fail("", ""); TODO [] {} def etc
 
     /******
     * gte *
