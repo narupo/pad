@@ -569,13 +569,19 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
                 tkr_move_token(self, mem_move(token));
                 m = 20;
             } else if (c == '\r' && *self->ptr == '\n') {
+                bool next_is_eos = *(self->ptr + 1) == '\0';
                 tkr_next(self);
-                str_app(self->buf, "\r\n");
-                self->program_lineno++;
+                if (!next_is_eos) {
+                    str_app(self->buf, "\r\n");
+                    self->program_lineno++;                    
+                }
             } else if ((c == '\r' && *self->ptr != '\n') ||
                        (c == '\n')) {
-                str_pushb(self->buf, c);
-                self->program_lineno++;
+                bool next_is_eos = *(self->ptr) == '\0';
+                if (!next_is_eos) {
+                    str_pushb(self->buf, c);
+                    self->program_lineno++;                    
+                }
             } else {
                 str_pushb(self->buf, c);
             }

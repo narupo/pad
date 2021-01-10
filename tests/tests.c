@@ -5050,6 +5050,26 @@ test_tkr_parse(void) {
         assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
 
+    tkr_parse(tkr, "{@@}\n");
+    {
+        assert(tkr_tokens_len(tkr) == 2);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_parse(tkr, "{@@}\n\n");
+    {
+        assert(tkr_tokens_len(tkr) == 3);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_TEXT_BLOCK);
+    }
+
     tkr_del(tkr);
 }
 
@@ -19543,7 +19563,7 @@ test_trv_code_block(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "\n\n\n"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "\n\n"));
     }
 
     tkr_parse(tkr, "\n{@\n\n\n@}\n{@\n\n\n@}\n");
@@ -19553,7 +19573,7 @@ test_trv_code_block(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "\n\n\n"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "\n\n"));
     }
 
     trv_cleanup;
@@ -19615,7 +19635,7 @@ test_trv_ref_block(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "\n1\n"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "\n1"));
     }
 
     tkr_parse(tkr, "{@@}{: 1 :}{@@}");
