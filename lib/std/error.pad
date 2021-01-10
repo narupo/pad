@@ -1,0 +1,35 @@
+{@
+    /**
+     * Error object
+     */
+    struct Error:
+        message = nil  // message of errors
+        no = nil  // detail number (string) of errors
+
+        // constants values
+        TYPE = "invalid type"
+        VALUE = "invalid value"
+
+        /**
+         * Get error detail strings
+         *
+         * @return {str} strings
+         */
+        met what(self):
+            if self.message == nil and self.no == nil:
+                return ""
+            end
+            
+            if self.message == nil:
+                return self.no.capitalize() + "."
+            end
+
+            if self.no == nil:
+                return self.message.capitalize() + "."
+            end
+            
+            return self.message.capitalize() + ". " + 
+                   self.no.capitalize() + "."
+        end
+    end
+@}
