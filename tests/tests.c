@@ -12591,6 +12591,11 @@ test_trv_comparison(void) {
     check_ok("{@ a = 1 == 1 == 0 @}{: a :}", "false");
     check_ok("{@ a = 1 != 1 @}{: a :}", "false");
 
+    check_ok("{: 1 == 1.0 :}", "true");
+    check_ok("{: 1.0 == 1 :}", "true");
+    check_ok("{: 1 != 1.0 :}", "false");
+    check_ok("{: 1.0 != 1 :}", "false");
+
     check_ok("{: 1 == 1 :}", "true");
     check_ok("{: 1 != 1 :}", "false");
 
@@ -12627,6 +12632,61 @@ test_trv_comparison(void) {
     check_ok("{@ struct A: end @}{: A() != 1 :}", "true");
     check_ok("{@ struct A: end @}{: 1 == A() :}", "false");
     check_ok("{@ struct A: end @}{: 1 != A() :}", "true");
+
+    /********
+    * float *
+    ********/
+
+    check_ok("{@ a = 0 != 1.0 @}{: a :}", "true");
+    check_ok("{@ a = 1.0 != 1.0 != 1.0 @}{: a :}", "true");
+    check_ok("{@ a = 1.0 != 1.0 != 0 @}{: a :}", "false");
+    check_ok("{@ a = 1.0 == 1.0 @}{: a :}", "true");
+    check_ok("{@ a = 1.0 == 0 @}{: a :}", "false");
+    check_ok("{@ a = 1.0 == 1.0 == 1.0 @}{: a :}", "true");
+    check_ok("{@ a = 1.0 == 1.0 == 0 @}{: a :}", "false");
+    check_ok("{@ a = 1.0 != 1.0 @}{: a :}", "false");
+
+    check_ok("{: 1.0 == 1.0 :}", "true");
+    check_ok("{: 1.0 != 1.0 :}", "false");
+
+    check_ok("{: 1 == 1.0 :}", "true");
+    check_ok("{: 1.0 == 1 :}", "true");
+    check_ok("{: 1 != 1.0 :}", "false");
+    check_ok("{: 1.0 != 1 :}", "false");
+
+    check_ok("{: 1.0 == true :}", "true");
+    check_ok("{: 1.0 != true :}", "false");
+    check_ok("{: 1.0 == false :}", "false");
+    check_ok("{: 1.0 != false :}", "true");
+    check_ok("{: true == 1.0 :}", "true");
+    check_ok("{: true != 1.0 :}", "false");
+    check_ok("{: false == 1.0 :}", "false");
+    check_ok("{: false != 1.0 :}", "true");
+
+    check_ok("{: [] == 1.0 :}", "false");
+    check_ok("{: [] != 1.0 :}", "true");
+    check_ok("{: 1.0 == [] :}", "false");
+    check_ok("{: 1.0 != [] :}", "true");
+
+    check_ok("{: {} == 1.0 :}", "false");
+    check_ok("{: {} != 1.0 :}", "true");
+    check_ok("{: 1.0 == {} :}", "false");
+    check_ok("{: 1.0 != {} :}", "true");
+
+    check_ok("{@ def f(): end @}{: f == 1.0 :}", "false");
+    check_ok("{@ def f(): end @}{: f != 1.0 :}", "true");
+    check_ok("{@ def f(): end @}{: 1.0 == f :}", "false");
+    check_ok("{@ def f(): end @}{: 1.0 != f :}", "true");
+
+    check_ok("{@ struct A: end @}{: A == 1.0 :}", "false");
+    check_ok("{@ struct A: end @}{: A != 1.0 :}", "true");
+    check_ok("{@ struct A: end @}{: 1.0 == A :}", "false");
+    check_ok("{@ struct A: end @}{: 1.0 != A :}", "true");
+
+    check_ok("{@ struct A: end @}{: A() == 1.0 :}", "false");
+    check_ok("{@ struct A: end @}{: A() != 1.0 :}", "true");
+    check_ok("{@ struct A: end @}{: 1.0 == A() :}", "false");
+    check_ok("{@ struct A: end @}{: 1.0 != A() :}", "true");
 
     /*******
     * bool *
@@ -12877,257 +12937,54 @@ test_trv_comparison(void) {
     * lte *
     ******/
 
-    tkr_parse(tkr, "{@ a = 1 <= 2 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
-    }
+    // int
+    check_ok("{: 1 <= 2 :}", "true");
+    check_ok("{: 2 <= 1 :}", "false");
 
-    tkr_parse(tkr, "{@ a = 2 <= 1 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
-    }
+    check_ok("{: 1.0 <= 2 :}", "true");
+    check_ok("{: 1.0 <= 0 :}", "false");
+    check_ok("{: 0 <= 1.0 :}", "true");
+    check_ok("{: 2 <= 1.0 :}", "false");
 
-    tkr_parse(tkr, "{@ a = true <= 2 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
-    }
+    check_ok("{: true <= 2 :}", "true");
+    check_ok("{: true <= 0 :}", "false");
+    check_ok("{: 0 <= true :}", "true");
+    check_ok("{: 2 <= true :}", "false");
 
-    tkr_parse(tkr, "{@ a = true <= 0 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
-    }
-
-    tkr_parse(tkr, "{@ a = 0 <= true @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
-    }
-
-    tkr_parse(tkr, "{@ a = 2 <= true @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
-    }
+    // check_fail("", ""); TODO [] {} etc
 
     /******
     * gte *
     ******/
 
-    tkr_parse(tkr, "{@ a = 1 >= 2 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
-    }
-
-    tkr_parse(tkr, "{@ a = 2 >= 1 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
-    }
-
-    tkr_parse(tkr, "{@ a = true >= 2 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
-    }
-
-    tkr_parse(tkr, "{@ a = true >= 0 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
-    }
-
-    tkr_parse(tkr, "{@ a = 0 >= true @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
-    }
-
-    tkr_parse(tkr, "{@ a = 2 >= true @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
-    }
+    check_ok("{@ a = 1 >= 2 @}{: a :}", "false");
+    check_ok("{@ a = 2 >= 1 @}{: a :}", "true");
+    check_ok("{@ a = true >= 2 @}{: a :}", "false");
+    check_ok("{@ a = true >= 0 @}{: a :}", "true");
+    check_ok("{@ a = 0 >= true @}{: a :}", "false");
+    check_ok("{@ a = 2 >= true @}{: a :}", "true");
 
     /*****
     * lt *
     *****/
 
-    tkr_parse(tkr, "{@ a = 1 < 2 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
-    }
-
-    tkr_parse(tkr, "{@ a = 2 < 1 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
-    }
-
-    tkr_parse(tkr, "{@ a = true < 2 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
-    }
-
-    tkr_parse(tkr, "{@ a = true < 1 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
-    }
-
-    tkr_parse(tkr, "{@ a = 0 < true @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
-    }
-
-    tkr_parse(tkr, "{@ a = 1 < true @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
-    }
+    check_ok("{@ a = 1 < 2 @}{: a :}", "true");
+    check_ok("{@ a = 2 < 1 @}{: a :}", "false");
+    check_ok("{@ a = true < 2 @}{: a :}", "true");
+    check_ok("{@ a = true < 1 @}{: a :}", "false");
+    check_ok("{@ a = 0 < true @}{: a :}", "true");
+    check_ok("{@ a = 1 < true @}{: a :}", "false");
 
     /*****
     * gt *
     *****/
 
-    tkr_parse(tkr, "{@ a = 1 > 1 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
-    }
-
-    tkr_parse(tkr, "{@ a = 2 > 1 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
-    }
-
-    tkr_parse(tkr, "{@ a = true > 1 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
-    }
-
-    tkr_parse(tkr, "{@ a = true > 0 @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
-    }
-
-    tkr_parse(tkr, "{@ a = 0 > true @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "false"));
-    }
-
-    tkr_parse(tkr, "{@ a = 2 > true @}{: a :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "true"));
-    }
+    check_ok("{@ a = 1 > 1 @}{: a :}", "false");
+    check_ok("{@ a = 2 > 1 @}{: a :}", "true");
+    check_ok("{@ a = true > 1 @}{: a :}", "false");
+    check_ok("{@ a = true > 0 @}{: a :}", "true");
+    check_ok("{@ a = 0 > true @}{: a :}", "false");
+    check_ok("{@ a = 2 > true @}{: a :}", "true");
 
     trv_cleanup;
 }
