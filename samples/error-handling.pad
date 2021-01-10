@@ -34,7 +34,7 @@
         return arg, nil
     end
 
-    // Non error
+    // non error
     result, err = run(1)
     if err != nil:
         puts(err.what())
@@ -42,11 +42,11 @@
     end
     puts(result)
 
-    // Errors occured
+    // errors occured
     result, err = run(0)
     if err != nil:
-        puts(err.what())  // Detail?
-        if err.no == Error.INVALID_ARGUMENTS:  // Error detail is...
+        puts(err.what())  // detail?
+        if err.no == Error.INVALID_ARGUMENTS:  // error detail is...
             puts("Your gave the arguments was invalid.")
         end
         exit(1)
