@@ -27886,6 +27886,14 @@ test_trv_expr_float(void) {
     check_ok("{@ a = [2.0] @}{: 4 / a[0] :}", "2.0");
     check_ok("{@ a = [2.0] @}{: true / a[0] :}", "0.5");
 
+    // - assign operator
+    check_ok("{@ a = [1.0] a[0] = 2.0 @}{: a[0] :}", "2.0");
+    check_ok("{@ a = [1.0] a[0] = 2 @}{: a[0] :}", "2");
+    check_ok("{@ a = [1.0] a[0] = true @}{: a[0] :}", "true");
+
+    check_ok("{@ a = [1] a[0] = 1.0 @}{: a[0] :}", "1.0");
+    check_ok("{@ a = [true] a[0] = 1.0 @}{: a[0] :}", "1.0");
+
     // - add assign operator
     check_ok("{@ a = [1.0] a[0] += 1.0 @}{: a[0] :}", "2.0");
     check_ok("{@ a = [1.0] a[0] += 1 @}{: a[0] :}", "2.0");
@@ -27915,10 +27923,63 @@ test_trv_expr_float(void) {
     check_ok("{@ a = [4.0] a[0] /= 2 @}{: a[0] :}", "2.0");
     check_ok("{@ a = [4.0] a[0] /= true @}{: a[0] :}", "4.0");
 
-    check_ok_trace("{@ a = [4] a[0] /= 2.0 @}{: a[0] :}", "2.0");
+    check_ok("{@ a = [4] a[0] /= 2.0 @}{: a[0] :}", "2.0");
     check_ok("{@ a = [true] a[0] /= 2.0 @}{: a[0] :}", "0.5");
 
-    // TODO: more test cases for comparison operators
+    // - comparison operator
+    // -- eq operator
+    check_ok("{@ a = [1.0] @}{: a[0] == 1.0 :}", "true");
+    check_ok("{@ a = [1] @}{: a[0] == 1.0 :}", "true");
+    check_ok("{@ a = [true] @}{: a[0] == 1.0 :}", "true");
+
+    check_ok("{@ a = [1.0] @}{: 1.0 == a[0] :}", "true");
+    check_ok("{@ a = [1] @}{: 1.0 == a[0] :}", "true");
+    check_ok("{@ a = [true] @}{: 1.0 == a[0] :}", "true");
+
+    // -- neq operator
+    check_ok("{@ a = [1.0] @}{: a[0] != 1.0 :}", "false");
+    check_ok("{@ a = [1] @}{: a[0] != 1.0 :}", "false");
+    check_ok("{@ a = [true] @}{: a[0] != 1.0 :}", "false");
+
+    check_ok("{@ a = [1.0] @}{: 1.0 != a[0] :}", "false");
+    check_ok("{@ a = [1] @}{: 1.0 != a[0] :}", "false");
+    check_ok("{@ a = [true] @}{: 1.0 != a[0] :}", "false");
+
+    // -- gt operator
+    check_ok("{@ a = [1.0] @}{: a[0] > 0.5 :}", "true");
+    check_ok("{@ a = [1] @}{: a[0] > 0.5 :}", "true");
+    check_ok("{@ a = [true] @}{: a[0] > 0.5 :}", "true");
+
+    check_ok("{@ a = [1.0] @}{: 0.5 > a[0] :}", "false");
+    check_ok("{@ a = [1] @}{: 0.5 > a[0] :}", "false");
+    check_ok("{@ a = [true] @}{: 0.5 > a[0] :}", "false");
+
+    // -- gte operator
+    check_ok("{@ a = [1.0] @}{: a[0] >= 0.5 :}", "true");
+    check_ok("{@ a = [1] @}{: a[0] >= 0.5 :}", "true");
+    check_ok("{@ a = [true] @}{: a[0] >= 0.5 :}", "true");
+
+    check_ok("{@ a = [1.0] @}{: 0.5 >= a[0] :}", "false");
+    check_ok("{@ a = [1] @}{: 0.5 >= a[0] :}", "false");
+    check_ok("{@ a = [true] @}{: 0.5 >= a[0] :}", "false");
+
+    // -- lt operator
+    check_ok("{@ a = [1.0] @}{: a[0] < 1.5 :}", "true");
+    check_ok("{@ a = [1] @}{: a[0] < 1.5 :}", "true");
+    check_ok("{@ a = [true] @}{: a[0] < 1.5 :}", "true");
+
+    check_ok("{@ a = [1.0] @}{: 1.5 < a[0] :}", "false");
+    check_ok("{@ a = [1] @}{: 1.5 < a[0] :}", "false");
+    check_ok("{@ a = [true] @}{: 1.5 < a[0] :}", "false");
+
+    // -- lte operator
+    check_ok("{@ a = [1.0] @}{: a[0] <= 1.5 :}", "true");
+    check_ok("{@ a = [1] @}{: a[0] <= 1.5 :}", "true");
+    check_ok("{@ a = [true] @}{: a[0] <= 1.5 :}", "true");
+
+    check_ok("{@ a = [1.0] @}{: 1.5 <= a[0] :}", "false");
+    check_ok("{@ a = [1] @}{: 1.5 <= a[0] :}", "false");
+    check_ok("{@ a = [true] @}{: 1.5 <= a[0] :}", "false");
 
     trv_cleanup;
 }

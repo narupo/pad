@@ -4513,6 +4513,10 @@ trv_compare_comparison_eq_int(ast_t *ast, trv_args_t *targs) {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue == rhs->lvalue);
         return_trav(obj);
     } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue == rhs->float_value);
+        return_trav(obj);
+    } break;
     case OBJ_TYPE_BOOL: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue == rhs->boolean);
         return_trav(obj);
@@ -4619,6 +4623,10 @@ trv_compare_comparison_eq_bool(ast_t *ast, trv_args_t *targs) {
     } break;
     case OBJ_TYPE_INT: {
         object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean == rhs->lvalue);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_FLOAT: {
+        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean == rhs->float_value);
         return_trav(obj);
     } break;
     case OBJ_TYPE_BOOL: {
