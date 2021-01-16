@@ -16618,90 +16618,19 @@ test_trv_builtin_functions_type_dict(void) {
 
 static void
 test_trv_builtin_functions_type(void) {
-    config_t *config = config_new();
-    tokenizer_option_t *opt = tkropt_new();
-    tokenizer_t *tkr = tkr_new(mem_move(opt));
-    ast_t *ast = ast_new(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    trv_ready;
 
     check_ok("{: type(nil) :}", "nil");
+    check_ok("{: type(1) :}", "int");
+    check_ok("{: type(true) :}", "bool");
+    check_ok("{: type(\"string\") :}", "str");
+    check_ok("{: type([1, 2]) :}", "array");
+    check_ok("{: type({ \"a\": 1 }) :}", "dict");
+    check_ok("{@ def f(): end @}{: type(f) :}", "func");
+    check_ok("{@ import \"tests/lang/modules/hello.cap\" as mod @}{: type(mod) :}", "imported\nmodule");
+    check_ok("{@ struct A: end @}{: type(A()) :}", "object");
 
-    tkr_parse(tkr, "{: type(1) :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "int"));
-    }
-
-    tkr_parse(tkr, "{: type(true) :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "bool"));
-    }
-
-    tkr_parse(tkr, "{: type(\"string\") :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "str"));
-    }
-
-    tkr_parse(tkr, "{: type([1, 2]) :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "array"));
-    }
-
-    tkr_parse(tkr, "{: type({ \"a\": 1 }) :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "dict"));
-    }
-
-    tkr_parse(tkr, "{@ def f(): end @}{: type(f) :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "func"));
-    }
-
-    tkr_parse(tkr, "{@ import \"tests/lang/modules/hello.cap\" as mod @}{: type(mod) :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        (trv_traverse(ast, ctx));
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "imported\nmodule"));
-    }
-
-    ctx_del(ctx);
-    gc_del(gc);
-    ast_del(ast);
-    tkr_del(tkr);
-    config_del(config);
+    trv_cleanup;
 }
 
 static void
