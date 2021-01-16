@@ -5769,7 +5769,7 @@ trv_compare_comparison_lte_float(ast_t *ast, trv_args_t *targs) {
 
     switch (rhs->type) {
     default:
-        pushb_error("can't compare lte with int");
+        pushb_error("can't compare lte with float");
         return_trav(NULL);
         break;
     case OBJ_TYPE_INT: {
@@ -6172,7 +6172,7 @@ trv_compare_comparison_lt_float(ast_t *ast, trv_args_t *targs) {
 
     switch (rhs->type) {
     default:
-        pushb_error("can't compare lt with int");
+        pushb_error("can't compare lt with float");
         return_trav(NULL);
         break;
     case OBJ_TYPE_INT: {
