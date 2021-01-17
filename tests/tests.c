@@ -16425,7 +16425,7 @@ test_trv_builtin_functions(void) {
 extern const char *builtin_structs_source;
 
 static void
-test_trv_builtin_structs_error(void) {
+test_trv_builtin_structs_error_0(void) {
     config_t *config = config_new();
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     tokenizer_t *s_tkr = tkr_new(mem_move(tkropt_new()));
@@ -16457,9 +16457,100 @@ test_trv_builtin_structs_error(void) {
         assert(!strcmp(ctx_getc_stdout_buf(ctx), "Oioi."));
     }
 
+    tkr_parse(tkr, "{@ err = Error(\"oioi\", Error.TYPE) @}{: err.what() :}");
+    tkr_parse(s_tkr, builtin_structs_source);
+    tkr_extendf_other(tkr, s_tkr);
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "Oioi. Invalid type."));
+    }
+
+    tkr_parse(tkr, "{@ def run():\n return nil, Error(\"oioi\", Error.TYPE)\n end a, b = run()\n @}{: b.what() :}");
+    tkr_parse(s_tkr, builtin_structs_source);
+    tkr_extendf_other(tkr, s_tkr);
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "Oioi. Invalid type."));
+    }
+
     ctx_del(ctx);
     gc_del(gc);
     ast_del(ast);
+    tkr_del(s_tkr);
+    tkr_del(tkr);
+    config_del(config);
+}
+
+// ATODO
+static void
+test_trv_builtin_structs_error_1(void) {
+    config_t *config = config_new();
+    tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
+    tokenizer_t *s_tkr = tkr_new(mem_move(tkropt_new()));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr,
+"{@\n"
+"    /**\n"
+"     * Run function with argument\n"
+"     *\n"
+"     * @param[in] {int} arg the argument\n"
+"     */\n"
+"    def run(arg):\n"
+"        if arg != 1:\n"
+"            err = Error(\"error\", Error.VALUE)\n"
+"            return nil, err\n"
+"        end\n"
+"\n"
+"        return arg, nil\n"
+"    end\n"
+"\n"
+"    // non error\n"
+"    result, err = run(1)\n"
+"    if err != nil:\n"
+"        puts(err.what())\n"
+"    end\n"
+"    puts(result)\n"
+"\n"
+"    // errors occured\n"
+"    result, err = run(0)\n"
+"    if err != nil:\n"
+"        puts(err.what())  // detail?\n"
+"        if err.no == Error.VALUE:  // error detail is...\n"
+"            puts(\"Your gave the arguments was invalid.\")\n"
+"        end\n"
+"    end\n"
+"@}\n"
+    );
+    tkr_parse(s_tkr, builtin_structs_source);
+    tkr_extendf_other(tkr, s_tkr);
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        trace();
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"
+"Error. Invalid value.\n"
+"Your gave the arguments was invalid.\n"
+        ));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(s_tkr);
     tkr_del(tkr);
     config_del(config);
 }
@@ -16673,6 +16764,11 @@ test_trv_builtin_functions_type(void) {
     check_ok("{@ struct A: end @}{: type(A()) :}", "object");
 
     trv_cleanup;
+}
+
+static void
+test_trv_builtin_functions_exit(void) {
+    // nothing to do
 }
 
 static void
@@ -19562,7 +19658,6 @@ test_trv_code_block(void) {
     trv_cleanup;
 }
 
-// ATODO
 static void
 test_trv_code_block_fail(void) {
     trv_ready;
@@ -30206,7 +30301,8 @@ traverser_tests[] = {
     {"dot_6", test_trv_dot_6},
     {"negative_0", test_trv_negative_0},
     {"call", test_trv_call},
-    {"builtin_structs_error", test_trv_builtin_structs_error},
+    {"builtin_structs_error_0", test_trv_builtin_structs_error_0},
+    {"builtin_structs_error_1", test_trv_builtin_structs_error_1},
     {"builtin_modules_opts_0", test_trv_builtin_modules_opts_0},
     {"builtin_modules_alias_0", test_trv_builtin_modules_alias_0},
     {"builtin_modules_alias_1", test_trv_builtin_modules_alias_1},

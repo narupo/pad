@@ -1,3 +1,5 @@
 {@
-    puts("hello")
+    err = Error("hello")
+    puts(err.what())
+    exit(1)
 @}

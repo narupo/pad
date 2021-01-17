@@ -309,9 +309,8 @@ builtin_exit(builtin_func_args_t *fargs) {
     fflush(stdout);
 
     objint_t exit_code = codeobj->lvalue;
-    exit(exit_code);
 
-    return NULL;
+    return obj_new_nil(ref_ast->ref_gc);
 }
 
 static object_t *

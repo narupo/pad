@@ -147,12 +147,15 @@ tkr_deep_copy(const tokenizer_t *other) {
 
 tokenizer_t *
 tkr_extendb_other(tokenizer_t *self, const tokenizer_t *other) {
-    int32_t needsize = (self->tokens_capa + other->tokens_len) * sizeof(token_t *);
+    int32_t byte = sizeof(token_t *);
+    int32_t needcapa = (self->tokens_capa + other->tokens_len);
+    int32_t needsize = needcapa * byte + byte;
     token_t **tmp = realloc(self->tokens, needsize);
     if (!tmp) {
         return NULL;
     }
     self->tokens = tmp;
+    self->tokens_capa = needcapa;
 
     for (int32_t i = 0; i < other->tokens_len; i++) {
         token_t *tok = token_deep_copy(other->tokens[i]);
@@ -165,16 +168,20 @@ tkr_extendb_other(tokenizer_t *self, const tokenizer_t *other) {
 
 tokenizer_t *
 tkr_extendf_other(tokenizer_t *self, const tokenizer_t *other) {
-    int32_t needsize = (self->tokens_capa + other->tokens_len) * sizeof(token_t *);
+    int32_t byte = sizeof(token_t *);
+    int32_t needcapa = (self->tokens_capa + other->tokens_len);
+    int32_t needsize = needcapa * byte + byte;
     token_t **tmp = realloc(self->tokens, needsize);
     if (!tmp) {
         return NULL;
     }
     self->tokens = tmp;
+    self->tokens_capa = needcapa;
 
     for (int32_t i = 0; i < self->tokens_len; i++) {
         int32_t j = other->tokens_len + i;
         self->tokens[j] = self->tokens[i];
+        self->tokens[i] = NULL;
     }
     for (int32_t i = 0; i < other->tokens_len; i++) {
         token_t *tok = token_deep_copy(other->tokens[i]);
@@ -182,7 +189,6 @@ tkr_extendf_other(tokenizer_t *self, const tokenizer_t *other) {
     }
     self->tokens_len = self->tokens_len + other->tokens_len;
     self->tokens[self->tokens_len] = NULL;
-
     return self;
 }
 
