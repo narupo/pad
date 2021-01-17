@@ -25,8 +25,10 @@ objdict_del(object_dict_t *self) {
 
     for (int32_t i = 0; i < self->len; ++i) {
         object_t *obj = self->map[i].value;
-        obj_dec_ref(obj);
-        obj_del(obj);
+        if (obj) {
+            obj_dec_ref(obj);
+            obj_del(obj);
+        }
     }
 
     free(self->map);

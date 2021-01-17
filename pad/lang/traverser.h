@@ -9,6 +9,7 @@
 #include <pad/lang/utils.h>
 #include <pad/lang/importer.h>
 #include <pad/lang/arguments.h>
+#include <pad/lang/types.h>
 #include <pad/lang/builtin/functions.h>
 #include <pad/lang/builtin/modules/unicode.h>
 #include <pad/lang/builtin/modules/array.h>

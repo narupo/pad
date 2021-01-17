@@ -10820,7 +10820,6 @@ trv_import_builtin_modules(ast_t *ast) {
 
 void
 trv_traverse(ast_t *ast, context_t *context) {
-    ctx_set_default_global_vars(context);
     ast_set_ref_context(ast, context);
     ast_set_ref_gc(ast, ctx_get_gc(context));
 
@@ -10830,7 +10829,6 @@ trv_traverse(ast_t *ast, context_t *context) {
     }
 
     trv_args_t targs = {0};
-
     targs.ref_node = ast->root;
     targs.depth = 0;
     object_t *result = _trv_traverse(ast, &targs);

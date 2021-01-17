@@ -104,6 +104,7 @@ SRCS := build/lib/error.c \
 	build/lang/chain_nodes.c \
 	build/lang/chain_object.c \
 	build/lang/chain_objects.c \
+	build/lang/builtin/structs.c \
 	build/lang/builtin/functions.c \
 	build/lang/builtin/modules/unicode.c \
 	build/lang/builtin/modules/array.c \
@@ -208,6 +209,8 @@ build/lang/chain_nodes.o: pad/lang/chain_nodes.c pad/lang/chain_nodes.h
 build/lang/chain_object.o: pad/lang/chain_object.c pad/lang/chain_object.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/chain_objects.o: pad/lang/chain_objects.c pad/lang/chain_objects.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/builtin/structs.o: pad/lang/builtin/structs.c 
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/builtin/functions.o: pad/lang/builtin/functions.c pad/lang/builtin/functions.h
 	$(CC) $(CFLAGS) -c $< -o $@

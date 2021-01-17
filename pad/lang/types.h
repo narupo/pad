@@ -94,3 +94,7 @@ typedef struct chain_objects chain_objects_t;
 
 struct node;
 typedef struct node node_t;
+
+struct kit;
+typedef struct kit kit_t;
+

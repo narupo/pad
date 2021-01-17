@@ -129,6 +129,21 @@
         assert(!strcmp(ast_getc_first_error_message(ast), hope)); \
     }
 
+#define trv_ready \
+    config_t *config = config_new(); \
+    tokenizer_option_t *opt = tkropt_new(); \
+    tokenizer_t *tkr = tkr_new(mem_move(opt)); \
+    ast_t *ast = ast_new(config); \
+    gc_t *gc = gc_new(); \
+    context_t *ctx = ctx_new(gc); \
+
+#define trv_cleanup \
+    ctx_del(ctx); \
+    gc_del(gc); \
+    ast_del(ast); \
+    tkr_del(tkr); \
+    config_del(config); \
+
 /********
 * utils *
 ********/
@@ -231,21 +246,6 @@ solve_path(char *dst, int32_t dstsz, const char *path) {
     snprintf(dst, dstsz, "%s", tmp);
     return dst;
 }
-
-#define trv_ready \
-    config_t *config = config_new(); \
-    tokenizer_option_t *opt = tkropt_new(); \
-    tokenizer_t *tkr = tkr_new(mem_move(opt)); \
-    ast_t *ast = ast_new(config); \
-    gc_t *gc = gc_new(); \
-    context_t *ctx = ctx_new(gc); \
-
-#define trv_cleanup \
-    ctx_del(ctx); \
-    gc_del(gc); \
-    ast_del(ast); \
-    tkr_del(tkr); \
-    config_del(config); \
 
 /********
 * tests *
@@ -16422,6 +16422,48 @@ test_trv_builtin_functions(void) {
     config_del(config);
 }
 
+extern const char *builtin_structs_source;
+
+static void
+test_trv_builtin_structs_error(void) {
+    config_t *config = config_new();
+    tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
+    tokenizer_t *s_tkr = tkr_new(mem_move(tkropt_new()));
+    ast_t *ast = ast_new(config);
+    gc_t *gc = gc_new();
+    context_t *ctx = ctx_new(gc);
+
+    tkr_parse(tkr, "{@ err = Error() @}{: type(err) :}");
+    tkr_parse(s_tkr, builtin_structs_source);
+    tkr_extendf_other(tkr, s_tkr);
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "object"));
+    }
+
+    tkr_parse(tkr, "{@ err = Error(\"oioi\") @}{: err.what() :}");
+    tkr_parse(s_tkr, builtin_structs_source);
+    tkr_extendf_other(tkr, s_tkr);
+    {
+        ast_clear(ast);
+        cc_compile(ast, tkr_get_tokens(tkr));
+        ctx_clear(ctx);
+        trv_traverse(ast, ctx);
+        assert(!ast_has_errors(ast));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "Oioi."));
+    }
+
+    ctx_del(ctx);
+    gc_del(gc);
+    ast_del(ast);
+    tkr_del(tkr);
+    config_del(config);
+}
+
 static void
 test_trv_builtin_modules_opts_0(void) {
     trv_ready;
@@ -16629,6 +16671,18 @@ test_trv_builtin_functions_type(void) {
     check_ok("{@ def f(): end @}{: type(f) :}", "func");
     check_ok("{@ import \"tests/lang/modules/hello.cap\" as mod @}{: type(mod) :}", "imported\nmodule");
     check_ok("{@ struct A: end @}{: type(A()) :}", "object");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_builtin_functions_cast(void) {
+    trv_ready;
+
+    // TODO
+    // check_ok("{@ n, err = cast(\"float\", 1) @}{: n :}", "1.0");
+    // check_ok("{@ n, err = cast(\"float\", 1.0) @}{: n :}", "1.0");
+    // check_ok("{@ n, err = cast(\"float\", nil) @}{: err.what() :}", "can't cast nil to float");
 
     trv_cleanup;
 }
@@ -19508,6 +19562,7 @@ test_trv_code_block(void) {
     trv_cleanup;
 }
 
+// ATODO
 static void
 test_trv_code_block_fail(void) {
     trv_ready;
@@ -30151,6 +30206,7 @@ traverser_tests[] = {
     {"dot_6", test_trv_dot_6},
     {"negative_0", test_trv_negative_0},
     {"call", test_trv_call},
+    {"builtin_structs_error", test_trv_builtin_structs_error},
     {"builtin_modules_opts_0", test_trv_builtin_modules_opts_0},
     {"builtin_modules_alias_0", test_trv_builtin_modules_alias_0},
     {"builtin_modules_alias_1", test_trv_builtin_modules_alias_1},
@@ -30161,6 +30217,7 @@ traverser_tests[] = {
     {"builtin_functions_puts_0", test_trv_builtin_functions_puts_0},
     {"builtin_functions_len_0", test_trv_builtin_functions_len_0},
     {"builtin_functions_type", test_trv_builtin_functions_type},
+    {"builtin_functions_cast", test_trv_builtin_functions_cast},
     {"builtin_functions_type_dict", test_trv_builtin_functions_type_dict},
     {"builtin_functions_copy_0", test_trv_builtin_functions_copy_0},
     {"builtin_functions_deepcopy_0", test_trv_builtin_functions_deepcopy_0},

@@ -107,7 +107,7 @@ tkr_new(tokenizer_option_t *move_option) {
 
     self->tokens_capa = INIT_TOKENS_CAPA;
     self->tokens_len = 0;
-    self->tokens = mem_ecalloc(self->tokens_capa+1, sizeof(token_t *)); // +1 for final null
+    self->tokens = mem_ecalloc(self->tokens_capa+1, sizeof(token_t *));  // +1 for final null
 
     self->buf = str_new();
     self->option = mem_move(move_option);
@@ -141,6 +141,47 @@ tkr_deep_copy(const tokenizer_t *other) {
         const token_t *tok = other->tokens[i];
         self->tokens[i] = token_deep_copy(tok);
     }
+
+    return self;
+}
+
+tokenizer_t *
+tkr_extendb_other(tokenizer_t *self, const tokenizer_t *other) {
+    int32_t needsize = (self->tokens_capa + other->tokens_len) * sizeof(token_t *);
+    token_t **tmp = realloc(self->tokens, needsize);
+    if (!tmp) {
+        return NULL;
+    }
+    self->tokens = tmp;
+
+    for (int32_t i = 0; i < other->tokens_len; i++) {
+        token_t *tok = token_deep_copy(other->tokens[i]);
+        self->tokens[self->tokens_len++] = mem_move(tok);
+    }
+    self->tokens[self->tokens_len] = NULL;
+
+    return self;
+}
+
+tokenizer_t *
+tkr_extendf_other(tokenizer_t *self, const tokenizer_t *other) {
+    int32_t needsize = (self->tokens_capa + other->tokens_len) * sizeof(token_t *);
+    token_t **tmp = realloc(self->tokens, needsize);
+    if (!tmp) {
+        return NULL;
+    }
+    self->tokens = tmp;
+
+    for (int32_t i = 0; i < self->tokens_len; i++) {
+        int32_t j = other->tokens_len + i;
+        self->tokens[j] = self->tokens[i];
+    }
+    for (int32_t i = 0; i < other->tokens_len; i++) {
+        token_t *tok = token_deep_copy(other->tokens[i]);
+        self->tokens[i] = tok;
+    }
+    self->tokens_len = self->tokens_len + other->tokens_len;
+    self->tokens[self->tokens_len] = NULL;
 
     return self;
 }

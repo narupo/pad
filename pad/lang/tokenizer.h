@@ -67,6 +67,12 @@ tkr_del(tokenizer_t *self);
 tokenizer_t *
 tkr_new(tokenizer_option_t *move_option);
 
+tokenizer_t *
+tkr_extendb_other(tokenizer_t *self, const tokenizer_t *other);
+
+tokenizer_t *
+tkr_extendf_other(tokenizer_t *self, const tokenizer_t *other);
+
 /**
  * copy constructor
  *

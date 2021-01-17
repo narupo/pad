@@ -9,10 +9,6 @@
  */
 #include <pad/lang/kit.h>
 
-enum {
-    ERR_SIZE = 1024,
-};
-
 struct kit {
     const config_t *ref_config;
     char *program_source;
@@ -21,6 +17,7 @@ struct kit {
     gc_t *gc;
     context_t *ctx;
     errstack_t *errstack;
+    bool gc_is_reference;
 };
 
 void
@@ -33,7 +30,9 @@ kit_del(kit_t *self) {
     tkr_del(self->tkr);
     ast_del(self->ast);
     ctx_del(self->ctx);
-    gc_del(self->gc);
+    if (!self->gc_is_reference) {
+        gc_del(self->gc);
+    }
     free(self);
 }
 
@@ -45,6 +44,21 @@ kit_new(const config_t *config) {
     self->tkr = tkr_new(tkropt_new());
     self->ast = ast_new(config);
     self->gc = gc_new();
+    self->ctx = ctx_new(self->gc);
+    self->errstack = errstack_new();
+
+    return self;
+}
+
+kit_t *
+kit_new_ref_gc(const config_t *config, gc_t *ref_gc) {
+    kit_t *self = mem_ecalloc(1, sizeof(*self));
+
+    self->ref_config = config;
+    self->tkr = tkr_new(tkropt_new());
+    self->ast = ast_new(config);
+    self->gc = ref_gc;
+    self->gc_is_reference = true;
     self->ctx = ctx_new(self->gc);
     self->errstack = errstack_new();
 
@@ -73,6 +87,8 @@ kit_compile_from_path_args(kit_t *self, const char *path, int argc, char *argv[]
     return result;
 }
 
+extern const char *builtin_structs_source;
+
 kit_t *
 kit_compile_from_string_args(
     kit_t *self,
@@ -99,6 +115,13 @@ kit_compile_from_string_args(
 
     tkr_set_program_filename(self->tkr, program_filename);
     tkr_parse(self->tkr, src);
+
+    tokenizer_t *src_tkr = tkr_new(tkropt_new());
+    tkr_parse(src_tkr, builtin_structs_source);
+
+    tkr_extendf_other(self->tkr, src_tkr);
+    tkr_del(src_tkr);
+
     if (tkr_has_error_stack(self->tkr)) {
         const errstack_t *err = tkr_getc_error_stack(self->tkr);
         errstack_extendf_other(self->errstack, err);

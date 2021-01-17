@@ -735,3 +735,9 @@ obj_get_owners_method_owner(object_t *self);
  */
 const char *
 obj_getc_mod_name(const object_t *self);
+
+gc_t *
+obj_get_gc(object_t *self);
+
+gc_t *
+obj_set_gc(object_t *self, gc_t *ref_gc);

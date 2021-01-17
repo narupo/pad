@@ -125,6 +125,24 @@ obj_del(object_t *self) {
     gc_free(self->ref_gc, &self->gc_item);
 }
 
+gc_t *
+obj_get_gc(object_t *self) {
+    if (!self) {
+        return NULL;
+    }
+    return self->ref_gc;
+}
+
+gc_t *
+obj_set_gc(object_t *self, gc_t *ref_gc) {
+    if (!self) {
+        return NULL;
+    }
+    gc_t *savegc = self->ref_gc;
+    self->ref_gc = ref_gc;
+    return savegc;
+}
+
 extern object_array_t*
 objarr_deep_copy(const object_array_t *other);
 
@@ -645,9 +663,9 @@ object_t *
 obj_new_object(
     gc_t *ref_gc,
     ast_t *ref_ast,
-    context_t *move_context
+    context_t *move_struct_context
 ) {
-    if (!ref_gc || !ref_ast || !move_context) {
+    if (!ref_gc || !ref_ast || !move_struct_context) {
         return NULL;
     }
 
@@ -657,7 +675,7 @@ obj_new_object(
     }
 
     self->object.ref_ast = ref_ast;
-    self->object.struct_context = move_context;
+    self->object.struct_context = move_struct_context;
 
     return self;
 }
