@@ -7696,7 +7696,7 @@ trv_calc_term_div(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_IDENTIFIER: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_calc_term_div;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        object_t *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
     case OBJ_TYPE_CHAIN: {

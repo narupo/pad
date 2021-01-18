@@ -27836,132 +27836,252 @@ test_trv_expr_float(void) {
     check_ok("{@ a = [1.0] @}{: a[0] + 1.0 :}", "2.0");
     check_ok("{@ a = [1.0] @}{: a[0] + 1 :}", "2.0");
     check_ok("{@ a = [1.0] @}{: a[0] + true :}", "2.0");
+    check_fail("{@ a = [1.0] @}{: a[0] + nil :}", "can't add with float");
+    check_fail("{@ a = [1.0] @}{: a[0] + [] :}", "can't add with float");
+    check_fail("{@ a = [1.0] @}{: a[0] + {} :}", "can't add with float");
+    check_fail("{@ a = [1.0] def f(): end @}{: a[0] + f :}", "can't add with float");
 
     check_ok("{@ a = [1.0] @}{: 1.0 + a[0] :}", "2.0");
     check_ok("{@ a = [1.0] @}{: 1 + a[0] :}", "2.0");
     check_ok("{@ a = [1.0] @}{: true + a[0] :}", "2.0");
+    check_fail("{@ a = [1.0] @}{: nil + a[0] :}", "can't add");
+    check_fail("{@ a = [1.0] @}{: [] + a[0] :}", "invalid right hand operand (2)");
+    check_fail("{@ a = [1.0] @}{: {} + a[0] :}", "can't add");
+    check_fail("{@ a = [1.0] def f(): end @}{: f + a[0] :}", "can't add");
 
     // - sub operator
     check_ok("{@ a = [1.0] @}{: a[0] - 1.0 :}", "0.0");
     check_ok("{@ a = [1.0] @}{: a[0] - 1 :}", "0.0");
     check_ok("{@ a = [1.0] @}{: a[0] - true :}", "0.0");
+    check_fail("{@ a = [1.0] @}{: a[0] - nil :}", "can't sub with float");
+    check_fail("{@ a = [1.0] @}{: a[0] - [] :}", "can't sub with float");
+    check_fail("{@ a = [1.0] @}{: a[0] - {} :}", "can't sub with float");
+    check_fail("{@ a = [1.0] def f(): end @}{: a[0] - f :}", "can't sub with float");
 
     check_ok("{@ a = [1.0] @}{: 1.0 - a[0] :}", "0.0");
     check_ok("{@ a = [1.0] @}{: 1 - a[0] :}", "0.0");
     check_ok("{@ a = [1.0] @}{: true - a[0] :}", "0.0");
+    check_fail("{@ a = [1.0] @}{: nil - a[0] :}", "can't sub");
+    check_fail("{@ a = [1.0] @}{: [] - a[0] :}", "can't sub");
+    check_fail("{@ a = [1.0] @}{: {} - a[0] :}", "can't sub");
+    check_fail("{@ a = [1.0] def f(): end @}{: f - a[0] :}", "can't sub");
 
     // - mul operator
     check_ok("{@ a = [2.0] @}{: a[0] * 2.0 :}", "4.0");
     check_ok("{@ a = [2.0] @}{: a[0] * 2 :}", "4.0");
     check_ok("{@ a = [2.0] @}{: a[0] * true :}", "2.0");
+    check_fail("{@ a = [1.0] @}{: a[0] * nil :}", "can't mul with float");
+    check_fail("{@ a = [1.0] @}{: a[0] * [] :}", "can't mul with float");
+    check_fail("{@ a = [1.0] @}{: a[0] * {} :}", "can't mul with float");
+    check_fail("{@ a = [1.0] def f(): end @}{: a[0] * f :}", "can't mul with float");
 
     check_ok("{@ a = [2.0] @}{: 2.0 * a[0] :}", "4.0");
     check_ok("{@ a = [2.0] @}{: 2 * a[0] :}", "4.0");
     check_ok("{@ a = [2.0] @}{: true * a[0] :}", "2.0");
+    check_fail("{@ a = [1.0] @}{: nil * a[0] :}", "can't mul");
+    check_fail("{@ a = [1.0] @}{: [] * a[0] :}", "can't mul");
+    check_fail("{@ a = [1.0] @}{: {} * a[0] :}", "can't mul");
+    check_fail("{@ a = [1.0] def f(): end @}{: f * a[0] :}", "can't mul");
 
     // - div operator
     check_ok("{@ a = [4.0] @}{: a[0] / 2.0 :}", "2.0");
     check_ok("{@ a = [4.0] @}{: a[0] / 2 :}", "2.0");
     check_ok("{@ a = [4.0] @}{: a[0] / true :}", "4.0");
+    check_fail("{@ a = [1.0] @}{: a[0] / nil :}", "invalid right hand operand");
+    check_fail("{@ a = [1.0] @}{: a[0] / [] :}", "invalid right hand operand");
+    check_fail("{@ a = [1.0] @}{: a[0] / {} :}", "invalid right hand operand");
+    check_fail("{@ a = [1.0] def f(): end @}{: a[0] / f :}", "invalid right hand operand");
 
     check_ok("{@ a = [2.0] @}{: 4.0 / a[0] :}", "2.0");
     check_ok("{@ a = [2.0] @}{: 4 / a[0] :}", "2.0");
     check_ok("{@ a = [2.0] @}{: true / a[0] :}", "0.5");
+    check_fail("{@ a = [1.0] @}{: nil / a[0] :}", "can't division");
+    check_fail("{@ a = [1.0] @}{: [] / a[0] :}", "can't division");
+    check_fail("{@ a = [1.0] @}{: {} / a[0] :}", "can't division");
+    check_fail("{@ a = [1.0] def f(): end @}{: f / a[0] :}", "can't division");
 
     // - assign operator
     check_ok("{@ a = [1.0] a[0] = 2.0 @}{: a[0] :}", "2.0");
     check_ok("{@ a = [1.0] a[0] = 2 @}{: a[0] :}", "2");
     check_ok("{@ a = [1.0] a[0] = true @}{: a[0] :}", "true");
+    check_ok("{@ a = [1.0] @}{: a[0] = nil :}", "nil");
+    check_ok("{@ a = [1.0] @}{: a[0] = [] :}", "(array)");
+    check_ok("{@ a = [1.0] @}{: a[0] = {} :}", "(dict)");
+    check_ok("{@ a = [1.0] def f(): end @}{: a[0] = f :}", "(function)");
 
     check_ok("{@ a = [1] a[0] = 1.0 @}{: a[0] :}", "1.0");
     check_ok("{@ a = [true] a[0] = 1.0 @}{: a[0] :}", "1.0");
+    check_ok("{@ a = [nil] a[0] = 1.0 @}{: a[0] :}", "1.0");
+    check_ok("{@ a = [[]] a[0] = 1.0 @}{: a[0] :}", "1.0");
+    check_ok("{@ a = [{}] a[0] = 1.0 @}{: a[0] :}", "1.0");
+    check_ok("{@ def f(): end a = [f] a[0] = 1.0 @}{: a[0] :}", "1.0");
 
     // - add assign operator
     check_ok("{@ a = [1.0] a[0] += 1.0 @}{: a[0] :}", "2.0");
     check_ok("{@ a = [1.0] a[0] += 1 @}{: a[0] :}", "2.0");
     check_ok("{@ a = [1.0] a[0] += true @}{: a[0] :}", "2.0");
+    check_fail("{@ a = [1.0] @}{: a[0] += nil :}", "invalid right hand operand (0)");
+    check_fail("{@ a = [1.0] @}{: a[0] += [] :}", "invalid right hand operand (6)");
+    check_fail("{@ a = [1.0] @}{: a[0] += {} :}", "invalid right hand operand (7)");
+    check_fail("{@ a = [1.0] def f(): end @}{: a[0] += f :}", "invalid right hand operand (10)");
 
     check_ok("{@ a = [1] a[0] += 1.0 @}{: a[0] :}", "2.0");
     check_ok("{@ a = [true] a[0] += 1.0 @}{: a[0] :}", "2.0");
+    check_fail("{@ a = [nil] a[0] += 1.0 @}{: a[0] :}", "invalid left hand operand (0)");
+    check_fail("{@ a = [[]] a[0] += 1.0 @}{: a[0] :}", "invalid right hand operand (2)");
+    check_fail("{@ a = [{}] a[0] += 1.0 @}{: a[0] :}", "invalid left hand operand (7)");
+    check_fail("{@ def f(): end a = [f] a[0] += 1.0 @}{: a[0] :}", "invalid left hand operand (10)");
 
     // - sub assign operator
     check_ok("{@ a = [1.0] a[0] -= 1.0 @}{: a[0] :}", "0.0");
     check_ok("{@ a = [1.0] a[0] -= 1 @}{: a[0] :}", "0.0");
     check_ok("{@ a = [1.0] a[0] -= true @}{: a[0] :}", "0.0");
+    check_fail("{@ a = [1.0] @}{: a[0] -= nil :}", "invalid right hand operand (0)");
+    check_fail("{@ a = [1.0] @}{: a[0] -= [] :}", "invalid right hand operand (6)");
+    check_fail("{@ a = [1.0] @}{: a[0] -= {} :}", "invalid right hand operand (7)");
+    check_fail("{@ a = [1.0] def f(): end @}{: a[0] -= f :}", "invalid right hand operand (10)");
 
     check_ok("{@ a = [1] a[0] -= 1.0 @}{: a[0] :}", "0.0");
     check_ok("{@ a = [true] a[0] -= 1.0 @}{: a[0] :}", "0.0");
+    check_fail("{@ a = [nil] a[0] -= 1.0 @}{: a[0] :}", "invalid left hand operand (0)");
+    check_fail("{@ a = [[]] a[0] -= 1.0 @}{: a[0] :}", "invalid left hand operand (6)");
+    check_fail("{@ a = [{}] a[0] -= 1.0 @}{: a[0] :}", "invalid left hand operand (7)");
+    check_fail("{@ def f(): end a = [f] a[0] -= 1.0 @}{: a[0] :}", "invalid left hand operand (10)");
 
     // - mul assign operator
     check_ok("{@ a = [2.0] a[0] *= 2.0 @}{: a[0] :}", "4.0");
     check_ok("{@ a = [2.0] a[0] *= 2 @}{: a[0] :}", "4.0");
     check_ok("{@ a = [2.0] a[0] *= true @}{: a[0] :}", "2.0");
+    check_fail("{@ a = [2.0] @}{: a[0] *= nil :}", "invalid right hand operand (0)");
+    check_fail("{@ a = [2.0] @}{: a[0] *= [] :}", "invalid right hand operand (6)");
+    check_fail("{@ a = [2.0] @}{: a[0] *= {} :}", "invalid right hand operand (7)");
+    check_fail("{@ a = [2.0] def f(): end @}{: a[0] *= f :}", "invalid right hand operand (10)");
 
     check_ok("{@ a = [2] a[0] *= 2.0 @}{: a[0] :}", "4.0");
     check_ok("{@ a = [true] a[0] *= 2.0 @}{: a[0] :}", "2.0");
+    check_fail("{@ a = [nil] a[0] *= 1.0 @}", "invalid left hand operand (0)");
+    check_fail("{@ a = [[]] a[0] *= 1.0 @}", "invalid left hand operand (6)");
+    check_fail("{@ a = [{}] a[0] *= 1.0 @}", "invalid left hand operand (7)");
+    check_fail("{@ def f(): end a = [f] a[0] *= 1.0 @}", "invalid left hand operand (10)");
 
     // - div assign operator
     check_ok("{@ a = [4.0] a[0] /= 2.0 @}{: a[0] :}", "2.0");
     check_ok("{@ a = [4.0] a[0] /= 2 @}{: a[0] :}", "2.0");
     check_ok("{@ a = [4.0] a[0] /= true @}{: a[0] :}", "4.0");
+    check_fail("{@ a = [4.0] @}{: a[0] /= nil :}", "invalid right hand operand (0)");
+    check_fail("{@ a = [4.0] @}{: a[0] /= [] :}", "invalid right hand operand (6)");
+    check_fail("{@ a = [4.0] @}{: a[0] /= {} :}", "invalid right hand operand (7)");
+    check_fail("{@ a = [4.0] def f(): end @}{: a[0] /= f :}", "invalid right hand operand (10)");
 
     check_ok("{@ a = [4] a[0] /= 2.0 @}{: a[0] :}", "2.0");
     check_ok("{@ a = [true] a[0] /= 2.0 @}{: a[0] :}", "0.5");
+    check_fail("{@ a = [nil] a[0] /= 1.0 @}", "invalid left hand operand (0)");
+    check_fail("{@ a = [[]] a[0] /= 1.0 @}", "invalid left hand operand (6)");
+    check_fail("{@ a = [{}] a[0] /= 1.0 @}", "invalid left hand operand (7)");
+    check_fail("{@ def f(): end a = [f] a[0] /= 1.0 @}", "invalid left hand operand (10)");
 
     // - comparison operator
     // -- eq operator
     check_ok("{@ a = [1.0] @}{: a[0] == 1.0 :}", "true");
     check_ok("{@ a = [1] @}{: a[0] == 1.0 :}", "true");
     check_ok("{@ a = [true] @}{: a[0] == 1.0 :}", "true");
+    check_ok("{@ a = [4.0] @}{: a[0] == nil :}", "false");
+    check_ok("{@ a = [4.0] @}{: a[0] == [] :}", "false");
+    check_ok("{@ a = [4.0] @}{: a[0] == {} :}", "false");
+    check_ok("{@ a = [4.0] def f(): end @}{: a[0] == f :}", "false");
 
     check_ok("{@ a = [1.0] @}{: 1.0 == a[0] :}", "true");
     check_ok("{@ a = [1] @}{: 1.0 == a[0] :}", "true");
     check_ok("{@ a = [true] @}{: 1.0 == a[0] :}", "true");
+    check_ok("{@ a = [nil] @}{: a[0] == 1.0 :}", "false");
+    check_ok("{@ a = [[]] @}{: a[0] == 1.0 :}", "false");
+    check_ok("{@ a = [{}] @}{: a[0] == 1.0 :}", "false");
+    check_ok("{@ def f(): end a = [f] @}{: a[0] == 1.0 :}", "false");
 
     // -- neq operator
     check_ok("{@ a = [1.0] @}{: a[0] != 1.0 :}", "false");
     check_ok("{@ a = [1] @}{: a[0] != 1.0 :}", "false");
     check_ok("{@ a = [true] @}{: a[0] != 1.0 :}", "false");
+    check_ok("{@ a = [nil] @}{: a[0] != 1.0 :}", "true");
+    check_ok("{@ a = [[]] @}{: a[0] != 1.0 :}", "true");
+    check_ok("{@ a = [{}] @}{: a[0] != 1.0 :}", "true");
+    check_ok("{@ def f(): end a = [f] @}{: a[0] != 1.0 :}", "true");
 
     check_ok("{@ a = [1.0] @}{: 1.0 != a[0] :}", "false");
     check_ok("{@ a = [1] @}{: 1.0 != a[0] :}", "false");
     check_ok("{@ a = [true] @}{: 1.0 != a[0] :}", "false");
+    check_ok("{@ a = [nil] @}{: 1.0 != a[0] :}", "true");
+    check_ok("{@ a = [[]] @}{: 1.0 != a[0] :}", "true");
+    check_ok("{@ a = [{}] @}{: 1.0 != a[0] :}", "true");
+    check_ok("{@ def f(): end a = [f] @}{: 1.0 != a[0] :}", "true");
 
     // -- gt operator
     check_ok("{@ a = [1.0] @}{: a[0] > 0.5 :}", "true");
     check_ok("{@ a = [1] @}{: a[0] > 0.5 :}", "true");
     check_ok("{@ a = [true] @}{: a[0] > 0.5 :}", "true");
+    check_fail("{@ a = [nil] @}{: a[0] > 0.5 :}", "can't compare with gt");
+    check_fail("{@ a = [[]] @}{: a[0] > 0.5 :}", "can't compare with gt");
+    check_fail("{@ a = [{}] @}{: a[0] > 0.5 :}", "can't compare with gt");
+    check_fail("{@ def f(): end a = [f] @}{: a[0] > 0.5 :}", "can't compare with gt");
 
     check_ok("{@ a = [1.0] @}{: 0.5 > a[0] :}", "false");
     check_ok("{@ a = [1] @}{: 0.5 > a[0] :}", "false");
     check_ok("{@ a = [true] @}{: 0.5 > a[0] :}", "false");
+    check_fail("{@ a = [nil] @}{: 0.5 > a[0] :}", "can't compare gt with float");
+    check_fail("{@ a = [[]] @}{: 0.5 > a[0] :}", "can't compare gt with float");
+    check_fail("{@ a = [{}] @}{: 0.5 > a[0] :}", "can't compare gt with float");
+    check_fail("{@ def f(): end a = [f] @}{: 0.5 > a[0] :}", "can't compare gt with float");
 
     // -- gte operator
     check_ok("{@ a = [1.0] @}{: a[0] >= 0.5 :}", "true");
     check_ok("{@ a = [1] @}{: a[0] >= 0.5 :}", "true");
     check_ok("{@ a = [true] @}{: a[0] >= 0.5 :}", "true");
+    check_fail("{@ a = [nil] @}{: a[0] >= 0.5 :}", "can't compare with gte");
+    check_fail("{@ a = [[]] @}{: a[0] >= 0.5 :}", "can't compare with gte");
+    check_fail("{@ a = [{}] @}{: a[0] >= 0.5 :}", "can't compare with gte");
+    check_fail("{@ def f(): end a = [f] @}{: a[0] >= 0.5 :}", "can't compare with gte");
 
     check_ok("{@ a = [1.0] @}{: 0.5 >= a[0] :}", "false");
     check_ok("{@ a = [1] @}{: 0.5 >= a[0] :}", "false");
     check_ok("{@ a = [true] @}{: 0.5 >= a[0] :}", "false");
+    check_fail("{@ a = [nil] @}{: 0.5 >= a[0] :}", "can't compare gte with float");
+    check_fail("{@ a = [[]] @}{: 0.5 >= a[0] :}", "can't compare gte with float");
+    check_fail("{@ a = [{}] @}{: 0.5 >= a[0] :}", "can't compare gte with float");
+    check_fail("{@ def f(): end a = [f] @}{: 0.5 >= a[0] :}", "can't compare gte with float");
 
     // -- lt operator
     check_ok("{@ a = [1.0] @}{: a[0] < 1.5 :}", "true");
     check_ok("{@ a = [1] @}{: a[0] < 1.5 :}", "true");
     check_ok("{@ a = [true] @}{: a[0] < 1.5 :}", "true");
+    check_fail("{@ a = [nil] @}{: a[0] < 1.5 :}", "can't compare with lt (0)");
+    check_fail("{@ a = [[]] @}{: a[0] < 1.5 :}", "can't compare with lt (6)");
+    check_fail("{@ a = [{}] @}{: a[0] < 1.5 :}", "can't compare with lt (7)");
+    check_fail("{@ def f(): end a = [f] @}{: a[0] < 1.5 :}", "can't compare with lt (10)");
 
     check_ok("{@ a = [1.0] @}{: 1.5 < a[0] :}", "false");
     check_ok("{@ a = [1] @}{: 1.5 < a[0] :}", "false");
     check_ok("{@ a = [true] @}{: 1.5 < a[0] :}", "false");
+    check_fail("{@ a = [nil] @}{: 1.5 < a[0] :}", "can't compare lt with float");
+    check_fail("{@ a = [[]] @}{: 1.5 < a[0] :}", "can't compare lt with float");
+    check_fail("{@ a = [{}] @}{: 1.5 < a[0] :}", "can't compare lt with float");
+    check_fail("{@ def f(): end a = [f] @}{: 1.5 < a[0] :}", "can't compare lt with float");
 
     // -- lte operator
     check_ok("{@ a = [1.0] @}{: a[0] <= 1.5 :}", "true");
     check_ok("{@ a = [1] @}{: a[0] <= 1.5 :}", "true");
     check_ok("{@ a = [true] @}{: a[0] <= 1.5 :}", "true");
+    check_fail("{@ a = [nil] @}{: a[0] <= 1.5 :}", "can't compare with lte");
+    check_fail("{@ a = [[]] @}{: a[0] <= 1.5 :}", "can't compare with lte");
+    check_fail("{@ a = [{}] @}{: a[0] <= 1.5 :}", "can't compare with lte");
+    check_fail("{@ def f(): end a = [f] @}{: a[0] <= 1.5 :}", "can't compare with lte");
 
     check_ok("{@ a = [1.0] @}{: 1.5 <= a[0] :}", "false");
     check_ok("{@ a = [1] @}{: 1.5 <= a[0] :}", "false");
     check_ok("{@ a = [true] @}{: 1.5 <= a[0] :}", "false");
+    check_fail("{@ a = [nil] @}{: 1.5 <= a[0] :}", "can't compare lte with float");
+    check_fail("{@ a = [[]] @}{: 1.5 <= a[0] :}", "can't compare lte with float");
+    check_fail("{@ a = [{}] @}{: 1.5 <= a[0] :}", "can't compare lte with float");
+    check_fail("{@ def f(): end a = [f] @}{: 1.5 <= a[0] :}", "can't compare lte with float");
 
     trv_cleanup;
 }
