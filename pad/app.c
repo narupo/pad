@@ -357,7 +357,6 @@ main(int argc, char *argv[]) {
 
     app_del(app);
 
-    puts("success");
     fflush(stdout);
     return result;
 }
