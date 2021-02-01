@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include <pad/core/error_stack.h>
 #include <pad/lib/error.h>

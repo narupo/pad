@@ -1,0 +1,32 @@
+{@
+
+struct Animal:
+    name = nil
+    age = nil
+    weight = nil
+
+    met showName(self):
+        puts(self.name)
+    end
+end
+
+struct Cat:
+    extract(Animal)
+end
+
+struct Dog:
+    extract(Animal)
+end
+
+animals = []
+animals.push(1)
+animals.pop()
+animals.pop()
+animals.pop()
+animals.pop()
+
+for i = 0; i < 3; i += 1:
+    puts(len(animals))
+end
+
+@}

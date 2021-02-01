@@ -178,17 +178,20 @@ tkr_extendf_other(tokenizer_t *self, const tokenizer_t *other) {
     self->tokens = tmp;
     self->tokens_capa = needcapa;
 
-    for (int32_t i = 0; i < self->tokens_len; i++) {
-        int32_t j = other->tokens_len + i;
-        self->tokens[j] = self->tokens[i];
-        self->tokens[i] = NULL;
+    for (int32_t i = needcapa - 1; i >= other->tokens_len; i--) {
+        int32_t j = i - other->tokens_len;
+        self->tokens[i] = self->tokens[j];
+        self->tokens[j] = NULL;
     }
     for (int32_t i = 0; i < other->tokens_len; i++) {
-        token_t *tok = token_deep_copy(other->tokens[i]);
+        token_t *otok = other->tokens[i];
+        assert(otok);
+        token_t *tok = token_deep_copy(otok);
         self->tokens[i] = tok;
     }
     self->tokens_len = self->tokens_len + other->tokens_len;
     self->tokens[self->tokens_len] = NULL;
+
     return self;
 }
 

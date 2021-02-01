@@ -119,7 +119,10 @@ kit_compile_from_string_args(
     tokenizer_t *src_tkr = tkr_new(tkropt_new());
     tkr_parse(src_tkr, builtin_structs_source);
 
-    tkr_extendf_other(self->tkr, src_tkr);
+    if (!tkr_extendf_other(self->tkr, src_tkr)) {
+        pusherr("failed to extend front other tokenizer");
+        return NULL;
+    }
     tkr_del(src_tkr);
 
     if (tkr_has_error_stack(self->tkr)) {

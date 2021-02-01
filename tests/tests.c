@@ -5074,6 +5074,44 @@ test_tkr_parse(void) {
 }
 
 static void
+test_tkr_long_code(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    assert(tkr);
+
+    const char *src = "{@\n"
+"    puts(1)\n"
+"    puts(2)\n"
+"    puts(3)\n"
+"    puts(4)\n"
+"    puts(5)\n"
+"    puts(6)\n"
+"    puts(7)\n"
+"    puts(8)\n"
+"    puts(9)\n"
+"    puts(10)\n"
+"    puts(11)\n"
+"    puts(12)\n"
+"    puts(13)\n"
+"    puts(14)\n"
+"    puts(15)\n"
+"    puts(16)\n"
+"    puts(17)\n"
+"    puts(18)\n"
+"    puts(19)\n"
+"    puts(20)\n"
+"    puts(21)\n"
+"    puts(22)\n"
+"    puts(23)\n"
+"    puts(24)\n"
+"@}\n";
+    assert(tkr_parse(tkr, src));
+    assert(tkr_tokens_len(tkr) == 123);
+
+    tkr_del(tkr);
+}
+
+static void
 test_tkr_deep_copy(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(opt);
@@ -5269,8 +5307,39 @@ test_tkr_parse_float_errors(void) {
         assert(token->type == TOKEN_TYPE_RBRACEAT);
     }
 
-
     tkr_del(tkr);
+}
+
+static void
+test_tkr_extendf_other(void) {
+    tokenizer_t *a = tkr_new(tkropt_new());
+    tokenizer_t *b = tkr_new(tkropt_new());
+    const token_t *token;
+
+    tkr_parse(a, "{@ 1 @}");
+    tkr_parse(b, "{@ 2 @}");
+
+    tkr_extendf_other(a, b);
+    {
+        assert(tkr_tokens_len(a) == 6);
+        token = tkr_tokens_getc(a, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(a, 1);
+        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(strcmp(token->text, "2") == 0);
+        token = tkr_tokens_getc(a, 2);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        token = tkr_tokens_getc(a, 3);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(a, 4);
+        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(strcmp(token->text, "1") == 0);
+        token = tkr_tokens_getc(a, 5);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_del(a);
+    tkr_del(b);
 }
 
 static const struct testcase
@@ -5285,6 +5354,8 @@ tokenizer_tests[] = {
     {"tkr_parse_float_minus", test_tkr_parse_float_minus},
     {"tkr_parse_float_errors", test_tkr_parse_float_errors},
     {"tkr_deep_copy", test_tkr_deep_copy},
+    {"tkr_long_code", test_tkr_long_code},
+    {"tkr_extendf_other", test_tkr_extendf_other},
     {0},
 };
 
@@ -5297,6 +5368,51 @@ test_ast_show_error(const ast_t *ast) {
     if (ast_has_errors(ast)) {
         printf("error detail[%s]\n", ast_getc_first_error_message(ast));
     }
+}
+
+static void
+test_cc_long_code(void) {
+    const char *src = "{@\n"
+"    puts(1)\n"
+"    puts(2)\n"
+"    puts(3)\n"
+"    puts(4)\n"
+"    puts(5)\n"
+"    puts(6)\n"
+"    puts(7)\n"
+"    puts(8)\n"
+"    puts(9)\n"
+"    puts(10)\n"
+"    puts(11)\n"
+"    puts(12)\n"
+"    puts(13)\n"
+"    puts(14)\n"
+"    puts(15)\n"
+"    puts(16)\n"
+"    puts(17)\n"
+"    puts(18)\n"
+"    puts(19)\n"
+"    puts(20)\n"
+"    puts(21)\n"
+"    puts(22)\n"
+"    puts(23)\n"
+"    puts(24)\n"
+"@}\n";
+    config_t *config = config_new();
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(mem_move(opt));
+    ast_t *ast = ast_new(config);
+    const node_t *root;
+
+    tkr_parse(tkr, src);
+    ast_clear(ast);
+    cc_compile(ast, tkr_get_tokens(tkr));
+    root = ast_getc_root(ast);
+    assert(root);
+
+    tkr_del(tkr);
+    ast_del(ast);
+    config_del(config);
 }
 
 static void
@@ -12565,6 +12681,7 @@ test_cc_func_def(void) {
 static const struct testcase
 compiler_tests[] = {
     {"cc_compile", test_cc_compile},
+    {"cc_long_code", test_cc_long_code},
     {"cc_basic_0", test_cc_basic_0},
     {"cc_basic_1", test_cc_basic_1},
     {"cc_code_block", test_cc_code_block},
@@ -12593,6 +12710,57 @@ compiler_tests[] = {
 /************
 * traverser *
 ************/
+
+static void
+test_trv_long_code(void) {
+    trv_ready;
+
+    const char *src = "{@\n"
+"    arr = []\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    arr.push(1)\n"
+"    puts(\"done\")\n"
+"@}\n";
+
+    check_ok(src, "done\n");
+
+    trv_cleanup;
+}
 
 static void
 test_trv_comparison(void) {
@@ -30386,6 +30554,7 @@ traverser_tests[] = {
     {"dict_fail_0", test_trv_dict_fail_0},
     {"identifier", test_trv_identifier},
     {"traverse", test_trv_traverse},
+    {"long_code", test_trv_long_code},
     {"comparison", test_trv_comparison},
     {"comparison_0", test_trv_comparison_0},
     {"comparison_1", test_trv_comparison_1},
