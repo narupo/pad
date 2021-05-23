@@ -31114,7 +31114,7 @@ test_lang_stdlib_list_dump(void) {
 
     check_ok("{@\n"
         "from \"lib/std/list.pad\" import List\n"
-        "list = List.new()\n"
+        "list = List()\n"
         "list.push(1)\n"
         "list.push(2)\n"
         "list.push(3)\n"
@@ -31132,7 +31132,7 @@ test_lang_stdlib_list_push(void) {
 static void
 test_lang_stdlib_list_pop(void) {
     trv_ready;
-
+/*
     check_ok("{@\n"
         "from \"lib/std/list.pad\" import List\n"
         "list = List.new()\n"
@@ -31140,7 +31140,7 @@ test_lang_stdlib_list_pop(void) {
         "list.push(2)\n"
         "val = list.pop()\n"
         "@}{: val :}", "2");
-
+*/
     trv_cleanup;
 }
 

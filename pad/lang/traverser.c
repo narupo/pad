@@ -889,23 +889,22 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
     node_t *node = targs->ref_node;
     assert(node);
     node_for_stmt_t *for_stmt = node->real;
-
     depth_t depth = targs->depth;
 
-    if (for_stmt->init_formula &&
-        for_stmt->comp_formula &&
-        for_stmt->update_formula) {
-        // for 1; 1; 1: end
-        check("call _trv_traverse with init_formula");
+    check("call _trv_traverse with init_formula");
+    object_t *result = NULL;
+    if (for_stmt->init_formula) {
         targs->ref_node = for_stmt->init_formula;
         targs->depth = depth + 1;
-        object_t *result = _trv_traverse(ast, targs);
+        result = _trv_traverse(ast, targs);
         if (ast_has_errors(ast)) {
             return_trav(NULL);
         }
+    }
 
-        for (;;) {
-            check("call _trv_traverse with update_formula");
+    for (;;) {
+        check("call _trv_traverse with update_formula");
+        if (for_stmt->comp_formula) {
             targs->ref_node = for_stmt->comp_formula;
             targs->depth = depth + 1;
             result = _trv_traverse(ast, targs);
@@ -915,39 +914,39 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
             if (!_parse_bool(result)) {
                 break;
             }
-            result = NULL;
+        }
 
-            ctx_clear_jump_flags(ast->ref_context);
+        ctx_clear_jump_flags(ast->ref_context);
+        check("call _trv_traverse with contents");
+        result = NULL;
 
-            check("call _trv_traverse with contents");
-            object_t *result = NULL;
+        for (int32_t i = 0; i < nodearr_len(for_stmt->contents); ++i) {
+            node_t *node = nodearr_get(for_stmt->contents, i);
+            targs->ref_node = node;
+            targs->depth = depth + 1;
+            result = _trv_traverse(ast, targs);
+            if (ast_has_errors(ast)) {
+                goto done;
+            }
 
-            for (int32_t i = 0; i < nodearr_len(for_stmt->contents); ++i) {
-                node_t *node = nodearr_get(for_stmt->contents, i);
-                targs->ref_node = node;
-                targs->depth = depth + 1;
-                result = _trv_traverse(ast, targs);
-                if (ast_has_errors(ast)) {
-                    goto done;
-                }
-
-                if (ctx_get_do_return(ast->ref_context)) {
-                    return_trav(result);
-                } else if (ctx_get_do_break(ast->ref_context)) {
-                    obj_del(result);
-                    break;
-                } else if (ctx_get_do_continue(ast->ref_context)) {
-                    obj_del(result);
-                    break;
-                }
-
+            if (ctx_get_do_return(ast->ref_context)) {
+                return_trav(result);
+            } else if (ctx_get_do_break(ast->ref_context)) {
                 obj_del(result);
-            }  // for
-
-            if (ctx_get_do_break(ast->ref_context)) {
+                break;
+            } else if (ctx_get_do_continue(ast->ref_context)) {
+                obj_del(result);
                 break;
             }
 
+            obj_del(result);
+        }  // for
+
+        if (ctx_get_do_break(ast->ref_context)) {
+            break;
+        }
+
+        if (for_stmt->update_formula) {
             check("call _trv_traverse with update_formula");
             targs->ref_node = for_stmt->update_formula;
             targs->depth = depth + 1;
@@ -955,84 +954,10 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
             if (ast_has_errors(ast)) {
                 goto done;
             }
-            result = NULL;
-        }  // for
-    } else if (for_stmt->comp_formula) {
-        // for 1: end
-        for (;;) {
-            check("call _trv_traverse");
-            targs->ref_node = for_stmt->comp_formula;
-            targs->depth = depth + 1;
-            object_t *result = _trv_traverse(ast, targs);
-            if (ast_has_errors(ast)) {
-                goto done;
-            }
-            if (!_parse_bool(result)) {
-                break;
-            }
-
-            ctx_clear_jump_flags(ast->ref_context);
-
-            check("call _trv_traverse with contents");
-            for (int32_t i = 0; i < nodearr_len(for_stmt->contents); ++i) {
-                node_t *node = nodearr_get(for_stmt->contents, i);
-                targs->ref_node = node;
-                targs->depth = depth + 1;
-                object_t *result = _trv_traverse(ast, targs);
-                if (ast_has_errors(ast)) {
-                    goto done;
-                }
-
-                if (ctx_get_do_return(ast->ref_context)) {
-                    return_trav(result);
-                } else if (ctx_get_do_break(ast->ref_context)) {
-                    obj_del(result);
-                    break;
-                } else if (ctx_get_do_continue(ast->ref_context)) {
-                    obj_del(result);
-                    break;
-                }
-
-                obj_del(result);
-            } // allow null contents
-
-            if (ctx_get_do_break(ast->ref_context)) {
-                break;
-            }
         }
-    } else {
-        // for: end
-        for (;;) {
-            check("call _trv_traverse");
 
-            check("call _trv_traverse with contents");
-            for (int32_t i = 0; i < nodearr_len(for_stmt->contents); ++i) {
-                node_t *node = nodearr_get(for_stmt->contents, i);
-                targs->ref_node = node;
-                targs->depth = depth + 1;
-                object_t *result = _trv_traverse(ast, targs);
-                if (ast_has_errors(ast)) {
-                    goto done;
-                }
-
-                if (ctx_get_do_return(ast->ref_context)) {
-                    return_trav(result);
-                } else if (ctx_get_do_break(ast->ref_context)) {
-                    obj_del(result);
-                    break;
-                } else if (ctx_get_do_continue(ast->ref_context)) {
-                    obj_del(result);
-                    break;
-                }
-
-                obj_del(result);
-            } // allow null contents
-
-            if (ctx_get_do_break(ast->ref_context)) {
-                break;
-            }
-        }  // for
-    }  // if
+        result = NULL;
+    }  // for
 
 done:
     ctx_clear_jump_flags(ast->ref_context);

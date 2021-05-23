@@ -20,6 +20,24 @@
     end
     puts("i", i)
 
+    for j = 0; j < 4; j += 1:
+        if true:
+            if j == 2:
+                puts("found two")
+            end
+        end
+    end
+
+    struct Node:
+        next = nil
+    end
+    
+    head = Node(Node(Node()))
+
+    for cur = head; ; cur = cur.next:
+        puts(cur)  // TODO: Error!
+    end
+
     puts("Element list")
 @}{@
     for i = 0; i < 4; i+= 1:
