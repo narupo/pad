@@ -1,0 +1,17 @@
+{@
+    from "lib/std/list.pad" import (
+        Node, 
+        List,
+    )
+
+    list = List()
+    list.push(1)
+    list.push(2)
+    list.push(3)
+    list.dump()
+    puts("-" * 40)
+
+    list.insert(0, 4)
+    list.insert(4, 5)
+    list.dump()
+@}

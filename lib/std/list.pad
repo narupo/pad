@@ -1,14 +1,13 @@
 {@
-/*
-    Created at 2020/10/09
-*/
+/* Created at 2020/10/09
+ * A simple list
+ */
 
 /**
  * Node of list
  */
 struct Node:
     value = nil  // value of node
-    prev = nil  // previous node
     next = nil  // next node
 end
 
@@ -17,57 +16,67 @@ end
  */
 struct List:
     head = nil
-    tail = nil
-
-    def new():
-        return List()
-    end
 
     met dump(self):
+        if self.head == nil:
+            return 
+        end
+
         for cur = self.head; cur; cur = cur.next:
-            puts(cur.value)
+            puts(cur.value)            
         end
     end
 
-    met push(self, value):
-        if not self.head:
-            self.head = Node()
-            self.head.value = value
-            self.tail = self.head
-            return
+    met push(self, obj):
+        if self.head == nil:
+            self.head = Node(obj)
+            return nil
         end
 
         tail = nil
         for cur = self.head; cur; cur = cur.next:
-            tail = cur
+            if cur.next == nil:
+                tail = cur
+                break
+            end
         end
 
-        if tail:
-            node = Node()
-            node.value = value
-            node.prev = tail
-            tail.next = node
-            self.tail = node
+        if tail == nil:  // impossible
+            return Error("not found tail", Error.VALUE)
         end
+
+        tail.next = Node(obj)
+        return nil
     end
 
-    met pop(self):
-        if not self.tail:
-            return nil
+    met insert(self, index, obj):
+        i = 0
+        prev = nil
+        cur = self.head
+        for:
+            if index == i:
+                // insert node
+                node = Node(obj)
+                if prev == nil:
+                    head = self.head
+                    node.next = head
+                    self.head = node
+                elif cur == nil:
+                    prev.next = node
+                else:
+                    next = prev.next
+                    node.next = next
+                    prev.next = node
+                end
+                break
+            end
+            if cur == nil:
+                break
+            end
+            prev = cur
+            cur = cur.next
+            i += 1
         end
-
-        tail = self.tail
-
-        if tail.prev:
-            tail.prev.next = nil
-            self.tail = tail.prev
-        else:
-            self.head = nil
-            self.tail = nil
-        end
-
-        tail.prev = nil
-        return tail.value
     end
 end
 @}
