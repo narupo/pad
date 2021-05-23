@@ -4,7 +4,7 @@
         age = 20
 
         met showName(self):
-            puts(self.name)
+            return puts(self.name)
         end
     end
 
@@ -25,6 +25,7 @@
 
     for i = 0; i < len(animals); i += 1:
         anim = animals[i]
-        anim.showName()
+        result = anim.showName()
+        puts("result", result)
     end
 @}

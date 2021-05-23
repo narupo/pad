@@ -1,6 +1,4 @@
 {@
-    from "lib/std/error.pad" import Error
-
     def positive(n):
         if type(n) != "int":
             return nil, Error("argument is not int", Error.TYPE)
@@ -15,7 +13,11 @@
 
     n, err = positive(nil)
     if err != nil:
-        puts(err.what())
+        if err.no == Error.TYPE:
+            puts("Failed.", err.what())
+        elif err.no == Error.VALUE:
+            puts("invalid value")
+        end
     end
 
     n, err = positive(1)
