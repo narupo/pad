@@ -623,6 +623,7 @@ exec_func_suites(errstack_t *err, object_t *func_obj) {
 
     for (int32_t i = 0; i < nodearr_len(func->ref_suites); ++i) {
         node_t *ref_suite = nodearr_get(func->ref_suites, i);
+        // ref_suite is content
         result = _trv_traverse(func->ref_ast, &(trv_args_t) {
             .ref_node = ref_suite,
             .depth = 0,

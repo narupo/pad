@@ -1,8 +1,8 @@
 {@
-from "tests/stmt/forstmt.pad" import main as forStmtMain
+from "tests/stmt/for-stmt.pad" import main as forStmtMain
 
 def allTest():
-    forStmtMain()
+    forStmtMain(nil)
 end
 
 def main():

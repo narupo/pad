@@ -5342,6 +5342,49 @@ test_tkr_extendf_other(void) {
     tkr_del(b);
 }
 
+static void
+test_tkr_parse_struct_0(void) {
+    tokenizer_option_t *opt = tkropt_new();
+    tokenizer_t *tkr = tkr_new(opt);
+    const token_t *token;
+
+    assert(tkr_parse(tkr, "{@123.@}") == NULL);
+    assert(strcmp(tkr_getc_first_error_message(tkr), "invalid float") == 0);
+
+    tkr_parse(tkr, "{@ def func(): struct S: end end @}");
+    {
+        assert(tkr_tokens_len(tkr) == 12);
+        token = tkr_tokens_getc(tkr, 0);
+        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        token = tkr_tokens_getc(tkr, 1);
+        assert(token->type == TOKEN_TYPE_DEF);
+        token = tkr_tokens_getc(tkr, 2);
+        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(strcmp(token->text, "func") == 0);
+        token = tkr_tokens_getc(tkr, 3);
+        assert(token->type == TOKEN_TYPE_LPAREN);
+        token = tkr_tokens_getc(tkr, 4);
+        assert(token->type == TOKEN_TYPE_RPAREN);
+        token = tkr_tokens_getc(tkr, 5);
+        assert(token->type == TOKEN_TYPE_COLON);
+        token = tkr_tokens_getc(tkr, 6);
+        assert(token->type == TOKEN_TYPE_STRUCT);
+        token = tkr_tokens_getc(tkr, 7);
+        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(strcmp(token->text, "S") == 0);
+        token = tkr_tokens_getc(tkr, 8);
+        assert(token->type == TOKEN_TYPE_COLON);
+        token = tkr_tokens_getc(tkr, 9);
+        assert(token->type == TOKEN_TYPE_STMT_END);
+        token = tkr_tokens_getc(tkr, 10);
+        assert(token->type == TOKEN_TYPE_STMT_END);
+        token = tkr_tokens_getc(tkr, 11);
+        assert(token->type == TOKEN_TYPE_RBRACEAT);
+    }
+
+    tkr_del(tkr);
+}
+
 static const struct testcase
 tokenizer_tests[] = {
     {"tkr_new", test_tkr_new},
@@ -5353,6 +5396,7 @@ tokenizer_tests[] = {
     {"tkr_parse_float_plus", test_tkr_parse_float_plus},
     {"tkr_parse_float_minus", test_tkr_parse_float_minus},
     {"tkr_parse_float_errors", test_tkr_parse_float_errors},
+    {"tkr_parse_struct_0", test_tkr_parse_struct_0},
     {"tkr_deep_copy", test_tkr_deep_copy},
     {"tkr_long_code", test_tkr_long_code},
     {"tkr_extendf_other", test_tkr_extendf_other},
@@ -24797,6 +24841,59 @@ test_trv_struct_44(void) {
 }
 
 static void
+test_trv_struct_45(void) {
+    trv_ready;
+
+    check_ok(
+"{@\n"
+"def func():\n"
+"   def f():\n"
+"   end\n"
+"   puts(f)\n"
+"end\n"
+"func()\n"
+"@}", "(function)\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_46(void) {
+    trv_ready;
+
+    check_ok(
+"{@\n"
+"def func():\n"
+"   struct S:\n"
+"   end\n"
+"   puts(S)\n"
+"end\n"
+"func()\n"
+"@}", "(struct)\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_47(void) {
+    trv_ready;
+
+    check_ok_trace(
+"{@\n"
+"def func():\n"
+"   struct S:\n"
+"   end\n"
+"   puts(S)\n"
+"end\n"
+"arr = [func]\n"
+"f = arr[0]\n"
+"f()\n"
+"@}", "(struct)\n");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_struct_fail_0(void) {
     trv_ready;
 
@@ -30455,6 +30552,9 @@ traverser_tests[] = {
     {"struct_42", test_trv_struct_42},
     {"struct_43", test_trv_struct_43},
     {"struct_44", test_trv_struct_44},
+    {"struct_45", test_trv_struct_45},
+    {"struct_46", test_trv_struct_46},
+    {"struct_47", test_trv_struct_47},
     {"struct_fail_0", test_trv_struct_fail_0},
     {"assign_list_0", test_trv_assign_list_0},
     {"assign_list_1", test_trv_assign_list_1},

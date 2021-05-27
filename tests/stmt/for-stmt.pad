@@ -1,0 +1,96 @@
+{@
+
+def case1():
+    puts("Test stmt/for-stmt case1")
+
+    struct Node:
+        next = nil
+    end
+    
+    head = Node(Node(Node()))
+
+    for cur = head; cur; cur = cur.next:
+        assert(type(cur) == "object")  // TODO: Error!
+    end
+end
+
+def case2():
+    puts("Test stmt/for-stmt case2")
+
+    struct Node:
+        next = nil
+    end
+    
+    head = Node(Node(Node()))
+
+    for cur = head; ; cur = cur.next:
+        if cur == nil:
+            break
+        end
+        assert(type(cur) == "object")  // TODO: Error!
+    end
+end
+
+def case3():
+    puts("Test stmt/for-stmt case3")
+
+    def func1(): assert(1) end
+    def func2(): assert(1) end
+    funcs = [
+        ["func1", func1],
+        ["func2", func2],
+    ]
+
+    for i = 0; i < len(funcs); i += 1:
+        funcs[i][1]()
+    end
+end
+
+def case4():
+    puts("Test stmt/for-stmt case4")
+
+    def c1():
+        struct S:
+        end
+        puts(S)
+    end
+    arr = [c1]
+    arr[0]()
+end
+
+def case5():
+    puts("Test stmt/for-stmt case5")
+
+    sum = 0
+    for i = 0; i < 4; i += 1:
+        sum += i
+    end
+
+    assert(sum == 6)
+end
+
+def allTest():
+    puts("Test stmt/for-stmt (all)")
+    case1()
+    case2()
+    case3()
+    // case4()  // TODO: fix error
+end
+
+def main(name):
+    if name == "case1":
+        case1()
+    elif name == "case2":
+        case2()
+    elif name == "case3":
+        case3()
+    elif name == "case4":
+        case4()
+    else:
+        allTest()
+    end
+
+    puts("Done")
+end
+
+@}
