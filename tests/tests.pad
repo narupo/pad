@@ -7,9 +7,10 @@ end
 
 def main():
     name = opts.args(1)
+    case = opts.args(2)
 
     if name == "stmt/for-stmt":
-        forStmtMain(opts.args(2)) 
+        forStmtMain(case) 
     else:
         allTest()
     end
