@@ -136,10 +136,22 @@ app_deploy_env(const app_t *self) {
  */
 static app_t *
 app_new(void) {
-    app_t *self = mem_ecalloc(1, sizeof(*self));
+    app_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->errstack = errstack_new();
+    if (!self->errstack) {
+        app_del(self);
+        return NULL;
+    }
+
     self->config = config_new();
+    if (!self->config) {
+        app_del(self);
+        return NULL;
+    }
 
     return self;
 }
