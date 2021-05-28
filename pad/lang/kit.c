@@ -38,29 +38,80 @@ kit_del(kit_t *self) {
 
 kit_t *
 kit_new(const config_t *config) {
-    kit_t *self = mem_ecalloc(1, sizeof(*self));
+    kit_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->ref_config = config;
     self->tkr = tkr_new(tkropt_new());
+    if (!self->tkr) {
+        kit_del(self);
+        return NULL;
+    }
+
     self->ast = ast_new(config);
+    if (!self->ast) {
+        kit_del(self);
+        return NULL;
+    }
+
     self->gc = gc_new();
+    if (!self->gc) {
+        kit_del(self);
+        return NULL;
+    }
+
     self->ctx = ctx_new(self->gc);
+    if (!self->ctx) {
+        kit_del(self);
+        return NULL;
+    }
+
     self->errstack = errstack_new();
+    if (!self->errstack) {
+        kit_del(self);
+        return NULL;
+    }
 
     return self;
 }
 
 kit_t *
 kit_new_ref_gc(const config_t *config, gc_t *ref_gc) {
-    kit_t *self = mem_ecalloc(1, sizeof(*self));
+    kit_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->ref_config = config;
+
     self->tkr = tkr_new(tkropt_new());
+    if (!self->tkr) {
+        kit_del(self);
+        return NULL;
+    }
+
     self->ast = ast_new(config);
+    if (!self->ast) {
+        kit_del(self);
+        return NULL;
+    }
+
     self->gc = ref_gc;
     self->gc_is_reference = true;
+
     self->ctx = ctx_new(self->gc);
+    if (!self->ctx) {
+        kit_del(self);
+        return NULL;
+    }
+
     self->errstack = errstack_new();
+    if (!self->errstack) {
+        kit_del(self);
+        return NULL;
+    }
 
     return self;
 }
