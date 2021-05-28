@@ -64,9 +64,17 @@ errstack_del(errstack_t *self) {
 
 errstack_t *
 errstack_new(void) {
-    errstack_t *self = mem_ecalloc(1, sizeof(*self));
+    errstack_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
-    self->stack = mem_ecalloc(ERRSTACK_INIT_CAPA, sizeof(errelem_t));
+    self->stack = mem_calloc(ERRSTACK_INIT_CAPA, sizeof(errelem_t));
+    if (!self->stack) {
+        errstack_del(self);
+        return NULL;
+    }
+
     self->capa = ERRSTACK_INIT_CAPA;
 
     return self;
@@ -108,7 +116,12 @@ static errstack_t *
 errstack_resize(errstack_t *self, int32_t newcapa) {
     int32_t byte = sizeof(errelem_t);
 
-    self->stack = mem_erealloc(self->stack, newcapa*byte);
+    errelem_t *tmp = mem_realloc(self->stack, newcapa*byte);
+    if (!tmp) {
+        return NULL;
+    }
+
+    self->stack = tmp;
     self->capa = newcapa;
 
     return self;
@@ -314,7 +327,10 @@ errstack_extendf_other(errstack_t *self, const errstack_t *_other) {
     // copy stack
     int32_t save_len = self->len;
     int32_t save_capa = self->capa;
-    errelem_t *save_stack = mem_ecalloc(save_capa+1, sizeof(errelem_t));
+    errelem_t *save_stack = mem_calloc(save_capa+1, sizeof(errelem_t));
+    if (!save_stack) {
+        return NULL;
+    }
 
     for (int32_t i = 0; i < self->len; ++i) {
         errelem_t *dst = &save_stack[i];
