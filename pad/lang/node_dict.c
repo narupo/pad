@@ -58,11 +58,18 @@ nodedict_escdel(node_dict_t *self) {
 
 node_dict_t *
 nodedict_new(void) {
-    node_dict_t *self = mem_ecalloc(1, sizeof(*self));
+    node_dict_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->capa = NODEDICT_INIT_CAPA;
     self->len = 0;
-    self->map = mem_ecalloc(self->capa+1, sizeof(node_dict_item_t));
+    self->map = mem_calloc(self->capa+1, sizeof(node_dict_item_t));
+    if (!self->map) {
+        nodedict_del(self);
+        return NULL;
+    }
 
     return self;
 }
@@ -73,17 +80,28 @@ nodedict_deep_copy(const node_dict_t *other) {
         return NULL;
     }
 
-    node_dict_t *self = mem_ecalloc(1, sizeof(*self));
+    node_dict_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->capa = other->capa;
     self->len = other->len;
-    self->map = mem_ecalloc(self->capa + 1, sizeof(node_dict_item_t));
+    self->map = mem_calloc(self->capa + 1, sizeof(node_dict_item_t));
+    if (!self->map) {
+        nodedict_del(self);
+        return NULL;
+    }
 
     for (int32_t i = 0; i < other->len; ++i) {
         node_dict_item_t *dstitem = &self->map[i];
         node_dict_item_t *srcitem = &other->map[i];
         strcpy(dstitem->key, srcitem->key);
         dstitem->value = node_deep_copy(srcitem->value);  // deep copy
+        if (!dstitem->value) {
+            nodedict_del(self);
+            return NULL;
+        }
     }
 
     return self;
@@ -95,17 +113,28 @@ nodedict_shallow_copy(const node_dict_t *other) {
         return NULL;
     }
 
-    node_dict_t *self = mem_ecalloc(1, sizeof(*self));
+    node_dict_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->capa = other->capa;
     self->len = other->len;
-    self->map = mem_ecalloc(self->capa + 1, sizeof(node_dict_item_t));
+    self->map = mem_calloc(self->capa + 1, sizeof(node_dict_item_t));
+    if (!self->map) {
+        nodedict_del(self);
+        return NULL;
+    }
 
     for (int32_t i = 0; i < other->len; ++i) {
         node_dict_item_t *dstitem = &self->map[i];
         node_dict_item_t *srcitem = &other->map[i];
         strcpy(dstitem->key, srcitem->key);
         dstitem->value = node_shallow_copy(srcitem->value);  // deep copy
+        if (!dstitem->value) {
+            nodedict_del(self);
+            return NULL;
+        }
     }
 
     return self;
@@ -118,7 +147,11 @@ nodedict_resize(node_dict_t *self, int32_t newcapa) {
     }
 
     int32_t byte = sizeof(node_dict_item_t);
-    node_dict_item_t *tmpmap = mem_erealloc(self->map, newcapa*byte + byte);
+    node_dict_item_t *tmpmap = mem_realloc(self->map, newcapa*byte + byte);
+    if (!tmpmap) {
+        return NULL;
+    }
+    
     self->map = tmpmap;
     self->capa = newcapa;
 
