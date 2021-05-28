@@ -43,9 +43,17 @@ nodearr_del_without_nodes(node_array_t* self) {
 
 node_array_t*
 nodearr_new(void) {
-    node_array_t *self = mem_ecalloc(1, sizeof(*self));
+    node_array_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
-    self->parray = mem_ecalloc(NODEARR_INIT_CAPA + 1, sizeof(node_t *));
+    self->parray = mem_calloc(NODEARR_INIT_CAPA + 1, sizeof(node_t *));
+    if (!self->parray) {
+        nodearr_del(self);
+        return NULL;
+    }
+
     self->capa = NODEARR_INIT_CAPA;
 
     return self;
@@ -60,14 +68,27 @@ nodearr_deep_copy(const node_array_t *other) {
         return NULL;
     }
 
-    node_array_t *self = mem_ecalloc(1, sizeof(*self));
+    node_array_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->capa = other->capa;
-    self->parray = mem_ecalloc(other->capa + 1, sizeof(node_t *));
+    self->parray = mem_calloc(other->capa + 1, sizeof(node_t *));
+    if (!self->parray) {
+        nodearr_del(self);
+        return NULL;
+    }
 
     for (int32_t i = 0; i < other->len; ++i) {
         node_t *node = other->parray[i];
-        self->parray[self->len++] = node_deep_copy(node);
+        node_t *copied = node_deep_copy(node);
+        if (!copied) {
+            nodearr_del(self);
+            return NULL;
+        }
+
+        self->parray[self->len++] = copied;
     }
 
     return self;
@@ -136,7 +157,10 @@ nodearr_resize(node_array_t* self, int32_t capa) {
     }
 
     int byte = sizeof(node_t *);
-    node_t **tmparr = mem_erealloc(self->parray, capa * byte + byte);
+    node_t **tmparr = mem_realloc(self->parray, capa * byte + byte);
+    if (!tmparr) {
+        return NULL;
+    }
 
     self->parray = tmparr;
     self->capa = capa;
