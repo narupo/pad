@@ -113,7 +113,11 @@ node_deep_copy(const node_t *other) {
     case NODE_TYPE_TEXT_BLOCK: {
         declare(node_text_block_t, dst);
         node_text_block_t *src = other->real;
-        dst->text = cstr_edup(src->text);
+        dst->text = cstr_dup(src->text);
+        if (!dst->text) {
+            node_del(self);
+            return NULL;
+        }
         self->real = dst;
     } break;
     case NODE_TYPE_ELEMS: {
@@ -429,19 +433,34 @@ node_deep_copy(const node_t *other) {
     case NODE_TYPE_STRING: {
         declare(node_string_t, dst);
         node_string_t *src = other->real;
-        dst->string = cstr_edup(src->string);
+        dst->string = cstr_dup(src->string);
+        if (!dst->string) {
+            free(dst);
+            node_del(self);
+            return NULL;
+        }
         self->real = dst;
     } break;
     case NODE_TYPE_IDENTIFIER: {
         declare(node_identifier_t, dst);
         node_identifier_t *src = other->real;
-        dst->identifier = cstr_edup(src->identifier);
+        dst->identifier = cstr_dup(src->identifier);
+        if (!dst->identifier) {
+            free(dst);
+            node_del(self);
+            return NULL;
+        }
         self->real = dst;
     } break;
     case NODE_TYPE_ARRAY: {
         declare(node_array_t_, dst);
         node_array_t_ *src = other->real;
         dst->array_elems = node_deep_copy(src->array_elems);
+        if (!dst->array_elems) {
+            free(dst);
+            node_del(self);
+            return NULL;
+        }
         self->real = dst;
     } break;
     case NODE_TYPE_ARRAY_ELEMS: {

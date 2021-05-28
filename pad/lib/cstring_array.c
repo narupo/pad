@@ -122,7 +122,12 @@ cstrarr_pushb(cstring_array_t *self, const char *str) {
 		}
 	}
 
-	self->arr[self->len++] = cstr_edup(str);
+	char *elem = cstr_dup(str);
+	if (!elem) {
+		return NULL;
+	}
+
+	self->arr[self->len++] = elem;
 	self->arr[self->len] = NULL;
 
 	return self;

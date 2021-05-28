@@ -1008,7 +1008,10 @@ cc_identifier(ast_t *ast, cc_args_t *cargs) {
     check("read identifier");
 
     // copy text
-    cur->identifier = cstr_edup(t->text);
+    cur->identifier = cstr_dup(t->text);
+    if (!cur->identifier) {
+        return_cleanup("failed to duplicate");
+    }
 
     return_parse(node_new(NODE_TYPE_IDENTIFIER, cur, t));
 }
@@ -1037,7 +1040,10 @@ cc_string(ast_t *ast, cc_args_t *cargs) {
     check("read string");
 
     // copy text
-    cur->string = cstr_edup(t->text);
+    cur->string = cstr_dup(t->text);
+    if (!cur->string) {
+        return_cleanup("failed to duplicate")
+    }
 
     return_parse(node_new(NODE_TYPE_STRING, cur, t));
 }
@@ -3692,7 +3698,11 @@ cc_text_block(ast_t *ast, cc_args_t *cargs) {
     check("read text block");
 
     // copy text
-    cur->text = cstr_edup(t->text);
+    cur->text = cstr_dup(t->text);
+    if (!cur->text) {
+        pushb_error(ast, t, "failed to duplicate");
+        return_parse(NULL);
+    }
 
     return_parse(node_new(NODE_TYPE_TEXT_BLOCK, cur, t));
 }

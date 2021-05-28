@@ -213,13 +213,25 @@ obj_deep_copy(const object_t *other) {
         break;
     case OBJ_TYPE_MODULE:
         if (other->module.name) {
-            self->module.name = cstr_edup(other->module.name);
+            self->module.name = cstr_dup(other->module.name);
+            if (!self->module.name) {
+                obj_del(self);
+                return NULL;
+            }
         }
         if (other->module.program_filename) {
-            self->module.program_filename = cstr_edup(other->module.program_filename);
+            self->module.program_filename = cstr_dup(other->module.program_filename);
+            if (!self->module.program_filename) {
+                obj_del(self);
+                return NULL;
+            }
         }
         if (other->module.program_source) {
-            self->module.program_source = cstr_edup(other->module.program_source);
+            self->module.program_source = cstr_dup(other->module.program_source);
+            if (!self->module.program_source) {
+                obj_del(self);
+                return NULL;
+            }
         }
         self->module.tokenizer = tkr_deep_copy(other->module.tokenizer);
         self->module.ast = ast_deep_copy(other->module.ast);
@@ -312,13 +324,25 @@ obj_shallow_copy(const object_t *other) {
         break;
     case OBJ_TYPE_MODULE:
         if (other->module.name) {
-            self->module.name = cstr_edup(other->module.name);
+            self->module.name = cstr_dup(other->module.name);
+            if (!self->module.name) {
+                obj_del(self);
+                return NULL;
+            }
         }
         if (other->module.program_filename) {
-            self->module.program_filename = cstr_edup(other->module.program_filename);
+            self->module.program_filename = cstr_dup(other->module.program_filename);
+            if (!self->module.program_filename) {
+                obj_del(self);
+                return NULL;
+            }
         }
         if (other->module.program_source) {
-            self->module.program_source = cstr_edup(other->module.program_source);
+            self->module.program_source = cstr_dup(other->module.program_source);
+            if (!self->module.program_source) {
+                obj_del(self);
+                return NULL;
+            }
         }
         self->module.tokenizer = tkr_shallow_copy(other->module.tokenizer);
         self->module.ast = ast_shallow_copy(other->module.ast);
@@ -725,10 +749,18 @@ obj_new_module_by(
     }
 
     if (name) {
-        self->module.name = cstr_edup(name);
+        self->module.name = cstr_dup(name);
+        if (!self->module.name) {
+            obj_del(self);
+            return NULL;
+        }
     }
     if (program_filename) {
-        self->module.program_filename = cstr_edup(program_filename);
+        self->module.program_filename = cstr_dup(program_filename);
+        if (!self->module.program_filename) {
+            obj_del(self);
+            return NULL;
+        }
     }
     self->module.program_source = mem_move(move_program_source);
     self->module.tokenizer = mem_move(move_tkr);
@@ -743,23 +775,35 @@ string_t *
 obj_to_str(const object_t *self) {
     if (!self) {
         string_t *str = str_new_cstr("null");
+        if (!str) {
+            return NULL;
+        }
         return str;
     }
 
     switch (self->type) {
     case OBJ_TYPE_NIL: {
         string_t *str = str_new();
+        if (!str) {
+            return NULL;
+        }
         str_set(str, "nil");
         return str;
     } break;
     case OBJ_TYPE_INT: {
         string_t *str = str_new();
+        if (!str) {
+            return NULL;
+        }
         char buf[1024];
         str_app_fmt(str, buf, sizeof buf, "%ld", self->lvalue);
         return str;
     } break;
     case OBJ_TYPE_FLOAT: {
         string_t *str = str_new();
+        if (!str) {
+            return NULL;
+        }
         char buf[1024];
         snprintf(buf, sizeof buf, "%lf", self->float_value);
         cstr_rstrip_float_zero(buf);
@@ -768,6 +812,9 @@ obj_to_str(const object_t *self) {
     } break;
     case OBJ_TYPE_BOOL: {
         string_t *str = str_new();
+        if (!str) {
+            return NULL;
+        }
         if (self->boolean) {
             str_set(str, "true");
         } else {
@@ -777,17 +824,26 @@ obj_to_str(const object_t *self) {
     } break;
     case OBJ_TYPE_UNICODE: {
         string_t *str = str_new();
+        if (!str) {
+            return NULL;
+        }
         const char *s = uni_getc_mb(self->unicode);
         str_set(str, s);
         return str;
     } break;
     case OBJ_TYPE_ARRAY: {
         string_t *str = str_new();
+        if (!str) {
+            return NULL;
+        }
         str_set(str, "(array)");
         return str;
     } break;
     case OBJ_TYPE_DICT: {
         string_t *str = str_new();
+        if (!str) {
+            return NULL;
+        }
         str_set(str, "(dict)");
         return str;
     } break;
@@ -796,31 +852,49 @@ obj_to_str(const object_t *self) {
     } break;
     case OBJ_TYPE_FUNC: {
         string_t *str = str_new();
+        if (!str) {
+            return NULL;
+        }
         str_set(str, "(function)");
         return str;
     } break;
     case OBJ_TYPE_CHAIN: {
         string_t *str = str_new();
+        if (!str) {
+            return NULL;
+        }
         str_set(str, "(chain)");
         return str;
     } break;
     case OBJ_TYPE_MODULE: {
         string_t *str = str_new();
+        if (!str) {
+            return NULL;
+        }
         str_set(str, "(module)");
         return str;
     } break;
     case OBJ_TYPE_DEF_STRUCT: {
         string_t *str = str_new();
+        if (!str) {
+            return NULL;
+        }
         str_set(str, "(struct)");
         return str;
     } break;
     case OBJ_TYPE_OBJECT: {
         string_t *str = str_new();
+        if (!str) {
+            return NULL;
+        }
         str_set(str, "(object)");
         return str;
     } break;
     case OBJ_TYPE_OWNERS_METHOD: {
         string_t *str = str_new();
+        if (!str) {
+            return NULL;
+        }
         str_set(str, "(method)");
         return str;
     } break;
@@ -835,13 +909,27 @@ object_t *
 obj_to_array(const object_t *obj) {
     if (!obj) {
         object_array_t *objarr = objarr_new();
+        if (!objarr) {
+            return NULL;
+        }
         return obj_new_array(obj->ref_gc, mem_move(objarr));
     }
 
     switch (obj->type) {
     default: {
         object_array_t *objarr = objarr_new();
-        objarr_moveb(objarr, obj_deep_copy(obj));
+        if (!objarr) {
+            return NULL;
+        }
+        object_t *copied = obj_deep_copy(obj);
+        if (!copied) {
+            objarr_del(objarr);
+            return NULL;
+        }
+        if (!objarr_moveb(objarr, mem_move(copied))) {
+            objarr_del(objarr);
+            return NULL;
+        }
         return obj_new_array(obj->ref_gc, mem_move(objarr));
     } break;
     case OBJ_TYPE_ARRAY:
@@ -892,7 +980,14 @@ obj_dump(const object_t *self, FILE *fout) {
     }
 
     string_t *s = obj_to_str(self);
+    if (!s) {
+        return;
+    }
+
     string_t *typ = obj_type_to_str(self);
+    if (!typ) {
+        return;
+    }
 
     fprintf(fout, "object[%p]\n", self);
     fprintf(fout, "object.type[%s]\n", str_getc(typ));
@@ -932,6 +1027,9 @@ obj_dump(const object_t *self, FILE *fout) {
 string_t *
 obj_type_to_str(const object_t *self) {
     string_t *s = str_new();
+    if (!s) {
+        return NULL;
+    }
 
     if (!self) {
         str_app(s, "<?: null>");

@@ -308,7 +308,12 @@ read_path_var_from_resource(const config_t *config, const char *rcpath) {
     fflush(stdout);
 
     const char *s = uni_getc_mb(item->value->unicode);
-    char *path = cstr_edup(s);
+    char *path = cstr_dup(s);
+    if (!path) {
+        ctx_del(ctx);
+        gc_del(gc);
+        return NULL;        
+    }
 
     ctx_del(ctx);
     gc_del(gc);
