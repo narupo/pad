@@ -87,7 +87,7 @@ objdict_deep_copy(const object_dict_t *other) {
 
     self->capa = other->capa;
     self->len = other->len;
-    self->map = mem_ecalloc(self->capa + 1, sizeof(object_dict_item_t));
+    self->map = mem_calloc(self->capa + 1, sizeof(object_dict_item_t));
     if (!self->map) {
         objdict_del(self);
         return NULL;

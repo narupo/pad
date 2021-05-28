@@ -43,9 +43,17 @@ objarr_del_without_objs(object_array_t* self) {
 
 object_array_t*
 objarr_new(void) {
-    object_array_t *self = mem_ecalloc(1, sizeof(*self));
+    object_array_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
-    self->parray = mem_ecalloc(OBJARR_INIT_CAPA+1, sizeof(object_t *));
+    self->parray = mem_calloc(OBJARR_INIT_CAPA+1, sizeof(object_t *));
+    if (!self->parray) {
+        objarr_del(self);
+        return NULL;
+    }
+
     self->capa = OBJARR_INIT_CAPA;
 
     return self;
@@ -56,14 +64,27 @@ obj_deep_copy(const object_t *other);
 
 object_array_t*
 objarr_deep_copy(const object_array_t *other) {
-    object_array_t *self = mem_ecalloc(1, sizeof(*self));
+    object_array_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
-    self->parray = mem_ecalloc(other->capa+1, sizeof(object_t *));
+    self->parray = mem_calloc(other->capa+1, sizeof(object_t *));
+    if (!self->parray) {
+        objarr_del(self);
+        return NULL;
+    }
+
     self->capa = other->capa;
     self->len = other->len;
 
     for (int i = 0; i < self->len; ++i) {
         object_t *obj = obj_deep_copy(other->parray[i]);
+        if (!obj) {
+            objarr_del(self);
+            return NULL;
+        }
+
         obj_inc_ref(obj);
         self->parray[i] = obj;
     }
@@ -73,14 +94,27 @@ objarr_deep_copy(const object_array_t *other) {
 
 object_array_t*
 objarr_shallow_copy(const object_array_t *other) {
-    object_array_t *self = mem_ecalloc(1, sizeof(*self));
+    object_array_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
-    self->parray = mem_ecalloc(other->capa+1, sizeof(object_t *));
+    self->parray = mem_calloc(other->capa+1, sizeof(object_t *));
+    if (!self->parray) {
+        objarr_del(self);
+        return NULL;
+    }
+
     self->capa = other->capa;
     self->len = other->len;
 
     for (int i = 0; i < self->len; ++i) {
         object_t *obj = obj_shallow_copy(other->parray[i]);
+        if (!obj) {
+            objarr_del(self);
+            return NULL;
+        }
+
         obj_inc_ref(obj);
         self->parray[i] = obj;
     }
@@ -129,7 +163,10 @@ objarr_resize(object_array_t* self, int32_t capa) {
     }
 
     int byte = sizeof(object_t *);
-    object_t **tmparr = mem_erealloc(self->parray, capa * byte + byte);
+    object_t **tmparr = mem_realloc(self->parray, capa * byte + byte);
+    if (!tmparr) {
+        return NULL;
+    }
 
     self->parray = tmparr;
     self->capa = capa;
