@@ -18,10 +18,22 @@ alinfo_del(alinfo_t *self) {
 
 alinfo_t *
 alinfo_new(void) {
-    alinfo_t *self = mem_ecalloc(1, sizeof(*self));
+    alinfo_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->key_val_map = dict_new(128);
+    if (!self->key_val_map) {
+        alinfo_del(self);
+        return NULL;
+    }
+
     self->key_desc_map = dict_new(128);
+    if (!self->key_desc_map) {
+        alinfo_del(self);
+        return NULL;
+    }
 
     return self;
 }
@@ -32,10 +44,22 @@ alinfo_deep_copy(const alinfo_t *other) {
         return NULL;
     }
 
-    alinfo_t *self = mem_ecalloc(1, sizeof(*self));
+    alinfo_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->key_val_map = dict_deep_copy(other->key_val_map);
+    if (!self->key_val_map) {
+        alinfo_del(self);
+        return NULL;
+    }
+
     self->key_desc_map = dict_deep_copy(other->key_desc_map);
+    if (!self->key_desc_map) {
+        alinfo_del(self);
+        return NULL;
+    }
 
     return self;
 }
@@ -46,10 +70,22 @@ alinfo_shallow_copy(const alinfo_t *other) {
         return NULL;
     }
 
-    alinfo_t *self = mem_ecalloc(1, sizeof(*self));
+    alinfo_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->key_val_map = dict_shallow_copy(other->key_val_map);
+    if (!self->key_val_map) {
+        alinfo_del(self);
+        return NULL;
+    }
+
     self->key_desc_map = dict_shallow_copy(other->key_desc_map);
+    if (!self->key_desc_map) {
+        alinfo_del(self);
+        return NULL;
+    }
 
     return self;  
 }
