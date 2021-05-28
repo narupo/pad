@@ -9,7 +9,11 @@ config_del(config_t *self) {
 
 config_t *
 config_new(void) {
-    config_t *self = mem_ecalloc(1, sizeof(*self));
+    config_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
+
     return self;
 }
 
@@ -23,7 +27,7 @@ config_init(config_t *self) {
     // standard libraries
     if (!file_solve(self->std_lib_dir_path, sizeof self->std_lib_dir_path, "~/.pad/stdlib")) {
         err_error("failed to solve path for standard libraries directory");
-        return false;
+        return NULL;
     }
 
     return self;
