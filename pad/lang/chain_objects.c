@@ -54,9 +54,17 @@ chain_objs_del(chain_objects_t *self) {
 
 chain_objects_t *
 chain_objs_new(void) {
-    chain_objects_t *self = mem_ecalloc(1, sizeof(*self));
+    chain_objects_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
-    self->chain_objs = mem_ecalloc(CHAIN_OBJS_INIT_CAPA+1, sizeof(chain_objects_t *));  // +1 for final null
+    self->chain_objs = mem_calloc(CHAIN_OBJS_INIT_CAPA+1, sizeof(chain_objects_t *));  // +1 for final null
+    if (!self->chain_objs) {
+        chain_objs_del(self);
+        return NULL;
+    }
+
     self->capa = CHAIN_OBJS_INIT_CAPA;
 
     return self;
@@ -100,7 +108,13 @@ chain_objs_shallow_copy(const chain_objects_t *other) {
 chain_objects_t *
 chain_objs_resize(chain_objects_t *self, int32_t newcapa) {
     int32_t nbyte = sizeof(chain_objects_t *);
-    self->chain_objs = mem_erealloc(self->chain_objs, nbyte * newcapa + nbyte);  // +nbyte is final null
+
+    chain_object_t **tmp = mem_realloc(self->chain_objs, nbyte * newcapa + nbyte);  // +nbyte is final null
+    if (!tmp) {
+        return NULL;
+    }
+    
+    self->chain_objs = tmp;
     self->capa = newcapa;
     return self;
 }
