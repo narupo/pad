@@ -15,7 +15,11 @@ importer_del(importer_t *self) {
 
 importer_t *
 importer_new(const config_t *ref_config) {
-    importer_t *self = mem_ecalloc(1, sizeof(*self));
+    importer_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
+    
     self->ref_config = ref_config;
     return self;
 }
