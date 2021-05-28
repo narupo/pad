@@ -21,3 +21,9 @@ mem_ecalloc(size_t nelems, size_t size);
 
 void *
 mem_erealloc(void *ptr, size_t size);
+
+void *
+mem_calloc(size_t nelems, size_t size);
+
+void *
+mem_realloc(void *ptr, size_t size);

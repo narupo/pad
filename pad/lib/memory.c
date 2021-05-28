@@ -19,3 +19,13 @@ mem_erealloc(void *ptr, size_t size) {
 
     return re;
 }
+
+void *
+mem_calloc(size_t nelems, size_t size) {
+    return calloc(nelems, size);
+}
+
+void *
+mem_realloc(void *ptr, size_t size) {
+    return realloc(ptr, size);
+}

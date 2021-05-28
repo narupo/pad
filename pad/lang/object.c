@@ -357,7 +357,9 @@ obj_new(gc_t *ref_gc, obj_type_t type) {
     }
 
     gc_item_t gc_item = {0};
-    gc_alloc(ref_gc, &gc_item, sizeof(object_t));
+    if (!gc_alloc(ref_gc, &gc_item, sizeof(object_t))) {
+        return NULL;
+    }
 
     object_t *self = gc_item.ptr;
     self->ref_gc = ref_gc;
