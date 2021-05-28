@@ -98,6 +98,61 @@ def case7():
     assert(sum == 6)
 end
 
+/********************
+* list and for-stmt *
+********************/
+
+def case8():
+    puts("Test stmt/for-stmt case8")
+
+    lis = [0, 1, 2]
+    for i = 0; i < 3; i += 1:
+        lis.push(i)
+    end
+
+    assert(lis[0] == 0)
+    assert(lis[1] == 1)
+    assert(lis[2] == 2)
+    assert(lis[3] == 0)
+    assert(lis[4] == 1)
+    assert(lis[5] == 2)
+end
+
+def case9():
+    puts("Test stmt/for-stmt case9")
+
+    lis = [0, 1, 2]
+    ln = len(lis)
+    for i = 0; i < ln; i += 1:
+        el = lis.pop()
+        assert(el == 2 - i)
+    end
+end
+
+def case10():
+    puts("Test stmt/for-stmt case10")
+
+    lis = [0, 1, 2]
+    i = 2
+    for len(lis):
+        assert(lis.pop() == i)
+        i -= 1
+    end
+end
+
+def case11():
+    puts("Test stmt/for-stmt case11")
+
+    lis = [0, 1, -1]
+    for i = 0; lis[i] != -1; i += 1:
+        assert(lis[i] == i)
+    end
+end
+
+/**********************
+* done case functions *
+**********************/
+
 def allTest():
     puts("Test stmt/for-stmt (all)")
     case1()
@@ -107,9 +162,14 @@ def allTest():
     case5()
     case6()
     case7()
+    case8()
+    case9()
+    case10()
+    case11()
 end
 
 def main(name):
+    // TODO: needs refactoring to replace this to dict and function
     if name == "case1":
         case1()
     elif name == "case2":
@@ -124,8 +184,18 @@ def main(name):
         case6()
     elif name == "case7":
         case7()
-    else:
+    elif name == "case8":
+        case8()
+    elif name == "case9":
+        case9()
+    elif name == "case10":
+        case10()
+    elif name == "case11":
+        case11()
+    elif name == "all":
         allTest()
+    else:
+        eputs("invalid name", name)
     end
 
     puts("Done")
