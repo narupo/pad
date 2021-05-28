@@ -189,5 +189,5 @@ tkr_set_debug(tokenizer_t *self, bool debug);
 void
 tkr_trace_error(const tokenizer_t *self, FILE *fout);
 
-void
+const char *
 tkr_set_program_filename(tokenizer_t *self, const char *program_filename);

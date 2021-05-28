@@ -19,7 +19,11 @@ tkropt_del(tokenizer_option_t *self) {
 
 tokenizer_option_t *
 tkropt_new(void) {
-    tokenizer_option_t *self = mem_ecalloc(1, sizeof(*self));
+    tokenizer_option_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
+
     self->ldbrace_value = "{:";
     self->rdbrace_value = ":}";
     return self;
@@ -27,7 +31,10 @@ tkropt_new(void) {
 
 tokenizer_option_t *
 tkropt_deep_copy(const tokenizer_option_t *other) {
-    tokenizer_option_t *self = mem_ecalloc(1, sizeof(*self));
+    tokenizer_option_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->ldbrace_value = other->ldbrace_value;
     self->rdbrace_value = other->rdbrace_value;
@@ -101,15 +108,31 @@ tkr_del(tokenizer_t *self) {
 
 tokenizer_t *
 tkr_new(tokenizer_option_t *move_option) {
-    tokenizer_t *self = mem_ecalloc(1, sizeof(*self));
+    tokenizer_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->error_stack = errstack_new();
+    if (!self->error_stack) {
+        tkr_del(self);
+        return NULL;
+    }
 
     self->tokens_capa = INIT_TOKENS_CAPA;
     self->tokens_len = 0;
-    self->tokens = mem_ecalloc(self->tokens_capa+1, sizeof(token_t *));  // +1 for final null
+    self->tokens = mem_calloc(self->tokens_capa+1, sizeof(token_t *));  // +1 for final null
+    if (!self->tokens) {
+        tkr_del(self);
+        return NULL;
+    }
 
     self->buf = str_new();
+    if (!self->buf) {
+        tkr_del(self);
+        return NULL;
+    }
+
     self->option = mem_move(move_option);
     self->debug = false;
     self->program_lineno = 1;
@@ -119,27 +142,58 @@ tkr_new(tokenizer_option_t *move_option) {
 
 tokenizer_t *
 tkr_deep_copy(const tokenizer_t *other) {
-    tokenizer_t *self = mem_ecalloc(1, sizeof(*self));
+    tokenizer_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->error_stack = errstack_deep_copy(other->error_stack);
+    if (!self->error_stack) {
+        tkr_del(self);
+        return NULL;
+    }
+
     if (other->program_filename) {
-        self->program_filename = cstr_edup(other->program_filename);
+        self->program_filename = cstr_dup(other->program_filename);
+        if (!self->program_filename) {
+            tkr_del(self);
+            return NULL;
+        }
     }
     self->program_lineno = other->program_lineno;
     self->program_source = other->program_source;
     self->ptr = other->ptr;
     self->buf = str_deep_copy(other->buf);
+    if (!self->buf) {
+        tkr_del(self);
+        return NULL;
+    }
+
     self->tokens_len = other->tokens_len;
     self->tokens_capa = other->tokens_capa;
 
     tokenizer_option_t *opt = tkropt_deep_copy(other->option);
+    if (!opt) {
+        tkr_del(self);
+        return NULL;
+    }
+
     self->option = mem_move(opt);
     self->debug = other->debug;
 
-    self->tokens = mem_ecalloc(self->tokens_capa + 1, sizeof(token_t *));  // +1 for final null
+    self->tokens = mem_calloc(self->tokens_capa + 1, sizeof(token_t *));  // +1 for final null
+    if (!self->tokens) {
+        tkr_del(self);
+        return NULL;
+    }
+
     for (int32_t i = 0; i < self->tokens_len; ++i) {
         const token_t *tok = other->tokens[i];
         self->tokens[i] = token_deep_copy(tok);
+        if (!self->tokens[i]) {
+            tkr_del(self);
+            return NULL;
+        }
     }
 
     return self;
@@ -240,7 +294,12 @@ tkr_move_opt(tokenizer_t *self, tokenizer_option_t *move_opt) {
 static void
 tkr_resize_tokens(tokenizer_t *self, int32_t capa) {
     size_t byte = sizeof(token_t *);
-    self->tokens = mem_erealloc(self->tokens, byte*capa +byte); // +byte for final null
+    token_t **tmp = mem_realloc(self->tokens, byte*capa +byte); // +byte for final null
+    if (!tmp) {
+        return;
+    }
+
+    self->tokens = tmp;
     self->tokens_capa = capa;
 }
 
@@ -938,7 +997,11 @@ tkr_trace_error(const tokenizer_t *self, FILE *fout) {
     errstack_trace(self->error_stack, fout);
 }
 
-void
+const char *
 tkr_set_program_filename(tokenizer_t *self, const char *program_filename) {
-    self->program_filename = cstr_edup(program_filename);
+    self->program_filename = cstr_dup(program_filename);
+    if (!self->program_filename) {
+        return NULL;
+    }
+    return self->program_filename;
 }
