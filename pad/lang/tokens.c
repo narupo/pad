@@ -16,7 +16,10 @@ token_new(
     const char *program_source,
     int32_t program_source_pos
 ) {
-    token_t *self = mem_ecalloc(1, sizeof(*self));
+    token_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->type = type;
     self->program_filename = program_filename;
@@ -29,11 +32,18 @@ token_new(
 
 token_t *
 token_deep_copy(const token_t *other) {
-    token_t *self = mem_ecalloc(1, sizeof(*self));
+    token_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->type = other->type;
     if (other->text) {
-        self->text = cstr_edup(other->text);
+        self->text = cstr_dup(other->text);
+        if (!self->text) {
+            token_del(self);
+            return NULL;
+        }
     } else {
         self->text = NULL;
     }
@@ -63,7 +73,7 @@ token_getc_text(const token_t *self) {
 
 char *
 token_copy_text(const token_t *self) {
-    return cstr_edup(self->text);
+    return cstr_dup(self->text);
 }
 
 /**
