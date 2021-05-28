@@ -392,11 +392,23 @@ ast_del(ast_t *self) {
 
 ast_t *
 ast_new(const config_t *ref_config) {
-    ast_t *self = mem_ecalloc(1, sizeof(*self));
+    ast_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->ref_config = ref_config;
     self->opts = opts_new();
+    if (!self->opts) {
+        ast_del(self);
+        return NULL;
+    }
+
     self->error_stack = errstack_new();
+    if (!self->error_stack) {
+        ast_del(self);
+        return NULL;
+    }
 
     return self;
 }
@@ -407,17 +419,35 @@ ast_deep_copy(const ast_t *other) {
         return NULL;
     }
 
-    ast_t *self = mem_ecalloc(1, sizeof(*self));
+    ast_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->ref_config = other->ref_config;
     self->ref_tokens = other->ref_tokens;
     self->ref_ptr = other->ref_ptr;
     self->root = node_deep_copy(other->root);
+    if (!self->root) {
+        ast_del(self);
+        return NULL;
+    }
+
     self->ref_context = other->ref_context;
     self->opts = opts_deep_copy(other->opts);
+    if (!self->opts) {
+        ast_del(self);
+        return NULL;
+    }
+
     self->ref_gc = other->ref_gc;
     self->import_level = other->import_level;
     self->error_stack = errstack_deep_copy(other->error_stack);
+    if (!self->error_stack) {
+        ast_del(self);
+        return NULL;
+    }
+
     self->debug = other->debug;
     self->is_in_loop = other->is_in_loop;
 
@@ -430,17 +460,35 @@ ast_shallow_copy(const ast_t *other) {
         return NULL;
     }
 
-    ast_t *self = mem_ecalloc(1, sizeof(*self));
+    ast_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->ref_config = other->ref_config;
     self->ref_tokens = other->ref_tokens;
     self->ref_ptr = other->ref_ptr;
     self->root = node_shallow_copy(other->root);
+    if (!self->root) {
+        ast_del(self);
+        return NULL;
+    }
+
     self->ref_context = other->ref_context;
     self->opts = opts_shallow_copy(other->opts);
+    if (!self->opts) {
+        ast_del(self);
+        return NULL;
+    }
+
     self->ref_gc = other->ref_gc;
     self->import_level = other->import_level;
     self->error_stack = errstack_shallow_copy(other->error_stack);
+    if (!self->error_stack) {
+        ast_del(self);
+        return NULL;
+    }
+    
     self->debug = other->debug;
     self->is_in_loop = other->is_in_loop;
 
