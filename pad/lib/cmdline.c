@@ -17,11 +17,23 @@ cmdlineobj_del(cmdline_object_t *self) {
 
 cmdline_object_t *
 cmdlineobj_new(cmdline_object_type_t type) {
-    cmdline_object_t *self = mem_ecalloc(1, sizeof(*self));
+    cmdline_object_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->type = type;
     self->command = str_new();
+    if (!self->command) {
+        cmdlineobj_del(self);
+        return NULL;
+    }
+
     self->cl = cl_new();
+    if (!self->cl) {
+        cmdlineobj_del(self);
+        return NULL;
+    }
 
     return self;
 }
@@ -67,11 +79,18 @@ cmdline_del(cmdline_t *self) {
 
 cmdline_t *
 cmdline_new(void) {
-    cmdline_t *self = mem_ecalloc(1, sizeof(*self));
+    cmdline_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     int32_t size = sizeof(cmdline_object_t *);
     self->capa = CMDLINE_OBJS_SIZE;
-    self->objs = mem_ecalloc(self->capa + 1, size);
+    self->objs = mem_calloc(self->capa + 1, size);
+    if (!self->objs) {
+        cmdline_del(self);
+        return NULL;
+    } 
 
     return self;
 }
@@ -92,7 +111,11 @@ cmdline_resize(cmdline_t *self, int32_t capa) {
 
     int32_t objsize = sizeof(cmdline_object_t *);
     int32_t size = objsize * capa + objsize;
-    self->objs = mem_erealloc(self->objs, size);
+    cmdline_object_t **tmp = mem_realloc(self->objs, size);
+    if (!tmp) {
+        return NULL;
+    }
+    self->objs = tmp;
     self->capa = capa;
 
     return self;
