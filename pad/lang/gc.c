@@ -48,9 +48,17 @@ gc_del(gc_t *self) {
 
 gc_t *
 gc_new(void) {
-    gc_t *self = mem_ecalloc(1, sizeof(*self));
+    gc_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
-    self->pool = mem_ecalloc(INIT_CAPA_SIZE+1, sizeof(void *));
+    self->pool = mem_calloc(INIT_CAPA_SIZE+1, sizeof(void *));
+    if (!self->pool) {
+        gc_del(self);
+        return NULL;
+    }
+
     self->capa = INIT_CAPA_SIZE;
     assert(self->capa != 0);
 
