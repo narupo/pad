@@ -61,7 +61,10 @@ chain_obj_new(chain_object_type_t type, object_t *move_obj) {
         return NULL;
     }
 
-    chain_object_t *self = mem_ecalloc(1, sizeof(*self));
+    chain_object_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->type = type;
     self->obj = mem_move(move_obj);
@@ -78,12 +81,22 @@ _chain_obj_copy(const chain_object_t *other, bool deep) {
     object_t *obj;
     if (deep) {
         obj = obj_deep_copy(other->obj);
+        if (!obj) {
+            return NULL;
+        }
     } else {
         obj = obj_shallow_copy(other->obj);
+        if (!obj) {
+            return NULL;
+        }
     }
 
     obj_inc_ref(obj);
     chain_object_t *self = chain_obj_new(other->type, mem_move(obj));
+    if (!self) {
+        obj_del(obj);
+        return NULL;
+    }
 
     return self;
 }
