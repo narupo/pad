@@ -17,7 +17,10 @@ typedef struct {
 
 static err_token_t *
 gen_token(char type, string_t *move_token) {
-    err_token_t *tok = mem_ecalloc(1, sizeof(*tok));
+    err_token_t *tok = mem_calloc(1, sizeof(*tok));
+    if (!tok) {
+        return NULL;
+    }
 
     tok->type = type;
     tok->token = mem_move(move_token);
@@ -44,7 +47,10 @@ static err_token_t **
 tokenize(const char *src) {
     int32_t capa = 4;
     int32_t cursize = 0;
-    err_token_t **tokens = mem_ecalloc(capa + 1, sizeof(err_token_t *));
+    err_token_t **tokens = mem_calloc(capa + 1, sizeof(err_token_t *));
+    if (!tokens) {
+        return NULL;
+    }
     string_t *buf = str_new();
     char bef = 0;
 
@@ -52,7 +58,12 @@ tokenize(const char *src) {
     if (cursize >= capa) { \
         int32_t nbyte = sizeof(err_token_t); \
         capa *= 2; \
-        tokens = mem_erealloc(tokens, capa * nbyte + nbyte); \
+        err_token_t **tmp = mem_realloc(tokens, capa * nbyte + nbyte); \
+        if (!tmp) { \
+            free(tokens); \
+            return NULL; \
+        } \
+        tokens = tmp; \
     } \
     tokens[cursize++] = t; \
     tokens[cursize] = NULL; \
@@ -61,6 +72,9 @@ tokenize(const char *src) {
     if (str_len(buf)) { \
         char type = infer_type(buf); \
         err_token_t *tok = gen_token(type, mem_move(buf)); \
+        if (!tok) { \
+            return NULL; \
+        } \
         push(tok); \
         buf = str_new(); \
     } \
