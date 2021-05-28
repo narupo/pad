@@ -64,13 +64,36 @@ ctx_escdel_global_varmap(context_t *self) {
 
 context_t *
 ctx_new(gc_t *ref_gc) {
-    context_t *self = mem_ecalloc(1, sizeof(*self));
+    context_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->ref_gc = ref_gc;
     self->alinfo = alinfo_new();
+    if (!self->alinfo) {
+        ctx_del(self);
+        return NULL;
+    }
+
     self->stdout_buf = str_new();
+    if (!self->stdout_buf) {
+        ctx_del(self);
+        return NULL;
+    }
+
     self->stderr_buf = str_new();
+    if (!self->stderr_buf) {
+        ctx_del(self);
+        return NULL;
+    }
+
     self->scope = scope_new(ref_gc);
+    if (!self->scope) {
+        ctx_del(self);
+        return NULL;
+    }
+    
     self->is_use_buf = true;
 
     return self;
