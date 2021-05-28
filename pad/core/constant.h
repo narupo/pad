@@ -1,12 +1,9 @@
 #pragma once
 
-#define _CAP_VERSION "0.35.53"
+#define _PAD_VERSION "0.35.53"
 
 #if defined(_WIN32) || defined(_WIN64)
-# define _CAP_WINDOWS 1 /* cap: core/constant.h */
+# define _PAD_WINDOWS 1 /* cap: core/constant.h */
 #else
-# undef _CAP_WINDOWS
+# undef _PAD_WINDOWS
 #endif
-
-static const int CAP_SCOPE_LOCAL = 1;
-static const int CAP_SCOPE_GLOBAL = 2;

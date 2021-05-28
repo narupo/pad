@@ -35,7 +35,7 @@ safesystem(const char *cmdline, int option) {
         return system(cmdline);
     }
 
-#ifdef _CAP_WINDOWS
+#ifdef _PAD_WINDOWS
     int flag = 0;
     if (option & SAFESYSTEM_EDIT) {
         // option for edit command
@@ -251,7 +251,7 @@ compile_argv(const config_t *config, errstack_t *errstack, int argc, char *argv[
 
 void
 clear_screen(void) {
-#ifdef _CAP_WINDOWS
+#ifdef _PAD_WINDOWS
     system("cls");
 #else
     system("clear");
@@ -395,7 +395,7 @@ is_dot_file(const char *path) {
 char *
 pop_tail_slash(char *path) {
     int32_t pathlen = strlen(path);
-#ifdef _CAP_WINDOWS
+#ifdef _PAD_WINDOWS
     if (pathlen == 3 && path[2] == '\\') {
         return path;
     } else {

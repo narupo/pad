@@ -21,10 +21,10 @@
 #include <pad/lib/cstring.h>
 
 #if defined(_WIN32) || defined(_WIN64)
-# define _CAP_WINDOWS 1
+# define _PAD_WINDOWS 1
 #endif
 
-#ifdef _CAP_WINDOWS
+#ifdef _PAD_WINDOWS
 
 #else
 # include <sys/wait.h>
