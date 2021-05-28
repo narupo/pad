@@ -16,7 +16,10 @@ node_del(node_t *self) {
 
 node_t *
 node_new(node_type_t type, void *real, const token_t *ref_token) {
-    node_t *self = mem_ecalloc(1, sizeof(*self));
+    node_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->type = type;
     self->real = real;
@@ -27,13 +30,32 @@ node_new(node_type_t type, void *real, const token_t *ref_token) {
 
 node_t *
 node_deep_copy(const node_t *other) {
-#define declare(T, name) T *name = mem_ecalloc(1, sizeof(*name))
+#define declare_first(T, name) \
+    T *name = mem_calloc(1, sizeof(*name)); \
+    if (!name) { \
+        return NULL; \
+    } \
+
+#define declare(T, name) \
+    T *name = mem_calloc(1, sizeof(*name)); \
+    if (!name) { \
+        node_del(self); \
+        return NULL; \
+    } \
 
 #define copy_node_array(dst, src, member) \
     dst->member = nodearr_new(); \
+    if (!dst->member) { \
+        node_del(self); \
+        return NULL; \
+    } \
     for (int32_t i = 0; i < nodearr_len(src->member); ++i) { \
         node_t *node = nodearr_get(src->member, i); \
         node = node_deep_copy(node); \
+        if (!node) { \
+            node_del(self); \
+            return NULL; \
+        } \
         nodearr_moveb(dst->member, node); \
     } \
 
@@ -43,6 +65,10 @@ node_deep_copy(const node_t *other) {
         const node_dict_item_t *item = nodedict_getc_index(src->member, i); \
         assert(item); \
         node_t *node = node_deep_copy(item->value); \
+        if (!node) { \
+            node_del(self); \
+            return NULL; \
+        } \
         nodedict_move(dst->member, item->key, mem_move(node)); \
     } \
 
@@ -50,7 +76,8 @@ node_deep_copy(const node_t *other) {
         return NULL;
     }
 
-    declare(node_t, self);
+    declare_first(node_t, self);
+
     self->type = other->type;
 
     switch (other->type) {
