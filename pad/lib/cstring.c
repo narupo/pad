@@ -97,6 +97,24 @@ cstr_cpywithout(char *dst, int32_t dstsz, const char *src, const char *without) 
 }
 
 char *
+cstr_dup(const char *src) {
+    if (!src) {
+        return NULL;
+    }
+
+    uint32_t nelems = strlen(src)+1;
+    char *dst = malloc(sizeof(src[0]) * nelems);
+    if (!dst) {
+        return NULL;
+    }
+
+    strcpy(dst, src);
+    dst[nelems-1] = '\0';
+
+    return dst;
+}
+
+char *
 cstr_edup(const char *src) {
     if (!src) {
         fprintf(stderr, "invalid source string in cstr_edup\n");

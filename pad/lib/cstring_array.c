@@ -30,12 +30,19 @@ cstrarr_del(cstring_array_t *arr) {
 
 cstring_array_t *
 cstrarr_new(void) {
-	cstring_array_t *arr = mem_ecalloc(1, sizeof(cstring_array_t));
+	cstring_array_t *self = mem_calloc(1, sizeof(cstring_array_t));
+	if (!self) {
+		return NULL;
+	}
 
-	arr->capa = CAP_ARRINITCAPA;
-	arr->arr = mem_ecalloc(arr->capa + 1, sizeof(cstring_array_t *));
+	self->capa = CAP_ARRINITCAPA;
+	self->arr = mem_calloc(self->capa + 1, sizeof(cstring_array_t *));
+	if (!self->arr) {
+		free(self);
+		return NULL;
+	}
 
-	return arr;
+	return self;
 }
 
 cstring_array_t *
@@ -44,13 +51,24 @@ cstrarr_deep_copy(const cstring_array_t *other) {
 		return NULL;
 	}	
 
-	cstring_array_t *self = mem_ecalloc(1, sizeof(cstring_array_t));
+	cstring_array_t *self = mem_calloc(1, sizeof(cstring_array_t));
+	if (!self) {
+		return NULL;
+	}
 
 	self->capa = other->capa;
-	self->arr = mem_ecalloc(other->capa + 1, sizeof(cstring_array_t *));
+	self->arr = mem_calloc(other->capa + 1, sizeof(cstring_array_t *));
+	if (!self->arr) {
+		cstrarr_del(self);
+		return NULL;
+	}
 
 	for (self->len = 0; self->len < other->len; ++self->len) {
-		self->arr[self->len] = cstr_edup(other->arr[self->len]);
+		self->arr[self->len] = cstr_dup(other->arr[self->len]);
+		if (!self->arr[self->len]) {
+			cstrarr_del(self);
+			return NULL;
+		}
 	}
 
 	return self;
@@ -62,29 +80,29 @@ cstrarr_shallow_copy(const cstring_array_t *other) {
 }
 
 char **
-cstrarr_escdel(cstring_array_t *arr) {
-	if (!arr) {
+cstrarr_escdel(cstring_array_t *self) {
+	if (!self) {
 		return NULL;
 	}
 
-	char **esc = arr->arr;
+	char **esc = self->arr;
 
-	free(arr);
+	free(self);
 
 	return esc;
 }
 
 cstring_array_t *
-cstrarr_resize(cstring_array_t *arr, int32_t capa) {
-	int32_t size = sizeof(arr->arr[0]);
-	char **tmp = realloc(arr->arr, size*capa + size);
+cstrarr_resize(cstring_array_t *self, int32_t capa) {
+	int32_t size = sizeof(self->arr[0]);
+	char **tmp = mem_realloc(self->arr, size*capa + size);
 	if (!tmp) {
 		return NULL;
 	}
 
-	arr->arr = tmp;
-	arr->capa = capa;
-	return arr;
+	self->arr = tmp;
+	self->capa = capa;
+	return self;
 }
 
 cstring_array_t *
@@ -125,21 +143,21 @@ cstrarr_pop_move(cstring_array_t *self) {
 }
 
 cstring_array_t *
-cstrarr_move(cstring_array_t *arr, char *ptr) {
-	if (!arr) {
+cstrarr_move(cstring_array_t *self, char *ptr) {
+	if (!self) {
 		return NULL;
 	}
 
-	if (arr->len >= arr->capa) {
-		if (!cstrarr_resize(arr, arr->capa*2)) {
+	if (self->len >= self->capa) {
+		if (!cstrarr_resize(self, self->capa*2)) {
 			return NULL;
 		}
 	}
 
-	arr->arr[arr->len++] = ptr;
-	arr->arr[arr->len] = NULL;
+	self->arr[self->len++] = ptr;
+	self->arr[self->len] = NULL;
 
-	return arr;
+	return self;
 }
 
 static int
@@ -150,49 +168,49 @@ cstrarr_cmp(const void *lh, const void *rh) {
 }
 
 cstring_array_t *
-cstrarr_sort(cstring_array_t *arr) {
-	if (!arr) {
+cstrarr_sort(cstring_array_t *self) {
+	if (!self) {
 		return NULL;
 	}
 
-	qsort(arr->arr, arr->len, sizeof(arr->arr[0]), cstrarr_cmp);
-	return arr;
+	qsort(self->arr, self->len, sizeof(self->arr[0]), cstrarr_cmp);
+	return self;
 }
 
 const char *
-cstrarr_getc(const cstring_array_t *arr, int idx) {
-	if (!arr) {
+cstrarr_getc(const cstring_array_t *self, int idx) {
+	if (!self) {
 		return NULL;
 	}
 
-	if (idx >= arr->len || idx < 0) {
+	if (idx >= self->len || idx < 0) {
 		return NULL;
 	}
 
-	return arr->arr[idx];
+	return self->arr[idx];
 }
 
 int32_t
-cstrarr_len(const cstring_array_t *arr) {
-	if (!arr) {
+cstrarr_len(const cstring_array_t *self) {
+	if (!self) {
 		return 0;
 	}
 
-	return arr->len;
+	return self->len;
 }
 
 const cstring_array_t *
-cstrarr_show(const cstring_array_t *arr, FILE *fout) {
-	if (!arr || !fout) {
+cstrarr_show(const cstring_array_t *self, FILE *fout) {
+	if (!self || !fout) {
 		return NULL;
 	}
 
-	for (int32_t i = 0; i < arr->len; ++i) {
-		fprintf(fout, "%s\n", arr->arr[i]);
+	for (int32_t i = 0; i < self->len; ++i) {
+		fprintf(fout, "%s\n", self->arr[i]);
 	}
 	fflush(fout);
 
-	return arr;
+	return self;
 }
 
 void

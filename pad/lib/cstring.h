@@ -85,6 +85,17 @@ char *
 cstr_edup(const char *src);
 
 /**
+ * Duplicate string
+ *
+ * @param[in] src source string
+ *
+ * @return success to pointer to string of dynamic allocate memory
+ * @return failed to pointer to NULL
+ */
+char *
+cstr_dup(const char *src);
+
+/**
  * Split path by separator character
  *
  * @param[in] *str pointer to string
