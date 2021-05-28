@@ -1001,7 +1001,11 @@ uni_split(const unicode_t *other, const unicode_type_t *sep) {
 
     int32_t capa = 4;
     int32_t cursize = 0;
-    unicode_t **arr = mem_ecalloc(capa + 1, sizeof(unicode_t *));
+    unicode_t **arr = mem_calloc(capa + 1, sizeof(unicode_t *));
+    if (!arr) {
+        return NULL;
+    }
+
     unicode_t *u = uni_new();
 
 #define store(u) \
@@ -1009,7 +1013,11 @@ uni_split(const unicode_t *other, const unicode_type_t *sep) {
         if (capa >= cursize) { \
             capa *= 2; \
             int32_t nbyte = sizeof(unicode_t *); \
-            arr = mem_erealloc(arr, capa * nbyte + nbyte); \
+            unicode_t **tmp = mem_realloc(arr, capa * nbyte + nbyte); \
+            if (!tmp) { \
+                return NULL; \
+            } \
+            arr = tmp; \
         } \
         arr[cursize++] = mem_move(u); \
         arr[cursize] = NULL; \
