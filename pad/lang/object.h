@@ -343,6 +343,16 @@ obj_new_unicode(gc_t *ref_gc, unicode_t *move_unicode);
 object_t *
 obj_new_int(gc_t *ref_gc, objint_t lvalue);
 
+/**
+ * construct float object by value
+ * if failed to allocate memory then exit from process
+ * 
+ * @param[in] *ref_gc reference to gc_t (do not delete)
+ * @param[in] value  value of objfloat_t
+ *
+ * @return success to pointer to object_t (new object)
+ * @return failed to NULL
+ */
 object_t *
 obj_new_float(gc_t *ref_gc, objfloat_t value);
 
