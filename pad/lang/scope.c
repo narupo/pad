@@ -40,10 +40,17 @@ scope_new(gc_t *ref_gc) {
         return NULL;
     }
 
-    scope_t *self = mem_ecalloc(1, sizeof(*self));
+    scope_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->ref_gc = ref_gc;
     self->varmap = objdict_new(ref_gc);
+    if (!self->varmap) {
+        scope_del(self);
+        return NULL;
+    }
 
     return self;
 }
@@ -54,10 +61,17 @@ scope_deep_copy_once(const scope_t *other) {
         return NULL;
     }
 
-    scope_t *self = mem_ecalloc(1, sizeof(*self));
+    scope_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->ref_gc = other->ref_gc;
     self->varmap = objdict_deep_copy(other->varmap);
+    if (!self->varmap) {
+        scope_del(self);
+        return NULL;
+    }
 
     return self;
 }
@@ -68,14 +82,26 @@ scope_deep_copy(const scope_t *other) {
         return NULL;
     }
 
-    scope_t *self = mem_ecalloc(1, sizeof(*self));
+    scope_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->ref_gc = other->ref_gc;
     self->varmap = objdict_deep_copy(other->varmap);
+    if (!self->varmap) {
+        scope_del(self);
+        return NULL;
+    }
 
     scope_t *dst = self;
     for (scope_t *cur = other->prev; cur; cur = cur->prev) {
         dst->prev = scope_deep_copy_once(cur);
+        if (!dst->prev) {
+            scope_del(self);
+            return NULL;
+        }
+
         dst->prev->next = dst;
         dst = dst->prev;
     }
@@ -83,6 +109,10 @@ scope_deep_copy(const scope_t *other) {
     dst = self;
     for (scope_t *cur = other->next; cur; cur = cur->next) {
         dst->next = scope_deep_copy_once(cur);
+        if (!dst->next) {
+            scope_del(self);
+            return NULL;
+        }
         dst->next->prev = dst;
         dst = dst->next;
     }
@@ -96,10 +126,17 @@ scope_shallow_copy_once(const scope_t *other) {
         return NULL;
     }
 
-    scope_t *self = mem_ecalloc(1, sizeof(*self));
+    scope_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->ref_gc = other->ref_gc;
     self->varmap = objdict_shallow_copy(other->varmap);
+    if (!self->varmap) {
+        scope_del(self);
+        return NULL;
+    }
 
     return self;
 }
@@ -110,14 +147,25 @@ scope_shallow_copy(const scope_t *other) {
         return NULL;
     }
 
-    scope_t *self = mem_ecalloc(1, sizeof(*self));
+    scope_t *self = mem_calloc(1, sizeof(*self));
+    if (!self) {
+        return NULL;
+    }
 
     self->ref_gc = other->ref_gc;
     self->varmap = objdict_shallow_copy(other->varmap);
+    if (!self->varmap) {
+        scope_del(self);
+        return NULL;
+    }
 
     scope_t *dst = self;
     for (scope_t *cur = other->prev; cur; cur = cur->prev) {
         dst->prev = scope_shallow_copy_once(cur);
+        if (!dst->prev) {
+            scope_del(self);
+            return NULL;            
+        }
         dst->prev->next = dst;
         dst = dst->prev;
     }
@@ -125,6 +173,10 @@ scope_shallow_copy(const scope_t *other) {
     dst = self;
     for (scope_t *cur = other->next; cur; cur = cur->next) {
         dst->next = scope_shallow_copy_once(cur);
+        if (!dst->next) {
+            scope_del(self);
+            return NULL;            
+        }
         dst->next->prev = dst;
         dst = dst->next;
     }
