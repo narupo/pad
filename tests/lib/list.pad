@@ -1,0 +1,36 @@
+{@
+from "lib/list.pad" import (Node, List)
+
+def case1():
+	puts("Test lib/test case1")
+
+	lis = List()
+	for i = 0; i < 4; i += 1:
+		lis.push(i)
+	end
+
+	assert(lis.pop() == 3)
+	assert(lis.pop() == 2)
+	assert(lis.pop() == 1)
+	assert(lis.pop() == 0)
+	assert(lis.pop() == nil)
+end
+
+def allTest():
+	puts("Test lib/list all")
+
+	case1()
+end
+
+def main(name):
+	puts("Test lib/list")
+
+	if name == "all":
+		allTest()
+	elif name == "case1":
+		case1()
+	end
+
+	puts("Done lib/list")
+end
+@}

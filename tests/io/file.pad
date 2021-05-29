@@ -1,6 +1,9 @@
 {@
 
 def case1():
+    puts("Test io/file case1")
+    // Needs implement!
+    
     fin = open("tests/io/file1.txt")
 
     content = fin.read()

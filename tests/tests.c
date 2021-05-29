@@ -25444,6 +25444,43 @@ test_trv_func_def_13(void) {
 }
 
 static void
+test_trv_func_def_14(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "i = 1\n"
+    "idval = id(i)\n"
+    "def func(a):\n"
+    "   puts(idval != id(a))\n"
+    "end\n"
+    "func(i)\n"
+    "@}", "true\n"
+    );
+
+    check_ok("{@\n"
+    "i = 1.23\n"
+    "idval = id(i)\n"
+    "def func(a):\n"
+    "   puts(idval != id(a))\n"
+    "end\n"
+    "func(i)\n"
+    "@}", "true\n"
+    );
+
+    check_ok("{@\n"
+    "i = \"abc\"\n"
+    "idval = id(i)\n"
+    "def func(a):\n"
+    "   puts(idval != id(a))\n"
+    "end\n"
+    "func(i)\n"
+    "@}", "true\n"
+    );
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_def_fail_0(void) {
     trv_ready;
 
@@ -30495,6 +30532,7 @@ traverser_tests[] = {
     {"func_def_11", test_trv_func_def_11},
     {"func_def_12", test_trv_func_def_12},
     {"func_def_13", test_trv_func_def_13},
+    {"func_def_14", test_trv_func_def_14},
     {"func_def_fail_0", test_trv_func_def_fail_0},
     {"func_met_0", test_trv_func_met_0},
     {"func_met_1", test_trv_func_met_1},

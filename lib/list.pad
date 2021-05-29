@@ -1,5 +1,6 @@
 {@
-/* Created at 2020/10/09
+/*
+ * Created at 2020/10/09
  * A simple list
  */
 
@@ -40,10 +41,7 @@ struct List:
                 break
             end
         end
-
-        if tail == nil:  // impossible
-            return Error("not found tail", Error.VALUE)
-        end
+        assert(tail)
 
         tail.next = Node(obj)
         return nil
@@ -52,8 +50,7 @@ struct List:
     met insert(self, index, obj):
         i = 0
         prev = nil
-        cur = self.head
-        for:
+        for cur = self.head; ; cur = cur.next:
             if index == i:
                 // insert node
                 node = Node(obj)
@@ -74,8 +71,32 @@ struct List:
                 break
             end
             prev = cur
-            cur = cur.next
             i += 1
+        end
+    end
+
+    met pop(self):
+        if self.head == nil:
+            return nil
+        end
+
+        tail = nil
+        prev = nil
+        for cur = self.head; cur; cur = cur.next:
+            if cur.next == nil:
+                tail = cur
+                break
+            end
+            prev = cur
+        end
+        assert(tail)
+
+        if prev == nil:
+            self.head = nil
+            return tail.value
+        else:
+            prev.next = nil
+            return tail.value
         end
     end
 end

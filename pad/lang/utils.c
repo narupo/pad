@@ -508,10 +508,7 @@ copy_func_args(
     again:
         switch (arg->type) {
         case OBJ_TYPE_NIL:
-        case OBJ_TYPE_INT:
-        case OBJ_TYPE_FLOAT:
         case OBJ_TYPE_BOOL:
-        case OBJ_TYPE_UNICODE:
         case OBJ_TYPE_OWNERS_METHOD:
         case OBJ_TYPE_ARRAY:
         case OBJ_TYPE_DICT:
@@ -521,6 +518,12 @@ copy_func_args(
         case OBJ_TYPE_MODULE:
             // reference
             savearg = arg;
+            break;
+        case OBJ_TYPE_INT:
+        case OBJ_TYPE_FLOAT:
+        case OBJ_TYPE_UNICODE:
+            // copy
+            savearg = obj_deep_copy(arg);
             break;
         case OBJ_TYPE_CHAIN:
             arg = refer_chain_obj_with_ref(ref_ast, err, ref_gc, ref_context, ref_node, arg);
