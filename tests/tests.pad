@@ -1,5 +1,6 @@
 {@
 from "tests/stmt/for-stmt.pad" import main as forStmtMain
+// from "tests/io/file.pad" import main as fileMain  // Needs implement
 
 def allTest():
     forStmtMain("all")

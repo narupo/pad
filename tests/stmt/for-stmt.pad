@@ -274,7 +274,7 @@ end
 **********************/
 
 def allTest():
-    puts("Test stmt/for-stmt (all)")
+    puts("Test stmt/for-stmt all")
     // TODO: needs refactoring to replace this to dict and function
     case1()
     case2()
@@ -296,6 +296,8 @@ def allTest():
 end
 
 def main(name):
+    puts("Test stmt/for-stmt")
+
     // TODO: needs refactoring to replace this to dict and function
     if name == "all":
         allTest()

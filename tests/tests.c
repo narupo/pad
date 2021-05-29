@@ -31213,7 +31213,7 @@ test_lang_stdlib_list_dump(void) {
     trv_ready;
 
     check_ok("{@\n"
-        "from \"lib/std/list.pad\" import List\n"
+        "from \"lib/list.pad\" import List\n"
         "list = List()\n"
         "list.push(1)\n"
         "list.push(2)\n"
@@ -31234,7 +31234,7 @@ test_lang_stdlib_list_pop(void) {
     trv_ready;
 /*
     check_ok("{@\n"
-        "from \"lib/std/list.pad\" import List\n"
+        "from \"lib/list.pad\" import List\n"
         "list = List.new()\n"
         "list.push(1)\n"
         "list.push(2)\n"
@@ -31261,7 +31261,7 @@ test_lang_stdlib_stream_new(void) {
     trv_ready;
 
     check_ok("{@\n"
-        "from \"lib/std/stream.pad\" import Stream\n"
+        "from \"lib/stream.pad\" import Stream\n"
         "s = Stream.new(\"abc\")\n"
         "@}{: s.buf :},{: s.index :},{: s.length :}", "abc,0,3");
 
@@ -31273,7 +31273,7 @@ test_lang_stdlib_stream_get(void) {
     trv_ready;
 
     check_ok("{@\n"
-        "from \"lib/std/stream.pad\" import Stream\n"
+        "from \"lib/stream.pad\" import Stream\n"
         "s = Stream.new(\"abc\")\n"
         "puts(s.eof())\n"
         "puts(s.get())\n"
@@ -31291,7 +31291,7 @@ test_lang_stdlib_stream_next(void) {
     trv_ready;
 
     check_ok("{@\n"
-        "from \"lib/std/stream.pad\" import Stream\n"
+        "from \"lib/stream.pad\" import Stream\n"
         "s = Stream.new(\"abc\")\n"
         "puts(s.cur(0))\n"
         "s.next()\n"
@@ -31312,7 +31312,7 @@ test_lang_stdlib_stream_prev(void) {
     trv_ready;
 
     check_ok("{@\n"
-        "from \"lib/std/stream.pad\" import Stream\n"
+        "from \"lib/stream.pad\" import Stream\n"
         "src = \"abc\""
         "s = Stream.new(src)\n"
         "s.index = len(src)\n"
@@ -31335,7 +31335,7 @@ test_lang_stdlib_stream_cur(void) {
     trv_ready;
 
     check_ok("{@\n"
-        "from \"lib/std/stream.pad\" import Stream\n"
+        "from \"lib/stream.pad\" import Stream\n"
         "s = Stream.new(\"abc\")\n"
         "puts(s.cur(0))\n"
         "@}", "a\n");

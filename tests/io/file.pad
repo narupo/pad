@@ -1,0 +1,27 @@
+{@
+
+def case1():
+    fin = open("tests/io/file1.txt")
+
+    content = fin.read()
+    assert(content == "this is file1 content")
+
+    fin.close()
+end
+
+def allTest():
+    puts("Test io/file all")
+    case1()
+end
+
+def main(name):
+    puts("Test io/file")
+
+    if name == "all":
+        allTest()
+    end
+
+    puts("Done io/file")
+end
+
+@}
