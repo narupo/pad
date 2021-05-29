@@ -1,0 +1,50 @@
+{@
+def case1():
+	puts("Test def/func case1")
+
+	def func(a):
+		return a
+	end
+
+	i = 0
+	j = func(i)
+	assert(i == j)
+	assert(id(i) != id(j))
+end
+
+def case2():
+	puts("Test def/func case2")
+
+	def func(a):
+		return a, a
+	end
+
+	i = 0
+	j, k = func(i)
+	assert(i == j and i == k and j == k)
+	assert(id(i) != id(j))
+	assert(id(i) != id(k))
+	assert(id(j) == id(k))  // ここの仕様はちょっと気持ち悪い気がする
+end
+
+def allTest():
+	puts("Test def/func all")
+
+	case1()
+	case2()
+end
+
+def main(name):
+	puts("Test def/func")
+
+	if name == "all":
+		allTest()
+	elif name == "case1":
+		case1()
+	elif name == "case2":
+		case2()
+	end
+
+	puts("Done def/func")
+end
+@}

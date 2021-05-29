@@ -2,7 +2,7 @@
 from "lib/list.pad" import (Node, List)
 
 def case1():
-	puts("Test lib/test case1")
+	puts("Test lib/list case1")
 
 	lis = List()
 	for i = 0; i < 4; i += 1:
