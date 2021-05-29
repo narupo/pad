@@ -18,6 +18,17 @@ end
 struct List:
     head = nil
 
+    met __len__(self):
+        length = 0
+        for cur = self.head; cur; cur = cur.next:
+            length += 1
+        end
+        return length
+    end
+
+    /**
+     * Dump list elements at stdout 
+     */
     met dump(self):
         if self.head == nil:
             return 
@@ -28,10 +39,15 @@ struct List:
         end
     end
 
+    /**
+     * Push element at tail of list
+     *
+     * @param[in] obj element 
+     */
     met push(self, obj):
         if self.head == nil:
             self.head = Node(obj)
-            return nil
+            return 
         end
 
         tail = nil
@@ -44,9 +60,14 @@ struct List:
         assert(tail)
 
         tail.next = Node(obj)
-        return nil
     end
 
+    /**
+     * Insert element at index position
+     * 
+     * @param[in] index number of index
+     * @param[in] obj   element
+     */
     met insert(self, index, obj):
         i = 0
         prev = nil
@@ -75,6 +96,11 @@ struct List:
         end
     end
 
+    /**
+     * Pop element from tail of list
+     * 
+     * @return element|nil 
+     */
     met pop(self):
         if self.head == nil:
             return nil
