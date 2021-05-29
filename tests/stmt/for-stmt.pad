@@ -192,6 +192,49 @@ def case13():
     assert(box[0][0][2] == 2)
 end
 
+/********************
+* dict and for-stmt *
+********************/
+
+def case14():
+    puts("Test stmt/for-stmt case14")
+
+    d = {"sum": 0}
+
+    for i = 0; i < 4; i += 1:
+        d["sum"] += i
+    end
+
+    assert(d["sum"] == 6)
+end
+
+def case15():
+    puts("Test stmt/for-stmt case15")
+    
+    d = {"lis": []}
+
+    for i = 0; i < 4; i += 1:
+        d["lis"].push(i)
+    end
+
+    assert(d["lis"][0] == 0)
+    assert(d["lis"][1] == 1)
+    assert(d["lis"][2] == 2)
+    assert(d["lis"][3] == 3)
+end
+
+def case16():
+    puts("Test stmt/for-stmt case16")
+    
+    d = {"outer": {"inner": 0}}
+
+    for i = 0; i < 4; i += 1:
+        d["outer"]["inner"] += i
+    end
+
+    assert(d["outer"]["inner"] == 6)
+end
+
 /**********************
 * done case functions *
 **********************/
@@ -212,6 +255,9 @@ def allTest():
     case11()
     case12()
     case13()
+    case14()
+    case15()
+    case16()
 end
 
 def main(name):
@@ -244,6 +290,12 @@ def main(name):
         case12()
     elif name == "case13":
         case13()
+    elif name == "case14":
+        case14()
+    elif name == "case15":
+        case15()
+    elif name == "case16":
+        case16()
     else:
         eputs("invalid name", name)
     end
