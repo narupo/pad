@@ -168,12 +168,37 @@ def case12():
     assert(mat[0][2] == 2)
 end
 
+def case13():
+    puts("Test stmt/for-stmt case13")
+
+    box = []
+    for i = 0; i < 3; i += 1:
+        row = []
+        for j = 0; j < 3; j += 1:
+            zrow = []
+            for k = 0; k < 3; k += 1:
+                zrow.push(k)
+            end
+            row.push(zrow)
+        end
+        box.push(row)
+    end
+
+    assert(len(box) == 3)
+    assert(len(box[0]) == 3)
+    assert(len(box[0][0]) == 3)
+    assert(box[0][0][0] == 0)
+    assert(box[0][0][1] == 1)
+    assert(box[0][0][2] == 2)
+end
+
 /**********************
 * done case functions *
 **********************/
 
 def allTest():
     puts("Test stmt/for-stmt (all)")
+    // TODO: needs refactoring to replace this to dict and function
     case1()
     case2()
     case3()
@@ -186,6 +211,7 @@ def allTest():
     case10()
     case11()
     case12()
+    case13()
 end
 
 def main(name):
@@ -215,7 +241,9 @@ def main(name):
     elif name == "case11":
         case11()
     elif name == "case12":
-        case11()
+        case12()
+    elif name == "case13":
+        case13()
     else:
         eputs("invalid name", name)
     end
