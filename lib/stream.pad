@@ -1,7 +1,7 @@
 {@
-/*
-    Created at 2020/10/11
-*/
+/* Stream object
+ * Since: 2020/10/11
+ */
 
 /**
  * Stream structure for parser
@@ -14,7 +14,7 @@ struct Stream:
     /**
      * Constructor
      *
-     * @param {str} buf buffer
+     * @param[in|out] buf buffer
      */
     def new(buf):
         return Stream(buf, len(buf))
@@ -23,8 +23,8 @@ struct Stream:
     /**
      * Get current character
      *
-     * @param {int} ofs offset value
-     * @return {str} character
+     * @param[in] ofs offset value
+     * @return character
      */
     met cur(self, ofs):
         i = self.index + ofs
@@ -58,7 +58,7 @@ struct Stream:
      * Check EOF of stream
      * If stream's index is EOF then return true else return false
      *
-     * @return {bool}
+     * @return true|false
      */
     met eof(self):
         return self.index < 0 or self.index >= self.length
@@ -67,7 +67,7 @@ struct Stream:
     /**
      * Get current character and step to next of index
      *
-     * @return {str} character
+     * @return character
      */
     met get(self):
         if self.eof():
