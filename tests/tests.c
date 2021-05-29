@@ -19559,7 +19559,7 @@ test_trv_assign_and_reference_11_5(void) {
     "   end\n"
     "   j = 1\n"
     "   k = f(j)\n"
-    "@}{: id(k) == id(j) :}");
+    "@}{: id(k) != id(j) :}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
@@ -19626,7 +19626,7 @@ test_trv_assign_and_reference_12(void) {
     "   end\n"
     "   k = 1\n"
     "   i, j = f(k)\n"
-    "@}{: i :},{: j :},{: id(i) == id(j) :},{: id(k) == id(i) :},{: id(k) == id(j) :}");
+    "@}{: i :},{: j :},{: id(i) == id(j) :},{: id(k) != id(i) :},{: id(k) != id(j) :}");
     {
         ast_clear(ast);
         cc_compile(ast, tkr_get_tokens(tkr));
