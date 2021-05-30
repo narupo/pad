@@ -1206,3 +1206,4 @@ const char *
 obj_getc_mod_name(const object_t *self) {
     return self->module.name;
 }
+

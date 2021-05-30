@@ -8915,37 +8915,6 @@ again:
     }
 }
 
-// TODO: remove me?
-static object_t *
-trv_calc_asscalc_add_ass_array(ast_t *ast, trv_args_t *targs) {
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs && lhs->type == OBJ_TYPE_ARRAY);
-
-again:
-    switch (rhs->type) {
-    default: {
-        pushb_error("invalid right hand operand (%d)", rhs->type);
-        return_trav(NULL);
-    } break;
-    case OBJ_TYPE_IDENTIFIER:
-    case OBJ_TYPE_CHAIN: {
-        rhs = extract_idn_and_chain(ast, targs, rhs);
-        if (ast_has_errors(ast)) {
-            pushb_error("failed to extract identifier and chain object");
-            return_trav(NULL);
-        }
-        goto again;
-    } break;
-    case OBJ_TYPE_ARRAY: {
-        object_array_t *dst = lhs->objarr;
-        object_array_t *src = rhs->objarr;
-        objarr_app_other(dst, src);
-        return_trav(lhs);
-    } break;
-    }
-}
-
 static object_t *
 trv_calc_asscalc_add_ass(ast_t *ast, trv_args_t *targs) {
     tready();
