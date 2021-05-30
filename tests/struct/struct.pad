@@ -37,11 +37,80 @@ def case2():
 	assert(Animal().getMouth() == 1)
 end
 
+def case3():
+	puts("Test struct/struct case3")
+
+	struct Head:
+		eyes = 2
+		mouth = 1
+	end
+
+	struct Animal:
+		def new(eyes, mouth):
+			self = Animal()
+			self.head = Head(eyes, mouth)
+			return self
+		end
+
+		met getEyes(self):
+			return self.head.eyes
+		end
+
+		met getMouth(self):
+			return self.head.mouth
+		end
+	end
+
+	animal = Animal.new(3, 2)
+	assert(animal.getEyes() == 3)
+	assert(animal.getMouth() == 2)
+end
+
+def case4():
+	puts("Test struct/struct case4")
+
+	struct Calculator:
+		met calc(self, lhs, op, rhs):
+			if op == "+":
+				return lhs + rhs
+			elif op == "-":
+				return lhs - rhs
+			end
+		end
+	end
+
+	c = Calculator()
+	assert(c.calc(10, "+", 5) == 15)
+	assert(c.calc(10, "-", 5) == 5)
+end
+
+def case5():
+	puts("Test struct/struct case5")
+
+	struct A:
+		a = nil
+
+		def new():
+			self = A()
+			self.a = A()
+			self.a.a = A()
+			self.a.a.a = 1
+			return self
+		end
+	end
+
+	a = A.new()
+	assert(a.a.a.a == 1)
+end
+
 def allTest():
 	puts("Test struct/struct all")
 
 	case1()
 	case2()
+	case3()
+	case4()
+	case5()
 end
 
 def main(name):
@@ -53,6 +122,12 @@ def main(name):
 		case1()
 	elif name == "case2":
 		case2()
+	elif name == "case3":
+		case3()
+	elif name == "case4":
+		case4()
+	elif name == "case5":
+		case5()
 	end
 
 	puts("Done struct/struct")
