@@ -8095,10 +8095,13 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    object_t *idnobj = targs->lhs_obj;
+    const char *idnname = str_getc(idnobj->identifier.name);
+    object_t *intobj = pull_in_ref_by_all(idnobj);
     object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    assert(idnobj && rhs);
+    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
 
     depth_t depth = targs->depth;
 
@@ -8108,16 +8111,22 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
         break;
     case OBJ_TYPE_INT: {
+        object_t *lhs = obj_deep_copy(intobj);
         lhs->lvalue += rhs->lvalue;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_FLOAT: {
+        object_t *lhs = obj_deep_copy(intobj);
         lhs->float_value = lhs->lvalue + rhs->float_value;
         lhs->type = OBJ_TYPE_FLOAT;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_BOOL: {
+        object_t *lhs = obj_deep_copy(intobj);
         lhs->lvalue += (objint_t) rhs->boolean;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -8128,7 +8137,7 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, trv_args_t *targs) {
         }
 
         check("call trv_calc_asscalc_add_ass_identifier_int");
-        targs->lhs_obj = lhs;
+        targs->lhs_obj = idnobj;
         targs->rhs_obj = rvar;
         targs->depth = depth + 1;
         object_t *obj = trv_calc_asscalc_add_ass_identifier_int(ast, targs);
@@ -8143,10 +8152,13 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_calc_asscalc_add_ass_identifier_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    object_t *idnobj = targs->lhs_obj;
+    const char *idnname = str_getc(idnobj->identifier.name);
+    object_t *floatobj = pull_in_ref_by_all(idnobj);
     object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FLOAT);
+    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    assert(idnobj && rhs);
+    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
 
     depth_t depth = targs->depth;
 
@@ -8156,15 +8168,21 @@ trv_calc_asscalc_add_ass_identifier_float(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
         break;
     case OBJ_TYPE_INT: {
+        object_t *lhs = obj_deep_copy(floatobj);
         lhs->float_value += rhs->lvalue;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_FLOAT: {
+        object_t *lhs = obj_deep_copy(floatobj);
         lhs->float_value += rhs->float_value;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_BOOL: {
+        object_t *lhs = obj_deep_copy(floatobj);
         lhs->float_value += (objint_t) rhs->boolean;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -8175,7 +8193,7 @@ trv_calc_asscalc_add_ass_identifier_float(ast_t *ast, trv_args_t *targs) {
         }
 
         check("call trv_calc_asscalc_add_ass_identifier_int");
-        targs->lhs_obj = lhs;
+        targs->lhs_obj = idnobj;
         targs->rhs_obj = rvar;
         targs->depth = depth + 1;
         object_t *obj = trv_calc_asscalc_add_ass_identifier_float(ast, targs);
@@ -8190,10 +8208,13 @@ trv_calc_asscalc_add_ass_identifier_float(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_calc_asscalc_add_ass_identifier_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    object_t *idnobj = targs->lhs_obj;
+    const char *idnname = str_getc(idnobj->identifier.name);
+    object_t *boolobj = pull_in_ref_by_all(idnobj);
+    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
     object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(idnobj && rhs);
+    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
 
     depth_t depth = targs->depth;
 
@@ -8203,18 +8224,24 @@ trv_calc_asscalc_add_ass_identifier_bool(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
         break;
     case OBJ_TYPE_INT: {
+        object_t *lhs = obj_deep_copy(boolobj);
         lhs->lvalue = lhs->boolean + rhs->lvalue;
         lhs->type = OBJ_TYPE_INT;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_FLOAT: {
+        object_t *lhs = obj_deep_copy(boolobj);
         lhs->float_value = lhs->boolean + rhs->float_value;
         lhs->type = OBJ_TYPE_FLOAT;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_BOOL: {
+        object_t *lhs = obj_deep_copy(boolobj);
         lhs->lvalue = lhs->boolean + rhs->boolean;
         lhs->type = OBJ_TYPE_INT;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -8225,7 +8252,7 @@ trv_calc_asscalc_add_ass_identifier_bool(ast_t *ast, trv_args_t *targs) {
         }
 
         check("call trv_calc_asscalc_add_ass_identifier_bool");
-        targs->lhs_obj = lhs;
+        targs->lhs_obj = idnobj;
         targs->rhs_obj = rvar;
         targs->depth = depth + 1;
         object_t *obj = trv_calc_asscalc_add_ass_identifier_bool(ast, targs);
@@ -8240,11 +8267,14 @@ trv_calc_asscalc_add_ass_identifier_bool(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_calc_asscalc_add_ass_identifier_string(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    object_t *idnobj = targs->lhs_obj;
+    const char *idnname = str_getc(idnobj->identifier.name);
+    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_t *unicodeobj = pull_in_ref_by_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     const char *idn = targs->identifier;
-    assert(lhs && rhs && idn);
-    assert(lhs->type == OBJ_TYPE_UNICODE);
+    assert(idnobj && rhs && idn);
+    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
 
 again:
     switch (rhs->type) {
@@ -8262,20 +8292,10 @@ again:
         goto again;
     } break;
     case OBJ_TYPE_UNICODE: {
-        unicode_t *dst = uni_deep_copy(lhs->unicode);
-        uni_app(dst, uni_getc(rhs->unicode));
-        object_t *ret = obj_new_unicode(ast->ref_gc, mem_move(dst));
-
-        // replace variable because unicode is immutable object
-        set_ref_at_cur_varmap(
-            ast->error_stack,
-            ast->ref_context,
-            targs->ref_owners,
-            idn,
-            ret
-        );
-
-        return_trav(ret);
+        object_t *lhs = obj_deep_copy(unicodeobj);
+        uni_app(lhs->unicode, uni_getc(rhs->unicode));
+        set_ref(varmap, idnname, lhs);
+        return_trav(lhs);
     } break;
     case OBJ_TYPE_CHAIN: {
         rhs = _extract_ref_of_obj_all(rhs);
@@ -8315,19 +8335,20 @@ trv_calc_asscalc_add_ass_identifier(ast_t *ast, trv_args_t *targs) {
         break;
     case OBJ_TYPE_INT: {
         check("call trv_calc_asscalc_add_ass_identifier_int");
-        targs->lhs_obj = lhsref;
+        // ATODO
+        targs->lhs_obj = lhs;
         targs->depth = depth + 1;
         result = trv_calc_asscalc_add_ass_identifier_int(ast, targs);
     } break;
     case OBJ_TYPE_FLOAT: {
         check("call trv_calc_asscalc_add_ass_identifier_float");
-        targs->lhs_obj = lhsref;
+        targs->lhs_obj = lhs;
         targs->depth = depth + 1;
         result = trv_calc_asscalc_add_ass_identifier_float(ast, targs);
     } break;
     case OBJ_TYPE_BOOL: {
         check("call trv_calc_asscalc_add_ass_identifier_bool");
-        targs->lhs_obj = lhsref;
+        targs->lhs_obj = lhs;
         targs->depth = depth + 1;
         result = trv_calc_asscalc_add_ass_identifier_bool(ast, targs);
     } break;
@@ -8339,7 +8360,7 @@ trv_calc_asscalc_add_ass_identifier(ast_t *ast, trv_args_t *targs) {
         break;
     case OBJ_TYPE_UNICODE: {
         check("call trv_calc_asscalc_add_ass_identifier_string");
-        targs->lhs_obj = lhsref;
+        targs->lhs_obj = lhs;
         targs->identifier = idn;
         targs->depth = depth + 1;
         result = trv_calc_asscalc_add_ass_identifier_string(ast, targs);
@@ -8884,37 +8905,6 @@ again:
     }
 }
 
-// TODO: remove me?
-static object_t *
-trv_calc_asscalc_add_ass_unicode(ast_t *ast, trv_args_t *targs) {
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs && lhs->type == OBJ_TYPE_UNICODE);
-
-again:
-    switch (rhs->type) {
-    default: {
-        pushb_error("invalid right hand operand (%d)", rhs->type);
-        return_trav(NULL);
-    } break;
-    case OBJ_TYPE_IDENTIFIER:
-    case OBJ_TYPE_CHAIN: {
-        rhs = extract_idn_and_chain(ast, targs, rhs);
-        if (ast_has_errors(ast)) {
-            pushb_error("failed to extract identifier and chain object");
-            return_trav(NULL);
-        }
-        goto again;
-    } break;
-    case OBJ_TYPE_UNICODE: {
-        unicode_t *dst = lhs->unicode;
-        unicode_t *src = rhs->unicode;
-        uni_app_other(dst, src);
-        return_trav(lhs);
-    } break;
-    }
-}
-
 static object_t *
 trv_calc_asscalc_add_ass(ast_t *ast, trv_args_t *targs) {
     tready();
@@ -8947,10 +8937,13 @@ trv_calc_asscalc_add_ass(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    object_t *idnobj = targs->lhs_obj;
+    const char *idnname = str_getc(idnobj->identifier.name);
+    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_t *intobj = pull_in_ref_by_all(idnobj);
     object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(idnobj && rhs);
+    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
 
     object_t *rhsref = _extract_ref_of_obj_all(rhs);
     if (ast_has_errors(ast)) {
@@ -8964,16 +8957,22 @@ trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     } break;
     case OBJ_TYPE_INT: {
+        object_t *lhs = obj_deep_copy(intobj);
         lhs->lvalue -= rhsref->lvalue;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_FLOAT: {
+        object_t *lhs = obj_deep_copy(intobj);
         lhs->float_value = lhs->lvalue - rhsref->float_value;
         lhs->type = OBJ_TYPE_FLOAT;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_BOOL: {
+        object_t *lhs = obj_deep_copy(intobj);
         lhs->lvalue -= (objint_t) rhsref->boolean;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     }
@@ -8985,10 +8984,13 @@ trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_calc_asscalc_sub_ass_idn_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    object_t *idnobj = targs->lhs_obj;
+    const char *idnname = str_getc(idnobj->identifier.name);
+    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_t *floatobj = pull_in_ref_by_all(idnobj);
     object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FLOAT);
+    assert(idnobj && rhs);
+    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
 
     object_t *rhsref = _extract_ref_of_obj_all(rhs);
     if (ast_has_errors(ast)) {
@@ -9002,15 +9004,21 @@ trv_calc_asscalc_sub_ass_idn_float(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     } break;
     case OBJ_TYPE_INT: {
+        object_t *lhs = obj_deep_copy(floatobj);
         lhs->float_value -= rhsref->lvalue;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_FLOAT: {
+        object_t *lhs = obj_deep_copy(floatobj);
         lhs->float_value -= rhsref->float_value;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_BOOL: {
+        object_t *lhs = obj_deep_copy(floatobj);
         lhs->float_value -= (objfloat_t) rhsref->boolean;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     }
@@ -9022,10 +9030,13 @@ trv_calc_asscalc_sub_ass_idn_float(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_calc_asscalc_sub_ass_idn_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    object_t *idnobj = targs->lhs_obj;
+    const char *idnname = str_getc(idnobj->identifier.name);
+    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_t *boolobj = pull_in_ref_by_all(idnobj);
     object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(idnobj && rhs);
+    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
 
     object_t *rhsref = _extract_ref_of_obj_all(rhs);
     if (ast_has_errors(ast)) {
@@ -9039,18 +9050,24 @@ trv_calc_asscalc_sub_ass_idn_bool(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     } break;
     case OBJ_TYPE_INT: {
+        object_t *lhs = obj_deep_copy(boolobj);
         lhs->lvalue = lhs->boolean - rhsref->lvalue;
         lhs->type = OBJ_TYPE_INT;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_FLOAT: {
+        object_t *lhs = obj_deep_copy(boolobj);
         lhs->float_value = lhs->boolean - rhsref->float_value;
         lhs->type = OBJ_TYPE_FLOAT;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_BOOL: {
+        object_t *lhs = obj_deep_copy(boolobj);
         lhs->lvalue = lhs->boolean - rhsref->boolean;
         lhs->type = OBJ_TYPE_INT;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     }
@@ -9078,17 +9095,17 @@ trv_calc_asscalc_sub_ass_idn(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     } break;
     case OBJ_TYPE_INT: {
-        targs->lhs_obj = lhsref;
+        targs->lhs_obj = lhs;
         object_t *result = trv_calc_asscalc_sub_ass_idn_int(ast, targs);
         return_trav(result);
     } break;
     case OBJ_TYPE_FLOAT: {
-        targs->lhs_obj = lhsref;
+        targs->lhs_obj = lhs;
         object_t *result = trv_calc_asscalc_sub_ass_idn_float(ast, targs);
         return_trav(result);
     } break;
     case OBJ_TYPE_BOOL: {
-        targs->lhs_obj = lhsref;
+        targs->lhs_obj = lhs;
         object_t *result = trv_calc_asscalc_sub_ass_idn_bool(ast, targs);
         return_trav(result);
     } break;
@@ -9130,10 +9147,13 @@ trv_calc_asscalc_sub_ass(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_calc_asscalc_mul_ass_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    object_t *idnobj = targs->lhs_obj;
+    const char *idnname = str_getc(idnobj->identifier.name);
+    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_t *intobj = pull_in_ref_by_all(idnobj);
     object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(idnobj && rhs);
+    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
 
     object_t *rhsref = _extract_ref_of_obj_all(rhs);
     if (ast_has_errors(ast)) {
@@ -9147,16 +9167,22 @@ trv_calc_asscalc_mul_ass_int(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     } break;
     case OBJ_TYPE_INT: {
+        object_t *lhs = obj_deep_copy(intobj);
         lhs->lvalue *= rhsref->lvalue;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_FLOAT: {
+        object_t *lhs = obj_deep_copy(intobj);
         lhs->float_value = lhs->lvalue * rhsref->float_value;
         lhs->type = OBJ_TYPE_FLOAT;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_BOOL: {
+        object_t *lhs = obj_deep_copy(intobj);
         lhs->lvalue *= (objint_t) rhsref->boolean;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     }
@@ -9168,10 +9194,13 @@ trv_calc_asscalc_mul_ass_int(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_calc_asscalc_mul_ass_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    object_t *idnobj = targs->lhs_obj;
+    const char *idnname = str_getc(idnobj->identifier.name);
+    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_t *floatobj = pull_in_ref_by_all(idnobj);
     object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FLOAT);
+    assert(idnobj && rhs);
+    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
 
     object_t *rhsref = _extract_ref_of_obj_all(rhs);
     if (ast_has_errors(ast)) {
@@ -9185,15 +9214,21 @@ trv_calc_asscalc_mul_ass_float(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     } break;
     case OBJ_TYPE_INT: {
+        object_t *lhs = obj_deep_copy(floatobj);
         lhs->float_value *= rhsref->lvalue;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_FLOAT: {
+        object_t *lhs = obj_deep_copy(floatobj);
         lhs->float_value *= rhsref->float_value;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_BOOL: {
+        object_t *lhs = obj_deep_copy(floatobj);
         lhs->float_value *= (objfloat_t) rhsref->boolean;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     }
@@ -9205,10 +9240,13 @@ trv_calc_asscalc_mul_ass_float(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_calc_asscalc_mul_ass_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    object_t *idnobj = targs->lhs_obj;
+    const char *idnname = str_getc(idnobj->identifier.name);
+    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_t *boolobj = pull_in_ref_by_all(idnobj);
     object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(idnobj && rhs);
+    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
 
     object_t *rhsref = _extract_ref_of_obj_all(rhs);
     if (ast_has_errors(ast)) {
@@ -9222,18 +9260,24 @@ trv_calc_asscalc_mul_ass_bool(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     } break;
     case OBJ_TYPE_INT: {
+        object_t *lhs = obj_deep_copy(boolobj);
         lhs->lvalue = lhs->boolean * rhsref->lvalue;
         lhs->type = OBJ_TYPE_INT;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_FLOAT: {
+        object_t *lhs = obj_deep_copy(boolobj);
         lhs->float_value = lhs->boolean * rhsref->float_value;
         lhs->type = OBJ_TYPE_FLOAT;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_BOOL: {
+        object_t *lhs = obj_deep_copy(boolobj);
         lhs->lvalue = lhs->boolean * rhsref->boolean;
         lhs->type = OBJ_TYPE_INT;
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     }
@@ -9245,10 +9289,13 @@ trv_calc_asscalc_mul_ass_bool(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_calc_asscalc_mul_ass_string(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    object_t *idnobj = targs->lhs_obj;
+    const char *idnname = str_getc(idnobj->identifier.name);
+    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_t *unicodeobj = pull_in_ref_by_all(idnobj);
     object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_UNICODE);
+    assert(idnobj && rhs);
+    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
 
     object_t *rhsref = _extract_ref_of_obj_all(rhs);
     if (ast_has_errors(ast)) {
@@ -9262,6 +9309,7 @@ trv_calc_asscalc_mul_ass_string(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     } break;
     case OBJ_TYPE_INT: {
+        object_t *lhs = obj_deep_copy(unicodeobj);
         if (rhsref->lvalue < 0) {
             pushb_error("can't mul by negative value");
             return_trav(NULL);
@@ -9274,12 +9322,15 @@ trv_calc_asscalc_mul_ass_string(ast_t *ast, trv_args_t *targs) {
             }
             uni_del(other);
         }
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case OBJ_TYPE_BOOL: {
+        object_t *lhs = obj_deep_copy(unicodeobj);
         if (!rhsref->boolean) {
             uni_clear(lhs->unicode);
         }
+        set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     }
@@ -9316,25 +9367,25 @@ trv_calc_asscalc_mul_ass(ast_t *ast, trv_args_t *targs) {
     } break;
     case OBJ_TYPE_INT: {
         check("call trv_calc_asscalc_mul_ass_int");
-        targs->lhs_obj = lhsref;
+        targs->lhs_obj = lhs;
         object_t *result = trv_calc_asscalc_mul_ass_int(ast, targs);
         return_trav(result);
     } break;
     case OBJ_TYPE_FLOAT: {
         check("call trv_calc_asscalc_mul_ass_float");
-        targs->lhs_obj = lhsref;
+        targs->lhs_obj = lhs;
         object_t *result = trv_calc_asscalc_mul_ass_float(ast, targs);
         return_trav(result);
     } break;
     case OBJ_TYPE_BOOL: {
         check("call trv_calc_asscalc_mul_ass_bool");
-        targs->lhs_obj = lhsref;
+        targs->lhs_obj = lhs;
         object_t *result = trv_calc_asscalc_mul_ass_bool(ast, targs);
         return_trav(result);
     } break;
     case OBJ_TYPE_UNICODE: {
         check("call trv_calc_asscalc_mul_ass_string");
-        targs->lhs_obj = lhsref;
+        targs->lhs_obj = lhs;
         object_t *result = trv_calc_asscalc_mul_ass_string(ast, targs);
         return_trav(result);
     } break;

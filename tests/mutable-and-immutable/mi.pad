@@ -1,0 +1,77 @@
+{@
+def case1():
+    puts("Test mutable-and-immutable/mi case1")
+
+    // in-place operation
+    i = 0
+    aid = id(i)
+    i += 1
+    bid = id(i)
+    assert(aid != bid)
+
+    i = 0.123
+    aid = id(i)
+    i += 1.0
+    bid = id(i)
+    assert(aid != bid)    
+
+    i = "a"
+    aid = id(i)
+    i += "b"
+    bid = id(i)
+    assert(aid != bid)
+end
+
+def case2():
+    puts("Test mutable-and-immutable/mi case2")
+end
+
+def case3():
+    puts("Test mutable-and-immutable/mi case3")
+end
+
+def case4():
+    puts("Test mutable-and-immutable/mi case4")
+end
+
+def case5():
+    puts("Test mutable-and-immutable/mi case5")
+end
+
+def case6():
+    puts("Test mutable-and-immutable/mi case6")
+end
+
+def allTest():
+    puts("Test mutable-and-immutable/mi all")
+
+    case1()
+    case2()
+    case3()
+    case4()
+    case5()
+    case6()
+end
+
+def main(name):
+    puts("Test mutable-and-immutable/mi")
+
+    if name == "all":
+        allTest()
+    elif name == "case1":
+        case1()
+    elif name == "case2":
+        case2()
+    elif name == "case3":
+        case3()
+    elif name == "case4":
+        case4()
+    elif name == "case5":
+        case5()
+    elif name == "case6":
+        case6()
+    end
+
+    puts("Done mutable-and-immutable/mi")
+end
+@}

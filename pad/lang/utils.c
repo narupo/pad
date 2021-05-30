@@ -251,6 +251,25 @@ set_ref_at_cur_varmap(
     return true;
 }
 
+bool
+set_ref(object_dict_t *varmap, const char *identifier, object_t *ref_obj) {
+    if (!varmap || !identifier || !ref_obj) {
+        return false;
+    }
+
+    object_t *popped = objdict_pop(varmap, identifier);
+    if (popped == ref_obj) {
+        objdict_set(varmap, identifier, ref_obj);
+    } else {
+        obj_inc_ref(ref_obj);
+        obj_dec_ref(popped);
+        obj_del(popped);
+        objdict_set(varmap, identifier, ref_obj);
+    }
+
+    return true;
+}
+
 /**
  * chain.dot
  * chain [ . dot ] <--- chain object
@@ -509,7 +528,6 @@ copy_func_args(
         switch (arg->type) {
         case OBJ_TYPE_NIL:
         case OBJ_TYPE_BOOL:
-        case OBJ_TYPE_UNICODE:
         case OBJ_TYPE_OWNERS_METHOD:
         case OBJ_TYPE_ARRAY:
         case OBJ_TYPE_DICT:
@@ -521,6 +539,7 @@ copy_func_args(
             // reference
             savearg = arg;
             break;
+        case OBJ_TYPE_UNICODE:
         case OBJ_TYPE_INT:
         case OBJ_TYPE_FLOAT:
             // copy
@@ -1443,6 +1462,54 @@ refer_chain_obj_with_ref(
             pushb_error("failed to refer three objects");
             goto fail;
         }
+
+        obj_inc_ref(operand);
+        objarr_pushb(owns, operand);
+    }
+
+    objarr_del(owns);
+    return operand;
+
+fail:
+    objarr_del(owns);
+    return NULL;
+}
+
+/**
+ * set ref at last position of chain_obj
+ */
+object_t *
+set_ref_at_chain_obj(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *chain_obj,
+    object_t *ref
+) {
+    if (!chain_obj) {
+        pushb_error("chain object is null");
+        return NULL;
+    }
+
+    object_t *operand = obj_get_chain_operand(chain_obj);
+    assert(operand);
+
+    chain_objects_t *cos = obj_get_chain_objs(chain_obj);
+    assert(cos);
+    if (!chain_objs_len(cos)) {
+        return operand;
+    }
+
+    object_array_t *owns = objarr_new();
+    obj_inc_ref(operand);
+    objarr_pushb(owns, operand);
+
+    for (int32_t i = 0; i < chain_objs_len(cos); ++i) {
+        chain_object_t *co = chain_objs_get(cos, i);
+        assert(co);
+
 
         obj_inc_ref(operand);
         objarr_pushb(owns, operand);

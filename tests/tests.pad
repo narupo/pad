@@ -3,6 +3,7 @@ from "tests/stmt/for-stmt.pad" import main as forStmtMain
 from "tests/def/func.pad" import main as funcMain
 from "tests/type/types.pad" import main as typesMain
 from "tests/struct/struct.pad" import main as structMain
+from "tests/mutable-and-immutable/mi.pad" import main as miMain
 // from "tests/io/file.pad" import main as fileMain  // Needs implement
 from "tests/lib/list.pad" import main as listMain
 
@@ -12,6 +13,7 @@ def allTest():
     funcMain("all")
     structMain("all")
     typesMain("all")
+    miMain("all")
 end
 
 def main():
@@ -26,6 +28,8 @@ def main():
         structMain(case)
     elif name == "lib/list":
         listMain(case)
+    elif name == "mutable-and-immutable/mi":
+        miMain(case)
     else:
         allTest()
     end

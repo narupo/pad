@@ -25552,7 +25552,7 @@ test_trv_func_def_14(void) {
     "i = \"abc\"\n"
     "idval = id(i)\n"
     "def func(a):\n"
-    "   puts(idval == id(a))\n"
+    "   puts(idval != id(a))\n"
     "end\n"
     "func(i)\n"
     "@}", "true\n"
@@ -27762,7 +27762,9 @@ test_trv_asscalc_add_ass_string(void) {
     trv_ready;
 
     check_ok("{@ a = \"a\" a += \"b\" @}{: a :}", "ab");
-    check_ok_trace("{@ a = \"a\" b = [\"b\"] a += b[0] @}{: a :}", "ab");
+    check_ok("{@ a = \"a\" b = [\"b\"] a += b[0] @}{: a :}", "ab");
+
+    check_ok("{@ a = \"a\" aid = id(a) a += \"b\" @}{: aid != id(a) :}", "true");
 
     trv_cleanup;
 }
@@ -28860,7 +28862,6 @@ static void
 test_trv_array_1(void) {
     trv_ready;
 
-    // TODO: implement in-place operator
     tkr_parse(tkr, "{@\n"
     "   i = 0\n"
     "   a = [i, 1]\n"
@@ -28873,7 +28874,7 @@ test_trv_array_1(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "0\n"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
     }
 
     trv_cleanup;
@@ -30486,6 +30487,40 @@ test_trv_scope_7(void) {
     trv_cleanup;
 }
 
+static void 
+test_trv_mutable_and_immutable(void) {
+    trv_ready;
+
+    /* Pad's mutable and immutable of object
+     *
+     * Mutable:
+     *
+     *   array
+     *   dict
+     *
+     * Immutable:
+     *
+     *   int
+     *   float
+     *   string
+     * 
+     * But int and float of function arguments copied and pass
+     */
+    check_fail("{@ 0 += 1 @}", "invalid left hand operand (1)");
+
+    check_ok("{@ i = 0 iid = id(i) i += 1 @}{: iid != id(i) :},{: i :}", "true,1");
+    check_ok("{@ i = 0.12 iid = id(i) i += 0.01 @}{: iid != id(i) :},{: i :}", "true,0.13");
+    check_ok("{@ i = \"aaa\" iid = id(i) i += \"bbb\" @}{: iid != id(i) :},{: i :}", "true,aaabbb");
+
+    check_ok_trace("{@ def f(a): a += 1 end \n i = 0 \n f(i) @}{: i :}", "0")
+    check_ok_trace("{@ def f(a): a += 0.1 end \n i = 0.0 \n f(i) @}{: i :}", "0.0")
+    check_ok_trace("{@ def f(a): a += \"b\" end \n i = \"a\" \n f(i) @}{: i :}", "a")
+
+    // check_ok_showbuf("{@ a = [0] aid = id(a[0]) a[0] += 1 @}{: aid != id(a[0]) :},{: a[0] :}", "true,1")
+
+    trv_cleanup;
+}
+
 static const struct testcase
 traverser_tests[] = {
     {"scope_0", test_trv_scope_0},
@@ -30496,6 +30531,7 @@ traverser_tests[] = {
     {"scope_5", test_trv_scope_5},
     {"scope_6", test_trv_scope_6},
     {"scope_7", test_trv_scope_7},
+    {"mutable_and_immutable", test_trv_mutable_and_immutable},
     {"assign_and_reference_0", test_trv_assign_and_reference_0},
     {"assign_and_reference_1", test_trv_assign_and_reference_1},
     {"assign_and_reference_2", test_trv_assign_and_reference_2},

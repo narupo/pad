@@ -121,6 +121,9 @@ set_ref_at_cur_varmap(
     object_t *ref
 );
 
+bool
+set_ref(object_dict_t *varmap, const char *identifier, object_t *ref_obj);
+
 /**
  * extract identifier object and index object and etc to reference
  *

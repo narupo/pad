@@ -27,7 +27,7 @@ def case2():
     i = 0
     a = Array([i])
     assert(len(a) == 1)
-    assert(id(a[0]) != id(i))  // TODO: what the xxxx is this?
+    assert(id(a[0]) == id(i))  
 end
 
 def case3():
