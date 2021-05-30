@@ -154,6 +154,24 @@ chain_objs_get(chain_objects_t *self, int32_t idx) {
     return self->chain_objs[idx];
 }
 
+chain_object_t *
+chain_objs_get_last(chain_objects_t *self) {
+    if (self->len <= 0) {
+        return NULL;
+    }
+
+    return self->chain_objs[self->len - 1];
+}
+
+chain_object_t *
+chain_objs_get_last_2(chain_objects_t *self) {
+    if (self->len <= 1) {
+        return NULL;
+    }
+
+    return self->chain_objs[self->len - 2];
+}
+
 void
 chain_objs_dump(const chain_objects_t *self, FILE *fout) {
     if (!self || !fout) {

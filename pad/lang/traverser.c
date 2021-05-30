@@ -70,6 +70,10 @@
 #define _refer_chain_obj_with_ref(obj) \
     refer_chain_obj_with_ref(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, obj)
 
+#undef _refer_and_set_ref
+#define _refer_and_set_ref(chain_obj, ref) \
+    refer_and_set_ref(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, chain_obj, ref)
+
 #undef _refer_chain_three_objs
 #define _refer_chain_three_objs(owns, co) \
     refer_chain_three_objs(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, owns, co)
@@ -8373,12 +8377,12 @@ trv_calc_asscalc_add_ass_identifier(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    object_t *chainobj = targs->lhs_obj;
     object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_CHAIN);
+    assert(chainobj && rhs);
+    assert(chainobj->type == OBJ_TYPE_CHAIN);
 
-    object_t *lref = _refer_chain_obj_with_ref(lhs);
+    object_t *lref = _refer_chain_obj_with_ref(chainobj);
     if (ast_has_errors(ast)) {
         pushb_error("failed to refer chain object");
         return_trav(NULL);
@@ -8402,14 +8406,20 @@ trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
             return_trav(NULL);
         } break;
         case OBJ_TYPE_INT: {
+            lref = obj_deep_copy(lref);
             lref->lvalue += rref->lvalue;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_FLOAT: {
+            lref = obj_deep_copy(lref);
             lref->float_value = lref->lvalue + rref->float_value;
             lref->type = OBJ_TYPE_FLOAT;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_BOOL: {
+            lref = obj_deep_copy(lref);
             lref->lvalue += (objint_t) rref->boolean;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
@@ -8420,13 +8430,19 @@ trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
             return_trav(NULL);
         } break;
         case OBJ_TYPE_INT: {
+            lref = obj_deep_copy(lref);
             lref->float_value += rref->lvalue;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_FLOAT: {
+            lref = obj_deep_copy(lref);
             lref->float_value += rref->float_value;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_BOOL: {
+            lref = obj_deep_copy(lref);
             lref->float_value += (objfloat_t) rref->boolean;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
@@ -8437,16 +8453,22 @@ trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
             return_trav(NULL);
         } break;
         case OBJ_TYPE_INT: {
+            lref = obj_deep_copy(lref);
             lref->lvalue = ((objint_t) lref->boolean) + rref->lvalue;
             lref->type = OBJ_TYPE_INT;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_FLOAT: {
+            lref = obj_deep_copy(lref);
             lref->float_value = ((objfloat_t) lref->boolean) + rref->float_value;
             lref->type = OBJ_TYPE_FLOAT;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_BOOL: {
+            lref = obj_deep_copy(lref);
             lref->lvalue = ((objint_t) lref->boolean) + ((objint_t) rref->boolean);
             lref->type = OBJ_TYPE_INT;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
@@ -8457,7 +8479,9 @@ trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
             return_trav(NULL);
         } break;
         case OBJ_TYPE_UNICODE: {
+            lref = obj_deep_copy(lref);
             uni_app_other(lref->unicode, rref->unicode);
+            _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
@@ -8468,7 +8492,9 @@ trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
             return_trav(NULL);
         } break;
         case OBJ_TYPE_ARRAY: {
+            lref = obj_deep_copy(lref);
             objarr_app_other(lref->objarr, rref->objarr);
+            _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
@@ -8484,12 +8510,12 @@ trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_calc_asscalc_sub_ass_chain(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    object_t *chainobj = targs->lhs_obj;
     object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_CHAIN);
+    assert(chainobj && rhs);
+    assert(chainobj->type == OBJ_TYPE_CHAIN);
 
-    object_t *lref = _refer_chain_obj_with_ref(lhs);
+    object_t *lref = _refer_chain_obj_with_ref(chainobj);
     if (ast_has_errors(ast)) {
         pushb_error("failed to refer chain object");
         return NULL;
@@ -8513,14 +8539,20 @@ trv_calc_asscalc_sub_ass_chain(ast_t *ast, trv_args_t *targs) {
             return NULL;
         } break;
         case OBJ_TYPE_INT: {
+            lref = obj_deep_copy(lref);
             lref->lvalue -= rref->lvalue;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_FLOAT: {
+            lref = obj_deep_copy(lref);
             lref->float_value = lref->lvalue - rref->float_value;
             lref->type = OBJ_TYPE_FLOAT;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_BOOL: {
+            lref = obj_deep_copy(lref);
             lref->lvalue -= (objint_t) rref->boolean;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
@@ -8531,13 +8563,19 @@ trv_calc_asscalc_sub_ass_chain(ast_t *ast, trv_args_t *targs) {
             return NULL;
         } break;
         case OBJ_TYPE_INT: {
+            lref = obj_deep_copy(lref);
             lref->float_value -= rref->lvalue;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_FLOAT: {
+            lref = obj_deep_copy(lref);
             lref->float_value -= rref->float_value;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_BOOL: {
+            lref = obj_deep_copy(lref);
             lref->float_value -= (objfloat_t) rref->boolean;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
@@ -8548,16 +8586,22 @@ trv_calc_asscalc_sub_ass_chain(ast_t *ast, trv_args_t *targs) {
             return NULL;
         } break;
         case OBJ_TYPE_INT: {
+            lref = obj_deep_copy(lref);
             lref->lvalue = ((objint_t) lref->boolean) - rref->lvalue;
             lref->type = OBJ_TYPE_INT;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_FLOAT: {
+            lref = obj_deep_copy(lref);
             lref->float_value = ((objfloat_t) lref->boolean) - rref->float_value;
             lref->type = OBJ_TYPE_FLOAT;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_BOOL: {
+            lref = obj_deep_copy(lref);
             lref->lvalue = ((objint_t) lref->boolean) - ((objint_t) rref->boolean);
             lref->type = OBJ_TYPE_INT;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
@@ -8573,12 +8617,12 @@ trv_calc_asscalc_sub_ass_chain(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_calc_asscalc_mul_ass_chain(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    object_t *chainobj = targs->lhs_obj;
     object_t *rhs = targs->rhs_obj;
-    assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_CHAIN);
+    assert(chainobj && rhs);
+    assert(chainobj->type == OBJ_TYPE_CHAIN);
 
-    object_t *lref = _refer_chain_obj_with_ref(lhs);
+    object_t *lref = _refer_chain_obj_with_ref(chainobj);
     if (ast_has_errors(ast)) {
         pushb_error("failed to refer chain object");
         return NULL;
@@ -8602,14 +8646,20 @@ trv_calc_asscalc_mul_ass_chain(ast_t *ast, trv_args_t *targs) {
             return NULL;
         } break;
         case OBJ_TYPE_INT: {
+            lref = obj_deep_copy(lref);
             lref->lvalue *= rref->lvalue;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_FLOAT: {
+            lref = obj_deep_copy(lref);
             lref->float_value = lref->lvalue * rref->float_value;
             lref->type = OBJ_TYPE_FLOAT;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_BOOL: {
+            lref = obj_deep_copy(lref);
             lref->lvalue *= (objint_t) rref->boolean;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
@@ -8620,13 +8670,19 @@ trv_calc_asscalc_mul_ass_chain(ast_t *ast, trv_args_t *targs) {
             return NULL;
         } break;
         case OBJ_TYPE_INT: {
+            lref = obj_deep_copy(lref);
             lref->float_value *= rref->lvalue;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_FLOAT: {
+            lref = obj_deep_copy(lref);
             lref->float_value *= rref->float_value;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_BOOL: {
+            lref = obj_deep_copy(lref);
             lref->float_value *= (objfloat_t) rref->boolean;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
@@ -8637,16 +8693,22 @@ trv_calc_asscalc_mul_ass_chain(ast_t *ast, trv_args_t *targs) {
             return NULL;
         } break;
         case OBJ_TYPE_INT: {
+            lref = obj_deep_copy(lref);
             lref->lvalue = ((objint_t) lref->boolean) * rref->lvalue;
             lref->type = OBJ_TYPE_INT;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_FLOAT: {
+            lref = obj_deep_copy(lref);
             lref->float_value = ((objfloat_t) lref->boolean) * rref->float_value;
             lref->type = OBJ_TYPE_FLOAT;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         case OBJ_TYPE_BOOL: {
+            lref = obj_deep_copy(lref);
             lref->lvalue = ((objint_t) lref->boolean) * ((objint_t) rref->boolean);
             lref->type = OBJ_TYPE_INT;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
@@ -8657,9 +8719,11 @@ trv_calc_asscalc_mul_ass_chain(ast_t *ast, trv_args_t *targs) {
             return NULL;
         } break;
         case OBJ_TYPE_INT: {
+            lref = obj_deep_copy(lref);
             unicode_t *u = uni_mul(lref->unicode, rref->lvalue);
             uni_del(lref->unicode);
             lref->unicode = u;
+            _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;

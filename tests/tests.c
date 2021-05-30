@@ -28862,20 +28862,12 @@ static void
 test_trv_array_1(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok("{@\n"
     "   i = 0\n"
     "   a = [i, 1]\n"
     "   a[0] += 1\n"
     "   puts(i)\n"
-    "@}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "1\n"));
-    }
+    "@}", "0\n");
 
     trv_cleanup;
 }
@@ -30506,17 +30498,18 @@ test_trv_mutable_and_immutable(void) {
      * 
      * But int and float of function arguments copied and pass
      */
-    check_fail("{@ 0 += 1 @}", "invalid left hand operand (1)");
+    // check_fail("{@ 0 += 1 @}", "invalid left hand operand (1)");
 
-    check_ok("{@ i = 0 iid = id(i) i += 1 @}{: iid != id(i) :},{: i :}", "true,1");
-    check_ok("{@ i = 0.12 iid = id(i) i += 0.01 @}{: iid != id(i) :},{: i :}", "true,0.13");
-    check_ok("{@ i = \"aaa\" iid = id(i) i += \"bbb\" @}{: iid != id(i) :},{: i :}", "true,aaabbb");
+    // check_ok("{@ i = 0 iid = id(i) i += 1 @}{: iid != id(i) :},{: i :}", "true,1");
+    // check_ok("{@ i = 0.12 iid = id(i) i += 0.01 @}{: iid != id(i) :},{: i :}", "true,0.13");
+    // check_ok("{@ i = \"aaa\" iid = id(i) i += \"bbb\" @}{: iid != id(i) :},{: i :}", "true,aaabbb");
 
-    check_ok_trace("{@ def f(a): a += 1 end \n i = 0 \n f(i) @}{: i :}", "0")
-    check_ok_trace("{@ def f(a): a += 0.1 end \n i = 0.0 \n f(i) @}{: i :}", "0.0")
-    check_ok_trace("{@ def f(a): a += \"b\" end \n i = \"a\" \n f(i) @}{: i :}", "a")
+    // check_ok_trace("{@ def f(a): a += 1 end \n i = 0 \n f(i) @}{: i :}", "0")
+    // check_ok_trace("{@ def f(a): a += 0.1 end \n i = 0.0 \n f(i) @}{: i :}", "0.0")
+    // check_ok_trace("{@ def f(a): a += \"b\" end \n i = \"a\" \n f(i) @}{: i :}", "a")
 
-    // check_ok_showbuf("{@ a = [0] aid = id(a[0]) a[0] += 1 @}{: aid != id(a[0]) :},{: a[0] :}", "true,1")
+    check_ok_trace("{@ a = [100] aid = id(a[0]) a[0] += 1 @}{: aid != id(a[0]) :},{: a[0] :}", "true,101")
+    // check_ok_trace("{@ a = {\"b\": 0} aid = id(a[\"b\"]) a[\"b\"] += 1 @}{: aid != id(a[\"b\"]) :},{: a[\"b\"] :}", "true,1")
 
     trv_cleanup;
 }

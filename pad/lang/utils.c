@@ -392,6 +392,84 @@ again2:
 }
 
 static object_t *
+refer_and_set_ref_chain_dot(
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    object_array_t *owns,
+    chain_object_t *co,
+    object_t *ref
+) {
+#define error(fmt, ...) \
+    errstack_pushb(err, NULL, 0, NULL, 0, fmt, ##__VA_ARGS__);
+
+    if (!err || !ref_gc || !ref_context || !owns || !co) {
+        return NULL;
+    }
+    object_t *own = objarr_get_last(owns);
+    assert(own);
+    object_t *rhs = chain_obj_get_obj(co);
+
+again:
+    switch (own->type) {
+    default:
+        error("unsupported object type (%d)", own->type);
+        return NULL;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(own);
+        own = pull_in_ref_by_all(own);
+        if (!own) {
+            error("\"%s\" is not defined", idn);
+            return NULL;
+        }
+        goto again;
+    } break;
+    case OBJ_TYPE_MODULE: {
+        if (rhs->type != OBJ_TYPE_IDENTIFIER) {
+            error("invalid identitifer type (%d)", rhs->type);
+            return NULL;
+        }
+
+        const char *idn = obj_getc_idn_name(rhs);
+        object_dict_t *varmap = ctx_get_varmap(own->module.context);
+        set_ref(varmap, idn, ref);
+        return ref;
+    }
+    case OBJ_TYPE_UNICODE:
+    case OBJ_TYPE_DICT:
+    case OBJ_TYPE_ARRAY: {
+        error("can't set object");
+        return NULL;
+    } break;
+    case OBJ_TYPE_DEF_STRUCT: {
+        if (rhs->type != OBJ_TYPE_IDENTIFIER) {
+            error("invalid identitifer type (%d)", rhs->type);
+            return NULL;
+        }
+
+        const char *idn = obj_getc_idn_name(rhs);
+        object_dict_t *varmap = ctx_get_varmap(own->def_struct.context);
+        set_ref(varmap, idn, ref);
+        return ref;
+    } break;
+    case OBJ_TYPE_OBJECT: {
+        if (rhs->type != OBJ_TYPE_IDENTIFIER) {
+            error("invalid identitifer type (%d)", rhs->type);
+            return NULL;
+        }
+
+        const char *idn = obj_getc_idn_name(rhs);
+        object_dict_t *varmap = ctx_get_varmap(own->object.struct_context);
+        set_ref(varmap, idn, ref);
+        return ref;
+    } break;
+    }
+
+    assert(0 && "impossible");
+    return NULL;
+}
+
+static object_t *
 extract_idn(object_t *obj) {
     if (!obj) {
         return NULL;
@@ -1292,6 +1370,51 @@ again:
 }
 
 static object_t *
+refer_and_set_ref_array_index(
+    errstack_t *err,
+    const node_t *ref_node,
+    object_t *owner,
+    object_t *indexobj,
+    object_t *ref
+) {
+    assert(owner->type == OBJ_TYPE_ARRAY);
+
+again:
+    switch (indexobj->type) {
+    default:
+        pushb_error("index isn't integer");
+        return NULL;
+        break;
+    case OBJ_TYPE_INT:
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(indexobj);
+        indexobj = pull_in_ref_by_all(indexobj);
+        if (!indexobj) {
+            pushb_error("\"%s\" is not defined", idn);
+            return NULL;
+        }
+        goto again;
+    } break;
+    }
+
+    objint_t index = indexobj->lvalue;
+    object_array_t *objarr = obj_get_array(owner);
+
+    if (index < 0 || index >= objarr_len(objarr)) {
+        pushb_error("index out of range");
+        return NULL;
+    }
+
+    if (!objarr_move(objarr, index, ref)) {
+        pushb_error("failed to move element at array");
+        return NULL;
+    }
+
+    return ref;
+}
+
+static object_t *
 refer_dict_index(
     errstack_t *err, 
     const node_t *ref_node,
@@ -1331,6 +1454,48 @@ again:
     }
 
     return item->value;
+}
+
+static object_t *
+refer_and_set_ref_dict_index(
+    errstack_t *err, 
+    const node_t *ref_node,
+    object_t *owner,
+    object_t *indexobj,
+    object_t *ref
+) {
+    assert(owner->type == OBJ_TYPE_DICT);
+
+again:
+    switch (indexobj->type) {
+    default:
+        pushb_error("index isn't string");
+        return NULL;
+        break;
+    case OBJ_TYPE_UNICODE:
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(indexobj);
+        indexobj = pull_in_ref_by_all(indexobj);
+        if (!indexobj) {
+            pushb_error("\"%s\" is not defined", idn);
+            return NULL;
+        }
+        goto again;
+    } break;
+    }
+
+    object_dict_t *objdict = obj_get_dict(owner);
+    assert(objdict);
+    unicode_t *key = obj_get_unicode(indexobj);
+    const char *ckey = uni_getc_mb(key);
+
+    if (!objdict_move(objdict, ckey, ref)) {
+        pushb_error("failed to move element at dict");
+        return NULL;
+    }
+
+    return ref;
 }
 
 static object_t *
@@ -1379,6 +1544,54 @@ again:
     return NULL;
 }
 
+static object_t *
+refer_and_set_ref_chain_index(
+    errstack_t *err,
+    gc_t *ref_gc,
+    const node_t *ref_node,
+    object_array_t *owns,
+    chain_object_t *co,
+    object_t *ref
+) {
+    object_t *owner = objarr_get_last(owns);
+    if (!owner) {
+        pushb_error("owner is null");
+        return NULL;
+    }
+
+    object_t *indexobj = chain_obj_get_obj(co);
+
+again:
+    switch (owner->type) {
+    default:
+        pushb_error("not indexable (%d)", owner->type);
+        return NULL;
+        break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(owner);
+        owner = pull_in_ref_by_all(owner);
+        if (!owner) {
+            pushb_error("\"%s\" is not defined", idn);
+            return NULL;
+        }
+        goto again;
+    } break;
+    case OBJ_TYPE_ARRAY:
+        return refer_and_set_ref_array_index(
+            err, ref_node, owner, indexobj, ref
+        );
+        break;
+    case OBJ_TYPE_DICT:
+        return refer_and_set_ref_dict_index(
+            err, ref_node, owner, indexobj, ref
+        );
+        break;
+    }
+
+    assert(0 && "impossible");
+    return NULL;
+}
+
 object_t *
 refer_chain_three_objs(
     ast_t *ref_ast,
@@ -1408,6 +1621,49 @@ refer_chain_three_objs(
     } break;
     case CHAIN_OBJ_TYPE_INDEX: {
         operand = refer_chain_index(err, ref_gc, ref_node, owns, co);
+        if (errstack_len(err)) {
+            pushb_error("failed to refer chain index");
+            return NULL;
+        }
+    } break;
+    }
+
+    return operand;
+}
+
+object_t *
+refer_and_set_ref_chain_three_objs(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_array_t *owns,
+    chain_object_t *co,
+    object_t *ref
+) {
+    object_t *operand = NULL;
+
+    switch (chain_obj_getc_type(co)) {
+    case CHAIN_OBJ_TYPE_DOT: {
+        operand = refer_and_set_ref_chain_dot(
+            err, ref_gc, ref_context,
+            owns, co, ref
+        );
+        if (errstack_len(err)) {
+            pushb_error("failed to refer chain dot");
+            return NULL;
+        }
+    } break;
+    case CHAIN_OBJ_TYPE_CALL: {
+        pushb_error("can't set at call object");
+        return NULL;
+    } break;
+    case CHAIN_OBJ_TYPE_INDEX: {
+        operand = refer_and_set_ref_chain_index(
+            err, ref_gc, ref_node,
+            owns, co, ref
+        );
         if (errstack_len(err)) {
             pushb_error("failed to refer chain index");
             return NULL;
@@ -1450,13 +1706,8 @@ refer_chain_obj_with_ref(
         assert(co);
 
         operand = refer_chain_three_objs(
-            ref_ast,
-            err,
-            ref_gc,
-            ref_context,
-            ref_node,
-            owns,
-            co
+            ref_ast, err, ref_gc, ref_context, ref_node,
+            owns, co
         );
         if (errstack_len(err)) {
             pushb_error("failed to refer three objects");
@@ -1475,11 +1726,8 @@ fail:
     return NULL;
 }
 
-/**
- * set ref at last position of chain_obj
- */
 object_t *
-set_ref_at_chain_obj(
+refer_and_set_ref(
     ast_t *ref_ast,
     errstack_t *err,
     gc_t *ref_gc,
@@ -1506,13 +1754,29 @@ set_ref_at_chain_obj(
     obj_inc_ref(operand);
     objarr_pushb(owns, operand);
 
-    for (int32_t i = 0; i < chain_objs_len(cos); ++i) {
+    for (int32_t i = 0; i < chain_objs_len(cos) - 1; ++i) {
         chain_object_t *co = chain_objs_get(cos, i);
         assert(co);
 
+        operand = refer_chain_three_objs(
+            ref_ast, err, ref_gc, ref_context, ref_node,
+            owns, co
+        );
+        if (errstack_len(err)) {
+            pushb_error("failed to refer three objects");
+            goto fail;
+        }
 
         obj_inc_ref(operand);
         objarr_pushb(owns, operand);
+    }
+    if (chain_objs_len(cos)) {
+        chain_object_t *co = chain_objs_get_last(cos);
+        assert(co);
+        refer_and_set_ref_chain_three_objs(
+            ref_ast, err, ref_gc, ref_context, ref_node,
+            owns, co, ref
+        );
     }
 
     objarr_del(owns);
@@ -1522,6 +1786,10 @@ fail:
     objarr_del(owns);
     return NULL;
 }
+
+// const char *idn = str_getc(lastown->identifier.name);
+// object_dict_t *varmap = ctx_get_varmap(lastown->identifier.ref_context);
+// set_ref(varmap, idn, ref);
 
 object_t *
 extract_copy_of_obj(

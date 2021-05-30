@@ -85,6 +85,12 @@ chain_objs_len(const chain_objects_t *self);
 chain_object_t *
 chain_objs_get(chain_objects_t *self, int32_t idx);
 
+chain_object_t *
+chain_objs_get_last(chain_objects_t *self);
+
+chain_object_t *
+chain_objs_get_last_2(chain_objects_t *self);
+
 /**
  * dump chain_objects_t
  *

@@ -231,6 +231,17 @@ refer_chain_call(
     chain_object_t *co
 );
 
+object_t *
+refer_and_set_ref(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *chain_obj,
+    object_t *ref
+);
+
 /**
  * dump array object's elements at stdout
  *
