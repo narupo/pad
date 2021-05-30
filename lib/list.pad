@@ -18,6 +18,11 @@ end
 struct List:
     head = nil
 
+    /**
+     * Get length of list
+     *
+     * @return number of length
+     */
     met __len__(self):
         length = 0
         for cur = self.head; cur; cur = cur.next:
