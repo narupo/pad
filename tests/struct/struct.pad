@@ -13,10 +13,35 @@ def case1():
 	assert(animal.age == 20)
 end
 
+def case2():
+	puts("Test struct/struct case2")
+
+	struct Animal:
+		struct Head:
+			eyes = 2
+			mouth = 1
+		end
+
+		def getEyes():
+			return Animal.Head().eyes
+		end
+
+		met getMouth(self):
+			animal = Animal()
+			head = animal.Head()
+			return head.mouth
+		end
+	end
+
+	assert(Animal.getEyes() == 2)
+	assert(Animal().getMouth() == 1)
+end
+
 def allTest():
 	puts("Test struct/struct all")
 
 	case1()
+	case2()
 end
 
 def main(name):
@@ -26,6 +51,8 @@ def main(name):
 		allTest()
 	elif name == "case1":
 		case1()
+	elif name == "case2":
+		case2()
 	end
 
 	puts("Done struct/struct")
