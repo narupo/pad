@@ -103,6 +103,43 @@ def case5():
 	assert(a.a.a.a == 1)
 end
 
+def case6():
+	puts("Test struct/struct case6")
+
+	struct File:
+		fileno = nil
+	end
+
+	struct TextFile:
+		extract(File)
+	end
+
+	f = TextFile(1)
+	assert(f.fileno == 1)
+
+	struct Walkable:
+		met walk(self):
+			return 1
+		end
+	end
+
+	struct Swimable:
+		met swim(self):
+			return 2
+		end
+	end
+
+	struct Animal:
+		name = "Tama"
+		extract(Walkable, Swimable)
+	end
+
+	a = Animal()
+	assert(a.name == "Tama")
+	assert(a.walk() == 1)
+	assert(a.swim() == 2)
+end
+
 def allTest():
 	puts("Test struct/struct all")
 
@@ -111,6 +148,7 @@ def allTest():
 	case3()
 	case4()
 	case5()
+	case6()
 end
 
 def main(name):
@@ -128,6 +166,8 @@ def main(name):
 		case4()
 	elif name == "case5":
 		case5()
+	elif name == "case6":
+		case6()
 	end
 
 	puts("Done struct/struct")
