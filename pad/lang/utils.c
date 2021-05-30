@@ -509,6 +509,7 @@ copy_func_args(
         switch (arg->type) {
         case OBJ_TYPE_NIL:
         case OBJ_TYPE_BOOL:
+        case OBJ_TYPE_UNICODE:
         case OBJ_TYPE_OWNERS_METHOD:
         case OBJ_TYPE_ARRAY:
         case OBJ_TYPE_DICT:
@@ -521,7 +522,6 @@ copy_func_args(
             break;
         case OBJ_TYPE_INT:
         case OBJ_TYPE_FLOAT:
-        case OBJ_TYPE_UNICODE:
             // copy
             savearg = obj_deep_copy(arg);
             break;

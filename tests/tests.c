@@ -25471,7 +25471,7 @@ test_trv_func_def_14(void) {
     "i = \"abc\"\n"
     "idval = id(i)\n"
     "def func(a):\n"
-    "   puts(idval != id(a))\n"
+    "   puts(idval == id(a))\n"
     "end\n"
     "func(i)\n"
     "@}", "true\n"
