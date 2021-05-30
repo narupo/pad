@@ -1,6 +1,7 @@
 {@
 from "tests/stmt/for-stmt.pad" import main as forStmtMain
 from "tests/def/func.pad" import main as funcMain
+from "tests/type/types.pad" import main as typesMain
 from "tests/struct/struct.pad" import main as structMain
 // from "tests/io/file.pad" import main as fileMain  // Needs implement
 from "tests/lib/list.pad" import main as listMain
@@ -10,6 +11,7 @@ def allTest():
     listMain("all")
     funcMain("all")
     structMain("all")
+    typesMain("all")
 end
 
 def main():

@@ -24958,8 +24958,19 @@ test_trv_type_0(void) {
     trv_ready;
 
     check_ok("{: len(Array()) :}", "0");
-    check_ok("{: len(Array(1, 2, 3)) :}", "3");
-    check_ok("{: Array(1, 2, 3)[1] :}", "2");
+    check_ok("{: len(Array([1, 2, 3])) :}", "3");
+    check_ok("{: Array([1, 2, 3])[1] :}", "2");
+    check_ok("{@ i = 0 @}{: len(Array([i])) :}", "1");
+    check_ok("{@ i = 0 a = Array([i]) @}{: len(a) :}", "1");
+    
+    check_ok("{@ i = 0 a = [i] @}{: id(a[0]) == id(i) :}", "true");
+    check_ok("{@ i = 0 a = Array([i]) @}{: id(a[0]) == id(i) :}", "true");
+
+    check_ok("{@ i = 1.23 a = Array([i]) @}{: id(a[0]) == id(i) :}", "true");
+    check_ok("{@ i = \"abc\" a = Array([i]) @}{: id(a[0]) == id(i) :}", "true");
+
+    check_ok("{@ i = [0] a = Array(i) @}{: id(a[0]) != id(i) :}", "true");
+    check_ok("{@ i = {\"a\": 0} a = Array([i]) @}{: id(a[0][\"a\"]) == id(i[\"a\"]) :}", "true");
 
     trv_cleanup;
 }
@@ -28849,6 +28860,7 @@ static void
 test_trv_array_1(void) {
     trv_ready;
 
+    // TODO: implement in-place operator
     tkr_parse(tkr, "{@\n"
     "   i = 0\n"
     "   a = [i, 1]\n"
@@ -28876,7 +28888,7 @@ test_trv_array_2(void) {
     "   a = [i, 1]\n"
     "   puts(i)\n"
     "   puts(a[0])\n"
-    "   puts(id(i) != id(a[0]))"
+    "   puts(id(i) == id(a[0]))"
     "@}");
     {
         ast_clear(ast);
@@ -28902,9 +28914,9 @@ test_trv_array_3(void) {
     "   d = {\"a\": 1, \"b\": 2}\n"
     "   a = [i, s, n, l, d]\n"
     "   puts(a[0], a[1], a[2], a[3][0], a[4][\"a\"])\n"
-    "   puts(id(i) != id(a[0]))\n"
-    "   puts(id(s) != id(a[1]))\n"
-    "   puts(id(n) != id(a[2]))\n"
+    "   puts(id(i) == id(a[0]))\n"
+    "   puts(id(s) == id(a[1]))\n"
+    "   puts(id(n) == id(a[2]))\n"
     "   puts(id(l) == id(a[3]))\n"
     "   puts(id(d) == id(a[4]))\n"
     "   l[0] = 3\n"

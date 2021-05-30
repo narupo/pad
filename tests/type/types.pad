@@ -1,0 +1,85 @@
+{@
+def case1():
+    puts("Test type/types case1")
+
+    i = Int()
+    assert(i == 0)
+
+    f = Float()
+    assert(f == 0.0)
+
+    b = Bool()
+    assert(b == false)
+
+    s = String()
+    assert(s == "")
+
+    a = Array()
+    assert(len(a) == 0)
+
+    d = Dict()
+    assert(len(d) == 0)
+end
+
+def case2():
+    puts("Test type/types case2")
+
+    i = 0
+    a = Array([i])
+    assert(len(a) == 1)
+    assert(id(a[0]) != id(i))  // TODO: what the xxxx is this?
+end
+
+def case3():
+    puts("Test type/types case3")
+
+end
+
+def case4():
+    puts("Test type/types case4")
+
+end
+
+def case5():
+    puts("Test type/types case5")
+
+end
+
+def case6():
+    puts("Test type/types case6")
+
+end
+
+def allTest():
+    puts("Test type/types all")
+
+    case1()
+    case2()
+    case3()
+    case4()
+    case5()
+    case6()
+end
+
+def main(name):
+    puts("Test type/types")
+
+    if name == "all":
+        allTest()
+    elif name == "case1":
+        case1()
+    elif name == "case2":
+        case2()
+    elif name == "case3":
+        case3()
+    elif name == "case4":
+        case4()
+    elif name == "case5":
+        case5()
+    elif name == "case6":
+        case6()
+    end
+
+    puts("Done type/types")
+end
+@}

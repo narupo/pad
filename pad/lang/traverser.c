@@ -10038,6 +10038,11 @@ trv_array_elems(ast_t *ast, trv_args_t *targs) {
             object_t *copy = obj_deep_copy(ref);
             objarr_moveb(objarr, mem_move(copy));
         } break;
+        case OBJ_TYPE_NIL:
+        case OBJ_TYPE_INT:
+        case OBJ_TYPE_FLOAT:
+        case OBJ_TYPE_BOOL:
+        case OBJ_TYPE_UNICODE:
         case OBJ_TYPE_ARRAY:
         case OBJ_TYPE_DICT:
         case OBJ_TYPE_OBJECT:

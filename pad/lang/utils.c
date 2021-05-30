@@ -551,6 +551,67 @@ copy_func_args(
     return obj_new_array(ref_gc, mem_move(dstarr));
 }
 
+static object_t *
+copy_array_args(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *drtargs
+) {
+    assert(drtargs->type == OBJ_TYPE_ARRAY);
+    object_array_t *dstarr = objarr_new();
+    object_array_t *srcarr = drtargs->objarr;
+
+    for (int32_t i = 0; i < objarr_len(srcarr); ++i) {
+        object_t *arg = objarr_get(srcarr, i);
+        object_t *savearg = NULL;
+        assert(arg);
+
+    again:
+        switch (arg->type) {
+        case OBJ_TYPE_NIL:
+        case OBJ_TYPE_BOOL:
+        case OBJ_TYPE_UNICODE:
+        case OBJ_TYPE_OWNERS_METHOD:
+        case OBJ_TYPE_ARRAY:
+        case OBJ_TYPE_DICT:
+        case OBJ_TYPE_FUNC:
+        case OBJ_TYPE_DEF_STRUCT:
+        case OBJ_TYPE_OBJECT:
+        case OBJ_TYPE_MODULE:
+        case OBJ_TYPE_TYPE:
+        case OBJ_TYPE_INT:
+        case OBJ_TYPE_FLOAT:
+            // reference
+            savearg = arg;
+            break;
+        case OBJ_TYPE_CHAIN:
+            arg = refer_chain_obj_with_ref(ref_ast, err, ref_gc, ref_context, ref_node, arg);
+            if (errstack_len(err)) {
+                pushb_error("failed to refer chain object");
+                return NULL;
+            }
+            goto again;
+        case OBJ_TYPE_IDENTIFIER: {
+            const char *idn = obj_getc_idn_name(arg);
+            arg = pull_in_ref_by_all(arg);
+            if (!arg) {
+                pushb_error("\"%s\" is not defined", idn);
+                return NULL;
+            }
+            goto again;
+        } break;
+        }
+
+        obj_inc_ref(savearg);
+        objarr_pushb(dstarr, savearg);
+    }
+
+    return obj_new_array(ref_gc, mem_move(dstarr));
+}
+
 /**
  * set function arguments at current scope varmap
  */
@@ -935,8 +996,23 @@ invoke_type_obj(
         return obj;
     } break;
     case OBJ_TYPE_ARRAY: {
-        object_t *ret = obj_new_array(ref_gc, mem_move(args));
-        return ret;
+        object_array_t *dstargs;
+
+        if (objarr_len(args)) {
+            object_t *ary = objarr_get(args, 0);
+            if (ary->type != OBJ_TYPE_ARRAY) {
+                pushb_error("invalid argument type. expected array but given other");
+                return NULL;
+            }
+            ary = copy_array_args(ref_ast, err, ref_gc, ref_context, ref_node, ary);
+            dstargs = mem_move(ary->objarr);
+            ary->objarr = NULL;
+            obj_del(ary);
+        } else {
+            dstargs = objarr_new();
+        }
+        
+        return obj_new_array(ref_gc, mem_move(dstargs));
     } break;
     case OBJ_TYPE_DICT: {
         object_dict_t *dict;
@@ -946,7 +1022,7 @@ invoke_type_obj(
                 pushb_error("invalid type of argument");
                 return NULL;
             }
-            dict = objdict_deep_copy(obj->objdict);
+            dict = objdict_shallow_copy(obj->objdict);
         } else {
             dict = objdict_new(ref_gc);
         }
@@ -966,7 +1042,7 @@ invoke_type_obj(
                 u = uni_new();
                 uni_set_mb(u, str_getc(s));
             } else {
-                u = uni_deep_copy(obj->unicode);
+                u = uni_shallow_copy(obj->unicode);
             }
         } else {
             u = uni_new();
