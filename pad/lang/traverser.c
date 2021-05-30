@@ -10742,6 +10742,32 @@ trv_import_builtin_modules(ast_t *ast) {
     return ast;
 }
 
+ast_t *
+trv_define_builtin_types(ast_t *ast) {
+    object_dict_t *varmap = ctx_get_varmap(ast->ref_context);
+    object_t *obj = NULL;
+
+    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_ARRAY, "Array");
+    objdict_move(varmap, "Array", mem_move(obj));
+
+    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_DICT, "Dict");
+    objdict_move(varmap, "Dict", mem_move(obj));
+
+    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_UNICODE, "String");
+    objdict_move(varmap, "String", mem_move(obj));
+
+    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_BOOL, "Bool");
+    objdict_move(varmap, "Bool", mem_move(obj));
+
+    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_INT, "Int");
+    objdict_move(varmap, "Int", mem_move(obj));
+
+    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_FLOAT, "Float");
+    objdict_move(varmap, "Float", mem_move(obj));
+
+    return ast;
+}
+
 void
 trv_traverse(ast_t *ast, context_t *context) {
     ast_set_ref_context(ast, context);
@@ -10749,6 +10775,10 @@ trv_traverse(ast_t *ast, context_t *context) {
 
     if (!trv_import_builtin_modules(ast)) {
         pushb_error_node(ast->error_stack, ast->root, "failed to import builtin modules");
+        return;
+    }
+    if (!trv_define_builtin_types(ast)) {
+        pushb_error_node(ast->error_stack, ast->root, "failed to define builtin types");
         return;
     }
 

@@ -120,6 +120,9 @@ obj_del(object_t *self) {
         str_del(self->owners_method.method_name);
         self->owners_method.method_name = NULL;
         break;
+    case OBJ_TYPE_TYPE:
+        self->type_obj.name = NULL;
+        break;
     }
 
     gc_free(self->ref_gc, &self->gc_item);
@@ -771,6 +774,23 @@ obj_new_module_by(
     return self;
 }
 
+object_t *
+obj_new_type(gc_t *ref_gc, obj_type_t type, const char *name) {
+    if (!ref_gc || !name) {
+        return NULL;
+    }
+
+    object_t *self = obj_new(ref_gc, OBJ_TYPE_TYPE);
+    if (!self) {
+        return NULL;
+    }
+
+    self->type_obj.type = type;
+    self->type_obj.name = name;
+
+    return self;
+}
+
 string_t *
 obj_to_str(const object_t *self) {
     if (!self) {
@@ -896,6 +916,14 @@ obj_to_str(const object_t *self) {
             return NULL;
         }
         str_set(str, "(method)");
+        return str;
+    } break;
+    case OBJ_TYPE_TYPE: {
+        string_t *str = str_new();
+        if (!str) {
+            return NULL;
+        }
+        str_set(str, "(type)");
         return str;
     } break;
     } // switch
@@ -1080,6 +1108,9 @@ obj_type_to_str(const object_t *self) {
         break;
     case OBJ_TYPE_OWNERS_METHOD:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: owners-method>", self->type);
+        break;
+    case OBJ_TYPE_TYPE:
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: type>", self->type);
         break;
     }
 

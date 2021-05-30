@@ -24954,6 +24954,76 @@ test_trv_struct_fail_0(void) {
 }
 
 static void
+test_trv_type_0(void) {
+    trv_ready;
+
+    check_ok("{: len(Array()) :}", "0");
+    check_ok("{: len(Array(1, 2, 3)) :}", "3");
+    check_ok("{: Array(1, 2, 3)[1] :}", "2");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_type_1(void) {
+    trv_ready;
+
+    check_ok("{: String() :}", "");
+    check_ok("{: String(\"abc\") :}", "abc");
+    check_ok("{: String(1) :}", "1");
+    check_ok("{: String(true) :}", "true");
+    check_ok("{: String([]) :}", "(array)");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_type_2(void) {
+    trv_ready;
+
+    check_ok("{: len(Dict()) :}", "0");
+    check_ok("{: len(Dict({\"a\": 1})) :}", "1");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_type_3(void) {
+    trv_ready;
+
+    check_ok("{: Int() :}", "0");
+    check_ok("{: Int(1) :}", "1");
+    check_ok("{: Int(\"2\") :}", "2");
+    check_ok("{: Int(false) :}", "0");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_type_4(void) {
+    trv_ready;
+
+    check_ok("{: Float() :}", "0.0");
+    check_ok("{: Float(1) :}", "1.0");
+    check_ok("{: Float(\"1.23\") :}", "1.23");
+    check_ok("{: Float(false) :}", "0.0");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_type_5(void) {
+    trv_ready;
+
+    check_ok("{: Bool() :}", "false");
+    check_ok("{: Bool(0) :}", "false");
+    check_ok("{: Bool(1) :}", "true");
+    check_ok("{: Bool(\"abc\") :}", "true");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_def_0(void) {
     config_t *config = config_new();
     tokenizer_option_t *opt = tkropt_new();
@@ -29045,6 +29115,17 @@ test_trv_array_13(void) {
 }
 
 static void
+test_trv_array_14(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+    "a = Array()\n"
+    "@}{: len(a) :}", "0");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_array_fail_0(void) {
     trv_ready;
 
@@ -30594,6 +30675,12 @@ traverser_tests[] = {
     {"struct_46", test_trv_struct_46},
     {"struct_47", test_trv_struct_47},
     {"struct_fail_0", test_trv_struct_fail_0},
+    {"type_0", test_trv_type_0},
+    {"type_1", test_trv_type_1},
+    {"type_2", test_trv_type_2},
+    {"type_3", test_trv_type_3},
+    {"type_4", test_trv_type_4},
+    {"type_5", test_trv_type_5},
     {"assign_list_0", test_trv_assign_list_0},
     {"assign_list_1", test_trv_assign_list_1},
     {"assign_list_2", test_trv_assign_list_2},

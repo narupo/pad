@@ -34,6 +34,9 @@ typedef struct object_chain object_chain_t;
 struct object_owners_method;
 typedef struct object_owners_method object_owners_method_t;
 
+struct object_type;
+typedef struct object_type object_type_t;
+
 struct node_array;
 typedef struct node_array node_array_t;
 

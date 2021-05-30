@@ -252,6 +252,36 @@ parse_bool(
 );
 
 /**
+ * objectをint値にする
+ *
+ * @return true or false
+ */
+objint_t
+parse_int(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *obj
+);
+
+/**
+ * objectをfloat値にする
+ *
+ * @return true or false
+ */
+objfloat_t
+parse_float(
+    ast_t *ref_ast,
+    errstack_t *err,
+    gc_t *ref_gc,
+    context_t *ref_context,
+    const node_t *ref_node,
+    object_t *obj
+);
+
+/**
  * if idnobj has in current scope then return true else return false
  *
  * @param[in] *ast

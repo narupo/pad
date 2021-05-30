@@ -83,6 +83,9 @@ typedef enum {
     // array.push() や dict.pop("key") など、ドット演算子で繋げで呼び出すメソッド用のオブジェクト
     // owner にメソッドのオーナーオブジェクト、method_name にメソッド名が保存される
     OBJ_TYPE_OWNERS_METHOD,
+
+    // A type object
+    OBJ_TYPE_TYPE,
 } obj_type_t;
 
 /**
@@ -155,6 +158,11 @@ struct object_object {
     context_t *struct_context;  // moved
 };
 
+struct object_type {
+    obj_type_t type;
+    const char *name;
+};
+
 /**
  * A abstract object
  */
@@ -175,6 +183,7 @@ struct object {
     object_module_t module;  // structure of module (type == OBJ_TYPE_MODULE)
     object_chain_t chain;  // structure of chain (type == OBJ_TYPE_CHAIN)
     object_owners_method_t owners_method;  // structure of owners_method (type == OBJ_TYPE_OWNERS_METHOD)
+    object_type_t type_obj;  // structure of type (type == OBJ_TYPE_TYPE)
 };
 
 /**
@@ -504,6 +513,9 @@ obj_new_module_by(
  */
 object_t *
 obj_new_owners_method(gc_t *ref_gc, object_t *owner, string_t *move_method_name);
+
+object_t *
+obj_new_type(gc_t *ref_gc, obj_type_t type, const char *name);
 
 /**
  * object to string_t
