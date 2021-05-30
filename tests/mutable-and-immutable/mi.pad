@@ -8,22 +8,57 @@ def case1():
     i += 1
     bid = id(i)
     assert(aid != bid)
+    assert(i == 1)
 
     i = 0.123
     aid = id(i)
     i += 1.0
     bid = id(i)
     assert(aid != bid)    
+    assert(i == 1.123)
 
     i = "a"
     aid = id(i)
     i += "b"
     bid = id(i)
     assert(aid != bid)
+    assert(i == "ab")
+
+    a = [0]
+    aid = id(a[0])
+    a[0] += 1
+    bid = id(a[0])
+    assert(aid != bid)
+
+    a = [0.0]
+    aid = id(a[0])
+    a[0] += 1
+    bid = id(a[0])
+    assert(aid != bid)
+    assert(a[0] == 1.0)
+
+    a = ["a"]
+    aid = id(a[0])
+    a[0] += "b"
+    bid = id(a[0])
+    assert(aid != bid)
+    assert(a[0] == "ab")
 end
 
 def case2():
     puts("Test mutable-and-immutable/mi case2")
+
+    aid = nil
+    bid = nil
+    def func(a, b):
+        aid = id(a)
+        bid = id(b)
+    end
+
+    i, j = 0, 1
+    func(i, j)
+    assert(aid != id(i))
+    assert(bid != id(j))
 end
 
 def case3():
