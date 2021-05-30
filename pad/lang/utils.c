@@ -287,8 +287,8 @@ again1:
         ref_context = own->module.context;
         const char *modname = obj_getc_mod_name(own);
         if (!(cstr_eq(modname, "__builtin__") ||
-                cstr_eq(modname, "alias") ||
-                cstr_eq(modname, "opts"))) {
+              cstr_eq(modname, "alias") ||
+              cstr_eq(modname, "opts"))) {
             break;
         }
     } // fallthrough

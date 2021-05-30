@@ -1,0 +1,33 @@
+{@
+def case1():
+	puts("Test struct/struct case1")
+
+	struct Animal:
+		name = nil
+		age = nil
+	end
+
+	animal = Animal("Tama", 20)
+
+	assert(animal.name == "Tama")
+	assert(animal.age == 20)
+end
+
+def allTest():
+	puts("Test struct/struct all")
+
+	case1()
+end
+
+def main(name):
+	puts("Test struct/struct")
+
+	if name == "all":
+		allTest()
+	elif name == "case1":
+		case1()
+	end
+
+	puts("Done struct/struct")
+end
+@}
