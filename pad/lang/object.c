@@ -126,6 +126,9 @@ obj_del(object_t *self) {
     case OBJ_TYPE_TYPE:
         self->type_obj.name = NULL;
         break;
+    case OBJ_TYPE_BUILTIN_FUNC:
+        self->builtin_func.funcname = NULL;
+        break;
     }
 
     gc_free(self->ref_gc, &self->gc_item);
@@ -802,6 +805,22 @@ obj_new_type(gc_t *ref_gc, obj_type_t type) {
     return self;
 }
 
+object_t *
+obj_new_builtin_func(gc_t *ref_gc, const char *funcname) {
+    if (!ref_gc) {
+        return NULL;
+    }
+
+    object_t *self = obj_new(ref_gc, OBJ_TYPE_BUILTIN_FUNC);
+    if (!self) {
+        return NULL;
+    }
+
+    self->builtin_func.funcname = funcname;
+
+    return self;
+}
+
 string_t *
 obj_to_str(const object_t *self) {
     if (!self) {
@@ -935,6 +954,14 @@ obj_to_str(const object_t *self) {
             return NULL;
         }
         str_set(str, "(type)");
+        return str;
+    } break;
+    case OBJ_TYPE_BUILTIN_FUNC: {
+        string_t *str = str_new();
+        if (!str) {
+            return NULL;
+        }
+        str_set(str, "(builtin-function)");
         return str;
     } break;
     } // switch
@@ -1122,6 +1149,9 @@ obj_type_to_str(const object_t *self) {
         break;
     case OBJ_TYPE_TYPE:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: type>", self->type);
+        break;
+    case OBJ_TYPE_BUILTIN_FUNC:
+        str_app_fmt(s, tmp, sizeof tmp, "<%d: builtin-function>", self->type);
         break;
     }
 

@@ -37,6 +37,9 @@ typedef struct object_owners_method object_owners_method_t;
 struct object_type;
 typedef struct object_type object_type_t;
 
+struct object_builtin_func;
+typedef struct object_builtin_func object_builtin_func_t;
+
 struct node_array;
 typedef struct node_array node_array_t;
 

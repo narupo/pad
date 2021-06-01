@@ -9,6 +9,25 @@ end
 
 def case2():
     puts("Test builtin/functions case2")
+
+    assert(id)
+    assert(String(type(id)) == "(builtin-function)")
+
+    assert(type)
+    assert(puts)
+    assert(eputs)
+    assert(len)
+    assert(die)
+    assert(exit)
+    assert(copy)
+    assert(deepcopy)
+    assert(assert)
+    assert(extract)
+    assert(setattr)
+    assert(getattr)
+    assert(dance)
+    assert(ord)
+    assert(chr)
 end
 
 def case3():

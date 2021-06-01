@@ -10936,6 +10936,65 @@ trv_define_builtin_types(ast_t *ast) {
     return ast;
 }
 
+ast_t *
+trv_define_builtin_funcs(ast_t *ast) {
+    object_dict_t *varmap = ctx_get_varmap(ast->ref_context);
+    object_t *obj = NULL;
+
+    obj = obj_new_builtin_func(ast->ref_gc, "dance");
+    objdict_move(varmap, "dance", mem_move(obj));
+
+    obj = obj_new_builtin_func(ast->ref_gc, "id");
+    objdict_move(varmap, "id", mem_move(obj));
+    
+    obj = obj_new_builtin_func(ast->ref_gc, "type");
+    objdict_move(varmap, "type", mem_move(obj));
+    
+    obj = obj_new_builtin_func(ast->ref_gc, "puts");
+    objdict_move(varmap, "puts", mem_move(obj));
+    
+    obj = obj_new_builtin_func(ast->ref_gc, "eputs");
+    objdict_move(varmap, "eputs", mem_move(obj));
+    
+    obj = obj_new_builtin_func(ast->ref_gc, "len");
+    objdict_move(varmap, "len", mem_move(obj));
+    
+    obj = obj_new_builtin_func(ast->ref_gc, "die");
+    objdict_move(varmap, "die", mem_move(obj));
+    
+    obj = obj_new_builtin_func(ast->ref_gc, "exit");
+    objdict_move(varmap, "exit", mem_move(obj));
+    
+    obj = obj_new_builtin_func(ast->ref_gc, "copy");
+    objdict_move(varmap, "copy", mem_move(obj));
+    
+    obj = obj_new_builtin_func(ast->ref_gc, "deepcopy");
+    objdict_move(varmap, "deepcopy", mem_move(obj));
+    
+    obj = obj_new_builtin_func(ast->ref_gc, "assert");
+    objdict_move(varmap, "assert", mem_move(obj));
+    
+    obj = obj_new_builtin_func(ast->ref_gc, "extract");
+    objdict_move(varmap, "extract", mem_move(obj));
+    
+    obj = obj_new_builtin_func(ast->ref_gc, "setattr");
+    objdict_move(varmap, "setattr", mem_move(obj));
+    
+    obj = obj_new_builtin_func(ast->ref_gc, "getattr");
+    objdict_move(varmap, "getattr", mem_move(obj));
+    
+    obj = obj_new_builtin_func(ast->ref_gc, "dance");
+    objdict_move(varmap, "dance", mem_move(obj));
+    
+    obj = obj_new_builtin_func(ast->ref_gc, "ord");
+    objdict_move(varmap, "ord", mem_move(obj));
+    
+    obj = obj_new_builtin_func(ast->ref_gc, "chr");
+    objdict_move(varmap, "chr", mem_move(obj));
+    
+    return ast;
+}
+
 void
 trv_traverse(ast_t *ast, context_t *context) {
     ast_set_ref_context(ast, context);
@@ -10947,6 +11006,10 @@ trv_traverse(ast_t *ast, context_t *context) {
     }
     if (!trv_define_builtin_types(ast)) {
         pushb_error_node(ast->error_stack, ast->root, "failed to define builtin types");
+        return;
+    }
+    if (!trv_define_builtin_funcs(ast)) {
+        pushb_error_node(ast->error_stack, ast->root, "failed to define builtin funcs");
         return;
     }
 

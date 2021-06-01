@@ -614,6 +614,7 @@ copy_func_args(
         case OBJ_TYPE_OBJECT:
         case OBJ_TYPE_MODULE:
         case OBJ_TYPE_TYPE:
+        case OBJ_TYPE_BUILTIN_FUNC:
             // reference
             savearg = arg;
             break;
@@ -681,6 +682,7 @@ copy_array_args(
         case OBJ_TYPE_TYPE:
         case OBJ_TYPE_INT:
         case OBJ_TYPE_FLOAT:
+        case OBJ_TYPE_BUILTIN_FUNC:
             // reference
             savearg = arg;
             break;
@@ -918,7 +920,9 @@ invoke_builtin_modules(
     const char *bltin_mod_name = NULL;
     object_t *module = NULL;
 
-    if (owns && objarr_len(owns) >= 2) {
+    if (owns && objarr_len(owns) == 1) {
+        bltin_mod_name = "__builtin__";
+    } else {
         object_t *ownpar = objarr_get_last_2(owns);
         assert(ownpar);
 
@@ -955,9 +959,10 @@ invoke_builtin_modules(
             }
             goto again;
         } break;
+        case OBJ_TYPE_BUILTIN_FUNC: {
+            bltin_mod_name = "__builtin__";
+        } break;
         }
-    } else {
-        bltin_mod_name = "__builtin__";
     }
 
     if (!module) {

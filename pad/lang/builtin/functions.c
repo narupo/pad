@@ -109,6 +109,9 @@ again:
     case OBJ_TYPE_TYPE: {
         return obj_new_type(ref_ast->ref_gc, OBJ_TYPE_TYPE);
     } break;
+    case OBJ_TYPE_BUILTIN_FUNC: {
+        return obj;
+    } break;
     } // switch
 
     return NULL;

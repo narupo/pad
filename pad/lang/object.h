@@ -86,6 +86,9 @@ typedef enum {
 
     // A type object
     OBJ_TYPE_TYPE,
+
+    // A builtin function
+    OBJ_TYPE_BUILTIN_FUNC,
 } obj_type_t;
 
 /**
@@ -164,6 +167,10 @@ struct object_type {
     const char *name;
 };
 
+struct object_builtin_func {
+    const char *funcname;
+};
+
 /**
  * A abstract object
  */
@@ -185,6 +192,7 @@ struct object {
     object_chain_t chain;  // structure of chain (type == OBJ_TYPE_CHAIN)
     object_owners_method_t owners_method;  // structure of owners_method (type == OBJ_TYPE_OWNERS_METHOD)
     object_type_t type_obj;  // structure of type (type == OBJ_TYPE_TYPE)
+    object_builtin_func_t builtin_func;  // structure of builtin func (type == OBJ_TYPE_BUILTIN_FUNC)
 };
 
 /**
@@ -518,6 +526,9 @@ obj_new_owners_method(gc_t *ref_gc, object_t *owner, string_t *move_method_name)
 
 object_t *
 obj_new_type(gc_t *ref_gc, obj_type_t type);
+
+object_t *
+obj_new_builtin_func(gc_t *ref_gc, const char *funcname);
 
 /**
  * object to string_t
