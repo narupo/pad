@@ -39,7 +39,7 @@ again:
         goto again;
         break;
     case OBJ_TYPE_IDENTIFIER:
-        ref_owner = pull_in_ref_by(ref_owner);
+        ref_owner = pull_ref(ref_owner);
         if (!ref_owner) {
             ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "object is not found. can't get");
             return NULL;
@@ -61,7 +61,7 @@ again2:
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(arg);
-        arg = pull_in_ref_by(arg);
+        arg = pull_ref(arg);
         if (!arg) {
             ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
             return NULL;

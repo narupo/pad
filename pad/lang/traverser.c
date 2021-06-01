@@ -319,7 +319,7 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
         }
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *obj = pull_in_ref_by_all(result);
+        object_t *obj = pull_ref_all(result);
         if (!obj) {
             pushb_error("\"%s\" is not defined in ref block", obj_getc_idn_name(result));
             return_trav(NULL);
@@ -1045,7 +1045,7 @@ again:
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(result);
-        result = pull_in_ref_by_all(result);
+        result = pull_ref_all(result);
         if (!result) {
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
@@ -1261,6 +1261,7 @@ trv_def_struct(ast_t *ast, trv_args_t *targs) {
 
     move_obj_at_cur_varmap(
         ast->error_stack,
+        targs->ref_node,
         ast->ref_context,
         targs->ref_owners,
         obj_getc_idn_name(idn),
@@ -1399,7 +1400,7 @@ again1:
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(rhs);
-        rhs = pull_in_ref_by_all(rhs);
+        rhs = pull_ref_all(rhs);
         if (!rhs) {
             pushb_error("not found \"%s\"", idn);
             return NULL;
@@ -1419,7 +1420,7 @@ again2:
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        ref_owner = pull_in_ref_by_all(ref_owner);
+        ref_owner = pull_ref_all(ref_owner);
         if (!ref_owner) {
             return NULL;
         }
@@ -1492,7 +1493,7 @@ again:
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(idxobj);
-        idxobj = pull_in_ref_by_all(idxobj);
+        idxobj = pull_ref_all(idxobj);
         if (!idxobj) {
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
@@ -1517,7 +1518,7 @@ again2:
     default: break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(rhs);
-        rhs = pull_in_ref_by_all(rhs);
+        rhs = pull_ref_all(rhs);
         if (!rhs) {
             pushb_error("%s is not defined", idn);
             return NULL;
@@ -1550,7 +1551,7 @@ again:
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(idxobj);
-        idxobj = pull_in_ref_by_all(idxobj);
+        idxobj = pull_ref_all(idxobj);
         if (!idxobj) {
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
@@ -1593,7 +1594,7 @@ again:
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(owner);
-        owner = pull_in_ref_by_all(owner);
+        owner = pull_ref_all(owner);
         if (!owner) {
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
@@ -2289,7 +2290,7 @@ trv_compare_or_int(ast_t *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = pull_in_ref_by_all(rhs);
+        object_t *rvar = pull_ref_all(rhs);
         if (!rvar) {
             pushb_error("%s is not defined in compare or int", obj_getc_idn_name(rhs));
             return_trav(NULL);
@@ -8152,7 +8153,7 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
         return_trav(val);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rval = pull_in_ref_by_all(rhs);
+        object_t *rval = pull_ref_all(rhs);
         if (!rval) {
             pushb_error("\"%s\" is not defined in asscalc ass idn", obj_getc_idn_name(rhs));
             return_trav(NULL);
@@ -8180,7 +8181,7 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_t *intobj = pull_in_ref_by_all(idnobj);
+    object_t *intobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
     assert(idnobj && rhs);
@@ -8237,7 +8238,7 @@ trv_calc_asscalc_add_ass_identifier_float(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_t *floatobj = pull_in_ref_by_all(idnobj);
+    object_t *floatobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
     assert(idnobj && rhs);
@@ -8293,7 +8294,7 @@ trv_calc_asscalc_add_ass_identifier_bool(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_t *boolobj = pull_in_ref_by_all(idnobj);
+    object_t *boolobj = pull_ref_all(idnobj);
     object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -8353,7 +8354,7 @@ trv_calc_asscalc_add_ass_identifier_string(ast_t *ast, trv_args_t *targs) {
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
-    object_t *unicodeobj = pull_in_ref_by_all(idnobj);
+    object_t *unicodeobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     const char *idn = targs->identifier;
     assert(idnobj && rhs && idn);
@@ -8367,7 +8368,7 @@ again:
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(rhs);
-        rhs = pull_in_ref_by_all(rhs);
+        rhs = pull_ref_all(rhs);
         if (!rhs) {
             pushb_error("not found \"%s\"", idn);
             return_trav(NULL);
@@ -9029,7 +9030,7 @@ again:
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(obj);
-        obj = pull_in_ref_by_all(obj);
+        obj = pull_ref_all(obj);
         if (!obj) {
             pushb_error("\"%s\" is not defined", idn);
             return_trav(NULL);
@@ -9083,7 +9084,7 @@ trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, trv_args_t *targs) {
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
-    object_t *intobj = pull_in_ref_by_all(idnobj);
+    object_t *intobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
@@ -9130,7 +9131,7 @@ trv_calc_asscalc_sub_ass_idn_float(ast_t *ast, trv_args_t *targs) {
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
-    object_t *floatobj = pull_in_ref_by_all(idnobj);
+    object_t *floatobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
@@ -9176,7 +9177,7 @@ trv_calc_asscalc_sub_ass_idn_bool(ast_t *ast, trv_args_t *targs) {
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
-    object_t *boolobj = pull_in_ref_by_all(idnobj);
+    object_t *boolobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
@@ -9293,7 +9294,7 @@ trv_calc_asscalc_mul_ass_int(ast_t *ast, trv_args_t *targs) {
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
-    object_t *intobj = pull_in_ref_by_all(idnobj);
+    object_t *intobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
@@ -9340,7 +9341,7 @@ trv_calc_asscalc_mul_ass_float(ast_t *ast, trv_args_t *targs) {
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
-    object_t *floatobj = pull_in_ref_by_all(idnobj);
+    object_t *floatobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
@@ -9386,7 +9387,7 @@ trv_calc_asscalc_mul_ass_bool(ast_t *ast, trv_args_t *targs) {
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
-    object_t *boolobj = pull_in_ref_by_all(idnobj);
+    object_t *boolobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
@@ -9435,7 +9436,7 @@ trv_calc_asscalc_mul_ass_string(ast_t *ast, trv_args_t *targs) {
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
-    object_t *unicodeobj = pull_in_ref_by_all(idnobj);
+    object_t *unicodeobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
@@ -10315,7 +10316,7 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
 
         if (val->type == OBJ_TYPE_IDENTIFIER) {
             const char *idn = str_getc(val->identifier.name);
-            val = pull_in_ref_by_all(val);
+            val = pull_ref_all(val);
             if (!val) {
                 pushb_error("\"%s\" is not defined. can not store to dict elements", idn);
                 return_trav(NULL);
@@ -10334,7 +10335,7 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
             skey = uni_getc_mb(key->unicode);
             break;
         case OBJ_TYPE_IDENTIFIER: {
-            const object_t *ref = pull_in_ref_by_all(key);
+            const object_t *ref = pull_ref_all(key);
             if (ref->type != OBJ_TYPE_UNICODE) {
                 pushb_error("invalid key type in variable of dict");
                 obj_del(arrobj);
@@ -10380,15 +10381,15 @@ trv_identifier(ast_t *ast, trv_args_t *targs) {
     assert(identifier && node->type == NODE_TYPE_IDENTIFIER);
     object_array_t *ref_owners = targs->ref_owners;
 
-    ast_t *ref_ast = get_ast_by_owners(ast, ref_owners);
-    if (ast_has_errors(ast)) {
-        pushb_error("failed to get ast by owner");
+    context_t *ref_context = get_context_by_owners(ref_owners, ast->ref_context);
+    if (!ref_context) {
+        pushb_error("failed to get context by owners");
         return_trav(NULL);
     }
 
     object_t *obj = obj_new_cidentifier(
         ast->ref_gc,
-        ref_ast->ref_context,
+        ref_context,
         identifier->identifier
     );
     return_trav(obj);
@@ -10456,7 +10457,7 @@ trv_func_def(ast_t *ast, trv_args_t *targs) {
             pushb_error("failed to traverse func-extends");
             return_trav(NULL);
         }
-        object_t *ref_extends_func = pull_in_ref_by_all(extends_func_name);
+        object_t *ref_extends_func = pull_ref_all(extends_func_name);
         if (!ref_extends_func) {
             pushb_error("not found \"%s\". can't extends", obj_getc_idn_name(extends_func_name));
             return_trav(NULL);
@@ -10484,6 +10485,7 @@ trv_func_def(ast_t *ast, trv_args_t *targs) {
     check("set func at varmap");
     move_obj_at_cur_varmap(
         ast->error_stack,
+        targs->ref_node,
         ast->ref_context,
         ref_owners,
         obj_getc_idn_name(name),
@@ -10516,9 +10518,9 @@ trv_func_def_args(ast_t *ast, trv_args_t *targs) {
     assert(func_def_args && node->type == NODE_TYPE_FUNC_DEF_ARGS);
     object_array_t *ref_owners = targs->ref_owners;
 
-    ast_t *ref_ast = get_ast_by_owners(ast, ref_owners);
-    if (ast_has_errors(ast)) {
-        pushb_error("failed to get ast by owner");
+    context_t *ref_context = get_context_by_owners(ref_owners, ast->ref_context);
+    if (!ref_context) {
+        pushb_error("failed to get context by owners");
         return_trav(NULL);
     }
 
@@ -10532,7 +10534,7 @@ trv_func_def_args(ast_t *ast, trv_args_t *targs) {
 
         object_t *oidn = obj_new_cidentifier(
             ast->ref_gc,
-            ref_ast->ref_context,
+            ref_context,
             nidn->identifier
         );
         obj_inc_ref(oidn);

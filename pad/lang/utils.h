@@ -52,19 +52,8 @@
 * functions *
 ************/
 
-/**
- * get reference of ast by owner object
- *
- * @param[in] *def_ast    default ast
- * @param[in] *ref_owners reference to owners in array
- *
- * @return default ast or owner's ast
- */
-ast_t *
-get_ast_by_owners(ast_t *def_ast, object_array_t *ref_owners);
-
 context_t *
-get_context_by_owners(context_t *def_context, object_array_t *ref_owners);
+get_context_by_owners(object_array_t *ref_owners, context_t *def_context);
 
 /**
  * pull-in reference of object by identifier object from varmap of current scope of context
@@ -76,13 +65,13 @@ get_context_by_owners(context_t *def_context, object_array_t *ref_owners);
  * @param return NULL or reference to object in varmap in current scope (DO NOT DELETE)
  */
 object_t *
-pull_in_ref_by(const object_t *idn_obj);
+pull_ref(const object_t *idn_obj);
 
 /**
  * traverse previous context
  */
 object_t *
-pull_in_ref_by_all(const object_t *idn_obj);
+pull_ref_all(const object_t *idn_obj);
 
 /**
  * object to string
@@ -93,7 +82,7 @@ pull_in_ref_by_all(const object_t *idn_obj);
  * @return success to pointer to string_t copied (can delete)
  */
 string_t *
-obj_to_string(errstack_t *err, const object_t *obj);
+obj_to_string(errstack_t *err, const node_t *ref_node, const object_t *obj);
 
 /**
  * move object at varmap of current scope of context by identifier
@@ -102,6 +91,7 @@ obj_to_string(errstack_t *err, const object_t *obj);
 bool
 move_obj_at_cur_varmap(
     errstack_t *err,
+    const node_t *ref_node,
     context_t *ctx,
     object_array_t *ref_owners,
     const char *identifier,

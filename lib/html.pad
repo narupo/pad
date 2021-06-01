@@ -47,7 +47,7 @@ struct Tag:
                     self.text = buf
                     return
                 else:
-                    buf += 1//c
+                    buf += c
                 end
             elif m == "found <":
                 if self.isNameHead(c):

@@ -83,7 +83,7 @@ again:
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(obj);
-        obj = pull_in_ref_by(obj);
+        obj = pull_ref(obj);
         if (!obj) {
             push_error("not defined \"%s\" in type()", idn);
             return NULL;
@@ -141,7 +141,7 @@ builtin_eputs(builtin_func_args_t *fargs) {
         object_t *obj = objarr_get(args, i);
         assert(obj);
         object_t *ref = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-        string_t *s = obj_to_string(ref_ast->error_stack, ref);
+        string_t *s = obj_to_string(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             continue;
         }
@@ -153,7 +153,7 @@ builtin_eputs(builtin_func_args_t *fargs) {
         object_t *obj = objarr_get(args, arrlen-1);
         assert(obj);
         object_t *ref = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-        string_t *s = obj_to_string(ref_ast->error_stack, ref);
+        string_t *s = obj_to_string(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             goto done;
         }
@@ -195,7 +195,7 @@ builtin_puts(builtin_func_args_t *fargs) {
             push_error("failed to get argument");
             return NULL;
         }
-        string_t *s = obj_to_string(ref_ast->error_stack, ref);
+        string_t *s = obj_to_string(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             continue;
         }
@@ -211,7 +211,7 @@ builtin_puts(builtin_func_args_t *fargs) {
             push_error("failed to get argument");
             return NULL;
         }
-        string_t *s = obj_to_string(ref_ast->error_stack, ref);
+        string_t *s = obj_to_string(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             goto done;
         }
@@ -249,7 +249,7 @@ again:
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *obj = pull_in_ref_by(arg);
+        object_t *obj = pull_ref(arg);
         if (!obj) {
             push_error("not found object for len");
             return NULL;
@@ -468,7 +468,7 @@ again:
         return uni_getc_mb(obj->unicode);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        obj = pull_in_ref_by(obj);
+        obj = pull_ref(obj);
         if (!obj) {
             return NULL;
         }
