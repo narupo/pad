@@ -32,20 +32,54 @@ end
 
 def case3():
     puts("Test builtin/functions case3")
+
+    struct Animal: end
+
+    setattr(Animal, "name", "Tama")
+    a = Animal()
+    assert(a.name == "Tama")
+    assert(getattr(Animal, "name") == "Tama")
 end
 
 def case4():
     puts("Test builtin/functions case4")
+
+    struct Walkable:
+        met walk(self):
+            return self.name + " walking"
+        end
+    end
+
+    struct Animal:
+        name = "Tama"
+        extract(Walkable)
+    end
+
+    animal = Animal()
+    assert(animal.walk() == "Tama walking")
+    assert(animal.name == "Tama")
+
+    struct Swimable:
+        met swim(self):
+            return self.name + " swiming"
+        end
+    end
+
+    struct Animal:
+        name = "Mike"
+        extract(Walkable, Swimable)
+    end
+
+    animal = Animal()
+    assert(animal.swim() == "Mike swiming")
 end
 
 def case5():
     puts("Test builtin/functions case5")
-
 end
 
 def case6():
     puts("Test builtin/functions case6")
-
 end
 
 def allTest():
