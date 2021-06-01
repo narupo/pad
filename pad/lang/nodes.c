@@ -16,6 +16,11 @@ node_del(node_t *self) {
 
 node_t *
 node_new(node_type_t type, void *real, const token_t *ref_token) {
+    assert(ref_token);
+    if (!real || !ref_token) {
+        return NULL;
+    }
+
     node_t *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
@@ -79,6 +84,7 @@ node_deep_copy(const node_t *other) {
     declare_first(node_t, self);
 
     self->type = other->type;
+    self->ref_token = other->ref_token;
 
     switch (other->type) {
     case NODE_TYPE_INVALID:

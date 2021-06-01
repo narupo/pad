@@ -1,0 +1,28 @@
+{@
+from "lib/html.pad" import HtmlParser
+
+def case1():
+	puts("Test lib/list case1")
+
+	p = HtmlParser()
+	p.parse("<h1>title</h1>")
+end
+
+def allTest():
+	puts("Test lib/list all")
+
+	case1()
+end
+
+def main(name):
+	puts("Test lib/list")
+
+	if name == "all":
+		allTest()
+	elif name == "case1":
+		case1()
+	end
+
+	puts("Done lib/list")
+end
+@}

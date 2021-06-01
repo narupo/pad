@@ -12,7 +12,7 @@
 
 #define ready() \
     if (ast->debug) { \
-        token_t *t = *ast->ref_ptr; \
+        token_t *t = cur_tok(ast); \
         fprintf( \
             stderr, \
             "debug: %5d: %*s: %3d: token(%s): err(%s)\n", \
@@ -25,13 +25,13 @@
         ); \
         fflush(stderr); \
     } \
-    if (!*ast->ref_ptr) { \
+    if (is_end(ast)) { \
         return NULL; \
     } \
 
 #define return_parse(ret) \
     if (ast->debug) { \
-        token_t *t = *ast->ref_ptr; \
+        token_t *t = cur_tok(ast); \
         fprintf( \
             stderr, \
             "debug: %5d: %*s: %3d: return (%p): token(%s): err(%s)\n", \
@@ -156,6 +156,42 @@ cc_struct(ast_t *ast, cc_args_t *cargs);
 * functions *
 ************/
 
+static token_t *
+back_tok(ast_t *ast) {
+    for (token_t **p = ast->ref_ptr; ast->ref_tokens != p; p--) {
+        if (*p) {
+            return *p;
+        }
+    }
+    return *ast->ref_tokens;
+}
+
+static token_t *
+cur_tok(ast_t *ast) {
+    return *ast->ref_ptr;
+}
+
+static token_t *
+next_tok(ast_t *ast) {
+    if (*ast->ref_ptr) {
+        return *ast->ref_ptr++;
+    }
+    return NULL;
+}
+
+static token_t *
+prev_tok(ast_t *ast) {
+    if (ast->ref_ptr != ast->ref_tokens) {
+        return *ast->ref_ptr--;
+    }
+    return NULL;
+}
+
+static bool
+is_end(ast_t *ast) {
+    return *ast->ref_ptr == NULL;
+}
+
 ast_t *
 cc_compile(ast_t *ast, token_t *ref_tokens[]) {
     ast->ref_tokens = ref_tokens;
@@ -169,10 +205,10 @@ cc_compile(ast_t *ast, token_t *ref_tokens[]) {
 
 static void
 cc_skip_newlines(ast_t *ast) {
-    for (; *ast->ref_ptr; ) {
-        token_t *t = *ast->ref_ptr++;
+    for (; cur_tok(ast); ) {
+        token_t *t = next_tok(ast);
         if (t->type != TOKEN_TYPE_NEWLINE) {
-            ast->ref_ptr--;
+            prev_tok(ast);
             return;
         }
     }
@@ -187,7 +223,7 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -212,11 +248,11 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
 
     nodearr_moveb(cur->nodearr, lhs);
 
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("");
     }
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_OP_ASS) {
         return_cleanup("");
     }
@@ -235,14 +271,15 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
     nodearr_moveb(cur->nodearr, rhs);
 
     for (;;) {
-        if (!*ast->ref_ptr) {
-            return_parse(make_node(NODE_TYPE_ASSIGN, cur));
+        if (is_end(ast)) {
+            node_t *node = node_new(NODE_TYPE_ASSIGN, cur, back_tok(ast));
+            return_parse(node);
         }
 
-        token_t *t = *ast->ref_ptr++;
+        t = next_tok(ast);
         if (t->type != TOKEN_TYPE_OP_ASS) {
-            ast->ref_ptr--;
-            node_t *node = node_new(NODE_TYPE_ASSIGN, cur, t);
+            prev_tok(ast);
+            node_t *node = node_new(NODE_TYPE_ASSIGN, cur, *ast->ref_ptr);
             return_parse(node);
         }
         check("read =");
@@ -272,7 +309,7 @@ cc_assign_list(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -297,15 +334,17 @@ cc_assign_list(ast_t *ast, cc_args_t *cargs) {
 
     nodearr_moveb(cur->nodearr, first);
 
+    token_t *t = cur_tok(ast);
     for (;;) {
-        if (!*ast->ref_ptr) {
-            return_parse(make_node(NODE_TYPE_ASSIGN_LIST, cur));
+        if (is_end(ast)) {
+            node_t *node = node_new(NODE_TYPE_ASSIGN_LIST, cur, back_tok(ast));
+            return_parse(node);
         }
 
-        token_t *t = *ast->ref_ptr++;
+        t = next_tok(ast);
         if (t->type != TOKEN_TYPE_COMMA) {
-            ast->ref_ptr--;
-            return_parse(node_new(NODE_TYPE_ASSIGN_LIST, cur, t));
+            prev_tok(ast);
+            return_parse(node_new(NODE_TYPE_ASSIGN_LIST, cur, *ast->ref_ptr));
         }
         check("read ,");
 
@@ -333,7 +372,7 @@ cc_formula(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->assign_list); \
         ast_del_nodes(ast, cur->multi_assign); \
@@ -347,7 +386,7 @@ cc_formula(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     check("call cc_assign_list");
-    const token_t *savetok = *ast->ref_ptr;
+    const token_t *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->assign_list = cc_assign_list(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -358,7 +397,7 @@ cc_formula(ast_t *ast, cc_args_t *cargs) {
     }
 
     check("call cc_multi_assign");
-    savetok = *ast->ref_ptr;
+    savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->multi_assign = cc_multi_assign(ast, cargs);
     if (!cur->multi_assign) {
@@ -380,7 +419,7 @@ cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -408,15 +447,17 @@ cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
 
     nodearr_moveb(cur->nodearr, node);
 
+    token_t *t = cur_tok(ast);
     for (;;) {
-        if (!*ast->ref_ptr) {
-            return_parse(make_node(NODE_TYPE_MULTI_ASSIGN, cur));
+        if (is_end(ast)) {
+            node_t *node = node_new(NODE_TYPE_MULTI_ASSIGN, cur, back_tok(ast));
+            return_parse(node);
         }
 
-        token_t *t = *ast->ref_ptr++;
+        t = next_tok(ast);
         if (t->type != TOKEN_TYPE_OP_ASS) {
-            ast->ref_ptr--;
-            return_parse(node_new(NODE_TYPE_MULTI_ASSIGN, cur, t));
+            prev_tok(ast);
+            return_parse(node_new(NODE_TYPE_MULTI_ASSIGN, cur, *ast->ref_ptr));
         }
 
         check("call rhs cc_test_list");
@@ -444,7 +485,7 @@ cc_test_list(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -472,14 +513,14 @@ cc_test_list(ast_t *ast, cc_args_t *cargs) {
     nodearr_moveb(cur->nodearr, lhs);
 
     for (;;) {
-        if (!*ast->ref_ptr) {
-            return make_node(NODE_TYPE_TEST_LIST, cur);
+        if (is_end(ast)) {
+            return node_new(NODE_TYPE_TEST_LIST, cur, back_tok(ast));
         }
 
-        token_t *t = *ast->ref_ptr++;
+        token_t *t = next_tok(ast);
         if (t->type != TOKEN_TYPE_COMMA) {
-            ast->ref_ptr--;
-            return make_node(NODE_TYPE_TEST_LIST, cur);
+            prev_tok(ast);
+            return node_new(NODE_TYPE_TEST_LIST, cur, *ast->ref_ptr);
         }
         check("read ,");
 
@@ -507,7 +548,7 @@ cc_call_args(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -523,7 +564,7 @@ cc_call_args(ast_t *ast, cc_args_t *cargs) {
 
     depth_t depth = cargs->depth;
 
-    const token_t *savetok = *ast->ref_ptr;
+    const token_t *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     node_t *lhs = cc_test(ast, cargs);
     if (!lhs) {
@@ -536,14 +577,14 @@ cc_call_args(ast_t *ast, cc_args_t *cargs) {
     nodearr_moveb(cur->nodearr, lhs);
 
     for (;;) {
-        if (!*ast->ref_ptr) {
-            return make_node(NODE_TYPE_CALL_ARGS, cur);
+        if (is_end(ast)) {
+            return node_new(NODE_TYPE_CALL_ARGS, cur, back_tok(ast));
         }
 
-        token_t *t = *ast->ref_ptr++;
+        token_t *t = next_tok(ast);
         if (t->type != TOKEN_TYPE_COMMA) {
-            ast->ref_ptr--;
-            return make_node(NODE_TYPE_CALL_ARGS, cur);
+            prev_tok(ast);
+            return node_new(NODE_TYPE_CALL_ARGS, cur, cur_tok(ast));
         }
         check("read ,");
 
@@ -572,7 +613,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         cargs->is_in_loop = is_in_loop; \
         ast_del_nodes(ast, cur->init_formula); \
@@ -586,14 +627,9 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-#undef return_ok
-#define return_ok \
-    cargs->is_in_loop = is_in_loop; \
-    return_parse(make_node(NODE_TYPE_FOR_STMT, cur)); \
-
     depth_t depth = cargs->depth;
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_STMT_FOR) {
         return_cleanup("");
     }
@@ -601,45 +637,45 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("reached EOF in for statement");
     }
 
-    t = *ast->ref_ptr++;
+    t = next_tok(ast);
     if (t->type == TOKEN_TYPE_COLON) {
         // for : [ (( '@}' blocks '{@' ) | elems) ]* end
         check("read colon");
 
         // read contents start
         for (;;) {
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF in for statement (2)");
             }
 
             check("skip newlines");
             cc_skip_newlines(ast);
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF in for statement (3)");
             }
 
             // end?
-            t = *ast->ref_ptr++;
+            t = next_tok(ast);
             if (t->type == TOKEN_TYPE_STMT_END) {
                 check("read 'end'");
                 break;
             } else {
-                --ast->ref_ptr;
+                prev_tok(ast);
             }
 
             // read blocks or elems
-            t = *ast->ref_ptr++;
+            t = next_tok(ast);
             if (t->type == TOKEN_TYPE_RBRACEAT) {
                 // read blocks
                 check("read '@}'");
 
                 check("skip newlines");
                 cc_skip_newlines(ast);
-                if (!*ast->ref_ptr) {
+                if (is_end(ast)) {
                     return_cleanup("reached EOF in for statement (4)");
                 }
 
@@ -656,11 +692,11 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
 
                 check("skip newlines");
                 cc_skip_newlines(ast);
-                if (!*ast->ref_ptr) {
+                if (is_end(ast)) {
                     return_cleanup("reached EOF in for statement (5)");
                 }
 
-                t = *ast->ref_ptr++;
+                t = next_tok(ast);
                 if (t->type == TOKEN_TYPE_LBRACEAT) {
                     check("read '{@'");
                 } else {
@@ -668,7 +704,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
                 }
             } else {
                 // read elems
-                --ast->ref_ptr;
+                prev_tok(ast);
                 cargs->depth = depth + 1;
                 cargs->is_in_loop = true;
                 node_t *elems = cc_elems(ast, cargs);
@@ -684,11 +720,11 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
     } else {
         // for comp_formula : [ (( '@}' blocks '{@' ) | elems) ]* end
         // for init_formula ; comp_formula ; test_list : [ (( '@}' blocks '{@' ) | elems) ]* end
-        ast->ref_ptr--;
+        prev_tok(ast);
 
         check("skip newlines");
         cc_skip_newlines(ast);
-        if (!*ast->ref_ptr) {
+        if (is_end(ast)) {
             return_cleanup("reached EOF in for statement (6)");
         }
 
@@ -704,13 +740,13 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
 
         check("skip newlines");
         cc_skip_newlines(ast);
-        if (!*ast->ref_ptr) {
+        if (is_end(ast)) {
             return_cleanup("reached EOF in for statement (7)");
         }
 
-        t = *ast->ref_ptr++;
+        t = next_tok(ast);
         if (t->type == TOKEN_TYPE_COLON) {
-            ast->ref_ptr--;
+            prev_tok(ast);
             // for <comp_formula> : elems end
             cur->comp_formula = cur->init_formula;
             cur->init_formula = NULL;
@@ -720,7 +756,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
 
             check("skip newlines");
             cc_skip_newlines(ast);
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF in for statement (8)");
             }
 
@@ -734,11 +770,11 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
 
             check("skip newlines");
             cc_skip_newlines(ast);
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF in for statement (9)");
             }
 
-            t = *ast->ref_ptr++;
+            t = next_tok(ast);
             if (t->type != TOKEN_TYPE_SEMICOLON) {
                 return_cleanup("syntax error. not found semicolon (2)");
             }
@@ -746,7 +782,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
 
             check("skip newlines");
             cc_skip_newlines(ast);
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF in for statement (10)");
             }
 
@@ -765,11 +801,11 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
 
         check("skip newlines");
         cc_skip_newlines(ast);
-        if (!*ast->ref_ptr) {
+        if (is_end(ast)) {
             return_cleanup("reached EOF in for statement (11)");
         }
 
-        t = *ast->ref_ptr++;
+        t = next_tok(ast);
         if (t->type != TOKEN_TYPE_COLON) {
             return_cleanup("syntax error. not found colon in for statement")
         }
@@ -777,34 +813,34 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
 
         // read contents start
         for (;;) {
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF in for statement (12)");
             }
 
             check("skip newlines");
             cc_skip_newlines(ast);
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF in for statement (13)");
             }
 
             // end?
-            t = *ast->ref_ptr++;
+            t = next_tok(ast);
             if (t->type == TOKEN_TYPE_STMT_END) {
                 check("read 'end'");
                 break;
             } else {
-                --ast->ref_ptr;
+                prev_tok(ast);
             }
 
             // read blocks or elems
-            t = *ast->ref_ptr++;
+            t = next_tok(ast);
             if (t->type == TOKEN_TYPE_RBRACEAT) {
                 // read blocks
                 check("read '@}'");
 
                 check("skip newlines");
                 cc_skip_newlines(ast);
-                if (!*ast->ref_ptr) {
+                if (is_end(ast)) {
                     return_cleanup("reached EOF in for statement (14)");
                 }
 
@@ -821,11 +857,11 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
 
                 check("skip newlines");
                 cc_skip_newlines(ast);
-                if (!*ast->ref_ptr) {
+                if (is_end(ast)) {
                     return_cleanup("reached EOF in for statement (15)");
                 }
 
-                t = *ast->ref_ptr++;
+                t = next_tok(ast);
                 if (t->type == TOKEN_TYPE_LBRACEAT) {
                     check("read '{@'");
                 } else {
@@ -833,7 +869,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
                 }
             } else {
                 // read elems
-                --ast->ref_ptr;
+                prev_tok(ast);
 
                 cargs->depth = depth + 1;
                 cargs->is_in_loop = true;
@@ -849,7 +885,8 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
         }  // for
     }
 
-    return_ok;
+    cargs->is_in_loop = is_in_loop;
+    return_parse(node_new(NODE_TYPE_FOR_STMT, cur, cur_tok(ast)));
 }
 
 static node_t *
@@ -860,7 +897,7 @@ cc_break_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
@@ -869,7 +906,7 @@ cc_break_stmt(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_STMT_BREAK) {
         return_cleanup("");
     }
@@ -889,7 +926,7 @@ cc_continue_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
@@ -898,7 +935,7 @@ cc_continue_stmt(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_STMT_CONTINUE) {
         return_cleanup("");
     }
@@ -918,7 +955,7 @@ cc_return_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
@@ -929,7 +966,7 @@ cc_return_stmt(ast_t *ast, cc_args_t *cargs) {
 
     depth_t depth = cargs->depth;
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_STMT_RETURN) {
         // not error
         return_cleanup("");
@@ -940,7 +977,7 @@ cc_return_stmt(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("invalid return statement. not in function");
     }
 
-    const token_t *savetok = *ast->ref_ptr;
+    const token_t *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->formula = cc_formula(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -959,7 +996,7 @@ cc_augassign(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
@@ -968,7 +1005,7 @@ cc_augassign(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     switch (t->type) {
     default:
         return_cleanup("");
@@ -992,7 +1029,7 @@ cc_identifier(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
@@ -1001,7 +1038,7 @@ cc_identifier(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_IDENTIFIER) {
         return_cleanup("");
     }
@@ -1024,7 +1061,7 @@ cc_string(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
@@ -1033,7 +1070,7 @@ cc_string(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_DQ_STRING) {
         return_cleanup("");
     }
@@ -1057,7 +1094,7 @@ cc_simple_assign(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -1086,14 +1123,14 @@ cc_simple_assign(ast_t *ast, cc_args_t *cargs) {
     nodearr_moveb(cur->nodearr, lhs);
 
     for (;;) {
-        if (!*ast->ref_ptr) {
-            return_parse(make_node(NODE_TYPE_SIMPLE_ASSIGN, cur));
+        if (is_end(ast)) {
+            return_parse(node_new(NODE_TYPE_SIMPLE_ASSIGN, cur, back_tok(ast)));
         }
 
-        token_t *t = *ast->ref_ptr++;
+        token_t *t = next_tok(ast);
         if (t->type != TOKEN_TYPE_OP_ASS) {
-            ast->ref_ptr--;
-            return_parse(make_node(NODE_TYPE_SIMPLE_ASSIGN, cur));
+            prev_tok(ast);
+            return_parse(node_new(NODE_TYPE_SIMPLE_ASSIGN, cur, cur_tok(ast)));
         }
         check("read '='")
 
@@ -1123,7 +1160,7 @@ cc_array_elems(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -1137,56 +1174,55 @@ cc_array_elems(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-#undef return_ok
-#define return_ok return_parse(make_node(NODE_TYPE_ARRAY_ELEMS, cur))
-
     depth_t depth = cargs->depth;
 
     check("call cc_simple_assign");
+    token_t *t = cur_tok(ast);
     cargs->depth = depth + 1;
     node_t *lhs = cc_simple_assign(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!lhs) {
-        return_ok;
+        return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur, t));
     }
 
     nodearr_moveb(cur->nodearr, lhs);
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("reached EOF in array elems");
     }
 
     for (;;) {
-        if (!*ast->ref_ptr) {
-            return_ok;
+        if (is_end(ast)) {
+            return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur, back_tok(ast)));
         }
 
-        token_t *t = *ast->ref_ptr++;
+        token_t *t = next_tok(ast);
         if (t->type != TOKEN_TYPE_COMMA) {
-            ast->ref_ptr--;
-            return_ok;
+            prev_tok(ast);
+            return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur, cur_tok(ast)));
         }
         check("read ','")
 
         check("skip newlines");
         cc_skip_newlines(ast);
 
-        if (!*ast->ref_ptr) {
+        if (is_end(ast)) {
             return_cleanup("reached EOF in array elems");
         }
 
         check("call cc_simple_assign");
+        t = cur_tok(ast);
         cargs->depth = depth + 1;
         node_t *rhs = cc_simple_assign(ast, cargs);
         if (ast_has_errors(ast)) {
             return_cleanup("");
         }
         if (!rhs) {
-            return_ok;  // not error
+            return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur, t));  // not error
         }
 
         nodearr_moveb(cur->nodearr, rhs);
@@ -1204,7 +1240,7 @@ cc_array(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->array_elems); \
         free(cur); \
@@ -1216,7 +1252,7 @@ cc_array(ast_t *ast, cc_args_t *cargs) {
 
     depth_t depth = cargs->depth;
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_LBRACKET) {
         return_cleanup(""); // not error
     }
@@ -1225,7 +1261,7 @@ cc_array(ast_t *ast, cc_args_t *cargs) {
     check("skip newlines");
     cc_skip_newlines(ast);
 
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("reached EOF in compile array");
     }
 
@@ -1239,11 +1275,11 @@ cc_array(ast_t *ast, cc_args_t *cargs) {
     check("skip newlines");
     cc_skip_newlines(ast);
 
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("reached EOF in compile array");
     }
 
-    t = *ast->ref_ptr++;
+    t = next_tok(ast);
     if (t->type != TOKEN_TYPE_RBRACKET) {
         return_cleanup("not found ']' in array");
     }
@@ -1260,7 +1296,7 @@ cc_dict_elem(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->key_simple_assign); \
         ast_del_nodes(ast, cur->value_simple_assign); \
@@ -1284,11 +1320,11 @@ cc_dict_elem(ast_t *ast, cc_args_t *cargs) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("reached EOF in dict elem");
     }
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_COLON) {
         return_cleanup("not found colon in parse dict elem");
     }
@@ -1296,11 +1332,11 @@ cc_dict_elem(ast_t *ast, cc_args_t *cargs) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("reached EOF in dict elem");
     }
 
-    const token_t *savetok = *ast->ref_ptr;
+    const token_t *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->value_simple_assign = cc_simple_assign(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -1322,7 +1358,7 @@ cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -1336,48 +1372,47 @@ cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-#undef return_ok
-#define return_ok return_parse(make_node(NODE_TYPE_DICT_ELEMS, cur))
-
     depth_t depth = cargs->depth;
 
     check("call cc_dict_elem");
+    token_t *t = cur_tok(ast);
     cargs->depth = depth + 1;
     node_t *lhs = cc_dict_elem(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     }
     if (!lhs) {
-        return_ok;
+        return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur, t));
     }
 
     nodearr_moveb(cur->nodearr, lhs);
 
     for (;;) {
-        if (!*ast->ref_ptr) {
-            return_ok;
+        if (is_end(ast)) {
+            return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur, back_tok(ast)));
         }
 
         check("skip newlines");
         cc_skip_newlines(ast);
-        if (!*ast->ref_ptr) {
+        if (is_end(ast)) {
             return_cleanup("reached EOF in dict elems");
         }
 
-        token_t *t = *ast->ref_ptr++;
+        token_t *t = next_tok(ast);
         if (t->type != TOKEN_TYPE_COMMA) {
-            ast->ref_ptr--;
-            return_ok;
+            prev_tok(ast);
+            return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur, cur_tok(ast)));
         }
         check("read ','")
 
         check("skip newlines");
         cc_skip_newlines(ast);
-        if (!*ast->ref_ptr) {
+        if (is_end(ast)) {
             return_cleanup("reached EOF in dict elems");
         }
 
         check("call cc_dict_elem");
+        t = cur_tok(ast);
         cargs->depth = depth + 1;
         node_t *rhs = cc_dict_elem(ast, cargs);
         if (ast_has_errors(ast)) {
@@ -1385,7 +1420,7 @@ cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
         }
         if (!rhs) {
             // not error
-            return_ok;
+            return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur, t));
         }
 
         nodearr_moveb(cur->nodearr, rhs);
@@ -1403,7 +1438,7 @@ cc_dict(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->dict_elems); \
         free(cur); \
@@ -1415,7 +1450,7 @@ cc_dict(ast_t *ast, cc_args_t *cargs) {
 
     depth_t depth = cargs->depth;
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_LBRACE) {
         return_cleanup("");
     }
@@ -1423,7 +1458,7 @@ cc_dict(ast_t *ast, cc_args_t *cargs) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("reached EOF in dict");
     }
 
@@ -1438,15 +1473,15 @@ cc_dict(ast_t *ast, cc_args_t *cargs) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("reached EOF in dict");
     }
 
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("reached EOF in parse dict")
     }
 
-    t = *ast->ref_ptr++;
+    t = next_tok(ast);
     if (t->type != TOKEN_TYPE_RBRACE) {
         return_cleanup("not found right brace in parse dict");
     }
@@ -1463,7 +1498,7 @@ cc_nil(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
@@ -1472,7 +1507,7 @@ cc_nil(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_NIL) {
         return_cleanup("");
     }
@@ -1489,7 +1524,7 @@ cc_digit(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
@@ -1498,7 +1533,7 @@ cc_digit(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_INTEGER) {
         return_cleanup("");
     }
@@ -1517,7 +1552,7 @@ cc_float(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
@@ -1526,7 +1561,7 @@ cc_float(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_FLOAT) {
         return_cleanup("");
     }
@@ -1545,7 +1580,7 @@ cc_false_(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
@@ -1554,7 +1589,7 @@ cc_false_(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_FALSE) {
         return_cleanup("");
     }
@@ -1572,7 +1607,7 @@ cc_true_(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
@@ -1581,7 +1616,7 @@ cc_true_(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_TRUE) {
         return_cleanup("");
     }
@@ -1599,7 +1634,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->nil); \
         ast_del_nodes(ast, cur->true_); \
@@ -1620,7 +1655,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     check("call cc_nil");
-    const token_t *savetok = *ast->ref_ptr;
+    const token_t *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->nil = cc_nil(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -1631,7 +1666,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
     }
 
     check("call cc_false_");
-    savetok = *ast->ref_ptr;
+    savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->false_ = cc_false_(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -1642,7 +1677,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
     }
 
     check("call cc_true_");
-    savetok = *ast->ref_ptr;
+    savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->true_ = cc_true_(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -1653,7 +1688,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
     }
 
     check("call cc_digit");
-    savetok = *ast->ref_ptr;
+    savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->digit = cc_digit(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -1664,7 +1699,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
     }
 
     check("call cc_float");
-    savetok = *ast->ref_ptr;
+    savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->float_ = cc_float(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -1675,7 +1710,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
     }
 
     check("call cc_string");
-    savetok = *ast->ref_ptr;
+    savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->string = cc_string(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -1686,7 +1721,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
     }
 
     check("call cc_array");
-    savetok = *ast->ref_ptr;
+    savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->array = cc_array(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -1697,7 +1732,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
     }
 
     check("call cc_dict");
-    savetok = *ast->ref_ptr;
+    savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->dict = cc_dict(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -1708,7 +1743,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
     }
 
     check("call cc_identifier");
-    savetok = *ast->ref_ptr;
+    savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->identifier = cc_identifier(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -1729,7 +1764,7 @@ cc_factor(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->atom); \
         ast_del_nodes(ast, cur->formula); \
@@ -1750,11 +1785,11 @@ cc_factor(ast_t *ast, cc_args_t *cargs) {
             return_cleanup("");
         }
 
-        if (!*ast->ref_ptr) {
+        if (is_end(ast)) {
             return_cleanup("syntax error. reached EOF in factor");
         }
 
-        token_t *t = *ast->ref_ptr++;
+        token_t *t = next_tok(ast);
         if (t->type != TOKEN_TYPE_LPAREN) {
             return_cleanup(""); // not error
         }
@@ -1770,18 +1805,18 @@ cc_factor(ast_t *ast, cc_args_t *cargs) {
             return_cleanup("syntax error. not found content of ( )");
         }
 
-        if (!*ast->ref_ptr) {
+        if (is_end(ast)) {
             return_cleanup("syntax error. reached EOF in factor (2)");
         }
 
-        t = *ast->ref_ptr++;
+        t = next_tok(ast);
         if (t->type != TOKEN_TYPE_RPAREN) {
             return_cleanup("syntax error. not found ) in factor"); // not error
         }
         check("read )")
     }
 
-    node_t *node = make_node(NODE_TYPE_FACTOR, mem_move(cur));
+    node_t *node = node_new(NODE_TYPE_FACTOR, mem_move(cur), back_tok(ast));
     return_parse(node);
 }
 
@@ -1794,7 +1829,7 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -1825,7 +1860,7 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         check("call cc_augassign");
-        const token_t *savetok = *ast->ref_ptr;
+        const token_t *savetok = cur_tok(ast);
         cargs->depth = depth + 1;
         node_t *op = cc_augassign(ast, cargs);
         if (!op) {
@@ -1864,7 +1899,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -1895,7 +1930,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         check("call mul_div_op");
-        const token_t *savetok = *ast->ref_ptr;
+        const token_t *savetok = cur_tok(ast);
         cargs->depth = depth + 1;
         node_t *op = cc_mul_div_op(ast, cargs);
         if (ast_has_errors(ast)) {
@@ -1933,7 +1968,7 @@ cc_negative(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->chain); \
         free(cur); \
@@ -1945,16 +1980,16 @@ cc_negative(ast_t *ast, cc_args_t *cargs) {
 
     depth_t depth = cargs->depth;
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_OP_SUB) {
-        --ast->ref_ptr;
+        prev_tok(ast);
     } else {
         check("read op sub in negative");
         cur->is_negative = true;
     }
 
     check("call left cc_dot");
-    const token_t *savetok = *ast->ref_ptr;
+    const token_t *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->chain = cc_chain(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -1976,7 +2011,7 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (int32_t i = 0; i < chain_nodes_len(cur->chain_nodes); ++i) { \
             chain_node_t *cn = chain_nodes_get(cur->chain_nodes, i); \
@@ -1989,10 +2024,6 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
         } \
         return_parse(NULL); \
     } \
-
-#undef return_ok
-#define return_ok \
-    return_parse(make_node(NODE_TYPE_CHAIN, mem_move(cur))); \
 
     depth_t depth = cargs->depth;
     const token_t *t = NULL;
@@ -2012,11 +2043,11 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
     for (;;) {
         switch (m) {
         case 0: {  // first
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("");  // not error
             }
 
-            t = *ast->ref_ptr++;
+            t = next_tok(ast);
             if (t->type == TOKEN_TYPE_DOT_OPE) {
                 m = 50;
             } else if (t->type == TOKEN_TYPE_LBRACKET) {
@@ -2024,12 +2055,12 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
             } else if (t->type == TOKEN_TYPE_LPAREN) {
                 m = 150;
             } else {
-                ast->ref_ptr--;
-                return_ok;
+                prev_tok(ast);
+                return_parse(node_new(NODE_TYPE_CHAIN, mem_move(cur), cur_tok(ast)));
             }
         } break;
         case 50: {  // found '.'
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF after '.'");
             }
 
@@ -2046,7 +2077,7 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
             m = 0;
         } break;
         case 100: {  // found '['
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF after '['");
             }
 
@@ -2065,11 +2096,11 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
             chain_node_t *nchain = chain_node_new(CHAIN_NODE_TYPE_INDEX, mem_move(simple_assign));
             chain_nodes_moveb(cur->chain_nodes, mem_move(nchain));
 
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF");
             }
 
-            t = *ast->ref_ptr++;
+            t = next_tok(ast);
             if (t->type != TOKEN_TYPE_RBRACKET) {
                 printf("t[%d]\n", t->type);
                 return_cleanup("not found ']'");
@@ -2079,7 +2110,7 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
             m = 0;
         } break;
         case 150: {  // found '('
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF after '('");
             }
 
@@ -2094,11 +2125,11 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
             chain_node_t *nchain = chain_node_new(CHAIN_NODE_TYPE_CALL, mem_move(call_args));
             chain_nodes_moveb(cur->chain_nodes, mem_move(nchain));
 
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF");
             }
 
-            t = *ast->ref_ptr++;
+            t = next_tok(ast);
             if (t->type != TOKEN_TYPE_RPAREN) {
                 return_cleanup("not found ')'");
             }
@@ -2121,7 +2152,7 @@ cc_mul_div_op(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
@@ -2130,7 +2161,11 @@ cc_mul_div_op(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ref_ptr++;
+    if (is_end(ast)) {
+        return_cleanup("reached EOF");
+    }
+
+    token_t *t = next_tok(ast);
     switch (t->type) {
     default:
         return_cleanup(""); // not error
@@ -2152,7 +2187,7 @@ cc_add_sub_op(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
@@ -2161,7 +2196,11 @@ cc_add_sub_op(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ref_ptr++;
+    if (is_end(ast)) {
+        return_cleanup("reached EOF");
+    }
+
+    token_t *t = next_tok(ast);
     switch (t->type) {
     default:
         return_cleanup(""); // not error
@@ -2183,7 +2222,7 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -2214,7 +2253,7 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         check("call add_sub_op");
-        const token_t *savetok = *ast->ref_ptr;
+        const token_t *savetok = cur_tok(ast);
         cargs->depth = depth + 1;
         node_t *op = cc_add_sub_op(ast, cargs);
         if (!op) {
@@ -2252,7 +2291,7 @@ cc_comp_op(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         free(cur); \
         if (strlen(msg)) { \
@@ -2261,10 +2300,14 @@ cc_comp_op(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    token_t *t = *ast->ref_ptr++;
+    if (is_end(ast)) {
+        return_cleanup("reached EOF");
+    }
+
+    token_t *t = next_tok(ast);
     switch (t->type) {
     default:
-        ast->ref_ptr--;
+        prev_tok(ast);
         return_cleanup(""); // not error
         break;
     case TOKEN_TYPE_OP_EQ:
@@ -2305,7 +2348,7 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -2336,7 +2379,7 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         check("call cc_comp_op");
-        const token_t *savetok = *ast->ref_ptr;
+        const token_t *savetok = cur_tok(ast);
         cargs->depth = depth + 1;
         node_t *comp_op = cc_comp_op(ast, cargs);
         if (!comp_op) {
@@ -2376,7 +2419,7 @@ cc_not_test(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->not_test); \
         ast_del_nodes(ast, cur->comparison); \
@@ -2389,7 +2432,7 @@ cc_not_test(ast_t *ast, cc_args_t *cargs) {
 
     depth_t depth = cargs->depth;
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type == TOKEN_TYPE_OP_NOT) {
         check("call cc_not_test");
         cc_skip_newlines(ast);
@@ -2403,7 +2446,7 @@ cc_not_test(ast_t *ast, cc_args_t *cargs) {
             return_cleanup("syntax error. not found operand in not operator");
         }
     } else {
-        ast->ref_ptr--;
+        prev_tok(ast);
         check("call cc_comparison");
 
         cargs->depth = depth + 1;
@@ -2428,7 +2471,7 @@ cc_and_test(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -2455,14 +2498,14 @@ cc_and_test(ast_t *ast, cc_args_t *cargs) {
     cc_skip_newlines(ast);
 
     for (;;) {
-        if (!*ast->ref_ptr) {
-            return_parse(make_node(NODE_TYPE_AND_TEST, cur));
+        if (is_end(ast)) {
+            return_parse(node_new(NODE_TYPE_AND_TEST, cur, back_tok(ast)));
         }
 
-        token_t *t = *ast->ref_ptr++;
+        token_t *t = next_tok(ast);
         if (t->type != TOKEN_TYPE_OP_AND) {
-            ast->ref_ptr--;
-            return_parse(make_node(NODE_TYPE_AND_TEST, cur));
+            prev_tok(ast);
+            return_parse(node_new(NODE_TYPE_AND_TEST, cur, cur_tok(ast)));
         }
         check("read 'or'")
         cc_skip_newlines(ast);
@@ -2494,7 +2537,7 @@ cc_or_test(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
             node_t *node = nodearr_popb(cur->nodearr); \
@@ -2521,14 +2564,14 @@ cc_or_test(ast_t *ast, cc_args_t *cargs) {
     cc_skip_newlines(ast);
 
     for (;;) {
-        if (!*ast->ref_ptr) {
-            return_parse(make_node(NODE_TYPE_OR_TEST, cur));
+        if (is_end(ast)) {
+            return_parse(node_new(NODE_TYPE_OR_TEST, cur, back_tok(ast)));
         }
 
-        token_t *t = *ast->ref_ptr++;
+        token_t *t = next_tok(ast);
         if (t->type != TOKEN_TYPE_OP_OR) {
-            ast->ref_ptr--;
-            return_parse(make_node(NODE_TYPE_OR_TEST, cur));
+            prev_tok(ast);
+            return_parse(node_new(NODE_TYPE_OR_TEST, cur, cur_tok(ast)));
         }
         check("read 'or'")
         cc_skip_newlines(ast);
@@ -2559,7 +2602,7 @@ cc_test(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->or_test); \
         free(cur); \
@@ -2572,7 +2615,7 @@ cc_test(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     check("call cc_or_test");
-    const token_t *savetok = *ast->ref_ptr;
+    const token_t *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->or_test = cc_or_test(ast, cargs);
     if (!cur->or_test) {
@@ -2591,7 +2634,7 @@ cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         nodearr_del(cur->contents); \
         free(cur); \
@@ -2603,7 +2646,7 @@ cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
 
     depth_t depth = cargs->depth;
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_STMT_ELSE) {
         return_cleanup("invalid token type in else statement");
     }
@@ -2611,11 +2654,11 @@ cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("reached EOF in if statement");
     }
 
-    t = *ast->ref_ptr++;
+    t = next_tok(ast);
     if (t->type != TOKEN_TYPE_COLON) {
         return_cleanup("not found colon in else statement");
     }
@@ -2625,21 +2668,21 @@ cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
     for (;;) {
         check("skip newlines");
         cc_skip_newlines(ast);
-        if (!*ast->ref_ptr) {
+        if (is_end(ast)) {
             return_cleanup("reached EOF in if statement");
         }
 
-        t = *ast->ref_ptr++;
+        t = next_tok(ast);
         if (t->type == TOKEN_TYPE_STMT_END) {
-            --ast->ref_ptr;  // don't read 'end' token. this token will be read in if-statement
+            prev_tok(ast);  // don't read 'end' token. this token will be read in if-statement
             check("found 'end'");
             break;
         } else {
-            --ast->ref_ptr;
+            prev_tok(ast);
         }
 
         // blocks or elems?
-        t = *ast->ref_ptr++;
+        t = next_tok(ast);
         if (t->type == TOKEN_TYPE_RBRACEAT) {
             // read blocks
             check("read '@}'");
@@ -2655,19 +2698,19 @@ cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
             }
             // allow null
 
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF in else statement");
             }
 
-            t = *ast->ref_ptr++;
+            t = next_tok(ast);
             if (t->type != TOKEN_TYPE_LBRACEAT) {
                 return_cleanup("not found '{@'");
             }
             check("read '{@'");
         } else {
             // read elems
-            --ast->ref_ptr;
-            const token_t *t = *ast->ref_ptr;
+            prev_tok(ast);
+            const token_t *t = cur_tok(ast);
             if (t->type == TOKEN_TYPE_STMT_ELIF) {
                 return_cleanup("syntax error. invalid token");
             }
@@ -2685,7 +2728,7 @@ cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
         }
     }
 
-    return_parse(make_node(NODE_TYPE_ELSE_STMT, cur));
+    return_parse(node_new(NODE_TYPE_ELSE_STMT, cur, t));
 }
 
 static node_t *
@@ -2698,7 +2741,7 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->test); \
         nodearr_del(cur->contents); \
@@ -2713,7 +2756,7 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
 
     depth_t depth = cargs->depth;
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (cargs->if_stmt_type == 0) {
         if (t->type != TOKEN_TYPE_STMT_IF) {
             return_cleanup("");  // not error
@@ -2732,7 +2775,7 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("reached EOF in if statement");
     }
 
@@ -2750,11 +2793,11 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("reached EOF in if statement");
     }
 
-    t = *ast->ref_ptr++;
+    t = next_tok(ast);
     if (t->type != TOKEN_TYPE_COLON) {
         return_cleanup("syntax error. not found colon in if statement");
     }
@@ -2764,22 +2807,22 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
     for (;;) {
         check("skip newlines");
         cc_skip_newlines(ast);
-        if (!*ast->ref_ptr) {
+        if (is_end(ast)) {
             return_cleanup("reached EOF in if statement");
         }
 
-        t = *ast->ref_ptr++;
+        t = next_tok(ast);
         if (t->type == TOKEN_TYPE_STMT_END) {
             if (node_type == NODE_TYPE_ELIF_STMT) {
                 // do not read 'end' token because this token will read in if statement
-                --ast->ref_ptr;
+                prev_tok(ast);
                 check("found 'end'")
             } else {
                 check("read 'end'");
             }
             break;
         } else if (t->type == TOKEN_TYPE_STMT_ELIF) {
-            --ast->ref_ptr;
+            prev_tok(ast);
 
             cargs->depth = depth + 1;
             cargs->if_stmt_type = 1;
@@ -2791,7 +2834,7 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
             check("read elif");
             continue;
         } else if (t->type == TOKEN_TYPE_STMT_ELSE) {
-            --ast->ref_ptr;
+            prev_tok(ast);
 
             cargs->depth = depth + 1;
             node_t *else_ = cc_else_stmt(ast, cargs);
@@ -2802,17 +2845,17 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
             check("read else");
             continue;
         } else {
-            --ast->ref_ptr;
+            prev_tok(ast);
         }
 
         // read blocks or elems
-        t = *ast->ref_ptr++;
+        t = next_tok(ast);
         if (t->type == TOKEN_TYPE_RBRACEAT) {
             check("read '@}'");
 
             check("skip newlines");
             cc_skip_newlines(ast);
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF in if statement");
             }
 
@@ -2829,17 +2872,17 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
 
             check("skip newlines");
             cc_skip_newlines(ast);
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF in if statement");
             }
 
-            t = *ast->ref_ptr++;
+            t = next_tok(ast);
             if (t->type != TOKEN_TYPE_LBRACEAT) {
                 return_cleanup("not found '{@' in if statement");
             }
             check("read '{@'");
         } else {
-            --ast->ref_ptr;
+            prev_tok(ast);
 
             check("call cc_elems");
             cargs->depth = depth + 1;
@@ -2852,19 +2895,18 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
             }
             // allow elems is null
 
-            const token_t *t = *ast->ref_ptr;
+            const token_t *t = cur_tok(ast);
             bool hope = t->type == TOKEN_TYPE_STMT_ELIF ||
                         t->type == TOKEN_TYPE_STMT_ELSE ||
                         t->type == TOKEN_TYPE_STMT_END ||
                         t->type == TOKEN_TYPE_RBRACEAT;
             if (!hope) {
-                token_dump(t, stdout);
                 return_cleanup("syntax error");
             }
         }
     }
 
-    return_parse(make_node(node_type, cur));
+    return_parse(node_new(node_type, cur, t));
 }
 
 static node_t *
@@ -2875,7 +2917,7 @@ cc_import_as_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->path); \
         ast_del_nodes(ast, cur->alias); \
@@ -2886,13 +2928,10 @@ cc_import_as_stmt(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-#undef return_ok
-#define return_ok return_parse(make_node(NODE_TYPE_IMPORT_AS_STMT, cur))
-
     depth_t depth = cargs->depth;
 
-    const token_t *tok = *ast->ref_ptr++;
-    if (tok->type != TOKEN_TYPE_STMT_IMPORT) {
+    token_t *t = next_tok(ast);
+    if (t->type != TOKEN_TYPE_STMT_IMPORT) {
         return_cleanup(""); // not error
     }
 
@@ -2904,12 +2943,12 @@ cc_import_as_stmt(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("not found path in compile import as statement");
     }
 
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("reached EOF in compile import as statement");
     }
 
-    tok = *ast->ref_ptr++;
-    if (tok->type != TOKEN_TYPE_AS) {
+    t = next_tok(ast);
+    if (t->type != TOKEN_TYPE_AS) {
         return_cleanup("not found keyword 'as' in compile import as statement");
     }
 
@@ -2921,7 +2960,7 @@ cc_import_as_stmt(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("not found alias in compile import as statement");
     }
 
-    return_ok;
+    return_parse(node_new(NODE_TYPE_IMPORT_AS_STMT, cur, cur_tok(ast)));
 }
 
 static node_t *
@@ -2932,7 +2971,7 @@ cc_import_var(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->identifier); \
         ast_del_nodes(ast, cur->alias); \
@@ -2942,9 +2981,6 @@ cc_import_var(ast_t *ast, cc_args_t *cargs) {
         } \
         return_parse(NULL); \
     } \
-
-#undef return_ok
-#define return_ok return_parse(make_node(NODE_TYPE_IMPORT_VAR, cur))
 
     depth_t depth = cargs->depth;
 
@@ -2958,14 +2994,14 @@ cc_import_var(ast_t *ast, cc_args_t *cargs) {
     }
     check("readed first identifier");
 
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("reached EOF in compile import variable");
     }
 
-    const token_t *tok = *ast->ref_ptr++;
-    if (tok->type != TOKEN_TYPE_AS) {
-        --ast->ref_ptr;
-        return_ok;
+    token_t *t = next_tok(ast);
+    if (t->type != TOKEN_TYPE_AS) {
+        prev_tok(ast);
+        return_parse(node_new(NODE_TYPE_IMPORT_VAR, cur, cur_tok(ast)));
     }
     check("readed 'as'");
 
@@ -2979,7 +3015,7 @@ cc_import_var(ast_t *ast, cc_args_t *cargs) {
     }
     check("readed second identifier");
 
-    return_ok;
+    return_parse(node_new(NODE_TYPE_IMPORT_VAR, cur, cur_tok(ast)));
 }
 
 static node_t *
@@ -2991,7 +3027,7 @@ cc_import_vars(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (int32_t i = 0; i < nodearr_len(cur->nodearr); ++i) { \
             node_t *node = nodearr_get(cur->nodearr, i); \
@@ -3005,19 +3041,20 @@ cc_import_vars(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-#undef return_ok
-#define return_ok return_parse(make_node(NODE_TYPE_IMPORT_VARS, cur))
-
 #undef push
 #define push(node) nodearr_moveb(cur->nodearr, node)
 
     depth_t depth = cargs->depth;
 
     // read '(' or single import variable
-    const token_t *tok = *ast->ref_ptr++;
+
+    // 2021/06/02
+    // なぜか↓の tok を t にリネームするとセグフォになる
+    // 原因不明
+    token_t *tok = next_tok(ast);
     if (tok->type != TOKEN_TYPE_LPAREN) {
         // read single import variable
-        --ast->ref_ptr;
+        prev_tok(ast);
 
         cargs->depth = depth + 1;
         node_t *import_var = cc_import_var(ast, cargs);
@@ -3030,13 +3067,13 @@ cc_import_vars(ast_t *ast, cc_args_t *cargs) {
         check("readed single import variable");
 
         push(import_var);
-        return_ok;
+        return_parse(node_new(NODE_TYPE_IMPORT_VARS, cur, tok));
     }
     check("readed '('");
 
     // read ... ')'
     for (;;) {
-        if (!*ast->ref_ptr) {
+        if (is_end(ast)) {
             return_cleanup("reached EOF in compile import variables");
         }
 
@@ -3057,29 +3094,29 @@ cc_import_vars(ast_t *ast, cc_args_t *cargs) {
         check("skip newlines");
         cc_skip_newlines(ast);
 
-        if (!*ast->ref_ptr) {
+        if (is_end(ast)) {
             return_cleanup("reached EOF in compile import variables (2)");
         }
 
         check("skip newlines");
         cc_skip_newlines(ast);
 
-        tok = *ast->ref_ptr++;
+        tok = next_tok(ast);
         if (tok->type == TOKEN_TYPE_COMMA) {
             check("readed comma");
 
             check("skip newlines");
             cc_skip_newlines(ast);
 
-            if (!*ast->ref_ptr) {
+            if (is_end(ast)) {
                 return_cleanup("reached EOF in compile import variables (3)");
             }
-            tok = *ast->ref_ptr++;
+            tok = next_tok(ast);
             if (tok->type == TOKEN_TYPE_RPAREN) {
                 check("readed ')'");
                 break; // end parse
             }
-            --ast->ref_ptr;
+            prev_tok(ast);
         } else if (tok->type == TOKEN_TYPE_RPAREN) {
             check("readed ')'");
             break; // end parse
@@ -3088,7 +3125,7 @@ cc_import_vars(ast_t *ast, cc_args_t *cargs) {
         }
     }
 
-    return_ok;
+    return_parse(node_new(NODE_TYPE_IMPORT_VARS, cur, cur_tok(ast)));
 }
 
 static node_t *
@@ -3099,7 +3136,7 @@ cc_from_import_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->path); \
         ast_del_nodes(ast, cur->import_vars); \
@@ -3110,13 +3147,10 @@ cc_from_import_stmt(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-#undef return_ok
-#define return_ok return_parse(make_node(NODE_TYPE_FROM_IMPORT_STMT, cur))
-
     depth_t depth = cargs->depth;
 
-    const token_t *tok = *ast->ref_ptr++;
-    if (tok->type != TOKEN_TYPE_FROM) {
+    token_t *t = next_tok(ast);
+    if (t->type != TOKEN_TYPE_FROM) {
         return_cleanup("");
     }
     check("readed 'from'");
@@ -3131,8 +3165,8 @@ cc_from_import_stmt(ast_t *ast, cc_args_t *cargs) {
     }
     check("readed path");
 
-    tok = *ast->ref_ptr++;
-    if (tok->type != TOKEN_TYPE_STMT_IMPORT) {
+    t = next_tok(ast);
+    if (t->type != TOKEN_TYPE_STMT_IMPORT) {
         return_cleanup("not found import in compile from import statement");
     }
     check("readed 'import'");
@@ -3147,7 +3181,7 @@ cc_from_import_stmt(ast_t *ast, cc_args_t *cargs) {
     }
     check("readed import variables");
 
-    return_ok;
+    return_parse(node_new(NODE_TYPE_FROM_IMPORT_STMT, cur, cur_tok(ast)));
 }
 
 static node_t *
@@ -3158,7 +3192,7 @@ cc_import_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt, ...) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->import_as_stmt); \
         ast_del_nodes(ast, cur->from_import_stmt); \
@@ -3168,9 +3202,6 @@ cc_import_stmt(ast_t *ast, cc_args_t *cargs) {
         } \
         return_parse(NULL); \
     } \
-
-#undef return_ok
-#define return_ok return_parse(make_node(NODE_TYPE_IMPORT_STMT, cur))
 
     depth_t depth = cargs->depth;
 
@@ -3194,11 +3225,11 @@ cc_import_stmt(ast_t *ast, cc_args_t *cargs) {
         check("readed import as statement");
     }
 
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("reached EOF in compile import statement");
     }
 
-    const token_t *tok = *ast->ref_ptr++;
+    const token_t *tok = next_tok(ast);
     if (!(tok->type == TOKEN_TYPE_NEWLINE ||
           tok->type == TOKEN_TYPE_RBRACEAT)) {
         return_cleanup(
@@ -3207,9 +3238,9 @@ cc_import_stmt(ast_t *ast, cc_args_t *cargs) {
         );
     }
     check("found NEWLINE or '@}'");
-    --ast->ref_ptr;
+    prev_tok(ast);
 
-    return_ok;
+    return_parse(node_new(NODE_TYPE_IMPORT_STMT, cur, cur_tok(ast)));
 }
 
 static node_t *
@@ -3220,7 +3251,7 @@ cc_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->import_stmt); \
         ast_del_nodes(ast, cur->if_stmt); \
@@ -3235,82 +3266,88 @@ cc_stmt(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-#undef return_ok
-#define return_ok return_parse(make_node(NODE_TYPE_STMT, cur))
-
     depth_t depth = cargs->depth;
+    token_t *t;
 
     check("call cc_import_stmt");
+    t = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->import_stmt = cc_import_stmt(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     } else if (cur->import_stmt) {
-        return_ok;
+        return_parse(node_new(NODE_TYPE_STMT, cur, t));
     }
 
     check("call cc_if_stmt");
+    t = cur_tok(ast);
     cargs->depth = depth + 1;
     cargs->if_stmt_type = 0;
     cur->if_stmt = cc_if_stmt(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     } else if (cur->if_stmt) {
-        return_ok;
+        return_parse(node_new(NODE_TYPE_STMT, cur, t));
     }
 
     check("call cc_for_stmt");
+    t = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->for_stmt = cc_for_stmt(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     } else if (cur->for_stmt) {
-        return_ok;
+        return_parse(node_new(NODE_TYPE_STMT, cur, t));
     }
 
     check("call cc_break_stmt");
+    t = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->break_stmt = cc_break_stmt(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     } else if (cur->break_stmt) {
-        return_ok;
+        return_parse(node_new(NODE_TYPE_STMT, cur, t));
     }
 
     check("call cc_continue_stmt");
+    t = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->continue_stmt = cc_continue_stmt(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     } else if (cur->continue_stmt) {
-        return_ok;
+        return_parse(node_new(NODE_TYPE_STMT, cur, t));
     }
 
     check("call cc_return_stmt");
+    t = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->return_stmt = cc_return_stmt(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     } else if (cur->return_stmt) {
-        return_ok;
+        return_parse(node_new(NODE_TYPE_STMT, cur, t));
     }
 
     check("call cc_block_stmt");
+    t = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->block_stmt = cc_block_stmt(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     } else if (cur->block_stmt) {
-        return_ok;
+        return_parse(node_new(NODE_TYPE_STMT, cur, t));
     }
 
     check("call cc_inject_stmt");
+    t = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->inject_stmt = cc_inject_stmt(ast, cargs);
     if (ast_has_errors(ast)) {
         return_cleanup("");
     } else if (cur->inject_stmt) {
-        return_ok;
+        return_parse(node_new(NODE_TYPE_STMT, cur, t));
     }
 
     return_cleanup("");
@@ -3325,7 +3362,7 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->identifier); \
         for (int32_t i = 0; i < nodearr_len(cur->contents); ++i) { \
@@ -3341,7 +3378,7 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
     } \
 
     depth_t depth = cargs->depth;
-    token_t *t = ast_read_token(ast);
+    token_t *t = next_tok(ast);
     if (!t || t->type != TOKEN_TYPE_STMT_BLOCK) {
         return_cleanup("");
     }
@@ -3358,7 +3395,7 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("not found identifier in block statement");
     }
 
-    t = ast_read_token(ast);
+    t = next_tok(ast);
     if (!t || t->type != TOKEN_TYPE_COLON) {
         return_cleanup("not found colon in block statement");
     }
@@ -3367,7 +3404,7 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
     cc_skip_newlines(ast);
 
     for (;;) {
-        t = ast_read_token(ast);
+        t = next_tok(ast);
         if (!t) {
             return_cleanup("not found 'end' in block statement");
         } else if (t->type == TOKEN_TYPE_STMT_END) {
@@ -3387,7 +3424,7 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
         nodearr_moveb(cur->contents, mem_move(content));
     }
 
-    node_t *node = make_node(NODE_TYPE_BLOCK_STMT, cur);
+    node_t *node = node_new(NODE_TYPE_BLOCK_STMT, cur, cur_tok(ast));
     node_identifier_t *idnnode = cur->identifier->real;
     assert(cargs->func_def->blocks);
     nodedict_move(cargs->func_def->blocks, idnnode->identifier, node);
@@ -3405,7 +3442,7 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->identifier); \
         for (int32_t i = 0; i < nodearr_len(cur->contents); ++i) { \
@@ -3421,7 +3458,7 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
     } \
 
     depth_t depth = cargs->depth;
-    token_t *t = ast_read_token(ast);
+    token_t *t = next_tok(ast);
     if (!t || t->type != TOKEN_TYPE_STMT_INJECT) {
         return_cleanup("");
     }
@@ -3434,17 +3471,17 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("not found identifier in inject statement");
     }
 
-    t = ast_read_token(ast);
+    t = next_tok(ast);
     if (!t || t->type != TOKEN_TYPE_COLON) {
         return_cleanup("not found colon in inject statement");
     }
 
     check("skip newlines");
     cc_skip_newlines(ast);
-    const token_t *savetok = *ast->ref_ptr;
+    const token_t *savetok = cur_tok(ast);
 
     for (;;) {
-        t = ast_read_token(ast);
+        t = next_tok(ast);
         if (!t) {
             return_cleanup("not found 'end' in inject statement");
         } else if (t->type == TOKEN_TYPE_STMT_END) {
@@ -3453,7 +3490,7 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
             ast_prev_ptr(ast);
         }
 
-        savetok = *ast->ref_ptr;
+        savetok = cur_tok(ast);
         cargs->depth = depth + 1;
         node_t *content = cc_content(ast, cargs);
         if (!content || ast_has_errors(ast)) {
@@ -3480,7 +3517,7 @@ cc_struct(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg, ...) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->identifier); \
         ast_del_nodes(ast, cur->elems); \
@@ -3492,7 +3529,7 @@ cc_struct(ast_t *ast, cc_args_t *cargs) {
     } \
 
     depth_t depth = cargs->depth;
-    token_t *t = ast_read_token(ast);
+    token_t *t = next_tok(ast);
     if (!t) {
         return_cleanup("reached EOF in read struct");
     }
@@ -3508,7 +3545,7 @@ cc_struct(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("not found identifier");
     }
 
-    t = ast_read_token(ast);
+    t = next_tok(ast);
     if (!t) {
         return_cleanup("reached EOF in read colon");
     }
@@ -3528,7 +3565,7 @@ cc_struct(ast_t *ast, cc_args_t *cargs) {
     cc_skip_newlines(ast);
 
     saveptr = ast->ref_ptr;
-    t = ast_read_token(ast);
+    t = next_tok(ast);
     if (!t) {
         return_cleanup("reached EOF in read 'end'");
     }
@@ -3550,7 +3587,7 @@ cc_content(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->elems); \
         ast_del_nodes(ast, cur->blocks); \
@@ -3561,14 +3598,11 @@ cc_content(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-#undef return_ok
-#define return_ok return_parse(make_node(NODE_TYPE_CONTENT, cur))
-
     check("skip newlines");
     cc_skip_newlines(ast);
 
     depth_t depth = cargs->depth;
-    token_t *t = ast_read_token(ast);
+    token_t *t = next_tok(ast);
     if (!t) {
         return_cleanup("");
     } else if (t->type == TOKEN_TYPE_RBRACEAT) {  // '@}'
@@ -3578,7 +3612,7 @@ cc_content(ast_t *ast, cc_args_t *cargs) {
             return_cleanup("");
         }
 
-        t = ast_read_token(ast);
+        t = next_tok(ast);
         if (!t || t->type != TOKEN_TYPE_LBRACEAT) {  // '{@'
             return_cleanup("not found '{@' in content");
         }
@@ -3594,7 +3628,7 @@ cc_content(ast_t *ast, cc_args_t *cargs) {
     check("skip newlines");
     cc_skip_newlines(ast);
 
-    return_ok;
+    return_parse(node_new(NODE_TYPE_CONTENT, cur, t));
 }
 
 static node_t *
@@ -3605,7 +3639,7 @@ cc_elems(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->def); \
         ast_del_nodes(ast, cur->stmt); \
@@ -3670,7 +3704,7 @@ elem_readed:
     cc_skip_newlines(ast);
 
     check("call cc_elems");
-    const token_t *savetok = *ast->ref_ptr;
+    const token_t *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->elems = cc_elems(ast, cargs);
     if (!cur->elems) {
@@ -3689,7 +3723,7 @@ cc_text_block(ast_t *ast, cc_args_t *cargs) {
     declare(node_text_block_t, cur);
     token_t **save_ptr = ast->ref_ptr;
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_TEXT_BLOCK) {
         ast->ref_ptr = save_ptr;
         free(cur);
@@ -3715,7 +3749,7 @@ cc_ref_block(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->formula); \
         free(cur); \
@@ -3727,7 +3761,7 @@ cc_ref_block(ast_t *ast, cc_args_t *cargs) {
 
     depth_t depth = cargs->depth;
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_LDOUBLE_BRACE) {
         return_cleanup("");
     }
@@ -3744,7 +3778,7 @@ cc_ref_block(ast_t *ast, cc_args_t *cargs) {
 
     cc_skip_newlines(ast);
     
-    t = *ast->ref_ptr++;
+    t = next_tok(ast);
     if (!t) {
         return_cleanup("syntax error. reached EOF in reference block");
     }
@@ -3764,7 +3798,7 @@ cc_code_block(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->elems); \
         free(cur); \
@@ -3776,7 +3810,7 @@ cc_code_block(ast_t *ast, cc_args_t *cargs) {
 
     depth_t depth = cargs->depth;
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_LBRACEAT) {
         return_cleanup("");
     }
@@ -3796,7 +3830,7 @@ cc_code_block(ast_t *ast, cc_args_t *cargs) {
     check("skip newlines");
     cc_skip_newlines(ast);
 
-    t = *ast->ref_ptr++;
+    t = next_tok(ast);
     if (!t) {
         return_cleanup("syntax error. reached EOF in code block");
     }
@@ -3853,7 +3887,6 @@ cc_blocks(ast_t *ast, cc_args_t *cargs) {
         }
     }
 
-    const token_t *savetok = *ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->blocks = cc_blocks(ast, cargs);
     // allow null
@@ -3861,7 +3894,7 @@ cc_blocks(ast_t *ast, cc_args_t *cargs) {
         return_cleanup();
     }
 
-    return_parse(node_new(NODE_TYPE_BLOCKS, cur, savetok));
+    return_parse(node_new(NODE_TYPE_BLOCKS, cur, back_tok(ast)));
 }
 
 static node_t *
@@ -3882,7 +3915,7 @@ cc_program(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     check("call cc_blocks");
-    const token_t *savetok = *ast->ref_ptr;
+    const token_t *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->blocks = cc_blocks(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -3903,7 +3936,7 @@ cc_def(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->func_def); \
         free(cur); \
@@ -3916,7 +3949,7 @@ cc_def(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     check("call cc_func_def");
-    const token_t *savetok = *ast->ref_ptr;
+    const token_t *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->func_def = cc_func_def(ast, cargs);
     if (ast_has_errors(ast)) {
@@ -3938,7 +3971,7 @@ cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->identifiers); ) { \
             node_t *node = nodearr_popb(cur->identifiers); \
@@ -3954,7 +3987,7 @@ cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     check("call cc_identifier");
-    const token_t *savetok = *ast->ref_ptr;
+    const token_t *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     node_t *identifier = cc_identifier(ast, cargs);
     if (!identifier) {
@@ -3967,14 +4000,14 @@ cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
     nodearr_moveb(cur->identifiers, identifier);
 
     for (;;) {
-        if (!*ast->ref_ptr) {
-            return_parse(make_node(NODE_TYPE_FUNC_DEF_ARGS, cur));
+        if (is_end(ast)) {
+            return_parse(node_new(NODE_TYPE_FUNC_DEF_ARGS, cur, back_tok(ast)));
         }
 
-        token_t *t = *ast->ref_ptr++;
+        token_t *t = next_tok(ast);
         if (t->type != TOKEN_TYPE_COMMA) {
-            ast->ref_ptr--;
-            return_parse(make_node(NODE_TYPE_FUNC_DEF_ARGS, cur));
+            prev_tok(ast);
+            return_parse(node_new(NODE_TYPE_FUNC_DEF_ARGS, cur, cur_tok(ast)));
         }
         check("read ,");
 
@@ -4003,7 +4036,7 @@ cc_func_def_params(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->func_def_args); \
         free(cur); \
@@ -4015,7 +4048,7 @@ cc_func_def_params(ast_t *ast, cc_args_t *cargs) {
 
     depth_t depth = cargs->depth;
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_LPAREN) {
         return_cleanup("");
     }
@@ -4031,11 +4064,11 @@ cc_func_def_params(ast_t *ast, cc_args_t *cargs) {
         return_cleanup(""); // not error
     }
 
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("syntax error. reached EOF in func def params");
     }
 
-    t = *ast->ref_ptr++;
+    t = next_tok(ast);
     if (t->type != TOKEN_TYPE_RPAREN) {
         return_cleanup("syntax error. not found ')' in func def params");
     }
@@ -4052,7 +4085,7 @@ cc_func_extends(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         ast_del_nodes(ast, cur->identifier); \
         free(cur); \
@@ -4062,11 +4095,8 @@ cc_func_extends(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-#undef return_ok
-#define return_ok return_parse(make_node(NODE_TYPE_FUNC_EXTENDS, cur))
-
     depth_t depth = cargs->depth;
-    token_t *t = ast_read_token(ast);
+    token_t *t = next_tok(ast);
     if (!t || t->type != TOKEN_TYPE_EXTENDS) {
         return_cleanup("");
     }
@@ -4079,7 +4109,7 @@ cc_func_extends(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("not found identifier in function extends");
     }
 
-    return_ok;
+    return_parse(node_new(NODE_TYPE_FUNC_EXTENDS, cur, cur_tok(ast)));
 }
 
 static node_t *
@@ -4095,7 +4125,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt) { \
-        token_t *curtok = *ast->ref_ptr; \
+        token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         cargs->is_in_loop = is_in_loop; \
         cargs->is_in_func = is_in_func; \
@@ -4112,15 +4142,9 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-#undef return_ok
-#define return_ok \
-    cargs->is_in_loop = is_in_loop; \
-    cargs->is_in_func = is_in_func; \
-    return_parse(make_node(NODE_TYPE_FUNC_DEF, cur)); \
-
     depth_t depth = cargs->depth;
 
-    token_t *t = *ast->ref_ptr++;
+    token_t *t = next_tok(ast);
     if (!(t->type == TOKEN_TYPE_DEF ||
           t->type == TOKEN_TYPE_MET)) {
         return_cleanup("");
@@ -4151,7 +4175,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
         return_cleanup(""); // not error
     }
 
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("syntax error. reached EOF in parse func def");
     }
 
@@ -4164,14 +4188,14 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
     // allow cur->func_extends is null
 
     // colon
-    t = *ast->ref_ptr++;
+    t = next_tok(ast);
     if (t->type != TOKEN_TYPE_COLON) {
-        ast->ref_ptr--;
+        prev_tok(ast);
         return_cleanup("not found colon"); // not error
     }
     check("read :");
 
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("syntax error. reached EOF in parse func def (2)");
     }
 
@@ -4197,11 +4221,11 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
     check("skip newlines");
     cc_skip_newlines(ast);
 
-    if (!*ast->ref_ptr) {
+    if (is_end(ast)) {
         return_cleanup("syntax error. reached EOF in parse func def (5)");
     }
 
-    t = *ast->ref_ptr++;
+    t = next_tok(ast);
     if (t->type != TOKEN_TYPE_STMT_END) {
         char msg[1024];
         snprintf(msg, sizeof msg, "not found 'end' in parse func def. token type is %d", t->type);
@@ -4209,7 +4233,9 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
     }
     check("read end");
 
-    return_ok;
+    cargs->is_in_loop = is_in_loop;
+    cargs->is_in_func = is_in_func;
+    return_parse(node_new(NODE_TYPE_FUNC_DEF, cur, t));
 }
 
 #undef viss

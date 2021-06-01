@@ -7,15 +7,17 @@ from "tests/mutable-and-immutable/mi.pad" import main as miMain
 from "tests/builtin/functions.pad" import main as functionsMain
 // from "tests/io/file.pad" import main as fileMain  // Needs implement
 from "tests/lib/list.pad" import main as listMain
+from "tests/lib/html.pad" import main as htmlMain
 
 def allTest():
     forStmtMain("all")
-    listMain("all")
     funcMain("all")
     structMain("all")
     typesMain("all")
     miMain("all")
     functionsMain("all")
+    listMain("all")
+    htmlMain("all")
 end
 
 def main():
