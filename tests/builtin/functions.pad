@@ -1,0 +1,64 @@
+{@
+def case1():
+    puts("Test builtin/functions case1")
+
+    out, err = dance("{@ sum = 0 for i = 0; i < 4; i += 1: sum += i end puts(sum) @}")
+    assert(out == "6\n")
+    assert(err == nil)
+end
+
+def case2():
+    puts("Test builtin/functions case2")
+end
+
+def case3():
+    puts("Test builtin/functions case3")
+end
+
+def case4():
+    puts("Test builtin/functions case4")
+end
+
+def case5():
+    puts("Test builtin/functions case5")
+
+end
+
+def case6():
+    puts("Test builtin/functions case6")
+
+end
+
+def allTest():
+    puts("Test builtin/functions all")
+
+    case1()
+    case2()
+    case3()
+    case4()
+    case5()
+    case6()
+end
+
+def main(name):
+    puts("Test builtin/functions")
+
+    if name == "all":
+        allTest()
+    elif name == "case1":
+        case1()
+    elif name == "case2":
+        case2()
+    elif name == "case3":
+        case3()
+    elif name == "case4":
+        case4()
+    elif name == "case5":
+        case5()
+    elif name == "case6":
+        case6()
+    end
+
+    puts("Done builtin/functions")
+end
+@}

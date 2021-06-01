@@ -4,6 +4,7 @@ from "tests/def/func.pad" import main as funcMain
 from "tests/type/types.pad" import main as typesMain
 from "tests/struct/struct.pad" import main as structMain
 from "tests/mutable-and-immutable/mi.pad" import main as miMain
+from "tests/builtin/functions.pad" import main as functionsMain
 // from "tests/io/file.pad" import main as fileMain  // Needs implement
 from "tests/lib/list.pad" import main as listMain
 
@@ -14,6 +15,7 @@ def allTest():
     structMain("all")
     typesMain("all")
     miMain("all")
+    functionsMain("all")
 end
 
 def main():
