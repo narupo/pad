@@ -343,6 +343,9 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_OBJECT: {
         ctx_pushb_stdout_buf(context, "(object)");
     } break;
+    case OBJ_TYPE_TYPE: {
+        ctx_pushb_stdout_buf(context, "(type)");
+    } break;
     } // switch
 
     return_trav(NULL);
@@ -4964,6 +4967,38 @@ trv_compare_comparison_eq_chain(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
+trv_compare_comparison_eq_type(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_TYPE);
+
+    depth_t depth = targs->depth;
+
+    switch (rhs->type) {
+    default: {
+        pushb_error("can't comparision");
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        check("call trv_roll_identifier_rhs");
+        targs->callback = trv_compare_comparison_eq;
+        targs->depth = depth + 1;
+        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_TYPE: {
+        bool b = lhs->type_obj.type == rhs->type_obj.type;
+        return obj_new_bool(ast->ref_gc, b);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison type");
+    return_trav(NULL);
+}
+
+static object_t *
 trv_compare_comparison_eq(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *lhs = targs->lhs_obj;
@@ -5040,6 +5075,11 @@ trv_compare_comparison_eq(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_CHAIN: {
         check("call trv_compare_comparison_eq_chain");
         object_t *obj = trv_compare_comparison_eq_chain(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_TYPE: {
+        check("call trv_compare_comparison_eq_type");
+        object_t *obj = trv_compare_comparison_eq_type(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5545,6 +5585,37 @@ trv_compare_comparison_not_eq_def_struct(ast_t *ast, trv_args_t *targs) {
 }
 
 static object_t *
+trv_compare_comparison_not_eq_type(ast_t *ast, trv_args_t *targs) {
+    tready();
+    object_t *lhs = targs->lhs_obj;
+    object_t *rhs = targs->rhs_obj;
+    assert(lhs && rhs);
+    assert(lhs->type == OBJ_TYPE_TYPE);
+
+    targs->depth += 1;
+
+    switch (rhs->type) {
+    default: {
+        pushb_error("can't comparison");
+        return_trav(NULL);
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        check("call trv_roll_identifier_rhs");
+        targs->callback = trv_compare_comparison_not_eq;
+        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_TYPE: {
+        bool b = lhs->type_obj.type != rhs->type_obj.type;
+        return obj_new_bool(ast->ref_gc, b);
+    } break;
+    }
+
+    assert(0 && "impossible. failed to compare comparison not eq type");
+    return_trav(NULL);
+}
+
+static object_t *
 trv_compare_comparison_not_eq(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *lhs = targs->lhs_obj;
@@ -5627,6 +5698,11 @@ trv_compare_comparison_not_eq(ast_t *ast, trv_args_t *targs) {
 
         targs->lhs_obj = lval;
         object_t *obj = trv_compare_comparison_not_eq(ast, targs);
+        return_trav(obj);
+    } break;
+    case OBJ_TYPE_TYPE: {
+        check("call trv_compare_comparison_not_eq_type");
+        object_t *obj = trv_compare_comparison_not_eq_type(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -10836,22 +10912,22 @@ trv_define_builtin_types(ast_t *ast) {
     object_dict_t *varmap = ctx_get_varmap(ast->ref_context);
     object_t *obj = NULL;
 
-    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_ARRAY, "Array");
+    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_ARRAY);
     objdict_move(varmap, "Array", mem_move(obj));
 
-    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_DICT, "Dict");
+    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_DICT);
     objdict_move(varmap, "Dict", mem_move(obj));
 
-    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_UNICODE, "String");
+    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_UNICODE);
     objdict_move(varmap, "String", mem_move(obj));
 
-    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_BOOL, "Bool");
+    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_BOOL);
     objdict_move(varmap, "Bool", mem_move(obj));
 
-    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_INT, "Int");
+    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_INT);
     objdict_move(varmap, "Int", mem_move(obj));
 
-    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_FLOAT, "Float");
+    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_FLOAT);
     objdict_move(varmap, "Float", mem_move(obj));
 
     return ast;

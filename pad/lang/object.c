@@ -261,6 +261,9 @@ obj_deep_copy(const object_t *other) {
         self->chain.operand = obj_deep_copy(other->chain.operand);
         self->chain.chain_objs = chain_objs_deep_copy(other->chain.chain_objs);
         break;
+    case OBJ_TYPE_TYPE:
+        self->type_obj.type = other->type_obj.type;
+        break;
     }
 
     return self;
@@ -775,8 +778,8 @@ obj_new_module_by(
 }
 
 object_t *
-obj_new_type(gc_t *ref_gc, obj_type_t type, const char *name) {
-    if (!ref_gc || !name) {
+obj_new_type(gc_t *ref_gc, obj_type_t type) {
+    if (!ref_gc) {
         return NULL;
     }
 
@@ -786,7 +789,6 @@ obj_new_type(gc_t *ref_gc, obj_type_t type, const char *name) {
     }
 
     self->type_obj.type = type;
-    self->type_obj.name = name;
 
     return self;
 }
@@ -1206,4 +1208,3 @@ const char *
 obj_getc_mod_name(const object_t *self) {
     return self->module.name;
 }
-

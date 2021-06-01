@@ -33,11 +33,29 @@ end
 def case3():
     puts("Test type/types case3")
 
+    T = type(1)
+    assert(T == Int)
+    assert(Int == T)
+    assert(T != Bool)
+    assert(Bool != T)
+    assert(T() == 0)
+    assert(T(1) == 1)
+
+    assert(type("Hige")("Hoge") == "Hoge")
 end
 
 def case4():
     puts("Test type/types case4")
 
+    types = [Int, Float, String]
+
+    for i = 0; i < len(types); i += 1:
+        if i == 0 or i == 2:
+            assert(String(types[i]("100")) == "100")
+        elif i == 1:
+            assert(String(types[i]("100")) == "100.0")
+        end
+    end
 end
 
 def case5():

@@ -61,24 +61,25 @@ builtin_type(builtin_func_args_t *fargs) {
 again:
     switch (obj->type) {
     default:
-        break;
+        push_error("not supported type \"%d\"", obj->type);
+        return NULL;
     case OBJ_TYPE_NIL: {
-        return obj_new_unicode_cstr(ref_ast->ref_gc, "nil");
+        return obj_new_type(ref_ast->ref_gc, OBJ_TYPE_NIL);
     } break;
     case OBJ_TYPE_INT: {
-        return obj_new_unicode_cstr(ref_ast->ref_gc, "int");
+        return obj_new_type(ref_ast->ref_gc, OBJ_TYPE_INT);
     } break;
     case OBJ_TYPE_BOOL: {
-        return obj_new_unicode_cstr(ref_ast->ref_gc, "bool");
+        return obj_new_type(ref_ast->ref_gc, OBJ_TYPE_BOOL);
     } break;
     case OBJ_TYPE_UNICODE: {
-        return obj_new_unicode_cstr(ref_ast->ref_gc, "str");
+        return obj_new_type(ref_ast->ref_gc, OBJ_TYPE_UNICODE);
     } break;
     case OBJ_TYPE_ARRAY: {
-        return obj_new_unicode_cstr(ref_ast->ref_gc, "array");
+        return obj_new_type(ref_ast->ref_gc, OBJ_TYPE_ARRAY);
     } break;
     case OBJ_TYPE_DICT: {
-        return obj_new_unicode_cstr(ref_ast->ref_gc, "dict");
+        return obj_new_type(ref_ast->ref_gc, OBJ_TYPE_DICT);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(obj);
@@ -90,24 +91,23 @@ again:
         goto again;
     } break;
     case OBJ_TYPE_FUNC: {
-        return obj_new_unicode_cstr(ref_ast->ref_gc, "func");
+        return obj_new_type(ref_ast->ref_gc, OBJ_TYPE_FUNC);
     } break;
     case OBJ_TYPE_CHAIN: {
         obj = obj->chain.operand;
         goto again;
     } break;
     case OBJ_TYPE_MODULE: {
-        return obj_new_unicode_cstr(ref_ast->ref_gc, "module");
+        return obj_new_type(ref_ast->ref_gc, OBJ_TYPE_MODULE);
     } break;
     case OBJ_TYPE_DEF_STRUCT: {
-        return obj_new_unicode_cstr(ref_ast->ref_gc, "struct");
+        return obj_new_type(ref_ast->ref_gc, OBJ_TYPE_DEF_STRUCT);
     } break;
     case OBJ_TYPE_OBJECT: {
-        return obj_new_unicode_cstr(ref_ast->ref_gc, "object");
+        return obj_new_type(ref_ast->ref_gc, OBJ_TYPE_OBJECT);
     } break;
     } // switch
 
-    push_error("not supported type \"%d\"", obj->type);
     return NULL;
 }
 

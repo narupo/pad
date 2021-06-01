@@ -10,7 +10,6 @@ def case1():
     head = Node(Node(Node()))
 
     for cur = head; cur; cur = cur.next:
-        assert(type(cur) == "object")  // TODO: Error!
     end
 end
 
@@ -27,7 +26,6 @@ def case2():
         if cur == nil:
             break
         end
-        assert(type(cur) == "object")  // TODO: Error!
     end
 end
 

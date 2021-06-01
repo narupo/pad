@@ -140,6 +140,63 @@ def case6():
     assert(a.swim() == 2)
 end
 
+def case7():
+    struct Human:
+        hp = 100
+        power = 10
+        status = "alive"
+    end
+
+    struct Game:
+        frame = 0
+        humans = []
+        maxHumans = 10
+
+        def new():
+            self = Game()
+
+            for i = 0; i < self.maxHumans; i += 1:
+                human = Human()
+                self.humans.push(human)
+            end
+
+            return self
+        end
+
+        met update(self):
+            if self.frame % 4 == 0:
+                h1 = self.humans[0]
+                h2 = self.humans[1]
+                h1.hp -= h2.power
+            end
+            if self.checkGameOver():
+                return false
+            end
+            self.frame += 1
+            return true
+        end
+
+        met checkGameOver(self):
+            alived = false
+            for i = 0; i < len(self.humans); i += 1:
+                h = self.humans[i]
+                if h.hp <= 0:
+                    h.status = "died"
+                end
+                if h.status == "alive":
+                    alived = true
+                end
+            end
+            return not alived
+        end
+    end
+
+    game = Game.new()
+    for i = 0; i < 10; i += 1:
+        game.update()
+    end
+end
+
 def allTest():
     puts("Test struct/struct all")
 
@@ -149,6 +206,7 @@ def allTest():
     case4()
     case5()
     case6()
+    case7()
 end
 
 def main(name):
@@ -168,6 +226,8 @@ def main(name):
         case5()
     elif name == "case6":
         case6()
+    elif name == "case7":
+        case7()
     end
 
     puts("Done struct/struct")

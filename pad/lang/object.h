@@ -515,7 +515,7 @@ object_t *
 obj_new_owners_method(gc_t *ref_gc, object_t *owner, string_t *move_method_name);
 
 object_t *
-obj_new_type(gc_t *ref_gc, obj_type_t type, const char *name);
+obj_new_type(gc_t *ref_gc, obj_type_t type);
 
 /**
  * object to string_t

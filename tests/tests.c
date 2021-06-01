@@ -16654,7 +16654,7 @@ test_trv_builtin_structs_error_0(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "object"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(type)"));
     }
 
     tkr_parse(tkr, "{@ err = Error(\"oioi\") @}{: err.what() :}");
@@ -16951,7 +16951,7 @@ test_trv_builtin_functions_type_dict(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "dict"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(type)"));
     }
 
     ctx_del(ctx);
@@ -16965,15 +16965,15 @@ static void
 test_trv_builtin_functions_type(void) {
     trv_ready;
 
-    check_ok("{: type(nil) :}", "nil");
-    check_ok("{: type(1) :}", "int");
-    check_ok("{: type(true) :}", "bool");
-    check_ok("{: type(\"string\") :}", "str");
-    check_ok("{: type([1, 2]) :}", "array");
-    check_ok("{: type({ \"a\": 1 }) :}", "dict");
-    check_ok("{@ def f(): end @}{: type(f) :}", "func");
-    check_ok("{@ import \"tests/lang/modules/hello.cap\" as mod @}{: type(mod) :}", "imported\nmodule");
-    check_ok("{@ struct A: end @}{: type(A()) :}", "object");
+    check_ok("{: type(nil) :}", "(type)");
+    check_ok("{: type(1) :}", "(type)");
+    check_ok("{: type(true) :}", "(type)");
+    check_ok("{: type(\"string\") :}", "(type)");
+    check_ok("{: type([1, 2]) :}", "(type)");
+    check_ok("{: type({ \"a\": 1 }) :}", "(type)");
+    check_ok("{@ def f(): end @}{: type(f) :}", "(type)");
+    check_ok("{@ import \"tests/lang/modules/hello.cap\" as mod @}{: type(mod) :}", "imported\n(type)");
+    check_ok("{@ struct A: end @}{: type(A()) :}", "(type)");
 
     trv_cleanup;
 }
@@ -23844,7 +23844,7 @@ test_trv_struct_5(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "object"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(type)"));
     }
 
     trv_cleanup;
