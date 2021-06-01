@@ -16654,7 +16654,7 @@ test_trv_builtin_structs_error_0(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(type)"));
+        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(struct)"));
     }
 
     tkr_parse(tkr, "{@ err = Error(\"oioi\") @}{: err.what() :}");
@@ -16973,7 +16973,7 @@ test_trv_builtin_functions_type(void) {
     check_ok("{: type({ \"a\": 1 }) :}", "(type)");
     check_ok("{@ def f(): end @}{: type(f) :}", "(type)");
     check_ok("{@ import \"tests/lang/modules/hello.cap\" as mod @}{: type(mod) :}", "imported\n(type)");
-    check_ok("{@ struct A: end @}{: type(A()) :}", "(type)");
+    check_ok("{@ struct A: end @}{: type(A()) :}", "(struct)");
 
     trv_cleanup;
 }
@@ -23831,21 +23831,13 @@ static void
 test_trv_struct_5(void) {
     trv_ready;
 
-    tkr_parse(tkr, "{@\n"
+    check_ok_trace("{@\n"
     "struct Animal:\n"
     "   a = 1\n"
     "   b = 2\n"
     "end\n"
     "animal = Animal()\n"
-    "@}{: type(animal) :}");
-    {
-        ast_clear(ast);
-        cc_compile(ast, tkr_get_tokens(tkr));
-        ctx_clear(ctx);
-        trv_traverse(ast, ctx);
-        assert(!ast_has_errors(ast));
-        assert(!strcmp(ctx_getc_stdout_buf(ctx), "(type)"));
-    }
+    "@}{: type(animal) :}", "(struct)");
 
     trv_cleanup;
 }

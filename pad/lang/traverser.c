@@ -343,6 +343,9 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
     case OBJ_TYPE_OBJECT: {
         ctx_pushb_stdout_buf(context, "(object)");
     } break;
+    case OBJ_TYPE_DEF_STRUCT: {
+        ctx_pushb_stdout_buf(context, "(struct)");
+    } break;
     case OBJ_TYPE_TYPE: {
         ctx_pushb_stdout_buf(context, "(type)");
     } break;

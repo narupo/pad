@@ -55,7 +55,7 @@ builtin_type(builtin_func_args_t *fargs) {
         return NULL;
     }
 
-    const object_t *obj = objarr_getc(args, 0);
+    object_t *obj = objarr_get(args, 0);
     assert(obj);
 
 again:
@@ -101,10 +101,13 @@ again:
         return obj_new_type(ref_ast->ref_gc, OBJ_TYPE_MODULE);
     } break;
     case OBJ_TYPE_DEF_STRUCT: {
-        return obj_new_type(ref_ast->ref_gc, OBJ_TYPE_DEF_STRUCT);
+        return obj;
     } break;
     case OBJ_TYPE_OBJECT: {
-        return obj_new_type(ref_ast->ref_gc, OBJ_TYPE_OBJECT);
+        return obj->object.ref_def_obj;
+    } break;
+    case OBJ_TYPE_TYPE: {
+        return obj_new_type(ref_ast->ref_gc, OBJ_TYPE_TYPE);
     } break;
     } // switch
 

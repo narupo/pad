@@ -156,6 +156,7 @@ struct object_object {
     ast_t *ref_ast;  // DO NOT DELETE
     ast_t *ref_struct_ast;  // DO NOT DELETE
     context_t *struct_context;  // moved
+    object_t *ref_def_obj;  // DO NOT DELETE
 };
 
 struct object_type {
@@ -471,7 +472,8 @@ object_t *
 obj_new_object(
     gc_t *ref_gc,
     ast_t *ref_ast,
-    context_t *move_context
+    context_t *move_context,
+    object_t *ref_def_obj
 );
 
 /**

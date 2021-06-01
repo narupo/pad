@@ -112,6 +112,9 @@ obj_del(object_t *self) {
     case OBJ_TYPE_OBJECT:
         self->object.ref_ast = NULL;
         ctx_del(self->object.struct_context);
+        obj_dec_ref(self->object.ref_def_obj);
+        obj_del(self->object.ref_def_obj);
+        self->object.ref_def_obj = NULL;
         break;
     case OBJ_TYPE_OWNERS_METHOD:
         obj_dec_ref(self->owners_method.owner);
@@ -251,6 +254,8 @@ obj_deep_copy(const object_t *other) {
         self->object.ref_ast = other->object.ref_ast;
         self->object.ref_struct_ast = other->object.ref_struct_ast;
         self->object.struct_context = ctx_deep_copy(other->object.struct_context);
+        obj_inc_ref(other->object.ref_def_obj);
+        self->object.ref_def_obj = other->object.ref_def_obj;
         break;
     case OBJ_TYPE_OWNERS_METHOD:
         self->owners_method.owner = obj_deep_copy(other->owners_method.owner);
@@ -365,6 +370,8 @@ obj_shallow_copy(const object_t *other) {
         self->object.ref_ast = other->object.ref_ast;
         self->object.ref_struct_ast = other->object.ref_struct_ast;
         self->object.struct_context = ctx_shallow_copy(other->object.struct_context);
+        obj_inc_ref(other->object.ref_def_obj);
+        self->object.ref_def_obj = other->object.ref_def_obj;
         break;
     case OBJ_TYPE_OWNERS_METHOD:
         self->owners_method.owner = obj_shallow_copy(other->owners_method.owner);
@@ -695,9 +702,10 @@ object_t *
 obj_new_object(
     gc_t *ref_gc,
     ast_t *ref_ast,
-    context_t *move_struct_context
+    context_t *move_struct_context,
+    object_t *ref_def_obj
 ) {
-    if (!ref_gc || !ref_ast || !move_struct_context) {
+    if (!ref_gc || !ref_ast || !move_struct_context || !ref_def_obj) {
         return NULL;
     }
 
@@ -708,6 +716,7 @@ obj_new_object(
 
     self->object.ref_ast = ref_ast;
     self->object.struct_context = move_struct_context;
+    self->object.ref_def_obj = ref_def_obj;
 
     return self;
 }

@@ -1028,10 +1028,12 @@ gen_struct(
         return NULL;
     }
 
+    obj_inc_ref(own);
     return obj_new_object(
         ref_gc,
         ref_ast,
-        mem_move(context)
+        mem_move(context),
+        own
     );
 }
 

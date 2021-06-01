@@ -61,11 +61,23 @@ end
 def case5():
     puts("Test type/types case5")
 
+    assert(String(type(type(1))) == "(type)")
 end
 
 def case6():
     puts("Test type/types case6")
 
+    struct Animal:
+        name = "Tama"
+    end
+
+    assert(type(Animal) == Animal)
+
+    animal = Animal()
+    assert(type(animal) == Animal)
+
+    animal = type(animal)("Mike")
+    assert(animal.name == "Mike")
 end
 
 def allTest():
