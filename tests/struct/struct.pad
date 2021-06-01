@@ -197,6 +197,35 @@ def case7():
     end
 end
 
+def case8():
+    puts("Test struct/struct case8")
+
+    struct Animal:
+        met swim(self):
+            return "swiming"
+        end
+    end
+
+    assert(Animal.swim() == "swiming")
+    assert(Animal().swim() == "swiming")
+
+    struct A:
+        a = 1
+        met inc(self):
+            self.a += 1
+        end
+    end
+
+    assert(A.a == 1)
+    A.inc()
+    assert(A.a == 1)  // TODO: インクリメントされないけど、この仕様はどうだろう？
+
+    a = A()
+    assert(a.a == 1)
+    a.inc()
+    assert(a.a == 2)
+end
+
 def allTest():
     puts("Test struct/struct all")
 
@@ -207,6 +236,7 @@ def allTest():
     case5()
     case6()
     case7()
+    case8()
 end
 
 def main(name):
@@ -228,6 +258,8 @@ def main(name):
         case6()
     elif name == "case7":
         case7()
+    elif name == "case8":
+        case8()
     end
 
     puts("Done struct/struct")
