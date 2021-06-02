@@ -1543,7 +1543,7 @@ assign_to_chain_dict_index(
     assert(owner->type == OBJ_TYPE_DICT);
     object_t *idxobj = chain_obj_get_obj(co);
 
-again:
+bob:
     switch (idxobj->type) {
     default: {
         pushb_error("invalid index (%d)", idxobj->type);
@@ -1556,14 +1556,14 @@ again:
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
         }
-        goto again;
+        goto bob;
     } break;
     case OBJ_TYPE_UNICODE: {
         // pass
     } break;
     }
 
-again2:
+marley:
     switch (rhs->type) {
     default: break;
     case OBJ_TYPE_CHAIN: {
@@ -1572,7 +1572,7 @@ again2:
             pushb_error("failed to refer chain object");
             return NULL;
         }
-        goto again2;
+        goto marley;
     } break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(rhs);
@@ -1581,7 +1581,7 @@ again2:
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
         }
-        goto again2;
+        goto marley;
     } break;
     }
 
