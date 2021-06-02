@@ -5,6 +5,7 @@ def case1():
 	puts("Test lib/list case1")
 
 	p = HtmlParser()
+
 	err = p.parse("<h1>title</h1>")
 	assert(err == nil)
 	assert(p.document)
@@ -14,6 +15,18 @@ def case1():
 	assert(childs[0].name == "h1")
 	assert(childs[0].childs[0].type == "text")
 	assert(childs[0].childs[0].content == "title")
+
+	err = p.parse("<h1><h2>title</h2></h1>")
+	assert(err == nil)
+	assert(p.document)
+	childs = p.document.childs
+	assert(len(childs) == 1)
+	assert(childs[0].type == "normal")
+	assert(childs[0].name == "h1")
+	assert(childs[0].childs[0].type == "normal")
+	assert(childs[0].childs[0].name == "h2")
+	assert(childs[0].childs[0].childs[0].type == "text")
+	assert(childs[0].childs[0].childs[0].content == "title")
 
 	err = p.parse("<h1 id=\"main\" class=\"gray\">title</h1>")
 	assert(err == nil)

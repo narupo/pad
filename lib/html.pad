@@ -42,7 +42,7 @@ struct Tag:
 
         for not self.strm.eof():
             c = self.strm.get()
-            puts(m, c, self.name)
+            // puts(m, c)
             if m == "first":
                 if c == "<":
                     m = "found <"
@@ -169,7 +169,6 @@ struct Tag:
                 if c == "\"":
                     val = buf
                     buf = ""
-                    puts("val", val)
                     self.attrs[key] = val
                     m = "read attr key"
                 else:
