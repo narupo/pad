@@ -24,7 +24,7 @@ struct Tag:
 
     met skip(self):
         for not self.strm.eof():
-            if self.strm.get() != " ":  // TODO: isspace
+            if not self.strm.get().isspace():
                 self.strm.prev()
                 break
             end
@@ -65,14 +65,14 @@ struct Tag:
                     buf += c
                 elif c == "/":
                     m = "found </"
-                elif c == " ":  // TODO: isspace()
+                elif c.isspace():
                     // pass
                 end
             elif m == "found </":
                 if self.isNameHead(c):
                     m = "read end name"
                     buf += c
-                elif c == " ":
+                elif c.isspace():
                     // pass
                 end
             elif m == "read end name":
@@ -80,13 +80,13 @@ struct Tag:
                     buf += c
                 elif c == ">":
                     return nil
-                elif c == " ":
+                elif c.isspace():
                     // pass
                 end
             elif m == "read name":
                 if self.isName(c):
                     buf += c
-                elif c == " ":  // TODO: isspace()
+                elif c.isspace():
                     self.name = buf
                     buf = ""
                     self.skip()
@@ -115,7 +115,7 @@ struct Tag:
             elif m == "read attr key":
                 if self.isName(c):
                     buf += c
-                elif c == " ":  // TODO: isspace
+                elif c.isspace():
                     self.skip()
                     key = buf
                     buf = ""
