@@ -14,6 +14,16 @@ def case1():
 	assert(childs[0].name == "h1")
 	assert(childs[0].childs[0].type == "text")
 	assert(childs[0].childs[0].content == "title")
+
+	err = p.parse("<h1 id=\"main\" class=\"gray\">title</h1>")
+	assert(err == nil)
+	assert(p.document)
+	childs = p.document.childs
+	assert(len(childs) == 1)
+	assert(len(childs[0].attrs) == 2)
+	assert(childs[0].attrs["id"] == "main")
+	assert(childs[0].attrs["class"] == "gray")
+	assert(childs[0].childs[0].content == "title")
 end
 
 def allTest():

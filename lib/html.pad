@@ -8,6 +8,7 @@ struct Tag:
     type = nil
     name = nil
     content = nil
+    attrs = {}
 
     def new():
         return Tag()
@@ -21,7 +22,7 @@ struct Tag:
         return c.isalpha() or c.isdigit() or c == "_" or c == "-"
     end
 
-    met skipsp(self):
+    met skip(self):
         for not self.strm.eof():
             if self.strm.get() != " ":  // TODO: isspace
                 self.strm.prev()
@@ -33,12 +34,15 @@ struct Tag:
     met parse(self, strm):
         self.strm = strm
         self.childs = []
+        self.attrs = {}
         m = "first"
         buf = ""
+        key = ""
+        val = ""
 
         for not self.strm.eof():
             c = self.strm.get()
-            // puts(m, c)
+            puts(m, c, self.name)
             if m == "first":
                 if c == "<":
                     m = "found <"
@@ -75,12 +79,7 @@ struct Tag:
                 if self.isName(c):
                     buf += c
                 elif c == ">":
-                    if buf == self.name:
-                        return nil
-                    else:
-                        puts("buf", buf)
-                        return Error("not closed tag", Error.VALUE)
-                    end
+                    return nil
                 elif c == " ":
                     // pass
                 end
@@ -88,9 +87,12 @@ struct Tag:
                 if self.isName(c):
                     buf += c
                 elif c == " ":  // TODO: isspace()
-                    // pass
+                    self.name = buf
+                    buf = ""
+                    self.skip()
+                    m = "read attr key"
                 elif c == "/":
-                    self.skipsp()
+                    self.skip()
                     c = self.strm.get()
                     if c == ">":
                         return nil
@@ -109,6 +111,69 @@ struct Tag:
                         return err
                     end
                     self.childs.push(tag)
+                end
+            elif m == "read attr key":
+                if self.isName(c):
+                    buf += c
+                elif c == " ":  // TODO: isspace
+                    self.skip()
+                    key = buf
+                    buf = ""
+                    m = "read attr ="
+                elif c == "=":
+                    self.skip()
+                    key = buf
+                    buf = ""
+                    m = "read attr val"
+                elif c == ">":
+                    self.type = "normal"
+                    self.name = buf
+                    buf = ""
+                    m = "first"
+                    tag = Tag()
+                    err = tag.parse(self.strm)
+                    if err:
+                        return err
+                    end
+                    self.childs.push(tag)
+                end
+            elif m == "read attr =":
+                if c == "=":
+                    self.skip()
+                    m = "read attr val"
+                else:
+                    self.strm.prev()
+                    m = "read attr key"
+                end
+            elif m == "read attr val":
+                if c == "\"":
+                    m = "read attr val str"
+                elif c == ">":
+                    val = buf
+                    buf = ""
+                    self.attrs[key] = val
+                    self.type = "normal"
+                    self.name = buf
+                    buf = ""
+                    m = "first"
+                    tag = Tag()
+                    err = tag.parse(self.strm)
+                    if err:
+                        return err
+                    end
+                    self.childs.push(tag)
+                else:
+                    buf += c
+                end
+            elif m == "read attr val str":
+                if c == "\"":
+                    val = buf
+                    buf = ""
+                    puts("val", val)
+                    self.attrs[key] = val
+                    m = "read attr key"
+                else:
+                    buf += c
                 end
             end
         end

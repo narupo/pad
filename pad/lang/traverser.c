@@ -1461,7 +1461,7 @@ assign_to_chain_call(
     chain_object_t *co,
     object_t *rhs
 ) {
-    object_t *obj = refer_chain_call(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, owners, co);
+    object_t *obj = refer_chain_call(ast, ast->error_stack, targs->ref_node, ast->ref_gc, ast->ref_context, owners, co);
     if (ast_has_errors(ast)) {
         pushb_error("failed to refer chain call");
         return NULL;
@@ -1560,6 +1560,28 @@ again:
     } break;
     case OBJ_TYPE_UNICODE: {
         // pass
+    } break;
+    }
+
+again2:
+    switch (rhs->type) {
+    default: break;
+    case OBJ_TYPE_CHAIN: {
+        rhs = _refer_chain_obj_with_ref(rhs);
+        if (errstack_len(ast->error_stack)) {
+            pushb_error("failed to refer chain object");
+            return NULL;
+        }
+        goto again2;
+    } break;
+    case OBJ_TYPE_IDENTIFIER: {
+        const char *idn = obj_getc_idn_name(rhs);
+        rhs = pull_ref(rhs);
+        if (!rhs) {
+            pushb_error("\"%s\" is not defined", idn);
+            return NULL;
+        }
+        goto again2;
     } break;
     }
 

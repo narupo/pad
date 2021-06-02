@@ -1,0 +1,70 @@
+{@
+def case1():
+	puts("Test data/dict case1")
+
+	d = {"key": "val"}
+	assert(d["key"] == "val")
+
+	d = {"a": 1, "b": 2}
+	assert(d["a"] == 1)
+	assert(d["b"] == 2)
+
+	val = "gray"
+	d = {"class": val}
+	assert(d["class"] == "gray")
+
+	val = "gray"
+	d = {}
+	d["class"] = val
+	assert(d["class"] == "gray")
+end
+
+def case2():
+	puts("Test data/dict case2")
+
+	d = {}
+	def func():
+		val = "gray"
+		d["class"] = val
+	end
+
+	func()
+	assert(d["class"] == "gray")
+end
+
+def case3():
+	puts("Test data/dict case3")
+
+	d = {}
+	def func():
+		i = [[1]]
+		d["class"] = i[0][0]
+	end
+
+	func()
+	assert(d["class"] == 1)
+end
+
+def allTest():
+	puts("Test data/dict all")
+	case1()
+	case2()
+	case3()
+end
+
+def main(name):
+	puts("Test data/dict")
+
+	if name == "all":
+		allTest()
+	elif name == "case1":
+		case1()
+	elif name == "case2":
+		case2()
+	elif name == "case3":
+		case3()
+	end
+
+	puts("Done data/dict")
+end
+@}
