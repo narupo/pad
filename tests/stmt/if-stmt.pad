@@ -1,0 +1,92 @@
+{@
+
+def case1():
+    puts("Test stmt/if-stmt case1")
+
+    def func(n):
+    	if n == 1:
+    		return 1
+    	elif n == 2:
+    		return 2
+    	elif n == 3:
+    		return 3
+    	elif n == 4:
+    		return 4
+    	else:
+    		return 5
+    	end
+    end
+
+    assert(func(1) == 1)
+    assert(func(2) == 2)
+    assert(func(3) == 3)
+    assert(func(4) == 4)
+    assert(func(5) == 5)
+    assert(func(nil) == 5)
+end
+
+def case2():
+    puts("Test stmt/if-stmt case2")
+
+    struct Animal:
+	    met func(self, n):
+	    	c = 1
+	    	a = 1
+	    	if n == 1:
+	    		if n == 1:
+		    		return 1
+		    	end
+	    	elif n == 2:
+	    		if n == 2:
+	    			return 2
+	    		else:
+		    		return 2
+		    	end
+	    	elif n == 3:
+	    		return 3
+	    	elif n == 4:
+	    		return 4
+	    	else:
+	    		if n == nil:
+		    		return 5
+		    	else:
+		    		return 5
+		    	end
+	    	end
+	    	b = 2
+	    end
+	end
+
+	animal = Animal()
+
+    assert(animal.func(1) == 1)
+    assert(animal.func(2) == 2)
+    assert(animal.func(3) == 3)
+    assert(animal.func(4) == 4)
+    assert(animal.func(5) == 5)
+    assert(animal.func(nil) == 5)
+end
+
+def allTest():
+    puts("Test stmt/if-stmt all")
+    case1()
+    case2()
+end
+
+def main(name):
+    puts("Test stmt/if-stmt")
+
+    if name == "all":
+        allTest()
+    elif name == "case1":
+        case1()
+    elif name == "case2":
+        case2()
+    else:
+        eputs("invalid name", name)
+    end
+
+    puts("Done if-stmt")
+end
+
+@}
