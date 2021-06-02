@@ -1444,7 +1444,7 @@ refer_child:
         return NULL;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(child);
-        set_ref_at_cur_varmap(errstack, ref_context, owners, idn, rhs);
+        set_ref_at_cur_varmap(errstack, targs->ref_node, ref_context, owners, idn, rhs);
         return rhs;
     } break;
     }
@@ -8133,6 +8133,7 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
         check("set reference of (%d) at (%s) of current varmap", rhs->type, idn);
         set_ref_at_cur_varmap(
             ast->error_stack,
+            targs->ref_node,
             ast->ref_context,
             ref_owners,
             idn,
@@ -8145,6 +8146,7 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
         object_t *val = _extract_ref_of_obj_all(rhs);
         set_ref_at_cur_varmap(
             ast->error_stack,
+            targs->ref_node,
             ast->ref_context,
             ref_owners,
             idn,
@@ -8163,6 +8165,7 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
         obj_inc_ref(rval);
         set_ref_at_cur_varmap(
             ast->error_stack,
+            targs->ref_node,
             ast->ref_context,
             ref_owners,
             idn,

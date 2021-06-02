@@ -5,6 +5,10 @@ from "lib/stream.pad" import Stream  // TODO: remove lib/
  * Tag
  */
 struct Tag:
+    type = nil
+    name = nil
+    content = nil
+
     def new():
         return Tag()
     end
@@ -34,6 +38,7 @@ struct Tag:
 
         for not self.strm.eof():
             c = self.strm.get()
+            // puts(m, c)
             if m == "first":
                 if c == "<":
                     m = "found <"
@@ -44,8 +49,9 @@ struct Tag:
             elif m == "read text tag":
                 if c == "<":
                     self.strm.prev()
-                    self.text = buf
-                    return
+                    self.type = "text"
+                    self.content = buf
+                    return nil
                 else:
                     buf += c
                 end
@@ -53,28 +59,55 @@ struct Tag:
                 if self.isNameHead(c):
                     m = "read name"
                     buf += c
+                elif c == "/":
+                    m = "found </"
                 elif c == " ":  // TODO: isspace()
+                    // pass
+                end
+            elif m == "found </":
+                if self.isNameHead(c):
+                    m = "read end name"
+                    buf += c
+                elif c == " ":
+                    // pass
+                end
+            elif m == "read end name":
+                if self.isName(c):
+                    buf += c
+                elif c == ">":
+                    if buf == self.name:
+                        return nil
+                    else:
+                        puts("buf", buf)
+                        return Error("not closed tag", Error.VALUE)
+                    end
+                elif c == " ":
                     // pass
                 end
             elif m == "read name":
                 if self.isName(c):
                     buf += c
-                elif c == " ":
-                    self.name = buf
-                    buf = ""
+                elif c == " ":  // TODO: isspace()
+                    // pass
                 elif c == "/":
                     self.skipsp()
                     c = self.strm.get()
                     if c == ">":
-                        return
+                        return nil
                     else:
                         self.strm.prev()
                         m = "first"
                     end
                 elif c == ">":
+                    self.type = "normal"
+                    self.name = buf
+                    buf = ""
                     m = "first"
                     tag = Tag()
-                    tag.parse(self.strm)
+                    err = tag.parse(self.strm)
+                    if err:
+                        return err
+                    end
                     self.childs.push(tag)
                 end
             end
@@ -86,6 +119,8 @@ end
  * Document
  */
 struct Document:
+    childs = nil
+
     def new():
         return Document()
     end
@@ -102,7 +137,10 @@ struct Document:
                 if c == "<":
                     self.strm.prev()
                     tag = Tag()
-                    tag.parse(self.strm)
+                    err = tag.parse(self.strm)
+                    if err:
+                        return err
+                    end
                     self.childs.push(tag)
                 else:
                     m = "read text tag"
@@ -117,7 +155,10 @@ struct Document:
 
                     self.strm.prev()
                     tag = Tag()
-                    tag.parse(self.strm)
+                    err = tag.parse(self.strm)
+                    if err:
+                        return err
+                    end
                     self.childs.push(tag)
                 else:
                     buf += c
@@ -140,7 +181,7 @@ struct HtmlParser:
     met parse(self, src):
         strm = Stream.new(src)
         self.document = Document.new()
-        self.document.parse(strm)
+        return self.document.parse(strm)
     end
 end
 

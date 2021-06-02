@@ -521,7 +521,7 @@ builtin_setattr(builtin_func_args_t *fargs) {
         return NULL;
     }
 
-    set_ref_at_cur_varmap(errstack, ref_context, NULL, key, obj);
+    set_ref_at_cur_varmap(errstack, fargs->ref_node, ref_context, NULL, key, obj);
     if (errstack_len(errstack)) {
         push_error("failed to set reference at varmap");
         return NULL;

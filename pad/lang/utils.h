@@ -105,6 +105,7 @@ move_obj_at_cur_varmap(
 bool
 set_ref_at_cur_varmap(
     errstack_t *err,
+    const node_t *ref_node,
     context_t *ctx,
     object_array_t *ref_owners,
     const char *identifier,
@@ -214,9 +215,9 @@ object_t *
 refer_chain_call(
     ast_t *ref_ast,
     errstack_t *err,
+    const node_t *ref_node,
     gc_t *ref_gc,
     context_t *ref_context,
-    const node_t *ref_node,
     object_array_t *owns,  // TODO: const
     chain_object_t *co
 );
