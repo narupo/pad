@@ -1,17 +1,27 @@
 {@
 from "lib/stream.pad" import Stream  // TODO: remove lib/
 
-/**
- * Tag
- */
+struct Token:
+    type = nil
+    text = nil
+    TYPE_LT = 1
+    TYPE_GT = 2
+    TYPE_NAME = 3
+    TYPE_ATTR_KEY = 4
+    TYPE_ATTR_VAL = 5
+    TYPE_TEXT = 6
+end
+
 struct Tag:
     type = nil
     name = nil
     content = nil
     attrs = {}
+end
 
+struct Tokenizer:
     def new():
-        return Tag()
+        return Tokenizer()
     end
 
     met isNameHead(self, c):
@@ -31,203 +41,14 @@ struct Tag:
         end
     end
 
-    met parse(self, strm):
+    met tokenize(self, strm):
         self.strm = strm
-        self.childs = []
-        self.attrs = {}
-        m = "first"
-        buf = ""
-        key = ""
-        val = ""
-
-        for not self.strm.eof():
-            c = self.strm.get()
-            // puts(m, c)
-            if m == "first":
-                if c == "<":
-                    m = "found <"
-                else:
-                    buf += c
-                    m = "read text tag"
-                end
-            elif m == "read text tag":
-                if c == "<":
-                    self.strm.prev()
-                    self.type = "text"
-                    self.content = buf
-                    return nil
-                else:
-                    buf += c
-                end
-            elif m == "found <":
-                if self.isNameHead(c):
-                    m = "read name"
-                    buf += c
-                elif c == "/":
-                    m = "found </"
-                elif c.isspace():
-                    // pass
-                end
-            elif m == "found </":
-                if self.isNameHead(c):
-                    m = "read end name"
-                    buf += c
-                elif c.isspace():
-                    // pass
-                end
-            elif m == "read end name":
-                if self.isName(c):
-                    buf += c
-                elif c == ">":
-                    return nil
-                elif c.isspace():
-                    // pass
-                end
-            elif m == "read name":
-                if self.isName(c):
-                    buf += c
-                elif c.isspace():
-                    self.name = buf
-                    buf = ""
-                    self.skip()
-                    m = "read attr key"
-                elif c == "/":
-                    self.skip()
-                    c = self.strm.get()
-                    if c == ">":
-                        return nil
-                    else:
-                        self.strm.prev()
-                        m = "first"
-                    end
-                elif c == ">":
-                    self.type = "normal"
-                    self.name = buf
-                    buf = ""
-                    m = "first"
-                    tag = Tag()
-                    err = tag.parse(self.strm)
-                    if err:
-                        return err
-                    end
-                    self.childs.push(tag)
-                end
-            elif m == "read attr key":
-                if self.isName(c):
-                    buf += c
-                elif c.isspace():
-                    self.skip()
-                    key = buf
-                    buf = ""
-                    m = "read attr ="
-                elif c == "=":
-                    self.skip()
-                    key = buf
-                    buf = ""
-                    m = "read attr val"
-                elif c == ">":
-                    self.type = "normal"
-                    self.name = buf
-                    buf = ""
-                    m = "first"
-                    tag = Tag()
-                    err = tag.parse(self.strm)
-                    if err:
-                        return err
-                    end
-                    self.childs.push(tag)
-                end
-            elif m == "read attr =":
-                if c == "=":
-                    self.skip()
-                    m = "read attr val"
-                else:
-                    self.strm.prev()
-                    m = "read attr key"
-                end
-            elif m == "read attr val":
-                if c == "\"":
-                    m = "read attr val str"
-                elif c == ">":
-                    val = buf
-                    buf = ""
-                    self.attrs[key] = val
-                    self.type = "normal"
-                    self.name = buf
-                    buf = ""
-                    m = "first"
-                    tag = Tag()
-                    err = tag.parse(self.strm)
-                    if err:
-                        return err
-                    end
-                    self.childs.push(tag)
-                else:
-                    buf += c
-                end
-            elif m == "read attr val str":
-                if c == "\"":
-                    val = buf
-                    buf = ""
-                    self.attrs[key] = val
-                    m = "read attr key"
-                else:
-                    buf += c
-                end
-            end
-        end
-    end
-end
-
-/**
- * Document
- */
-struct Document:
-    childs = nil
-
-    def new():
-        return Document()
+        self.tokens = []
     end
 
-    met parse(self, strm):
-        self.strm = strm
-        self.childs = []
-        buf = ""
-        m = "first"
-
-        for not self.strm.eof():
-            c = self.strm.get()
-            if m == "first":
-                if c == "<":
-                    self.strm.prev()
-                    tag = Tag()
-                    err = tag.parse(self.strm)
-                    if err:
-                        return err
-                    end
-                    self.childs.push(tag)
-                else:
-                    m = "read text tag"
-                    buf += c
-                end
-            elif m == "read text tag":
-                if c == "<":
-                    tag = Tag()
-                    tag.text = buf
-                    buf = ""
-                    self.childs.push(tag)
-
-                    self.strm.prev()
-                    tag = Tag()
-                    err = tag.parse(self.strm)
-                    if err:
-                        return err
-                    end
-                    self.childs.push(tag)
-                else:
-                    buf += c
-                end
-            end
+    met debug(self, msg):
+        if self._debug:
+            puts(msg)
         end
     end
 end
@@ -236,16 +57,20 @@ end
  * HTML Parser
  */
 struct HtmlParser:
-    document = nil
-
     def new():
         return HtmlParser()
     end
 
     met parse(self, src):
         strm = Stream.new(src)
-        self.document = Document.new()
-        return self.document.parse(strm)
+        tokenizer = Tokenizer.new()
+        tokens = tokenizer.tokenize(strm)
+
+        strm = Stream.new(tokens)
+        parser = Parser()
+        tags = parser.parse(tokens)
+
+        return tags
     end
 end
 

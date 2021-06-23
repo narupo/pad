@@ -2,19 +2,58 @@
 from "lib/html.pad" import HtmlParser
 
 def case1():
-	puts("Test lib/list case1")
+	puts("Test lib/html case1")
 
 	p = HtmlParser()
 
 	err = p.parse("<h1>title</h1>")
+	if err:
+		puts(err.what())
+		exit(1)
+	end
+	assert(err == nil)
+	assert(p.document)
+	tags = p.document.tags
+	assert(len(tags) == 1)
+	assert(tags[0].type == "normal")
+	assert(tags[0].name == "h1")
+	assert(tags[0].tags[0].type == "text")
+	assert(tags[0].tags[0].content == "title")
+end
+
+def case2():
+	puts("Test lib/html case2")
+
+	p = HtmlParser()
+
+	err = p.parse("<h1><h2>title1</h2><h3>title2</h3></h1>")
+	if err:
+		puts(err.what())
+		exit(1)
+	end
 	assert(err == nil)
 	assert(p.document)
 	childs = p.document.childs
+	puts("childs len", len(childs))
 	assert(len(childs) == 1)
 	assert(childs[0].type == "normal")
+	puts(childs[0].name)
 	assert(childs[0].name == "h1")
-	assert(childs[0].childs[0].type == "text")
-	assert(childs[0].childs[0].content == "title")
+	assert(childs[0].childs[0].type == "normal")
+	assert(childs[0].childs[0].name == "h2")
+	assert(childs[0].childs[0].childs[0].type == "text")
+	puts("content", childs[0].childs[0].childs[0].content)
+	assert(childs[0].childs[0].childs[0].content == "title1")
+	assert(childs[0].childs[1].type == "normal")
+	assert(childs[0].childs[1].name == "h2")
+	assert(childs[0].childs[1].childs[0].type == "text")
+	assert(childs[0].childs[1].childs[0].content == "title2")
+end
+
+def case3():
+	puts("Test lib/html case3")
+
+	p = HtmlParser()
 
 	err = p.parse("<h1><h2>title</h2></h1>")
 	assert(err == nil)
@@ -40,20 +79,26 @@ def case1():
 end
 
 def allTest():
-	puts("Test lib/list all")
+	puts("Test lib/html all")
 
 	case1()
+	case2()
+	case3()
 end
 
 def main(name):
-	puts("Test lib/list")
+	puts("Test lib/html")
 
 	if name == "all":
 		allTest()
 	elif name == "case1":
 		case1()
+	elif name == "case2":
+		case2()
+	elif name == "case3":
+		case3()
 	end
 
-	puts("Done lib/list")
+	puts("Done lib/html")
 end
 @}

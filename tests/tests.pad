@@ -1,5 +1,6 @@
 {@
 from "tests/stmt/for-stmt.pad" import main as forStmtMain
+from "tests/stmt/if-stmt.pad" import main as ifStmtMain
 from "tests/def/func.pad" import main as funcMain
 from "tests/type/types.pad" import main as typesMain
 from "tests/struct/struct.pad" import main as structMain
@@ -12,6 +13,7 @@ from "tests/data/dict.pad" import main as dictMain
 
 def allTest():
     forStmtMain("all")
+    ifStmtMain("all")
     funcMain("all")
     structMain("all")
     typesMain("all")
@@ -28,12 +30,16 @@ def main():
 
     if name == "stmt/for-stmt":
         forStmtMain(case) 
+    elif name == "stmt/if-stmt":
+        ifStmtMain(case) 
     elif name == "def/func":
         funcMain(case)
     elif name == "struct/struct":
         structMain(case)
     elif name == "lib/list":
         listMain(case)
+    elif name == "lib/html":
+        htmlMain(case)
     elif name == "mutable-and-immutable/mi":
         miMain(case)
     elif name == "data/dict":
