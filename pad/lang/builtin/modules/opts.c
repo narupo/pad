@@ -24,7 +24,7 @@ builtin_opts_get(builtin_func_args_t *fargs) {
     }
 
     unicode_t *optname = objname->unicode;
-    const char *optval = opts_getc(ref_ast->opts, uni_getc_mb(optname));
+    const char *optval = PadOpts_Getc(ref_ast->opts, uni_getc_mb(optname));
     if (!optval) {
         return PadObj_NewNil(ref_ast->ref_gc);
     }
@@ -33,7 +33,7 @@ builtin_opts_get(builtin_func_args_t *fargs) {
 }
 
 static PadObj *
-builtin_opts_has(builtin_func_args_t *fargs) {
+builtin_PadOpts_Has(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
@@ -56,7 +56,7 @@ builtin_opts_has(builtin_func_args_t *fargs) {
     }
 
     unicode_t *optname = objname->unicode;
-    bool has = opts_has(ref_ast->opts, uni_getc_mb(optname));
+    bool has = PadOpts_Has(ref_ast->opts, uni_getc_mb(optname));
     return PadObj_NewBool(ref_ast->ref_gc, has);
 }
 
@@ -81,7 +81,7 @@ builtin_opts_args(builtin_func_args_t *fargs) {
     }
 
     int32_t idx = arg->lvalue;
-    const char *value = opts_getc_args(ref_ast->opts, idx);
+    const char *value = PadOpts_GetcArgs(ref_ast->opts, idx);
     if (!value) {
         return PadObj_NewNil(ref_ast->ref_gc);
     }
@@ -92,7 +92,7 @@ builtin_opts_args(builtin_func_args_t *fargs) {
 static builtin_func_info_t
 builtin_func_infos[] = {
     {"get", builtin_opts_get},
-    {"has", builtin_opts_has},
+    {"has", builtin_PadOpts_Has},
     {"args", builtin_opts_args},
     {0},
 };

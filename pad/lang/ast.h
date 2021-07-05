@@ -44,7 +44,7 @@ struct PadAst {
     PadCtx *ref_context;
 
     // options for builtin opts module
-    opts_t *opts;
+    PadOpts *opts;
 
     // reference to gc (DO NOT DELETE)
     PadGc *ref_gc;
@@ -104,10 +104,10 @@ PadAst_ShallowCopy(const ast_t *other);
  * move opts at ast
  *
  * @param[in] *self      pointer to ast_t
- * @param[in] *move_opts pointer to opts_t with move semantics
+ * @param[in] *move_opts pointer to PadOpts with move semantics
  */
 void
-PadAst_MoveOpts(ast_t *self, opts_t *move_opts);
+PadAst_MoveOpts(ast_t *self, PadOpts *move_opts);
 
 void
 PadAst_SetRefCtx(ast_t *ast, PadCtx *ref_context);

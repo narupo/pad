@@ -196,9 +196,9 @@ Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *
     ast_t *ast = PadAst_New(config);
     PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
-    opts_t *opts = opts_new();
+    PadOpts *opts = PadOpts_New();
 
-    if (!opts_parse(opts, argc, argv)) {
+    if (!PadOpts_Parse(opts, argc, argv)) {
         if (errstack) {
             PadErrStack_PushBack(errstack, NULL, 0, NULL, 0, "failed to compile argv. failed to parse options");
         }
@@ -266,7 +266,7 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     ast_t *ast = PadAst_New(config);
     PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
-    opts_t *opts = opts_new();
+    PadOpts *opts = PadOpts_New();
 
     tkr_parse(tkr, src);
     free(src);

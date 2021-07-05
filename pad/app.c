@@ -10,7 +10,7 @@
 /**
  * program option
  */
-struct opts {
+struct PadOpts {
     bool is_help;
     bool is_version;
     bool is_debug;
@@ -25,7 +25,7 @@ typedef struct {
     int cmd_argc;
     char **cmd_argv;
     PadConfig *config;
-    struct opts opts;
+    struct PadOpts opts;
     PadErrStack *errstack;
 } app_t;
 
@@ -49,7 +49,7 @@ app_parse_opts(app_t *self) {
     };
 
     // init status
-    self->opts = (struct opts){0};
+    self->opts = (struct PadOpts){0};
     optind = 0;
     opterr = 0;
 

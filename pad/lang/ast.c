@@ -385,7 +385,7 @@ PadAst_Del(ast_t *self) {
     }
 
     PadAst_DelNodes(self, self->root);
-    opts_del(self->opts);
+    PadOpts_Del(self->opts);
     PadErrStack_Del(self->error_stack);
     free(self);
 }
@@ -398,7 +398,7 @@ PadAst_New(const PadConfig *ref_config) {
     }
 
     self->ref_config = ref_config;
-    self->opts = opts_new();
+    self->opts = PadOpts_New();
     if (!self->opts) {
         PadAst_Del(self);
         return NULL;
@@ -434,7 +434,7 @@ PadAst_DeepCopy(const ast_t *other) {
     }
 
     self->ref_context = other->ref_context;
-    self->opts = opts_deep_copy(other->opts);
+    self->opts = PadOpts_DeepCopy(other->opts);
     if (!self->opts) {
         PadAst_Del(self);
         return NULL;
@@ -475,7 +475,7 @@ PadAst_ShallowCopy(const ast_t *other) {
     }
 
     self->ref_context = other->ref_context;
-    self->opts = opts_shallow_copy(other->opts);
+    self->opts = PadOpts_ShallowCopy(other->opts);
     if (!self->opts) {
         PadAst_Del(self);
         return NULL;
@@ -496,9 +496,9 @@ PadAst_ShallowCopy(const ast_t *other) {
 }
 
 void
-PadAst_MoveOpts(ast_t *self, opts_t *move_opts) {
+PadAst_MoveOpts(ast_t *self, PadOpts *move_opts) {
     if (self->opts) {
-        opts_del(self->opts);
+        PadOpts_Del(self->opts);
     }
 
     self->opts = mem_move(move_opts);
@@ -531,7 +531,7 @@ PadAst_Clear(ast_t *self) {
 
     self->ref_context = NULL; // do not delete
 
-    opts_clear(self->opts);
+    PadOpts_Clear(self->opts);
     // do not null clear
 
     self->ref_gc = NULL;  // do not delete

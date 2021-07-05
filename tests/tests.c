@@ -3773,15 +3773,15 @@ pathtests[] = {
 ************/
 
 static void
-test_lang_opts_new(void) {
-    opts_t *opts = opts_new();
+test_lang_PadOpts_New(void) {
+    PadOpts *opts = PadOpts_New();
     assert(opts);
-    opts_del(opts);
+    PadOpts_Del(opts);
 }
 
 static void
-test_lang_opts_parse(void) {
-    opts_t *opts = opts_new();
+test_lang_PadOpts_Parse(void) {
+    PadOpts *opts = PadOpts_New();
     assert(opts);
 
     int argc = 7;
@@ -3795,29 +3795,29 @@ test_lang_opts_parse(void) {
         "bbb",
         NULL,
     };
-    assert(opts_parse(opts, argc, argv));
+    assert(PadOpts_Parse(opts, argc, argv));
 
-    assert(opts_args_len(opts) == 3);
-    assert(opts_getc_args(opts, -1) == NULL);
-    assert(opts_getc_args(opts, 0));
-    assert(opts_getc_args(opts, 1));
-    assert(opts_getc_args(opts, 2));
-    assert(opts_getc_args(opts, 3) == NULL);
-    assert(!strcmp(opts_getc_args(opts, 0), "make"));
-    assert(!strcmp(opts_getc_args(opts, 1), "arg1"));
-    assert(!strcmp(opts_getc_args(opts, 2), "arg2"));
-    assert(opts_getc(opts, "a"));
-    assert(!strcmp(opts_getc(opts, "a"), "aaa"));
-    assert(opts_getc(opts, "bbb"));
-    assert(!strcmp(opts_getc(opts, "bbb"), "bbb"));
-    assert(opts_has(opts, "a"));
-    assert(opts_has(opts, "bbb"));
-    opts_del(opts);
+    assert(PadOpts_ArgsLen(opts) == 3);
+    assert(PadOpts_GetcArgs(opts, -1) == NULL);
+    assert(PadOpts_GetcArgs(opts, 0));
+    assert(PadOpts_GetcArgs(opts, 1));
+    assert(PadOpts_GetcArgs(opts, 2));
+    assert(PadOpts_GetcArgs(opts, 3) == NULL);
+    assert(!strcmp(PadOpts_GetcArgs(opts, 0), "make"));
+    assert(!strcmp(PadOpts_GetcArgs(opts, 1), "arg1"));
+    assert(!strcmp(PadOpts_GetcArgs(opts, 2), "arg2"));
+    assert(PadOpts_Getc(opts, "a"));
+    assert(!strcmp(PadOpts_Getc(opts, "a"), "aaa"));
+    assert(PadOpts_Getc(opts, "bbb"));
+    assert(!strcmp(PadOpts_Getc(opts, "bbb"), "bbb"));
+    assert(PadOpts_Has(opts, "a"));
+    assert(PadOpts_Has(opts, "bbb"));
+    PadOpts_Del(opts);
 }
 
 static void
-test_lang_opts_parse_0(void) {
-    opts_t *opts = opts_new();
+test_lang_PadOpts_Parse_0(void) {
+    PadOpts *opts = PadOpts_New();
     assert(opts);
 
     int argc = 1;
@@ -3825,13 +3825,13 @@ test_lang_opts_parse_0(void) {
         "make",
         NULL,
     };
-    assert(opts_parse(opts, argc, argv));
-    opts_del(opts);
+    assert(PadOpts_Parse(opts, argc, argv));
+    PadOpts_Del(opts);
 }
 
 static void
-test_lang_opts_getc_args_0(void) {
-    opts_t *opts = opts_new();
+test_lang_PadOpts_GetcArgs_0(void) {
+    PadOpts *opts = PadOpts_New();
     assert(opts);
 
     int argc = 3;
@@ -3842,16 +3842,16 @@ test_lang_opts_getc_args_0(void) {
         NULL,
     };
 
-    assert(opts_parse(opts, argc, argv));
-    assert(!strcmp(opts_getc_args(opts, 0), "cmd"));
-    assert(!strcmp(opts_getc_args(opts, 1), "arg1"));
-    assert(!strcmp(opts_getc_args(opts, 2), "arg2"));
-    opts_del(opts);
+    assert(PadOpts_Parse(opts, argc, argv));
+    assert(!strcmp(PadOpts_GetcArgs(opts, 0), "cmd"));
+    assert(!strcmp(PadOpts_GetcArgs(opts, 1), "arg1"));
+    assert(!strcmp(PadOpts_GetcArgs(opts, 2), "arg2"));
+    PadOpts_Del(opts);
 }
 
 static void
-test_lang_opts_getc_args_1(void) {
-    opts_t *opts = opts_new();
+test_lang_PadOpts_GetcArgs_1(void) {
+    PadOpts *opts = PadOpts_New();
     assert(opts);
 
     int argc = 7;
@@ -3866,35 +3866,35 @@ test_lang_opts_getc_args_1(void) {
         NULL,
     };
 
-    assert(opts_parse(opts, argc, argv));
-    assert(!strcmp(opts_getc(opts, "a"), "optarg1"));
-    assert(!strcmp(opts_getc(opts, "b"), "optarg2"));
-    assert(opts_getc_args(opts, 0));
-    assert(!strcmp(opts_getc_args(opts, 0), "cmd"));
-    assert(opts_getc_args(opts, 1));
-    assert(!strcmp(opts_getc_args(opts, 1), "arg1"));
-    assert(opts_getc_args(opts, 2));
-    assert(!strcmp(opts_getc_args(opts, 2), "arg2"));
-    opts_del(opts);
+    assert(PadOpts_Parse(opts, argc, argv));
+    assert(!strcmp(PadOpts_Getc(opts, "a"), "optarg1"));
+    assert(!strcmp(PadOpts_Getc(opts, "b"), "optarg2"));
+    assert(PadOpts_GetcArgs(opts, 0));
+    assert(!strcmp(PadOpts_GetcArgs(opts, 0), "cmd"));
+    assert(PadOpts_GetcArgs(opts, 1));
+    assert(!strcmp(PadOpts_GetcArgs(opts, 1), "arg1"));
+    assert(PadOpts_GetcArgs(opts, 2));
+    assert(!strcmp(PadOpts_GetcArgs(opts, 2), "arg2"));
+    PadOpts_Del(opts);
 }
 
 static void
-test_lang_opts_clear(void) {
+test_lang_PadOpts_Clear(void) {
     int argc = 1;
     char *argv[] = {"abc", NULL};
 
-    opts_t *opts = opts_new();
+    PadOpts *opts = PadOpts_New();
 
-    assert(opts_parse(opts, argc, argv));
-    assert(opts_args_len(opts) == 1);
-    opts_clear(opts);
-    assert(opts_args_len(opts) == 0);
+    assert(PadOpts_Parse(opts, argc, argv));
+    assert(PadOpts_ArgsLen(opts) == 1);
+    PadOpts_Clear(opts);
+    assert(PadOpts_ArgsLen(opts) == 0);
 
-    opts_del(opts);
+    PadOpts_Del(opts);
 }
 
 static void
-test_lang_opts_getc(void) {
+test_lang_PadOpts_Getc(void) {
     int argc = 5;
     char *argv[] = {
         "cmd",
@@ -3904,17 +3904,17 @@ test_lang_opts_getc(void) {
         "bbb",
         NULL,
     };
-    opts_t *opts = opts_new();
+    PadOpts *opts = PadOpts_New();
 
-    assert(opts_parse(opts, argc, argv));
-    assert(!strcmp(opts_getc(opts, "a"), "aaa"));
-    assert(!strcmp(opts_getc(opts, "b"), "bbb"));
+    assert(PadOpts_Parse(opts, argc, argv));
+    assert(!strcmp(PadOpts_Getc(opts, "a"), "aaa"));
+    assert(!strcmp(PadOpts_Getc(opts, "b"), "bbb"));
 
-    opts_del(opts);
+    PadOpts_Del(opts);
 }
 
 static void
-test_lang_opts_has(void) {
+test_lang_PadOpts_Has(void) {
     int argc = 3;
     char *argv[] = {
         "cmd",
@@ -3922,16 +3922,16 @@ test_lang_opts_has(void) {
         "aaa",
         NULL,
     };
-    opts_t *opts = opts_new();
+    PadOpts *opts = PadOpts_New();
 
-    assert(opts_parse(opts, argc, argv));
-    assert(opts_has(opts, "a"));
+    assert(PadOpts_Parse(opts, argc, argv));
+    assert(PadOpts_Has(opts, "a"));
 
-    opts_del(opts);
+    PadOpts_Del(opts);
 }
 
 static void
-test_lang_opts_args_len(void) {
+test_lang_PadOpts_ArgsLen(void) {
     int argc = 3;
     char *argv[] = {
         "cmd",
@@ -3939,25 +3939,25 @@ test_lang_opts_args_len(void) {
         "arg2",
         NULL,
     };
-    opts_t *opts = opts_new();
+    PadOpts *opts = PadOpts_New();
 
-    assert(opts_parse(opts, argc, argv));
-    assert(opts_args_len(opts) == 3);
+    assert(PadOpts_Parse(opts, argc, argv));
+    assert(PadOpts_ArgsLen(opts) == 3);
 
-    opts_del(opts);
+    PadOpts_Del(opts);
 }
 
 static const struct testcase
-lang_opts_tests[] = {
-    {"opts_new", test_lang_opts_new},
-    {"opts_parse", test_lang_opts_parse},
-    {"opts_parse_0", test_lang_opts_parse_0},
-    {"opts_getc_args_0", test_lang_opts_getc_args_0},
-    {"opts_getc_args_1", test_lang_opts_getc_args_1},
-    {"opts_clear", test_lang_opts_clear},
-    {"opts_getc", test_lang_opts_getc},
-    {"opts_has", test_lang_opts_has},
-    {"opts_args_len", test_lang_opts_args_len},
+lang_PadOptsests[] = {
+    {"PadOpts_New", test_lang_PadOpts_New},
+    {"PadOpts_Parse", test_lang_PadOpts_Parse},
+    {"PadOpts_Parse_0", test_lang_PadOpts_Parse_0},
+    {"PadOpts_GetcArgs_0", test_lang_PadOpts_GetcArgs_0},
+    {"PadOpts_GetcArgs_1", test_lang_PadOpts_GetcArgs_1},
+    {"PadOpts_Clear", test_lang_PadOpts_Clear},
+    {"PadOpts_Getc", test_lang_PadOpts_Getc},
+    {"PadOpts_Has", test_lang_PadOpts_Has},
+    {"PadOpts_ArgsLen", test_lang_PadOpts_ArgsLen},
     {0},
 };
 
@@ -15727,8 +15727,8 @@ test_trv_assign_list(void) {
             "def",
             NULL,
         };
-        opts_t *opts = opts_new();
-        assert(opts_parse(opts, 3, argv));
+        PadOpts *opts = PadOpts_New();
+        assert(PadOpts_Parse(opts, 3, argv));
         PadAst_Clear(ast);
         (PadCc_Compile(ast, tkr_get_tokens(tkr)));
         PadCtx_Clear(ctx);
@@ -16453,14 +16453,14 @@ test_trv_builtin_functions(void) {
 
     tkr_parse(tkr, "{: opts.get(\"abc\") :}");
     {
-        opts_t *opts = opts_new();
+        PadOpts *opts = PadOpts_New();
         char *argv[] = {
             "make",
             "--abc",
             "def",
             NULL,
         };
-        opts_parse(opts, 3, argv);
+        PadOpts_Parse(opts, 3, argv);
         PadAst_Clear(ast);
         PadCc_Compile(ast, tkr_get_tokens(tkr));
         PadCtx_Clear(ctx);
@@ -16472,13 +16472,13 @@ test_trv_builtin_functions(void) {
 
     tkr_parse(tkr, "{: opts.has(\"abc\") :}");
     {
-        opts_t *opts = opts_new();
+        PadOpts *opts = PadOpts_New();
         char *argv[] = {
             "make",
             "--abc",
             NULL,
         };
-        opts_parse(opts, 2, argv);
+        PadOpts_Parse(opts, 2, argv);
         PadAst_Clear(ast);
         PadCc_Compile(ast, tkr_get_tokens(tkr));
         PadCtx_Clear(ctx);
@@ -16490,13 +16490,13 @@ test_trv_builtin_functions(void) {
 
     tkr_parse(tkr, "{: opts.has(\"def\") :}");
     {
-        opts_t *opts = opts_new();
+        PadOpts *opts = PadOpts_New();
         char *argv[] = {
             "make",
             "--abc",
             NULL,
         };
-        opts_parse(opts, 2, argv);
+        PadOpts_Parse(opts, 2, argv);
         PadAst_Clear(ast);
         PadCc_Compile(ast, tkr_get_tokens(tkr));
         PadCtx_Clear(ctx);
@@ -16783,8 +16783,8 @@ test_trv_builtin_modules_opts_0(void) {
             "aaa",
             NULL
         };
-        opts_t *opts = opts_new();
-        opts_parse(opts, argc, argv);
+        PadOpts *opts = PadOpts_New();
+        PadOpts_Parse(opts, argc, argv);
         PadAst_Clear(ast);
         PadAst_MoveOpts(ast, mem_move(opts));
         PadCc_Compile(ast, tkr_get_tokens(tkr));
@@ -31528,7 +31528,7 @@ testmodules[] = {
     {"error", error_tests},
     {"util", utiltests},
     {"path", pathtests},
-    {"opts", lang_opts_tests},
+    {"opts", lang_PadOptsests},
     {"tokenizer", tokenizer_tests},
     {"compiler", compiler_tests},
     {"traverser", traverser_tests},
@@ -31540,7 +31540,7 @@ testmodules[] = {
     {0},
 };
 
-struct opts {
+struct PadOpts {
     bool ishelp;
     int32_t argc;
     char **argv;
@@ -31548,9 +31548,9 @@ struct opts {
 };
 
 static int32_t
-parseopts(struct opts *opts, int argc, char *argv[]) {
+parseopts(struct PadOpts *opts, int argc, char *argv[]) {
     // Init opts
-    *opts = (struct opts) {0};
+    *opts = (struct PadOpts) {0};
     optind = 0;
     opterr = 0;
 
@@ -31660,7 +31660,7 @@ fulltests(void) {
 }
 
 static void
-run(const struct opts *opts) {
+run(const struct PadOpts *opts) {
     int32_t ntest = 0;
     clock_t start;
     clock_t end;
@@ -31696,7 +31696,7 @@ int
 main(int argc, char *argv[]) {
     setlocale(LC_CTYPE, "");
 
-    struct opts opts;
+    struct PadOpts opts;
     if (parseopts(&opts, argc, argv) != 0) {
         die("failed to parse options");
     }

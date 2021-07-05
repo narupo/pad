@@ -10,7 +10,7 @@
 #include <pad/lang/arguments.h>
 
 /**
- * construct opts module
+ * construct PadOpts module
  *
  * @param[in] *config
  * @param[in] *ref_gc

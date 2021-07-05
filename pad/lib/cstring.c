@@ -272,10 +272,10 @@ buf_clear(buffer_t *self) {
 
 typedef struct {
     bool ignore_empty_token;
-} split_opts_t;
+} split_PadOpts;
 
 static char **
-__cstr_split(const char *str, char sep, split_opts_t *opts) {
+__cstr_split(const char *str, char sep, split_PadOpts *opts) {
     if (!str) {
         return NULL;
     }
@@ -333,14 +333,14 @@ fail:
 
 char **
 cstr_split(const char *str, char sep) {
-    return __cstr_split(str, sep, &(split_opts_t) {
+    return __cstr_split(str, sep, &(split_PadOpts) {
         .ignore_empty_token=false,
     });
 }
 
 char **
 cstr_split_ignore_empty(const char *str, char sep) {
-    return __cstr_split(str, sep, &(split_opts_t) {
+    return __cstr_split(str, sep, &(split_PadOpts) {
         .ignore_empty_token=true,
     });
 }

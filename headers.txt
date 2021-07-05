@@ -30,7 +30,7 @@
 ./pad/lang/object.h *
 ./pad/lang/object_array.h *
 ./pad/lang/object_dict.h *
-./pad/lang/opts.h
+./pad/lang/opts.h *
 ./pad/lang/scope.h
 ./pad/lang/tokenizer.h
 ./pad/lang/tokens.h

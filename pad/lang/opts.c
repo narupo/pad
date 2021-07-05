@@ -1,12 +1,12 @@
 #include <pad/lang/opts.h>
 
-struct opts {
+struct PadOpts {
     dict_t *opts;
     cstring_array_t *args;
 };
 
 void
-opts_del(opts_t *self) {
+PadOpts_Del(PadOpts *self) {
     if (!self) {
         return;
     }
@@ -16,74 +16,74 @@ opts_del(opts_t *self) {
     free(self);
 }
 
-opts_t *
-opts_new(void) {
-    opts_t *self = mem_calloc(1, sizeof(*self));
+PadOpts *
+PadOpts_New(void) {
+    PadOpts *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->opts = dict_new(100);
     if (!self->opts) {
-        opts_del(self);
+        PadOpts_Del(self);
         return NULL;
     }
 
     self->args = cstrarr_new();
     if (!self->args) {
-        opts_del(self);
+        PadOpts_Del(self);
         return NULL;
     }
 
     return self;
 }
 
-opts_t *
-opts_deep_copy(const opts_t *other) {
+PadOpts *
+PadOpts_DeepCopy(const PadOpts *other) {
     if (!other) {
         return NULL;
     }
 
-    opts_t *self = mem_calloc(1, sizeof(*self));
+    PadOpts *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->opts = dict_deep_copy(other->opts);
     if (!self->opts) {
-        opts_del(self);
+        PadOpts_Del(self);
         return NULL;
     }
 
     self->args = cstrarr_deep_copy(other->args);
     if (!self->args) {
-        opts_del(self);
+        PadOpts_Del(self);
         return NULL;
     }
 
     return self;
 }
 
-opts_t *
-opts_shallow_copy(const opts_t *other) {
+PadOpts *
+PadOpts_ShallowCopy(const PadOpts *other) {
     if (!other) {
         return NULL;
     }
 
-    opts_t *self = mem_calloc(1, sizeof(*self));
+    PadOpts *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->opts = dict_shallow_copy(other->opts);
     if (!self->opts) {
-        opts_del(self);
+        PadOpts_Del(self);
         return NULL;
     }
 
     self->args = cstrarr_shallow_copy(other->args);
     if (!self->args) {
-        opts_del(self);
+        PadOpts_Del(self);
         return NULL;
     }
 
@@ -91,7 +91,7 @@ opts_shallow_copy(const opts_t *other) {
 }
 
 void
-opts_clear(opts_t *self) {
+PadOpts_Clear(PadOpts *self) {
     if (!self) {
         return;
     }
@@ -100,8 +100,8 @@ opts_clear(opts_t *self) {
     cstrarr_clear(self->args);
 }
 
-opts_t *
-opts_parse(opts_t *self, int argc, char *argv[]) {
+PadOpts *
+PadOpts_Parse(PadOpts *self, int argc, char *argv[]) {
     if (!self || !argv) {
         return NULL;
     }
@@ -178,7 +178,7 @@ opts_parse(opts_t *self, int argc, char *argv[]) {
 }
 
 const char *
-opts_getc(const opts_t *self, const char *optname) {
+PadOpts_Getc(const PadOpts *self, const char *optname) {
     if (!self || !optname) {
         return NULL;
     }
@@ -191,7 +191,7 @@ opts_getc(const opts_t *self, const char *optname) {
 }
 
 bool
-opts_has(const opts_t *self, const char *optname) {
+PadOpts_Has(const PadOpts *self, const char *optname) {
     if (!self || !optname) {
         return NULL;
     }
@@ -200,7 +200,7 @@ opts_has(const opts_t *self, const char *optname) {
 }
 
 const char *
-opts_getc_args(const opts_t *self, int32_t idx) {
+PadOpts_GetcArgs(const PadOpts *self, int32_t idx) {
     if (!self) {
         return NULL;
     }
@@ -212,7 +212,7 @@ opts_getc_args(const opts_t *self, int32_t idx) {
 }
 
 int32_t
-opts_args_len(const opts_t *self) {
+PadOpts_ArgsLen(const PadOpts *self) {
     if (!self) {
         return -1;
     }

@@ -149,7 +149,7 @@ PadKit_CompileFromStrArgs(
     char *argv[]
 ) {
     PadErrStack_Clear(self->errstack);
-    opts_t *opts = NULL;
+    PadOpts *opts = NULL;
 
     const char *program_filename = path;
     if (!program_filename) {
@@ -157,8 +157,8 @@ PadKit_CompileFromStrArgs(
     }
 
     if (argv) {
-        opts = opts_new();
-        if (!opts_parse(opts, argc, argv)) {
+        opts = PadOpts_New();
+        if (!PadOpts_Parse(opts, argc, argv)) {
             Pad_PushErr("failed to parse options");
             return NULL;
         }

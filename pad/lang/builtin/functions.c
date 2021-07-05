@@ -630,7 +630,7 @@ builtin_dance(builtin_func_args_t *fargs) {
     tokenizer_t *tkr = tkr_new(tkropt_new());
     ast_t *ast = PadAst_New(ref_ast->ref_config);
     PadCtx *ctx = PadCtx_New(ref_ast->ref_gc);
-    opts_t *opts = opts_new();
+    PadOpts *opts = PadOpts_New();
 
     if (codectx) {
         PadObjDict *varmap = PadCtx_GetVarmap(ctx);

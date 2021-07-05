@@ -7,93 +7,93 @@
 #include <pad/lib/cstring_array.h>
 #include <pad/lib/dict.h>
 
-struct opts;
-typedef struct opts opts_t;
+struct PadOpts;
+typedef struct PadOpts PadOpts;
 
 /**
- * destruct opts_t
+ * destruct PadOpts_t
  * the self of argument is will be free'd
  *
- * @param[in] *self pointer to opts_t
+ * @param[in] *self pointer to PadOpts
  */
 void
-opts_del(opts_t *self);
+PadOpts_Del(PadOpts *self);
 
 /**
- * construct opts_t
+ * construct PadOpts_t
  * allocate memory and init that memory
  * default constructor
  *
- * @return pointer to opts_t (dynamic allocated memory)
+ * @return pointer to PadOpts (dynamic allocated memory)
  */
-opts_t *
-opts_new(void);
+PadOpts *
+PadOpts_New(void);
 
-opts_t *
-opts_deep_copy(const opts_t *other);
+PadOpts *
+PadOpts_DeepCopy(const PadOpts *other);
 
-opts_t *
-opts_shallow_copy(const opts_t *other);
+PadOpts *
+PadOpts_ShallowCopy(const PadOpts *other);
 
 /**
- * parse arguments and store values at opts_t
+ * parse arguments and store values at PadOpts
  *
- * @param[in] *self   pointer to opts_t
+ * @param[in] *self   pointer to PadOpts
  * @param[in] argc    number of arguments
  * @param[in] *argv[] array of arguments (NULL terminated)
  *
  * @return succes to pointer to the self of argument
  * @return failed to NULL
  */
-opts_t *
-opts_parse(opts_t *self, int argc, char *argv[]);
+PadOpts *
+PadOpts_Parse(PadOpts *self, int argc, char *argv[]);
 
 /**
- * get element in opts_t by option name
+ * get element in PadOpts by option name
  * the option name will be without '-' like the 'h' or 'help'
  *
- * @param[in] *self    pointer to opts_t
+ * @param[in] *self    pointer to PadOpts
  * @param[in] *optname strings of option name
  *
- * @return found to pointer to option value of string in opts_t
+ * @return found to pointer to option value of string in PadOpts
  * @return not found to NULL
  */
 const char *
-opts_getc(const opts_t *self, const char *optname);
+PadOpts_Getc(const PadOpts *self, const char *optname);
 
 /**
- * if opts_t has option name then return true else return false
+ * if PadOpts has option name then return true else return false
  *
- * @param[in] *self    pointer to opts_t
+ * @param[in] *self    pointer to PadOpts
  * @param[in] *optname striongs of option name
  *
  * @return found option name to return true
  * @return not found option name to return false
  */
 bool
-opts_has(const opts_t *self, const char *optname);
+PadOpts_Has(const PadOpts *self, const char *optname);
 
 /**
  * get element of arguments
  *
- * @param[in] *self pointer to opts_t
+ * @param[in] *self pointer to PadOpts
  * @param[in] idx   number of index
  *
  * @return found to return argument value of strings
  * @return not found to NULL
  */
 const char *
-opts_getc_args(const opts_t *self, int32_t idx);
+PadOpts_GetcArgs(const PadOpts *self, int32_t idx);
 
 /**
  * get arguments length
  *
- * @param[in] *self pointer to opts_t
+ * @param[in] *self pointer to PadOpts
  *
  * @return number of arguments length
  */
 int32_t
-opts_args_len(const opts_t *self);
+PadOpts_ArgsLen(const PadOpts *self);
 
 /**
  * clear status
@@ -101,4 +101,4 @@ opts_args_len(const opts_t *self);
  * @param[in] *self
  */
 void
-opts_clear(opts_t *self);
+PadOpts_Clear(PadOpts *self);
