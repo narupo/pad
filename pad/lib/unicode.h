@@ -298,7 +298,7 @@ char32_isspace(char32_t ch);
 **********/
 
 /**
- * destruct object
+ * destruct PadObj
  *
  * @param[in] *self
  */
@@ -306,7 +306,7 @@ void
 uni_del(unicode_t *self);
 
 /**
- * destruct object with move semantics
+ * destruct PadObj with move semantics
  *
  * @param[in] *self
  */
@@ -314,7 +314,7 @@ unicode_type_t *
 uni_esc_del(unicode_t *self);
 
 /**
- * construct object
+ * construct PadObj
  *
  * @param[in] void
  *

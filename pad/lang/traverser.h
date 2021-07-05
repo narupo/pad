@@ -20,7 +20,7 @@
 void
 trv_traverse(ast_t *ast, PadCtx *context);
 
-object_t *
+PadObj *
 _trv_traverse(ast_t *ast, trv_args_t *targs);
 
 ast_t *

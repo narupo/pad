@@ -42,10 +42,10 @@ struct PadTrvArgs {
     // references of objects of owners
     // traverser refer this owners on context
     // references. do not delete objects in array
-    object_array_t *ref_owners;
+    PadObjAry *ref_owners;
 
     // reference of node
-    // traverser parse this node and return result as object_t
+    // traverser parse this node and return result as PadObj
     // reference. do not delete
     PadNode *ref_node;
 
@@ -66,17 +66,17 @@ struct PadTrvArgs {
 
     // left hand and right hand objects
     // these objects refer from calc functions
-    object_t *lhs_obj;
-    object_t *rhs_obj;
+    PadObj *lhs_obj;
+    PadObj *rhs_obj;
 
     // reference of object
-    object_t *ref_obj;
+    PadObj *ref_obj;
 
     // read-only reference of object
-    const object_t *cref_obj;
+    const PadObj *cref_obj;
 
     // actual arguments
-    object_t *ref_args_obj;
+    PadObj *ref_args_obj;
 
     // function name
     const char *funcname;
@@ -88,7 +88,7 @@ struct PadTrvArgs {
     PadIndexValue index_value;
 
     // a callback function
-    object_t * (*callback)(ast_t *ast, struct PadTrvArgs *targs);
+    PadObj * (*callback)(ast_t *ast, struct PadTrvArgs *targs);
 
     // if do not refer chain object on context then store true else store false
     // this flag refer in trv_chain function
@@ -96,7 +96,7 @@ struct PadTrvArgs {
 
     // if current context is in function block then store pointer
     // of function object to this func_obj variable
-    object_t *func_obj;
+    PadObj *func_obj;
 };
 
 /**
@@ -105,7 +105,7 @@ struct PadTrvArgs {
 struct PadBuiltFuncArgs {
     ast_t *ref_ast;  // the ast of current context
     const PadNode *ref_node;  // reference of node for errors
-    object_t *ref_args;  // the arguments object of builtin functions
-    object_array_t *ref_owners;  // reference to owners of array
+    PadObj *ref_args;  // the arguments object of builtin functions
+    PadObjAry *ref_owners;  // reference to owners of array
 };
 

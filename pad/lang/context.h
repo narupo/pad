@@ -15,7 +15,7 @@
 #include <pad/lang/gc.h>
 
 /**
- * destruct object
+ * destruct PadObj
  *
  * @param[in] *self pointer to PadCtx
  *
@@ -25,7 +25,7 @@ void
 PadCtx_Del(PadCtx *self);
 
 /**
- * destruct object and Pad_Escape global variable map from context
+ * destruct PadObj and Pad_Escape global variable map from context
  *
  * @param[in] *self
  *
@@ -35,7 +35,7 @@ object_dict_t *
 PadCtx_EscDelGlobalVarmap(PadCtx *self);
 
 /**
- * construct object
+ * construct PadObj
  *
  * @param[in|out] *gc reference to PadGc (DO NOT DELETE)
  * @return pointer to PadCtx dynamic allocate memory (do PadCtx_Del)
@@ -253,10 +253,10 @@ PadCtx_PopBackScope(PadCtx *self);
  * @param[in] *self pointer to PadCtx
  * @param[in] *key  key strings
  *
- * @return found to poitner to object_t
+ * @return found to poitner to PadObj
  * @return not found to pointer to NULL
  */
-object_t *
+PadObj *
 PadCtx_FindVarRef(PadCtx *self, const char *key);
 
 /**
@@ -266,10 +266,10 @@ PadCtx_FindVarRef(PadCtx *self, const char *key);
  * @param[in] *self pointer to PadCtx
  * @param[in] *key  key strings
  *
- * @return found to poitner to object_t
+ * @return found to poitner to PadObj
  * @return not found to pointer to NULL
  */
-object_t *
+PadObj *
 PadCtx_FindVarRefAll(PadCtx *self, const char *key);
 
 /**
@@ -373,7 +373,7 @@ PadCtx *
 PadCtx_ShallowCopy(const PadCtx *other);
 
 PadCtx *
-PadCtx_UnpackObjAryToCurScope(PadCtx *self, object_array_t *arr);
+PadCtx_UnpackObjAryToCurScope(PadCtx *self, PadObjAry *arr);
 
 void
 PadCtx_SetUseBuf(PadCtx *self, bool is_use_buf);

@@ -4,7 +4,7 @@ enum {
     OBJDICT_INIT_CAPA = 128,
 };
 
-struct object_dict {
+struct PadObj_dict {
     PadGc *ref_gc; // do not delete (this is reference)
     object_dict_item_t *map;
     size_t capa;
@@ -12,10 +12,10 @@ struct object_dict {
 };
 
 void
-obj_del(object_t *self);
+PadObj_Del(PadObj *self);
 
 typedef struct string string_t;
-string_t * obj_to_str(const object_t *self);
+string_t * PadObj_ToStr(const PadObj *self);
 
 void
 objdict_del(object_dict_t *self) {
@@ -24,10 +24,10 @@ objdict_del(object_dict_t *self) {
     }
 
     for (int32_t i = 0; i < self->len; ++i) {
-        object_t *obj = self->map[i].value;
+        PadObj *obj = self->map[i].value;
         if (obj) {
-            obj_dec_ref(obj);
-            obj_del(obj);
+            PadObj_DecRef(obj);
+            PadObj_Del(obj);
         }
     }
 
@@ -71,8 +71,8 @@ objdict_new(PadGc *ref_gc) {
     return self;
 }
 
-extern object_t *
-obj_deep_copy(const object_t *other);
+extern PadObj *
+PadObj_DeepCopy(const PadObj *other);
 
 object_dict_t*
 objdict_deep_copy(const object_dict_t *other) {
@@ -97,12 +97,12 @@ objdict_deep_copy(const object_dict_t *other) {
         object_dict_item_t *dstitem = &self->map[i];
         object_dict_item_t *srcitem = &other->map[i];
         strcpy(dstitem->key, srcitem->key);
-        object_t *obj = obj_deep_copy(srcitem->value);
+        PadObj *obj = PadObj_DeepCopy(srcitem->value);
         if (!obj) {
             objdict_del(self);
             return NULL;
         }
-        obj_inc_ref(obj);
+        PadObj_IncRef(obj);
         dstitem->value = obj;
     }
 
@@ -132,8 +132,8 @@ objdict_shallow_copy(const object_dict_t *other) {
         object_dict_item_t *dstitem = &self->map[i];
         object_dict_item_t *srcitem = &other->map[i];
         strcpy(dstitem->key, srcitem->key);
-        object_t *obj = srcitem->value;  // shallow copy
-        obj_inc_ref(obj);
+        PadObj *obj = srcitem->value;  // shallow copy
+        PadObj_IncRef(obj);
         dstitem->value = obj;
     }
 
@@ -158,7 +158,7 @@ objdict_resize(object_dict_t *self, int32_t newcapa) {
 }
 
 object_dict_t *
-objdict_move(object_dict_t *self, const char *key, struct object *move_value) {
+objdict_move(object_dict_t *self, const char *key, struct PadObj *move_value) {
     if (!self || !key || !move_value) {
         return NULL;
     }
@@ -168,9 +168,9 @@ objdict_move(object_dict_t *self, const char *key, struct object *move_value) {
         if (cstr_eq(self->map[i].key, key)) {
             // over write
             if (self->map[i].value != move_value) {
-                obj_dec_ref(self->map[i].value);
-                obj_del(self->map[i].value);
-                obj_inc_ref(move_value);
+                PadObj_DecRef(self->map[i].value);
+                PadObj_Del(self->map[i].value);
+                PadObj_IncRef(move_value);
                 self->map[i].value = mem_move(move_value);
             }
             return self;
@@ -186,14 +186,14 @@ objdict_move(object_dict_t *self, const char *key, struct object *move_value) {
 
     object_dict_item_t *el = &self->map[self->len++];
     cstr_copy(el->key, OBJ_DICT_ITEM_KEY_SIZE, key);
-    obj_inc_ref(move_value);
+    PadObj_IncRef(move_value);
     el->value = move_value;
 
     return self;
 }
 
 object_dict_t *
-objdict_set(object_dict_t *self, const char *key, object_t *ref_value) {
+objdict_set(object_dict_t *self, const char *key, PadObj *ref_value) {
     return objdict_move(self, key, ref_value);
 }
 
@@ -232,8 +232,8 @@ objdict_clear(object_dict_t *self) {
 
     for (int i = 0; i < self->len; ++i) {
         self->map[i].key[0] = '\0';
-        obj_dec_ref(self->map[i].value);
-        obj_del(self->map[i].value);
+        PadObj_DecRef(self->map[i].value);
+        PadObj_Del(self->map[i].value);
         self->map[i].value = NULL;
     }
     self->len = 0;
@@ -265,7 +265,7 @@ objdict_getc_index(const object_dict_t *self, int32_t index) {
     return objdict_get_index((object_dict_t *) self, index);
 }
 
-object_t *
+PadObj *
 objdict_pop(object_dict_t *self, const char *key) {
     if (!self || !key) {
         return NULL;
@@ -287,7 +287,7 @@ objdict_pop(object_dict_t *self, const char *key) {
 
     // save item
     object_dict_item_t *cur = &self->map[found_index];
-    object_t *found = cur->value;
+    PadObj *found = cur->value;
 
     // shrink map
     for (int32_t i = found_index; i < self->len - 1; ++i) {
@@ -315,9 +315,9 @@ objdict_dump(const object_dict_t *self, FILE *fout) {
 
     for (int32_t i = 0; i < self->len; ++i) {
         const object_dict_item_t *item = &self->map[i];
-        string_t *s = obj_to_str(item->value);
+        string_t *s = PadObj_ToStr(item->value);
         fprintf(fout, "[%s] = [%s]\n", item->key, str_getc(s));
         str_del(s);
-        obj_dump(item->value, fout);
+        PadObj_Dump(item->value, fout);
     }
 }

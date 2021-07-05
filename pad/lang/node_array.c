@@ -15,7 +15,7 @@ struct PadNode_array {
 *****************/
 
 void
-nodearr_del(node_array_t* self) {
+PadNodeAry_Del(PadNodeAry* self) {
     if (!self) {
         return;
     }
@@ -30,7 +30,7 @@ nodearr_del(node_array_t* self) {
 }
 
 void
-nodearr_del_without_nodes(node_array_t* self) {
+PadNodeAry_DelWithoutNodes(PadNodeAry* self) {
     if (!self) {
         return;
     }
@@ -41,16 +41,16 @@ nodearr_del_without_nodes(node_array_t* self) {
     free(self);
 }
 
-node_array_t*
-nodearr_new(void) {
-    node_array_t *self = mem_calloc(1, sizeof(*self));
+PadNodeAry*
+PadNodeAry_New(void) {
+    PadNodeAry *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->parray = mem_calloc(NODEARR_INIT_CAPA + 1, sizeof(PadNode *));
     if (!self->parray) {
-        nodearr_del(self);
+        PadNodeAry_Del(self);
         return NULL;
     }
 
@@ -62,13 +62,13 @@ nodearr_new(void) {
 PadNode *
 PadNode_DeepCopy(const PadNode *other);
 
-node_array_t *
-nodearr_deep_copy(const node_array_t *other) {
+PadNodeAry *
+PadNodeAry_DeepCopy(const PadNodeAry *other) {
     if (!other) {
         return NULL;
     }
 
-    node_array_t *self = mem_calloc(1, sizeof(*self));
+    PadNodeAry *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -76,7 +76,7 @@ nodearr_deep_copy(const node_array_t *other) {
     self->capa = other->capa;
     self->parray = mem_calloc(other->capa + 1, sizeof(PadNode *));
     if (!self->parray) {
-        nodearr_del(self);
+        PadNodeAry_Del(self);
         return NULL;
     }
 
@@ -84,7 +84,7 @@ nodearr_deep_copy(const node_array_t *other) {
         PadNode *node = other->parray[i];
         PadNode *copied = PadNode_DeepCopy(node);
         if (!copied) {
-            nodearr_del(self);
+            PadNodeAry_Del(self);
             return NULL;
         }
 
@@ -94,9 +94,9 @@ nodearr_deep_copy(const node_array_t *other) {
     return self;
 }
 
-node_array_t *
-nodearr_shallow_copy(const node_array_t *other) {
-    return nodearr_deep_copy(other);
+PadNodeAry *
+PadNodeAry_ShallowCopy(const PadNodeAry *other) {
+    return PadNodeAry_DeepCopy(other);
 }
 
 /*********
@@ -104,7 +104,7 @@ nodearr_shallow_copy(const node_array_t *other) {
 *********/
 
 int32_t
-nodearr_len(const node_array_t *self) {
+PadNodeAry_Len(const PadNodeAry *self) {
     if (!self) {
         return 0;
     }
@@ -113,7 +113,7 @@ nodearr_len(const node_array_t *self) {
 }
 
 int32_t
-nodearry_capa(const node_array_t *self) {
+PadNodeAry_Capa(const PadNodeAry *self) {
     if (!self) {
         return 0;
     }
@@ -122,7 +122,7 @@ nodearry_capa(const node_array_t *self) {
 }
 
 PadNode *
-nodearr_get(const node_array_t *self, int32_t index) {
+PadNodeAry_Get(const PadNodeAry *self, int32_t index) {
     if (!self || index < 0 || index >= self->capa) {
         return NULL;
     }
@@ -130,7 +130,7 @@ nodearr_get(const node_array_t *self, int32_t index) {
 }
 
 const PadNode *
-nodearr_getc(const node_array_t *self, int32_t index) {
+PadNodeAry_Getc(const PadNodeAry *self, int32_t index) {
     if (!self || index < 0 || index >= self->capa) {
         return NULL;
     }
@@ -138,7 +138,7 @@ nodearr_getc(const node_array_t *self, int32_t index) {
 }
 
 PadNode *
-nodearr_get_last(const node_array_t *self) {
+PadNodeAry_GetLast(const PadNodeAry *self) {
     if (!self || !self->len) {
         return NULL;
     }
@@ -150,8 +150,8 @@ nodearr_get_last(const node_array_t *self) {
 * setter *
 *********/
 
-node_array_t *
-nodearr_resize(node_array_t* self, int32_t capa) {
+PadNodeAry *
+PadNodeAry_Resize(PadNodeAry* self, int32_t capa) {
     if (!self) {
         return NULL;
     }
@@ -168,15 +168,15 @@ nodearr_resize(node_array_t* self, int32_t capa) {
     return self;
 }
 
-node_array_t *
-nodearr_moveb(node_array_t* self, PadNode *node) {
+PadNodeAry *
+PadNodeAry_MoveBack(PadNodeAry* self, PadNode *node) {
     if (!self) {
         return NULL;
     }
 
     assert(self);
     if (self->len >= self->capa) {
-        if (!nodearr_resize(self, self->capa * 2)) {
+        if (!PadNodeAry_Resize(self, self->capa * 2)) {
             return NULL;
         }
     }
@@ -187,14 +187,14 @@ nodearr_moveb(node_array_t* self, PadNode *node) {
     return self;
 }
 
-node_array_t *
-nodearr_movef(node_array_t* self, PadNode *node) {
+PadNodeAry *
+PadNodeAry_MoveFront(PadNodeAry* self, PadNode *node) {
     if (!self) {
         return NULL;
     }
 
     if (self->len >= self->capa) {
-        if (!nodearr_resize(self, self->capa * 2)) {
+        if (!PadNodeAry_Resize(self, self->capa * 2)) {
             return NULL;
         }
     }
@@ -211,7 +211,7 @@ nodearr_movef(node_array_t* self, PadNode *node) {
 }
 
 PadNode *
-nodearr_popb(node_array_t *self) {
+PadNodeAry_PopBack(PadNodeAry *self) {
     if (!self || self->len <= 0) {
         return NULL;
     }

@@ -17,5 +17,5 @@
  *
  * @return
  */
-object_t *
+PadObj *
 Pad_NewBltAliasMod(const PadConfig *ref_config, PadGc *ref_gc);

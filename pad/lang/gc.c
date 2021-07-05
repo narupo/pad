@@ -125,7 +125,7 @@ PadGc_Free(PadGc *self, PadGcItem *item) {
     }
 
     if (item->ref_counts <= 0) {
-        // do not delete (duplicated address of pool[id]). deleted by obj_del
+        // do not delete (duplicated address of pool[id]). deleted by PadObj_Del
         item->ptr = NULL;
         int32_t id = item->id;
 

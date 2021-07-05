@@ -14,75 +14,75 @@
 // TODO: test
 
 enum {
-    NODE_DICT_ITEM_KEY_SIZE = 256,
+    PAD_NODE_DICT__ITEM_KEY_SIZE = 256,
 };
 
 /**
- * item of array of node_dict_t
+ * item of array of PadNodeDict
  */
 typedef struct PadNode_dict_item {
-    char key[NODE_DICT_ITEM_KEY_SIZE];  // key of item
+    char key[PAD_NODE_DICT__ITEM_KEY_SIZE];  // key of item
     PadNode *value;  // value of item
-} node_dict_item_t;
+} PadNodeDictItem;
 
 /**
  * destruct PadNode_dict_t
  *
- * @param[in] *self pointer to node_dict_t
+ * @param[in] *self pointer to PadNodeDict
  */
 void
-nodedict_del(node_dict_t *self);
+PadNodeDict_Del(PadNodeDict *self);
 
 /**
  * destruct PadNode_dict_t. do not delete nodes in map
  *
- * @param[in] *self pointer to node_dict_t
+ * @param[in] *self pointer to PadNodeDict
  */
 void
-nodedict_del_without_nodes(node_dict_t *self);
+PadNodeDict_DelWithoutNodes(PadNodeDict *self);
 
 /**
- * destruct PadNode_dict_t with Pad_Escape array of node_dict_item_t dynamic allocated
+ * destruct PadNode_dict_t with Pad_Escape array of PadNodeDictItem dynamic allocated
  *
- * @param[in] *self pointer to node_dict_t
+ * @param[in] *self pointer to PadNodeDict
  *
- * @return success to pointer to array of node_dict_item_t
+ * @return success to pointer to array of PadNodeDictItem
  * @return failed to NULL
  */
-node_dict_item_t *
-nodedict_escdel(node_dict_t *self);
+PadNodeDictItem *
+PadNodeDict_EscDel(PadNodeDict *self);
 
 /**
  * construct PadNode_dict_t
  *
- * @return success to pointer to node_dict_t (dynamic allocate memory)
+ * @return success to pointer to PadNodeDict (dynamic allocate memory)
  * @return failed to NULL
  */
-node_dict_t *
-nodedict_new(void);
+PadNodeDict *
+PadNodeDict_New(void);
 
 /**
  * shallow copy node-dict
  *
  * @param[in] *self
  *
- * @return pointer to node_dict_t (copied)
+ * @return pointer to PadNodeDict (copied)
  */
-node_dict_t *
-nodedict_shallow_copy(const node_dict_t *other);
+PadNodeDict *
+PadNodeDict_ShallowCopy(const PadNodeDict *other);
 
 /**
  * deep copy node-dict
  *
  * @param[in] *self
  *
- * @return pointer to node_dict_t (copied)
+ * @return pointer to PadNodeDict (copied)
  */
-node_dict_t *
-nodedict_deep_copy(const node_dict_t *other);
+PadNodeDict *
+PadNodeDict_DeepCopy(const PadNodeDict *other);
 
-node_dict_t *
-nodedict_resize(node_dict_t *self, int32_t newcapa);
+PadNodeDict *
+PadNodeDict_Resize(PadNodeDict *self, int32_t newcapa);
 
 /**
  * move node at key
@@ -94,8 +94,8 @@ nodedict_resize(node_dict_t *self, int32_t newcapa);
  * @return success to pointer to self
  * @return failed to NULL
  */
-node_dict_t *
-nodedict_move(node_dict_t *self, const char *key, PadNode *move_value);
+PadNodeDict *
+PadNodeDict_Move(PadNodeDict *self, const char *key, PadNode *move_value);
 
 /**
  * set reference of node at key
@@ -107,23 +107,23 @@ nodedict_move(node_dict_t *self, const char *key, PadNode *move_value);
  * @return success to pointer to self
  * @return failed to NULL
  */
-node_dict_t *
-nodedict_set(node_dict_t *self, const char *key, PadNode *ref_value);
+PadNodeDict *
+PadNodeDict_Set(PadNodeDict *self, const char *key, PadNode *ref_value);
 
-node_dict_item_t *
-nodedict_get(node_dict_t *self, const char *key);
+PadNodeDictItem *
+PadNodeDict_Get(PadNodeDict *self, const char *key);
 
-const node_dict_item_t *
-nodedict_getc(const node_dict_t *self, const char *key);
+const PadNodeDictItem *
+PadNodeDict_Getc(const PadNodeDict *self, const char *key);
 
 void
-nodedict_clear(node_dict_t *self);
+PadNodeDict_Clear(PadNodeDict *self);
 
 int32_t
-nodedict_len(const node_dict_t *self);
+PadNodeDict_Len(const PadNodeDict *self);
 
-const node_dict_item_t *
-nodedict_getc_index(const node_dict_t *self, int32_t index);
+const PadNodeDictItem *
+PadNodeDict_GetcIndex(const PadNodeDict *self, int32_t index);
 
 /**
  * pop node from node dict
@@ -135,13 +135,13 @@ nodedict_getc_index(const node_dict_t *self, int32_t index);
  * @return not found to return NULL
  */
 PadNode *
-nodedict_pop(node_dict_t *self, const char *key);
+PadNodeDict_Pop(PadNodeDict *self, const char *key);
 
 /**
- * dump node_dict_t at stream
+ * dump PadNodeDict at stream
  *
  * @param[in] *self
  * @param[in] *fout stream
  */
 void
-nodedict_dump(const node_dict_t *self, FILE *fout);
+PadNodeDict_Dump(const PadNodeDict *self, FILE *fout);

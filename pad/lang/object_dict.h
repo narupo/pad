@@ -21,13 +21,13 @@ enum {
 /**
  * item of array of object_dict_t
  */
-typedef struct object_dict_item {
+typedef struct PadObj_dict_item {
     char key[OBJ_DICT_ITEM_KEY_SIZE];  // key of item
-    object_t *value;  // value of item
+    PadObj *value;  // value of item
 } object_dict_item_t;
 
 /**
- * destruct object_dict_t
+ * destruct PadObj_dict_t
  *
  * @param[in] *self pointer to object_dict_t
  */
@@ -35,7 +35,7 @@ void
 objdict_del(object_dict_t *self);
 
 /**
- * destruct object_dict_t with Pad_Escape array of object_dict_item_t dynamic allocated
+ * destruct PadObj_dict_t with Pad_Escape array of object_dict_item_t dynamic allocated
  *
  * @param[in] *self pointer to object_dict_t
  *
@@ -46,7 +46,7 @@ object_dict_item_t *
 objdict_escdel(object_dict_t *self);
 
 /**
- * construct object_dict_t
+ * construct PadObj_dict_t
  *
  * @param[in] *ref_gc reference to PadGc (do not delete)
  *
@@ -92,26 +92,26 @@ objdict_resize(object_dict_t *self, int32_t newcapa);
  *
  * @param[in] *self
  * @param[in] *key        key of strings
- * @param[in] *move_value pointer to object_t (move semantics)
+ * @param[in] *move_value pointer to PadObj (move semantics)
  *
  * @return success to pointer to self
  * @return failed to NULL
  */
 object_dict_t *
-objdict_move(object_dict_t *self, const char *key, object_t *move_value);
+objdict_move(object_dict_t *self, const char *key, PadObj *move_value);
 
 /**
  * set reference of object at key
  *
  * @param[in] *self
  * @param[in] *key       key of strings
- * @param[in] *ref_value reference to object_t
+ * @param[in] *ref_value reference to PadObj
  *
  * @return success to pointer to self
  * @return failed to NULL
  */
 object_dict_t *
-objdict_set(object_dict_t *self, const char *key, object_t *ref_value);
+objdict_set(object_dict_t *self, const char *key, PadObj *ref_value);
 
 /**
  * get dict item
@@ -181,10 +181,10 @@ objdict_get_index(object_dict_t *self, int32_t index);
  * @param[in] *self
  * @param[in] *key  key of strings
  *
- * @return found to return pointer to object_t
+ * @return found to return pointer to PadObj
  * @return not found to return NULL
  */
-object_t *
+PadObj *
 objdict_pop(object_dict_t *self, const char *key);
 
 /**

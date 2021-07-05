@@ -53,7 +53,7 @@
 ************/
 
 PadCtx *
-get_context_by_owners(object_array_t *ref_owners, PadCtx *def_context);
+get_context_by_owners(PadObjAry *ref_owners, PadCtx *def_context);
 
 /**
  * pull-in reference of object by identifier object from varmap of current scope of context
@@ -64,14 +64,14 @@ get_context_by_owners(object_array_t *ref_owners, PadCtx *def_context);
  *
  * @param return NULL or reference to object in varmap in current scope (DO NOT DELETE)
  */
-object_t *
-pull_ref(const object_t *idn_obj);
+PadObj *
+pull_ref(const PadObj *idn_obj);
 
 /**
  * traverse previous context
  */
-object_t *
-pull_ref_all(const object_t *idn_obj);
+PadObj *
+pull_ref_all(const PadObj *idn_obj);
 
 /**
  * object to string
@@ -82,7 +82,7 @@ pull_ref_all(const object_t *idn_obj);
  * @return success to pointer to string_t copied (can delete)
  */
 string_t *
-obj_to_string(PadErrStack *err, const PadNode *ref_node, const object_t *obj);
+PadObj_ToString(PadErrStack *err, const PadNode *ref_node, const PadObj *obj);
 
 /**
  * move object at varmap of current scope of context by identifier
@@ -93,9 +93,9 @@ move_obj_at_cur_varmap(
     PadErrStack *err,
     const PadNode *ref_node,
     PadCtx *ctx,
-    object_array_t *ref_owners,
+    PadObjAry *ref_owners,
     const char *identifier,
-    object_t *move_obj
+    PadObj *move_obj
 );
 
 /**
@@ -107,37 +107,37 @@ set_ref_at_cur_varmap(
     PadErrStack *err,
     const PadNode *ref_node,
     PadCtx *ctx,
-    object_array_t *ref_owners,
+    PadObjAry *ref_owners,
     const char *identifier,
-    object_t *ref
+    PadObj *ref
 );
 
 bool
-set_ref(object_dict_t *varmap, const char *identifier, object_t *ref_obj);
+set_ref(object_dict_t *varmap, const char *identifier, PadObj *ref_obj);
 
 /**
  * extract identifier object and index object and etc to reference
  *
  * @return reference to object
  */
-object_t *
+PadObj *
 extract_ref_of_obj(
     ast_t *ref_ast,
     PadErrStack *err,
     PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
-    object_t *obj
+    PadObj *obj
 );
 
-object_t *
+PadObj *
 extract_ref_of_obj_all(
     ast_t *ref_ast,
     PadErrStack *err,
     PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
-    object_t *obj
+    PadObj *obj
 );
 
 /**
@@ -150,14 +150,14 @@ extract_ref_of_obj_all(
  *
  * @return new object
  */
-object_t *
+PadObj *
 extract_copy_of_obj(
     ast_t *ref_ast,
     PadErrStack *err,
     PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
-    object_t *obj
+    PadObj *obj
 );
 
 /**
@@ -169,14 +169,14 @@ extract_copy_of_obj(
  * @return success to reference to object of index
  * @return failed to NULL
  */
-object_t *
+PadObj *
 refer_chain_obj_with_ref(
     ast_t *ref_ast,
     PadErrStack *err,
     PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
-    object_t *chain_obj
+    PadObj *chain_obj
 );
 
 /**
@@ -190,14 +190,14 @@ refer_chain_obj_with_ref(
  * @return success to refer object
  * @return failed to NULL
  */
-object_t *
+PadObj *
 refer_chain_three_objs(
     ast_t *ref_ast,
     PadErrStack *err,
     PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
-    object_array_t *owns,
+    PadObjAry *owns,
     PadChainObj *co
 );
 
@@ -211,26 +211,26 @@ refer_chain_three_objs(
  * @return success to refer object
  * @return failed to NULL
  */
-object_t *
+PadObj *
 refer_chain_call(
     ast_t *ref_ast,
     PadErrStack *err,
     const PadNode *ref_node,
     PadGc *ref_gc,
     PadCtx *ref_context,
-    object_array_t *owns,  // TODO: const
+    PadObjAry *owns,  // TODO: const
     PadChainObj *co
 );
 
-object_t *
+PadObj *
 refer_and_set_ref(
     ast_t *ref_ast,
     PadErrStack *err,
     PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
-    object_t *chain_obj,
-    object_t *ref
+    PadObj *chain_obj,
+    PadObj *ref
 );
 
 /**
@@ -239,7 +239,7 @@ refer_and_set_ref(
  * @param[in] *arrobj
  */
 void
-dump_array_obj(const object_t *arrobj);
+dump_array_obj(const PadObj *arrobj);
 
 /**
  * objectをbool値にする
@@ -253,7 +253,7 @@ parse_bool(
     PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
-    object_t *obj
+    PadObj *obj
 );
 
 /**
@@ -268,7 +268,7 @@ parse_int(
     PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
-    object_t *obj
+    PadObj *obj
 );
 
 /**
@@ -283,16 +283,16 @@ parse_float(
     PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
-    object_t *obj
+    PadObj *obj
 );
 
 /**
  * if idnobj has in current scope then return true else return false
  *
  * @param[in] *ast
- * @param[in] *idnobj identifier object (type == OBJ_TYPE_IDENTIFIER)
+ * @param[in] *idnobj identifier object (type == PAD_OBJ_TYPE__IDENT)
  *
  * @return true or false
  */
 bool
-is_var_in_cur_scope(const object_t *idnobj);
+is_var_in_cur_scope(const PadObj *idnobj);

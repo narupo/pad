@@ -20,7 +20,7 @@
 #define return_trav(obj) \
     if (ast->debug) { \
         string_t *s = NULL; \
-        if (obj) s = obj_to_str(obj); \
+        if (obj) s = PadObj_ToStr(obj); \
         fprintf(stderr, \
             "debug: line[%5d]: %*s: %3d: return %p (%s): msg[%s]\n", \
             __LINE__, \
@@ -86,98 +86,98 @@
 * prototypes *
 *************/
 
-static object_t *
+static PadObj *
 trv_compare_or(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_or_array(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_or_string(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_or_identifier(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_or_bool(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_or_int(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_and(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq_def_struct(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_comparison_gte(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_comparison_lte(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_comparison_gt(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_comparison_lt(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_calc_expr_add(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_calc_expr_sub(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_calc_term_div(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_calc_term_mul(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_multi_assign(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_calc_assign(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_array(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_unicode(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_bool(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_nil(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_int(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_def_struct(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_func(ast_t *ast, trv_args_t *targs);
 
-static object_t *
+static PadObj *
 trv_compare_comparison_lte_int(ast_t *ast, trv_args_t *targs);
 
 /************
 * functions *
 ************/
 
-static object_t *
+static PadObj *
 trv_program(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -187,7 +187,7 @@ trv_program(ast_t *ast, trv_args_t *targs) {
     check("call _trv_traverse");
     targs->ref_node = program->blocks;
     targs->depth += 1;
-    object_t *result = _trv_traverse(ast, targs);
+    PadObj *result = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         return_trav(NULL);
     }
@@ -195,7 +195,7 @@ trv_program(ast_t *ast, trv_args_t *targs) {
     return_trav(result);
 }
 
-static object_t *
+static PadObj *
 trv_blocks(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -207,7 +207,7 @@ trv_blocks(ast_t *ast, trv_args_t *targs) {
     check("call _trv_traverse");
     targs->ref_node = blocks->code_block;
     targs->depth = depth + 1;
-    object_t *result = _trv_traverse(ast, targs);
+    PadObj *result = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         return_trav(NULL);
     }
@@ -244,7 +244,7 @@ trv_blocks(ast_t *ast, trv_args_t *targs) {
     return_trav(result);
 }
 
-static object_t *
+static PadObj *
 trv_code_block(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -264,7 +264,7 @@ trv_code_block(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_ref_block(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -275,14 +275,14 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
     check("call _trv_traverse");
     targs->ref_node = ref_block->formula;
     targs->depth = depth + 1;
-    object_t *tmp = _trv_traverse(ast, targs);
+    PadObj *tmp = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         return_trav(NULL);
     }
     assert(tmp);
 
-    object_t *result = tmp;
-    if (tmp->type == OBJ_TYPE_CHAIN) {
+    PadObj *result = tmp;
+    if (tmp->type == PAD_OBJ_TYPE__CHAIN) {
         result = _extract_ref_of_obj_all(tmp);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
@@ -297,56 +297,56 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
     default:
         pushb_error("can't refer object (%d)", result->type);
         break;
-    case OBJ_TYPE_NIL:
+    case PAD_OBJ_TYPE__NIL:
         PadCtx_PushBackStdoutBuf(context, "nil");
         break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         char n[1024]; // very large
         snprintf(n, sizeof n, "%ld", result->lvalue);
         PadCtx_PushBackStdoutBuf(context, n);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         char n[1024]; // very large
         snprintf(n, sizeof n, "%lf", result->float_value);
         cstr_rstrip_float_zero(n);
         PadCtx_PushBackStdoutBuf(context, n);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         if (result->boolean) {
             PadCtx_PushBackStdoutBuf(context, "true");
         } else {
             PadCtx_PushBackStdoutBuf(context, "false");
         }
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        object_t *obj = pull_ref_all(result);
+    case PAD_OBJ_TYPE__IDENT: {
+        PadObj *obj = pull_ref_all(result);
         if (!obj) {
-            pushb_error("\"%s\" is not defined in ref block", obj_getc_idn_name(result));
+            pushb_error("\"%s\" is not defined in ref block", PadObj_GetcIdentName(result));
             return_trav(NULL);
         }
-        string_t *str = obj_to_str(obj);
+        string_t *str = PadObj_ToStr(obj);
         PadCtx_PushBackStdoutBuf(context, str_getc(str));
         str_del(str);
     } break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         PadCtx_PushBackStdoutBuf(context, uni_getc_mb(result->unicode));
     } break;
-    case OBJ_TYPE_ARRAY: {
+    case PAD_OBJ_TYPE__ARRAY: {
         PadCtx_PushBackStdoutBuf(context, "(array)");
     } break;
-    case OBJ_TYPE_DICT: {
+    case PAD_OBJ_TYPE__DICT: {
         PadCtx_PushBackStdoutBuf(context, "(dict)");
     } break;
-    case OBJ_TYPE_FUNC: {
+    case PAD_OBJ_TYPE__FUNC: {
         PadCtx_PushBackStdoutBuf(context, "(function)");
     } break;
-    case OBJ_TYPE_OBJECT: {
+    case PAD_OBJ_TYPE__OBJECT: {
         PadCtx_PushBackStdoutBuf(context, "(object)");
     } break;
-    case OBJ_TYPE_DEF_STRUCT: {
+    case PAD_OBJ_TYPE__DEF_STRUCT: {
         PadCtx_PushBackStdoutBuf(context, "(struct)");
     } break;
-    case OBJ_TYPE_TYPE: {
+    case PAD_OBJ_TYPE__TYPE: {
         PadCtx_PushBackStdoutBuf(context, "(type)");
     } break;
     } // switch
@@ -355,7 +355,7 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
 }
 
 
-static object_t *
+static PadObj *
 trv_text_block(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -372,13 +372,13 @@ trv_text_block(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_elems(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__ELEMS);
     PadElemsNode *elems = node->real;
-    object_t *result = NULL;
+    PadObj *result = NULL;
 
     depth_t depth = targs->depth;
 
@@ -417,11 +417,11 @@ trv_elems(ast_t *ast, trv_args_t *targs) {
         check("call _trv_traverse with formula");
         targs->ref_node = elems->formula;
         targs->depth = depth + 1;
-        object_t *result = _trv_traverse(ast, targs);
+        PadObj *result = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
-        obj_del(result);
+        PadObj_Del(result);
     }
 
     check("call _trv_traverse with elems");
@@ -435,7 +435,7 @@ trv_elems(ast_t *ast, trv_args_t *targs) {
     return_trav(result);
 }
 
-static object_t *
+static PadObj *
 trv_formula(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -448,7 +448,7 @@ trv_formula(ast_t *ast, trv_args_t *targs) {
         check("call _trv_traverse with assign_list");
         targs->ref_node = formula->assign_list;
         targs->depth = depth + 1;
-        object_t *result = _trv_traverse(ast, targs);
+        PadObj *result = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
@@ -457,7 +457,7 @@ trv_formula(ast_t *ast, trv_args_t *targs) {
         check("call _trv_traverse with multi_assign");
         targs->ref_node = formula->multi_assign;
         targs->depth = depth + 1;
-        object_t *result = _trv_traverse(ast, targs);
+        PadObj *result = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
@@ -468,13 +468,13 @@ trv_formula(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__STMT);
     PadStmtNode *stmt = node->real;
-    object_t *result = NULL;
+    PadObj *result = NULL;
 
     depth_t depth = targs->depth;
 
@@ -556,7 +556,7 @@ trv_stmt(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_import_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -589,7 +589,7 @@ trv_import_stmt(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_import_as_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -603,11 +603,11 @@ trv_import_as_stmt(ast_t *ast, trv_args_t *targs) {
     check("call _trv_traverse with path of import as statement");
     targs->ref_node = import_as_stmt->path;
     targs->depth = depth + 1;
-    object_t *pathobj = _trv_traverse(ast, targs);
+    PadObj *pathobj = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         return_trav(NULL);
     }
-    if (!pathobj || pathobj->type != OBJ_TYPE_UNICODE) {
+    if (!pathobj || pathobj->type != PAD_OBJ_TYPE__UNICODE) {
         pushb_error("invalid path object in import as statement");
         return_trav(NULL);
     }
@@ -615,22 +615,22 @@ trv_import_as_stmt(ast_t *ast, trv_args_t *targs) {
     check("call _trv_traverse with identifier of import as statement");
     targs->ref_node = import_as_stmt->alias;
     targs->depth = depth + 1;
-    object_t *aliasobj = _trv_traverse(ast, targs);
+    PadObj *aliasobj = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
-        obj_del(pathobj);
+        PadObj_Del(pathobj);
         return_trav(NULL);
     }
-    if (!aliasobj || aliasobj->type != OBJ_TYPE_IDENTIFIER) {
+    if (!aliasobj || aliasobj->type != PAD_OBJ_TYPE__IDENT) {
         pushb_error("invalid identifier object in import as statement");
-        obj_del(pathobj);
-        obj_del(aliasobj);
+        PadObj_Del(pathobj);
+        PadObj_Del(aliasobj);
         return_trav(NULL);
     }
 
     // import start
     const char *path = uni_getc_mb(pathobj->unicode);
     assert(path);
-    const char *alias = obj_getc_idn_name(aliasobj);
+    const char *alias = PadObj_GetcIdentName(aliasobj);
     assert(alias);
 
     PadImporter *importer = PadImporter_New(ast->ref_config);
@@ -644,8 +644,8 @@ trv_import_as_stmt(ast_t *ast, trv_args_t *targs) {
         alias
     )) {
         pushb_error(PadImporter_GetcErr(importer));
-        obj_del(pathobj);
-        obj_del(aliasobj);
+        PadObj_Del(pathobj);
+        PadObj_Del(aliasobj);
         return_trav(NULL);
     }
 
@@ -654,7 +654,7 @@ trv_import_as_stmt(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_from_import_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -667,28 +667,28 @@ trv_from_import_stmt(ast_t *ast, trv_args_t *targs) {
     check("call _trv_traverse with path of from import statement");
     targs->ref_node = from_import_stmt->path;
     targs->depth = depth + 1;
-    object_t *pathobj = _trv_traverse(ast, targs);
+    PadObj *pathobj = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         return_trav(NULL);
     }
-    if (!pathobj || pathobj->type != OBJ_TYPE_UNICODE) {
+    if (!pathobj || pathobj->type != PAD_OBJ_TYPE__UNICODE) {
         pushb_error("invalid path object in from import statement");
-        obj_del(pathobj);
+        PadObj_Del(pathobj);
         return_trav(NULL);
     }
 
     check("call _trv_traverse with import variables of from import statement");
     targs->ref_node = from_import_stmt->import_vars;
     targs->depth = depth + 1;
-    object_t *varsobj = _trv_traverse(ast, targs);
+    PadObj *varsobj = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
-        obj_del(pathobj);
+        PadObj_Del(pathobj);
         return_trav(NULL);
     }
-    if (!varsobj || varsobj->type != OBJ_TYPE_ARRAY) {
+    if (!varsobj || varsobj->type != PAD_OBJ_TYPE__ARRAY) {
         pushb_error("invalid variables object in from import statement");
-        obj_del(pathobj);
-        obj_del(varsobj);
+        PadObj_Del(pathobj);
+        PadObj_Del(varsobj);
         return_trav(NULL);
     }
 
@@ -705,8 +705,8 @@ trv_from_import_stmt(ast_t *ast, trv_args_t *targs) {
         varsobj->objarr
     )) {
         pushb_error(PadImporter_GetcErr(importer));
-        obj_del(pathobj);
-        obj_del(varsobj);
+        PadObj_Del(pathobj);
+        PadObj_Del(varsobj);
         return_trav(NULL);
     }
 
@@ -715,7 +715,7 @@ trv_from_import_stmt(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_import_vars(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -723,39 +723,39 @@ trv_import_vars(ast_t *ast, trv_args_t *targs) {
     assert(node->type == PAD_NODE_TYPE__IMPORT_VARS);
     PadImportVarsNode *import_vars = node->real;
 
-    node_array_t *nodearr = import_vars->nodearr;
-    assert(nodearr_len(nodearr));
+    PadNodeAry *nodearr = import_vars->nodearr;
+    assert(PadNodeAry_Len(nodearr));
 
-    object_array_t *objarr = objarr_new();
+    PadObjAry *objarr = PadObjAry_New();
 
     depth_t depth = targs->depth;
 
-    for (int32_t i = 0; i < nodearr_len(nodearr); ++i) {
-        PadNode *node = nodearr_get(nodearr, i);
+    for (int32_t i = 0; i < PadNodeAry_Len(nodearr); ++i) {
+        PadNode *node = PadNodeAry_Get(nodearr, i);
 
         check("call _trv_traverse with variable node of import variables");
         targs->ref_node = node;
         targs->depth = depth + 1;
-        object_t *varobj = _trv_traverse(ast, targs);
+        PadObj *varobj = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
-            objarr_del(objarr);
+            PadObjAry_Del(objarr);
             return_trav(NULL);
         }
-        if (!varobj || varobj->type != OBJ_TYPE_ARRAY) {
+        if (!varobj || varobj->type != PAD_OBJ_TYPE__ARRAY) {
             pushb_error("invalid variable object in import variables");
-            objarr_del(objarr);
+            PadObjAry_Del(objarr);
             return_trav(NULL);
         }
 
-        objarr_moveb(objarr, varobj);
+        PadObjAry_MoveBack(objarr, varobj);
     }
 
-    assert(objarr_len(objarr));
-    object_t *arrobj = obj_new_array(ast->ref_gc, mem_move(objarr));
+    assert(PadObjAry_Len(objarr));
+    PadObj *arrobj = PadObj_NewAry(ast->ref_gc, mem_move(objarr));
     return_trav(arrobj);
 }
 
-static object_t *
+static PadObj *
 trv_import_var(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -763,48 +763,48 @@ trv_import_var(ast_t *ast, trv_args_t *targs) {
     assert(node->type == PAD_NODE_TYPE__IMPORT_VAR);
     PadImportVarNode *import_var = node->real;
 
-    object_array_t *objarr = objarr_new();
+    PadObjAry *objarr = PadObjAry_New();
     depth_t depth = targs->depth;
 
     check("call _trv_traverse with identifier of import variable");
     targs->ref_node = import_var->identifier;
     targs->depth = depth + 1;
-    object_t *idnobj = _trv_traverse(ast, targs);
+    PadObj *idnobj = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         return_trav(NULL);
     }
-    if (!idnobj || idnobj->type != OBJ_TYPE_IDENTIFIER) {
+    if (!idnobj || idnobj->type != PAD_OBJ_TYPE__IDENT) {
         pushb_error("invalid identifier object in import variable");
-        obj_del(idnobj);
+        PadObj_Del(idnobj);
         return_trav(NULL);
     }
-    objarr_moveb(objarr, idnobj); // store
+    PadObjAry_MoveBack(objarr, idnobj); // store
 
     check("call _trv_traverse with alias of import variable");
     targs->ref_node = import_var->alias;
     targs->depth = depth + 1;
-    object_t *aliasobj = _trv_traverse(ast, targs);
+    PadObj *aliasobj = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
-        obj_del(idnobj);
+        PadObj_Del(idnobj);
         return_trav(NULL);
     }
     // allow null of aliasobj
 
     if (aliasobj) {
-        if (aliasobj->type != OBJ_TYPE_IDENTIFIER) {
+        if (aliasobj->type != PAD_OBJ_TYPE__IDENT) {
             pushb_error("invalid alias object in import variable");
-            obj_del(idnobj);
-            obj_del(aliasobj);
+            PadObj_Del(idnobj);
+            PadObj_Del(aliasobj);
             return_trav(NULL);
         }
-        objarr_moveb(objarr, aliasobj); // store
+        PadObjAry_MoveBack(objarr, aliasobj); // store
     }
 
-    object_t *arrobj = obj_new_array(ast->ref_gc, mem_move(objarr));
+    PadObj *arrobj = PadObj_NewAry(ast->ref_gc, mem_move(objarr));
     return_trav(arrobj);
 }
 
-static object_t *
+static PadObj *
 trv_if_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -816,7 +816,7 @@ trv_if_stmt(ast_t *ast, trv_args_t *targs) {
     check("call _trv_traverse");
     targs->ref_node = if_stmt->test;
     targs->depth = depth + 1;
-    object_t *result = _trv_traverse(ast, targs);
+    PadObj *result = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         return_trav(NULL);
     }
@@ -833,8 +833,8 @@ trv_if_stmt(ast_t *ast, trv_args_t *targs) {
     result = NULL;
 
     if (boolean) {
-        for (int32_t i = 0; i < nodearr_len(if_stmt->contents); ++i) {
-            PadNode *node = nodearr_get(if_stmt->contents, i);
+        for (int32_t i = 0; i < PadNodeAry_Len(if_stmt->contents); ++i) {
+            PadNode *node = PadNodeAry_Get(if_stmt->contents, i);
             targs->ref_node = node;
             targs->depth = depth + 1;
             result = _trv_traverse(ast, targs);
@@ -868,19 +868,19 @@ trv_if_stmt(ast_t *ast, trv_args_t *targs) {
     return_trav(result);
 }
 
-static object_t *
+static PadObj *
 trv_else_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     PadElseStmtNode *else_stmt = node->real;
     assert(else_stmt);
-    object_t *result = NULL;
+    PadObj *result = NULL;
 
     depth_t depth = targs->depth;
 
-    for (int32_t i = 0; i < nodearr_len(else_stmt->contents); ++i) {
-        PadNode *node = nodearr_get(else_stmt->contents, i);
+    for (int32_t i = 0; i < PadNodeAry_Len(else_stmt->contents); ++i) {
+        PadNode *node = PadNodeAry_Get(else_stmt->contents, i);
         targs->ref_node = node;
         targs->depth = depth + 1;
         result = _trv_traverse(ast, targs);
@@ -893,7 +893,7 @@ trv_else_stmt(ast_t *ast, trv_args_t *targs) {
     return_trav(result);
 }
 
-static object_t *
+static PadObj *
 trv_for_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -902,7 +902,7 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
     depth_t depth = targs->depth;
 
     check("call _trv_traverse with init_formula");
-    object_t *result = NULL;
+    PadObj *result = NULL;
     if (for_stmt->init_formula) {
         targs->ref_node = for_stmt->init_formula;
         targs->depth = depth + 1;
@@ -930,8 +930,8 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
         check("call _trv_traverse with contents");
         result = NULL;
 
-        for (int32_t i = 0; i < nodearr_len(for_stmt->contents); ++i) {
-            PadNode *node = nodearr_get(for_stmt->contents, i);
+        for (int32_t i = 0; i < PadNodeAry_Len(for_stmt->contents); ++i) {
+            PadNode *node = PadNodeAry_Get(for_stmt->contents, i);
             targs->ref_node = node;
             targs->depth = depth + 1;
             result = _trv_traverse(ast, targs);
@@ -942,14 +942,14 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
             if (PadCtx_GetDoReturn(ast->ref_context)) {
                 return_trav(result);
             } else if (PadCtx_GetDoBreak(ast->ref_context)) {
-                obj_del(result);
+                PadObj_Del(result);
                 break;
             } else if (PadCtx_GetDoContinue(ast->ref_context)) {
-                obj_del(result);
+                PadObj_Del(result);
                 break;
             }
 
-            obj_del(result);
+            PadObj_Del(result);
         }  // for
 
         if (PadCtx_GetDoBreak(ast->ref_context)) {
@@ -974,7 +974,7 @@ done:
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_break_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -987,7 +987,7 @@ trv_break_stmt(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_continue_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -1000,7 +1000,7 @@ trv_continue_stmt(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_return_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -1015,14 +1015,14 @@ trv_return_stmt(ast_t *ast, trv_args_t *targs) {
         PadCtx *ref_context = PadAst_GetRefCtx(ast);
         PadGc *ref_gc = PadAst_GetRefGc(ast);
         PadCtx_SetDoReturn(ref_context, true);
-        object_t *ret = obj_new_nil(ref_gc);
+        PadObj *ret = PadObj_NewNil(ref_gc);
         return_trav(ret);
     }
 
     check("call _trv_traverse with formula");
     targs->ref_node = return_stmt->formula;
     targs->depth = depth + 1;
-    object_t *result = _trv_traverse(ast, targs);
+    PadObj *result = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to traverse formula");
         return_trav(NULL);
@@ -1032,19 +1032,19 @@ trv_return_stmt(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
-    object_t *ret = NULL;
+    PadObj *ret = NULL;
 again:
     switch (result->type) {
     default:
         pushb_error("invalid return type (%d)", result->type);
         return NULL;
         break;
-    case OBJ_TYPE_CHAIN:
+    case PAD_OBJ_TYPE__CHAIN:
         result = _refer_chain_obj_with_ref(result);
         goto again;
         break;
-    case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = obj_getc_idn_name(result);
+    case PAD_OBJ_TYPE__IDENT: {
+        const char *idn = PadObj_GetcIdentName(result);
         result = pull_ref_all(result);
         if (!result) {
             pushb_error("\"%s\" is not defined", idn);
@@ -1052,17 +1052,17 @@ again:
         }
         goto again;
     } break;
-    case OBJ_TYPE_ARRAY:
-    case OBJ_TYPE_DICT:
+    case PAD_OBJ_TYPE__ARRAY:
+    case PAD_OBJ_TYPE__DICT:
         ret = _extract_ref_of_obj_all(result);
         break;
-    case OBJ_TYPE_NIL:
-    case OBJ_TYPE_INT:
-    case OBJ_TYPE_BOOL:
-    case OBJ_TYPE_UNICODE:
-    case OBJ_TYPE_MODULE:
-    case OBJ_TYPE_FUNC:
-    case OBJ_TYPE_OBJECT:
+    case PAD_OBJ_TYPE__NIL:
+    case PAD_OBJ_TYPE__INT:
+    case PAD_OBJ_TYPE__BOOL:
+    case PAD_OBJ_TYPE__UNICODE:
+    case PAD_OBJ_TYPE__MODULE:
+    case PAD_OBJ_TYPE__FUNC:
+    case PAD_OBJ_TYPE__OBJECT:
         ret = result;
         break;
     }
@@ -1084,7 +1084,7 @@ shallow_assign_varmap(object_dict_t *dst, object_dict_t *src) {
     }
 }
 
-static object_t *
+static PadObj *
 trv_block_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -1097,16 +1097,16 @@ trv_block_stmt(ast_t *ast, trv_args_t *targs) {
 
     targs->ref_node = block_stmt->identifier;
     targs->depth = depth + 1;
-    object_t *idn = _trv_traverse(ast, targs);
+    PadObj *idn = _trv_traverse(ast, targs);
     if (!idn || PadAst_HasErrs(ast)) {
         pushb_error("failed to traverse identifier");
         return_trav(NULL);
     }
 
-    object_t *func_obj = targs->func_obj;
+    PadObj *func_obj = targs->func_obj;
     object_func_t *func = &func_obj->func;
-    node_dict_t *ref_blocks = func->ref_blocks;
-    const node_dict_item_t *item = nodedict_getc(ref_blocks, obj_getc_idn_name(idn));
+    PadNodeDict *ref_blocks = func->ref_blocks;
+    const PadNodeDictItem *item = PadNodeDict_Getc(ref_blocks, PadObj_GetcIdentName(idn));
     assert(item);
     node = item->value;
     assert(node && node->type == PAD_NODE_TYPE__BLOCK_STMT);
@@ -1127,18 +1127,18 @@ trv_block_stmt(ast_t *ast, trv_args_t *targs) {
     }
 
     // execute contents nodes
-    node_array_t *contents = block_stmt->contents;
-    for (int32_t i = 0; i < nodearr_len(contents); ++i) {
-        PadNode *content = nodearr_get(contents, i);
+    PadNodeAry *contents = block_stmt->contents;
+    for (int32_t i = 0; i < PadNodeAry_Len(contents); ++i) {
+        PadNode *content = PadNodeAry_Get(contents, i);
         assert(content);
         targs->ref_node = content;
         targs->depth = depth + 1;
-        object_t *result = _trv_traverse(ast, targs);
+        PadObj *result = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to traverse content");
             goto fail;
         }
-        obj_del(result);
+        PadObj_Del(result);
     }
 
 fail:
@@ -1146,7 +1146,7 @@ fail:
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_inject_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -1164,15 +1164,15 @@ trv_inject_stmt(ast_t *ast, trv_args_t *targs) {
 
     targs->ref_node = inject_stmt->identifier;
     targs->depth = depth + 1;
-    object_t *idn = _trv_traverse(ast, targs);
+    PadObj *idn = _trv_traverse(ast, targs);
     if (!idn || PadAst_HasErrs(ast)) {
         pushb_error("failed to traverse identifier");
         return_trav(NULL);
     }
-    const char *idnname = obj_getc_idn_name(idn);
+    const char *idnname = PadObj_GetcIdentName(idn);
 
     object_func_t *func = &targs->func_obj->func;
-    object_t *extends_func = func->extends_func;
+    PadObj *extends_func = func->extends_func;
     if (!extends_func) {
         pushb_error("can't inject. not found extended function");
         return_trav(NULL);
@@ -1182,8 +1182,8 @@ trv_inject_stmt(ast_t *ast, trv_args_t *targs) {
     // find block-stmt
     PadBlockStmtNode *block_stmt = NULL;
     for (;;) {
-        node_dict_t *ref_blocks = func->ref_blocks;
-        node_dict_item_t *item = nodedict_get(ref_blocks, idnname);
+        PadNodeDict *ref_blocks = func->ref_blocks;
+        PadNodeDictItem *item = PadNodeDict_Get(ref_blocks, idnname);
         if (!item) {
             if (!func->extends_func) {
                 pushb_error("not found \"%s\" block", idnname);
@@ -1211,7 +1211,7 @@ trv_inject_stmt(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_def_struct(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -1224,7 +1224,7 @@ trv_def_struct(ast_t *ast, trv_args_t *targs) {
 
     targs->ref_node = struct_->identifier;
     targs->depth = depth + 1;
-    object_t *idn = _trv_traverse(ast, targs);
+    PadObj *idn = _trv_traverse(ast, targs);
     if (!idn || PadAst_HasErrs(ast)) {
         pushb_error("failed to traverse identifier");
         return_trav(NULL);
@@ -1238,7 +1238,7 @@ trv_def_struct(ast_t *ast, trv_args_t *targs) {
     PadAst_SetRefCtx(struct_ast, struct_ctx);
     PadAst_SetRefGc(struct_ast, ast->ref_gc);
 
-    object_t *result = _trv_traverse(struct_ast, &(trv_args_t) {
+    PadObj *result = _trv_traverse(struct_ast, &(trv_args_t) {
         .ref_node = struct_->elems,
         .depth = 0,
     });
@@ -1248,14 +1248,14 @@ trv_def_struct(ast_t *ast, trv_args_t *targs) {
     }
     assert(!result);
 
-    object_t *def_struct = obj_new_def_struct(
+    PadObj *def_struct = PadObj_NewDefStruct(
         ast->ref_gc,
         mem_move(idn),
         mem_move(struct_ast),
         mem_move(struct_ctx)
     );
     if (!def_struct) {
-        pushb_error("failed to create def-struct object");
+        pushb_error("failed to create def-struct PadObj");
         return_trav(NULL);
     }
 
@@ -1264,7 +1264,7 @@ trv_def_struct(ast_t *ast, trv_args_t *targs) {
         targs->ref_node,
         ast->ref_context,
         targs->ref_owners,
-        obj_getc_idn_name(idn),
+        PadObj_GetcIdentName(idn),
         mem_move(def_struct)
     );
     if (PadAst_HasErrs(ast)) {
@@ -1275,7 +1275,7 @@ trv_def_struct(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_content(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -1285,7 +1285,7 @@ trv_content(ast_t *ast, trv_args_t *targs) {
     assert(content);
 
     depth_t depth = targs->depth;
-    object_t *result = NULL;
+    PadObj *result = NULL;
 
     if (content->elems) {
         check("trv_traverse elems");
@@ -1312,13 +1312,13 @@ trv_content(ast_t *ast, trv_args_t *targs) {
     return_trav(result);
 }
 
-static object_t *
+static PadObj *
 trv_calc_assign_to_array(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_ARRAY);
+    assert(lhs->type == PAD_OBJ_TYPE__ARRAY);
 
     depth_t depth = targs->depth;
 
@@ -1328,7 +1328,7 @@ again:
         pushb_error("invalid right operand (%d)", rhs->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_CHAIN: {
+    case PAD_OBJ_TYPE__CHAIN: {
         rhs = _refer_chain_obj_with_ref(rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to refer chain object");
@@ -1336,10 +1336,10 @@ again:
         }
         goto again;
     } break;
-    case OBJ_TYPE_ARRAY: {
+    case PAD_OBJ_TYPE__ARRAY: {
         // if not same length left-hand objects and right-hand objects
         // then cause an error
-        if (objarr_len(lhs->objarr) != objarr_len(rhs->objarr)) {
+        if (PadObjAry_Len(lhs->objarr) != PadObjAry_Len(rhs->objarr)) {
             pushb_error("can't assign array to array. not same length");
             return_trav(NULL);
         }
@@ -1349,30 +1349,30 @@ again:
         // 
         //     a, b = b, a
         // 
-        object_array_t *rhsarr = objarr_new();
+        PadObjAry *rhsarr = PadObjAry_New();
 
-        for (int32_t i = 0; i < objarr_len(rhs->objarr); ++i) {
-            object_t *rh = objarr_get(rhs->objarr, i);
-            object_t *real = _extract_ref_of_obj_all(rh);
-            objarr_moveb(rhsarr, real);
+        for (int32_t i = 0; i < PadObjAry_Len(rhs->objarr); ++i) {
+            PadObj *rh = PadObjAry_Get(rhs->objarr, i);
+            PadObj *real = _extract_ref_of_obj_all(rh);
+            PadObjAry_MoveBack(rhsarr, real);
         }
 
         // assign right-hand objects to left-hand objects
-        object_array_t *results = objarr_new();
+        PadObjAry *results = PadObjAry_New();
 
-        for (int32_t i = 0; i < objarr_len(lhs->objarr); ++i) {
-            object_t *lh = objarr_get(lhs->objarr, i);
-            object_t *rh = objarr_get(rhsarr, i);
+        for (int32_t i = 0; i < PadObjAry_Len(lhs->objarr); ++i) {
+            PadObj *lh = PadObjAry_Get(lhs->objarr, i);
+            PadObj *rh = PadObjAry_Get(rhsarr, i);
             check("call trv_calc_assign");
             targs->lhs_obj = lh;
             targs->rhs_obj = rh;
             targs->depth = depth + 1;
-            object_t *result = trv_calc_assign(ast, targs);
-            objarr_moveb(results, result);
+            PadObj *result = trv_calc_assign(ast, targs);
+            PadObjAry_MoveBack(results, result);
         }
 
-        objarr_del(rhsarr);
-        object_t *ret = obj_new_array(ast->ref_gc, mem_move(results));
+        PadObjAry_Del(rhsarr);
+        PadObj *ret = PadObj_NewAry(ast->ref_gc, mem_move(results));
         return_trav(ret);
     } break;
     }
@@ -1381,16 +1381,16 @@ again:
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 assign_to_chain_dot(
     ast_t *ast,
     trv_args_t *targs,
-    object_array_t *owners,
+    PadObjAry *owners,
     PadChainObj *co,
-    object_t *rhs
+    PadObj *rhs
 ) {
-    object_t *ref_owner = objarr_get_last(owners);
-    object_t *child = PadChainObj_GetObj(co);
+    PadObj *ref_owner = PadObjAry_GetLast(owners);
+    PadObj *child = PadChainObj_GetObj(co);
     PadErrStack *errstack = ast->error_stack;
     PadCtx *ref_context = ast->ref_context;
 
@@ -1398,8 +1398,8 @@ again1:
     switch (rhs->type) {
     default:
         break;
-    case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = obj_getc_idn_name(rhs);
+    case PAD_OBJ_TYPE__IDENT: {
+        const char *idn = PadObj_GetcIdentName(rhs);
         rhs = pull_ref_all(rhs);
         if (!rhs) {
             pushb_error("not found \"%s\"", idn);
@@ -1419,20 +1419,20 @@ again2:
         pushb_error("unsupported object (%d)", ref_owner->type);
         return NULL;
         break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         ref_owner = pull_ref_all(ref_owner);
         if (!ref_owner) {
             return NULL;
         }
         goto again2;
     } break;
-    case OBJ_TYPE_DEF_STRUCT: {
+    case PAD_OBJ_TYPE__DEF_STRUCT: {
         ref_context = ref_owner->def_struct.context;
     } break;
-    case OBJ_TYPE_OBJECT: {
+    case PAD_OBJ_TYPE__OBJECT: {
         ref_context = ref_owner->object.struct_context;
     } break;
-    case OBJ_TYPE_MODULE: {
+    case PAD_OBJ_TYPE__MODULE: {
         ref_context = ref_owner->module.ast->ref_context;
     } break;
     }
@@ -1442,8 +1442,8 @@ refer_child:
     default:
         pushb_error("invalid type (%d)", child->type);
         return NULL;
-    case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = obj_getc_idn_name(child);
+    case PAD_OBJ_TYPE__IDENT: {
+        const char *idn = PadObj_GetcIdentName(child);
         set_ref_at_cur_varmap(errstack, targs->ref_node, ref_context, owners, idn, rhs);
         return rhs;
     } break;
@@ -1453,15 +1453,15 @@ refer_child:
     return NULL;
 }
 
-static object_t *
+static PadObj *
 assign_to_chain_call(
     ast_t *ast,
     trv_args_t *targs,
-    object_array_t *owners,
+    PadObjAry *owners,
     PadChainObj *co,
-    object_t *rhs
+    PadObj *rhs
 ) {
-    object_t *obj = refer_chain_call(ast, ast->error_stack, targs->ref_node, ast->ref_gc, ast->ref_context, owners, co);
+    PadObj *obj = refer_chain_call(ast, ast->error_stack, targs->ref_node, ast->ref_gc, ast->ref_context, owners, co);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to refer chain call");
         return NULL;
@@ -1474,16 +1474,16 @@ assign_to_chain_call(
     });
 }
 
-static object_t *
+static PadObj *
 assign_to_chain_array_index(
     ast_t *ast,
     trv_args_t *targs,
-    object_t *owner,
+    PadObj *owner,
     PadChainObj *co,
-    object_t *rhs
+    PadObj *rhs
 ) {
-    assert(owner->type == OBJ_TYPE_ARRAY);
-    const object_t *idxobj = PadChainObj_GetObj(co);
+    assert(owner->type == PAD_OBJ_TYPE__ARRAY);
+    const PadObj *idxobj = PadChainObj_GetObj(co);
 
 again:
     switch (idxobj->type) {
@@ -1491,8 +1491,8 @@ again:
         pushb_error("invalid index type (%d)", idxobj->type);
         return NULL;
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = obj_getc_idn_name(idxobj);
+    case PAD_OBJ_TYPE__IDENT: {
+        const char *idn = PadObj_GetcIdentName(idxobj);
         idxobj = pull_ref_all(idxobj);
         if (!idxobj) {
             pushb_error("\"%s\" is not defined", idn);
@@ -1500,15 +1500,15 @@ again:
         }
         goto again;
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         // pass
     } break;
     }
 
-    assert(owner->type == OBJ_TYPE_ARRAY);
-    object_array_t *objarr = obj_get_array(owner);
+    assert(owner->type == PAD_OBJ_TYPE__ARRAY);
+    PadObjAry *objarr = PadObj_GetAry(owner);
     objint_t idx = idxobj->lvalue;
-    if (idx < 0 || idx >= objarr_len(objarr)) {
+    if (idx < 0 || idx >= PadObjAry_Len(objarr)) {
         pushb_error("index out of range");
         return NULL;
     }
@@ -1516,8 +1516,8 @@ again:
 again2:
     switch (rhs->type) {
     default: break;
-    case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = obj_getc_idn_name(rhs);
+    case PAD_OBJ_TYPE__IDENT: {
+        const char *idn = PadObj_GetcIdentName(rhs);
         rhs = pull_ref_all(rhs);
         if (!rhs) {
             pushb_error("%s is not defined", idn);
@@ -1527,21 +1527,21 @@ again2:
     } break;
     }
 
-    objarr_set(objarr, idx, rhs);
+    PadObjAry_Set(objarr, idx, rhs);
 
     return rhs;
 }
 
-static object_t *
+static PadObj *
 assign_to_chain_dict_index(
     ast_t *ast,
     trv_args_t *targs,
-    object_t *owner,
+    PadObj *owner,
     PadChainObj *co,
-    object_t *rhs
+    PadObj *rhs
 ) {
-    assert(owner->type == OBJ_TYPE_DICT);
-    object_t *idxobj = PadChainObj_GetObj(co);
+    assert(owner->type == PAD_OBJ_TYPE__DICT);
+    PadObj *idxobj = PadChainObj_GetObj(co);
 
 bob:
     switch (idxobj->type) {
@@ -1549,8 +1549,8 @@ bob:
         pushb_error("invalid index (%d)", idxobj->type);
         return NULL;
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = obj_getc_idn_name(idxobj);
+    case PAD_OBJ_TYPE__IDENT: {
+        const char *idn = PadObj_GetcIdentName(idxobj);
         idxobj = pull_ref_all(idxobj);
         if (!idxobj) {
             pushb_error("\"%s\" is not defined", idn);
@@ -1558,7 +1558,7 @@ bob:
         }
         goto bob;
     } break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         // pass
     } break;
     }
@@ -1566,7 +1566,7 @@ bob:
 marley:
     switch (rhs->type) {
     default: break;
-    case OBJ_TYPE_CHAIN: {
+    case PAD_OBJ_TYPE__CHAIN: {
         rhs = _refer_chain_obj_with_ref(rhs);
         if (PadErrStack_Len(ast->error_stack)) {
             pushb_error("failed to refer chain object");
@@ -1574,8 +1574,8 @@ marley:
         }
         goto marley;
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = obj_getc_idn_name(rhs);
+    case PAD_OBJ_TYPE__IDENT: {
+        const char *idn = PadObj_GetcIdentName(rhs);
         rhs = pull_ref(rhs);
         if (!rhs) {
             pushb_error("\"%s\" is not defined", idn);
@@ -1585,24 +1585,24 @@ marley:
     } break;
     }
 
-    unicode_t *keyuni = obj_get_unicode(idxobj);
+    unicode_t *keyuni = PadObj_GetUnicode(idxobj);
     const char *key = uni_getc_mb(keyuni);
-    object_dict_t *objdict = obj_get_dict(owner);
+    object_dict_t *objdict = PadObj_GetDict(owner);
 
     objdict_set(objdict, key, rhs);
 
     return rhs;
 }
 
-static object_t *
+static PadObj *
 assign_to_chain_index(
     ast_t *ast,
     trv_args_t *targs,
-    object_array_t *owners,
+    PadObjAry *owners,
     PadChainObj *co,
-    object_t *rhs
+    PadObj *rhs
 ) {
-    object_t *owner = objarr_get_last(owners);
+    PadObj *owner = PadObjAry_GetLast(owners);
     if (!owner) {
         pushb_error("owner is null");
         return NULL;
@@ -1614,8 +1614,8 @@ again:
         pushb_error("can't assign to (%d)", owner->type);
         return NULL;
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = obj_getc_idn_name(owner);
+    case PAD_OBJ_TYPE__IDENT: {
+        const char *idn = PadObj_GetcIdentName(owner);
         owner = pull_ref_all(owner);
         if (!owner) {
             pushb_error("\"%s\" is not defined", idn);
@@ -1623,16 +1623,16 @@ again:
         }
         goto again;
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *result = assign_to_chain_array_index(ast, targs, owner, co, rhs);
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *result = assign_to_chain_array_index(ast, targs, owner, co, rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to assign to array");
             return NULL;
         }
         return result;
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *result = assign_to_chain_dict_index(ast, targs, owner, co, rhs);
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *result = assign_to_chain_dict_index(ast, targs, owner, co, rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to assign to dict");
             return NULL;
@@ -1645,35 +1645,35 @@ again:
     return NULL;
 }
 
-static object_t *
+static PadObj *
 assign_to_chain_three_objs(
     ast_t *ast,
     trv_args_t *targs,
-    object_array_t *owners,
+    PadObjAry *owners,
     PadChainObj *co,
-    object_t *rhs
+    PadObj *rhs
 ) {
     assert(ast && owners && co);
 
     switch (PadChainObj_GetcType(co)) {
-    case PAD_CHAIN_OBJ_TYPE__DOT: {
-        object_t *result = assign_to_chain_dot(ast, targs, owners, co, rhs);
+    case PAD_CHAIN_PAD_OBJ_TYPE___DOT: {
+        PadObj *result = assign_to_chain_dot(ast, targs, owners, co, rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to assign to chain dot");
             return NULL;
         }
         return result;
     } break;
-    case PAD_CHAIN_OBJ_TYPE__CALL: {
-        object_t *result = assign_to_chain_call(ast, targs, owners, co, rhs);
+    case PAD_CHAIN_PAD_OBJ_TYPE___CALL: {
+        PadObj *result = assign_to_chain_call(ast, targs, owners, co, rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to assign to chain call");
             return NULL;
         }
         return result;
     } break;
-    case PAD_CHAIN_OBJ_TYPE__INDEX: {
-        object_t *result = assign_to_chain_index(ast, targs, owners, co, rhs);
+    case PAD_CHAIN_PAD_OBJ_TYPE___INDEX: {
+        PadObj *result = assign_to_chain_index(ast, targs, owners, co, rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to assign to chain index");
             return NULL;
@@ -1686,18 +1686,18 @@ assign_to_chain_three_objs(
     return NULL;
 }
 
-static object_t *
+static PadObj *
 trv_assign_to_chain(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     depth_t depth = targs->depth;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_CHAIN);
+    assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
 
-    object_t *operand = obj_get_chain_operand(lhs);
+    PadObj *operand = PadObj_GetChainOperand(lhs);
     assert(operand);
-    PadChainObjs *cos = obj_get_chain_objs(lhs);
+    PadChainObjs *cos = PadObj_GetChainObjs(lhs);
     assert(cos);
     int32_t coslen = PadChainObjs_Len(cos);
 
@@ -1708,10 +1708,10 @@ trv_assign_to_chain(ast_t *ast, trv_args_t *targs) {
     }
 
     // start loop
-    object_t *last = NULL;
-    object_array_t *owners = objarr_new();
-    obj_inc_ref(operand);
-    objarr_pushb(owners, operand);
+    PadObj *last = NULL;
+    PadObjAry *owners = PadObjAry_New();
+    PadObj_IncRef(operand);
+    PadObjAry_PushBack(owners, operand);
 
     for (int32_t i = 0; i < coslen-1; ++i) {
         PadChainObj *co = PadChainObjs_Get(cos, i);
@@ -1723,8 +1723,8 @@ trv_assign_to_chain(ast_t *ast, trv_args_t *targs) {
             return NULL;
         }
         assert(last);
-        obj_inc_ref(last);
-        objarr_pushb(owners, last);
+        PadObj_IncRef(last);
+        PadObjAry_PushBack(owners, last);
     }
 
     PadChainObj *co = PadChainObjs_Get(cos, coslen-1);
@@ -1735,21 +1735,21 @@ trv_assign_to_chain(ast_t *ast, trv_args_t *targs) {
         return NULL;
     }
 
-    objarr_del(owners);
+    PadObjAry_Del(owners);
     return_trav(last);
 }
 
-static object_t *
+static PadObj *
 trv_calc_assign_to_chain(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
-    assert(lhs->type == OBJ_TYPE_CHAIN);
+    assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
 
     depth_t depth = targs->depth;
 
     targs->depth = depth + 1;
-    object_t *obj = trv_assign_to_chain(ast, targs);
+    PadObj *obj = trv_assign_to_chain(ast, targs);
     if (PadAst_HasErrs(ast)) {
         return_trav(NULL);
     }
@@ -1757,11 +1757,11 @@ trv_calc_assign_to_chain(ast_t *ast, trv_args_t *targs) {
     return_trav(obj);
 }
 
-static object_t *
+static PadObj *
 trv_calc_assign(ast_t *ast, trv_args_t *targs) {
     tready();
 
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
     depth_t depth = targs->depth;
@@ -1771,21 +1771,21 @@ trv_calc_assign(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_calc_assign_to_idn");
         targs->depth = depth + 1;
-        object_t *obj = trv_calc_assign_to_idn(ast, targs);
+        PadObj *obj = trv_calc_assign_to_idn(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
+    case PAD_OBJ_TYPE__ARRAY: {
         check("call trv_calc_assign_to_array");
         targs->depth = depth + 1;
-        object_t *obj = trv_calc_assign_to_array(ast, targs);
+        PadObj *obj = trv_calc_assign_to_array(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
+    case PAD_OBJ_TYPE__CHAIN: {
         targs->depth = depth + 1;
-        object_t *obj = trv_calc_assign_to_chain(ast, targs);
+        PadObj *obj = trv_calc_assign_to_chain(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -1797,7 +1797,7 @@ trv_calc_assign(ast_t *ast, trv_args_t *targs) {
 /**
  * 右優先結合
  */
-static object_t *
+static PadObj *
 trv_simple_assign(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -1807,32 +1807,32 @@ trv_simple_assign(ast_t *ast, trv_args_t *targs) {
 
     depth_t depth = targs->depth;
 
-    if (!nodearr_len(simple_assign->nodearr)) {
+    if (!PadNodeAry_Len(simple_assign->nodearr)) {
         pushb_error("failed to traverse simple assign. array is empty");
         return_trav(NULL);
     }
 
-    int32_t arrlen = nodearr_len(simple_assign->nodearr);
-    PadNode *rnode = nodearr_get(simple_assign->nodearr, arrlen-1);
+    int32_t arrlen = PadNodeAry_Len(simple_assign->nodearr);
+    PadNode *rnode = PadNodeAry_Get(simple_assign->nodearr, arrlen-1);
     assert(rnode->type == PAD_NODE_TYPE__TEST);
 
     check("call _trv_traverse with right test");
     targs->ref_node = rnode;
     targs->depth = depth + 1;
-    object_t *rhs = _trv_traverse(ast, targs);
+    PadObj *rhs = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         return_trav(NULL);
     }
     assert(rhs);
 
     for (int32_t i = arrlen-2; i >= 0; --i) {
-        PadNode *lnode = nodearr_get(simple_assign->nodearr, i);
+        PadNode *lnode = PadNodeAry_Get(simple_assign->nodearr, i);
         assert(lnode->type == PAD_NODE_TYPE__TEST);
 
         check("call _trv_traverse with test left test");
         targs->ref_node = lnode;
         targs->depth = depth + 1;
-        object_t *lhs = _trv_traverse(ast, targs);
+        PadObj *lhs = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
@@ -1843,7 +1843,7 @@ trv_simple_assign(ast_t *ast, trv_args_t *targs) {
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->depth = depth + 1;
-        object_t *result = trv_calc_assign(ast, targs);
+        PadObj *result = trv_calc_assign(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
@@ -1857,7 +1857,7 @@ trv_simple_assign(ast_t *ast, trv_args_t *targs) {
 /**
  * 右優先結合
  */
-static object_t *
+static PadObj *
 trv_assign(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -1865,7 +1865,7 @@ trv_assign(ast_t *ast, trv_args_t *targs) {
     assert(targs && targs->ref_node);
     PadAssignListNode *assign_list = node->real;
 
-    if (!nodearr_len(assign_list->nodearr)) {
+    if (!PadNodeAry_Len(assign_list->nodearr)) {
         pushb_error("failed to traverse assign. array is empty");
         return_trav(NULL);
     }
@@ -1877,14 +1877,14 @@ trv_assign(ast_t *ast, trv_args_t *targs) {
         targs->do_not_refer_chain = do_not_refer_chain; \
         return_trav(result); \
 
-    int32_t arrlen = nodearr_len(assign_list->nodearr);
-    PadNode *rnode = nodearr_get(assign_list->nodearr, arrlen-1);
+    int32_t arrlen = PadNodeAry_Len(assign_list->nodearr);
+    PadNode *rnode = PadNodeAry_Get(assign_list->nodearr, arrlen-1);
     assert(rnode->type == PAD_NODE_TYPE__TEST);
 
     check("call _trv_traverse with test rnode");
     targs->ref_node = rnode;
     targs->depth = depth + 1;
-    object_t *rhs = _trv_traverse(ast, targs);
+    PadObj *rhs = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         _return(NULL);
     }
@@ -1892,7 +1892,7 @@ trv_assign(ast_t *ast, trv_args_t *targs) {
 
     for (int32_t i = arrlen-2; i >= 0; --i) {
         // assign node has not operators, operand only
-        PadNode *lnode = nodearr_get(assign_list->nodearr, i);
+        PadNode *lnode = PadNodeAry_Get(assign_list->nodearr, i);
         assert(lnode->type == PAD_NODE_TYPE__TEST);
 
         check("call _trv_traverse with test lnode");
@@ -1903,7 +1903,7 @@ trv_assign(ast_t *ast, trv_args_t *targs) {
         // this flag store true to don't refer chain object
         targs->do_not_refer_chain = true;
 
-        object_t *lhs = _trv_traverse(ast, targs);
+        PadObj *lhs = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             _return(NULL);
         }
@@ -1916,7 +1916,7 @@ trv_assign(ast_t *ast, trv_args_t *targs) {
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->depth = depth + 1;
-        object_t *result = trv_calc_assign(ast, targs);
+        PadObj *result = trv_calc_assign(ast, targs);
         if (PadAst_HasErrs(ast)) {
             _return(NULL);
         }
@@ -1927,39 +1927,39 @@ trv_assign(ast_t *ast, trv_args_t *targs) {
     _return(rhs);
 }
 
-static object_t *
+static PadObj *
 trv_assign_list(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node->type == PAD_NODE_TYPE__ASSIGN_LIST);
     PadAssignListNode *assign_list = targs->ref_node->real;
 
-    if (!nodearr_len(assign_list->nodearr)) {
+    if (!PadNodeAry_Len(assign_list->nodearr)) {
         pushb_error("failed to traverse assign list. array is empty");
         return_trav(NULL);
     }
 
     depth_t depth = targs->depth;
-    object_array_t *objarr = objarr_new();
+    PadObjAry *objarr = PadObjAry_New();
 
-    int32_t arrlen = nodearr_len(assign_list->nodearr);
-    PadNode *assign = nodearr_get(assign_list->nodearr, 0);
+    int32_t arrlen = PadNodeAry_Len(assign_list->nodearr);
+    PadNode *assign = PadNodeAry_Get(assign_list->nodearr, 0);
     assert(assign->type == PAD_NODE_TYPE__ASSIGN);
 
     check("call _trv_traverse with assign assign");
     targs->ref_node = assign;
     targs->depth = depth + 1;
-    object_t *obj = _trv_traverse(ast, targs);
+    PadObj *obj = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
-        objarr_del(objarr);
+        PadObjAry_Del(objarr);
         return_trav(NULL);
     }
     assert(obj);
 
-    objarr_moveb(objarr, obj);
+    PadObjAry_MoveBack(objarr, obj);
 
     for (int32_t i = 1; i < arrlen; ++i) {
-        assign = nodearr_get(assign_list->nodearr, i);
+        assign = PadNodeAry_Get(assign_list->nodearr, i);
         assert(assign->type == PAD_NODE_TYPE__ASSIGN);
 
         check("call _trv_traverse with assign assign");
@@ -1967,32 +1967,32 @@ trv_assign_list(ast_t *ast, trv_args_t *targs) {
         targs->depth = depth + 1;
         obj = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
-            objarr_del(objarr);
+            PadObjAry_Del(objarr);
             return_trav(NULL);
         }
         if (!obj) {
             goto done;
         }
 
-        objarr_moveb(objarr, obj);
+        PadObjAry_MoveBack(objarr, obj);
     }
 
 done:
-    assert(objarr_len(objarr));
-    if (objarr_len(objarr) == 1) {
-        obj = objarr_popb(objarr);
-        objarr_del(objarr);
+    assert(PadObjAry_Len(objarr));
+    if (PadObjAry_Len(objarr) == 1) {
+        obj = PadObjAry_PopBack(objarr);
+        PadObjAry_Del(objarr);
         return_trav(obj);
     }
 
-    obj = obj_new_array(ast->ref_gc, mem_move(objarr));
+    obj = PadObj_NewAry(ast->ref_gc, mem_move(objarr));
     return_trav(obj);
 }
 
 /**
  * 右優先結合
  */
-static object_t *
+static PadObj *
 trv_multi_assign(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -2002,31 +2002,31 @@ trv_multi_assign(ast_t *ast, trv_args_t *targs) {
 
     depth_t depth = targs->depth;
 
-    if (!nodearr_len(multi_assign->nodearr)) {
+    if (!PadNodeAry_Len(multi_assign->nodearr)) {
         pushb_error("failed to traverse assign list. array is empty");
         return_trav(NULL);
     }
 
-    int32_t arrlen = nodearr_len(multi_assign->nodearr);
-    PadNode *rnode = nodearr_get(multi_assign->nodearr, arrlen-1);
+    int32_t arrlen = PadNodeAry_Len(multi_assign->nodearr);
+    PadNode *rnode = PadNodeAry_Get(multi_assign->nodearr, arrlen-1);
     assert(rnode->type == PAD_NODE_TYPE__TEST_LIST);
 
     check("call _trv_traverse with right test_list node");
     targs->ref_node = rnode;
     targs->depth = depth + 1;
-    object_t *rhs = _trv_traverse(ast, targs);
+    PadObj *rhs = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         return_trav(NULL);
     }
     assert(rhs);
 
     for (int32_t i = arrlen-2; i >= 0; --i) {
-        PadNode *lnode = nodearr_get(multi_assign->nodearr, i);
+        PadNode *lnode = PadNodeAry_Get(multi_assign->nodearr, i);
         assert(lnode->type == PAD_NODE_TYPE__TEST_LIST);
         check("call _trv_traverse with left test_list node");
         targs->ref_node = lnode;
         targs->depth = depth + 1;
-        object_t *lhs = _trv_traverse(ast, targs);
+        PadObj *lhs = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
@@ -2038,7 +2038,7 @@ trv_multi_assign(ast_t *ast, trv_args_t *targs) {
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->depth = depth + 1;
-        object_t *result = trv_calc_assign(ast, targs);
+        PadObj *result = trv_calc_assign(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
@@ -2053,7 +2053,7 @@ trv_multi_assign(ast_t *ast, trv_args_t *targs) {
     return_trav(rhs);
 }
 
-static object_t *
+static PadObj *
 trv_test_list(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -2063,36 +2063,36 @@ trv_test_list(ast_t *ast, trv_args_t *targs) {
 
     depth_t depth = targs->depth;
 
-    assert(nodearr_len(test_list->nodearr));
-    if (nodearr_len(test_list->nodearr) == 1) {
-        PadNode *test = nodearr_get(test_list->nodearr, 0);
+    assert(PadNodeAry_Len(test_list->nodearr));
+    if (PadNodeAry_Len(test_list->nodearr) == 1) {
+        PadNode *test = PadNodeAry_Get(test_list->nodearr, 0);
         check("call _trv_traverse")
         targs->ref_node = test;
         targs->depth = depth + 1;
-        object_t *obj = _trv_traverse(ast, targs);
+        PadObj *obj = _trv_traverse(ast, targs);
         return_trav(obj);
     }
 
-    object_array_t *arr = objarr_new();
+    PadObjAry *arr = PadObjAry_New();
 
-    for (int32_t i = 0; i < nodearr_len(test_list->nodearr); ++i) {
-        PadNode *test = nodearr_get(test_list->nodearr, i);
+    for (int32_t i = 0; i < PadNodeAry_Len(test_list->nodearr); ++i) {
+        PadNode *test = PadNodeAry_Get(test_list->nodearr, i);
         check("call _trv_traverse");
         targs->ref_node = test;
         targs->depth = depth + 1;
-        object_t *result = _trv_traverse(ast, targs);
+        PadObj *result = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
 
-        objarr_moveb(arr, result);
+        PadObjAry_MoveBack(arr, result);
     }
 
-    object_t *obj = obj_new_array(ast->ref_gc, arr);
+    PadObj *obj = PadObj_NewAry(ast->ref_gc, arr);
     return_trav(obj);
 }
 
-static object_t *
+static PadObj *
 trv_call_args(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -2101,21 +2101,21 @@ trv_call_args(ast_t *ast, trv_args_t *targs) {
     assert(call_args);
 
     depth_t depth = targs->depth;
-    object_array_t *arr = objarr_new();
+    PadObjAry *arr = PadObjAry_New();
 
-    for (int32_t i = 0; i < nodearr_len(call_args->nodearr); ++i) {
-        PadNode *test = nodearr_get(call_args->nodearr, i);
+    for (int32_t i = 0; i < PadNodeAry_Len(call_args->nodearr); ++i) {
+        PadNode *test = PadNodeAry_Get(call_args->nodearr, i);
         check("call _trv_traverse");
         targs->ref_node = test;
         targs->depth = depth + 1;
-        object_t *result = _trv_traverse(ast, targs);
+        PadObj *result = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to traverse call argument");
             return_trav(NULL);
         }
         assert(result);
 
-        object_t *ref = _extract_ref_of_obj_all(result);
+        PadObj *ref = _extract_ref_of_obj_all(result);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to extract reference");
             return_trav(NULL);
@@ -2123,23 +2123,23 @@ trv_call_args(ast_t *ast, trv_args_t *targs) {
 
         switch (ref->type) {
         default: {
-            obj_inc_ref(ref);
-            objarr_pushb(arr, ref);
+            PadObj_IncRef(ref);
+            PadObjAry_PushBack(arr, ref);
         } break;
-        case OBJ_TYPE_CHAIN:
-        case OBJ_TYPE_DICT:
+        case PAD_OBJ_TYPE__CHAIN:
+        case PAD_OBJ_TYPE__DICT:
             // set reference at array
-            obj_inc_ref(ref);
-            objarr_pushb(arr, ref);
+            PadObj_IncRef(ref);
+            PadObjAry_PushBack(arr, ref);
             break;
         }
     }
 
-    object_t *ret = obj_new_array(ast->ref_gc, mem_move(arr));
+    PadObj *ret = PadObj_NewAry(ast->ref_gc, mem_move(arr));
     return_trav(ret);
 }
 
-static object_t *
+static PadObj *
 trv_test(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -2151,24 +2151,24 @@ trv_test(ast_t *ast, trv_args_t *targs) {
     check("call _trv_traverse with or_test");
     targs->ref_node = test->or_test;
     targs->depth = depth + 1;
-    object_t *obj = _trv_traverse(ast, targs);
+    PadObj *obj = _trv_traverse(ast, targs);
     return_trav(obj);
 }
 
-static object_t *
+static PadObj *
 trv_roll_identifier_lhs(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_IDENTIFIER);
+    assert(lhs->type == PAD_OBJ_TYPE__IDENT);
 
     depth_t depth = targs->depth;
 
-    PadCtx *ref_context = obj_get_idn_ref_context(lhs);
+    PadCtx *ref_context = PadObj_GetIdentRefCtx(lhs);
     assert(ref_context);
-    const char *idn = obj_getc_idn_name(lhs);
-    object_t *lvar = PadCtx_FindVarRefAll(ref_context, idn);
+    const char *idn = PadObj_GetcIdentName(lhs);
+    PadObj *lvar = PadCtx_FindVarRefAll(ref_context, idn);
     if (!lvar) {
         pushb_error("\"%s\" is not defined", idn);
         return_trav(NULL);
@@ -2178,26 +2178,26 @@ trv_roll_identifier_lhs(ast_t *ast, trv_args_t *targs) {
     targs->lhs_obj = lvar;
     targs->rhs_obj = rhs;
     targs->depth = depth + 1;
-    object_t *result = targs->callback(ast, targs);
+    PadObj *result = targs->callback(ast, targs);
     return_trav(result);
 }
 
-static object_t*
+static PadObj*
 trv_roll_identifier_rhs(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs && targs->callback);
-    assert(rhs->type == OBJ_TYPE_IDENTIFIER);
+    assert(rhs->type == PAD_OBJ_TYPE__IDENT);
 
     depth_t depth = targs->depth;
 
-    PadCtx *ref_context = obj_get_idn_ref_context(rhs);
-    const char *idn = obj_getc_idn_name(rhs);
-    object_t *rvar = PadCtx_FindVarRefAll(ref_context, idn);
+    PadCtx *ref_context = PadObj_GetIdentRefCtx(rhs);
+    const char *idn = PadObj_GetcIdentName(rhs);
+    PadObj *rvar = PadCtx_FindVarRefAll(ref_context, idn);
     if (!rvar) {
         pushb_error("\"%s\" is not defined in roll identifier rhs",
-            obj_getc_idn_name(rhs));
+            PadObj_GetcIdentName(rhs));
         return_trav(NULL);
     }
 
@@ -2205,116 +2205,116 @@ trv_roll_identifier_rhs(ast_t *ast, trv_args_t *targs) {
     targs->lhs_obj = lhs;
     targs->rhs_obj = rvar;
     targs->depth = depth + 1;
-    object_t *result = targs->callback(ast, targs);
+    PadObj *result = targs->callback(ast, targs);
     return_trav(result);
 }
 
-static object_t *
+static PadObj *
 trv_compare_or_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(lhs->type == PAD_OBJ_TYPE__INT);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = NULL;
+        PadObj *obj = NULL;
         if (lhs->lvalue && rhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs->lvalue && !rhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs->lvalue && rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = NULL;
         if (lhs->lvalue && NULL) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs->lvalue && !NULL) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs->lvalue && NULL) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = NULL;
         if (lhs->lvalue && rhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs->lvalue && !rhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs->lvalue && rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = NULL;
         if (lhs->lvalue && rhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs->lvalue && !rhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs->lvalue && rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = NULL;
         if (lhs->lvalue && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs->lvalue && !uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs->lvalue && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = NULL;
-        if (lhs->lvalue && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(lhs);
-        } else if (lhs->lvalue && !objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(lhs);
-        } else if (!lhs->lvalue && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *obj = NULL;
+        if (lhs->lvalue && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(lhs);
+        } else if (lhs->lvalue && !PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(lhs);
+        } else if (!lhs->lvalue && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *obj = NULL;
         if (lhs->lvalue && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs->lvalue && !objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs->lvalue && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = pull_ref_all(rhs);
+    case PAD_OBJ_TYPE__IDENT: {
+        PadObj *rvar = pull_ref_all(rhs);
         if (!rvar) {
-            pushb_error("%s is not defined in compare or int", obj_getc_idn_name(rhs));
+            pushb_error("%s is not defined in compare or int", PadObj_GetcIdentName(rhs));
             return_trav(NULL);
         }
 
@@ -2322,11 +2322,11 @@ trv_compare_or_int(ast_t *ast, trv_args_t *targs) {
         targs->lhs_obj = lhs;
         targs->rhs_obj = rvar;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or(ast, targs);
+        PadObj *obj = trv_compare_or(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare or int. index object value is null");
             return_trav(NULL);
@@ -2334,7 +2334,7 @@ trv_compare_or_int(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_int(ast, targs);
+        PadObj *obj = trv_compare_or_int(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -2343,110 +2343,110 @@ trv_compare_or_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_or_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = NULL;
+        PadObj *obj = NULL;
         if (lhs->boolean && rhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs->boolean && !rhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs->boolean && rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = NULL;
         if (lhs->boolean && NULL) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs->boolean && !NULL) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs->boolean && NULL) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = NULL;
         if (lhs->boolean && rhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs->boolean && !rhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs->boolean && rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = NULL;
         if (lhs->boolean && rhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs->boolean && !rhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs->boolean && rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = NULL;
         if (lhs->boolean && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs->boolean && !uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs->boolean && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = NULL;
-        if (lhs->boolean && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(lhs);
-        } else if (lhs->boolean && !objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(lhs);
-        } else if (!lhs->boolean && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *obj = NULL;
+        if (lhs->boolean && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(lhs);
+        } else if (lhs->boolean && !PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(lhs);
+        } else if (!lhs->boolean && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *obj = NULL;
         if (lhs->boolean && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs->boolean && !objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs->boolean && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = PadCtx_FindVarRef(ast->ref_context, obj_getc_idn_name(rhs));
+    case PAD_OBJ_TYPE__IDENT: {
+        PadObj *rvar = PadCtx_FindVarRef(ast->ref_context, PadObj_GetcIdentName(rhs));
         if (!rvar) {
             pushb_error("%s is not defined compare or bool", str_getc(rhs->identifier.name));
             return_trav(NULL);
@@ -2456,11 +2456,11 @@ trv_compare_or_bool(ast_t *ast, trv_args_t *targs) {
         targs->lhs_obj = lhs;
         targs->rhs_obj = rvar;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or(ast, targs);
+        PadObj *obj = trv_compare_or(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare or bool. index object value is null");
             return_trav(NULL);
@@ -2468,7 +2468,7 @@ trv_compare_or_bool(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_bool(ast, targs);
+        PadObj *obj = trv_compare_or_bool(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -2477,120 +2477,120 @@ trv_compare_or_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_or_string(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_UNICODE);
+    assert(lhs->type == PAD_OBJ_TYPE__UNICODE);
 
     depth_t depth = targs->depth;
     int32_t slen = uni_len(lhs->unicode);
 
     switch (rhs->type) {
     default: {
-        object_t *obj = NULL;
+        PadObj *obj = NULL;
         if (slen && rhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (slen && !rhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!slen && rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = NULL;
         if (slen && NULL) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (slen && !NULL) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!slen && NULL) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = NULL;
         if (slen && rhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (slen && !rhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!slen && rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = NULL;
         if (slen && rhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (slen && !rhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!slen && rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = NULL;
         if (slen && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (slen && !uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!slen && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = NULL;
-        if (slen && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(lhs);
-        } else if (slen && !objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(lhs);
-        } else if (!slen && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *obj = NULL;
+        if (slen && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(lhs);
+        } else if (slen && !PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(lhs);
+        } else if (!slen && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *obj = NULL;
         if (slen && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (slen && !objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!slen && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->callback = trv_compare_or;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare or string. index object value is null");
             return_trav(NULL);
@@ -2598,7 +2598,7 @@ trv_compare_or_string(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_string(ast, targs);
+        PadObj *obj = trv_compare_or_string(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -2607,121 +2607,121 @@ trv_compare_or_string(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_or_array(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_ARRAY);
+    assert(lhs->type == PAD_OBJ_TYPE__ARRAY);
 
     depth_t depth = targs->depth;
-    int32_t arrlen = objarr_len(lhs->objarr);
+    int32_t arrlen = PadObjAry_Len(lhs->objarr);
 
     switch (rhs->type) {
     default: {
-        object_t *obj = NULL;
+        PadObj *obj = NULL;
         if (arrlen && rhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (arrlen && !rhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!arrlen && rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = NULL;
         if (arrlen && NULL) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (arrlen && !NULL) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!arrlen && NULL) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = NULL;
         if (arrlen && rhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (arrlen && !rhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!arrlen && rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = NULL;
         if (arrlen && rhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (arrlen && !rhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!arrlen && rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = NULL;
         if (arrlen && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (arrlen && !uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!arrlen && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = NULL;
-        if (arrlen && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(lhs);
-        } else if (arrlen && !objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(lhs);
-        } else if (!arrlen && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *obj = NULL;
+        if (arrlen && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(lhs);
+        } else if (arrlen && !PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(lhs);
+        } else if (!arrlen && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *obj = NULL;
         if (arrlen && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (arrlen && !objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!arrlen && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->callback = trv_compare_or;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare or array. index object value is null");
             return_trav(NULL);
@@ -2729,7 +2729,7 @@ trv_compare_or_array(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_array(ast, targs);
+        PadObj *obj = trv_compare_or_array(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -2738,121 +2738,121 @@ trv_compare_or_array(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_or_dict(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_DICT);
+    assert(lhs->type == PAD_OBJ_TYPE__DICT);
 
     depth_t depth = targs->depth;
     int32_t dictlen = objdict_len(lhs->objdict);
 
     switch (rhs->type) {
     default: {
-        object_t *obj = NULL;
+        PadObj *obj = NULL;
         if (dictlen && rhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (dictlen && !rhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!dictlen && rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = NULL;
         if (dictlen && NULL) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (dictlen && !NULL) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!dictlen && NULL) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = NULL;
         if (dictlen && rhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (dictlen && !rhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!dictlen && rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = NULL;
         if (dictlen && rhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (dictlen && !rhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!dictlen && rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = NULL;
         if (dictlen && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (dictlen && !uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!dictlen && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = NULL;
-        if (dictlen && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(lhs);
-        } else if (dictlen && !objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(lhs);
-        } else if (!dictlen && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *obj = NULL;
+        if (dictlen && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(lhs);
+        } else if (dictlen && !PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(lhs);
+        } else if (!dictlen && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *obj = NULL;
         if (dictlen && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (dictlen && !objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!dictlen && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->callback = trv_compare_or;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare or dict. index object value is null");
             return_trav(NULL);
@@ -2860,7 +2860,7 @@ trv_compare_or_dict(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_dict(ast, targs);
+        PadObj *obj = trv_compare_or_dict(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -2869,36 +2869,36 @@ trv_compare_or_dict(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_or_nil(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_NIL);
+    assert(lhs->type == PAD_OBJ_TYPE__NIL);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_deep_copy(rhs);
+        PadObj *obj = PadObj_DeepCopy(rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->callback = trv_compare_or;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
-        object_t *obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__FUNC: {
+        PadObj *obj = PadObj_DeepCopy(rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare or nil. index object value is null");
             return_trav(NULL);
@@ -2906,7 +2906,7 @@ trv_compare_or_nil(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_nil(ast, targs);
+        PadObj *obj = trv_compare_or_nil(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -2915,118 +2915,118 @@ trv_compare_or_nil(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_or_func(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FUNC);
+    assert(lhs->type == PAD_OBJ_TYPE__FUNC);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = NULL;
+        PadObj *obj = NULL;
         if (lhs && rhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs && !rhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs && rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = NULL;
         if (lhs && NULL) {
         } else if (lhs && !NULL) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs && NULL) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = NULL;
         if (lhs && rhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs && !rhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs && rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = NULL;
         if (lhs && rhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs && !rhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs && rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = NULL;
         if (lhs && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs && !uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = NULL;
-        if (lhs && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(lhs);
-        } else if (lhs && !objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(lhs);
-        } else if (!lhs && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *obj = NULL;
+        if (lhs && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(lhs);
+        } else if (lhs && !PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(lhs);
+        } else if (!lhs && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *obj = NULL;
         if (lhs && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs && !objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->callback = trv_compare_or;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare or func. index object value is null");
             return_trav(NULL);
@@ -3034,7 +3034,7 @@ trv_compare_or_func(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_func(ast, targs);
+        PadObj *obj = trv_compare_or_func(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -3043,118 +3043,118 @@ trv_compare_or_func(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_or_module(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_MODULE);
+    assert(lhs->type == PAD_OBJ_TYPE__MODULE);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = NULL;
+        PadObj *obj = NULL;
         if (lhs && rhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs && !rhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs && rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = NULL;
         if (lhs && NULL) {
         } else if (lhs && !NULL) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs && NULL) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = NULL;
         if (lhs && rhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs && !rhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs && rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = NULL;
         if (lhs && rhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs && !rhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs && rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = NULL;
         if (lhs && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs && !uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = NULL;
-        if (lhs && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(lhs);
-        } else if (lhs && !objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(lhs);
-        } else if (!lhs && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *obj = NULL;
+        if (lhs && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(lhs);
+        } else if (lhs && !PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(lhs);
+        } else if (!lhs && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *obj = NULL;
         if (lhs && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (lhs && !objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else if (!lhs && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->callback = trv_compare_or;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare or func. index object value is null");
             return_trav(NULL);
@@ -3162,7 +3162,7 @@ trv_compare_or_module(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_func(ast, targs);
+        PadObj *obj = trv_compare_or_func(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -3171,10 +3171,10 @@ trv_compare_or_module(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_or(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
     depth_t depth = targs->depth;
@@ -3184,63 +3184,63 @@ trv_compare_or(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand (%d)", lhs->type);
         return NULL;
         break;
-    case OBJ_TYPE_NIL: {
+    case PAD_OBJ_TYPE__NIL: {
         check("call trv_compare_or_nil");
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_nil(ast, targs);
+        PadObj *obj = trv_compare_or_nil(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("call trv_compare_or_int");
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_int(ast, targs);
+        PadObj *obj = trv_compare_or_int(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("call trv_compare_or_bool");
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_bool(ast, targs);
+        PadObj *obj = trv_compare_or_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         check("call trv_compare_or_string");
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_string(ast, targs);
+        PadObj *obj = trv_compare_or_string(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
+    case PAD_OBJ_TYPE__ARRAY: {
         check("call trv_compare_or_array");
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_array(ast, targs);
+        PadObj *obj = trv_compare_or_array(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
+    case PAD_OBJ_TYPE__DICT: {
         check("call trv_compare_or_dict");
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_dict(ast, targs);
+        PadObj *obj = trv_compare_or_dict(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_or;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_lhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
+    case PAD_OBJ_TYPE__FUNC: {
         check("call trv_compare_or_func");
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_func(ast, targs);
+        PadObj *obj = trv_compare_or_func(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_MODULE: {
+    case PAD_OBJ_TYPE__MODULE: {
         check("call trv_compare_or_module");
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or_module(ast, targs);
+        PadObj *obj = trv_compare_or_module(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *lval = _extract_ref_of_obj_all(lhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *lval = _extract_ref_of_obj_all(lhs);
         if (!lval) {
             pushb_error("can't compare or. index object value is null");
             return_trav(NULL);
@@ -3248,7 +3248,7 @@ trv_compare_or(ast_t *ast, trv_args_t *targs) {
 
         targs->lhs_obj = lval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_or(ast, targs);
+        PadObj *obj = trv_compare_or(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -3257,7 +3257,7 @@ trv_compare_or(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_or_test(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -3267,23 +3267,23 @@ trv_or_test(ast_t *ast, trv_args_t *targs) {
 
     depth_t depth = targs->depth;
 
-    PadNode *lnode = nodearr_get(or_test->nodearr, 0);
+    PadNode *lnode = PadNodeAry_Get(or_test->nodearr, 0);
 
     check("call _trv_traverse");
     targs->ref_node = lnode;
     targs->depth = depth + 1;
-    object_t *lhs = _trv_traverse(ast, targs);
+    PadObj *lhs = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         return_trav(NULL);
     }
     assert(lhs);
 
-    for (int i = 1; i < nodearr_len(or_test->nodearr); ++i) {
-        PadNode *rnode = nodearr_get(or_test->nodearr, i);
+    for (int i = 1; i < PadNodeAry_Len(or_test->nodearr); ++i) {
+        PadNode *rnode = PadNodeAry_Get(or_test->nodearr, i);
         check("call _trv_traverse");
         targs->ref_node = rnode;
         targs->depth = depth + 1;
-        object_t *rhs = _trv_traverse(ast, targs);
+        PadObj *rhs = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
@@ -3295,7 +3295,7 @@ trv_or_test(ast_t *ast, trv_args_t *targs) {
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->depth = depth + 1;
-        object_t *result = trv_compare_or(ast, targs);
+        PadObj *result = trv_compare_or(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
@@ -3307,119 +3307,119 @@ trv_or_test(ast_t *ast, trv_args_t *targs) {
     return_trav(lhs);
 }
 
-static object_t *
+static PadObj *
 trv_compare_and_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(lhs->type == PAD_OBJ_TYPE__INT);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = NULL;
+        PadObj *obj = NULL;
         if (lhs->lvalue && rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = NULL;
         if (lhs->lvalue && NULL) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!NULL) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = NULL;
         if (lhs->lvalue && rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = NULL;
         if (lhs->lvalue && rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = NULL;
         if (lhs->lvalue && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = NULL;
-        if (lhs->lvalue && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
-        } else if (!objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *obj = NULL;
+        if (lhs->lvalue && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
+        } else if (!PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *obj = NULL;
         if (lhs->lvalue && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->lvalue) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->callback = trv_compare_and;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare and int. index object value is null");
             return_trav(NULL);
@@ -3427,7 +3427,7 @@ trv_compare_and_int(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_and_int(ast, targs);
+        PadObj *obj = trv_compare_and_int(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -3436,119 +3436,119 @@ trv_compare_and_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_and_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = NULL;
+        PadObj *obj = NULL;
         if (lhs->boolean && rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = NULL;
         if (lhs->boolean && NULL) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!NULL) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = NULL;
         if (lhs->boolean && rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = NULL;
         if (lhs->boolean && rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = NULL;
         if (lhs->boolean && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = NULL;
-        if (lhs->boolean && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
-        } else if (!objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *obj = NULL;
+        if (lhs->boolean && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
+        } else if (!PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *obj = NULL;
         if (lhs->boolean && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->boolean) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->callback = trv_compare_and;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare and bool. index object value is null");
             return_trav(NULL);
@@ -3556,7 +3556,7 @@ trv_compare_and_bool(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_and_bool(ast, targs);
+        PadObj *obj = trv_compare_and_bool(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -3565,120 +3565,120 @@ trv_compare_and_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_and_string(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_UNICODE);
+    assert(lhs->type == PAD_OBJ_TYPE__UNICODE);
 
     depth_t depth = targs->depth;
     int32_t slen = uni_len(lhs->unicode);
 
     switch (rhs->type) {
     default: {
-        object_t *obj = NULL;
+        PadObj *obj = NULL;
         if (slen && rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!slen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = NULL;
         if (slen && NULL) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!NULL) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!slen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = NULL;
         if (slen && rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!slen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = NULL;
         if (slen && rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!slen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = NULL;
         if (slen && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!slen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = NULL;
-        if (slen && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
-        } else if (!objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *obj = NULL;
+        if (slen && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
+        } else if (!PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
         } else if (!slen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *obj = NULL;
         if (slen && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!slen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->callback = trv_compare_and;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare and string. index object value is null");
             return_trav(NULL);
@@ -3686,7 +3686,7 @@ trv_compare_and_string(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_and_string(ast, targs);
+        PadObj *obj = trv_compare_and_string(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -3695,111 +3695,111 @@ trv_compare_and_string(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_and_array(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_ARRAY);
+    assert(lhs->type == PAD_OBJ_TYPE__ARRAY);
 
     depth_t depth = targs->depth;
-    int32_t arrlen = objarr_len(lhs->objarr);
+    int32_t arrlen = PadObjAry_Len(lhs->objarr);
 
     switch (rhs->type) {
     default: {
-        object_t *obj = NULL;
+        PadObj *obj = NULL;
         if (arrlen && rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!arrlen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_DeepCopy(rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = NULL;
         if (arrlen && rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!arrlen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = NULL;
         if (arrlen && rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!arrlen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = NULL;
         if (arrlen && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!arrlen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = NULL;
-        if (arrlen && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
-        } else if (!objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *obj = NULL;
+        if (arrlen && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
+        } else if (!PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
         } else if (!arrlen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *obj = NULL;
         if (arrlen && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!arrlen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->callback = trv_compare_and;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare and array. index object value is null");
             return_trav(NULL);
@@ -3807,7 +3807,7 @@ trv_compare_and_array(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_and_array(ast, targs);
+        PadObj *obj = trv_compare_and_array(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -3816,111 +3816,111 @@ trv_compare_and_array(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_and_dict(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_DICT);
+    assert(lhs->type == PAD_OBJ_TYPE__DICT);
 
     depth_t depth = targs->depth;
     int32_t dictlen = objdict_len(lhs->objdict);
 
     switch (rhs->type) {
     default: {
-        object_t *obj = NULL;
+        PadObj *obj = NULL;
         if (dictlen && rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!dictlen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_DeepCopy(rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = NULL;
         if (dictlen && rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!dictlen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = NULL;
         if (dictlen && rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!dictlen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = NULL;
         if (dictlen && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!dictlen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = NULL;
-        if (dictlen && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
-        } else if (!objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *obj = NULL;
+        if (dictlen && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
+        } else if (!PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
         } else if (!dictlen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *obj = NULL;
         if (dictlen && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!dictlen) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->callback = trv_compare_and;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare and dict. index object value is null");
             return_trav(NULL);
@@ -3928,7 +3928,7 @@ trv_compare_and_dict(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_and_dict(ast, targs);
+        PadObj *obj = trv_compare_and_dict(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -3937,32 +3937,32 @@ trv_compare_and_dict(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_and_nil(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_NIL);
+    assert(lhs->type == PAD_OBJ_TYPE__NIL);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_deep_copy(lhs);
+        PadObj *obj = PadObj_DeepCopy(lhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->callback = trv_compare_and;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare and nil. index object value is null");
             return_trav(NULL);
@@ -3970,7 +3970,7 @@ trv_compare_and_nil(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_and_nil(ast, targs);
+        PadObj *obj = trv_compare_and_nil(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -3979,110 +3979,110 @@ trv_compare_and_nil(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_and_func(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FUNC);
+    assert(lhs->type == PAD_OBJ_TYPE__FUNC);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = NULL;
+        PadObj *obj = NULL;
         if (lhs && rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_DeepCopy(rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = NULL;
         if (lhs && rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = NULL;
         if (lhs && rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = NULL;
         if (lhs && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = NULL;
-        if (lhs && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
-        } else if (!objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *obj = NULL;
+        if (lhs && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
+        } else if (!PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *obj = NULL;
         if (lhs && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->callback = trv_compare_and;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare and func. index object value is null");
             return_trav(NULL);
@@ -4090,7 +4090,7 @@ trv_compare_and_func(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_and_func(ast, targs);
+        PadObj *obj = trv_compare_and_func(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -4099,108 +4099,108 @@ trv_compare_and_func(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_and_module(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_MODULE);
+    assert(lhs->type == PAD_OBJ_TYPE__MODULE);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = NULL;
+        PadObj *obj = NULL;
         if (lhs && rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_DeepCopy(rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = NULL;
         if (lhs && rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs->lvalue) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = NULL;
         if (lhs && rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!rhs->boolean) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = NULL;
         if (lhs && uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!uni_len(rhs->unicode)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = NULL;
-        if (lhs && objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
-        } else if (!objarr_len(rhs->objarr)) {
-            obj = obj_deep_copy(rhs);
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *obj = NULL;
+        if (lhs && PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
+        } else if (!PadObjAry_Len(rhs->objarr)) {
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *obj = NULL;
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *obj = NULL;
         if (lhs && objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!objdict_len(rhs->objdict)) {
-            obj = obj_deep_copy(rhs);
+            obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
-            obj = obj_deep_copy(lhs);
+            obj = PadObj_DeepCopy(lhs);
         } else {
             assert(0 && "impossible. obj is not should be null");
         }
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_and;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't compare and func. index object value is null");
             return_trav(NULL);
@@ -4208,7 +4208,7 @@ trv_compare_and_module(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_and_func(ast, targs);
+        PadObj *obj = trv_compare_and_func(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -4217,10 +4217,10 @@ trv_compare_and_module(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_and(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
     depth_t depth = targs->depth;
@@ -4230,55 +4230,55 @@ trv_compare_and(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand (%d)", lhs->type);
         return NULL;
         break;
-    case OBJ_TYPE_NIL: {
+    case PAD_OBJ_TYPE__NIL: {
         check("call trv_compare_and_nil");
-        object_t *obj = trv_compare_and_nil(ast, targs);
+        PadObj *obj = trv_compare_and_nil(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("call trv_compare_and_int");
-        object_t *obj = trv_compare_and_int(ast, targs);
+        PadObj *obj = trv_compare_and_int(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("call trv_compare_and_bool");
-        object_t *obj = trv_compare_and_bool(ast, targs);
+        PadObj *obj = trv_compare_and_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         check("call trv_compare_and_string");
-        object_t *obj = trv_compare_and_string(ast, targs);
+        PadObj *obj = trv_compare_and_string(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
+    case PAD_OBJ_TYPE__ARRAY: {
         check("call trv_compare_and_array");
-        object_t *obj = trv_compare_and_array(ast, targs);
+        PadObj *obj = trv_compare_and_array(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
+    case PAD_OBJ_TYPE__DICT: {
         check("call trv_compare_and_dict");
-        object_t *obj = trv_compare_and_dict(ast, targs);
+        PadObj *obj = trv_compare_and_dict(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_lhs with trv_compare_and");
         targs->callback = trv_compare_and;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_lhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
+    case PAD_OBJ_TYPE__FUNC: {
         check("call trv_compare_and_func");
-        object_t *obj = trv_compare_and_func(ast, targs);
+        PadObj *obj = trv_compare_and_func(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_MODULE: {
+    case PAD_OBJ_TYPE__MODULE: {
         check("call trv_compare_and_module");
-        object_t *obj = trv_compare_and_module(ast, targs);
+        PadObj *obj = trv_compare_and_module(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *lval = _extract_ref_of_obj_all(lhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *lval = _extract_ref_of_obj_all(lhs);
         if (!lval) {
             pushb_error("can't compare and. index object value is null");
             return_trav(NULL);
@@ -4286,7 +4286,7 @@ trv_compare_and(ast_t *ast, trv_args_t *targs) {
 
         targs->lhs_obj = lval;
         targs->depth = depth + 1;
-        object_t *result = trv_compare_and(ast, targs);
+        PadObj *result = trv_compare_and(ast, targs);
         return_trav(result);
     } break;
     }
@@ -4295,7 +4295,7 @@ trv_compare_and(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_and_test(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -4304,22 +4304,22 @@ trv_and_test(ast_t *ast, trv_args_t *targs) {
     PadAndTestNode *and_test = node->real;
     depth_t depth = targs->depth;
 
-    PadNode *lnode = nodearr_get(and_test->nodearr, 0);
+    PadNode *lnode = PadNodeAry_Get(and_test->nodearr, 0);
     check("call _trv_traverse with not_test");
     targs->ref_node = lnode;
     targs->depth = depth + 1;
-    object_t *lhs = _trv_traverse(ast, targs);
+    PadObj *lhs = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         return_trav(NULL);
     }
     assert(lhs);
 
-    for (int i = 1; i < nodearr_len(and_test->nodearr); ++i) {
-        PadNode *rnode = nodearr_get(and_test->nodearr, i);
+    for (int i = 1; i < PadNodeAry_Len(and_test->nodearr); ++i) {
+        PadNode *rnode = PadNodeAry_Get(and_test->nodearr, i);
         check("call _trv_traverse with not_test");
         targs->ref_node = rnode;
         targs->depth = depth + 1;
-        object_t *rhs = _trv_traverse(ast, targs);
+        PadObj *rhs = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
@@ -4331,7 +4331,7 @@ trv_and_test(ast_t *ast, trv_args_t *targs) {
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->depth = depth + 1;
-        object_t *result = trv_compare_and(ast, targs);
+        PadObj *result = trv_compare_and(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
@@ -4343,33 +4343,33 @@ trv_and_test(ast_t *ast, trv_args_t *targs) {
     return_trav(lhs);
 }
 
-static object_t *
+static PadObj *
 trv_compare_not(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *operand = targs->ref_obj;
+    PadObj *operand = targs->ref_obj;
     assert(operand);
 
     depth_t depth = targs->depth;
 
     switch (operand->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, !operand);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, !operand);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, true);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, !operand->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, !operand->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, !operand->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, !operand->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        object_t *var = PadCtx_FindVarRef(ast->ref_context, str_getc(operand->identifier.name));
+    case PAD_OBJ_TYPE__IDENT: {
+        PadObj *var = PadCtx_FindVarRef(ast->ref_context, str_getc(operand->identifier.name));
         if (!var) {
             pushb_error("\"%s\" is not defined compare not", str_getc(operand->identifier.name));
             return_trav(NULL);
@@ -4378,23 +4378,23 @@ trv_compare_not(ast_t *ast, trv_args_t *targs) {
         check("call trv_compare_not");
         targs->ref_obj = var;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_not(ast, targs);
+        PadObj *obj = trv_compare_not(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = obj_new_bool(ast->ref_gc, !uni_len(operand->unicode));
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, !uni_len(operand->unicode));
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_t *obj = obj_new_bool(ast->ref_gc, !objarr_len(operand->objarr));
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, !PadObjAry_Len(operand->objarr));
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, !objdict_len(operand->objdict));
+    case PAD_OBJ_TYPE__DICT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, !objdict_len(operand->objdict));
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *val = _extract_ref_of_obj_all(operand);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *val = _extract_ref_of_obj_all(operand);
         if (!val) {
             pushb_error("can't compare not. index object value is null");
             return_trav(NULL);
@@ -4402,7 +4402,7 @@ trv_compare_not(ast_t *ast, trv_args_t *targs) {
 
         targs->ref_obj = val;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_not(ast, targs);
+        PadObj *obj = trv_compare_not(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -4411,7 +4411,7 @@ trv_compare_not(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_not_test(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -4423,7 +4423,7 @@ trv_not_test(ast_t *ast, trv_args_t *targs) {
     if (not_test->not_test) {
         targs->ref_node = not_test->not_test;
         targs->depth = depth + 1;
-        object_t *operand = _trv_traverse(ast, targs);
+        PadObj *operand = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
@@ -4435,59 +4435,59 @@ trv_not_test(ast_t *ast, trv_args_t *targs) {
         check("call trv_compare_not");
         targs->ref_obj = operand;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_not(ast, targs);
+        PadObj *obj = trv_compare_not(ast, targs);
         return_trav(obj);
     } else if (not_test->comparison) {
         check("call _trv_traverse with comparision");
         targs->ref_node = not_test->comparison;
         targs->depth = depth + 1;
-        object_t *result = _trv_traverse(ast, targs);
+        PadObj *result = _trv_traverse(ast, targs);
         return_trav(result);
     }
 
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(lhs->type == PAD_OBJ_TYPE__INT);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs == rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, false);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue == rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue == rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue == rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue == rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue == rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue == rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_eq;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison eq int. index object value is null");
             return_trav(NULL);
@@ -4495,7 +4495,7 @@ trv_compare_comparison_eq_int(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_comparison_eq_int(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_int(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -4504,46 +4504,46 @@ trv_compare_comparison_eq_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FLOAT);
+    assert(lhs->type == PAD_OBJ_TYPE__FLOAT);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs == rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, false);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value == rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value == rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value == rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value == rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value == rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value == rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_eq;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison eq int. index object value is null");
             return_trav(NULL);
@@ -4551,7 +4551,7 @@ trv_compare_comparison_eq_float(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_comparison_eq_int(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_int(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -4560,45 +4560,45 @@ trv_compare_comparison_eq_float(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs == rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, false);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean == rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean == rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean == rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean == rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean == rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean == rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         targs->callback = trv_compare_comparison_eq;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison eq bool. index object value is null");
             return_trav(NULL);
@@ -4606,7 +4606,7 @@ trv_compare_comparison_eq_bool(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_comparison_not_eq_bool(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_bool(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -4615,41 +4615,41 @@ trv_compare_comparison_eq_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq_string(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_UNICODE);
+    assert(lhs->type == PAD_OBJ_TYPE__UNICODE);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs == rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, false);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->lhs_obj = lhs;
         targs->rhs_obj = rhs;
         targs->callback = trv_compare_comparison_eq;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         bool b = u_strcmp(uni_getc(lhs->unicode), uni_getc(rhs->unicode)) == 0;
-        object_t *obj = obj_new_bool(ast->ref_gc, b);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, b);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison eq unicode. index object value is null");
             return_trav(NULL);
@@ -4657,7 +4657,7 @@ trv_compare_comparison_eq_string(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_comparison_eq_string(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_string(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -4666,34 +4666,34 @@ trv_compare_comparison_eq_string(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq_array(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_ARRAY);
+    assert(lhs->type == PAD_OBJ_TYPE__ARRAY);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs == rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, false);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_eq;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison eq array. index object value is null");
             return_trav(NULL);
@@ -4701,7 +4701,7 @@ trv_compare_comparison_eq_array(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_comparison_eq_array(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_array(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -4710,33 +4710,33 @@ trv_compare_comparison_eq_array(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq_dict(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs);
-    assert(lhs->type == OBJ_TYPE_DICT);
+    assert(lhs->type == PAD_OBJ_TYPE__DICT);
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs == rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, false);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_eq;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison eq dict. index object value is null");
             return_trav(NULL);
@@ -4744,7 +4744,7 @@ trv_compare_comparison_eq_dict(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_comparison_eq_dict(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_dict(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -4753,27 +4753,27 @@ trv_compare_comparison_eq_dict(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq_nil(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_NIL);
+    assert(lhs->type == PAD_OBJ_TYPE__NIL);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, false);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, true);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison eq nil. index object value is null");
             return_trav(NULL);
@@ -4781,7 +4781,7 @@ trv_compare_comparison_eq_nil(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_comparison_not_eq_nil(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_nil(ast, targs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to compare not equal to nil");
             return_trav(NULL);
@@ -4794,34 +4794,34 @@ trv_compare_comparison_eq_nil(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq_func(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FUNC);
+    assert(lhs->type == PAD_OBJ_TYPE__FUNC);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs == rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, false);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_eq;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison eq func. index object value is null");
             return_trav(NULL);
@@ -4829,7 +4829,7 @@ trv_compare_comparison_eq_func(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_comparison_not_eq_func(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_func(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -4838,33 +4838,33 @@ trv_compare_comparison_eq_func(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq_object(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_OBJECT);
+    assert(lhs->type == PAD_OBJ_TYPE__OBJECT);
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs == rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, false);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_eq;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison eq func. index object value is null");
             return_trav(NULL);
@@ -4872,7 +4872,7 @@ trv_compare_comparison_eq_object(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_comparison_eq_object(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_object(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -4881,33 +4881,33 @@ trv_compare_comparison_eq_object(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq_def_struct(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_DEF_STRUCT);
+    assert(lhs->type == PAD_OBJ_TYPE__DEF_STRUCT);
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs == rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, false);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_eq;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison eq struct. index object value is null");
             return_trav(NULL);
@@ -4915,7 +4915,7 @@ trv_compare_comparison_eq_def_struct(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_comparison_eq_def_struct(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_def_struct(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -4924,34 +4924,34 @@ trv_compare_comparison_eq_def_struct(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq_module(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_MODULE);
+    assert(lhs->type == PAD_OBJ_TYPE__MODULE);
 
     depth_t depth = targs->depth;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs == rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs == rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, false);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_eq;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison eq func. index object value is null");
             return_trav(NULL);
@@ -4959,7 +4959,7 @@ trv_compare_comparison_eq_module(ast_t *ast, trv_args_t *targs) {
 
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
-        object_t *obj = trv_compare_comparison_eq_module(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_module(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -4968,14 +4968,14 @@ trv_compare_comparison_eq_module(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq_chain(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
-    assert(lhs->type == OBJ_TYPE_CHAIN);
+    assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
 
-    object_t *lval = _extract_ref_of_obj_all(lhs);
+    PadObj *lval = _extract_ref_of_obj_all(lhs);
     if (!lval) {
         pushb_error("chain object value is null");
         return_trav(NULL);
@@ -4983,22 +4983,22 @@ trv_compare_comparison_eq_chain(ast_t *ast, trv_args_t *targs) {
 
     depth_t depth = targs->depth;
 
-    obj_inc_ref(lval);
+    PadObj_IncRef(lval);
     targs->lhs_obj = lval;
     targs->depth = depth + 1;
-    object_t *ret = trv_compare_comparison_eq(ast, targs);
-    obj_dec_ref(lval);
-    obj_del(lval);
+    PadObj *ret = trv_compare_comparison_eq(ast, targs);
+    PadObj_DecRef(lval);
+    PadObj_Del(lval);
     return ret;
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq_type(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_TYPE);
+    assert(lhs->type == PAD_OBJ_TYPE__TYPE);
 
     depth_t depth = targs->depth;
 
@@ -5007,16 +5007,16 @@ trv_compare_comparison_eq_type(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't comparision");
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_eq;
         targs->depth = depth + 1;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_TYPE: {
+    case PAD_OBJ_TYPE__TYPE: {
         bool b = lhs->type_obj.type == rhs->type_obj.type;
-        return obj_new_bool(ast->ref_gc, b);
+        return PadObj_NewBool(ast->ref_gc, b);
     } break;
     }
 
@@ -5024,10 +5024,10 @@ trv_compare_comparison_eq_type(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_eq(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
     targs->depth += 1;
@@ -5037,75 +5037,75 @@ trv_compare_comparison_eq(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand (%d)", lhs->type);
         return NULL;
     } break;
-    case OBJ_TYPE_NIL: {
+    case PAD_OBJ_TYPE__NIL: {
         check("call trv_compare_comparison_eq_nil");
-        object_t *obj = trv_compare_comparison_eq_nil(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_nil(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("call trv_compare_comparison_eq_int");
-        object_t *obj = trv_compare_comparison_eq_int(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_int(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         check("call trv_compare_comparison_eq_float");
-        object_t *obj = trv_compare_comparison_eq_float(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_float(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("call trv_compare_comparison_eq_bool");
-        object_t *obj = trv_compare_comparison_eq_bool(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         check("call trv_compare_comparison_eq_string");
-        object_t *obj = trv_compare_comparison_eq_string(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_string(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
+    case PAD_OBJ_TYPE__ARRAY: {
         check("call trv_compare_comparison_eq_array");
-        object_t *obj = trv_compare_comparison_eq_array(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_array(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
+    case PAD_OBJ_TYPE__DICT: {
         check("call trv_compare_comparison_eq_dict");
-        object_t *obj = trv_compare_comparison_eq_dict(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_dict(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_lhs with trv_compare_comparison_eq");
         targs->callback = trv_compare_comparison_eq;
-        object_t *obj = trv_roll_identifier_lhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
+    case PAD_OBJ_TYPE__FUNC: {
         check("call trv_compare_comparison_eq_func");
-        object_t *obj = trv_compare_comparison_eq_func(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_func(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_OBJECT: {
+    case PAD_OBJ_TYPE__OBJECT: {
         check("call trv_compare_comparison_eq_object");
-        object_t *obj = trv_compare_comparison_eq_object(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_object(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DEF_STRUCT: {
+    case PAD_OBJ_TYPE__DEF_STRUCT: {
         check("call trv_compare_comparison_not_eq_def_struct");
-        object_t *obj = trv_compare_comparison_eq_def_struct(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_def_struct(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_MODULE: {
+    case PAD_OBJ_TYPE__MODULE: {
         check("call trv_compare_comparison_eq_module");
-        object_t *obj = trv_compare_comparison_eq_module(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_module(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
+    case PAD_OBJ_TYPE__CHAIN: {
         check("call trv_compare_comparison_eq_chain");
-        object_t *obj = trv_compare_comparison_eq_chain(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_chain(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_TYPE: {
+    case PAD_OBJ_TYPE__TYPE: {
         check("call trv_compare_comparison_eq_type");
-        object_t *obj = trv_compare_comparison_eq_type(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq_type(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5114,52 +5114,52 @@ trv_compare_comparison_eq(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(lhs->type == PAD_OBJ_TYPE__INT);
 
     targs->depth += 1;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs != rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, true);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue != rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue != rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue != rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue != rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue != rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue != rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs with trv_compare_comparison_not_eq");
         targs->callback = trv_compare_comparison_not_eq;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_not_eq_int(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_int(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5168,52 +5168,52 @@ trv_compare_comparison_not_eq_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FLOAT);
+    assert(lhs->type == PAD_OBJ_TYPE__FLOAT);
 
     targs->depth += 1;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs != rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, true);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value != rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value != rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value != rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value != rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value != rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value != rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs with trv_compare_comparison_not_eq");
         targs->callback = trv_compare_comparison_not_eq;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_not_eq_float(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_float(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5222,48 +5222,48 @@ trv_compare_comparison_not_eq_float(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
     targs->depth += 1;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs != rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean != rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean != rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean != rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean != rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean != rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean != rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_not_eq;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq bool. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_not_eq_bool(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_bool(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5272,44 +5272,44 @@ trv_compare_comparison_not_eq_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_unicode(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_UNICODE);
+    assert(lhs->type == PAD_OBJ_TYPE__UNICODE);
 
     targs->depth += 1;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs != rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, true);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         targs->callback = trv_compare_comparison_not_eq;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         bool b = u_strcmp(uni_getc(lhs->unicode), uni_getc(rhs->unicode)) != 0;
-        object_t *obj = obj_new_bool(ast->ref_gc, b);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, b);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq string. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_not_eq_unicode(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_unicode(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5318,39 +5318,39 @@ trv_compare_comparison_not_eq_unicode(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_array(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_ARRAY);
+    assert(lhs->type == PAD_OBJ_TYPE__ARRAY);
     targs->depth += 1;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs != rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, true);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_not_eq;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq array. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_not_eq_array(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_array(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5359,39 +5359,39 @@ trv_compare_comparison_not_eq_array(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_dict(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs);
-    assert(lhs->type == OBJ_TYPE_DICT);
+    assert(lhs->type == PAD_OBJ_TYPE__DICT);
     targs->depth += 1;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs != rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, true);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_not_eq;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq dict. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_not_eq_dict(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_dict(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5400,40 +5400,40 @@ trv_compare_comparison_not_eq_dict(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_nil(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_NIL);
+    assert(lhs->type == PAD_OBJ_TYPE__NIL);
 
     targs->depth += 1;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, true);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, false);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, false);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_lhs with trv_compare_comparison_not_eq");
         targs->callback = trv_compare_comparison_not_eq;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq nil. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_not_eq_nil(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_nil(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5442,40 +5442,40 @@ trv_compare_comparison_not_eq_nil(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_func(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FUNC);
+    assert(lhs->type == PAD_OBJ_TYPE__FUNC);
 
     targs->depth += 1;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs != rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, true);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_not_eq;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq func. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_not_eq_func(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_func(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5484,40 +5484,40 @@ trv_compare_comparison_not_eq_func(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_module(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_MODULE);
+    assert(lhs->type == PAD_OBJ_TYPE__MODULE);
 
     targs->depth += 1;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs != rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, true);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_not_eq;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq func. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_not_eq_module(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_module(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5526,40 +5526,40 @@ trv_compare_comparison_not_eq_module(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_object(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_OBJECT);
+    assert(lhs->type == PAD_OBJ_TYPE__OBJECT);
 
     targs->depth += 1;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs != rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, true);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_not_eq;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq func. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_not_eq_object(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_object(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5568,40 +5568,40 @@ trv_compare_comparison_not_eq_object(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_def_struct(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_DEF_STRUCT);
+    assert(lhs->type == PAD_OBJ_TYPE__DEF_STRUCT);
 
     targs->depth += 1;
 
     switch (rhs->type) {
     default: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs != rhs);
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs != rhs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_NIL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, true);
+    case PAD_OBJ_TYPE__NIL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_not_eq;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq struct. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_not_eq_def_struct(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_def_struct(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5610,13 +5610,13 @@ trv_compare_comparison_not_eq_def_struct(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq_type(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_TYPE);
+    assert(lhs->type == PAD_OBJ_TYPE__TYPE);
 
     targs->depth += 1;
 
@@ -5625,15 +5625,15 @@ trv_compare_comparison_not_eq_type(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't comparison");
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_compare_comparison_not_eq;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_TYPE: {
+    case PAD_OBJ_TYPE__TYPE: {
         bool b = lhs->type_obj.type != rhs->type_obj.type;
-        return obj_new_bool(ast->ref_gc, b);
+        return PadObj_NewBool(ast->ref_gc, b);
     } break;
     }
 
@@ -5641,10 +5641,10 @@ trv_compare_comparison_not_eq_type(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_not_eq(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
     targs->depth += 1;
@@ -5654,81 +5654,81 @@ trv_compare_comparison_not_eq(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand (%d)", lhs->type);
         return NULL;
         break;
-    case OBJ_TYPE_NIL: {
+    case PAD_OBJ_TYPE__NIL: {
         check("call trv_compare_comparison_not_eq_nil");
-        object_t *obj = trv_compare_comparison_not_eq_nil(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_nil(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("call trv_compare_comparison_not_eq_int");
-        object_t *obj = trv_compare_comparison_not_eq_int(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_int(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         check("call trv_compare_comparison_not_eq_float");
-        object_t *obj = trv_compare_comparison_not_eq_float(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_float(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("call trv_compare_comparison_not_eq_bool");
-        object_t *obj = trv_compare_comparison_not_eq_bool(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         check("call trv_compare_comparison_not_eq_unicode");
-        object_t *obj = trv_compare_comparison_not_eq_unicode(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_unicode(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
+    case PAD_OBJ_TYPE__ARRAY: {
         check("call trv_compare_comparison_not_eq_array");
-        object_t *obj = trv_compare_comparison_not_eq_array(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_array(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DICT: {
+    case PAD_OBJ_TYPE__DICT: {
         check("call trv_compare_comparison_not_eq_dict");
-        object_t *obj = trv_compare_comparison_not_eq_dict(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_dict(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_lhs with trv_compare_comparison_not_eq");
         targs->callback = trv_compare_comparison_not_eq;
-        object_t *obj = trv_roll_identifier_lhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FUNC: {
+    case PAD_OBJ_TYPE__FUNC: {
         check("call trv_compare_comparison_not_eq_func");
-        object_t *obj = trv_compare_comparison_not_eq_func(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_func(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_MODULE: {
+    case PAD_OBJ_TYPE__MODULE: {
         check("call trv_compare_comparison_not_eq_module");
-        object_t *obj = trv_compare_comparison_not_eq_module(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_module(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_OBJECT: {
+    case PAD_OBJ_TYPE__OBJECT: {
         check("call trv_compare_comparison_not_eq_object");
-        object_t *obj = trv_compare_comparison_not_eq_object(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_object(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_DEF_STRUCT: {
+    case PAD_OBJ_TYPE__DEF_STRUCT: {
         check("call trv_compare_comparison_not_eq_object");
-        object_t *obj = trv_compare_comparison_not_eq_def_struct(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_def_struct(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *lval = _extract_ref_of_obj_all(lhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *lval = _extract_ref_of_obj_all(lhs);
         if (!lval) {
             pushb_error("can't comparison not eq. index object value is null");
             return_trav(NULL);
         }
 
         targs->lhs_obj = lval;
-        object_t *obj = trv_compare_comparison_not_eq(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_TYPE: {
+    case PAD_OBJ_TYPE__TYPE: {
         check("call trv_compare_comparison_not_eq_type");
-        object_t *obj = trv_compare_comparison_not_eq_type(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq_type(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5737,13 +5737,13 @@ trv_compare_comparison_not_eq(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_lte_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(lhs->type == PAD_OBJ_TYPE__INT);
 
     targs->depth += 1;
 
@@ -5752,33 +5752,33 @@ trv_compare_comparison_lte_int(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare lte with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue <= rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue <= rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue <= rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue <= rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue <= rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue <= rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs with trv_compare_comparison_lte");
         targs->callback = trv_compare_comparison_lte;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison lte int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_lte_int(ast, targs);
+        PadObj *obj = trv_compare_comparison_lte_int(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5787,13 +5787,13 @@ trv_compare_comparison_lte_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_lte_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FLOAT);
+    assert(lhs->type == PAD_OBJ_TYPE__FLOAT);
 
     targs->depth += 1;
 
@@ -5802,33 +5802,33 @@ trv_compare_comparison_lte_float(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare lte with float");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value <= rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value <= rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value <= rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value <= rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value <= rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value <= rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs with trv_compare_comparison_lte");
         targs->callback = trv_compare_comparison_lte;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison lte int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_lte_float(ast, targs);
+        PadObj *obj = trv_compare_comparison_lte_float(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5837,13 +5837,13 @@ trv_compare_comparison_lte_float(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_lte_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
     targs->depth += 1;
 
@@ -5852,33 +5852,33 @@ trv_compare_comparison_lte_bool(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare lte with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean <= rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean <= rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean <= rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean <= rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean <= rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean <= rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs with trv_compare_comparison_lte");
         targs->callback = trv_compare_comparison_lte;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison lte bool. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_lte_bool(ast, targs);
+        PadObj *obj = trv_compare_comparison_lte_bool(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5887,11 +5887,11 @@ trv_compare_comparison_lte_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_lte(ast_t *ast, trv_args_t *targs) {
     tready();
 
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
     targs->depth += 1;
@@ -5901,36 +5901,36 @@ trv_compare_comparison_lte(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare with lte");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("call trv_compare_comparison_lte_int");
-        object_t *obj = trv_compare_comparison_lte_int(ast, targs);
+        PadObj *obj = trv_compare_comparison_lte_int(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         check("call trv_compare_comparison_lte_float");
-        object_t *obj = trv_compare_comparison_lte_float(ast, targs);
+        PadObj *obj = trv_compare_comparison_lte_float(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("call trv_compare_comparison_lte_bool");
-        object_t *obj = trv_compare_comparison_lte_bool(ast, targs);
+        PadObj *obj = trv_compare_comparison_lte_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_lhs with trv_compare_comparison_lte");
         targs->callback = trv_compare_comparison_lte;
-        object_t *obj = trv_roll_identifier_lhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *lval = _extract_ref_of_obj_all(lhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *lval = _extract_ref_of_obj_all(lhs);
         if (!lval) {
             pushb_error("can't comparison lte. index object value is null");
             return_trav(NULL);
         }
 
         targs->lhs_obj = lval;
-        object_t *obj = trv_compare_comparison_lte(ast, targs);
+        PadObj *obj = trv_compare_comparison_lte(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5939,13 +5939,13 @@ trv_compare_comparison_lte(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_gte_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(lhs->type == PAD_OBJ_TYPE__INT);
 
     targs->depth += 1;
 
@@ -5954,33 +5954,33 @@ trv_compare_comparison_gte_int(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare gte with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue >= rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue >= rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue >= rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue >= rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue >= rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue >= rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs with trv_compare_comparison_gte");
         targs->callback = trv_compare_comparison_gte;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison gte int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_gte_int(ast, targs);
+        PadObj *obj = trv_compare_comparison_gte_int(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -5989,13 +5989,13 @@ trv_compare_comparison_gte_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_gte_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FLOAT);
+    assert(lhs->type == PAD_OBJ_TYPE__FLOAT);
 
     targs->depth += 1;
 
@@ -6004,33 +6004,33 @@ trv_compare_comparison_gte_float(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare gte with float");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value >= rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value >= rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value >= rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value >= rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value >= rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value >= rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs with trv_compare_comparison_gte");
         targs->callback = trv_compare_comparison_gte;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison gte int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_gte_float(ast, targs);
+        PadObj *obj = trv_compare_comparison_gte_float(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6039,13 +6039,13 @@ trv_compare_comparison_gte_float(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_gte_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
     targs->depth += 1;
 
@@ -6054,33 +6054,33 @@ trv_compare_comparison_gte_bool(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare gte with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean >= rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean >= rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean >= rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean >= rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean >= rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean >= rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs with trv_compare_comparison_gte");
         targs->callback = trv_compare_comparison_gte;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison gte bool. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_gte_bool(ast, targs);
+        PadObj *obj = trv_compare_comparison_gte_bool(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6089,10 +6089,10 @@ trv_compare_comparison_gte_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_gte(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
     targs->depth += 1;
@@ -6102,36 +6102,36 @@ trv_compare_comparison_gte(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare with gte");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("call trv_compare_comparison_gte_int");
-        object_t *obj = trv_compare_comparison_gte_int(ast, targs);
+        PadObj *obj = trv_compare_comparison_gte_int(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         check("call trv_compare_comparison_gte_float");
-        object_t *obj = trv_compare_comparison_gte_float(ast, targs);
+        PadObj *obj = trv_compare_comparison_gte_float(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("call trv_compare_comparison_gte_bool");
-        object_t *obj = trv_compare_comparison_gte_bool(ast, targs);
+        PadObj *obj = trv_compare_comparison_gte_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_lhs with trv_compare_comparison_gte");
         targs->callback = trv_compare_comparison_gte;
-        object_t *obj = trv_roll_identifier_lhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *lval = _extract_ref_of_obj_all(lhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *lval = _extract_ref_of_obj_all(lhs);
         if (!lval) {
             pushb_error("can't comparison gte. index object value is null");
             return_trav(NULL);
         }
 
         targs->lhs_obj = lval;
-        object_t *obj = trv_compare_comparison_gte(ast, targs);
+        PadObj *obj = trv_compare_comparison_gte(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6140,13 +6140,13 @@ trv_compare_comparison_gte(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_lt_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(lhs->type == PAD_OBJ_TYPE__INT);
 
     targs->depth += 1;
 
@@ -6155,33 +6155,33 @@ trv_compare_comparison_lt_int(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare lt with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue < rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue < rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue < rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue < rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue < rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue < rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs with trv_compare_comparison_lt");
         targs->callback = trv_compare_comparison_lt;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison lt int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_lt_int(ast, targs);
+        PadObj *obj = trv_compare_comparison_lt_int(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6190,13 +6190,13 @@ trv_compare_comparison_lt_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_lt_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FLOAT);
+    assert(lhs->type == PAD_OBJ_TYPE__FLOAT);
 
     targs->depth += 1;
 
@@ -6205,33 +6205,33 @@ trv_compare_comparison_lt_float(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare lt with float");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value < rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value < rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value < rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value < rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value < rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value < rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs with trv_compare_comparison_lt");
         targs->callback = trv_compare_comparison_lt;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison lt int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_lt_float(ast, targs);
+        PadObj *obj = trv_compare_comparison_lt_float(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6240,13 +6240,13 @@ trv_compare_comparison_lt_float(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_lt_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
     targs->depth += 1;
 
@@ -6255,33 +6255,33 @@ trv_compare_comparison_lt_bool(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare lt with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean < rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean < rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean < rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean < rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean < rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean < rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs with trv_compare_comparison_lt");
         targs->callback = trv_compare_comparison_lt;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison lt bool. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_lt_bool(ast, targs);
+        PadObj *obj = trv_compare_comparison_lt_bool(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6290,10 +6290,10 @@ trv_compare_comparison_lt_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_lt(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
     targs->depth += 1;
@@ -6303,36 +6303,36 @@ trv_compare_comparison_lt(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare with lt (%d)", lhs->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("call trv_compare_comparison_lt_int");
-        object_t *obj = trv_compare_comparison_lt_int(ast, targs);
+        PadObj *obj = trv_compare_comparison_lt_int(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         check("call trv_compare_comparison_lt_float");
-        object_t *obj = trv_compare_comparison_lt_float(ast, targs);
+        PadObj *obj = trv_compare_comparison_lt_float(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("call trv_compare_comparison_lt_bool");
-        object_t *obj = trv_compare_comparison_lt_bool(ast, targs);
+        PadObj *obj = trv_compare_comparison_lt_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_lhs with trv_compare_comparison_lt");
         targs->callback = trv_compare_comparison_lt;
-        object_t *obj = trv_roll_identifier_lhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *lval = _extract_ref_of_obj_all(lhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *lval = _extract_ref_of_obj_all(lhs);
         if (!lval) {
             pushb_error("can't comparison lt. index object value is null");
             return_trav(NULL);
         }
 
         targs->lhs_obj = lval;
-        object_t *obj = trv_compare_comparison_lt(ast, targs);
+        PadObj *obj = trv_compare_comparison_lt(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6341,13 +6341,13 @@ trv_compare_comparison_lt(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_gt_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(lhs->type == PAD_OBJ_TYPE__INT);
 
     targs->depth += 1;
 
@@ -6356,33 +6356,33 @@ trv_compare_comparison_gt_int(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare gt with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue > rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue > rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue > rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue > rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->lvalue > rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->lvalue > rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs with trv_compare_comparison_gt");
         targs->callback = trv_compare_comparison_gt;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison gt int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_gt_int(ast, targs);
+        PadObj *obj = trv_compare_comparison_gt_int(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6391,13 +6391,13 @@ trv_compare_comparison_gt_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_gt_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FLOAT);
+    assert(lhs->type == PAD_OBJ_TYPE__FLOAT);
 
     targs->depth += 1;
 
@@ -6406,33 +6406,33 @@ trv_compare_comparison_gt_float(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare gt with float");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value > rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value > rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value > rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value > rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->float_value > rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->float_value > rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs with trv_compare_comparison_gt");
         targs->callback = trv_compare_comparison_gt;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison gt int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_gt_float(ast, targs);
+        PadObj *obj = trv_compare_comparison_gt_float(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6441,13 +6441,13 @@ trv_compare_comparison_gt_float(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_gt_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
     targs->depth += 1;
 
@@ -6456,33 +6456,33 @@ trv_compare_comparison_gt_bool(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare gt with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean > rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean > rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean > rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean > rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_bool(ast->ref_gc, lhs->boolean > rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, lhs->boolean > rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs with trv_compare_comparison_gt");
         targs->callback = trv_compare_comparison_gt;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't comparison gt bool. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_compare_comparison_gt_bool(ast, targs);
+        PadObj *obj = trv_compare_comparison_gt_bool(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6491,10 +6491,10 @@ trv_compare_comparison_gt_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison_gt(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
     targs->depth += 1;
@@ -6504,36 +6504,36 @@ trv_compare_comparison_gt(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't compare with gt");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("call trv_compare_comparison_gt_int");
-        object_t *obj = trv_compare_comparison_gt_int(ast, targs);
+        PadObj *obj = trv_compare_comparison_gt_int(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         check("call trv_compare_comparison_gt_float");
-        object_t *obj = trv_compare_comparison_gt_float(ast, targs);
+        PadObj *obj = trv_compare_comparison_gt_float(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("call trv_compare_comparison_gt_bool");
-        object_t *obj = trv_compare_comparison_gt_bool(ast, targs);
+        PadObj *obj = trv_compare_comparison_gt_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_lhs with trv_compare_comparison_gt");
         targs->callback = trv_compare_comparison_gt;
-        object_t *obj = trv_roll_identifier_lhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *lval = _extract_ref_of_obj_all(lhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *lval = _extract_ref_of_obj_all(lhs);
         if (!lval) {
             pushb_error("can't comparison gt. index object value is null");
             return_trav(NULL);
         }
 
         targs->lhs_obj = lval;
-        object_t *obj = trv_compare_comparison_gt(ast, targs);
+        PadObj *obj = trv_compare_comparison_gt(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6542,7 +6542,7 @@ trv_compare_comparison_gt(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_compare_comparison(ast_t *ast, trv_args_t *targs) {
     tready();
 
@@ -6555,32 +6555,32 @@ trv_compare_comparison(ast_t *ast, trv_args_t *targs) {
     default: break;
     case PAD_OP__EQ: {
         check("call trv_compare_comparison_eq");
-        object_t *obj = trv_compare_comparison_eq(ast, targs);
+        PadObj *obj = trv_compare_comparison_eq(ast, targs);
         return_trav(obj);
     } break;
     case PAD_OP__NOT_EQ: {
         check("call trv_compare_comparison_not_eq");
-        object_t *obj = trv_compare_comparison_not_eq(ast, targs);
+        PadObj *obj = trv_compare_comparison_not_eq(ast, targs);
         return_trav(obj);
     } break;
     case PAD_OP__LTE: {
         check("call trv_compare_comparison_lte");
-        object_t *obj = trv_compare_comparison_lte(ast, targs);
+        PadObj *obj = trv_compare_comparison_lte(ast, targs);
         return_trav(obj);
     } break;
     case PAD_OP__GTE: {
         check("call trv_compare_comparison_gte");
-        object_t *obj = trv_compare_comparison_gte(ast, targs);
+        PadObj *obj = trv_compare_comparison_gte(ast, targs);
         return_trav(obj);
     } break;
     case PAD_OP__LT: {
         check("call trv_compare_comparison_lt");
-        object_t *obj = trv_compare_comparison_lt(ast, targs);
+        PadObj *obj = trv_compare_comparison_lt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_OP__GT: {
         check("call trv_compare_comparison_gt");
-        object_t *obj = trv_compare_comparison_gt(ast, targs);
+        PadObj *obj = trv_compare_comparison_gt(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6589,7 +6589,7 @@ trv_compare_comparison(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_comparison(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -6599,40 +6599,40 @@ trv_comparison(ast_t *ast, trv_args_t *targs) {
 
     depth_t depth = targs->depth;
 
-    if (nodearr_len(comparison->nodearr) == 1) {
-        PadNode *node = nodearr_get(comparison->nodearr, 0);
+    if (PadNodeAry_Len(comparison->nodearr) == 1) {
+        PadNode *node = PadNodeAry_Get(comparison->nodearr, 0);
         assert(node->type == PAD_NODE_TYPE__ASSCALC);
 
         check("call _trv_traverse with asscalc");
         targs->ref_node = node;
         targs->depth = depth + 1;
-        object_t *result = _trv_traverse(ast, targs);
+        PadObj *result = _trv_traverse(ast, targs);
         return_trav(result);
-    } else if (nodearr_len(comparison->nodearr) >= 3) {
-        PadNode *lnode = nodearr_get(comparison->nodearr, 0);
+    } else if (PadNodeAry_Len(comparison->nodearr) >= 3) {
+        PadNode *lnode = PadNodeAry_Get(comparison->nodearr, 0);
         assert(lnode->type == PAD_NODE_TYPE__ASSCALC);
         check("call _trv_traverse with asscalc");
         targs->ref_node = lnode;
         targs->depth = depth + 1;
-        object_t *lhs = _trv_traverse(ast, targs);
+        PadObj *lhs = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
         assert(lhs);
 
-        for (int i = 1; i < nodearr_len(comparison->nodearr); i += 2) {
-            PadNode *node = nodearr_get(comparison->nodearr, i);
+        for (int i = 1; i < PadNodeAry_Len(comparison->nodearr); i += 2) {
+            PadNode *node = PadNodeAry_Get(comparison->nodearr, i);
             assert(node->type == PAD_NODE_TYPE__COMP_OP);
             PadCompOpNode *node_comp_op = node->real;
             assert(node_comp_op);
 
-            PadNode *rnode = nodearr_get(comparison->nodearr, i+1);
+            PadNode *rnode = PadNodeAry_Get(comparison->nodearr, i+1);
             assert(rnode->type == PAD_NODE_TYPE__ASSCALC);
             assert(rnode);
             check("call _trv_traverse with asscalc");
             targs->ref_node = rnode;
             targs->depth = depth + 1;
-            object_t *rhs = _trv_traverse(ast, targs);
+            PadObj *rhs = _trv_traverse(ast, targs);
             if (PadAst_HasErrs(ast)) {
                 return_trav(NULL);
             }
@@ -6643,7 +6643,7 @@ trv_comparison(ast_t *ast, trv_args_t *targs) {
             targs->comp_op_node = node_comp_op;
             targs->rhs_obj = rhs;
             targs->depth = depth + 1;
-            object_t *result = trv_compare_comparison(ast, targs);
+            PadObj *result = trv_compare_comparison(ast, targs);
             if (PadAst_HasErrs(ast)) {
                 return_trav(NULL);
             }
@@ -6658,13 +6658,13 @@ trv_comparison(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_expr_add_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(lhs->type == PAD_OBJ_TYPE__INT);
 
     targs->depth += 1;
 
@@ -6673,33 +6673,33 @@ trv_calc_expr_add_int(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't add with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue + rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, lhs->lvalue + rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->lvalue + rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->lvalue + rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue + rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, lhs->lvalue + rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_calc_expr_add;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't add with int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_calc_expr_add(ast, targs);
+        PadObj *obj = trv_calc_expr_add(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6708,13 +6708,13 @@ trv_calc_expr_add_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_expr_add_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FLOAT);
+    assert(lhs->type == PAD_OBJ_TYPE__FLOAT);
 
     targs->depth += 1;
 
@@ -6723,33 +6723,33 @@ trv_calc_expr_add_float(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't add with float");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value + rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->float_value + rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value + rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->float_value + rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value + rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->float_value + rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_calc_expr_add;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't add with int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_calc_expr_add(ast, targs);
+        PadObj *obj = trv_calc_expr_add(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6758,13 +6758,13 @@ trv_calc_expr_add_float(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_expr_add_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
     targs->depth += 1;
 
@@ -6773,33 +6773,33 @@ trv_calc_expr_add_bool(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't add with bool");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean + rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, lhs->boolean + rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->boolean + rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->boolean + rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean + rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, lhs->boolean + rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_calc_expr_add;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't add with bool. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_calc_expr_add(ast, targs);
+        PadObj *obj = trv_calc_expr_add(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6808,13 +6808,13 @@ trv_calc_expr_add_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_expr_add_string(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_UNICODE);
+    assert(lhs->type == PAD_OBJ_TYPE__UNICODE);
 
     targs->depth += 1;
 
@@ -6823,28 +6823,28 @@ trv_calc_expr_add_string(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't add %d with string", rhs->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_calc_expr_add;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         unicode_t *u = uni_new();
         uni_app(u, uni_getc(lhs->unicode));
         uni_app(u, uni_getc(rhs->unicode));
-        object_t *obj = obj_new_unicode(ast->ref_gc, u);
+        PadObj *obj = PadObj_NewUnicode(ast->ref_gc, u);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't add with string. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_calc_expr_add(ast, targs);
+        PadObj *obj = trv_calc_expr_add(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6853,15 +6853,15 @@ trv_calc_expr_add_string(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_expr_add_array(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_ARRAY);
+    assert(lhs->type == PAD_OBJ_TYPE__ARRAY);
 
-    object_t *rref = _extract_ref_of_obj_all(rhs);
+    PadObj *rref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return NULL;
@@ -6872,34 +6872,34 @@ trv_calc_expr_add_array(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand (%d)", rref->type);
         return NULL;
     } break;
-    case OBJ_TYPE_ARRAY: {
-        object_array_t *dst = objarr_new();
-        object_array_t *a1 = lhs->objarr;
-        object_array_t *a2 = rref->objarr;
+    case PAD_OBJ_TYPE__ARRAY: {
+        PadObjAry *dst = PadObjAry_New();
+        PadObjAry *a1 = lhs->objarr;
+        PadObjAry *a2 = rref->objarr;
 
-        for (int32_t i = 0; i < objarr_len(a1); ++i) {
-            object_t *el = objarr_get(a1, i);
+        for (int32_t i = 0; i < PadObjAry_Len(a1); ++i) {
+            PadObj *el = PadObjAry_Get(a1, i);
             assert(el);
-            obj_inc_ref(el);
-            objarr_pushb(dst, el);
+            PadObj_IncRef(el);
+            PadObjAry_PushBack(dst, el);
         }
 
-        for (int32_t i = 0; i < objarr_len(a2); ++i) {
-            object_t *el = objarr_get(a2, i);
+        for (int32_t i = 0; i < PadObjAry_Len(a2); ++i) {
+            PadObj *el = PadObjAry_Get(a2, i);
             assert(el);
-            obj_inc_ref(el);
-            objarr_pushb(dst, el);
+            PadObj_IncRef(el);
+            PadObjAry_PushBack(dst, el);
         }
 
-        return obj_new_array(ast->ref_gc, mem_move(dst));
+        return PadObj_NewAry(ast->ref_gc, mem_move(dst));
     } break;
     }
 }
 
-static object_t *
+static PadObj *
 trv_calc_expr_add(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
     targs->depth += 1;
@@ -6909,46 +6909,46 @@ trv_calc_expr_add(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't add");
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("call trv_calc_expr_add_int");
-        object_t *obj = trv_calc_expr_add_int(ast, targs);
+        PadObj *obj = trv_calc_expr_add_int(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         check("call trv_calc_expr_add_float");
-        object_t *obj = trv_calc_expr_add_float(ast, targs);
+        PadObj *obj = trv_calc_expr_add_float(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("call trv_calc_expr_add_bool");
-        object_t *obj = trv_calc_expr_add_bool(ast, targs);
+        PadObj *obj = trv_calc_expr_add_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         check("call trv_calc_expr_add_string");
-        object_t *obj = trv_calc_expr_add_string(ast, targs);
+        PadObj *obj = trv_calc_expr_add_string(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_lhs with trv_calc_expr_add");
         targs->callback = trv_calc_expr_add;
-        object_t *obj = trv_roll_identifier_lhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *lval = _extract_ref_of_obj_all(lhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *lval = _extract_ref_of_obj_all(lhs);
         if (!lval) {
             pushb_error("can't add with string. index object value is null");
             return_trav(NULL);
         }
 
         targs->lhs_obj = lval;
-        object_t *obj = trv_calc_expr_add(ast, targs);
+        PadObj *obj = trv_calc_expr_add(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_ARRAY: {
+    case PAD_OBJ_TYPE__ARRAY: {
         check("call trv_calc_expr_add_array");
-        object_t *obj = trv_calc_expr_add_array(ast, targs);
+        PadObj *obj = trv_calc_expr_add_array(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -6957,13 +6957,13 @@ trv_calc_expr_add(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_expr_sub_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(lhs->type == PAD_OBJ_TYPE__INT);
 
     targs->depth += 1;
 
@@ -6972,33 +6972,33 @@ trv_calc_expr_sub_int(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't sub with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue - rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, lhs->lvalue - rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->lvalue - rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->lvalue - rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue - rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, lhs->lvalue - rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_calc_expr_sub;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't sub with int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_calc_expr_sub(ast, targs);
+        PadObj *obj = trv_calc_expr_sub(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7007,13 +7007,13 @@ trv_calc_expr_sub_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_expr_sub_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FLOAT);
+    assert(lhs->type == PAD_OBJ_TYPE__FLOAT);
 
     targs->depth += 1;
 
@@ -7022,33 +7022,33 @@ trv_calc_expr_sub_float(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't sub with float");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value - rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->float_value - rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value - rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->float_value - rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value - rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->float_value - rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_calc_expr_sub;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't sub with int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_calc_expr_sub(ast, targs);
+        PadObj *obj = trv_calc_expr_sub(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7057,13 +7057,13 @@ trv_calc_expr_sub_float(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_expr_sub_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
     targs->depth += 1;
 
@@ -7072,33 +7072,33 @@ trv_calc_expr_sub_bool(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't sub with bool");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean - rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, lhs->boolean - rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->boolean - rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->boolean - rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean - rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, lhs->boolean - rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("trv_roll_identifier_rhs");
         targs->callback = trv_calc_expr_sub;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't sub with bool. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_calc_expr_sub(ast, targs);
+        PadObj *obj = trv_calc_expr_sub(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7107,11 +7107,11 @@ trv_calc_expr_sub_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_expr_sub(ast_t *ast, trv_args_t *targs) {
     tready();
 
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
     targs->depth += 1;
@@ -7121,36 +7121,36 @@ trv_calc_expr_sub(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't sub");
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("call trv_calc_expr_sub_int");
-        object_t *obj = trv_calc_expr_sub_int(ast, targs);
+        PadObj *obj = trv_calc_expr_sub_int(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         check("call trv_calc_expr_sub_float");
-        object_t *obj = trv_calc_expr_sub_float(ast, targs);
+        PadObj *obj = trv_calc_expr_sub_float(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("call trv_calc_expr_sub_bool");
-        object_t *obj = trv_calc_expr_sub_bool(ast, targs);
+        PadObj *obj = trv_calc_expr_sub_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_calc_expr_sub;
-        object_t *obj = trv_roll_identifier_lhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *lval = _extract_ref_of_obj_all(lhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *lval = _extract_ref_of_obj_all(lhs);
         if (!lval) {
             pushb_error("can't sub. index object value is null");
             return_trav(NULL);
         }
 
         targs->lhs_obj = lval;
-        object_t *obj = trv_calc_expr_sub(ast, targs);
+        PadObj *obj = trv_calc_expr_sub(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7159,7 +7159,7 @@ trv_calc_expr_sub(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_expr(ast_t *ast, trv_args_t *targs) {
     tready();
     PadAddSubOpNode *add_sub_op = targs->add_sub_op_node;
@@ -7172,12 +7172,12 @@ trv_calc_expr(ast_t *ast, trv_args_t *targs) {
         break;
     case PAD_OP__ADD: {
         check("call trv_calc_expr_add");
-        object_t *obj = trv_calc_expr_add(ast, targs);
+        PadObj *obj = trv_calc_expr_add(ast, targs);
         return_trav(obj);
     } break;
     case PAD_OP__SUB: {
         check("call trv_calc_expr_sub");
-        object_t *obj = trv_calc_expr_sub(ast, targs);
+        PadObj *obj = trv_calc_expr_sub(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7186,7 +7186,7 @@ trv_calc_expr(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_expr(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -7196,34 +7196,34 @@ trv_expr(ast_t *ast, trv_args_t *targs) {
 
     depth_t depth = targs->depth;
 
-    if (nodearr_len(expr->nodearr) == 1) {
-        PadNode *node = nodearr_get(expr->nodearr, 0);
+    if (PadNodeAry_Len(expr->nodearr) == 1) {
+        PadNode *node = PadNodeAry_Get(expr->nodearr, 0);
         check("call _trv_traverse");
         targs->ref_node = node;
         targs->depth = depth + 1;
-        object_t *result = _trv_traverse(ast, targs);
+        PadObj *result = _trv_traverse(ast, targs);
         return_trav(result);
-    } else if (nodearr_len(expr->nodearr) >= 3) {
-        PadNode *lnode = nodearr_get(expr->nodearr, 0);
+    } else if (PadNodeAry_Len(expr->nodearr) >= 3) {
+        PadNode *lnode = PadNodeAry_Get(expr->nodearr, 0);
         targs->ref_node = lnode;
         targs->depth = depth + 1;
-        object_t *lhs = _trv_traverse(ast, targs);
+        PadObj *lhs = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
         assert(lhs);
 
-        for (int i = 1; i < nodearr_len(expr->nodearr); i += 2) {
-            PadNode *node = nodearr_get(expr->nodearr, i);
+        for (int i = 1; i < PadNodeAry_Len(expr->nodearr); i += 2) {
+            PadNode *node = PadNodeAry_Get(expr->nodearr, i);
             PadAddSubOpNode *op = node->real;
             assert(op);
 
-            PadNode *rnode = nodearr_get(expr->nodearr, i+1);
+            PadNode *rnode = PadNodeAry_Get(expr->nodearr, i+1);
             assert(rnode);
             check("call _trv_traverse");
             targs->ref_node = rnode;
             targs->depth = depth + 1;
-            object_t *rhs = _trv_traverse(ast, targs);
+            PadObj *rhs = _trv_traverse(ast, targs);
             if (PadAst_HasErrs(ast)) {
                 return_trav(NULL);
             }
@@ -7234,7 +7234,7 @@ trv_expr(ast_t *ast, trv_args_t *targs) {
             targs->add_sub_op_node = op;
             targs->rhs_obj = rhs;
             targs->depth = depth + 1;
-            object_t *result = trv_calc_expr(ast, targs);
+            PadObj *result = trv_calc_expr(ast, targs);
             if (PadAst_HasErrs(ast)) {
                 return_trav(NULL);
             }
@@ -7249,7 +7249,7 @@ trv_expr(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 mul_unicode_object(ast_t *ast, trv_args_t *targs, const unicode_t *s, int32_t n) {
     if (n < 0) {
         pushb_error("can't mul string by negative value");
@@ -7257,16 +7257,16 @@ mul_unicode_object(ast_t *ast, trv_args_t *targs, const unicode_t *s, int32_t n)
     }
 
     unicode_t *u = uni_mul(s, n);
-    return obj_new_unicode(ast->ref_gc, mem_move(u));
+    return PadObj_NewUnicode(ast->ref_gc, mem_move(u));
 }
 
-static object_t *
+static PadObj *
 trv_calc_term_mul_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(lhs->type == PAD_OBJ_TYPE__INT);
 
     targs->depth += 1;
 
@@ -7275,37 +7275,37 @@ trv_calc_term_mul_int(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't mul with int");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue * rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, lhs->lvalue * rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->lvalue * rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->lvalue * rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue * rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, lhs->lvalue * rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_calc_term_mul;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *obj = mul_unicode_object(ast, targs, rhs->unicode, lhs->lvalue);
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *obj = mul_unicode_object(ast, targs, rhs->unicode, lhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't mul with int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_calc_term_mul(ast, targs);
+        PadObj *obj = trv_calc_term_mul(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7314,13 +7314,13 @@ trv_calc_term_mul_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_term_mul_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FLOAT);
+    assert(lhs->type == PAD_OBJ_TYPE__FLOAT);
 
     targs->depth += 1;
 
@@ -7329,33 +7329,33 @@ trv_calc_term_mul_float(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't mul with float");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value * rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->float_value * rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value * rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->float_value * rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value * rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->float_value * rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_calc_term_mul;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't mul with int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_calc_term_mul(ast, targs);
+        PadObj *obj = trv_calc_term_mul(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7364,13 +7364,13 @@ trv_calc_term_mul_float(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_term_mul_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
     targs->depth += 1;
 
@@ -7379,33 +7379,33 @@ trv_calc_term_mul_bool(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't mul with bool");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean * rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, lhs->boolean * rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->boolean * rhs->float_value);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->boolean * rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *obj = obj_new_int(ast->ref_gc, lhs->boolean * rhs->boolean);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, lhs->boolean * rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_calc_term_mul;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't mul with bool. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_calc_term_mul(ast, targs);
+        PadObj *obj = trv_calc_term_mul(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7414,13 +7414,13 @@ trv_calc_term_mul_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_term_mul_string(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_UNICODE);
+    assert(lhs->type == PAD_OBJ_TYPE__UNICODE);
 
     targs->depth += 1;
 
@@ -7429,28 +7429,28 @@ trv_calc_term_mul_string(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't mul with string");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *obj = mul_unicode_object(ast, targs, lhs->unicode, rhs->lvalue);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *obj = mul_unicode_object(ast, targs, lhs->unicode, rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_calc_term_mul;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE:
+    case PAD_OBJ_TYPE__UNICODE:
         err_die("TODO: mul string 2");
         break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't mul with string. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_calc_term_mul(ast, targs);
+        PadObj *obj = trv_calc_term_mul(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7459,10 +7459,10 @@ trv_calc_term_mul_string(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_term_mul(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
     targs->depth += 1;
@@ -7472,41 +7472,41 @@ trv_calc_term_mul(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't mul");
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("call trv_calc_term_mul_int");
-        object_t *obj = trv_calc_term_mul_int(ast, targs);
+        PadObj *obj = trv_calc_term_mul_int(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         check("call trv_calc_term_mul_float");
-        object_t *obj = trv_calc_term_mul_float(ast, targs);
+        PadObj *obj = trv_calc_term_mul_float(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("call trv_calc_term_mul_bool");
-        object_t *obj = trv_calc_term_mul_bool(ast, targs);
+        PadObj *obj = trv_calc_term_mul_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_lhs with trv_calc_term_mul");
         targs->callback = trv_calc_term_mul;
-        object_t *obj = trv_roll_identifier_lhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         check("call trv_calc_term_mul_string");
-        object_t *obj = trv_calc_term_mul_string(ast, targs);
+        PadObj *obj = trv_calc_term_mul_string(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *lval = _extract_ref_of_obj_all(lhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *lval = _extract_ref_of_obj_all(lhs);
         if (!lval) {
             pushb_error("can't mul. index object value is null");
             return_trav(NULL);
         }
 
         targs->lhs_obj = lval;
-        object_t *obj = trv_calc_term_mul(ast, targs);
+        PadObj *obj = trv_calc_term_mul(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7515,13 +7515,13 @@ trv_calc_term_mul(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_term_div_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(lhs->type == PAD_OBJ_TYPE__INT);
 
     targs->depth += 1;
 
@@ -7530,45 +7530,45 @@ trv_calc_term_div_int(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         if (!rhs->lvalue) {
             pushb_error("zero division error");
             return_trav(NULL);
         }
-        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue / rhs->lvalue);
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, lhs->lvalue / rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         if (!rhs->float_value) {
             pushb_error("zero division error");
             return_trav(NULL);
         }
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->lvalue / rhs->float_value);
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->lvalue / rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         if (!rhs->boolean) {
             pushb_error("zero division error");
             return_trav(NULL);
         }
-        object_t *obj = obj_new_int(ast->ref_gc, lhs->lvalue / rhs->boolean);
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, lhs->lvalue / rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("trv_roll_identifier_rhs");
         targs->callback = trv_calc_term_div;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't division with int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_calc_term_div(ast, targs);
+        PadObj *obj = trv_calc_term_div(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7577,13 +7577,13 @@ trv_calc_term_div_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_term_div_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FLOAT);
+    assert(lhs->type == PAD_OBJ_TYPE__FLOAT);
 
     targs->depth += 1;
 
@@ -7592,45 +7592,45 @@ trv_calc_term_div_float(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         if (!rhs->lvalue) {
             pushb_error("zero division error");
             return_trav(NULL);
         }
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value / rhs->lvalue);
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->float_value / rhs->lvalue);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         if (!rhs->float_value) {
             pushb_error("zero division error");
             return_trav(NULL);
         }
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value / rhs->float_value);
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->float_value / rhs->float_value);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         if (!rhs->boolean) {
             pushb_error("zero division error");
             return_trav(NULL);
         }
-        object_t *obj = obj_new_float(ast->ref_gc, lhs->float_value / rhs->boolean);
+        PadObj *obj = PadObj_NewFloat(ast->ref_gc, lhs->float_value / rhs->boolean);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("trv_roll_identifier_rhs");
         targs->callback = trv_calc_term_div;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't division with int. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_calc_term_div(ast, targs);
+        PadObj *obj = trv_calc_term_div(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7639,13 +7639,13 @@ trv_calc_term_div_float(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_term_div_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
     targs->depth += 1;
 
@@ -7654,39 +7654,39 @@ trv_calc_term_div_bool(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't division with bool");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT:
+    case PAD_OBJ_TYPE__INT:
         if (!rhs->lvalue) {
             pushb_error("zero division error");
             return_trav(NULL);
         }
-        return obj_new_int(ast->ref_gc, lhs->boolean / rhs->lvalue);
-    case OBJ_TYPE_FLOAT:
+        return PadObj_NewInt(ast->ref_gc, lhs->boolean / rhs->lvalue);
+    case PAD_OBJ_TYPE__FLOAT:
         if (!rhs->float_value) {
             pushb_error("zero division error");
             return_trav(NULL);
         }
-        return obj_new_float(ast->ref_gc, lhs->boolean / rhs->float_value);
-    case OBJ_TYPE_BOOL:
+        return PadObj_NewFloat(ast->ref_gc, lhs->boolean / rhs->float_value);
+    case PAD_OBJ_TYPE__BOOL:
         if (!rhs->boolean) {
             pushb_error("zero division error");
             return_trav(NULL);
         }
-        return obj_new_int(ast->ref_gc, lhs->boolean / rhs->boolean);
-    case OBJ_TYPE_IDENTIFIER: {
+        return PadObj_NewInt(ast->ref_gc, lhs->boolean / rhs->boolean);
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_calc_term_div;
-        object_t *obj = trv_roll_identifier_rhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *rval = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *rval = _extract_ref_of_obj_all(rhs);
         if (!rval) {
             pushb_error("can't division with bool. index object value is null");
             return_trav(NULL);
         }
 
         targs->rhs_obj = rval;
-        object_t *obj = trv_calc_term_div(ast, targs);
+        PadObj *obj = trv_calc_term_div(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7695,10 +7695,10 @@ trv_calc_term_div_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_term_div(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
     targs->depth += 1;
@@ -7708,40 +7708,40 @@ trv_calc_term_div(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't division");
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("call trv_calc_term_div_int");
-        object_t *obj = trv_calc_term_div_int(ast, targs);
+        PadObj *obj = trv_calc_term_div_int(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         check("call trv_calc_term_div_float");
-        object_t *obj = trv_calc_term_div_float(ast, targs);
+        PadObj *obj = trv_calc_term_div_float(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("call trv_calc_term_div_bool");
-        object_t *obj = trv_calc_term_div_bool(ast, targs);
+        PadObj *obj = trv_calc_term_div_bool(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_roll_identifier_rhs");
         targs->callback = trv_calc_term_div;
-        object_t *obj = trv_roll_identifier_lhs(ast, targs);
+        PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
-        object_t *lval = extract_copy_of_obj(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, lhs);
+    case PAD_OBJ_TYPE__CHAIN: {
+        PadObj *lval = extract_copy_of_obj(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, lhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("can't division. index object value is null");
             return_trav(NULL);
         }
         assert(lval);
 
-        obj_inc_ref(lval);
+        PadObj_IncRef(lval);
         targs->lhs_obj = lval;
-        object_t *obj = trv_calc_term_div(ast, targs);
-        obj_dec_ref(lval);
-        obj_del(lval);
+        PadObj *obj = trv_calc_term_div(ast, targs);
+        PadObj_DecRef(lval);
+        PadObj_Del(lval);
         return_trav(obj);
     } break;
     }
@@ -7750,14 +7750,14 @@ trv_calc_term_div(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_term_mod_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
 
-    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -7768,7 +7768,7 @@ trv_calc_term_mod_int(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand (%d)", rhsref->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         if (!rhsref->boolean) {
             pushb_error("zero division error");
             return_trav(NULL);
@@ -7776,10 +7776,10 @@ trv_calc_term_mod_int(ast_t *ast, trv_args_t *targs) {
 
         // TODO: need imp float!
         objint_t result = lhs->lvalue % ((objint_t) rhsref->boolean);
-        object_t *obj = obj_new_int(ast->ref_gc, result);
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, result);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         if (!rhsref->lvalue) {
             pushb_error("zero division error");
             return_trav(NULL);
@@ -7787,7 +7787,7 @@ trv_calc_term_mod_int(ast_t *ast, trv_args_t *targs) {
 
         // TODO: need imp float!
         objint_t result = lhs->lvalue % rhsref->lvalue;
-        object_t *obj = obj_new_int(ast->ref_gc, result);
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, result);
         return_trav(obj);
     } break;
     }
@@ -7796,14 +7796,14 @@ trv_calc_term_mod_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_term_mod_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
 
-    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -7814,7 +7814,7 @@ trv_calc_term_mod_bool(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand (%d)", rhsref->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         if (!rhsref->boolean) {
             pushb_error("zero division error");
             return_trav(NULL);
@@ -7822,10 +7822,10 @@ trv_calc_term_mod_bool(ast_t *ast, trv_args_t *targs) {
 
         // TODO: need imp float!
         objint_t result = ((objint_t) lhs->boolean) % ((objint_t) rhsref->boolean);
-        object_t *obj = obj_new_int(ast->ref_gc, result);
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, result);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         if (!rhsref->lvalue) {
             pushb_error("zero division error");
             return_trav(NULL);
@@ -7833,7 +7833,7 @@ trv_calc_term_mod_bool(ast_t *ast, trv_args_t *targs) {
 
         // TODO: need imp float!
         objint_t result = ((objint_t) lhs->boolean) % rhsref->lvalue;
-        object_t *obj = obj_new_int(ast->ref_gc, result);
+        PadObj *obj = PadObj_NewInt(ast->ref_gc, result);
         return_trav(obj);
     } break;
     }
@@ -7842,17 +7842,17 @@ trv_calc_term_mod_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_term_mod(ast_t *ast, trv_args_t *targs) {
     tready();
     PadMulDivOpNode *op = targs->mul_div_op_node;
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(op->op == PAD_OP__MOD);
     assert(lhs);
 
     targs->depth += 1;
 
-    object_t *lhsref = _extract_ref_of_obj_all(lhs);
+    PadObj *lhsref = _extract_ref_of_obj_all(lhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -7863,16 +7863,16 @@ trv_calc_term_mod(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand (%d)", lhsref->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("call trv_calc_term_mod_int");
         targs->lhs_obj = lhsref;
-        object_t *result = trv_calc_term_mod_bool(ast, targs);
+        PadObj *result = trv_calc_term_mod_bool(ast, targs);
         return_trav(result);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("call trv_calc_term_mod_int");
         targs->lhs_obj = lhsref;
-        object_t *result = trv_calc_term_mod_int(ast, targs);
+        PadObj *result = trv_calc_term_mod_int(ast, targs);
         return_trav(result);
     } break;
     }
@@ -7881,7 +7881,7 @@ trv_calc_term_mod(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_term(ast_t *ast, trv_args_t *targs) {
     tready();
 
@@ -7894,17 +7894,17 @@ trv_calc_term(ast_t *ast, trv_args_t *targs) {
     default: break;
     case PAD_OP__MUL: {
         check("call trv_calc_term_mul");
-        object_t *obj = trv_calc_term_mul(ast, targs);
+        PadObj *obj = trv_calc_term_mul(ast, targs);
         return_trav(obj);
     } break;
     case PAD_OP__DIV: {
         check("call trv_calc_term_div");
-        object_t *obj = trv_calc_term_div(ast, targs);
+        PadObj *obj = trv_calc_term_div(ast, targs);
         return_trav(obj);
     } break;
     case PAD_OP__MOD: {
         check("call trv_call_term_mod");
-        object_t *obj = trv_calc_term_mod(ast, targs);
+        PadObj *obj = trv_calc_term_mod(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -7913,7 +7913,7 @@ trv_calc_term(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_term(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -7923,38 +7923,38 @@ trv_term(ast_t *ast, trv_args_t *targs) {
 
     depth_t depth = targs->depth;
 
-    if (nodearr_len(term->nodearr) == 1) {
-        PadNode *node = nodearr_get(term->nodearr, 0);
+    if (PadNodeAry_Len(term->nodearr) == 1) {
+        PadNode *node = PadNodeAry_Get(term->nodearr, 0);
         assert(node->type == PAD_NODE_TYPE__NEGATIVE);
         check("call _trv_traverse with dot");
         targs->ref_node = node;
         targs->depth = depth + 1;
-        object_t *result = _trv_traverse(ast, targs);
+        PadObj *result = _trv_traverse(ast, targs);
         return_trav(result);
-    } else if (nodearr_len(term->nodearr) >= 3) {
-        PadNode *lnode = nodearr_get(term->nodearr, 0);
+    } else if (PadNodeAry_Len(term->nodearr) >= 3) {
+        PadNode *lnode = PadNodeAry_Get(term->nodearr, 0);
         assert(lnode->type == PAD_NODE_TYPE__NEGATIVE);
         check("call _trv_traverse with dot");
         targs->ref_node = lnode;
         targs->depth = depth + 1;
-        object_t *lhs = _trv_traverse(ast, targs);
+        PadObj *lhs = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
         assert(lhs);
 
-        for (int i = 1; i < nodearr_len(term->nodearr); i += 2) {
-            PadNode *node = nodearr_get(term->nodearr, i);
+        for (int i = 1; i < PadNodeAry_Len(term->nodearr); i += 2) {
+            PadNode *node = PadNodeAry_Get(term->nodearr, i);
             assert(node->type == PAD_NODE_TYPE__MUL_DIV_OP);
             PadMulDivOpNode *op = node->real;
             assert(op);
 
-            PadNode *rnode = nodearr_get(term->nodearr, i+1);
+            PadNode *rnode = PadNodeAry_Get(term->nodearr, i+1);
             assert(rnode->type == PAD_NODE_TYPE__NEGATIVE);
             check("call _trv_traverse with index");
             targs->ref_node = rnode;
             targs->depth = depth + 1;
-            object_t *rhs = _trv_traverse(ast, targs);
+            PadObj *rhs = _trv_traverse(ast, targs);
             if (PadAst_HasErrs(ast)) {
                 return_trav(NULL);
             }
@@ -7965,7 +7965,7 @@ trv_term(ast_t *ast, trv_args_t *targs) {
             targs->mul_div_op_node = op;
             targs->rhs_obj = rhs;
             targs->depth = depth + 1;
-            object_t *result = trv_calc_term(ast, targs);
+            PadObj *result = trv_calc_term(ast, targs);
             if (PadAst_HasErrs(ast)) {
                 return_trav(NULL);
             }
@@ -7980,7 +7980,7 @@ trv_term(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_negative(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -7993,7 +7993,7 @@ trv_negative(ast_t *ast, trv_args_t *targs) {
     check("call _trv_traverse with negative's dot")
     targs->ref_node = negative->chain;
     targs->depth = depth + 1;
-    object_t *operand = _trv_traverse(ast, targs);
+    PadObj *operand = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         return_trav(NULL);
     }
@@ -8011,28 +8011,28 @@ again:
         }
         return operand;
     break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         if (negative->is_negative) {
-            object_t *obj = obj_new_int(ast->ref_gc, -operand->lvalue);
+            PadObj *obj = PadObj_NewInt(ast->ref_gc, -operand->lvalue);
             return_trav(obj);
         }
         return_trav(operand);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         if (negative->is_negative) {
-            object_t *obj = obj_new_int(ast->ref_gc, -operand->boolean);
+            PadObj *obj = PadObj_NewInt(ast->ref_gc, -operand->boolean);
             return_trav(obj);
         }
         return_trav(operand);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         if (negative->is_negative) {
-            object_t *obj = obj_new_float(ast->ref_gc, -operand->float_value);
+            PadObj *obj = PadObj_NewFloat(ast->ref_gc, -operand->float_value);
             return_trav(obj);
         }
         return_trav(operand);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         if (negative->is_negative) {
             operand = _extract_ref_of_obj_all(operand);
             goto again;
@@ -8045,7 +8045,7 @@ again:
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_chain(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -8061,7 +8061,7 @@ trv_chain(ast_t *ast, trv_args_t *targs) {
 
     targs->ref_node = factor;
     targs->depth = depth + 1;
-    object_t *operand = _trv_traverse(ast, targs);
+    PadObj *operand = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to traverse factor");
         return_trav(NULL);
@@ -8086,7 +8086,7 @@ trv_chain(ast_t *ast, trv_args_t *targs) {
 
         targs->ref_node = node;
         targs->depth = depth + 1;
-        object_t *elem = _trv_traverse(ast, targs);
+        PadObj *elem = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to traverse node");
             goto fail;
@@ -8094,24 +8094,24 @@ trv_chain(ast_t *ast, trv_args_t *targs) {
 
         PadChainObjType type;
         switch (PadChainNode_GetcType(cn)) {
-        case PAD_CHAIN_PAD_NODE_TYPE___DOT:   type = PAD_CHAIN_OBJ_TYPE__DOT;   break;
-        case PAD_CHAIN_PAD_NODE_TYPE___INDEX: type = PAD_CHAIN_OBJ_TYPE__INDEX; break;
-        case PAD_CHAIN_PAD_NODE_TYPE___CALL:  type = PAD_CHAIN_OBJ_TYPE__CALL;  break;
+        case PAD_CHAIN_PAD_NODE_TYPE___DOT:   type = PAD_CHAIN_PAD_OBJ_TYPE___DOT;   break;
+        case PAD_CHAIN_PAD_NODE_TYPE___INDEX: type = PAD_CHAIN_PAD_OBJ_TYPE___INDEX; break;
+        case PAD_CHAIN_PAD_NODE_TYPE___CALL:  type = PAD_CHAIN_PAD_OBJ_TYPE___CALL;  break;
         default:
             pushb_error("invalid chain node type (%d)", PadChainNode_GetcType(cn));
             goto fail;
             break;
         }
 
-        obj_inc_ref(elem);
+        PadObj_IncRef(elem);
         PadChainObj *chobj = PadChainObj_New(type, mem_move(elem));
         PadChainObjs_MoveBack(chobjs, mem_move(chobj));
     }
     assert(PadChainObjs_Len(chobjs) != 0);
 
     // done
-    obj_inc_ref(operand);
-    object_t *obj_chain = obj_new_chain(
+    PadObj_IncRef(operand);
+    PadObj *obj_chain = PadObj_NewChain(
         ast->ref_gc,
         mem_move(operand),
         mem_move(chobjs)
@@ -8123,31 +8123,31 @@ trv_chain(ast_t *ast, trv_args_t *targs) {
     if (targs->do_not_refer_chain) {
         return_trav(obj_chain);
     } else {
-        object_t *result = _refer_chain_obj_with_ref(obj_chain);
+        PadObj *result = _refer_chain_obj_with_ref(obj_chain);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to refer chain object");
             goto fail;
         }
 
-        obj_del(obj_chain);
+        PadObj_Del(obj_chain);
         return_trav(result);
     }
 
 fail:
-    obj_del(operand);
+    PadObj_Del(operand);
     PadChainObjs_Del(chobjs);
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
     tready();
 
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_IDENTIFIER);
-    object_array_t *ref_owners = targs->ref_owners;
+    assert(lhs->type == PAD_OBJ_TYPE__IDENT);
+    PadObjAry *ref_owners = targs->ref_owners;
     const char *idn = str_getc(lhs->identifier.name);
 
     switch (rhs->type) {
@@ -8163,9 +8163,9 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
         );
         return_trav(rhs);
     } break;
-    case OBJ_TYPE_CHAIN: {
+    case PAD_OBJ_TYPE__CHAIN: {
         // TODO: fix me!
-        object_t *val = _extract_ref_of_obj_all(rhs);
+        PadObj *val = _extract_ref_of_obj_all(rhs);
         set_ref_at_cur_varmap(
             ast->error_stack,
             targs->ref_node,
@@ -8176,15 +8176,15 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
         );
         return_trav(val);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        object_t *rval = pull_ref_all(rhs);
+    case PAD_OBJ_TYPE__IDENT: {
+        PadObj *rval = pull_ref_all(rhs);
         if (!rval) {
-            pushb_error("\"%s\" is not defined in asscalc ass idn", obj_getc_idn_name(rhs));
+            pushb_error("\"%s\" is not defined in asscalc ass idn", PadObj_GetcIdentName(rhs));
             return_trav(NULL);
         }
 
         check("set reference of (%d) at (%s) of current varmap", rval->type, idn);
-        obj_inc_ref(rval);
+        PadObj_IncRef(rval);
         set_ref_at_cur_varmap(
             ast->error_stack,
             targs->ref_node,
@@ -8201,16 +8201,16 @@ trv_calc_assign_to_idn(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *idnobj = targs->lhs_obj;
+    PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_t *intobj = pull_ref_all(idnobj);
-    object_t *rhs = targs->rhs_obj;
+    PadObj *intobj = pull_ref_all(idnobj);
+    PadObj *rhs = targs->rhs_obj;
     object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     assert(idnobj && rhs);
-    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
+    assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
     depth_t depth = targs->depth;
 
@@ -8219,27 +8219,27 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand (%d)", rhs->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *lhs = obj_deep_copy(intobj);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *lhs = PadObj_DeepCopy(intobj);
         lhs->lvalue += rhs->lvalue;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *lhs = obj_deep_copy(intobj);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *lhs = PadObj_DeepCopy(intobj);
         lhs->float_value = lhs->lvalue + rhs->float_value;
-        lhs->type = OBJ_TYPE_FLOAT;
+        lhs->type = PAD_OBJ_TYPE__FLOAT;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *lhs = obj_deep_copy(intobj);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *lhs = PadObj_DeepCopy(intobj);
         lhs->lvalue += (objint_t) rhs->boolean;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__IDENT: {
+        PadObj *rvar = _extract_ref_of_obj_all(rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to extract object");
             return_trav(NULL);
@@ -8249,7 +8249,7 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, trv_args_t *targs) {
         targs->lhs_obj = idnobj;
         targs->rhs_obj = rvar;
         targs->depth = depth + 1;
-        object_t *obj = trv_calc_asscalc_add_ass_identifier_int(ast, targs);
+        PadObj *obj = trv_calc_asscalc_add_ass_identifier_int(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -8258,16 +8258,16 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_add_ass_identifier_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *idnobj = targs->lhs_obj;
+    PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_t *floatobj = pull_ref_all(idnobj);
-    object_t *rhs = targs->rhs_obj;
+    PadObj *floatobj = pull_ref_all(idnobj);
+    PadObj *rhs = targs->rhs_obj;
     object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     assert(idnobj && rhs);
-    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
+    assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
     depth_t depth = targs->depth;
 
@@ -8276,26 +8276,26 @@ trv_calc_asscalc_add_ass_identifier_float(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand (%d)", rhs->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *lhs = obj_deep_copy(floatobj);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *lhs = PadObj_DeepCopy(floatobj);
         lhs->float_value += rhs->lvalue;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *lhs = obj_deep_copy(floatobj);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *lhs = PadObj_DeepCopy(floatobj);
         lhs->float_value += rhs->float_value;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *lhs = obj_deep_copy(floatobj);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *lhs = PadObj_DeepCopy(floatobj);
         lhs->float_value += (objint_t) rhs->boolean;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__IDENT: {
+        PadObj *rvar = _extract_ref_of_obj_all(rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to extract object");
             return_trav(NULL);
@@ -8305,7 +8305,7 @@ trv_calc_asscalc_add_ass_identifier_float(ast_t *ast, trv_args_t *targs) {
         targs->lhs_obj = idnobj;
         targs->rhs_obj = rvar;
         targs->depth = depth + 1;
-        object_t *obj = trv_calc_asscalc_add_ass_identifier_float(ast, targs);
+        PadObj *obj = trv_calc_asscalc_add_ass_identifier_float(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -8314,16 +8314,16 @@ trv_calc_asscalc_add_ass_identifier_float(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_add_ass_identifier_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *idnobj = targs->lhs_obj;
+    PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_t *boolobj = pull_ref_all(idnobj);
+    PadObj *boolobj = pull_ref_all(idnobj);
     object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    object_t *rhs = targs->rhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
-    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
+    assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
     depth_t depth = targs->depth;
 
@@ -8332,29 +8332,29 @@ trv_calc_asscalc_add_ass_identifier_bool(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand (%d)", rhs->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
-        object_t *lhs = obj_deep_copy(boolobj);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->lvalue = lhs->boolean + rhs->lvalue;
-        lhs->type = OBJ_TYPE_INT;
+        lhs->type = PAD_OBJ_TYPE__INT;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *lhs = obj_deep_copy(boolobj);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->float_value = lhs->boolean + rhs->float_value;
-        lhs->type = OBJ_TYPE_FLOAT;
+        lhs->type = PAD_OBJ_TYPE__FLOAT;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *lhs = obj_deep_copy(boolobj);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->lvalue = lhs->boolean + rhs->boolean;
-        lhs->type = OBJ_TYPE_INT;
+        lhs->type = PAD_OBJ_TYPE__INT;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = _extract_ref_of_obj_all(rhs);
+    case PAD_OBJ_TYPE__IDENT: {
+        PadObj *rvar = _extract_ref_of_obj_all(rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to extract object");
             return_trav(NULL);
@@ -8364,7 +8364,7 @@ trv_calc_asscalc_add_ass_identifier_bool(ast_t *ast, trv_args_t *targs) {
         targs->lhs_obj = idnobj;
         targs->rhs_obj = rvar;
         targs->depth = depth + 1;
-        object_t *obj = trv_calc_asscalc_add_ass_identifier_bool(ast, targs);
+        PadObj *obj = trv_calc_asscalc_add_ass_identifier_bool(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -8373,17 +8373,17 @@ trv_calc_asscalc_add_ass_identifier_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_add_ass_identifier_string(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *idnobj = targs->lhs_obj;
+    PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    object_t *unicodeobj = pull_ref_all(idnobj);
-    object_t *rhs = targs->rhs_obj;
+    PadObj *unicodeobj = pull_ref_all(idnobj);
+    PadObj *rhs = targs->rhs_obj;
     const char *idn = targs->identifier;
     assert(idnobj && rhs && idn);
-    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
+    assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
 again:
     switch (rhs->type) {
@@ -8391,8 +8391,8 @@ again:
         pushb_error("invalid right hand operand (%d)", rhs->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = obj_getc_idn_name(rhs);
+    case PAD_OBJ_TYPE__IDENT: {
+        const char *idn = PadObj_GetcIdentName(rhs);
         rhs = pull_ref_all(rhs);
         if (!rhs) {
             pushb_error("not found \"%s\"", idn);
@@ -8400,13 +8400,13 @@ again:
         }
         goto again;
     } break;
-    case OBJ_TYPE_UNICODE: {
-        object_t *lhs = obj_deep_copy(unicodeobj);
+    case PAD_OBJ_TYPE__UNICODE: {
+        PadObj *lhs = PadObj_DeepCopy(unicodeobj);
         uni_app(lhs->unicode, uni_getc(rhs->unicode));
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_CHAIN: {
+    case PAD_OBJ_TYPE__CHAIN: {
         rhs = _extract_ref_of_obj_all(rhs);
         if (PadErrStack_Len(ast->error_stack)) {
             pushb_error("failed to extract chain object");
@@ -8420,54 +8420,54 @@ again:
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_add_ass_identifier(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
-    assert(lhs->type == OBJ_TYPE_IDENTIFIER);
+    assert(lhs->type == PAD_OBJ_TYPE__IDENT);
 
-    const char *idn = obj_getc_idn_name(lhs);
-    object_t *lhsref = _extract_ref_of_obj(lhs);
+    const char *idn = PadObj_GetcIdentName(lhs);
+    PadObj *lhsref = _extract_ref_of_obj(lhs);
     if (!lhsref) {
         pushb_error("failed to extract object");
         return_trav(NULL);
     }
 
     depth_t depth = targs->depth;
-    object_t *result = NULL;
+    PadObj *result = NULL;
 
     switch (lhsref->type) {
     default:
         pushb_error("invalid left hand operand (%d)", lhsref->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("call trv_calc_asscalc_add_ass_identifier_int");
         // ATODO
         targs->lhs_obj = lhs;
         targs->depth = depth + 1;
         result = trv_calc_asscalc_add_ass_identifier_int(ast, targs);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         check("call trv_calc_asscalc_add_ass_identifier_float");
         targs->lhs_obj = lhs;
         targs->depth = depth + 1;
         result = trv_calc_asscalc_add_ass_identifier_float(ast, targs);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("call trv_calc_asscalc_add_ass_identifier_bool");
         targs->lhs_obj = lhs;
         targs->depth = depth + 1;
         result = trv_calc_asscalc_add_ass_identifier_bool(ast, targs);
     } break;
-    case OBJ_TYPE_IDENTIFIER:
+    case PAD_OBJ_TYPE__IDENT:
         check("call trv_calc_asscalc_add_ass_identifier");
         targs->lhs_obj = lhsref;
         targs->depth = depth + 1;
         result = trv_calc_asscalc_add_ass_identifier(ast, targs);
         break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         check("call trv_calc_asscalc_add_ass_identifier_string");
         targs->lhs_obj = lhs;
         targs->identifier = idn;
@@ -8479,21 +8479,21 @@ trv_calc_asscalc_add_ass_identifier(ast_t *ast, trv_args_t *targs) {
     return_trav(result);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *chainobj = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *chainobj = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(chainobj && rhs);
-    assert(chainobj->type == OBJ_TYPE_CHAIN);
+    assert(chainobj->type == PAD_OBJ_TYPE__CHAIN);
 
-    object_t *lref = _refer_chain_obj_with_ref(chainobj);
+    PadObj *lref = _refer_chain_obj_with_ref(chainobj);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to refer chain object");
         return_trav(NULL);
     }
 
-    object_t *rref = _extract_ref_of_obj_all(rhs);
+    PadObj *rref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -8504,101 +8504,101 @@ trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand (%d)", lref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return_trav(NULL);
         } break;
-        case OBJ_TYPE_INT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__INT: {
+            lref = PadObj_DeepCopy(lref);
             lref->lvalue += rref->lvalue;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_FLOAT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__FLOAT: {
+            lref = PadObj_DeepCopy(lref);
             lref->float_value = lref->lvalue + rref->float_value;
-            lref->type = OBJ_TYPE_FLOAT;
+            lref->type = PAD_OBJ_TYPE__FLOAT;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_BOOL: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__BOOL: {
+            lref = PadObj_DeepCopy(lref);
             lref->lvalue += (objint_t) rref->boolean;
             _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return_trav(NULL);
         } break;
-        case OBJ_TYPE_INT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__INT: {
+            lref = PadObj_DeepCopy(lref);
             lref->float_value += rref->lvalue;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_FLOAT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__FLOAT: {
+            lref = PadObj_DeepCopy(lref);
             lref->float_value += rref->float_value;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_BOOL: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__BOOL: {
+            lref = PadObj_DeepCopy(lref);
             lref->float_value += (objfloat_t) rref->boolean;
             _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return_trav(NULL);
         } break;
-        case OBJ_TYPE_INT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__INT: {
+            lref = PadObj_DeepCopy(lref);
             lref->lvalue = ((objint_t) lref->boolean) + rref->lvalue;
-            lref->type = OBJ_TYPE_INT;
+            lref->type = PAD_OBJ_TYPE__INT;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_FLOAT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__FLOAT: {
+            lref = PadObj_DeepCopy(lref);
             lref->float_value = ((objfloat_t) lref->boolean) + rref->float_value;
-            lref->type = OBJ_TYPE_FLOAT;
+            lref->type = PAD_OBJ_TYPE__FLOAT;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_BOOL: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__BOOL: {
+            lref = PadObj_DeepCopy(lref);
             lref->lvalue = ((objint_t) lref->boolean) + ((objint_t) rref->boolean);
-            lref->type = OBJ_TYPE_INT;
+            lref->type = PAD_OBJ_TYPE__INT;
             _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return_trav(NULL);
         } break;
-        case OBJ_TYPE_UNICODE: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__UNICODE: {
+            lref = PadObj_DeepCopy(lref);
             uni_app_other(lref->unicode, rref->unicode);
             _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
-    case OBJ_TYPE_ARRAY: {
+    case PAD_OBJ_TYPE__ARRAY: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return_trav(NULL);
         } break;
-        case OBJ_TYPE_ARRAY: {
-            lref = obj_deep_copy(lref);
-            objarr_app_other(lref->objarr, rref->objarr);
+        case PAD_OBJ_TYPE__ARRAY: {
+            lref = PadObj_DeepCopy(lref);
+            PadObjAry_AppOther(lref->objarr, rref->objarr);
             _refer_and_set_ref(chainobj, lref);
         } break;
         }
@@ -8612,21 +8612,21 @@ trv_calc_asscalc_add_ass_chain(ast_t *ast, trv_args_t *targs) {
  * TODO: use me!
  * TODO: test
  */
-static object_t *
+static PadObj *
 trv_calc_asscalc_sub_ass_chain(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *chainobj = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *chainobj = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(chainobj && rhs);
-    assert(chainobj->type == OBJ_TYPE_CHAIN);
+    assert(chainobj->type == PAD_OBJ_TYPE__CHAIN);
 
-    object_t *lref = _refer_chain_obj_with_ref(chainobj);
+    PadObj *lref = _refer_chain_obj_with_ref(chainobj);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to refer chain object");
         return NULL;
     }
 
-    object_t *rref = _extract_ref_of_obj_all(rhs);
+    PadObj *rref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return NULL;
@@ -8637,75 +8637,75 @@ trv_calc_asscalc_sub_ass_chain(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand (%d)", lref->type);
         return NULL;
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return NULL;
         } break;
-        case OBJ_TYPE_INT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__INT: {
+            lref = PadObj_DeepCopy(lref);
             lref->lvalue -= rref->lvalue;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_FLOAT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__FLOAT: {
+            lref = PadObj_DeepCopy(lref);
             lref->float_value = lref->lvalue - rref->float_value;
-            lref->type = OBJ_TYPE_FLOAT;
+            lref->type = PAD_OBJ_TYPE__FLOAT;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_BOOL: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__BOOL: {
+            lref = PadObj_DeepCopy(lref);
             lref->lvalue -= (objint_t) rref->boolean;
             _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return NULL;
         } break;
-        case OBJ_TYPE_INT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__INT: {
+            lref = PadObj_DeepCopy(lref);
             lref->float_value -= rref->lvalue;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_FLOAT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__FLOAT: {
+            lref = PadObj_DeepCopy(lref);
             lref->float_value -= rref->float_value;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_BOOL: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__BOOL: {
+            lref = PadObj_DeepCopy(lref);
             lref->float_value -= (objfloat_t) rref->boolean;
             _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return NULL;
         } break;
-        case OBJ_TYPE_INT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__INT: {
+            lref = PadObj_DeepCopy(lref);
             lref->lvalue = ((objint_t) lref->boolean) - rref->lvalue;
-            lref->type = OBJ_TYPE_INT;
+            lref->type = PAD_OBJ_TYPE__INT;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_FLOAT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__FLOAT: {
+            lref = PadObj_DeepCopy(lref);
             lref->float_value = ((objfloat_t) lref->boolean) - rref->float_value;
-            lref->type = OBJ_TYPE_FLOAT;
+            lref->type = PAD_OBJ_TYPE__FLOAT;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_BOOL: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__BOOL: {
+            lref = PadObj_DeepCopy(lref);
             lref->lvalue = ((objint_t) lref->boolean) - ((objint_t) rref->boolean);
-            lref->type = OBJ_TYPE_INT;
+            lref->type = PAD_OBJ_TYPE__INT;
             _refer_and_set_ref(chainobj, lref);
         } break;
         }
@@ -8719,21 +8719,21 @@ trv_calc_asscalc_sub_ass_chain(ast_t *ast, trv_args_t *targs) {
  * TODO: use me!
  * TODO: test
  */
-static object_t *
+static PadObj *
 trv_calc_asscalc_mul_ass_chain(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *chainobj = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *chainobj = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(chainobj && rhs);
-    assert(chainobj->type == OBJ_TYPE_CHAIN);
+    assert(chainobj->type == PAD_OBJ_TYPE__CHAIN);
 
-    object_t *lref = _refer_chain_obj_with_ref(chainobj);
+    PadObj *lref = _refer_chain_obj_with_ref(chainobj);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to refer chain object");
         return NULL;
     }
 
-    object_t *rref = _extract_ref_of_obj_all(rhs);
+    PadObj *rref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return NULL;
@@ -8744,87 +8744,87 @@ trv_calc_asscalc_mul_ass_chain(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand (%d)", lref->type);
         return NULL;
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return NULL;
         } break;
-        case OBJ_TYPE_INT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__INT: {
+            lref = PadObj_DeepCopy(lref);
             lref->lvalue *= rref->lvalue;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_FLOAT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__FLOAT: {
+            lref = PadObj_DeepCopy(lref);
             lref->float_value = lref->lvalue * rref->float_value;
-            lref->type = OBJ_TYPE_FLOAT;
+            lref->type = PAD_OBJ_TYPE__FLOAT;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_BOOL: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__BOOL: {
+            lref = PadObj_DeepCopy(lref);
             lref->lvalue *= (objint_t) rref->boolean;
             _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return NULL;
         } break;
-        case OBJ_TYPE_INT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__INT: {
+            lref = PadObj_DeepCopy(lref);
             lref->float_value *= rref->lvalue;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_FLOAT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__FLOAT: {
+            lref = PadObj_DeepCopy(lref);
             lref->float_value *= rref->float_value;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_BOOL: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__BOOL: {
+            lref = PadObj_DeepCopy(lref);
             lref->float_value *= (objfloat_t) rref->boolean;
             _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return NULL;
         } break;
-        case OBJ_TYPE_INT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__INT: {
+            lref = PadObj_DeepCopy(lref);
             lref->lvalue = ((objint_t) lref->boolean) * rref->lvalue;
-            lref->type = OBJ_TYPE_INT;
+            lref->type = PAD_OBJ_TYPE__INT;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_FLOAT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__FLOAT: {
+            lref = PadObj_DeepCopy(lref);
             lref->float_value = ((objfloat_t) lref->boolean) * rref->float_value;
-            lref->type = OBJ_TYPE_FLOAT;
+            lref->type = PAD_OBJ_TYPE__FLOAT;
             _refer_and_set_ref(chainobj, lref);
         } break;
-        case OBJ_TYPE_BOOL: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__BOOL: {
+            lref = PadObj_DeepCopy(lref);
             lref->lvalue = ((objint_t) lref->boolean) * ((objint_t) rref->boolean);
-            lref->type = OBJ_TYPE_INT;
+            lref->type = PAD_OBJ_TYPE__INT;
             _refer_and_set_ref(chainobj, lref);
         } break;
         }
     } break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return NULL;
         } break;
-        case OBJ_TYPE_INT: {
-            lref = obj_deep_copy(lref);
+        case PAD_OBJ_TYPE__INT: {
+            lref = PadObj_DeepCopy(lref);
             unicode_t *u = uni_mul(lref->unicode, rref->lvalue);
             uni_del(lref->unicode);
             lref->unicode = u;
@@ -8841,21 +8841,21 @@ trv_calc_asscalc_mul_ass_chain(ast_t *ast, trv_args_t *targs) {
  * TODO: use me!
  * TODO: test
  */
-static object_t *
+static PadObj *
 trv_calc_asscalc_div_ass_chain(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_CHAIN);
+    assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
 
-    object_t *lref = _refer_chain_obj_with_ref(lhs);
+    PadObj *lref = _refer_chain_obj_with_ref(lhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to refer chain object");
         return NULL;
     }
 
-    object_t *rref = _extract_ref_of_obj_all(rhs);
+    PadObj *rref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return NULL;
@@ -8866,28 +8866,28 @@ trv_calc_asscalc_div_ass_chain(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand (%d)", lref->type);
         return NULL;
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return NULL;
         } break;
-        case OBJ_TYPE_INT: {
+        case PAD_OBJ_TYPE__INT: {
             if (rref->lvalue == 0) {
                 pushb_error("zero division error");
                 return NULL;
             }
             lref->lvalue /= rref->lvalue;
         } break;
-        case OBJ_TYPE_FLOAT: {
+        case PAD_OBJ_TYPE__FLOAT: {
             if (rref->float_value == 0.0) {
                 pushb_error("zero division error");
                 return NULL;
             }
             lref->float_value = lref->lvalue / rref->float_value;
-            lref->type = OBJ_TYPE_FLOAT;
+            lref->type = PAD_OBJ_TYPE__FLOAT;
         } break;
-        case OBJ_TYPE_BOOL: {
+        case PAD_OBJ_TYPE__BOOL: {
             if (!rref->boolean) {
                 pushb_error("zero division error");
                 return NULL;
@@ -8896,27 +8896,27 @@ trv_calc_asscalc_div_ass_chain(ast_t *ast, trv_args_t *targs) {
         } break;
         }
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return NULL;
         } break;
-        case OBJ_TYPE_INT: {
+        case PAD_OBJ_TYPE__INT: {
             if (rref->lvalue == 0) {
                 pushb_error("zero division error");
                 return NULL;
             }
             lref->float_value /= rref->lvalue;
         } break;
-        case OBJ_TYPE_FLOAT: {
+        case PAD_OBJ_TYPE__FLOAT: {
             if (rref->float_value == 0.0) {
                 pushb_error("zero division error");
                 return NULL;
             }
             lref->float_value /= rref->float_value;
         } break;
-        case OBJ_TYPE_BOOL: {
+        case PAD_OBJ_TYPE__BOOL: {
             if (!rref->boolean) {
                 pushb_error("zero division error");
                 return NULL;
@@ -8925,35 +8925,35 @@ trv_calc_asscalc_div_ass_chain(ast_t *ast, trv_args_t *targs) {
         } break;
         }
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return NULL;
         } break;
-        case OBJ_TYPE_INT: {
+        case PAD_OBJ_TYPE__INT: {
             if (rref->lvalue == 0) {
                 pushb_error("zero division error");
                 return NULL;
             }
             lref->lvalue = ((objint_t) lref->boolean) / rref->lvalue;
-            lref->type = OBJ_TYPE_INT;
+            lref->type = PAD_OBJ_TYPE__INT;
         } break;
-        case OBJ_TYPE_FLOAT: {
+        case PAD_OBJ_TYPE__FLOAT: {
             if (rref->float_value == 0.0) {
                 pushb_error("zero division error");
                 return NULL;
             }
             lref->float_value = ((objfloat_t) lref->boolean) / rref->float_value;
-            lref->type = OBJ_TYPE_FLOAT;
+            lref->type = PAD_OBJ_TYPE__FLOAT;
         } break;
-        case OBJ_TYPE_BOOL: {
+        case PAD_OBJ_TYPE__BOOL: {
             if (!rref->boolean) {
                 pushb_error("zero division error");
                 return NULL;
             }
             lref->lvalue = ((objint_t) lref->boolean) / ((objint_t) rref->boolean);
-            lref->type = OBJ_TYPE_INT;
+            lref->type = PAD_OBJ_TYPE__INT;
         } break;
         }
     } break;
@@ -8966,21 +8966,21 @@ trv_calc_asscalc_div_ass_chain(ast_t *ast, trv_args_t *targs) {
  * TODO: use me!
  * TODO: test
  */
-static object_t *
+static PadObj *
 trv_calc_asscalc_mod_ass_chain(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_CHAIN);
+    assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
 
-    object_t *lref = _refer_chain_obj_with_ref(lhs);
+    PadObj *lref = _refer_chain_obj_with_ref(lhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to refer chain object");
         return NULL;
     }
 
-    object_t *rref = _extract_ref_of_obj_all(rhs);
+    PadObj *rref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return NULL;
@@ -8991,20 +8991,20 @@ trv_calc_asscalc_mod_ass_chain(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand (%d)", lref->type);
         return NULL;
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return NULL;
         } break;
-        case OBJ_TYPE_INT: {
+        case PAD_OBJ_TYPE__INT: {
             if (rref->lvalue == 0) {
                 pushb_error("zero division error");
                 return NULL;
             }
             lref->lvalue %= rref->lvalue;
         } break;
-        case OBJ_TYPE_BOOL: {
+        case PAD_OBJ_TYPE__BOOL: {
             if (!rref->boolean) {
                 pushb_error("zero division error");
                 return NULL;
@@ -9013,27 +9013,27 @@ trv_calc_asscalc_mod_ass_chain(ast_t *ast, trv_args_t *targs) {
         } break;
         }
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         switch (rref->type) {
         default: {
             pushb_error("invalid right hand operand (%d)", rref->type);
             return NULL;
         } break;
-        case OBJ_TYPE_INT: {
+        case PAD_OBJ_TYPE__INT: {
             if (rref->lvalue == 0) {
                 pushb_error("zero division error");
                 return NULL;
             }
             lref->lvalue = ((objint_t) lref->boolean) % rref->lvalue;
-            lref->type = OBJ_TYPE_INT;
+            lref->type = PAD_OBJ_TYPE__INT;
         } break;
-        case OBJ_TYPE_BOOL: {
+        case PAD_OBJ_TYPE__BOOL: {
             if (!rref->boolean) {
                 pushb_error("zero division error");
                 return NULL;
             }
             lref->lvalue = ((objint_t) lref->boolean) % ((objint_t) rref->boolean);
-            lref->type = OBJ_TYPE_INT;
+            lref->type = PAD_OBJ_TYPE__INT;
         } break;
         }
     } break;
@@ -9042,8 +9042,8 @@ trv_calc_asscalc_mod_ass_chain(ast_t *ast, trv_args_t *targs) {
     return lref;
 }
 
-static object_t *
-extract_idn_and_chain(ast_t *ast, trv_args_t *targs, object_t *obj) {
+static PadObj *
+extract_idn_and_chain(ast_t *ast, trv_args_t *targs, PadObj *obj) {
     if (!ast || !targs || !obj) {
         return NULL;
     }
@@ -9053,8 +9053,8 @@ again:
     default: {
         return_trav(obj);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        const char *idn = obj_getc_idn_name(obj);
+    case PAD_OBJ_TYPE__IDENT: {
+        const char *idn = PadObj_GetcIdentName(obj);
         obj = pull_ref_all(obj);
         if (!obj) {
             pushb_error("\"%s\" is not defined", idn);
@@ -9062,7 +9062,7 @@ again:
         }
         goto again;
     } break;
-    case OBJ_TYPE_CHAIN: {
+    case PAD_OBJ_TYPE__CHAIN: {
         obj = _refer_chain_obj_with_ref(obj);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to refer chain object");
@@ -9074,10 +9074,10 @@ again:
     }
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_add_ass(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
     targs->depth += 1;
@@ -9087,14 +9087,14 @@ trv_calc_asscalc_add_ass(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
         break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_calc_asscalc_add_ass_identifier");
-        object_t *result = trv_calc_asscalc_add_ass_identifier(ast, targs);
+        PadObj *result = trv_calc_asscalc_add_ass_identifier(ast, targs);
         return_trav(result);
     } break;
-    case OBJ_TYPE_CHAIN: {
+    case PAD_OBJ_TYPE__CHAIN: {
         check("call trv_calc_asscalc_add_ass_chain");
-        object_t *result = trv_calc_asscalc_add_ass_chain(ast, targs);
+        PadObj *result = trv_calc_asscalc_add_ass_chain(ast, targs);
         return_trav(result);
     } break;
     }
@@ -9103,18 +9103,18 @@ trv_calc_asscalc_add_ass(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *idnobj = targs->lhs_obj;
+    PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    object_t *intobj = pull_ref_all(idnobj);
-    object_t *rhs = targs->rhs_obj;
+    PadObj *intobj = pull_ref_all(idnobj);
+    PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
-    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
+    assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9125,21 +9125,21 @@ trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand type (%d)", rhsref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *lhs = obj_deep_copy(intobj);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *lhs = PadObj_DeepCopy(intobj);
         lhs->lvalue -= rhsref->lvalue;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *lhs = obj_deep_copy(intobj);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *lhs = PadObj_DeepCopy(intobj);
         lhs->float_value = lhs->lvalue - rhsref->float_value;
-        lhs->type = OBJ_TYPE_FLOAT;
+        lhs->type = PAD_OBJ_TYPE__FLOAT;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *lhs = obj_deep_copy(intobj);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *lhs = PadObj_DeepCopy(intobj);
         lhs->lvalue -= (objint_t) rhsref->boolean;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
@@ -9150,18 +9150,18 @@ trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_sub_ass_idn_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *idnobj = targs->lhs_obj;
+    PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    object_t *floatobj = pull_ref_all(idnobj);
-    object_t *rhs = targs->rhs_obj;
+    PadObj *floatobj = pull_ref_all(idnobj);
+    PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
-    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
+    assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9172,20 +9172,20 @@ trv_calc_asscalc_sub_ass_idn_float(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand type (%d)", rhsref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *lhs = obj_deep_copy(floatobj);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *lhs = PadObj_DeepCopy(floatobj);
         lhs->float_value -= rhsref->lvalue;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *lhs = obj_deep_copy(floatobj);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *lhs = PadObj_DeepCopy(floatobj);
         lhs->float_value -= rhsref->float_value;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *lhs = obj_deep_copy(floatobj);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *lhs = PadObj_DeepCopy(floatobj);
         lhs->float_value -= (objfloat_t) rhsref->boolean;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
@@ -9196,18 +9196,18 @@ trv_calc_asscalc_sub_ass_idn_float(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_sub_ass_idn_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *idnobj = targs->lhs_obj;
+    PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    object_t *boolobj = pull_ref_all(idnobj);
-    object_t *rhs = targs->rhs_obj;
+    PadObj *boolobj = pull_ref_all(idnobj);
+    PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
-    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
+    assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9218,24 +9218,24 @@ trv_calc_asscalc_sub_ass_idn_bool(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand type (%d)", rhsref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *lhs = obj_deep_copy(boolobj);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->lvalue = lhs->boolean - rhsref->lvalue;
-        lhs->type = OBJ_TYPE_INT;
+        lhs->type = PAD_OBJ_TYPE__INT;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *lhs = obj_deep_copy(boolobj);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->float_value = lhs->boolean - rhsref->float_value;
-        lhs->type = OBJ_TYPE_FLOAT;
+        lhs->type = PAD_OBJ_TYPE__FLOAT;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *lhs = obj_deep_copy(boolobj);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->lvalue = lhs->boolean - rhsref->boolean;
-        lhs->type = OBJ_TYPE_INT;
+        lhs->type = PAD_OBJ_TYPE__INT;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
@@ -9245,14 +9245,14 @@ trv_calc_asscalc_sub_ass_idn_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_sub_ass_idn(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
-    assert(lhs->type == OBJ_TYPE_IDENTIFIER);
+    assert(lhs->type == PAD_OBJ_TYPE__IDENT);
 
-    object_t *lhsref = _extract_ref_of_obj_all(lhs);
+    PadObj *lhsref = _extract_ref_of_obj_all(lhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to pull reference");
         return_trav(NULL);
@@ -9263,19 +9263,19 @@ trv_calc_asscalc_sub_ass_idn(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand type (%d)", lhs->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         targs->lhs_obj = lhs;
-        object_t *result = trv_calc_asscalc_sub_ass_idn_int(ast, targs);
+        PadObj *result = trv_calc_asscalc_sub_ass_idn_int(ast, targs);
         return_trav(result);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         targs->lhs_obj = lhs;
-        object_t *result = trv_calc_asscalc_sub_ass_idn_float(ast, targs);
+        PadObj *result = trv_calc_asscalc_sub_ass_idn_float(ast, targs);
         return_trav(result);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         targs->lhs_obj = lhs;
-        object_t *result = trv_calc_asscalc_sub_ass_idn_bool(ast, targs);
+        PadObj *result = trv_calc_asscalc_sub_ass_idn_bool(ast, targs);
         return_trav(result);
     } break;
     }
@@ -9284,10 +9284,10 @@ trv_calc_asscalc_sub_ass_idn(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_sub_ass(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
     targs->depth += 1;
@@ -9297,14 +9297,14 @@ trv_calc_asscalc_sub_ass(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand type (%d)", lhs->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
+    case PAD_OBJ_TYPE__IDENT: {
         check("call trv_asscalc_sub_ass_idn");
-        object_t *obj = trv_calc_asscalc_sub_ass_idn(ast, targs);
+        PadObj *obj = trv_calc_asscalc_sub_ass_idn(ast, targs);
         return_trav(obj);
     } break;
-    case OBJ_TYPE_CHAIN: {
+    case PAD_OBJ_TYPE__CHAIN: {
         check("call trv_calc_asscalc_sub_ass_chain");
-        object_t *result = trv_calc_asscalc_sub_ass_chain(ast, targs);
+        PadObj *result = trv_calc_asscalc_sub_ass_chain(ast, targs);
         return_trav(result);
     } break;
     }
@@ -9313,18 +9313,18 @@ trv_calc_asscalc_sub_ass(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_mul_ass_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *idnobj = targs->lhs_obj;
+    PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    object_t *intobj = pull_ref_all(idnobj);
-    object_t *rhs = targs->rhs_obj;
+    PadObj *intobj = pull_ref_all(idnobj);
+    PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
-    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
+    assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9335,21 +9335,21 @@ trv_calc_asscalc_mul_ass_int(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand (%d)", rhsref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *lhs = obj_deep_copy(intobj);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *lhs = PadObj_DeepCopy(intobj);
         lhs->lvalue *= rhsref->lvalue;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *lhs = obj_deep_copy(intobj);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *lhs = PadObj_DeepCopy(intobj);
         lhs->float_value = lhs->lvalue * rhsref->float_value;
-        lhs->type = OBJ_TYPE_FLOAT;
+        lhs->type = PAD_OBJ_TYPE__FLOAT;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *lhs = obj_deep_copy(intobj);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *lhs = PadObj_DeepCopy(intobj);
         lhs->lvalue *= (objint_t) rhsref->boolean;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
@@ -9360,18 +9360,18 @@ trv_calc_asscalc_mul_ass_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_mul_ass_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *idnobj = targs->lhs_obj;
+    PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    object_t *floatobj = pull_ref_all(idnobj);
-    object_t *rhs = targs->rhs_obj;
+    PadObj *floatobj = pull_ref_all(idnobj);
+    PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
-    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
+    assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9382,20 +9382,20 @@ trv_calc_asscalc_mul_ass_float(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand (%d)", rhsref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *lhs = obj_deep_copy(floatobj);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *lhs = PadObj_DeepCopy(floatobj);
         lhs->float_value *= rhsref->lvalue;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *lhs = obj_deep_copy(floatobj);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *lhs = PadObj_DeepCopy(floatobj);
         lhs->float_value *= rhsref->float_value;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *lhs = obj_deep_copy(floatobj);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *lhs = PadObj_DeepCopy(floatobj);
         lhs->float_value *= (objfloat_t) rhsref->boolean;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
@@ -9406,18 +9406,18 @@ trv_calc_asscalc_mul_ass_float(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_mul_ass_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *idnobj = targs->lhs_obj;
+    PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    object_t *boolobj = pull_ref_all(idnobj);
-    object_t *rhs = targs->rhs_obj;
+    PadObj *boolobj = pull_ref_all(idnobj);
+    PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
-    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
+    assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9428,24 +9428,24 @@ trv_calc_asscalc_mul_ass_bool(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand (%d)", rhsref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *lhs = obj_deep_copy(boolobj);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->lvalue = lhs->boolean * rhsref->lvalue;
-        lhs->type = OBJ_TYPE_INT;
+        lhs->type = PAD_OBJ_TYPE__INT;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *lhs = obj_deep_copy(boolobj);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->float_value = lhs->boolean * rhsref->float_value;
-        lhs->type = OBJ_TYPE_FLOAT;
+        lhs->type = PAD_OBJ_TYPE__FLOAT;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *lhs = obj_deep_copy(boolobj);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->lvalue = lhs->boolean * rhsref->boolean;
-        lhs->type = OBJ_TYPE_INT;
+        lhs->type = PAD_OBJ_TYPE__INT;
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
@@ -9455,18 +9455,18 @@ trv_calc_asscalc_mul_ass_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_mul_ass_string(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *idnobj = targs->lhs_obj;
+    PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    object_t *unicodeobj = pull_ref_all(idnobj);
-    object_t *rhs = targs->rhs_obj;
+    PadObj *unicodeobj = pull_ref_all(idnobj);
+    PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
-    assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
+    assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9477,8 +9477,8 @@ trv_calc_asscalc_mul_ass_string(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand (%d)", rhsref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *lhs = obj_deep_copy(unicodeobj);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *lhs = PadObj_DeepCopy(unicodeobj);
         if (rhsref->lvalue < 0) {
             pushb_error("can't mul by negative value");
             return_trav(NULL);
@@ -9494,8 +9494,8 @@ trv_calc_asscalc_mul_ass_string(ast_t *ast, trv_args_t *targs) {
         set_ref(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *lhs = obj_deep_copy(unicodeobj);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *lhs = PadObj_DeepCopy(unicodeobj);
         if (!rhsref->boolean) {
             uni_clear(lhs->unicode);
         }
@@ -9508,22 +9508,22 @@ trv_calc_asscalc_mul_ass_string(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_mul_ass(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
-    if (lhs->type == OBJ_TYPE_CHAIN) {
+    if (lhs->type == PAD_OBJ_TYPE__CHAIN) {
         check("call trv_calc_asscalc_mul_ass_chain");
-        object_t *result = trv_calc_asscalc_mul_ass_chain(ast, targs);
+        PadObj *result = trv_calc_asscalc_mul_ass_chain(ast, targs);
         return_trav(result);
-    } else if (lhs->type != OBJ_TYPE_IDENTIFIER) {
+    } else if (lhs->type != PAD_OBJ_TYPE__IDENT) {
         pushb_error("invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
     }
 
-    object_t *lhsref = _extract_ref_of_obj_all(lhs);
+    PadObj *lhsref = _extract_ref_of_obj_all(lhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9534,28 +9534,28 @@ trv_calc_asscalc_mul_ass(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand (%d)", lhsref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("call trv_calc_asscalc_mul_ass_int");
         targs->lhs_obj = lhs;
-        object_t *result = trv_calc_asscalc_mul_ass_int(ast, targs);
+        PadObj *result = trv_calc_asscalc_mul_ass_int(ast, targs);
         return_trav(result);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         check("call trv_calc_asscalc_mul_ass_float");
         targs->lhs_obj = lhs;
-        object_t *result = trv_calc_asscalc_mul_ass_float(ast, targs);
+        PadObj *result = trv_calc_asscalc_mul_ass_float(ast, targs);
         return_trav(result);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("call trv_calc_asscalc_mul_ass_bool");
         targs->lhs_obj = lhs;
-        object_t *result = trv_calc_asscalc_mul_ass_bool(ast, targs);
+        PadObj *result = trv_calc_asscalc_mul_ass_bool(ast, targs);
         return_trav(result);
     } break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         check("call trv_calc_asscalc_mul_ass_string");
         targs->lhs_obj = lhs;
-        object_t *result = trv_calc_asscalc_mul_ass_string(ast, targs);
+        PadObj *result = trv_calc_asscalc_mul_ass_string(ast, targs);
         return_trav(result);
     } break;
     }
@@ -9564,15 +9564,15 @@ trv_calc_asscalc_mul_ass(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_div_ass_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(lhs->type == PAD_OBJ_TYPE__INT);
 
-    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9583,7 +9583,7 @@ trv_calc_asscalc_div_ass_int(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand (%d)", rhsref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         if (rhsref->lvalue == 0) {
             pushb_error("zero division error");
             return_trav(NULL);
@@ -9592,17 +9592,17 @@ trv_calc_asscalc_div_ass_int(ast_t *ast, trv_args_t *targs) {
         lhs->lvalue /= rhsref->lvalue;
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         if (rhsref->float_value == 0.0) {
             pushb_error("zero division error");
             return_trav(NULL);
         }
 
         lhs->float_value = lhs->lvalue / rhsref->float_value;
-        lhs->type = OBJ_TYPE_FLOAT;
+        lhs->type = PAD_OBJ_TYPE__FLOAT;
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         if (!rhsref->boolean) {
             pushb_error("zero division error");
             return_trav(NULL);
@@ -9617,15 +9617,15 @@ trv_calc_asscalc_div_ass_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_div_ass_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_FLOAT);
+    assert(lhs->type == PAD_OBJ_TYPE__FLOAT);
 
-    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9636,7 +9636,7 @@ trv_calc_asscalc_div_ass_float(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand (%d)", rhsref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         if (rhsref->lvalue == 0) {
             pushb_error("zero division error");
             return_trav(NULL);
@@ -9645,7 +9645,7 @@ trv_calc_asscalc_div_ass_float(ast_t *ast, trv_args_t *targs) {
         lhs->float_value /= rhsref->lvalue;
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         if (rhsref->float_value == 0.0) {
             pushb_error("zero division error");
             return_trav(NULL);
@@ -9654,7 +9654,7 @@ trv_calc_asscalc_div_ass_float(ast_t *ast, trv_args_t *targs) {
         lhs->float_value /= rhsref->float_value;
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         if (!rhsref->boolean) {
             pushb_error("zero division error");
             return_trav(NULL);
@@ -9669,15 +9669,15 @@ trv_calc_asscalc_div_ass_float(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_div_ass_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
-    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9688,36 +9688,36 @@ trv_calc_asscalc_div_ass_bool(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand");
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         if (rhsref->lvalue == 0) {
             pushb_error("zero division error");
             return_trav(NULL);
         }
 
         objint_t result = ((objint_t)lhs->boolean) / rhsref->lvalue;
-        lhs->type = OBJ_TYPE_INT;
+        lhs->type = PAD_OBJ_TYPE__INT;
         lhs->lvalue = result;
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         if (rhsref->float_value == 0) {
             pushb_error("zero division error");
             return_trav(NULL);
         }
 
         objfloat_t result = ((objfloat_t)lhs->boolean) / rhsref->float_value;
-        lhs->type = OBJ_TYPE_FLOAT;
+        lhs->type = PAD_OBJ_TYPE__FLOAT;
         lhs->float_value = result;
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         if (!rhsref->boolean) {
             pushb_error("zero division error");
             return_trav(NULL);
         }
 
         objint_t result = ((objint_t)lhs->boolean) / ((objint_t)rhsref->boolean);
-        lhs->type = OBJ_TYPE_INT;
+        lhs->type = PAD_OBJ_TYPE__INT;
         lhs->lvalue = result;
         return_trav(lhs);
     } break;
@@ -9727,22 +9727,22 @@ trv_calc_asscalc_div_ass_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_div_ass(ast_t *ast, trv_args_t *targs) {
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
     tready();
 
-    if (lhs->type == OBJ_TYPE_CHAIN) {
+    if (lhs->type == PAD_OBJ_TYPE__CHAIN) {
         check("call trv_calc_asscalc_div_ass_chain");
-        object_t *result = trv_calc_asscalc_div_ass_chain(ast, targs);
+        PadObj *result = trv_calc_asscalc_div_ass_chain(ast, targs);
         return_trav(result);
-    } else if (lhs->type != OBJ_TYPE_IDENTIFIER) {
+    } else if (lhs->type != PAD_OBJ_TYPE__IDENT) {
         pushb_error("invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
     }
 
-    object_t *lhsref = _extract_ref_of_obj_all(lhs);
+    PadObj *lhsref = _extract_ref_of_obj_all(lhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9756,16 +9756,16 @@ trv_calc_asscalc_div_ass(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand");
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_BOOL: {
-        object_t *result = trv_calc_asscalc_div_ass_bool(ast, targs);
+    case PAD_OBJ_TYPE__BOOL: {
+        PadObj *result = trv_calc_asscalc_div_ass_bool(ast, targs);
         return_trav(result);
     } break;
-    case OBJ_TYPE_INT: {
-        object_t *result = trv_calc_asscalc_div_ass_int(ast, targs);
+    case PAD_OBJ_TYPE__INT: {
+        PadObj *result = trv_calc_asscalc_div_ass_int(ast, targs);
         return_trav(result);
     } break;
-    case OBJ_TYPE_FLOAT: {
-        object_t *result = trv_calc_asscalc_div_ass_float(ast, targs);
+    case PAD_OBJ_TYPE__FLOAT: {
+        PadObj *result = trv_calc_asscalc_div_ass_float(ast, targs);
         return_trav(result);
     } break;
     }
@@ -9774,15 +9774,15 @@ trv_calc_asscalc_div_ass(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_mod_ass_int(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_INT);
+    assert(lhs->type == PAD_OBJ_TYPE__INT);
 
-    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9793,7 +9793,7 @@ trv_calc_asscalc_mod_ass_int(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand (%d)", rhsref->type);
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         if (rhsref->lvalue == 0) {
             pushb_error("zero division error");
             return_trav(NULL);
@@ -9803,7 +9803,7 @@ trv_calc_asscalc_mod_ass_int(ast_t *ast, trv_args_t *targs) {
         lhs->lvalue %= rhsref->lvalue;
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         if (!rhsref->boolean) {
             pushb_error("zero division error");
             return_trav(NULL);
@@ -9819,15 +9819,15 @@ trv_calc_asscalc_mod_ass_int(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_mod_ass_bool(ast_t *ast, trv_args_t *targs) {
     tready();
-    object_t *lhs = targs->lhs_obj;
-    object_t *rhs = targs->rhs_obj;
+    PadObj *lhs = targs->lhs_obj;
+    PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == OBJ_TYPE_BOOL);
+    assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
-    object_t *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9838,7 +9838,7 @@ trv_calc_asscalc_mod_ass_bool(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid right hand operand");
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         if (rhsref->lvalue == 0) {
             pushb_error("zero division error");
             return_trav(NULL);
@@ -9846,11 +9846,11 @@ trv_calc_asscalc_mod_ass_bool(ast_t *ast, trv_args_t *targs) {
 
         // TODO: need imp float!
         objint_t result = ((objint_t)lhs->boolean) % rhsref->lvalue;
-        lhs->type = OBJ_TYPE_INT;
+        lhs->type = PAD_OBJ_TYPE__INT;
         lhs->lvalue = result;
         return_trav(lhs);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         if (!rhsref->boolean) {
             pushb_error("zero division error");
             return_trav(NULL);
@@ -9858,7 +9858,7 @@ trv_calc_asscalc_mod_ass_bool(ast_t *ast, trv_args_t *targs) {
 
         // TODO: need imp float!
         objint_t result = ((objint_t)lhs->boolean) % ((objint_t)rhsref->boolean);
-        lhs->type = OBJ_TYPE_INT;
+        lhs->type = PAD_OBJ_TYPE__INT;
         lhs->lvalue = result;
         return_trav(lhs);
     } break;
@@ -9868,22 +9868,22 @@ trv_calc_asscalc_mod_ass_bool(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc_mod_ass(ast_t *ast, trv_args_t *targs) {
-    object_t *lhs = targs->lhs_obj;
+    PadObj *lhs = targs->lhs_obj;
     assert(lhs);
     tready();
 
-    if (lhs->type == OBJ_TYPE_CHAIN) {
+    if (lhs->type == PAD_OBJ_TYPE__CHAIN) {
         check("call trv_calc_asscalc_mod_ass_chain");
-        object_t *result = trv_calc_asscalc_mod_ass_chain(ast, targs);
+        PadObj *result = trv_calc_asscalc_mod_ass_chain(ast, targs);
         return_trav(result);
-    } else if (lhs->type != OBJ_TYPE_IDENTIFIER) {
+    } else if (lhs->type != PAD_OBJ_TYPE__IDENT) {
         pushb_error("invalid left hand operand (%d)", lhs->type);
         return_trav(NULL);
     }
 
-    object_t *lhsref = _extract_ref_of_obj_all(lhs);
+    PadObj *lhsref = _extract_ref_of_obj_all(lhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9897,14 +9897,14 @@ trv_calc_asscalc_mod_ass(ast_t *ast, trv_args_t *targs) {
         pushb_error("invalid left hand operand");
         return_trav(NULL);
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         check("trv_calc_asscalc_mod_ass_bool");
-        object_t *result = trv_calc_asscalc_mod_ass_bool(ast, targs);
+        PadObj *result = trv_calc_asscalc_mod_ass_bool(ast, targs);
         return_trav(result);
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         check("trv_calc_asscalc_mod_ass_int");
-        object_t *result = trv_calc_asscalc_mod_ass_int(ast, targs);
+        PadObj *result = trv_calc_asscalc_mod_ass_int(ast, targs);
         return_trav(result);
     } break;
     }
@@ -9913,7 +9913,7 @@ trv_calc_asscalc_mod_ass(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_calc_asscalc(ast_t *ast, trv_args_t *targs) {
     tready();
     PadAugassignNode *augassign = targs->augassign_op_node;
@@ -9925,27 +9925,27 @@ trv_calc_asscalc(ast_t *ast, trv_args_t *targs) {
     default: break;
     case PAD_OP__ADD_ASS: {
         check("call trv_calc_asscalc_add_ass");
-        object_t *obj = trv_calc_asscalc_add_ass(ast, targs);
+        PadObj *obj = trv_calc_asscalc_add_ass(ast, targs);
         return_trav(obj);
     } break;
     case PAD_OP__SUB_ASS: {
         check("call trv_calc_asscalc_sub_ass");
-        object_t *obj = trv_calc_asscalc_sub_ass(ast, targs);
+        PadObj *obj = trv_calc_asscalc_sub_ass(ast, targs);
         return_trav(obj);
     } break;
     case PAD_OP__MUL_ASS: {
         check("call trv_calc_asscalc_mul_ass");
-        object_t *obj = trv_calc_asscalc_mul_ass(ast, targs);
+        PadObj *obj = trv_calc_asscalc_mul_ass(ast, targs);
         return_trav(obj);
     } break;
     case PAD_OP__DIV_ASS: {
         check("call trv_calc_asscalc_div_ass");
-        object_t *obj = trv_calc_asscalc_div_ass(ast, targs);
+        PadObj *obj = trv_calc_asscalc_div_ass(ast, targs);
         return_trav(obj);
     } break;
     case PAD_OP__MOD_ASS: {
         check("call trv_calc_asscalc_mod_ass");
-        object_t *obj = trv_calc_asscalc_mod_ass(ast, targs);
+        PadObj *obj = trv_calc_asscalc_mod_ass(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -9957,7 +9957,7 @@ trv_calc_asscalc(ast_t *ast, trv_args_t *targs) {
 /**
  *  right priority
  */
-static object_t *
+static PadObj *
 trv_asscalc(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -9972,42 +9972,42 @@ trv_asscalc(ast_t *ast, trv_args_t *targs) {
     targs->do_not_refer_chain = do_not_refer_chain; \
     return_trav(result); \
 
-    if (nodearr_len(asscalc->nodearr) == 1) {
-        PadNode *node = nodearr_get(asscalc->nodearr, 0);
+    if (PadNodeAry_Len(asscalc->nodearr) == 1) {
+        PadNode *node = PadNodeAry_Get(asscalc->nodearr, 0);
         assert(node->type == PAD_NODE_TYPE__EXPR);
         check("call _trv_traverse with expr");
         targs->ref_node = node;
         targs->depth = depth + 1;
-        object_t *result = _trv_traverse(ast, targs);
+        PadObj *result = _trv_traverse(ast, targs);
         _return(result);
-    } else if (nodearr_len(asscalc->nodearr) >= 3) {
-        node_array_t *nodearr = asscalc->nodearr;
-        PadNode *rnode = nodearr_get_last(nodearr);
+    } else if (PadNodeAry_Len(asscalc->nodearr) >= 3) {
+        PadNodeAry *nodearr = asscalc->nodearr;
+        PadNode *rnode = PadNodeAry_GetLast(nodearr);
         assert(rnode->type == PAD_NODE_TYPE__EXPR);
         check("call _trv_traverse");
         targs->ref_node = rnode;
         targs->depth = depth + 1;
         targs->do_not_refer_chain = true;
-        object_t *rhs = _trv_traverse(ast, targs);
+        PadObj *rhs = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             _return(NULL);
         }
         assert(rhs);
 
-        for (int i = nodearr_len(nodearr) - 2; i > 0; i -= 2) {
-            PadNode *node = nodearr_get(nodearr, i);
+        for (int i = PadNodeAry_Len(nodearr) - 2; i > 0; i -= 2) {
+            PadNode *node = PadNodeAry_Get(nodearr, i);
             assert(node->type == PAD_NODE_TYPE__AUGASSIGN);
             PadAugassignNode *op = node->real;
             assert(op);
 
-            PadNode *lnode = nodearr_get(nodearr, i - 1);
+            PadNode *lnode = PadNodeAry_Get(nodearr, i - 1);
             assert(lnode);
             assert(lnode->type == PAD_NODE_TYPE__EXPR);
             check("call _trv_traverse");
             targs->ref_node = lnode;
             targs->depth = depth + 1;
             targs->do_not_refer_chain = true;
-            object_t *lhs = _trv_traverse(ast, targs);
+            PadObj *lhs = _trv_traverse(ast, targs);
             if (PadAst_HasErrs(ast)) {
                 _return(NULL);
             }
@@ -10018,7 +10018,7 @@ trv_asscalc(ast_t *ast, trv_args_t *targs) {
             targs->augassign_op_node = op;
             targs->lhs_obj = lhs;
             targs->depth = depth + 1;
-            object_t *result = trv_calc_asscalc(ast, targs);
+            PadObj *result = trv_calc_asscalc(ast, targs);
             if (PadAst_HasErrs(ast)) {
                 _return(NULL);
             }
@@ -10034,7 +10034,7 @@ trv_asscalc(ast_t *ast, trv_args_t *targs) {
     _return(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_factor(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -10047,12 +10047,12 @@ trv_factor(ast_t *ast, trv_args_t *targs) {
     if (factor->atom) {
         check("call _trv_traverse");
         targs->ref_node = factor->atom;
-        object_t *obj = _trv_traverse(ast, targs);
+        PadObj *obj = _trv_traverse(ast, targs);
         return_trav(obj);
     } else if (factor->formula) {
         check("call _trv_traverse");
         targs->ref_node = factor->formula;
-        object_t *obj = _trv_traverse(ast, targs);
+        PadObj *obj = _trv_traverse(ast, targs);
         return_trav(obj);
     }
 
@@ -10060,7 +10060,7 @@ trv_factor(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_atom(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -10073,47 +10073,47 @@ trv_atom(ast_t *ast, trv_args_t *targs) {
     if (atom->nil) {
         check("call _trv_traverse with nil");
         targs->ref_node = atom->nil;
-        object_t *obj = _trv_traverse(ast, targs);
+        PadObj *obj = _trv_traverse(ast, targs);
         return_trav(obj);
     } else if (atom->false_) {
         check("call _trv_traverse with false_");
         targs->ref_node = atom->false_;
-        object_t *obj = _trv_traverse(ast, targs);
+        PadObj *obj = _trv_traverse(ast, targs);
         return_trav(obj);
     } else if (atom->true_) {
         check("call _trv_traverse with true_");
         targs->ref_node = atom->true_;
-        object_t *obj = _trv_traverse(ast, targs);
+        PadObj *obj = _trv_traverse(ast, targs);
         return_trav(obj);
     } else if (atom->digit) {
         check("call _trv_traverse with digit");
         targs->ref_node = atom->digit;
-        object_t *obj = _trv_traverse(ast, targs);
+        PadObj *obj = _trv_traverse(ast, targs);
         return_trav(obj);
     } else if (atom->float_) {
         check("call _trv_traverse with digit");
         targs->ref_node = atom->float_;
-        object_t *obj = _trv_traverse(ast, targs);
+        PadObj *obj = _trv_traverse(ast, targs);
         return_trav(obj);        
     } else if (atom->string) {
         check("call _trv_traverse with string");
         targs->ref_node = atom->string;
-        object_t *obj = _trv_traverse(ast, targs);
+        PadObj *obj = _trv_traverse(ast, targs);
         return_trav(obj);
     } else if (atom->array) {
         check("call _trv_traverse with array");
         targs->ref_node = atom->array;
-        object_t *obj = _trv_traverse(ast, targs);
+        PadObj *obj = _trv_traverse(ast, targs);
         return_trav(obj);
     } else if (atom->dict) {
         check("call _trv_traverse with dict");
         targs->ref_node = atom->dict;
-        object_t *obj = _trv_traverse(ast, targs);
+        PadObj *obj = _trv_traverse(ast, targs);
         return_trav(obj);
     } else if (atom->identifier) {
         check("call _trv_traverse with identifier");
         targs->ref_node = atom->identifier;
-        object_t *obj = _trv_traverse(ast, targs);
+        PadObj *obj = _trv_traverse(ast, targs);
         return_trav(obj);
     }
 
@@ -10121,7 +10121,7 @@ trv_atom(ast_t *ast, trv_args_t *targs) {
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_nil(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -10129,11 +10129,11 @@ trv_nil(ast_t *ast, trv_args_t *targs) {
     PadNilNode *nil = node->real;
     assert(nil);
     // not check exists field
-    object_t *nilobj = obj_new_nil(ast->ref_gc);
+    PadObj *nilobj = PadObj_NewNil(ast->ref_gc);
     return_trav(nilobj);
 }
 
-static object_t *
+static PadObj *
 trv_false(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -10141,10 +10141,10 @@ trv_false(ast_t *ast, trv_args_t *targs) {
     PadFalseNode *false_ = node->real;
     assert(false_);
     assert(!false_->boolean);
-    return_trav(obj_new_false(ast->ref_gc));
+    return_trav(PadObj_NewFalse(ast->ref_gc));
 }
 
-static object_t *
+static PadObj *
 trv_true(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -10152,32 +10152,32 @@ trv_true(ast_t *ast, trv_args_t *targs) {
     PadTrueNode *true_ = node->real;
     assert(true_);
     assert(true_->boolean);
-    return_trav(obj_new_true(ast->ref_gc));
+    return_trav(PadObj_NewTrue(ast->ref_gc));
 }
 
-static object_t *
+static PadObj *
 trv_digit(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__DIGIT);
     PadDigitNode *digit = node->real;
     assert(digit);
-    object_t *obj = obj_new_int(ast->ref_gc, digit->lvalue);
+    PadObj *obj = PadObj_NewInt(ast->ref_gc, digit->lvalue);
     return_trav(obj);
 }
 
-static object_t *
+static PadObj *
 trv_float(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__FLOAT);
     PadFloatNode *float_ = node->real;
     assert(float_);
-    object_t *obj = obj_new_float(ast->ref_gc, float_->value);
+    PadObj *obj = PadObj_NewFloat(ast->ref_gc, float_->value);
     return_trav(obj);
 }
 
-static object_t *
+static PadObj *
 trv_string(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -10186,7 +10186,7 @@ trv_string(ast_t *ast, trv_args_t *targs) {
     assert(string);
 
     // convert C string to unicode object
-    object_t *obj = obj_new_unicode_cstr(ast->ref_gc, string->string);
+    PadObj *obj = PadObj_NewUnicodeCStr(ast->ref_gc, string->string);
 
     return_trav(obj);
 }
@@ -10194,7 +10194,7 @@ trv_string(ast_t *ast, trv_args_t *targs) {
 /**
  * left priority
  */
-static object_t *
+static PadObj *
 trv_array_elems(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -10203,19 +10203,19 @@ trv_array_elems(ast_t *ast, trv_args_t *targs) {
     assert(array_elems);
 
     depth_t depth = targs->depth;
-    object_array_t *objarr = objarr_new();
+    PadObjAry *objarr = PadObjAry_New();
 
-    for (int32_t i = 0; i < nodearr_len(array_elems->nodearr); ++i) {
-        PadNode *n = nodearr_get(array_elems->nodearr, i);
+    for (int32_t i = 0; i < PadNodeAry_Len(array_elems->nodearr); ++i) {
+        PadNode *n = PadNodeAry_Get(array_elems->nodearr, i);
         targs->ref_node = n;
         targs->depth = depth + 1;
-        object_t *result = _trv_traverse(ast, targs);
+        PadObj *result = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("result is null");
             return_trav(NULL);
         }
 
-        object_t *ref = _extract_ref_of_obj_all(result);
+        PadObj *ref = _extract_ref_of_obj_all(result);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to extract reference");
             return_trav(NULL);
@@ -10224,29 +10224,29 @@ trv_array_elems(ast_t *ast, trv_args_t *targs) {
 
         switch (ref->type) {
         default: {
-            object_t *copy = obj_deep_copy(ref);
-            objarr_moveb(objarr, mem_move(copy));
+            PadObj *copy = PadObj_DeepCopy(ref);
+            PadObjAry_MoveBack(objarr, mem_move(copy));
         } break;
-        case OBJ_TYPE_NIL:
-        case OBJ_TYPE_INT:
-        case OBJ_TYPE_FLOAT:
-        case OBJ_TYPE_BOOL:
-        case OBJ_TYPE_UNICODE:
-        case OBJ_TYPE_ARRAY:
-        case OBJ_TYPE_DICT:
-        case OBJ_TYPE_OBJECT:
+        case PAD_OBJ_TYPE__NIL:
+        case PAD_OBJ_TYPE__INT:
+        case PAD_OBJ_TYPE__FLOAT:
+        case PAD_OBJ_TYPE__BOOL:
+        case PAD_OBJ_TYPE__UNICODE:
+        case PAD_OBJ_TYPE__ARRAY:
+        case PAD_OBJ_TYPE__DICT:
+        case PAD_OBJ_TYPE__OBJECT:
             // if object is array or dict then store reference at array
-            obj_inc_ref(ref);
-            objarr_pushb(objarr, ref);
+            PadObj_IncRef(ref);
+            PadObjAry_PushBack(objarr, ref);
             break;
         }
     }
 
-    object_t *ret = obj_new_array(ast->ref_gc, objarr);
+    PadObj *ret = PadObj_NewAry(ast->ref_gc, objarr);
     return_trav(ret);
 }
 
-static object_t *
+static PadObj *
 trv_array(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -10258,11 +10258,11 @@ trv_array(ast_t *ast, trv_args_t *targs) {
     check("call _trv_traverse with array elems");
     targs->ref_node = array->array_elems;
     targs->depth += 1;
-    object_t *result = _trv_traverse(ast, targs);
+    PadObj *result = _trv_traverse(ast, targs);
     return_trav(result);
 }
 
-static object_t *
+static PadObj *
 trv_dict_elem(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -10276,7 +10276,7 @@ trv_dict_elem(ast_t *ast, trv_args_t *targs) {
 
     check("call _trv_traverse with key simple assign");
     targs->ref_node = dict_elem->key_simple_assign;
-    object_t *key = _trv_traverse(ast, targs);
+    PadObj *key = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         return_trav(NULL);
     }
@@ -10286,31 +10286,31 @@ trv_dict_elem(ast_t *ast, trv_args_t *targs) {
         pushb_error("key is not string in dict elem");
         return_trav(NULL);
         break;
-    case OBJ_TYPE_UNICODE:
-    case OBJ_TYPE_IDENTIFIER:
+    case PAD_OBJ_TYPE__UNICODE:
+    case PAD_OBJ_TYPE__IDENT:
         break;
     }
 
     targs->ref_node = dict_elem->value_simple_assign;
-    object_t *val = _trv_traverse(ast, targs);
+    PadObj *val = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         return_trav(NULL);
     }
     assert(val);
 
-    object_array_t *objarr = objarr_new();
+    PadObjAry *objarr = PadObjAry_New();
 
-    objarr_moveb(objarr, key);
-    objarr_moveb(objarr, val);
+    PadObjAry_MoveBack(objarr, key);
+    PadObjAry_MoveBack(objarr, val);
 
-    object_t *obj = obj_new_array(ast->ref_gc, objarr);
+    PadObj *obj = PadObj_NewAry(ast->ref_gc, objarr);
     return_trav(obj);
 }
 
 /**
  * left priority
  */
-static object_t *
+static PadObj *
 trv_dict_elems(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -10321,25 +10321,25 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
     depth_t depth = targs->depth;
     object_dict_t *objdict = objdict_new(ast->ref_gc);
 
-    for (int32_t i = 0; i < nodearr_len(dict_elems->nodearr); ++i) {
-        PadNode *dict_elem = nodearr_get(dict_elems->nodearr, i);
+    for (int32_t i = 0; i < PadNodeAry_Len(dict_elems->nodearr); ++i) {
+        PadNode *dict_elem = PadNodeAry_Get(dict_elems->nodearr, i);
         check("call _trv_traverse with dict_elem");
         targs->ref_node = dict_elem;
         targs->depth = depth + 1;
-        object_t *arrobj = _trv_traverse(ast, targs);
+        PadObj *arrobj = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
-            obj_del(arrobj);
+            PadObj_Del(arrobj);
             objdict_del(objdict);
             return_trav(NULL);
         }
         assert(arrobj);
-        assert(arrobj->type == OBJ_TYPE_ARRAY);
-        object_array_t *objarr = arrobj->objarr;
-        assert(objarr_len(objarr) == 2);
-        const object_t *key = objarr_getc(objarr, 0);
-        object_t *val = objarr_get(objarr, 1);
+        assert(arrobj->type == PAD_OBJ_TYPE__ARRAY);
+        PadObjAry *objarr = arrobj->objarr;
+        assert(PadObjAry_Len(objarr) == 2);
+        const PadObj *key = PadObjAry_Getc(objarr, 0);
+        PadObj *val = PadObjAry_Get(objarr, 1);
 
-        if (val->type == OBJ_TYPE_IDENTIFIER) {
+        if (val->type == PAD_OBJ_TYPE__IDENT) {
             const char *idn = str_getc(val->identifier.name);
             val = pull_ref_all(val);
             if (!val) {
@@ -10352,18 +10352,18 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
         switch (key->type) {
         default:
             pushb_error("invalid key type");
-            obj_del(arrobj);
+            PadObj_Del(arrobj);
             objdict_del(objdict);
             return_trav(NULL);
             break;
-        case OBJ_TYPE_UNICODE:
+        case PAD_OBJ_TYPE__UNICODE:
             skey = uni_getc_mb(key->unicode);
             break;
-        case OBJ_TYPE_IDENTIFIER: {
-            const object_t *ref = pull_ref_all(key);
-            if (ref->type != OBJ_TYPE_UNICODE) {
+        case PAD_OBJ_TYPE__IDENT: {
+            const PadObj *ref = pull_ref_all(key);
+            if (ref->type != PAD_OBJ_TYPE__UNICODE) {
                 pushb_error("invalid key type in variable of dict");
-                obj_del(arrobj);
+                PadObj_Del(arrobj);
                 objdict_del(objdict);
                 return_trav(NULL);
                 break;
@@ -10372,16 +10372,16 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
         } break;
         }
 
-        obj_inc_ref(val);
+        PadObj_IncRef(val);
         objdict_set(objdict, skey, val);
-        obj_del(arrobj);
+        PadObj_Del(arrobj);
     }
 
-    object_t *ret = obj_new_dict(ast->ref_gc, objdict);
+    PadObj *ret = PadObj_NewDict(ast->ref_gc, objdict);
     return_trav(ret);
 }
 
-static object_t *
+static PadObj *
 trv_dict(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -10393,18 +10393,18 @@ trv_dict(ast_t *ast, trv_args_t *targs) {
     check("call _trv_traverse with dict");
     targs->ref_node = dict->dict_elems;
     targs->depth += 1;
-    object_t *result = _trv_traverse(ast, targs);
+    PadObj *result = _trv_traverse(ast, targs);
     return_trav(result);
 }
 
-static object_t *
+static PadObj *
 trv_identifier(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     PadIdentNode *identifier = node->real;
     assert(identifier && node->type == PAD_NODE_TYPE__IDENTIFIER);
-    object_array_t *ref_owners = targs->ref_owners;
+    PadObjAry *ref_owners = targs->ref_owners;
 
     PadCtx *ref_context = get_context_by_owners(ref_owners, ast->ref_context);
     if (!ref_context) {
@@ -10412,7 +10412,7 @@ trv_identifier(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
-    object_t *obj = obj_new_cidentifier(
+    PadObj *obj = PadObj_NewCIdent(
         ast->ref_gc,
         ref_context,
         identifier->identifier
@@ -10420,7 +10420,7 @@ trv_identifier(ast_t *ast, trv_args_t *targs) {
     return_trav(obj);
 }
 
-static object_t *
+static PadObj *
 trv_def(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -10431,24 +10431,24 @@ trv_def(ast_t *ast, trv_args_t *targs) {
     check("call _trv_traverse with func_def")
     targs->ref_node = def->func_def;
     targs->depth += 1;
-    object_t *result = _trv_traverse(ast, targs);
+    PadObj *result = _trv_traverse(ast, targs);
     return_trav(result);
 }
 
-static object_t *
+static PadObj *
 trv_func_def(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__FUNC_DEF);
     PadFuncDefNode *func_def = node->real;
     assert(func_def);
-    object_array_t *ref_owners = targs->ref_owners;
+    PadObjAry *ref_owners = targs->ref_owners;
     depth_t depth = targs->depth;
 
     check("call _trv_traverse with identifier");
     targs->ref_node = func_def->identifier;
     targs->depth = depth + 1;
-    object_t *name = _trv_traverse(ast, targs);
+    PadObj *name = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to traverse identifier");
         return_trav(NULL);
@@ -10460,42 +10460,42 @@ trv_func_def(ast_t *ast, trv_args_t *targs) {
         pushb_error("failed to traverse name in traverse func def");
         return_trav(NULL);
     }
-    assert(name->type == OBJ_TYPE_IDENTIFIER);
+    assert(name->type == PAD_OBJ_TYPE__IDENT);
 
     targs->ref_node = func_def->func_def_params;
     targs->depth = depth + 1;
-    object_t *def_args = _trv_traverse(ast, targs);
+    PadObj *def_args = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to traverse func def params");
         return_trav(NULL);
     }
     assert(def_args);
-    assert(def_args->type == OBJ_TYPE_ARRAY);
+    assert(def_args->type == PAD_OBJ_TYPE__ARRAY);
 
     // need extends func ?
-    object_t *extends_func = NULL;
+    PadObj *extends_func = NULL;
     if (func_def->func_extends) {
         targs->ref_node = func_def->func_extends;
         targs->depth = depth + 1;
-        object_t *extends_func_name = _trv_traverse(ast, targs);
+        PadObj *extends_func_name = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to traverse func-extends");
             return_trav(NULL);
         }
-        object_t *ref_extends_func = pull_ref_all(extends_func_name);
+        PadObj *ref_extends_func = pull_ref_all(extends_func_name);
         if (!ref_extends_func) {
-            pushb_error("not found \"%s\". can't extends", obj_getc_idn_name(extends_func_name));
+            pushb_error("not found \"%s\". can't extends", PadObj_GetcIdentName(extends_func_name));
             return_trav(NULL);
         }
 
         // deep copy
-        extends_func = obj_deep_copy(ref_extends_func);
-        obj_inc_ref(extends_func);  // for obj_new_func
+        extends_func = PadObj_DeepCopy(ref_extends_func);
+        PadObj_IncRef(extends_func);  // for PadObj_NewFunc
     }
 
-    node_array_t *ref_suites = func_def->contents;
+    PadNodeAry *ref_suites = func_def->contents;
     assert(func_def->blocks);
-    object_t *func_obj = obj_new_func(
+    PadObj *func_obj = PadObj_NewFunc(
         ast->ref_gc,
         ast,
         ast->ref_context,
@@ -10513,14 +10513,14 @@ trv_func_def(ast_t *ast, trv_args_t *targs) {
         targs->ref_node,
         ast->ref_context,
         ref_owners,
-        obj_getc_idn_name(name),
+        PadObj_GetcIdentName(name),
         mem_move(func_obj)
     );
 
     return_trav(NULL);
 }
 
-static object_t *
+static PadObj *
 trv_func_def_params(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -10534,14 +10534,14 @@ trv_func_def_params(ast_t *ast, trv_args_t *targs) {
     return _trv_traverse(ast, targs);
 }
 
-static object_t *
+static PadObj *
 trv_func_def_args(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__FUNC_DEF_ARGS);
     PadFuncDefArgsNode *func_def_args = node->real;
     assert(func_def_args && node->type == PAD_NODE_TYPE__FUNC_DEF_ARGS);
-    object_array_t *ref_owners = targs->ref_owners;
+    PadObjAry *ref_owners = targs->ref_owners;
 
     PadCtx *ref_context = get_context_by_owners(ref_owners, ast->ref_context);
     if (!ref_context) {
@@ -10549,27 +10549,27 @@ trv_func_def_args(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
-    object_array_t *args = objarr_new();
+    PadObjAry *args = PadObjAry_New();
 
-    for (int32_t i = 0; i < nodearr_len(func_def_args->identifiers); ++i) {
-        PadNode *n = nodearr_get(func_def_args->identifiers, i);
+    for (int32_t i = 0; i < PadNodeAry_Len(func_def_args->identifiers); ++i) {
+        PadNode *n = PadNodeAry_Get(func_def_args->identifiers, i);
         assert(n);
         assert(n->type == PAD_NODE_TYPE__IDENTIFIER);
         PadIdentNode *nidn = n->real;
 
-        object_t *oidn = obj_new_cidentifier(
+        PadObj *oidn = PadObj_NewCIdent(
             ast->ref_gc,
             ref_context,
             nidn->identifier
         );
-        obj_inc_ref(oidn);
-        objarr_moveb(args, oidn);
+        PadObj_IncRef(oidn);
+        PadObjAry_MoveBack(args, oidn);
     }
 
-    return obj_new_array(ast->ref_gc, args);
+    return PadObj_NewAry(ast->ref_gc, args);
 }
 
-static object_t *
+static PadObj *
 trv_func_extends(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -10580,7 +10580,7 @@ trv_func_extends(ast_t *ast, trv_args_t *targs) {
     depth_t depth = targs->depth;
     targs->ref_node = func_extends->identifier;
     targs->depth = depth + 1;
-    object_t *idnobj = _trv_traverse(ast, targs);
+    PadObj *idnobj = _trv_traverse(ast, targs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to traverse identifier");
         return_trav(NULL);
@@ -10590,7 +10590,7 @@ trv_func_extends(ast_t *ast, trv_args_t *targs) {
     return idnobj;
 }
 
-object_t *
+PadObj *
 _trv_traverse(ast_t *ast, trv_args_t *targs) {
     tready();
     PadNode *node = targs->ref_node;
@@ -10606,297 +10606,297 @@ _trv_traverse(ast_t *ast, trv_args_t *targs) {
     } break;
     case PAD_NODE_TYPE__PROGRAM: {
         check("call trv_program");
-        object_t *obj = trv_program(ast, targs);
+        PadObj *obj = trv_program(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__BLOCKS: {
         check("call trv_blocks");
-        object_t *obj = trv_blocks(ast, targs);
+        PadObj *obj = trv_blocks(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__CODE_BLOCK: {
         check("call trv_code_block");
-        object_t *obj = trv_code_block(ast, targs);
+        PadObj *obj = trv_code_block(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__REF_BLOCK: {
         check("call trv_ref_block");
-        object_t *obj = trv_ref_block(ast, targs);
+        PadObj *obj = trv_ref_block(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__TEXT_BLOCK: {
         check("call trv_text_block");
-        object_t *obj = trv_text_block(ast, targs);
+        PadObj *obj = trv_text_block(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__ELEMS: {
         check("call trv_elems");
-        object_t *obj = trv_elems(ast, targs);
+        PadObj *obj = trv_elems(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__FORMULA: {
         check("call trv_formula");
-        object_t *obj = trv_formula(ast, targs);
+        PadObj *obj = trv_formula(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__ASSIGN_LIST: {
         check("call trv_assign_list");
-        object_t *obj = trv_assign_list(ast, targs);
+        PadObj *obj = trv_assign_list(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__ASSIGN: {
         check("call trv_assign");
-        object_t *obj = trv_assign(ast, targs);
+        PadObj *obj = trv_assign(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__SIMPLE_ASSIGN: {
         check("call trv_simple_assign");
-        object_t *obj = trv_simple_assign(ast, targs);
+        PadObj *obj = trv_simple_assign(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__MULTI_ASSIGN: {
         check("call trv_multi_assign");
-        object_t *obj = trv_multi_assign(ast, targs);
+        PadObj *obj = trv_multi_assign(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__DEF: {
         check("call trv_def");
-        object_t *obj = trv_def(ast, targs);
+        PadObj *obj = trv_def(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__FUNC_DEF: {
         check("call trv_func_def");
-        object_t *obj = trv_func_def(ast, targs);
+        PadObj *obj = trv_func_def(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__FUNC_DEF_PARAMS: {
         check("call trv_func_def_params");
-        object_t *obj = trv_func_def_params(ast, targs);
+        PadObj *obj = trv_func_def_params(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__FUNC_DEF_ARGS: {
         check("call trv_func_def_args");
-        object_t *obj = trv_func_def_args(ast, targs);
+        PadObj *obj = trv_func_def_args(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__FUNC_EXTENDS: {
         check("call trv_func_extends");
-        object_t *obj = trv_func_extends(ast, targs);
+        PadObj *obj = trv_func_extends(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__STMT: {
         check("call trv_stmt");
-        object_t *obj = trv_stmt(ast, targs);
+        PadObj *obj = trv_stmt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__IMPORT_STMT: {
         check("call trv_import_stmt with import statement");
-        object_t *obj = trv_import_stmt(ast, targs);
+        PadObj *obj = trv_import_stmt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__IMPORT_AS_STMT: {
         check("call trv_import_stmt with import as statement");
-        object_t *obj = trv_import_as_stmt(ast, targs);
+        PadObj *obj = trv_import_as_stmt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__FROM_IMPORT_STMT: {
         check("call trv_import_stmt with from import statement");
-        object_t *obj = trv_from_import_stmt(ast, targs);
+        PadObj *obj = trv_from_import_stmt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__IMPORT_VARS: {
         check("call trv_import_stmt with import vars");
-        object_t *obj = trv_import_vars(ast, targs);
+        PadObj *obj = trv_import_vars(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__IMPORT_VAR: {
         check("call trv_import_stmt with import var");
-        object_t *obj = trv_import_var(ast, targs);
+        PadObj *obj = trv_import_var(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__IF_STMT: {
         check("call trv_if_stmt");
-        object_t *obj = trv_if_stmt(ast, targs);
+        PadObj *obj = trv_if_stmt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__ELIF_STMT: {
         check("call trv_elif_stmt");
-        object_t *obj = trv_if_stmt(ast, targs);
+        PadObj *obj = trv_if_stmt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__ELSE_STMT: {
         check("call trv_else_stmt");
-        object_t *obj = trv_else_stmt(ast, targs);
+        PadObj *obj = trv_else_stmt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__FOR_STMT: {
         check("call trv_for_stmt");
-        object_t *obj = trv_for_stmt(ast, targs);
+        PadObj *obj = trv_for_stmt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__BREAK_STMT: {
         check("call trv_break_stmt");
-        object_t *obj = trv_break_stmt(ast, targs);
+        PadObj *obj = trv_break_stmt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__CONTINUE_STMT: {
         check("call trv_continue_stmt");
-        object_t *obj = trv_continue_stmt(ast, targs);
+        PadObj *obj = trv_continue_stmt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__RETURN_STMT: {
         check("call trv_return_stmt");
-        object_t *obj = trv_return_stmt(ast, targs);
+        PadObj *obj = trv_return_stmt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__CONTENT: {
         check("call trv_content");
-        object_t *obj = trv_content(ast, targs);
+        PadObj *obj = trv_content(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__BLOCK_STMT: {
         check("call trv_block_stmt");
-        object_t *obj = trv_block_stmt(ast, targs);
+        PadObj *obj = trv_block_stmt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__INJECT_STMT: {
         check("call trv_inject_stmt");
-        object_t *obj = trv_inject_stmt(ast, targs);
+        PadObj *obj = trv_inject_stmt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__STRUCT: {
         check("call trv_def_struct");
-        object_t *obj = trv_def_struct(ast, targs);
+        PadObj *obj = trv_def_struct(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__TEST_LIST: {
         check("call trv_test_list");
-        object_t *obj = trv_test_list(ast, targs);
+        PadObj *obj = trv_test_list(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__CALL_ARGS: {
         check("call trv_call_args");
-        object_t *obj = trv_call_args(ast, targs);
+        PadObj *obj = trv_call_args(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__TEST: {
         check("call trv_test");
-        object_t *obj = trv_test(ast, targs);
+        PadObj *obj = trv_test(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__OR_TEST: {
         check("call trv_or_test");
-        object_t *obj = trv_or_test(ast, targs);
+        PadObj *obj = trv_or_test(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__AND_TEST: {
         check("call trv_and_test");
-        object_t *obj = trv_and_test(ast, targs);
+        PadObj *obj = trv_and_test(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__NOT_TEST: {
         check("call trv_not_test");
-        object_t *obj = trv_not_test(ast, targs);
+        PadObj *obj = trv_not_test(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__COMPARISON: {
         check("call trv_comparison");
-        object_t *obj = trv_comparison(ast, targs);
+        PadObj *obj = trv_comparison(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__EXPR: {
         check("call trv_expr");
-        object_t *obj = trv_expr(ast, targs);
+        PadObj *obj = trv_expr(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__TERM: {
         check("call trv_term");
-        object_t *obj = trv_term(ast, targs);
+        PadObj *obj = trv_term(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__NEGATIVE: {
         check("call trv_negative");
-        object_t *obj = trv_negative(ast, targs);
+        PadObj *obj = trv_negative(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__RING: {
         check("call trv_chain");
-        object_t *obj = trv_chain(ast, targs);
+        PadObj *obj = trv_chain(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__ASSCALC: {
         check("call trv_asscalc");
-        object_t *obj = trv_asscalc(ast, targs);
+        PadObj *obj = trv_asscalc(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__FACTOR: {
         check("call trv_factor");
-        object_t *obj = trv_factor(ast, targs);
+        PadObj *obj = trv_factor(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__ATOM: {
         check("call trv_atom");
-        object_t *obj = trv_atom(ast, targs);
+        PadObj *obj = trv_atom(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__NIL: {
         check("call trv_nil");
-        object_t *obj = trv_nil(ast, targs);
+        PadObj *obj = trv_nil(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__FALSE: {
         check("call trv_false");
-        object_t *obj = trv_false(ast, targs);
+        PadObj *obj = trv_false(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__TRUE: {
         check("call trv_true");
-        object_t *obj = trv_true(ast, targs);
+        PadObj *obj = trv_true(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__DIGIT: {
         check("call trv_digit");
-        object_t *obj = trv_digit(ast, targs);
+        PadObj *obj = trv_digit(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__FLOAT: {
         check("call trv_digit");
-        object_t *obj = trv_float(ast, targs);
+        PadObj *obj = trv_float(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__STRING: {
         check("call trv_string");
-        object_t *obj = trv_string(ast, targs);
+        PadObj *obj = trv_string(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__ARRAY: {
         check("call trv_array");
-        object_t *obj = trv_array(ast, targs);
+        PadObj *obj = trv_array(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__ARRAY_ELEMS: {
         check("call trv_array_elems");
-        object_t *obj = trv_array_elems(ast, targs);
+        PadObj *obj = trv_array_elems(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__DICT: {
         check("call trv_dict");
-        object_t *obj = trv_dict(ast, targs);
+        PadObj *obj = trv_dict(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__DICT_ELEMS: {
         check("call trv_dict_elems");
-        object_t *obj = trv_dict_elems(ast, targs);
+        PadObj *obj = trv_dict_elems(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__DICT_ELEM: {
         check("call trv_dict_elem");
-        object_t *obj = trv_dict_elem(ast, targs);
+        PadObj *obj = trv_dict_elem(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__IDENTIFIER: {
         check("call trv_identifier");
-        object_t *obj = trv_identifier(ast, targs);
+        PadObj *obj = trv_identifier(ast, targs);
         return_trav(obj);
     } break;
     }
@@ -10908,7 +10908,7 @@ _trv_traverse(ast_t *ast, trv_args_t *targs) {
 ast_t *
 trv_import_builtin_modules(ast_t *ast) {
     object_dict_t *varmap = PadCtx_GetVarmap(ast->ref_context);
-    object_t *mod = NULL;
+    PadObj *mod = NULL;
 
     // builtin functions
     mod = Pad_NewBltMod(ast->ref_config, ast->ref_gc);
@@ -10940,24 +10940,24 @@ trv_import_builtin_modules(ast_t *ast) {
 ast_t *
 trv_define_builtin_types(ast_t *ast) {
     object_dict_t *varmap = PadCtx_GetVarmap(ast->ref_context);
-    object_t *obj = NULL;
+    PadObj *obj = NULL;
 
-    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_ARRAY);
+    obj = PadObj_NewType(ast->ref_gc, PAD_OBJ_TYPE__ARRAY);
     objdict_move(varmap, "Array", mem_move(obj));
 
-    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_DICT);
+    obj = PadObj_NewType(ast->ref_gc, PAD_OBJ_TYPE__DICT);
     objdict_move(varmap, "Dict", mem_move(obj));
 
-    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_UNICODE);
+    obj = PadObj_NewType(ast->ref_gc, PAD_OBJ_TYPE__UNICODE);
     objdict_move(varmap, "String", mem_move(obj));
 
-    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_BOOL);
+    obj = PadObj_NewType(ast->ref_gc, PAD_OBJ_TYPE__BOOL);
     objdict_move(varmap, "Bool", mem_move(obj));
 
-    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_INT);
+    obj = PadObj_NewType(ast->ref_gc, PAD_OBJ_TYPE__INT);
     objdict_move(varmap, "Int", mem_move(obj));
 
-    obj = obj_new_type(ast->ref_gc, OBJ_TYPE_FLOAT);
+    obj = PadObj_NewType(ast->ref_gc, PAD_OBJ_TYPE__FLOAT);
     objdict_move(varmap, "Float", mem_move(obj));
 
     return ast;
@@ -10966,57 +10966,57 @@ trv_define_builtin_types(ast_t *ast) {
 ast_t *
 trv_define_builtin_funcs(ast_t *ast) {
     object_dict_t *varmap = PadCtx_GetVarmap(ast->ref_context);
-    object_t *obj = NULL;
+    PadObj *obj = NULL;
 
-    obj = obj_new_builtin_func(ast->ref_gc, "dance");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "dance");
     objdict_move(varmap, "dance", mem_move(obj));
 
-    obj = obj_new_builtin_func(ast->ref_gc, "id");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "id");
     objdict_move(varmap, "id", mem_move(obj));
     
-    obj = obj_new_builtin_func(ast->ref_gc, "type");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "type");
     objdict_move(varmap, "type", mem_move(obj));
     
-    obj = obj_new_builtin_func(ast->ref_gc, "puts");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "puts");
     objdict_move(varmap, "puts", mem_move(obj));
     
-    obj = obj_new_builtin_func(ast->ref_gc, "eputs");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "eputs");
     objdict_move(varmap, "eputs", mem_move(obj));
     
-    obj = obj_new_builtin_func(ast->ref_gc, "len");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "len");
     objdict_move(varmap, "len", mem_move(obj));
     
-    obj = obj_new_builtin_func(ast->ref_gc, "die");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "die");
     objdict_move(varmap, "die", mem_move(obj));
     
-    obj = obj_new_builtin_func(ast->ref_gc, "exit");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "exit");
     objdict_move(varmap, "exit", mem_move(obj));
     
-    obj = obj_new_builtin_func(ast->ref_gc, "copy");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "copy");
     objdict_move(varmap, "copy", mem_move(obj));
     
-    obj = obj_new_builtin_func(ast->ref_gc, "deepcopy");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "deepcopy");
     objdict_move(varmap, "deepcopy", mem_move(obj));
     
-    obj = obj_new_builtin_func(ast->ref_gc, "assert");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "assert");
     objdict_move(varmap, "assert", mem_move(obj));
     
-    obj = obj_new_builtin_func(ast->ref_gc, "extract");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "extract");
     objdict_move(varmap, "extract", mem_move(obj));
     
-    obj = obj_new_builtin_func(ast->ref_gc, "setattr");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "setattr");
     objdict_move(varmap, "setattr", mem_move(obj));
     
-    obj = obj_new_builtin_func(ast->ref_gc, "getattr");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "getattr");
     objdict_move(varmap, "getattr", mem_move(obj));
     
-    obj = obj_new_builtin_func(ast->ref_gc, "dance");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "dance");
     objdict_move(varmap, "dance", mem_move(obj));
     
-    obj = obj_new_builtin_func(ast->ref_gc, "ord");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "ord");
     objdict_move(varmap, "ord", mem_move(obj));
     
-    obj = obj_new_builtin_func(ast->ref_gc, "chr");
+    obj = PadObj_NewBltFunc(ast->ref_gc, "chr");
     objdict_move(varmap, "chr", mem_move(obj));
     
     return ast;
@@ -11043,8 +11043,8 @@ trv_traverse(ast_t *ast, PadCtx *context) {
     trv_args_t targs = {0};
     targs.ref_node = ast->root;
     targs.depth = 0;
-    object_t *result = _trv_traverse(ast, &targs);
-    obj_del(result);
+    PadObj *result = _trv_traverse(ast, &targs);
+    PadObj_Del(result);
 }
 
 #undef tready

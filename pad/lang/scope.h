@@ -53,10 +53,10 @@ scope_clear(scope_t *self);
  * find object from varmap from last scope to first scope
  * return to reference of object in varmap
  */
-object_t *
+PadObj *
 scope_find_var_ref(scope_t *self, const char *key);
 
-object_t *
+PadObj *
 scope_find_var_ref_all(scope_t *self, const char *key);
 
 /**

@@ -7,9 +7,9 @@
  * number of type of PadChainObj
  */
 typedef enum {
-    PAD_CHAIN_OBJ_TYPE__DOT,
-    PAD_CHAIN_OBJ_TYPE__CALL,
-    PAD_CHAIN_OBJ_TYPE__INDEX,
+    PAD_CHAIN_PAD_OBJ_TYPE___DOT,
+    PAD_CHAIN_PAD_OBJ_TYPE___CALL,
+    PAD_CHAIN_PAD_OBJ_TYPE___INDEX,
 } PadChainObjType;
 
 /**
@@ -30,7 +30,7 @@ PadChainObj_Del(PadChainObj *self);
  * @return
  */
 PadChainObj *
-PadChainObj_New(PadChainObjType type, object_t *move_obj);
+PadChainObj_New(PadChainObjType type, PadObj *move_obj);
 
 /**
  * TODO: test
@@ -65,9 +65,9 @@ PadChainObj_GetcType(const PadChainObj *self);
  *
  * @param[in] *self
  *
- * @return pointer to object_t
+ * @return pointer to PadObj
  */
-object_t *
+PadObj *
 PadChainObj_GetObj(PadChainObj *self);
 
 /**
@@ -75,9 +75,9 @@ PadChainObj_GetObj(PadChainObj *self);
  *
  * @param[in] *self
  *
- * @return pointer to object_t
+ * @return pointer to PadObj
  */
-const object_t *
+const PadObj *
 PadChainObj_GetcObj(const PadChainObj *self);
 
 /**

@@ -196,7 +196,7 @@ typedef struct {
 } PadFromImportStmtNode;
 
 typedef struct {
-    node_array_t *nodearr;
+    PadNodeAry *nodearr;
 } PadImportVarsNode;
 
 typedef struct {
@@ -206,7 +206,7 @@ typedef struct {
 
 typedef struct {
     PadNode *test;
-    node_array_t *contents;
+    PadNodeAry *contents;
     PadNode *elif_stmt;
     PadNode *else_stmt;
 } PadIfStmtNode;
@@ -214,14 +214,14 @@ typedef struct {
 typedef PadIfStmtNode PadElifStmtNode;
 
 typedef struct {
-    node_array_t *contents;
+    PadNodeAry *contents;
 } PadElseStmtNode;
 
 typedef struct {
     PadNode *init_formula;
     PadNode *comp_formula;
     PadNode *update_formula;
-    node_array_t *contents;
+    PadNodeAry *contents;
 } PadForStmtNode;
 
 typedef struct {
@@ -238,13 +238,13 @@ typedef struct {
 
 typedef struct {
     PadNode *identifier;
-    node_array_t *contents;
+    PadNodeAry *contents;
     object_dict_t *inject_varmap;
 } PadBlockStmtNode;
 
 typedef struct {
     PadNode *identifier;
-    node_array_t *contents;
+    PadNodeAry *contents;
 } PadInjectStmtNode;
 
 /*********
@@ -277,8 +277,8 @@ typedef struct {
     PadNode *identifier;
     PadNode *func_def_params;
     PadNode *func_extends;  // function of extended
-    node_array_t *contents;  // array of nodes
-    node_dict_t *blocks;  // block nodes of block statement
+    PadNodeAry *contents;  // array of nodes
+    PadNodeDict *blocks;  // block nodes of block statement
     bool is_met;
 } PadFuncDefNode;
 
@@ -287,7 +287,7 @@ typedef struct {
 } PadFuncDefParamsNode;
 
 typedef struct {
-    node_array_t *identifiers;
+    PadNodeAry *identifiers;
 } PadFuncDefArgsNode;
 
 typedef struct {
@@ -304,27 +304,27 @@ typedef struct {
 } PadFormulaNode;
 
 typedef struct {
-    node_array_t *nodearr;
+    PadNodeAry *nodearr;
 } PadMultiAssignNode;
 
 typedef struct {
-    node_array_t *nodearr;
+    PadNodeAry *nodearr;
 } PadAssignNode;
 
 typedef struct {
-    node_array_t *nodearr;
+    PadNodeAry *nodearr;
 } PadSimpleAssignNode;
 
 typedef struct {
-    node_array_t *nodearr;
+    PadNodeAry *nodearr;
 } PadAssignListNode;
 
 typedef struct {
-    node_array_t *nodearr;
+    PadNodeAry *nodearr;
 } PadTestListNode;
 
 typedef struct {
-    node_array_t *nodearr;
+    PadNodeAry *nodearr;
 } PadCallArgsNode;
 
 typedef struct {
@@ -332,11 +332,11 @@ typedef struct {
 } PadTestNode;
 
 typedef struct {
-    node_array_t *nodearr;
+    PadNodeAry *nodearr;
 } PadOrTestNode;
 
 typedef struct {
-    node_array_t *nodearr;
+    PadNodeAry *nodearr;
 } PadAndTestNode;
 
 typedef struct {
@@ -345,15 +345,15 @@ typedef struct {
 } PadNotTestNode;
 
 typedef struct {
-    node_array_t *nodearr;
+    PadNodeAry *nodearr;
 } PadComparisonNode;
 
 typedef struct {
-    node_array_t *nodearr;
+    PadNodeAry *nodearr;
 } PadExprNode;
 
 typedef struct {
-    node_array_t *nodearr;
+    PadNodeAry *nodearr;
 } PadTermNode;
 
 typedef struct {
@@ -367,7 +367,7 @@ typedef struct {
 } PadRingNode;
 
 typedef struct {
-    node_array_t *nodearr;
+    PadNodeAry *nodearr;
 } PadAssCalcNode;
 
 typedef struct {
@@ -392,7 +392,7 @@ typedef struct {
 } PadAryNode_;
 
 typedef struct {
-    node_array_t *nodearr;
+    PadNodeAry *nodearr;
 } PadAryElemsNode_;
 
 typedef struct {
@@ -400,7 +400,7 @@ typedef struct {
 } _PadDictNode;
 
 typedef struct {
-    node_array_t *nodearr;
+    PadNodeAry *nodearr;
 } PadDictElemsNode;
 
 typedef struct {

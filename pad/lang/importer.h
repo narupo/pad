@@ -16,7 +16,7 @@ struct PadImporter;
 typedef struct PadImporter PadImporter;
 
 /**
- * destruct object
+ * destruct PadObj
  *
  * @param[out] *self poitner to PadImporter
  */
@@ -24,7 +24,7 @@ void
 PadImporter_Del(PadImporter *self);
 
 /**
- * construct object
+ * construct PadObj
  *
  * @return pointer to PadImporter
  */
@@ -75,7 +75,7 @@ PadImporter_FromImport(
     const ast_t *ref_ast,
     PadCtx *dstctx,
     const char *path,
-    object_array_t *vars
+    PadObjAry *vars
 );
 
 /**

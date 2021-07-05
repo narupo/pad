@@ -1,50 +1,50 @@
 #pragma once
 #include <stdint.h>
 
-struct object_dict;
-typedef struct object_dict object_dict_t;
+struct PadObj_dict;
+typedef struct PadObj_dict object_dict_t;
 
-struct object_array;
-typedef struct object_array object_array_t;
+struct PadObjAry;
+typedef struct PadObjAry PadObjAry;
 
-struct object;
-typedef struct object object_t;
+struct PadObj;
+typedef struct PadObj PadObj;
 
-struct object_func;
-typedef struct object_func object_func_t;
+struct PadFuncObj;
+typedef struct PadFuncObj object_func_t;
 
-struct object_index;
-typedef struct object_index object_index_t;
+struct PadObj_index;
+typedef struct PadObj_index object_index_t;
 
-struct object_module;
-typedef struct object_module object_module_t;
+struct PadModObj;
+typedef struct PadModObj object_module_t;
 
-struct object_identifier;
-typedef struct object_identifier object_identifier_t;
+struct PadIdentObj;
+typedef struct PadIdentObj object_identifier_t;
 
-struct object_def_struct;
-typedef struct object_def_struct object_def_struct_t;
+struct PadDefStructObj;
+typedef struct PadDefStructObj object_def_struct_t;
 
-struct object_object;
-typedef struct object_object object_object_t;
+struct PadObjObj;
+typedef struct PadObjObj object_PadObj;
 
-struct object_chain;
-typedef struct object_chain object_chain_t;
+struct PadChainObj;
+typedef struct PadChainObj object_chain_t;
 
-struct object_owners_method;
-typedef struct object_owners_method object_owners_method_t;
+struct PadOwnsMethodObj;
+typedef struct PadOwnsMethodObj object_owners_method_t;
 
-struct object_type;
-typedef struct object_type object_type_t;
+struct PadTypeObj;
+typedef struct PadTypeObj PadObjype_t;
 
-struct object_builtin_func;
-typedef struct object_builtin_func object_builtin_func_t;
+struct PadBltFuncObj;
+typedef struct PadBltFuncObj object_builtin_func_t;
 
 struct PadNode_array;
-typedef struct PadNode_array node_array_t;
+typedef struct PadNode_array PadNodeAry;
 
 struct PadNode_dict;
-typedef struct PadNode_dict node_dict_t;
+typedef struct PadNode_dict PadNodeDict;
 
 struct tokenizer;
 typedef struct tokenizer tokenizer_t;
@@ -67,7 +67,7 @@ typedef struct PadTrvArgs trv_args_t;
 struct PadBuiltFuncArgs;
 typedef struct PadBuiltFuncArgs builtin_func_args_t;
 
-typedef object_t *(*builtin_func_t)(builtin_func_args_t *args);
+typedef PadObj *(*builtin_func_t)(builtin_func_args_t *args);
 
 typedef struct PadBuiltFuncInfo builtin_func_info_t;
 

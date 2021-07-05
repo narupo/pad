@@ -33,7 +33,7 @@ typedef enum {
     CMDLINE_OBJECT_TYPE_PIPE,
     CMDLINE_OBJECT_TYPE_AND,
     CMDLINE_OBJECT_TYPE_REDIRECT,
-} cmdline_object_type_t;
+} cmdline_PadObjype_t;
 
 /**
  * structure of cmdline_object
@@ -41,13 +41,13 @@ typedef enum {
  * DO NOT DELETE command, and cl object
  */
 struct cmdline_object {
-    cmdline_object_type_t type;
+    cmdline_PadObjype_t type;
     string_t *command;
     cl_t *cl;
 };
 
 struct cmdline_object;
-typedef struct cmdline_object cmdline_object_t;
+typedef struct cmdline_object cmdline_PadObj;
 
 struct cmdline;
 typedef struct cmdline cmdline_t;
@@ -57,41 +57,41 @@ typedef struct cmdline cmdline_t;
 *****************/
 
 /**
- * destruct object
+ * destruct PadObj
  *
- * @param[in] *self pointer to cmdline_object_t dynamic allocate memory
+ * @param[in] *self pointer to cmdline_PadObj dynamic allocate memory
  */
 void
-cmdlineobj_del(cmdline_object_t *self);
+cmdlinePadObj_Del(cmdline_PadObj *self);
 
 /**
- * construct object
+ * construct PadObj
  *
  * @param[in] type number of type of object
  *
- * @return pointer to cmdline_object_t dynamic allocate memory
+ * @return pointer to cmdline_PadObj dynamic allocate memory
  */
-cmdline_object_t *
-cmdlineobj_new(cmdline_object_type_t type);
+cmdline_PadObj *
+cmdlinePadObj_New(cmdline_PadObjype_t type);
 
 /**
  * parse text line
  *
- * @param[in] *self pointer to cmdline_object_t dynamic allocate memory
+ * @param[in] *self pointer to cmdline_PadObj dynamic allocate memory
  * @param[in] *line pointer to strings
  *
- * @return success to pointer to cmdline_object_t dynamic allocate memory
+ * @return success to pointer to cmdline_PadObj dynamic allocate memory
  * @return failed to pointer to NULL
  */
-cmdline_object_t *
-cmdlineobj_parse(cmdline_object_t *self, const char *line);
+cmdline_PadObj *
+cmdlineobj_parse(cmdline_PadObj *self, const char *line);
 
 /**********
 * cmdline *
 **********/
 
 /**
- * destruct object
+ * destruct PadObj
  *
  * @param[in] *self pointer to cmdline_t dynamic allocate memory
  */
@@ -99,7 +99,7 @@ void
 cmdline_del(cmdline_t *self);
 
 /**
- * construct object
+ * construct PadObj
  *
  * @return pointer to cmdline_t dynamic allocate memory
  */
@@ -128,7 +128,7 @@ cmdline_resize(cmdline_t *self, int32_t capa);
  * @return failed to pointer to NULL
  */
 cmdline_t *
-cmdline_moveb(cmdline_t *self, cmdline_object_t *move_obj);
+cmdline_moveb(cmdline_t *self, cmdline_PadObj *move_obj);
 
 /**
  * if object has error then return true
@@ -157,10 +157,10 @@ cmdline_len(const cmdline_t *self);
  * @param[in] *self pointer to cmdline_t dynamic allocate memory
  * @param[in] index number of index of array
  *
- * @return success to pointer to cmdline_object_t dynamic allocate memory
+ * @return success to pointer to cmdline_PadObj dynamic allocate memory
  * @return failed to pointer to NULL
  */
-const cmdline_object_t *
+const cmdline_PadObj *
 cmdline_getc(const cmdline_t *self, int32_t index);
 
 /**

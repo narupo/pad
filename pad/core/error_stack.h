@@ -81,7 +81,7 @@ struct PadErrStack;
 typedef struct PadErrStack PadErrStack;
 
 /**
- * destruct object
+ * destruct PadObj
  *
  * @param[in] *self pointer to PadErrStack
  */
@@ -89,7 +89,7 @@ void
 PadErrStack_Del(PadErrStack *self);
 
 /**
- * construct object
+ * construct PadObj
  *
  * @return pointer to PadErrStack dynamic allocate memory (do PadErrStack_Del)
  */

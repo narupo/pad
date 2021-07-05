@@ -293,7 +293,7 @@ find_tail(scope_t *self) {
     return last;
 }
 
-object_t *
+PadObj *
 scope_find_var_ref(scope_t *self, const char *key) {
     if (!self) {
         return NULL;
@@ -308,7 +308,7 @@ scope_find_var_ref(scope_t *self, const char *key) {
     return NULL;
 }
 
-object_t *
+PadObj *
 scope_find_var_ref_all(scope_t *self, const char *key) {
     if (!self) {
         return NULL;

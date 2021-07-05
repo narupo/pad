@@ -8,7 +8,7 @@ void
 PadNode_Del(PadNode *self);
 
 void
-nodearr_del(node_array_t *self);
+PadNodeAry_Del(PadNodeAry *self);
 
 /************
 * structure *

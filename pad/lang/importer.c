@@ -60,7 +60,7 @@ fix_path(PadImporter *self, char *dst, int32_t dstsz, const char *path) {
     return dst;
 }
 
-static object_t *
+static PadObj *
 create_modobj(
     PadImporter *self,
     PadGc *ref_gc,
@@ -117,7 +117,7 @@ create_modobj(
         return NULL;
     }
 
-    object_t *modobj = obj_new_module_by(
+    PadObj *modobj = PadObj_NewModBy(
         ref_gc,
         path,  // module name
         path,  // program_filename
@@ -142,7 +142,7 @@ PadImporter_ImportAs(
 ) {
     self->error[0] = '\0';
 
-    object_t *modobj = create_modobj(
+    PadObj *modobj = create_modobj(
         self,
         ref_gc,
         ref_ast,
@@ -153,7 +153,7 @@ PadImporter_ImportAs(
     }
 
     object_dict_t *dst_varmap = PadCtx_GetVarmap(dstctx);
-    obj_inc_ref(modobj);
+    PadObj_IncRef(modobj);
     objdict_move(dst_varmap, alias, mem_move(modobj));
 
     return self;
@@ -166,11 +166,11 @@ PadImporter_FromImport(
     const ast_t *ref_ast,
     PadCtx *dstctx,
     const char *path,
-    object_array_t *vars   // import_vars
+    PadObjAry *vars   // import_vars
 ) {
     self->error[0] = '\0';
 
-    object_t *modobj = create_modobj(
+    PadObj *modobj = create_modobj(
         self,
         ref_gc,
         ref_ast,
@@ -184,45 +184,45 @@ PadImporter_FromImport(
  * extract import-var from import-vars
  */
 #define extract_var(vs, v) \
-    object_t *varobj = objarr_get(vs, i); \
+    PadObj *varobj = PadObjAry_Get(vs, i); \
     assert(varobj); \
-    assert(varobj->type == OBJ_TYPE_ARRAY); \
-    object_array_t *v = varobj->objarr; \
-    assert(objarr_len(v) == 1 || objarr_len(v) == 2); \
+    assert(varobj->type == PAD_OBJ_TYPE__ARRAY); \
+    PadObjAry *v = varobj->objarr; \
+    assert(PadObjAry_Len(v) == 1 || PadObjAry_Len(v) == 2); \
 
     object_dict_t *dst_varmap = PadCtx_GetVarmap(dstctx);
 
     // assign objects at global varmap of current context from module context
     // increment a reference count of objects
     // objects look at memory of imported module
-    for (int32_t i = 0; i < objarr_len(vars); ++i) {
+    for (int32_t i = 0; i < PadObjAry_Len(vars); ++i) {
         extract_var(vars, var);
 
         // get name
-        object_t *objnameobj = objarr_get(var, 0);
-        assert(objnameobj->type == OBJ_TYPE_IDENTIFIER);
-        const char *objname = obj_getc_idn_name(objnameobj);
+        PadObj *objnameobj = PadObjAry_Get(var, 0);
+        assert(objnameobj->type == PAD_OBJ_TYPE__IDENT);
+        const char *objname = PadObj_GetcIdentName(objnameobj);
 
         // get alias if exists
         const char *alias = NULL;
-        if (objarr_len(var) == 2) {
-            object_t *aliasobj = objarr_get(var, 1);
-            assert(aliasobj->type == OBJ_TYPE_IDENTIFIER);
-            alias = obj_getc_idn_name(aliasobj);
+        if (PadObjAry_Len(var) == 2) {
+            PadObj *aliasobj = PadObjAry_Get(var, 1);
+            assert(aliasobj->type == PAD_OBJ_TYPE__IDENT);
+            alias = PadObj_GetcIdentName(aliasobj);
         }
 
         // get object from imported module
-        object_t *objinmod = PadCtx_FindVarRef(modobj->module.ast->ref_context, objname);
+        PadObj *objinmod = PadCtx_FindVarRef(modobj->module.ast->ref_context, objname);
         if (!objinmod) {
             PadImporter_SetErr(self,
                 "\"%s\" is can't import from module \"%s\"",
                 objname, path
             );
-            obj_del(modobj);
+            PadObj_Del(modobj);
             return NULL;
         }
 
-        obj_inc_ref(objinmod); // increment reference-count!
+        PadObj_IncRef(objinmod); // increment reference-count!
 
         if (alias) {
             objdict_set(dst_varmap, alias, objinmod);
@@ -232,7 +232,7 @@ PadImporter_FromImport(
     }
 
     // assign imported module at global varmap of current context
-    obj_inc_ref(modobj);
+    PadObj_IncRef(modobj);
     objdict_move(dst_varmap, modobj->module.name, mem_move(modobj));
 
     return self;

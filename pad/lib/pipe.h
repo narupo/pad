@@ -19,7 +19,7 @@ struct pipe;
 typedef struct pipe pipe_t;
 
 /**
- * Destruct object
+ * Destruct PadObj
  *
  * @param[in] *self 
  */
@@ -27,7 +27,7 @@ void
 pipe_del(pipe_t *self);
 
 /**
- * Construct object
+ * Construct PadObj
  * If failed to construct then show errors and exit from process
  *
  * @param[in] void 

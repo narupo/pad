@@ -1,7 +1,7 @@
 #include <pad/lang/object.h>
 
 extern void
-objarr_del(object_array_t* self);
+PadObjAry_Del(PadObjAry* self);
 
 extern void
 tkr_del(tokenizer_t *self);
@@ -34,7 +34,7 @@ tokenizer_t *
 tkr_shallow_copy(const tokenizer_t *self);
 
 void
-obj_del(object_t *self) {
+PadObj_Del(PadObj *self) {
     if (!self) {
         return;
     }
@@ -44,52 +44,52 @@ obj_del(object_t *self) {
     }
 
     switch (self->type) {
-    case OBJ_TYPE_NIL:
+    case PAD_OBJ_TYPE__NIL:
         // nothing todo
         break;
-    case OBJ_TYPE_INT:
+    case PAD_OBJ_TYPE__INT:
         // nothing todo
         break;
-    case OBJ_TYPE_FLOAT:
+    case PAD_OBJ_TYPE__FLOAT:
         // nothing todo
         break;
-    case OBJ_TYPE_BOOL:
+    case PAD_OBJ_TYPE__BOOL:
         // nothing todo
         break;
-    case OBJ_TYPE_IDENTIFIER:
+    case PAD_OBJ_TYPE__IDENT:
         self->identifier.ref_context = NULL;  // do not delete
         str_del(self->identifier.name);
         self->identifier.name = NULL;
         break;
-    case OBJ_TYPE_UNICODE:
+    case PAD_OBJ_TYPE__UNICODE:
         uni_del(self->unicode);
         self->unicode = NULL;
         break;
-    case OBJ_TYPE_ARRAY:
-        objarr_del(self->objarr);
+    case PAD_OBJ_TYPE__ARRAY:
+        PadObjAry_Del(self->objarr);
         self->objarr = NULL;
         break;
-    case OBJ_TYPE_DICT:
+    case PAD_OBJ_TYPE__DICT:
         objdict_del(self->objdict);
         self->objdict = NULL;
         break;
-    case OBJ_TYPE_FUNC:
-        obj_dec_ref(self->func.name);
-        obj_del(self->func.name);
+    case PAD_OBJ_TYPE__FUNC:
+        PadObj_DecRef(self->func.name);
+        PadObj_Del(self->func.name);
         self->func.name = NULL;
-        obj_dec_ref(self->func.args);
-        obj_del(self->func.args);
+        PadObj_DecRef(self->func.args);
+        PadObj_Del(self->func.args);
         self->func.args = NULL;
         // do not delete ref_suites, this is reference
-        obj_del(self->func.extends_func);
+        PadObj_Del(self->func.extends_func);
         self->func.extends_func = NULL;
         break;
-    case OBJ_TYPE_CHAIN:
-        obj_dec_ref(self->chain.operand);
-        obj_del(self->chain.operand);
+    case PAD_OBJ_TYPE__CHAIN:
+        PadObj_DecRef(self->chain.operand);
+        PadObj_Del(self->chain.operand);
         PadChainObjs_Del(self->chain.chain_objs);
         break;
-    case OBJ_TYPE_MODULE:
+    case PAD_OBJ_TYPE__MODULE:
         free(self->module.name);
         self->module.name = NULL;
         free(self->module.program_filename);
@@ -103,30 +103,30 @@ obj_del(object_t *self) {
         PadCtx_Del(self->module.context);
         self->module.context = NULL;
         break;
-    case OBJ_TYPE_DEF_STRUCT:
-        obj_del(self->def_struct.identifier);
+    case PAD_OBJ_TYPE__DEF_STRUCT:
+        PadObj_Del(self->def_struct.identifier);
         self->def_struct.identifier = NULL;
         PadCtx_Del(self->def_struct.context);
         self->def_struct.context = NULL;
         break;
-    case OBJ_TYPE_OBJECT:
+    case PAD_OBJ_TYPE__OBJECT:
         self->object.ref_ast = NULL;
         PadCtx_Del(self->object.struct_context);
-        obj_dec_ref(self->object.ref_def_obj);
-        obj_del(self->object.ref_def_obj);
+        PadObj_DecRef(self->object.ref_def_obj);
+        PadObj_Del(self->object.ref_def_obj);
         self->object.ref_def_obj = NULL;
         break;
-    case OBJ_TYPE_OWNERS_METHOD:
-        obj_dec_ref(self->owners_method.owner);
-        obj_del(self->owners_method.owner);
+    case PAD_OBJ_TYPE__OWNERS_METHOD:
+        PadObj_DecRef(self->owners_method.owner);
+        PadObj_Del(self->owners_method.owner);
         self->owners_method.owner = NULL;
         str_del(self->owners_method.method_name);
         self->owners_method.method_name = NULL;
         break;
-    case OBJ_TYPE_TYPE:
+    case PAD_OBJ_TYPE__TYPE:
         self->type_obj.name = NULL;
         break;
-    case OBJ_TYPE_BUILTIN_FUNC:
+    case PAD_OBJ_TYPE__BUILTIN_FUNC:
         self->builtin_func.funcname = NULL;
         break;
     }
@@ -135,7 +135,7 @@ obj_del(object_t *self) {
 }
 
 PadGc *
-obj_get_gc(object_t *self) {
+PadObj_GetGc(PadObj *self) {
     if (!self) {
         return NULL;
     }
@@ -143,7 +143,7 @@ obj_get_gc(object_t *self) {
 }
 
 PadGc *
-obj_set_gc(object_t *self, PadGc *ref_gc) {
+PadObj_SetGc(PadObj *self, PadGc *ref_gc) {
     if (!self) {
         return NULL;
     }
@@ -152,26 +152,26 @@ obj_set_gc(object_t *self, PadGc *ref_gc) {
     return savegc;
 }
 
-extern object_array_t*
-objarr_deep_copy(const object_array_t *other);
+extern PadObjAry*
+PadObjAry_DeepCopy(const PadObjAry *other);
 
 extern object_dict_t*
 objdict_deep_copy(const object_dict_t *other);
 
-object_t *
-obj_deep_copy(const object_t *other) {
+PadObj *
+PadObj_DeepCopy(const PadObj *other) {
     if (!other) {
         return NULL;
     }
 
     // allocate memory by gc
     PadGcItem gc_item = {0};
-    if (!PadGc_Alloc(other->ref_gc, &gc_item, sizeof(object_t))) {
+    if (!PadGc_Alloc(other->ref_gc, &gc_item, sizeof(PadObj))) {
         return NULL;
     }
 
     // get pointer of allocated memory
-    object_t *self = gc_item.ptr;
+    PadObj *self = gc_item.ptr;
 
     // copy parameters
     self->ref_gc = other->ref_gc;
@@ -184,61 +184,61 @@ obj_deep_copy(const object_t *other) {
         fprintf(stderr, "object type is %d\n", other->type);
         assert(0 && "need implement!");
         break;
-    case OBJ_TYPE_NIL:
+    case PAD_OBJ_TYPE__NIL:
         break;
-    case OBJ_TYPE_INT:
+    case PAD_OBJ_TYPE__INT:
         self->lvalue = other->lvalue;
         break;
-    case OBJ_TYPE_FLOAT:
+    case PAD_OBJ_TYPE__FLOAT:
         self->float_value = other->float_value;
         break;
-    case OBJ_TYPE_BOOL:
+    case PAD_OBJ_TYPE__BOOL:
         self->boolean = other->boolean;
         break;
-    case OBJ_TYPE_IDENTIFIER:
+    case PAD_OBJ_TYPE__IDENT:
         self->identifier.ref_context = other->identifier.ref_context;
         self->identifier.name = str_deep_copy(other->identifier.name);
         break;
-    case OBJ_TYPE_UNICODE:
+    case PAD_OBJ_TYPE__UNICODE:
         self->unicode = uni_deep_copy(other->unicode);
         break;
-    case OBJ_TYPE_ARRAY:
-        self->objarr = objarr_deep_copy(other->objarr);
+    case PAD_OBJ_TYPE__ARRAY:
+        self->objarr = PadObjAry_DeepCopy(other->objarr);
         break;
-    case OBJ_TYPE_DICT:
+    case PAD_OBJ_TYPE__DICT:
         self->objdict = objdict_deep_copy(other->objdict);
         break;
-    case OBJ_TYPE_FUNC:
+    case PAD_OBJ_TYPE__FUNC:
         self->func.ref_ast = other->func.ref_ast;
         self->func.ref_context = other->func.ref_context;
-        self->func.name = obj_deep_copy(other->func.name);
-        obj_inc_ref(self->func.name);
-        self->func.args = obj_deep_copy(other->func.args);
-        obj_inc_ref(self->func.args);
-        self->func.ref_suites = nodearr_deep_copy(other->func.ref_suites);
-        self->func.ref_blocks = nodedict_deep_copy(other->func.ref_blocks);
-        self->func.extends_func = obj_deep_copy(other->func.extends_func);
+        self->func.name = PadObj_DeepCopy(other->func.name);
+        PadObj_IncRef(self->func.name);
+        self->func.args = PadObj_DeepCopy(other->func.args);
+        PadObj_IncRef(self->func.args);
+        self->func.ref_suites = PadNodeAry_DeepCopy(other->func.ref_suites);
+        self->func.ref_blocks = PadNodeDict_DeepCopy(other->func.ref_blocks);
+        self->func.extends_func = PadObj_DeepCopy(other->func.extends_func);
         self->func.is_met = other->func.is_met;
         break;
-    case OBJ_TYPE_MODULE:
+    case PAD_OBJ_TYPE__MODULE:
         if (other->module.name) {
             self->module.name = cstr_dup(other->module.name);
             if (!self->module.name) {
-                obj_del(self);
+                PadObj_Del(self);
                 return NULL;
             }
         }
         if (other->module.program_filename) {
             self->module.program_filename = cstr_dup(other->module.program_filename);
             if (!self->module.program_filename) {
-                obj_del(self);
+                PadObj_Del(self);
                 return NULL;
             }
         }
         if (other->module.program_source) {
             self->module.program_source = cstr_dup(other->module.program_source);
             if (!self->module.program_source) {
-                obj_del(self);
+                PadObj_Del(self);
                 return NULL;
             }
         }
@@ -247,29 +247,29 @@ obj_deep_copy(const object_t *other) {
         self->module.context = PadCtx_DeepCopy(other->module.context);
         self->module.builtin_func_infos = other->module.builtin_func_infos;
         break;
-    case OBJ_TYPE_DEF_STRUCT:
+    case PAD_OBJ_TYPE__DEF_STRUCT:
         self->def_struct.ref_ast = other->def_struct.ref_ast;
-        self->def_struct.identifier = obj_deep_copy(other->def_struct.identifier); 
+        self->def_struct.identifier = PadObj_DeepCopy(other->def_struct.identifier); 
         self->def_struct.ast = PadAst_DeepCopy(other->def_struct.ast);
         self->def_struct.context = PadCtx_DeepCopy(other->def_struct.context);
         break;
-    case OBJ_TYPE_OBJECT:
+    case PAD_OBJ_TYPE__OBJECT:
         self->object.ref_ast = other->object.ref_ast;
         self->object.ref_struct_ast = other->object.ref_struct_ast;
         self->object.struct_context = PadCtx_DeepCopy(other->object.struct_context);
-        obj_inc_ref(other->object.ref_def_obj);
+        PadObj_IncRef(other->object.ref_def_obj);
         self->object.ref_def_obj = other->object.ref_def_obj;
         break;
-    case OBJ_TYPE_OWNERS_METHOD:
-        self->owners_method.owner = obj_deep_copy(other->owners_method.owner);
-        obj_inc_ref(self->owners_method.owner);
+    case PAD_OBJ_TYPE__OWNERS_METHOD:
+        self->owners_method.owner = PadObj_DeepCopy(other->owners_method.owner);
+        PadObj_IncRef(self->owners_method.owner);
         self->owners_method.method_name = str_deep_copy(other->owners_method.method_name);
         break;
-    case OBJ_TYPE_CHAIN:
-        self->chain.operand = obj_deep_copy(other->chain.operand);
+    case PAD_OBJ_TYPE__CHAIN:
+        self->chain.operand = PadObj_DeepCopy(other->chain.operand);
         self->chain.chain_objs = PadChainObjs_DeepCopy(other->chain.chain_objs);
         break;
-    case OBJ_TYPE_TYPE:
+    case PAD_OBJ_TYPE__TYPE:
         self->type_obj.type = other->type_obj.type;
         break;
     }
@@ -277,20 +277,20 @@ obj_deep_copy(const object_t *other) {
     return self;
 }
 
-object_t *
-obj_shallow_copy(const object_t *other) {
+PadObj *
+PadObj_ShallowCopy(const PadObj *other) {
     if (!other) {
         return NULL;
     }
 
     // allocate memory by gc
     PadGcItem gc_item = {0};
-    if (!PadGc_Alloc(other->ref_gc, &gc_item, sizeof(object_t))) {
+    if (!PadGc_Alloc(other->ref_gc, &gc_item, sizeof(PadObj))) {
         return NULL;
     }
 
     // get pointer of allocated memory
-    object_t *self = gc_item.ptr;
+    PadObj *self = gc_item.ptr;
 
     // copy parameters
     self->ref_gc = other->ref_gc;
@@ -303,58 +303,58 @@ obj_shallow_copy(const object_t *other) {
         fprintf(stderr, "object type is %d\n", other->type);
         assert(0 && "need implement!");
         break;
-    case OBJ_TYPE_NIL:
+    case PAD_OBJ_TYPE__NIL:
         break;
-    case OBJ_TYPE_INT:
+    case PAD_OBJ_TYPE__INT:
         self->lvalue = other->lvalue;
         break;
-    case OBJ_TYPE_BOOL:
+    case PAD_OBJ_TYPE__BOOL:
         self->boolean = other->boolean;
         break;
-    case OBJ_TYPE_IDENTIFIER:
+    case PAD_OBJ_TYPE__IDENT:
         self->identifier.ref_context = other->identifier.ref_context;
         self->identifier.name = str_shallow_copy(other->identifier.name);
         break;
-    case OBJ_TYPE_UNICODE:
+    case PAD_OBJ_TYPE__UNICODE:
         self->unicode = uni_shallow_copy(other->unicode);
         break;
-    case OBJ_TYPE_ARRAY:
-        self->objarr = objarr_shallow_copy(other->objarr);
+    case PAD_OBJ_TYPE__ARRAY:
+        self->objarr = PadObjAry_ShallowCopy(other->objarr);
         break;
-    case OBJ_TYPE_DICT:
+    case PAD_OBJ_TYPE__DICT:
         self->objdict = objdict_shallow_copy(other->objdict);
         break;
-    case OBJ_TYPE_FUNC:
+    case PAD_OBJ_TYPE__FUNC:
         self->func.ref_ast = other->func.ref_ast;
         self->func.ref_context = other->func.ref_context;
-        self->func.name = obj_shallow_copy(other->func.name);
-        obj_inc_ref(self->func.name);
-        self->func.args = obj_shallow_copy(other->func.args);
-        obj_inc_ref(self->func.args);
-        self->func.ref_suites = nodearr_shallow_copy(other->func.ref_suites);
-        self->func.ref_blocks = nodedict_shallow_copy(other->func.ref_blocks);
-        self->func.extends_func = obj_shallow_copy(other->func.extends_func);
+        self->func.name = PadObj_ShallowCopy(other->func.name);
+        PadObj_IncRef(self->func.name);
+        self->func.args = PadObj_ShallowCopy(other->func.args);
+        PadObj_IncRef(self->func.args);
+        self->func.ref_suites = PadNodeAry_ShallowCopy(other->func.ref_suites);
+        self->func.ref_blocks = PadNodeDict_ShallowCopy(other->func.ref_blocks);
+        self->func.extends_func = PadObj_ShallowCopy(other->func.extends_func);
         self->func.is_met = other->func.is_met;
         break;
-    case OBJ_TYPE_MODULE:
+    case PAD_OBJ_TYPE__MODULE:
         if (other->module.name) {
             self->module.name = cstr_dup(other->module.name);
             if (!self->module.name) {
-                obj_del(self);
+                PadObj_Del(self);
                 return NULL;
             }
         }
         if (other->module.program_filename) {
             self->module.program_filename = cstr_dup(other->module.program_filename);
             if (!self->module.program_filename) {
-                obj_del(self);
+                PadObj_Del(self);
                 return NULL;
             }
         }
         if (other->module.program_source) {
             self->module.program_source = cstr_dup(other->module.program_source);
             if (!self->module.program_source) {
-                obj_del(self);
+                PadObj_Del(self);
                 return NULL;
             }
         }
@@ -363,26 +363,26 @@ obj_shallow_copy(const object_t *other) {
         self->module.context = PadCtx_ShallowCopy(other->module.context);
         self->module.builtin_func_infos = other->module.builtin_func_infos;
         break;
-    case OBJ_TYPE_DEF_STRUCT:
+    case PAD_OBJ_TYPE__DEF_STRUCT:
         self->def_struct.ref_ast = other->def_struct.ref_ast;
-        self->def_struct.identifier = obj_shallow_copy(other->def_struct.identifier); 
+        self->def_struct.identifier = PadObj_ShallowCopy(other->def_struct.identifier); 
         self->def_struct.ast = PadAst_ShallowCopy(other->def_struct.ast);
         self->def_struct.context = PadCtx_ShallowCopy(other->def_struct.context);
         break;
-    case OBJ_TYPE_OBJECT:
+    case PAD_OBJ_TYPE__OBJECT:
         self->object.ref_ast = other->object.ref_ast;
         self->object.ref_struct_ast = other->object.ref_struct_ast;
         self->object.struct_context = PadCtx_ShallowCopy(other->object.struct_context);
-        obj_inc_ref(other->object.ref_def_obj);
+        PadObj_IncRef(other->object.ref_def_obj);
         self->object.ref_def_obj = other->object.ref_def_obj;
         break;
-    case OBJ_TYPE_OWNERS_METHOD:
-        self->owners_method.owner = obj_shallow_copy(other->owners_method.owner);
-        obj_inc_ref(self->owners_method.owner);
+    case PAD_OBJ_TYPE__OWNERS_METHOD:
+        self->owners_method.owner = PadObj_ShallowCopy(other->owners_method.owner);
+        PadObj_IncRef(self->owners_method.owner);
         self->owners_method.method_name = str_shallow_copy(other->owners_method.method_name);
         break;
-    case OBJ_TYPE_CHAIN:
-        self->chain.operand = obj_shallow_copy(other->chain.operand);
+    case PAD_OBJ_TYPE__CHAIN:
+        self->chain.operand = PadObj_ShallowCopy(other->chain.operand);
         self->chain.chain_objs = PadChainObjs_ShallowCopy(other->chain.chain_objs);
         break;
     }
@@ -390,18 +390,18 @@ obj_shallow_copy(const object_t *other) {
     return self;
 }
 
-object_t *
-obj_new(PadGc *ref_gc, obj_type_t type) {
+PadObj *
+PadObj_New(PadGc *ref_gc, PadObjType type) {
     if (!ref_gc) {
         return NULL;
     }
 
     PadGcItem gc_item = {0};
-    if (!PadGc_Alloc(ref_gc, &gc_item, sizeof(object_t))) {
+    if (!PadGc_Alloc(ref_gc, &gc_item, sizeof(PadObj))) {
         return NULL;
     }
 
-    object_t *self = gc_item.ptr;
+    PadObj *self = gc_item.ptr;
     self->ref_gc = ref_gc;
     self->gc_item = gc_item;
     self->type = type;
@@ -409,13 +409,13 @@ obj_new(PadGc *ref_gc, obj_type_t type) {
     return self;
 }
 
-object_t *
-obj_new_nil(PadGc *ref_gc) {
+PadObj *
+PadObj_NewNil(PadGc *ref_gc) {
     if (!ref_gc) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_NIL);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__NIL);
     if (!self) {
         return NULL;
     }
@@ -423,13 +423,13 @@ obj_new_nil(PadGc *ref_gc) {
     return self;
 }
 
-object_t *
-obj_new_false(PadGc *ref_gc) {
+PadObj *
+PadObj_NewFalse(PadGc *ref_gc) {
     if (!ref_gc) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_BOOL);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__BOOL);
     if (!self) {
         return NULL;
     }
@@ -439,13 +439,13 @@ obj_new_false(PadGc *ref_gc) {
     return self;
 }
 
-object_t *
-obj_new_true(PadGc *ref_gc) {
+PadObj *
+PadObj_NewTrue(PadGc *ref_gc) {
     if (!ref_gc) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_BOOL);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__BOOL);
     if (!self) {
         return NULL;
     }
@@ -455,8 +455,8 @@ obj_new_true(PadGc *ref_gc) {
     return self;
 }
 
-object_t *
-obj_new_cidentifier(
+PadObj *
+PadObj_NewCIdent(
     PadGc *ref_gc,
     PadCtx *ref_context,
     const char *identifier
@@ -465,7 +465,7 @@ obj_new_cidentifier(
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_IDENTIFIER);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__IDENT);
     if (!self) {
         return NULL;
     }
@@ -477,8 +477,8 @@ obj_new_cidentifier(
     return self;
 }
 
-object_t *
-obj_new_identifier(
+PadObj *
+PadObj_NewIdent(
     PadGc *ref_gc,
     PadCtx *ref_context,
     string_t *move_identifier
@@ -487,7 +487,7 @@ obj_new_identifier(
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_UNICODE);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__UNICODE);
     if (!self) {
         return NULL;
     }
@@ -498,13 +498,13 @@ obj_new_identifier(
     return self;
 }
 
-object_t *
-obj_new_unicode_cstr(PadGc *ref_gc, const char *str) {
+PadObj *
+PadObj_NewUnicodeCStr(PadGc *ref_gc, const char *str) {
     if (!ref_gc || !str) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_UNICODE);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__UNICODE);
     if (!self) {
         return NULL;
     }
@@ -515,13 +515,13 @@ obj_new_unicode_cstr(PadGc *ref_gc, const char *str) {
     return self;
 }
 
-object_t *
-obj_new_unicode(PadGc *ref_gc, unicode_t *move_unicode) {
+PadObj *
+PadObj_NewUnicode(PadGc *ref_gc, unicode_t *move_unicode) {
     if (!ref_gc || !move_unicode) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_UNICODE);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__UNICODE);
     if (!self) {
         return NULL;
     }
@@ -531,13 +531,13 @@ obj_new_unicode(PadGc *ref_gc, unicode_t *move_unicode) {
     return self;
 }
 
-object_t *
-obj_new_int(PadGc *ref_gc, objint_t lvalue) {
+PadObj *
+PadObj_NewInt(PadGc *ref_gc, objint_t lvalue) {
     if (!ref_gc) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_INT);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__INT);
     if (!self) {
         return NULL;
     }
@@ -547,13 +547,13 @@ obj_new_int(PadGc *ref_gc, objint_t lvalue) {
     return self;
 }
 
-object_t *
-obj_new_float(PadGc *ref_gc, objfloat_t value) {
+PadObj *
+PadObj_NewFloat(PadGc *ref_gc, objfloat_t value) {
     if (!ref_gc) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_FLOAT);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__FLOAT);
     if (!self) {
         return NULL;
     }
@@ -563,13 +563,13 @@ obj_new_float(PadGc *ref_gc, objfloat_t value) {
     return self;
 }
 
-object_t *
-obj_new_bool(PadGc *ref_gc, bool boolean) {
+PadObj *
+PadObj_NewBool(PadGc *ref_gc, bool boolean) {
     if (!ref_gc) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_BOOL);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__BOOL);
     if (!self) {
         return NULL;
     }
@@ -579,13 +579,13 @@ obj_new_bool(PadGc *ref_gc, bool boolean) {
     return self;
 }
 
-object_t *
-obj_new_array(PadGc *ref_gc, object_array_t *move_objarr) {
+PadObj *
+PadObj_NewAry(PadGc *ref_gc, PadObjAry *move_objarr) {
     if (!ref_gc || !move_objarr) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_ARRAY);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__ARRAY);
     if (!self) {
         return NULL;
     }
@@ -595,13 +595,13 @@ obj_new_array(PadGc *ref_gc, object_array_t *move_objarr) {
     return self;
 }
 
-object_t *
-obj_new_dict(PadGc *ref_gc, object_dict_t *move_objdict) {
+PadObj *
+PadObj_NewDict(PadGc *ref_gc, object_dict_t *move_objdict) {
     if (!ref_gc || !move_objdict) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_DICT);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__DICT);
     if (!self) {
         return NULL;
     }
@@ -611,16 +611,16 @@ obj_new_dict(PadGc *ref_gc, object_dict_t *move_objdict) {
     return self;
 }
 
-object_t *
-obj_new_func(
+PadObj *
+PadObj_NewFunc(
     PadGc *ref_gc,
     ast_t *ref_ast,
     PadCtx *ref_context,
-    object_t *move_name,
-    object_t *move_args,
-    node_array_t *ref_suites,
-    node_dict_t *ref_blocks,
-    object_t *extends_func,  // allow null
+    PadObj *move_name,
+    PadObj *move_args,
+    PadNodeAry *ref_suites,
+    PadNodeDict *ref_blocks,
+    PadObj *extends_func,  // allow null
     bool is_met
 ) {
     bool invalid_args = !ref_gc || !ref_ast || !ref_context || !move_name ||
@@ -629,7 +629,7 @@ obj_new_func(
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_FUNC);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__FUNC);
     if (!self) {
         return NULL;
     }
@@ -646,13 +646,13 @@ obj_new_func(
     return self;
 }
 
-object_t *
-obj_new_chain(PadGc *ref_gc, object_t *move_operand, PadChainObjs *move_chain_objs) {
+PadObj *
+PadObj_NewChain(PadGc *ref_gc, PadObj *move_operand, PadChainObjs *move_chain_objs) {
     if (!ref_gc || !move_operand || !move_chain_objs) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_CHAIN);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__CHAIN);
     if (!self) {
         return NULL;
     }
@@ -663,13 +663,13 @@ obj_new_chain(PadGc *ref_gc, object_t *move_operand, PadChainObjs *move_chain_ob
     return self;
 }
 
-object_t *
-obj_new_module(PadGc *ref_gc) {
+PadObj *
+PadObj_NewMod(PadGc *ref_gc) {
     if (!ref_gc) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_MODULE);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__MODULE);
     if (!self) {
         return NULL;
     }
@@ -677,10 +677,10 @@ obj_new_module(PadGc *ref_gc) {
     return self;
 }
 
-object_t *
-obj_new_def_struct(
+PadObj *
+PadObj_NewDefStruct(
     PadGc *ref_gc,
-    object_t *move_idn,
+    PadObj *move_idn,
     ast_t *move_ast,
     PadCtx *move_context
 ) {
@@ -689,7 +689,7 @@ obj_new_def_struct(
     }
     // ref_elems allow null
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_DEF_STRUCT);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__DEF_STRUCT);
     if (!self) {
         return NULL;
     }
@@ -701,18 +701,18 @@ obj_new_def_struct(
     return self;    
 }
 
-object_t *
-obj_new_object(
+PadObj *
+PadObj_NewObj(
     PadGc *ref_gc,
     ast_t *ref_ast,
     PadCtx *move_struct_context,
-    object_t *ref_def_obj
+    PadObj *ref_def_obj
 ) {
     if (!ref_gc || !ref_ast || !move_struct_context || !ref_def_obj) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_OBJECT);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__OBJECT);
     if (!self) {
         return NULL;
     }
@@ -724,29 +724,29 @@ obj_new_object(
     return self;
 }
 
-object_t *
-obj_new_owners_method(
+PadObj *
+PadObj_NewOwnsMethod(
     PadGc *ref_gc,
-    object_t *owner,
+    PadObj *owner,
     string_t *move_method_name
 ) {
     if (!ref_gc || !owner || !move_method_name) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_OWNERS_METHOD);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__OWNERS_METHOD);
     if (!self) {
         return NULL;
     }
 
-    self->owners_method.owner = owner;  // can obj_del
+    self->owners_method.owner = owner;  // can PadObj_Del
     self->owners_method.method_name = mem_move(move_method_name);
 
     return self;
 }
 
-object_t *
-obj_new_module_by(
+PadObj *
+PadObj_NewModBy(
     PadGc *ref_gc,
     const char *name,
     const char *program_filename,
@@ -761,7 +761,7 @@ obj_new_module_by(
     }
     // allow program_filename, move_program_source is null
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_MODULE);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__MODULE);
     if (!self) {
         return NULL;
     }
@@ -769,14 +769,14 @@ obj_new_module_by(
     if (name) {
         self->module.name = cstr_dup(name);
         if (!self->module.name) {
-            obj_del(self);
+            PadObj_Del(self);
             return NULL;
         }
     }
     if (program_filename) {
         self->module.program_filename = cstr_dup(program_filename);
         if (!self->module.program_filename) {
-            obj_del(self);
+            PadObj_Del(self);
             return NULL;
         }
     }
@@ -789,13 +789,13 @@ obj_new_module_by(
     return self;
 }
 
-object_t *
-obj_new_type(PadGc *ref_gc, obj_type_t type) {
+PadObj *
+PadObj_NewType(PadGc *ref_gc, PadObjType type) {
     if (!ref_gc) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_TYPE);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__TYPE);
     if (!self) {
         return NULL;
     }
@@ -805,13 +805,13 @@ obj_new_type(PadGc *ref_gc, obj_type_t type) {
     return self;
 }
 
-object_t *
-obj_new_builtin_func(PadGc *ref_gc, const char *funcname) {
+PadObj *
+PadObj_NewBltFunc(PadGc *ref_gc, const char *funcname) {
     if (!ref_gc) {
         return NULL;
     }
 
-    object_t *self = obj_new(ref_gc, OBJ_TYPE_BUILTIN_FUNC);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__BUILTIN_FUNC);
     if (!self) {
         return NULL;
     }
@@ -822,7 +822,7 @@ obj_new_builtin_func(PadGc *ref_gc, const char *funcname) {
 }
 
 string_t *
-obj_to_str(const object_t *self) {
+PadObj_ToStr(const PadObj *self) {
     if (!self) {
         string_t *str = str_new_cstr("null");
         if (!str) {
@@ -832,7 +832,7 @@ obj_to_str(const object_t *self) {
     }
 
     switch (self->type) {
-    case OBJ_TYPE_NIL: {
+    case PAD_OBJ_TYPE__NIL: {
         string_t *str = str_new();
         if (!str) {
             return NULL;
@@ -840,7 +840,7 @@ obj_to_str(const object_t *self) {
         str_set(str, "nil");
         return str;
     } break;
-    case OBJ_TYPE_INT: {
+    case PAD_OBJ_TYPE__INT: {
         string_t *str = str_new();
         if (!str) {
             return NULL;
@@ -849,7 +849,7 @@ obj_to_str(const object_t *self) {
         str_app_fmt(str, buf, sizeof buf, "%ld", self->lvalue);
         return str;
     } break;
-    case OBJ_TYPE_FLOAT: {
+    case PAD_OBJ_TYPE__FLOAT: {
         string_t *str = str_new();
         if (!str) {
             return NULL;
@@ -860,7 +860,7 @@ obj_to_str(const object_t *self) {
         str_set(str, buf);
         return str;
     } break;
-    case OBJ_TYPE_BOOL: {
+    case PAD_OBJ_TYPE__BOOL: {
         string_t *str = str_new();
         if (!str) {
             return NULL;
@@ -872,7 +872,7 @@ obj_to_str(const object_t *self) {
         }
         return str;
     } break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         string_t *str = str_new();
         if (!str) {
             return NULL;
@@ -881,7 +881,7 @@ obj_to_str(const object_t *self) {
         str_set(str, s);
         return str;
     } break;
-    case OBJ_TYPE_ARRAY: {
+    case PAD_OBJ_TYPE__ARRAY: {
         string_t *str = str_new();
         if (!str) {
             return NULL;
@@ -889,7 +889,7 @@ obj_to_str(const object_t *self) {
         str_set(str, "(array)");
         return str;
     } break;
-    case OBJ_TYPE_DICT: {
+    case PAD_OBJ_TYPE__DICT: {
         string_t *str = str_new();
         if (!str) {
             return NULL;
@@ -897,10 +897,10 @@ obj_to_str(const object_t *self) {
         str_set(str, "(dict)");
         return str;
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        return str_new_cstr(obj_getc_idn_name(self));
+    case PAD_OBJ_TYPE__IDENT: {
+        return str_new_cstr(PadObj_GetcIdentName(self));
     } break;
-    case OBJ_TYPE_FUNC: {
+    case PAD_OBJ_TYPE__FUNC: {
         string_t *str = str_new();
         if (!str) {
             return NULL;
@@ -908,7 +908,7 @@ obj_to_str(const object_t *self) {
         str_set(str, "(function)");
         return str;
     } break;
-    case OBJ_TYPE_CHAIN: {
+    case PAD_OBJ_TYPE__CHAIN: {
         string_t *str = str_new();
         if (!str) {
             return NULL;
@@ -916,7 +916,7 @@ obj_to_str(const object_t *self) {
         str_set(str, "(chain)");
         return str;
     } break;
-    case OBJ_TYPE_MODULE: {
+    case PAD_OBJ_TYPE__MODULE: {
         string_t *str = str_new();
         if (!str) {
             return NULL;
@@ -924,7 +924,7 @@ obj_to_str(const object_t *self) {
         str_set(str, "(module)");
         return str;
     } break;
-    case OBJ_TYPE_DEF_STRUCT: {
+    case PAD_OBJ_TYPE__DEF_STRUCT: {
         string_t *str = str_new();
         if (!str) {
             return NULL;
@@ -932,7 +932,7 @@ obj_to_str(const object_t *self) {
         str_set(str, "(struct)");
         return str;
     } break;
-    case OBJ_TYPE_OBJECT: {
+    case PAD_OBJ_TYPE__OBJECT: {
         string_t *str = str_new();
         if (!str) {
             return NULL;
@@ -940,7 +940,7 @@ obj_to_str(const object_t *self) {
         str_set(str, "(object)");
         return str;
     } break;
-    case OBJ_TYPE_OWNERS_METHOD: {
+    case PAD_OBJ_TYPE__OWNERS_METHOD: {
         string_t *str = str_new();
         if (!str) {
             return NULL;
@@ -948,7 +948,7 @@ obj_to_str(const object_t *self) {
         str_set(str, "(method)");
         return str;
     } break;
-    case OBJ_TYPE_TYPE: {
+    case PAD_OBJ_TYPE__TYPE: {
         string_t *str = str_new();
         if (!str) {
             return NULL;
@@ -956,7 +956,7 @@ obj_to_str(const object_t *self) {
         str_set(str, "(type)");
         return str;
     } break;
-    case OBJ_TYPE_BUILTIN_FUNC: {
+    case PAD_OBJ_TYPE__BUILTIN_FUNC: {
         string_t *str = str_new();
         if (!str) {
             return NULL;
@@ -971,35 +971,35 @@ obj_to_str(const object_t *self) {
     return NULL;
 }
 
-object_t *
-obj_to_array(const object_t *obj) {
+PadObj *
+PadObj_ToAry(const PadObj *obj) {
     if (!obj) {
-        object_array_t *objarr = objarr_new();
+        PadObjAry *objarr = PadObjAry_New();
         if (!objarr) {
             return NULL;
         }
-        return obj_new_array(obj->ref_gc, mem_move(objarr));
+        return PadObj_NewAry(obj->ref_gc, mem_move(objarr));
     }
 
     switch (obj->type) {
     default: {
-        object_array_t *objarr = objarr_new();
+        PadObjAry *objarr = PadObjAry_New();
         if (!objarr) {
             return NULL;
         }
-        object_t *copied = obj_deep_copy(obj);
+        PadObj *copied = PadObj_DeepCopy(obj);
         if (!copied) {
-            objarr_del(objarr);
+            PadObjAry_Del(objarr);
             return NULL;
         }
-        if (!objarr_moveb(objarr, mem_move(copied))) {
-            objarr_del(objarr);
+        if (!PadObjAry_MoveBack(objarr, mem_move(copied))) {
+            PadObjAry_Del(objarr);
             return NULL;
         }
-        return obj_new_array(obj->ref_gc, mem_move(objarr));
+        return PadObj_NewAry(obj->ref_gc, mem_move(objarr));
     } break;
-    case OBJ_TYPE_ARRAY:
-        return obj_deep_copy(obj);
+    case PAD_OBJ_TYPE__ARRAY:
+        return PadObj_DeepCopy(obj);
         break;
     }
 
@@ -1008,7 +1008,7 @@ obj_to_array(const object_t *obj) {
 }
 
 void
-obj_inc_ref(object_t *self) {
+PadObj_IncRef(PadObj *self) {
     if (!self) {
         return;
     }
@@ -1017,7 +1017,7 @@ obj_inc_ref(object_t *self) {
 }
 
 void
-obj_dec_ref(object_t *self) {
+PadObj_DecRef(PadObj *self) {
     if (!self) {
         return;
     }
@@ -1026,7 +1026,7 @@ obj_dec_ref(object_t *self) {
 }
 
 PadGcItem *
-obj_get_gc_item(object_t *self) {
+PadObj_GetGcItem(PadObj *self) {
     if (!self) {
         return NULL;
     }
@@ -1035,7 +1035,7 @@ obj_get_gc_item(object_t *self) {
 }
 
 void
-obj_dump(const object_t *self, FILE *fout) {
+PadObj_Dump(const PadObj *self, FILE *fout) {
     if (!fout) {
         return;
     }
@@ -1045,12 +1045,12 @@ obj_dump(const object_t *self, FILE *fout) {
         return;
     }
 
-    string_t *s = obj_to_str(self);
+    string_t *s = PadObj_ToStr(self);
     if (!s) {
         return;
     }
 
-    string_t *typ = obj_type_to_str(self);
+    string_t *typ = PadObj_TypeToStr(self);
     if (!typ) {
         return;
     }
@@ -1065,24 +1065,24 @@ obj_dump(const object_t *self, FILE *fout) {
 
     switch (self->type) {
     default: break;
-    case OBJ_TYPE_INT:
+    case PAD_OBJ_TYPE__INT:
         fprintf(fout, "object.lvalue[%ld]\n", self->lvalue);
         break;
-    case OBJ_TYPE_MODULE:
+    case PAD_OBJ_TYPE__MODULE:
         fprintf(fout, "object.module.name[%s]\n", self->module.name);
         break;
-    case OBJ_TYPE_ARRAY:
-        objarr_dump(self->objarr, fout);
+    case PAD_OBJ_TYPE__ARRAY:
+        PadObjAry_Dump(self->objarr, fout);
         break;
-    case OBJ_TYPE_CHAIN:
+    case PAD_OBJ_TYPE__CHAIN:
         fprintf(fout, "object.chain.operand[%p]\n", self->chain.operand);
-        obj_dump(self->chain.operand, fout);
+        PadObj_Dump(self->chain.operand, fout);
         fprintf(fout, "object.chain.chain_objs[%p]\n", self->chain.chain_objs);
         PadChainObjs_Dump(self->chain.chain_objs, fout);
         break;
-    case OBJ_TYPE_DEF_STRUCT:
+    case PAD_OBJ_TYPE__DEF_STRUCT:
         fprintf(fout, "def-struct.ref_ast[%p]\n", self->def_struct.ref_ast);
-        fprintf(fout, "def-struct.identifier[%s]\n", obj_getc_idn_name(self->def_struct.identifier));
+        fprintf(fout, "def-struct.identifier[%s]\n", PadObj_GetcIdentName(self->def_struct.identifier));
         fprintf(fout, "def-struct.ast[%p]\n", self->def_struct.ast);
         fprintf(fout, "def-struct.context\n");
         PadCtx_Dump(self->def_struct.context, fout);
@@ -1091,7 +1091,7 @@ obj_dump(const object_t *self, FILE *fout) {
 }
 
 string_t *
-obj_type_to_str(const object_t *self) {
+PadObj_TypeToStr(const PadObj *self) {
     string_t *s = str_new();
     if (!s) {
         return NULL;
@@ -1105,52 +1105,52 @@ obj_type_to_str(const object_t *self) {
     char tmp[256];
 
     switch (self->type) {
-    case OBJ_TYPE_NIL:
+    case PAD_OBJ_TYPE__NIL:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: nil>", self->type);
         break;
-    case OBJ_TYPE_INT:
+    case PAD_OBJ_TYPE__INT:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: int>", self->type);
         break;
-    case OBJ_TYPE_FLOAT:
+    case PAD_OBJ_TYPE__FLOAT:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: float>", self->type);
         break;
-    case OBJ_TYPE_BOOL:
+    case PAD_OBJ_TYPE__BOOL:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: bool>", self->type);
         break;
-    case OBJ_TYPE_IDENTIFIER:
+    case PAD_OBJ_TYPE__IDENT:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: identifier>", self->type);
         break;
-    case OBJ_TYPE_UNICODE:
+    case PAD_OBJ_TYPE__UNICODE:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: unicode>", self->type);
         break;
-    case OBJ_TYPE_ARRAY:
+    case PAD_OBJ_TYPE__ARRAY:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: array>", self->type);
         break;
-    case OBJ_TYPE_DICT:
+    case PAD_OBJ_TYPE__DICT:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: dict>", self->type);
         break;
-    case OBJ_TYPE_FUNC:
+    case PAD_OBJ_TYPE__FUNC:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: func>", self->type);
         break;
-    case OBJ_TYPE_CHAIN:
+    case PAD_OBJ_TYPE__CHAIN:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: chain>", self->type);
         break;
-    case OBJ_TYPE_MODULE:
+    case PAD_OBJ_TYPE__MODULE:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: module>", self->type);
         break;
-    case OBJ_TYPE_DEF_STRUCT:
+    case PAD_OBJ_TYPE__DEF_STRUCT:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: def-struct>", self->type);
         break;
-    case OBJ_TYPE_OBJECT:
+    case PAD_OBJ_TYPE__OBJECT:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: object>", self->type);
         break;
-    case OBJ_TYPE_OWNERS_METHOD:
+    case PAD_OBJ_TYPE__OWNERS_METHOD:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: owners-method>", self->type);
         break;
-    case OBJ_TYPE_TYPE:
+    case PAD_OBJ_TYPE__TYPE:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: type>", self->type);
         break;
-    case OBJ_TYPE_BUILTIN_FUNC:
+    case PAD_OBJ_TYPE__BUILTIN_FUNC:
         str_app_fmt(s, tmp, sizeof tmp, "<%d: builtin-function>", self->type);
         break;
     }
@@ -1159,91 +1159,91 @@ obj_type_to_str(const object_t *self) {
 }
 
 const char *
-obj_getc_idn_name(const object_t *self) {
+PadObj_GetcIdentName(const PadObj *self) {
     return str_getc(self->identifier.name);
 }
 
 const char *
-obj_getc_def_struct_idn_name(const object_t *self) {
-    return obj_getc_idn_name(self->def_struct.identifier);
+PadObj_GetcDefStructIdentName(const PadObj *self) {
+    return PadObj_GetcIdentName(self->def_struct.identifier);
 }
 
 PadCtx *
-obj_get_idn_ref_context(const object_t *self) {
+PadObj_GetIdentRefCtx(const PadObj *self) {
     return self->identifier.ref_context;
 }
 
 PadChainObjs *
-obj_get_chain_objs(object_t *self) {
+PadObj_GetChainObjs(PadObj *self) {
     return self->chain.chain_objs;
 }
 
 const PadChainObjs *
-obj_getc_chain_objs(const object_t *self) {
+PadObj_GetcChainObjs(const PadObj *self) {
     return self->chain.chain_objs;
 }
 
-object_t *
-obj_get_chain_operand(object_t *self) {
+PadObj *
+PadObj_GetChainOperand(PadObj *self) {
     return self->chain.operand;
 }
 
-const object_t *
-obj_getc_chain_operand(const object_t *self) {
+const PadObj *
+PadObj_GetcChainOperand(const PadObj *self) {
     return self->chain.operand;
 }
 
 const char *
-obj_getc_func_name(const object_t *self) {
-    return obj_getc_idn_name(self->func.name);
+PadObj_GetcFuncName(const PadObj *self) {
+    return PadObj_GetcIdentName(self->func.name);
 }
 
-object_array_t *
-obj_get_array(object_t *self) {
+PadObjAry *
+PadObj_GetAry(PadObj *self) {
     return self->objarr;
 }
 
-const object_array_t *
-obj_getc_array(const object_t *self) {
+const PadObjAry *
+PadObj_GetcAry(const PadObj *self) {
     return self->objarr;
 }
 
 object_dict_t *
-obj_get_dict(object_t *self) {
+PadObj_GetDict(PadObj *self) {
     return self->objdict;
 }
 
 const object_dict_t *
-obj_getc_dict(const object_t *self) {
+PadObj_GetcDict(const PadObj *self) {
     return self->objdict;
 }
 
 unicode_t *
-obj_get_unicode(object_t *self) {
+PadObj_GetUnicode(PadObj *self) {
     return self->unicode;
 }
 
 const unicode_t *
-obj_getc_unicode(const object_t *self) {
+PadObj_GetcUnicode(const PadObj *self) {
     return self->unicode;
 }
 
 builtin_func_info_t *
-obj_get_module_builtin_func_infos(const object_t *self) {
+PadObj_GetModBltFuncInfos(const PadObj *self) {
     return self->module.builtin_func_infos;
 }
 
 const string_t *
-obj_getc_owners_method_name(const object_t *self) {
+PadObj_GetcOwnsMethodName(const PadObj *self) {
     return self->owners_method.method_name;
 }
 
-object_t *
-obj_get_owners_method_owner(object_t *self) {
+PadObj *
+PadObj_GetOwnsMethodOwn(PadObj *self) {
     return self->owners_method.owner;
 }
 
 const char *
-obj_getc_mod_name(const object_t *self) {
+PadObj_GetcModName(const PadObj *self) {
     return self->module.name;
 }

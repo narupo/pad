@@ -12,51 +12,51 @@
 *****************/
 
 void
-nodearr_del(node_array_t *self);
+PadNodeAry_Del(PadNodeAry *self);
 
 void
-nodearr_del_without_nodes(node_array_t* self);
+PadNodeAry_DelWithoutNodes(PadNodeAry* self);
 
-node_array_t *
-nodearr_new(void);
+PadNodeAry *
+PadNodeAry_New(void);
 
-node_array_t *
-nodearr_deep_copy(const node_array_t *other);
+PadNodeAry *
+PadNodeAry_DeepCopy(const PadNodeAry *other);
 
-node_array_t *
-nodearr_shallow_copy(const node_array_t *other);
+PadNodeAry *
+PadNodeAry_ShallowCopy(const PadNodeAry *other);
 
 /*********
 * getter *
 *********/
 
 int32_t
-nodearr_len(const node_array_t *self);
+PadNodeAry_Len(const PadNodeAry *self);
 
 int32_t
-nodearry_capa(const node_array_t *self);
+PadNodeAry_Capa(const PadNodeAry *self);
 
 PadNode *
-nodearr_get(const node_array_t *self, int32_t index);
+PadNodeAry_Get(const PadNodeAry *self, int32_t index);
 
 const PadNode *
-nodearr_getc(const node_array_t *self, int32_t index);
+PadNodeAry_Getc(const PadNodeAry *self, int32_t index);
 
 PadNode *
-nodearr_get_last(const node_array_t *self);
+PadNodeAry_GetLast(const PadNodeAry *self);
 
 /*********
 * setter *
 *********/
 
-node_array_t *
-nodearr_resize(node_array_t *self, int32_t capa);
+PadNodeAry *
+PadNodeAry_Resize(PadNodeAry *self, int32_t capa);
 
-node_array_t *
-nodearr_moveb(node_array_t *self, PadNode *node);
+PadNodeAry *
+PadNodeAry_MoveBack(PadNodeAry *self, PadNode *node);
 
-node_array_t *
-nodearr_movef(node_array_t *self, PadNode *node);
+PadNodeAry *
+PadNodeAry_MoveFront(PadNodeAry *self, PadNode *node);
 
 PadNode *
-nodearr_popb(node_array_t *self);
+PadNodeAry_PopBack(PadNodeAry *self);

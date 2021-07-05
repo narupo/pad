@@ -8,99 +8,96 @@
 #include <pad/lang/object.h>
 #include <pad/lang/gc.h>
 
-struct object_array;
-typedef struct object_array object_array_t;
+struct PadObjAry;
+typedef struct PadObjAry PadObjAry;
 
 /*****************
 * delete and new *
 *****************/
 
 void
-objarr_del(object_array_t* self);
+PadObjAry_Del(PadObjAry* self);
 
 void
-objarr_del_without_objs(object_array_t* self);
+PadObjAry_DelWithoutObjs(PadObjAry* self);
 
-object_array_t*
-objarr_new(void);
+PadObjAry*
+PadObjAry_New(void);
 
-object_array_t*
-objarr_deep_copy(const object_array_t *other);
+PadObjAry*
+PadObjAry_DeepCopy(const PadObjAry *other);
 
-object_array_t*
-objarr_shallow_copy(const object_array_t *other);
-
-object_array_t*
-objarr_shallow_copy(const object_array_t *other);
+PadObjAry*
+PadObjAry_ShallowCopy(const PadObjAry *other);
 
 /*********
 * getter *
 *********/
 
 int32_t
-objarr_len(const object_array_t *self);
+PadObjAry_Len(const PadObjAry *self);
 
 int32_t
-objarry_capa(const object_array_t *self);
+PadObjAry_Capa(const PadObjAry *self);
 
-object_t *
-objarr_get(const object_array_t *self, int32_t index);
+PadObj *
+PadObjAry_Get(const PadObjAry *self, int32_t index);
 
-const object_t *
-objarr_getc(const object_array_t *self, int32_t index);
+const PadObj *
+PadObjAry_Getc(const PadObjAry *self, int32_t index);
 
 /*********
 * setter *
 *********/
 
-object_array_t *
-objarr_resize(object_array_t* self, int32_t capa);
+PadObjAry *
+PadObjAry_Resize(PadObjAry* self, int32_t capa);
 
-object_array_t *
-objarr_move(object_array_t* self, int32_t index, object_t *move_obj);
+PadObjAry *
+PadObjAry_Move(PadObjAry* self, int32_t index, PadObj *move_obj);
 
 /**
  * set referencet at index
  *
  * @param[in] *self
  * @param[in] index    number of index
- * @param[in] *ref_obj reference of object_t
+ * @param[in] *ref_obj reference of PadObj
  *
  * @return success to pointer to self
  * @return failed to NULL
  */
-object_array_t *
-objarr_set(object_array_t* self, int32_t index, object_t *ref_obj);
+PadObjAry *
+PadObjAry_Set(PadObjAry* self, int32_t index, PadObj *ref_obj);
 
-object_array_t *
-objarr_moveb(object_array_t* self, object_t *move_obj);
+PadObjAry *
+PadObjAry_MoveBack(PadObjAry* self, PadObj *move_obj);
 
-object_array_t *
-objarr_movef(object_array_t* self, object_t *move_obj);
+PadObjAry *
+PadObjAry_MoveFront(PadObjAry* self, PadObj *move_obj);
 
-object_array_t *
-objarr_pushb(object_array_t* self, object_t *reference);
+PadObjAry *
+PadObjAry_PushBack(PadObjAry* self, PadObj *reference);
 
-object_array_t *
-objarr_pushf(object_array_t* self, object_t *reference);
+PadObjAry *
+PadObjAry_PushFront(PadObjAry* self, PadObj *reference);
 
-object_t *
-objarr_popb(object_array_t *self);
+PadObj *
+PadObjAry_PopBack(PadObjAry *self);
 
-object_t *
-objarr_get_last(object_array_t *self);
+PadObj *
+PadObjAry_GetLast(PadObjAry *self);
 
-object_t *
-objarr_get_last_2(object_array_t *self);
+PadObj *
+PadObjAry_GetLast2(PadObjAry *self);
 
-const object_t *
-objarr_getc_last(const object_array_t *self);
+const PadObj *
+PadObjAry_GetcLast(const PadObjAry *self);
 
 /**
  * TODO: test
  */
-object_array_t *
-objarr_app_other(object_array_t *self, object_array_t *other);
+PadObjAry *
+PadObjAry_AppOther(PadObjAry *self, PadObjAry *other);
 
 /**
  * dump object array at stream
@@ -109,7 +106,7 @@ objarr_app_other(object_array_t *self, object_array_t *other);
  * @param[in] *fout stream
  */
 void
-objarr_dump(const object_array_t *self, FILE *fout);
+PadObjAry_Dump(const PadObjAry *self, FILE *fout);
 
 void
-objarr_dump_s(const object_array_t *self, FILE *fout);
+PadObjAry_DumpS(const PadObjAry *self, FILE *fout);

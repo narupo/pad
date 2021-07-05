@@ -77,7 +77,7 @@ void
 PadAst_DelNodes(const ast_t *self, PadNode *node);
 
 /**
- * destruct object
+ * destruct PadObj
  *
  * @param[in] *self pointer to ast_t
  */
@@ -85,7 +85,7 @@ void
 PadAst_Del(ast_t *self);
 
 /**
- * construct object
+ * construct PadObj
  *
  * @param[in] *ref_config pointer to read-only PadConfig
  *

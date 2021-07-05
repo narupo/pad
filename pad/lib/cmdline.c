@@ -5,7 +5,7 @@
 *****************/
 
 void
-cmdlineobj_del(cmdline_object_t *self) {
+cmdlinePadObj_Del(cmdline_PadObj *self) {
     if (!self) {
         return;
     }
@@ -15,9 +15,9 @@ cmdlineobj_del(cmdline_object_t *self) {
     free(self);
 }
 
-cmdline_object_t *
-cmdlineobj_new(cmdline_object_type_t type) {
-    cmdline_object_t *self = mem_calloc(1, sizeof(*self));
+cmdline_PadObj *
+cmdlinePadObj_New(cmdline_PadObjype_t type) {
+    cmdline_PadObj *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -25,21 +25,21 @@ cmdlineobj_new(cmdline_object_type_t type) {
     self->type = type;
     self->command = str_new();
     if (!self->command) {
-        cmdlineobj_del(self);
+        cmdlinePadObj_Del(self);
         return NULL;
     }
 
     self->cl = cl_new();
     if (!self->cl) {
-        cmdlineobj_del(self);
+        cmdlinePadObj_Del(self);
         return NULL;
     }
 
     return self;
 }
 
-cmdline_object_t *
-cmdlineobj_parse(cmdline_object_t *self, const char *line) {
+cmdline_PadObj *
+cmdlineobj_parse(cmdline_PadObj *self, const char *line) {
     if (!cl_parse_str(self->cl, line)) {
         return NULL;
     }
@@ -56,7 +56,7 @@ enum {
 };
 
 struct cmdline {
-    cmdline_object_t **objs;
+    cmdline_PadObj **objs;
     int32_t capa;
     int32_t len;
     char what[1024];
@@ -69,8 +69,8 @@ cmdline_del(cmdline_t *self) {
     }
 
     for (int32_t i = 0; i < self->len; ++i) {
-        cmdline_object_t *obj = self->objs[i];
-        cmdlineobj_del(obj);
+        cmdline_PadObj *obj = self->objs[i];
+        cmdlinePadObj_Del(obj);
     }
 
     free(self->objs);
@@ -84,7 +84,7 @@ cmdline_new(void) {
         return NULL;
     }
 
-    int32_t size = sizeof(cmdline_object_t *);
+    int32_t size = sizeof(cmdline_PadObj *);
     self->capa = CMDLINE_OBJS_SIZE;
     self->objs = mem_calloc(self->capa + 1, size);
     if (!self->objs) {
@@ -104,14 +104,14 @@ cmdline_resize(cmdline_t *self, int32_t capa) {
     if (capa < self->len) {
         int32_t dif = self->len - capa;
         for (int32_t i = dif; i < self->len; ++i) {
-            cmdlineobj_del(self->objs[i]);
+            cmdlinePadObj_Del(self->objs[i]);
             self->objs[i] = NULL;
         }
     }
 
-    int32_t objsize = sizeof(cmdline_object_t *);
+    int32_t objsize = sizeof(cmdline_PadObj *);
     int32_t size = objsize * capa + objsize;
-    cmdline_object_t **tmp = mem_realloc(self->objs, size);
+    cmdline_PadObj **tmp = mem_realloc(self->objs, size);
     if (!tmp) {
         return NULL;
     }
@@ -122,7 +122,7 @@ cmdline_resize(cmdline_t *self, int32_t capa) {
 }
 
 cmdline_t *
-cmdline_moveb(cmdline_t *self, cmdline_object_t *move_obj) {
+cmdline_moveb(cmdline_t *self, cmdline_PadObj *move_obj) {
     if (!self || !move_obj) {
         return NULL;
     }
@@ -156,7 +156,7 @@ cmdline_len(const cmdline_t *self) {
     return self->len;
 }
 
-const cmdline_object_t *
+const cmdline_PadObj *
 cmdline_getc(const cmdline_t *self, int32_t index) {
     if (!self || index < 0 || index >= self->len) {
         return NULL;
@@ -172,8 +172,8 @@ cmdline_clear(cmdline_t *self) {
     }
 
     for (int32_t i = 0; i < self->len; ++i) {
-        cmdline_object_t *obj = self->objs[i];
-        cmdlineobj_del(obj);
+        cmdline_PadObj *obj = self->objs[i];
+        cmdlinePadObj_Del(obj);
         self->objs[i] = NULL;
     }
 
@@ -212,7 +212,7 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 }
 
                 // move back cmd object
-                cmdline_object_t *obj = cmdlineobj_new(CMDLINE_OBJECT_TYPE_CMD);
+                cmdline_PadObj *obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_CMD);
                 if (!cmdlineobj_parse(obj, str_getc(buf))) {
                     snprintf(self->what, sizeof self->what, "failed to parse mini command line");
                     str_del(buf);
@@ -235,7 +235,7 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 obj = NULL;
 
                 // move back pipe object
-                obj = cmdlineobj_new(CMDLINE_OBJECT_TYPE_PIPE);
+                obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_PIPE);
 
                 if (!cmdline_moveb(self, obj)) {
                     snprintf(self->what, sizeof self->what, "failed to move back PIPE object");
@@ -252,7 +252,7 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 }
 
                 // move back cmd object
-                cmdline_object_t *obj = cmdlineobj_new(CMDLINE_OBJECT_TYPE_CMD);
+                cmdline_PadObj *obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_CMD);
                 if (!cmdlineobj_parse(obj, str_getc(buf))) {
                     snprintf(self->what, sizeof self->what, "failed to parse mini command line");
                     str_del(buf);
@@ -275,7 +275,7 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 obj = NULL;
 
                 // move back and object
-                obj = cmdlineobj_new(CMDLINE_OBJECT_TYPE_AND);
+                obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_AND);
 
                 if (!cmdline_moveb(self, obj)) {
                     snprintf(self->what, sizeof self->what, "failed to move back AND object");
@@ -290,7 +290,7 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 }
 
                 // move back cmd object
-                cmdline_object_t *obj = cmdlineobj_new(CMDLINE_OBJECT_TYPE_CMD);
+                cmdline_PadObj *obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_CMD);
                 if (!cmdlineobj_parse(obj, str_getc(buf))) {
                     snprintf(self->what, sizeof self->what, "failed to parse mini command line");
                     str_del(buf);
@@ -313,7 +313,7 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 obj = NULL;
 
                 // move back and object
-                obj = cmdlineobj_new(CMDLINE_OBJECT_TYPE_REDIRECT);
+                obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_REDIRECT);
 
                 if (!cmdline_moveb(self, obj)) {
                     snprintf(self->what, sizeof self->what, "failed to move back REDIRECT object");
@@ -344,10 +344,10 @@ cmdline_parse(cmdline_t *self, const char *line) {
 
     if (str_len(buf)) {
         // move back cmd object
-        cmdline_object_t *obj = cmdlineobj_new(CMDLINE_OBJECT_TYPE_CMD);
+        cmdline_PadObj *obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_CMD);
         if (!cmdlineobj_parse(obj, str_getc(buf))) {
             snprintf(self->what, sizeof self->what, "failed to parse mini command line (2)");
-            cmdlineobj_del(obj);
+            cmdlinePadObj_Del(obj);
             str_del(buf);
             return NULL;
         }
@@ -362,7 +362,7 @@ cmdline_parse(cmdline_t *self, const char *line) {
 
         if (!cmdline_moveb(self, obj)) {
             snprintf(self->what, sizeof self->what, "failed to move back command object (2)");
-            cmdlineobj_del(obj);
+            cmdlinePadObj_Del(obj);
             str_del(buf);
             return NULL;
         }

@@ -18,5 +18,5 @@
  *
  * @return
  */
-object_t *
+PadObj *
 Pad_NewBltDictMod(const PadConfig *ref_config, PadGc *ref_gc);

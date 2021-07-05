@@ -4,11 +4,11 @@ enum {
     OBJARR_INIT_CAPA = 4,
 };
 
-struct object_array {
+struct PadObjAry {
     PadGc *ref_gc;
     int32_t len;
     int32_t capa;
-    object_t **parray;
+    PadObj **parray;
 };
 
 /*****************
@@ -16,15 +16,15 @@ struct object_array {
 *****************/
 
 void
-objarr_del(object_array_t* self) {
+PadObjAry_Del(PadObjAry* self) {
     if (!self) {
         return;
     }
 
     for (int i = 0; i < self->len; ++i) {
-        object_t *obj = self->parray[i];
-        obj_dec_ref(obj);
-        obj_del(obj);
+        PadObj *obj = self->parray[i];
+        PadObj_DecRef(obj);
+        PadObj_Del(obj);
     }
 
     free(self->parray);
@@ -32,7 +32,7 @@ objarr_del(object_array_t* self) {
 }
 
 void
-objarr_del_without_objs(object_array_t* self) {
+PadObjAry_DelWithoutObjs(PadObjAry* self) {
     if (!self) {
         return;
     }
@@ -41,16 +41,16 @@ objarr_del_without_objs(object_array_t* self) {
     free(self);
 }
 
-object_array_t*
-objarr_new(void) {
-    object_array_t *self = mem_calloc(1, sizeof(*self));
+PadObjAry*
+PadObjAry_New(void) {
+    PadObjAry *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
-    self->parray = mem_calloc(OBJARR_INIT_CAPA+1, sizeof(object_t *));
+    self->parray = mem_calloc(OBJARR_INIT_CAPA+1, sizeof(PadObj *));
     if (!self->parray) {
-        objarr_del(self);
+        PadObjAry_Del(self);
         return NULL;
     }
 
@@ -59,19 +59,19 @@ objarr_new(void) {
     return self;
 }
 
-object_t *
-obj_deep_copy(const object_t *other);
+PadObj *
+PadObj_DeepCopy(const PadObj *other);
 
-object_array_t*
-objarr_deep_copy(const object_array_t *other) {
-    object_array_t *self = mem_calloc(1, sizeof(*self));
+PadObjAry*
+PadObjAry_DeepCopy(const PadObjAry *other) {
+    PadObjAry *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
-    self->parray = mem_calloc(other->capa+1, sizeof(object_t *));
+    self->parray = mem_calloc(other->capa+1, sizeof(PadObj *));
     if (!self->parray) {
-        objarr_del(self);
+        PadObjAry_Del(self);
         return NULL;
     }
 
@@ -79,29 +79,29 @@ objarr_deep_copy(const object_array_t *other) {
     self->len = other->len;
 
     for (int i = 0; i < self->len; ++i) {
-        object_t *obj = obj_deep_copy(other->parray[i]);
+        PadObj *obj = PadObj_DeepCopy(other->parray[i]);
         if (!obj) {
-            objarr_del(self);
+            PadObjAry_Del(self);
             return NULL;
         }
 
-        obj_inc_ref(obj);
+        PadObj_IncRef(obj);
         self->parray[i] = obj;
     }
 
     return self;
 }
 
-object_array_t*
-objarr_shallow_copy(const object_array_t *other) {
-    object_array_t *self = mem_calloc(1, sizeof(*self));
+PadObjAry*
+PadObjAry_ShallowCopy(const PadObjAry *other) {
+    PadObjAry *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
-    self->parray = mem_calloc(other->capa+1, sizeof(object_t *));
+    self->parray = mem_calloc(other->capa+1, sizeof(PadObj *));
     if (!self->parray) {
-        objarr_del(self);
+        PadObjAry_Del(self);
         return NULL;
     }
 
@@ -109,13 +109,13 @@ objarr_shallow_copy(const object_array_t *other) {
     self->len = other->len;
 
     for (int i = 0; i < self->len; ++i) {
-        object_t *obj = obj_shallow_copy(other->parray[i]);
+        PadObj *obj = PadObj_ShallowCopy(other->parray[i]);
         if (!obj) {
-            objarr_del(self);
+            PadObjAry_Del(self);
             return NULL;
         }
 
-        obj_inc_ref(obj);
+        PadObj_IncRef(obj);
         self->parray[i] = obj;
     }
 
@@ -127,25 +127,25 @@ objarr_shallow_copy(const object_array_t *other) {
 *********/
 
 int32_t
-objarr_len(const object_array_t *self) {
+PadObjAry_Len(const PadObjAry *self) {
     return self->len;
 }
 
 int32_t
-objarry_capa(const object_array_t *self) {
+PadObjAry_Capa(const PadObjAry *self) {
     return self->capa;
 }
 
-object_t *
-objarr_get(const object_array_t *self, int32_t index) {
+PadObj *
+PadObjAry_Get(const PadObjAry *self, int32_t index) {
     if (index < 0 || index >= self->capa) {
         return NULL;
     }
     return self->parray[index];
 }
 
-const object_t *
-objarr_getc(const object_array_t *self, int32_t index) {
+const PadObj *
+PadObjAry_Getc(const PadObjAry *self, int32_t index) {
     if (index < 0 || index >= self->capa) {
         return NULL;
     }
@@ -156,14 +156,14 @@ objarr_getc(const object_array_t *self, int32_t index) {
 * setter *
 *********/
 
-object_array_t *
-objarr_resize(object_array_t* self, int32_t capa) {
+PadObjAry *
+PadObjAry_Resize(PadObjAry* self, int32_t capa) {
     if (!self || capa < 0) {
         return NULL;
     }
 
-    int byte = sizeof(object_t *);
-    object_t **tmparr = mem_realloc(self->parray, capa * byte + byte);
+    int byte = sizeof(PadObj *);
+    PadObj **tmparr = mem_realloc(self->parray, capa * byte + byte);
     if (!tmparr) {
         return NULL;
     }
@@ -174,47 +174,47 @@ objarr_resize(object_array_t* self, int32_t capa) {
     return self;
 }
 
-object_array_t *
-objarr_move(object_array_t* self, int32_t index, object_t *move_obj) {
+PadObjAry *
+PadObjAry_Move(PadObjAry* self, int32_t index, PadObj *move_obj) {
     if (index < 0 || index >= self->capa) {
         return NULL;
     }
 
-    object_t *old = self->parray[index];
+    PadObj *old = self->parray[index];
     if (old != move_obj) {
-        obj_dec_ref(old);
-        obj_del(old);
-        obj_inc_ref(move_obj);
+        PadObj_DecRef(old);
+        PadObj_Del(old);
+        PadObj_IncRef(move_obj);
         self->parray[index] = move_obj;
     }
 
     return self;
 }
 
-object_array_t *
-objarr_set(object_array_t* self, int32_t index, object_t *ref_obj) {
-    return objarr_move(self, index, ref_obj);
+PadObjAry *
+PadObjAry_Set(PadObjAry* self, int32_t index, PadObj *ref_obj) {
+    return PadObjAry_Move(self, index, ref_obj);
 }
 
-object_array_t *
-objarr_moveb(object_array_t* self, object_t *obj) {
+PadObjAry *
+PadObjAry_MoveBack(PadObjAry* self, PadObj *obj) {
     if (self->len >= self->capa) {
-        if (!objarr_resize(self, self->capa * 2)) {
+        if (!PadObjAry_Resize(self, self->capa * 2)) {
             return NULL;
         }
     }
 
-    obj_inc_ref(obj);
+    PadObj_IncRef(obj);
     self->parray[self->len++] = obj;
     self->parray[self->len] = NULL;
 
     return self;
 }
 
-object_array_t *
-objarr_movef(object_array_t* self, object_t *obj) {
+PadObjAry *
+PadObjAry_MoveFront(PadObjAry* self, PadObj *obj) {
     if (self->len >= self->capa) {
-        if (!objarr_resize(self, self->capa * 2)) {
+        if (!PadObjAry_Resize(self, self->capa * 2)) {
             return NULL;
         }
     }
@@ -223,7 +223,7 @@ objarr_movef(object_array_t* self, object_t *obj) {
         self->parray[i+1] = self->parray[i];
     }
 
-    obj_inc_ref(obj);
+    PadObj_IncRef(obj);
     self->parray[0] = obj;
     self->len++;
     self->parray[self->len] = NULL;
@@ -231,51 +231,51 @@ objarr_movef(object_array_t* self, object_t *obj) {
     return self;
 }
 
-object_array_t *
-objarr_pushb(object_array_t* self, object_t *reference) {
-    return objarr_moveb(self, reference);
+PadObjAry *
+PadObjAry_PushBack(PadObjAry* self, PadObj *reference) {
+    return PadObjAry_MoveBack(self, reference);
 }
 
-object_array_t *
-objarr_pushf(object_array_t* self, object_t *reference) {
-    return objarr_movef(self, reference);
+PadObjAry *
+PadObjAry_PushFront(PadObjAry* self, PadObj *reference) {
+    return PadObjAry_MoveFront(self, reference);
 }
 
-object_t *
-objarr_popb(object_array_t *self) {
+PadObj *
+PadObjAry_PopBack(PadObjAry *self) {
     if (self->len <= 0) {
         return NULL;
     }
 
     self->len--;
-    object_t *obj = self->parray[self->len];
+    PadObj *obj = self->parray[self->len];
     self->parray[self->len] = NULL;
 
     return obj;
 }
 
-object_array_t *
-objarr_app_other(object_array_t *self, object_array_t *other) {
+PadObjAry *
+PadObjAry_AppOther(PadObjAry *self, PadObjAry *other) {
     bool same = self == other;
     if (same) {
-        other = objarr_shallow_copy(other);
+        other = PadObjAry_ShallowCopy(other);
     }
 
     for (int32_t i = 0; i < other->len; ++i) {
-        object_t *obj = other->parray[i];
-        obj_inc_ref(obj);
-        objarr_pushb(self, obj);
+        PadObj *obj = other->parray[i];
+        PadObj_IncRef(obj);
+        PadObjAry_PushBack(self, obj);
     }
 
     if (same) {
-        objarr_del(other);
+        PadObjAry_Del(other);
     }
 
     return self;
 }
 
-object_t *
-objarr_get_last(object_array_t *self) {
+PadObj *
+PadObjAry_GetLast(PadObjAry *self) {
     if (self->len <= 0) {
         return NULL;
     }
@@ -283,8 +283,8 @@ objarr_get_last(object_array_t *self) {
     return self->parray[self->len - 1];
 }
 
-object_t *
-objarr_get_last_2(object_array_t *self) {
+PadObj *
+PadObjAry_GetLast2(PadObjAry *self) {
     if (self->len <= 1) {
         return NULL;
     }
@@ -292,13 +292,13 @@ objarr_get_last_2(object_array_t *self) {
     return self->parray[self->len - 2];
 }
 
-const object_t *
-objarr_getc_last(const object_array_t *self) {
-    return objarr_get_last((object_array_t *) self);
+const PadObj *
+PadObjAry_GetcLast(const PadObjAry *self) {
+    return PadObjAry_GetLast((PadObjAry *) self);
 }
 
 void
-objarr_dump(const object_array_t *self, FILE *fout) {
+PadObjAry_Dump(const PadObjAry *self, FILE *fout) {
     fprintf(fout, "array[%p]\n", self);
     fprintf(fout, "array.ref_gc[%p]\n", self->ref_gc);
     fprintf(fout, "array.len[%d]\n", self->len);
@@ -306,16 +306,16 @@ objarr_dump(const object_array_t *self, FILE *fout) {
     fprintf(fout, "array.parray[%p]\n", self->parray);
 
     for (int32_t i = 0; i < self->len; ++i) {
-        const object_t *obj = self->parray[i];
+        const PadObj *obj = self->parray[i];
         fprintf(fout, "parray[%d] = obj[%p]\n", i, obj);
-        obj_dump(obj, fout);
+        PadObj_Dump(obj, fout);
     }
 }
 
 void
-objarr_dump_s(const object_array_t *self, FILE *fout) {
+PadObjAry_DumpS(const PadObjAry *self, FILE *fout) {
     for (int32_t i = 0; i < self->len; ++i) {
-        const object_t *obj = self->parray[i];
+        const PadObj *obj = self->parray[i];
         fprintf(fout, "[%d] = obj[%p]\n", i, obj);
     }    
 }

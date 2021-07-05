@@ -49,32 +49,32 @@ PadNode_DeepCopy(const PadNode *other) {
     } \
 
 #define copy_node_array(dst, src, member) \
-    dst->member = nodearr_new(); \
+    dst->member = PadNodeAry_New(); \
     if (!dst->member) { \
         PadNode_Del(self); \
         return NULL; \
     } \
-    for (int32_t i = 0; i < nodearr_len(src->member); ++i) { \
-        PadNode *node = nodearr_get(src->member, i); \
+    for (int32_t i = 0; i < PadNodeAry_Len(src->member); ++i) { \
+        PadNode *node = PadNodeAry_Get(src->member, i); \
         node = PadNode_DeepCopy(node); \
         if (!node) { \
             PadNode_Del(self); \
             return NULL; \
         } \
-        nodearr_moveb(dst->member, node); \
+        PadNodeAry_MoveBack(dst->member, node); \
     } \
 
 #define copy_node_dict(dst, src, member) \
-    dst->member = nodedict_new(); \
-    for (int32_t i = 0; i < nodedict_len(src->member); ++i) { \
-        const node_dict_item_t *item = nodedict_getc_index(src->member, i); \
+    dst->member = PadNodeDict_New(); \
+    for (int32_t i = 0; i < PadNodeDict_Len(src->member); ++i) { \
+        const PadNodeDictItem *item = PadNodeDict_GetcIndex(src->member, i); \
         assert(item); \
         PadNode *node = PadNode_DeepCopy(item->value); \
         if (!node) { \
             PadNode_Del(self); \
             return NULL; \
         } \
-        nodedict_move(dst->member, item->key, mem_move(node)); \
+        PadNodeDict_Move(dst->member, item->key, mem_move(node)); \
     } \
 
     if (!other) {

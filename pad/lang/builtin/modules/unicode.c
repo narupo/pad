@@ -1,14 +1,14 @@
 #include <pad/lang/builtin/modules/unicode.h>
 
-static object_t *
-extract_unicode_object(ast_t *ref_ast, object_array_t *ref_owners, const char *method_name) {
+static PadObj *
+extract_unicode_object(ast_t *ref_ast, PadObjAry *ref_owners, const char *method_name) {
     if (!ref_ast || !ref_owners || !method_name) {
         return NULL;
     }
     
-    object_t *owner = objarr_get_last(ref_owners);
+    PadObj *owner = PadObjAry_GetLast(ref_owners);
     if (!owner) {
-        return obj_new_nil(ref_ast->ref_gc);
+        return PadObj_NewNil(ref_ast->ref_gc);
     }
 
 again:
@@ -17,22 +17,22 @@ again:
         PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't call %s method", method_name);
         return NULL;
         break;
-    case OBJ_TYPE_UNICODE: {
+    case PAD_OBJ_TYPE__UNICODE: {
         return owner;
     } break;
-    case OBJ_TYPE_OWNERS_METHOD: {
+    case PAD_OBJ_TYPE__OWNERS_METHOD: {
         owner = owner->owners_method.owner;
         goto again;
     } break;
-    case OBJ_TYPE_IDENTIFIER: {
-        owner = PadCtx_FindVarRef(ref_ast->ref_context, obj_getc_idn_name(owner));
+    case PAD_OBJ_TYPE__IDENT: {
+        owner = PadCtx_FindVarRef(ref_ast->ref_context, PadObj_GetcIdentName(owner));
         if (!owner) {
             PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "not found \"%s\" in %s method", owner->identifier, method_name);
             return NULL;
         }
         goto again;
     } break;
-    case OBJ_TYPE_CHAIN: {
+    case PAD_OBJ_TYPE__CHAIN: {
         owner = refer_chain_obj_with_ref(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, owner);
         if (!owner) {
             PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "failed to refer index");
@@ -43,16 +43,16 @@ again:
     }
 
     assert(0 && "impossible. failed to invoke basic unicode function");
-    return obj_new_nil(ref_ast->ref_gc);
+    return PadObj_NewNil(ref_ast->ref_gc);
 }
 
-static object_t *
+static PadObj *
 call_basic_unicode_func(const char *method_name, builtin_func_args_t *fargs) {
     if (!method_name || !fargs) {
         return NULL;
     }
 
-    object_t *owner = extract_unicode_object(
+    PadObj *owner = extract_unicode_object(
         fargs->ref_ast,
         fargs->ref_owners,
         method_name
@@ -80,55 +80,55 @@ call_basic_unicode_func(const char *method_name, builtin_func_args_t *fargs) {
         return NULL;
     }
 
-    return obj_new_unicode(fargs->ref_ast->ref_gc, result);
+    return PadObj_NewUnicode(fargs->ref_ast->ref_gc, result);
 }
 
-static object_t *
+static PadObj *
 builtin_unicode_lower(builtin_func_args_t *fargs) {
     return call_basic_unicode_func("lower", fargs);
 }
 
-static object_t *
+static PadObj *
 builtin_unicode_upper(builtin_func_args_t *fargs) {
     return call_basic_unicode_func("upper", fargs);
 }
 
-static object_t *
+static PadObj *
 builtin_unicode_capitalize(builtin_func_args_t *fargs) {
     return call_basic_unicode_func("capitalize", fargs);
 }
 
-static object_t *
+static PadObj *
 builtin_unicode_snake(builtin_func_args_t *fargs) {
     return call_basic_unicode_func("snake", fargs);
 }
 
-static object_t *
+static PadObj *
 builtin_unicode_camel(builtin_func_args_t *fargs) {
     return call_basic_unicode_func("camel", fargs);
 }
 
-static object_t *
+static PadObj *
 builtin_unicode_hacker(builtin_func_args_t *fargs) {
     return call_basic_unicode_func("hacker", fargs);
 }
 
-static object_t *
+static PadObj *
 builtin_unicode_split(builtin_func_args_t *fargs) {
     if (!fargs) {
         return NULL;
     }
 
-    object_array_t *args = fargs->ref_args->objarr;
+    PadObjAry *args = fargs->ref_args->objarr;
     assert(args);
-    const object_t *sep = objarr_getc(args, 0);
-    if (sep->type != OBJ_TYPE_UNICODE) {
+    const PadObj *sep = PadObjAry_Getc(args, 0);
+    if (sep->type != PAD_OBJ_TYPE__UNICODE) {
         PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid argument");
         return NULL;
     }
     const unicode_type_t *unisep = uni_getc(sep->unicode);
 
-    object_t *owner = extract_unicode_object(
+    PadObj *owner = extract_unicode_object(
         fargs->ref_ast,
         fargs->ref_owners,
         "split"
@@ -144,30 +144,30 @@ builtin_unicode_split(builtin_func_args_t *fargs) {
         return NULL;
     }
 
-    object_array_t *toks = objarr_new();
+    PadObjAry *toks = PadObjAry_New();
     for (unicode_t **p = arr; *p; ++p) {
-        object_t *obj = obj_new_unicode(fargs->ref_ast->ref_gc, mem_move(*p));
-        objarr_moveb(toks, mem_move(obj));
+        PadObj *obj = PadObj_NewUnicode(fargs->ref_ast->ref_gc, mem_move(*p));
+        PadObjAry_MoveBack(toks, mem_move(obj));
     }
     free(arr);
 
-    object_t *ret = obj_new_array(fargs->ref_ast->ref_gc, mem_move(toks));
+    PadObj *ret = PadObj_NewAry(fargs->ref_ast->ref_gc, mem_move(toks));
     return ret;
 }
 
-static object_t *
+static PadObj *
 strip_work(const char *method_name, builtin_func_args_t *fargs) {
     if (!fargs) {
         return NULL;
     }
 
-    object_array_t *args = fargs->ref_args->objarr;
+    PadObjAry *args = fargs->ref_args->objarr;
     assert(args);
 
     const unicode_type_t *unirems = NULL;
-    if (objarr_len(args)) {
-        const object_t *rems = objarr_getc(args, 0);
-        if (rems->type != OBJ_TYPE_UNICODE) {
+    if (PadObjAry_Len(args)) {
+        const PadObj *rems = PadObjAry_Getc(args, 0);
+        if (rems->type != PAD_OBJ_TYPE__UNICODE) {
             PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid argument");
             return NULL;
         }
@@ -176,7 +176,7 @@ strip_work(const char *method_name, builtin_func_args_t *fargs) {
         unirems = UNI_STR(" \r\n\t");  // default value
     }
 
-    object_t *owner = extract_unicode_object(
+    PadObj *owner = extract_unicode_object(
         fargs->ref_ast,
         fargs->ref_owners,
         method_name
@@ -203,33 +203,33 @@ strip_work(const char *method_name, builtin_func_args_t *fargs) {
         return NULL;
     }
 
-    object_t *ret = obj_new_unicode(fargs->ref_ast->ref_gc, mem_move(result));
+    PadObj *ret = PadObj_NewUnicode(fargs->ref_ast->ref_gc, mem_move(result));
     return ret;
 }
 
-static object_t *
+static PadObj *
 builtin_unicode_rstrip(builtin_func_args_t *fargs) {
     return strip_work("rstrip", fargs);
 }
  
-static object_t *
+static PadObj *
 builtin_unicode_lstrip(builtin_func_args_t *fargs) {
     return strip_work("lstrip", fargs);
 }
  
-static object_t *
+static PadObj *
 builtin_unicode_strip(builtin_func_args_t *fargs) {
     return strip_work("strip", fargs);
 }
 
-static object_t *
+static PadObj *
 builtin_unicode_is(const char *method_name, builtin_func_args_t *fargs) {
     if (!fargs) {
         return NULL;
     }
     ast_t *ref_ast = fargs->ref_ast;
 
-    object_t *owner = extract_unicode_object(
+    PadObj *owner = extract_unicode_object(
         fargs->ref_ast,
         fargs->ref_owners,
         method_name
@@ -250,20 +250,20 @@ builtin_unicode_is(const char *method_name, builtin_func_args_t *fargs) {
         PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "unsupported method \"%s\"", method_name);
     }
 
-    return obj_new_bool(ref_ast->ref_gc, boolean);
+    return PadObj_NewBool(ref_ast->ref_gc, boolean);
 }
  
-static object_t *
+static PadObj *
 builtin_unicode_isdigit(builtin_func_args_t *fargs) {
     return builtin_unicode_is("isdigit", fargs);
 }
  
-static object_t *
+static PadObj *
 builtin_unicode_isalpha(builtin_func_args_t *fargs) {
     return builtin_unicode_is("isalpha", fargs);
 }
  
-static object_t *
+static PadObj *
 builtin_unicode_isspace(builtin_func_args_t *fargs) {
     return builtin_unicode_is("isspace", fargs);
 }
@@ -286,14 +286,14 @@ builtin_func_infos[] = {
     {0},
 };
 
-object_t *
+PadObj *
 Pad_NewBltUnicodeMod(const PadConfig *ref_config, PadGc *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = PadAst_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;
 
-    return obj_new_module_by(
+    return PadObj_NewModBy(
         ref_gc,
         "__unicode__",
         NULL,

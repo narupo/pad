@@ -228,7 +228,7 @@ PadCtx_PopBackScope(PadCtx *self) {
     scope_del(scope);
 }
 
-object_t *
+PadObj *
 PadCtx_FindVarRef(PadCtx *self, const char *key) {
     if (!self || !key) {
         return NULL;
@@ -237,14 +237,14 @@ PadCtx_FindVarRef(PadCtx *self, const char *key) {
     return scope_find_var_ref(self->scope, key);
 }
 
-object_t *
+PadObj *
 PadCtx_FindVarRefAll(PadCtx *self, const char *key) {
     if (!self || !key) {
         return NULL;
     }
     
     for (PadCtx *cur = self; cur; cur = cur->ref_prev) {
-        object_t *ref = scope_find_var_ref_all(cur->scope, key);
+        PadObj *ref = scope_find_var_ref_all(cur->scope, key);
         if (ref) {
             return ref;
         }
@@ -420,7 +420,7 @@ PadCtx_ShallowCopy(const PadCtx *other) {
 }
 
 PadCtx *
-PadCtx_UnpackObjAryToCurScope(PadCtx *self, object_array_t *arr) {
+PadCtx_UnpackObjAryToCurScope(PadCtx *self, PadObjAry *arr) {
     if (!self || !arr) {
         return NULL;
     }
@@ -428,16 +428,16 @@ PadCtx_UnpackObjAryToCurScope(PadCtx *self, object_array_t *arr) {
     scope_t *scope = self->scope;
     object_dict_t *varmap = scope_get_varmap(scope);
 
-    for (int32_t i = 0; i < objdict_len(varmap) && i < objarr_len(arr); ++i) {
+    for (int32_t i = 0; i < objdict_len(varmap) && i < PadObjAry_Len(arr); ++i) {
         object_dict_item_t *item = objdict_get_index(varmap, i);
-        object_t *obj = objarr_get(arr, i);
+        PadObj *obj = PadObjAry_Get(arr, i);
         if (item->value == obj) {
             continue;
         }
 
-        obj_dec_ref(item->value);
-        obj_del(item->value);
-        obj_inc_ref(obj);
+        PadObj_DecRef(item->value);
+        PadObj_Del(item->value);
+        PadObj_IncRef(obj);
         item->value = obj;
     }
 

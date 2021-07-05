@@ -5,7 +5,7 @@ enum {
 };
 
 struct PadNode_dict {
-    node_dict_item_t *map;
+    PadNodeDictItem *map;
     size_t capa;
     size_t len;
 };
@@ -17,7 +17,7 @@ typedef struct string string_t;
 string_t * PadNode_ToStr(const PadNode *self);
 
 void
-nodedict_del(node_dict_t *self) {
+PadNodeDict_Del(PadNodeDict *self) {
     if (!self) {
         return;
     }
@@ -32,7 +32,7 @@ nodedict_del(node_dict_t *self) {
 }
 
 void
-nodedict_del_without_nodes(node_dict_t *self) {
+PadNodeDict_DelWithoutNodes(PadNodeDict *self) {
     if (!self) {
         return;
     }
@@ -43,63 +43,63 @@ nodedict_del_without_nodes(node_dict_t *self) {
     free(self);
 }
 
-node_dict_item_t *
-nodedict_escdel(node_dict_t *self) {
+PadNodeDictItem *
+PadNodeDict_EscDel(PadNodeDict *self) {
     if (!self) {
         return NULL;
     }
 
-    node_dict_item_t *map = mem_move(self->map);
+    PadNodeDictItem *map = mem_move(self->map);
     self->map = NULL;
     free(self);
 
     return map;
 }
 
-node_dict_t *
-nodedict_new(void) {
-    node_dict_t *self = mem_calloc(1, sizeof(*self));
+PadNodeDict *
+PadNodeDict_New(void) {
+    PadNodeDict *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->capa = NODEDICT_INIT_CAPA;
     self->len = 0;
-    self->map = mem_calloc(self->capa+1, sizeof(node_dict_item_t));
+    self->map = mem_calloc(self->capa+1, sizeof(PadNodeDictItem));
     if (!self->map) {
-        nodedict_del(self);
+        PadNodeDict_Del(self);
         return NULL;
     }
 
     return self;
 }
 
-node_dict_t *
-nodedict_deep_copy(const node_dict_t *other) {
+PadNodeDict *
+PadNodeDict_DeepCopy(const PadNodeDict *other) {
     if (!other) {
         return NULL;
     }
 
-    node_dict_t *self = mem_calloc(1, sizeof(*self));
+    PadNodeDict *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->capa = other->capa;
     self->len = other->len;
-    self->map = mem_calloc(self->capa + 1, sizeof(node_dict_item_t));
+    self->map = mem_calloc(self->capa + 1, sizeof(PadNodeDictItem));
     if (!self->map) {
-        nodedict_del(self);
+        PadNodeDict_Del(self);
         return NULL;
     }
 
     for (int32_t i = 0; i < other->len; ++i) {
-        node_dict_item_t *dstitem = &self->map[i];
-        node_dict_item_t *srcitem = &other->map[i];
+        PadNodeDictItem *dstitem = &self->map[i];
+        PadNodeDictItem *srcitem = &other->map[i];
         strcpy(dstitem->key, srcitem->key);
         dstitem->value = PadNode_DeepCopy(srcitem->value);  // deep copy
         if (!dstitem->value) {
-            nodedict_del(self);
+            PadNodeDict_Del(self);
             return NULL;
         }
     }
@@ -107,32 +107,32 @@ nodedict_deep_copy(const node_dict_t *other) {
     return self;
 }
 
-node_dict_t *
-nodedict_shallow_copy(const node_dict_t *other) {
+PadNodeDict *
+PadNodeDict_ShallowCopy(const PadNodeDict *other) {
     if (!other) {
         return NULL;
     }
 
-    node_dict_t *self = mem_calloc(1, sizeof(*self));
+    PadNodeDict *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->capa = other->capa;
     self->len = other->len;
-    self->map = mem_calloc(self->capa + 1, sizeof(node_dict_item_t));
+    self->map = mem_calloc(self->capa + 1, sizeof(PadNodeDictItem));
     if (!self->map) {
-        nodedict_del(self);
+        PadNodeDict_Del(self);
         return NULL;
     }
 
     for (int32_t i = 0; i < other->len; ++i) {
-        node_dict_item_t *dstitem = &self->map[i];
-        node_dict_item_t *srcitem = &other->map[i];
+        PadNodeDictItem *dstitem = &self->map[i];
+        PadNodeDictItem *srcitem = &other->map[i];
         strcpy(dstitem->key, srcitem->key);
         dstitem->value = PadNode_ShallowCopy(srcitem->value);  // deep copy
         if (!dstitem->value) {
-            nodedict_del(self);
+            PadNodeDict_Del(self);
             return NULL;
         }
     }
@@ -140,14 +140,14 @@ nodedict_shallow_copy(const node_dict_t *other) {
     return self;
 }
 
-node_dict_t *
-nodedict_resize(node_dict_t *self, int32_t newcapa) {
+PadNodeDict *
+PadNodeDict_Resize(PadNodeDict *self, int32_t newcapa) {
     if (!self || newcapa < 0) {
         return NULL;
     }
 
-    int32_t byte = sizeof(node_dict_item_t);
-    node_dict_item_t *tmpmap = mem_realloc(self->map, newcapa*byte + byte);
+    int32_t byte = sizeof(PadNodeDictItem);
+    PadNodeDictItem *tmpmap = mem_realloc(self->map, newcapa*byte + byte);
     if (!tmpmap) {
         return NULL;
     }
@@ -158,8 +158,8 @@ nodedict_resize(node_dict_t *self, int32_t newcapa) {
     return self;
 }
 
-node_dict_t *
-nodedict_move(node_dict_t *self, const char *key, struct PadNode *move_value) {
+PadNodeDict *
+PadNodeDict_Move(PadNodeDict *self, const char *key, struct PadNode *move_value) {
     if (!self || !key || !move_value) {
         return NULL;
     }
@@ -176,50 +176,50 @@ nodedict_move(node_dict_t *self, const char *key, struct PadNode *move_value) {
 
     // add value at tail of map
     if (self->len >= self->capa) {
-        nodedict_resize(self, self->capa*2);
+        PadNodeDict_Resize(self, self->capa*2);
     }
 
-    node_dict_item_t *el = &self->map[self->len++];
-    cstr_copy(el->key, NODE_DICT_ITEM_KEY_SIZE, key);
+    PadNodeDictItem *el = &self->map[self->len++];
+    cstr_copy(el->key, PAD_NODE_DICT__ITEM_KEY_SIZE, key);
     el->value = move_value;
 
     return self;
 }
 
-node_dict_t *
-nodedict_set(node_dict_t *self, const char *key, PadNode *ref_value) {
-    return nodedict_move(self, key, ref_value);
+PadNodeDict *
+PadNodeDict_Set(PadNodeDict *self, const char *key, PadNode *ref_value) {
+    return PadNodeDict_Move(self, key, ref_value);
 }
 
-node_dict_item_t *
-nodedict_get(node_dict_t *self, const char *key) {
+PadNodeDictItem *
+PadNodeDict_Get(PadNodeDict *self, const char *key) {
     if (!self || !key) {
         return NULL;
     }
 
     for (int i = 0; i < self->len; ++i) {
         if (cstr_eq(self->map[i].key, key)) {
-            // printf("nodedict_get (%p) key (%s) val (%p)\n", self, key, self->map[i].value);
+            // printf("PadNodeDict_Get (%p) key (%s) val (%p)\n", self, key, self->map[i].value);
             return &self->map[i];
         }
     }
 
-    // printf("nodedict_get (%p) not found by (%s)\n", self, key);
+    // printf("PadNodeDict_Get (%p) not found by (%s)\n", self, key);
     return NULL;
 }
 
-const node_dict_item_t *
-nodedict_getc(const node_dict_t *self, const char *key) {
+const PadNodeDictItem *
+PadNodeDict_Getc(const PadNodeDict *self, const char *key) {
     if (!self || !key) {
         return NULL;
     }
 
     // const cast danger
-    return nodedict_get((node_dict_t *)self, key);
+    return PadNodeDict_Get((PadNodeDict *)self, key);
 }
 
 void
-nodedict_clear(node_dict_t *self) {
+PadNodeDict_Clear(PadNodeDict *self) {
     if (!self) {
         return;
     }
@@ -233,7 +233,7 @@ nodedict_clear(node_dict_t *self) {
 }
 
 int32_t
-nodedict_len(const node_dict_t *self) {
+PadNodeDict_Len(const PadNodeDict *self) {
     if (!self) {
         return -1;
     }
@@ -241,8 +241,8 @@ nodedict_len(const node_dict_t *self) {
     return self->len;
 }
 
-const node_dict_item_t *
-nodedict_getc_index(const node_dict_t *self, int32_t index) {
+const PadNodeDictItem *
+PadNodeDict_GetcIndex(const PadNodeDict *self, int32_t index) {
     if (!self) {
         return NULL;
     }
@@ -255,7 +255,7 @@ nodedict_getc_index(const node_dict_t *self, int32_t index) {
 }
 
 PadNode *
-nodedict_pop(node_dict_t *self, const char *key) {
+PadNodeDict_Pop(PadNodeDict *self, const char *key) {
     if (!self || !key) {
         return NULL;
     }
@@ -275,19 +275,19 @@ nodedict_pop(node_dict_t *self, const char *key) {
     }
 
     // save item
-    node_dict_item_t *cur = &self->map[found_index];
+    PadNodeDictItem *cur = &self->map[found_index];
     PadNode *found = cur->value;
 
     // shrink map
     for (int32_t i = found_index; i < self->len - 1; ++i) {
-        node_dict_item_t *cur = &self->map[i];
-        node_dict_item_t *next = &self->map[i + 1];
-        cstr_copy(cur->key, NODE_DICT_ITEM_KEY_SIZE, next->key);
+        PadNodeDictItem *cur = &self->map[i];
+        PadNodeDictItem *next = &self->map[i + 1];
+        cstr_copy(cur->key, PAD_NODE_DICT__ITEM_KEY_SIZE, next->key);
         cur->value = next->value;
         next->value = NULL;
     }
 
-    node_dict_item_t *last = &self->map[self->len-1];
+    PadNodeDictItem *last = &self->map[self->len-1];
     last->key[0] = '\0';
     last->value = NULL;
     self->len -= 1;
@@ -297,13 +297,13 @@ nodedict_pop(node_dict_t *self, const char *key) {
 }
 
 void
-nodedict_dump(const node_dict_t *self, FILE *fout) {
+PadNodeDict_Dump(const PadNodeDict *self, FILE *fout) {
     if (!self || !fout) {
         return;
     }
 
     for (int32_t i = 0; i < self->len; ++i) {
-        const node_dict_item_t *item = &self->map[i];
+        const PadNodeDictItem *item = &self->map[i];
         string_t *s = PadNode_ToStr(item->value);
         fprintf(fout, "[%s] = [%s]\n", item->key, str_getc(s));
         str_del(s);
