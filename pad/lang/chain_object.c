@@ -29,7 +29,7 @@ PadObjAry_Del(PadObjAry *self);
 * structure *
 ************/
 
-struct chain_object {
+struct PadChainObj {
     // number of type of chain obj element
     PadChainObjType type;
 

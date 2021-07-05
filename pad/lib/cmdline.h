@@ -33,7 +33,7 @@ typedef enum {
     CMDLINE_OBJECT_TYPE_PIPE,
     CMDLINE_OBJECT_TYPE_AND,
     CMDLINE_OBJECT_TYPE_REDIRECT,
-} cmdline_PadObjype_t;
+} cmdline_PadTypeObj;
 
 /**
  * structure of cmdline_object
@@ -41,9 +41,9 @@ typedef enum {
  * DO NOT DELETE command, and cl object
  */
 struct cmdline_object {
-    cmdline_PadObjype_t type;
+    cmdline_PadTypeObj type;
     string_t *command;
-    cl_t *cl;
+    PadCL *cl;
 };
 
 struct cmdline_object;
@@ -72,7 +72,7 @@ cmdlinePadObj_Del(cmdline_PadObj *self);
  * @return pointer to cmdline_PadObj dynamic allocate memory
  */
 cmdline_PadObj *
-cmdlinePadObj_New(cmdline_PadObjype_t type);
+cmdlinePadObj_New(cmdline_PadTypeObj type);
 
 /**
  * parse text line

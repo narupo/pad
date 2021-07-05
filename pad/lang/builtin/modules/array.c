@@ -1,7 +1,7 @@
 #include <pad/lang/builtin/modules/array.h>
 
 static PadObj *
-builtin_array_push(builtin_func_args_t *fargs) {
+builtin_array_push(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
@@ -38,7 +38,7 @@ again:
         goto again;
         break;
     case PAD_OBJ_TYPE__IDENT:
-        ref_owner = pull_ref(ref_owner);
+        ref_owner = Pad_PullRef(ref_owner);
         if (!ref_owner) {
             PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "object is not found. can't push");
             return NULL;
@@ -61,7 +61,7 @@ again2:
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(arg);
-        arg = pull_ref(arg);
+        arg = Pad_PullRef(arg);
         if (!arg) {
             PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
             return NULL;
@@ -77,7 +77,7 @@ again2:
 }
 
 static PadObj *
-builtin_array_pop(builtin_func_args_t *fargs) {
+builtin_array_pop(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
@@ -108,7 +108,7 @@ again:
         goto again;
         break;
     case PAD_OBJ_TYPE__IDENT:
-        ref_owner = pull_ref(ref_owner);
+        ref_owner = Pad_PullRef(ref_owner);
         if (!ref_owner) {
             PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "object is not found. can't pop");
             return NULL;
@@ -126,7 +126,7 @@ again:
     return ret;
 }
 
-static builtin_func_info_t
+static PadBltFuncInfo
 builtin_func_infos[] = {
     {"push", builtin_array_push},
     {"pop", builtin_array_pop},
@@ -134,7 +134,7 @@ builtin_func_infos[] = {
 };
 
 PadObj *
-Pad_NewBltAryMod(const PadConfig *ref_config, PadGc *ref_gc) {
+Pad_NewBltAryMod(const PadConfig *ref_config, PadGC *ref_gc) {
     PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
     PadAST *ast = PadAst_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);

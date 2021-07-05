@@ -19,7 +19,7 @@ PadKit *
 PadKit_New(const PadConfig *config);
 
 PadKit *
-PadKit_NewRefGc(const PadConfig *config, PadGc *ref_gc);
+PadKit_NewRefGc(const PadConfig *config, PadGC *ref_gc);
 
 PadKit *
 PadKit_CompileFromPath(PadKit *self, const char *path);

@@ -13,8 +13,8 @@
 * macros *
 *********/
 
-#undef pushb_error_token
-#define pushb_error_token(errstack, token, fmt, ...) { \
+#undef Pad_PushBackErrTok
+#define Pad_PushBackErrTok(errstack, token, fmt, ...) { \
         const PadTok *t = token; \
         const char *fname = NULL; \
         int32_t lineno = 0; \
@@ -29,8 +29,8 @@
         PadErrStack_PushBack(errstack, fname, lineno, src, pos, fmt, ##__VA_ARGS__); \
     }
 
-#undef pushb_error_node
-#define pushb_error_node(errstack, node, fmt, ...) { \
+#undef Pad_PushBackErrNode
+#define Pad_PushBackErrNode(errstack, node, fmt, ...) { \
         const PadNode *n = node; \
         const char *fname = NULL; \
         int32_t lineno = 0; \
@@ -53,7 +53,7 @@
 ************/
 
 PadCtx *
-get_context_by_owners(PadObjAry *ref_owners, PadCtx *def_context);
+Pad_GetCtxByOwns(PadObjAry *ref_owners, PadCtx *def_context);
 
 /**
  * pull-in reference of object by identifier object from varmap of current scope of context
@@ -65,13 +65,13 @@ get_context_by_owners(PadObjAry *ref_owners, PadCtx *def_context);
  * @param return NULL or reference to object in varmap in current scope (DO NOT DELETE)
  */
 PadObj *
-pull_ref(const PadObj *idn_obj);
+Pad_PullRef(const PadObj *idn_obj);
 
 /**
  * traverse previous context
  */
 PadObj *
-pull_ref_all(const PadObj *idn_obj);
+Pad_PullRefAll(const PadObj *idn_obj);
 
 /**
  * object to string
@@ -82,14 +82,14 @@ pull_ref_all(const PadObj *idn_obj);
  * @return success to pointer to string_t copied (can delete)
  */
 string_t *
-PadObj_ToString(PadErrStack *err, const PadNode *ref_node, const PadObj *obj);
+Pad_ObjToString(PadErrStack *err, const PadNode *ref_node, const PadObj *obj);
 
 /**
  * move object at varmap of current scope of context by identifier
  * this function do not increment reference count of object
  */
 bool
-move_obj_at_cur_varmap(
+Pad_MoveObjAtCurVarmap(
     PadErrStack *err,
     const PadNode *ref_node,
     PadCtx *ctx,
@@ -103,7 +103,7 @@ move_obj_at_cur_varmap(
  * this function auto increment reference count of object (ref)
  */
 bool
-set_ref_at_cur_varmap(
+Pad_SetRefAtCurVarmap(
     PadErrStack *err,
     const PadNode *ref_node,
     PadCtx *ctx,
@@ -113,7 +113,7 @@ set_ref_at_cur_varmap(
 );
 
 bool
-set_ref(PadObjDict *varmap, const char *identifier, PadObj *ref_obj);
+Pad_SetRef(PadObjDict *varmap, const char *identifier, PadObj *ref_obj);
 
 /**
  * extract identifier object and index object and etc to reference
@@ -121,20 +121,20 @@ set_ref(PadObjDict *varmap, const char *identifier, PadObj *ref_obj);
  * @return reference to object
  */
 PadObj *
-extract_ref_of_obj(
+Pad_ExtractRefOfObj(
     PadAST *ref_ast,
     PadErrStack *err,
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     PadObj *obj
 );
 
 PadObj *
-extract_ref_of_obj_all(
+Pad_ExtractRefOfObjAll(
     PadAST *ref_ast,
     PadErrStack *err,
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     PadObj *obj
@@ -151,10 +151,10 @@ extract_ref_of_obj_all(
  * @return new object
  */
 PadObj *
-extract_copy_of_obj(
+Pad_ExtractCopyOfObj(
     PadAST *ref_ast,
     PadErrStack *err,
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     PadObj *obj
@@ -170,13 +170,13 @@ extract_copy_of_obj(
  * @return failed to NULL
  */
 PadObj *
-refer_chain_obj_with_ref(
+Pad_ReferRingObjWithRef(
     PadAST *ref_ast,
     PadErrStack *err,
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
-    PadObj *chain_obj
+    PadObj *ring_obj
 );
 
 /**
@@ -191,10 +191,10 @@ refer_chain_obj_with_ref(
  * @return failed to NULL
  */
 PadObj *
-refer_chain_three_objs(
+Pad_ReferChainThreeObjs(
     PadAST *ref_ast,
     PadErrStack *err,
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     PadObjAry *owns,
@@ -212,21 +212,21 @@ refer_chain_three_objs(
  * @return failed to NULL
  */
 PadObj *
-refer_chain_call(
+Pad_ReferChainCall(
     PadAST *ref_ast,
     PadErrStack *err,
     const PadNode *ref_node,
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadCtx *ref_context,
     PadObjAry *owns,  // TODO: const
     PadChainObj *co
 );
 
 PadObj *
-refer_and_set_ref(
+Pad_ReferAndSetRef(
     PadAST *ref_ast,
     PadErrStack *err,
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     PadObj *chain_obj,
@@ -239,7 +239,7 @@ refer_and_set_ref(
  * @param[in] *arrobj
  */
 void
-dump_array_obj(const PadObj *arrobj);
+Pad_DumpAryObj(const PadObj *arrobj);
 
 /**
  * objectをbool値にする
@@ -247,10 +247,10 @@ dump_array_obj(const PadObj *arrobj);
  * @return true or false
  */
 bool
-parse_bool(
+Pad_ParseBool(
     PadAST *ref_ast,
     PadErrStack *err,
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     PadObj *obj
@@ -261,11 +261,11 @@ parse_bool(
  *
  * @return true or false
  */
-objint_t
-parse_int(
+PadIntObj
+Pad_ParseInt(
     PadAST *ref_ast,
     PadErrStack *err,
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     PadObj *obj
@@ -276,11 +276,11 @@ parse_int(
  *
  * @return true or false
  */
-objfloat_t
-parse_float(
+PadFloatObj
+Pad_ParseFloat(
     PadAST *ref_ast,
     PadErrStack *err,
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     PadObj *obj
@@ -295,4 +295,4 @@ parse_float(
  * @return true or false
  */
 bool
-is_var_in_cur_scope(const PadObj *idnobj);
+Pad_IsVarInCurScope(const PadObj *idnobj);

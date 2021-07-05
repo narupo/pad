@@ -56,129 +56,129 @@
 
 #undef pushb_error
 #define pushb_error(fmt, ...) \
-    pushb_error_node(ast->error_stack, targs->ref_node, fmt, ##__VA_ARGS__)
+    Pad_PushBackErrNode(ast->error_stack, targs->ref_node, fmt, ##__VA_ARGS__)
 
-#undef _extract_ref_of_obj_all
-#define _extract_ref_of_obj_all(obj) \
-    extract_ref_of_obj_all(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, obj)
+#undef _Pad_ExtractRefOfObjAll
+#define _Pad_ExtractRefOfObjAll(obj) \
+    Pad_ExtractRefOfObjAll(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, obj)
 
-#undef _extract_ref_of_obj
-#define _extract_ref_of_obj(obj) \
-    extract_ref_of_obj(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, obj)
+#undef _Pad_ExtractRefOfObj
+#define _Pad_ExtractRefOfObj(obj) \
+    Pad_ExtractRefOfObj(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, obj)
 
-#undef _refer_chain_obj_with_ref
-#define _refer_chain_obj_with_ref(obj) \
-    refer_chain_obj_with_ref(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, obj)
+#undef _Pad_ReferRingObjWithRef
+#define _Pad_ReferRingObjWithRef(obj) \
+    Pad_ReferRingObjWithRef(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, obj)
 
-#undef _refer_and_set_ref
-#define _refer_and_set_ref(chain_obj, ref) \
-    refer_and_set_ref(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, chain_obj, ref)
+#undef _Pad_ReferAndSetRef
+#define _Pad_ReferAndSetRef(chain_obj, ref) \
+    Pad_ReferAndSetRef(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, chain_obj, ref)
 
-#undef _refer_chain_three_objs
-#define _refer_chain_three_objs(owns, co) \
-    refer_chain_three_objs(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, owns, co)
+#undef _Pad_ReferChainThreeObjs
+#define _Pad_ReferChainThreeObjs(owns, co) \
+    Pad_ReferChainThreeObjs(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, owns, co)
 
-#undef _parse_bool
-#define _parse_bool(obj) \
-    parse_bool(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, obj)
+#undef _Pad_ParseBool
+#define _Pad_ParseBool(obj) \
+    Pad_ParseBool(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, obj)
 
 /*************
 * prototypes *
 *************/
 
 static PadObj *
-trv_compare_or(PadAST *ast, trv_args_t *targs);
+trv_compare_or(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_or_array(PadAST *ast, trv_args_t *targs);
+trv_compare_or_array(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_or_string(PadAST *ast, trv_args_t *targs);
+trv_compare_or_string(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_or_identifier(PadAST *ast, trv_args_t *targs);
+trv_compare_or_identifier(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_or_bool(PadAST *ast, trv_args_t *targs);
+trv_compare_or_bool(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_or_int(PadAST *ast, trv_args_t *targs);
+trv_compare_or_int(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_and(PadAST *ast, trv_args_t *targs);
+trv_compare_and(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_comparison_eq(PadAST *ast, trv_args_t *targs);
+trv_compare_comparison_eq(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_comparison_eq_def_struct(PadAST *ast, trv_args_t *targs);
+trv_compare_comparison_eq_def_struct(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_comparison_not_eq(PadAST *ast, trv_args_t *targs);
+trv_compare_comparison_not_eq(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_comparison_gte(PadAST *ast, trv_args_t *targs);
+trv_compare_comparison_gte(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_comparison_lte(PadAST *ast, trv_args_t *targs);
+trv_compare_comparison_lte(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_comparison_gt(PadAST *ast, trv_args_t *targs);
+trv_compare_comparison_gt(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_comparison_lt(PadAST *ast, trv_args_t *targs);
+trv_compare_comparison_lt(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_calc_expr_add(PadAST *ast, trv_args_t *targs);
+trv_calc_expr_add(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_calc_expr_sub(PadAST *ast, trv_args_t *targs);
+trv_calc_expr_sub(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_calc_term_div(PadAST *ast, trv_args_t *targs);
+trv_calc_term_div(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_calc_term_mul(PadAST *ast, trv_args_t *targs);
+trv_calc_term_mul(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_calc_assign_to_idn(PadAST *ast, trv_args_t *targs);
+trv_calc_assign_to_idn(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_multi_assign(PadAST *ast, trv_args_t *targs);
+trv_multi_assign(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_calc_assign(PadAST *ast, trv_args_t *targs);
+trv_calc_assign(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_comparison_not_eq_array(PadAST *ast, trv_args_t *targs);
+trv_compare_comparison_not_eq_array(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_comparison_not_eq_unicode(PadAST *ast, trv_args_t *targs);
+trv_compare_comparison_not_eq_unicode(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_comparison_not_eq_bool(PadAST *ast, trv_args_t *targs);
+trv_compare_comparison_not_eq_bool(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_comparison_not_eq_nil(PadAST *ast, trv_args_t *targs);
+trv_compare_comparison_not_eq_nil(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_comparison_not_eq_int(PadAST *ast, trv_args_t *targs);
+trv_compare_comparison_not_eq_int(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_comparison_not_eq_def_struct(PadAST *ast, trv_args_t *targs);
+trv_compare_comparison_not_eq_def_struct(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_comparison_not_eq_func(PadAST *ast, trv_args_t *targs);
+trv_compare_comparison_not_eq_func(PadAST *ast, PadTrvArgs *targs);
 
 static PadObj *
-trv_compare_comparison_lte_int(PadAST *ast, trv_args_t *targs);
+trv_compare_comparison_lte_int(PadAST *ast, PadTrvArgs *targs);
 
 /************
 * functions *
 ************/
 
 static PadObj *
-trv_program(PadAST *ast, trv_args_t *targs) {
+trv_program(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__PROGRAM);
@@ -196,13 +196,13 @@ trv_program(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_blocks(PadAST *ast, trv_args_t *targs) {
+trv_blocks(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__BLOCKS);
     PadBlocksNode *blocks = node->real;
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     check("call _PadTrv_Trav");
     targs->ref_node = blocks->code_block;
@@ -245,13 +245,13 @@ trv_blocks(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_code_block(PadAST *ast, trv_args_t *targs) {
+trv_code_block(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__CODE_BLOCK);
     PadCodeBlockNode *code_block = node->real;
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     check("call _PadTrv_Trav");
     targs->ref_node = code_block->elems;
@@ -265,12 +265,12 @@ trv_code_block(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_ref_block(PadAST *ast, trv_args_t *targs) {
+trv_ref_block(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__REF_BLOCK);
     PadRefBlockNode *ref_block = node->real;
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     check("call _PadTrv_Trav");
     targs->ref_node = ref_block->formula;
@@ -283,7 +283,7 @@ trv_ref_block(PadAST *ast, trv_args_t *targs) {
 
     PadObj *result = tmp;
     if (tmp->type == PAD_OBJ_TYPE__CHAIN) {
-        result = _extract_ref_of_obj_all(tmp);
+        result = _Pad_ExtractRefOfObjAll(tmp);
         if (PadAst_HasErrs(ast)) {
             return_trav(NULL);
         }
@@ -319,7 +319,7 @@ trv_ref_block(PadAST *ast, trv_args_t *targs) {
         }
     } break;
     case PAD_OBJ_TYPE__IDENT: {
-        PadObj *obj = pull_ref_all(result);
+        PadObj *obj = Pad_PullRefAll(result);
         if (!obj) {
             pushb_error("\"%s\" is not defined in ref block", PadObj_GetcIdentName(result));
             return_trav(NULL);
@@ -356,7 +356,7 @@ trv_ref_block(PadAST *ast, trv_args_t *targs) {
 
 
 static PadObj *
-trv_text_block(PadAST *ast, trv_args_t *targs) {
+trv_text_block(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__TEXT_BLOCK);
@@ -373,14 +373,14 @@ trv_text_block(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_elems(PadAST *ast, trv_args_t *targs) {
+trv_elems(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__ELEMS);
     PadElemsNode *elems = node->real;
     PadObj *result = NULL;
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     check("call _PadTrv_Trav with def");
     if (elems->def) {
@@ -436,13 +436,13 @@ trv_elems(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_formula(PadAST *ast, trv_args_t *targs) {
+trv_formula(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__FORMULA);
     PadFormulaNode *formula = node->real;
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     if (formula->assign_list) {
         check("call _PadTrv_Trav with assign_list");
@@ -469,14 +469,14 @@ trv_formula(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_stmt(PadAST *ast, trv_args_t *targs) {
+trv_stmt(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__STMT);
     PadStmtNode *stmt = node->real;
     PadObj *result = NULL;
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     if (stmt->import_stmt) {
         check("call _PadTrv_Trav with import stmt");
@@ -557,14 +557,14 @@ trv_stmt(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_import_stmt(PadAST *ast, trv_args_t *targs) {
+trv_import_stmt(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == PAD_NODE_TYPE__IMPORT_STMT);
     PadImportStmtNode *import_stmt = node->real;
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     if (import_stmt->import_as_stmt) {
         check("call _PadTrv_Trav with import as statement");
@@ -590,14 +590,14 @@ trv_import_stmt(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_import_as_stmt(PadAST *ast, trv_args_t *targs) {
+trv_import_as_stmt(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == PAD_NODE_TYPE__IMPORT_AS_STMT);
     PadImportAsStmtNode *import_as_stmt = node->real;
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     // get path and alias value
     check("call _PadTrv_Trav with path of import as statement");
@@ -655,14 +655,14 @@ trv_import_as_stmt(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_from_import_stmt(PadAST *ast, trv_args_t *targs) {
+trv_from_import_stmt(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == PAD_NODE_TYPE__FROM_IMPORT_STMT);
     PadFromImportStmtNode *from_import_stmt = node->real;
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     check("call _PadTrv_Trav with path of from import statement");
     targs->ref_node = from_import_stmt->path;
@@ -716,7 +716,7 @@ trv_from_import_stmt(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_import_vars(PadAST *ast, trv_args_t *targs) {
+trv_import_vars(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
@@ -728,7 +728,7 @@ trv_import_vars(PadAST *ast, trv_args_t *targs) {
 
     PadObjAry *objarr = PadObjAry_New();
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     for (int32_t i = 0; i < PadNodeAry_Len(nodearr); ++i) {
         PadNode *node = PadNodeAry_Get(nodearr, i);
@@ -756,7 +756,7 @@ trv_import_vars(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_import_var(PadAST *ast, trv_args_t *targs) {
+trv_import_var(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
@@ -764,7 +764,7 @@ trv_import_var(PadAST *ast, trv_args_t *targs) {
     PadImportVarNode *import_var = node->real;
 
     PadObjAry *objarr = PadObjAry_New();
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     check("call _PadTrv_Trav with identifier of import variable");
     targs->ref_node = import_var->identifier;
@@ -805,13 +805,13 @@ trv_import_var(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_if_stmt(PadAST *ast, trv_args_t *targs) {
+trv_if_stmt(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     PadIfStmtNode *if_stmt = node->real;
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     check("call _PadTrv_Trav");
     targs->ref_node = if_stmt->test;
@@ -825,7 +825,7 @@ trv_if_stmt(PadAST *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
-    bool boolean = _parse_bool(result);
+    bool boolean = _Pad_ParseBool(result);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to parse boolean");
         return_trav(NULL);
@@ -869,7 +869,7 @@ trv_if_stmt(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_else_stmt(PadAST *ast, trv_args_t *targs) {
+trv_else_stmt(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
@@ -877,7 +877,7 @@ trv_else_stmt(PadAST *ast, trv_args_t *targs) {
     assert(else_stmt);
     PadObj *result = NULL;
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     for (int32_t i = 0; i < PadNodeAry_Len(else_stmt->contents); ++i) {
         PadNode *node = PadNodeAry_Get(else_stmt->contents, i);
@@ -894,12 +894,12 @@ trv_else_stmt(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_for_stmt(PadAST *ast, trv_args_t *targs) {
+trv_for_stmt(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     PadForStmtNode *for_stmt = node->real;
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     check("call _PadTrv_Trav with init_formula");
     PadObj *result = NULL;
@@ -921,7 +921,7 @@ trv_for_stmt(PadAST *ast, trv_args_t *targs) {
             if (PadAst_HasErrs(ast)) {
                 goto done;
             }
-            if (!_parse_bool(result)) {
+            if (!_Pad_ParseBool(result)) {
                 break;
             }
         }
@@ -975,7 +975,7 @@ done:
 }
 
 static PadObj *
-trv_break_stmt(PadAST *ast, trv_args_t *targs) {
+trv_break_stmt(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
@@ -988,7 +988,7 @@ trv_break_stmt(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_continue_stmt(PadAST *ast, trv_args_t *targs) {
+trv_continue_stmt(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
@@ -1001,7 +1001,7 @@ trv_continue_stmt(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_return_stmt(PadAST *ast, trv_args_t *targs) {
+trv_return_stmt(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
@@ -1009,11 +1009,11 @@ trv_return_stmt(PadAST *ast, trv_args_t *targs) {
     PadReturnStmtNode *return_stmt = node->real;
     assert(return_stmt);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     if (!return_stmt->formula) {
         PadCtx *ref_context = PadAst_GetRefCtx(ast);
-        PadGc *ref_gc = PadAst_GetRefGc(ast);
+        PadGC *ref_gc = PadAst_GetRefGc(ast);
         PadCtx_SetDoReturn(ref_context, true);
         PadObj *ret = PadObj_NewNil(ref_gc);
         return_trav(ret);
@@ -1040,12 +1040,12 @@ again:
         return NULL;
         break;
     case PAD_OBJ_TYPE__CHAIN:
-        result = _refer_chain_obj_with_ref(result);
+        result = _Pad_ReferRingObjWithRef(result);
         goto again;
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(result);
-        result = pull_ref_all(result);
+        result = Pad_PullRefAll(result);
         if (!result) {
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
@@ -1054,7 +1054,7 @@ again:
     } break;
     case PAD_OBJ_TYPE__ARRAY:
     case PAD_OBJ_TYPE__DICT:
-        ret = _extract_ref_of_obj_all(result);
+        ret = _Pad_ExtractRefOfObjAll(result);
         break;
     case PAD_OBJ_TYPE__NIL:
     case PAD_OBJ_TYPE__INT:
@@ -1085,7 +1085,7 @@ shallow_assign_varmap(PadObjDict *dst, PadObjDict *src) {
 }
 
 static PadObj *
-trv_block_stmt(PadAST *ast, trv_args_t *targs) {
+trv_block_stmt(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
@@ -1093,7 +1093,7 @@ trv_block_stmt(PadAST *ast, trv_args_t *targs) {
     PadBlockStmtNode *block_stmt = node->real;
     assert(block_stmt);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     targs->ref_node = block_stmt->identifier;
     targs->depth = depth + 1;
@@ -1104,7 +1104,7 @@ trv_block_stmt(PadAST *ast, trv_args_t *targs) {
     }
 
     PadObj *func_obj = targs->func_obj;
-    object_func_t *func = &func_obj->func;
+    PadFuncObj *func = &func_obj->func;
     PadNodeDict *ref_blocks = func->ref_blocks;
     const PadNodeDictItem *item = PadNodeDict_Getc(ref_blocks, PadObj_GetcIdentName(idn));
     assert(item);
@@ -1147,7 +1147,7 @@ fail:
 }
 
 static PadObj *
-trv_inject_stmt(PadAST *ast, trv_args_t *targs) {
+trv_inject_stmt(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
@@ -1160,7 +1160,7 @@ trv_inject_stmt(PadAST *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     targs->ref_node = inject_stmt->identifier;
     targs->depth = depth + 1;
@@ -1171,7 +1171,7 @@ trv_inject_stmt(PadAST *ast, trv_args_t *targs) {
     }
     const char *idnname = PadObj_GetcIdentName(idn);
 
-    object_func_t *func = &targs->func_obj->func;
+    PadFuncObj *func = &targs->func_obj->func;
     PadObj *extends_func = func->extends_func;
     if (!extends_func) {
         pushb_error("can't inject. not found extended function");
@@ -1212,7 +1212,7 @@ trv_inject_stmt(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_def_struct(PadAST *ast, trv_args_t *targs) {
+trv_def_struct(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
@@ -1220,7 +1220,7 @@ trv_def_struct(PadAST *ast, trv_args_t *targs) {
     PadStructNode *struct_ = node->real;
     assert(struct_);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     targs->ref_node = struct_->identifier;
     targs->depth = depth + 1;
@@ -1238,7 +1238,7 @@ trv_def_struct(PadAST *ast, trv_args_t *targs) {
     PadAst_SetRefCtx(struct_ast, struct_ctx);
     PadAst_SetRefGc(struct_ast, ast->ref_gc);
 
-    PadObj *result = _PadTrv_Trav(struct_ast, &(trv_args_t) {
+    PadObj *result = _PadTrv_Trav(struct_ast, &(PadTrvArgs) {
         .ref_node = struct_->elems,
         .depth = 0,
     });
@@ -1259,7 +1259,7 @@ trv_def_struct(PadAST *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
-    move_obj_at_cur_varmap(
+    Pad_MoveObjAtCurVarmap(
         ast->error_stack,
         targs->ref_node,
         ast->ref_context,
@@ -1276,7 +1276,7 @@ trv_def_struct(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_content(PadAST *ast, trv_args_t *targs) {
+trv_content(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
@@ -1284,7 +1284,7 @@ trv_content(PadAST *ast, trv_args_t *targs) {
     PadContentNode *content = node->real;
     assert(content);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     PadObj *result = NULL;
 
     if (content->elems) {
@@ -1313,14 +1313,14 @@ trv_content(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_assign_to_array(PadAST *ast, trv_args_t *targs) {
+trv_calc_assign_to_array(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__ARRAY);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
 again:
     switch (rhs->type) {
@@ -1329,7 +1329,7 @@ again:
         return_trav(NULL);
         break;
     case PAD_OBJ_TYPE__CHAIN: {
-        rhs = _refer_chain_obj_with_ref(rhs);
+        rhs = _Pad_ReferRingObjWithRef(rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to refer chain object");
             return_trav(NULL);
@@ -1353,7 +1353,7 @@ again:
 
         for (int32_t i = 0; i < PadObjAry_Len(rhs->objarr); ++i) {
             PadObj *rh = PadObjAry_Get(rhs->objarr, i);
-            PadObj *real = _extract_ref_of_obj_all(rh);
+            PadObj *real = _Pad_ExtractRefOfObjAll(rh);
             PadObjAry_MoveBack(rhsarr, real);
         }
 
@@ -1384,7 +1384,7 @@ again:
 static PadObj *
 assign_to_chain_dot(
     PadAST *ast,
-    trv_args_t *targs,
+    PadTrvArgs *targs,
     PadObjAry *owners,
     PadChainObj *co,
     PadObj *rhs
@@ -1400,7 +1400,7 @@ again1:
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(rhs);
-        rhs = pull_ref_all(rhs);
+        rhs = Pad_PullRefAll(rhs);
         if (!rhs) {
             pushb_error("not found \"%s\"", idn);
             return NULL;
@@ -1420,7 +1420,7 @@ again2:
         return NULL;
         break;
     case PAD_OBJ_TYPE__IDENT: {
-        ref_owner = pull_ref_all(ref_owner);
+        ref_owner = Pad_PullRefAll(ref_owner);
         if (!ref_owner) {
             return NULL;
         }
@@ -1444,7 +1444,7 @@ refer_child:
         return NULL;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(child);
-        set_ref_at_cur_varmap(errstack, targs->ref_node, ref_context, owners, idn, rhs);
+        Pad_SetRefAtCurVarmap(errstack, targs->ref_node, ref_context, owners, idn, rhs);
         return rhs;
     } break;
     }
@@ -1456,18 +1456,18 @@ refer_child:
 static PadObj *
 assign_to_chain_call(
     PadAST *ast,
-    trv_args_t *targs,
+    PadTrvArgs *targs,
     PadObjAry *owners,
     PadChainObj *co,
     PadObj *rhs
 ) {
-    PadObj *obj = refer_chain_call(ast, ast->error_stack, targs->ref_node, ast->ref_gc, ast->ref_context, owners, co);
+    PadObj *obj = Pad_ReferChainCall(ast, ast->error_stack, targs->ref_node, ast->ref_gc, ast->ref_context, owners, co);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to refer chain call");
         return NULL;
     }
 
-    return trv_calc_assign(ast, &(trv_args_t) {
+    return trv_calc_assign(ast, &(PadTrvArgs) {
         .lhs_obj = obj,
         .rhs_obj = rhs,
         .ref_owners = owners,
@@ -1477,7 +1477,7 @@ assign_to_chain_call(
 static PadObj *
 assign_to_chain_array_index(
     PadAST *ast,
-    trv_args_t *targs,
+    PadTrvArgs *targs,
     PadObj *owner,
     PadChainObj *co,
     PadObj *rhs
@@ -1493,7 +1493,7 @@ again:
     } break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(idxobj);
-        idxobj = pull_ref_all(idxobj);
+        idxobj = Pad_PullRefAll(idxobj);
         if (!idxobj) {
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
@@ -1507,7 +1507,7 @@ again:
 
     assert(owner->type == PAD_OBJ_TYPE__ARRAY);
     PadObjAry *objarr = PadObj_GetAry(owner);
-    objint_t idx = idxobj->lvalue;
+    PadIntObj idx = idxobj->lvalue;
     if (idx < 0 || idx >= PadObjAry_Len(objarr)) {
         pushb_error("index out of range");
         return NULL;
@@ -1518,7 +1518,7 @@ again2:
     default: break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(rhs);
-        rhs = pull_ref_all(rhs);
+        rhs = Pad_PullRefAll(rhs);
         if (!rhs) {
             pushb_error("%s is not defined", idn);
             return NULL;
@@ -1535,7 +1535,7 @@ again2:
 static PadObj *
 assign_to_chain_dict_index(
     PadAST *ast,
-    trv_args_t *targs,
+    PadTrvArgs *targs,
     PadObj *owner,
     PadChainObj *co,
     PadObj *rhs
@@ -1551,7 +1551,7 @@ bob:
     } break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(idxobj);
-        idxobj = pull_ref_all(idxobj);
+        idxobj = Pad_PullRefAll(idxobj);
         if (!idxobj) {
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
@@ -1567,7 +1567,7 @@ marley:
     switch (rhs->type) {
     default: break;
     case PAD_OBJ_TYPE__CHAIN: {
-        rhs = _refer_chain_obj_with_ref(rhs);
+        rhs = _Pad_ReferRingObjWithRef(rhs);
         if (PadErrStack_Len(ast->error_stack)) {
             pushb_error("failed to refer chain object");
             return NULL;
@@ -1576,7 +1576,7 @@ marley:
     } break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(rhs);
-        rhs = pull_ref(rhs);
+        rhs = Pad_PullRef(rhs);
         if (!rhs) {
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
@@ -1597,7 +1597,7 @@ marley:
 static PadObj *
 assign_to_chain_index(
     PadAST *ast,
-    trv_args_t *targs,
+    PadTrvArgs *targs,
     PadObjAry *owners,
     PadChainObj *co,
     PadObj *rhs
@@ -1616,7 +1616,7 @@ again:
     } break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(owner);
-        owner = pull_ref_all(owner);
+        owner = Pad_PullRefAll(owner);
         if (!owner) {
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
@@ -1648,7 +1648,7 @@ again:
 static PadObj *
 assign_to_chain_three_objs(
     PadAST *ast,
-    trv_args_t *targs,
+    PadTrvArgs *targs,
     PadObjAry *owners,
     PadChainObj *co,
     PadObj *rhs
@@ -1687,11 +1687,11 @@ assign_to_chain_three_objs(
 }
 
 static PadObj *
-trv_assign_to_chain(PadAST *ast, trv_args_t *targs) {
+trv_assign_to_chain(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
 
@@ -1717,7 +1717,7 @@ trv_assign_to_chain(PadAST *ast, trv_args_t *targs) {
         PadChainObj *co = PadChainObjs_Get(cos, i);
         assert(co);
 
-        last = _refer_chain_three_objs(owners, co);
+        last = _Pad_ReferChainThreeObjs(owners, co);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to refer three objects");
             return NULL;
@@ -1740,13 +1740,13 @@ trv_assign_to_chain(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_assign_to_chain(PadAST *ast, trv_args_t *targs) {
+trv_calc_assign_to_chain(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
     assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     targs->depth = depth + 1;
     PadObj *obj = trv_assign_to_chain(ast, targs);
@@ -1758,13 +1758,13 @@ trv_calc_assign_to_chain(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_assign(PadAST *ast, trv_args_t *targs) {
+trv_calc_assign(PadAST *ast, PadTrvArgs *targs) {
     tready();
 
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (lhs->type) {
     default:
@@ -1798,14 +1798,14 @@ trv_calc_assign(PadAST *ast, trv_args_t *targs) {
  * 右優先結合
  */
 static PadObj *
-trv_simple_assign(PadAST *ast, trv_args_t *targs) {
+trv_simple_assign(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == PAD_NODE_TYPE__SIMPLE_ASSIGN);
     PadSimpleAssignNode *simple_assign = node->real;
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     if (!PadNodeAry_Len(simple_assign->nodearr)) {
         pushb_error("failed to traverse simple assign. array is empty");
@@ -1858,7 +1858,7 @@ trv_simple_assign(PadAST *ast, trv_args_t *targs) {
  * 右優先結合
  */
 static PadObj *
-trv_assign(PadAST *ast, trv_args_t *targs) {
+trv_assign(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node->type == PAD_NODE_TYPE__ASSIGN);
@@ -1870,7 +1870,7 @@ trv_assign(PadAST *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     bool do_not_refer_chain = targs->do_not_refer_chain;
 
 #define _return(result) \
@@ -1928,7 +1928,7 @@ trv_assign(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_assign_list(PadAST *ast, trv_args_t *targs) {
+trv_assign_list(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node->type == PAD_NODE_TYPE__ASSIGN_LIST);
@@ -1939,7 +1939,7 @@ trv_assign_list(PadAST *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     PadObjAry *objarr = PadObjAry_New();
 
     int32_t arrlen = PadNodeAry_Len(assign_list->nodearr);
@@ -1993,14 +1993,14 @@ done:
  * 右優先結合
  */
 static PadObj *
-trv_multi_assign(PadAST *ast, trv_args_t *targs) {
+trv_multi_assign(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == PAD_NODE_TYPE__MULTI_ASSIGN);
     PadMultiAssignNode *multi_assign = node->real;
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     if (!PadNodeAry_Len(multi_assign->nodearr)) {
         pushb_error("failed to traverse assign list. array is empty");
@@ -2054,14 +2054,14 @@ trv_multi_assign(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_test_list(PadAST *ast, trv_args_t *targs) {
+trv_test_list(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     PadTestListNode *test_list = node->real;
     assert(test_list);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     assert(PadNodeAry_Len(test_list->nodearr));
     if (PadNodeAry_Len(test_list->nodearr) == 1) {
@@ -2093,14 +2093,14 @@ trv_test_list(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_call_args(PadAST *ast, trv_args_t *targs) {
+trv_call_args(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     PadCallArgsNode *call_args = node->real;
     assert(call_args);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     PadObjAry *arr = PadObjAry_New();
 
     for (int32_t i = 0; i < PadNodeAry_Len(call_args->nodearr); ++i) {
@@ -2115,7 +2115,7 @@ trv_call_args(PadAST *ast, trv_args_t *targs) {
         }
         assert(result);
 
-        PadObj *ref = _extract_ref_of_obj_all(result);
+        PadObj *ref = _Pad_ExtractRefOfObjAll(result);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to extract reference");
             return_trav(NULL);
@@ -2140,13 +2140,13 @@ trv_call_args(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_test(PadAST *ast, trv_args_t *targs) {
+trv_test(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__TEST);
     PadTestNode *test = node->real;
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     check("call _PadTrv_Trav with or_test");
     targs->ref_node = test->or_test;
@@ -2156,14 +2156,14 @@ trv_test(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_roll_identifier_lhs(PadAST *ast, trv_args_t *targs) {
+trv_roll_identifier_lhs(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__IDENT);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     PadCtx *ref_context = PadObj_GetIdentRefCtx(lhs);
     assert(ref_context);
@@ -2183,14 +2183,14 @@ trv_roll_identifier_lhs(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj*
-trv_roll_identifier_rhs(PadAST *ast, trv_args_t *targs) {
+trv_roll_identifier_rhs(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs && targs->callback);
     assert(rhs->type == PAD_OBJ_TYPE__IDENT);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     PadCtx *ref_context = PadObj_GetIdentRefCtx(rhs);
     const char *idn = PadObj_GetcIdentName(rhs);
@@ -2210,14 +2210,14 @@ trv_roll_identifier_rhs(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_or_int(PadAST *ast, trv_args_t *targs) {
+trv_compare_or_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__INT);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -2312,7 +2312,7 @@ trv_compare_or_int(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__IDENT: {
-        PadObj *rvar = pull_ref_all(rhs);
+        PadObj *rvar = Pad_PullRefAll(rhs);
         if (!rvar) {
             pushb_error("%s is not defined in compare or int", PadObj_GetcIdentName(rhs));
             return_trav(NULL);
@@ -2326,7 +2326,7 @@ trv_compare_or_int(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or int. index object value is null");
             return_trav(NULL);
@@ -2344,14 +2344,14 @@ trv_compare_or_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_or_bool(PadAST *ast, trv_args_t *targs) {
+trv_compare_or_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -2460,7 +2460,7 @@ trv_compare_or_bool(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or bool. index object value is null");
             return_trav(NULL);
@@ -2478,14 +2478,14 @@ trv_compare_or_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_or_string(PadAST *ast, trv_args_t *targs) {
+trv_compare_or_string(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__UNICODE);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     int32_t slen = uni_len(lhs->unicode);
 
     switch (rhs->type) {
@@ -2590,7 +2590,7 @@ trv_compare_or_string(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or string. index object value is null");
             return_trav(NULL);
@@ -2608,14 +2608,14 @@ trv_compare_or_string(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_or_array(PadAST *ast, trv_args_t *targs) {
+trv_compare_or_array(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__ARRAY);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     int32_t arrlen = PadObjAry_Len(lhs->objarr);
 
     switch (rhs->type) {
@@ -2721,7 +2721,7 @@ trv_compare_or_array(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or array. index object value is null");
             return_trav(NULL);
@@ -2739,14 +2739,14 @@ trv_compare_or_array(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_or_dict(PadAST *ast, trv_args_t *targs) {
+trv_compare_or_dict(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__DICT);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     int32_t dictlen = PadObjDict_Len(lhs->objdict);
 
     switch (rhs->type) {
@@ -2852,7 +2852,7 @@ trv_compare_or_dict(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or dict. index object value is null");
             return_trav(NULL);
@@ -2870,14 +2870,14 @@ trv_compare_or_dict(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_or_nil(PadAST *ast, trv_args_t *targs) {
+trv_compare_or_nil(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__NIL);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -2898,7 +2898,7 @@ trv_compare_or_nil(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or nil. index object value is null");
             return_trav(NULL);
@@ -2916,14 +2916,14 @@ trv_compare_or_nil(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_or_func(PadAST *ast, trv_args_t *targs) {
+trv_compare_or_func(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__FUNC);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -3026,7 +3026,7 @@ trv_compare_or_func(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or func. index object value is null");
             return_trav(NULL);
@@ -3044,14 +3044,14 @@ trv_compare_or_func(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_or_module(PadAST *ast, trv_args_t *targs) {
+trv_compare_or_module(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__MODULE);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -3154,7 +3154,7 @@ trv_compare_or_module(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or func. index object value is null");
             return_trav(NULL);
@@ -3172,12 +3172,12 @@ trv_compare_or_module(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_or(PadAST *ast, trv_args_t *targs) {
+trv_compare_or(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (lhs->type) {
     default:
@@ -3240,7 +3240,7 @@ trv_compare_or(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *lval = _extract_ref_of_obj_all(lhs);
+        PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't compare or. index object value is null");
             return_trav(NULL);
@@ -3258,14 +3258,14 @@ trv_compare_or(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_or_test(PadAST *ast, trv_args_t *targs) {
+trv_or_test(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == PAD_NODE_TYPE__OR_TEST);
     PadOrTestNode *or_test = node->real;
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     PadNode *lnode = PadNodeAry_Get(or_test->nodearr, 0);
 
@@ -3308,14 +3308,14 @@ trv_or_test(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_and_int(PadAST *ast, trv_args_t *targs) {
+trv_compare_and_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__INT);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -3419,7 +3419,7 @@ trv_compare_and_int(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and int. index object value is null");
             return_trav(NULL);
@@ -3437,14 +3437,14 @@ trv_compare_and_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_and_bool(PadAST *ast, trv_args_t *targs) {
+trv_compare_and_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -3548,7 +3548,7 @@ trv_compare_and_bool(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and bool. index object value is null");
             return_trav(NULL);
@@ -3566,14 +3566,14 @@ trv_compare_and_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_and_string(PadAST *ast, trv_args_t *targs) {
+trv_compare_and_string(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__UNICODE);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     int32_t slen = uni_len(lhs->unicode);
 
     switch (rhs->type) {
@@ -3678,7 +3678,7 @@ trv_compare_and_string(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and string. index object value is null");
             return_trav(NULL);
@@ -3696,14 +3696,14 @@ trv_compare_and_string(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_and_array(PadAST *ast, trv_args_t *targs) {
+trv_compare_and_array(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__ARRAY);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     int32_t arrlen = PadObjAry_Len(lhs->objarr);
 
     switch (rhs->type) {
@@ -3799,7 +3799,7 @@ trv_compare_and_array(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and array. index object value is null");
             return_trav(NULL);
@@ -3817,14 +3817,14 @@ trv_compare_and_array(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_and_dict(PadAST *ast, trv_args_t *targs) {
+trv_compare_and_dict(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__DICT);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     int32_t dictlen = PadObjDict_Len(lhs->objdict);
 
     switch (rhs->type) {
@@ -3920,7 +3920,7 @@ trv_compare_and_dict(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and dict. index object value is null");
             return_trav(NULL);
@@ -3938,14 +3938,14 @@ trv_compare_and_dict(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_and_nil(PadAST *ast, trv_args_t *targs) {
+trv_compare_and_nil(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__NIL);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -3962,7 +3962,7 @@ trv_compare_and_nil(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and nil. index object value is null");
             return_trav(NULL);
@@ -3980,14 +3980,14 @@ trv_compare_and_nil(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_and_func(PadAST *ast, trv_args_t *targs) {
+trv_compare_and_func(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__FUNC);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -4082,7 +4082,7 @@ trv_compare_and_func(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and func. index object value is null");
             return_trav(NULL);
@@ -4100,14 +4100,14 @@ trv_compare_and_func(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_and_module(PadAST *ast, trv_args_t *targs) {
+trv_compare_and_module(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__MODULE);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -4200,7 +4200,7 @@ trv_compare_and_module(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and func. index object value is null");
             return_trav(NULL);
@@ -4218,12 +4218,12 @@ trv_compare_and_module(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_and(PadAST *ast, trv_args_t *targs) {
+trv_compare_and(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (lhs->type) {
     default:
@@ -4278,7 +4278,7 @@ trv_compare_and(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *lval = _extract_ref_of_obj_all(lhs);
+        PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't compare and. index object value is null");
             return_trav(NULL);
@@ -4296,13 +4296,13 @@ trv_compare_and(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_and_test(PadAST *ast, trv_args_t *targs) {
+trv_and_test(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == PAD_NODE_TYPE__AND_TEST);
     PadAndTestNode *and_test = node->real;
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     PadNode *lnode = PadNodeAry_Get(and_test->nodearr, 0);
     check("call _PadTrv_Trav with not_test");
@@ -4344,12 +4344,12 @@ trv_and_test(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_not(PadAST *ast, trv_args_t *targs) {
+trv_compare_not(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *operand = targs->ref_obj;
     assert(operand);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (operand->type) {
     default: {
@@ -4394,7 +4394,7 @@ trv_compare_not(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *val = _extract_ref_of_obj_all(operand);
+        PadObj *val = _Pad_ExtractRefOfObjAll(operand);
         if (!val) {
             pushb_error("can't compare not. index object value is null");
             return_trav(NULL);
@@ -4412,13 +4412,13 @@ trv_compare_not(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_not_test(PadAST *ast, trv_args_t *targs) {
+trv_not_test(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     PadNotTestNode *not_test = node->real;
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     if (not_test->not_test) {
         targs->ref_node = not_test->not_test;
@@ -4449,14 +4449,14 @@ trv_not_test(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_eq_int(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_eq_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__INT);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -4487,7 +4487,7 @@ trv_compare_comparison_eq_int(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq int. index object value is null");
             return_trav(NULL);
@@ -4505,14 +4505,14 @@ trv_compare_comparison_eq_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_eq_float(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_eq_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__FLOAT);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -4543,7 +4543,7 @@ trv_compare_comparison_eq_float(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq int. index object value is null");
             return_trav(NULL);
@@ -4561,14 +4561,14 @@ trv_compare_comparison_eq_float(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_eq_bool(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_eq_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -4598,7 +4598,7 @@ trv_compare_comparison_eq_bool(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq bool. index object value is null");
             return_trav(NULL);
@@ -4616,14 +4616,14 @@ trv_compare_comparison_eq_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_eq_string(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_eq_string(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__UNICODE);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -4649,7 +4649,7 @@ trv_compare_comparison_eq_string(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq unicode. index object value is null");
             return_trav(NULL);
@@ -4667,14 +4667,14 @@ trv_compare_comparison_eq_string(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_eq_array(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_eq_array(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__ARRAY);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -4693,7 +4693,7 @@ trv_compare_comparison_eq_array(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq array. index object value is null");
             return_trav(NULL);
@@ -4711,13 +4711,13 @@ trv_compare_comparison_eq_array(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_eq_dict(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_eq_dict(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs);
     assert(lhs->type == PAD_OBJ_TYPE__DICT);
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -4736,7 +4736,7 @@ trv_compare_comparison_eq_dict(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq dict. index object value is null");
             return_trav(NULL);
@@ -4754,14 +4754,14 @@ trv_compare_comparison_eq_dict(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_eq_nil(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_eq_nil(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__NIL);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -4773,7 +4773,7 @@ trv_compare_comparison_eq_nil(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq nil. index object value is null");
             return_trav(NULL);
@@ -4795,14 +4795,14 @@ trv_compare_comparison_eq_nil(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_eq_func(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_eq_func(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__FUNC);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -4821,7 +4821,7 @@ trv_compare_comparison_eq_func(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq func. index object value is null");
             return_trav(NULL);
@@ -4839,13 +4839,13 @@ trv_compare_comparison_eq_func(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_eq_object(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_eq_object(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__OBJECT);
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -4864,7 +4864,7 @@ trv_compare_comparison_eq_object(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq func. index object value is null");
             return_trav(NULL);
@@ -4882,13 +4882,13 @@ trv_compare_comparison_eq_object(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_eq_def_struct(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_eq_def_struct(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__DEF_STRUCT);
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -4907,7 +4907,7 @@ trv_compare_comparison_eq_def_struct(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq struct. index object value is null");
             return_trav(NULL);
@@ -4925,14 +4925,14 @@ trv_compare_comparison_eq_def_struct(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_eq_module(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_eq_module(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__MODULE);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -4951,7 +4951,7 @@ trv_compare_comparison_eq_module(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq func. index object value is null");
             return_trav(NULL);
@@ -4969,19 +4969,19 @@ trv_compare_comparison_eq_module(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_eq_chain(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_eq_chain(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
     assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
 
-    PadObj *lval = _extract_ref_of_obj_all(lhs);
+    PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
     if (!lval) {
         pushb_error("chain object value is null");
         return_trav(NULL);
     }
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     PadObj_IncRef(lval);
     targs->lhs_obj = lval;
@@ -4993,14 +4993,14 @@ trv_compare_comparison_eq_chain(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_eq_type(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_eq_type(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__TYPE);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default: {
@@ -5025,7 +5025,7 @@ trv_compare_comparison_eq_type(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_eq(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_eq(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
@@ -5115,7 +5115,7 @@ trv_compare_comparison_eq(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_not_eq_int(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_not_eq_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5152,7 +5152,7 @@ trv_compare_comparison_not_eq_int(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq int. index object value is null");
             return_trav(NULL);
@@ -5169,7 +5169,7 @@ trv_compare_comparison_not_eq_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_not_eq_float(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_not_eq_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5206,7 +5206,7 @@ trv_compare_comparison_not_eq_float(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq int. index object value is null");
             return_trav(NULL);
@@ -5223,7 +5223,7 @@ trv_compare_comparison_not_eq_float(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_not_eq_bool(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_not_eq_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5256,7 +5256,7 @@ trv_compare_comparison_not_eq_bool(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq bool. index object value is null");
             return_trav(NULL);
@@ -5273,7 +5273,7 @@ trv_compare_comparison_not_eq_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_not_eq_unicode(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_not_eq_unicode(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5302,7 +5302,7 @@ trv_compare_comparison_not_eq_unicode(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq string. index object value is null");
             return_trav(NULL);
@@ -5319,7 +5319,7 @@ trv_compare_comparison_not_eq_unicode(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_not_eq_array(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_not_eq_array(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5343,7 +5343,7 @@ trv_compare_comparison_not_eq_array(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq array. index object value is null");
             return_trav(NULL);
@@ -5360,7 +5360,7 @@ trv_compare_comparison_not_eq_array(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_not_eq_dict(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_not_eq_dict(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5384,7 +5384,7 @@ trv_compare_comparison_not_eq_dict(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq dict. index object value is null");
             return_trav(NULL);
@@ -5401,7 +5401,7 @@ trv_compare_comparison_not_eq_dict(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_not_eq_nil(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_not_eq_nil(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5426,7 +5426,7 @@ trv_compare_comparison_not_eq_nil(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq nil. index object value is null");
             return_trav(NULL);
@@ -5443,7 +5443,7 @@ trv_compare_comparison_not_eq_nil(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_not_eq_func(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_not_eq_func(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5468,7 +5468,7 @@ trv_compare_comparison_not_eq_func(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq func. index object value is null");
             return_trav(NULL);
@@ -5485,7 +5485,7 @@ trv_compare_comparison_not_eq_func(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_not_eq_module(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_not_eq_module(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5510,7 +5510,7 @@ trv_compare_comparison_not_eq_module(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq func. index object value is null");
             return_trav(NULL);
@@ -5527,7 +5527,7 @@ trv_compare_comparison_not_eq_module(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_not_eq_object(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_not_eq_object(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5552,7 +5552,7 @@ trv_compare_comparison_not_eq_object(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq func. index object value is null");
             return_trav(NULL);
@@ -5569,7 +5569,7 @@ trv_compare_comparison_not_eq_object(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_not_eq_def_struct(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_not_eq_def_struct(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5594,7 +5594,7 @@ trv_compare_comparison_not_eq_def_struct(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq struct. index object value is null");
             return_trav(NULL);
@@ -5611,7 +5611,7 @@ trv_compare_comparison_not_eq_def_struct(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_not_eq_type(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_not_eq_type(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5642,7 +5642,7 @@ trv_compare_comparison_not_eq_type(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_not_eq(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_not_eq(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
@@ -5716,7 +5716,7 @@ trv_compare_comparison_not_eq(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *lval = _extract_ref_of_obj_all(lhs);
+        PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't comparison not eq. index object value is null");
             return_trav(NULL);
@@ -5738,7 +5738,7 @@ trv_compare_comparison_not_eq(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_lte_int(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_lte_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5771,7 +5771,7 @@ trv_compare_comparison_lte_int(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison lte int. index object value is null");
             return_trav(NULL);
@@ -5788,7 +5788,7 @@ trv_compare_comparison_lte_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_lte_float(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_lte_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5821,7 +5821,7 @@ trv_compare_comparison_lte_float(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison lte int. index object value is null");
             return_trav(NULL);
@@ -5838,7 +5838,7 @@ trv_compare_comparison_lte_float(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_lte_bool(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_lte_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5871,7 +5871,7 @@ trv_compare_comparison_lte_bool(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison lte bool. index object value is null");
             return_trav(NULL);
@@ -5888,7 +5888,7 @@ trv_compare_comparison_lte_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_lte(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_lte(PadAST *ast, PadTrvArgs *targs) {
     tready();
 
     PadObj *lhs = targs->lhs_obj;
@@ -5923,7 +5923,7 @@ trv_compare_comparison_lte(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *lval = _extract_ref_of_obj_all(lhs);
+        PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't comparison lte. index object value is null");
             return_trav(NULL);
@@ -5940,7 +5940,7 @@ trv_compare_comparison_lte(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_gte_int(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_gte_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -5973,7 +5973,7 @@ trv_compare_comparison_gte_int(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison gte int. index object value is null");
             return_trav(NULL);
@@ -5990,7 +5990,7 @@ trv_compare_comparison_gte_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_gte_float(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_gte_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -6023,7 +6023,7 @@ trv_compare_comparison_gte_float(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison gte int. index object value is null");
             return_trav(NULL);
@@ -6040,7 +6040,7 @@ trv_compare_comparison_gte_float(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_gte_bool(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_gte_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -6073,7 +6073,7 @@ trv_compare_comparison_gte_bool(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison gte bool. index object value is null");
             return_trav(NULL);
@@ -6090,7 +6090,7 @@ trv_compare_comparison_gte_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_gte(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_gte(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
@@ -6124,7 +6124,7 @@ trv_compare_comparison_gte(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *lval = _extract_ref_of_obj_all(lhs);
+        PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't comparison gte. index object value is null");
             return_trav(NULL);
@@ -6141,7 +6141,7 @@ trv_compare_comparison_gte(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_lt_int(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_lt_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -6174,7 +6174,7 @@ trv_compare_comparison_lt_int(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison lt int. index object value is null");
             return_trav(NULL);
@@ -6191,7 +6191,7 @@ trv_compare_comparison_lt_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_lt_float(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_lt_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -6224,7 +6224,7 @@ trv_compare_comparison_lt_float(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison lt int. index object value is null");
             return_trav(NULL);
@@ -6241,7 +6241,7 @@ trv_compare_comparison_lt_float(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_lt_bool(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_lt_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -6274,7 +6274,7 @@ trv_compare_comparison_lt_bool(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison lt bool. index object value is null");
             return_trav(NULL);
@@ -6291,7 +6291,7 @@ trv_compare_comparison_lt_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_lt(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_lt(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
@@ -6325,7 +6325,7 @@ trv_compare_comparison_lt(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *lval = _extract_ref_of_obj_all(lhs);
+        PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't comparison lt. index object value is null");
             return_trav(NULL);
@@ -6342,7 +6342,7 @@ trv_compare_comparison_lt(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_gt_int(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_gt_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -6375,7 +6375,7 @@ trv_compare_comparison_gt_int(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison gt int. index object value is null");
             return_trav(NULL);
@@ -6392,7 +6392,7 @@ trv_compare_comparison_gt_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_gt_float(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_gt_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -6425,7 +6425,7 @@ trv_compare_comparison_gt_float(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison gt int. index object value is null");
             return_trav(NULL);
@@ -6442,7 +6442,7 @@ trv_compare_comparison_gt_float(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_gt_bool(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_gt_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -6475,7 +6475,7 @@ trv_compare_comparison_gt_bool(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison gt bool. index object value is null");
             return_trav(NULL);
@@ -6492,7 +6492,7 @@ trv_compare_comparison_gt_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison_gt(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison_gt(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
@@ -6526,7 +6526,7 @@ trv_compare_comparison_gt(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *lval = _extract_ref_of_obj_all(lhs);
+        PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't comparison gt. index object value is null");
             return_trav(NULL);
@@ -6543,7 +6543,7 @@ trv_compare_comparison_gt(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_compare_comparison(PadAST *ast, trv_args_t *targs) {
+trv_compare_comparison(PadAST *ast, PadTrvArgs *targs) {
     tready();
 
     PadCompOpNode *comp_op = targs->comp_op_node;
@@ -6590,14 +6590,14 @@ trv_compare_comparison(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_comparison(PadAST *ast, trv_args_t *targs) {
+trv_comparison(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     PadComparisonNode *comparison = node->real;
     assert(comparison);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     if (PadNodeAry_Len(comparison->nodearr) == 1) {
         PadNode *node = PadNodeAry_Get(comparison->nodearr, 0);
@@ -6659,7 +6659,7 @@ trv_comparison(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_expr_add_int(PadAST *ast, trv_args_t *targs) {
+trv_calc_expr_add_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -6692,7 +6692,7 @@ trv_calc_expr_add_int(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't add with int. index object value is null");
             return_trav(NULL);
@@ -6709,7 +6709,7 @@ trv_calc_expr_add_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_expr_add_float(PadAST *ast, trv_args_t *targs) {
+trv_calc_expr_add_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -6742,7 +6742,7 @@ trv_calc_expr_add_float(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't add with int. index object value is null");
             return_trav(NULL);
@@ -6759,7 +6759,7 @@ trv_calc_expr_add_float(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_expr_add_bool(PadAST *ast, trv_args_t *targs) {
+trv_calc_expr_add_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -6792,7 +6792,7 @@ trv_calc_expr_add_bool(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't add with bool. index object value is null");
             return_trav(NULL);
@@ -6809,7 +6809,7 @@ trv_calc_expr_add_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_expr_add_string(PadAST *ast, trv_args_t *targs) {
+trv_calc_expr_add_string(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -6837,7 +6837,7 @@ trv_calc_expr_add_string(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't add with string. index object value is null");
             return_trav(NULL);
@@ -6854,14 +6854,14 @@ trv_calc_expr_add_string(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_expr_add_array(PadAST *ast, trv_args_t *targs) {
+trv_calc_expr_add_array(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__ARRAY);
 
-    PadObj *rref = _extract_ref_of_obj_all(rhs);
+    PadObj *rref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return NULL;
@@ -6897,7 +6897,7 @@ trv_calc_expr_add_array(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_expr_add(PadAST *ast, trv_args_t *targs) {
+trv_calc_expr_add(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
@@ -6936,7 +6936,7 @@ trv_calc_expr_add(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *lval = _extract_ref_of_obj_all(lhs);
+        PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't add with string. index object value is null");
             return_trav(NULL);
@@ -6958,7 +6958,7 @@ trv_calc_expr_add(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_expr_sub_int(PadAST *ast, trv_args_t *targs) {
+trv_calc_expr_sub_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -6991,7 +6991,7 @@ trv_calc_expr_sub_int(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't sub with int. index object value is null");
             return_trav(NULL);
@@ -7008,7 +7008,7 @@ trv_calc_expr_sub_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_expr_sub_float(PadAST *ast, trv_args_t *targs) {
+trv_calc_expr_sub_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -7041,7 +7041,7 @@ trv_calc_expr_sub_float(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't sub with int. index object value is null");
             return_trav(NULL);
@@ -7058,7 +7058,7 @@ trv_calc_expr_sub_float(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_expr_sub_bool(PadAST *ast, trv_args_t *targs) {
+trv_calc_expr_sub_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -7091,7 +7091,7 @@ trv_calc_expr_sub_bool(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't sub with bool. index object value is null");
             return_trav(NULL);
@@ -7108,7 +7108,7 @@ trv_calc_expr_sub_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_expr_sub(PadAST *ast, trv_args_t *targs) {
+trv_calc_expr_sub(PadAST *ast, PadTrvArgs *targs) {
     tready();
 
     PadObj *lhs = targs->lhs_obj;
@@ -7143,7 +7143,7 @@ trv_calc_expr_sub(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *lval = _extract_ref_of_obj_all(lhs);
+        PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't sub. index object value is null");
             return_trav(NULL);
@@ -7160,7 +7160,7 @@ trv_calc_expr_sub(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_expr(PadAST *ast, trv_args_t *targs) {
+trv_calc_expr(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadAddSubOpNode *add_sub_op = targs->add_sub_op_node;
     assert(add_sub_op);
@@ -7187,14 +7187,14 @@ trv_calc_expr(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_expr(PadAST *ast, trv_args_t *targs) {
+trv_expr(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     PadExprNode *expr = node->real;
     assert(expr);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     if (PadNodeAry_Len(expr->nodearr) == 1) {
         PadNode *node = PadNodeAry_Get(expr->nodearr, 0);
@@ -7250,7 +7250,7 @@ trv_expr(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-mul_unicode_object(PadAST *ast, trv_args_t *targs, const unicode_t *s, int32_t n) {
+mul_unicode_object(PadAST *ast, PadTrvArgs *targs, const unicode_t *s, int32_t n) {
     if (n < 0) {
         pushb_error("can't mul string by negative value");
         return NULL;
@@ -7261,7 +7261,7 @@ mul_unicode_object(PadAST *ast, trv_args_t *targs, const unicode_t *s, int32_t n
 }
 
 static PadObj *
-trv_calc_term_mul_int(PadAST *ast, trv_args_t *targs) {
+trv_calc_term_mul_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -7298,7 +7298,7 @@ trv_calc_term_mul_int(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't mul with int. index object value is null");
             return_trav(NULL);
@@ -7315,7 +7315,7 @@ trv_calc_term_mul_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_term_mul_float(PadAST *ast, trv_args_t *targs) {
+trv_calc_term_mul_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -7348,7 +7348,7 @@ trv_calc_term_mul_float(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't mul with int. index object value is null");
             return_trav(NULL);
@@ -7365,7 +7365,7 @@ trv_calc_term_mul_float(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_term_mul_bool(PadAST *ast, trv_args_t *targs) {
+trv_calc_term_mul_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -7398,7 +7398,7 @@ trv_calc_term_mul_bool(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't mul with bool. index object value is null");
             return_trav(NULL);
@@ -7415,7 +7415,7 @@ trv_calc_term_mul_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_term_mul_string(PadAST *ast, trv_args_t *targs) {
+trv_calc_term_mul_string(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -7443,7 +7443,7 @@ trv_calc_term_mul_string(PadAST *ast, trv_args_t *targs) {
         err_die("TODO: mul string 2");
         break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't mul with string. index object value is null");
             return_trav(NULL);
@@ -7460,7 +7460,7 @@ trv_calc_term_mul_string(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_term_mul(PadAST *ast, trv_args_t *targs) {
+trv_calc_term_mul(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
@@ -7499,7 +7499,7 @@ trv_calc_term_mul(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *lval = _extract_ref_of_obj_all(lhs);
+        PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't mul. index object value is null");
             return_trav(NULL);
@@ -7516,7 +7516,7 @@ trv_calc_term_mul(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_term_div_int(PadAST *ast, trv_args_t *targs) {
+trv_calc_term_div_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -7561,7 +7561,7 @@ trv_calc_term_div_int(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't division with int. index object value is null");
             return_trav(NULL);
@@ -7578,7 +7578,7 @@ trv_calc_term_div_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_term_div_float(PadAST *ast, trv_args_t *targs) {
+trv_calc_term_div_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -7623,7 +7623,7 @@ trv_calc_term_div_float(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't division with int. index object value is null");
             return_trav(NULL);
@@ -7640,7 +7640,7 @@ trv_calc_term_div_float(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_term_div_bool(PadAST *ast, trv_args_t *targs) {
+trv_calc_term_div_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
@@ -7679,7 +7679,7 @@ trv_calc_term_div_bool(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *rval = _extract_ref_of_obj_all(rhs);
+        PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't division with bool. index object value is null");
             return_trav(NULL);
@@ -7696,7 +7696,7 @@ trv_calc_term_div_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_term_div(PadAST *ast, trv_args_t *targs) {
+trv_calc_term_div(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
@@ -7730,7 +7730,7 @@ trv_calc_term_div(PadAST *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        PadObj *lval = extract_copy_of_obj(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, lhs);
+        PadObj *lval = Pad_ExtractCopyOfObj(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, lhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("can't division. index object value is null");
             return_trav(NULL);
@@ -7751,13 +7751,13 @@ trv_calc_term_div(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_term_mod_int(PadAST *ast, trv_args_t *targs) {
+trv_calc_term_mod_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
 
-    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -7775,7 +7775,7 @@ trv_calc_term_mod_int(PadAST *ast, trv_args_t *targs) {
         }
 
         // TODO: need imp float!
-        objint_t result = lhs->lvalue % ((objint_t) rhsref->boolean);
+        PadIntObj result = lhs->lvalue % ((PadIntObj) rhsref->boolean);
         PadObj *obj = PadObj_NewInt(ast->ref_gc, result);
         return_trav(obj);
     } break;
@@ -7786,7 +7786,7 @@ trv_calc_term_mod_int(PadAST *ast, trv_args_t *targs) {
         }
 
         // TODO: need imp float!
-        objint_t result = lhs->lvalue % rhsref->lvalue;
+        PadIntObj result = lhs->lvalue % rhsref->lvalue;
         PadObj *obj = PadObj_NewInt(ast->ref_gc, result);
         return_trav(obj);
     } break;
@@ -7797,13 +7797,13 @@ trv_calc_term_mod_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_term_mod_bool(PadAST *ast, trv_args_t *targs) {
+trv_calc_term_mod_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
 
-    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -7821,7 +7821,7 @@ trv_calc_term_mod_bool(PadAST *ast, trv_args_t *targs) {
         }
 
         // TODO: need imp float!
-        objint_t result = ((objint_t) lhs->boolean) % ((objint_t) rhsref->boolean);
+        PadIntObj result = ((PadIntObj) lhs->boolean) % ((PadIntObj) rhsref->boolean);
         PadObj *obj = PadObj_NewInt(ast->ref_gc, result);
         return_trav(obj);
     } break;
@@ -7832,7 +7832,7 @@ trv_calc_term_mod_bool(PadAST *ast, trv_args_t *targs) {
         }
 
         // TODO: need imp float!
-        objint_t result = ((objint_t) lhs->boolean) % rhsref->lvalue;
+        PadIntObj result = ((PadIntObj) lhs->boolean) % rhsref->lvalue;
         PadObj *obj = PadObj_NewInt(ast->ref_gc, result);
         return_trav(obj);
     } break;
@@ -7843,7 +7843,7 @@ trv_calc_term_mod_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_term_mod(PadAST *ast, trv_args_t *targs) {
+trv_calc_term_mod(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadMulDivOpNode *op = targs->mul_div_op_node;
     PadObj *lhs = targs->lhs_obj;
@@ -7852,7 +7852,7 @@ trv_calc_term_mod(PadAST *ast, trv_args_t *targs) {
 
     targs->depth += 1;
 
-    PadObj *lhsref = _extract_ref_of_obj_all(lhs);
+    PadObj *lhsref = _Pad_ExtractRefOfObjAll(lhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -7882,7 +7882,7 @@ trv_calc_term_mod(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_term(PadAST *ast, trv_args_t *targs) {
+trv_calc_term(PadAST *ast, PadTrvArgs *targs) {
     tready();
 
     PadMulDivOpNode *mul_div_op = targs->mul_div_op_node;
@@ -7914,14 +7914,14 @@ trv_calc_term(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_term(PadAST *ast, trv_args_t *targs) {
+trv_term(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     PadTermNode *term = node->real;
     assert(term);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     if (PadNodeAry_Len(term->nodearr) == 1) {
         PadNode *node = PadNodeAry_Get(term->nodearr, 0);
@@ -7981,14 +7981,14 @@ trv_term(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_negative(PadAST *ast, trv_args_t *targs) {
+trv_negative(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     PadNegativeNode *negative = node->real;
     assert(negative);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     check("call _PadTrv_Trav with negative's dot")
     targs->ref_node = negative->chain;
@@ -8034,7 +8034,7 @@ again:
     } break;
     case PAD_OBJ_TYPE__IDENT: {
         if (negative->is_negative) {
-            operand = _extract_ref_of_obj_all(operand);
+            operand = _Pad_ExtractRefOfObjAll(operand);
             goto again;
         }
         return_trav(operand);
@@ -8046,14 +8046,14 @@ again:
 }
 
 static PadObj *
-trv_chain(PadAST *ast, trv_args_t *targs) {
+trv_chain(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
     PadRingNode *chain = node->real;
     assert(chain);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     // get operand
     PadNode *factor = chain->factor;
@@ -8111,7 +8111,7 @@ trv_chain(PadAST *ast, trv_args_t *targs) {
 
     // done
     PadObj_IncRef(operand);
-    PadObj *obj_chain = PadObj_NewChain(
+    PadObj *obj_chain = PadObj_NewRing(
         ast->ref_gc,
         mem_move(operand),
         mem_move(chobjs)
@@ -8123,7 +8123,7 @@ trv_chain(PadAST *ast, trv_args_t *targs) {
     if (targs->do_not_refer_chain) {
         return_trav(obj_chain);
     } else {
-        PadObj *result = _refer_chain_obj_with_ref(obj_chain);
+        PadObj *result = _Pad_ReferRingObjWithRef(obj_chain);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to refer chain object");
             goto fail;
@@ -8140,7 +8140,7 @@ fail:
 }
 
 static PadObj *
-trv_calc_assign_to_idn(PadAST *ast, trv_args_t *targs) {
+trv_calc_assign_to_idn(PadAST *ast, PadTrvArgs *targs) {
     tready();
 
     PadObj *lhs = targs->lhs_obj;
@@ -8153,7 +8153,7 @@ trv_calc_assign_to_idn(PadAST *ast, trv_args_t *targs) {
     switch (rhs->type) {
     default: {
         check("set reference of (%d) at (%s) of current varmap", rhs->type, idn);
-        set_ref_at_cur_varmap(
+        Pad_SetRefAtCurVarmap(
             ast->error_stack,
             targs->ref_node,
             ast->ref_context,
@@ -8165,8 +8165,8 @@ trv_calc_assign_to_idn(PadAST *ast, trv_args_t *targs) {
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
         // TODO: fix me!
-        PadObj *val = _extract_ref_of_obj_all(rhs);
-        set_ref_at_cur_varmap(
+        PadObj *val = _Pad_ExtractRefOfObjAll(rhs);
+        Pad_SetRefAtCurVarmap(
             ast->error_stack,
             targs->ref_node,
             ast->ref_context,
@@ -8177,7 +8177,7 @@ trv_calc_assign_to_idn(PadAST *ast, trv_args_t *targs) {
         return_trav(val);
     } break;
     case PAD_OBJ_TYPE__IDENT: {
-        PadObj *rval = pull_ref_all(rhs);
+        PadObj *rval = Pad_PullRefAll(rhs);
         if (!rval) {
             pushb_error("\"%s\" is not defined in asscalc ass idn", PadObj_GetcIdentName(rhs));
             return_trav(NULL);
@@ -8185,7 +8185,7 @@ trv_calc_assign_to_idn(PadAST *ast, trv_args_t *targs) {
 
         check("set reference of (%d) at (%s) of current varmap", rval->type, idn);
         PadObj_IncRef(rval);
-        set_ref_at_cur_varmap(
+        Pad_SetRefAtCurVarmap(
             ast->error_stack,
             targs->ref_node,
             ast->ref_context,
@@ -8202,17 +8202,17 @@ trv_calc_assign_to_idn(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_add_ass_identifier_int(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_add_ass_identifier_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    PadObj *intobj = pull_ref_all(idnobj);
+    PadObj *intobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default:
@@ -8222,24 +8222,24 @@ trv_calc_asscalc_add_ass_identifier_int(PadAST *ast, trv_args_t *targs) {
     case PAD_OBJ_TYPE__INT: {
         PadObj *lhs = PadObj_DeepCopy(intobj);
         lhs->lvalue += rhs->lvalue;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__FLOAT: {
         PadObj *lhs = PadObj_DeepCopy(intobj);
         lhs->float_value = lhs->lvalue + rhs->float_value;
         lhs->type = PAD_OBJ_TYPE__FLOAT;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__BOOL: {
         PadObj *lhs = PadObj_DeepCopy(intobj);
-        lhs->lvalue += (objint_t) rhs->boolean;
-        set_ref(varmap, idnname, lhs);
+        lhs->lvalue += (PadIntObj) rhs->boolean;
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__IDENT: {
-        PadObj *rvar = _extract_ref_of_obj_all(rhs);
+        PadObj *rvar = _Pad_ExtractRefOfObjAll(rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to extract object");
             return_trav(NULL);
@@ -8259,17 +8259,17 @@ trv_calc_asscalc_add_ass_identifier_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_add_ass_identifier_float(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_add_ass_identifier_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    PadObj *floatobj = pull_ref_all(idnobj);
+    PadObj *floatobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default:
@@ -8279,23 +8279,23 @@ trv_calc_asscalc_add_ass_identifier_float(PadAST *ast, trv_args_t *targs) {
     case PAD_OBJ_TYPE__INT: {
         PadObj *lhs = PadObj_DeepCopy(floatobj);
         lhs->float_value += rhs->lvalue;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__FLOAT: {
         PadObj *lhs = PadObj_DeepCopy(floatobj);
         lhs->float_value += rhs->float_value;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__BOOL: {
         PadObj *lhs = PadObj_DeepCopy(floatobj);
-        lhs->float_value += (objint_t) rhs->boolean;
-        set_ref(varmap, idnname, lhs);
+        lhs->float_value += (PadIntObj) rhs->boolean;
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__IDENT: {
-        PadObj *rvar = _extract_ref_of_obj_all(rhs);
+        PadObj *rvar = _Pad_ExtractRefOfObjAll(rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to extract object");
             return_trav(NULL);
@@ -8315,17 +8315,17 @@ trv_calc_asscalc_add_ass_identifier_float(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_add_ass_identifier_bool(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_add_ass_identifier_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    PadObj *boolobj = pull_ref_all(idnobj);
+    PadObj *boolobj = Pad_PullRefAll(idnobj);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     switch (rhs->type) {
     default:
@@ -8336,25 +8336,25 @@ trv_calc_asscalc_add_ass_identifier_bool(PadAST *ast, trv_args_t *targs) {
         PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->lvalue = lhs->boolean + rhs->lvalue;
         lhs->type = PAD_OBJ_TYPE__INT;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__FLOAT: {
         PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->float_value = lhs->boolean + rhs->float_value;
         lhs->type = PAD_OBJ_TYPE__FLOAT;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__BOOL: {
         PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->lvalue = lhs->boolean + rhs->boolean;
         lhs->type = PAD_OBJ_TYPE__INT;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__IDENT: {
-        PadObj *rvar = _extract_ref_of_obj_all(rhs);
+        PadObj *rvar = _Pad_ExtractRefOfObjAll(rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to extract object");
             return_trav(NULL);
@@ -8374,12 +8374,12 @@ trv_calc_asscalc_add_ass_identifier_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_add_ass_identifier_string(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_add_ass_identifier_string(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    PadObj *unicodeobj = pull_ref_all(idnobj);
+    PadObj *unicodeobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
     const char *idn = targs->identifier;
     assert(idnobj && rhs && idn);
@@ -8393,7 +8393,7 @@ again:
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(rhs);
-        rhs = pull_ref_all(rhs);
+        rhs = Pad_PullRefAll(rhs);
         if (!rhs) {
             pushb_error("not found \"%s\"", idn);
             return_trav(NULL);
@@ -8403,11 +8403,11 @@ again:
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *lhs = PadObj_DeepCopy(unicodeobj);
         uni_app(lhs->unicode, uni_getc(rhs->unicode));
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        rhs = _extract_ref_of_obj_all(rhs);
+        rhs = _Pad_ExtractRefOfObjAll(rhs);
         if (PadErrStack_Len(ast->error_stack)) {
             pushb_error("failed to extract chain object");
             return_trav(NULL);
@@ -8421,20 +8421,20 @@ again:
 }
 
 static PadObj *
-trv_calc_asscalc_add_ass_identifier(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_add_ass_identifier(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
     assert(lhs->type == PAD_OBJ_TYPE__IDENT);
 
     const char *idn = PadObj_GetcIdentName(lhs);
-    PadObj *lhsref = _extract_ref_of_obj(lhs);
+    PadObj *lhsref = _Pad_ExtractRefOfObj(lhs);
     if (!lhsref) {
         pushb_error("failed to extract object");
         return_trav(NULL);
     }
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     PadObj *result = NULL;
 
     switch (lhsref->type) {
@@ -8480,20 +8480,20 @@ trv_calc_asscalc_add_ass_identifier(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_add_ass_chain(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_add_ass_chain(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *chainobj = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(chainobj && rhs);
     assert(chainobj->type == PAD_OBJ_TYPE__CHAIN);
 
-    PadObj *lref = _refer_chain_obj_with_ref(chainobj);
+    PadObj *lref = _Pad_ReferRingObjWithRef(chainobj);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to refer chain object");
         return_trav(NULL);
     }
 
-    PadObj *rref = _extract_ref_of_obj_all(rhs);
+    PadObj *rref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -8513,18 +8513,18 @@ trv_calc_asscalc_add_ass_chain(PadAST *ast, trv_args_t *targs) {
         case PAD_OBJ_TYPE__INT: {
             lref = PadObj_DeepCopy(lref);
             lref->lvalue += rref->lvalue;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__FLOAT: {
             lref = PadObj_DeepCopy(lref);
             lref->float_value = lref->lvalue + rref->float_value;
             lref->type = PAD_OBJ_TYPE__FLOAT;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__BOOL: {
             lref = PadObj_DeepCopy(lref);
-            lref->lvalue += (objint_t) rref->boolean;
-            _refer_and_set_ref(chainobj, lref);
+            lref->lvalue += (PadIntObj) rref->boolean;
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         }
     } break;
@@ -8537,17 +8537,17 @@ trv_calc_asscalc_add_ass_chain(PadAST *ast, trv_args_t *targs) {
         case PAD_OBJ_TYPE__INT: {
             lref = PadObj_DeepCopy(lref);
             lref->float_value += rref->lvalue;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__FLOAT: {
             lref = PadObj_DeepCopy(lref);
             lref->float_value += rref->float_value;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__BOOL: {
             lref = PadObj_DeepCopy(lref);
-            lref->float_value += (objfloat_t) rref->boolean;
-            _refer_and_set_ref(chainobj, lref);
+            lref->float_value += (PadFloatObj) rref->boolean;
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         }
     } break;
@@ -8559,21 +8559,21 @@ trv_calc_asscalc_add_ass_chain(PadAST *ast, trv_args_t *targs) {
         } break;
         case PAD_OBJ_TYPE__INT: {
             lref = PadObj_DeepCopy(lref);
-            lref->lvalue = ((objint_t) lref->boolean) + rref->lvalue;
+            lref->lvalue = ((PadIntObj) lref->boolean) + rref->lvalue;
             lref->type = PAD_OBJ_TYPE__INT;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__FLOAT: {
             lref = PadObj_DeepCopy(lref);
-            lref->float_value = ((objfloat_t) lref->boolean) + rref->float_value;
+            lref->float_value = ((PadFloatObj) lref->boolean) + rref->float_value;
             lref->type = PAD_OBJ_TYPE__FLOAT;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__BOOL: {
             lref = PadObj_DeepCopy(lref);
-            lref->lvalue = ((objint_t) lref->boolean) + ((objint_t) rref->boolean);
+            lref->lvalue = ((PadIntObj) lref->boolean) + ((PadIntObj) rref->boolean);
             lref->type = PAD_OBJ_TYPE__INT;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         }
     } break;
@@ -8586,7 +8586,7 @@ trv_calc_asscalc_add_ass_chain(PadAST *ast, trv_args_t *targs) {
         case PAD_OBJ_TYPE__UNICODE: {
             lref = PadObj_DeepCopy(lref);
             uni_app_other(lref->unicode, rref->unicode);
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         }
     } break;
@@ -8599,7 +8599,7 @@ trv_calc_asscalc_add_ass_chain(PadAST *ast, trv_args_t *targs) {
         case PAD_OBJ_TYPE__ARRAY: {
             lref = PadObj_DeepCopy(lref);
             PadObjAry_AppOther(lref->objarr, rref->objarr);
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         }
     } break;
@@ -8613,20 +8613,20 @@ trv_calc_asscalc_add_ass_chain(PadAST *ast, trv_args_t *targs) {
  * TODO: test
  */
 static PadObj *
-trv_calc_asscalc_sub_ass_chain(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_sub_ass_chain(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *chainobj = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(chainobj && rhs);
     assert(chainobj->type == PAD_OBJ_TYPE__CHAIN);
 
-    PadObj *lref = _refer_chain_obj_with_ref(chainobj);
+    PadObj *lref = _Pad_ReferRingObjWithRef(chainobj);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to refer chain object");
         return NULL;
     }
 
-    PadObj *rref = _extract_ref_of_obj_all(rhs);
+    PadObj *rref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return NULL;
@@ -8646,18 +8646,18 @@ trv_calc_asscalc_sub_ass_chain(PadAST *ast, trv_args_t *targs) {
         case PAD_OBJ_TYPE__INT: {
             lref = PadObj_DeepCopy(lref);
             lref->lvalue -= rref->lvalue;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__FLOAT: {
             lref = PadObj_DeepCopy(lref);
             lref->float_value = lref->lvalue - rref->float_value;
             lref->type = PAD_OBJ_TYPE__FLOAT;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__BOOL: {
             lref = PadObj_DeepCopy(lref);
-            lref->lvalue -= (objint_t) rref->boolean;
-            _refer_and_set_ref(chainobj, lref);
+            lref->lvalue -= (PadIntObj) rref->boolean;
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         }
     } break;
@@ -8670,17 +8670,17 @@ trv_calc_asscalc_sub_ass_chain(PadAST *ast, trv_args_t *targs) {
         case PAD_OBJ_TYPE__INT: {
             lref = PadObj_DeepCopy(lref);
             lref->float_value -= rref->lvalue;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__FLOAT: {
             lref = PadObj_DeepCopy(lref);
             lref->float_value -= rref->float_value;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__BOOL: {
             lref = PadObj_DeepCopy(lref);
-            lref->float_value -= (objfloat_t) rref->boolean;
-            _refer_and_set_ref(chainobj, lref);
+            lref->float_value -= (PadFloatObj) rref->boolean;
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         }
     } break;
@@ -8692,21 +8692,21 @@ trv_calc_asscalc_sub_ass_chain(PadAST *ast, trv_args_t *targs) {
         } break;
         case PAD_OBJ_TYPE__INT: {
             lref = PadObj_DeepCopy(lref);
-            lref->lvalue = ((objint_t) lref->boolean) - rref->lvalue;
+            lref->lvalue = ((PadIntObj) lref->boolean) - rref->lvalue;
             lref->type = PAD_OBJ_TYPE__INT;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__FLOAT: {
             lref = PadObj_DeepCopy(lref);
-            lref->float_value = ((objfloat_t) lref->boolean) - rref->float_value;
+            lref->float_value = ((PadFloatObj) lref->boolean) - rref->float_value;
             lref->type = PAD_OBJ_TYPE__FLOAT;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__BOOL: {
             lref = PadObj_DeepCopy(lref);
-            lref->lvalue = ((objint_t) lref->boolean) - ((objint_t) rref->boolean);
+            lref->lvalue = ((PadIntObj) lref->boolean) - ((PadIntObj) rref->boolean);
             lref->type = PAD_OBJ_TYPE__INT;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         }
     } break;
@@ -8720,20 +8720,20 @@ trv_calc_asscalc_sub_ass_chain(PadAST *ast, trv_args_t *targs) {
  * TODO: test
  */
 static PadObj *
-trv_calc_asscalc_mul_ass_chain(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_mul_ass_chain(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *chainobj = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(chainobj && rhs);
     assert(chainobj->type == PAD_OBJ_TYPE__CHAIN);
 
-    PadObj *lref = _refer_chain_obj_with_ref(chainobj);
+    PadObj *lref = _Pad_ReferRingObjWithRef(chainobj);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to refer chain object");
         return NULL;
     }
 
-    PadObj *rref = _extract_ref_of_obj_all(rhs);
+    PadObj *rref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return NULL;
@@ -8753,18 +8753,18 @@ trv_calc_asscalc_mul_ass_chain(PadAST *ast, trv_args_t *targs) {
         case PAD_OBJ_TYPE__INT: {
             lref = PadObj_DeepCopy(lref);
             lref->lvalue *= rref->lvalue;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__FLOAT: {
             lref = PadObj_DeepCopy(lref);
             lref->float_value = lref->lvalue * rref->float_value;
             lref->type = PAD_OBJ_TYPE__FLOAT;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__BOOL: {
             lref = PadObj_DeepCopy(lref);
-            lref->lvalue *= (objint_t) rref->boolean;
-            _refer_and_set_ref(chainobj, lref);
+            lref->lvalue *= (PadIntObj) rref->boolean;
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         }
     } break;
@@ -8777,17 +8777,17 @@ trv_calc_asscalc_mul_ass_chain(PadAST *ast, trv_args_t *targs) {
         case PAD_OBJ_TYPE__INT: {
             lref = PadObj_DeepCopy(lref);
             lref->float_value *= rref->lvalue;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__FLOAT: {
             lref = PadObj_DeepCopy(lref);
             lref->float_value *= rref->float_value;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__BOOL: {
             lref = PadObj_DeepCopy(lref);
-            lref->float_value *= (objfloat_t) rref->boolean;
-            _refer_and_set_ref(chainobj, lref);
+            lref->float_value *= (PadFloatObj) rref->boolean;
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         }
     } break;
@@ -8799,21 +8799,21 @@ trv_calc_asscalc_mul_ass_chain(PadAST *ast, trv_args_t *targs) {
         } break;
         case PAD_OBJ_TYPE__INT: {
             lref = PadObj_DeepCopy(lref);
-            lref->lvalue = ((objint_t) lref->boolean) * rref->lvalue;
+            lref->lvalue = ((PadIntObj) lref->boolean) * rref->lvalue;
             lref->type = PAD_OBJ_TYPE__INT;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__FLOAT: {
             lref = PadObj_DeepCopy(lref);
-            lref->float_value = ((objfloat_t) lref->boolean) * rref->float_value;
+            lref->float_value = ((PadFloatObj) lref->boolean) * rref->float_value;
             lref->type = PAD_OBJ_TYPE__FLOAT;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         case PAD_OBJ_TYPE__BOOL: {
             lref = PadObj_DeepCopy(lref);
-            lref->lvalue = ((objint_t) lref->boolean) * ((objint_t) rref->boolean);
+            lref->lvalue = ((PadIntObj) lref->boolean) * ((PadIntObj) rref->boolean);
             lref->type = PAD_OBJ_TYPE__INT;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         }
     } break;
@@ -8828,7 +8828,7 @@ trv_calc_asscalc_mul_ass_chain(PadAST *ast, trv_args_t *targs) {
             unicode_t *u = uni_mul(lref->unicode, rref->lvalue);
             uni_del(lref->unicode);
             lref->unicode = u;
-            _refer_and_set_ref(chainobj, lref);
+            _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         }
     } break;
@@ -8842,20 +8842,20 @@ trv_calc_asscalc_mul_ass_chain(PadAST *ast, trv_args_t *targs) {
  * TODO: test
  */
 static PadObj *
-trv_calc_asscalc_div_ass_chain(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_div_ass_chain(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
 
-    PadObj *lref = _refer_chain_obj_with_ref(lhs);
+    PadObj *lref = _Pad_ReferRingObjWithRef(lhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to refer chain object");
         return NULL;
     }
 
-    PadObj *rref = _extract_ref_of_obj_all(rhs);
+    PadObj *rref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return NULL;
@@ -8892,7 +8892,7 @@ trv_calc_asscalc_div_ass_chain(PadAST *ast, trv_args_t *targs) {
                 pushb_error("zero division error");
                 return NULL;
             }
-            lref->lvalue /= (objint_t) rref->boolean;
+            lref->lvalue /= (PadIntObj) rref->boolean;
         } break;
         }
     } break;
@@ -8921,7 +8921,7 @@ trv_calc_asscalc_div_ass_chain(PadAST *ast, trv_args_t *targs) {
                 pushb_error("zero division error");
                 return NULL;
             }
-            lref->float_value /= (objfloat_t) rref->boolean;
+            lref->float_value /= (PadFloatObj) rref->boolean;
         } break;
         }
     } break;
@@ -8936,7 +8936,7 @@ trv_calc_asscalc_div_ass_chain(PadAST *ast, trv_args_t *targs) {
                 pushb_error("zero division error");
                 return NULL;
             }
-            lref->lvalue = ((objint_t) lref->boolean) / rref->lvalue;
+            lref->lvalue = ((PadIntObj) lref->boolean) / rref->lvalue;
             lref->type = PAD_OBJ_TYPE__INT;
         } break;
         case PAD_OBJ_TYPE__FLOAT: {
@@ -8944,7 +8944,7 @@ trv_calc_asscalc_div_ass_chain(PadAST *ast, trv_args_t *targs) {
                 pushb_error("zero division error");
                 return NULL;
             }
-            lref->float_value = ((objfloat_t) lref->boolean) / rref->float_value;
+            lref->float_value = ((PadFloatObj) lref->boolean) / rref->float_value;
             lref->type = PAD_OBJ_TYPE__FLOAT;
         } break;
         case PAD_OBJ_TYPE__BOOL: {
@@ -8952,7 +8952,7 @@ trv_calc_asscalc_div_ass_chain(PadAST *ast, trv_args_t *targs) {
                 pushb_error("zero division error");
                 return NULL;
             }
-            lref->lvalue = ((objint_t) lref->boolean) / ((objint_t) rref->boolean);
+            lref->lvalue = ((PadIntObj) lref->boolean) / ((PadIntObj) rref->boolean);
             lref->type = PAD_OBJ_TYPE__INT;
         } break;
         }
@@ -8967,20 +8967,20 @@ trv_calc_asscalc_div_ass_chain(PadAST *ast, trv_args_t *targs) {
  * TODO: test
  */
 static PadObj *
-trv_calc_asscalc_mod_ass_chain(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_mod_ass_chain(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
 
-    PadObj *lref = _refer_chain_obj_with_ref(lhs);
+    PadObj *lref = _Pad_ReferRingObjWithRef(lhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to refer chain object");
         return NULL;
     }
 
-    PadObj *rref = _extract_ref_of_obj_all(rhs);
+    PadObj *rref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return NULL;
@@ -9009,7 +9009,7 @@ trv_calc_asscalc_mod_ass_chain(PadAST *ast, trv_args_t *targs) {
                 pushb_error("zero division error");
                 return NULL;
             }
-            lref->lvalue %= (objint_t) rref->boolean;
+            lref->lvalue %= (PadIntObj) rref->boolean;
         } break;
         }
     } break;
@@ -9024,7 +9024,7 @@ trv_calc_asscalc_mod_ass_chain(PadAST *ast, trv_args_t *targs) {
                 pushb_error("zero division error");
                 return NULL;
             }
-            lref->lvalue = ((objint_t) lref->boolean) % rref->lvalue;
+            lref->lvalue = ((PadIntObj) lref->boolean) % rref->lvalue;
             lref->type = PAD_OBJ_TYPE__INT;
         } break;
         case PAD_OBJ_TYPE__BOOL: {
@@ -9032,7 +9032,7 @@ trv_calc_asscalc_mod_ass_chain(PadAST *ast, trv_args_t *targs) {
                 pushb_error("zero division error");
                 return NULL;
             }
-            lref->lvalue = ((objint_t) lref->boolean) % ((objint_t) rref->boolean);
+            lref->lvalue = ((PadIntObj) lref->boolean) % ((PadIntObj) rref->boolean);
             lref->type = PAD_OBJ_TYPE__INT;
         } break;
         }
@@ -9043,7 +9043,7 @@ trv_calc_asscalc_mod_ass_chain(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-extract_idn_and_chain(PadAST *ast, trv_args_t *targs, PadObj *obj) {
+extract_idn_and_chain(PadAST *ast, PadTrvArgs *targs, PadObj *obj) {
     if (!ast || !targs || !obj) {
         return NULL;
     }
@@ -9055,7 +9055,7 @@ again:
     } break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(obj);
-        obj = pull_ref_all(obj);
+        obj = Pad_PullRefAll(obj);
         if (!obj) {
             pushb_error("\"%s\" is not defined", idn);
             return_trav(NULL);
@@ -9063,7 +9063,7 @@ again:
         goto again;
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        obj = _refer_chain_obj_with_ref(obj);
+        obj = _Pad_ReferRingObjWithRef(obj);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to refer chain object");
             return_trav(NULL);
@@ -9075,7 +9075,7 @@ again:
 }
 
 static PadObj *
-trv_calc_asscalc_add_ass(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_add_ass(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
@@ -9104,17 +9104,17 @@ trv_calc_asscalc_add_ass(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_sub_ass_idn_int(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_sub_ass_idn_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    PadObj *intobj = pull_ref_all(idnobj);
+    PadObj *intobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9128,20 +9128,20 @@ trv_calc_asscalc_sub_ass_idn_int(PadAST *ast, trv_args_t *targs) {
     case PAD_OBJ_TYPE__INT: {
         PadObj *lhs = PadObj_DeepCopy(intobj);
         lhs->lvalue -= rhsref->lvalue;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__FLOAT: {
         PadObj *lhs = PadObj_DeepCopy(intobj);
         lhs->float_value = lhs->lvalue - rhsref->float_value;
         lhs->type = PAD_OBJ_TYPE__FLOAT;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__BOOL: {
         PadObj *lhs = PadObj_DeepCopy(intobj);
-        lhs->lvalue -= (objint_t) rhsref->boolean;
-        set_ref(varmap, idnname, lhs);
+        lhs->lvalue -= (PadIntObj) rhsref->boolean;
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     }
@@ -9151,17 +9151,17 @@ trv_calc_asscalc_sub_ass_idn_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_sub_ass_idn_float(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_sub_ass_idn_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    PadObj *floatobj = pull_ref_all(idnobj);
+    PadObj *floatobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9175,19 +9175,19 @@ trv_calc_asscalc_sub_ass_idn_float(PadAST *ast, trv_args_t *targs) {
     case PAD_OBJ_TYPE__INT: {
         PadObj *lhs = PadObj_DeepCopy(floatobj);
         lhs->float_value -= rhsref->lvalue;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__FLOAT: {
         PadObj *lhs = PadObj_DeepCopy(floatobj);
         lhs->float_value -= rhsref->float_value;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__BOOL: {
         PadObj *lhs = PadObj_DeepCopy(floatobj);
-        lhs->float_value -= (objfloat_t) rhsref->boolean;
-        set_ref(varmap, idnname, lhs);
+        lhs->float_value -= (PadFloatObj) rhsref->boolean;
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     }
@@ -9197,17 +9197,17 @@ trv_calc_asscalc_sub_ass_idn_float(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_sub_ass_idn_bool(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_sub_ass_idn_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    PadObj *boolobj = pull_ref_all(idnobj);
+    PadObj *boolobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9222,21 +9222,21 @@ trv_calc_asscalc_sub_ass_idn_bool(PadAST *ast, trv_args_t *targs) {
         PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->lvalue = lhs->boolean - rhsref->lvalue;
         lhs->type = PAD_OBJ_TYPE__INT;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__FLOAT: {
         PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->float_value = lhs->boolean - rhsref->float_value;
         lhs->type = PAD_OBJ_TYPE__FLOAT;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__BOOL: {
         PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->lvalue = lhs->boolean - rhsref->boolean;
         lhs->type = PAD_OBJ_TYPE__INT;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     }
@@ -9246,13 +9246,13 @@ trv_calc_asscalc_sub_ass_idn_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_sub_ass_idn(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_sub_ass_idn(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
     assert(lhs->type == PAD_OBJ_TYPE__IDENT);
 
-    PadObj *lhsref = _extract_ref_of_obj_all(lhs);
+    PadObj *lhsref = _Pad_ExtractRefOfObjAll(lhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to pull reference");
         return_trav(NULL);
@@ -9285,7 +9285,7 @@ trv_calc_asscalc_sub_ass_idn(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_sub_ass(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_sub_ass(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
@@ -9314,17 +9314,17 @@ trv_calc_asscalc_sub_ass(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_mul_ass_int(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_mul_ass_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    PadObj *intobj = pull_ref_all(idnobj);
+    PadObj *intobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9338,20 +9338,20 @@ trv_calc_asscalc_mul_ass_int(PadAST *ast, trv_args_t *targs) {
     case PAD_OBJ_TYPE__INT: {
         PadObj *lhs = PadObj_DeepCopy(intobj);
         lhs->lvalue *= rhsref->lvalue;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__FLOAT: {
         PadObj *lhs = PadObj_DeepCopy(intobj);
         lhs->float_value = lhs->lvalue * rhsref->float_value;
         lhs->type = PAD_OBJ_TYPE__FLOAT;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__BOOL: {
         PadObj *lhs = PadObj_DeepCopy(intobj);
-        lhs->lvalue *= (objint_t) rhsref->boolean;
-        set_ref(varmap, idnname, lhs);
+        lhs->lvalue *= (PadIntObj) rhsref->boolean;
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     }
@@ -9361,17 +9361,17 @@ trv_calc_asscalc_mul_ass_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_mul_ass_float(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_mul_ass_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    PadObj *floatobj = pull_ref_all(idnobj);
+    PadObj *floatobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9385,19 +9385,19 @@ trv_calc_asscalc_mul_ass_float(PadAST *ast, trv_args_t *targs) {
     case PAD_OBJ_TYPE__INT: {
         PadObj *lhs = PadObj_DeepCopy(floatobj);
         lhs->float_value *= rhsref->lvalue;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__FLOAT: {
         PadObj *lhs = PadObj_DeepCopy(floatobj);
         lhs->float_value *= rhsref->float_value;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__BOOL: {
         PadObj *lhs = PadObj_DeepCopy(floatobj);
-        lhs->float_value *= (objfloat_t) rhsref->boolean;
-        set_ref(varmap, idnname, lhs);
+        lhs->float_value *= (PadFloatObj) rhsref->boolean;
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     }
@@ -9407,17 +9407,17 @@ trv_calc_asscalc_mul_ass_float(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_mul_ass_bool(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_mul_ass_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    PadObj *boolobj = pull_ref_all(idnobj);
+    PadObj *boolobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9432,21 +9432,21 @@ trv_calc_asscalc_mul_ass_bool(PadAST *ast, trv_args_t *targs) {
         PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->lvalue = lhs->boolean * rhsref->lvalue;
         lhs->type = PAD_OBJ_TYPE__INT;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__FLOAT: {
         PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->float_value = lhs->boolean * rhsref->float_value;
         lhs->type = PAD_OBJ_TYPE__FLOAT;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__BOOL: {
         PadObj *lhs = PadObj_DeepCopy(boolobj);
         lhs->lvalue = lhs->boolean * rhsref->boolean;
         lhs->type = PAD_OBJ_TYPE__INT;
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     }
@@ -9456,17 +9456,17 @@ trv_calc_asscalc_mul_ass_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_mul_ass_string(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_mul_ass_string(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    PadObj *unicodeobj = pull_ref_all(idnobj);
+    PadObj *unicodeobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
-    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9486,12 +9486,12 @@ trv_calc_asscalc_mul_ass_string(PadAST *ast, trv_args_t *targs) {
             uni_clear(lhs->unicode);
         } else {
             unicode_t *other = uni_deep_copy(lhs->unicode);
-            for (objint_t i = 0; i < rhsref->lvalue-1; ++i) {
+            for (PadIntObj i = 0; i < rhsref->lvalue-1; ++i) {
                 uni_app_other(lhs->unicode, other);
             }
             uni_del(other);
         }
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     case PAD_OBJ_TYPE__BOOL: {
@@ -9499,7 +9499,7 @@ trv_calc_asscalc_mul_ass_string(PadAST *ast, trv_args_t *targs) {
         if (!rhsref->boolean) {
             uni_clear(lhs->unicode);
         }
-        set_ref(varmap, idnname, lhs);
+        Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
     }
@@ -9509,7 +9509,7 @@ trv_calc_asscalc_mul_ass_string(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_mul_ass(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_mul_ass(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
@@ -9523,7 +9523,7 @@ trv_calc_asscalc_mul_ass(PadAST *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
-    PadObj *lhsref = _extract_ref_of_obj_all(lhs);
+    PadObj *lhsref = _Pad_ExtractRefOfObjAll(lhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9565,14 +9565,14 @@ trv_calc_asscalc_mul_ass(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_div_ass_int(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_div_ass_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__INT);
 
-    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9608,7 +9608,7 @@ trv_calc_asscalc_div_ass_int(PadAST *ast, trv_args_t *targs) {
             return_trav(NULL);
         }
 
-        lhs->lvalue /= (objint_t) rhsref->boolean;
+        lhs->lvalue /= (PadIntObj) rhsref->boolean;
         return_trav(lhs);
     } break;
     }
@@ -9618,14 +9618,14 @@ trv_calc_asscalc_div_ass_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_div_ass_float(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_div_ass_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__FLOAT);
 
-    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9660,7 +9660,7 @@ trv_calc_asscalc_div_ass_float(PadAST *ast, trv_args_t *targs) {
             return_trav(NULL);
         }
 
-        lhs->float_value /= (objfloat_t) rhsref->boolean;
+        lhs->float_value /= (PadFloatObj) rhsref->boolean;
         return_trav(lhs);
     } break;
     }
@@ -9670,14 +9670,14 @@ trv_calc_asscalc_div_ass_float(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_div_ass_bool(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_div_ass_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
-    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9694,7 +9694,7 @@ trv_calc_asscalc_div_ass_bool(PadAST *ast, trv_args_t *targs) {
             return_trav(NULL);
         }
 
-        objint_t result = ((objint_t)lhs->boolean) / rhsref->lvalue;
+        PadIntObj result = ((PadIntObj)lhs->boolean) / rhsref->lvalue;
         lhs->type = PAD_OBJ_TYPE__INT;
         lhs->lvalue = result;
         return_trav(lhs);
@@ -9705,7 +9705,7 @@ trv_calc_asscalc_div_ass_bool(PadAST *ast, trv_args_t *targs) {
             return_trav(NULL);
         }
 
-        objfloat_t result = ((objfloat_t)lhs->boolean) / rhsref->float_value;
+        PadFloatObj result = ((PadFloatObj)lhs->boolean) / rhsref->float_value;
         lhs->type = PAD_OBJ_TYPE__FLOAT;
         lhs->float_value = result;
         return_trav(lhs);
@@ -9716,7 +9716,7 @@ trv_calc_asscalc_div_ass_bool(PadAST *ast, trv_args_t *targs) {
             return_trav(NULL);
         }
 
-        objint_t result = ((objint_t)lhs->boolean) / ((objint_t)rhsref->boolean);
+        PadIntObj result = ((PadIntObj)lhs->boolean) / ((PadIntObj)rhsref->boolean);
         lhs->type = PAD_OBJ_TYPE__INT;
         lhs->lvalue = result;
         return_trav(lhs);
@@ -9728,7 +9728,7 @@ trv_calc_asscalc_div_ass_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_div_ass(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_div_ass(PadAST *ast, PadTrvArgs *targs) {
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
     tready();
@@ -9742,7 +9742,7 @@ trv_calc_asscalc_div_ass(PadAST *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
-    PadObj *lhsref = _extract_ref_of_obj_all(lhs);
+    PadObj *lhsref = _Pad_ExtractRefOfObjAll(lhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9775,14 +9775,14 @@ trv_calc_asscalc_div_ass(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_mod_ass_int(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_mod_ass_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__INT);
 
-    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9810,7 +9810,7 @@ trv_calc_asscalc_mod_ass_int(PadAST *ast, trv_args_t *targs) {
         }
 
         // TODO: need imp float!
-        lhs->lvalue %= (objint_t) rhsref->boolean;
+        lhs->lvalue %= (PadIntObj) rhsref->boolean;
         return_trav(lhs);
     } break;
     }
@@ -9820,14 +9820,14 @@ trv_calc_asscalc_mod_ass_int(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_mod_ass_bool(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_mod_ass_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
-    PadObj *rhsref = _extract_ref_of_obj_all(rhs);
+    PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9845,7 +9845,7 @@ trv_calc_asscalc_mod_ass_bool(PadAST *ast, trv_args_t *targs) {
         }
 
         // TODO: need imp float!
-        objint_t result = ((objint_t)lhs->boolean) % rhsref->lvalue;
+        PadIntObj result = ((PadIntObj)lhs->boolean) % rhsref->lvalue;
         lhs->type = PAD_OBJ_TYPE__INT;
         lhs->lvalue = result;
         return_trav(lhs);
@@ -9857,7 +9857,7 @@ trv_calc_asscalc_mod_ass_bool(PadAST *ast, trv_args_t *targs) {
         }
 
         // TODO: need imp float!
-        objint_t result = ((objint_t)lhs->boolean) % ((objint_t)rhsref->boolean);
+        PadIntObj result = ((PadIntObj)lhs->boolean) % ((PadIntObj)rhsref->boolean);
         lhs->type = PAD_OBJ_TYPE__INT;
         lhs->lvalue = result;
         return_trav(lhs);
@@ -9869,7 +9869,7 @@ trv_calc_asscalc_mod_ass_bool(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc_mod_ass(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc_mod_ass(PadAST *ast, PadTrvArgs *targs) {
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
     tready();
@@ -9883,7 +9883,7 @@ trv_calc_asscalc_mod_ass(PadAST *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
-    PadObj *lhsref = _extract_ref_of_obj_all(lhs);
+    PadObj *lhsref = _Pad_ExtractRefOfObjAll(lhs);
     if (PadAst_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
@@ -9914,7 +9914,7 @@ trv_calc_asscalc_mod_ass(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_calc_asscalc(PadAST *ast, trv_args_t *targs) {
+trv_calc_asscalc(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadAugassignNode *augassign = targs->augassign_op_node;
     assert(augassign);
@@ -9958,14 +9958,14 @@ trv_calc_asscalc(PadAST *ast, trv_args_t *targs) {
  *  right priority
  */
 static PadObj *
-trv_asscalc(PadAST *ast, trv_args_t *targs) {
+trv_asscalc(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__ASSCALC);
     PadAssCalcNode *asscalc = node->real;
     assert(asscalc);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     bool do_not_refer_chain = targs->do_not_refer_chain;
 
 #define _return(result) \
@@ -10035,7 +10035,7 @@ trv_asscalc(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_factor(PadAST *ast, trv_args_t *targs) {
+trv_factor(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__FACTOR);
@@ -10061,7 +10061,7 @@ trv_factor(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_atom(PadAST *ast, trv_args_t *targs) {
+trv_atom(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__ATOM);
@@ -10122,7 +10122,7 @@ trv_atom(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_nil(PadAST *ast, trv_args_t *targs) {
+trv_nil(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__NIL);
@@ -10134,7 +10134,7 @@ trv_nil(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_false(PadAST *ast, trv_args_t *targs) {
+trv_false(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__FALSE);
@@ -10145,7 +10145,7 @@ trv_false(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_true(PadAST *ast, trv_args_t *targs) {
+trv_true(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__TRUE);
@@ -10156,7 +10156,7 @@ trv_true(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_digit(PadAST *ast, trv_args_t *targs) {
+trv_digit(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__DIGIT);
@@ -10167,7 +10167,7 @@ trv_digit(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_float(PadAST *ast, trv_args_t *targs) {
+trv_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__FLOAT);
@@ -10178,7 +10178,7 @@ trv_float(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_string(PadAST *ast, trv_args_t *targs) {
+trv_string(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__STRING);
@@ -10195,14 +10195,14 @@ trv_string(PadAST *ast, trv_args_t *targs) {
  * left priority
  */
 static PadObj *
-trv_array_elems(PadAST *ast, trv_args_t *targs) {
+trv_array_elems(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__ARRAY_ELEMS);
     PadAryElemsNode_ *array_elems = node->real;
     assert(array_elems);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     PadObjAry *objarr = PadObjAry_New();
 
     for (int32_t i = 0; i < PadNodeAry_Len(array_elems->nodearr); ++i) {
@@ -10215,7 +10215,7 @@ trv_array_elems(PadAST *ast, trv_args_t *targs) {
             return_trav(NULL);
         }
 
-        PadObj *ref = _extract_ref_of_obj_all(result);
+        PadObj *ref = _Pad_ExtractRefOfObjAll(result);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to extract reference");
             return_trav(NULL);
@@ -10247,7 +10247,7 @@ trv_array_elems(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_array(PadAST *ast, trv_args_t *targs) {
+trv_array(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__ARRAY);
@@ -10263,7 +10263,7 @@ trv_array(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_dict_elem(PadAST *ast, trv_args_t *targs) {
+trv_dict_elem(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__DICT_ELEM);
@@ -10311,14 +10311,14 @@ trv_dict_elem(PadAST *ast, trv_args_t *targs) {
  * left priority
  */
 static PadObj *
-trv_dict_elems(PadAST *ast, trv_args_t *targs) {
+trv_dict_elems(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__DICT_ELEMS);
     PadDictElemsNode *dict_elems = node->real;
     assert(dict_elems);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     PadObjDict *objdict = PadObjDict_New(ast->ref_gc);
 
     for (int32_t i = 0; i < PadNodeAry_Len(dict_elems->nodearr); ++i) {
@@ -10341,7 +10341,7 @@ trv_dict_elems(PadAST *ast, trv_args_t *targs) {
 
         if (val->type == PAD_OBJ_TYPE__IDENT) {
             const char *idn = str_getc(val->identifier.name);
-            val = pull_ref_all(val);
+            val = Pad_PullRefAll(val);
             if (!val) {
                 pushb_error("\"%s\" is not defined. can not store to dict elements", idn);
                 return_trav(NULL);
@@ -10360,7 +10360,7 @@ trv_dict_elems(PadAST *ast, trv_args_t *targs) {
             skey = uni_getc_mb(key->unicode);
             break;
         case PAD_OBJ_TYPE__IDENT: {
-            const PadObj *ref = pull_ref_all(key);
+            const PadObj *ref = Pad_PullRefAll(key);
             if (ref->type != PAD_OBJ_TYPE__UNICODE) {
                 pushb_error("invalid key type in variable of dict");
                 PadObj_Del(arrobj);
@@ -10382,7 +10382,7 @@ trv_dict_elems(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_dict(PadAST *ast, trv_args_t *targs) {
+trv_dict(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
@@ -10398,7 +10398,7 @@ trv_dict(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_identifier(PadAST *ast, trv_args_t *targs) {
+trv_identifier(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
@@ -10406,7 +10406,7 @@ trv_identifier(PadAST *ast, trv_args_t *targs) {
     assert(identifier && node->type == PAD_NODE_TYPE__IDENTIFIER);
     PadObjAry *ref_owners = targs->ref_owners;
 
-    PadCtx *ref_context = get_context_by_owners(ref_owners, ast->ref_context);
+    PadCtx *ref_context = Pad_GetCtxByOwns(ref_owners, ast->ref_context);
     if (!ref_context) {
         pushb_error("failed to get context by owners");
         return_trav(NULL);
@@ -10421,7 +10421,7 @@ trv_identifier(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_def(PadAST *ast, trv_args_t *targs) {
+trv_def(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__DEF);
@@ -10436,14 +10436,14 @@ trv_def(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_func_def(PadAST *ast, trv_args_t *targs) {
+trv_func_def(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__FUNC_DEF);
     PadFuncDefNode *func_def = node->real;
     assert(func_def);
     PadObjAry *ref_owners = targs->ref_owners;
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
 
     check("call _PadTrv_Trav with identifier");
     targs->ref_node = func_def->identifier;
@@ -10482,7 +10482,7 @@ trv_func_def(PadAST *ast, trv_args_t *targs) {
             pushb_error("failed to traverse func-extends");
             return_trav(NULL);
         }
-        PadObj *ref_extends_func = pull_ref_all(extends_func_name);
+        PadObj *ref_extends_func = Pad_PullRefAll(extends_func_name);
         if (!ref_extends_func) {
             pushb_error("not found \"%s\". can't extends", PadObj_GetcIdentName(extends_func_name));
             return_trav(NULL);
@@ -10508,7 +10508,7 @@ trv_func_def(PadAST *ast, trv_args_t *targs) {
     );
     assert(func_obj);
     check("set func at varmap");
-    move_obj_at_cur_varmap(
+    Pad_MoveObjAtCurVarmap(
         ast->error_stack,
         targs->ref_node,
         ast->ref_context,
@@ -10521,7 +10521,7 @@ trv_func_def(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_func_def_params(PadAST *ast, trv_args_t *targs) {
+trv_func_def_params(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__FUNC_DEF_PARAMS);
@@ -10535,7 +10535,7 @@ trv_func_def_params(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_func_def_args(PadAST *ast, trv_args_t *targs) {
+trv_func_def_args(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__FUNC_DEF_ARGS);
@@ -10543,7 +10543,7 @@ trv_func_def_args(PadAST *ast, trv_args_t *targs) {
     assert(func_def_args && node->type == PAD_NODE_TYPE__FUNC_DEF_ARGS);
     PadObjAry *ref_owners = targs->ref_owners;
 
-    PadCtx *ref_context = get_context_by_owners(ref_owners, ast->ref_context);
+    PadCtx *ref_context = Pad_GetCtxByOwns(ref_owners, ast->ref_context);
     if (!ref_context) {
         pushb_error("failed to get context by owners");
         return_trav(NULL);
@@ -10570,14 +10570,14 @@ trv_func_def_args(PadAST *ast, trv_args_t *targs) {
 }
 
 static PadObj *
-trv_func_extends(PadAST *ast, trv_args_t *targs) {
+trv_func_extends(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node && node->type == PAD_NODE_TYPE__FUNC_EXTENDS);
     PadFuncExtendsNode *func_extends = node->real;
     assert(func_extends);
 
-    depth_t depth = targs->depth;
+    PadDepth depth = targs->depth;
     targs->ref_node = func_extends->identifier;
     targs->depth = depth + 1;
     PadObj *idnobj = _PadTrv_Trav(ast, targs);
@@ -10591,7 +10591,7 @@ trv_func_extends(PadAST *ast, trv_args_t *targs) {
 }
 
 PadObj *
-_PadTrv_Trav(PadAST *ast, trv_args_t *targs) {
+_PadTrv_Trav(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     if (!node) {
@@ -11028,19 +11028,19 @@ PadTrv_Trav(PadAST *ast, PadCtx *context) {
     PadAst_SetRefGc(ast, PadCtx_GetGc(context));
 
     if (!PadTrv_ImportBltMods(ast)) {
-        pushb_error_node(ast->error_stack, ast->root, "failed to import builtin modules");
+        Pad_PushBackErrNode(ast->error_stack, ast->root, "failed to import builtin modules");
         return;
     }
     if (!trv_define_builtin_types(ast)) {
-        pushb_error_node(ast->error_stack, ast->root, "failed to define builtin types");
+        Pad_PushBackErrNode(ast->error_stack, ast->root, "failed to define builtin types");
         return;
     }
     if (!trv_define_builtin_funcs(ast)) {
-        pushb_error_node(ast->error_stack, ast->root, "failed to define builtin funcs");
+        Pad_PushBackErrNode(ast->error_stack, ast->root, "failed to define builtin funcs");
         return;
     }
 
-    trv_args_t targs = {0};
+    PadTrvArgs targs = {0};
     targs.ref_node = ast->root;
     targs.depth = 0;
     PadObj *result = _PadTrv_Trav(ast, &targs);

@@ -6,13 +6,13 @@ enum {
     OBJDICT_SIZE = 1024,
 };
 
-struct context {
+struct PadCtx {
     // ref_prevにはコンテキストをつなげたい時に、親のコンテキストを設定する
     // contextはこのref_prevを使い親のコンテキストを辿れるようになっている
     // これによってルートのコンテキストや1つ前のコンテキストを辿れる
     PadCtx *ref_prev;  // reference to previous context
 
-    PadGc *ref_gc;  // reference to gc (DO NOT DELETE)
+    PadGC *ref_gc;  // reference to gc (DO NOT DELETE)
     PadAliasInfo *alinfo;  // alias info for builtin alias module
 
     // ルートのcontextのstdout_buf, stderr_bufにputsなどの組み込み関数の出力が保存される
@@ -63,7 +63,7 @@ PadCtx_EscDelGlobalVarmap(PadCtx *self) {
 }
 
 PadCtx *
-PadCtx_New(PadGc *ref_gc) {
+PadCtx_New(PadGC *ref_gc) {
     PadCtx *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
@@ -253,7 +253,7 @@ PadCtx_FindVarRefAll(PadCtx *self, const char *key) {
     return NULL;
 }
 
-PadGc *
+PadGC *
 PadCtx_GetGc(PadCtx *self) {
     return self->ref_gc;
 }

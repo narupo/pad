@@ -20,13 +20,13 @@ enum {
 /**
  * item of array of PadNodeDict
  */
-typedef struct PadNode_dict_item {
+typedef struct PadNodeDict_item {
     char key[PAD_NODE_DICT__ITEM_KEY_SIZE];  // key of item
     PadNode *value;  // value of item
 } PadNodeDictItem;
 
 /**
- * destruct PadNode_dict_t
+ * destruct PadNodeDict_t
  *
  * @param[in] *self pointer to PadNodeDict
  */
@@ -34,7 +34,7 @@ void
 PadNodeDict_Del(PadNodeDict *self);
 
 /**
- * destruct PadNode_dict_t. do not delete nodes in map
+ * destruct PadNodeDict_t. do not delete nodes in map
  *
  * @param[in] *self pointer to PadNodeDict
  */
@@ -42,7 +42,7 @@ void
 PadNodeDict_DelWithoutNodes(PadNodeDict *self);
 
 /**
- * destruct PadNode_dict_t with Pad_Escape array of PadNodeDictItem dynamic allocated
+ * destruct PadNodeDict_t with Pad_Escape array of PadNodeDictItem dynamic allocated
  *
  * @param[in] *self pointer to PadNodeDict
  *
@@ -53,7 +53,7 @@ PadNodeDictItem *
 PadNodeDict_EscDel(PadNodeDict *self);
 
 /**
- * construct PadNode_dict_t
+ * construct PadNodeDict_t
  *
  * @return success to pointer to PadNodeDict (dynamic allocate memory)
  * @return failed to NULL

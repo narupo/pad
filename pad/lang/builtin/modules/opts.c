@@ -1,7 +1,7 @@
 #include <pad/lang/builtin/modules/opts.h>
 
 static PadObj *
-builtin_opts_get(builtin_func_args_t *fargs) {
+builtin_opts_get(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
@@ -33,7 +33,7 @@ builtin_opts_get(builtin_func_args_t *fargs) {
 }
 
 static PadObj *
-builtin_PadOpts_Has(builtin_func_args_t *fargs) {
+builtin_PadOpts_Has(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
@@ -61,7 +61,7 @@ builtin_PadOpts_Has(builtin_func_args_t *fargs) {
 }
 
 static PadObj *
-builtin_opts_args(builtin_func_args_t *fargs) {
+builtin_opts_args(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
@@ -89,7 +89,7 @@ builtin_opts_args(builtin_func_args_t *fargs) {
     return PadObj_NewUnicodeCStr(ref_ast->ref_gc, value);
 }
 
-static builtin_func_info_t
+static PadBltFuncInfo
 builtin_func_infos[] = {
     {"get", builtin_opts_get},
     {"has", builtin_PadOpts_Has},
@@ -98,7 +98,7 @@ builtin_func_infos[] = {
 };
 
 PadObj *
-Pad_NewBltOptsMod(const PadConfig *ref_config, PadGc *ref_gc) {
+Pad_NewBltOptsMod(const PadConfig *ref_config, PadGC *ref_gc) {
     PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
     PadAST *ast = PadAst_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);

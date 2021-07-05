@@ -89,8 +89,8 @@ typedef struct PadTok {
     int32_t program_lineno;  // program line number
     int32_t program_source_pos;  // position of token in program source strings
     PadTokType type;  // token type
-    objint_t lvalue;  // value of token value
-    objfloat_t float_value;  // value of float value
+    PadIntObj lvalue;  // value of token value
+    PadFloatObj float_value;  // value of float value
 } PadTok;
 
 /**

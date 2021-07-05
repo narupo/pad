@@ -433,11 +433,11 @@ typedef struct {
 } PadNilNode;
 
 typedef struct {
-    objint_t lvalue;  // TODO: lvalue to value
+    PadIntObj lvalue;  // TODO: lvalue to value
 } PadDigitNode;
 
 typedef struct {
-    objfloat_t value;
+    PadFloatObj value;
 } PadFloatNode;
 
 typedef struct {

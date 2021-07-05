@@ -4,7 +4,7 @@ enum {
     NODEDICT_INIT_CAPA = 128,
 };
 
-struct PadNode_dict {
+struct PadNodeDict {
     PadNodeDictItem *map;
     size_t capa;
     size_t len;

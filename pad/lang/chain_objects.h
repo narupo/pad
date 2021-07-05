@@ -4,7 +4,7 @@
 #include <pad/lang/types.h>
 
 /**
- * destruct PadChainObjs
+ * destruct PadRingObjs
  *
  * @param[in] *self
  */
@@ -12,7 +12,7 @@ void
 PadChainObjs_Del(PadChainObjs *self);
 
 /**
- * construct PadChainObjs
+ * construct PadRingObjs
  *
  * @param[in] void
  *

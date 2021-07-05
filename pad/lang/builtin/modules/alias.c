@@ -1,7 +1,7 @@
 #include <pad/lang/builtin/modules/alias.h>
 
 static PadObj *
-builtin_alias_set(builtin_func_args_t *fargs) {
+builtin_alias_set(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
@@ -48,14 +48,14 @@ builtin_alias_set(builtin_func_args_t *fargs) {
     return PadObj_NewNil(ref_ast->ref_gc);
 }
 
-static builtin_func_info_t
+static PadBltFuncInfo
 builtin_func_infos[] = {
     {"set", builtin_alias_set},
     {0},
 };
 
 PadObj *
-Pad_NewBltAliasMod(const PadConfig *ref_config, PadGc *ref_gc) {
+Pad_NewBltAliasMod(const PadConfig *ref_config, PadGC *ref_gc) {
     PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
     PadCtx *ctx = PadCtx_New(ref_gc);
     PadAST *ast = PadAst_New(ref_config);

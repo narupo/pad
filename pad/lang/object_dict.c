@@ -4,8 +4,8 @@ enum {
     OBJDICT_INIT_CAPA = 128,
 };
 
-struct PadObj_dict {
-    PadGc *ref_gc; // do not delete (this is reference)
+struct PadObjDict {
+    PadGC *ref_gc; // do not delete (this is reference)
     PadObjDictItem *map;
     size_t capa;
     size_t len;
@@ -49,7 +49,7 @@ PadObjDict_EscDel(PadObjDict *self) {
 }
 
 PadObjDict *
-PadObjDict_New(PadGc *ref_gc) {
+PadObjDict_New(PadGC *ref_gc) {
     if (!ref_gc) {
         return NULL;
     }

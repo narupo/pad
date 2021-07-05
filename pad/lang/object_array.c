@@ -5,7 +5,7 @@ enum {
 };
 
 struct PadObjAry {
-    PadGc *ref_gc;
+    PadGC *ref_gc;
     int32_t len;
     int32_t capa;
     PadObj **parray;

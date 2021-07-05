@@ -47,7 +47,7 @@ struct PadAst {
     PadOpts *opts;
 
     // reference to gc (DO NOT DELETE)
-    PadGc *ref_gc;
+    PadGC *ref_gc;
 
     // error stack for errors
     PadErrStack *error_stack;
@@ -113,7 +113,7 @@ void
 PadAst_SetRefCtx(PadAST *ast, PadCtx *ref_context);
 
 void
-PadAst_SetRefGc(PadAST *ast, PadGc *ref_gc);
+PadAst_SetRefGc(PadAST *ast, PadGC *ref_gc);
 
 /**
  * get root node read-only
@@ -255,13 +255,13 @@ void
 PadAst_PrevPtr(PadAST *self);
 
 /**
- * get reference of PadGc
+ * get reference of PadGC
  *
  * @param[in] *self
  *
- * @return reference to PadGc (do not delete)
+ * @return reference to PadGC (do not delete)
  */
-PadGc *
+PadGC *
 PadAst_GetRefGc(PadAST *self);
 
 PadAST *

@@ -21,7 +21,7 @@ void
 PadTrv_Trav(PadAST *ast, PadCtx *context);
 
 PadObj *
-_PadTrv_Trav(PadAST *ast, trv_args_t *targs);
+_PadTrv_Trav(PadAST *ast, PadTrvArgs *targs);
 
 PadAST *
 PadTrv_ImportBltMods(PadAST *ast);

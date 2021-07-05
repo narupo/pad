@@ -93,64 +93,64 @@
 *************/
 
 static PadNode *
-cc_program(PadAST *ast, cc_args_t *cargs);
+cc_program(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_elems(PadAST *ast, cc_args_t *cargs);
+cc_elems(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_blocks(PadAST *ast, cc_args_t *cargs);
+cc_blocks(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_def(PadAST *ast, cc_args_t *cargs);
+cc_def(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_func_def(PadAST *ast, cc_args_t *cargs);
+cc_func_def(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_test(PadAST *ast, cc_args_t *cargs);
+cc_test(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_test_list(PadAST *ast, cc_args_t *cargs);
+cc_test_list(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_identifier(PadAST *ast, cc_args_t *cargs);
+cc_identifier(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_mul_div_op(PadAST *ast, cc_args_t *cargs);
+cc_mul_div_op(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_dot(PadAST *ast, cc_args_t *cargs);
+cc_dot(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_negative(PadAST *ast, cc_args_t *cargs);
+cc_negative(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_call(PadAST *ast, cc_args_t *cargs);
+cc_call(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_dot_op(PadAST *ast, cc_args_t *cargs);
+cc_dot_op(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_multi_assign(PadAST *ast, cc_args_t *cargs);
+cc_multi_assign(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_expr(PadAST *ast, cc_args_t *cargs);
+cc_expr(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_ring(PadAST *ast, cc_args_t *cargs);
+cc_ring(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_content(PadAST *ast, cc_args_t *cargs);
+cc_content(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_inject_stmt(PadAST *ast, cc_args_t *cargs);
+cc_inject_stmt(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_block_stmt(PadAST *ast, cc_args_t *cargs);
+cc_block_stmt(PadAST *ast, PadCcArgs *cargs);
 
 static PadNode *
-cc_struct(PadAST *ast, cc_args_t *cargs);
+cc_struct(PadAST *ast, PadCcArgs *cargs);
 
 /************
 * functions *
@@ -196,7 +196,7 @@ PadAST *
 PadCc_Compile(PadAST *ast, PadTok *ref_tokens[]) {
     ast->ref_tokens = ref_tokens;
     ast->ref_ptr = ref_tokens;
-    ast->root = cc_program(ast, &(cc_args_t) {
+    ast->root = cc_program(ast, &(PadCcArgs) {
         .depth = 0,
         .is_in_loop = false,
     });
@@ -215,7 +215,7 @@ cc_skip_newlines(PadAST *ast) {
 }
 
 static PadNode *
-cc_assign(PadAST *ast, cc_args_t *cargs) {
+cc_assign(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadAssignNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -237,7 +237,7 @@ cc_assign(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call lhs cc_test");
     cargs->depth = depth + 1;
@@ -301,7 +301,7 @@ cc_assign(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_assign_list(PadAST *ast, cc_args_t *cargs) {
+cc_assign_list(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadAssignListNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -323,7 +323,7 @@ cc_assign_list(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call first cc_assign");
     cargs->depth = depth + 1;
@@ -365,7 +365,7 @@ cc_assign_list(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_formula(PadAST *ast, cc_args_t *cargs) {
+cc_formula(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadFormulaNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -383,7 +383,7 @@ cc_formula(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call cc_assign_list");
     const PadTok *savetok = cur_tok(ast);
@@ -411,7 +411,7 @@ cc_formula(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_multi_assign(PadAST *ast, cc_args_t *cargs) {
+cc_multi_assign(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadMultiAssignNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -433,7 +433,7 @@ cc_multi_assign(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call first cc_test_list");
     cargs->depth = depth + 1;
@@ -477,7 +477,7 @@ cc_multi_assign(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_test_list(PadAST *ast, cc_args_t *cargs) {
+cc_test_list(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadTestListNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -499,7 +499,7 @@ cc_test_list(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     cargs->depth = depth + 1;
     PadNode *lhs = cc_test(ast, cargs);
@@ -540,7 +540,7 @@ cc_test_list(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_call_args(PadAST *ast, cc_args_t *cargs) {
+cc_call_args(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadCallArgsNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -562,7 +562,7 @@ cc_call_args(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     const PadTok *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
@@ -604,7 +604,7 @@ cc_call_args(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_for_stmt(PadAST *ast, cc_args_t *cargs) {
+cc_for_stmt(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadForStmtNode, cur);
     cur->contents = PadNodeAry_New();
@@ -627,7 +627,7 @@ cc_for_stmt(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
     if (t->type != PAD_TOK_TYPE__STMT_FOR) {
@@ -890,7 +890,7 @@ cc_for_stmt(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_break_stmt(PadAST *ast, cc_args_t *cargs) {
+cc_break_stmt(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadBreakStmtNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -919,7 +919,7 @@ cc_break_stmt(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_continue_stmt(PadAST *ast, cc_args_t *cargs) {
+cc_continue_stmt(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadContinueStmtNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -948,7 +948,7 @@ cc_continue_stmt(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_return_stmt(PadAST *ast, cc_args_t *cargs) {
+cc_return_stmt(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadReturnStmtNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -964,7 +964,7 @@ cc_return_stmt(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
     if (t->type != PAD_TOK_TYPE__STMT_RETURN) {
@@ -989,7 +989,7 @@ cc_return_stmt(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_augassign(PadAST *ast, cc_args_t *cargs) {
+cc_augassign(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadAugassignNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1022,7 +1022,7 @@ cc_augassign(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_identifier(PadAST *ast, cc_args_t *cargs) {
+cc_identifier(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadIdentNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1054,7 +1054,7 @@ cc_identifier(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_string(PadAST *ast, cc_args_t *cargs) {
+cc_string(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadStrNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1086,7 +1086,7 @@ cc_string(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_simple_assign(PadAST *ast, cc_args_t *cargs) {
+cc_simple_assign(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadSimpleAssignNode, cur);
     cur->nodearr = PadNodeAry_New();
@@ -1108,7 +1108,7 @@ cc_simple_assign(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call cc_test");
     cargs->depth = depth + 1;
@@ -1152,7 +1152,7 @@ cc_simple_assign(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_array_elems(PadAST *ast, cc_args_t *cargs) {
+cc_array_elems(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadAryElemsNode_, cur);
     cur->nodearr = PadNodeAry_New();
@@ -1174,7 +1174,7 @@ cc_array_elems(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call cc_simple_assign");
     PadTok *t = cur_tok(ast);
@@ -1233,7 +1233,7 @@ cc_array_elems(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_array(PadAST *ast, cc_args_t *cargs) {
+cc_array(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadAryNode_, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1250,7 +1250,7 @@ cc_array(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
     if (t->type != PAD_TOK_TYPE__LBRACKET) {
@@ -1289,7 +1289,7 @@ cc_array(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_dict_elem(PadAST *ast, cc_args_t *cargs) {
+cc_dict_elem(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadDictElemNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1307,7 +1307,7 @@ cc_dict_elem(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     cargs->depth = depth + 1;
     cur->key_simple_assign = cc_simple_assign(ast, cargs);
@@ -1350,7 +1350,7 @@ cc_dict_elem(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_dict_elems(PadAST *ast, cc_args_t *cargs) {
+cc_dict_elems(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadDictElemsNode, cur);
     cur->nodearr = PadNodeAry_New();
@@ -1372,7 +1372,7 @@ cc_dict_elems(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call cc_dict_elem");
     PadTok *t = cur_tok(ast);
@@ -1431,7 +1431,7 @@ cc_dict_elems(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_dict(PadAST *ast, cc_args_t *cargs) {
+cc_dict(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(_PadDictNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1448,7 +1448,7 @@ cc_dict(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
     if (t->type != PAD_TOK_TYPE__LBRACE) {
@@ -1491,7 +1491,7 @@ cc_dict(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_nil(PadAST *ast, cc_args_t *cargs) {
+cc_nil(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadNilNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1517,7 +1517,7 @@ cc_nil(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_digit(PadAST *ast, cc_args_t *cargs) {
+cc_digit(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadDigitNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1545,7 +1545,7 @@ cc_digit(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_float(PadAST *ast, cc_args_t *cargs) {
+cc_float(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadFloatNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1573,7 +1573,7 @@ cc_float(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_false_(PadAST *ast, cc_args_t *cargs) {
+cc_false_(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadFalseNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1600,7 +1600,7 @@ cc_false_(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_true_(PadAST *ast, cc_args_t *cargs) {
+cc_true_(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadTrueNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1627,7 +1627,7 @@ cc_true_(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_atom(PadAST *ast, cc_args_t *cargs) {
+cc_atom(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadAtomNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1652,7 +1652,7 @@ cc_atom(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call cc_nil");
     const PadTok *savetok = cur_tok(ast);
@@ -1757,7 +1757,7 @@ cc_atom(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_factor(PadAST *ast, cc_args_t *cargs) {
+cc_factor(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadFactorNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1775,7 +1775,7 @@ cc_factor(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call cc_atom");
     cargs->depth = depth + 1;
@@ -1821,7 +1821,7 @@ cc_factor(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_asscalc(PadAST *ast, cc_args_t *cargs) {
+cc_asscalc(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadAssCalcNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1843,7 +1843,7 @@ cc_asscalc(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call cc_expr");
     cargs->depth = depth + 1;
@@ -1891,7 +1891,7 @@ cc_asscalc(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_term(PadAST *ast, cc_args_t *cargs) {
+cc_term(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadTermNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1913,7 +1913,7 @@ cc_term(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call left cc_dot");
     cargs->depth = depth + 1;
@@ -1961,7 +1961,7 @@ cc_term(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_negative(PadAST *ast, cc_args_t *cargs) {
+cc_negative(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadNegativeNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1978,7 +1978,7 @@ cc_negative(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
     if (t->type != PAD_TOK_TYPE__PAD_OP__SUB) {
@@ -2003,7 +2003,7 @@ cc_negative(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_ring(PadAST *ast, cc_args_t *cargs) {
+cc_ring(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadRingNode, cur);
     cur->chain_nodes = PadChainNodes_New();
@@ -2025,7 +2025,7 @@ cc_ring(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
     const PadTok *t = NULL;
     int32_t m = 0;
 
@@ -2145,7 +2145,7 @@ cc_ring(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_mul_div_op(PadAST *ast, cc_args_t *cargs) {
+cc_mul_div_op(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadMulDivOpNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2180,7 +2180,7 @@ cc_mul_div_op(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_add_sub_op(PadAST *ast, cc_args_t *cargs) {
+cc_add_sub_op(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadAddSubOpNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2214,7 +2214,7 @@ cc_add_sub_op(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_expr(PadAST *ast, cc_args_t *cargs) {
+cc_expr(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadExprNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2236,7 +2236,7 @@ cc_expr(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call left cc_term");
     cargs->depth = depth + 1;
@@ -2284,7 +2284,7 @@ cc_expr(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_comp_op(PadAST *ast, cc_args_t *cargs) {
+cc_comp_op(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadCompOpNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2340,7 +2340,7 @@ cc_comp_op(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_comparison(PadAST *ast, cc_args_t *cargs) {
+cc_comparison(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadComparisonNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2362,7 +2362,7 @@ cc_comparison(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call left cc_asscalc");
     cargs->depth = depth + 1;
@@ -2412,7 +2412,7 @@ cc_comparison(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_not_test(PadAST *ast, cc_args_t *cargs) {
+cc_not_test(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadNotTestNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2430,7 +2430,7 @@ cc_not_test(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
     if (t->type == PAD_TOK_TYPE__PAD_OP__NOT) {
@@ -2463,7 +2463,7 @@ cc_not_test(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_and_test(PadAST *ast, cc_args_t *cargs) {
+cc_and_test(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadAndTestNode, cur);
     cur->nodearr = PadNodeAry_New();
@@ -2485,7 +2485,7 @@ cc_and_test(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call cc_not_test");
     cargs->depth = depth + 1;
@@ -2529,7 +2529,7 @@ cc_and_test(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_or_test(PadAST *ast, cc_args_t *cargs) {
+cc_or_test(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadOrTestNode, cur);
     cur->nodearr = PadNodeAry_New();
@@ -2551,7 +2551,7 @@ cc_or_test(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call cc_and_test");
     cargs->depth = depth + 1;
@@ -2595,7 +2595,7 @@ cc_or_test(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_test(PadAST *ast, cc_args_t *cargs) {
+cc_test(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadTestNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2612,7 +2612,7 @@ cc_test(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call cc_or_test");
     const PadTok *savetok = cur_tok(ast);
@@ -2626,7 +2626,7 @@ cc_test(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_else_stmt(PadAST *ast, cc_args_t *cargs) {
+cc_else_stmt(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadElseStmtNode, cur);
     cur->contents = PadNodeAry_New();
@@ -2644,7 +2644,7 @@ cc_else_stmt(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
     if (t->type != PAD_TOK_TYPE__STMT_ELSE) {
@@ -2732,7 +2732,7 @@ cc_else_stmt(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_if_stmt(PadAST *ast, cc_args_t *cargs) {
+cc_if_stmt(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadIfStmtNode, cur);
     cur->contents = PadNodeAry_New();
@@ -2754,7 +2754,7 @@ cc_if_stmt(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
     if (cargs->if_stmt_type == 0) {
@@ -2910,7 +2910,7 @@ cc_if_stmt(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_import_as_stmt(PadAST *ast, cc_args_t *cargs) {
+cc_import_as_stmt(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadImportAsStmtNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2928,7 +2928,7 @@ cc_import_as_stmt(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
     if (t->type != PAD_TOK_TYPE__STMT_IMPORT) {
@@ -2964,7 +2964,7 @@ cc_import_as_stmt(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_import_var(PadAST *ast, cc_args_t *cargs) {
+cc_import_var(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadImportVarNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2982,7 +2982,7 @@ cc_import_var(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     cargs->depth = depth + 1;
     cur->identifier = cc_identifier(ast, cargs);
@@ -3019,7 +3019,7 @@ cc_import_var(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_import_vars(PadAST *ast, cc_args_t *cargs) {
+cc_import_vars(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadImportVarsNode, cur);
     cur->nodearr = PadNodeAry_New();
@@ -3044,7 +3044,7 @@ cc_import_vars(PadAST *ast, cc_args_t *cargs) {
 #undef push
 #define push(node) PadNodeAry_MoveBack(cur->nodearr, node)
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     // read '(' or single import variable
 
@@ -3129,7 +3129,7 @@ cc_import_vars(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_from_import_stmt(PadAST *ast, cc_args_t *cargs) {
+cc_from_import_stmt(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadFromImportStmtNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3147,7 +3147,7 @@ cc_from_import_stmt(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
     if (t->type != PAD_TOK_TYPE__FROM) {
@@ -3185,7 +3185,7 @@ cc_from_import_stmt(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_import_stmt(PadAST *ast, cc_args_t *cargs) {
+cc_import_stmt(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadImportStmtNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3203,7 +3203,7 @@ cc_import_stmt(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     // get import_as_stmt or from_import_stmt
     cargs->depth = depth + 1;
@@ -3244,7 +3244,7 @@ cc_import_stmt(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_stmt(PadAST *ast, cc_args_t *cargs) {
+cc_stmt(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadStmtNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3266,7 +3266,7 @@ cc_stmt(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
     PadTok *t;
 
     check("call cc_import_stmt");
@@ -3354,7 +3354,7 @@ cc_stmt(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_block_stmt(PadAST *ast, cc_args_t *cargs) {
+cc_block_stmt(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadBlockStmtNode, cur);
     cur->contents = PadNodeAry_New();
@@ -3377,7 +3377,7 @@ cc_block_stmt(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
     PadTok *t = next_tok(ast);
     if (!t || t->type != PAD_TOK_TYPE__STMT_BLOCK) {
         return_cleanup("");
@@ -3434,7 +3434,7 @@ cc_block_stmt(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_inject_stmt(PadAST *ast, cc_args_t *cargs) {
+cc_inject_stmt(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadInjectStmtNode, cur);
     cur->contents = PadNodeAry_New();
@@ -3457,7 +3457,7 @@ cc_inject_stmt(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
     PadTok *t = next_tok(ast);
     if (!t || t->type != PAD_TOK_TYPE__STMT_INJECT) {
         return_cleanup("");
@@ -3510,7 +3510,7 @@ cc_inject_stmt(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_struct(PadAST *ast, cc_args_t *cargs) {
+cc_struct(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadStructNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3528,7 +3528,7 @@ cc_struct(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
     PadTok *t = next_tok(ast);
     if (!t) {
         return_cleanup("reached EOF in read struct");
@@ -3580,7 +3580,7 @@ cc_struct(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_content(PadAST *ast, cc_args_t *cargs) {
+cc_content(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadContentNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3601,7 +3601,7 @@ cc_content(PadAST *ast, cc_args_t *cargs) {
     check("skip newlines");
     cc_skip_newlines(ast);
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
     PadTok *t = next_tok(ast);
     if (!t) {
         return_cleanup("");
@@ -3632,7 +3632,7 @@ cc_content(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_elems(PadAST *ast, cc_args_t *cargs) {
+cc_elems(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadElemsNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3653,7 +3653,7 @@ cc_elems(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call def");
     cargs->depth = depth + 1;
@@ -3718,7 +3718,7 @@ elem_readed:
 }
 
 static PadNode *
-cc_text_block(PadAST *ast, cc_args_t *cargs) {
+cc_text_block(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadTextBlockNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3742,7 +3742,7 @@ cc_text_block(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_ref_block(PadAST *ast, cc_args_t *cargs) {
+cc_ref_block(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadRefBlockNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3759,7 +3759,7 @@ cc_ref_block(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
     if (t->type != PAD_TOK_TYPE__LDOUBLE_BRACE) {
@@ -3791,7 +3791,7 @@ cc_ref_block(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_code_block(PadAST *ast, cc_args_t *cargs) {
+cc_code_block(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadCodeBlockNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3808,7 +3808,7 @@ cc_code_block(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
     if (t->type != PAD_TOK_TYPE__LBRACEAT) {
@@ -3846,7 +3846,7 @@ cc_code_block(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_blocks(PadAST *ast, cc_args_t *cargs) {
+cc_blocks(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadBlocksNode, cur);
 
@@ -3860,7 +3860,7 @@ cc_blocks(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call cc_code_block");
     cargs->depth = depth + 1;
@@ -3898,7 +3898,7 @@ cc_blocks(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_program(PadAST *ast, cc_args_t *cargs) {
+cc_program(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadProgramNode, cur);
 
@@ -3912,7 +3912,7 @@ cc_program(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call cc_blocks");
     const PadTok *savetok = cur_tok(ast);
@@ -3929,7 +3929,7 @@ cc_program(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_def(PadAST *ast, cc_args_t *cargs) {
+cc_def(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadDefNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3946,7 +3946,7 @@ cc_def(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call cc_func_def");
     const PadTok *savetok = cur_tok(ast);
@@ -3963,7 +3963,7 @@ cc_def(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_func_def_args(PadAST *ast, cc_args_t *cargs) {
+cc_func_def_args(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadFuncDefArgsNode, cur);
     cur->identifiers = PadNodeAry_New();
@@ -3984,7 +3984,7 @@ cc_func_def_args(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     check("call cc_identifier");
     const PadTok *savetok = cur_tok(ast);
@@ -4029,7 +4029,7 @@ cc_func_def_args(PadAST *ast, cc_args_t *cargs) {
 
 
 static PadNode *
-cc_func_def_params(PadAST *ast, cc_args_t *cargs) {
+cc_func_def_params(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadFuncDefParamsNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -4046,7 +4046,7 @@ cc_func_def_params(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
     if (t->type != PAD_TOK_TYPE__LPAREN) {
@@ -4078,7 +4078,7 @@ cc_func_def_params(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_func_extends(PadAST *ast, cc_args_t *cargs) {
+cc_func_extends(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadFuncDefNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -4095,7 +4095,7 @@ cc_func_extends(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
     PadTok *t = next_tok(ast);
     if (!t || t->type != PAD_TOK_TYPE__EXTENDS) {
         return_cleanup("");
@@ -4113,7 +4113,7 @@ cc_func_extends(PadAST *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_func_def(PadAST *ast, cc_args_t *cargs) {
+cc_func_def(PadAST *ast, PadCcArgs *cargs) {
     ready();
     declare(PadFuncDefNode, cur);
     cur->contents = PadNodeAry_New();
@@ -4142,7 +4142,7 @@ cc_func_def(PadAST *ast, cc_args_t *cargs) {
         return_parse(NULL); \
     } \
 
-    depth_t depth = cargs->depth;
+    PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
     if (!(t->type == PAD_TOK_TYPE__DEF ||

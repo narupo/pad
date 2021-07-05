@@ -35,44 +35,44 @@
 ********************/
 
 enum {
-    CL_DEBUG = (1 << 1),
-    CL_WRAP = (1 << 2),
-    CL_ESCAPE = (1 << 3),
+    PAD_CL__DEBUG = (1 << 1),
+    PAD_CL__WRAP = (1 << 2),
+    PAD_CL__ESCAPE = (1 << 3),
 };
 
 /*****
 * cl *
 *****/
 
-struct cl;
-typedef struct cl cl_t;
+struct PadCL;
+typedef struct PadCL PadCL;
 
 /**
- * Destruct cl
+ * Destruct PadCL
  *
  * @param[in] *self
  */
 void
-cl_del(cl_t *self);
+PadCL_Del(PadCL *self);
 
 /**
- * Destruct cl with move semantics
+ * Destruct PadCL with move semantics
  *
  * @param[in] *self
  *
  * @return pointer to pointer to dynamic allocate memory of array like a argv. should be free(3)
  */
 char **
-cl_escdel(cl_t *self);
+PadCL_EscDel(PadCL *self);
 
 /**
- * Construct cl
+ * Construct PadCL
  *
  * @return success to pointer to dynamic allocate memory of cl
  * @return failed to NULL
  */
-cl_t *
-cl_new(void);
+PadCL *
+PadCL_New(void);
 
 /**
  * Resize cl
@@ -83,8 +83,8 @@ cl_new(void);
  * @return success to pointer to self
  * @return failed to NULL
  */
-cl_t *
-cl_resize(cl_t *self, int32_t newcapa);
+PadCL *
+PadCL_Resize(PadCL *self, int32_t newcapa);
 
 /**
  * Push element with copy
@@ -95,8 +95,8 @@ cl_resize(cl_t *self, int32_t newcapa);
  * @return success to pointer to self
  * @return failed to NULL
  */
-cl_t *
-cl_push(cl_t *self, const char *str);
+PadCL *
+PadCL_PushBack(PadCL *self, const char *str);
 
 /**
  * Clear cl
@@ -104,7 +104,7 @@ cl_push(cl_t *self, const char *str);
  * @param[in] *self
  */
 void
-cl_clear(cl_t *self);
+PadCL_Clear(PadCL *self);
 
 /**
  * Parse string of command line by options
@@ -116,8 +116,8 @@ cl_clear(cl_t *self);
  * @return success to pointer to self
  * @return failed to NULL
  */
-cl_t *
-cl_parse_str_opts(cl_t *self, const char *cmdline, int32_t opts);
+PadCL *
+PadCL_ParseStrOpts(PadCL *self, const char *cmdline, int32_t opts);
 
 /**
  * Parse string of command line
@@ -128,8 +128,8 @@ cl_parse_str_opts(cl_t *self, const char *cmdline, int32_t opts);
  * @return success to pointer to self
  * @return failed to NULL
  */
-cl_t *
-cl_parse_str(cl_t *self, const char *cmdline);
+PadCL *
+PadCL_ParseStr(PadCL *self, const char *cmdline);
 
 /**
  * Parse argv by options
@@ -142,8 +142,8 @@ cl_parse_str(cl_t *self, const char *cmdline);
  * @return success to pointer to self
  * @return failed to NULL
  */
-cl_t *
-cl_parse_argv_opts(cl_t *self, int argc, char *argv[], int32_t opts);
+PadCL *
+PadCL_ParseArgvOpts(PadCL *self, int argc, char *argv[], int32_t opts);
 
 /**
  * Parse argv
@@ -155,8 +155,8 @@ cl_parse_argv_opts(cl_t *self, int argc, char *argv[], int32_t opts);
  * @return success to pointer to self
  * @return failed to NULL
  */
-cl_t *
-cl_parse_argv(cl_t *self, int argc, char *argv[]);
+PadCL *
+PadCL_ParseArgv(PadCL *self, int argc, char *argv[]);
 
 /**
  * Show cl to stream
@@ -165,7 +165,7 @@ cl_parse_argv(cl_t *self, int argc, char *argv[]);
  * @param[in] *fout pointer to destruct stream
  */
 void
-cl_show(const cl_t *self, FILE *fout);
+PadCL_Show(const PadCL *self, FILE *fout);
 
 /**
  * Get length of cl
@@ -175,7 +175,7 @@ cl_show(const cl_t *self, FILE *fout);
  * @return number of length of cl
  */
 int32_t
-cl_len(const cl_t *self);
+PadCL_Len(const PadCL *self);
 
 /**
  * Get capacity of cl
@@ -185,7 +185,7 @@ cl_len(const cl_t *self);
  * @return number of capacity of cl
  */
 int32_t
-cl_capa(const cl_t *self);
+PadCL_Capa(const PadCL *self);
 
 /**
  * Get element in cl
@@ -197,7 +197,7 @@ cl_capa(const cl_t *self);
  * @return failed to NULL
  */
 const char *
-cl_getc(const cl_t *self, int32_t idx);
+PadCL_Getc(const PadCL *self, int32_t idx);
 
 /**
  * get argv
@@ -207,7 +207,7 @@ cl_getc(const cl_t *self, int32_t idx);
  * @return pointer to array
  */
 char **
-cl_get_argv(const cl_t *self);
+PadCL_GetArgv(const PadCL *self);
 
 /**
  * Generate string from object
@@ -218,4 +218,4 @@ cl_get_argv(const cl_t *self);
  * @return failed to pointer to NULL
  */
 char *
-cl_to_string(const cl_t *self);
+PadCL_GenStr(const PadCL *self);

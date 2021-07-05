@@ -37,11 +37,11 @@ PadCtx_EscDelGlobalVarmap(PadCtx *self);
 /**
  * construct PadObj
  *
- * @param[in|out] *gc reference to PadGc (DO NOT DELETE)
+ * @param[in|out] *gc reference to PadGC (DO NOT DELETE)
  * @return pointer to PadCtx dynamic allocate memory (do PadCtx_Del)
  */
 PadCtx *
-PadCtx_New(PadGc *ref_gc);
+PadCtx_New(PadGC *ref_gc);
 
 /**
  * clear state of context
@@ -273,13 +273,13 @@ PadObj *
 PadCtx_FindVarRefAll(PadCtx *self, const char *key);
 
 /**
- * get reference of PadGc in context
+ * get reference of PadGC in context
  *
  * @param[in] *self pointer to PadCtx
  *
- * @return reference to PadGc (this is reference, DO NOT DELETE)
+ * @return reference to PadGC (this is reference, DO NOT DELETE)
  */
-PadGc *
+PadGC *
 PadCtx_GetGc(PadCtx *self);
 
 /**

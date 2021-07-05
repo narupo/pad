@@ -24,12 +24,12 @@ typedef enum {
 
     // A integer object
     // 整数オブジェクト
-    // 整数の範囲は lang/types.h@objint_t を参照
+    // 整数の範囲は lang/types.h@PadIntObj を参照
     PAD_OBJ_TYPE__INT,
 
     // A float object
     // 浮動小数点数オブジェクト
-    // 値の範囲は lang/types.h@objint_t を参照
+    // 値の範囲は lang/types.h@PadIntObj を参照
     PAD_OBJ_TYPE__FLOAT,
 
     // A boolean object
@@ -115,7 +115,7 @@ struct PadModObj {
     PadTkr *tokenizer;
     PadAST *ast;
     PadCtx *context;
-    builtin_func_info_t *builtin_func_infos;  // builtin functions
+    PadBltFuncInfo *builtin_func_infos;  // builtin functions
 };
 
 /**
@@ -129,7 +129,7 @@ struct PadIdentObj {
 /**
  * A chain object
  */
-struct PadChainObj {
+struct PadRingObj {
     PadObj *operand;
     PadChainObjs *chain_objs;
 };
@@ -176,23 +176,23 @@ struct PadBltFuncObj {
  */
 struct PadObj {
     PadObjType type;  // object type
-    PadGc *ref_gc;  // reference to gc (DO NOT DELETE)
-    PadGcItem gc_item;  // gc item for memory management
-    object_identifier_t identifier;  // value of identifier (type == PAD_OBJ_TYPE__IDENT)
+    PadGC *ref_gc;  // reference to gc (DO NOT DELETE)
+    PadGCItem gc_item;  // gc item for memory management
+    PadIdentObj identifier;  // value of identifier (type == PAD_OBJ_TYPE__IDENT)
     unicode_t *unicode;  // value of unicode (type == PAD_OBJ_TYPE__UNICODE)
     PadObjAry *objarr;  // value of array (type == PAD_OBJ_TYPE__ARRAY)
     PadObjDict *objdict;  // value of dict (type == PAD_OBJ_TYPE__DICT)
-    objint_t lvalue;  // value of integer (type == PAD_OBJ_TYPE__INT)
-    objfloat_t float_value;  // value of float (type == PAD_OBJ_TYPE__FLOAT)
+    PadIntObj lvalue;  // value of integer (type == PAD_OBJ_TYPE__INT)
+    PadFloatObj float_value;  // value of float (type == PAD_OBJ_TYPE__FLOAT)
     bool boolean;  // value of boolean (type == PAD_OBJ_TYPE__BOOL)
-    object_func_t func;  // structure of function (type == PAD_OBJ_TYPE__FUNC)
-    object_def_struct_t def_struct;  // structure of pad's structure (type == PAD_OBJ_TYPE__DEF_STRUCT)
-    object_PadObj object;  // structure of object (type == PAD_OBJ_TYPE__INSTANCE)
-    object_module_t module;  // structure of module (type == PAD_OBJ_TYPE__MODULE)
-    object_chain_t chain;  // structure of chain (type == PAD_OBJ_TYPE__CHAIN)
-    object_owners_method_t owners_method;  // structure of owners_method (type == PAD_OBJ_TYPE__OWNERS_METHOD)
-    PadObjype_t type_obj;  // structure of type (type == PAD_OBJ_TYPE__TYPE)
-    object_builtin_func_t builtin_func;  // structure of builtin func (type == PAD_OBJ_TYPE__BUILTIN_FUNC)
+    PadFuncObj func;  // structure of function (type == PAD_OBJ_TYPE__FUNC)
+    PadDefStructObj def_struct;  // structure of pad's structure (type == PAD_OBJ_TYPE__DEF_STRUCT)
+    PadObjObj object;  // structure of object (type == PAD_OBJ_TYPE__INSTANCE)
+    PadModObj module;  // structure of module (type == PAD_OBJ_TYPE__MODULE)
+    PadRingObj chain;  // structure of chain (type == PAD_OBJ_TYPE__CHAIN)
+    PadOwnsMethodObj owners_method;  // structure of owners_method (type == PAD_OBJ_TYPE__OWNERS_METHOD)
+    PadTypeObj type_obj;  // structure of type (type == PAD_OBJ_TYPE__TYPE)
+    PadBltFuncObj builtin_func;  // structure of builtin func (type == PAD_OBJ_TYPE__BUILTIN_FUNC)
 };
 
 /**
@@ -206,14 +206,14 @@ PadObj_Del(PadObj *self);
 /**
  * construct PadObj
  *
- * @param[in] *ref_gc reference to PadGc (DO NOT DELETE)
+ * @param[in] *ref_gc reference to PadGC (DO NOT DELETE)
  * @param[in] type number of object type
  *
  * @return success to pointer to PadObj (dynamic allocate memory)
  * @return failed to NULL
  */
 PadObj *
-PadObj_New(PadGc *ref_gc, PadObjType type);
+PadObj_New(PadGC *ref_gc, PadObjType type);
 
 /**
  * deep copy
@@ -239,56 +239,56 @@ PadObj_ShallowCopy(const PadObj *other);
  * construct nil object
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc reference to PadGc (do not delete)
+ * @param[in] *ref_gc reference to PadGC (do not delete)
  *
  * @return success to pointer to PadObj (new object)
  * @return failed to NULL
  */
 PadObj *
-PadObj_NewNil(PadGc *ref_gc);
+PadObj_NewNil(PadGC *ref_gc);
 
 /**
  * construct false of boolean object
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc reference to PadGc (do not delete)
+ * @param[in] *ref_gc reference to PadGC (do not delete)
  *
  * @return success to pointer to PadObj (new object)
  * @return failed to NULL
  */
 PadObj *
-PadObj_NewFalse(PadGc *ref_gc);
+PadObj_NewFalse(PadGC *ref_gc);
 
 /**
  * construct true of boolean object
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc reference to PadGc (do not delete)
+ * @param[in] *ref_gc reference to PadGC (do not delete)
  *
  * @return success to pointer to PadObj (new object)
  * @return failed to NULL
  */
 PadObj *
-PadObj_NewTrue(PadGc *ref_gc);
+PadObj_NewTrue(PadGC *ref_gc);
 
 /**
  * construct boolean object by value
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc reference to PadGc (do not delete)
+ * @param[in] *ref_gc reference to PadGC (do not delete)
  * @param[in] boolean value of boolean
  *
  * @return success to pointer to PadObj (new object)
  * @return failed to NULL
  */
 PadObj *
-PadObj_NewBool(PadGc *ref_gc, bool boolean);
+PadObj_NewBool(PadGC *ref_gc, bool boolean);
 
 /**
  * construct identifier object by C string
  * if failed to allocate memory then exit from process
  *
- * @param[in]      *ref_gc      reference to PadGc (do not delete)
+ * @param[in]      *ref_gc      reference to PadGC (do not delete)
  * @param[in|out]  *ref_ast     reference to PadAST current context (do not delete)
  * @param [in|out] *ref_context reference to PadCtx
  * @param[in]      *identifier  C strings of identifier
@@ -298,7 +298,7 @@ PadObj_NewBool(PadGc *ref_gc, bool boolean);
  */
 PadObj *
 PadObj_NewCIdent(
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadCtx *ref_context,
     const char *identifier
 );
@@ -307,7 +307,7 @@ PadObj_NewCIdent(
  * construct identifier object by string_t
  * if failed to allocate memory then exit from process
  *
- * @param[in]     *ref_gc          reference to PadGc (do not delete)
+ * @param[in]     *ref_gc          reference to PadGC (do not delete)
  * @param[in|out] *ref_ast         reference to PadAST current context (do not delete)
  * @param [in|out] *ref_context    reference to PadCtx
  * @param[in]     *move_identifier pointer to string_t (with move semantics)
@@ -317,7 +317,7 @@ PadObj_NewCIdent(
  */
 PadObj *
 PadObj_NewIdent(
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadCtx *ref_context,
     string_t *move_identifier
 );
@@ -326,85 +326,85 @@ PadObj_NewIdent(
  * construct unicode object by C strings
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc reference to PadGc (do not delete)
+ * @param[in] *ref_gc reference to PadGC (do not delete)
  * @param[in] *str    pointer to C strings
  *
  * @return success to pointer to PadObj (new object)
  * @return failed to NULL
  */
 PadObj *
-PadObj_NewUnicodeCStr(PadGc *ref_gc, const char *str);
+PadObj_NewUnicodeCStr(PadGC *ref_gc, const char *str);
 
 /**
  * construct unicode object by unicode_t
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc   reference to PadGc (do not delete)
+ * @param[in] *ref_gc   reference to PadGC (do not delete)
  * @param[in] *move_str pointer to string_t (with move semantics)
  *
  * @return success to pointer to PadObj (new object)
  * @return failed to NULL
  */
 PadObj *
-PadObj_NewUnicode(PadGc *ref_gc, unicode_t *move_unicode);
+PadObj_NewUnicode(PadGC *ref_gc, unicode_t *move_unicode);
 
 /**
  * construct integer object by value
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc reference to PadGc (do not delete)
+ * @param[in] *ref_gc reference to PadGC (do not delete)
  * @param[in] lvalue  value of integer
  *
  * @return success to pointer to PadObj (new object)
  * @return failed to NULL
  */
 PadObj *
-PadObj_NewInt(PadGc *ref_gc, objint_t lvalue);
+PadObj_NewInt(PadGC *ref_gc, PadIntObj lvalue);
 
 /**
  * construct float object by value
  * if failed to allocate memory then exit from process
  * 
- * @param[in] *ref_gc reference to PadGc (do not delete)
- * @param[in] value  value of objfloat_t
+ * @param[in] *ref_gc reference to PadGC (do not delete)
+ * @param[in] value  value of PadFloatObj
  *
  * @return success to pointer to PadObj (new object)
  * @return failed to NULL
  */
 PadObj *
-PadObj_NewFloat(PadGc *ref_gc, objfloat_t value);
+PadObj_NewFloat(PadGC *ref_gc, PadFloatObj value);
 
 /**
  * construct array object by PadObjAry
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc      reference to PadGc (do not delete)
+ * @param[in] *ref_gc      reference to PadGC (do not delete)
  * @param[in] *move_objarr pointer to PadObjAry (with move semantics)
  *
  * @return success to pointer to PadObj (new object)
  * @return failed to NULL
  */
 PadObj *
-PadObj_NewAry(PadGc *ref_gc, PadObjAry *move_objarr);
+PadObj_NewAry(PadGC *ref_gc, PadObjAry *move_objarr);
 
 /**
  * construct dictionary object by PadObjDict
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc       reference to PadGc (do not delete)
+ * @param[in] *ref_gc       reference to PadGC (do not delete)
  * @param[in] *move_objdict pointer to PadObjDict (with move semantics)
  *
  * @return success to pointer to PadObj (new object)
  * @return failed to NULL
  */
 PadObj *
-PadObj_NewDict(PadGc *ref_gc, PadObjDict *move_objdict);
+PadObj_NewDict(PadGC *ref_gc, PadObjDict *move_objdict);
 
 /**
  * construct function object by parameters
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc       reference to PadGc (do not delete)
+ * @param[in] *ref_gc       reference to PadGC (do not delete)
  * @param[in] *ref_ast      reference to PadAST (do not delete). The function object refer this context
  * @param[in] *move_name    pointer to identifier object for function name (with move semantics)
  * @param[in] *move_args    pointer to array object for function arguments (with move semantics)
@@ -417,7 +417,7 @@ PadObj_NewDict(PadGc *ref_gc, PadObjDict *move_objdict);
  */
 PadObj *
 PadObj_NewFunc(
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadAST *ref_ast,
     PadCtx *ref_context,
     PadObj *move_name,
@@ -429,10 +429,10 @@ PadObj_NewFunc(
 );
 
 /**
- * construct chain object by parameters
+ * construct ring object by parameters
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc          reference to PadGc (do not delete)
+ * @param[in] *ref_gc          reference to PadGC (do not delete)
  * @param[in] *move_operand    pointer to PadObj (move semantics)
  * @param[in] *move_chain_objs pointer to PadChainObjs (move semantics)
  *
@@ -440,19 +440,19 @@ PadObj_NewFunc(
  * @return failed to NULL
  */
 PadObj *
-PadObj_NewChain(PadGc *ref_gc, PadObj *move_operand, PadChainObjs *move_chain_objs);
+PadObj_NewRing(PadGC *ref_gc, PadObj *move_operand, PadChainObjs *move_chain_objs);
 
 /**
  * construct module object (default constructor)
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc reference to PadGc (do not delete)
+ * @param[in] *ref_gc reference to PadGC (do not delete)
  *
  * @return success to pointer to PadObj (new object)
  * @return failed to NULL
  */
 PadObj *
-PadObj_NewMod(PadGc *ref_gc);
+PadObj_NewMod(PadGC *ref_gc);
 
 /**
  * construct def-struct-object 
@@ -463,7 +463,7 @@ PadObj_NewMod(PadGc *ref_gc);
  */
 PadObj *
 PadObj_NewDefStruct(
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadObj *move_idn,
     PadAST *move_ast,
     PadCtx *move_context
@@ -478,7 +478,7 @@ PadObj_NewDefStruct(
  */
 PadObj *
 PadObj_NewObj(
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadAST *ref_ast,
     PadCtx *move_context,
     PadObj *ref_def_obj
@@ -488,7 +488,7 @@ PadObj_NewObj(
  * construct module object by parameters
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc              reference to PadGc (do not delete)
+ * @param[in] *ref_gc              reference to PadGC (do not delete)
  * @param[in] *name                pointer to C strings for module name
  * @param[in] *program_filename    file name
  * @param[in] *move_program_source program source
@@ -501,14 +501,14 @@ PadObj_NewObj(
  */
 PadObj *
 PadObj_NewModBy(
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     const char *name,
     const char *program_filename,
     char *move_program_source,
     PadTkr *move_tkr,
     PadAST *move_ast,
     PadCtx *move_context,
-    builtin_func_info_t *func_infos
+    PadBltFuncInfo *func_infos
 );
 
 /**
@@ -522,13 +522,13 @@ PadObj_NewModBy(
  * @return pointer to PadObj
  */
 PadObj *
-PadObj_NewOwnsMethod(PadGc *ref_gc, PadObj *owner, string_t *move_method_name);
+PadObj_NewOwnsMethod(PadGC *ref_gc, PadObj *owner, string_t *move_method_name);
 
 PadObj *
-PadObj_NewType(PadGc *ref_gc, PadObjType type);
+PadObj_NewType(PadGC *ref_gc, PadObjType type);
 
 PadObj *
-PadObj_NewBltFunc(PadGc *ref_gc, const char *funcname);
+PadObj_NewBltFunc(PadGC *ref_gc, const char *funcname);
 
 /**
  * object to string_t
@@ -569,14 +569,14 @@ void
 PadObj_DecRef(PadObj *self);
 
 /**
- * get reference of PadGcItem in object
+ * get reference of PadGCItem in object
  *
  * @param[in] *self
  *
- * @return reference to PadGcItem (do not delete)
+ * @return reference to PadGCItem (do not delete)
  * @return failed to NULL
  */
-PadGcItem *
+PadGCItem *
 PadObj_GetGcItem(PadObj *self);
 
 /**
@@ -736,9 +736,9 @@ PadObj_GetUnicode(PadObj *self);
  *
  * @param[in] *self
  *
- * @return pointer to builtin_func_info_t
+ * @return pointer to PadBltFuncInfo
  */
-builtin_func_info_t *
+PadBltFuncInfo *
 PadObj_GetModBltFuncInfos(const PadObj *self);
 
 /**
@@ -771,8 +771,8 @@ PadObj_GetOwnsMethodOwn(PadObj *self);
 const char *
 PadObj_GetcModName(const PadObj *self);
 
-PadGc *
+PadGC *
 PadObj_GetGc(PadObj *self);
 
-PadGc *
-PadObj_SetGc(PadObj *self, PadGc *ref_gc);
+PadGC *
+PadObj_SetGc(PadObj *self, PadGC *ref_gc);

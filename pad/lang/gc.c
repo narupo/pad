@@ -5,7 +5,7 @@
 **********/
 
 void
-PadGcItem_Dump(const PadGcItem *self, FILE *fout) {
+PadGCItem_Dump(const PadGCItem *self, FILE *fout) {
     if (!self) {
         fprintf(fout, "gc_item[null]\n");
         return;
@@ -25,14 +25,14 @@ enum {
     INIT_CAPA_SIZE = 4,
 };
 
-struct gc {
+struct PadGC {
     void **pool;  // memory pool (pointer array)
     int32_t len;  // length of pool
     int32_t capa;  // capacity of pool
 };
 
 void
-PadGc_Del(PadGc *self) {
+PadGC_Del(PadGC *self) {
     if (!self) {
         return;
     }
@@ -46,16 +46,16 @@ PadGc_Del(PadGc *self) {
     free(self);
 }
 
-PadGc *
-PadGc_New(void) {
-    PadGc *self = mem_calloc(1, sizeof(*self));
+PadGC *
+PadGC_New(void) {
+    PadGC *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->pool = mem_calloc(INIT_CAPA_SIZE+1, sizeof(void *));
     if (!self->pool) {
-        PadGc_Del(self);
+        PadGC_Del(self);
         return NULL;
     }
 
@@ -68,14 +68,14 @@ PadGc_New(void) {
 /**
  * resize pool by new capacity value
  *
- * @param[in] *self   pointer to PadGc
+ * @param[in] *self   pointer to PadGC
  * @param[in] newcapa number of resize capacity
  *
  * @return success to pointer to self
  * @return failed to NULL
  */
-static PadGc *
-gc_resize(PadGc *self, int32_t newcapa) {
+static PadGC *
+gc_resize(PadGC *self, int32_t newcapa) {
     if (!self || newcapa <= 0) {
         return NULL;
     }
@@ -93,8 +93,8 @@ gc_resize(PadGc *self, int32_t newcapa) {
     return self;
 }
 
-PadGcItem *
-PadGc_Alloc(PadGc *self, PadGcItem *item, int32_t size) {
+PadGCItem *
+PadGC_Alloc(PadGC *self, PadGCItem *item, int32_t size) {
     if (!self || !item || size <= 0) {
         return NULL;
     }
@@ -119,7 +119,7 @@ PadGc_Alloc(PadGc *self, PadGcItem *item, int32_t size) {
 }
 
 void
-PadGc_Free(PadGc *self, PadGcItem *item) {
+PadGC_Free(PadGC *self, PadGCItem *item) {
     if (!self || !item) {
         return;
     }

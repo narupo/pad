@@ -1,10 +1,10 @@
 #include <pad/lang/builtin/modules/dict.h>
 
 static PadObj *
-builtin_dict_get(builtin_func_args_t *fargs) {
+builtin_dict_get(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     assert(ref_ast);
-    PadGc * ref_gc = PadAst_GetRefGc(ref_ast);
+    PadGC * ref_gc = PadAst_GetRefGc(ref_ast);
     assert(ref_gc);
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -39,7 +39,7 @@ again:
         goto again;
         break;
     case PAD_OBJ_TYPE__IDENT:
-        ref_owner = pull_ref(ref_owner);
+        ref_owner = Pad_PullRef(ref_owner);
         if (!ref_owner) {
             PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "object is not found. can't get");
             return NULL;
@@ -61,7 +61,7 @@ again2:
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(arg);
-        arg = pull_ref(arg);
+        arg = Pad_PullRef(arg);
         if (!arg) {
             PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
             return NULL;
@@ -83,14 +83,14 @@ again2:
     return item->value;
 }
 
-static builtin_func_info_t
+static PadBltFuncInfo
 builtin_func_infos[] = {
     {"get", builtin_dict_get},
     {0},
 };
 
 PadObj *
-Pad_NewBltDictMod(const PadConfig *ref_config, PadGc *ref_gc) {
+Pad_NewBltDictMod(const PadConfig *ref_config, PadGC *ref_gc) {
     PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
     PadAST *ast = PadAst_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);

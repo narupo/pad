@@ -28,7 +28,7 @@ enum {
 * structure *
 ************/
 
-struct chain_objects {
+struct PadChainObjs {
     int32_t len;
     int32_t capa;
     PadChainObj **chain_objs;

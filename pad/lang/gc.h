@@ -18,57 +18,57 @@
  * rec_counts is reference count for garbage collection
  * user do not update this value manually
  */
-struct PadGcItem {
+struct PadGCItem {
     int32_t id;
     void *ptr;
     int32_t ref_counts;
 };
 
 /**
- * dump PadGcItem at stream
+ * dump PadGCItem at stream
  *
  * @param[in] *self
  */
 void
-PadGcItem_Dump(const PadGcItem *self, FILE *fout);
+PadGCItem_Dump(const PadGCItem *self, FILE *fout);
 
 /**
- * destruct gc
+ * destruct PadGC
  *
- * @param[in] *self pointer to PadGc
+ * @param[in] *self pointer to PadGC
  */
 void
-PadGc_Del(PadGc *self);
+PadGC_Del(PadGC *self);
 
 /**
- * construct gc
+ * construct PadGC
  *
- * @return success to pointer to PadGc (dynamic allocate memory)
+ * @return success to pointer to PadGC (dynamic allocate memory)
  */
-PadGc *
-PadGc_New(void);
+PadGC *
+PadGC_New(void);
 
 /**
- * allocate memory by PadGcItem and size
+ * allocate memory by PadGCItem and size
  * and stored allocated memory at memory pool of gc
- * and stored allocated memory address at PadGcItem.ptr
- * and save item id at PadGcItem.id
+ * and stored allocated memory address at PadGCItem.ptr
+ * and save item id at PadGCItem.id
  *
- * @param[in] *self pointer to PadGc
- * @param[in] *item pointer to PadGcItem
+ * @param[in] *self pointer to PadGC
+ * @param[in] *item pointer to PadGCItem
  * @param[in] size  number of size of want to allocate memory
  *
  * @return
  */
-PadGcItem *
-PadGc_Alloc(PadGc *self, PadGcItem *item, int32_t size);
+PadGCItem *
+PadGC_Alloc(PadGC *self, PadGCItem *item, int32_t size);
 
 /**
- * free allocated memory in PadGcItem
- * and remove from poll of PadGc
+ * free allocated memory in PadGCItem
+ * and remove from poll of PadGC
  *
- * @param[in] *self pointer to PadGc
- * @param[in] *item pointer to PadGcItem
+ * @param[in] *self pointer to PadGC
+ * @param[in] *item pointer to PadGCItem
  */
 void
-PadGc_Free(PadGc *self, PadGcItem *item);
+PadGC_Free(PadGC *self, PadGCItem *item);

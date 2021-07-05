@@ -4,14 +4,14 @@ enum {
     CL_INIT_CAPA = 4,
 };
 
-struct cl {
+struct PadCL {
     int32_t capa;
     int32_t len;
     char **arr;
 };
 
 void
-cl_del(cl_t *self) {
+PadCL_Del(PadCL *self) {
     if (self) {
         for (int32_t i = 0; i < self->len; ++i) {
             free(self->arr[i]);
@@ -22,7 +22,7 @@ cl_del(cl_t *self) {
 }
 
 char **
-cl_escdel(cl_t *self) {
+PadCL_EscDel(PadCL *self) {
     if (!self) {
         return NULL;
     }
@@ -32,9 +32,9 @@ cl_escdel(cl_t *self) {
     return arr;
 }
 
-cl_t *
-cl_new(void) {
-    cl_t *self = calloc(1, sizeof(*self));
+PadCL *
+PadCL_New(void) {
+    PadCL *self = calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -49,8 +49,8 @@ cl_new(void) {
     return self;
 }
 
-cl_t *
-cl_resize(cl_t *self, int32_t newcapa) {
+PadCL *
+PadCL_Resize(PadCL *self, int32_t newcapa) {
     if (!self || newcapa <= self->capa) {
         return NULL;
     }
@@ -66,14 +66,14 @@ cl_resize(cl_t *self, int32_t newcapa) {
     return self;
 }
 
-cl_t *
-cl_push(cl_t *self, const char *str) {
+PadCL *
+PadCL_PushBack(PadCL *self, const char *str) {
     if (!self || !str) {
         return NULL;
     }
 
     if (self->len >= self->capa) {
-        if (!cl_resize(self, self->capa*2)) {
+        if (!PadCL_Resize(self, self->capa*2)) {
             return NULL;
         }
     }
@@ -89,7 +89,7 @@ cl_push(cl_t *self, const char *str) {
 }
 
 void
-cl_clear(cl_t *self) {
+PadCL_Clear(PadCL *self) {
     if (!self) {
         return;
     }
@@ -102,7 +102,7 @@ cl_clear(cl_t *self) {
 }
 
 int32_t
-cl_len(const cl_t *self) {
+PadCL_Len(const PadCL *self) {
     if (!self) {
         return -1;
     }
@@ -111,7 +111,7 @@ cl_len(const cl_t *self) {
 }
 
 int32_t
-cl_capa(const cl_t *self) {
+PadCL_Capa(const PadCL *self) {
     if (!self) {
         return -1;
     }
@@ -120,7 +120,7 @@ cl_capa(const cl_t *self) {
 }
 
 const char *
-cl_getc(const cl_t *self, int32_t idx) {
+PadCL_Getc(const PadCL *self, int32_t idx) {
     if (!self || idx < 0 || idx >= self->len) {
         return NULL;
     }
@@ -129,7 +129,7 @@ cl_getc(const cl_t *self, int32_t idx) {
 }
 
 char **
-cl_get_argv(const cl_t *self) {
+PadCL_GetArgv(const PadCL *self) {
     return self->arr;
 }
 
@@ -137,13 +137,13 @@ cl_get_argv(const cl_t *self) {
 * string *
 *********/
 
-struct cl_string {
+struct PadCL_string {
     int32_t capa;
     int32_t len;
     char *arr;
 };
 
-typedef struct cl_string cl_string_t;
+typedef struct PadCL_string cl_string_t;
 
 static void
 clstr_del(cl_string_t *self) {
@@ -275,7 +275,7 @@ ismetach(int32_t c) {
 }
 
 static void
-Pad_Escapecpy(cl_string_t *dst, const cl_string_t *src, int32_t opts) {
+escape_copy(cl_string_t *dst, const cl_string_t *src, int32_t opts) {
     const char *srcval = clstr_getc(src);
     int32_t m = 0;
     for (const char *p = srcval; *p; ++p) {
@@ -288,7 +288,7 @@ Pad_Escapecpy(cl_string_t *dst, const cl_string_t *src, int32_t opts) {
             continue;
         }
 
-        if (opts & CL_DEBUG) {
+        if (opts & PAD_CL__DEBUG) {
             printf("esc: m[%d] c[%c]\n", m, *p);
         }
 
@@ -319,7 +319,7 @@ Pad_Escapecpy(cl_string_t *dst, const cl_string_t *src, int32_t opts) {
         case 20: // ''
             if (*p == '\'') {
                 m = 0;
-                if (opts & CL_WRAP) {
+                if (opts & PAD_CL__WRAP) {
                     clstr_push(dst, '\\');
                 }
                 clstr_push(dst, *p);
@@ -332,28 +332,28 @@ Pad_Escapecpy(cl_string_t *dst, const cl_string_t *src, int32_t opts) {
 }
 
 static void
-validatepush(cl_t *cl, cl_string_t *src, int32_t opts) {
+validatepush(PadCL *cl, cl_string_t *src, int32_t opts) {
     if (!clstr_len(src)) {
         return;
     }
 
     cl_string_t *dst = clstr_new();
 
-    if (opts & CL_WRAP) {
+    if (opts & PAD_CL__WRAP) {
         clstr_push(dst, '\'');
     }
 
-    if (opts & CL_ESCAPE) {
-        Pad_Escapecpy(dst, src, opts);
+    if (opts & PAD_CL__ESCAPE) {
+        escape_copy(dst, src, opts);
     } else {
         clstr_app(dst, clstr_getc(src));
     }
 
-    if (opts & CL_WRAP) {
+    if (opts & PAD_CL__WRAP) {
         clstr_push(dst, '\'');
     }
 
-    cl_push(cl, clstr_getc(dst));
+    PadCL_PushBack(cl, clstr_getc(dst));
     clstr_del(dst);
     clstr_clear(src);
 }
@@ -369,14 +369,14 @@ conv_Pad_Escape_char(int32_t ch) {
     }
 }
 
-cl_t *
-cl_parse_str_opts(cl_t *self, const char *drtsrc, int32_t opts) {
+PadCL *
+PadCL_ParseStrOpts(PadCL *self, const char *drtsrc, int32_t opts) {
     int32_t m = 0;
     const char *p = drtsrc;
     cl_string_t *tmp = clstr_new();
-    opts = (opts < 0 ? CL_ESCAPE : opts);
+    opts = (opts < 0 ? PAD_CL__ESCAPE : opts);
 
-    cl_clear(self);
+    PadCL_Clear(self);
 
     do {
         int32_t c = *p;
@@ -385,7 +385,7 @@ cl_parse_str_opts(cl_t *self, const char *drtsrc, int32_t opts) {
             break;
         }
 
-        if (opts & CL_DEBUG) {
+        if (opts & PAD_CL__DEBUG) {
             printf("m[%d] c[%c]\n", m, c);
         }
 
@@ -535,17 +535,17 @@ cl_parse_str_opts(cl_t *self, const char *drtsrc, int32_t opts) {
     return self;
 }
 
-cl_t *
-cl_parse_str(cl_t *self, const char *drtcl) {
+PadCL *
+PadCL_ParseStr(PadCL *self, const char *drtcl) {
     if (!self || !drtcl) {
         return NULL;
     }
 
-    return cl_parse_str_opts(self, drtcl, -1);
+    return PadCL_ParseStrOpts(self, drtcl, -1);
 }
 
-cl_t *
-cl_parse_argv_opts(cl_t *self, int32_t argc, char *argv[], int32_t opts) {
+PadCL *
+PadCL_ParseArgvOpts(PadCL *self, int32_t argc, char *argv[], int32_t opts) {
     if (!self || argc <= 0 || !argv) {
         return NULL;
     }
@@ -571,23 +571,23 @@ cl_parse_argv_opts(cl_t *self, int32_t argc, char *argv[], int32_t opts) {
         clstr_push(line, ' ');
     }
 
-    self = cl_parse_str_opts(self, clstr_getc(line), opts);
+    self = PadCL_ParseStrOpts(self, clstr_getc(line), opts);
     clstr_del(line);
 
     return self;
 }
 
-cl_t *
-cl_parse_argv(cl_t *self, int32_t argc, char *argv[]) {
+PadCL *
+PadCL_ParseArgv(PadCL *self, int32_t argc, char *argv[]) {
     if (!self || argc <= 0 || !argv) {
         return NULL;
     }
 
-    return cl_parse_argv_opts(self, argc, argv, -1);
+    return PadCL_ParseArgvOpts(self, argc, argv, -1);
 }
 
 void
-cl_show(const cl_t *self, FILE *fout) {
+PadCL_Show(const PadCL *self, FILE *fout) {
     if (!self || !fout) {
         return;
     }
@@ -598,7 +598,7 @@ cl_show(const cl_t *self, FILE *fout) {
 }
 
 char *
-cl_to_string(const cl_t *self) {
+PadCL_GenStr(const PadCL *self) {
     cl_string_t *line = clstr_new();
 
     for (int32_t i = 0; i < self->len-1; ++i) {

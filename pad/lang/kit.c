@@ -9,12 +9,12 @@
  */
 #include <pad/lang/kit.h>
 
-struct kit {
+struct PadKit {
     const PadConfig *ref_config;
     char *program_source;
     PadTkr *tkr;
     PadAST *ast;
-    PadGc *gc;
+    PadGC *gc;
     PadCtx *ctx;
     PadErrStack *errstack;
     bool gc_is_reference;
@@ -31,7 +31,7 @@ PadKit_Del(PadKit *self) {
     PadAst_Del(self->ast);
     PadCtx_Del(self->ctx);
     if (!self->gc_is_reference) {
-        PadGc_Del(self->gc);
+        PadGC_Del(self->gc);
     }
     free(self);
 }
@@ -56,7 +56,7 @@ PadKit_New(const PadConfig *config) {
         return NULL;
     }
 
-    self->gc = PadGc_New();
+    self->gc = PadGC_New();
     if (!self->gc) {
         PadKit_Del(self);
         return NULL;
@@ -78,7 +78,7 @@ PadKit_New(const PadConfig *config) {
 }
 
 PadKit *
-PadKit_NewRefGc(const PadConfig *config, PadGc *ref_gc) {
+PadKit_NewRefGc(const PadConfig *config, PadGC *ref_gc) {
     PadKit *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;

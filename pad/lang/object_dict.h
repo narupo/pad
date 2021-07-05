@@ -27,7 +27,7 @@ typedef struct PadObjDictItem {
 } PadObjDictItem;
 
 /**
- * destruct PadObj_dict_t
+ * destruct PadObjDict_t
  *
  * @param[in] *self pointer to PadObjDict
  */
@@ -35,7 +35,7 @@ void
 PadObjDict_Del(PadObjDict *self);
 
 /**
- * destruct PadObj_dict_t with Pad_Escape array of PadObjDictItem dynamic allocated
+ * destruct PadObjDict_t with Pad_Escape array of PadObjDictItem dynamic allocated
  *
  * @param[in] *self pointer to PadObjDict
  *
@@ -46,15 +46,15 @@ PadObjDictItem *
 PadObjDict_EscDel(PadObjDict *self);
 
 /**
- * construct PadObj_dict_t
+ * construct PadObjDict_t
  *
- * @param[in] *ref_gc reference to PadGc (do not delete)
+ * @param[in] *ref_gc reference to PadGC (do not delete)
  *
  * @return success to pointer to PadObjDict (dynamic allocate memory)
  * @return failed to NULL
  */
 PadObjDict *
-PadObjDict_New(PadGc *ref_gc);
+PadObjDict_New(PadGC *ref_gc);
 
 /**
  * deep copy

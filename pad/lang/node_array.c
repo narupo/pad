@@ -4,7 +4,7 @@ enum {
     NODEARR_INIT_CAPA = 4,
 };
 
-struct PadNode_array {
+struct PadNodeAry {
     int32_t len;
     int32_t capa;
     PadNode **parray;

@@ -14,7 +14,7 @@ PadObjDict *
 PadScope_EscDelHeadVarmap(PadScope *self);
 
 PadScope *
-PadScope_New(PadGc *gc);
+PadScope_New(PadGC *gc);
 
 /**
  * !!! WARNING !!!

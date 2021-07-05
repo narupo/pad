@@ -63,7 +63,7 @@ fix_path(PadImporter *self, char *dst, int32_t dstsz, const char *path) {
 static PadObj *
 create_modobj(
     PadImporter *self,
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     const PadAST *ref_ast,
     const char *path
 ) {
@@ -134,7 +134,7 @@ create_modobj(
 PadImporter *
 PadImporter_ImportAs(
     PadImporter *self,
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     const PadAST *ref_ast,
     PadCtx *dstctx,
     const char *path,
@@ -162,7 +162,7 @@ PadImporter_ImportAs(
 PadImporter *
 PadImporter_FromImport(
     PadImporter *self,
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     const PadAST *ref_ast,
     PadCtx *dstctx,
     const char *path,

@@ -13,7 +13,7 @@ typedef enum {
 } PadChainObjType;
 
 /**
- * destruct PadChainObj
+ * destruct PadRingObj
  *
  * @param[in] *self
  */
@@ -21,7 +21,7 @@ void
 PadChainObj_Del(PadChainObj *self);
 
 /**
- * construct PadChainObj
+ * construct PadRingObj
  *
  * @param[in] type
  * @param[in] *move_factor

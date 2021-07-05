@@ -33,7 +33,7 @@ again:
         goto again;
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
-        owner = refer_chain_obj_with_ref(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, owner);
+        owner = Pad_ReferRingObjWithRef(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, owner);
         if (!owner) {
             PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "failed to refer index");
             return NULL;
@@ -47,7 +47,7 @@ again:
 }
 
 static PadObj *
-call_basic_unicode_func(const char *method_name, builtin_func_args_t *fargs) {
+call_basic_unicode_func(const char *method_name, PadBltFuncArgs *fargs) {
     if (!method_name || !fargs) {
         return NULL;
     }
@@ -84,37 +84,37 @@ call_basic_unicode_func(const char *method_name, builtin_func_args_t *fargs) {
 }
 
 static PadObj *
-builtin_unicode_lower(builtin_func_args_t *fargs) {
+builtin_unicode_lower(PadBltFuncArgs *fargs) {
     return call_basic_unicode_func("lower", fargs);
 }
 
 static PadObj *
-builtin_unicode_upper(builtin_func_args_t *fargs) {
+builtin_unicode_upper(PadBltFuncArgs *fargs) {
     return call_basic_unicode_func("upper", fargs);
 }
 
 static PadObj *
-builtin_unicode_capitalize(builtin_func_args_t *fargs) {
+builtin_unicode_capitalize(PadBltFuncArgs *fargs) {
     return call_basic_unicode_func("capitalize", fargs);
 }
 
 static PadObj *
-builtin_unicode_snake(builtin_func_args_t *fargs) {
+builtin_unicode_snake(PadBltFuncArgs *fargs) {
     return call_basic_unicode_func("snake", fargs);
 }
 
 static PadObj *
-builtin_unicode_camel(builtin_func_args_t *fargs) {
+builtin_unicode_camel(PadBltFuncArgs *fargs) {
     return call_basic_unicode_func("camel", fargs);
 }
 
 static PadObj *
-builtin_unicode_hacker(builtin_func_args_t *fargs) {
+builtin_unicode_hacker(PadBltFuncArgs *fargs) {
     return call_basic_unicode_func("hacker", fargs);
 }
 
 static PadObj *
-builtin_unicode_split(builtin_func_args_t *fargs) {
+builtin_unicode_split(PadBltFuncArgs *fargs) {
     if (!fargs) {
         return NULL;
     }
@@ -156,7 +156,7 @@ builtin_unicode_split(builtin_func_args_t *fargs) {
 }
 
 static PadObj *
-strip_work(const char *method_name, builtin_func_args_t *fargs) {
+strip_work(const char *method_name, PadBltFuncArgs *fargs) {
     if (!fargs) {
         return NULL;
     }
@@ -208,22 +208,22 @@ strip_work(const char *method_name, builtin_func_args_t *fargs) {
 }
 
 static PadObj *
-builtin_unicode_rstrip(builtin_func_args_t *fargs) {
+builtin_unicode_rstrip(PadBltFuncArgs *fargs) {
     return strip_work("rstrip", fargs);
 }
  
 static PadObj *
-builtin_unicode_lstrip(builtin_func_args_t *fargs) {
+builtin_unicode_lstrip(PadBltFuncArgs *fargs) {
     return strip_work("lstrip", fargs);
 }
  
 static PadObj *
-builtin_unicode_strip(builtin_func_args_t *fargs) {
+builtin_unicode_strip(PadBltFuncArgs *fargs) {
     return strip_work("strip", fargs);
 }
 
 static PadObj *
-builtin_unicode_is(const char *method_name, builtin_func_args_t *fargs) {
+builtin_unicode_is(const char *method_name, PadBltFuncArgs *fargs) {
     if (!fargs) {
         return NULL;
     }
@@ -254,21 +254,21 @@ builtin_unicode_is(const char *method_name, builtin_func_args_t *fargs) {
 }
  
 static PadObj *
-builtin_unicode_isdigit(builtin_func_args_t *fargs) {
+builtin_unicode_isdigit(PadBltFuncArgs *fargs) {
     return builtin_unicode_is("isdigit", fargs);
 }
  
 static PadObj *
-builtin_unicode_isalpha(builtin_func_args_t *fargs) {
+builtin_unicode_isalpha(PadBltFuncArgs *fargs) {
     return builtin_unicode_is("isalpha", fargs);
 }
  
 static PadObj *
-builtin_unicode_isspace(builtin_func_args_t *fargs) {
+builtin_unicode_isspace(PadBltFuncArgs *fargs) {
     return builtin_unicode_is("isspace", fargs);
 }
  
-static builtin_func_info_t
+static PadBltFuncInfo
 builtin_func_infos[] = {
     {"lower", builtin_unicode_lower},
     {"upper", builtin_unicode_upper},
@@ -287,7 +287,7 @@ builtin_func_infos[] = {
 };
 
 PadObj *
-Pad_NewBltUnicodeMod(const PadConfig *ref_config, PadGc *ref_gc) {
+Pad_NewBltUnicodeMod(const PadConfig *ref_config, PadGC *ref_gc) {
     PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
     PadAST *ast = PadAst_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);

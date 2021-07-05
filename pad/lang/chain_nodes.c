@@ -19,7 +19,7 @@ enum {
 * structure *
 ************/
 
-struct chain_nodes {
+struct PadChainNodes {
     int32_t len;
     int32_t capa;
     PadChainNode **chain_nodes;

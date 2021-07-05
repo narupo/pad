@@ -6,14 +6,14 @@
 
 #undef push_error
 #define push_error(fmt, ...) \
-    pushb_error_node(ref_ast->error_stack, ref_node, fmt, ##__VA_ARGS__)
+    Pad_PushBackErrNode(ref_ast->error_stack, ref_node, fmt, ##__VA_ARGS__)
 
 /************
 * functions *
 ************/
 
 static PadObj *
-builtin_id(builtin_func_args_t *fargs) {
+builtin_id(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
@@ -29,7 +29,7 @@ builtin_id(builtin_func_args_t *fargs) {
     PadObj *obj = PadObjAry_Get(args, 0);
     assert(obj);
 
-    obj = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
+    obj = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
     if (PadAst_HasErrs(ref_ast)) {
         return NULL;
     }
@@ -42,7 +42,7 @@ builtin_id(builtin_func_args_t *fargs) {
 }
 
 static PadObj *
-builtin_type(builtin_func_args_t *fargs) {
+builtin_type(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
@@ -83,7 +83,7 @@ again:
     } break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(obj);
-        obj = pull_ref(obj);
+        obj = Pad_PullRef(obj);
         if (!obj) {
             push_error("not defined \"%s\" in type()", idn);
             return NULL;
@@ -118,7 +118,7 @@ again:
 }
 
 static PadObj *
-builtin_eputs(builtin_func_args_t *fargs) {
+builtin_eputs(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
@@ -140,8 +140,8 @@ builtin_eputs(builtin_func_args_t *fargs) {
     for (int32_t i = 0; i < arrlen-1; ++i) {
         PadObj *obj = PadObjAry_Get(args, i);
         assert(obj);
-        PadObj *ref = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-        string_t *s = PadObj_ToString(ref_ast->error_stack, fargs->ref_node, ref);
+        PadObj *ref = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
+        string_t *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             continue;
         }
@@ -152,8 +152,8 @@ builtin_eputs(builtin_func_args_t *fargs) {
     if (arrlen) {
         PadObj *obj = PadObjAry_Get(args, arrlen-1);
         assert(obj);
-        PadObj *ref = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-        string_t *s = PadObj_ToString(ref_ast->error_stack, fargs->ref_node, ref);
+        PadObj *ref = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
+        string_t *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             goto done;
         }
@@ -167,7 +167,7 @@ done:
 }
 
 static PadObj *
-builtin_puts(builtin_func_args_t *fargs) {
+builtin_puts(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
@@ -190,12 +190,12 @@ builtin_puts(builtin_func_args_t *fargs) {
     for (int32_t i = 0; i < arrlen-1; ++i) {
         PadObj *obj = PadObjAry_Get(args, i);
         assert(obj);
-        PadObj *ref = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
+        PadObj *ref = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
         if (PadAst_HasErrs(ref_ast)) {
             push_error("failed to get argument");
             return NULL;
         }
-        string_t *s = PadObj_ToString(ref_ast->error_stack, fargs->ref_node, ref);
+        string_t *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             continue;
         }
@@ -206,12 +206,12 @@ builtin_puts(builtin_func_args_t *fargs) {
     if (arrlen) {
         PadObj *obj = PadObjAry_Get(args, arrlen-1);
         assert(obj);
-        PadObj *ref = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
+        PadObj *ref = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
         if (PadAst_HasErrs(ref_ast)) {
             push_error("failed to get argument");
             return NULL;
         }
-        string_t *s = PadObj_ToString(ref_ast->error_stack, fargs->ref_node, ref);
+        string_t *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             goto done;
         }
@@ -225,7 +225,7 @@ done:
 }
 
 static PadObj *
-builtin_len(builtin_func_args_t *fargs) {
+builtin_len(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
@@ -249,7 +249,7 @@ again:
         return NULL;
         break;
     case PAD_OBJ_TYPE__IDENT: {
-        PadObj *obj = pull_ref(arg);
+        PadObj *obj = Pad_PullRef(arg);
         if (!obj) {
             push_error("not found object for len");
             return NULL;
@@ -272,7 +272,7 @@ again:
 }
 
 static PadObj *
-builtin_die(builtin_func_args_t *fargs) {
+builtin_die(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     assert(ref_ast);
 
@@ -288,7 +288,7 @@ builtin_die(builtin_func_args_t *fargs) {
 }
 
 static PadObj *
-builtin_exit(builtin_func_args_t *fargs) {
+builtin_exit(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
@@ -314,14 +314,14 @@ builtin_exit(builtin_func_args_t *fargs) {
     printf("%s", PadCtx_GetcStdoutBuf(ref_ast->ref_context));
     fflush(stdout);
 
-    objint_t exit_code = codeobj->lvalue;
+    PadIntObj exit_code = codeobj->lvalue;
     exit(exit_code);
 
     return PadObj_NewNil(ref_ast->ref_gc);
 }
 
 static PadObj *
-builtin_copy(builtin_func_args_t *fargs, bool deep) {
+builtin_copy(PadBltFuncArgs *fargs, bool deep) {
     PadAST *ref_ast = fargs->ref_ast;
     const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
@@ -346,17 +346,17 @@ builtin_copy(builtin_func_args_t *fargs, bool deep) {
 }
 
 static PadObj *
-builtin_deepcopy(builtin_func_args_t *fargs) {
+builtin_deepcopy(PadBltFuncArgs *fargs) {
     return builtin_copy(fargs, true);
 }
 
 static PadObj *
-builtin_shallowcopy(builtin_func_args_t *fargs) {
+builtin_shallowcopy(PadBltFuncArgs *fargs) {
     return builtin_copy(fargs, false);
 }
 
 static PadObj *
-builtin_assert(builtin_func_args_t *fargs) {
+builtin_assert(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
@@ -373,7 +373,7 @@ builtin_assert(builtin_func_args_t *fargs) {
     PadObj *arg = PadObjAry_Get(args, 0);
     assert(arg);
 
-    bool ok = parse_bool(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, arg);
+    bool ok = Pad_ParseBool(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, arg);
     if (!ok) {
         push_error("assertion error");
         return NULL;
@@ -431,7 +431,7 @@ extract_arg(PadAST *ref_ast, const PadNode *ref_node, const PadObj *arg) {
 }
 
 static PadObj *
-builtin_extract(builtin_func_args_t *fargs) {
+builtin_extract(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
@@ -468,7 +468,7 @@ again:
         return uni_getc_mb(obj->unicode);
     } break;
     case PAD_OBJ_TYPE__IDENT: {
-        obj = pull_ref(obj);
+        obj = Pad_PullRef(obj);
         if (!obj) {
             return NULL;
         }
@@ -478,7 +478,7 @@ again:
 }
 
 static PadObj *
-builtin_setattr(builtin_func_args_t *fargs) {
+builtin_setattr(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     const PadNode *ref_node = fargs->ref_node;
     PadErrStack *errstack = ref_ast->error_stack;
@@ -521,7 +521,7 @@ builtin_setattr(builtin_func_args_t *fargs) {
         return NULL;
     }
 
-    set_ref_at_cur_varmap(errstack, fargs->ref_node, ref_context, NULL, key, obj);
+    Pad_SetRefAtCurVarmap(errstack, fargs->ref_node, ref_context, NULL, key, obj);
     if (PadErrStack_Len(errstack)) {
         push_error("failed to set reference at varmap");
         return NULL;
@@ -531,7 +531,7 @@ builtin_setattr(builtin_func_args_t *fargs) {
 }
 
 static PadObj *
-builtin_getattr(builtin_func_args_t *fargs) {
+builtin_getattr(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
@@ -581,9 +581,9 @@ builtin_getattr(builtin_func_args_t *fargs) {
 }
 
 static PadObj *
-builtin_dance(builtin_func_args_t *fargs) {
+builtin_dance(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
-    PadGc *ref_gc = ref_ast->ref_gc;
+    PadGC *ref_gc = ref_ast->ref_gc;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -685,9 +685,9 @@ builtin_dance(builtin_func_args_t *fargs) {
 }
 
 static PadObj *
-builtin_ord(builtin_func_args_t *fargs) {
+builtin_ord(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
-    PadGc *ref_gc = ref_ast->ref_gc;
+    PadGC *ref_gc = ref_ast->ref_gc;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -714,7 +714,7 @@ builtin_ord(builtin_func_args_t *fargs) {
     }
 
     const unicode_type_t c = uni_getc(u->unicode)[0];
-    PadObj *i = PadObj_NewInt(ref_gc, (objint_t) c);
+    PadObj *i = PadObj_NewInt(ref_gc, (PadIntObj) c);
     PadObj *nil = PadObj_NewNil(ref_gc);
     PadObjAry *ret = PadObjAry_New();
     PadObjAry_MoveBack(ret, mem_move(i));
@@ -723,9 +723,9 @@ builtin_ord(builtin_func_args_t *fargs) {
 }
 
 static PadObj *
-builtin_chr(builtin_func_args_t *fargs) {
+builtin_chr(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
-    PadGc *ref_gc = ref_ast->ref_gc;
+    PadGC *ref_gc = ref_ast->ref_gc;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -757,7 +757,7 @@ builtin_chr(builtin_func_args_t *fargs) {
     return PadObj_NewAry(ref_gc, mem_move(ret));
 }
 
-static builtin_func_info_t
+static PadBltFuncInfo
 builtin_func_infos[] = {
     {"id", builtin_id},
     {"type", builtin_type},
@@ -779,7 +779,7 @@ builtin_func_infos[] = {
 };
 
 PadObj *
-Pad_NewBltMod(const PadConfig *ref_config, PadGc *ref_gc) {
+Pad_NewBltMod(const PadConfig *ref_config, PadGC *ref_gc) {
     PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
     PadAST *ast = PadAst_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);

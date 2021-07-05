@@ -19,7 +19,7 @@ typedef struct {
  */
 struct PadCcArgs {
     // number of depth of recursion
-    depth_t depth;
+    PadDepth depth;
 
     // if current context is in loop statement then store true else store false
     bool is_in_loop;
@@ -62,7 +62,7 @@ struct PadTrvArgs {
     PadAugassignNode *augassign_op_node;
 
     // number of depth of function
-    depth_t depth;
+    PadDepth depth;
 
     // left hand and right hand objects
     // these objects refer from calc functions
@@ -102,7 +102,7 @@ struct PadTrvArgs {
 /**
  * The abstract arguments for builtin functions
  */
-struct PadBuiltFuncArgs {
+struct PadBltFuncArgs {
     PadAST *ref_ast;  // the ast of current context
     const PadNode *ref_node;  // reference of node for errors
     PadObj *ref_args;  // the arguments object of builtin functions

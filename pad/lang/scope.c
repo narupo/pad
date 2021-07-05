@@ -1,7 +1,7 @@
 #include <pad/lang/scope.h>
 
-struct scope {
-    PadGc *ref_gc; // do not delete (this is reference)
+struct PadScope {
+    PadGC *ref_gc; // do not delete (this is reference)
     PadObjDict *varmap;
     PadScope *prev;
     PadScope *next;
@@ -35,7 +35,7 @@ PadScope_EscDelHeadVarmap(PadScope *self) {
 }
 
 PadScope *
-PadScope_New(PadGc *ref_gc) {
+PadScope_New(PadGC *ref_gc) {
     if (!ref_gc) {
         return NULL;
     }

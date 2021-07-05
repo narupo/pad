@@ -131,10 +131,10 @@ PadObj_Del(PadObj *self) {
         break;
     }
 
-    PadGc_Free(self->ref_gc, &self->gc_item);
+    PadGC_Free(self->ref_gc, &self->gc_item);
 }
 
-PadGc *
+PadGC *
 PadObj_GetGc(PadObj *self) {
     if (!self) {
         return NULL;
@@ -142,12 +142,12 @@ PadObj_GetGc(PadObj *self) {
     return self->ref_gc;
 }
 
-PadGc *
-PadObj_SetGc(PadObj *self, PadGc *ref_gc) {
+PadGC *
+PadObj_SetGc(PadObj *self, PadGC *ref_gc) {
     if (!self) {
         return NULL;
     }
-    PadGc *savegc = self->ref_gc;
+    PadGC *savegc = self->ref_gc;
     self->ref_gc = ref_gc;
     return savegc;
 }
@@ -165,8 +165,8 @@ PadObj_DeepCopy(const PadObj *other) {
     }
 
     // allocate memory by gc
-    PadGcItem gc_item = {0};
-    if (!PadGc_Alloc(other->ref_gc, &gc_item, sizeof(PadObj))) {
+    PadGCItem gc_item = {0};
+    if (!PadGC_Alloc(other->ref_gc, &gc_item, sizeof(PadObj))) {
         return NULL;
     }
 
@@ -284,8 +284,8 @@ PadObj_ShallowCopy(const PadObj *other) {
     }
 
     // allocate memory by gc
-    PadGcItem gc_item = {0};
-    if (!PadGc_Alloc(other->ref_gc, &gc_item, sizeof(PadObj))) {
+    PadGCItem gc_item = {0};
+    if (!PadGC_Alloc(other->ref_gc, &gc_item, sizeof(PadObj))) {
         return NULL;
     }
 
@@ -391,13 +391,13 @@ PadObj_ShallowCopy(const PadObj *other) {
 }
 
 PadObj *
-PadObj_New(PadGc *ref_gc, PadObjType type) {
+PadObj_New(PadGC *ref_gc, PadObjType type) {
     if (!ref_gc) {
         return NULL;
     }
 
-    PadGcItem gc_item = {0};
-    if (!PadGc_Alloc(ref_gc, &gc_item, sizeof(PadObj))) {
+    PadGCItem gc_item = {0};
+    if (!PadGC_Alloc(ref_gc, &gc_item, sizeof(PadObj))) {
         return NULL;
     }
 
@@ -410,7 +410,7 @@ PadObj_New(PadGc *ref_gc, PadObjType type) {
 }
 
 PadObj *
-PadObj_NewNil(PadGc *ref_gc) {
+PadObj_NewNil(PadGC *ref_gc) {
     if (!ref_gc) {
         return NULL;
     }
@@ -424,7 +424,7 @@ PadObj_NewNil(PadGc *ref_gc) {
 }
 
 PadObj *
-PadObj_NewFalse(PadGc *ref_gc) {
+PadObj_NewFalse(PadGC *ref_gc) {
     if (!ref_gc) {
         return NULL;
     }
@@ -440,7 +440,7 @@ PadObj_NewFalse(PadGc *ref_gc) {
 }
 
 PadObj *
-PadObj_NewTrue(PadGc *ref_gc) {
+PadObj_NewTrue(PadGC *ref_gc) {
     if (!ref_gc) {
         return NULL;
     }
@@ -457,7 +457,7 @@ PadObj_NewTrue(PadGc *ref_gc) {
 
 PadObj *
 PadObj_NewCIdent(
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadCtx *ref_context,
     const char *identifier
 ) {
@@ -479,7 +479,7 @@ PadObj_NewCIdent(
 
 PadObj *
 PadObj_NewIdent(
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadCtx *ref_context,
     string_t *move_identifier
 ) {
@@ -499,7 +499,7 @@ PadObj_NewIdent(
 }
 
 PadObj *
-PadObj_NewUnicodeCStr(PadGc *ref_gc, const char *str) {
+PadObj_NewUnicodeCStr(PadGC *ref_gc, const char *str) {
     if (!ref_gc || !str) {
         return NULL;
     }
@@ -516,7 +516,7 @@ PadObj_NewUnicodeCStr(PadGc *ref_gc, const char *str) {
 }
 
 PadObj *
-PadObj_NewUnicode(PadGc *ref_gc, unicode_t *move_unicode) {
+PadObj_NewUnicode(PadGC *ref_gc, unicode_t *move_unicode) {
     if (!ref_gc || !move_unicode) {
         return NULL;
     }
@@ -532,7 +532,7 @@ PadObj_NewUnicode(PadGc *ref_gc, unicode_t *move_unicode) {
 }
 
 PadObj *
-PadObj_NewInt(PadGc *ref_gc, objint_t lvalue) {
+PadObj_NewInt(PadGC *ref_gc, PadIntObj lvalue) {
     if (!ref_gc) {
         return NULL;
     }
@@ -548,7 +548,7 @@ PadObj_NewInt(PadGc *ref_gc, objint_t lvalue) {
 }
 
 PadObj *
-PadObj_NewFloat(PadGc *ref_gc, objfloat_t value) {
+PadObj_NewFloat(PadGC *ref_gc, PadFloatObj value) {
     if (!ref_gc) {
         return NULL;
     }
@@ -564,7 +564,7 @@ PadObj_NewFloat(PadGc *ref_gc, objfloat_t value) {
 }
 
 PadObj *
-PadObj_NewBool(PadGc *ref_gc, bool boolean) {
+PadObj_NewBool(PadGC *ref_gc, bool boolean) {
     if (!ref_gc) {
         return NULL;
     }
@@ -580,7 +580,7 @@ PadObj_NewBool(PadGc *ref_gc, bool boolean) {
 }
 
 PadObj *
-PadObj_NewAry(PadGc *ref_gc, PadObjAry *move_objarr) {
+PadObj_NewAry(PadGC *ref_gc, PadObjAry *move_objarr) {
     if (!ref_gc || !move_objarr) {
         return NULL;
     }
@@ -596,7 +596,7 @@ PadObj_NewAry(PadGc *ref_gc, PadObjAry *move_objarr) {
 }
 
 PadObj *
-PadObj_NewDict(PadGc *ref_gc, PadObjDict *move_objdict) {
+PadObj_NewDict(PadGC *ref_gc, PadObjDict *move_objdict) {
     if (!ref_gc || !move_objdict) {
         return NULL;
     }
@@ -613,7 +613,7 @@ PadObj_NewDict(PadGc *ref_gc, PadObjDict *move_objdict) {
 
 PadObj *
 PadObj_NewFunc(
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadAST *ref_ast,
     PadCtx *ref_context,
     PadObj *move_name,
@@ -647,7 +647,7 @@ PadObj_NewFunc(
 }
 
 PadObj *
-PadObj_NewChain(PadGc *ref_gc, PadObj *move_operand, PadChainObjs *move_chain_objs) {
+PadObj_NewRing(PadGC *ref_gc, PadObj *move_operand, PadChainObjs *move_chain_objs) {
     if (!ref_gc || !move_operand || !move_chain_objs) {
         return NULL;
     }
@@ -664,7 +664,7 @@ PadObj_NewChain(PadGc *ref_gc, PadObj *move_operand, PadChainObjs *move_chain_ob
 }
 
 PadObj *
-PadObj_NewMod(PadGc *ref_gc) {
+PadObj_NewMod(PadGC *ref_gc) {
     if (!ref_gc) {
         return NULL;
     }
@@ -679,7 +679,7 @@ PadObj_NewMod(PadGc *ref_gc) {
 
 PadObj *
 PadObj_NewDefStruct(
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadObj *move_idn,
     PadAST *move_ast,
     PadCtx *move_context
@@ -703,7 +703,7 @@ PadObj_NewDefStruct(
 
 PadObj *
 PadObj_NewObj(
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadAST *ref_ast,
     PadCtx *move_struct_context,
     PadObj *ref_def_obj
@@ -726,7 +726,7 @@ PadObj_NewObj(
 
 PadObj *
 PadObj_NewOwnsMethod(
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     PadObj *owner,
     string_t *move_method_name
 ) {
@@ -747,14 +747,14 @@ PadObj_NewOwnsMethod(
 
 PadObj *
 PadObj_NewModBy(
-    PadGc *ref_gc,
+    PadGC *ref_gc,
     const char *name,
     const char *program_filename,
     char *move_program_source,
     PadTkr *move_tkr,
     PadAST *move_ast,
     PadCtx *move_context,
-    builtin_func_info_t *infos  // allow null
+    PadBltFuncInfo *infos  // allow null
 ) {
     if (!ref_gc || !name || !move_tkr || !move_ast || !move_context) {
         return NULL;
@@ -790,7 +790,7 @@ PadObj_NewModBy(
 }
 
 PadObj *
-PadObj_NewType(PadGc *ref_gc, PadObjType type) {
+PadObj_NewType(PadGC *ref_gc, PadObjType type) {
     if (!ref_gc) {
         return NULL;
     }
@@ -806,7 +806,7 @@ PadObj_NewType(PadGc *ref_gc, PadObjType type) {
 }
 
 PadObj *
-PadObj_NewBltFunc(PadGc *ref_gc, const char *funcname) {
+PadObj_NewBltFunc(PadGC *ref_gc, const char *funcname) {
     if (!ref_gc) {
         return NULL;
     }
@@ -1025,7 +1025,7 @@ PadObj_DecRef(PadObj *self) {
     self->gc_item.ref_counts -= 1;
 }
 
-PadGcItem *
+PadGCItem *
 PadObj_GetGcItem(PadObj *self) {
     if (!self) {
         return NULL;
@@ -1058,7 +1058,7 @@ PadObj_Dump(const PadObj *self, FILE *fout) {
     fprintf(fout, "object[%p]\n", self);
     fprintf(fout, "object.type[%s]\n", str_getc(typ));
     fprintf(fout, "object.to_str[%s]\n", str_getc(s));
-    PadGcItem_Dump(&self->gc_item, fout);
+    PadGCItem_Dump(&self->gc_item, fout);
 
     str_del(s);
     str_del(typ);
@@ -1228,7 +1228,7 @@ PadObj_GetcUnicode(const PadObj *self) {
     return self->unicode;
 }
 
-builtin_func_info_t *
+PadBltFuncInfo *
 PadObj_GetModBltFuncInfos(const PadObj *self) {
     return self->module.builtin_func_infos;
 }

@@ -11,12 +11,12 @@ cmdlinePadObj_Del(cmdline_PadObj *self) {
     }
 
     str_del(self->command);
-    cl_del(self->cl);
+    PadCL_Del(self->cl);
     free(self);
 }
 
 cmdline_PadObj *
-cmdlinePadObj_New(cmdline_PadObjype_t type) {
+cmdlinePadObj_New(cmdline_PadTypeObj type) {
     cmdline_PadObj *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
@@ -29,7 +29,7 @@ cmdlinePadObj_New(cmdline_PadObjype_t type) {
         return NULL;
     }
 
-    self->cl = cl_new();
+    self->cl = PadCL_New();
     if (!self->cl) {
         cmdlinePadObj_Del(self);
         return NULL;
@@ -40,7 +40,7 @@ cmdlinePadObj_New(cmdline_PadObjype_t type) {
 
 cmdline_PadObj *
 cmdlineobj_parse(cmdline_PadObj *self, const char *line) {
-    if (!cl_parse_str(self->cl, line)) {
+    if (!PadCL_ParseStr(self->cl, line)) {
         return NULL;
     }
 

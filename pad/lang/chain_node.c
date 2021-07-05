@@ -14,7 +14,7 @@ PadNodeAry_Del(PadNodeAry *self);
 * structure *
 ************/
 
-struct chain_node {
+struct PadChainNode {
     // number of type of chain node element
     PadChainNodeType type;
 

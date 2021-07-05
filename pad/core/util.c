@@ -108,15 +108,15 @@ Pad_SafeSystem(const char *cmdline, int option) {
     return exit_code;
 
 #else
-    cl_t *cl = cl_new();
-    if (!cl_parse_str_opts(cl, cmdline, 0)) {
+    PadCL *cl = PadCL_New();
+    if (!PadCL_ParseStrOpts(cl, cmdline, 0)) {
         err_error("failed to parse command line \"%s\"", cmdline);
-        cl_del(cl);
+        PadCL_Del(cl);
         return -1;
     }
 
-    int argc = cl_len(cl);
-    char **argv = cl_escdel(cl);
+    int argc = PadCL_Len(cl);
+    char **argv = PadCL_EscDel(cl);
     if (!argv) {
         err_error("failed to Pad_Escape and delete of clk");
         return -1;
@@ -194,7 +194,7 @@ char *
 Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *argv[], const char *src) {
     PadTkr *tkr = PadTkr_New(PadTkrOpt_New());
     PadAST *ast = PadAst_New(config);
-    PadGc *gc = PadGc_New();
+    PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
     PadOpts *opts = PadOpts_New();
 
@@ -244,7 +244,7 @@ Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *
     str_app(buf, PadCtx_GetcStderrBuf(ctx));
 
     PadCtx_Del(ctx);
-    PadGc_Del(gc);
+    PadGC_Del(gc);
 
     return str_esc_del(buf);
 }
@@ -264,7 +264,7 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
 
     PadTkr *tkr = PadTkr_New(PadTkrOpt_New());
     PadAST *ast = PadAst_New(config);
-    PadGc *gc = PadGc_New();
+    PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
     PadOpts *opts = PadOpts_New();
 
@@ -299,7 +299,7 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     const PadObjDictItem *item = PadObjDict_Getc(varmap, "PATH");
     if (!item) {
         PadCtx_Del(ctx);
-        PadGc_Del(gc);
+        PadGC_Del(gc);
         return NULL;
     }
 
@@ -311,12 +311,12 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     char *path = cstr_dup(s);
     if (!path) {
         PadCtx_Del(ctx);
-        PadGc_Del(gc);
+        PadGC_Del(gc);
         return NULL;        
     }
 
     PadCtx_Del(ctx);
-    PadGc_Del(gc);
+    PadGC_Del(gc);
 
     return path;
 }

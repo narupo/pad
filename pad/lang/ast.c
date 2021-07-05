@@ -633,7 +633,7 @@ PadAst_SetRefCtx(PadAST *ast, PadCtx *ref_context) {
 }
 
 void
-PadAst_SetRefGc(PadAST *ast, PadGc *ref_gc) {
+PadAst_SetRefGc(PadAST *ast, PadGC *ref_gc) {
     ast->ref_gc = ref_gc;
 }
 
@@ -655,7 +655,7 @@ PadAst_PrevPtr(PadAST *self) {
     self->ref_ptr--;
 }
 
-PadGc *
+PadGC *
 PadAst_GetRefGc(PadAST *self) {
     return self->ref_gc;
 }
