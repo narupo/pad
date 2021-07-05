@@ -19,18 +19,18 @@
 * tokenizer_option *
 *******************/
 
-struct tokenizer_option {
+struct PadTkrOpt {
     const char *ldbrace_value; // left double brace value
     const char *rdbrace_value; // right double brace value
 };
 
-typedef struct tokenizer_option tokenizer_option_t;
+typedef struct PadTkrOpt PadTkrOpt;
 
 void
-tkropt_del(tokenizer_option_t *self);
+PadTkrOpt_Del(PadTkrOpt *self);
 
-tokenizer_option_t *
-tkropt_new(void);
+PadTkrOpt *
+PadTkrOpt_New(void);
 
 /**
  * copy constructor
@@ -39,40 +39,40 @@ tkropt_new(void);
  *
  * @return
  */
-tokenizer_option_t *
-tkropt_deep_copy(const tokenizer_option_t *other);
+PadTkrOpt *
+PadTkrOpt_DeepCopy(const PadTkrOpt *other);
 
 /************
 * tokenizer *
 ************/
 
-struct tokenizer;
-typedef struct tokenizer tokenizer_t;
+struct PadTkr;
+typedef struct PadTkr PadTkr;
 
 /**
  * Destruct module
  *
- * @param[in] self pointer to dynamic allocate memory of tokenizer_t
+ * @param[in] self pointer to dynamic allocate memory of PadTkr
  */
 void
-tkr_del(tokenizer_t *self);
+PadTkr_Del(PadTkr *self);
 
 /**
  * Construct module
  *
- * @param[in|out] move_option pointer to tokenizer_option_t with move semantics
+ * @param[in|out] move_option pointer to PadTkrOpt with move semantics
  *
- * @return success to pointer to dynamic allocate memory of tokenizer_t
+ * @return success to pointer to dynamic allocate memory of PadTkr
  * @return failed to pointer to NULL
  */
-tokenizer_t *
-tkr_new(tokenizer_option_t *move_option);
+PadTkr *
+PadTkr_New(PadTkrOpt *move_option);
 
-tokenizer_t *
-tkr_extendb_other(tokenizer_t *self, const tokenizer_t *other);
+PadTkr *
+PadTkr_ExtendBackOther(PadTkr *self, const PadTkr *other);
 
-tokenizer_t *
-tkr_extendf_other(tokenizer_t *self, const tokenizer_t *other);
+PadTkr *
+PadTkr_ExtendFrontOther(PadTkr *self, const PadTkr *other);
 
 /**
  * copy constructor
@@ -81,23 +81,23 @@ tkr_extendf_other(tokenizer_t *self, const tokenizer_t *other);
  *
  * @return
  */
-tokenizer_t *
-tkr_deep_copy(const tokenizer_t *other);
+PadTkr *
+PadTkr_DeepCopy(const PadTkr *other);
 
-tokenizer_t *
-tkr_shallow_copy(const tokenizer_t *other);
+PadTkr *
+PadTkr_ShallowCopy(const PadTkr *other);
 
 /**
  * Parse string and build tokens
  *
- * @param[in] self pointer to dynamic allocate memory of tokenizer_t
+ * @param[in] self pointer to dynamic allocate memory of PadTkr
  * @param[in] src string of source
  *
- * @return success to pointer to dynamic allocate memory of tokenizer_t
+ * @return success to pointer to dynamic allocate memory of PadTkr
  * @return failed to pointer to NULL
  */
-tokenizer_t *
-tkr_parse(tokenizer_t *self, const char *src);
+PadTkr *
+PadTkr_Parse(PadTkr *self, const char *src);
 
 /**
  * move option
@@ -107,49 +107,49 @@ tkr_parse(tokenizer_t *self, const char *src);
  * 
  * @return 
  */
-tokenizer_t *
-tkr_move_opt(tokenizer_t *self, tokenizer_option_t *move_opt);
+PadTkr *
+PadTkr_MoveOpt(PadTkr *self, PadTkrOpt *move_opt);
 
 /**
  * Get length of tokens list
  *
- * @param[in] self pointer to dynamic allocate memory of tokenizer_t
+ * @param[in] self pointer to dynamic allocate memory of PadTkr
  *
  * @return number of length
  */
 int32_t
-tkr_tokens_len(const tokenizer_t *self);
+PadTkr_ToksLen(const PadTkr *self);
 
 /**
  * Get token from tokens list of tokenizer
  *
- * @param[in] self pointer to dynamic allocate memory of tokenizer_t
+ * @param[in] self pointer to dynamic allocate memory of PadTkr
  *
  * @return found to pointer to token_t
  * @return not found to pointer to NULL
  */
 const token_t *
-tkr_tokens_getc(tokenizer_t *self, int32_t index);
+PadTkr_ToksGetc(PadTkr *self, int32_t index);
 
 /**
  * Get error status
  *
- * @param[in] self pointer to dynamic allocate memory of tokenizer_t
+ * @param[in] self pointer to dynamic allocate memory of PadTkr
  *
  * @return value of boolean
  */
 bool
-tkr_has_error_stack(const tokenizer_t *self);
+PadTkr_HasErrStack(const PadTkr *self);
 
 /**
  * Get error detail
  *
- * @param[in] self pointer to dynamic allocate memory of tokenizer_t
+ * @param[in] self pointer to dynamic allocate memory of PadTkr
  *
  * @return string
  */
 const char *
-tkr_getc_first_error_message(const tokenizer_t *self);
+PadTkr_GetcFirstErrMsg(const PadTkr *self);
 
 /**
  * get error stack read only
@@ -159,26 +159,26 @@ tkr_getc_first_error_message(const tokenizer_t *self);
  * @return pointer to PadErrStack
  */
 const PadErrStack *
-tkr_getc_error_stack(const tokenizer_t *self);
+PadTkr_GetcErrStack(const PadTkr *self);
 
 /**
  * Get tokens from tokenizer
  *
- * @param[in] self pointer to dynamic allocate memory of tokenizer_t
+ * @param[in] self pointer to dynamic allocate memory of PadTkr
  *
  * @return pointer to array of pointer to token
  */
 token_t **
-tkr_get_tokens(tokenizer_t *self);
+PadTkr_GetToks(PadTkr *self);
 
 /**
  * Set debug mode
  *
- * @param[in] self pointer to dynamic allocate memory of tokenizer_t
+ * @param[in] self pointer to dynamic allocate memory of PadTkr
  * @param[in] debug switch debug mode to true, else false
  */
 void
-tkr_set_debug(tokenizer_t *self, bool debug);
+PadTkr_SetDebug(PadTkr *self, bool debug);
 
 /**
  * trace error stack at stream
@@ -187,7 +187,7 @@ tkr_set_debug(tokenizer_t *self, bool debug);
  * @param[in] *fout
  */
 void
-tkr_trace_error(const tokenizer_t *self, FILE *fout);
+PadTkr_TraceErr(const PadTkr *self, FILE *fout);
 
 const char *
-tkr_set_program_filename(tokenizer_t *self, const char *program_filename);
+PadTkr_SetProgFname(PadTkr *self, const char *program_filename);

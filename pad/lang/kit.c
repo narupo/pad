@@ -12,7 +12,7 @@
 struct kit {
     const PadConfig *ref_config;
     char *program_source;
-    tokenizer_t *tkr;
+    PadTkr *tkr;
     ast_t *ast;
     PadGc *gc;
     PadCtx *ctx;
@@ -27,7 +27,7 @@ PadKit_Del(PadKit *self) {
     }
 
     free(self->program_source);
-    tkr_del(self->tkr);
+    PadTkr_Del(self->tkr);
     PadAst_Del(self->ast);
     PadCtx_Del(self->ctx);
     if (!self->gc_is_reference) {
@@ -44,7 +44,7 @@ PadKit_New(const PadConfig *config) {
     }
 
     self->ref_config = config;
-    self->tkr = tkr_new(tkropt_new());
+    self->tkr = PadTkr_New(PadTkrOpt_New());
     if (!self->tkr) {
         PadKit_Del(self);
         return NULL;
@@ -86,7 +86,7 @@ PadKit_NewRefGc(const PadConfig *config, PadGc *ref_gc) {
 
     self->ref_config = config;
 
-    self->tkr = tkr_new(tkropt_new());
+    self->tkr = PadTkr_New(PadTkrOpt_New());
     if (!self->tkr) {
         PadKit_Del(self);
         return NULL;
@@ -164,20 +164,20 @@ PadKit_CompileFromStrArgs(
         }
     }
 
-    tkr_set_program_filename(self->tkr, program_filename);
-    tkr_parse(self->tkr, src);
+    PadTkr_SetProgFname(self->tkr, program_filename);
+    PadTkr_Parse(self->tkr, src);
 
-    tokenizer_t *src_tkr = tkr_new(tkropt_new());
-    tkr_parse(src_tkr, builtin_structs_source);
+    PadTkr *src_tkr = PadTkr_New(PadTkrOpt_New());
+    PadTkr_Parse(src_tkr, builtin_structs_source);
 
-    if (!tkr_extendf_other(self->tkr, src_tkr)) {
+    if (!PadTkr_ExtendFrontOther(self->tkr, src_tkr)) {
         Pad_PushErr("failed to extend front other tokenizer");
         return NULL;
     }
-    tkr_del(src_tkr);
+    PadTkr_Del(src_tkr);
 
-    if (tkr_has_error_stack(self->tkr)) {
-        const PadErrStack *err = tkr_getc_error_stack(self->tkr);
+    if (PadTkr_HasErrStack(self->tkr)) {
+        const PadErrStack *err = PadTkr_GetcErrStack(self->tkr);
         PadErrStack_ExtendFrontOther(self->errstack, err);
         return NULL;
     }
@@ -188,7 +188,7 @@ PadKit_CompileFromStrArgs(
         opts = NULL;
     }
 
-    PadCc_Compile(self->ast, tkr_get_tokens(self->tkr));
+    PadCc_Compile(self->ast, PadTkr_GetToks(self->tkr));
     if (PadAst_HasErrs(self->ast)) {
         const PadErrStack *err = PadAst_GetcErrStack(self->ast);
         PadErrStack_ExtendFrontOther(self->errstack, err);

@@ -10,16 +10,16 @@ enum {
 *******************/
 
 void
-tkropt_del(tokenizer_option_t *self) {
+PadTkrOpt_Del(PadTkrOpt *self) {
     if (!self) {
         return;
     }
     free(self);
 }
 
-tokenizer_option_t *
-tkropt_new(void) {
-    tokenizer_option_t *self = mem_calloc(1, sizeof(*self));
+PadTkrOpt *
+PadTkrOpt_New(void) {
+    PadTkrOpt *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -29,9 +29,9 @@ tkropt_new(void) {
     return self;
 }
 
-tokenizer_option_t *
-tkropt_deep_copy(const tokenizer_option_t *other) {
-    tokenizer_option_t *self = mem_calloc(1, sizeof(*self));
+PadTkrOpt *
+PadTkrOpt_DeepCopy(const PadTkrOpt *other) {
+    PadTkrOpt *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -42,8 +42,8 @@ tkropt_deep_copy(const tokenizer_option_t *other) {
     return self;
 }
 
-tokenizer_option_t *
-tkropt_validate(tokenizer_option_t *self) {
+PadTkrOpt *
+tkropt_validate(PadTkrOpt *self) {
     if (self->ldbrace_value == NULL ||
         self->rdbrace_value == NULL ||
         strlen(self->ldbrace_value) != 2 ||
@@ -75,14 +75,14 @@ tkropt_validate(tokenizer_option_t *self) {
 * tokenizer *
 ************/
 
-struct tokenizer {
+struct PadTkr {
     PadErrStack *error_stack;
     char *program_filename;
     const char *program_source;
     const char *ptr;
     token_t **tokens;
     string_t *buf;
-    tokenizer_option_t *option;
+    PadTkrOpt *option;
     int32_t tokens_len;
     int32_t tokens_capa;
     int32_t program_lineno;
@@ -90,7 +90,7 @@ struct tokenizer {
 };
 
 void
-tkr_del(tokenizer_t *self) {
+PadTkr_Del(PadTkr *self) {
     if (!self) {
         return;
     }
@@ -102,20 +102,20 @@ tkr_del(tokenizer_t *self) {
     free(self->tokens);
     PadErrStack_Del(self->error_stack);
     str_del(self->buf);
-    tkropt_del(self->option);
+    PadTkrOpt_Del(self->option);
     free(self);
 }
 
-tokenizer_t *
-tkr_new(tokenizer_option_t *move_option) {
-    tokenizer_t *self = mem_calloc(1, sizeof(*self));
+PadTkr *
+PadTkr_New(PadTkrOpt *move_option) {
+    PadTkr *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->error_stack = PadErrStack_New();
     if (!self->error_stack) {
-        tkr_del(self);
+        PadTkr_Del(self);
         return NULL;
     }
 
@@ -123,13 +123,13 @@ tkr_new(tokenizer_option_t *move_option) {
     self->tokens_len = 0;
     self->tokens = mem_calloc(self->tokens_capa+1, sizeof(token_t *));  // +1 for final null
     if (!self->tokens) {
-        tkr_del(self);
+        PadTkr_Del(self);
         return NULL;
     }
 
     self->buf = str_new();
     if (!self->buf) {
-        tkr_del(self);
+        PadTkr_Del(self);
         return NULL;
     }
 
@@ -140,23 +140,23 @@ tkr_new(tokenizer_option_t *move_option) {
     return self;
 }
 
-tokenizer_t *
-tkr_deep_copy(const tokenizer_t *other) {
-    tokenizer_t *self = mem_calloc(1, sizeof(*self));
+PadTkr *
+PadTkr_DeepCopy(const PadTkr *other) {
+    PadTkr *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->error_stack = PadErrStack_DeepCopy(other->error_stack);
     if (!self->error_stack) {
-        tkr_del(self);
+        PadTkr_Del(self);
         return NULL;
     }
 
     if (other->program_filename) {
         self->program_filename = cstr_dup(other->program_filename);
         if (!self->program_filename) {
-            tkr_del(self);
+            PadTkr_Del(self);
             return NULL;
         }
     }
@@ -165,16 +165,16 @@ tkr_deep_copy(const tokenizer_t *other) {
     self->ptr = other->ptr;
     self->buf = str_deep_copy(other->buf);
     if (!self->buf) {
-        tkr_del(self);
+        PadTkr_Del(self);
         return NULL;
     }
 
     self->tokens_len = other->tokens_len;
     self->tokens_capa = other->tokens_capa;
 
-    tokenizer_option_t *opt = tkropt_deep_copy(other->option);
+    PadTkrOpt *opt = PadTkrOpt_DeepCopy(other->option);
     if (!opt) {
-        tkr_del(self);
+        PadTkr_Del(self);
         return NULL;
     }
 
@@ -183,7 +183,7 @@ tkr_deep_copy(const tokenizer_t *other) {
 
     self->tokens = mem_calloc(self->tokens_capa + 1, sizeof(token_t *));  // +1 for final null
     if (!self->tokens) {
-        tkr_del(self);
+        PadTkr_Del(self);
         return NULL;
     }
 
@@ -191,7 +191,7 @@ tkr_deep_copy(const tokenizer_t *other) {
         const token_t *tok = other->tokens[i];
         self->tokens[i] = token_deep_copy(tok);
         if (!self->tokens[i]) {
-            tkr_del(self);
+            PadTkr_Del(self);
             return NULL;
         }
     }
@@ -199,8 +199,8 @@ tkr_deep_copy(const tokenizer_t *other) {
     return self;
 }
 
-tokenizer_t *
-tkr_extendb_other(tokenizer_t *self, const tokenizer_t *other) {
+PadTkr *
+PadTkr_ExtendBackOther(PadTkr *self, const PadTkr *other) {
     int32_t byte = sizeof(token_t *);
     int32_t needcapa = (self->tokens_capa + other->tokens_len);
     int32_t needsize = needcapa * byte + byte;
@@ -220,8 +220,8 @@ tkr_extendb_other(tokenizer_t *self, const tokenizer_t *other) {
     return self;
 }
 
-tokenizer_t *
-tkr_extendf_other(tokenizer_t *self, const tokenizer_t *other) {
+PadTkr *
+PadTkr_ExtendFrontOther(PadTkr *self, const PadTkr *other) {
     int32_t byte = sizeof(token_t *);
     int32_t needcapa = (self->tokens_capa + other->tokens_len);
     int32_t needsize = needcapa * byte + byte;
@@ -249,13 +249,13 @@ tkr_extendf_other(tokenizer_t *self, const tokenizer_t *other) {
     return self;
 }
 
-tokenizer_t *
-tkr_shallow_copy(const tokenizer_t *other) {
-    return tkr_deep_copy(other);
+PadTkr *
+PadTkr_ShallowCopy(const PadTkr *other) {
+    return PadTkr_DeepCopy(other);
 }
 
 static char
-tkr_next(tokenizer_t *self) {
+tkr_next(PadTkr *self) {
     if (!*self->ptr) {
         return '\0';
     }
@@ -264,7 +264,7 @@ tkr_next(tokenizer_t *self) {
 }
 
 static void
-tkr_prev(tokenizer_t *self) {
+tkr_prev(PadTkr *self) {
     if (self->ptr <= self->program_source) {
         return;
     }
@@ -273,18 +273,18 @@ tkr_prev(tokenizer_t *self) {
 }
 
 static int32_t
-tkr_get_program_source_pos(const tokenizer_t *self) {
+tkr_get_program_source_pos(const PadTkr *self) {
     return self->ptr - self->program_source;
 }
 
-tokenizer_t *
-tkr_move_opt(tokenizer_t *self, tokenizer_option_t *move_opt) {
+PadTkr *
+PadTkr_MoveOpt(PadTkr *self, PadTkrOpt *move_opt) {
     if (!self || !move_opt) {
         return NULL;
     }
 
     if (self->option) {
-        tkropt_del(self->option);
+        PadTkrOpt_Del(self->option);
     }
     self->option = mem_move(move_opt);
 
@@ -292,7 +292,7 @@ tkr_move_opt(tokenizer_t *self, tokenizer_option_t *move_opt) {
 }
 
 static void
-tkr_resize_tokens(tokenizer_t *self, int32_t capa) {
+tkr_resize_tokens(PadTkr *self, int32_t capa) {
     size_t byte = sizeof(token_t *);
     token_t **tmp = mem_realloc(self->tokens, byte*capa +byte); // +byte for final null
     if (!tmp) {
@@ -304,7 +304,7 @@ tkr_resize_tokens(tokenizer_t *self, int32_t capa) {
 }
 
 static void
-tkr_move_token(tokenizer_t *self, token_t *move_token) {
+tkr_move_token(PadTkr *self, token_t *move_token) {
     if (self->tokens_len >= self->tokens_capa) {
         tkr_resize_tokens(self, self->tokens_capa*2);
     }
@@ -314,7 +314,7 @@ tkr_move_token(tokenizer_t *self, token_t *move_token) {
 }
 
 static token_t *
-tkr_read_atmark(tokenizer_t *self) {
+tkr_read_atmark(PadTkr *self) {
     int m = 0;
 
     for (; *self->ptr ;) {
@@ -348,7 +348,7 @@ done:
 }
 
 static void
-tkr_clear_tokens(tokenizer_t *self) {
+tkr_clear_tokens(PadTkr *self) {
     for (int i = 0; i < self->tokens_len; ++i) {
         token_del(self->tokens[i]);
         self->tokens[i] = NULL;
@@ -357,12 +357,12 @@ tkr_clear_tokens(tokenizer_t *self) {
 }
 
 static bool
-tkr_is_identifier_char(tokenizer_t *self, int c) {
+tkr_is_identifier_char(PadTkr *self, int c) {
     return isalpha(c) || isdigit(c) || c == '_';
 }
 
 static token_t *
-tkr_read_identifier(tokenizer_t *self) {
+tkr_read_identifier(PadTkr *self) {
     string_t *buf = str_new();
 
     for (; *self->ptr; ) {
@@ -385,7 +385,7 @@ tkr_read_identifier(tokenizer_t *self) {
 }
 
 static string_t *
-tkr_read_Pad_Escape(tokenizer_t *self) {
+tkr_read_Pad_Escape(PadTkr *self) {
     if (*self->ptr != '\\') {
         pushb_error("not found \\ in read Pad_Escape");
         return NULL;
@@ -416,7 +416,7 @@ tkr_read_Pad_Escape(tokenizer_t *self) {
 }
 
 static token_t *
-tkr_read_dq_string(tokenizer_t *self) {
+tkr_read_dq_string(PadTkr *self) {
     int m = 0;
 
     if (*self->ptr != '"') {
@@ -462,14 +462,14 @@ fail:
 }
 
 bool
-tkr_has_error_stack(const tokenizer_t *self) {
+PadTkr_HasErrStack(const PadTkr *self) {
     return PadErrStack_Len(self->error_stack);
 }
 
 static token_t *
-tkr_parse_identifier(tokenizer_t *self) {
+PadTkr_Parse_identifier(PadTkr *self) {
     token_t *token = tkr_read_identifier(self);
-    if (tkr_has_error_stack(self)) {
+    if (PadTkr_HasErrStack(self)) {
         token_del(token);
         return NULL;
     }
@@ -526,8 +526,8 @@ tkr_parse_identifier(tokenizer_t *self) {
     return token;
 }
 
-static tokenizer_t *
-tkr_store_textblock(tokenizer_t *self) {
+static PadTkr *
+tkr_store_textblock(PadTkr *self) {
     if (!str_len(self->buf)) {
         return self;
     }
@@ -538,9 +538,9 @@ tkr_store_textblock(tokenizer_t *self) {
     return self;
 }
 
-static tokenizer_t *
-tkr_parse_op(
-    tokenizer_t *self,
+static PadTkr *
+PadTkr_Parse_op(
+    PadTkr *self,
     char op,
     token_type_t type_op,
     token_type_t type_op_ass
@@ -564,8 +564,8 @@ tkr_parse_op(
     return self;
 }
 
-static tokenizer_t *
-tkr_parse_int_or_float(tokenizer_t *self) {
+static PadTkr *
+PadTkr_Parse_int_or_float(PadTkr *self) {
     const char *save = self->ptr;
     int m = 0;
     string_t *buf = str_new();
@@ -642,8 +642,8 @@ done:
     return self;
 }
 
-tokenizer_t *
-tkr_parse(tokenizer_t *self, const char *program_source) {
+PadTkr *
+PadTkr_Parse(PadTkr *self, const char *program_source) {
     self->program_source = program_source;
     self->ptr = program_source;
     PadErrStack_Clear(self->error_stack);
@@ -698,19 +698,19 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
             if (c == '"') {
                 tkr_prev(self);
                 token_t *token = tkr_read_dq_string(self);
-                if (tkr_has_error_stack(self)) {
+                if (PadTkr_HasErrStack(self)) {
                     token_del(token);
                     goto fail;
                 }
                 tkr_move_token(self, mem_move(token));
             } else if (isdigit(c)) {
                 tkr_prev(self);
-                if (!tkr_parse_int_or_float(self)) {
+                if (!PadTkr_Parse_int_or_float(self)) {
                     goto fail;
                 }
             } else if (tkr_is_identifier_char(self, c)) {
                 tkr_prev(self);
-                if (!tkr_parse_identifier(self)) {
+                if (!PadTkr_Parse_identifier(self)) {
                     goto fail;
                 }
             } else if (c == '/' && *self->ptr == '/') {
@@ -730,7 +730,7 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
             } else if (c == '@') {
                 tkr_prev(self);
                 token_t *token = tkr_read_atmark(self);
-                if (tkr_has_error_stack(self)) {
+                if (PadTkr_HasErrStack(self)) {
                     token_del(token);
                     goto fail;
                 }
@@ -741,7 +741,7 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
                 }
             } else if (c == '=') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__ASS, TOKEN_TYPE_PAD_OP__EQ)) {
+                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__ASS, TOKEN_TYPE_PAD_OP__EQ)) {
                     goto fail;
                 }
             } else if (c == '!' && *self->ptr == '=') {
@@ -762,27 +762,27 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
                 tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_PAD_OP__GT)));
             } else if (c == '+') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__ADD, TOKEN_TYPE_PAD_OP__ADD_ASS)) {
+                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__ADD, TOKEN_TYPE_PAD_OP__ADD_ASS)) {
                     goto fail;
                 }
             } else if (c == '-') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__SUB, TOKEN_TYPE_PAD_OP__SUB_ASS)) {
+                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__SUB, TOKEN_TYPE_PAD_OP__SUB_ASS)) {
                     goto fail;
                 }
             } else if (c == '*') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__MUL, TOKEN_TYPE_PAD_OP__MUL_ASS)) {
+                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__MUL, TOKEN_TYPE_PAD_OP__MUL_ASS)) {
                     goto fail;
                 }
             } else if (c == '/') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__DIV, TOKEN_TYPE_PAD_OP__DIV_ASS)) {
+                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__DIV, TOKEN_TYPE_PAD_OP__DIV_ASS)) {
                     goto fail;
                 }
             } else if (c == '%') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__MOD, TOKEN_TYPE_PAD_OP__MOD_ASS)) {
+                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__MOD, TOKEN_TYPE_PAD_OP__MOD_ASS)) {
                     goto fail;
                 }
             } else if (c == '.') {
@@ -815,19 +815,19 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
             if (c == '"') {
                 tkr_prev(self);
                 token_t *token = tkr_read_dq_string(self);
-                if (tkr_has_error_stack(self)) {
+                if (PadTkr_HasErrStack(self)) {
                     token_del(token);
                     goto fail;
                 }
                 tkr_move_token(self, mem_move(token));
             } else if (isdigit(c)) {
                 tkr_prev(self);
-                if (!tkr_parse_int_or_float(self)) {
+                if (!PadTkr_Parse_int_or_float(self)) {
                     goto fail;
                 }
             } else if (tkr_is_identifier_char(self, c)) {
                 tkr_prev(self);
-                if (!tkr_parse_identifier(self)) {
+                if (!PadTkr_Parse_identifier(self)) {
                     goto fail;
                 }
             } else if (c == self->option->rdbrace_value[0] &&
@@ -839,7 +839,7 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
                m = 0;
             } else if (c == '=') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__ASS, TOKEN_TYPE_PAD_OP__EQ)) {
+                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__ASS, TOKEN_TYPE_PAD_OP__EQ)) {
                     goto fail;
                 }
             } else if (c == '!' && *self->ptr == '=') {
@@ -860,27 +860,27 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
                 tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_PAD_OP__GT)));
             } else if (c == '+') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__ADD, TOKEN_TYPE_PAD_OP__ADD_ASS)) {
+                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__ADD, TOKEN_TYPE_PAD_OP__ADD_ASS)) {
                     goto fail;
                 }
             } else if (c == '-') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__SUB, TOKEN_TYPE_PAD_OP__SUB_ASS)) {
+                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__SUB, TOKEN_TYPE_PAD_OP__SUB_ASS)) {
                     goto fail;
                 }
             } else if (c == '*') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__MUL, TOKEN_TYPE_PAD_OP__MUL_ASS)) {
+                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__MUL, TOKEN_TYPE_PAD_OP__MUL_ASS)) {
                     goto fail;
                 }
             } else if (c == '/') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__DIV, TOKEN_TYPE_PAD_OP__DIV_ASS)) {
+                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__DIV, TOKEN_TYPE_PAD_OP__DIV_ASS)) {
                     goto fail;
                 }
             } else if (c == '%') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__MOD, TOKEN_TYPE_PAD_OP__MOD_ASS)) {
+                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__MOD, TOKEN_TYPE_PAD_OP__MOD_ASS)) {
                     goto fail;
                 }
             } else if (c == '.') {
@@ -952,12 +952,12 @@ fail:
 }
 
 int32_t
-tkr_tokens_len(const tokenizer_t *self) {
+PadTkr_ToksLen(const PadTkr *self) {
     return self->tokens_len;
 }
 
 const token_t *
-tkr_tokens_getc(tokenizer_t *self, int32_t index) {
+PadTkr_ToksGetc(PadTkr *self, int32_t index) {
     if (index < 0 || index >= self->tokens_len) {
         return NULL;
     }
@@ -965,7 +965,7 @@ tkr_tokens_getc(tokenizer_t *self, int32_t index) {
 }
 
 const char *
-tkr_getc_first_error_message(const tokenizer_t *self) {
+PadTkr_GetcFirstErrMsg(const PadTkr *self) {
     if (!PadErrStack_Len(self->error_stack)) {
         return NULL;
     }
@@ -975,7 +975,7 @@ tkr_getc_first_error_message(const tokenizer_t *self) {
 }
 
 const PadErrStack *
-tkr_getc_error_stack(const tokenizer_t *self) {
+PadTkr_GetcErrStack(const PadTkr *self) {
     if (!self) {
         return NULL;
     }
@@ -983,22 +983,22 @@ tkr_getc_error_stack(const tokenizer_t *self) {
 }
 
 token_t **
-tkr_get_tokens(tokenizer_t *self) {
+PadTkr_GetToks(PadTkr *self) {
     return self->tokens;
 }
 
 void
-tkr_set_debug(tokenizer_t *self, bool debug) {
+PadTkr_SetDebug(PadTkr *self, bool debug) {
     self->debug = debug;
 }
 
 void
-tkr_trace_error(const tokenizer_t *self, FILE *fout) {
+PadTkr_TraceErr(const PadTkr *self, FILE *fout) {
     PadErrStack_Trace(self->error_stack, fout);
 }
 
 const char *
-tkr_set_program_filename(tokenizer_t *self, const char *program_filename) {
+PadTkr_SetProgFname(PadTkr *self, const char *program_filename) {
     self->program_filename = cstr_dup(program_filename);
     if (!self->program_filename) {
         return NULL;

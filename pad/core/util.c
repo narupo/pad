@@ -192,7 +192,7 @@ Pad_TrimFirstLine(char *dst, int32_t dstsz, const char *text) {
 
 char *
 Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *argv[], const char *src) {
-    tokenizer_t *tkr = tkr_new(tkropt_new());
+    PadTkr *tkr = PadTkr_New(PadTkrOpt_New());
     ast_t *ast = PadAst_New(config);
     PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -205,10 +205,10 @@ Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *
         return NULL;
     }
 
-    tkr_parse(tkr, src);
-    if (tkr_has_error_stack(tkr)) {
+    PadTkr_Parse(tkr, src);
+    if (PadTkr_HasErrStack(tkr)) {
         if (errstack) {
-            const PadErrStack *es = tkr_getc_error_stack(tkr);
+            const PadErrStack *es = PadTkr_GetcErrStack(tkr);
             PadErrStack_ExtendBackOther(errstack, es);
         }
         return NULL;
@@ -218,7 +218,7 @@ Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *
     PadAst_MoveOpts(ast, opts);
     opts = NULL;
 
-    PadCc_Compile(ast, tkr_get_tokens(tkr));
+    PadCc_Compile(ast, PadTkr_GetToks(tkr));
     if (PadAst_HasErrs(ast)) {
         if (errstack) {
             const PadErrStack *es = PadAst_GetcErrStack(ast);
@@ -236,7 +236,7 @@ Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *
         return NULL;
     }
 
-    tkr_del(tkr);
+    PadTkr_Del(tkr);
     PadAst_Del(ast);
 
     string_t *buf = str_new();
@@ -262,17 +262,17 @@ static char *
 read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     char *src = file_readcp_from_path(rcpath);
 
-    tokenizer_t *tkr = tkr_new(tkropt_new());
+    PadTkr *tkr = PadTkr_New(PadTkrOpt_New());
     ast_t *ast = PadAst_New(config);
     PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
     PadOpts *opts = PadOpts_New();
 
-    tkr_parse(tkr, src);
+    PadTkr_Parse(tkr, src);
     free(src);
     src = NULL;
-    if (tkr_has_error_stack(tkr)) {
-        err_error("%s", tkr_getc_first_error_message(tkr));
+    if (PadTkr_HasErrStack(tkr)) {
+        err_error("%s", PadTkr_GetcFirstErrMsg(tkr));
         return NULL;
     }
 
@@ -280,7 +280,7 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     PadAst_MoveOpts(ast, opts);
     opts = NULL;
 
-    PadCc_Compile(ast, tkr_get_tokens(tkr));
+    PadCc_Compile(ast, PadTkr_GetToks(tkr));
     if (PadAst_HasErrs(ast)) {
         err_error("%s", PadAst_GetcFirstErrMsg(ast));
         return NULL;
@@ -292,7 +292,7 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
         return NULL;
     }
 
-    tkr_del(tkr);
+    PadTkr_Del(tkr);
     PadAst_Del(ast);
 
     PadObjDict *varmap = PadCtx_GetVarmapAtGlobal(ctx);

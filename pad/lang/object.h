@@ -112,7 +112,7 @@ struct PadModObj {
     char *name;  // module name
     char *program_filename;
     char *program_source;
-    tokenizer_t *tokenizer;
+    PadTkr *tokenizer;
     ast_t *ast;
     PadCtx *context;
     builtin_func_info_t *builtin_func_infos;  // builtin functions
@@ -492,7 +492,7 @@ PadObj_NewObj(
  * @param[in] *name                pointer to C strings for module name
  * @param[in] *program_filename    file name
  * @param[in] *move_program_source program source
- * @param[in] *move_tkr            pointer to tokenizer_t (with move semantics)
+ * @param[in] *move_tkr            pointer to PadTkr (with move semantics)
  * @param[in] *move_ast            pointer to ast_t (with move semantics)
  * @param[in] *move_context        context
  * @param[in] *func_infos          array of functions
@@ -505,7 +505,7 @@ PadObj_NewModBy(
     const char *name,
     const char *program_filename,
     char *move_program_source,
-    tokenizer_t *move_tkr,
+    PadTkr *move_tkr,
     ast_t *move_ast,
     PadCtx *move_context,
     builtin_func_info_t *func_infos

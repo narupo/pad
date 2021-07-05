@@ -627,7 +627,7 @@ builtin_dance(builtin_func_args_t *fargs) {
     }
 
     PadObjAry *retarr = PadObjAry_New();
-    tokenizer_t *tkr = tkr_new(tkropt_new());
+    PadTkr *tkr = PadTkr_New(PadTkrOpt_New());
     ast_t *ast = PadAst_New(ref_ast->ref_config);
     PadCtx *ctx = PadCtx_New(ref_ast->ref_gc);
     PadOpts *opts = PadOpts_New();
@@ -640,9 +640,9 @@ builtin_dance(builtin_func_args_t *fargs) {
         }
     }
 
-    tkr_parse(tkr, code);
-    if (tkr_has_error_stack(tkr)) {
-        const PadErrStack *es = tkr_getc_error_stack(tkr);
+    PadTkr_Parse(tkr, code);
+    if (PadTkr_HasErrStack(tkr)) {
+        const PadErrStack *es = PadTkr_GetcErrStack(tkr);
         return_fail_es(es);
     }
 
@@ -650,7 +650,7 @@ builtin_dance(builtin_func_args_t *fargs) {
     PadAst_MoveOpts(ast, mem_move(opts));
     opts = NULL;
 
-    PadCc_Compile(ast, tkr_get_tokens(tkr));
+    PadCc_Compile(ast, PadTkr_GetToks(tkr));
     if (PadAst_HasErrs(ast)) {
         const PadErrStack *es = PadAst_GetcErrStack(ast);
         return_fail_es(es);
@@ -662,7 +662,7 @@ builtin_dance(builtin_func_args_t *fargs) {
         return_fail_es(es);
     }
 
-    tkr_del(tkr);
+    PadTkr_Del(tkr);
     PadAst_Del(ast);
 
     const char *out = PadCtx_GetcStdoutBuf(ctx);
@@ -780,7 +780,7 @@ builtin_func_infos[] = {
 
 PadObj *
 Pad_NewBltMod(const PadConfig *ref_config, PadGc *ref_gc) {
-    tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
+    PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
     ast_t *ast = PadAst_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;

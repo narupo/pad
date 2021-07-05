@@ -46,8 +46,8 @@ typedef struct PadNode_array PadNodeAry;
 struct PadNode_dict;
 typedef struct PadNode_dict PadNodeDict;
 
-struct tokenizer;
-typedef struct tokenizer tokenizer_t;
+struct PadTkr;
+typedef struct PadTkr PadTkr;
 
 struct context;
 typedef struct context PadCtx;

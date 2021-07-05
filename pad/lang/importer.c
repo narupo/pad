@@ -86,7 +86,7 @@ create_modobj(
     }
 
     // compile source
-    tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
+    PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
     ast_t *ast = PadAst_New(self->ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);  // LOOK ME! gc is *REFERENCE* from arguments!
     PadCtx_SetRefPrev(ctx, ref_ast->ref_context);
@@ -94,16 +94,16 @@ create_modobj(
     ast->import_level = ref_ast->import_level + 1;
     ast->debug = ref_ast->debug;
 
-    tkr_set_program_filename(tkr, src_path);
-    tkr_parse(tkr, src);
-    if (tkr_has_error_stack(tkr)) {
-        PadImporter_SetErr(self, tkr_getc_first_error_message(tkr));
+    PadTkr_SetProgFname(tkr, src_path);
+    PadTkr_Parse(tkr, src);
+    if (PadTkr_HasErrStack(tkr)) {
+        PadImporter_SetErr(self, PadTkr_GetcFirstErrMsg(tkr));
         free(src);
         return NULL;
     }
 
     PadAst_Clear(ast);
-    PadCc_Compile(ast, tkr_get_tokens(tkr));
+    PadCc_Compile(ast, PadTkr_GetToks(tkr));
     if (PadAst_HasErrs(ast)) {
         PadImporter_SetErr(self, PadAst_GetcFirstErrMsg(ast));
         free(src);

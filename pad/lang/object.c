@@ -4,7 +4,7 @@ extern void
 PadObjAry_Del(PadObjAry* self);
 
 extern void
-tkr_del(tokenizer_t *self);
+PadTkr_Del(PadTkr *self);
 
 extern void
 PadAst_Del(ast_t *self);
@@ -27,11 +27,11 @@ PadCtx_ShallowCopy(const PadCtx *other);
 extern void
 PadCtx_Dump(const PadCtx *self, FILE *fout);
 
-tokenizer_t *
-tkr_deep_copy(const tokenizer_t *self);
+PadTkr *
+PadTkr_DeepCopy(const PadTkr *self);
 
-tokenizer_t *
-tkr_shallow_copy(const tokenizer_t *self);
+PadTkr *
+PadTkr_ShallowCopy(const PadTkr *self);
 
 void
 PadObj_Del(PadObj *self) {
@@ -96,7 +96,7 @@ PadObj_Del(PadObj *self) {
         self->module.program_filename = NULL;
         free(self->module.program_source);
         self->module.program_source = NULL;
-        tkr_del(self->module.tokenizer);
+        PadTkr_Del(self->module.tokenizer);
         self->module.tokenizer = NULL;
         PadAst_Del(self->module.ast);
         self->module.ast = NULL;
@@ -242,7 +242,7 @@ PadObj_DeepCopy(const PadObj *other) {
                 return NULL;
             }
         }
-        self->module.tokenizer = tkr_deep_copy(other->module.tokenizer);
+        self->module.tokenizer = PadTkr_DeepCopy(other->module.tokenizer);
         self->module.ast = PadAst_DeepCopy(other->module.ast);
         self->module.context = PadCtx_DeepCopy(other->module.context);
         self->module.builtin_func_infos = other->module.builtin_func_infos;
@@ -358,7 +358,7 @@ PadObj_ShallowCopy(const PadObj *other) {
                 return NULL;
             }
         }
-        self->module.tokenizer = tkr_shallow_copy(other->module.tokenizer);
+        self->module.tokenizer = PadTkr_ShallowCopy(other->module.tokenizer);
         self->module.ast = PadAst_ShallowCopy(other->module.ast);
         self->module.context = PadCtx_ShallowCopy(other->module.context);
         self->module.builtin_func_infos = other->module.builtin_func_infos;
@@ -751,7 +751,7 @@ PadObj_NewModBy(
     const char *name,
     const char *program_filename,
     char *move_program_source,
-    tokenizer_t *move_tkr,
+    PadTkr *move_tkr,
     ast_t *move_ast,
     PadCtx *move_context,
     builtin_func_info_t *infos  // allow null

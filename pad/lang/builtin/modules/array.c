@@ -135,7 +135,7 @@ builtin_func_infos[] = {
 
 PadObj *
 Pad_NewBltAryMod(const PadConfig *ref_config, PadGc *ref_gc) {
-    tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
+    PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
     ast_t *ast = PadAst_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;  // set reference
