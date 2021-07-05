@@ -17,13 +17,27 @@
 #define pusherr(fmt, ...) \
     errstack_pushb(self->errstack, NULL, 0, NULL, 0, fmt, ##__VA_ARGS__)
 
-#define errstack_pushb(self, prog_fname, prog_lineno, prog_src, prog_src_pos, fmt, ...) \
+#define errstack_pushb(stack, prog_fname, prog_lineno, prog_src, prog_src_pos, fmt, ...) \
     _errstack_pushb( \
-        self, \
+        stack, \
         prog_fname, \
         prog_lineno, \
         prog_src, \
         prog_src_pos, \
+        __FILE__, \
+        __LINE__, \
+        __func__, \
+        fmt, \
+        ##__VA_ARGS__ \
+    )
+
+#define errstack_add(stack, fmt, ...) \
+    _errstack_pushb( \
+        stack, \
+        NULL, \
+        0, \
+        NULL, \
+        0, \
         __FILE__, \
         __LINE__, \
         __func__, \
