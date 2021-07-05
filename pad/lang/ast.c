@@ -8,7 +8,7 @@ PadAst_DelNodes(const PadAST *self, PadNode *node) {
 
     switch (node->type) {
     default: {
-        err_die(
+        PadErr_Die(
             "impossible. failed to delete nodes in ast. "
             "not supported node type '%d'", node->type
         );

@@ -7440,7 +7440,7 @@ trv_calc_term_mul_string(PadAST *ast, PadTrvArgs *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__UNICODE:
-        err_die("TODO: mul string 2");
+        PadErr_Die("TODO: mul string 2");
         break;
     case PAD_OBJ_TYPE__CHAIN: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
@@ -10602,7 +10602,7 @@ _PadTrv_Trav(PadAST *ast, PadTrvArgs *targs) {
 
     switch (node->type) {
     default: {
-        err_die("impossible. unsupported node type %d in traverse", PadNode_GetcType(node));
+        PadErr_Die("impossible. unsupported node type %d in traverse", PadNode_GetcType(node));
     } break;
     case PAD_NODE_TYPE__PROGRAM: {
         check("call trv_program");

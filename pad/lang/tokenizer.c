@@ -338,7 +338,7 @@ tkr_read_atmark(PadTkr *self) {
 
 done:
     if (m == 0) {
-        err_die("impossible. mode is first");
+        PadErr_Die("impossible. mode is first");
     } else if (m == 10) {
         pushb_error("invalid syntax. single '@' is not supported");
     } else if (m == 20) {
@@ -376,7 +376,7 @@ tkr_read_identifier(PadTkr *self) {
     }
 
     if (!str_len(buf)) {
-        err_die("impossible. identifier is empty");
+        PadErr_Die("impossible. identifier is empty");
     }
 
     PadTok *token = tok_new(PAD_TOK_TYPE__IDENTIFIER);
@@ -420,7 +420,7 @@ tkr_read_dq_string(PadTkr *self) {
     int m = 0;
 
     if (*self->ptr != '"') {
-        err_die("impossible. should be begin by double quote");
+        PadErr_Die("impossible. should be begin by double quote");
     }
 
     string_t *buf = str_new();

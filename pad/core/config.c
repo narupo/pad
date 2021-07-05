@@ -26,7 +26,7 @@ PadConfig_Init(PadConfig *self) {
 
     // standard libraries
     if (!file_solve(self->std_lib_dir_path, sizeof self->std_lib_dir_path, "~/.pad/stdlib")) {
-        err_error("failed to solve path for standard libraries directory");
+        PadErr_Err("failed to solve path for standard libraries directory");
         return NULL;
     }
 

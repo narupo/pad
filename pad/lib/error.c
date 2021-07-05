@@ -140,7 +140,7 @@ look_fname_ext(err_PadTok **p) {
 }
 
 void
-err_fix_text(char *dst, uint32_t dstsz, const char *src) {
+PadErr_FixTxt(char *dst, uint32_t dstsz, const char *src) {
     const char *deb = getenv("ERROR_DEBUG");
     bool debug = deb && deb[0] == '1';
     int m = 0;
@@ -225,7 +225,7 @@ errorap_unsafe(const char *title, va_list ap, const char *fmt) {
         char tmp[1024 * 5] = {0},
              msg[1024 * 5] = {0};
 		vsnprintf(tmp, sizeof tmp, fmt, ap);
-        err_fix_text(msg, sizeof msg, tmp);
+        PadErr_FixTxt(msg, sizeof msg, tmp);
 		fprintf(stderr, "%s", msg);
         if (strlen(msg) && msg[strlen(msg)-1] != '.') {
             fprintf(stderr, ".");
@@ -251,7 +251,7 @@ fmttoupper_unsafe(char *dst, uint32_t dstsz, const char *fmt) {
 }
 
 bool
-_log_unsafe(const char *file, long line, const char *func, const char *type, const char *msg) {
+PadErr_LogUnsafe(const char *file, long line, const char *func, const char *type, const char *msg) {
 	// Check arguments
 	type = (type ? type : "type");
 	msg = (msg ? msg : "");
@@ -287,7 +287,7 @@ _log_unsafe(const char *file, long line, const char *func, const char *type, con
 }
 
 void
-_err_die(
+_PadErr_Die(
 	const char *fname,
 	int32_t line,
 	const char *funcname,
@@ -309,7 +309,7 @@ _err_die(
 }
 
 void
-err_error(const char *fmt, ...) {
+PadErr_Err(const char *fmt, ...) {
 	char tmp[1024];
 	fmt = fmttoupper_unsafe(tmp, sizeof tmp, fmt);
 
@@ -320,7 +320,7 @@ err_error(const char *fmt, ...) {
 }
 
 void
-err_warn(const char *fmt, ...) {
+PadErr_Warn(const char *fmt, ...) {
 	char tmp[1024];
 	fmt = fmttoupper_unsafe(tmp, sizeof tmp, fmt);
 
@@ -331,7 +331,7 @@ err_warn(const char *fmt, ...) {
 }
 
 void
-err_debug(const char *fmt, ...) {
+PadErr_Debug(const char *fmt, ...) {
 	const char *isdeb = getenv("CAP_DEBUG");
 	if (!isdeb || (isdeb && *isdeb == '0')) {
 		return;

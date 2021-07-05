@@ -563,7 +563,7 @@ PadNode_GetcType(const PadNode *self) {
 void *
 PadNode_GetReal(PadNode *self) {
     if (self == NULL) {
-        err_warn("reference to null pointer in get real from node");
+        PadErr_Warn("reference to null pointer in get real from node");
         return NULL;
     }
     return self->real;

@@ -3381,47 +3381,47 @@ static void
 test_error_fix_text_1(void) {
     char buf[BUFSIZ] = {0};
 
-    err_fix_text(buf, sizeof buf, "text");
+    PadErr_FixTxt(buf, sizeof buf, "text");
     assert(!strcmp(buf, "Text."));
     buf[0] = '\0';
 
-    err_fix_text(buf, sizeof buf, "file.text");
+    PadErr_FixTxt(buf, sizeof buf, "file.text");
     assert(!strcmp(buf, "file.text."));
     buf[0] = '\0';
 
-    err_fix_text(buf, sizeof buf, "file...");
+    PadErr_FixTxt(buf, sizeof buf, "file...");
     assert(!strcmp(buf, "File..."));
     buf[0] = '\0';
 
-    err_fix_text(buf, sizeof buf, "the file...");
+    PadErr_FixTxt(buf, sizeof buf, "the file...");
     assert(!strcmp(buf, "The file..."));
     buf[0] = '\0';
 
-    err_fix_text(buf, sizeof buf, "the file...test");
+    PadErr_FixTxt(buf, sizeof buf, "the file...test");
     assert(!strcmp(buf, "The file...test."));
     buf[0] = '\0';
 
-    err_fix_text(buf, sizeof buf, "the file... test string");
+    PadErr_FixTxt(buf, sizeof buf, "the file... test string");
     assert(!strcmp(buf, "The file... Test string."));
     buf[0] = '\0';
 
-    err_fix_text(buf, sizeof buf, "text. text");
+    PadErr_FixTxt(buf, sizeof buf, "text. text");
     assert(!strcmp(buf, "Text. Text."));
     buf[0] = '\0';
 
-    err_fix_text(buf, sizeof buf, "text.     text");
+    PadErr_FixTxt(buf, sizeof buf, "text.     text");
     assert(!strcmp(buf, "Text. Text."));
     buf[0] = '\0';
 
-    err_fix_text(buf, sizeof buf, "Failed to open directory \"/path/to/dir\". failed to remove recursive.");
+    PadErr_FixTxt(buf, sizeof buf, "Failed to open directory \"/path/to/dir\". failed to remove recursive.");
     assert(!strcmp(buf, "Failed to open directory \"/path/to/dir\". Failed to remove recursive."));
     buf[0] = '\0';
 
-    err_fix_text(buf, sizeof buf, "src/core/error_stack.c");
+    PadErr_FixTxt(buf, sizeof buf, "src/core/error_stack.c");
     assert(!strcmp(buf, "src/core/error_stack.c."));
     buf[0] = '\0';
 
-    err_fix_text(buf, sizeof buf, "newline\n");
+    PadErr_FixTxt(buf, sizeof buf, "newline\n");
     puts(buf);
     assert(!strcmp(buf, "Newline\n."));
     buf[0] = '\0';
@@ -3432,7 +3432,7 @@ test_error__log(void) {
     char buf[BUFSIZ] = {0};
     setbuf(stderr, buf);
 
-    _log_unsafe("file", 100, "func", "warn", "msg");
+    PadErr_LogUnsafe("file", 100, "func", "warn", "msg");
     // assert(strcmp(buf, "")); // TODO
 
     setbuf(stderr, NULL);
@@ -3448,7 +3448,7 @@ test_error_error_1(void) {
     char buf[BUFSIZ] = {0};
     setbuf(stderr, buf);
 
-    err_error("this is error");
+    PadErr_Err("this is error");
     // assert(strcmp(buf, "Error: This is error. No such file or directory.\n") == 0);
 
     setbuf(stderr, NULL);
@@ -3456,9 +3456,9 @@ test_error_error_1(void) {
 
 static void
 test_error_error_2(void) {
-    err_error("test1");
-    err_error("test2");
-    err_error("test3");
+    PadErr_Err("test1");
+    PadErr_Err("test2");
+    PadErr_Err("test3");
 }
 
 /**

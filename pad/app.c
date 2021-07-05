@@ -359,7 +359,7 @@ main(int argc, char *argv[]) {
 
     app_t *app = app_new();
     if (!app) {
-        err_die("failed to start application");
+        PadErr_Die("failed to start application");
     }
 
     int result = app_run(app, argc, argv);

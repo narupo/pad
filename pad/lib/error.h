@@ -34,17 +34,17 @@
  * @return failed to false
  */
 bool
-_log_unsafe(const char *file, long line, const char *func, const char *type, const char *msg);
+PadErr_LogUnsafe(const char *file, long line, const char *func, const char *type, const char *msg);
 
 /**
  * Write log
  *
  * @param[in] type string of log type (examples 'error', 'debug', etc...)
  */
-#define err_log(type, ...) { \
+#define PadErr_Log(type, ...) { \
 	char msg[1024]; \
 	snprintf(msg, sizeof msg, __VA_ARGS__); \
-	_log_unsafe(__FILE__, __LINE__, __func__, type, msg); \
+	PadErr_LogUnsafe(__FILE__, __LINE__, __func__, type, msg); \
 }
 
 /**
@@ -54,7 +54,7 @@ _log_unsafe(const char *file, long line, const char *func, const char *type, con
  * @param[in] ... arguments of format
  */
 void
-_err_die(
+_PadErr_Die(
 	const char *fname,
 	int32_t line,
 	const char *funcname,
@@ -62,8 +62,8 @@ _err_die(
 	...
 );
 
-#define err_die(fmt, ...) \
-	_err_die(__FILE__, __LINE__, __func__, fmt, ##__VA_ARGS__)
+#define PadErr_Die(fmt, ...) \
+	_PadErr_Die(__FILE__, __LINE__, __func__, fmt, ##__VA_ARGS__)
 
 /**
  * Show error message
@@ -72,7 +72,7 @@ _err_die(
  * @param[in] ... arguments of format
  */
 void
-err_error(const char *fmt, ...);
+PadErr_Err(const char *fmt, ...);
 
 /**
  * Show warning message
@@ -81,7 +81,7 @@ err_error(const char *fmt, ...);
  * @param[in] ... arguments of format
  */
 void
-err_warn(const char *fmt, ...);
+PadErr_Warn(const char *fmt, ...);
 
 /**
  * Show debug message
@@ -90,7 +90,7 @@ err_warn(const char *fmt, ...);
  * @param[in] ... arguments of format
  */
 void
-err_debug(const char *fmt, ...);
+PadErr_Debug(const char *fmt, ...);
 
 /**
  * Fix text by error format
@@ -100,4 +100,4 @@ err_debug(const char *fmt, ...);
  * @param[in] src   source text
  */
 void
-err_fix_text(char *dst, uint32_t dstsz, const char *src);
+PadErr_FixTxt(char *dst, uint32_t dstsz, const char *src);

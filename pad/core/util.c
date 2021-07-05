@@ -59,7 +59,7 @@ Pad_SafeSystem(const char *cmdline, int option) {
         &si, // Pointer to STARTUPINFO structure
         &pi) // Pointer to PROCESS_INFORMATION structure
     ) {
-        err_error("failed to create sub process");
+        PadErr_Err("failed to create sub process");
         return 1;
     }
 
@@ -76,7 +76,7 @@ Pad_SafeSystem(const char *cmdline, int option) {
     // success to fork
     HANDLE child_process = pi.hProcess;
     if (!CloseHandle(pi.hThread)) {
-        err_error("failed to close handle");
+        PadErr_Err("failed to close handle");
         return 1;
     }
 
@@ -84,15 +84,15 @@ Pad_SafeSystem(const char *cmdline, int option) {
     DWORD r = WaitForSingleObject(child_process, INFINITE);
     switch(r) {
     case WAIT_FAILED:
-        err_error("child process was failed");
+        PadErr_Err("child process was failed");
         return 1;
     case WAIT_ABANDONED:
-        err_error("child process was abandoned");
+        PadErr_Err("child process was abandoned");
         return 1;
     case WAIT_OBJECT_0: // success
         break;
     case WAIT_TIMEOUT:
-        err_error("child process was timeout");
+        PadErr_Err("child process was timeout");
         return 1;
     default:
         return 1;
@@ -101,7 +101,7 @@ Pad_SafeSystem(const char *cmdline, int option) {
     // get exit code of child process
     DWORD exit_code;
     if (!GetExitCodeProcess(child_process, &exit_code)) {
-        err_error("failed to get exit code of child process");
+        PadErr_Err("failed to get exit code of child process");
         return 1;
     }
 
@@ -110,7 +110,7 @@ Pad_SafeSystem(const char *cmdline, int option) {
 #else
     PadCL *cl = PadCL_New();
     if (!PadCL_ParseStrOpts(cl, cmdline, 0)) {
-        err_error("failed to parse command line \"%s\"", cmdline);
+        PadErr_Err("failed to parse command line \"%s\"", cmdline);
         PadCL_Del(cl);
         return -1;
     }
@@ -118,7 +118,7 @@ Pad_SafeSystem(const char *cmdline, int option) {
     int argc = PadCL_Len(cl);
     char **argv = PadCL_EscDel(cl);
     if (!argv) {
-        err_error("failed to Pad_Escape and delete of clk");
+        PadErr_Err("failed to Pad_Escape and delete of clk");
         return -1;
     }
 
@@ -131,13 +131,13 @@ Pad_SafeSystem(const char *cmdline, int option) {
         break;
     case 0: // child
         if (execv(argv[0], argv) == -1) {
-            err_error("failed to Pad_SafeSystem");
+            PadErr_Err("failed to Pad_SafeSystem");
             Pad_FreeArgv(argc, argv);
             _exit(1);
         }
         break;
     case -1: // error
-        err_error("failed to fork");
+        PadErr_Err("failed to fork");
         return -1;
         break;
     }
@@ -272,7 +272,7 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     free(src);
     src = NULL;
     if (PadTkr_HasErrStack(tkr)) {
-        err_error("%s", PadTkr_GetcFirstErrMsg(tkr));
+        PadErr_Err("%s", PadTkr_GetcFirstErrMsg(tkr));
         return NULL;
     }
 
@@ -282,13 +282,13 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
 
     PadCc_Compile(ast, PadTkr_GetToks(tkr));
     if (PadAst_HasErrs(ast)) {
-        err_error("%s", PadAst_GetcFirstErrMsg(ast));
+        PadErr_Err("%s", PadAst_GetcFirstErrMsg(ast));
         return NULL;
     }
 
     PadTrv_Trav(ast, ctx);
     if (PadAst_HasErrs(ast)) {
-        err_error("%s", PadAst_GetcFirstErrMsg(ast));
+        PadErr_Err("%s", PadAst_GetcFirstErrMsg(ast));
         return NULL;
     }
 

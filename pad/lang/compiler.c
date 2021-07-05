@@ -7,7 +7,7 @@
 #define declare(T, var) \
     T *var = calloc(1, sizeof(T)); \
     if (!var) { \
-        err_die("failed to alloc. LINE %d", __LINE__); \
+        PadErr_Die("failed to alloc. LINE %d", __LINE__); \
     } \
 
 #define ready() \
@@ -2770,7 +2770,7 @@ cc_if_stmt(PadAST *ast, PadCcArgs *cargs) {
         PadNodeype = PAD_NODE_TYPE__ELIF_STMT;
         check("read elif");
     } else {
-        err_die("invalid type in if stmt");
+        PadErr_Die("invalid type in if stmt");
     }
 
     check("skip newlines");

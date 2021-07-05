@@ -11,7 +11,7 @@ enum {
 void
 PadErrElem_Show_debug(const PadErrElem *self, FILE *fout) {
     char msg[PAD_ERRELEM_MESSAGE_SIZE] = {0};
-    err_fix_text(msg, sizeof msg, self->message);
+    PadErr_FixTxt(msg, sizeof msg, self->message);
 
     fprintf(fout, "%s: %d: %s: %s\n",
         self->filename,
@@ -24,7 +24,7 @@ PadErrElem_Show_debug(const PadErrElem *self, FILE *fout) {
 void
 PadErrElem_Show(const PadErrElem *self, FILE *fout) {
     char msg[PAD_ERRELEM_MESSAGE_SIZE] = {0};
-    err_fix_text(msg, sizeof msg, self->message);
+    PadErr_FixTxt(msg, sizeof msg, self->message);
 
     const char *fname = self->program_filename;
     int32_t lineno = self->program_lineno;
@@ -38,7 +38,7 @@ PadErrElem_Show(const PadErrElem *self, FILE *fout) {
 void
 PadErrElem_Show_msg(const PadErrElem *self, FILE *fout) {
     char msg[PAD_ERRELEM_MESSAGE_SIZE] = {0};
-    err_fix_text(msg, sizeof msg, self->message);
+    PadErr_FixTxt(msg, sizeof msg, self->message);
     fprintf(fout, "%s\n", msg);
 }
 
