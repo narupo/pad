@@ -24,7 +24,7 @@ struct context {
     // コンテキストはスコープを管理する
     // 関数などのブロックに入るとスコープがプッシュされ、関数のスコープになる
     // 関数から出るとこのスコープがポップされ、スコープから出る
-    scope_t *scope;  // scope in context
+    PadScope *scope;  // scope in context
 
     bool do_break;  // if do break from current context then store true
     bool do_continue;  // if do continue on current context then store
@@ -43,7 +43,7 @@ PadCtx_Del(PadCtx *self) {
     PadAliasInfo_Del(self->alinfo);
     str_del(self->stdout_buf);
     str_del(self->stderr_buf);
-    scope_del(self->scope);
+    PadScope_Del(self->scope);
     free(self);
 }
 
@@ -56,7 +56,7 @@ PadCtx_EscDelGlobalVarmap(PadCtx *self) {
     PadAliasInfo_Del(self->alinfo);
     str_del(self->stdout_buf);
     str_del(self->stderr_buf);
-    PadObjDict *varmap = scope_escdel_head_varmap(self->scope);
+    PadObjDict *varmap = PadScope_EscDelHeadVarmap(self->scope);
     free(self);
 
     return varmap;
@@ -88,7 +88,7 @@ PadCtx_New(PadGc *ref_gc) {
         return NULL;
     }
 
-    self->scope = scope_new(ref_gc);
+    self->scope = PadScope_New(ref_gc);
     if (!self->scope) {
         PadCtx_Del(self);
         return NULL;
@@ -104,7 +104,7 @@ PadCtx_Clear(PadCtx *self) {
     PadAliasInfo_Clear(self->alinfo);
     str_clear(self->stdout_buf);
     str_clear(self->stderr_buf);
-    scope_clear(self->scope);
+    PadScope_Clear(self->scope);
     self->is_use_buf = true;
 }
 
@@ -170,13 +170,13 @@ PadCtx_GetcAliasInfo(const PadCtx *self) {
 
 PadObjDict *
 PadCtx_GetVarmap(PadCtx *self) {
-    scope_t *current_scope = scope_get_last(self->scope);
-    return scope_get_varmap(current_scope);
+    PadScope *current_scope = PadScope_GetLast(self->scope);
+    return PadScope_GetVarmap(current_scope);
 }
 
 PadObjDict *
 PadCtx_GetVarmapAtGlobal(PadCtx *self) {
-    return scope_get_varmap(self->scope);
+    return PadScope_GetVarmap(self->scope);
 }
 
 bool
@@ -218,14 +218,14 @@ PadCtx_ClearJumpFlags(PadCtx *self) {
 
 void
 PadCtx_PushBackScope(PadCtx *self) {
-    scope_t *scope = scope_new(self->ref_gc);
-    scope_moveb(self->scope, scope);
+    PadScope *scope = PadScope_New(self->ref_gc);
+    PadScope_MoveBack(self->scope, scope);
 }
 
 void
 PadCtx_PopBackScope(PadCtx *self) {
-    scope_t *scope = scope_popb(self->scope);
-    scope_del(scope);
+    PadScope *scope = PadScope_PopBack(self->scope);
+    PadScope_Del(scope);
 }
 
 PadObj *
@@ -234,7 +234,7 @@ PadCtx_FindVarRef(PadCtx *self, const char *key) {
         return NULL;
     }
 
-    return scope_find_var_ref(self->scope, key);
+    return PadScope_FindVarRef(self->scope, key);
 }
 
 PadObj *
@@ -244,7 +244,7 @@ PadCtx_FindVarRefAll(PadCtx *self, const char *key) {
     }
     
     for (PadCtx *cur = self; cur; cur = cur->ref_prev) {
-        PadObj *ref = scope_find_var_ref_all(cur->scope, key);
+        PadObj *ref = PadScope_FindVarRefAll(cur->scope, key);
         if (ref) {
             return ref;
         }
@@ -290,13 +290,13 @@ PadCtx_Dump(const PadCtx *self, FILE *fout) {
 
     fprintf(fout, "context[%p]\n", self);
     fprintf(fout, "ref_prev[%p]\n", self->ref_prev);
-    scope_dump(self->scope, fout);
+    PadScope_Dump(self->scope, fout);
 }
 
 bool
 PadCtx_VarInCurScope(const PadCtx *self, const char *idn) {
-    scope_t *current_scope = scope_get_last(self->scope);
-    PadObjDict *varmap = scope_get_varmap(current_scope);
+    PadScope *current_scope = PadScope_GetLast(self->scope);
+    PadObjDict *varmap = PadScope_GetVarmap(current_scope);
 
     for (int32_t i = 0; i < PadObjDict_Len(varmap); ++i) {
         const PadObjDictItem *item = PadObjDict_GetcIndex(varmap, i);
@@ -311,8 +311,8 @@ PadCtx_VarInCurScope(const PadCtx *self, const char *idn) {
 
 PadObjDict *
 PadCtx_GetRefVarmapCurScope(const PadCtx *self) {
-    scope_t *current_scope = scope_get_last(self->scope);
-    return scope_get_varmap(current_scope);
+    PadScope *current_scope = PadScope_GetLast(self->scope);
+    return PadScope_GetVarmap(current_scope);
 }
 
 void
@@ -388,7 +388,7 @@ PadCtx_DeepCopy(const PadCtx *other) {
     self->alinfo = PadAliasInfo_DeepCopy(other->alinfo);
     self->stdout_buf = str_deep_copy(other->stdout_buf);
     self->stderr_buf = str_deep_copy(other->stderr_buf);
-    self->scope = scope_deep_copy(other->scope);
+    self->scope = PadScope_DeepCopy(other->scope);
     self->do_break = other->do_break;
     self->do_continue = other->do_continue;
     self->do_return = other->do_return;
@@ -410,7 +410,7 @@ PadCtx_ShallowCopy(const PadCtx *other) {
     self->alinfo = PadAliasInfo_ShallowCopy(other->alinfo);
     self->stdout_buf = str_shallow_copy(other->stdout_buf);
     self->stderr_buf = str_shallow_copy(other->stderr_buf);
-    self->scope = scope_shallow_copy(other->scope);
+    self->scope = PadScope_ShallowCopy(other->scope);
     self->do_break = other->do_break;
     self->do_continue = other->do_continue;
     self->do_return = other->do_return;
@@ -425,8 +425,8 @@ PadCtx_UnpackObjAryToCurScope(PadCtx *self, PadObjAry *arr) {
         return NULL;
     }
 
-    scope_t *scope = self->scope;
-    PadObjDict *varmap = scope_get_varmap(scope);
+    PadScope *scope = self->scope;
+    PadObjDict *varmap = PadScope_GetVarmap(scope);
 
     for (int32_t i = 0; i < PadObjDict_Len(varmap) && i < PadObjAry_Len(arr); ++i) {
         PadObjDictItem *item = PadObjDict_GetIndex(varmap, i);

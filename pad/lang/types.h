@@ -53,7 +53,7 @@ struct context;
 typedef struct context PadCtx;
 
 struct scope;
-typedef struct scope scope_t;
+typedef struct scope PadScope;
 
 struct PadAst;
 typedef struct PadAst ast_t;

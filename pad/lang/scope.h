@@ -8,13 +8,13 @@
 #include <pad/lang/gc.h>
 
 void
-scope_del(scope_t *self);
+PadScope_Del(PadScope *self);
 
 PadObjDict *
-scope_escdel_head_varmap(scope_t *self);
+PadScope_EscDelHeadVarmap(PadScope *self);
 
-scope_t *
-scope_new(PadGc *gc);
+PadScope *
+PadScope_New(PadGc *gc);
 
 /**
  * !!! WARNING !!!
@@ -22,48 +22,48 @@ scope_new(PadGc *gc);
  * this function may be to recursion loop of deep copy
  * because varmap has objects of def_struct and module
  */
-scope_t *
-scope_deep_copy(const scope_t *other);
+PadScope *
+PadScope_DeepCopy(const PadScope *other);
 
-scope_t *
-scope_shallow_copy(const scope_t *other);
+PadScope *
+PadScope_ShallowCopy(const PadScope *other);
 
-scope_t *
-scope_moveb(scope_t *self, scope_t *move_scope);
+PadScope *
+PadScope_MoveBack(PadScope *self, PadScope *move_scope);
 
-scope_t *
-scope_popb(scope_t *self);
+PadScope *
+PadScope_PopBack(PadScope *self);
 
-const scope_t *
-scope_getc_last(const scope_t *self);
+const PadScope *
+PadScope_GetcLast(const PadScope *self);
 
-scope_t *
-scope_get_last(scope_t *self);
+PadScope *
+PadScope_GetLast(PadScope *self);
 
 PadObjDict *
-scope_get_varmap(scope_t *self);
+PadScope_GetVarmap(PadScope *self);
 
 const PadObjDict *
-scope_getc_varmap(const scope_t *self);
+PadScope_GetcVarmap(const PadScope *self);
 
-scope_t *
-scope_clear(scope_t *self);
+PadScope *
+PadScope_Clear(PadScope *self);
 
 /**
  * find object from varmap from last scope to first scope
  * return to reference of object in varmap
  */
 PadObj *
-scope_find_var_ref(scope_t *self, const char *key);
+PadScope_FindVarRef(PadScope *self, const char *key);
 
 PadObj *
-scope_find_var_ref_all(scope_t *self, const char *key);
+PadScope_FindVarRefAll(PadScope *self, const char *key);
 
 /**
- * dump scope_t at stream
+ * dump PadScope at stream
  *
  * @param[in] *self
  * @param[in] *fout stream
  */
 void
-scope_dump(const scope_t *self, FILE *fout);
+PadScope_Dump(const PadScope *self, FILE *fout);
