@@ -1,13 +1,13 @@
 #include <pad/lib/dict.h>
 
-struct dict {
-    dict_item_t *map;
+struct PadDict {
+    PadDictItem *map;
     size_t capa;
     size_t len;
 };
 
 void
-dict_del(dict_t *self) {
+PadDict_Del(PadDict *self) {
     if (!self) {
         return;
     }
@@ -16,20 +16,20 @@ dict_del(dict_t *self) {
     free(self);
 }
 
-dict_t *
-dict_new(size_t capa) {
+PadDict *
+PadDict_New(size_t capa) {
     if (capa <= 0) {
         return NULL;
     }
 
-    dict_t *self = mem_calloc(1, sizeof(*self));
+    PadDict *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->capa = capa;
     self->len = 0;
-    self->map = mem_calloc(self->capa + 1, sizeof(dict_item_t));
+    self->map = mem_calloc(self->capa + 1, sizeof(PadDictItem));
     if (!self->map) {
         free(self);
         return NULL;
@@ -38,48 +38,48 @@ dict_new(size_t capa) {
     return self;
 }
 
-dict_t *
-dict_deep_copy(const dict_t *other) {
+PadDict *
+PadDict_DeepCopy(const PadDict *other) {
     if (!other) {
         return NULL;
     }
 
-    dict_t *self = mem_calloc(1, sizeof(*self));
+    PadDict *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
     
     self->capa = other->capa;
     self->len = 0;
-    self->map = mem_calloc(other->capa + 1, sizeof(dict_item_t));
+    self->map = mem_calloc(other->capa + 1, sizeof(PadDictItem));
     if (!self->map) {
         free(self);
         return NULL;
     }
 
     for (self->len = 0; self->len < other->len; ++self->len) {
-        dict_item_t *src = &other->map[self->len];
-        dict_item_t *dst = &self->map[self->len];
-        PadCStr_Copy(dst->key, DICT_ITEM_KEY_SIZE, src->key);
-        PadCStr_Copy(dst->value, DICT_ITEM_KEY_SIZE, src->value);
+        PadDictItem *src = &other->map[self->len];
+        PadDictItem *dst = &self->map[self->len];
+        PadCStr_Copy(dst->key, PAD_DICT_ITEM__KEY_SIZE, src->key);
+        PadCStr_Copy(dst->value, PAD_DICT_ITEM__KEY_SIZE, src->value);
     }
 
     return self;
 }
 
-dict_t *
-dict_shallow_copy(const dict_t *other) {
-    return dict_deep_copy(other);
+PadDict *
+PadDict_ShallowCopy(const PadDict *other) {
+    return PadDict_DeepCopy(other);
 }
 
-dict_t *
-dict_resize(dict_t *self, size_t newcapa) {
+PadDict *
+PadDict_Resize(PadDict *self, size_t newcapa) {
     if (!self || newcapa <= 0) {
         return NULL;
     }
 
-    size_t byte = sizeof(dict_t);
-    dict_item_t *tmp = mem_realloc(self->map, newcapa*byte+byte);
+    size_t byte = sizeof(PadDict);
+    PadDictItem *tmp = mem_realloc(self->map, newcapa*byte+byte);
     if (!tmp) {
         return NULL;
     }
@@ -89,33 +89,33 @@ dict_resize(dict_t *self, size_t newcapa) {
     return self;
 }
 
-dict_t *
-dict_set(dict_t *self, const char *key, const char *value) {
+PadDict *
+PadDict_Set(PadDict *self, const char *key, const char *value) {
     if (!self || !key || !value) {
         return NULL;
     }
 
     for (int i = 0; i < self->len; ++i) {
         if (!strcmp(self->map[i].key, key)) {
-            PadCStr_Copy(self->map[i].value, DICT_ITEM_VALUE_SIZE, value);
+            PadCStr_Copy(self->map[i].value, PAD_DICT_ITEM__VALUE_SIZE, value);
             return self;
         }
     }
     
     if (self->len >= self->capa) {
-        if (!dict_resize(self, self->capa*2)) {
+        if (!PadDict_Resize(self, self->capa*2)) {
             return NULL;
         }
     }
 
-    dict_item_t *el = &self->map[self->len++]; 
-    PadCStr_Copy(el->key, DICT_ITEM_KEY_SIZE, key);
-    PadCStr_Copy(el->value, DICT_ITEM_VALUE_SIZE, value);
+    PadDictItem *el = &self->map[self->len++]; 
+    PadCStr_Copy(el->key, PAD_DICT_ITEM__KEY_SIZE, key);
+    PadCStr_Copy(el->value, PAD_DICT_ITEM__VALUE_SIZE, value);
     return self;
 }
 
-dict_item_t *
-dict_get(dict_t *self, const char *key) {
+PadDictItem *
+PadDict_Get(PadDict *self, const char *key) {
     if (!self || !key) {
         return NULL;
     }
@@ -129,17 +129,17 @@ dict_get(dict_t *self, const char *key) {
     return NULL;
 }
 
-const dict_item_t *
-dict_getc(const dict_t *self, const char *key) {
+const PadDictItem *
+PadDict_Getc(const PadDict *self, const char *key) {
     if (!self || !key) {
         return NULL;
     }
 
-    return dict_get((dict_t *)self, key);
+    return PadDict_Get((PadDict *)self, key);
 }
 
 void
-dict_clear(dict_t *self) {
+PadDict_Clear(PadDict *self) {
     if (!self) {
         return;
     }
@@ -152,7 +152,7 @@ dict_clear(dict_t *self) {
 }
 
 size_t
-dict_len(const dict_t *self) {
+PadDict_Len(const PadDict *self) {
     if (!self) {
         return 0;
     }
@@ -160,8 +160,8 @@ dict_len(const dict_t *self) {
     return self->len;
 }
 
-const dict_item_t *
-dict_getc_index(const dict_t *self, size_t index) {
+const PadDictItem *
+PadDict_Getc_index(const PadDict *self, size_t index) {
     if (!self) {
         return NULL;
     }
@@ -173,7 +173,7 @@ dict_getc_index(const dict_t *self, size_t index) {
 }
 
 bool
-dict_has_key(const dict_t *self, const char *key) {
+dict_has_key(const PadDict *self, const char *key) {
     if (!self || !key) {
         return false;
     }
@@ -188,7 +188,7 @@ dict_has_key(const dict_t *self, const char *key) {
 }
 
 void
-dict_show(const dict_t *self, FILE *fout) {
+dict_show(const PadDict *self, FILE *fout) {
     if (!self || !fout) {
         return;
     }

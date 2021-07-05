@@ -1,7 +1,7 @@
 #include <pad/lang/opts.h>
 
 struct PadOpts {
-    dict_t *opts;
+    PadDict *opts;
     PadCStrAry *args;
 };
 
@@ -11,7 +11,7 @@ PadOpts_Del(PadOpts *self) {
         return;
     }
     
-    dict_del(self->opts);
+    PadDict_Del(self->opts);
     PadCStrAry_Del(self->args);
     free(self);
 }
@@ -23,7 +23,7 @@ PadOpts_New(void) {
         return NULL;
     }
 
-    self->opts = dict_new(100);
+    self->opts = PadDict_New(100);
     if (!self->opts) {
         PadOpts_Del(self);
         return NULL;
@@ -49,7 +49,7 @@ PadOpts_DeepCopy(const PadOpts *other) {
         return NULL;
     }
 
-    self->opts = dict_deep_copy(other->opts);
+    self->opts = PadDict_DeepCopy(other->opts);
     if (!self->opts) {
         PadOpts_Del(self);
         return NULL;
@@ -75,7 +75,7 @@ PadOpts_ShallowCopy(const PadOpts *other) {
         return NULL;
     }
 
-    self->opts = dict_shallow_copy(other->opts);
+    self->opts = PadDict_ShallowCopy(other->opts);
     if (!self->opts) {
         PadOpts_Del(self);
         return NULL;
@@ -96,7 +96,7 @@ PadOpts_Clear(PadOpts *self) {
         return;
     }
 
-    dict_clear(self->opts);
+    PadDict_Clear(self->opts);
     PadCStrAry_Clear(self->args);
 }
 
@@ -136,32 +136,32 @@ PadOpts_Parse(PadOpts *self, int argc, char *argv[]) {
             break;
         case 10: // found long option
             if (arg[0] == '-' && arg[1] == '-') {
-                dict_set(self->opts, str_getc(key), "");
+                PadDict_Set(self->opts, str_getc(key), "");
                 str_set(key, arg+2);
                 // keep current mode
             } else if (arg[0] == '-') {
-                dict_set(self->opts, str_getc(key), "");
+                PadDict_Set(self->opts, str_getc(key), "");
                 str_set(key, arg+1);
                 m = 20;
             } else {
                 // store option value
-                dict_set(self->opts, str_getc(key), arg);
+                PadDict_Set(self->opts, str_getc(key), arg);
                 str_clear(key);
                 m = 0;
             }
             break;
         case 20: // found short option
             if (arg[0] == '-' && arg[1] == '-') {
-                dict_set(self->opts, str_getc(key), "");
+                PadDict_Set(self->opts, str_getc(key), "");
                 str_set(key, arg+2);
                 m = 10;
             } else if (arg[0] == '-') {
-                dict_set(self->opts, str_getc(key), "");
+                PadDict_Set(self->opts, str_getc(key), "");
                 str_set(key, arg+1);
                 // keep current mode
             } else {
                 // store option value
-                dict_set(self->opts, str_getc(key), arg);
+                PadDict_Set(self->opts, str_getc(key), arg);
                 str_clear(key);
                 m = 0;
             }
@@ -170,7 +170,7 @@ PadOpts_Parse(PadOpts *self, int argc, char *argv[]) {
     }
 
     if (str_len(key)) {
-        dict_set(self->opts, str_getc(key), "");
+        PadDict_Set(self->opts, str_getc(key), "");
     }
 
     str_del(key);
@@ -183,7 +183,7 @@ PadOpts_Getc(const PadOpts *self, const char *optname) {
         return NULL;
     }
 
-    const dict_item_t *item = dict_getc(self->opts, optname);
+    const PadDictItem *item = PadDict_Getc(self->opts, optname);
     if (!item) {
         return NULL;
     }

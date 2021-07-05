@@ -388,7 +388,7 @@ PadObj *
 PadObj_NewAry(PadGC *ref_gc, PadObjAry *move_objarr);
 
 /**
- * construct dictionary object by PadObjDict
+ * construct PadDictionary object by PadObjDict
  * if failed to allocate memory then exit from process
  *
  * @param[in] *ref_gc       reference to PadGC (do not delete)

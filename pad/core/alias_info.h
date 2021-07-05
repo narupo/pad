@@ -107,9 +107,9 @@ PadAliasInfo_Clear(PadAliasInfo *self);
  *
  * @param[in] *self pointer to PadAliasInfo dynamic allocate memory
  *
- * @return pointer to dict_t dynamic allocate memory
+ * @return pointer to PadDict dynamic allocate memory
  */
-const dict_t *
+const PadDict *
 PadAliasInfo_GetcKeyValueMap(const PadAliasInfo *self);
 
 /**
@@ -117,7 +117,7 @@ PadAliasInfo_GetcKeyValueMap(const PadAliasInfo *self);
  *
  * @param[in] *self pointer to PadAliasInfo dynamic allocate memory
  *
- * @return pointer to dict_t dynamic allocate memory
+ * @return pointer to PadDict dynamic allocate memory
  */
-const dict_t *
+const PadDict *
 PadAliasInfo_GetcKeyDescMap(const PadAliasInfo *self);

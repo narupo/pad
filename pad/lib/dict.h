@@ -8,54 +8,54 @@
 #include <pad/lib/cstring.h>
 
 enum {
-    DICT_ITEM_KEY_SIZE = 256,
-    DICT_ITEM_VALUE_SIZE = 512,
+    PAD_DICT_ITEM__KEY_SIZE = 256,
+    PAD_DICT_ITEM__VALUE_SIZE = 512,
 };
 
-struct dict_item {
-    char key[DICT_ITEM_KEY_SIZE];
-    char value[DICT_ITEM_VALUE_SIZE];
+struct PadDictItem {
+    char key[PAD_DICT_ITEM__KEY_SIZE];
+    char value[PAD_DICT_ITEM__VALUE_SIZE];
 };
-typedef struct dict_item dict_item_t;
+typedef struct PadDictItem PadDictItem;
 
-struct dict;
-typedef struct dict dict_t;
-
-void
-dict_del(dict_t *self);
-
-dict_t *
-dict_new(size_t capa);
-
-dict_t *
-dict_deep_copy(const dict_t *other);
-
-dict_t *
-dict_shallow_copy(const dict_t *other);
-
-dict_t *
-dict_resize(dict_t *self, size_t newcapa);
-
-dict_t *
-dict_set(dict_t *self, const char *key, const char *value);
-
-dict_item_t *
-dict_get(dict_t *self, const char *key);
-
-const dict_item_t *
-dict_getc(const dict_t *self, const char *key);
+struct PadDict;
+typedef struct PadDict PadDict;
 
 void
-dict_clear(dict_t *self);
+PadDict_Del(PadDict *self);
+
+PadDict *
+PadDict_New(size_t capa);
+
+PadDict *
+PadDict_DeepCopy(const PadDict *other);
+
+PadDict *
+PadDict_ShallowCopy(const PadDict *other);
+
+PadDict *
+PadDict_Resize(PadDict *self, size_t newcapa);
+
+PadDict *
+PadDict_Set(PadDict *self, const char *key, const char *value);
+
+PadDictItem *
+PadDict_Get(PadDict *self, const char *key);
+
+const PadDictItem *
+PadDict_Getc(const PadDict *self, const char *key);
+
+void
+PadDict_Clear(PadDict *self);
 
 size_t
-dict_len(const dict_t *self);
+PadDict_Len(const PadDict *self);
 
-const dict_item_t *
-dict_getc_index(const dict_t *self, size_t index);
+const PadDictItem *
+PadDict_Getc_index(const PadDict *self, size_t index);
 
 bool
-dict_has_key(const dict_t *self, const char *key);
+dict_has_key(const PadDict *self, const char *key);
 
 void
-dict_show(const dict_t *self, FILE *fout);
+dict_show(const PadDict *self, FILE *fout);

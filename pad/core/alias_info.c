@@ -1,8 +1,8 @@
 #include <pad/core/alias_info.h>
 
 struct PadAliasInfo {
-    dict_t *key_val_map;
-    dict_t *key_desc_map;
+    PadDict *key_val_map;
+    PadDict *key_desc_map;
 };
 
 void
@@ -11,8 +11,8 @@ PadAliasInfo_Del(PadAliasInfo *self) {
         return;
     }
 
-    dict_del(self->key_val_map);
-    dict_del(self->key_desc_map);
+    PadDict_Del(self->key_val_map);
+    PadDict_Del(self->key_desc_map);
     free(self);
 }
 
@@ -23,13 +23,13 @@ PadAliasInfo_New(void) {
         return NULL;
     }
 
-    self->key_val_map = dict_new(128);
+    self->key_val_map = PadDict_New(128);
     if (!self->key_val_map) {
         PadAliasInfo_Del(self);
         return NULL;
     }
 
-    self->key_desc_map = dict_new(128);
+    self->key_desc_map = PadDict_New(128);
     if (!self->key_desc_map) {
         PadAliasInfo_Del(self);
         return NULL;
@@ -49,13 +49,13 @@ PadAliasInfo_DeepCopy(const PadAliasInfo *other) {
         return NULL;
     }
 
-    self->key_val_map = dict_deep_copy(other->key_val_map);
+    self->key_val_map = PadDict_DeepCopy(other->key_val_map);
     if (!self->key_val_map) {
         PadAliasInfo_Del(self);
         return NULL;
     }
 
-    self->key_desc_map = dict_deep_copy(other->key_desc_map);
+    self->key_desc_map = PadDict_DeepCopy(other->key_desc_map);
     if (!self->key_desc_map) {
         PadAliasInfo_Del(self);
         return NULL;
@@ -75,13 +75,13 @@ PadAliasInfo_ShallowCopy(const PadAliasInfo *other) {
         return NULL;
     }
 
-    self->key_val_map = dict_shallow_copy(other->key_val_map);
+    self->key_val_map = PadDict_ShallowCopy(other->key_val_map);
     if (!self->key_val_map) {
         PadAliasInfo_Del(self);
         return NULL;
     }
 
-    self->key_desc_map = dict_shallow_copy(other->key_desc_map);
+    self->key_desc_map = PadDict_ShallowCopy(other->key_desc_map);
     if (!self->key_desc_map) {
         PadAliasInfo_Del(self);
         return NULL;
@@ -92,7 +92,7 @@ PadAliasInfo_ShallowCopy(const PadAliasInfo *other) {
 
 const char *
 PadAliasInfo_GetcValue(const PadAliasInfo *self, const char *key) {
-   const dict_item_t *item = dict_getc(self->key_val_map, key);
+   const PadDictItem *item = PadDict_Getc(self->key_val_map, key);
    if (!item) {
        return NULL;
    }
@@ -102,7 +102,7 @@ PadAliasInfo_GetcValue(const PadAliasInfo *self, const char *key) {
 
 const char *
 PadAliasInfo_GetcDesc(const PadAliasInfo *self, const char *key) {
-   const dict_item_t *item = dict_getc(self->key_desc_map, key);
+   const PadDictItem *item = PadDict_Getc(self->key_desc_map, key);
    if (!item) {
        return NULL;
    }
@@ -112,7 +112,7 @@ PadAliasInfo_GetcDesc(const PadAliasInfo *self, const char *key) {
 
 PadAliasInfo *
 PadAliasInfo_SetValue(PadAliasInfo *self, const char *key, const char *value) {
-    dict_t *result = dict_set(self->key_val_map, key, value);
+    PadDict *result = PadDict_Set(self->key_val_map, key, value);
     if (!result) {
         return NULL;
     }
@@ -122,7 +122,7 @@ PadAliasInfo_SetValue(PadAliasInfo *self, const char *key, const char *value) {
 
 PadAliasInfo *
 PadAliasInfo_SetDesc(PadAliasInfo *self, const char *key, const char *desc) {
-    dict_t *result = dict_set(self->key_desc_map, key, desc);
+    PadDict *result = PadDict_Set(self->key_desc_map, key, desc);
     if (!result) {
         return NULL;
     }
@@ -132,16 +132,16 @@ PadAliasInfo_SetDesc(PadAliasInfo *self, const char *key, const char *desc) {
 
 void
 PadAliasInfo_Clear(PadAliasInfo *self) {
-    dict_clear(self->key_val_map);
-    dict_clear(self->key_desc_map);
+    PadDict_Clear(self->key_val_map);
+    PadDict_Clear(self->key_desc_map);
 }
 
-const dict_t *
+const PadDict *
 PadAliasInfo_GetcKeyValueMap(const PadAliasInfo *self) {
     return self->key_val_map;
 }
 
-const dict_t *
+const PadDict *
 PadAliasInfo_GetcKeyDescMap(const PadAliasInfo *self) {
     return self->key_desc_map;
 }

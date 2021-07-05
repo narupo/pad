@@ -11,7 +11,7 @@
 #include <pad/lang/arguments.h>
 
 /**
- * construct dict module
+ * construct PadDict module
  *
  * @param[in] *ref_config
  * @param[in] *ref_gc

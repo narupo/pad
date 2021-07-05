@@ -1,7 +1,7 @@
 #include <pad/lang/builtin/modules/dict.h>
 
 static PadObj *
-builtin_dict_get(PadBltFuncArgs *fargs) {
+builtin_PadDict_Get(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     assert(ref_ast);
     PadGC * ref_gc = PadAst_GetRefGc(ref_ast);
@@ -85,7 +85,7 @@ again2:
 
 static PadBltFuncInfo
 builtin_func_infos[] = {
-    {"get", builtin_dict_get},
+    {"get", builtin_PadDict_Get},
     {0},
 };
 
