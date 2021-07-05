@@ -505,361 +505,361 @@ cstrarr_tests[] = {
 **********/
 
 void
-test_cmdline_new(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_New(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 void
-test_cmdline_del(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_Del(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 void
-test_cmdline_parse_0(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_Parse_0(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
 
-    assert(cmdline_parse(cmdline, "abc"));
+    assert(PadCmdline_Parse(cmdline, "abc"));
 
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 void
-test_cmdline_parse_1(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_Parse_1(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
 
-    assert(cmdline_parse(cmdline, "abc && def"));
+    assert(PadCmdline_Parse(cmdline, "abc && def"));
 
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 void
-test_cmdline_parse_2(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_Parse_2(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
 
-    assert(cmdline_parse(cmdline, "abc | def"));
+    assert(PadCmdline_Parse(cmdline, "abc | def"));
 
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 void
-test_cmdline_parse_3(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_Parse_3(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
 
-    assert(cmdline_parse(cmdline, "abc > def"));
+    assert(PadCmdline_Parse(cmdline, "abc > def"));
 
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 void
-test_cmdline_parse(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_Parse(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
 
-    const cmdline_PadObj *obj = NULL;
+    const PadCmdlineObj *obj = NULL;
 
-    assert(cmdline_parse(cmdline, "abc && def | ghi > jkl"));
-    assert(cmdline_len(cmdline) == 7);
-    obj = cmdline_getc(cmdline, 0);
+    assert(PadCmdline_Parse(cmdline, "abc && def | ghi > jkl"));
+    assert(PadCmdline_Len(cmdline) == 7);
+    obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "abc"));
     assert(PadCL_Len(obj->cl) == 1);
-    obj = cmdline_getc(cmdline, 1);
+    obj = PadCmdline_Getc(cmdline, 1);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_AND);
-    obj = cmdline_getc(cmdline, 2);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__AND);
+    obj = PadCmdline_Getc(cmdline, 2);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "def"));
     assert(PadCL_Len(obj->cl) == 1);
-    obj = cmdline_getc(cmdline, 3);
+    obj = PadCmdline_Getc(cmdline, 3);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_PIPE);
-    obj = cmdline_getc(cmdline, 4);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__PIPE);
+    obj = PadCmdline_Getc(cmdline, 4);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "ghi"));
     assert(PadCL_Len(obj->cl) == 1);
-    obj = cmdline_getc(cmdline, 5);
+    obj = PadCmdline_Getc(cmdline, 5);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_REDIRECT);
-    obj = cmdline_getc(cmdline, 6);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__REDIRECT);
+    obj = PadCmdline_Getc(cmdline, 6);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "jkl"));
     assert(PadCL_Len(obj->cl) == 1);
 
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 void
-test_cmdline_parse_pipe(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_Parse_pipe(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
 
-    const cmdline_PadObj *obj = NULL;
+    const PadCmdlineObj *obj = NULL;
 
-    assert(cmdline_parse(cmdline, "abc"));
-    assert(cmdline_len(cmdline) == 1);
-    obj = cmdline_getc(cmdline, 0);
+    assert(PadCmdline_Parse(cmdline, "abc"));
+    assert(PadCmdline_Len(cmdline) == 1);
+    obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "abc"));
     assert(PadCL_Len(obj->cl) == 1);
 
-    assert(cmdline_parse(cmdline, "abc | def"));
-    assert(cmdline_len(cmdline) == 3);
-    obj = cmdline_getc(cmdline, 0);
+    assert(PadCmdline_Parse(cmdline, "abc | def"));
+    assert(PadCmdline_Len(cmdline) == 3);
+    obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "abc"));
     assert(PadCL_Len(obj->cl) == 1);
-    obj = cmdline_getc(cmdline, 1);
+    obj = PadCmdline_Getc(cmdline, 1);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_PIPE);
-    obj = cmdline_getc(cmdline, 2);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__PIPE);
+    obj = PadCmdline_Getc(cmdline, 2);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "def"));
     assert(PadCL_Len(obj->cl) == 1);
 
-    assert(cmdline_parse(cmdline, "abc -d efg | hij -d \"klm\""));
-    assert(cmdline_len(cmdline) == 3);
-    obj = cmdline_getc(cmdline, 0);
+    assert(PadCmdline_Parse(cmdline, "abc -d efg | hij -d \"klm\""));
+    assert(PadCmdline_Len(cmdline) == 3);
+    obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "abc -d efg"));
     assert(PadCL_Len(obj->cl) == 3);
-    obj = cmdline_getc(cmdline, 1);
+    obj = PadCmdline_Getc(cmdline, 1);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_PIPE);
-    obj = cmdline_getc(cmdline, 2);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__PIPE);
+    obj = PadCmdline_Getc(cmdline, 2);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "hij -d \"klm\""));
     assert(PadCL_Len(obj->cl) == 3);
 
-    assert(cmdline_parse(cmdline, "a | b | c | d | e"));
-    assert(cmdline_len(cmdline) == 9);
+    assert(PadCmdline_Parse(cmdline, "a | b | c | d | e"));
+    assert(PadCmdline_Len(cmdline) == 9);
 
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 void
-test_cmdline_parse_and(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_Parse_and(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
 
-    const cmdline_PadObj *obj = NULL;
+    const PadCmdlineObj *obj = NULL;
 
-    assert(cmdline_parse(cmdline, "abc && def"));
-    assert(cmdline_len(cmdline) == 3);
-    obj = cmdline_getc(cmdline, 0);
+    assert(PadCmdline_Parse(cmdline, "abc && def"));
+    assert(PadCmdline_Len(cmdline) == 3);
+    obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "abc"));
     assert(PadCL_Len(obj->cl) == 1);
-    obj = cmdline_getc(cmdline, 1);
+    obj = PadCmdline_Getc(cmdline, 1);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_AND);
-    obj = cmdline_getc(cmdline, 2);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__AND);
+    obj = PadCmdline_Getc(cmdline, 2);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "def"));
     assert(PadCL_Len(obj->cl) == 1);
 
-    assert(cmdline_parse(cmdline, "abc -d efg && hij -d \"klm\""));
-    assert(cmdline_len(cmdline) == 3);
-    obj = cmdline_getc(cmdline, 0);
+    assert(PadCmdline_Parse(cmdline, "abc -d efg && hij -d \"klm\""));
+    assert(PadCmdline_Len(cmdline) == 3);
+    obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "abc -d efg"));
     assert(PadCL_Len(obj->cl) == 3);
-    obj = cmdline_getc(cmdline, 1);
+    obj = PadCmdline_Getc(cmdline, 1);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_AND);
-    obj = cmdline_getc(cmdline, 2);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__AND);
+    obj = PadCmdline_Getc(cmdline, 2);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "hij -d \"klm\""));
     assert(PadCL_Len(obj->cl) == 3);
 
-    assert(cmdline_parse(cmdline, "a && b && c && d && e"));
-    assert(cmdline_len(cmdline) == 9);
+    assert(PadCmdline_Parse(cmdline, "a && b && c && d && e"));
+    assert(PadCmdline_Len(cmdline) == 9);
 
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 void
-test_cmdline_parse_redirect(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_Parse_redirect(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
 
-    const cmdline_PadObj *obj = NULL;
+    const PadCmdlineObj *obj = NULL;
 
-    assert(cmdline_parse(cmdline, "abc > def"));
-    assert(cmdline_len(cmdline) == 3);
-    obj = cmdline_getc(cmdline, 0);
+    assert(PadCmdline_Parse(cmdline, "abc > def"));
+    assert(PadCmdline_Len(cmdline) == 3);
+    obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "abc"));
     assert(PadCL_Len(obj->cl) == 1);
-    obj = cmdline_getc(cmdline, 1);
+    obj = PadCmdline_Getc(cmdline, 1);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_REDIRECT);
-    obj = cmdline_getc(cmdline, 2);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__REDIRECT);
+    obj = PadCmdline_Getc(cmdline, 2);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "def"));
     assert(PadCL_Len(obj->cl) == 1);
 
-    assert(cmdline_parse(cmdline, "abc -d efg > hij -d \"klm\""));
-    assert(cmdline_len(cmdline) == 3);
-    obj = cmdline_getc(cmdline, 0);
+    assert(PadCmdline_Parse(cmdline, "abc -d efg > hij -d \"klm\""));
+    assert(PadCmdline_Len(cmdline) == 3);
+    obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "abc -d efg"));
     assert(PadCL_Len(obj->cl) == 3);
-    obj = cmdline_getc(cmdline, 1);
+    obj = PadCmdline_Getc(cmdline, 1);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_REDIRECT);
-    obj = cmdline_getc(cmdline, 2);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__REDIRECT);
+    obj = PadCmdline_Getc(cmdline, 2);
     assert(obj);
-    assert(obj->type == CMDLINE_OBJECT_TYPE_CMD);
+    assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
     assert(!strcmp(str_getc(obj->command), "hij -d \"klm\""));
     assert(PadCL_Len(obj->cl) == 3);
 
-    assert(cmdline_parse(cmdline, "a > b > c > d > e"));
-    assert(cmdline_len(cmdline) == 9);
+    assert(PadCmdline_Parse(cmdline, "a > b > c > d > e"));
+    assert(PadCmdline_Len(cmdline) == 9);
 
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 void
-test_cmdline_resize(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_Resize(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
 
-    assert(cmdline_resize(NULL, 0) == NULL);
-    assert(cmdline_resize(cmdline, 0) == NULL);
+    assert(PadCmdline_Resize(NULL, 0) == NULL);
+    assert(PadCmdline_Resize(cmdline, 0) == NULL);
 
-    assert(cmdline_resize(cmdline, 32));
-    assert(cmdline_resize(cmdline, 8));
-    assert(cmdline_resize(cmdline, 16));
+    assert(PadCmdline_Resize(cmdline, 32));
+    assert(PadCmdline_Resize(cmdline, 8));
+    assert(PadCmdline_Resize(cmdline, 16));
 
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 void
-test_cmdline_moveb(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_MoveBack(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
 
-    assert(cmdline_moveb(NULL, NULL) == NULL);
-    assert(cmdline_moveb(cmdline, NULL) == NULL);
+    assert(PadCmdline_MoveBack(NULL, NULL) == NULL);
+    assert(PadCmdline_MoveBack(cmdline, NULL) == NULL);
 
-    cmdline_PadObj *obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_CMD);
+    PadCmdlineObj *obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
 
-    assert(cmdline_moveb(cmdline, mem_move(obj)));
+    assert(PadCmdline_MoveBack(cmdline, mem_move(obj)));
 
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 void
-test_cmdline_len(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_Len(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
 
-    assert(cmdline_moveb(NULL, NULL) == NULL);
-    assert(cmdline_moveb(cmdline, NULL) == NULL);
-    assert(cmdline_len(NULL) == -1);
+    assert(PadCmdline_MoveBack(NULL, NULL) == NULL);
+    assert(PadCmdline_MoveBack(cmdline, NULL) == NULL);
+    assert(PadCmdline_Len(NULL) == -1);
 
-    cmdline_PadObj *obj1 = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_CMD);
-    cmdline_PadObj *obj2 = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_CMD);
+    PadCmdlineObj *obj1 = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
+    PadCmdlineObj *obj2 = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
 
-    assert(cmdline_moveb(cmdline, mem_move(obj1)));
-    assert(cmdline_len(cmdline) == 1);
+    assert(PadCmdline_MoveBack(cmdline, mem_move(obj1)));
+    assert(PadCmdline_Len(cmdline) == 1);
 
-    assert(cmdline_moveb(cmdline, mem_move(obj2)));
-    assert(cmdline_len(cmdline) == 2);
+    assert(PadCmdline_MoveBack(cmdline, mem_move(obj2)));
+    assert(PadCmdline_Len(cmdline) == 2);
 
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 void
-test_cmdline_clear(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_Clear(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
 
-    cmdline_clear(NULL);
+    PadCmdline_Clear(NULL);
 
-    cmdline_PadObj *obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_CMD);
+    PadCmdlineObj *obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
 
-    assert(cmdline_moveb(cmdline, mem_move(obj)));
-    assert(cmdline_len(cmdline) == 1);
+    assert(PadCmdline_MoveBack(cmdline, mem_move(obj)));
+    assert(PadCmdline_Len(cmdline) == 1);
 
-    cmdline_clear(cmdline);
-    assert(cmdline_len(cmdline) == 0);
+    PadCmdline_Clear(cmdline);
+    assert(PadCmdline_Len(cmdline) == 0);
 
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 void
-test_cmdline_getc(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_Getc(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
 
-    assert(cmdline_getc(NULL, -1) == NULL);
-    assert(cmdline_getc(cmdline, -1) == NULL);
-    assert(cmdline_getc(cmdline, 0) == NULL);
+    assert(PadCmdline_Getc(NULL, -1) == NULL);
+    assert(PadCmdline_Getc(cmdline, -1) == NULL);
+    assert(PadCmdline_Getc(cmdline, 0) == NULL);
 
-    cmdline_PadObj *obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_CMD);
+    PadCmdlineObj *obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
 
-    assert(cmdline_moveb(cmdline, mem_move(obj)));
-    assert(cmdline_len(cmdline) == 1);
+    assert(PadCmdline_MoveBack(cmdline, mem_move(obj)));
+    assert(PadCmdline_Len(cmdline) == 1);
 
-    assert(cmdline_getc(cmdline, 0));
-    assert(cmdline_getc(cmdline, 1) == NULL);
+    assert(PadCmdline_Getc(cmdline, 0));
+    assert(PadCmdline_Getc(cmdline, 1) == NULL);
 
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 void
-test_cmdline_has_error(void) {
-    cmdline_t *cmdline = cmdline_new();
+test_PadCmdline_HasErr(void) {
+    PadCmdline *cmdline = PadCmdline_New();
     assert(cmdline);
 
-    assert(cmdline_parse(cmdline, "||||") == NULL);
-    assert(cmdline_has_error(cmdline));
+    assert(PadCmdline_Parse(cmdline, "||||") == NULL);
+    assert(PadCmdline_HasErr(cmdline));
 
-    cmdline_del(cmdline);
+    PadCmdline_Del(cmdline);
 }
 
 static const struct testcase
-cmdline_tests[] = {
-    {"cmdline_new", test_cmdline_new},
-    {"cmdline_del", test_cmdline_del},
-    {"cmdline_parse", test_cmdline_parse},
-    {"cmdline_parse_0", test_cmdline_parse_0},
-    {"cmdline_parse_1", test_cmdline_parse_1},
-    {"cmdline_parse_2", test_cmdline_parse_2},
-    {"cmdline_parse_3", test_cmdline_parse_3},
-    {"cmdline_parse_pipe", test_cmdline_parse_pipe},
-    {"cmdline_parse_and", test_cmdline_parse_and},
-    {"cmdline_parse_redirect", test_cmdline_parse_redirect},
-    {"cmdline_resize", test_cmdline_resize},
-    {"cmdline_moveb", test_cmdline_moveb},
-    {"cmdline_clear", test_cmdline_clear},
-    {"cmdline_getc", test_cmdline_getc},
-    {"cmdline_has_error", test_cmdline_has_error},
+PadCmdlineests[] = {
+    {"PadCmdline_New", test_PadCmdline_New},
+    {"PadCmdline_Del", test_PadCmdline_Del},
+    {"PadCmdline_Parse", test_PadCmdline_Parse},
+    {"PadCmdline_Parse_0", test_PadCmdline_Parse_0},
+    {"PadCmdline_Parse_1", test_PadCmdline_Parse_1},
+    {"PadCmdline_Parse_2", test_PadCmdline_Parse_2},
+    {"PadCmdline_Parse_3", test_PadCmdline_Parse_3},
+    {"PadCmdline_Parse_pipe", test_PadCmdline_Parse_pipe},
+    {"PadCmdline_Parse_and", test_PadCmdline_Parse_and},
+    {"PadCmdline_Parse_redirect", test_PadCmdline_Parse_redirect},
+    {"PadCmdline_Resize", test_PadCmdline_Resize},
+    {"PadCmdline_MoveBack", test_PadCmdline_MoveBack},
+    {"PadCmdline_Clear", test_PadCmdline_Clear},
+    {"PadCmdline_Getc", test_PadCmdline_Getc},
+    {"PadCmdline_HasErr", test_PadCmdline_HasErr},
     {0},
 };
 
@@ -31524,7 +31524,7 @@ testmodules[] = {
     {"unicode", unicode_tests},
     {"file", file_tests},
     {"cl", PadCLests},
-    {"cmdline", cmdline_tests},
+    {"cmdline", PadCmdlineests},
     {"error", error_tests},
     {"util", utiltests},
     {"path", pathtests},

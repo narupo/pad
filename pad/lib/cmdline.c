@@ -1,11 +1,11 @@
 #include <pad/lib/cmdline.h>
 
 /*****************
-* cmdline_object *
+* PadCmdlineObj *
 *****************/
 
 void
-cmdlinePadObj_Del(cmdline_PadObj *self) {
+PadCmdlineObj_Del(PadCmdlineObj *self) {
     if (!self) {
         return;
     }
@@ -15,9 +15,9 @@ cmdlinePadObj_Del(cmdline_PadObj *self) {
     free(self);
 }
 
-cmdline_PadObj *
-cmdlinePadObj_New(cmdline_PadTypeObj type) {
-    cmdline_PadObj *self = mem_calloc(1, sizeof(*self));
+PadCmdlineObj *
+PadCmdlineObj_New(PadCmdlineObjType type) {
+    PadCmdlineObj *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -25,21 +25,21 @@ cmdlinePadObj_New(cmdline_PadTypeObj type) {
     self->type = type;
     self->command = str_new();
     if (!self->command) {
-        cmdlinePadObj_Del(self);
+        PadCmdlineObj_Del(self);
         return NULL;
     }
 
     self->cl = PadCL_New();
     if (!self->cl) {
-        cmdlinePadObj_Del(self);
+        PadCmdlineObj_Del(self);
         return NULL;
     }
 
     return self;
 }
 
-cmdline_PadObj *
-cmdlineobj_parse(cmdline_PadObj *self, const char *line) {
+PadCmdlineObj *
+PadCmdlineObj_Parse(PadCmdlineObj *self, const char *line) {
     if (!PadCL_ParseStr(self->cl, line)) {
         return NULL;
     }
@@ -55,48 +55,48 @@ enum {
     CMDLINE_OBJS_SIZE = 4,
 };
 
-struct cmdline {
-    cmdline_PadObj **objs;
+struct PadCmdline {
+    PadCmdlineObj **objs;
     int32_t capa;
     int32_t len;
     char what[1024];
 };
 
 void
-cmdline_del(cmdline_t *self) {
+PadCmdline_Del(PadCmdline *self) {
     if (!self) {
         return;
     }
 
     for (int32_t i = 0; i < self->len; ++i) {
-        cmdline_PadObj *obj = self->objs[i];
-        cmdlinePadObj_Del(obj);
+        PadCmdlineObj *obj = self->objs[i];
+        PadCmdlineObj_Del(obj);
     }
 
     free(self->objs);
     free(self);
 }
 
-cmdline_t *
-cmdline_new(void) {
-    cmdline_t *self = mem_calloc(1, sizeof(*self));
+PadCmdline *
+PadCmdline_New(void) {
+    PadCmdline *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
-    int32_t size = sizeof(cmdline_PadObj *);
+    int32_t size = sizeof(PadCmdlineObj *);
     self->capa = CMDLINE_OBJS_SIZE;
     self->objs = mem_calloc(self->capa + 1, size);
     if (!self->objs) {
-        cmdline_del(self);
+        PadCmdline_Del(self);
         return NULL;
     } 
 
     return self;
 }
 
-cmdline_t *
-cmdline_resize(cmdline_t *self, int32_t capa) {
+PadCmdline *
+PadCmdline_Resize(PadCmdline *self, int32_t capa) {
     if (!self || capa <= 0) {
         return NULL;
     }
@@ -104,14 +104,14 @@ cmdline_resize(cmdline_t *self, int32_t capa) {
     if (capa < self->len) {
         int32_t dif = self->len - capa;
         for (int32_t i = dif; i < self->len; ++i) {
-            cmdlinePadObj_Del(self->objs[i]);
+            PadCmdlineObj_Del(self->objs[i]);
             self->objs[i] = NULL;
         }
     }
 
-    int32_t objsize = sizeof(cmdline_PadObj *);
+    int32_t objsize = sizeof(PadCmdlineObj *);
     int32_t size = objsize * capa + objsize;
-    cmdline_PadObj **tmp = mem_realloc(self->objs, size);
+    PadCmdlineObj **tmp = mem_realloc(self->objs, size);
     if (!tmp) {
         return NULL;
     }
@@ -121,14 +121,14 @@ cmdline_resize(cmdline_t *self, int32_t capa) {
     return self;
 }
 
-cmdline_t *
-cmdline_moveb(cmdline_t *self, cmdline_PadObj *move_obj) {
+PadCmdline *
+PadCmdline_MoveBack(PadCmdline *self, PadCmdlineObj *move_obj) {
     if (!self || !move_obj) {
         return NULL;
     }
 
     if (self->len >= self->capa) {
-        if (!cmdline_resize(self, self->capa*2)) {
+        if (!PadCmdline_Resize(self, self->capa*2)) {
             return NULL;
         }
     }
@@ -139,7 +139,7 @@ cmdline_moveb(cmdline_t *self, cmdline_PadObj *move_obj) {
 }
 
 bool
-cmdline_has_error(const cmdline_t *self) {
+PadCmdline_HasErr(const PadCmdline *self) {
     if (!self) {
         return true;
     }
@@ -148,7 +148,7 @@ cmdline_has_error(const cmdline_t *self) {
 }
 
 int32_t
-cmdline_len(const cmdline_t *self) {
+PadCmdline_Len(const PadCmdline *self) {
     if (!self) {
         return -1;
     }
@@ -156,8 +156,8 @@ cmdline_len(const cmdline_t *self) {
     return self->len;
 }
 
-const cmdline_PadObj *
-cmdline_getc(const cmdline_t *self, int32_t index) {
+const PadCmdlineObj *
+PadCmdline_Getc(const PadCmdline *self, int32_t index) {
     if (!self || index < 0 || index >= self->len) {
         return NULL;
     }
@@ -166,14 +166,14 @@ cmdline_getc(const cmdline_t *self, int32_t index) {
 }
 
 void
-cmdline_clear(cmdline_t *self) {
+PadCmdline_Clear(PadCmdline *self) {
     if (!self) {
         return;
     }
 
     for (int32_t i = 0; i < self->len; ++i) {
-        cmdline_PadObj *obj = self->objs[i];
-        cmdlinePadObj_Del(obj);
+        PadCmdlineObj *obj = self->objs[i];
+        PadCmdlineObj_Del(obj);
         self->objs[i] = NULL;
     }
 
@@ -181,15 +181,15 @@ cmdline_clear(cmdline_t *self) {
     self->what[0] = '\0';
 }
 
-cmdline_t *
-cmdline_parse(cmdline_t *self, const char *line) {
+PadCmdline *
+PadCmdline_Parse(PadCmdline *self, const char *line) {
     if (!self || !line) {
         return NULL;
     }
 
     string_t *buf = str_new();
     int32_t m = 0;
-    cmdline_clear(self);
+    PadCmdline_Clear(self);
 
     for (const char *p = line; *p; ++p) {
         switch (m) {
@@ -212,8 +212,8 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 }
 
                 // move back cmd object
-                cmdline_PadObj *obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_CMD);
-                if (!cmdlineobj_parse(obj, str_getc(buf))) {
+                PadCmdlineObj *obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
+                if (!PadCmdlineObj_Parse(obj, str_getc(buf))) {
                     snprintf(self->what, sizeof self->what, "failed to parse mini command line");
                     str_del(buf);
                     return NULL;
@@ -227,7 +227,7 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 obj->command = mem_move(buf);
                 buf = str_new();
 
-                if (!cmdline_moveb(self, obj)) {
+                if (!PadCmdline_MoveBack(self, obj)) {
                     snprintf(self->what, sizeof self->what, "failed to move back command object");
                     str_del(buf);
                     return NULL;
@@ -235,9 +235,9 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 obj = NULL;
 
                 // move back pipe object
-                obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_PIPE);
+                obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__PIPE);
 
-                if (!cmdline_moveb(self, obj)) {
+                if (!PadCmdline_MoveBack(self, obj)) {
                     snprintf(self->what, sizeof self->what, "failed to move back PIPE object");
                     str_del(buf);
                     return NULL;
@@ -252,8 +252,8 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 }
 
                 // move back cmd object
-                cmdline_PadObj *obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_CMD);
-                if (!cmdlineobj_parse(obj, str_getc(buf))) {
+                PadCmdlineObj *obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
+                if (!PadCmdlineObj_Parse(obj, str_getc(buf))) {
                     snprintf(self->what, sizeof self->what, "failed to parse mini command line");
                     str_del(buf);
                     return NULL;
@@ -267,7 +267,7 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 obj->command = buf;
                 buf = str_new();
 
-                if (!cmdline_moveb(self, obj)) {
+                if (!PadCmdline_MoveBack(self, obj)) {
                     snprintf(self->what, sizeof self->what, "failed to move back command object");
                     str_del(buf);
                     return NULL;
@@ -275,9 +275,9 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 obj = NULL;
 
                 // move back and object
-                obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_AND);
+                obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__AND);
 
-                if (!cmdline_moveb(self, obj)) {
+                if (!PadCmdline_MoveBack(self, obj)) {
                     snprintf(self->what, sizeof self->what, "failed to move back AND object");
                     str_del(buf);
                     return NULL;
@@ -290,8 +290,8 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 }
 
                 // move back cmd object
-                cmdline_PadObj *obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_CMD);
-                if (!cmdlineobj_parse(obj, str_getc(buf))) {
+                PadCmdlineObj *obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
+                if (!PadCmdlineObj_Parse(obj, str_getc(buf))) {
                     snprintf(self->what, sizeof self->what, "failed to parse mini command line");
                     str_del(buf);
                     return NULL;
@@ -305,7 +305,7 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 obj->command = buf;
                 buf = str_new();
 
-                if (!cmdline_moveb(self, obj)) {
+                if (!PadCmdline_MoveBack(self, obj)) {
                     snprintf(self->what, sizeof self->what, "failed to move back command object");
                     str_del(buf);
                     return NULL;
@@ -313,9 +313,9 @@ cmdline_parse(cmdline_t *self, const char *line) {
                 obj = NULL;
 
                 // move back and object
-                obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_REDIRECT);
+                obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__REDIRECT);
 
-                if (!cmdline_moveb(self, obj)) {
+                if (!PadCmdline_MoveBack(self, obj)) {
                     snprintf(self->what, sizeof self->what, "failed to move back REDIRECT object");
                     str_del(buf);
                     return NULL;
@@ -344,10 +344,10 @@ cmdline_parse(cmdline_t *self, const char *line) {
 
     if (str_len(buf)) {
         // move back cmd object
-        cmdline_PadObj *obj = cmdlinePadObj_New(CMDLINE_OBJECT_TYPE_CMD);
-        if (!cmdlineobj_parse(obj, str_getc(buf))) {
+        PadCmdlineObj *obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
+        if (!PadCmdlineObj_Parse(obj, str_getc(buf))) {
             snprintf(self->what, sizeof self->what, "failed to parse mini command line (2)");
-            cmdlinePadObj_Del(obj);
+            PadCmdlineObj_Del(obj);
             str_del(buf);
             return NULL;
         }
@@ -360,9 +360,9 @@ cmdline_parse(cmdline_t *self, const char *line) {
         obj->command = mem_move(buf);
         buf = NULL;
 
-        if (!cmdline_moveb(self, obj)) {
+        if (!PadCmdline_MoveBack(self, obj)) {
             snprintf(self->what, sizeof self->what, "failed to move back command object (2)");
-            cmdlinePadObj_Del(obj);
+            PadCmdlineObj_Del(obj);
             str_del(buf);
             return NULL;
         }
