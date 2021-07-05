@@ -260,7 +260,7 @@ Pad_ClearScreen(void) {
 
 static char *
 read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
-    char *src = file_readcp_from_path(rcpath);
+    char *src = PadFile_ReadCopyFromPath(rcpath);
 
     PadTkr *tkr = PadTkr_New(PadTkrOpt_New());
     PadAST *ast = PadAst_New(config);

@@ -46,12 +46,12 @@ fix_path(PadImporter *self, char *dst, int32_t dstsz, const char *path) {
         return NULL;
     }
 
-    if (file_exists(path)) {
+    if (PadFile_IsExists(path)) {
         snprintf(dst, dstsz, "%s", path);
         return dst;
     }
 
-    if (!file_solvefmt(dst, sizeof dst, "%s/%s", self->ref_config->std_lib_dir_path, path
+    if (!PadFile_SolveFmt(dst, sizeof dst, "%s/%s", self->ref_config->std_lib_dir_path, path
     )) {
         PadImporter_SetErr(self, "failed to solve path for standard library");
         return NULL;
@@ -68,18 +68,18 @@ create_modobj(
     const char *path
 ) {
     // read source
-    char src_path[FILE_NPATH];
+    char src_path[PAD_FILE__NPATH];
     if (!fix_path(self, src_path, sizeof src_path, path)) {
         PadImporter_SetErr(self, "failed to fix path from \"%s\"", path);
         return NULL; 
     }
 
-    if (!file_exists(src_path)) {
+    if (!PadFile_IsExists(src_path)) {
         PadImporter_SetErr(self, "\"%s\" is not found", src_path);
         return NULL;
     }
 
-    char *src = file_readcp_from_path(src_path);
+    char *src = PadFile_ReadCopyFromPath(src_path);
     if (!src) {
         PadImporter_SetErr(self, "failed to read content from \"%s\"", src_path);
         return NULL;

@@ -28,20 +28,20 @@
 #include <libgen.h>
 
 #if defined(_WIN32) || defined(_WIN64)
-# define _FILE_WINDOWS 1 /* cap: file.h */
+# define PAD_FILE__WINDOWS 1 /* cap: file.h */
 #else
-# undef _FILE_WINDOWS
+# undef PAD_FILE__WINDOWS
 #endif
 
-#if defined(_FILE_WINDOWS)
+#if defined(PAD_FILE__WINDOWS)
 # include <windows.h>
 #endif
 
-#undef FILE_SEP
-#if defined(_FILE_WINDOWS)
-# define FILE_SEP ('\\')
+#undef PAD_FILE__SEP
+#if defined(PAD_FILE__WINDOWS)
+# define PAD_FILE__SEP ('\\')
 #else
-# define FILE_SEP ('/')
+# define PAD_FILE__SEP ('/')
 #endif
 
 /***************
@@ -49,7 +49,7 @@
 ***************/
 
 enum {
-    FILE_NPATH = 256,
+    PAD_FILE__NPATH = 256,
 };
 
 /*******
@@ -60,13 +60,13 @@ enum {
  * Wrapper of fclose
  */
 int32_t
-file_close(FILE *fp);
+PadFile_Close(FILE *fp);
 
 /**
  * Wrapper of fopen
  */
 FILE *
-file_open(const char *name, const char *mode);
+PadFile_Open(const char *name, const char *mode);
 
 /**
  * Copy stream
@@ -76,19 +76,19 @@ file_open(const char *name, const char *mode);
  * @return bool success to true, failed to false
  */
 bool
-file_copy(FILE *dst, FILE *src);
+PadFile_Copy(FILE *dst, FILE *src);
 
 /**
  * Wrapper of closedir
  */
 int32_t
-file_closedir(DIR* dir);
+PadFile_CloseDir(DIR* dir);
 
 /**
  * Wrapper of opendir
  */
 DIR *
-file_opendir(const char *path);
+PadFile_OpenDir(const char *path);
 
 /**
  * Wrapper of realpath (UNIX's API)
@@ -101,7 +101,7 @@ file_opendir(const char *path);
  * @return failed to NULL
 */
 char *
-file_realpath(char *dst, uint32_t dstsz, const char *src);
+PadFile_RealPath(char *dst, uint32_t dstsz, const char *src);
 
 /**
  * Check exists file
@@ -111,7 +111,7 @@ file_realpath(char *dst, uint32_t dstsz, const char *src);
  * @return is not exists to false
  */
 bool
-file_exists(const char *path);
+PadFile_IsExists(const char *path);
 
 /**
  * Wrapper of mkdir
@@ -122,7 +122,7 @@ file_exists(const char *path);
  * @return failed to number of -1
  */
 int32_t
-file_mkdirmode(const char *path, mode_t mode);
+PadFile_MkdirMode(const char *path, mode_t mode);
 
 /**
  * Wrapper of mkdir without mode for the quickly
@@ -132,7 +132,7 @@ file_mkdirmode(const char *path, mode_t mode);
  * @return failed to number of -1
  */
 int32_t
-file_mkdirq(const char *path);
+PadFile_MkdirQ(const char *path);
 
 /**
  * Make directories quickly
@@ -142,7 +142,7 @@ file_mkdirq(const char *path);
  * @return failed to number of -1
  */
 int32_t
-file_mkdirsq(const char *path);
+PadFile_MkdirsQ(const char *path);
 
 /**
  * Create empty file on file-system
@@ -153,7 +153,7 @@ file_mkdirsq(const char *path);
  * @return failed to false
  */
 bool
-file_trunc(const char *path);
+PadFile_Trunc(const char *path);
 
 /**
  * Get user's home directory path
@@ -164,7 +164,7 @@ file_trunc(const char *path);
  * @return failed to NULL
  */
 char *
-file_get_user_home(char *dst, uint32_t dstsz);
+PadFile_GetUserHome(char *dst, uint32_t dstsz);
 
 /**
  * Get normalized file path
@@ -177,7 +177,7 @@ file_get_user_home(char *dst, uint32_t dstsz);
  * @return failed to NULL
  */
 char *
-file_solve(char *dst, uint32_t dstsz, const char *path);
+PadFile_Solve(char *dst, uint32_t dstsz, const char *path);
 
 /**
  * Wrapper of remove
@@ -188,7 +188,7 @@ file_solve(char *dst, uint32_t dstsz, const char *path);
  * @return failed to not 0
  */
 int32_t
-file_remove(const char *path);
+PadFile_Remove(const char *path);
 
 /**
  * Wrapper of rename
@@ -199,7 +199,7 @@ file_remove(const char *path);
  * @return failed to not 0
  */
 int32_t
-file_rename(const char *old, const char *new);
+PadFile_Rename(const char *old, const char *new);
 
 /**
  * Get normalized file path with copy
@@ -210,7 +210,7 @@ file_rename(const char *old, const char *new);
  * @return failed to NULL
  */
 char *
-file_solvecp(const char *path);
+PadFile_SolveCopy(const char *path);
 
 /**
  * Get normalized file path by string format
@@ -225,7 +225,7 @@ file_solvecp(const char *path);
  * @return failed to NULL
  */
 char *
-file_solvefmt(char *dst, uint32_t dstsz, const char *fmt, ...);
+PadFile_SolveFmt(char *dst, uint32_t dstsz, const char *fmt, ...);
 
 /**
  * Check file is directory
@@ -235,7 +235,7 @@ file_solvefmt(char *dst, uint32_t dstsz, const char *fmt, ...);
  * @return is not directory to false
  */
 bool
-file_isdir(const char *path);
+PadFile_IsDir(const char *path);
 
 /**
  * Read all string from stream
@@ -245,7 +245,7 @@ file_isdir(const char *path);
  * @return failed to pointer to NULL
  */
 char *
-file_readcp(FILE *fin);
+PadFile_ReadCopy(FILE *fin);
 
 /**
  * Read all string from stream
@@ -255,7 +255,7 @@ file_readcp(FILE *fin);
  * @return failed to pointer to NULL
  */
 char *
-file_readcp_from_path(const char *path);
+PadFile_ReadCopyFromPath(const char *path);
 
 /**
  * Get file size
@@ -266,7 +266,7 @@ file_readcp_from_path(const char *path);
  * @return failed to under of zero
  */
 int64_t
-file_size(FILE *stream);
+PadFile_Size(FILE *stream);
 
 /**
  * Get suffix in file path
@@ -277,7 +277,7 @@ file_size(FILE *stream);
  * @return failed to NULL
  */
 const char *
-file_suffix(const char *path);
+PadFile_Suffix(const char *path);
 
 /**
  * Get directory name in path
@@ -290,7 +290,7 @@ file_suffix(const char *path);
  * @return failed to NULL
  */
 char *
-file_dirname(char *dst, uint32_t dstsz, const char *path);
+PadFile_DirName(char *dst, uint32_t dstsz, const char *path);
 
 /**
  * Get base name in path
@@ -303,7 +303,7 @@ file_dirname(char *dst, uint32_t dstsz, const char *path);
  * @return failed to NULL
  */
 char *
-file_basename(char *dst, uint32_t dstsz, const char *path);
+PadFile_BaseName(char *dst, uint32_t dstsz, const char *path);
 
 /**
  * Get line of string from stream
@@ -316,7 +316,7 @@ file_basename(char *dst, uint32_t dstsz, const char *path);
  * @return end of file or failed to EOF
  */
 int32_t
-file_getline(char *dst, uint32_t dstsz, FILE *fin);
+PadFile_GetLine(char *dst, uint32_t dstsz, FILE *fin);
 
 /**
  * Read first line in file
@@ -329,7 +329,7 @@ file_getline(char *dst, uint32_t dstsz, FILE *fin);
  * @return failed to NULL
  */
 char *
-file_readline(char *dst, uint32_t dstsz, const char *path);
+PadFile_ReadLine(char *dst, uint32_t dstsz, const char *path);
 
 /**
  * Write first line to file
@@ -341,7 +341,7 @@ file_readline(char *dst, uint32_t dstsz, const char *path);
  * @return failed to NULL
  */
 const char *
-file_writeline(const char *line, const char *path);
+PadFile_WriteLine(const char *line, const char *path);
 
 /**
  * Convert line encoding
@@ -353,14 +353,14 @@ file_writeline(const char *line, const char *path);
  * @return failed to pointer to NULL
  */
 char *
-file_conv_line_encoding(const char *encoding, const char *text);
+PadFile_ConvLineEnc(const char *encoding, const char *text);
 
 /***************
 * file_dirnode *
 ***************/
 
-struct file_dirnode;
-typedef struct file_dirnode file_dirPadNode;
+struct PadFileDirNode;
+typedef struct PadFileDirNode PadFileDirNode;
 
 /**
  * Delete node of dynamic allocate memory
@@ -368,7 +368,7 @@ typedef struct file_dirnode file_dirPadNode;
  * @param self
  */
 void
-file_dirnodedel(file_dirPadNode *self);
+PadFileDirNode_Del(PadFileDirNode *self);
 
 /**
  * Get name of node
@@ -379,14 +379,14 @@ file_dirnodedel(file_dirPadNode *self);
  * @return failed to NULL
  */
 const char *
-file_dirnodename(const file_dirPadNode* self);
+PadFileDirNode_Name(const PadFileDirNode* self);
 
 /***********
 * file_dir *
 ***********/
 
-struct file_dir;
-typedef struct file_dir file_dir_t;
+struct PadFileDir;
+typedef struct PadFileDir PadFileDir;
 
 /**
  * Close directory
@@ -397,29 +397,29 @@ typedef struct file_dir file_dir_t;
  * @return failed to number of under of zero
  */
 int32_t
-file_dirclose(file_dir_t *self);
+PadFileDir_Close(PadFileDir *self);
 
 /**
  * Open directory
  *
  * @param path path of directory
  *
- * @return success to pointer to file_dir_t
+ * @return success to pointer to PadFileDir
  * @return failed to NULL
  */
-file_dir_t *
-file_diropen(const char *path);
+PadFileDir *
+PadFileDir_Open(const char *path);
 
 /**
  * Read next node in directory
  *
  * @param self
  *
- * @return success to pointer to file_dirPadNode
+ * @return success to pointer to PadFileDirNode
  * @return failed or end of read to NULL
  */
-file_dirPadNode *
-file_dirread(file_dir_t *self);
+PadFileDirNode *
+PadFileDir_Read(PadFileDir *self);
 
 /**
  * Get file number from FILE object
@@ -429,7 +429,7 @@ file_dirread(file_dir_t *self);
  * @return number of fileno
  */
 int
-file_get_no(FILE *fp);
+PadFile_GetNum(FILE *fp);
 
 /**
  * load lines from file path
@@ -440,4 +440,4 @@ file_get_no(FILE *fp);
  * @return failed to NULL
  */
 char **
-file_read_lines(const char *fname);
+PadFile_ReadLines(const char *fname);

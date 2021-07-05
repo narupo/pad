@@ -127,7 +127,7 @@ PadKit_CompileFromPathArgs(PadKit *self, const char *path, int argc, char *argv[
         Pad_SafeFree(self->program_source);
     }
 
-    self->program_source = file_readcp_from_path(path);
+    self->program_source = PadFile_ReadCopyFromPath(path);
     if (!self->program_source) {
         return NULL;
     }

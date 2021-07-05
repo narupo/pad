@@ -102,21 +102,21 @@ app_del(app_t *self) {
  */
 static bool
 app_deploy_env(const app_t *self) {
-    char userhome[FILE_NPATH];
-    if (!file_get_user_home(userhome, sizeof userhome)) {
+    char userhome[PAD_FILE__NPATH];
+    if (!PadFile_GetUserHome(userhome, sizeof userhome)) {
         Pad_PushErr("failed to get user's home directory. what is your file system?");
         return false;
     }
 
     // make application directory
-    char appdir[FILE_NPATH];
-    if (!file_solvefmt(appdir, sizeof appdir, "%s/.pad", userhome)) {
+    char appdir[PAD_FILE__NPATH];
+    if (!PadFile_SolveFmt(appdir, sizeof appdir, "%s/.pad", userhome)) {
         Pad_PushErr("faield to create application directory path");
         return false;
     }
 
-    if (!file_exists(appdir)) {
-        if (file_mkdirq(appdir) != 0) {
+    if (!PadFile_IsExists(appdir)) {
+        if (PadFile_MkdirQ(appdir) != 0) {
             Pad_PushErr("failed to make application directory");
             return false;
         }
@@ -242,7 +242,7 @@ trace_kit(const app_t *self, const PadKit *kit, FILE *fout) {
 
 static int
 _app_run(app_t *self) {
-    char *content = file_readcp(stdin);
+    char *content = PadFile_ReadCopy(stdin);
     if (!content) {
         Pad_PushErr("failed to read from stdin");
         return 1;
@@ -276,7 +276,7 @@ app_run_args(app_t *self) {
     }
 
     const char *path = argv[0];
-    if (!file_exists(path)) {
+    if (!PadFile_IsExists(path)) {
         Pad_PushErr("not found \"%s\"", path);
         return 1;
     }

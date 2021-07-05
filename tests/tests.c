@@ -241,8 +241,8 @@ warn(const char *fmt, ...) {
  */
 static char *
 solve_path(char *dst, int32_t dstsz, const char *path) {
-    char tmp[FILE_NPATH] = {0};
-    assert(file_solve(tmp, sizeof tmp, path));
+    char tmp[PAD_FILE__NPATH] = {0};
+    assert(PadFile_Solve(tmp, sizeof tmp, path));
     snprintf(dst, dstsz, "%s", tmp);
     return dst;
 }
@@ -1269,8 +1269,8 @@ test_str_app_stream(void) {
 
     char curdir[1024];
     char path[1024];
-    assert(file_realpath(curdir, sizeof curdir, ".") != NULL);
-    assert(file_solvefmt(path, sizeof path, "%s/tests/tests.c", curdir) != NULL);
+    assert(PadFile_RealPath(curdir, sizeof curdir, ".") != NULL);
+    assert(PadFile_SolveFmt(path, sizeof path, "%s/tests/tests.c", curdir) != NULL);
 
     FILE *fin = fopen(path, "r");
     assert(fin != NULL);
@@ -1937,8 +1937,8 @@ test_uni_app_stream(void) {
 
     char curdir[1024];
     char path[1024];
-    assert(file_realpath(curdir, sizeof curdir, ".") != NULL);
-    assert(file_solvefmt(path, sizeof path, "%s/tests/tests.c", curdir) != NULL);
+    assert(PadFile_RealPath(curdir, sizeof curdir, ".") != NULL);
+    assert(PadFile_SolveFmt(path, sizeof path, "%s/tests/tests.c", curdir) != NULL);
 
     FILE *fin = fopen(path, "r");
     assert(fin != NULL);
@@ -2640,21 +2640,21 @@ get_test_fcontent_nonewline(void) {
 
 static const char *
 get_test_finpath(void) {
-    static char path[FILE_NPATH];
+    static char path[PAD_FILE__NPATH];
 
 #ifdef _TESTS_WINDOWS
-    char tmp[FILE_NPATH];
-    assert(file_get_user_home(tmp, sizeof tmp) != NULL);
-    assert(file_solvefmt(path, sizeof path, "%s/cap.test.file", tmp) != NULL);
+    char tmp[PAD_FILE__NPATH];
+    assert(PadFile_GetUserHome(tmp, sizeof tmp) != NULL);
+    assert(PadFile_SolveFmt(path, sizeof path, "%s/cap.test.file", tmp) != NULL);
 #else
-    assert(file_solve(path, sizeof path, "/tmp/cap.test.file") != NULL);
+    assert(PadFile_Solve(path, sizeof path, "/tmp/cap.test.file") != NULL);
 #endif
 
-    if (!file_exists(path)) {
-        FILE *f = file_open(path, "wb");
+    if (!PadFile_IsExists(path)) {
+        FILE *f = PadFile_Open(path, "wb");
         assert(f != NULL);
         fprintf(f, "%s", get_test_fcontent());
-        assert(file_close(f) == 0);
+        assert(PadFile_Close(f) == 0);
     }
     return path;
 }
@@ -2662,14 +2662,14 @@ get_test_finpath(void) {
 static void
 remove_test_file(void) {
     const char *path = get_test_finpath();
-    if (file_exists(path)) {
-        assert(file_remove(path) == 0);
+    if (PadFile_IsExists(path)) {
+        assert(PadFile_Remove(path) == 0);
     }
 }
 
 static FILE *
 get_test_fin(void) {
-    FILE *fin = file_open(get_test_finpath(), "rb");
+    FILE *fin = PadFile_Open(get_test_finpath(), "rb");
     assert(fin != NULL);
     return fin;
 }
@@ -2681,357 +2681,357 @@ get_test_finsize(void) {
 
 static const char *
 get_test_dirpath(void) {
-    static char path[FILE_NPATH];
+    static char path[PAD_FILE__NPATH];
 #ifdef _TESTS_WINDOWS
-    assert(file_get_user_home(path, sizeof path) != NULL);
+    assert(PadFile_GetUserHome(path, sizeof path) != NULL);
 #else
-    assert(file_solve(path, sizeof path, "/tmp") != NULL);
+    assert(PadFile_Solve(path, sizeof path, "/tmp") != NULL);
 #endif
     return path;
 }
 
 static void
-test_file_close(void) {
-    FILE* f = file_open(get_test_finpath(), "rb");
+test_PadFile_Close(void) {
+    FILE* f = PadFile_Open(get_test_finpath(), "rb");
     assert(f != NULL);
-    assert(file_close(NULL) != 0);
-    assert(file_close(f) == 0);
+    assert(PadFile_Close(NULL) != 0);
+    assert(PadFile_Close(f) == 0);
 }
 
 static void
-test_file_open(void) {
-    test_file_close();
+test_PadFile_Open(void) {
+    test_PadFile_Close();
 }
 
 static void
-test_file_copy(void) {
-    FILE *f = file_open(get_test_finpath(), "rb");
+test_PadFile_Copy(void) {
+    FILE *f = PadFile_Open(get_test_finpath(), "rb");
     assert(f != NULL);
     // TODO
-    assert(file_close(f) == 0);
+    assert(PadFile_Close(f) == 0);
 }
 
 static void
-test_file_closedir(void) {
-    DIR *f = file_opendir(get_test_dirpath());
+test_PadFile_CloseDir(void) {
+    DIR *f = PadFile_OpenDir(get_test_dirpath());
     assert(f != NULL);
-    assert(file_closedir(NULL) == -1);
-    assert(file_closedir(f) == 0);
+    assert(PadFile_CloseDir(NULL) == -1);
+    assert(PadFile_CloseDir(f) == 0);
 }
 
 static void
-test_file_opendir(void) {
-    test_file_closedir();
+test_PadFile_OpenDir(void) {
+    test_PadFile_CloseDir();
 }
 
 static void
-test_file_realpath(void) {
-    char path[FILE_NPATH];
+test_PadFile_RealPath(void) {
+    char path[PAD_FILE__NPATH];
 
-    assert(file_realpath(NULL, sizeof path, "/tmp/../tmp") == NULL);
-    assert(file_realpath(path, 0, "/tmp/../tmp") == NULL);
-    assert(file_realpath(path, sizeof path, NULL) == NULL);
+    assert(PadFile_RealPath(NULL, sizeof path, "/tmp/../tmp") == NULL);
+    assert(PadFile_RealPath(path, 0, "/tmp/../tmp") == NULL);
+    assert(PadFile_RealPath(path, sizeof path, NULL) == NULL);
 
-    char userhome[FILE_NPATH];
-    assert(file_get_user_home(userhome, sizeof userhome));
+    char userhome[PAD_FILE__NPATH];
+    assert(PadFile_GetUserHome(userhome, sizeof userhome));
 
-    char src[FILE_NPATH + 5] = {0};
-    snprintf(src, sizeof src, "%s%c..", userhome, FILE_SEP);
-    assert(file_realpath(path, sizeof path, src) != NULL);
+    char src[PAD_FILE__NPATH + 5] = {0};
+    snprintf(src, sizeof src, "%s%c..", userhome, PAD_FILE__SEP);
+    assert(PadFile_RealPath(path, sizeof path, src) != NULL);
 }
 
 static void
-test_file_exists(void) {
-    assert(file_exists(NULL) == false);
-    assert(file_exists(get_test_dirpath()));
-    assert(!file_exists("/nothing/directory"));
+test_PadFile_IsExists(void) {
+    assert(PadFile_IsExists(NULL) == false);
+    assert(PadFile_IsExists(get_test_dirpath()));
+    assert(!PadFile_IsExists("/nothing/directory"));
 }
 
 static void
-test_file_mkdirmode(void) {
+test_PadFile_MkdirMode(void) {
     // TODO
 }
 
 static void
-test_file_mkdirq(void) {
-    assert(file_mkdirq(NULL) != 0);
+test_PadFile_MkdirQ(void) {
+    assert(PadFile_MkdirQ(NULL) != 0);
 }
 
 static void
-test_file_trunc(void) {
-    char path[FILE_NPATH];
-    char userhome[FILE_NPATH];
-    assert(file_get_user_home(userhome, sizeof userhome) != NULL);
-    assert(file_solvefmt(path, sizeof path, "%s/cap.ftrunc", userhome) != NULL);
+test_PadFile_Trunc(void) {
+    char path[PAD_FILE__NPATH];
+    char userhome[PAD_FILE__NPATH];
+    assert(PadFile_GetUserHome(userhome, sizeof userhome) != NULL);
+    assert(PadFile_SolveFmt(path, sizeof path, "%s/cap.ftrunc", userhome) != NULL);
 
-    assert(!file_exists(path));
-    assert(!file_trunc(NULL));
-    assert(file_trunc(path));
-    assert(file_exists(path));
-    assert(file_remove(path) == 0);
+    assert(!PadFile_IsExists(path));
+    assert(!PadFile_Trunc(NULL));
+    assert(PadFile_Trunc(path));
+    assert(PadFile_IsExists(path));
+    assert(PadFile_Remove(path) == 0);
 }
 
 static void
-test_file_solve(void) {
-    char path[FILE_NPATH];
-    assert(file_solve(NULL, sizeof path, "/tmp/../tmp") == NULL);
-    assert(file_solve(path, 0, "/tmp/../tmp") == NULL);
-    assert(file_solve(path, sizeof path, NULL) == NULL);
-    assert(file_solve(path, sizeof path, get_test_dirpath()) != NULL);
+test_PadFile_Solve(void) {
+    char path[PAD_FILE__NPATH];
+    assert(PadFile_Solve(NULL, sizeof path, "/tmp/../tmp") == NULL);
+    assert(PadFile_Solve(path, 0, "/tmp/../tmp") == NULL);
+    assert(PadFile_Solve(path, sizeof path, NULL) == NULL);
+    assert(PadFile_Solve(path, sizeof path, get_test_dirpath()) != NULL);
 }
 
 static void
-test_file_solvecp(void) {
-    assert(!file_solvecp(NULL));
-    char *path = file_solvecp(get_test_dirpath());
+test_PadFile_SolveCopy(void) {
+    assert(!PadFile_SolveCopy(NULL));
+    char *path = PadFile_SolveCopy(get_test_dirpath());
     assert(path != NULL);
     assert(strcmp(path, get_test_dirpath()) == 0);
     free(path);
 }
 
 static void
-test_file_solvefmt(void) {
+test_PadFile_SolveFmt(void) {
     char path[1024];
-    assert(file_solvefmt(NULL, sizeof path, "/%s/../%s", "tmp", "tmp") == NULL);
-    assert(file_solvefmt(path, 0, "/%s/../%s", "tmp", "tmp") == NULL);
-    assert(file_solvefmt(path, sizeof path, NULL, "tmp", "tmp") == NULL);
-    assert(file_solvefmt(path, sizeof path, "%s", get_test_dirpath()) != NULL);
+    assert(PadFile_SolveFmt(NULL, sizeof path, "/%s/../%s", "tmp", "tmp") == NULL);
+    assert(PadFile_SolveFmt(path, 0, "/%s/../%s", "tmp", "tmp") == NULL);
+    assert(PadFile_SolveFmt(path, sizeof path, NULL, "tmp", "tmp") == NULL);
+    assert(PadFile_SolveFmt(path, sizeof path, "%s", get_test_dirpath()) != NULL);
 }
 
 static void
-test_file_isdir(void) {
-    assert(!file_isdir(NULL));
-    assert(file_isdir(get_test_dirpath()));
-    assert(!file_isdir("/not/found/directory"));
+test_PadFile_IsDir(void) {
+    assert(!PadFile_IsDir(NULL));
+    assert(PadFile_IsDir(get_test_dirpath()));
+    assert(!PadFile_IsDir("/not/found/directory"));
 }
 
 static void
-test_file_readcp(void) {
-    FILE *fin = file_open(get_test_finpath(), "rb");
+test_PadFile_ReadCopy(void) {
+    FILE *fin = PadFile_Open(get_test_finpath(), "rb");
     assert(fin != NULL);
-    assert(!file_readcp(NULL));
-    char *p = file_readcp(fin);
-    file_close(fin);
+    assert(!PadFile_ReadCopy(NULL));
+    char *p = PadFile_ReadCopy(fin);
+    PadFile_Close(fin);
     assert(p != NULL);
     free(p);
 }
 
 static void
-test_file_size(void) {
-    FILE *fin = file_open(get_test_finpath(), "rb");
+test_PadFile_Size(void) {
+    FILE *fin = PadFile_Open(get_test_finpath(), "rb");
     assert(fin != NULL);
-    assert(file_size(NULL) == -1);
-    assert(file_size(fin) == get_test_finsize());
-    assert(file_close(fin) == 0);
+    assert(PadFile_Size(NULL) == -1);
+    assert(PadFile_Size(fin) == get_test_finsize());
+    assert(PadFile_Close(fin) == 0);
 }
 
 static void
-test_file_suffix(void) {
-    assert(file_suffix(NULL) == NULL);
-    const char *suf = file_suffix("/this/is/text/file.txt");
+test_PadFile_Suffix(void) {
+    assert(PadFile_Suffix(NULL) == NULL);
+    const char *suf = PadFile_Suffix("/this/is/text/file.txt");
     assert(suf != NULL);
     assert(strcmp(suf, "txt") == 0);
 }
 
 static void
-test_file_dirname(void) {
-    char name[FILE_NPATH];
-    char userhome[FILE_NPATH];
-    char path[FILE_NPATH];
-    assert(file_get_user_home(userhome, sizeof userhome));
-    assert(file_solvefmt(path, sizeof path, "%s/file", userhome));
+test_PadFile_DirName(void) {
+    char name[PAD_FILE__NPATH];
+    char userhome[PAD_FILE__NPATH];
+    char path[PAD_FILE__NPATH];
+    assert(PadFile_GetUserHome(userhome, sizeof userhome));
+    assert(PadFile_SolveFmt(path, sizeof path, "%s/file", userhome));
 
-    assert(file_dirname(NULL, sizeof name, path) == NULL);
-    assert(file_dirname(name, 0, path) == NULL);
-    assert(file_dirname(name, sizeof name, NULL) == NULL);
-    assert(file_dirname(name, sizeof name, path) != NULL);
+    assert(PadFile_DirName(NULL, sizeof name, path) == NULL);
+    assert(PadFile_DirName(name, 0, path) == NULL);
+    assert(PadFile_DirName(name, sizeof name, NULL) == NULL);
+    assert(PadFile_DirName(name, sizeof name, path) != NULL);
     assert(strcmp(name, userhome) == 0);
 }
 
 static void
-test_file_basename(void) {
-    char name[FILE_NPATH];
-    char userhome[FILE_NPATH];
-    char path[FILE_NPATH];
-    assert(file_get_user_home(userhome, sizeof userhome));
-    assert(file_solvefmt(path, sizeof path, "%s/file.txt", userhome));
+test_PadFile_BaseName(void) {
+    char name[PAD_FILE__NPATH];
+    char userhome[PAD_FILE__NPATH];
+    char path[PAD_FILE__NPATH];
+    assert(PadFile_GetUserHome(userhome, sizeof userhome));
+    assert(PadFile_SolveFmt(path, sizeof path, "%s/file.txt", userhome));
 
-    assert(file_basename(NULL, sizeof name, path) == NULL);
-    assert(file_basename(name, 0, path) == NULL);
-    assert(file_basename(name, sizeof name, NULL) == NULL);
-    assert(file_basename(name, sizeof name, path) != NULL);
+    assert(PadFile_BaseName(NULL, sizeof name, path) == NULL);
+    assert(PadFile_BaseName(name, 0, path) == NULL);
+    assert(PadFile_BaseName(name, sizeof name, NULL) == NULL);
+    assert(PadFile_BaseName(name, sizeof name, path) != NULL);
     assert(strcmp(name, "file.txt") == 0);
 }
 
 static void
-test_file_getline(void) {
+test_PadFile_GetLine(void) {
     FILE *fin = get_test_fin();
     assert(fin != NULL);
     char line[1024];
-    assert(file_getline(NULL, sizeof line, fin) == EOF);
-    assert(file_getline(line, 0, fin) == EOF);
-    assert(file_getline(line, sizeof line, NULL) == EOF);
-    assert(file_getline(line, sizeof line, fin) != EOF);
+    assert(PadFile_GetLine(NULL, sizeof line, fin) == EOF);
+    assert(PadFile_GetLine(line, 0, fin) == EOF);
+    assert(PadFile_GetLine(line, sizeof line, NULL) == EOF);
+    assert(PadFile_GetLine(line, sizeof line, fin) != EOF);
     assert(strcmp(get_test_fcontent_nonewline(), line) == 0);
-    assert(file_close(fin) == 0);
+    assert(PadFile_Close(fin) == 0);
 }
 
 static void
-test_file_readline(void) {
+test_PadFile_ReadLine(void) {
     char line[1024];
-    assert(file_readline(NULL, sizeof line, get_test_finpath()) == NULL);
-    assert(file_readline(line, 0, get_test_finpath()) == NULL);
-    assert(file_readline(line, sizeof line, NULL) == NULL);
-    assert(file_readline(line, sizeof line, get_test_finpath()) != NULL);
+    assert(PadFile_ReadLine(NULL, sizeof line, get_test_finpath()) == NULL);
+    assert(PadFile_ReadLine(line, 0, get_test_finpath()) == NULL);
+    assert(PadFile_ReadLine(line, sizeof line, NULL) == NULL);
+    assert(PadFile_ReadLine(line, sizeof line, get_test_finpath()) != NULL);
     assert(strcmp(line, get_test_fcontent_nonewline()) == 0);
 }
 
 static void
-test_file_writeline(void) {
-    assert(file_writeline(NULL, get_test_finpath()) == NULL);
-    assert(file_writeline(get_test_fcontent_nonewline(), NULL) == NULL);
-    assert(file_writeline(get_test_fcontent_nonewline(), get_test_finpath()));
-    test_file_readline();
+test_PadFile_WriteLine(void) {
+    assert(PadFile_WriteLine(NULL, get_test_finpath()) == NULL);
+    assert(PadFile_WriteLine(get_test_fcontent_nonewline(), NULL) == NULL);
+    assert(PadFile_WriteLine(get_test_fcontent_nonewline(), get_test_finpath()));
+    test_PadFile_ReadLine();
 }
 
 static void
-test_file_dirnodedel(void) {
-    file_dirclose(NULL);
-    assert(file_diropen(NULL) == NULL);
-    assert(file_dirread(NULL) == NULL);
-    file_dirnodedel(NULL);
+test_PadFileDirNode_Del(void) {
+    PadFileDir_Close(NULL);
+    assert(PadFileDir_Open(NULL) == NULL);
+    assert(PadFileDir_Read(NULL) == NULL);
+    PadFileDirNode_Del(NULL);
 
-    struct file_dir *dir = file_diropen(get_test_dirpath());
+    struct PadFileDir *dir = PadFileDir_Open(get_test_dirpath());
     assert(dir != NULL);
 
-    for (struct file_dirnode *node; (node = file_dirread(dir)); ) {
-        const char *dname = file_dirnodename(node);
+    for (struct PadFileDirNode *node; (node = PadFileDir_Read(dir)); ) {
+        const char *dname = PadFileDirNode_Name(node);
         assert(dname != NULL);
-        file_dirnodedel(node);
+        PadFileDirNode_Del(node);
     }
 
-    assert(file_dirclose(dir) == 0);
+    assert(PadFileDir_Close(dir) == 0);
 }
 
 static void
-test_file_dirnodename(void) {
-    // test_file_dirclose
+test_PadFileDirNode_Name(void) {
+    // test_PadFileDir_Close
 }
 
 static void
-test_file_dirclose(void) {
-    // test_file_dirclose
+test_PadFileDir_Close(void) {
+    // test_PadFileDir_Close
 }
 
 static void
-test_file_diropen(void) {
-    // test_file_dirclose
+test_PadFileDir_Open(void) {
+    // test_PadFileDir_Close
 }
 
 static void
-test_file_dirread(void) {
-    // test_file_dirclose
+test_PadFileDir_Read(void) {
+    // test_PadFileDir_Close
 }
 
 static void
-test_file_conv_line_encoding(void) {
+test_PadFile_ConvLineEnc(void) {
     char *encoded;
 
-    encoded = file_conv_line_encoding(NULL, "abc");
+    encoded = PadFile_ConvLineEnc(NULL, "abc");
     assert(!encoded);
 
-    encoded = file_conv_line_encoding("nothing", "abc");
+    encoded = PadFile_ConvLineEnc("nothing", "abc");
     assert(!encoded);
 
-    encoded = file_conv_line_encoding("crlf", NULL);
+    encoded = PadFile_ConvLineEnc("crlf", NULL);
     assert(!encoded);
 
-    encoded = file_conv_line_encoding("crlf", "abc");
+    encoded = PadFile_ConvLineEnc("crlf", "abc");
     assert(encoded);
     assert(!strcmp(encoded, "abc"));
     free(encoded);
 
     // to crlf
-    encoded = file_conv_line_encoding("crlf", "abc\r\ndef\r\n");
+    encoded = PadFile_ConvLineEnc("crlf", "abc\r\ndef\r\n");
     assert(encoded);
     assert(!strcmp(encoded, "abc\r\ndef\r\n"));
     free(encoded);
 
-    encoded = file_conv_line_encoding("crlf", "abc\rdef\r");
+    encoded = PadFile_ConvLineEnc("crlf", "abc\rdef\r");
     assert(encoded);
     assert(!strcmp(encoded, "abc\r\ndef\r\n"));
     free(encoded);
 
-    encoded = file_conv_line_encoding("crlf", "abc\ndef\n");
+    encoded = PadFile_ConvLineEnc("crlf", "abc\ndef\n");
     assert(encoded);
     assert(!strcmp(encoded, "abc\r\ndef\r\n"));
     free(encoded);
 
     // to cr
-    encoded = file_conv_line_encoding("cr", "abc\r\ndef\r\n");
+    encoded = PadFile_ConvLineEnc("cr", "abc\r\ndef\r\n");
     assert(encoded);
     assert(!strcmp(encoded, "abc\rdef\r"));
     free(encoded);
 
-    encoded = file_conv_line_encoding("cr", "abc\rdef\r");
+    encoded = PadFile_ConvLineEnc("cr", "abc\rdef\r");
     assert(encoded);
     assert(!strcmp(encoded, "abc\rdef\r"));
     free(encoded);
 
-    encoded = file_conv_line_encoding("cr", "abc\ndef\n");
+    encoded = PadFile_ConvLineEnc("cr", "abc\ndef\n");
     assert(encoded);
     assert(!strcmp(encoded, "abc\rdef\r"));
     free(encoded);
 
     // to lf
-    encoded = file_conv_line_encoding("lf", "abc\r\ndef\r\n");
+    encoded = PadFile_ConvLineEnc("lf", "abc\r\ndef\r\n");
     assert(encoded);
     assert(!strcmp(encoded, "abc\ndef\n"));
     free(encoded);
 
-    encoded = file_conv_line_encoding("lf", "abc\rdef\r");
+    encoded = PadFile_ConvLineEnc("lf", "abc\rdef\r");
     assert(encoded);
     assert(!strcmp(encoded, "abc\ndef\n"));
     free(encoded);
 
-    encoded = file_conv_line_encoding("lf", "abc\ndef\n");
+    encoded = PadFile_ConvLineEnc("lf", "abc\ndef\n");
     assert(encoded);
     assert(!strcmp(encoded, "abc\ndef\n"));
     free(encoded);
 }
 
 static void
-test_file_get_user_home(void) {
+test_PadFile_GetUserHome(void) {
     // can't test    
 }
 
 static void
-test_file_remove(void) {
-    if (!file_exists("tests/file/")) {
-        file_mkdirq("tests/file/");
+test_PadFile_Remove(void) {
+    if (!PadFile_IsExists("tests/file/")) {
+        PadFile_MkdirQ("tests/file/");
     }
-    file_trunc("tests/file/remove.txt");
-    assert(file_exists("tests/file/remove.txt"));
-    file_remove("tests/file/remove.txt");
-    assert(!file_exists("tests/file/remove.txt"));
+    PadFile_Trunc("tests/file/remove.txt");
+    assert(PadFile_IsExists("tests/file/remove.txt"));
+    PadFile_Remove("tests/file/remove.txt");
+    assert(!PadFile_IsExists("tests/file/remove.txt"));
 }
 
 static void
-test_file_rename(void) {
-    if (!file_exists("tests/file/")) {
-        file_mkdirq("tests/file/");
+test_PadFile_Rename(void) {
+    if (!PadFile_IsExists("tests/file/")) {
+        PadFile_MkdirQ("tests/file/");
     }
-    file_trunc("tests/file/rename.txt");
-    assert(file_exists("tests/file/rename.txt"));
-    file_rename("tests/file/rename.txt", "tests/file/renamed.txt");
-    assert(file_exists("tests/file/renamed.txt"));
-    file_remove("tests/file/renamed.txt");
+    PadFile_Trunc("tests/file/rename.txt");
+    assert(PadFile_IsExists("tests/file/rename.txt"));
+    PadFile_Rename("tests/file/rename.txt", "tests/file/renamed.txt");
+    assert(PadFile_IsExists("tests/file/renamed.txt"));
+    PadFile_Remove("tests/file/renamed.txt");
 }
 
 static void
-test_file_read_lines(void) {
-    if (!file_exists("tests/file/")) {
-        file_mkdirq("tests/file/");
+test_PadFile_ReadLines(void) {
+    if (!PadFile_IsExists("tests/file/")) {
+        PadFile_MkdirQ("tests/file/");
     }
     FILE *fout = fopen("tests/file/lines.txt", "wt");
     assert(fout);
@@ -3040,14 +3040,14 @@ test_file_read_lines(void) {
     fputs("323\n", fout);
     fclose(fout);
 
-    char **lines = file_read_lines("tests/file/lines.txt");
+    char **lines = PadFile_ReadLines("tests/file/lines.txt");
     assert(lines);
     assert(!strcmp(lines[0], "123"));
     assert(!strcmp(lines[1], "223"));
     assert(!strcmp(lines[2], "323"));
     assert(lines[3] == NULL);
 
-    file_remove("tests/file/lines.txt");
+    PadFile_Remove("tests/file/lines.txt");
 }
 
 /**
@@ -3056,38 +3056,38 @@ test_file_read_lines(void) {
  */
 static const struct testcase
 file_tests[] = {
-    {"file_close", test_file_close},
-    {"file_open", test_file_open},
-    {"file_copy", test_file_copy},
-    {"file_closedir", test_file_closedir},
-    {"file_opendir", test_file_opendir},
-    {"file_realpath", test_file_realpath},
-    {"file_exists", test_file_exists},
-    {"file_mkdirmode", test_file_mkdirmode},
-    {"file_mkdirq", test_file_mkdirq},
-    {"file_trunc", test_file_trunc},
-    {"file_solve", test_file_solve},
-    {"file_solvecp", test_file_solvecp},
-    {"file_solvefmt", test_file_solvefmt},
-    {"file_isdir", test_file_isdir},
-    {"file_readcp", test_file_readcp},
-    {"file_size", test_file_size},
-    {"file_suffix", test_file_suffix},
-    {"file_dirname", test_file_dirname},
-    {"file_basename", test_file_basename},
-    {"file_getline", test_file_getline},
-    {"file_readline", test_file_readline},
-    {"file_writeline", test_file_writeline},
-    {"file_dirnodedel", test_file_dirnodedel},
-    {"file_dirnodename", test_file_dirnodename},
-    {"file_dirclose", test_file_dirclose},
-    {"file_diropen", test_file_diropen},
-    {"file_dirread", test_file_dirread},
-    {"file_conv_line_encoding", test_file_conv_line_encoding},
-    {"file_get_user_home", test_file_get_user_home},
-    {"file_remove", test_file_remove},
-    {"file_rename", test_file_rename},
-    {"file_read_lines", test_file_read_lines},
+    {"PadFile_Close", test_PadFile_Close},
+    {"PadFile_Open", test_PadFile_Open},
+    {"PadFile_Copy", test_PadFile_Copy},
+    {"PadFile_CloseDir", test_PadFile_CloseDir},
+    {"PadFile_OpenDir", test_PadFile_OpenDir},
+    {"PadFile_RealPath", test_PadFile_RealPath},
+    {"PadFile_IsExists", test_PadFile_IsExists},
+    {"PadFile_MkdirMode", test_PadFile_MkdirMode},
+    {"PadFile_MkdirQ", test_PadFile_MkdirQ},
+    {"PadFile_Trunc", test_PadFile_Trunc},
+    {"PadFile_Solve", test_PadFile_Solve},
+    {"PadFile_SolveCopy", test_PadFile_SolveCopy},
+    {"PadFile_SolveFmt", test_PadFile_SolveFmt},
+    {"PadFile_IsDir", test_PadFile_IsDir},
+    {"PadFile_ReadCopy", test_PadFile_ReadCopy},
+    {"PadFile_Size", test_PadFile_Size},
+    {"PadFile_Suffix", test_PadFile_Suffix},
+    {"PadFile_DirName", test_PadFile_DirName},
+    {"PadFile_BaseName", test_PadFile_BaseName},
+    {"PadFile_GetLine", test_PadFile_GetLine},
+    {"PadFile_ReadLine", test_PadFile_ReadLine},
+    {"PadFile_WriteLine", test_PadFile_WriteLine},
+    {"PadFileDirNode_Del", test_PadFileDirNode_Del},
+    {"PadFileDirNode_Name", test_PadFileDirNode_Name},
+    {"PadFileDir_Close", test_PadFileDir_Close},
+    {"PadFileDir_Open", test_PadFileDir_Open},
+    {"PadFileDir_Read", test_PadFileDir_Read},
+    {"PadFile_ConvLineEnc", test_PadFile_ConvLineEnc},
+    {"PadFile_GetUserHome", test_PadFile_GetUserHome},
+    {"PadFile_Remove", test_PadFile_Remove},
+    {"PadFile_Rename", test_PadFile_Rename},
+    {"PadFile_ReadLines", test_PadFile_ReadLines},
     {0},
 };
 
@@ -3538,15 +3538,15 @@ static void
 test_util_Pad_SafeSystem(void) {
     char cmd[1024];
 #ifdef _TESTS_WINDOWS
-    assert(file_solvefmt(cmd, sizeof cmd, "dir") != NULL);
+    assert(PadFile_SolveFmt(cmd, sizeof cmd, "dir") != NULL);
 #else
     const char *path = "/tmp/f";
-    if (file_exists(path)) {
+    if (PadFile_IsExists(path)) {
         assert(remove(path) == 0);
     }
-    assert(file_solvefmt(cmd, sizeof cmd, "/bin/sh -c \"touch %s\"", path) != NULL);
+    assert(PadFile_SolveFmt(cmd, sizeof cmd, "/bin/sh -c \"touch %s\"", path) != NULL);
     assert(Pad_SafeSystem(cmd, PAD_SAFESYSTEM_DEFAULT) == 0);
-    assert(file_exists(path));
+    assert(PadFile_IsExists(path));
 #endif
 }
 

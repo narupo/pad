@@ -7,7 +7,7 @@
 
 typedef struct PadConfig {
     char line_encoding[32+1];  // line encoding "cr" | "crlf" | "lf"
-    char std_lib_dir_path[FILE_NPATH];  // standard libraries directory path
+    char std_lib_dir_path[PAD_FILE__NPATH];  // standard libraries directory path
 } PadConfig;
 
 /**

@@ -25,7 +25,7 @@ PadConfig_Init(PadConfig *self) {
     strcpy(self->line_encoding, "lf");
 
     // standard libraries
-    if (!file_solve(self->std_lib_dir_path, sizeof self->std_lib_dir_path, "~/.pad/stdlib")) {
+    if (!PadFile_Solve(self->std_lib_dir_path, sizeof self->std_lib_dir_path, "~/.pad/stdlib")) {
         PadErr_Err("failed to solve path for standard libraries directory");
         return NULL;
     }

@@ -8,7 +8,7 @@
 #include <pad/lib/file.h>
 
 int32_t
-file_close(FILE *fp) {
+PadFile_Close(FILE *fp) {
     if (!fp) {
         return -1;
     }
@@ -17,7 +17,7 @@ file_close(FILE *fp) {
 }
 
 FILE *
-file_open(const char *path, const char *mode) {
+PadFile_Open(const char *path, const char *mode) {
     if (!path || !mode) {
         return NULL;
     }
@@ -26,7 +26,7 @@ file_open(const char *path, const char *mode) {
 }
 
 bool
-file_copy(FILE *dst, FILE *src) {
+PadFile_Copy(FILE *dst, FILE *src) {
     if (!dst || !src) {
         return false;
     }
@@ -40,12 +40,12 @@ file_copy(FILE *dst, FILE *src) {
 }
 
 char *
-file_realpath(char *dst, uint32_t dstsz, const char *src) {
+PadFile_RealPath(char *dst, uint32_t dstsz, const char *src) {
     if (!dst || dstsz == 0 || !src) {
         return NULL;
     }
 
-#if defined(_FILE_WINDOWS)
+#if defined(PAD_FILE__WINDOWS)
     char *fpart;
     if (!GetFullPathName(src, dstsz, dst, &fpart)) {
         return NULL;
@@ -66,8 +66,8 @@ file_realpath(char *dst, uint32_t dstsz, const char *src) {
 }
 
 char *
-file_get_user_home(char *dst, uint32_t dstsz) {
-#ifdef _FILE_WINDOWS
+PadFile_GetUserHome(char *dst, uint32_t dstsz) {
+#ifdef PAD_FILE__WINDOWS
     const char *drive = getenv("HOMEDRIVE");
     if (!drive) {
         return NULL;
@@ -91,18 +91,18 @@ file_get_user_home(char *dst, uint32_t dstsz) {
 }
 
 char *
-file_solve(char *dst, uint32_t dstsz, const char *path) {
+PadFile_Solve(char *dst, uint32_t dstsz, const char *path) {
     // Check arugments
     if (!dst || dstsz == 0 || !path) {
         return NULL;
     }
 
-    char tmp[FILE_NPATH*2];
+    char tmp[PAD_FILE__NPATH*2];
 
     // Solve '~'
     if (path[0] == '~') {
-        char home[FILE_NPATH];
-        if (!file_get_user_home(home, sizeof home)) {
+        char home[PAD_FILE__NPATH];
+        if (!PadFile_GetUserHome(home, sizeof home)) {
             return NULL;
         }
         const char *p = path;
@@ -113,7 +113,7 @@ file_solve(char *dst, uint32_t dstsz, const char *path) {
     }
 
     // Get real path
-    if (!file_realpath(dst, dstsz, tmp)) {
+    if (!PadFile_RealPath(dst, dstsz, tmp)) {
         return NULL;
     }
 
@@ -121,20 +121,20 @@ file_solve(char *dst, uint32_t dstsz, const char *path) {
 }
 
 char *
-file_solvecp(const char *path) {
+PadFile_SolveCopy(const char *path) {
     // Check arguments
     if (!path) {
         return NULL;
     }
 
     // Ready
-    char *dst = malloc(sizeof(char) * FILE_NPATH);
+    char *dst = malloc(sizeof(char) * PAD_FILE__NPATH);
     if (!dst) {
         return NULL;
     }
 
     // Solve
-    char *res = file_solve(dst, FILE_NPATH, path);
+    char *res = PadFile_Solve(dst, PAD_FILE__NPATH, path);
     if (!res) {
         free(dst);
         return NULL;
@@ -144,23 +144,23 @@ file_solvecp(const char *path) {
 }
 
 char *
-file_solvefmt(char *dst, uint32_t dstsz, const char *fmt, ...) {
+PadFile_SolveFmt(char *dst, uint32_t dstsz, const char *fmt, ...) {
     if (!dst || dstsz == 0 || !fmt) {
         return NULL;
     }
 
     va_list ap;
     va_start(ap, fmt);
-    char tmp[FILE_NPATH];
+    char tmp[PAD_FILE__NPATH];
     vsnprintf(tmp, sizeof tmp, fmt, ap);
     va_end(ap);
-    return file_solve(dst, dstsz, tmp);
+    return PadFile_Solve(dst, dstsz, tmp);
 }
 
 int32_t
-file_remove(const char *path) {
-#ifdef _FILE_WINDOWS
-    if (file_isdir(path)) {
+PadFile_Remove(const char *path) {
+#ifdef PAD_FILE__WINDOWS
+    if (PadFile_IsDir(path)) {
         if (RemoveDirectory(path)) {
             return 0; // success
         } else {
@@ -172,12 +172,12 @@ file_remove(const char *path) {
 }
 
 int32_t
-file_rename(const char *old, const char *new) {
+PadFile_Rename(const char *old, const char *new) {
     return rename(old, new);
 }
 
 DIR*
-file_opendir(const char *path) {
+PadFile_OpenDir(const char *path) {
     if (!path) {
         return NULL;
     }
@@ -186,7 +186,7 @@ file_opendir(const char *path) {
 }
 
 int32_t
-file_closedir(DIR* dir) {
+PadFile_CloseDir(DIR* dir) {
     if (!dir) {
         return -1;
     }
@@ -195,7 +195,7 @@ file_closedir(DIR* dir) {
 }
 
 bool
-file_exists(const char *path) {
+PadFile_IsExists(const char *path) {
     if (!path) {
         return false;
     }
@@ -216,7 +216,7 @@ file_exists(const char *path) {
 }
 
 bool
-file_isdir(const char *path) {
+PadFile_IsDir(const char *path) {
     if (!path) {
         return false;
     }
@@ -243,12 +243,12 @@ file_isdir(const char *path) {
 }
 
 int32_t
-file_mkdirmode(const char *dirpath, mode_t mode) {
+PadFile_MkdirMode(const char *dirpath, mode_t mode) {
     if (!dirpath) {
         return -1;
     }
 
-#if defined(_FILE_WINDOWS)
+#if defined(PAD_FILE__WINDOWS)
     return mkdir(dirpath);
 #else
     return mkdir(dirpath, mode);
@@ -256,52 +256,52 @@ file_mkdirmode(const char *dirpath, mode_t mode) {
 }
 
 int32_t
-file_mkdirq(const char *path) {
+PadFile_MkdirQ(const char *path) {
     if (!path) {
         return -1;
     }
 
-    return file_mkdirmode(path, S_IRUSR | S_IWUSR | S_IXUSR);
+    return PadFile_MkdirMode(path, S_IRUSR | S_IWUSR | S_IXUSR);
 }
 
 int32_t
-file_mkdirsq(const char *path) {
+PadFile_MkdirsQ(const char *path) {
     if (!path) {
         return -1;
     }
 
     char tmp[strlen(path)+1];
     int i = 0;
-    for (const char *p = path; *p && i < FILE_NPATH; ++p) {
+    for (const char *p = path; *p && i < PAD_FILE__NPATH; ++p) {
         tmp[i++] = *p;
         tmp[i] = '\0';
-        if (*p == FILE_SEP && !file_exists(tmp)) {
-            file_mkdirq(tmp);
+        if (*p == PAD_FILE__SEP && !PadFile_IsExists(tmp)) {
+            PadFile_MkdirQ(tmp);
         }
     }
 
-    file_mkdirq(tmp);
+    PadFile_MkdirQ(tmp);
     return 0;
 }
 
 bool
-file_trunc(const char *path) {
+PadFile_Trunc(const char *path) {
     if (!path) {
         return false;
     }
 
-    FILE* fout = file_open(path, "wb");
+    FILE* fout = PadFile_Open(path, "wb");
     if (!fout) {
         return false;
     }
 
-    file_close(fout);
+    PadFile_Close(fout);
 
     return true;
 }
 
 char *
-file_readcp(FILE* fin) {
+PadFile_ReadCopy(FILE* fin) {
     if (!fin || feof(fin)) {
         return NULL;
     }
@@ -337,13 +337,13 @@ file_readcp(FILE* fin) {
 }
 
 char *
-file_readcp_from_path(const char *path) {
+PadFile_ReadCopyFromPath(const char *path) {
     FILE *fin = fopen(path, "rb");
     if (fin == NULL) {
         return NULL;
     }
 
-    char *content = file_readcp(fin);
+    char *content = PadFile_ReadCopy(fin);
 
     if (fclose(fin) == EOF) {
         return NULL;
@@ -353,7 +353,7 @@ file_readcp_from_path(const char *path) {
 }
 
 int64_t
-file_size(FILE* fp) {
+PadFile_Size(FILE* fp) {
     if (!fp) {
         return -1;
     }
@@ -373,7 +373,7 @@ file_size(FILE* fp) {
 }
 
 const char *
-file_suffix(const char *path) {
+PadFile_Suffix(const char *path) {
     if (!path) {
         return NULL;
     }
@@ -387,7 +387,7 @@ file_suffix(const char *path) {
 }
 
 char *
-file_dirname(char *dst, uint32_t dstsz, const char *path) {
+PadFile_DirName(char *dst, uint32_t dstsz, const char *path) {
     if (!dst || dstsz == 0 || !path) {
         return NULL;
     }
@@ -398,7 +398,7 @@ file_dirname(char *dst, uint32_t dstsz, const char *path) {
 }
 
 char *
-file_basename(char *dst, uint32_t dstsz, const char *path) {
+PadFile_BaseName(char *dst, uint32_t dstsz, const char *path) {
     if (!dst || dstsz == 0 || !path) {
         return NULL;
     }
@@ -416,7 +416,7 @@ file_basename(char *dst, uint32_t dstsz, const char *path) {
 }
 
 int32_t
-file_getline(char *dst, uint32_t dstsz, FILE *fin) {
+PadFile_GetLine(char *dst, uint32_t dstsz, FILE *fin) {
     if (!dst || dstsz == 0 || !fin) {
         return EOF;
     }
@@ -434,7 +434,7 @@ file_getline(char *dst, uint32_t dstsz, FILE *fin) {
 }
 
 char *
-file_readline(char *dst, uint32_t dstsz, const char *path) {
+PadFile_ReadLine(char *dst, uint32_t dstsz, const char *path) {
     if (!dst || dstsz == 0 || !path) {
         return NULL;
     }
@@ -447,7 +447,7 @@ file_readline(char *dst, uint32_t dstsz, const char *path) {
         return NULL;
     }
 
-    if (file_getline(dst, dstsz, fin) == EOF) {
+    if (PadFile_GetLine(dst, dstsz, fin) == EOF) {
         fclose(fin);
         if (dstsz) {
             *dst = '\0';
@@ -466,7 +466,7 @@ file_readline(char *dst, uint32_t dstsz, const char *path) {
 }
 
 const char *
-file_writeline(const char *line, const char *path) {
+PadFile_WriteLine(const char *line, const char *path) {
     if (!line || !path) {
         return NULL;
     }
@@ -490,8 +490,8 @@ file_writeline(const char *line, const char *path) {
 * file file_dirnode *
 *********************/
 
-struct file_dirnode {
-#if defined(_FILE_WINDOWS)
+struct PadFileDirNode {
+#if defined(PAD_FILE__WINDOWS)
     WIN32_FIND_DATA finddata;
 #else
     struct dirent* node;
@@ -503,15 +503,15 @@ struct file_dirnode {
 *******************************/
 
 void
-file_dirnodedel(file_dirPadNode *self) {
+PadFileDirNode_Del(PadFileDirNode *self) {
     if (self) {
         free(self);
     }
 }
 
-file_dirPadNode *
+PadFileDirNode *
 file_dirnodenew(void) {
-    file_dirPadNode *self = calloc(1, sizeof(file_dirPadNode));
+    PadFileDirNode *self = calloc(1, sizeof(PadFileDirNode));
     if (!self) {
         return NULL;
     }
@@ -523,12 +523,12 @@ file_dirnodenew(void) {
 **********************/
 
 const char *
-file_dirnodename(const file_dirPadNode *self) {
+PadFileDirNode_Name(const PadFileDirNode *self) {
     if (!self) {
         return NULL;
     }
 
-#if defined(_FILE_WINDOWS)
+#if defined(PAD_FILE__WINDOWS)
     return self->finddata.cFileName;
 #else
     return self->node->d_name;
@@ -536,27 +536,27 @@ file_dirnodename(const file_dirPadNode *self) {
 }
 
 /***********************
-* file struct file_dir *
+* file struct PadFileDir *
 ***********************/
 
-struct file_dir {
-#if defined(_FILE_WINDOWS)
+struct PadFileDir {
+#if defined(PAD_FILE__WINDOWS)
     HANDLE handle;
-    char dirpath[FILE_NPATH];
+    char dirpath[PAD_FILE__NPATH];
 #else
     DIR* directory;
 #endif
 };
 
 /*********************************
-* struct file_dir close and open *
+* struct PadFileDir close and open *
 *********************************/
 
 int32_t
-file_dirclose(file_dir_t *self) {
+PadFileDir_Close(PadFileDir *self) {
     if (self) {
         int32_t ret = 0;
-#if defined(_FILE_WINDOWS)
+#if defined(PAD_FILE__WINDOWS)
         if (self->handle) {
             ret = FindClose(self->handle);
             if (ret == 0) {
@@ -582,19 +582,19 @@ file_dirclose(file_dir_t *self) {
     return -1;
 }
 
-file_dir_t *
-file_diropen(const char *path) {
+PadFileDir *
+PadFileDir_Open(const char *path) {
     if (!path) {
         return NULL;
     }
 
-    file_dir_t *self = calloc(1, sizeof(file_dir_t));
+    PadFileDir *self = calloc(1, sizeof(PadFileDir));
     if (!self) {
         return NULL;
     }
 
-#if defined(_FILE_WINDOWS)
-    if (!file_exists(path)) {
+#if defined(PAD_FILE__WINDOWS)
+    if (!PadFile_IsExists(path)) {
         return NULL;
     }
     self->handle = NULL;
@@ -611,31 +611,31 @@ file_diropen(const char *path) {
 }
 
 /********************
-* file_dir_t getter *
+* PadFileDir getter *
 ********************/
 
-file_dirPadNode *
-file_dirread(file_dir_t *self) {
+PadFileDirNode *
+PadFileDir_Read(PadFileDir *self) {
     if (!self) {
         return NULL;
     }
 
-    file_dirPadNode * node = file_dirnodenew();
+    PadFileDirNode * node = file_dirnodenew();
     if (!node) {
         return NULL;
     }
 
-#if defined(_FILE_WINDOWS)
+#if defined(PAD_FILE__WINDOWS)
     if (!self->handle) {
         if ((self->handle = FindFirstFile(self->dirpath, &node->finddata)) == INVALID_HANDLE_VALUE) {
-            file_dirnodedel(node);
+            PadFileDirNode_Del(node);
             return NULL;
 
         }
 
     } else {
         if (!FindNextFile(self->handle, &node->finddata)) {
-            file_dirnodedel(node);
+            PadFileDirNode_Del(node);
             return NULL; // Done to find
         }
     }
@@ -644,11 +644,11 @@ file_dirread(file_dir_t *self) {
     errno = 0;
     if (!(node->node = readdir(self->directory))) {
         if (errno != 0) {
-            file_dirnodedel(node);
+            PadFileDirNode_Del(node);
             return NULL;
         } else {
             // Done to readdir
-            file_dirnodedel(node);
+            PadFileDirNode_Del(node);
             return NULL;
         }
     }
@@ -658,7 +658,7 @@ file_dirread(file_dir_t *self) {
 }
 
 char *
-file_conv_line_encoding(const char *encoding, const char *text) {
+PadFile_ConvLineEnc(const char *encoding, const char *text) {
     if (!encoding || !text) {
         return NULL;
     }
@@ -726,12 +726,12 @@ file_conv_line_encoding(const char *encoding, const char *text) {
 }
 
 int
-file_get_no(FILE *fp) {
+PadFile_GetNum(FILE *fp) {
     return fileno(fp);
 }
 
 char **
-file_read_lines(const char *fname) {
+PadFile_ReadLines(const char *fname) {
     FILE *fin = fopen(fname, "r");
     if (!fin) {
         return NULL;
